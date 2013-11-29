@@ -513,7 +513,7 @@ typedef struct cgameImport_s {
 	int				(*S_GetVoiceVolume)						( int entID );
 	void			(*S_MuteSound)							( int entityNum, int entchannel );
 	sfxHandle_t		(*S_RegisterSound)						( const char *sample );
-	void			(*S_Respatialize)						( int entityNum, const vec3_t origin, vec3_t axis[3], int inwater );
+	void			(*S_Respatialize)						( int entityNum, const vec3_t origin, matrix3_t axis, int inwater );
 	void			(*S_Shutup)								( qboolean shutup );
 	void			(*S_StartBackgroundTrack)				( const char *intro, const char *loop, qboolean bReturnWithoutStarting );
 	void			(*S_StartLocalSound)					( sfxHandle_t sfx, int channelNum );
@@ -614,7 +614,7 @@ typedef struct cgameImport_s {
 	int				(*FX_RegisterEffect)					( const char *file );
 	void			(*FX_PlayEffect)						( const char *file, vec3_t org, vec3_t fwd, int vol, int rad );
 	void			(*FX_PlayEffectID)						( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal );
-	void			(*FX_PlayEntityEffectID)				( int id, vec3_t org, vec3_t axis[3], const int boltInfo, const int entNum, int vol, int rad );
+	void			(*FX_PlayEntityEffectID)				( int id, vec3_t org, matrix3_t axis, const int boltInfo, const int entNum, int vol, int rad );
 	qboolean		(*FX_PlayBoltedEffectID)				( int id, vec3_t org, void *pGhoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative );
 	void			(*FX_AddScheduledEffects)				( qboolean portal );
 	int				(*FX_InitSystem)						( refdef_t *refdef );

@@ -24,6 +24,8 @@ This file is part of Jedi Knight 2.
 #ifndef __WEAPONS_H__
 #define __WEAPONS_H__
 
+#include "../../code/qcommon/q_shared.h"
+
 typedef enum //# weapon_e
 {
 	WP_NONE,
@@ -135,7 +137,6 @@ typedef struct weaponData_s
 
 	char	missileHitSound[64];	// Missile impact sound
 	char	altmissileHitSound[64];	// alt Missile impact sound
-#ifndef _USRDLL
 	void	*func;
 	void	*altfunc;
 
@@ -143,8 +144,6 @@ typedef struct weaponData_s
 	int		mMuzzleEffectID;
 	char	mAltMuzzleEffect[64];
 	int		mAltMuzzleEffectID;
-
-#endif
 
 	// OPENJK ADD
 	int		damage;

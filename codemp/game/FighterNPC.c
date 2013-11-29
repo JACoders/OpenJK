@@ -27,7 +27,7 @@ qboolean BG_FighterUpdate(Vehicle_t *pVeh, const usercmd_t *pUcmd, vec3_t trMins
 {
 	vec3_t		bottom;
 	playerState_t *parentPS;
-	qboolean	isDead = qfalse;
+	//qboolean	isDead = qfalse;
 #ifdef _GAME //don't do this on client
 	int i;
 
@@ -65,9 +65,9 @@ qboolean BG_FighterUpdate(Vehicle_t *pVeh, const usercmd_t *pUcmd, vec3_t trMins
 		}
 	}
 
+	/*
 	isDead = (qboolean)((parentPS->eFlags&EF_DEAD)!=0);
 
-	/*
 	if ( isDead || 
 		(pVeh->m_pVehicleInfo->surfDestruction &&
 			pVeh->m_iRemovedSurfaces ) )

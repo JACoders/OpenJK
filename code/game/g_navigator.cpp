@@ -25,9 +25,11 @@ This file is part of Jedi Academy.
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#include "g_headers.h"
 
-
+#include "../cgame/cg_local.h"
+#include "g_shared.h"
+#include "g_nav.h"
+#include "../cgame/cg_main.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // HFile Bindings
@@ -65,9 +67,6 @@ extern vec3_t		playerMaxs;
 #if !defined(RATL_GRAPH_REGION_INC)
 	#include "../Ragl/graph_region.h"
 #endif
-//#if !defined(RATL_GRAPH_TRIANGULATE_INC)
-//	#include "../Ragl/graph_triangulate.h"
-//#endif
 #if !defined(RATL_VECTOR_VS_INC)
 	#include "../Ratl/vector_vs.h"
 #endif

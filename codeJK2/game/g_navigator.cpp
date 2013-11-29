@@ -23,9 +23,6 @@ This file is part of Jedi Knight 2.
 #include "b_local.h"
 #include "g_navigator.h"
 #include "g_nav.h"
-#include <time.h>
-
-
 
 extern int NAVNEW_ClearPathBetweenPoints(vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask);
 extern qboolean NAV_CheckNodeFailedForEnt( gentity_t *ent, int nodeNum );
@@ -45,22 +42,6 @@ static vec3_t	wpMins = { -16, -16, -24+STEPSIZE };//WTF:  was 16??!!!
 static byte CHECKED_NO = 0;
 static byte CHECKED_FAILED = 1;
 static byte CHECKED_PASSED = 2;
-
-
-int GetTime ( int lastTime )
-{
-	int			curtime;
-	static int	timeBase = 0;
-	static qboolean	initialized = qfalse;
-
-	if (!initialized) {
-		timeBase = timeGetTime();
-		initialized = qtrue;
-	}
-	curtime = timeGetTime() - timeBase - lastTime;
-
-	return curtime;
-}
 
 /*
 -------------------------
@@ -282,7 +263,7 @@ GetEdgeFlags
 -------------------------
 */
 
-BYTE CNode::GetEdgeFlags( int edgeNum )
+unsigned char CNode::GetEdgeFlags( int edgeNum )
 {
 	if ( edgeNum > m_numEdges )
 		return 0;
@@ -798,10 +779,10 @@ void CNavigator::CalculatePath( CNode *node )
 	int	i;
 
 	CPriorityQueue	*pathList = new CPriorityQueue();
-	BYTE			*checked;
+	unsigned char			*checked;
 
 	//Init the completion table
-	checked = new BYTE[ m_nodes.size() ];
+	checked = new unsigned char[ m_nodes.size() ];
 	memset( checked, 0, m_nodes.size() );
 
 	//Mark this node as checked
@@ -866,7 +847,7 @@ extern void CP_FindCombatPointWaypoints( void );
 void CNavigator::CalculatePaths( bool	recalc )
 {
 #ifndef FINAL_BUILD
-	int	startTime = GetTime(0);
+	int	startTime = gi.Milliseconds();
 #endif
 #if _HARD_CONNECT
 #else
@@ -887,7 +868,7 @@ void CNavigator::CalculatePaths( bool	recalc )
 #ifndef FINAL_BUILD
 	if ( pathsCalculated )
 	{
-		gi.Printf( S_COLOR_CYAN"%s recalced paths in %d ms\n", (NPC!=NULL?NPC->targetname:"NULL"), GetTime(startTime) );
+		gi.Printf( S_COLOR_CYAN"%s recalced paths in %d ms\n", (NPC!=NULL?NPC->targetname:"NULL"), gi.Milliseconds()-startTime );
 	}
 #endif
 	
@@ -985,7 +966,7 @@ void CNavigator::ShowEdges( void )
 			if ( drawMap[(*ni)->GetID()].find( id ) != drawMap[(*ni)->GetID()].end() )
 				continue;
 
-			BYTE flags = (*ni)->GetEdgeFlags( i );
+			unsigned char flags = (*ni)->GetEdgeFlags( i );
 
 			CNode	*node = m_nodes[id];
 

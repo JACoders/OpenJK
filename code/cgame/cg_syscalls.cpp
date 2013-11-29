@@ -19,7 +19,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 
 // this file is only included when building a dll
 
@@ -28,11 +27,7 @@ extern void CG_PreInit();
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
-#if !defined(_WIN32)
-extern "C" Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
-#else
-Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
-#endif
+extern "C" Q_EXPORT void QDECL dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg, ... ) ) {
 	Q_syscall = syscallptr;
 	CG_PreInit();
 }
@@ -341,10 +336,6 @@ void	cgi_R_DrawStretchPic( float x, float y, float w, float h,
 	Q_syscall( CG_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
 }
 
-//void	cgi_R_DrawScreenShot( float x, float y, float w, float h){
-//	Q_syscall( CG_R_DRAWSCREENSHOT, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h) );
-//}
-
 void	cgi_R_ModelBounds( qhandle_t model, vec3_t mins, vec3_t maxs ) {
 	Q_syscall( CG_R_MODELBOUNDS, model, mins, maxs );
 }
@@ -581,11 +572,6 @@ int cgi_UI_GetItemText(char *menuFile,char *itemName, char* text)
 int cgi_SP_GetStringTextString(const char *text, char *buffer, int bufferLength)
 {
 	return Q_syscall( CG_SP_GETSTRINGTEXTSTRING, text, buffer, bufferLength );
-}
-
-int cgi_EndGame(void)
-{
-	return Q_syscall( CG_SENDCONSOLECOMMAND, "cam_disable; disconnect\n" );//; cinematic outcast
 }
 
 /*

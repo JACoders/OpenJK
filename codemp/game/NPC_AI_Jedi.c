@@ -16,7 +16,6 @@ extern void ForceJump( gentity_t *self, usercmd_t *ucmd );
 #define	JEDI_MAX_LIGHT_THRESHOLD 50
 
 #define	DISTANCE_SCALE		0.25f
-//#define	DISTANCE_THRESHOLD	0.075f
 #define	SPEED_SCALE			0.25f
 #define	FOV_SCALE			0.5f
 #define	LIGHT_SCALE			0.25f
@@ -48,7 +47,6 @@ extern qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePowe
 extern void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower );
 extern void WP_DeactivateSaber( gentity_t *self, qboolean clearLength ); //clearLength = qfalse
 extern void WP_ActivateSaber( gentity_t *self );
-//extern void WP_SaberBlock(gentity_t *saber, vec3_t hitloc);
 
 extern qboolean PM_SaberInStart( int move );
 extern qboolean BG_SaberInSpecialAttack( int anim );
@@ -415,7 +413,6 @@ void Boba_FireFlameThrower( gentity_t *self )
 	}
 }
 
-//extern void SP_fx_explosion_trail( gentity_t *ent );
 void Boba_StartFlameThrower( gentity_t *self )
 {
 	int	flameTime = 4000;//Q_irand( 1000, 3000 );
@@ -482,7 +479,7 @@ void Boba_FireDecide( void )
 {
 	qboolean enemyLOS = qfalse, enemyCS = qfalse, enemyInFOV = qfalse;
 	//qboolean move = qtrue;
-	qboolean faceEnemy = qfalse, shoot = qfalse, hitAlly = qfalse;
+	qboolean shoot = qfalse, hitAlly = qfalse;
 	vec3_t	impactPos, enemyDir, shootDir;
 	float	enemyDist, dot;
 
@@ -546,7 +543,6 @@ void Boba_FireDecide( void )
 		enemyCS = qfalse;
 		shoot = qfalse;
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
-		faceEnemy = qtrue;
 		NPCS.ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);
 	}
 	else if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
@@ -627,21 +623,15 @@ void Boba_FireDecide( void )
 		else if ( trap->InPVS( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin ) )
 		{
 			NPCS.NPCInfo->enemyLastSeenTime = level.time;
-			faceEnemy = qtrue;
 			//NPC_AimAdjust( -1 );//adjust aim worse longer we cannot see enemy
 		}
 
 		if ( NPCS.NPC->client->ps.weapon == WP_NONE )
 		{
-			faceEnemy = qfalse;
 			shoot = qfalse;
 		}
 		else
 		{
-			if ( enemyLOS )
-			{//FIXME: no need to face enemy if we're moving to some other goal and he's too far away to shoot?
-				faceEnemy = qtrue;
-			}
 			if ( enemyCS )
 			{
 				shoot = qtrue;
@@ -746,7 +736,6 @@ void Boba_FireDecide( void )
 							NPCS.NPCInfo->desiredPitch	= angles[PITCH];
 
 							shoot = qtrue;
-							faceEnemy = qfalse;
 						}
 					}
 				}
@@ -2453,7 +2442,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	float zdiff;
 	int	  duckChance = 0;
 	int	  dodgeAnim = -1;
-	qboolean	saberBusy = qfalse, evaded = qfalse, doDodge = qfalse;
+	qboolean	saberBusy = qfalse, doDodge = qfalse;
 	evasionType_t	evasionType = EVASION_NONE;
 
 	//FIXME: if we don't have our saber in hand, pick the force throw option or a jump or strafe!
@@ -2553,7 +2542,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						TIMER_Start( self, "strafeLeft", Q_irand( 500, 1500 ) );
 						TIMER_Set( self, "strafeRight", 0 );
 						evasionType = EVASION_DUCK;
-						evaded = qtrue;
 					}
 					else if ( Q_irand( 0, 1 ) )
 					{
@@ -2574,7 +2562,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						{
 							TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 							evasionType = EVASION_DUCK_PARRY;
-							evaded = qtrue;
 							if ( d_JediAI.integer )
 							{
 								Com_Printf( "duck " );
@@ -2603,7 +2590,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						TIMER_Start( self, "strafeRight", Q_irand( 500, 1500 ) );
 						TIMER_Set( self, "strafeLeft", 0 );
 						evasionType = EVASION_DUCK;
-						evaded = qtrue;
 					}
 					else if ( Q_irand( 0, 1 ) )
 					{
@@ -2624,7 +2610,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						{
 							TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 							evasionType = EVASION_DUCK_PARRY;
-							evaded = qtrue;
 							if ( d_JediAI.integer )
 							{
 								Com_Printf( "duck " );
@@ -2654,7 +2639,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					Com_Printf( "TOP block\n" );
 				}
 			}
-			evaded = qtrue;
 		}
 		else
 		{
@@ -2663,7 +2647,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 				//duckChance = 2;
 				TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 				evasionType = EVASION_DUCK;
-				evaded = qtrue;
 				if ( d_JediAI.integer )
 				{
 					Com_Printf( "duck " );
@@ -2682,7 +2665,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 				//duckChance = 2;
 				TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 				evasionType = EVASION_DUCK;
-				evaded = qtrue;
 				if ( d_JediAI.integer )
 				{
 					Com_Printf( "duck " );
@@ -2772,7 +2754,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					Com_Printf( "mid-TOP block\n" );
 				}
 			}
-			evaded = qtrue;
 		}
 	}
 	else if ( saberBusy || (zdiff < -36 && ( zdiff < -44 || !Q_irand( 0, 2 ) ) ) )//was -30 and -40//2nd one was -46
@@ -2781,7 +2762,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 		{//already in air, duck to pull up legs
 			TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 			evasionType = EVASION_DUCK;
-			evaded = qtrue;
 			if ( d_JediAI.integer )
 			{
 				Com_Printf( "legs up\n" );
@@ -2807,7 +2787,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						Com_Printf( "LL block\n" );
 					}
 				}
-				evaded = qtrue;
 			}
 		}
 		else 
@@ -2824,7 +2803,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 				{
 					self->client->ps.fd.forceJumpCharge = 320;//FIXME: calc this intelligently
 					evasionType = EVASION_FJUMP;
-					evaded = qtrue;
 					if ( d_JediAI.integer )
 					{
 						Com_Printf( "force jump + " );
@@ -2866,7 +2844,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						}
 					}
 					evasionType = EVASION_JUMP;
-					evaded = qtrue;
 					if ( d_JediAI.integer )
 					{
 						Com_Printf( "jump + " );
@@ -2910,7 +2887,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 							}
 							cmd->upmove = 0;
 							saberBusy = qtrue;
-							evaded = qtrue;
 						}
 					}
 				}
@@ -2918,7 +2894,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 			if ( ((evasionType = Jedi_CheckFlipEvasions( self, rightdot, zdiff ))!=EVASION_NONE) )
 			{
 				saberBusy = qtrue;
-				evaded = qtrue;
 			}
 			else if ( incoming || !saberBusy )
 			{
@@ -2955,7 +2930,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						Com_Printf( "LL block\n" );
 					}
 				}
-				evaded = qtrue;
 			}
 		}
 	}
@@ -3025,7 +2999,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					}
 				}
 			}
-			evaded = qtrue;
 		}
 	}
 
@@ -5247,7 +5220,7 @@ static void Jedi_Combat( void )
 	//maintain a distance from enemy appropriate for our aggression level
 	Jedi_CombatDistance( enemy_dist );
 
-	//if ( !enemy_lost )
+	if ( !enemy_lost )
 	{
 		//Update our seen enemy position
 		if ( !NPCS.NPC->enemy->client || ( NPCS.NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE && NPCS.NPC->client->ps.groundEntityNum != ENTITYNUM_NONE ) )

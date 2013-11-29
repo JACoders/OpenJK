@@ -16,8 +16,6 @@ This file is part of OpenJK.
 */
 // Copyright 2013 OpenJK
 
-#include "g_headers.h"
-
 #include "g_local.h"
 #include "b_local.h"
 #include "g_functions.h"
@@ -137,8 +135,8 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->methodOfDeath = MOD_REPEATER_ALT;
 	missile->splashMethodOfDeath = MOD_REPEATER_ALT;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = weaponData[WP_REPEATER].splashDamage;
-	missile->splashRadius = weaponData[WP_REPEATER].splashRadius;
+	missile->splashDamage = weaponData[WP_REPEATER].altSplashDamage;
+	missile->splashRadius = weaponData[WP_REPEATER].altSplashRadius;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;

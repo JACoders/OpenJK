@@ -237,7 +237,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 CommaParse
 
 This is unfortunate, but the skin files aren't
-compatable with our normal parsing rules.
+compatible with our normal parsing rules.
 ==================
 */
 static char *CommaParse( char **data_p ) {

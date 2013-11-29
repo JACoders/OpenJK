@@ -21,9 +21,9 @@ This file is part of Jedi Academy.
 #define __QCOMMON_H__
 
 #include "stringed_ingame.h"
-#include "../qcommon/q_shared.h"
-#include "../../codeJK2/qcommon/strippublic.h"
-#include "../qcommon/cm_public.h"
+#include "q_shared.h"
+#include "strippublic.h"
+#include "cm_public.h"
 
 
 // some zone mem debugging stuff
@@ -94,34 +94,6 @@ void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
 
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
 void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
-
-
-//============================================================================
-
-#ifdef id386
-//
-// optimised stuff for Intel, since most of our data is in that format anyway...
-//
-extern	short	BigShort (short l);
-extern	int		BigLong (int l);
-extern	float	BigFloat (float l);
-#define LittleShort(l) l
-#define LittleLong(l) l
-#define LittleFloat(l) l
-//
-#else
-//
-// standard smart-swap code...
-//
-extern	short	BigShort (short l);
-extern	short	LittleShort (short l);
-extern	int		BigLong (int l);
-extern	int		LittleLong (int l);
-extern	float	BigFloat (float l);
-extern	float	LittleFloat (float l);
-//
-#endif
-
 
 /*
 ==============================================================
@@ -447,6 +419,7 @@ issues.
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
+void	FS_Shutdown( void );
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
 // directory should not have either a leading or trailing /
@@ -511,6 +484,8 @@ int		FS_FTell( fileHandle_t f );
 void	FS_Flush( fileHandle_t f );
 
 void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+
+const char *FS_GetCurrentGameDir(bool emptybase=false);
 
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
@@ -757,7 +732,7 @@ void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
 // server interface
 //
 void SV_Init( void );
-void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame = qfalse );
+void SV_Shutdown( const char *finalmsg);
 void SV_Frame( int msec,float fractionMsec);
 void SV_PacketEvent( netadr_t from, msg_t *msg );
 qboolean SV_GameCommand( void );
@@ -839,20 +814,14 @@ void 	Sys_SetEnv(const char *name, const char *value);
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
 
-void	Sys_BeginStreamedFile( fileHandle_t f, int readahead );
-void	Sys_EndStreamedFile( fileHandle_t f );
-int		Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f );
-void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
-
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
 
-void	Sys_Mkdir( const char *path );
+qboolean	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-char	*Sys_DefaultBasePath(void);
 
 #ifdef MACOS_X
 char    *Sys_DefaultAppPath(void);
@@ -874,9 +843,6 @@ qboolean Sys_CopyFile(const char *lpExistingFileName, const char *lpNewFileName,
 
 
 byte*	SCR_GetScreenshot(qboolean *qValid);
-//void	SCR_SetScreenshot(const byte *pbData, int w, int h);
-//byte*	SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
-//void	SCR_TempRawImage_CleanUp();
 
 inline int Round(float value)
 {

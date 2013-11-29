@@ -16,11 +16,8 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "../icarus/IcarusInterface.h"
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
@@ -28,6 +25,7 @@ This file is part of Jedi Academy.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "objectives.h"
+#include "b_local.h"
 
 extern int WP_SaberInitBladeData( gentity_t *ent );
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
@@ -377,47 +375,74 @@ void respawn( gentity_t *ent ) {
 	}
 }
 
-
-/*
-================
-PickTeam
-
-================
-*/
-team_t PickTeam( int ignoreClientNum ) {
-	int		i;
-	int		counts[TEAM_NUM_TEAMS];
-
-	memset( counts, 0, sizeof( counts ) );
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if ( i == ignoreClientNum ) {
-			continue;
-		}
-		if ( level.clients[i].pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-	}
-
-	return TEAM_FREE;
-}
-
 /*
 ===========
-ForceClientSkin
-
-Forces a client's skin (for teamplay)
-===========
+ClientCheckName
+============
 */
-void ForceClientSkin( gclient_t *client, char *model, const char *skin ) {
-	char *p;
+static void ClientCleanName( const char *in, char *out, int outSize )
+{
+	int outpos = 0, colorlessLen = 0, spaces = 0, ats = 0;
 
-	if ((p = strchr(model, '/')) != NULL) {
-		*p = 0;
+	// discard leading spaces
+	for ( ; *in == ' '; in++);
+
+	// discard leading asterisk's (fail raven for using * as a skipnotify)
+	// apparently .* causes the issue too so... derp
+	//for(; *in == '*'; in++);
+	
+	for(; *in && outpos < outSize - 1; in++)
+	{
+		out[outpos] = *in;
+
+		if ( *in == ' ' )
+		{// don't allow too many consecutive spaces
+			if ( spaces > 2 )
+				continue;
+
+			spaces++;
+		}
+		else if ( *in == '@' )
+		{// don't allow too many consecutive at signs
+			if ( ats > 2 )
+				continue;
+
+			ats++;
+		}
+		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
+		{
+			if ( Q_IsColorStringExt( &out[outpos-1] ) )
+			{
+				colorlessLen--;
+				
+#if 0
+				if ( ColorIndex( *in ) == 0 )
+				{// Disallow color black in names to prevent players from getting advantage playing in front of black backgrounds
+					outpos--;
+					continue;
+				}
+#endif
+			}
+			else
+			{
+				spaces = ats = 0;
+				colorlessLen++;
+			}
+		}
+		else
+		{
+			spaces = ats = 0;
+			colorlessLen++;
+		}
+		
+		outpos++;
 	}
 
-	Q_strcat(model, MAX_QPATH, "/");
-	Q_strcat(model, MAX_QPATH, skin);
+	out[outpos] = '\0';
+
+	// don't allow empty names
+	if ( *out == '\0' || colorlessLen == 0 )
+		Q_strncpyz( out, "Padawan", outSize );
 }
 
 /*
@@ -432,71 +457,48 @@ if desired.
 ============
 */
 void ClientUserinfoChanged( int clientNum ) {
-	gentity_t *ent;
-	const char	*s;
-	char	headModel[MAX_QPATH];
-	char	torsoModel[MAX_QPATH];
-	char	legsModel[MAX_QPATH];
-	char	sound[MAX_QPATH];
-	char	oldname[MAX_STRING_CHARS];
-	gclient_t	*client;
-	const char	*sex;
-	char	userinfo[MAX_INFO_STRING];
-
-	ent = g_entities + clientNum;
-	client = ent->client;
+	gentity_t	*ent = g_entities + clientNum;
+	gclient_t	*client = ent->client;
+	int			health=100, maxHealth=100;
+	const char	*s=NULL;
+	char		userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},
+				sound[MAX_STRING_CHARS]={0},	oldname[34]={0};
 
 	gi.GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	// check for malformed or illegal info strings
-	if ( !Info_Validate(userinfo) ) {
+	/*if ( !Info_Validate(userinfo) ) {
 		strcpy (userinfo, "\\name\\badinfo");
-	}
+	}*/
 
 	// set name
 	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey (userinfo, "name");
-	Q_strncpyz( client->pers.netname, s, sizeof(client->pers.netname) );
+	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 
-/*	if ( client->pers.connected == CON_CONNECTED ) {
-		if ( strcmp( oldname, client->pers.netname ) ) {
-			gi.SendServerCommand( -1, "print \"%s renamed to %s\n\"", oldname, client->pers.netname );
-		}
-	}
-*/
 	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
+	maxHealth = 100;
+	health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	client->pers.maxHealth = health;
+	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
 		client->pers.maxHealth = 100;
-	}
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
 	Q_strncpyz( sound, Info_ValueForKey (userinfo, "snd"), sizeof( sound ) );
 
-
-	// set model
-	//Q_strncpyz( headModel, Info_ValueForKey (userinfo, "headModel"), sizeof( headModel ) );
-	//Q_strncpyz( torsoModel, Info_ValueForKey (userinfo, "torsoModel"), sizeof( torsoModel ) );
-	//Q_strncpyz( legsModel, Info_ValueForKey (userinfo, "legsModel"), sizeof( legsModel ) );
-	headModel[0]=0;
-	torsoModel[0]=0;
-	legsModel[0]=0;
-
-	// sex
-	sex = Info_ValueForKey( userinfo, "sex" );
-	if ( !sex[0] ) {
-		sex = "m";
-	}
-
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
+	buf[0] = '\0';
+	Q_strcat( buf, sizeof( buf ), va( "n\\%s\\", client->pers.netname ) );
+	Q_strcat( buf, sizeof( buf ), va( "t\\%i\\", client->sess.sessionTeam ) );
+	Q_strcat( buf, sizeof( buf ),	  "headModel\\\\" );
+	Q_strcat( buf, sizeof( buf ),	  "torsoModel\\\\" );
+	Q_strcat( buf, sizeof( buf ),	  "legsModel\\\\" );
+	Q_strcat( buf, sizeof( buf ), va( "hc\\%i\\", client->pers.maxHealth ) );
+	Q_strcat( buf, sizeof( buf ), va( "snd\\%s\\", sound ) );
 
-	s = va("n\\%s\\t\\%i\\headModel\\%s\\torsoModel\\%s\\legsModel\\%s\\hc\\%i\\snd\\%s",
-		client->pers.netname, client->sess.sessionTeam, headModel, torsoModel, legsModel, 
-		client->pers.maxHealth, sound );
-
-	gi.SetConfigstring( CS_PLAYERS+clientNum, s );
+	gi.SetConfigstring( CS_PLAYERS+clientNum, buf );
 }
 
 
@@ -522,23 +524,19 @@ restarts.
 */
 char *ClientConnect( int clientNum, qboolean firstTime, SavedGameJustLoaded_e eSavedGameJustLoaded ) 
 {
-	gclient_t	*client;
-	char		userinfo[MAX_INFO_STRING];
-	gentity_t	*ent;
-	clientSession_t		savedSess;
+	gentity_t	*ent = &g_entities[ clientNum ];
+	char		userinfo[MAX_INFO_STRING] = {0};
 
-	ent = &g_entities[ clientNum ];
 	gi.GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
-
 
 	// they can connect
 	ent->client = level.clients + clientNum;
-	client = ent->client;
+	gclient_t *client = ent->client;
 
 //	if (!qbFromSavedGame)
 	if (eSavedGameJustLoaded != eFULL)
 	{
-		savedSess = client->sess;	// 
+		clientSession_t savedSess = client->sess;	// 
 		memset( client, 0, sizeof(*client) );
 		client->sess = savedSess; 
 		if ( firstTime ) {	//not loading full, and directconnect
@@ -1976,7 +1974,10 @@ void G_SetSabersFromCVars( gentity_t *ent )
 void G_InitPlayerFromCvars( gentity_t *ent )
 {
 	//set model based on cvars
-	G_ChangePlayerModel( ent, va("%s|%s|%s|%s", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string) );
+	if(Q_stricmp(g_char_skin_head->string, "model_default") == 0 && Q_stricmp(g_char_skin_torso->string, "model_default") == 0 && Q_stricmp(g_char_skin_legs->string, "model_default") == 0)
+		G_ChangePlayerModel( ent, va("%s|model_default", g_char_model->string) );
+	else
+		G_ChangePlayerModel( ent, va("%s|%s|%s|%s", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string) );
 
 	//FIXME: parse these 2 from some cvar or require playermodel to be in a *.npc?
 	if( ent->NPC_type && gi.bIsFromZone(ent->NPC_type, TAG_G_ALLOC) ) {
@@ -2049,7 +2050,10 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		*p=0;
 		p++;
 
-		G_SetG2PlayerModel( ent, name, p, NULL, NULL );
+		if ( strstr(p, "model_default" ) )
+			G_SetG2PlayerModel( ent, name, NULL, NULL, NULL );
+		else
+			G_SetG2PlayerModel( ent, name, p, NULL, NULL );
 	}
 	else
 	{

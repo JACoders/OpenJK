@@ -16,8 +16,9 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
+#include "../qcommon/q_shared.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean FlyingCreature( gentity_t *ent );

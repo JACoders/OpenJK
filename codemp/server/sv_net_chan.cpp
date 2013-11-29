@@ -130,7 +130,6 @@ SV_Netchan_Transmit
 ================
 */
 
-//extern byte chksum[65536];
 void SV_Netchan_Transmit( client_t *client, msg_t *msg) {	//int length, const byte *data ) {
 //	int i;
 	MSG_WriteByte( msg, svc_EOF );

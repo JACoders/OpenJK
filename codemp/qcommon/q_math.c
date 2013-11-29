@@ -3,8 +3,8 @@
 // q_math.c -- stateless support routines that are included in each code module
 #include "q_shared.h"
 
-vec3_t	vec3_origin = {0,0,0};
-vec3_t	axisDefault[3] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
+vec3_t		vec3_origin = {0,0,0};
+matrix3_t	axisDefault = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 
 
 vec4_t		colorBlack	= {0, 0, 0, 1};
@@ -292,7 +292,7 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 RotateAroundDirection
 ===============
 */
-void RotateAroundDirection( vec3_t axis[3], float yaw ) {
+void RotateAroundDirection( matrix3_t axis, float yaw ) {
 
 	// create an arbitrary axis[1] 
 	PerpendicularVector( axis[1], axis[0] );
@@ -356,7 +356,7 @@ void vectoangles( const vec3_t value1, vec3_t angles ) {
 AnglesToAxis
 =================
 */
-void AnglesToAxis( const vec3_t angles, vec3_t axis[3] ) {
+void AnglesToAxis( const vec3_t angles, matrix3_t axis ) {
 	vec3_t	right;
 
 	// angle vectors returns "right" instead of "y axis"
@@ -364,7 +364,7 @@ void AnglesToAxis( const vec3_t angles, vec3_t axis[3] ) {
 	VectorSubtract( vec3_origin, right, axis[1] );
 }
 
-void AxisClear( vec3_t axis[3] ) {
+void AxisClear( matrix3_t axis ) {
 	axis[0][0] = 1;
 	axis[0][1] = 0;
 	axis[0][2] = 0;
@@ -376,7 +376,7 @@ void AxisClear( vec3_t axis[3] ) {
 	axis[2][2] = 1;
 }
 
-void AxisCopy( vec3_t in[3], vec3_t out[3] ) {
+void AxisCopy( matrix3_t in, matrix3_t out ) {
 	VectorCopy( in[0], out[0] );
 	VectorCopy( in[1], out[1] );
 	VectorCopy( in[2], out[2] );
@@ -427,7 +427,7 @@ void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up) {
 }
 
 
-void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out )
+void VectorRotate( const vec3_t in, matrix3_t matrix, vec3_t out )
 {
 	out[0] = DotProduct( in, matrix[0] );
 	out[1] = DotProduct( in, matrix[1] );
@@ -656,14 +656,14 @@ void ClearBounds( vec3_t mins, vec3_t maxs ) {
 	maxs[0] = maxs[1] = maxs[2] = -99999;
 }
 
-vec_t DistanceHorizontal( const vec3_t p1, const vec3_t p2 ) {
+float DistanceHorizontal( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
 	return sqrt( v[0]*v[0] + v[1]*v[1] ); //Leave off the z component
 }
 
-vec_t DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 ) {
+float DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
@@ -708,13 +708,13 @@ void VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 	vecOut[2] = vec1[2]-vec2[2];
 }
 
-void VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut ) {
+void VectorScale( const vec3_t vecIn, float scale, vec3_t vecOut ) {
 	vecOut[0] = vecIn[0]*scale;
 	vecOut[1] = vecIn[1]*scale;
 	vecOut[2] = vecIn[2]*scale;
 }
 
-void VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut ) {
+void VectorScale4( const vec4_t vecIn, float scale, vec4_t vecOut ) {
 	vecOut[0] = vecIn[0]*scale;
 	vecOut[1] = vecIn[1]*scale;
 	vecOut[2] = vecIn[2]*scale;
@@ -727,22 +727,22 @@ void VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut 
 	vecOut[2] = vec1[2] + scale*vec2[2];
 }
 
-vec_t VectorLength( const vec3_t vec ) {
-	return (vec_t)sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
+float VectorLength( const vec3_t vec ) {
+	return (float)sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
 }
 
-vec_t VectorLengthSquared( const vec3_t vec ) {
+float VectorLengthSquared( const vec3_t vec ) {
 	return (vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
 }
 
-vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
+float Distance( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
 	return VectorLength( v );
 }
 
-vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
+float DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
@@ -762,7 +762,7 @@ void VectorNormalizeFast( vec3_t vec )
 	vec[2] *= ilength;
 }
 
-vec_t VectorNormalize( vec3_t vec ) {
+float VectorNormalize( vec3_t vec ) {
 	float	length, ilength;
 
 	length = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
@@ -778,7 +778,7 @@ vec_t VectorNormalize( vec3_t vec ) {
 	return length;
 }
 
-vec_t VectorNormalize2( const vec3_t vec, vec3_t vecOut ) {
+float VectorNormalize2( const vec3_t vec, vec3_t vecOut ) {
 	float	length, ilength;
 
 	length = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
@@ -804,15 +804,15 @@ void VectorCopy4( const vec4_t vecIn, vec4_t vecOut ) {
 	vecOut[0]=vecIn[0]; vecOut[1]=vecIn[1]; vecOut[2]=vecIn[2]; vecOut[3]=vecIn[3];
 }
 
-void VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z ) {
+void VectorSet( vec3_t vec, float x, float y, float z ) {
 	vec[0]=x; vec[1]=y; vec[2]=z;
 }
 
-void VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w ) {
+void VectorSet4( vec4_t vec, float x, float y, float z, float w ) {
 	vec[0]=x; vec[1]=y; vec[2]=z; vec[3]=w;
 }
 
-void VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u ) {
+void VectorSet5( vec5_t vec, float x, float y, float z, float w, float u ) {
 	vec[0]=x; vec[1]=y; vec[2]=z; vec[3]=w; vec[4]=u;
 }
 
@@ -842,7 +842,7 @@ void CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 	vecOut[2] = vec1[0]*vec2[1] - vec1[1]*vec2[0];
 }
 
-vec_t DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
+float DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
 	return vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
 }
 
@@ -1036,10 +1036,10 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] )
 	{
 		int	a, b;
 
-		a = (int)(RAD2DEG( (vec_t)atan2( normal[1], normal[0] ) ) * (255.0f / 360.0f ));
+		a = (int)(RAD2DEG( (float)atan2( normal[1], normal[0] ) ) * (255.0f / 360.0f ));
 		a &= 0xff;
 
-		b = (int)(RAD2DEG( (vec_t)acos( normal[2] ) ) * ( 255.0f / 360.0f ));
+		b = (int)(RAD2DEG( (float)acos( normal[2] ) ) * ( 255.0f / 360.0f ));
 		b &= 0xff;
 
 		bytes[0] = b;	// longitude

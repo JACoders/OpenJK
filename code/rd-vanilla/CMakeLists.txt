@@ -24,11 +24,11 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
 set(SPRDVanillaG2Files
 	"${SPDir}/ghoul2/G2.h"
 	"${SPDir}/ghoul2/ghoul2_gore.h"
-	"${SPDir}/rd-vanilla/ghoul2/G2_API.cpp"
-	"${SPDir}/rd-vanilla/ghoul2/G2_bolts.cpp"
-	"${SPDir}/rd-vanilla/ghoul2/G2_bones.cpp"
-	"${SPDir}/rd-vanilla/ghoul2/G2_misc.cpp"
-	"${SPDir}/rd-vanilla/ghoul2/G2_surfaces.cpp"
+	"${SPDir}/rd-vanilla/G2_API.cpp"
+	"${SPDir}/rd-vanilla/G2_bolts.cpp"
+	"${SPDir}/rd-vanilla/G2_bones.cpp"
+	"${SPDir}/rd-vanilla/G2_misc.cpp"
+	"${SPDir}/rd-vanilla/G2_surfaces.cpp"
 	)
 source_group("ghoul2" FILES ${SPRDVanillaG2Files})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
@@ -83,9 +83,11 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaGameFiles})
 
 # Misc files
 set(SPRDVanillaCommonFiles
+	"${SPDir}/qcommon/matcomp.cpp"
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
+	"${SPDir}/qcommon/q_platform.h"
 	"${SPDir}/qcommon/cm_landscape.h"
 	)
 source_group("common" FILES ${SPRDVanillaCommonFiles})
@@ -93,18 +95,16 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
 
 # main files
 set(SPRDVanillaMainFiles
-	"${SPDir}/renderer/mdx_format.h"
-	"${SPDir}/renderer/tr_public.h"
-	"${SPDir}/renderer/tr_types.h"
+	"${SPDir}/rd-common/mdx_format.h"
+	"${SPDir}/rd-common/tr_common.h"
+	"${SPDir}/rd-common/tr_font.cpp"
+	"${SPDir}/rd-common/tr_font.h"
+	"${SPDir}/rd-common/tr_noise.cpp"
+	"${SPDir}/rd-common/tr_public.h"
+	"${SPDir}/rd-common/tr_types.h"
 
-	"${SPDir}/rd-vanilla/amd3d.h"
 	"${SPDir}/rd-vanilla/glext.h"
-	"${SPDir}/rd-vanilla/glext_console.h"
-	"${SPDir}/rd-vanilla/matcomp.c"
-	"${SPDir}/rd-vanilla/matcomp.h"
 	"${SPDir}/rd-vanilla/qgl.h"
-	"${SPDir}/rd-vanilla/qgl_linked.h"
-	"${SPDir}/rd-vanilla/ref_trin.def"
 	"${SPDir}/rd-vanilla/tr_arioche.cpp"
 	"${SPDir}/rd-vanilla/tr_backend.cpp"
 	"${SPDir}/rd-vanilla/tr_bsp.cpp"
@@ -112,8 +112,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_curve.cpp"
 	"${SPDir}/rd-vanilla/tr_draw.cpp"
 	"${SPDir}/rd-vanilla/tr_flares.cpp"
-	"${SPDir}/rd-vanilla/tr_font.cpp"
-	"${SPDir}/rd-vanilla/tr_font.h"
 	"${SPDir}/rd-vanilla/tr_ghoul2.cpp"
 	"${SPDir}/rd-vanilla/tr_image.cpp"
 	"${SPDir}/rd-vanilla/tr_init.cpp"
@@ -126,7 +124,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_marks.cpp"
 	"${SPDir}/rd-vanilla/tr_mesh.cpp"
 	"${SPDir}/rd-vanilla/tr_model.cpp"
-	"${SPDir}/rd-vanilla/tr_noise.cpp"
 	"${SPDir}/rd-vanilla/tr_quicksprite.cpp"
 	"${SPDir}/rd-vanilla/tr_quicksprite.h"
 	"${SPDir}/rd-vanilla/tr_scene.cpp"
@@ -150,9 +147,9 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMainFiles})
 
 if(WIN32)
     set(SPRDVanillaWin32Files
-        "${SPDir}/rd-vanilla/win_gamma.cpp"
-        "${SPDir}/rd-vanilla/win_glimp.cpp"
-        "${SPDir}/rd-vanilla/win_qgl.cpp"
+        "${SPDir}/win32/win_gamma.cpp"
+        "${SPDir}/win32/win_glimp.cpp"
+        "${SPDir}/win32/win_qgl.cpp"
         )
     source_group("win32" FILES ${SPRDVanillaWin32Files})
     set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaWin32Files})

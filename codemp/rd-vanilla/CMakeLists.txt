@@ -68,7 +68,8 @@ set(MPVanillaRendererRdCommonFiles
 	"${MPDir}/rd-common/tr_image_tga.cpp"
 	"${MPDir}/rd-common/tr_image_png.cpp"
 	"${MPDir}/rd-common/tr_noise.cpp"
-	"${MPDir}/rd-common/tr_public.h")
+	"${MPDir}/rd-common/tr_public.h"
+	"${MPDir}/rd-common/tr_types.h")
 source_group("rd-common" FILES ${MPVanillaRendererRdCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommonFiles})
 

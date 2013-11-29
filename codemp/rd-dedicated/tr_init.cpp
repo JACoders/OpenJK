@@ -9,11 +9,6 @@
 #include "G2_local.h"
 
 
-//#ifdef __USEA3D
-//// Defined in snd_a3dg_refcommon.c
-//void RE_A3D_RenderGeometry (void *pVoidA3D, void *pVoidGeom, void *pVoidMat, void *pVoidGeomStatus);
-//#endif
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 

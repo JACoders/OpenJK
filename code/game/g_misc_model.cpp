@@ -16,14 +16,10 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "bg_public.h"
-
+#include "../cgame/cg_local.h"
 extern cvar_t *g_spskill;
 
 //
@@ -185,6 +181,10 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	ent->s.modelindex = G_ModelIndex( ent->model );
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 	ent->s.radius = 50;
+
+	G_SetOrigin( ent, ent->s.origin );
+	G_SetAngles( ent, ent->s.angles );
+	gi.linkentity (ent);
 #else
 	char name1[200] = "models/players/kyle/model.glm";
 	ent->s.modelindex = G_ModelIndex( name1 );

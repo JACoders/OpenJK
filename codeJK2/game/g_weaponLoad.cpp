@@ -21,17 +21,6 @@ This file is part of Jedi Knight 2.
 
 // this is excluded from PCH usage 'cos it looks kinda scary to me, being game and ui.... -Ste
 
-#ifdef _USRDLL	//UI dll
-
-#include "../ui/gameinfo.h"
-#include "weapons.h"
-extern	gameinfo_import_t	gi;
-extern weaponData_t weaponData[];
-extern ammoData_t ammoData[];
-
-#else	//we are in the game
-
-// ONLY DO THIS ON THE GAME SIDE
 #include "g_local.h"
 
 typedef struct {
@@ -101,8 +90,6 @@ func_t	funcs[] = {
 	{"atst_side_main_func",	FX_ATSTSideMainProjectileThink},
 	{NULL,					NULL}
 };
-#endif
-
 
 //qboolean COM_ParseInt( char **data, int *i );
 //qboolean COM_ParseString( char **data, char **s ); 
@@ -159,6 +146,9 @@ void WPN_SplashDamage(const char **holdBuf);
 void WPN_SplashRadius(const char **holdBuf);
 void WPN_AltSplashDamage(const char **holdBuf);
 void WPN_AltSplashRadius(const char **holdBuf);
+
+// Legacy weapons.dat force fields
+void WPN_FuncSkip(const char **holdBuf);
 
 typedef struct 
 {
@@ -368,9 +358,20 @@ wpnParms_t WpnParms[] =
 	"splashRadius",		WPN_SplashRadius,
 	"altSplashDamage",	WPN_AltSplashDamage,
 	"altSplashRadius",	WPN_AltSplashRadius,
+	
+	// Old legacy files contain these, so we skip them to shut up warnings
+	"firingforce",		WPN_FuncSkip,
+	"chargeforce",		WPN_FuncSkip,
+	"altchargeforce",	WPN_FuncSkip,
+	"selectforce",		WPN_FuncSkip,
 };
 
 const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
+
+void WPN_FuncSkip( const char **holdBuf)
+{
+	SkipRestOfLine(holdBuf);
+}
 
 void WPN_WeaponType( const char **holdBuf)
 {
@@ -1157,8 +1158,7 @@ void WPN_FuncName(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
+
 	int len = strlen(tokenStr);
 
 	len++;
@@ -1176,7 +1176,6 @@ void WPN_FuncName(const char **holdBuf)
 		}
 	}
 	gi.Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' in external WEAPONS.DAT does not exist\n", tokenStr);
-#endif
 }
 
 
@@ -1190,8 +1189,6 @@ void WPN_AltFuncName(const char **holdBuf)
 		return;
 	}
 
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
 	int len = strlen(tokenStr);
 	len++;
 	if (len > 64)
@@ -1209,7 +1206,6 @@ void WPN_AltFuncName(const char **holdBuf)
 	}
 	gi.Printf(S_COLOR_YELLOW"WARNING: AltFuncName %s in external WEAPONS.DAT does not exist\n", tokenStr);
 
-#endif
 }
 
 //--------------------------------------------
@@ -1221,8 +1217,6 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
 
 	int len = strlen(tokenStr);
 
@@ -1236,7 +1230,6 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mMuzzleEffect,tokenStr,len);
 
-#endif
 }
 
 //--------------------------------------------
@@ -1248,8 +1241,6 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
 
 	int len = strlen(tokenStr);
 
@@ -1262,8 +1253,6 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mAltMuzzleEffect,tokenStr,len);
-
-#endif
 }
 
 //--------------------------------------------
@@ -1370,6 +1359,8 @@ static void WP_ParseParms(const char *buffer)
 		}
 		 
 	}
+
+	COM_EndParseSession(  );
 
 }
 

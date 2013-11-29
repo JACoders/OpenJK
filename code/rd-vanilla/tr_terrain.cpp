@@ -545,7 +545,6 @@ void CTRLandScape::SetShaders(const int height, const qhandle_t shader)
 
 void CTRLandScape::LoadTerrainDef(const char *td)
 {
-#ifndef PRE_RELEASE_DEMO
 	char			terrainDef[MAX_QPATH];
 	CGenericParser2	parse;
 	CGPGroup		*basegroup, *classes, *items;
@@ -612,7 +611,6 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	}
 	
 	Com_ParseTextFileDestroy(parse);
-#endif // PRE_RELEASE_DEMO
 }
 
 qhandle_t R_CreateBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites );
@@ -667,7 +665,6 @@ static int ComparePatchInfo(const TPatchInfo *arg1, const TPatchInfo *arg2)
 
 void CTRLandScape::CalculateShaders(void)
 {
-#ifndef PRE_RELEASE_DEMO
 	int						x, y;
 	int						width, height;
 	int						offset;
@@ -809,7 +806,6 @@ void CTRLandScape::CalculateShaders(void)
 
 	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int (*)(const void *,const void *))ComparePatchInfo);
 
-#endif // PRE_RELEASE_DEMO
 }
 
 void CTRPatch::SetRenderMap(const int x, const int y) 
@@ -883,7 +879,6 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData);
 
 CTRLandScape::CTRLandScape(const char *configstring)
 {
-#ifndef PRE_RELEASE_DEMO
 	int					shaderNum;
 	const CCMLandScape	*common;
 
@@ -944,7 +939,6 @@ CTRLandScape::CTRLandScape(const char *configstring)
 #if	_DEBUG
 	mCycleCount = 0;
 #endif
-#endif // PRE_RELEASE_DEMO
 }
 
 // ---------------------------------------------------------------------

@@ -411,7 +411,7 @@ void CTRLandScape::CalculateLighting(void)
 			vec3_t		ambient;
 			vec3_t		directed, direction;
 			vec3_t		total, tint;
-			vec_t		dp;
+			float		dp;
 			
 			offset = (y * GetRealWidth()) + x;
 			

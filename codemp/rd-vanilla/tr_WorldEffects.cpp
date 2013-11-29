@@ -380,7 +380,7 @@ private:
 	struct SWeatherZone
 	{
 		static bool	mMarkedOutside;
-		ulong*		mPointCache;
+		uint32_t*		mPointCache;
 		SVecRange	mExtents;
 		SVecRange	mSize;
 		int			mWidth;
@@ -513,7 +513,7 @@ public:
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
 			
 			int arraySize	= (Wz.mWidth * Wz.mHeight * Wz.mDepth);
-			Wz.mPointCache  = (ulong *)Z_Malloc(arraySize*sizeof(ulong), TAG_POINTCACHE, qtrue);
+			Wz.mPointCache  = (uint32_t *)Z_Malloc(arraySize*sizeof(uint32_t), TAG_POINTCACHE, qtrue);
 		}
 	}
 
@@ -534,8 +534,8 @@ public:
 		CVec3		Mins;
 		int			x, y, z, q, zbase;
 		bool		curPosOutside;
-		ulong		contents;
-		ulong		bit;
+		uint32_t		contents;
+		uint32_t		bit;
 
 
 		// Record The Extents Of The World Incase No Other Weather Zones Exist

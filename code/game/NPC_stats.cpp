@@ -17,14 +17,12 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //NPC_stats.cpp
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "b_local.h"
 #include "b_public.h"
 #include "anims.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "../cgame/cg_local.h"
 #if !defined(RUFL_HSTRING_INC)
 	#include "../Rufl/hstring.h"
 #endif
@@ -357,7 +355,6 @@ static int MoveTypeNameToEnum( const char *name )
 extern void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri);
 extern void CG_RegisterClientModels (int entityNum);
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
-//extern void CG_RegisterNPCEffects( team_t team );
 
 //#define CONVENIENT_ANIMATION_FILE_DEBUG_THING
 

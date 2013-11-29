@@ -994,7 +994,7 @@ const char *SE_GetString( const char *psPackageReference, const char *psStringRe
 {
 	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
 
-	sprintf(sReference,"%s_%s", psPackageReference, psStringReference);
+	Com_sprintf(sReference, sizeof(sReference),"%s_%s", psPackageReference, psStringReference);
 
 	return SE_GetString( Q_strupr(sReference) );
 }
@@ -1043,7 +1043,7 @@ int	SE_GetFlags ( const char *psPackageReference, const char *psStringReference 
 {
 	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
 
-	sprintf(sReference,"%s_%s", psPackageReference, psStringReference);
+	Com_sprintf(sReference, sizeof(sReference),"%s_%s", psPackageReference, psStringReference);
 
 	return SE_GetFlags( sReference );
 }

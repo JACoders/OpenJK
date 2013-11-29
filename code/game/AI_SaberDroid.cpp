@@ -16,20 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
 #include "wp_saber.h"
 
-//extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern void WP_DeactivateSaber( gentity_t *self, qboolean clearLength = qfalse );
 extern int PM_AnimLength( int index, animNumber_t anim );
 

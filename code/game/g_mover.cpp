@@ -16,11 +16,11 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
+#include "bg_public.h"
+#include "../cgame/cg_local.h"
 #include "g_functions.h"
 #include "objectives.h"
+#include "g_local.h"
 
 #include "../icarus/IcarusInterface.h"
 
@@ -557,7 +557,6 @@ G_RunMover
 
 ================
 */
-//void rebolt_turret( gentity_t *base );
 void G_RunMover( gentity_t *ent ) {
 	// if not a team captain, don't do anything, because
 	// the captain will handle everything

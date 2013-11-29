@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
-#include "matcomp.h"
+#include "qcommon/matcomp.h"
 
 float ProjectRadius( float r, vec3_t location )
 {
@@ -332,7 +332,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 		|| (ent->e.oldframe >= tr.currentModel->md3[0]->numFrames)
 		|| (ent->e.oldframe < 0) ) 
 	{
-			VID_Printf (PRINT_ALL, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
+			ri.Printf (PRINT_ALL, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
 				ent->e.oldframe, ent->e.frame,
 				tr.currentModel->name );
 			ent->e.frame = 0;

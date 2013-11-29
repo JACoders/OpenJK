@@ -22,7 +22,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
@@ -558,7 +557,10 @@ static void CG_UpdateThirdPersonTargetDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = pow(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf( dampfactor, dtime );
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealTarget, -ratio, targetdiff, cameraCurTarget);
@@ -659,7 +661,10 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = pow(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf( dampfactor, dtime );
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealLoc, -ratio, locdiff, cameraCurLoc);
@@ -1336,7 +1341,6 @@ CG_CalcFov
 Fixed fov at intermissions, otherwise account for fov variable and zooms.
 ====================
 */
-//extern float	g_fov;
 static qboolean	CG_CalcFov( void ) {
 	float	fov_x;
 	float	f;
@@ -1572,7 +1576,6 @@ static qboolean CG_CalcViewValues( void ) {
 	playerState_t	*ps;
 	qboolean		viewEntIsHumanoid = qfalse;
 	qboolean		viewEntIsCam = qfalse;
-	//extern vec3_t	cgRefdefVieworg;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
@@ -2055,7 +2058,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	// let the client system know what our weapon and zoom settings are
 	//FIXME: should really send forcePowersActive over network onto cg.snap->ps...
-	float speed = cg.refdef.fov_y / 75.0 * ((cg_entities[0].gent->client->ps.forcePowersActive&(1<<FP_SPEED))?1.0f:cg_timescale.value);
+	const int fpActive = cg_entities[0].gent->client->ps.forcePowersActive;
+	const bool matrixMode = !!(fpActive & (1 << FP_SPEED) | (1 << FP_RAGE));
+	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : cg_timescale.value);
 
 //FIXME: junk code, BUG:168
 

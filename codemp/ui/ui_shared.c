@@ -14,6 +14,26 @@
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 extern void UI_UpdateCharacterSkin( void );
 
+const char *HolocronIcons[NUM_FORCE_POWERS] = {
+	"gfx/mp/f_icon_lt_heal",		//FP_HEAL,
+	"gfx/mp/f_icon_levitation",		//FP_LEVITATION,
+	"gfx/mp/f_icon_speed",			//FP_SPEED,
+	"gfx/mp/f_icon_push",			//FP_PUSH,
+	"gfx/mp/f_icon_pull",			//FP_PULL,
+	"gfx/mp/f_icon_lt_telepathy",	//FP_TELEPATHY,
+	"gfx/mp/f_icon_dk_grip",		//FP_GRIP,
+	"gfx/mp/f_icon_dk_l1",			//FP_LIGHTNING,
+	"gfx/mp/f_icon_dk_rage",		//FP_RAGE,
+	"gfx/mp/f_icon_lt_protect",		//FP_PROTECT,
+	"gfx/mp/f_icon_lt_absorb",		//FP_ABSORB,
+	"gfx/mp/f_icon_lt_healother",	//FP_TEAM_HEAL,
+	"gfx/mp/f_icon_dk_forceother",	//FP_TEAM_FORCE,
+	"gfx/mp/f_icon_dk_drain",		//FP_DRAIN,
+	"gfx/mp/f_icon_sight",			//FP_SEE,
+	"gfx/mp/f_icon_saber_attack",	//FP_SABER_OFFENSE,
+	"gfx/mp/f_icon_saber_defend",	//FP_SABER_DEFENSE,
+	"gfx/mp/f_icon_saber_throw"		//FP_SABERTHROW
+};
 
 #define SCROLL_TIME_START					500
 #define SCROLL_TIME_ADJUST					150
@@ -1587,7 +1607,6 @@ qboolean Script_Close(itemDef_t *item, char **args)
 	return qtrue;
 }
 
-//void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFrom, rectDef_t rectTo, int time, float amt) 
 void Menu_TransitionItemByName(menuDef_t *menu, const char *p, const rectDef_t *rectFrom, const rectDef_t *rectTo, int time, float amt) 
 {
 	itemDef_t *item;
@@ -2459,12 +2478,7 @@ int Item_TextScroll_ThumbDrawPosition ( itemDef_t *item )
 int Item_TextScroll_OverLB ( itemDef_t *item, float x, float y ) 
 {
 	rectDef_t		r;
-	textScrollDef_t *scrollPtr;
 	int				thumbstart;
-	int				count;
-
-	scrollPtr = (textScrollDef_t*)item->typeData;
-	count     = scrollPtr->iLineCount;
 
 	r.x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE;
 	r.y = item->window.rect.y;
@@ -2785,9 +2799,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 	rectDef_t r;
 	listBoxDef_t *listPtr;
 	int thumbstart;
-	int count;
 
-	count = DC->feederCount(item->special);
 	listPtr = (listBoxDef_t*)item->typeData;
 	if (item->window.flags & WINDOW_HORIZONTAL) 
 	{
@@ -5143,10 +5155,8 @@ void BindingFromName(const char *cvar) {
 
 void Item_Slider_Paint(itemDef_t *item) {
 	vec4_t newColor, lowLight;
-	float x, y, value;
+	float x, y;
 	menuDef_t *parent = (menuDef_t*)item->parent;
-
-	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
 
 	if (item->window.flags & WINDOW_HASFOCUS) {
 		lowLight[0] = 0.8 * parent->focusColor[0]; 
@@ -5681,8 +5691,6 @@ void Item_ListBox_Paint(itemDef_t *item) {
 	qhandle_t optionalImage1, optionalImage2, optionalImage3;
 	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
 //JLF MPMOVED
-	int numlines;
-
 
 	// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
 	// elements are enumerated from the DC and either text or image handles are acquired from the DC as well
@@ -5805,9 +5813,6 @@ void Item_ListBox_Paint(itemDef_t *item) {
 	// A vertical list box
 	else 
 	{
-//JLF MPMOVED
-		numlines = item->window.rect.h / listPtr->elementHeight;
-//JLFEND
 		//JLF new variable (code idented with if)
 		if (!listPtr->scrollhidden)
 		{
@@ -6044,12 +6049,10 @@ void Item_ListBox_Paint(itemDef_t *item) {
 
 
 void Item_OwnerDraw_Paint(itemDef_t *item) {
-  menuDef_t *parent;
 
 	if (item == NULL) {
 		return;
 	}
-  parent = (menuDef_t*)item->parent;
 
 	if (DC->ownerDrawItem) {
 		vec4_t color, lowLight;
@@ -7317,12 +7320,10 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 
 qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 	const char *temp;
-	modelDef_t *modelPtr;
 	int animRunLength;
 	pc_token_t token;
 
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
 
 	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
@@ -8506,10 +8507,6 @@ qboolean ItemParse_isSaber( itemDef_t *item, int handle  )
 #endif
 	return qfalse;
 }
-
-//extern void UI_SaberLoadParms( void );
-//extern qboolean ui_saber_parms_parsed;
-//extern void UI_CacheSaberGlowGraphics( void );
 
 qboolean ItemParse_isSaber2( itemDef_t *item, int handle  )
 {

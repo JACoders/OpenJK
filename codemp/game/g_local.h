@@ -875,6 +875,7 @@ typedef struct level_locals_s {
 	char		voteDisplayString[MAX_STRING_CHARS];
 	int			voteTime;				// level.time vote was called
 	int			voteExecuteTime;		// time the vote is executed
+	int			voteExecuteDelay;		// set per-vote
 	int			voteYes;
 	int			voteNo;
 	int			numVotingClients;		// set by CalculateRanks
@@ -945,6 +946,16 @@ typedef struct level_locals_s {
 	struct {
 		fileHandle_t	log;
 	} security;
+
+	struct {
+		int num;
+		char *infos[MAX_BOTS];
+	} bots;
+
+	struct {
+		int num;
+		char *infos[MAX_ARENAS];
+	} arenas;
 
 	gametype_t	gametype;
 } level_locals_t;
@@ -1215,9 +1226,9 @@ int TeamCount( int ignoreClientNum, team_t team );
 int TeamLeader( int team );
 team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team );
+gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team, qboolean isbot );
 void MaintainBodyQueue(gentity_t *ent);
-void respawn (gentity_t *ent);
+void ClientRespawn (gentity_t *ent);
 void BeginIntermission (void);
 void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );

@@ -151,7 +151,6 @@ typedef struct {
 	int			numSnapshotEntities;		// sv_maxclients->integer*PACKET_BACKUP*MAX_PACKET_ENTITIES
 	int			nextSnapshotEntities;		// next snapshotEntities to use
 	entityState_t	*snapshotEntities;		// [numSnapshotEntities]
-	int			nextHeartbeatTime;
 } serverStatic_t;
 
 //=============================================================================
@@ -231,7 +230,7 @@ gentity_t	*SV_GentityNum( int num );
 svEntity_t	*SV_SvEntityForGentity( gentity_t *gEnt );
 gentity_t	*SV_GEntityForSvEntity( svEntity_t *svEnt );
 void		SV_InitGameProgs (void);
-void		SV_ShutdownGameProgs (qboolean shutdownCin, qboolean delayFreeGame = qfalse);
+void		SV_ShutdownGameProgs (qboolean shutdownCin);
 qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
 
 

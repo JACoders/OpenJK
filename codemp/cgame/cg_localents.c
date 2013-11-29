@@ -15,7 +15,7 @@ localEntity_t	*cg_freeLocalEntities;		// single linked list
 ===================
 CG_InitLocalEntities
 
-This is called at startup and for tournement restarts
+This is called at startup and for tournament restarts
 ===================
 */
 void	CG_InitLocalEntities( void ) {
@@ -135,23 +135,17 @@ CG_FragmentBounceMark
 ================
 */
 void CG_FragmentBounceMark( localEntity_t *le, trace_t *trace ) {
-	int			radius;
+//	int radius;
 
 	if ( le->leMarkType == LEMT_BLOOD ) {
-
-		radius = 16 + (rand()&31);
-//		CG_ImpactMark( cgs.media.bloodMarkShader, trace->endpos, trace->plane.normal, random()*360,
-//			1,1,1,1, qtrue, radius, qfalse );
+	//	radius = 16 + (rand()&31);
+	//	CG_ImpactMark( cgs.media.bloodMarkShader, trace->endpos, trace->plane.normal, random()*360, 1,1,1,1, qtrue, radius, qfalse );
 	} else if ( le->leMarkType == LEMT_BURN ) {
-
-		radius = 8 + (rand()&15);
-//		CG_ImpactMark( cgs.media.burnMarkShader, trace->endpos, trace->plane.normal, random()*360,
-//			1,1,1,1, qtrue, radius, qfalse );
+	//	radius = 8 + (rand()&15);
+	//	CG_ImpactMark( cgs.media.burnMarkShader, trace->endpos, trace->plane.normal, random()*360, 1,1,1,1, qtrue, radius, qfalse );
 	}
 
-
-	// don't allow a fragment to make multiple marks, or they
-	// pile up while settling
+	// don't allow a fragment to make multiple marks, or they pile up while settling
 	le->leMarkType = LEMT_NONE;
 }
 

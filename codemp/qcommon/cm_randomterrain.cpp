@@ -159,7 +159,7 @@ static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work
 
 #define BIG (1.0e12)
 
-static vec_t Vector2Normalize( vec2_t v ) 
+static float Vector2Normalize( vec2_t v ) 
 {
 	float	length, ilength;
 
@@ -212,7 +212,7 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 
 	mPoints = (vec4_t *)malloc(sizeof(vec4_t) * mNumPoints);
 	mWork = (vec4_t *)malloc(sizeof(vec4_t) * (mNumPoints+1));
-	mWeights = (vec_t *)malloc(sizeof(vec_t) * (mNumPoints+1));
+	mWeights = (float *)malloc(sizeof(float) * (mNumPoints+1));
 
 	if (fabs(ex - bx) >= fabs(ey - by))
 	{	// this appears to be a horizontal path
@@ -480,21 +480,21 @@ void CPathInfo::GetInfo(float PercentInto, vec4_t Coord, vec4_t Vector)
 	vec4_t	before, after;
 	float	testPercent;
 
-	DialASpline(PercentInto, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, Coord);
+	DialASpline(PercentInto, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, Coord);
 
 	testPercent = PercentInto - 0.01;
 	if (testPercent < 0)
 	{
 		testPercent = 0;
 	}
-	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, before);
+	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, before);
 
 	testPercent = PercentInto + 0.01;
 	if (testPercent > 1.0)
 	{
 		testPercent = 1.0;
 	}
-	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, after);
+	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, after);
 
 	Coord[2] = mDepth;
 

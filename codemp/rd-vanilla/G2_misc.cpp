@@ -144,7 +144,7 @@ void DeleteGoreSet(int goreSetTag)
 CGoreSet::~CGoreSet()
 {
 	multimap<int,SGoreSurface>::iterator i;
-	for (i=mGoreRecords.begin();i!=mGoreRecords.end();i++)
+	for (i=mGoreRecords.begin();i!=mGoreRecords.end();++i)
 	{
 		DeleteGoreRecord((*i).second.mGoreTag);
 	}
@@ -1590,7 +1590,7 @@ void TransformAndTranslatePoint (const vec3_t in, vec3_t out, mdxaBone_t *mat) {
 // create a matrix using a set of angles
 void Create_Matrix(const float *angle, mdxaBone_t *matrix)
 {
-	vec3_t		axis[3];
+	matrix3_t	axis;
 
 	// convert angles to axis
 	AnglesToAxis( angle, axis );

@@ -475,7 +475,7 @@ void JPG_ErrorThrow(const char *message)
 
 void JPG_MessageOut(const char *message)
 {
-	VID_Printf(PRINT_ALL, "%s\n", message);
+	ri.Printf(PRINT_ALL, "%s\n", message);
 }
 
 //////////////// eof ////////////

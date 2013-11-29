@@ -111,7 +111,7 @@ extern char		lastValidBase[MAX_OSPATH];
 extern char		lastValidGame[MAX_OSPATH];
 
 void			FS_Startup( const char *gameName );
-void			FS_CreatePath(char *OSPath);
+qboolean		FS_CreatePath(char *OSPath);
 char			*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 char			*FS_BuildOSPath( const char *qpath );
 fileHandle_t	FS_HandleForFile(void);

@@ -177,11 +177,6 @@ void Sys_UnloadDll( void *dllHandle )
 	Sys_UnloadLibrary(dllHandle);
 }
 
-char *Sys_DefaultCDPath(void)
-{
-	return "";
-}
-
 /*
 =================
 Sys_LoadDll
@@ -227,22 +222,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 			
 			if(!dllhandle)
 			{
-				const char *cdPath = Cvar_VariableString("fs_cdpath");
-
-				if(!basePath || !*basePath)
-					basePath = ".";
-
-				if(FS_FilenameCompare(topDir, cdPath))
-				{
-					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
-					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
-					dllhandle = Sys_LoadLibrary(libPath);
-				}
-
-				if(!dllhandle)
-				{
-					Com_Printf("Loading \"%s\" failed\n", name);
-				}
+				Com_Printf("Loading \"%s\" failed\n", name);
 			}
 		}
 	}
@@ -588,7 +568,11 @@ int main ( int argc, char* argv[] )
 	// get the initial time base
 	Sys_Milliseconds();
 
-	//Sys_InitStreamThread();
+#ifdef MACOS_X
+	// This is passed if we are launched by double-clicking
+	if ( argc >= 2 && Q_strncmp ( argv[1], "-psn", 4 ) == 0 )
+		argc = 1;
+#endif
 
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );

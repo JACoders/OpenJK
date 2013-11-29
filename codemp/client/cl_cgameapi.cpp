@@ -22,7 +22,6 @@ static vm_t *cgvm; // cgame vm, valid for legacy and new api
 //
 // cgame vmMain calls
 //
-
 void CGVM_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	if ( cgvm->isLegacy ) {
 		VM_Call( cgvm, CG_INIT, serverMessageNum, serverCommandSequence, clientNum );
@@ -766,6 +765,11 @@ static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelInde
 	strcpy( fillBuf, tmp );
 }
 
+static void CL_Key_SetCatcher( int catcher ) {
+	// Don't allow the cgame module to close the console
+	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
+}
+
 // legacy syscall
 
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
@@ -881,7 +885,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return FS_FOpenFileByMode( (const char *)VMA(1), (int *)VMA(2), (fsMode_t)args[3] );
 
 	case CG_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
+		FS_Read( VMA(1), args[2], args[3] );
 		return 0;
 
 	case CG_FS_WRITE:
@@ -1192,7 +1196,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return Key_GetCatcher();
 
 	case CG_KEY_SETCATCHER:
-		Key_SetCatcher( args[1] );
+		CL_Key_SetCatcher( args[1] );
 		return 0;
 
 	case CG_KEY_GETKEY:
@@ -1621,7 +1625,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_WE_ADDWEATHERZONE:
-		re->AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
+		re->AddWeatherZone( (float *)VMA(1), (float *)VMA(2) );
 		return 0;
 
 	default:
@@ -1640,7 +1644,7 @@ void CL_BindCGame( void ) {
 	memset( &cgi, 0, sizeof( cgi ) );
 
 	cgvm = VM_Create( VM_CGAME );
-	if ( cgvm ) {
+	if ( cgvm && !cgvm->isLegacy ) {
 		cgi.Print								= Com_Printf;
 		cgi.Error								= Com_Error;
 		cgi.SnapVector							= Sys_SnapVector;
@@ -1666,7 +1670,7 @@ void CL_BindCGame( void ) {
 		cgi.FS_Close							= FS_FCloseFile;
 		cgi.FS_GetFileList						= FS_GetFileList;
 		cgi.FS_Open								= FS_FOpenFileByMode;
-		cgi.FS_Read								= FS_Read2;
+		cgi.FS_Read								= FS_Read;
 		cgi.FS_Write							= FS_Write;
 		cgi.UpdateScreen						= SCR_UpdateScreen;
 		cgi.CM_InlineModel						= CM_InlineModel;
@@ -1755,7 +1759,7 @@ void CL_BindCGame( void ) {
 		cgi.Key_GetCatcher						= Key_GetCatcher;
 		cgi.Key_GetKey							= Key_GetKey;
 		cgi.Key_IsDown							= Key_IsDown;
-		cgi.Key_SetCatcher						= Key_SetCatcher;
+		cgi.Key_SetCatcher						= CL_Key_SetCatcher;
 		cgi.PC_AddGlobalDefine					= botlib_export->PC_AddGlobalDefine;
 		cgi.PC_FreeSource						= botlib_export->PC_FreeSourceHandle;
 		cgi.PC_LoadGlobalDefines				= botlib_export->PC_LoadGlobalDefines;
@@ -1854,6 +1858,8 @@ void CL_BindCGame( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		cge = ret;
+
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api

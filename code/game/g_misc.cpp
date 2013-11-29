@@ -18,14 +18,12 @@ This file is part of Jedi Academy.
 
 // g_misc.c
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "g_nav.h"
 #include "g_items.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern gentity_t *G_FindDoorTrigger( gentity_t *door );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
@@ -1055,47 +1053,7 @@ void SP_misc_camera( gentity_t *self )
 
 void Use_Shooter( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
-/*	vec3_t		dir;
-	float		deg;
-	vec3_t		up, right;
-*/
 	G_ActivateBehavior(ent,BSET_USE);
-/*
-	// see if we have a target
-	if ( ent->enemy ) {
-		VectorSubtract( ent->enemy->currentOrigin, ent->s.origin, dir );
-		VectorNormalize( dir );
-	} else {
-		VectorCopy( ent->movedir, dir );
-	}
-
-	// randomize a bit
-	PerpendicularVector( up, dir );
-	CrossProduct( up, dir, right );
-
-	deg = crandom() * ent->random;
-	VectorMA( dir, deg, up, dir );
-
-	deg = crandom() * ent->random;
-	VectorMA( dir, deg, right, dir );
-
-	VectorNormalize( dir );
-
-	switch ( ent->s.weapon ) 
-	{
-	case WP_GRENADE_LAUNCHER:
-		fire_grenade( ent, ent->s.origin, dir );
-		break;
-	case WP_ROCKET_LAUNCHER:
-		fire_rocket( ent, ent->s.origin, dir );
-		break;
-	case WP_PLASMAGUN:
-		fire_plasma( ent, ent->s.origin, dir );
-		break;
-	}
-
-	G_AddEvent( ent, EV_FIRE_WEAPON, 0 );
-*/
 }
 
 void InitShooter( gentity_t *ent, int weapon ) {

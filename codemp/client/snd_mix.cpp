@@ -250,7 +250,7 @@ static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, in
 {
 	portable_samplepair_t	*pSamplesDest;	
 	int iData;
-
+	float ofst = sampleOffset;
 
 	int iLeftVol	= ch->leftvol  * snd_vol;
 	int iRightVol	= ch->rightvol * snd_vol;
@@ -259,10 +259,15 @@ static void S_PaintChannelFrom16( channel_t *ch, const sfx_t *sfx, int count, in
 	
 	for ( int i=0 ; i<count ; i++ ) 
 	{
-		iData = sfx->pSoundData[ sampleOffset++ ];
+		iData = sfx->pSoundData[ (int)ofst ];
 
 		pSamplesDest[i].left  += (iData * iLeftVol )>>8;
 		pSamplesDest[i].right += (iData * iRightVol)>>8;
+		if (ch->doppler && ch->dopplerScale > 1) {
+			ofst += 1 * ch->dopplerScale;
+		} else {
+			ofst++;
+		}
 	}
 }
 

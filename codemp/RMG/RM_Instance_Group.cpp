@@ -139,7 +139,7 @@ void CRMGroupInstance::SetFilter( const char *filter )
 	rmInstanceIter_t it;
 
 	CRMInstance::SetFilter(filter);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetFilter(filter);
 	}
@@ -161,7 +161,7 @@ void CRMGroupInstance::SetTeamFilter( const char *teamFilter )
 	rmInstanceIter_t it;
 
 	CRMInstance::SetTeamFilter(teamFilter);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetTeamFilter(teamFilter);
 	}
@@ -183,7 +183,7 @@ void CRMGroupInstance::SetMirror(int mirror)
 	rmInstanceIter_t it;
 
 	CRMInstance::SetMirror(mirror);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetMirror(mirror);
 	}
@@ -205,7 +205,7 @@ void CRMGroupInstance::RemoveInstances ( )
 {
 	rmInstanceIter_t it;
 
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		delete *it;
 	}
@@ -229,7 +229,7 @@ bool CRMGroupInstance::PreSpawn ( CRandomTerrain* terrain, qboolean IsServer )
 {
 	rmInstanceIter_t it;
 
-	for(it = mInstances.begin(); it != mInstances.end(); it++ )
+	for(it = mInstances.begin(); it != mInstances.end(); ++it )
 	{
 		CRMInstance* instance = *it;
 
@@ -260,7 +260,7 @@ bool CRMGroupInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 	rmInstanceIter_t it;
 
 	// Spawn all the instances associated with this group
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		CRMInstance* instance = *it;
 		instance->SetSide(GetSide()); // which side owns it?
@@ -292,7 +292,7 @@ void CRMGroupInstance::Preview ( const vec3_t from )
 	CRMInstance::Preview ( from );
 	
 	// Render all the instances
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		CRMInstance* instance = *it;
 
@@ -326,7 +326,7 @@ void CRMGroupInstance::SetArea ( CRMAreaManager* amanager, CRMArea* area )
 
 	// Prepare for spawn by calculating all the positions of the sub instances
 	// and flattening the ground below them.
-	for(it = mInstances.begin(); it != mInstances.end(); it++ )
+	for(it = mInstances.begin(); it != mInstances.end(); ++it )
 	{
 		CRMInstance  *instance = *it;
 		CRMArea		 *newarea;

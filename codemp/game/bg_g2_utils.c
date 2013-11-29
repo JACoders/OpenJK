@@ -12,7 +12,7 @@
 	#include "cgame/cg_local.h"
 #endif
 
-void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time, qhandle_t *modelList, vec3_t modelScale, qboolean inMouth, vec3_t out_origin, vec3_t out_angles, vec3_t out_axis[3] )
+void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time, qhandle_t *modelList, vec3_t modelScale, qboolean inMouth, vec3_t out_origin, vec3_t out_angles, matrix3_t out_axis )
 {
 	mdxaBone_t	boltMatrix;
 	int boltIndex;
@@ -70,7 +70,7 @@ void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time
 	}
 	else if ( out_angles )
 	{
-		vec3_t temp_axis[3];
+		matrix3_t temp_axis;
 		if ( inMouth )
 		{//in mouth
 			BG_GiveMeVectorFromMatrix( &boltMatrix, POSITIVE_Z, temp_axis[0] );

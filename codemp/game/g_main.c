@@ -138,6 +138,8 @@ G_InitGame
 */
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
+gentity_t *SelectRandomDeathmatchSpawnPoint( void );
+void SP_info_jedimaster_start( gentity_t *ent );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -176,6 +178,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	memset( &level, 0, sizeof( level ) );
 	level.time = levelTime;
 	level.startTime = levelTime;
+
+	level.follow1 = level.follow2 = -1;
 
 	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
 
@@ -367,6 +371,29 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			}
 			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 			i++;
+		}
+	}
+
+	if ( level.gametype == GT_JEDIMASTER ) { 
+		gentity_t *ent = NULL;
+		int i=0;
+		for ( i=0, ent=g_entities; i<level.num_entities; i++, ent++ ) {
+			if ( ent->isSaberEntity )
+				break;
+		}
+
+		if ( i == level.num_entities ) {
+			// no JM saber found. drop one at one of the player spawnpoints
+			gentity_t *spawnpoint = SelectRandomDeathmatchSpawnPoint();
+
+			if( !spawnpoint ) {
+				trap->Error( ERR_DROP, "Couldn't find an FFA spawnpoint to drop the jedimaster saber at!\n" );
+				return;
+			}
+
+			ent = G_Spawn();
+			G_SetOrigin( ent, spawnpoint->s.origin );
+			SP_info_jedimaster_start( ent );
 		}
 	}
 }
@@ -971,8 +998,7 @@ qboolean g_noPDuelCheck = qfalse;
 void G_ResetDuelists(void)
 {
 	int i;
-	gentity_t *ent;
-	gentity_t *tent;
+	gentity_t *ent = NULL;
 
 	i = 0;
 	while (i < 3)
@@ -984,10 +1010,6 @@ void G_ResetDuelists(void)
 		g_noPDuelCheck = qfalse;
 		trap->UnlinkEntity ((sharedEntity_t *)ent);
 		ClientSpawn(ent);
-
-		// add a teleportation effect
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
 		i++;
 	}
 }
@@ -1006,11 +1028,11 @@ void CalculateRanks( void ) {
 	int		rank;
 	int		score;
 	int		newScore;
-	int		preNumSpec = 0;
+//	int		preNumSpec = 0;
 	//int		nonSpecIndex = -1;
 	gclient_t	*cl;
 
-	preNumSpec = level.numNonSpectatorClients;
+//	preNumSpec = level.numNonSpectatorClients;
 
 	level.follow1 = -1;
 	level.follow2 = -1;
@@ -1206,7 +1228,7 @@ void MoveClientToIntermission( gentity_t *ent ) {
 		StopFollowing( ent );
 	}
 
-
+	FindIntermissionPoint();
 	// move to the spot
 	VectorCopy( level.intermission_origin, ent->s.origin );
 	VectorCopy( level.intermission_origin, ent->client->ps.origin );
@@ -1242,7 +1264,7 @@ This is also used for spectator spawns
 */
 extern qboolean	gSiegeRoundBegun;
 extern qboolean	gSiegeRoundEnded;
-extern qboolean	gSiegeRoundWinningTeam;
+extern int	gSiegeRoundWinningTeam;
 void FindIntermissionPoint( void ) {
 	gentity_t	*ent = NULL;
 	gentity_t	*target;
@@ -1276,7 +1298,7 @@ void FindIntermissionPoint( void ) {
 		ent = G_Find (NULL, FOFS(classname), "info_player_intermission");
 	}
 	if ( !ent ) {	// the map creator forgot to put in an intermission point...
-		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR );
+		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR, qfalse );
 	} else {
 		VectorCopy (ent->s.origin, level.intermission_origin);
 		VectorCopy (ent->s.angles, level.intermission_angle);
@@ -1289,7 +1311,6 @@ void FindIntermissionPoint( void ) {
 			}
 		}
 	}
-
 }
 
 qboolean DuelLimitHit(void);
@@ -1307,7 +1328,7 @@ void BeginIntermission( void ) {
 		return;		// already active
 	}
 
-	// if in tournement mode, change the wins / losses
+	// if in tournament mode, change the wins / losses
 	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 
@@ -1326,7 +1347,6 @@ void BeginIntermission( void ) {
 	}
 
 	level.intermissiontime = level.time;
-	FindIntermissionPoint();
 
 	// move all clients to the intermission point
 	for (i=0 ; i< level.maxclients ; i++) {
@@ -1339,7 +1359,7 @@ void BeginIntermission( void ) {
 				!client->client ||
 				client->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ //don't respawn spectators in powerduel or it will mess the line order all up
-				respawn(client);
+				ClientRespawn(client);
 			}
 		}
 		MoveClientToIntermission( client );
@@ -1347,7 +1367,6 @@ void BeginIntermission( void ) {
 
 	// send the current scoring to all clients
 	SendScoreboardMessageToAllClients();
-
 }
 
 qboolean DuelLimitHit(void)
@@ -1401,7 +1420,7 @@ void ExitLevel (void) {
 	int		i;
 	gclient_t *cl;
 
-	// if we are running a tournement map, kick the loser to spectator status,
+	// if we are running a tournament map, kick the loser to spectator status,
 	// which will automatically grab the next spectator and restart
 	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		if (!DuelLimitHit())
@@ -1508,11 +1527,10 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
 	time_t		rawtime;
-	struct tm	*timeinfo;
 	int			timeLen=0;
 
 	time( &rawtime );
-	timeinfo = localtime( &rawtime );
+	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
 	timeLen = strlen( string );
 
@@ -1657,7 +1675,7 @@ void CheckIntermissionExit( void ) {
 				level.clients[level.sortedClients[1]].sess.wins,
 				level.clients[level.sortedClients[1]].sess.losses );
 		}
-		// if we are running a tournement map, kick the loser to spectator status,
+		// if we are running a tournament map, kick the loser to spectator status,
 		// which will automatically grab the next spectator and restart
 		if (!DuelLimitHit())
 		{
@@ -2231,7 +2249,7 @@ void G_RemoveDuelist(int team)
 =============
 CheckTournament
 
-Once a frame, check for changes in tournement player state
+Once a frame, check for changes in tournament player state
 =============
 */
 int g_duelPrintTimer = 0;
@@ -2537,7 +2555,7 @@ CheckVote
 void CheckVote( void ) {
 	if ( level.voteExecuteTime && level.voteExecuteTime < level.time ) {
 		level.voteExecuteTime = 0;
-		trap->SendConsoleCommand( EXEC_APPEND, va("%s\n", level.voteString ) );
+		trap->SendConsoleCommand( EXEC_APPEND, va( "%s\n", level.voteString ) );
 
 		if (level.votingGametype)
 		{
@@ -2603,7 +2621,7 @@ void CheckVote( void ) {
 		if ( level.voteYes > level.numVotingClients/2 ) {
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
-			level.voteExecuteTime = level.time + 3000;
+			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
 
 		// same behavior as a timeout
@@ -2612,7 +2630,7 @@ void CheckVote( void ) {
 			if you have odd amount of players, lets say 3 for example,
 			and vote is called, then only 1 vote of No will fail the vote,
 			i.e. if player A calls vote, player B votes No, then vote fails,
-			even if player C would vote Yes and it should have been 2:1 and passed */
+			even if player C would vote Yes and it should have been 2:1 and passed" */
 	//	else if ( level.voteNo >= level.numVotingClients/2 )
 		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
@@ -2892,7 +2910,6 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-	int			msec;
 #ifdef _G_FRAME_PERFANAL
 	int			iTimer_ItemRun = 0;
 	int			iTimer_ROFF = 0;
@@ -2919,7 +2936,7 @@ void G_RunFrame( int levelTime ) {
 				clEnt->client->tempSpectate > level.time &&
 				clEnt->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
-				respawn(clEnt);
+				ClientRespawn(clEnt);
 				clEnt->client->tempSpectate = 0;
 			}
 		}
@@ -2992,7 +3009,6 @@ void G_RunFrame( int levelTime ) {
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
-	msec = level.time - level.previousTime;
 
 	if (g_allowNPC.integer)
 	{
@@ -3362,7 +3378,7 @@ void G_RunFrame( int levelTime ) {
 #ifdef _G_FRAME_PERFANAL
 	trap->PrecisionTimer_Start(&timer_GameChecks);
 #endif
-	// see if it is time to do a tournement restart
+	// see if it is time to do a tournament restart
 	CheckTournament();
 
 	// see if it is time to end the level
@@ -3609,7 +3625,9 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+Q_EXPORT intptr_t vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4,
+	intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11 )
+{
 	switch ( command ) {
 	case GAME_INIT:
 		G_InitGame( arg0, arg1, arg2 );
@@ -3620,7 +3638,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return 0;
 
 	case GAME_CLIENT_CONNECT:
-		return (int)ClientConnect( arg0, arg1, arg2 );
+		return (intptr_t)ClientConnect( arg0, arg1, arg2 );
 
 	case GAME_CLIENT_THINK:
 		ClientThink( arg0, NULL );

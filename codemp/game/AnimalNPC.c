@@ -93,7 +93,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	/************************************************************************************/
 
 	//Client sets ucmds and such for speed alterations
-	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
+	float speedInc, speedIdleDec, speedIdle, speedMin, speedMax;
 	float fWalkSpeedMax;
 	int		curTime;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
@@ -110,7 +110,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	speedMax = pVeh->m_pVehicleInfo->speedMax;
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
-	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
+//	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
 
@@ -335,12 +335,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 	int				iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 	gentity_t *		pilot = (gentity_t *)pVeh->m_pPilot;
 	gentity_t *		parent = (gentity_t *)pVeh->m_pParentEntity;
-	playerState_t *	pilotPS;
-	playerState_t *	parentPS;
 	float			fSpeedPercToMax;
-
-	pilotPS = (pilot)?(pilot->playerState):(0);
-	parentPS = parent->playerState;
 
 	// We're dead (boarding is reused here so I don't have to make another variable :-).
 	if ( parent->health <= 0 ) 
@@ -473,11 +468,9 @@ static void AnimateRiders( Vehicle_t *pVeh )
 	gentity_t *pilot = (gentity_t *)pVeh->m_pPilot;
 	gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
 	playerState_t *pilotPS;
-	playerState_t *parentPS;
 	float fSpeedPercToMax;
 
 	pilotPS = pVeh->m_pPilot->playerState;
-	parentPS = pVeh->m_pPilot->playerState;
 
 	// Boarding animation.
 	if ( pVeh->m_iBoarding != 0 )

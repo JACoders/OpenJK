@@ -83,6 +83,8 @@ cvar_t	*cl_autolodscale;
 cvar_t	*cl_consoleKeys;
 #endif
 
+cvar_t  *cl_lanForcePackets;
+
 vec3_t cl_windVec;
 
 
@@ -91,6 +93,8 @@ clientConnection_t	clc;
 clientStatic_t		cls;
 
 netadr_t rcon_address;
+
+char cl_reconnectArgs[MAX_OSPATH] = {0};
 
 // Structure containing functions exported from refresh DLL
 refexport_t	*re = NULL;
@@ -118,10 +122,6 @@ serverStatus_t cl_serverStatusList[MAX_SERVERSTATUSREQUESTS];
 int serverStatusCount;
 
 CMiniHeap *G2VertSpaceClient = 0;
-
-#if defined __USEA3D && defined __A3D_GEOM
-	void hA3Dg_ExportRenderGeom (refexport_t *incoming_re);
-#endif
 
 extern void SV_BotFrame( int time );
 void CL_CheckForResend( void );
@@ -617,7 +617,7 @@ void CL_NextDemo( void ) {
 CL_ShutdownAll
 =====================
 */
-void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM ) {
+void CL_ShutdownAll( qboolean shutdownRef ) {
 	if(CL_VideoRecording())
 		CL_CloseAVI();
 
@@ -632,9 +632,9 @@ void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM ) {
 	// clear sounds
 	S_DisableSounds();
 	// shutdown CGame
-	CL_ShutdownCGame(delayFreeVM);
+	CL_ShutdownCGame();
 	// shutdown UI
-	CL_ShutdownUI(delayFreeVM);
+	CL_ShutdownUI();
 
 	// shutdown the renderer
 	if(shutdownRef)
@@ -658,10 +658,10 @@ ways a client gets into a game
 Also called by Com_Error
 =================
 */
-void CL_FlushMemory( qboolean delayFreeVM ) {
+void CL_FlushMemory( void ) {
 
 	// shutdown all the client stuff
-	CL_ShutdownAll( qfalse, delayFreeVM );
+	CL_ShutdownAll( qfalse );
 
 	// if not running a server clear the whole hunk
 	if ( !com_sv_running->integer ) {
@@ -820,9 +820,6 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	// not connected to a pure server anymore
 	cl_connectedToPureServer = qfalse;
-	cl_connectedGAME = 0;
-	cl_connectedCGAME = 0;
-	cl_connectedUI = 0;
 
 	// Stop recording any video
 	if( CL_VideoRecording( ) ) {
@@ -964,12 +961,11 @@ CL_Reconnect_f
 ================
 */
 void CL_Reconnect_f( void ) {
-	if ( !strlen( cls.servername ) || !strcmp( cls.servername, "localhost" ) ) {
-		Com_Printf( "Can't reconnect to localhost.\n" );
+	if ( !strlen( cl_reconnectArgs ) ) {
 		return;
 	}
 	Cvar_Set("ui_singlePlayerActive", "0");
-	Cbuf_AddText( va("connect %s\n", cls.servername ) );
+	Cbuf_AddText( va("connect %s\n", cl_reconnectArgs ) );
 }
 
 /*
@@ -986,6 +982,9 @@ void CL_Connect_f( void ) {
 		Com_Printf( "usage: connect [server]\n");
 		return;	
 	}
+
+	// save arguments for reconnect
+	Q_strncpyz( cl_reconnectArgs, Cmd_Args(), sizeof( cl_reconnectArgs ) );
 
 	Cvar_Set("ui_singlePlayerActive", "0");
 
@@ -1008,10 +1007,6 @@ void CL_Connect_f( void ) {
 
 	CL_Disconnect( qtrue );
 	Con_Close();
-
-	/* MrE: 2000-09-13: now called in CL_DownloadsComplete
-	CL_FlushMemory( );
-	*/
 
 	Q_strncpyz( cls.servername, server, sizeof(cls.servername) );
 
@@ -1172,9 +1167,9 @@ void CL_Vid_Restart_f( void ) {
 	// don't let them loop during the restart
 	S_StopAllSounds();
 	// shutdown the UI
-	CL_ShutdownUI(qfalse);
+	CL_ShutdownUI();
 	// shutdown the CGame
-	CL_ShutdownCGame(qfalse);
+	CL_ShutdownCGame();
 	// shutdown the renderer and clear the renderer interface
 	CL_ShutdownRef();
 	// client is no longer pure untill new checksums are sent
@@ -1345,7 +1340,7 @@ void CL_DownloadsComplete( void ) {
 	// this will also (re)load the UI
 	// if this is a local client then only the client part of the hunk
 	// will be cleared, note that this is done after the hunk mark has been set
-	CL_FlushMemory(qfalse);
+	CL_FlushMemory();
 
 	// initialize the CGame
 	cls.cgameStarted = qtrue;
@@ -1645,7 +1640,6 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->ping = -1;
 	server->game[0] = '\0';
 	server->gameType = 0;
-	//server->pure = qfalse;
 }
 
 #define MAX_SERVERSPERPACKET	256
@@ -2131,13 +2125,12 @@ void CL_Frame ( int msec ) {
 	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
 		// save the current screen
 		if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
+			float fps = min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
+			float frameDuration = max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
 			CL_TakeVideoFrame( );
 
-			// fixed time for next frame'
-			msec = (int)ceil( (1000.0f / cl_aviFrameRate->value) * com_timescale->value );
-			if (msec == 0) {
-				msec = 1;
-			}
+			msec = (int)frameDuration;
+			clc.aviVideoFrameRemainder = frameDuration - msec;
 		}
 	}
 
@@ -2384,7 +2377,6 @@ void CL_InitRef( void ) {
 
 	memset( &ri, 0, sizeof( ri ) );
 
-
 	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
 	if ( !GetRefAPI )
 		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
@@ -2478,10 +2470,6 @@ void CL_InitRef( void ) {
 	G2VertSpaceServer = &CMiniHeap_singleton;
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
-
-#if defined __USEA3D && defined __A3D_GEOM
-	hA3Dg_ExportRenderGeom (ret);
-#endif
 
 //	Com_Printf( "-------------------------------\n");
 
@@ -2726,6 +2714,8 @@ void CL_Init( void ) {
 
 	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE );
 
+	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
+
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
 #ifndef _WIN32
@@ -2835,7 +2825,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect( qtrue );
 
 	// RJ: added the shutdown all to close down the cgame (to free up some memory, such as in the fx system)
-	CL_ShutdownAll( qtrue, qfalse );
+	CL_ShutdownAll( qtrue );
 
 	S_Shutdown();
 	//CL_ShutdownUI();
@@ -2926,7 +2916,6 @@ CL_ServerInfoPacket
 void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	int		i, type;
 	char	info[MAX_INFO_STRING];
-
 	char	*infoString;
 	int		prot;
 
@@ -3000,23 +2989,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 
 	// add this to the list
 	cls.numlocalservers = i+1;
-	cls.localServers[i].adr = from;
-	cls.localServers[i].clients = 0;
-	cls.localServers[i].hostName[0] = '\0';
-	cls.localServers[i].mapName[0] = '\0';
-	cls.localServers[i].maxClients = 0;
-	cls.localServers[i].maxPing = 0;
-	cls.localServers[i].minPing = 0;
-	cls.localServers[i].netType = from.type;
-	cls.localServers[i].needPassword = qfalse;
-	cls.localServers[i].trueJedi = 0;
-	cls.localServers[i].weaponDisable = 0;
-	cls.localServers[i].forceDisable = 0;
-	cls.localServers[i].ping = -1;
-	cls.localServers[i].game[0] = '\0';
-	cls.localServers[i].gameType = 0;
-//	cls.localServers[i].allowAnonymous = 0;
-//	cls.localServers[i].pure = qfalse;
+	CL_InitServerInfo( &cls.localServers[i], &from );
 
 	Q_strncpyz( info, MSG_ReadString( msg ), MAX_INFO_STRING );
 	if (strlen(info)) {

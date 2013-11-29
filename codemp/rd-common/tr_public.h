@@ -80,10 +80,6 @@ typedef struct refexport_s {
 	void				(*ModelBounds)							( qhandle_t model, vec3_t mins, vec3_t maxs );
 	void				(*ModelBoundsRef)						( refEntity_t *model, vec3_t mins, vec3_t maxs );
 
-#ifdef __USEA3D
-	void				(*A3D_RenderGeometry)					(void *pVoidA3D, void *pVoidGeom, void *pVoidMat, void *pVoidGeomStatus);
-#endif
-
 	qhandle_t			(*RegisterFont)							( const char *fontName );
 	int					(*Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
 	int					(*Font_StrLenChars)						( const char *text );
@@ -271,10 +267,10 @@ typedef struct refimport_s {
 	void			(*FS_FreeFile)						( void *buffer );
 	void			(*FS_FreeFileList)					( char **fileList );
 	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int				(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long				(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void			(*FS_FCloseFile)					( fileHandle_t f );
-	int				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath );
+	long				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int				(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean		(*FS_FileExists)					( const char *file );
 	int				(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );

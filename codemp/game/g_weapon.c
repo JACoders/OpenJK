@@ -3937,17 +3937,17 @@ void G_EstimateCamPos( vec3_t viewAngles, vec3_t cameraFocusLoc, float viewheigh
 					  float thirdPersonHorzOffset, float vertOffset, float pitchOffset, 
 					  int ignoreEntNum, vec3_t camPos )
 {
-	int		MASK_CAMERACLIP = (MASK_SOLID|CONTENTS_PLAYERCLIP);
-	float	CAMERA_SIZE = 4;
-	vec3_t	cameramins;
-	vec3_t	cameramaxs;
-	vec3_t	cameraFocusAngles, camerafwd, cameraup;
-	vec3_t	cameraIdealTarget, cameraCurTarget;
-	vec3_t	cameraIdealLoc, cameraCurLoc;
-	vec3_t	diff;
-	vec3_t	camAngles;
-	vec3_t	viewaxis[3];
-	trace_t	trace;
+	int			MASK_CAMERACLIP = (MASK_SOLID|CONTENTS_PLAYERCLIP);
+	float		CAMERA_SIZE = 4;
+	vec3_t		cameramins;
+	vec3_t		cameramaxs;
+	vec3_t		cameraFocusAngles, camerafwd, cameraup;
+	vec3_t		cameraIdealTarget, cameraCurTarget;
+	vec3_t		cameraIdealLoc, cameraCurLoc;
+	vec3_t		diff;
+	vec3_t		camAngles;
+	matrix3_t	viewaxis;
+	trace_t		trace;
 
 	VectorSet( cameramins, -CAMERA_SIZE, -CAMERA_SIZE, -CAMERA_SIZE );
 	VectorSet( cameramaxs, CAMERA_SIZE, CAMERA_SIZE, CAMERA_SIZE );
@@ -4458,7 +4458,7 @@ FireWeapon
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
-	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
+	// track shots taken for accuracy tracking. melee weapons are not tracked.
 	if( ent->s.weapon != WP_SABER && ent->s.weapon != WP_STUN_BATON && ent->s.weapon != WP_MELEE ) 
 	{
 		if( ent->s.weapon == WP_FLECHETTE ) {

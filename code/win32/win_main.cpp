@@ -250,8 +250,13 @@ void Sys_Print( const char *msg ) {
 Sys_Mkdir
 ==============
 */
-void Sys_Mkdir( const char *path ) {
-	_mkdir (path);
+qboolean Sys_Mkdir( const char *path ) {
+	if( !CreateDirectory( path, NULL ) )
+	{
+		if( GetLastError( ) != ERROR_ALREADY_EXISTS )
+			return qfalse;
+	}
+	return qtrue;
 }
 
 /*
@@ -266,24 +271,6 @@ char *Sys_Cwd( void ) {
 	cwd[MAX_OSPATH-1] = 0;
 
 	return cwd;
-}
-
-/*
-==============
-Sys_DefaultCDPath
-==============
-*/
-char *Sys_DefaultCDPath( void ) {
-	return "";
-}
-
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
 }
 
 /*
@@ -571,22 +558,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 			
 			if(!dllhandle)
 			{
-				const char *cdPath = Cvar_VariableString("fs_cdpath");
-
-				if(!basePath || !*basePath)
-					basePath = ".";
-
-				if(FS_FilenameCompare(topDir, cdPath))
-				{
-					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
-					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
-					dllhandle = Sys_LoadLibrary(libPath);
-				}
-
-				if(!dllhandle)
-				{
-					Com_Printf("Loading \"%s\" failed\n", name);
-				}
+				Com_Printf("Loading \"%s\" failed\n", name);
 			}
 		}
 	}
@@ -617,32 +589,6 @@ void Sys_UnloadGame( void ) {
 		Com_Error (ERR_FATAL, "FreeLibrary failed for game library");
 	}
 	game_library = NULL;
-}
-
-/*
-=================
-Sys_UnloadGamePending
-This function is kind of redundant in Windows, but the extra
-function is needed because of Linux/Mac version being different.
-=================
-*/
-void Sys_UnloadGamePending() {
-	Sys_UnloadGame();
-}
-
-/*
-=================
-Sys_DelayedUnloadGame
-=================
-*/
-void Sys_DelayedUnloadGame()
-{
-	HINSTANCE save = game_library;
-	game_library = NULL;
-
-	Sys_UnloadGame();
-
-	game_library = save;
 }
 
 /*
@@ -730,11 +676,13 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 			goto successful;
 	}
 
+#ifdef _DEBUG
 	// Try exepath (cwd)
 	fn = NULL;
 	retVal = LoadLibrary( gamename );
 	if(retVal)
 		goto successful;
+#endif
 
 successful:
 	Com_DPrintf("LoadLibrary (%s)\n", fn?fn:gamename);
@@ -808,249 +756,6 @@ void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)
 	dllEntry( systemcalls );
 	return game_library;
 }
-
-/*
-========================================================================
-
-BACKGROUND FILE STREAMING
-
-========================================================================
-*/
-
-#if 1
-
-void Sys_InitStreamThread( void ) {
-}
-
-void Sys_ShutdownStreamThread( void ) {
-}
-
-void Sys_BeginStreamedFile( fileHandle_t f, int readAhead ) {
-}
-
-void Sys_EndStreamedFile( fileHandle_t f ) {
-}
-
-int Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f ) {
-   return FS_Read( buffer, size * count, f );
-}
-
-void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
-   FS_Seek( f, offset, origin );
-}
-
-
-#else
-
-typedef struct {
-	HANDLE	threadHandle;
-	int		threadId;
-	CRITICAL_SECTION	crit;
-	fileHandle_t	file;
-	byte	*buffer;
-	qboolean	eof;
-	int		bufferSize;
-	int		streamPosition;	// next byte to be returned by Sys_StreamRead
-	int		threadPosition;	// next byte to be read from file
-} streamState_t;
-
-streamState_t	stream;
-
-/*
-===============
-Sys_StreamThread
-
-A thread will be sitting in this loop forever
-================
-*/
-void Sys_StreamThread( void ) {
-	int		buffer;
-	int		count;
-	int		readCount;
-	int		bufferPoint;
-	int		r;
-
-	while (1) {
-		Sleep( 10 );
-		EnterCriticalSection (&stream.crit);
-
-		// if there is any space left in the buffer, fill it up
-		while ( !stream.eof ) {
-			count = stream.bufferSize - (stream.threadPosition - stream.streamPosition);
-			if ( !count ) {
-				break;
-			}
-
-			bufferPoint = stream.threadPosition % stream.bufferSize;
-			buffer = stream.bufferSize - bufferPoint;
-			readCount = buffer < count ? buffer : count;
-
-			r = FS_Read( stream.buffer + bufferPoint, readCount, stream.file );
-			stream.threadPosition += r;
-
-			if ( r != readCount ) {
-				stream.eof = qtrue;
-				break;
-			}
-		}
-
-		LeaveCriticalSection (&stream.crit);
-	}
-}
-
-/*
-===============
-Sys_InitStreamThread
-
-================
-*/
-void Sys_InitStreamThread( void ) {
-
-	InitializeCriticalSection ( &stream.crit );
-
-	// don't leave the critical section until there is a
-	// valid file to stream, which will cause the StreamThread
-	// to sleep without any overhead
-	EnterCriticalSection( &stream.crit );
-
-	stream.threadHandle = CreateThread(
-	   NULL,	// LPSECURITY_ATTRIBUTES lpsa,
-	   0,		// DWORD cbStack,
-	   (LPTHREAD_START_ROUTINE)Sys_StreamThread,	// LPTHREAD_START_ROUTINE lpStartAddr,
-	   0,			// LPVOID lpvThreadParm,
-	   0,			//   DWORD fdwCreate,
-	   (unsigned long *) &stream.threadId);
-}
-
-/*
-===============
-Sys_ShutdownStreamThread
-
-================
-*/
-void Sys_ShutdownStreamThread( void ) {
-}
-
-
-/*
-===============
-Sys_BeginStreamedFile
-
-================
-*/
-void Sys_BeginStreamedFile( fileHandle_t f, int readAhead ) {
-	if ( stream.file ) {
-		Sys_EndStreamedFile( stream.file );
-	}
-
-	stream.file = f;
-	stream.buffer = (unsigned char *) Z_Malloc( readAhead );
-	stream.bufferSize = readAhead;
-	stream.streamPosition = 0;
-	stream.threadPosition = 0;
-	stream.eof = qfalse;
-
-	// let the thread start running
-	LeaveCriticalSection( &stream.crit );
-}
-
-/*
-===============
-Sys_EndStreamedFile
-
-================
-*/
-void Sys_EndStreamedFile( fileHandle_t f ) {
-	if ( f != stream.file ) {
-		Com_Error( ERR_FATAL, "Sys_EndStreamedFile: wrong file");
-	}
-	// don't leave critical section until another stream is started
-	EnterCriticalSection( &stream.crit );
-
-	stream.file = 0;
-	Z_Free( stream.buffer );
-
-}
-
-
-/*
-===============
-Sys_StreamedRead
-
-================
-*/
-int Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f ) {
-	int		available;
-	int		remaining;
-	int		sleepCount;
-	int		copy;
-	int		bufferCount;
-	int		bufferPoint;
-	byte	*dest;
-
-	dest = (byte *)buffer;
-	remaining = size * count;
-
-	if ( remaining <= 0 ) {
-		Com_Error( ERR_FATAL, "Streamed read with non-positive size" );
-	}
-
-	sleepCount = 0;
-	while ( remaining > 0 ) {
-		available = stream.threadPosition - stream.streamPosition;
-		if ( !available ) {
-			if ( stream.eof ) {
-				break;
-			}
-			if ( sleepCount == 1 ) {
-				Com_DPrintf( "Sys_StreamedRead: waiting\n" );
-			}
-			if ( ++sleepCount > 100 ) {
-				Com_Error( ERR_FATAL, "Sys_StreamedRead: thread has died");
-			}
-			Sleep( 10 );
-			continue;
-		}
-
-		bufferPoint = stream.streamPosition % stream.bufferSize;
-		bufferCount = stream.bufferSize - bufferPoint;
-
-		copy = available < bufferCount ? available : bufferCount;
-		if ( copy > remaining ) {
-			copy = remaining;
-		}
-		memcpy( dest, stream.buffer + bufferPoint, copy );
-		stream.streamPosition += copy;
-		dest += copy;
-		remaining -= copy;
-	}
-
-	return (count * size - remaining) / size;
-}
-
-/*
-===============
-Sys_StreamSeek
-
-================
-*/
-void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
-
-	// halt the thread
-	EnterCriticalSection( &stream.crit );
-
-	// clear to that point
-	FS_Seek( f, offset, origin );
-	stream.streamPosition = 0;
-	stream.threadPosition = 0;
-	stream.eof = qfalse;
-
-	// let the thread start running at the new position
-	LeaveCriticalSection( &stream.crit );
-}
-
-#endif
-
 
 /*
 ========================================================================
@@ -1391,8 +1096,6 @@ int main ( int argc, char **argv )
 
 	// get the initial time base
 	Sys_Milliseconds();
-
-	Sys_InitStreamThread();
 
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );

@@ -306,12 +306,8 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 
 void CCMPatch::CreatePatchPlaneData(void)
 {				
-#ifndef PRE_RELEASE_DEMO
 	int				realWidth;
 	int				x, y, i, j;
-#if	0
-	int				n;
-#endif
 	cbrush_t		*brush;
 	cbrushside_t	*side;
 	cplane_t		*plane;
@@ -513,12 +509,10 @@ void CCMPatch::CreatePatchPlaneData(void)
 #endif
 		}
 	}
-#endif // PRE_RELEASE_DEMO
 }
 
 void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, byte *hMap, byte *patchBrushData)
 {
-#ifndef PRE_RELEASE_DEMO
 	int		min, max, x, y, height;
 
 	// Set owning landscape
@@ -582,7 +576,6 @@ void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, by
 	// Set base of brush data from big array
 	mPatchBrushData = (cbrush_t *)patchBrushData; 
 	CreatePatchPlaneData();
-#endif // PRE_RELEASE_DEMO
 }
 
 CCMPatch *CCMLandScape::GetPatch(int x, int y)
@@ -1683,7 +1676,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 {
 	CRandomTerrain	*RandomTerrain = 0;
 
-#ifndef PRE_RELEASE_DEMO
 	char			*ptr;
 	unsigned long	seed;
 
@@ -1693,7 +1685,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 	
 	RandomTerrain = new CRandomTerrain;
 	RandomTerrain->Init(landscape, heightmap, width, height);
-#endif // #ifndef PRE_RELEASE_DEMO
 
 /*
 	RandomTerrain->CreatePath(0, -1, 0, 9, 0.1, 0.5, 0.5, 0.5, 0.05, 0.08, 0.31, 0.1, 3);

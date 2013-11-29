@@ -508,7 +508,7 @@ passed to the renderer.
 
 void RE_AddDecalToScene ( qhandle_t decalShader, const vec3_t origin, const vec3_t dir, float orientation, float red, float green, float blue, float alpha, qboolean alphaFade, float radius, qboolean temporary )
 {
-	vec3_t			axis[3];
+	matrix3_t		axis;
 	float			texCoordScale;
 	vec3_t			originalPoints[4];
 	byte			colors[4];

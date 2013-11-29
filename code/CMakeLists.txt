@@ -146,6 +146,7 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
+		"${SPDir}/qcommon/q_platform.h"
 
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
@@ -254,9 +255,9 @@ if(BuildSPEngine)
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMP3Files})
 
 	set(SPEngineRendererFiles
-		"${SPDir}/renderer/mdx_format.h"
-		"${SPDir}/renderer/tr_public.h"
-		"${SPDir}/renderer/tr_types.h"
+		"${SPDir}/rd-common/mdx_format.h"
+		"${SPDir}/rd-common/tr_public.h"
+		"${SPDir}/rd-common/tr_types.h"
 		)
 
 
@@ -337,7 +338,6 @@ if(BuildSPEngine)
 			"${SPDir}/win32/win_shared.cpp"
 			"${SPDir}/win32/win_snd.cpp"
 			"${SPDir}/win32/win_syscon.cpp"
-			"${SPDir}/win32/win_video.cpp"
 			"${SPDir}/win32/win_wndproc.cpp"
 			"${SPDir}/win32/win_local.h"
 			"${SPDir}/win32/AutoVersion.h"

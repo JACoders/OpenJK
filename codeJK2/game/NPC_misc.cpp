@@ -27,7 +27,7 @@ This file is part of Jedi Knight 2.
 
 
 #include "b_local.h"
-#include "q_shared.h"
+#include "../../code/qcommon/q_shared.h"
 /*
 Debug_Printf
 */

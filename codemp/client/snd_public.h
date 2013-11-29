@@ -35,7 +35,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 
 // recompute the reletive volumes for all running sounds
 // relative to the given entityNum / orientation
-void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwater );
+void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwater );
 
 // let the sound system know where an entity currently is
 void S_UpdateEntityPosition( int entityNum, const vec3_t origin );

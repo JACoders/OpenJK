@@ -1429,14 +1429,10 @@ void CG_DrawForceSelect( void )
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,x2,y2,pad,length;
+	int		holdX, x, y, pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	int		yOffset = 0;
-
-
-	x2 = 0;
-	y2 = 0;
 
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
@@ -1498,10 +1494,6 @@ void CG_DrawForceSelect( void )
 	x = 320;
 	y = 425;
 
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
-	
 	i = BG_ProperForceIndex(cg.forceSelect) - 1;
 	if (i < 0)
 	{
@@ -1588,9 +1580,8 @@ void CG_DrawInvenSelect( void )
 	int				smallIconSize,bigIconSize;
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
-	int				holdX,x,y,y2,pad;
-	int				height;
-	float			addX;
+	int				holdX, x, y, y2, pad;
+//	float			addX;
 
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
@@ -1669,8 +1660,7 @@ void CG_DrawInvenSelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
-	addX = (float) smallIconSize * .75;
+//	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
 	{
@@ -1706,13 +1696,12 @@ void CG_DrawInvenSelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
 	if (cgs.media.invenIcons[cg.itemSelect] && BG_IsItemSelectable(&cg.predictedPlayerState, cg.itemSelect))
 	{
 		int itemNdex;
 		trap->R_SetColor(NULL);
 		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, cgs.media.invenIcons[cg.itemSelect] );
-		addX = (float) bigIconSize * .75;
+	//	addX = (float) bigIconSize * .75;
 		trap->R_SetColor(colorTable[CT_ICON_BLUE]);
 		/*CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.inventorySelect], 6, 12, 
 			NUM_FONT_SMALL,qfalse);*/
@@ -1746,8 +1735,7 @@ void CG_DrawInvenSelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
-	addX = (float) smallIconSize * .75;
+//	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
 		if (i> HI_NUM_HOLDABLE-1)
@@ -3137,12 +3125,10 @@ void CG_DrawDuelistHealth ( float x, float y, float w, float h, int duelist )
 CG_DrawRadar
 =====================
 */
-//#define RADAR_RANGE				2500
 float	cg_radarRange = 2500.0f;
 
 #define RADAR_RADIUS			60
 #define RADAR_X					(580 - RADAR_RADIUS)
-//#define RADAR_Y					10 //dynamic based on passed Y val
 #define RADAR_CHAT_DURATION		6000
 static int radarLockSoundDebounceTime = 0;
 static int impactSoundDebounceTime = 0;
@@ -4151,7 +4137,7 @@ void CG_AddLagometerSnapshotInfo( snapshot_t *snap ) {
 ==============
 CG_DrawDisconnect
 
-Should we draw something differnet for long lag vs no packets?
+Should we draw something different for long lag vs no packets?
 ==============
 */
 static void CG_DrawDisconnect( void ) {
@@ -4501,7 +4487,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	const char *configstring, *v;
 	siegeClass_t *siegeClass;
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x;
 	float y;
@@ -4566,12 +4551,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4614,12 +4593,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4640,7 +4613,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float chH)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
@@ -4673,12 +4645,6 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 		aColor[3] = 0.4f;
 	}
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4699,7 +4665,6 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 void CG_DrawHaqrBar(float chX, float chY, float chW, float chH)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
@@ -4716,12 +4681,6 @@ void CG_DrawHaqrBar(float chX, float chY, float chW, float chH)
 	aColor[1] = 1.0f;
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out done area
 	cColor[0] = 0.5f;
@@ -4753,7 +4712,6 @@ vec4_t cg_genericTimerColor;
 void CG_DrawGenericTimerBar(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = CGTIMERBAR_X;
 	float y = CGTIMERBAR_Y;
@@ -4774,12 +4732,6 @@ void CG_DrawGenericTimerBar(void)
 	aColor[1] = cg_genericTimerColor[1];
 	aColor[2] = cg_genericTimerColor[2];
 	aColor[3] = cg_genericTimerColor[3];
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
@@ -5241,9 +5193,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 {
     vec3_t trans;
-    vec_t xc, yc;
-    vec_t px, py;
-    vec_t z;
+    float xc, yc;
+    float px, py;
+    float z;
 
     px = tan(cg.refdef.fov_x * (M_PI / 360) );
     py = tan(cg.refdef.fov_y * (M_PI / 360) );
@@ -6195,21 +6147,17 @@ static void CG_ScanForCrosshairEntity( void ) {
 	{
 		if (trace.entityNum < /*MAX_CLIENTS*/ENTITYNUM_WORLD)
 		{
+			centity_t *veh = &cg_entities[trace.entityNum];
 			cg.crosshairClientNum = trace.entityNum;
 			cg.crosshairClientTime = cg.time;
 
-			if (cg.crosshairClientNum < ENTITYNUM_WORLD)
-			{
-				centity_t *veh = &cg_entities[cg.crosshairClientNum];
-
-				if (veh->currentState.eType == ET_NPC &&
-					veh->currentState.NPC_class == CLASS_VEHICLE &&
-					veh->currentState.owner < MAX_CLIENTS)
-				{ //draw the name of the pilot then
-					cg.crosshairClientNum = veh->currentState.owner;
-					cg.crosshairVehNum = veh->currentState.number;
-					cg.crosshairVehTime = cg.time;
-				}
+			if (veh->currentState.eType == ET_NPC &&
+				veh->currentState.NPC_class == CLASS_VEHICLE &&
+				veh->currentState.owner < MAX_CLIENTS)
+			{ //draw the name of the pilot then
+				cg.crosshairClientNum = veh->currentState.owner;
+				cg.crosshairVehNum = veh->currentState.number;
+				cg.crosshairVehTime = cg.time;
 			}
 
 			CG_DrawCrosshair(trace.endpos, 1);
@@ -6518,8 +6466,10 @@ static void CG_DrawVote(void) {
 	else
 		s = va( "%s(%i):<%s> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo);
 	CG_DrawSmallString( 4, 58, s, 1.0F );
-	s = CG_GetStringEdString( "MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE" );	//	s = "or press ESC then click Vote";
-	CG_DrawSmallString( 4, 58 + SMALLCHAR_HEIGHT + 2, s, 1.0F );
+	if ( cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR ) {
+		s = CG_GetStringEdString( "MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE" );	//	s = "or press ESC then click Vote";
+		CG_DrawSmallString( 4, 58 + SMALLCHAR_HEIGHT + 2, s, 1.0F );
+	}
 }
 
 /*
@@ -6728,11 +6678,8 @@ CG_DrawWarmup
 =================
 */
 static void CG_DrawWarmup( void ) {
-	int			w;
-	int			sec;
-	int			i;
-	float scale;
-	int			cw;
+	int			w, sec, i;
+	float		scale;
 	const char	*s;
 
 	sec = cg.warmup;
@@ -6799,23 +6746,15 @@ static void CG_DrawWarmup( void ) {
 			CG_Text_Paint(320 - w / 2, 60, 0.6f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE,FONT_MEDIUM);
 		}
 	} else {
-		if ( cgs.gametype == GT_FFA ) {
-			s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");//"Free For All";
-		} else if ( cgs.gametype == GT_HOLOCRON ) {
-			s = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");//"Holocron FFA";
-		} else if ( cgs.gametype == GT_JEDIMASTER ) {
-			s = CG_GetStringEdString("MENUS", "POWERDUEL");//"Jedi Master";??
-		} else if ( cgs.gametype == GT_TEAM ) {
-			s = CG_GetStringEdString("MENUS", "TEAM_FFA");//"Team FFA";
-		} else if ( cgs.gametype == GT_SIEGE ) {
-			s = CG_GetStringEdString("MENUS", "SIEGE");//"Siege";
-		} else if ( cgs.gametype == GT_CTF ) {
-			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");//"Capture the Flag";
-		} else if ( cgs.gametype == GT_CTY ) {
-			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");//"Capture the Ysalamiri";
-		} else {
-			s = "";
-		}
+			 if ( cgs.gametype == GT_FFA )				s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");//"Free For All";
+		else if ( cgs.gametype == GT_HOLOCRON )			s = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");//"Holocron FFA";
+		else if ( cgs.gametype == GT_JEDIMASTER )		s = "Jedi Master";
+		else if ( cgs.gametype == GT_TEAM )				s = CG_GetStringEdString("MENUS", "TEAM_FFA");//"Team FFA";
+		else if ( cgs.gametype == GT_SIEGE )			s = CG_GetStringEdString("MENUS", "SIEGE");//"Siege";
+		else if ( cgs.gametype == GT_CTF )				s = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");//"Capture the Flag";
+		else if ( cgs.gametype == GT_CTY )				s = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");//"Capture the Ysalamiri";
+		else if ( cgs.gametype == GT_SINGLE_PLAYER )	s = "Cooperative";
+		else											s = "";
 		w = CG_Text_Width(s, 1.5f, FONT_MEDIUM);
 		CG_Text_Paint(320 - w / 2, 90, 1.5f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE,FONT_MEDIUM);
 	}
@@ -6850,19 +6789,15 @@ static void CG_DrawWarmup( void ) {
 	scale = 0.45f;
 	switch ( cg.warmupCount ) {
 	case 0:
-		cw = 28;
 		scale = 1.25f;
 		break;
 	case 1:
-		cw = 24;
 		scale = 1.15f;
 		break;
 	case 2:
-		cw = 20;
 		scale = 1.05f;
 		break;
 	default:
-		cw = 16;
 		scale = 0.9f;
 		break;
 	}
@@ -6960,7 +6895,6 @@ void CG_DrawFlagStatus()
 void CG_DrawJetpackFuel(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = JPFUELBAR_X;
 	float y = JPFUELBAR_Y;
@@ -6981,12 +6915,6 @@ void CG_DrawJetpackFuel(void)
 	aColor[1] = 0.0f;
 	aColor[2] = 0.0f;
 	aColor[3] = 0.8f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
@@ -7012,7 +6940,6 @@ void CG_DrawJetpackFuel(void)
 void CG_DrawEWebHealth(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = EWEBHEALTH_X;
 	float y = EWEBHEALTH_Y;
@@ -7045,12 +6972,6 @@ void CG_DrawEWebHealth(void)
 	aColor[2] = 0.0f;
 	aColor[3] = 0.8f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -7075,7 +6996,6 @@ void CG_DrawEWebHealth(void)
 void CG_DrawCloakFuel(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = CLFUELBAR_X;
 	float y = CLFUELBAR_Y;
@@ -7101,12 +7021,6 @@ void CG_DrawCloakFuel(void)
 	aColor[1] = 0.0f;
 	aColor[2] = 0.6f;
 	aColor[3] = 0.8f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.1f;
@@ -8327,7 +8241,7 @@ static void CG_Draw2D( void ) {
 	CG_ChatBox_DrawStrings();
 }
 
-qboolean CG_CullPointAndRadius( const vec3_t pt, vec_t radius);
+qboolean CG_CullPointAndRadius( const vec3_t pt, float radius);
 void CG_DrawMiscStaticModels( void ) {
 	int i, j;
 	refEntity_t ent;
@@ -8396,7 +8310,7 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		return;
 	}
 
-	// optionally draw the tournement scoreboard instead
+	// optionally draw the tournament scoreboard instead
 	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR &&
 		( cg.snap->ps.pm_flags & PMF_SCOREBOARD ) ) {
 		CG_DrawTourneyScoreboard();

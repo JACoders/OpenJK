@@ -64,9 +64,6 @@ cvar_t	*cl_sensitivity;
 
 cvar_t	*cl_mouseAccel;
 cvar_t	*cl_showMouseRate;
-cvar_t  *cl_VideoQuality;
-cvar_t	*cl_VidFadeUp;	// deliberately kept as "Vid" rather than "Video" so tab-matching matches only VideoQuality
-cvar_t	*cl_VidFadeDown;
 cvar_t	*cl_framerate;
 
 cvar_t	*m_pitch;
@@ -77,7 +74,6 @@ cvar_t	*m_filter;
 
 cvar_t	*cl_activeAction;
 
-cvar_t	*cl_updateInfoString;
 
 cvar_t	*cl_inGameVideo;
 
@@ -729,7 +725,7 @@ void CL_CheckTimeout( void ) {
 	//
 	// check timeout
 	//
-	if ( ( !cl_paused->integer || !sv_paused->integer ) 
+	if ( ( !CL_CheckPaused() || !sv_paused->integer ) 
 //		&& cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
 		&& cls.state >= CA_CONNECTED && (cls.state != CA_CINEMATIC && !CL_IsRunningInGameCinematic())
 		&& cls.realtime - clc.lastPacketTime > cl_timeout->value*1000) {
@@ -743,6 +739,22 @@ void CL_CheckTimeout( void ) {
 	}
 }
 
+/*
+==================
+CL_CheckPaused
+Check whether client has been paused.
+==================
+*/
+qboolean CL_CheckPaused(void)
+{
+	// if cl_paused->modified is set, the cvar has only been changed in
+	// this frame. Keep paused in this frame to ensure the server doesn't
+	// lag behind.
+	if(cl_paused->integer || cl_paused->modified)
+		return qtrue;
+
+	return qfalse;
+}
 
 //============================================================================
 
@@ -756,7 +768,10 @@ void CL_CheckUserinfo( void ) {
 	if ( cls.state < CA_CHALLENGING ) {
 		return;
 	}
-
+	// don't overflow the reliable command buffer when paused
+	if ( CL_CheckPaused() ) {
+		return;
+	}
 	// send a reliable userinfo update if needed
 	if ( cvar_modifiedFlags & CVAR_USERINFO ) {
 		cvar_modifiedFlags &= ~CVAR_USERINFO;
@@ -898,36 +913,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	cls.framecount++;
 }
 
-
 //============================================================================
-
-/*
-================
-VID_Printf
-
-DLL glue
-================
-*/
-#define	MAXPRINTMSG	4096
-void VID_Printf (int print_level, const char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-	
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
-
-	if ( print_level == PRINT_ALL ) {
-		Com_Printf ("%s", msg);
-	} else if ( print_level == PRINT_WARNING ) {
-		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-	} else if ( print_level == PRINT_DEVELOPER ) {
-		Com_DPrintf (S_COLOR_RED"%s", msg);
-	}
-}
-
-
 
 /*
 ============
@@ -1024,7 +1010,6 @@ DLL glue
 ================
 */
 #define	MAXPRINTMSG	4096
-extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -1317,9 +1302,6 @@ void CL_Init( void ) {
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
 	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
-	cl_VideoQuality = Cvar_Get ("cl_VideoQuality", "0", CVAR_ARCHIVE);
-	cl_VidFadeUp	= Cvar_Get ("cl_VidFadeUp", "1", CVAR_TEMP);
-	cl_VidFadeDown	= Cvar_Get ("cl_VidFadeDown", "1", CVAR_TEMP);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 
 	cl_thumbStickMode = Cvar_Get ("ui_thumbStickMode", "0", CVAR_ARCHIVE);
@@ -1338,8 +1320,6 @@ void CL_Init( void ) {
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 #endif
-
-	cl_updateInfoString = Cvar_Get( "cl_updateInfoString", "", CVAR_ROM );
 
 	// userinfo
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );

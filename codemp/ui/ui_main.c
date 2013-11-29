@@ -18,8 +18,7 @@ USER INTERFACE MAIN
 #include "ui_force.h"
 #include "cgame/animtable.h" //we want this to be compiled into the module because we access it in the shared module.
 #include "game/bg_saga.h"
-
-#include "cgame/holocronicons.h"
+#include "ui_shared.h"
 
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
@@ -235,7 +234,7 @@ animation_t *UI_AnimsetAlloc(void)
 ======================
 UI_ParseAnimationFile
 
-Read a configuration file containing animation coutns and rates
+Read a configuration file containing animation counts and rates
 models/players/visor/animation.cfg, etc
 
 ======================
@@ -248,7 +247,6 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	int			i;
 	char		*token;
 	float		fps;
-	int			skip;
 	int			usedIndex = -1;
 	int			nextIndex = uiNumAllAnims;
 
@@ -320,7 +318,6 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 
 	// parse the text
 	text_p = UIPAFtext;
-	skip = 0;	// quiet the compiler warning
 
 	//FIXME: have some way of playing anims backwards... negative numFrames?
 
@@ -861,8 +858,6 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			return;
 		case UIMENU_MAIN:
 			{
-				qboolean active = qfalse;
-
 				//	trap->Cvar_Set( "sv_killserver", "1" );
 				trap->Key_SetCatcher( KEYCATCH_UI );
 				//	trap->S_StartLocalSound( trap_S_RegisterSound("sound/misc/menu_background.wav", qfalse) , CHAN_LOCAL_SOUND );
@@ -882,7 +877,6 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 					if (!ui_singlePlayerActive.integer) 
 					{
 						Menus_ActivateByName("error_popmenu");
-						active = qtrue;
 					} 
 					else 
 					{
@@ -1024,11 +1018,11 @@ char *GetMenuBuffer(const char *filename) {
 
 	len = trap->FS_Open( filename, &f, FS_READ );
 	if ( !f ) {
-		trap->Print( va( S_COLOR_RED "menu file not found: %s, using default\n", filename ) );
+		trap->Print( S_COLOR_RED "menu file not found: %s, using default\n", filename );
 		return defaultMenu;
 	}
 	if ( len >= MAX_MENUFILE ) {
-		trap->Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i\n", filename, len, MAX_MENUFILE ) );
+		trap->Print( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i\n", filename, len, MAX_MENUFILE );
 		trap->FS_Close( f );
 		return defaultMenu;
 	}
@@ -1381,9 +1375,7 @@ qboolean Load_Menu(int handle) {
 void UI_LoadMenus(const char *menuFile, qboolean reset) {
 	pc_token_t token;
 	int handle;
-	int start;
-
-	start = trap->Milliseconds();
+//	int start = trap->Milliseconds();
 
 	trap->PC_LoadGlobalDefines ( "ui/jamp/menudef.h" );
 
@@ -2014,11 +2006,11 @@ static void UI_DrawMapPreview(rectDef_t *rect, float scale, vec4_t color, qboole
 	int map = (net) ? ui_currentNetMap.integer : ui_currentMap.integer;
 	if (map < 0 || map > uiInfo.mapCount) {
 		if (net) {
-			ui_currentNetMap.integer = 0;
 			trap->Cvar_Set("ui_currentNetMap", "0");
+			trap->Cvar_Update(&ui_currentNetMap);
 		} else {
-			ui_currentMap.integer = 0;
 			trap->Cvar_Set("ui_currentMap", "0");
+			trap->Cvar_Update(&ui_currentMap);
 		}
 		map = 0;
 	}
@@ -5464,9 +5456,7 @@ static void UI_GetSaberCvars ( void )
 	trap->Cvar_Set ( "ui_saber2_color", UI_Cvar_VariableString ( "g_saber2_color" ) );
 }
 
-//extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
-//extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 
 void UI_UpdateCharacterSkin( void )
 {
@@ -5563,8 +5553,6 @@ static void UI_ResetCharacterListBoxes( void )
 		}
 	}
 }
-
-//#define MAX_SABER_HILTS	64
 
 const char *saberSingleHiltInfo [MAX_SABER_HILTS];
 const char *saberStaffHiltInfo [MAX_SABER_HILTS];
@@ -5970,7 +5958,7 @@ static void UI_RunMenuScript(char **args)
 			{
 				trap->Cvar_SetValue( "dedicated", Com_Clamp( 0, 2, ui_dedicated.integer ) );
 			}
-			trap->Cvar_SetValue( "g_gametype", Com_Clamp( 0, 8, uiInfo.gameTypes[ui_netGametype.integer].gtEnum ) );
+			trap->Cvar_SetValue( "g_gametype", Com_Clamp( 0, GT_MAX_GAME_TYPE, uiInfo.gameTypes[ui_netGametype.integer].gtEnum ) );
 			//trap->Cvar_Set("g_redTeam", UI_Cvar_VariableString("ui_teamName"));
 			//trap->Cvar_Set("g_blueTeam", UI_Cvar_VariableString("ui_opponentName"));
 			trap->Cmd_ExecuteText( EXEC_APPEND, va( "wait ; wait ; map %s\n", uiInfo.mapList[ui_currentNetMap.integer].mapLoadName ) );
@@ -6050,8 +6038,8 @@ static void UI_RunMenuScript(char **args)
 		} else if (Q_stricmp(name, "updateSPMenu") == 0) {
 			UI_SetCapFragLimits(qtrue);
 			UI_MapCountByGameType(qtrue);
-			ui_mapIndex.integer = UI_GetIndexFromSelection(ui_currentMap.integer);
-			trap->Cvar_Set("ui_mapIndex", va("%d", ui_mapIndex.integer));
+			trap->Cvar_SetValue("ui_mapIndex", UI_GetIndexFromSelection(ui_currentMap.integer));
+			trap->Cvar_Update(&ui_mapIndex);
 			Menu_SetFeederSelection(NULL, FEEDER_MAPS, ui_mapIndex.integer, "skirmish");
 			UI_GameType_HandleKey(0, 0, A_MOUSE1, qfalse);
 			UI_GameType_HandleKey(0, 0, A_MOUSE2, qfalse);
@@ -7261,15 +7249,12 @@ static int UI_MapCountByGameType(qboolean singlePlayer) {
 	int i, c, game;
 	c = 0;
 	game = singlePlayer ? uiInfo.gameTypes[ui_gametype.integer].gtEnum : uiInfo.gameTypes[ui_netGametype.integer].gtEnum;
-	if (game == GT_SINGLE_PLAYER) {
-		game++;
-	} 
-	if (game == GT_TEAM) {
+	if (game == GT_TEAM)
 		game = GT_FFA;
-	}
-	if (game == GT_HOLOCRON || game == GT_JEDIMASTER) {
-		game = GT_FFA;
-	}
+
+	//Since GT_CTY uses the same entities as CTF, use the same map sets
+	if ( game == GT_CTY )
+		game = GT_CTF;
 
 	for (i = 0; i < uiInfo.mapCount; i++) {
 		uiInfo.mapList[i].active = qfalse;
@@ -8302,15 +8287,13 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 					if (ping <= 0) {
 						return Info_ValueForKey(info, "addr");
 					} else {
-						int gametype = 0;
+						int gametype = atoi( Info_ValueForKey( info, "gametype" ) );
 						//check for password
 						if ( atoi(Info_ValueForKey(info, "needpass")) )
 						{
 							*handle3 = uiInfo.uiDC.Assets.needPass;
 						}
 						//check for saberonly and restricted force powers
-						gametype = atoi(Info_ValueForKey(info, "gametype"));
-#if 0
 						if ( gametype != GT_JEDIMASTER )
 						{
 							qboolean saberOnly = qtrue;
@@ -8357,7 +8340,6 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 								}
 							}
 						}
-#endif
 						if ( ui_netSource.integer == AS_LOCAL ) {
 							int nettype = atoi(Info_ValueForKey(info, "nettype"));
 
@@ -10517,13 +10499,15 @@ vmMain
 ============
 */
 
-Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+Q_EXPORT intptr_t vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4,
+	intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11 )
+{
 	switch ( command ) {
 	case UI_GETAPIVERSION:
 		return UI_LEGACY_API_VERSION;
 
 	case UI_INIT:
-		UI_Init(arg0);
+		UI_Init( arg0 );
 		return 0;
 
 	case UI_SHUTDOWN:

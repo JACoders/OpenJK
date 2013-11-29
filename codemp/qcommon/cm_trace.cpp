@@ -36,7 +36,7 @@ BASIC MATH
 RotatePoint
 ================
 */
-void RotatePoint(vec3_t point, /*const*/ vec3_t matrix[3]) { // bk: FIXME 
+void RotatePoint(vec3_t point, /*const*/ matrix3_t matrix) { // bk: FIXME 
 	vec3_t tvec;
 
 	VectorCopy(point, tvec);
@@ -50,7 +50,7 @@ void RotatePoint(vec3_t point, /*const*/ vec3_t matrix[3]) { // bk: FIXME
 TransposeMatrix
 ================
 */
-void TransposeMatrix(/*const*/ vec3_t matrix[3], vec3_t transpose[3]) { // bk: FIXME
+void TransposeMatrix(/*const*/ matrix3_t matrix, matrix3_t transpose) { // bk: FIXME
 	int i, j;
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 3; j++) {
@@ -64,7 +64,7 @@ void TransposeMatrix(/*const*/ vec3_t matrix[3], vec3_t transpose[3]) { // bk: F
 CreateRotationMatrix
 ================
 */
-void CreateRotationMatrix(const vec3_t angles, vec3_t matrix[3]) {
+void CreateRotationMatrix(const vec3_t angles, matrix3_t matrix) {
 	AngleVectors(angles, matrix[0], matrix[1], matrix[2]);
 	VectorInverse(matrix[1]);
 }
@@ -185,7 +185,7 @@ void CM_TestBoxInBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush ) {
 			side = brush->sides + i;
 			plane = side->plane;
 
-			// adjust the plane distance apropriately for radius
+			// adjust the plane distance appropriately for radius
 			dist = plane->dist + tw->sphere.radius;
 			// find the closest point on the capsule to the plane
 			t = DotProduct( plane->normal, tw->sphere.offset );
@@ -210,7 +210,7 @@ void CM_TestBoxInBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush ) {
 			side = brush->sides + i;
 			plane = side->plane;
 
-			// adjust the plane distance apropriately for mins/maxs
+			// adjust the plane distance appropriately for mins/maxs
 			dist = plane->dist - DotProduct( tw->offsets[ plane->signbits ], plane->normal );
 
 			d1 = DotProduct( tw->start, plane->normal ) - dist;
@@ -497,7 +497,7 @@ bool CM_PlaneCollision(traceWork_t *tw, cbrushside_t *side)
 
 	cplane_t		*plane = side->plane;
 
-	// adjust the plane distance apropriately for mins/maxs
+	// adjust the plane distance appropriately for mins/maxs
 	dist = plane->dist - DotProduct( tw->offsets[ plane->signbits ], plane->normal );
 
 	d1 = DotProduct( tw->start, plane->normal ) - dist;
@@ -1416,7 +1416,7 @@ void CM_TraceThroughTree( traceWork_t *tw, trace_t &trace, clipMap_t *local, int
 	node = local->nodes + num;
 	plane = node->plane;
 
-	// adjust the plane distance apropriately for mins/maxs
+	// adjust the plane distance appropriately for mins/maxs
 	if ( plane->type < 3 ) {
 		t1 = p1[plane->type] - plane->dist;
 		t2 = p2[plane->type] - plane->dist;
@@ -1591,7 +1591,7 @@ void CM_Trace( trace_t *trace, const vec3_t start, const vec3_t end,
 
 	tw.maxOffset = tw.size[1][0] + tw.size[1][1] + tw.size[1][2];
 
-	// tw.offsets[signbits] = vector to apropriate corner from origin
+	// tw.offsets[signbits] = vector to appropriately corner from origin
 	tw.offsets[0][0] = tw.size[0][0];
 	tw.offsets[0][1] = tw.size[0][1];
 	tw.offsets[0][2] = tw.size[0][2];
@@ -1812,7 +1812,7 @@ void CM_TransformedBoxTrace( trace_t *trace, const vec3_t start, const vec3_t en
 	qboolean	rotated;
 	vec3_t		offset;
 	vec3_t		symetricSize[2];
-	vec3_t		matrix[3], transpose[3];
+	matrix3_t	matrix, transpose;
 	int			i;
 	float		halfwidth;
 	float		halfheight;

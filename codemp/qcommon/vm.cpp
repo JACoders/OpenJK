@@ -182,45 +182,6 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 	return NULL;
 }
 
-//OJKFIXME: Add delayed free again
-#if 0
-/*
-==============
-VM_DelayedFree
-==============
-*/
-void VM_DelayedFree ( vm_t *vm )
-{
-	if ( !vm )
-	{
-		return;
-	}
-
-	ptrdiff_t index = vm - vmTable;
-	vmHandlesToDelete[index] = vm->dllHandle;
-
-	Com_Memset (vm, 0, sizeof (*vm));
-	currentVM = lastVM = NULL;
-}
-
-/*
-==============
-VM_FreeRemaining
-==============
-*/
-void VM_FreeRemaining()
-{
-	for ( int i = 0; i < MAX_VM; i++ )
-	{
-		if ( vmHandlesToDelete[i] != NULL )
-		{
-			Sys_UnloadDll (vmHandlesToDelete[i]);
-			vmHandlesToDelete[i] = NULL;
-		}
-	}
-}
-#endif
-
 /*
 ==============
 VM_Free
@@ -350,8 +311,7 @@ locals from sp
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t *oldVM = NULL;
 	intptr_t r = 0;
-	unsigned int i = 0;
-	int args[16] = {0};
+	intptr_t args[16] = {0};
 
 	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
@@ -365,8 +325,8 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	//rcg010207 -  see dissertation at top of VM_DllSyscall() in this file.
 	va_list ap;
 	va_start(ap, callnum);
-	for ( i=0; i<ARRAY_LEN( args ); i++ )
-		args[i] = va_arg( ap, int );
+	for ( size_t i=0; i<ARRAY_LEN( args ); i++ )
+		args[i] = va_arg( ap, intptr_t );
 	va_end(ap);
 
 	r = vm->legacy.main( callnum, args[ 0], args[ 1], args[ 2], args[ 3], args[ 4], args[ 5], args[ 6], args[ 7],

@@ -72,7 +72,7 @@ typedef enum
 } SavedGameJustLoaded_e;
 
 
-
+#define GAME_INCLUDE
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation

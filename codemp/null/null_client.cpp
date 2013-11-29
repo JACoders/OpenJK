@@ -53,7 +53,7 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 void CL_InitKeyCommands( void ) {
 }
 
-void CL_FlushMemory( qboolean delayFlushVM ) {
+void CL_FlushMemory( void ) {
 }
 
 void CL_StartHunkUsers( void ) {

@@ -75,7 +75,7 @@ public:
 	}
 	inline	int		ReadFile( void *data, int len, fileHandle_t fh )
 	{
-		FS_Read2( data, len, fh );
+		FS_Read( data, len, fh );
 		return 1;
 	}
 	inline	void	CloseFile( fileHandle_t fh )

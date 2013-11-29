@@ -19,11 +19,7 @@ This file is part of Jedi Academy.
 //b_spawn.cpp
 //added by MCG
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "b_local.h"
 #include "anims.h"
@@ -37,14 +33,8 @@ extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern void Jedi_Cloak( gentity_t *self );
 extern void Saboteur_Cloak( gentity_t *self );
 
-//extern void FX_BorgTeleport( vec3_t org );
-
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void Q3_SetParm (int entID, int parmNum, const char *parmValue);
-
-//extern void CG_ShimmeryThing_Spawner( vec3_t start, vec3_t end, float radius, qboolean taper, int duration );
-
-//extern void NPC_StasisSpawnEffect( gentity_t *ent );
 
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
@@ -55,8 +45,6 @@ extern void Jedi_ClearTimers( gentity_t *ent );
 extern void Howler_ClearTimers( gentity_t *self );
 #define	NSF_DROP_TO_FLOOR	16
 
-
-//void HirogenAlpha_Precache( void );
 
 /*
 -------------------------
@@ -1970,7 +1958,6 @@ first and so no scripts should be names with these names:
 
 delay - after spawned or triggered, how many seconds to wait to spawn the NPC
 */
-//void NPC_PrecacheModels ( char *NPCName );
 extern qboolean	spawning;				// the G_Spawn*() functions are valid  (only turned on during one function)
 extern void	NPC_PrecacheByClassName(const char*);
 

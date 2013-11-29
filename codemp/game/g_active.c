@@ -24,7 +24,7 @@ void P_SetTwitchInfo(gclient_t	*client)
 G_DamageFeedback
 
 Called just before a snapshot is sent to the given player.
-Totals up all damage and generates both the player_state_t
+Totals up all damage and generates both the playerState_t
 damage values to that client for pain blends and kicks, and
 global pain sound events for all clients.
 ===============
@@ -74,7 +74,7 @@ void P_DamageFeedback( gentity_t *player ) {
 		}
 	}
 
-	// play an apropriate pain sound
+	// play an appropriate pain sound
 	if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) && !(player->s.eFlags & EF_DEAD) ) {
 
 		// don't do more than two pain sounds a second
@@ -1622,7 +1622,7 @@ void G_CheckMovingLoopingSounds( gentity_t *ent, usercmd_t *ucmd )
 	}
 }
 
-void G_HeldByMonster( gentity_t *ent, usercmd_t **ucmd )
+void G_HeldByMonster( gentity_t *ent, usercmd_t *ucmd )
 {
 	if ( ent 
 		&& ent->client
@@ -1654,9 +1654,9 @@ void G_HeldByMonster( gentity_t *ent, usercmd_t **ucmd )
 		}
 	}
 	// don't allow movement, weapon switching, and most kinds of button presses
-	(*ucmd)->forwardmove = 0;
-	(*ucmd)->rightmove = 0;
-	(*ucmd)->upmove = 0;
+	ucmd->forwardmove = 0;
+	ucmd->rightmove = 0;
+	ucmd->upmove = 0;
 }
 
 typedef enum tauntTypes_e
@@ -2080,7 +2080,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if ( client && (client->ps.eFlags2&EF2_HELD_BY_MONSTER) )
 	{
-		G_HeldByMonster( ent, &ucmd );
+		G_HeldByMonster( ent, ucmd );
 	}
 
 	// sanity check the command time to prevent speedup cheating
@@ -2860,7 +2860,7 @@ void ClientThink_real( gentity_t *ent ) {
 			//player_die(ent, ent, ent, 100000, MOD_FALLING);
 	//		if (!ent->NPC)
 	//		{
-	//			respawn(ent);
+	//			ClientRespawn(ent);
 	//		}
 	//		ent->client->ps.fallingToDeath = 0;
 
@@ -3553,13 +3553,13 @@ void ClientThink_real( gentity_t *ent ) {
 
 			if ( forceRes > 0 && 
 				( level.time - client->respawnTime ) > forceRes * 1000 ) {
-				respawn( ent );
+				ClientRespawn( ent );
 				return;
 			}
 		
 			// pressing attack or use is the normal respawn method
 			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
-				respawn( ent );
+				ClientRespawn( ent );
 			}
 		}
 		else if (gDoSlowMoDuel)
@@ -3792,7 +3792,6 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 */
 void ClientEndFrame( gentity_t *ent ) {
 	int			i;
-	clientPersistant_t	*pers;
 	qboolean isNPC = qfalse;
 
 	if (ent->s.eType == ET_NPC)
@@ -3804,8 +3803,6 @@ void ClientEndFrame( gentity_t *ent ) {
 		SpectatorClientEndFrame( ent );
 		return;
 	}
-
-	pers = &ent->client->pers;
 
 	// turn off any expired powerups
 	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {

@@ -18,13 +18,13 @@ This file is part of Jedi Academy.
 
 // g_utils.c -- misc utility functions for game module
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
+#include "g_navigator.h"
+#include "b_local.h"
+#include "g_nav.h"
 
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse

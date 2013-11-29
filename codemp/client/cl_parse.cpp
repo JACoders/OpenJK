@@ -33,8 +33,6 @@ void SHOWNET( msg_t *msg, char *s) {
 	}
 }
 
-//void CL_SP_Print(const word ID, byte *Data); //, char* color)
-
 /*
 =========================================================================
 
@@ -364,7 +362,13 @@ void CL_ParseSetGame( msg_t *msg )
 		return;
 	}
 
-	Cvar_Set("fs_game", newGameDir);
+	if(!FS_FilenameCompare(newGameDir, BASEGAME))
+		Cvar_Set("fs_game", "");
+	else
+		Cvar_Set("fs_game", newGameDir);
+
+	if(!(Cvar_Flags("fs_game") & CVAR_MODIFIED))
+		return;
 
 	//Update the search path for the mod dir
 	FS_UpdateGamedir();
@@ -379,9 +383,6 @@ void CL_ParseSetGame( msg_t *msg )
 
 int cl_connectedToPureServer;
 int cl_connectedToCheatServer;
-int cl_connectedGAME;
-int cl_connectedCGAME;
-int cl_connectedUI;
 
 /*
 ==================
@@ -445,6 +446,12 @@ void CL_SystemInfoChanged( void ) {
 				continue;
 			}
 
+			if(!FS_FilenameCompare(value, BASEGAME))
+			{
+				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent \"%s\" fs_game value, clearing.\n", value);
+				Q_strncpyz(value, "", sizeof(value));
+			}
+
 			gameSet = qtrue;
 		}
 
@@ -473,10 +480,6 @@ void CL_SystemInfoChanged( void ) {
 		Cvar_Set( "fs_game", "" );
 	}
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
-
-	cl_connectedGAME = atoi(Info_ValueForKey( systemInfo, "vm_game" ));
-	cl_connectedCGAME = atoi(Info_ValueForKey( systemInfo, "vm_cgame" ));
-	cl_connectedUI = atoi(Info_ValueForKey( systemInfo, "vm_ui" ));
 }
 
 void CL_ParseAutomapSymbols ( msg_t* msg )
@@ -776,7 +779,7 @@ void CL_ParseDownload ( msg_t *msg ) {
 			clc.download = 0;
 
 			// rename the file
-			FS_SV_Rename ( clc.downloadTempName, clc.downloadName );
+			FS_SV_Rename ( clc.downloadTempName, clc.downloadName, qfalse );
 		}
 
 		// send intentions now

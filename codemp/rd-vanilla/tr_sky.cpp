@@ -43,7 +43,7 @@ static void AddSkyPolygon (int nump, vec3_t vecs)
 	int		axis;
 	float	*vp;
 	// s = [0]/[2], t = [1]/[2]
-	static int	vec_to_st[6][3] =
+	static int	floato_st[6][3] =
 	{
 		{-2,3,1},
 		{2,3,-1},
@@ -92,19 +92,19 @@ static void AddSkyPolygon (int nump, vec3_t vecs)
 	// project new texture coords
 	for (i=0 ; i<nump ; i++, vecs+=3)
 	{
-		j = vec_to_st[axis][2];
+		j = floato_st[axis][2];
 		if (j > 0)
 			dv = vecs[j - 1];
 		else
 			dv = -vecs[-j - 1];
 		if (dv < 0.001)
 			continue;	// don't divide by zero
-		j = vec_to_st[axis][0];
+		j = floato_st[axis][0];
 		if (j < 0)
 			s = -vecs[-j -1] / dv;
 		else
 			s = vecs[j-1] / dv;
-		j = vec_to_st[axis][1];
+		j = floato_st[axis][1];
 		if (j < 0)
 			t = -vecs[-j -1] / dv;
 		else

@@ -214,6 +214,9 @@ typedef struct clientConnection_s {
 	int			timeDemoStart;		// cls.realtime before first frame
 	int			timeDemoBaseTime;	// each frame will be at this time + frameNum * 50
 
+	float		aviVideoFrameRemainder;
+	float		aviSoundFrameRemainder;
+
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
 
@@ -257,12 +260,10 @@ typedef struct serverInfo_s {
 	int			maxPing;
 	int			ping;
 	qboolean	visible;
-//	int			allowAnonymous;
 	qboolean	needPassword;
 	int			trueJedi;
 	int			weaponDisable;
 	int			forceDisable;
-//	qboolean	pure;
 } serverInfo_t;
 
 typedef struct clientStatic_s {
@@ -390,6 +391,8 @@ extern	cvar_t	*cl_inGameVideo;
 extern	cvar_t	*cl_consoleKeys;
 #endif
 
+extern  cvar_t  *cl_lanForcePackets;
+
 //=================================================
 
 //
@@ -397,8 +400,8 @@ extern	cvar_t	*cl_consoleKeys;
 //
 
 void CL_Init (void);
-void CL_FlushMemory(qboolean delayFreeVM);
-void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM );
+void CL_FlushMemory(void);
+void CL_ShutdownAll( qboolean shutdownRef );
 void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
@@ -465,13 +468,9 @@ const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: 
 //
 extern int cl_connectedToPureServer;
 extern int cl_connectedToCheatServer;
-extern int cl_connectedGAME;
-extern int cl_connectedCGAME;
-extern int cl_connectedUI;
 
 void CL_SystemInfoChanged( void );
 void CL_ParseServerMessage( msg_t *msg );
-//void CL_SP_Print(const word ID, byte *Data);
 
 //====================================================================
 
@@ -486,7 +485,6 @@ qboolean CL_UpdateVisiblePings_f( int source );
 //
 // console
 //
-void Con_DrawCharacter (int cx, int line, int num);
 
 void Con_CheckResize (void);
 void Con_Init (void);
@@ -547,7 +545,7 @@ void CL_UpdateHotSwap(void);
 // cl_cgame.c
 //
 void CL_InitCGame( void );
-void CL_ShutdownCGame( qboolean delayFreeVM );
+void CL_ShutdownCGame( void );
 qboolean CL_GameCommand( void );
 void CL_CGameRendering( stereoFrame_t stereo );
 void CL_SetCGameTime( void );
@@ -558,7 +556,7 @@ void CL_ShaderStateChanged(void);
 // cl_ui.c
 //
 void CL_InitUI( void );
-void CL_ShutdownUI( qboolean delayFreeVM );
+void CL_ShutdownUI( void );
 int Key_GetCatcher( void );
 void Key_SetCatcher( int catcher );
 void LAN_LoadCachedServers();

@@ -21,14 +21,11 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
-
-//void DoBolt( vec3_t m_origin, vec3_t m_origin2, float m_scale, float m_deviation );
 
 /*
 ====================

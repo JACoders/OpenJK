@@ -171,7 +171,7 @@ typedef struct playerEntity_s {
 #define	MAX_CUSTOM_COMBAT_SOUNDS	40
 #define	MAX_CUSTOM_EXTRA_SOUNDS	40
 #define	MAX_CUSTOM_JEDI_SOUNDS	40
-//#define MAX_CUSTOM_SIEGE_SOUNDS..defined in bg_public.h
+// MAX_CUSTOM_SIEGE_SOUNDS defined in bg_public.h
 #define MAX_CUSTOM_DUEL_SOUNDS	40
 
 #define	MAX_CUSTOM_SOUNDS	40 //rww - Note that for now these must all be the same, because of the way I am
@@ -614,7 +614,7 @@ typedef struct score_s {
 	int				accuracy;
 	int				impressiveCount;
 	int				excellentCount;
-	int				guantletCount;
+	int				gauntletCount;
 	int				defendCount;
 	int				assistCount;
 	int				captures;
@@ -805,9 +805,9 @@ typedef struct cg_s {
 
 	// auto rotating items
 	vec3_t		autoAngles;
-	vec3_t		autoAxis[3];
+	matrix3_t	autoAxis;
 	vec3_t		autoAnglesFast;
-	vec3_t		autoAxisFast[3];
+	matrix3_t	autoAxisFast;
 
 	// view rendering
 	refdef_t	refdef;
@@ -1463,7 +1463,7 @@ typedef struct cgEffects_s {
 	fxHandle_t	mStunBatonFleshImpact;
 	fxHandle_t	mAltDetonate;
 	fxHandle_t	mSparksExplodeNoSound;
-	fxHandle_t	mTripMineLaster;
+	fxHandle_t	mTripMineLaser;
 	fxHandle_t	mEmplacedMuzzleFlash;
 	fxHandle_t	mConcussionAltRing;
 	fxHandle_t	mHyperspaceStars;
@@ -1494,14 +1494,14 @@ typedef struct cgEffects_s {
 typedef struct cg_staticmodel_s {
 	qhandle_t		model;
 	vec3_t			org;
-	vec3_t			axes[3];
-	vec_t			radius;
+	matrix3_t		axes;
+	float			radius;
 	float			zoffset;
 } cg_staticmodel_t;
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
-// be cleared when a tournement restart is done, allowing
+// be cleared when a tournament restart is done, allowing
 // all clients to begin playing instantly
 typedef struct cgs_s {
 	gameState_t		gameState;			// gamestate from server

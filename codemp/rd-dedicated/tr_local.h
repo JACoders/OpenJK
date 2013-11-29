@@ -9,9 +9,6 @@ typedef unsigned int GLuint;
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
-//for 3d textures -rww
-#define GL_TEXTURE_3D                     0x806F
-
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
 // see QSORT_SHADERNUM_SHIFT
@@ -80,7 +77,7 @@ typedef struct trRefEntity_s {
 
 typedef struct orientationr_s {
 	vec3_t		origin;			// in world coordinates
-	vec3_t		axis[3];		// orientation in world
+	matrix3_t	axis;		// orientation in world
 	vec3_t		viewOrigin;		// viewParms->or.origin in local coordinates
 	float		modelMatrix[16];
 } orientationr_t;
@@ -423,8 +420,6 @@ typedef struct shader_s {
 	bool		explicitlyDefined;		// found in a .shader file
 	bool		entityMergable;			// merge across entites optimizable (smoke, blood)
 
-	bool		isBumpMap;
-
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
 
@@ -440,8 +435,6 @@ typedef struct shader_s {
 
 	fogPass_t	fogPass;				// draw a blended pass, possibly with depth test equals
 
-	vec3_t		bumpVector;				// The given light vector for bump-mapping
-
 	deformStage_t	*deforms[MAX_SHADER_DEFORMS];
 	short		numDeforms;
 
@@ -454,27 +447,9 @@ typedef struct shader_s {
 	// True if this shader has a stage with glow in it (just an optimization).
 	bool hasGlow;
 
-/*
-  int numStates;                                    // if non-zero this is a state shader
-  struct shader_s *currentShader;                   // current state if this is a state shader
-  struct shader_s *parentShader;                    // current state if this is a state shader
-  int currentState;                                 // current state index for cycle purposes
-  long expireTime;                                  // time in milliseconds this expires
-
-  int shaderStates[MAX_STATES_PER_SHADER];          // index to valid shader states
-*/
-
 	struct shader_s *remappedShader;                  // current shader this one is remapped too
 	struct	shader_s	*next;
 } shader_t;
-
-typedef struct shaderState_s {
-  char shaderName[MAX_QPATH];     // name of shader this state belongs to
-  char name[MAX_STATE_NAME];      // name of this state
-  char stateShader[MAX_QPATH];    // shader this name invokes
-  int cycleTime;                  // time this cycle lasts, <= 0 is forever
-  shader_t *shader;
-} shaderState_t;
 
 /*
 Ghoul2 Insert Start
@@ -502,7 +477,7 @@ typedef struct trRefdef_s {
 	int			x, y, width, height;
 	float		fov_x, fov_y;
 	vec3_t		vieworg;
-	vec3_t		viewaxis[3];		// transformation matrix
+	matrix3_t	viewaxis;		// transformation matrix
 
 	int			time;				// time in milliseconds for shader effects and other time dependent rendering issues
 	int			frametime;
@@ -1319,7 +1294,6 @@ void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, 
 ** GL wrapper/helper functions
 */
 void	GL_Bind( image_t *image );
-void	GL_Bind3D( image_t *image );
 void	GL_SetDefaultState (void);
 void	GL_SelectTexture( int unit );
 void	GL_TextureMode( const char *string );
@@ -1383,13 +1357,11 @@ void		RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForc
 void		RE_RegisterMedia_LevelLoadEnd(void);
 int			RE_RegisterMedia_GetLevel(void);
 //
-//void		RE_RegisterModels_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel = qfalse);
 void*		RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag);
 void		RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 void		RE_RegisterModels_Info_f(void);
 //
-//void		RE_RegisterImages_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterImages_LevelLoadEnd(void);
 void		RE_RegisterImages_Info_f(void);
 

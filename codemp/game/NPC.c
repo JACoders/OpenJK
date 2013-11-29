@@ -8,7 +8,6 @@
 
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
-//extern void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority,int *torsoAnimTimer,int *legsAnimTimer,gentity_t *gent);
 extern void G_SoundOnEnt( gentity_t *ent, soundChannel_t channel, const char *soundPath );
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
@@ -1369,8 +1368,6 @@ extern void NPC_BSWampa_Default( void );
 extern qboolean Jedi_CultistDestroyer( gentity_t *self );
 void NPC_RunBehavior( int team, int bState )
 {
-	qboolean dontSetAim = qfalse;
-
 	if (NPCS.NPC->s.NPC_class == CLASS_VEHICLE &&
 		NPCS.NPC->m_pVehicle)
 	{ //vehicles don't do AI!
@@ -1393,7 +1390,6 @@ void NPC_RunBehavior( int team, int bState )
 		NPCS.NPC->client->ps.weapon == WP_SABER )
 	{//jedi
 		NPC_BehaviorSet_Jedi( bState );
-		dontSetAim = qtrue;
 	}
 	else if ( NPCS.NPC->client->NPC_class == CLASS_WAMPA )
 	{//wampa
@@ -1421,12 +1417,10 @@ void NPC_RunBehavior( int team, int bState )
 		{
 			NPC_BehaviorSet_Jedi( bState );
 		}
-		dontSetAim = qtrue;
 	}
 	else if ( Jedi_CultistDestroyer( NPCS.NPC ) )
 	{
 		NPC_BSJedi_Default();
-		dontSetAim = qtrue;
 	}
 	else if ( NPCS.NPCInfo->scriptFlags & SCF_FORCED_MARCH )
 	{//being forced to march
@@ -1551,7 +1545,6 @@ void NPC_RunBehavior( int team, int bState )
 					NPC_BehaviorSet_Default( bState );
 				}
 				NPC_CheckCharmed();
-				dontSetAim = qtrue;
 			}
 			break;
 		}
@@ -1609,7 +1602,7 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 //	}
 
 	//Here we need to see what the scripted stuff told us to do
-//Only process snapshot if independant and in combat mode- this would pick enemies and go after needed items
+//Only process snapshot if independent and in combat mode- this would pick enemies and go after needed items
 //	ProcessSnapshot();
 
 //Ignore my needs if I'm under script control- this would set needs for items

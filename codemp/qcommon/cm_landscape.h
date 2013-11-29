@@ -72,9 +72,6 @@ public:
 	int GetVillageID(void) const { return(mVillageID); }
 };
 
-typedef list<CArea*>					areaList_t;
-typedef list<CArea*>::iterator			areaIter_t;
-
 class CCMHeightDetails
 {
 private:

@@ -27,8 +27,6 @@ extern CMiniHeap *G2VertSpaceClient;
 #include "snd_ambient.h"
 #include "qcommon/timing.h"
 
-//extern int contentOverride;
-
 /*
 Ghoul2 Insert End
 */
@@ -466,7 +464,7 @@ rescan:
 	// the clientLevelShot command is used during development
 	// to generate 128*128 screenshots from the intermission
 	// point of levels for the menu system to use
-	// we pass it along to the cgame to make apropriate adjustments,
+	// we pass it along to the cgame to make appropriate adjustments,
 	// but we also clear the console and notify lines here
 	if ( !strcmp( cmd, "clientLevelShot" ) ) {
 		// don't do it if we aren't running the server locally,
@@ -494,7 +492,7 @@ CL_ShutdonwCGame
 
 ====================
 */
-void CL_ShutdownCGame( qboolean delayFreeVM ) {
+void CL_ShutdownCGame( void ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 
 	if ( !cls.cgameStarted )
@@ -834,6 +832,3 @@ void CL_SetCGameTime( void ) {
 		}
 	}
 }
-
-
-

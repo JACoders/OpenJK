@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../renderer/tr_public.h"
+#include "../rd-common/tr_public.h"
 #include "keys.h"
 #include "snd_public.h"
 #include "../cgame/cg_public.h"
@@ -291,9 +291,6 @@ extern	cvar_t	*cl_mouseAccel;
 extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*cl_inGameVideo;
-extern  cvar_t  *cl_VideoQuality;
-extern	cvar_t	*cl_VidFadeUp;
-extern	cvar_t	*cl_VidFadeDown;
 
 extern	cvar_t	*m_pitch;
 extern	cvar_t	*m_yaw;
@@ -329,6 +326,8 @@ void CL_NextDemo( void );
 void CL_GetPing( int n, char *adrstr, int *pingtime );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
+
+qboolean CL_CheckPaused(void);
 
 //
 // cl_input
@@ -367,12 +366,6 @@ void CL_SystemInfoChanged( void );
 void CL_ParseServerMessage( msg_t *msg );
 
 //====================================================================
-
-void	VID_MenuInit( void );
-void	VID_MenuDraw( void );
-const char *VID_MenuKey( int );
-void VID_Printf (int print_level, const char *fmt, ...);
-
 
 //
 // console

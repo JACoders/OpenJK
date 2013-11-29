@@ -1701,11 +1701,6 @@ int PC_OperatorPriority(int op)
 	return qfalse;
 } //end of the function PC_OperatorPriority
 
-//#define AllocValue()			GetClearedMemory(sizeof(value_t));
-//#define FreeValue(val)		FreeMemory(val)
-//#define AllocOperator(op)		op = (operator_t *) GetClearedMemory(sizeof(operator_t));
-//#define FreeOperator(op)		FreeMemory(op);
-
 #define MAX_VALUES		64
 #define MAX_OPERATORS	64
 #define AllocValue(val)									\

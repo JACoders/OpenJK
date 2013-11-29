@@ -35,7 +35,7 @@ char		*spawnVars[MAX_SPAWN_VARS][2];	// key / value pairs
 int			numSpawnVarChars;
 char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
@@ -990,13 +990,16 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	numSpawnVars = 0;
 	numSpawnVarChars = 0;
 
-	// parse the opening brace	
+	// parse the opening brace
+	COM_BeginParseSession();
 	com_token = COM_Parse( data );
 	if ( !*data ) {
 		// end of spawn string
+		COM_EndParseSession();
 		return qfalse;
 	}
 	if ( com_token[0] != '{' ) {
+		COM_EndParseSession();
 		G_Error( "G_ParseSpawnVars: found %s when expecting {",com_token );
 	}
 
@@ -1008,6 +1011,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 			break;
 		}
 		if ( !data ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 
@@ -1016,12 +1020,15 @@ qboolean G_ParseSpawnVars( const char **data ) {
 		// parse value	
 		com_token = COM_Parse( data );
 		if ( com_token[0] == '}' ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
 		}
 		if ( !data ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 		if ( numSpawnVars == MAX_SPAWN_VARS ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
 		}
 		spawnVars[ numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
@@ -1029,6 +1036,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 		numSpawnVars++;
 	}
 
+	COM_EndParseSession();
 	return qtrue;
 }
 

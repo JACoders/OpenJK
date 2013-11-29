@@ -19,12 +19,6 @@ This file is part of Jedi Academy.
 //g_itemLoad.cpp
 //reads in ext_data\items.dat to bg_itemlist[]
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
 #include "g_local.h"
 #include "g_items.h"
 

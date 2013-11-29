@@ -1277,7 +1277,6 @@ RB_SurfaceFace
 */
 void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 	int			i, k;
-	// VVFIXME : Sooper hack. Indices in the surface are still 32-bit, we need to make them 16 bit here.
 	unsigned int *indices;
 	glIndex_t	*tessIndexes;
 	float		*v;
@@ -1744,7 +1743,7 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 
 
 void RB_SurfaceDisplayList( srfDisplayList_t *surf ) {
-	// all apropriate state must be set in RB_BeginSurface
+	// all appropriate state must be set in RB_BeginSurface
 	// this isn't implemented yet...
 	qglCallList( surf->listNum );
 }

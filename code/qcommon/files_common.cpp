@@ -170,14 +170,6 @@ or configs will never get loaded from disk!
 
 */
 
-// if this is defined, the executable positively won't work with any paks other
-// than the demo pak, even if productid is present.  This is only used for our
-// last demo release to prevent the mac and linux users from using the demo
-// executable with the production windows pak before the mac/linux products
-// hit the shelves a little later
-//#define	PRE_RELEASE_DEMO
-
-
 char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 cvar_t		*fs_debug;
 cvar_t		*fs_homepath;
@@ -327,26 +319,36 @@ FS_CreatePath
 Creates any directories needed to store the given filename
 ============
 */
-void	FS_CreatePath (char *OSPath) {
+qboolean FS_CreatePath (char *OSPath) {
 	char	*ofs;
+	char	path[MAX_OSPATH];
 	
 	// make absolutely sure that it can't back up the path
 	// FIXME: is c: allowed???
 	if ( strstr( OSPath, ".." ) || strstr( OSPath, "::" ) ) {
 		Com_Printf( "WARNING: refusing to create relative path \"%s\"\n", OSPath );
-		return;
+		return qtrue;
 	}
 
-	Q_strlwr(OSPath);
+	Q_strncpyz( path, OSPath, sizeof( path ) );
+	FS_ReplaceSeparators( path );
 
-	for (ofs = OSPath+1 ; *ofs ; ofs++) {
-		if (*ofs == PATH_SEP) {	
+	// Skip creation of the root directory as it will always be there
+	ofs = strchr( path, PATH_SEP );
+	ofs++;
+
+	for (; ofs != NULL && *ofs ; ofs++) {
+		if (*ofs == PATH_SEP) {
 			// create the directory
 			*ofs = 0;
-			Sys_Mkdir (OSPath);
+			if (!Sys_Mkdir (path)) {
+				Com_Error( ERR_FATAL, "FS_CreatePath: failed to create path \"%s\"",
+					path );
+			}
 			*ofs = PATH_SEP;
 		}
 	}
+	return qfalse;
 }
 
 
@@ -628,6 +630,9 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
+#ifdef MACOS_X
+	Com_StartupVariable( "fs_apppath" );
+#endif
 
 	// try to start up normally
 	FS_Startup( BASEGAME );

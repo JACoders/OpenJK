@@ -23,11 +23,12 @@ This file is part of Jedi Academy.
 #include "g_public.h"
 #include "b_public.h"
 #include "../icarus/StdAfx.h"	//need stl
-#include "../renderer/tr_types.h"
+#include "../rd-common/tr_types.h"
 #include "../cgame/cg_public.h"
 #include "g_vehicles.h"
 #include "hitlocs.h"
 #include "bset.h"
+#include "../cgame/cg_main.h"
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
@@ -840,9 +841,7 @@ Ghoul2 Insert End
 #endif //#ifdef GAME_INCLUDE
 
 extern	gentity_t		g_entities[MAX_GENTITIES];
-#ifndef _USRDLL
 extern	game_import_t	gi;
-#endif
 
 // each WP_* weapon enum has an associated weaponInfo_t
 // that contains media references necessary to present the

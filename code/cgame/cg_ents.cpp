@@ -21,7 +21,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "../game/g_functions.h"
 #include "../ghoul2/G2.h"
@@ -186,14 +185,14 @@ static void CG_EntityEffects( centity_t *cent ) {
 	// constant light glow
 	if ( cent->currentState.constantLight ) {
 		int		cl;
-		int		i, r, g, b;
+		float	i, r, g, b;
 
 		cl = cent->currentState.constantLight;
-		r = cl & 255;
-		g = ( cl >> 8 ) & 255;
-		b = ( cl >> 16 ) & 255;
-		i = ( ( cl >> 24 ) & 255 ) * 4;
-		cgi_R_AddLightToScene( cent->lerpOrigin, (float)i, (float)r, (float)g, (float)b );
+		r = (float) (cl & 0xFF) / 255.0;
+		g = (float) ((cl >> 8) & 0xFF) / 255.0;
+		b = (float) ((cl >> 16) & 0xFF) / 255.0;
+		i = (float) ((cl >> 24) & 0xFF) * 4.0;
+		cgi_R_AddLightToScene( cent->lerpOrigin, i, r, g, b );
 	}
 }
 
@@ -2587,7 +2586,7 @@ void CG_ROFF_NotetrackCallback( centity_t *cent, const char *notetrack)
 
 		if (posoffsetGathered < 3)
 		{
-			sprintf(errMsg, "Offset position argument for 'effect' type is invalid.");
+			Q_strncpyz(errMsg, "Offset position argument for 'effect' type is invalid.", sizeof(errMsg));
 			goto functionend;
 		}
 

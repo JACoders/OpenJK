@@ -20,18 +20,6 @@ This file is part of Jedi Academy.
 // fills in memory struct with ext_dat\weapons.dat
 
 // this is excluded from PCH usage 'cos it looks kinda scary to me, being game and ui.... -Ste
-
-#ifdef _USRDLL	//UI dll
-
-#include "../ui/gameinfo.h"
-#include "weapons.h"
-extern	gameinfo_import_t	gi;
-extern weaponData_t weaponData[];
-extern ammoData_t ammoData[];
-
-#else	//we are in the game
-
-// ONLY DO THIS ON THE GAME SIDE
 #include "g_local.h"
 
 typedef struct {
@@ -113,8 +101,6 @@ func_t	funcs[] = {
 	{"noghri_shot_func",	FX_NoghriShotProjectileThink},
 	{NULL,					NULL}
 };
-#endif
-
 
 //qboolean COM_ParseInt( char **data, int *i );
 //qboolean COM_ParseString( char **data, char **s ); 
@@ -136,8 +122,6 @@ void WPN_FireTime (const char **holdBuf);
 void WPN_FiringSnd (const char **holdBuf);
 void WPN_AltFiringSnd(const char **holdBuf );
 void WPN_StopSnd( const char **holdBuf );
-//void WPN_FlashSnd (char **holdBuf);
-//void WPN_AltFlashSnd (char **holdBuf);
 void WPN_ChargeSnd (const char **holdBuf);
 void WPN_AltChargeSnd (const char **holdBuf);
 void WPN_SelectSnd (const char **holdBuf);
@@ -1265,8 +1249,6 @@ void WPN_FuncName(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
 	int len = strlen(tokenStr);
 
 	len++;
@@ -1284,7 +1266,6 @@ void WPN_FuncName(const char **holdBuf)
 		}
 	}
 	gi.Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' in external WEAPONS.DAT does not exist\n", tokenStr);
-#endif
 }
 
 
@@ -1298,8 +1279,6 @@ void WPN_AltFuncName(const char **holdBuf)
 		return;
 	}
 
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
 	int len = strlen(tokenStr);
 	len++;
 	if (len > 64)
@@ -1316,8 +1295,6 @@ void WPN_AltFuncName(const char **holdBuf)
 		}
 	}
 	gi.Printf(S_COLOR_YELLOW"WARNING: AltFuncName %s in external WEAPONS.DAT does not exist\n", tokenStr);
-
-#endif
 }
 
 //--------------------------------------------
@@ -1329,9 +1306,6 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
-
 	int len = strlen(tokenStr);
 
 	len++;
@@ -1343,8 +1317,6 @@ void WPN_MuzzleEffect(const char **holdBuf)
 
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mMuzzleEffect,tokenStr,len);
-
-#endif
 }
 
 //--------------------------------------------
@@ -1356,9 +1328,6 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	// ONLY DO THIS ON THE GAME SIDE
-#ifndef _USRDLL
-
 	int len = strlen(tokenStr);
 
 	len++;
@@ -1370,92 +1339,96 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mAltMuzzleEffect,tokenStr,len);
-
-#endif
 }
 
 //--------------------------------------------
 
 void WPN_Damage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].damage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].damage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].splashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].splashRadius = tokenFlt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashRadius = tokenFlt;
 }
 
 //--------------------------------------------

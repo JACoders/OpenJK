@@ -6,7 +6,10 @@
 #include "cm_landscape.h"
 #include "qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
-#include "client/client.h" // this will do for now. we're not a lib
+//#include "client/client.h" // this will do for now. we're not a lib
+#include "rd-common/tr_public.h"
+
+extern	refexport_t		*re;					// interface to refresh .dll
 
 #if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)
@@ -159,16 +162,14 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 
 	if(strlen(heightMap))
 	{
-		byte	*imageData;
 #ifndef DEDICATED
-		int		iWidth, iHeight;
+		int iWidth, iHeight;
+		byte *imageData;
 #endif
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
 		mRandomTerrain = 0;
-#ifdef DEDICATED
-		imageData=NULL;
-#else
+#ifndef DEDICATED
 		re->LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 		if(imageData)
 		{
@@ -1416,7 +1417,7 @@ CArea *CCMLandScape::GetFirstObjectiveArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
@@ -1436,15 +1437,14 @@ CArea *CCMLandScape::GetPlayerArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
 
 CArea *CCMLandScape::GetNextArea(void)
 {
-	mAreasIt++;
-	if(mAreasIt == mAreas.end())
+	if(++mAreasIt == mAreas.end())
 	{
 		return(NULL);
 	}
@@ -1453,7 +1453,7 @@ CArea *CCMLandScape::GetNextArea(void)
 
 CArea *CCMLandScape::GetNextObjectiveArea(void)
 {
-	mAreasIt++;
+	++mAreasIt;
 
 	while (mAreasIt != mAreas.end())
 	{
@@ -1462,7 +1462,7 @@ CArea *CCMLandScape::GetNextObjectiveArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
@@ -1589,7 +1589,7 @@ CCMLandScape::~CCMLandScape(void)
 		delete mRandomTerrain;
 	}
 
-	for(mAreasIt=mAreas.begin(); mAreasIt != mAreas.end(); mAreasIt++)
+	for(mAreasIt=mAreas.begin(); mAreasIt != mAreas.end(); ++mAreasIt)
 	{
 		delete (*mAreasIt);
 	}

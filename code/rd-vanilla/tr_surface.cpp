@@ -742,7 +742,7 @@ static void DoBoltSeg( vec3_t start, vec3_t end, vec3_t right, float radius )
 
 	if (dis > 2000)	//freaky long
 	{
-//		VID_Printf( PRINT_WARNING, "DoBoltSeg: insane distance.\n" );
+//		ri.Printf( PRINT_WARNING, "DoBoltSeg: insane distance.\n" );
 		dis = 2000;
 	}
 	MakeNormalVectors( fwd, rt, up );
@@ -1985,7 +1985,7 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 }
 
 void RB_SurfaceBad( surfaceType_t *surfType ) {
-	VID_Printf( PRINT_ALL, "Bad surface tesselated.\n" );
+	ri.Printf( PRINT_ALL, "Bad surface tesselated.\n" );
 }
 
 

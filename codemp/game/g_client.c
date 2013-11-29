@@ -416,6 +416,7 @@ void JMSaberTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	other->client->ps.stats[STAT_WEAPONS] = (1 << WP_SABER);
 	other->client->ps.weapon = WP_SABER;
 	other->s.weapon = WP_SABER;
+	other->client->ps.zoomMode = 0;
 	G_AddEvent(other, EV_BECOME_JEDIMASTER, 0);
 
 	// Track the jedi master 
@@ -619,7 +620,7 @@ go to a random point that doesn't telefrag
 ================
 */
 #define	MAX_SPAWN_POINTS	128
-gentity_t *SelectRandomDeathmatchSpawnPoint( void ) {
+gentity_t *SelectRandomDeathmatchSpawnPoint( qboolean isbot ) {
 	gentity_t	*spot;
 	int			count;
 	int			selection;
@@ -628,10 +629,18 @@ gentity_t *SelectRandomDeathmatchSpawnPoint( void ) {
 	count = 0;
 	spot = NULL;
 
-	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL && count < MAX_SPAWN_POINTS) {
 		if ( SpotWouldTelefrag( spot ) ) {
 			continue;
 		}
+
+		if(((spot->flags & FL_NO_BOTS) && isbot) ||
+		   ((spot->flags & FL_NO_HUMANS) && !isbot))
+		{
+			// spot is not for this human/bot player
+			continue;
+		}
+
 		spots[ count ] = spot;
 		count++;
 	}
@@ -651,12 +660,12 @@ SelectRandomFurthestSpawnPoint
 Chooses a player start, deathmatch start, etc
 ============
 */
-gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team ) {
+gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team, qboolean isbot ) {
 	gentity_t	*spot;
 	vec3_t		delta;
 	float		dist;
-	float		list_dist[64];
-	gentity_t	*list_spot[64];
+	float		list_dist[MAX_SPAWN_POINTS];
+	gentity_t	*list_spot[MAX_SPAWN_POINTS];
 	int			numSpots, rnd, i, j;
 
 	numSpots = 0;
@@ -680,12 +689,20 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 			if ( SpotWouldTelefrag( spot ) ) {
 				continue;
 			}
+
+			if(((spot->flags & FL_NO_BOTS) && isbot) ||
+			   ((spot->flags & FL_NO_HUMANS) && !isbot))
+			{
+				// spot is not for this human/bot player
+				continue;
+			}
+
 			VectorSubtract( spot->s.origin, avoidPoint, delta );
 			dist = VectorLength( delta );
 			for (i = 0; i < numSpots; i++) {
 				if ( dist > list_dist[i] ) {
-					if ( numSpots >= 64 )
-						numSpots = 64-1;
+					if ( numSpots >= MAX_SPAWN_POINTS )
+						numSpots = MAX_SPAWN_POINTS-1;
 					for (j = numSpots; j > i; j--) {
 						list_dist[j] = list_dist[j-1];
 						list_spot[j] = list_spot[j-1];
@@ -693,12 +710,10 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 					list_dist[i] = dist;
 					list_spot[i] = spot;
 					numSpots++;
-					if (numSpots > 64)
-						numSpots = 64;
 					break;
 				}
 			}
-			if (i >= numSpots && numSpots < 64) {
+			if (i >= numSpots && numSpots < MAX_SPAWN_POINTS) {
 				list_dist[numSpots] = dist;
 				list_spot[numSpots] = spot;
 				numSpots++;
@@ -712,12 +727,20 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 			if ( SpotWouldTelefrag( spot ) ) {
 				continue;
 			}
+
+			if(((spot->flags & FL_NO_BOTS) && isbot) ||
+			   ((spot->flags & FL_NO_HUMANS) && !isbot))
+			{
+				// spot is not for this human/bot player
+				continue;
+			}
+
 			VectorSubtract( spot->s.origin, avoidPoint, delta );
 			dist = VectorLength( delta );
 			for (i = 0; i < numSpots; i++) {
 				if ( dist > list_dist[i] ) {
-					if ( numSpots >= 64 )
-						numSpots = 64-1;
+					if ( numSpots >= MAX_SPAWN_POINTS )
+						numSpots = MAX_SPAWN_POINTS-1;
 					for (j = numSpots; j > i; j--) {
 						list_dist[j] = list_dist[j-1];
 						list_spot[j] = list_spot[j-1];
@@ -725,12 +748,10 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 					list_dist[i] = dist;
 					list_spot[i] = spot;
 					numSpots++;
-					if (numSpots > 64)
-						numSpots = 64;
 					break;
 				}
 			}
-			if (i >= numSpots && numSpots < 64) {
+			if (i >= numSpots && numSpots < MAX_SPAWN_POINTS) {
 				list_dist[numSpots] = dist;
 				list_spot[numSpots] = spot;
 				numSpots++;
@@ -757,13 +778,13 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 	return list_spot[rnd];
 }
 
-gentity_t *SelectDuelSpawnPoint( int team, vec3_t avoidPoint, vec3_t origin, vec3_t angles )
+gentity_t *SelectDuelSpawnPoint( int team, vec3_t avoidPoint, vec3_t origin, vec3_t angles, qboolean isbot )
 {
 	gentity_t	*spot;
 	vec3_t		delta;
 	float		dist;
-	float		list_dist[64];
-	gentity_t	*list_spot[64];
+	float		list_dist[MAX_SPAWN_POINTS];
+	gentity_t	*list_spot[MAX_SPAWN_POINTS];
 	int			numSpots, rnd, i, j;
 	char		*spotName;
 
@@ -792,12 +813,20 @@ tryAgain:
 		if ( SpotWouldTelefrag( spot ) ) {
 			continue;
 		}
+
+		if(((spot->flags & FL_NO_BOTS) && isbot) ||
+			((spot->flags & FL_NO_HUMANS) && !isbot))
+		{
+			// spot is not for this human/bot player
+			continue;
+		}
+
 		VectorSubtract( spot->s.origin, avoidPoint, delta );
 		dist = VectorLength( delta );
 		for (i = 0; i < numSpots; i++) {
 			if ( dist > list_dist[i] ) {
-				if ( numSpots >= 64 )
-					numSpots = 64-1;
+				if ( numSpots >= MAX_SPAWN_POINTS )
+					numSpots = MAX_SPAWN_POINTS-1;
 				for (j = numSpots; j > i; j--) {
 					list_dist[j] = list_dist[j-1];
 					list_spot[j] = list_spot[j-1];
@@ -805,12 +834,10 @@ tryAgain:
 				list_dist[i] = dist;
 				list_spot[i] = spot;
 				numSpots++;
-				if (numSpots > 64)
-					numSpots = 64;
 				break;
 			}
 		}
-		if (i >= numSpots && numSpots < 64) {
+		if (i >= numSpots && numSpots < MAX_SPAWN_POINTS) {
 			list_dist[numSpots] = dist;
 			list_spot[numSpots] = spot;
 			numSpots++;
@@ -851,8 +878,8 @@ SelectSpawnPoint
 Chooses a player start, deathmatch start, etc
 ============
 */
-gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team ) {
-	return SelectRandomFurthestSpawnPoint( avoidPoint, origin, angles, team );
+gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team, qboolean isbot ) {
+	return SelectRandomFurthestSpawnPoint( avoidPoint, origin, angles, team, isbot );
 
 	/*
 	gentity_t	*spot;
@@ -891,18 +918,24 @@ Try to find a spawn point marked 'initial', otherwise
 use normal spawn selection.
 ============
 */
-gentity_t *SelectInitialSpawnPoint( vec3_t origin, vec3_t angles, team_t team ) {
+gentity_t *SelectInitialSpawnPoint( vec3_t origin, vec3_t angles, team_t team, qboolean isbot ) {
 	gentity_t	*spot;
 
 	spot = NULL;
 	while ((spot = G_Find (spot, FOFS(classname), "info_player_deathmatch")) != NULL) {
+		if(((spot->flags & FL_NO_BOTS) && isbot) ||
+		   ((spot->flags & FL_NO_HUMANS) && !isbot))
+		{
+			continue;
+		}
+
 		if ( spot->spawnflags & 1 ) {
 			break;
 		}
 	}
 
 	if ( !spot || SpotWouldTelefrag( spot ) ) {
-		return SelectSpawnPoint( vec3_origin, origin, angles, team );
+		return SelectSpawnPoint( vec3_origin, origin, angles, team, isbot );
 	}
 
 	VectorCopy (spot->s.origin, origin);
@@ -967,7 +1000,7 @@ void InitBodyQue (void) {
 =============
 BodySink
 
-After sitting around for five seconds, fall into the ground and dissapear
+After sitting around for five seconds, fall into the ground and disappear
 =============
 */
 void BodySink( gentity_t *ent ) {
@@ -1160,11 +1193,11 @@ void MaintainBodyQueue(gentity_t *ent)
 
 /*
 ================
-respawn
+ClientRespawn
 ================
 */
 void SiegeRespawn(gentity_t *ent);
-void respawn( gentity_t *ent ) {
+void ClientRespawn( gentity_t *ent ) {
 	MaintainBodyQueue(ent);
 
 	if (gEscaping || level.gametype == GT_POWERDUEL)
@@ -1217,13 +1250,7 @@ void respawn( gentity_t *ent ) {
 	}
 	else
 	{
-		gentity_t	*tent;
-
 		ClientSpawn(ent);
-
-		// add a teleportation effect
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
 	}
 }
 
@@ -2331,7 +2358,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 ClientConnect
 
 Called when a player begins connecting to the server.
-Called again for every map change or tournement restart.
+Called again for every map change or tournament restart.
 
 The session information will be valid after exit.
 
@@ -2342,7 +2369,7 @@ Otherwise, the client will be sent the current gamestate
 and will eventually get to ClientBegin.
 
 firstTime will be qtrue the very first time a client connects
-to the server machine, but qfalse on map changes and tournement
+to the server machine, but qfalse on map changes and tournament
 restarts.
 ============
 */
@@ -2571,7 +2598,6 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin);
 void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	gentity_t	*ent;
 	gclient_t	*client;
-	gentity_t	*tent;
 	int			flags, i;
 	char		userinfo[MAX_INFO_VALUE], *modelname;
 	int			spawnCount;
@@ -2700,10 +2726,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	}
 
 	if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		// send event
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
-
 		if ( level.gametype != GT_DUEL || level.gametype == GT_POWERDUEL ) {
 			trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLENTER")) );
 		}
@@ -3060,7 +3082,7 @@ extern qboolean WP_HasForcePowers( const playerState_t *ps );
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;
-	gentity_t			*spawnPoint = NULL;
+	gentity_t			*spawnPoint = NULL, *tent = NULL;
 	gclient_t			*client = NULL;
 	clientPersistant_t	saved;
 	clientSession_t		savedSess;
@@ -3170,7 +3192,7 @@ void ClientSpawn(gentity_t *ent) {
 		spawnPoint = SelectCTFSpawnPoint ( 
 						client->sess.sessionTeam, 
 						client->pers.teamState.state, 
-						spawn_origin, spawn_angles);
+						spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 	}
 	else if (level.gametype == GT_SIEGE)
 	{
@@ -3178,45 +3200,30 @@ void ClientSpawn(gentity_t *ent) {
 						client->siegeClass,
 						client->sess.sessionTeam, 
 						client->pers.teamState.state, 
-						spawn_origin, spawn_angles);
+						spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 	}
 	else {
-		do {
-			if (level.gametype == GT_POWERDUEL)
-			{
-				spawnPoint = SelectDuelSpawnPoint(client->sess.duelTeam, client->ps.origin, spawn_origin, spawn_angles);
+		if (level.gametype == GT_POWERDUEL)
+		{
+			spawnPoint = SelectDuelSpawnPoint(client->sess.duelTeam, client->ps.origin, spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
+		}
+		else if (level.gametype == GT_DUEL)
+		{	// duel 
+			spawnPoint = SelectDuelSpawnPoint(DUELTEAM_SINGLE, client->ps.origin, spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
+		}
+		else
+		{
+			// the first spawn should be at a good looking spot
+			if ( !client->pers.initialSpawn && client->pers.localClient ) {
+				client->pers.initialSpawn = qtrue;
+				spawnPoint = SelectInitialSpawnPoint( spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
+			} else {
+				// don't spawn near existing origin if possible
+				spawnPoint = SelectSpawnPoint ( 
+					client->ps.origin, 
+					spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
 			}
-			else if (level.gametype == GT_DUEL)
-			{	// duel 
-				spawnPoint = SelectDuelSpawnPoint(DUELTEAM_SINGLE, client->ps.origin, spawn_origin, spawn_angles);
-			}
-			else
-			{
-				// the first spawn should be at a good looking spot
-				if ( !client->pers.initialSpawn && client->pers.localClient ) {
-					client->pers.initialSpawn = qtrue;
-					spawnPoint = SelectInitialSpawnPoint( spawn_origin, spawn_angles, client->sess.sessionTeam );
-				} else {
-					// don't spawn near existing origin if possible
-					spawnPoint = SelectSpawnPoint ( 
-						client->ps.origin, 
-						spawn_origin, spawn_angles, client->sess.sessionTeam );
-				}
-			}
-
-			// Tim needs to prevent bots from spawning at the initial point
-			// on q3dm0...
-			if ( ( spawnPoint->flags & FL_NO_BOTS ) && ( ent->r.svFlags & SVF_BOT ) ) {
-				continue;	// try again
-			}
-			// just to be symetric, we have a nohumans option...
-			if ( ( spawnPoint->flags & FL_NO_HUMANS ) && !( ent->r.svFlags & SVF_BOT ) ) {
-				continue;	// try again
-			}
-
-			break;
-
-		} while ( 1 );
+		}
 	}
 	client->pers.teamState.state = TEAM_ACTIVE;
 
@@ -3721,36 +3728,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	trap->GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
-
-	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-
-	} else {
-		G_KillBox( ent );
-		trap->LinkEntity ((sharedEntity_t *)ent);
-
-		// force the base weapon up
-		//client->ps.weapon = WP_BRYAR_PISTOL;
-		//client->ps.weaponstate = FIRST_WEAPON;
-		if (client->ps.weapon <= WP_NONE)
-		{
-			client->ps.weapon = WP_BRYAR_PISTOL;
-		}
-
-		client->ps.torsoTimer = client->ps.legsTimer = 0;
-
-		if (client->ps.weapon == WP_SABER)
-		{
-			G_SetAnim(ent, NULL, SETANIM_BOTH, BOTH_STAND1TO2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 0);
-		}
-		else
-		{
-			G_SetAnim(ent, NULL, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 0);
-			client->ps.legsAnim = WeaponReadyAnim[client->ps.weapon];
-		}
-		client->ps.weaponstate = WEAPON_RAISING;
-		client->ps.weaponTime = client->ps.torsoTimer;
-	}
-
 	// don't allow full run speed for a bit
 	client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 	client->ps.pm_time = 100;
@@ -3759,23 +3736,51 @@ void ClientSpawn(gentity_t *ent) {
 	client->inactivityTime = level.time + g_inactivity.integer * 1000;
 	client->latched_buttons = 0;
 
-	if ( level.intermissiontime ) {
-		MoveClientToIntermission( ent );
-	} else {
-		// fire the targets of the spawn point
-		G_UseTargets( spawnPoint, ent );
-
-		// select the highest weapon number available, after any
-		// spawn given items have fired
-		/*
-		client->ps.weapon = 1;
-		for ( i = WP_NUM_WEAPONS - 1 ; i > 0 ; i-- ) {
-			if ( client->ps.stats[STAT_WEAPONS] & ( 1 << i ) ) {
-				client->ps.weapon = i;
-				break;
+	if (!level.intermissiontime) {
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
+			G_KillBox(ent);
+			// force the base weapon up
+			//client->ps.weapon = WP_BRYAR_PISTOL;
+			//client->ps.weaponstate = FIRST_WEAPON;
+			if (client->ps.weapon <= WP_NONE)
+			{
+				client->ps.weapon = WP_BRYAR_PISTOL;
 			}
+
+			client->ps.torsoTimer = client->ps.legsTimer = 0;
+
+			if (client->ps.weapon == WP_SABER)
+			{
+				G_SetAnim(ent, NULL, SETANIM_BOTH, BOTH_STAND1TO2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 0);
+			}
+			else
+			{
+				G_SetAnim(ent, NULL, SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, 0);
+				client->ps.legsAnim = WeaponReadyAnim[client->ps.weapon];
+			}
+			client->ps.weaponstate = WEAPON_RAISING;
+			client->ps.weaponTime = client->ps.torsoTimer;
+
+			if (g_spawnInvulnerability.integer)
+			{
+				ent->client->ps.eFlags |= EF_INVULNERABLE;
+				ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
+			}
+
+			// fire the targets of the spawn point
+			G_UseTargets(spawnPoint, ent);
+
+			// positively link the client, even if the command times are weird
+			VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
+
+			tent = G_TempEntity(ent->client->ps.origin, EV_PLAYER_TELEPORT_IN);
+			tent->s.clientNum = ent->s.clientNum;
+
+			trap->LinkEntity ((sharedEntity_t *)ent);
 		}
-		*/
+	} else {
+		// move players to intermission
+		MoveClientToIntermission(ent);
 	}
 
 	//set teams for NPCs to recognize
@@ -3814,19 +3819,6 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink( ent-g_entities, NULL );
-
-	// positively link the client, even if the command times are weird
-	if ( ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
-		BG_PlayerStateToEntityState( &client->ps, &ent->s, qtrue );
-		VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
-		trap->LinkEntity( (sharedEntity_t *)ent );
-	}
-
-	if (g_spawnInvulnerability.integer)
-	{
-		ent->client->ps.eFlags |= EF_INVULNERABLE;
-		ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
-	}
 
 	// run the presend to set anything else, follow spectators wait
 	// until all clients have been reconnected after map_restart
@@ -3971,9 +3963,7 @@ void ClientDisconnect( int clientNum ) {
 	G_LogPrintf( "ClientDisconnect: %i [%s] (%s) \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, ent->client->pers.netname );
 
 	// if we are playing in tourney mode, give a win to the other player and clear his frags for this round
-	if ( (level.gametype == GT_DUEL )
-		&& !level.intermissiontime
-		&& !level.warmupTime ) {
+	if ( level.gametype == GT_DUEL && !level.intermissiontime && !level.warmupTime ) {
 		if ( level.sortedClients[1] == clientNum ) {
 			level.clients[ level.sortedClients[0] ].ps.persistant[PERS_SCORE] = 0;
 			level.clients[ level.sortedClients[0] ].sess.wins++;
@@ -3984,6 +3974,13 @@ void ClientDisconnect( int clientNum ) {
 			level.clients[ level.sortedClients[1] ].sess.wins++;
 			ClientUserinfoChanged( level.sortedClients[1] );
 		}
+	}
+
+	if ( level.gametype == GT_DUEL && ent->client->sess.sessionTeam == TEAM_FREE && level.intermissiontime ) {
+		trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+		level.restarted = qtrue;
+		level.changemap = NULL;
+		level.intermissiontime = 0;
 	}
 
 	if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))

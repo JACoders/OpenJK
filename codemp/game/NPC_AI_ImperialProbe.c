@@ -317,7 +317,7 @@ ImperialProbe_Ranged
 */
 void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 {
-	int	delay_min,delay_max;
+	int	delay_min, delay_max;
 
 	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
@@ -338,7 +338,7 @@ void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 			delay_max = 1500;
 		}
 
-		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 3000 ) );
+		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( delay_min, delay_max ) );
 		ImperialProbe_FireBlaster();
 //		ucmd.buttons |= BUTTON_ATTACK;
 	}

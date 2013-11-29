@@ -1291,7 +1291,6 @@ static void RoQShutdown( void ) {
 	if (!cinTable[currentHandle].buf) {
 		if (cinTable[currentHandle].iFile) {
 //			assert( 0 && "ROQ handle leak-prevention WAS needed!");
-			Sys_EndStreamedFile( cinTable[currentHandle].iFile );
 			FS_FCloseFile( cinTable[currentHandle].iFile );
 			cinTable[currentHandle].iFile = 0;
 			if (cinTable[currentHandle].hSFX) {
@@ -1309,7 +1308,6 @@ static void RoQShutdown( void ) {
 	cinTable[currentHandle].status = FMV_IDLE;
 
 	if (cinTable[currentHandle].iFile) {
-		Sys_EndStreamedFile( cinTable[currentHandle].iFile );
 		FS_FCloseFile( cinTable[currentHandle].iFile );
 		cinTable[currentHandle].iFile = 0;
 		if (cinTable[currentHandle].hSFX) {
@@ -1350,7 +1348,6 @@ e_status CIN_StopCinematic(int handle) {
 	if (!cinTable[currentHandle].buf) {
 		if (cinTable[currentHandle].iFile) {
 //			assert( 0 && "ROQ handle leak-prevention WAS needed!");
-			Sys_EndStreamedFile( cinTable[currentHandle].iFile );
 			FS_FCloseFile( cinTable[currentHandle].iFile );
 			cinTable[currentHandle].iFile = 0;
 			cinTable[currentHandle].fileName[0] = 0;

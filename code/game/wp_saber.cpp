@@ -16,11 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "anims.h"
 #include "b_local.h"
@@ -28,6 +23,8 @@ This file is part of Jedi Academy.
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "../qcommon/tri_coll_test.h"
+#include "../cgame/cg_local.h"
 
 #define JK2_RAGDOLL_GRIPNOHEALTH
 
@@ -1921,7 +1918,6 @@ qboolean WP_SabersIntersect( gentity_t *ent1, int ent1SaberNum, int ent1BladeNum
 	return qfalse;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 float WP_SabersDistance( gentity_t *ent1, gentity_t *ent2 )
 {
 	vec3_t	saberBaseNext1, saberTipNext1, saberPoint1;
@@ -2068,7 +2064,6 @@ qboolean WP_SabersIntersection( gentity_t *ent1, gentity_t *ent2, vec3_t interse
 const char *hit_blood_sparks = "sparks/blood_sparks2"; // could have changed this effect directly, but this is just safer in case anyone anywhere else is using the old one for something?
 const char *hit_sparks = "saber/saber_cut";
 
-//extern char *hitLocName[];
 qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, float dmg, vec3_t dmgDir, vec3_t bladeVec, int enemyTeam, saberType_t saberType, saberInfo_t *saber, int bladeNum )
 {
 

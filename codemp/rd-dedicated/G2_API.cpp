@@ -341,7 +341,7 @@ public:
 			for (i=0;i<MAX_G2_MODELS;i++)
 			{
 				list<int>::iterator j;
-				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();j++)
+				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();++j)
 				{
 					if (*j==i)
 						break;

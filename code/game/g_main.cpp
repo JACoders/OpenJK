@@ -16,11 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "Q3_Interface.h"
@@ -630,11 +625,7 @@ void G_InitCvars( void ) {
 
 	g_bobaDebug = gi.cvar ( "g_bobaDebug", "", 0 );
 
-#if defined(FINAL_BUILD)
 	g_delayedShutdown = gi.cvar ( "g_delayedShutdown", "0", 0 );
-#else
-	g_delayedShutdown = gi.cvar ( "g_delayedShutdown", "1", 0 );
-#endif
 
 	g_inactivity = gi.cvar ("g_inactivity", "0", 0);
 	g_debugMove = gi.cvar ("g_debugMove", "0", CVAR_CHEAT );
@@ -648,9 +639,9 @@ void G_InitCvars( void ) {
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT|CVAR_INIT );//makes collision more precise, increases damage
+	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT );//makes collision more precise, increases damage
 	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
-	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT|CVAR_INIT );//0 = ignore probabilities, 1 = use probabilities
+	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT );//0 = ignore probabilities, 1 = use probabilities
 	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
 	g_saberMoveSpeed = gi.cvar( "g_saberMoveSpeed", "1", CVAR_CHEAT );//how fast you run while attacking with a saber
 	g_saberAnimSpeed = gi.cvar( "g_saberAnimSpeed", "1", CVAR_CHEAT );//how fast saber animations run
@@ -669,7 +660,7 @@ void G_InitCvars( void ) {
 	gi.cvar_set("newTotalSecrets", "0");//used to carry over the count from SP_target_secret to ClientBegin
 	//g_iscensored = gi.cvar( "ui_iscensored", "0", CVAR_ARCHIVE|CVAR_ROM|CVAR_INIT|CVAR_CHEAT|CVAR_NORESTART );
 
-	g_speederControlScheme = gi.cvar( "g_speederControlScheme", "2", CVAR_ARCHIVE|CVAR_ROM );//2 is default, 1 is alternate
+	g_speederControlScheme = gi.cvar( "g_speederControlScheme", "2", CVAR_ARCHIVE );//2 is default, 1 is alternate
 
 	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
 	g_char_skin_head = gi.cvar( "g_char_skin_head", "head_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
@@ -868,10 +859,7 @@ and global variables
 =================
 */
 extern int PM_ValidateAnimRange( const int startFrame, const int endFrame, const float animSpeed );
-#ifndef _WIN32
-extern "C"
-#endif
-Q_EXPORT game_export_t *GetGameAPI( game_import_t *import ) {
+extern "C" Q_EXPORT game_export_t* QDECL GetGameAPI( game_import_t *import ) {
 	gameinfo_import_t	gameinfo_import;
 
 	gi = *import;
@@ -926,9 +914,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 	gi.Error( ERR_DROP, "%s", text);
 }
 
-#ifndef GAME_HARD_LINKED
-// this is only here so the functions in q_shared.c and bg_*.c can link
-
 /*
 -------------------------
 Com_Error
@@ -962,8 +947,6 @@ void Com_Printf( const char *msg, ... ) {
 
 	gi.Printf ("%s", text);
 }
-
-#endif
 
 /*
 ========================================================================

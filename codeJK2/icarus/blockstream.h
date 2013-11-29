@@ -25,6 +25,7 @@ This file is part of Jedi Knight 2.
 #pragma warning(disable : 4514)  //unreffed inline func removed
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <list>
@@ -84,10 +85,10 @@ public:
 	{
 		if ( m_data )
 		{
-			ICARUS_Free( m_data );
+			free( m_data );
 		}
 
-		m_data = ICARUS_Malloc( sizeof(T) );
+		m_data = malloc( sizeof(T) );
 		*((T *) m_data) = data;
 		m_size = sizeof(T);
 	}
@@ -96,10 +97,10 @@ public:
 	{
 		if ( m_data )
 		{
-			ICARUS_Free( m_data );
+			free( m_data );
 		}
 
-		m_data = ICARUS_Malloc( num*sizeof(T) );
+		m_data = malloc( num*sizeof(T) );
 		memcpy( m_data, data, num*sizeof(T) );
 		m_size = num*sizeof(T);
 	}

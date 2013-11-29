@@ -427,6 +427,11 @@ static qboolean CL_G2API_AttachG2Model( void *ghoul2From, int modelIndexFrom, vo
 	return re->G2API_AttachG2Model(*g2From, modelIndexFrom, *g2To, toBoltIndex, toModel);
 }
 
+static void CL_Key_SetCatcher( int catcher ) {
+	// Don't allow the ui module to close the console
+	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
+}
+
 // legacy syscall
 
 intptr_t CL_UISystemCalls( intptr_t *args ) {
@@ -549,7 +554,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return FS_FOpenFileByMode( (const char *)VMA(1), (int *)VMA(2), (fsMode_t)args[3] );
 
 	case UI_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
+		FS_Read( VMA(1), args[2], args[3] );
 		return 0;
 
 	case UI_FS_WRITE:
@@ -653,7 +658,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return Key_GetCatcher();
 
 	case UI_KEY_SETCATCHER:
-		Key_SetCatcher( args[1] );
+		CL_Key_SetCatcher( args[1] );
 		return 0;
 
 	case UI_GETCLIPBOARDDATA:
@@ -1022,7 +1027,7 @@ void CL_BindUI( void ) {
 	memset( &uii, 0, sizeof( uii ) );
 
 	uivm = VM_Create( VM_UI );
-	if ( uivm ) {
+	if ( uivm && !uivm->isLegacy ) {
 		uii.Print								= Com_Printf;
 		uii.Error								= Com_Error;
 		uii.Milliseconds						= CL_Milliseconds;
@@ -1046,7 +1051,7 @@ void CL_BindUI( void ) {
 		uii.FS_Close							= FS_FCloseFile;
 		uii.FS_GetFileList						= FS_GetFileList;
 		uii.FS_Open								= FS_FOpenFileByMode;
-		uii.FS_Read								= FS_Read2;
+		uii.FS_Read								= FS_Read;
 		uii.FS_Write							= FS_Write;
 
 		uii.GetClientState						= CL_GetClientState;
@@ -1062,7 +1067,7 @@ void CL_BindUI( void ) {
 		uii.Key_SetBinding						= Key_SetBinding;
 		uii.Key_GetCatcher						= Key_GetCatcher;
 		uii.Key_GetOverstrikeMode				= Key_GetOverstrikeMode;
-		uii.Key_SetCatcher						= Key_SetCatcher;
+		uii.Key_SetCatcher						= CL_Key_SetCatcher;
 		uii.Key_SetOverstrikeMode				= Key_SetOverstrikeMode;
 
 		uii.PC_AddGlobalDefine					= botlib_export->PC_AddGlobalDefine;
@@ -1175,6 +1180,8 @@ void CL_BindUI( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		uie = ret;
+		
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api

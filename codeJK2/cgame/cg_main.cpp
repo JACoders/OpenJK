@@ -24,11 +24,11 @@ This file is part of Jedi Knight 2.
 #include "cg_media.h"
 #include "FxScheduler.h"
 
-#include "../client/vmachine.h"
+#include "../../code/client/vmachine.h"
 #include "../game/characters.h"
 #include "cg_lights.h"
 
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
@@ -102,7 +102,7 @@ This is the only way control passes into the cgame module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7 ) {
+extern "C" Q_EXPORT intptr_t vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7 ) {
 	centity_t		*cent;
 
 	switch ( command ) {
@@ -1523,8 +1523,10 @@ void CG_StartMusic( qboolean bForceStart ) {
 
 	// start the background music
 	s = (char *)CG_ConfigString( CS_MUSIC );
+	COM_BeginParseSession();
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
+	COM_EndParseSession();
 
 	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
 }
@@ -2373,6 +2375,7 @@ void CG_LoadMenus(const char *menuFile)
 
 	p = buf;
 
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
 		token = COM_ParseExt( &p, qtrue );
@@ -2398,6 +2401,7 @@ void CG_LoadMenus(const char *menuFile)
 			}
 		}
 	}
+	COM_EndParseSession();
 
 	Com_Printf("UI menu load time = %d milli seconds\n", cgi_Milliseconds() - start);
 }

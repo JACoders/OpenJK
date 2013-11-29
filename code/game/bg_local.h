@@ -18,6 +18,9 @@ This file is part of Jedi Academy.
 
 // bg_local.h -- local definitions for the bg (both games) files
 
+#ifndef _BG_LOCAL_H
+#define _BG_LOCAL_H
+
 #define	TIMER_LAND		130
 #define	TIMER_GESTURE	(34*66+50)
 
@@ -69,6 +72,8 @@ void PM_AddEvent( int newEvent );
 
 qboolean	PM_SlideMove( float gravity );
 void		PM_StepSlideMove( float gravity );
+
+#endif
 
 
 

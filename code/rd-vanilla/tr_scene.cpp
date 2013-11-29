@@ -211,7 +211,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	}
 	if ( r_numentities >= TR_WORLDENT ) {
 #ifndef FINAL_BUILD
-		VID_Printf( PRINT_WARNING, "WARNING: RE_AddRefEntityToScene: too many entities\n");
+		ri.Printf( PRINT_WARNING, "WARNING: RE_AddRefEntityToScene: too many entities\n");
 #endif
 		return;
 	}

@@ -823,7 +823,7 @@ qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 	// to see a surface before the server has communicated the matching
 	// portal surface entity, so we don't want to print anything here...
 
-	//VID_Printf( PRINT_ALL, "Portal surface without a portal entity\n" );
+	//ri.Printf( PRINT_ALL, "Portal surface without a portal entity\n" );
 
 	return qfalse;
 }
@@ -1004,7 +1004,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	// don't recursively mirror
 	if (tr.viewParms.isPortal) 
 	{
-		VID_Printf( PRINT_DEVELOPER, "WARNING: recursive mirror/portal found\n" );
+		ri.Printf( PRINT_DEVELOPER, "WARNING: recursive mirror/portal found\n" );
 		return qfalse;
 	}
 
@@ -1112,7 +1112,7 @@ DRAWSURF SORTING
 R_Radix
 ===============
 */
-static inline void R_Radix( int byte, int size, drawSurf_t *source, drawSurf_t *dest )
+static QINLINE void R_Radix( int byte, int size, drawSurf_t *source, drawSurf_t *dest )
 {
   int           count[ 256 ] = { 0 };
   int           index[ 256 ];

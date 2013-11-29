@@ -264,11 +264,15 @@ IN_GobbleMotionEvents
 static void IN_GobbleMotionEvents( void )
 {
 	SDL_Event dummy[ 1 ];
+	int val = 0;
 
 	// Gobble any mouse motion events
 	SDL_PumpEvents( );
-	while( SDL_PeepEvents( dummy, 1, SDL_GETEVENT,
-		SDL_MOUSEMOTION, SDL_MOUSEMOTION ) ) { }
+	while( ( val = SDL_PeepEvents( dummy, 1, SDL_GETEVENT,
+		SDL_MOUSEMOTION, SDL_MOUSEMOTION ) ) > 0 ) { }
+
+	if ( val < 0 )
+		Com_Printf( "IN_GobbleMotionEvents failed: %s\n", SDL_GetError( ) );
 }
 
 /*
@@ -346,11 +350,11 @@ IN_InitKeyLockStates
 */
 void IN_InitKeyLockStates( void )
 {
-	/*unsigned char *keystate = SDL_GetKeyboardState(NULL);
+	const unsigned char *keystate = SDL_GetKeyboardState(NULL);
 
-	keys[K_SCROLLOCK].down = keystate[SDL_SCANCODE_SCROLLLOCK];
-	keys[K_KP_NUMLOCK].down = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
-	keys[K_CAPSLOCK].down = keystate[SDL_SCANCODE_CAPSLOCK];*/
+	kg.keys[A_SCROLLLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_SCROLLLOCK]);
+	kg.keys[A_NUMLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_NUMLOCKCLEAR]);
+	kg.keys[A_CAPSLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_CAPSLOCK]);
 }
 
 // We translate axes movement into keypresses
@@ -613,9 +617,15 @@ static void IN_ProcessEvents( void )
 
 			case SDL_MOUSEWHEEL:
 				if( e.wheel.y > 0 )
+				{
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qtrue, 0, NULL );
+					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qfalse, 0, NULL );
+				}
 				else
+				{
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qtrue, 0, NULL );
+					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qfalse, 0, NULL );
+				}
 				break;
 
 			case SDL_QUIT:
@@ -644,6 +654,7 @@ static void IN_ProcessEvents( void )
 						break;
 
 					case SDL_WINDOWEVENT_MINIMIZED:    Cvar_SetValue( "com_minimized", 1 ); break;
+					case SDL_WINDOWEVENT_RESTORED:
 					case SDL_WINDOWEVENT_MAXIMIZED:    Cvar_SetValue( "com_minimized", 0 ); break;
 					case SDL_WINDOWEVENT_FOCUS_LOST:   Cvar_SetValue( "com_unfocused", 1 ); break;
 					case SDL_WINDOWEVENT_FOCUS_GAINED: Cvar_SetValue( "com_unfocused", 0 ); break;
@@ -906,6 +917,9 @@ IN_ShutdownJoystick
 */
 static void IN_ShutdownJoystick( void )
 {
+	if ( !SDL_WasInit( SDL_INIT_JOYSTICK ) )
+		return;
+
 	if (stick)
 	{
 		SDL_JoystickClose(stick);

@@ -515,17 +515,17 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 
 static qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2 ) {
 	int		leafnum, cluster;
-	int		area1, area2;
+//	int		area1, area2;
 	byte	*mask;
 
 	leafnum = CM_PointLeafnum( p1 );
 	cluster = CM_LeafCluster( leafnum );
-	area1 = CM_LeafArea( leafnum );
+//	area1 = CM_LeafArea( leafnum );
 	mask = CM_ClusterPVS( cluster );
 
 	leafnum = CM_PointLeafnum( p2 );
 	cluster = CM_LeafCluster( leafnum );
-	area2 = CM_LeafArea( leafnum );
+//	area2 = CM_LeafArea( leafnum );
 
 	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
 		return qfalse;
@@ -1831,7 +1831,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return FS_FOpenFileByMode( (const char *)VMA(1), (int *)VMA(2), (fsMode_t)args[3] );
 
 	case G_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
+		FS_Read( VMA(1), args[2], args[3] );
 		return 0;
 
 	case G_FS_WRITE:
@@ -2883,7 +2883,7 @@ void SV_BindGame( void ) {
 	memset( &gi, 0, sizeof( gi ) );
 
 	gvm = VM_Create( VM_GAME );
-	if ( gvm ) {
+	if ( gvm && !gvm->isLegacy ) {
 		gi.Print								= Com_Printf;
 		gi.Error								= Com_Error;
 		gi.Milliseconds							= Com_Milliseconds;
@@ -3202,6 +3202,8 @@ void SV_BindGame( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		ge = ret;
+
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api

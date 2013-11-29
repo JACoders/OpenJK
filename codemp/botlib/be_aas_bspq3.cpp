@@ -28,7 +28,6 @@ extern botlib_import_t botimport;
 //#define TRACE_DEBUG
 
 #define ON_EPSILON		0.005
-//#define DEG2RAD( a ) (( a * M_PI ) / 180.0F)
 
 #define MAX_BSPENTITIES		2048
 
@@ -289,7 +288,7 @@ int AAS_VectorForBSPEpairKey(int ent, char *key, vec3_t v)
 
 	VectorClear(v);
 	if (!AAS_ValueForBSPEpairKey(ent, key, buf, MAX_EPAIRKEY)) return qfalse;
-	//scanf into doubles, then assign, so it is vec_t size independent
+	//scanf into doubles, then assign, so it is float size independent
 	v1 = v2 = v3 = 0;
 	sscanf(buf, "%lf %lf %lf", &v1, &v2, &v3);
 	v[0] = v1;

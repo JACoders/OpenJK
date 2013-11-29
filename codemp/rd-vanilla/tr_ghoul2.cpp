@@ -2146,7 +2146,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int boltNum, boltInfo_v &boltList, surfaceInfo_t *surfInfo, model_t *mod)
 {
  	mdxmVertex_t 	*v, *vert0, *vert1, *vert2;
- 	vec3_t			axes[3], sides[3];
+ 	matrix3_t		axes, sides;
  	float			pTri[3][3], d;
  	int				j, k;
 
@@ -2490,7 +2490,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 				for (k=range.first;k!=range.second;)
 				{
 					kcur=k;
-					k++;
+					++k;
 					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
 					if (!tex ||											 // it is gone, lets get rid of it
 						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
@@ -2831,7 +2831,7 @@ void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface, int boltNum, boltInfo_v &boltList, const surfaceInfo_t *surfInfo, const model_t *mod,mdxaBone_t &retMatrix)
 {
  	mdxmVertex_t 	*v, *vert0, *vert1, *vert2;
- 	vec3_t			axes[3], sides[3];
+ 	matrix3_t		axes, sides;
  	float			pTri[3][3], d;
  	int				j, k;
 

@@ -56,7 +56,7 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 							qhandle_t parentModel, char *tagName ) {
 	int				i;
 	orientation_t	lerped;
-	vec3_t			tempAxis[3];
+	matrix3_t		tempAxis;
 
 //AxisClear( entity->axis );
 	// lerp the tag
@@ -403,7 +403,6 @@ void FX_DrawPortableShield(centity_t *cent)
 
 	int				xaxis, height, posWidth, negWidth, team;
 	vec3_t			start, end, normal;
-	localEntity_t	*le;
 	qhandle_t		shader;
 
 	if ( cl_paused.integer )
@@ -469,7 +468,7 @@ void FX_DrawPortableShield(centity_t *cent)
 		}
 	}
 
-	le = FX_AddOrientedLine(start, end, normal, 1.0f, height, 0.0f, 1.0f, 1.0f, 50.0, shader);
+	FX_AddOrientedLine(start, end, normal, 1.0f, height, 0.0f, 1.0f, 1.0f, 50.0, shader);
 }
 
 /*
@@ -935,7 +934,7 @@ static void CG_General( centity_t *cent ) {
 			}
 
 			VectorSubtract(cent->lerpOrigin, cent->turAngles, posDif);
-			
+
 			for (k=0;k<3;k++)
 			{
 				cent->turAngles[k]=(cent->turAngles[k]+posDif[k]*smoothFactor);
@@ -1038,7 +1037,6 @@ static void CG_General( centity_t *cent ) {
 
 		if (!cent->ghoul2)
 		{
-			const char *limbBone;
 			const char *rotateBone;
 			char	limbName[MAX_QPATH];
 			char	stubName[MAX_QPATH];
@@ -1046,7 +1044,6 @@ static void CG_General( centity_t *cent ) {
 			char	stubCapName[MAX_QPATH];
 			char *limbTagName;
 			char *stubTagName;
-			int limb_anim;
 			int newBolt;
 			int limbBit = (1 << (cent->currentState.modelGhoul2-10));
 
@@ -1074,18 +1071,15 @@ static void CG_General( centity_t *cent ) {
 
 			if (cent->currentState.modelGhoul2 == G2_MODELPART_HEAD)
 			{
-				limbBone = "cervical";
 				rotateBone = "cranium";
 				Q_strncpyz( limbName , "head", sizeof( limbName  ) );
 				Q_strncpyz( limbCapName, "head_cap_torso", sizeof( limbCapName ) );
 				Q_strncpyz( stubCapName, "torso_cap_head", sizeof( stubCapName ) );
 				limbTagName = "*head_cap_torso";
 				stubTagName = "*torso_cap_head";
-				limb_anim = BOTH_DISMEMBER_HEAD1;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_WAIST)
 			{
-				limbBone = "pelvis";
 
 				if (clEnt->localAnimIndex <= 1)
 				{ //humanoid/rtrooper
@@ -1100,11 +1094,9 @@ static void CG_General( centity_t *cent ) {
 				Q_strncpyz( stubCapName, "hips_cap_torso", sizeof( stubCapName ) );
 				limbTagName = "*torso_cap_hips";
 				stubTagName = "*hips_cap_torso";
-				limb_anim = BOTH_DISMEMBER_TORSO1;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_LARM)
 			{
-				limbBone = "lhumerus";
 				rotateBone = "lradius";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "l_arm", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "torso", stubName, sizeof(stubName) );
@@ -1112,11 +1104,9 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_l_arm", stubName );
 				limbTagName = "*l_arm_cap_torso";
 				stubTagName = "*torso_cap_l_arm";
-				limb_anim = BOTH_DISMEMBER_LARM;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_RARM)
 			{
-				limbBone = "rhumerus";
 				rotateBone = "rradius";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "r_arm", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "torso", stubName, sizeof(stubName) );
@@ -1124,11 +1114,9 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_r_arm", stubName );
 				limbTagName = "*r_arm_cap_torso";
 				stubTagName = "*torso_cap_r_arm";
-				limb_anim = BOTH_DISMEMBER_RARM;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_RHAND)
 			{
-				limbBone = "rradiusX";
 				rotateBone = "rhand";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "r_hand", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "r_arm", stubName, sizeof(stubName) );
@@ -1136,11 +1124,9 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_r_hand", stubName );
 				limbTagName = "*r_hand_cap_r_arm";
 				stubTagName = "*r_arm_cap_r_hand";
-				limb_anim = BOTH_DISMEMBER_RARM;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_LLEG)
 			{
-				limbBone = "lfemurYZ";
 				rotateBone = "ltibia";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "l_leg", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "hips", stubName, sizeof(stubName) );
@@ -1148,11 +1134,9 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_l_leg", stubName );
 				limbTagName = "*l_leg_cap_hips";
 				stubTagName = "*hips_cap_l_leg";
-				limb_anim = BOTH_DISMEMBER_LLEG;
 			}
 			else if (cent->currentState.modelGhoul2 == G2_MODELPART_RLEG)
 			{
-				limbBone = "rfemurYZ";
 				rotateBone = "rtibia";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "r_leg", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "hips", stubName, sizeof(stubName) );
@@ -1160,11 +1144,9 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_r_leg", stubName );
 				limbTagName = "*r_leg_cap_hips";
 				stubTagName = "*hips_cap_r_leg";
-				limb_anim = BOTH_DISMEMBER_RLEG;
 			}
 			else
 			{//umm... just default to the right leg, I guess (same as on server)
-				limbBone = "rfemurYZ";
 				rotateBone = "rtibia";
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "r_leg", limbName, sizeof(limbName) );
 				BG_GetRootSurfNameWithVariant( clEnt->ghoul2, "hips", stubName, sizeof(stubName) );
@@ -1172,7 +1154,6 @@ static void CG_General( centity_t *cent ) {
 				Com_sprintf( stubCapName, sizeof( stubCapName), "%s_cap_r_leg", stubName );
 				limbTagName = "*r_leg_cap_hips";
 				stubTagName = "*hips_cap_r_leg";
-				limb_anim = BOTH_DISMEMBER_RLEG;
 			}
 
 			if (clEnt && clEnt->ghoul2)
@@ -2739,7 +2720,7 @@ Ghoul2 Insert End
 		vec3_t	beamOrg;
 
 		VectorMA( ent.origin, 8, ent.axis[0], beamOrg );// forward
-		trap->FX_PlayEffectID( cgs.effects.mTripMineLaster, beamOrg, ent.axis[0], -1, -1, qfalse );
+		trap->FX_PlayEffectID( cgs.effects.mTripMineLaser, beamOrg, ent.axis[0], -1, -1, qfalse );
 	}
 }
 
@@ -3092,7 +3073,7 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	// if this player does not want to see extrapolated players
 	if ( !cg_smoothClients.integer ) {
 		// make sure the clients use TR_INTERPOLATE
-		if ( cent->currentState.number < MAX_CLIENTS || cent->currentState.eType == ET_NPC ) {
+		if ( (cent->currentState.number != cg.clientNum && cent->currentState.number < MAX_CLIENTS) || cent->currentState.eType == ET_NPC ) {
 			cent->currentState.pos.trType = TR_INTERPOLATE;
 			cent->nextState.pos.trType = TR_INTERPOLATE;
 		}
@@ -3119,8 +3100,8 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 
 	// first see if we can interpolate between two snaps for
 	// linear extrapolated clients
-	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP &&
-			(cent->currentState.number < MAX_CLIENTS || cent->currentState.eType == ET_NPC) ) {
+	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP
+		&& ((cent->currentState.number != cg.clientNum && cent->currentState.number < MAX_CLIENTS) || cent->currentState.eType == ET_NPC) ) {
 		CG_InterpolateEntityPosition( cent );
 		goAway = qtrue;
 	}
@@ -3204,7 +3185,7 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 
 	// adjust for riding a mover if it wasn't rolled into the predicted
 	// player state
-	if ( cent->currentState.number != cg.predictedPlayerState.clientNum ) {
+	if ( cent->currentState.number != cg.clientNum ) {
 		CG_AdjustPositionForMover( cent->lerpOrigin, cent->currentState.groundEntityNum, 
 		cg.snap->serverTime, cg.time, cent->lerpOrigin );
 	}

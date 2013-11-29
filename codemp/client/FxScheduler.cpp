@@ -179,7 +179,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 	while ( itr != mFxSchedule.end() )
 	{
 		next = itr;
-		next++;
+		++next;
 
 		delete *itr;
 		mFxSchedule.erase(itr);
@@ -672,7 +672,7 @@ static void ReportPlayEffectError(int id)
 //------------------------------------------------------
 /*void CFxScheduler::PlayEffect( int id, vec3_t origin, int vol, int rad )
 {
-	vec3_t	axis[3];
+	matrix3_t	axis;
 
 	VectorSet( axis[0], 0, 0, 1 );
 	VectorSet( axis[1], 1, 0, 0 );
@@ -695,7 +695,7 @@ static void ReportPlayEffectError(int id)
 //------------------------------------------------------
 void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward, int vol, int rad, bool isPortal )
 {
-	vec3_t	axis[3];
+	matrix3_t	axis;
 
 	// Take the forward vector and create two arbitrary but perpendicular vectors
 	VectorCopy( forward, axis[0] );
@@ -718,7 +718,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward, int vol, i
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], const int boltInfo, int iGhoul2,
+void CFxScheduler::PlayEffect( const char *file, vec3_t origin, matrix3_t axis, const int boltInfo, int iGhoul2,
 							  int fxParm /*-1*/, int vol, int rad, int iLoopTime, bool isRelative )
 {
 	char	sfile[MAX_QPATH];
@@ -771,7 +771,7 @@ void GetRGB_Colors( CPrimitiveTemplate *fx, vec3_t outStartRGB, vec3_t outEndRGB
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int boltInfo, int iGhoul2, int fxParm /*-1*/, int vol, int rad, bool isPortal/*false*/, int iLoopTime/*0*/,  bool isRelative )
+void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int boltInfo, int iGhoul2, int fxParm /*-1*/, int vol, int rad, bool isPortal/*false*/, int iLoopTime/*0*/,  bool isRelative )
 {
 	SEffectTemplate			*fx;
 	CPrimitiveTemplate		*prim;
@@ -1036,7 +1036,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 {
 	TScheduledEffect::iterator	itr, next;
 	vec3_t						origin;
-	vec3_t						axis[3];
+	matrix3_t					axis;
 	int							oldEntNum = -1, oldBoltIndex = -1, oldModelNum = -1;
 	qboolean					doesBoltExist  = qfalse;
 
@@ -1054,7 +1054,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 	while ( itr != mFxSchedule.end() )
 	{
 		next = itr;
-		next++;
+		++next;
 
 		if (portal == (*itr)->mPortalEffect)
 		{ //only render portal fx on the skyportal pass and vice versa
@@ -1183,7 +1183,7 @@ void CFxScheduler::Draw2DEffects(float screenXScale, float screenYScale)
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int fxParm /*-1*/, int iGhoul2, int entNum, int modelNum, int boltNum  )
+void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, matrix3_t axis, int lateTime, int fxParm /*-1*/, int iGhoul2, int entNum, int modelNum, int boltNum  )
 {
 	vec3_t	org, org2, temp,
 				vel, accel,

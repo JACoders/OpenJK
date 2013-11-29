@@ -21,10 +21,6 @@ This file is part of Jedi Academy.
 // leave this at the top for PCH reasons...
 #include "../game/common_headers.h"
 
-
-//#include "q_shared.h"
-
-
 const vec3_t	vec3_origin = {0,0,0};
 const vec3_t	axisDefault[3] = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 
@@ -805,6 +801,13 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	** normalize the result
 	*/
 	VectorNormalize( dst );
+}
+
+float Q_powf( float x, int y ) {
+	float r = x;
+	for ( y--; y>0; y-- )
+		r *= x;
+	return r;
 }
 
 /*

@@ -101,8 +101,6 @@ This file is part of Jedi Academy.
 
 //#endif //__DEBUG
 
-//extern qboolean showWaypoints;
-
 typedef enum {VIS_UNKNOWN, VIS_NOT, VIS_PVS, VIS_360, VIS_FOV, VIS_SHOOT} visibility_t;
 typedef enum {SPOT_ORIGIN, SPOT_CHEST, SPOT_HEAD, SPOT_HEAD_LEAN, SPOT_WEAPON, SPOT_LEGS, SPOT_GROUND} spot_t;
 

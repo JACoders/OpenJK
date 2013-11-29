@@ -198,7 +198,7 @@ int CTaskManager::Free( void )
 	tasks_l::iterator		ti;
 
 	//Clear out all pending tasks
-	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ti++ )
+	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ++ti )
 	{
 		(*ti)->Free();
 	}
@@ -206,7 +206,7 @@ int CTaskManager::Free( void )
 	m_tasks.clear();
 
 	//Clear out all taskGroups
-	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); gi++ )
+	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); ++gi )
 	{
 		delete (*gi);
 	}
@@ -914,7 +914,7 @@ int CTaskManager::Completed( int id )
 	taskGroup_v::iterator	tgi;
 
 	//Mark the task as completed
-	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); tgi++ )
+	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); ++tgi )
 	{
 		//If this returns true, then the task was marked properly
 		if ( (*tgi)->MarkTaskComplete( id ) )

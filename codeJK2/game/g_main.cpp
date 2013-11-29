@@ -32,8 +32,10 @@ This file is part of Jedi Knight 2.
 #include "g_icarus.h"
 #include "objectives.h"
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
+#include "time.h"
 
 extern CNavigator		navigator;
+
 static int				navCalcPathTime = 0;
 int		eventClearTime = 0;
 
@@ -54,16 +56,16 @@ void ClearAllInUse(void)
 
 void SetInUse(gentity_t *ent)
 {
-	assert(((unsigned int)ent)>=(unsigned int)g_entities);
-	assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
+	//assert(((unsigned int)ent)>=(unsigned int)g_entities);
+	//assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
 	unsigned int entNum=ent-g_entities;
 	g_entityInUseBits[entNum/32]|=((unsigned int)1)<<(entNum&0x1f);
 }
 
 void ClearInUse(gentity_t *ent)
 {
-	assert(((unsigned int)ent)>=(unsigned int)g_entities);
-	assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
+	//assert(((unsigned int)ent)>=(unsigned int)g_entities);
+	//assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
 	unsigned int entNum=ent-g_entities;
 	g_entityInUseBits[entNum/32]&=~(((unsigned int)1)<<(entNum&0x1f));
 }
@@ -77,8 +79,8 @@ qboolean PInUse(unsigned int entNum)
 
 qboolean PInUse2(gentity_t *ent)
 {
-	assert(((unsigned int)ent)>=(unsigned int)g_entities);
-	assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
+	//assert(((unsigned int)ent)>=(unsigned int)g_entities);
+	//assert(((unsigned int)ent)<=(unsigned int)(g_entities+MAX_GENTITIES-1));
 	unsigned int entNum=ent-g_entities;
 	return((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
 }
@@ -598,8 +600,6 @@ extern int fatalErrors;
 #endif
 void InitGame(  const char *mapname, const char *spawntarget, int checkSum, const char *entities, int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition )
 {
-	int		i;
-
 	giMapChecksum = checkSum;
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
 	g_qbLoadTransition = qbLoadTransition;
@@ -683,14 +683,6 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 	gi.Printf ("-----------------------------------\n");
 
-	//randomize the rand functions
-	byte num_calls = (byte)timeGetTime();
-
-	for(i = 0; i < (int)num_calls; i++)
-	{
-		rand();
-	}
-
 	if ( navCalculatePaths )
 	{//not loaded - need to calc paths
 		navCalcPathTime = level.time + START_TIME_NAV_CALC;//make sure all ents are in and linked
@@ -773,7 +765,7 @@ and global variables
 =================
 */
 extern int PM_ValidateAnimRange( int startFrame, int endFrame, float animSpeed );
-game_export_t *GetGameAPI( game_import_t *import ) {
+extern "C" Q_EXPORT game_export_t *GetGameAPI( game_import_t *import ) {
 	gameinfo_import_t	gameinfo_import;
 
 	gi = *import;

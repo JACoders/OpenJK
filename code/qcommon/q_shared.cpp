@@ -20,8 +20,6 @@ This file is part of Jedi Academy.
 // leave this at the top for PCH reasons...
 #include "../game/common_headers.h"
 
-//#include "q_shared.h"
-
 int Com_Clampi( int min, int max, int value ) 
 {
 	if ( value < min ) 
@@ -113,7 +111,10 @@ void COM_StripExtension( const char *in, char *out, int destsize )
 {
 	const char *dot = strrchr(in, '.'), *slash;
 	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
-		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
+		destsize = (destsize < dot-in+1 ? destsize : dot-in+1);
+
+	if ( in == out && destsize > 1 )
+		out[destsize-1] = '\0';
 	else
 		Q_strncpyz(out, in, destsize);
 }
@@ -164,39 +165,23 @@ void COM_DefaultExtension( char *path, int maxSize, const char *extension )
 
 ============================================================================
 */
-
+/*
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
 static short	(*_BigShort) (short l);
 static short	(*_LittleShort) (short l);
 static int		(*_BigLong) (int l);
 static int		(*_LittleLong) (int l);
-static float	(*_BigFloat) (float l);
-static float	(*_LittleFloat) (float l);
+static float	(*_BigFloat) (const float *l);
+static float	(*_LittleFloat) (const float *l);
 
-#ifdef id386 // _M_IX86
-//
-// optimised stuff for Intel, since most of our data is in that format anyway...
-//
-short	BigShort(short l){return _BigShort(l);}
-int		BigLong (int l) {return _BigLong(l);}
-float	BigFloat (float l) {return _BigFloat(l);}
-//short	LittleShort(short l) {return _LittleShort(l);}	// these are now macros in q_shared.h
-//int		LittleLong (int l) {return _LittleLong(l);}	//
-//float	LittleFloat (float l) {return _LittleFloat(l);}	//
-//
-#else
-//
-// standard smart-swap code...
-//
 short	BigShort(short l){return _BigShort(l);}
 short	LittleShort(short l) {return _LittleShort(l);}
 int		BigLong (int l) {return _BigLong(l);}
 int		LittleLong (int l) {return _LittleLong(l);}
-float	BigFloat (float l) {return _BigFloat(l);}
-float	LittleFloat (float l) {return _LittleFloat(l);}
-//
-#endif
+float	BigFloat (const float *l) {return _BigFloat(l);}
+float	LittleFloat (const float *l) {return _LittleFloat(l);}
+*/
 
 short   ShortSwap (short l)
 {
@@ -230,26 +215,18 @@ int	LongNoSwap (int l)
 	return l;
 }
 
-float FloatSwap (float f)
-{
-	union
-	{
-		float	f;
-		byte	b[4];
-	} dat1, dat2;
-	
-	
-	dat1.f = f;
-	dat2.b[0] = dat1.b[3];
-	dat2.b[1] = dat1.b[2];
-	dat2.b[2] = dat1.b[1];
-	dat2.b[3] = dat1.b[0];
-	return dat2.f;
+float FloatSwap (const float *f) {
+	floatint_t out;
+
+	out.f = *f;
+	out.ui = LongSwap(out.ui);
+
+	return out.f;
 }
 
-float FloatNoSwap (float f)
+float FloatNoSwap (const float *f)
 {
-	return f;
+	return *f;
 }
 
 /*
@@ -257,6 +234,7 @@ float FloatNoSwap (float f)
 Swap_Init
 ================
 */
+/*
 void Swap_Init (void)
 {
 	byte	swaptest[2] = {1,0};
@@ -282,6 +260,7 @@ void Swap_Init (void)
 	}
 
 }
+*/
 
 
 /*
@@ -294,7 +273,6 @@ PARSING
 
 static	char	com_token[MAX_TOKEN_CHARS];
 //JLFCALLOUT MPNOTUSED
-//#include functionality for files
 int parseDataCount = -1;
 const int MAX_PARSE_DATA = 5;
 parseData_t parseData[MAX_PARSE_DATA];
@@ -1018,6 +996,69 @@ void Q_StripColor(char *text)
 			*write = '\0';
 		}
 	}
+}
+
+/*
+Q_strstrip
+
+	Description:	Replace strip[x] in string with repl[x] or remove characters entirely
+	Mutates:		string
+	Return:			--
+
+	Examples:		Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "123" );	// "Bo1b is h2airy33"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "12" );	// "Bo1b is h2airy"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", NULL );	// "Bob is hairy"
+*/
+
+void Q_strstrip( char *string, const char *strip, const char *repl )
+{
+	char		*out=string, *p=string, c;
+	const char	*s=strip;
+	int			replaceLen = repl?strlen( repl ):0, offset=0;
+
+	while ( (c = *p++) != '\0' )
+	{
+		for ( s=strip; *s; s++ )
+		{
+			offset = s-strip;
+			if ( c == *s )
+			{
+				if ( !repl || offset >= replaceLen )
+					c = *p++;
+				else
+					c = repl[offset];
+				break;
+			}
+		}
+		*out++ = c;
+	}
+	*out = '\0';
+}
+
+/*
+Q_strchrs
+
+	Description:	Find any characters in a string. Think of it as a shorthand strchr loop.
+	Mutates:		--
+	Return:			first instance of any characters found
+					 otherwise NULL
+*/
+
+const char *Q_strchrs( const char *string, const char *search )
+{
+	const char *p = string, *s = search;
+
+	while ( *p != '\0' )
+	{
+		for ( s=search; *s; s++ )
+		{
+			if ( *p == *s )
+				return p;
+		}
+		p++;
+	}
+
+	return NULL;
 }
 
 #ifdef _MSC_VER

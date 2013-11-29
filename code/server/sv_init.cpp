@@ -23,13 +23,6 @@ This file is part of Jedi Academy.
 #include "../client/snd_music.h"	// didn't want to put this in snd_local because of rebuild times etc.
 #include "server.h"
 
-/*
-Ghoul2 Insert Start
-*/
-/*#if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
-#endif*/
-
 #if !defined (MINIHEAP_H_INC)
 	#include "../qcommon/MiniHeap.h"
 #endif
@@ -374,9 +367,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	// and any configstring changes should be reliably transmitted
 	// to all clients
 	sv.state = SS_GAME;
-	
-	// send a heartbeat now so the master will get up to date info
-	svs.nextHeartbeatTime = -9999999;
 
 	Hunk_SetMark();
 	Z_Validate();
@@ -468,7 +458,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame ) {
+void SV_Shutdown( const char *finalmsg ) {
 	int i;
 
 	if ( !com_sv_running || !com_sv_running->integer ) {
@@ -482,7 +472,7 @@ void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame ) {
 	}
 
 	SV_RemoveOperatorCommands();
-	SV_ShutdownGameProgs(qfalse, delayFreeGame);
+	SV_ShutdownGameProgs(qfalse);
 
 	if (svs.snapshotEntities)
 	{

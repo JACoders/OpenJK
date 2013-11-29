@@ -16,16 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-//#include "../ui/ui_shared.h"
-
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 
 #include "../client/vmachine.h"
 #include "cg_lights.h"
+#include "g_local.h"
 
 #include "../qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
@@ -33,7 +29,6 @@ typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char
 extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
-//extern void CG_RegisterNPCEffects( team_t team );
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
 extern void CG_DrawDataPadInventorySelect( void );
 
@@ -100,10 +95,7 @@ This is the only way control passes into the cgame module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-#ifndef _WIN32
-extern "C"
-#endif
-Q_EXPORT intptr_t vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
+extern "C" Q_EXPORT intptr_t QDECL vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
 	centity_t		*cent;
 
 	switch ( command ) {
@@ -255,7 +247,7 @@ vmCvar_t	cg_drawSnapshot;
 vmCvar_t	cg_drawAmmoWarning;
 vmCvar_t	cg_drawCrosshair;
 vmCvar_t	cg_crosshairIdentifyTarget;
-//vmCvar_t	cg_dynamicCrosshair;
+vmCvar_t	cg_dynamicCrosshair;
 vmCvar_t	cg_crosshairForceHint;
 vmCvar_t	cg_crosshairX;
 vmCvar_t	cg_crosshairY;
@@ -336,6 +328,11 @@ vmCvar_t	cg_g2Marks;
 vmCvar_t	fx_expensivePhysics;
 vmCvar_t	cg_debugHealthBars;
 
+vmCvar_t	cg_smoothCamera;
+vmCvar_t	cg_speedTrail;
+vmCvar_t	cg_fovViewmodel;
+vmCvar_t	cg_fovViewmodelAdjust;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	const char	*cvarName;
@@ -363,7 +360,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_drawSnapshot, "cg_drawSnapshot", "0", CVAR_ARCHIVE  },
 	{ &cg_drawAmmoWarning, "cg_drawAmmoWarning", "1", CVAR_ARCHIVE  },
 	{ &cg_drawCrosshair, "cg_drawCrosshair", "1", CVAR_ARCHIVE },
-//	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
+	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
 	// NOTE : I also create this in UI_Init()
 	{ &cg_crosshairIdentifyTarget, "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE },
 	{ &cg_crosshairForceHint, "cg_crosshairForceHint", "1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART },
@@ -391,9 +388,9 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_debugAnimTarget, "cg_debugAnimTarget", "0", CVAR_CHEAT },
 #endif	
-	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
-	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
-	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
+	{ &cg_gun_x, "cg_gunX", "0", CVAR_ARCHIVE },
+	{ &cg_gun_y, "cg_gunY", "0", CVAR_ARCHIVE },
+	{ &cg_gun_z, "cg_gunZ", "0", CVAR_ARCHIVE },
 	{ &cg_debugSaber, "cg_debugsaber", "0", CVAR_CHEAT },
 	{ &cg_debugEvents, "cg_debugevents", "0", CVAR_CHEAT },
 	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
@@ -407,7 +404,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_roffval4, "cg_roffval4", "0" },
 #endif
 	{ &cg_thirdPerson, "cg_thirdPerson", "1", CVAR_SAVEGAME },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", 0 },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_ARCHIVE },
 	{ &cg_thirdPersonMaxRange, "cg_thirdPersonMaxRange", "150", 0 },
 	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", 0 },
 	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", 0 },
@@ -416,7 +413,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_thirdPersonTargetDamp, "cg_thirdPersonTargetDamp", "0.5", 0},
 	
 	{ &cg_thirdPersonHorzOffset, "cg_thirdPersonHorzOffset", "0", 0},
-	{ &cg_thirdPersonAlpha,	"cg_thirdPersonAlpha",	"1.0", CVAR_CHEAT },
+	{ &cg_thirdPersonAlpha, "cg_thirdPersonAlpha", "1.0", CVAR_ARCHIVE },
 	{ &cg_thirdPersonAutoAlpha,	"cg_thirdPersonAutoAlpha",	"0", 0 },
 	// NOTE: also declare this in UI_Init
 	{ &cg_gunAutoFirst, "cg_gunAutoFirst", "1", CVAR_ARCHIVE },
@@ -447,6 +444,11 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_g2Marks, "cg_g2Marks", "1", CVAR_ARCHIVE },
 	{ &fx_expensivePhysics, "fx_expensivePhysics", "1", CVAR_ARCHIVE },
 	{ &cg_debugHealthBars,	"cg_debugHealthBars",	"0", CVAR_CHEAT },
+
+	{ &cg_smoothCamera, "cg_smoothCamera", "1", CVAR_ARCHIVE },
+	{ &cg_speedTrail, "cg_speedTrail", "1", CVAR_ARCHIVE },
+	{ &cg_fovViewmodel, "cg_fovViewmodel", "0", CVAR_ARCHIVE },
+	{ &cg_fovViewmodelAdjust, "cg_fovViewmodelAdjust", "1", CVAR_ARCHIVE },
 };
 
 static int cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );
@@ -546,19 +548,6 @@ int CG_GetCameraAng( vec3_t cameraang )
 		VectorCopy( cg.refdefViewAngles, cameraang );
 		return 1;
 	}
-}
-
-void CG_TargetCommand_f( void ) {
-	int		targetNum;
-	char	test[4];
-
-	targetNum = CG_CrosshairPlayer();
-	if (targetNum <= 0) {
-		return;
-	}
-
-	cgi_Argv( 1, test, 4 );	//FIXME: this is now an exec_now command - in case we start using it... JFM
-	cgi_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
 void CG_Printf( const char *msg, ... ) {
@@ -848,30 +837,6 @@ CLIENT INFO
 
 =============================================================================
 */
-
-qhandle_t CG_RegisterHeadSkin( const char *headModelName, const char *headSkinName, qboolean *extensions )
-{
-	char		hfilename[MAX_QPATH];
-	qhandle_t	headSkin;
-
-	Com_sprintf( hfilename, sizeof( hfilename ), "models/players/%s/head_%s.skin", headModelName, headSkinName );
-	headSkin = cgi_R_RegisterSkin( hfilename );
-	if ( headSkin < 0 ) 
-	{	//have extensions
-		*extensions = qtrue;
-		headSkin = -headSkin;
-	} 
-	else 
-	{
-		*extensions = qfalse;	//just to be sure.
-	}
-
-	if ( !headSkin )
-	{
-		Com_Printf( "Failed to load skin file: %s : %s\n", headModelName, headSkinName );
-	}
-	return headSkin;
-}
 
 /*
 ==========================
@@ -2174,61 +2139,6 @@ void CG_Init( int serverCommandSequence ) {
 
 	CG_InitConsoleCommands();
 
-	//
-	// the game server will interpret these commands, which will be automatically
-	// forwarded to the server after they are not recognized locally
-	//
-	cgi_AddCommand ("kill");
-	cgi_AddCommand ("give");
-	cgi_AddCommand ("god");
-	cgi_AddCommand ("notarget");
-	cgi_AddCommand ("noclip");
-	cgi_AddCommand ("undying");
-	cgi_AddCommand ("setviewpos");
-	cgi_AddCommand ("setobjective");
-	cgi_AddCommand ("viewobjective");
-
-
-//ConsoleCommand in g_svcmds.cpp
-	cgi_AddCommand ("entitylist");
-	cgi_AddCommand ("nav");
-	cgi_AddCommand ("npc");
-
-	cgi_AddCommand ("saberColor");
-	cgi_AddCommand ("saber");
-	cgi_AddCommand ("saberblade");
-	cgi_AddCommand ("setForceAll");
-
-	cgi_AddCommand ("runscript");
-
-	cgi_AddCommand ("playerteam");
-	cgi_AddCommand ("playermodel");
-
-	cgi_AddCommand ("saberAttackCycle");
-
-	cgi_AddCommand ("use_electrobinoculars");
-	cgi_AddCommand ("use_bacta");
-	cgi_AddCommand ("use_seeker");
-	cgi_AddCommand ("use_lightamp_goggles");
-	cgi_AddCommand ("use_sentry");
-
-	cgi_AddCommand ("force_throw");
-	cgi_AddCommand ("force_pull");
-	cgi_AddCommand ("force_speed");
-	cgi_AddCommand ("force_heal");
-	cgi_AddCommand ("force_grip");
-	cgi_AddCommand ("force_distract");
-	cgi_AddCommand ("force_rage");
-	cgi_AddCommand ("force_protect");
-	cgi_AddCommand ("force_absorb");
-	cgi_AddCommand ("force_sight");
-
-	cgi_AddCommand ("taunt");
-	cgi_AddCommand ("bow");
-	cgi_AddCommand ("meditate");
-	cgi_AddCommand ("flourish");
-	cgi_AddCommand ("gloat");
-
 	cg.weaponPickupTextTime = 0;
 
 	cg.missionInfoFlashTime = 0;
@@ -3457,7 +3367,7 @@ void CG_DrawInventorySelect( void )
 			{
 				char itemName[256], data[1024]; // FIXME: do these really need to be this large??  does it matter?
 
-				sprintf( itemName, "SP_INGAME_%s",	item->classname );
+				Com_sprintf( itemName, sizeof(itemName), "SP_INGAME_%s",	item->classname );
 			
 				if ( cgi_SP_GetStringTextString( itemName, data, sizeof( data )))
 				{

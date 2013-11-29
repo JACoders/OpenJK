@@ -24,13 +24,7 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	vec3_t	bounce_dir;
 	int		i;
 	float	speed;
-	gentity_t	*owner = ent;
 	int		isowner = 0;
-
-	if ( ent->r.ownerNum )
-	{
-		owner = &g_entities[ent->r.ownerNum];
-	}
 
 	if (missile->r.ownerNum == ent->s.number)
 	{ //the original owner is bouncing the missile, so don't try to bounce it back at him
@@ -40,7 +34,6 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	//save the original speed
 	speed = VectorNormalize( missile->s.pos.trDelta );
 
-	//if ( ent && owner && owner->NPC && owner->enemy && Q_stricmp( "Tavion", owner->NPC_type ) == 0 && Q_irand( 0, 3 ) )
 	if ( &g_entities[missile->r.ownerNum] && missile->s.weapon != WP_SABER && missile->s.weapon != G2_MODEL_PART && !isowner )
 	{//bounce back at them if you can
 		VectorSubtract( g_entities[missile->r.ownerNum].r.currentOrigin, missile->r.currentOrigin, bounce_dir );
@@ -91,13 +84,7 @@ void G_DeflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	vec3_t	bounce_dir;
 	int		i;
 	float	speed;
-	int		isowner = 0;
 	vec3_t missile_dir;
-
-	if (missile->r.ownerNum == ent->s.number)
-	{ //the original owner is bouncing the missile, so don't try to bounce it back at him
-		isowner = 1;
-	}
 
 	//save the original speed
 	speed = VectorNormalize( missile->s.pos.trDelta );

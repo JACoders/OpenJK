@@ -115,7 +115,7 @@ gentity_t	*G_TestEntityPosition( gentity_t *ent ) {
 G_CreateRotationMatrix
 ================
 */
-void G_CreateRotationMatrix(vec3_t angles, vec3_t matrix[3]) {
+void G_CreateRotationMatrix(vec3_t angles, matrix3_t matrix) {
 	AngleVectors(angles, matrix[0], matrix[1], matrix[2]);
 	VectorInverse(matrix[1]);
 }
@@ -125,7 +125,7 @@ void G_CreateRotationMatrix(vec3_t angles, vec3_t matrix[3]) {
 G_TransposeMatrix
 ================
 */
-void G_TransposeMatrix(vec3_t matrix[3], vec3_t transpose[3]) {
+void G_TransposeMatrix(matrix3_t matrix, matrix3_t transpose) {
 	int i, j;
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 3; j++) {
@@ -139,7 +139,7 @@ void G_TransposeMatrix(vec3_t matrix[3], vec3_t transpose[3]) {
 G_RotatePoint
 ================
 */
-void G_RotatePoint(vec3_t point, vec3_t matrix[3]) {
+void G_RotatePoint(vec3_t point, matrix3_t matrix) {
 	vec3_t tvec;
 
 	VectorCopy(point, tvec);
@@ -156,7 +156,7 @@ Returns qfalse if the move is blocked
 ==================
 */
 qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, vec3_t amove ) {
-	vec3_t		matrix[3], transpose[3];
+	matrix3_t	matrix, transpose;
 	vec3_t		org, org2, move2;
 	gentity_t	*block;
 
@@ -1050,30 +1050,28 @@ void Blocked_Door( gentity_t *ent, gentity_t *other )
 Touch_DoorTriggerSpectator
 ================
 */
+static vec3_t doorangles = { 10000000.0, 0, 0 };
 static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_t *trace ) {
-	int i, axis;
+	int axis;
+	float doorMin, doorMax;
+	vec3_t origin, pMins, pMaxs;
 	trace_t tr;
-	vec3_t pMins, pMaxs;
-	vec3_t origin, dir, angles;
 
 	axis = ent->count;
-	VectorClear(dir);
-	if (fabs(other->s.origin[axis] - ent->r.absmax[axis]) <
-		fabs(other->s.origin[axis] - ent->r.absmin[axis])) {
-		origin[axis] = ent->r.absmin[axis] - 25;
-		dir[axis] = -1;
-	}
-	else {
-		origin[axis] = ent->r.absmax[axis] + 25;
-		dir[axis] = 1;
-	}
-	for (i = 0; i < 3; i++) {
-		if (i == axis) continue;
-		origin[i] = (ent->r.absmin[i] + ent->r.absmax[i]) * 0.5;
-	}
+	// the constants below relate to constants in Think_SpawnNewDoorTrigger()
+	doorMin = ent->r.absmin[axis] + 100;
+	doorMax = ent->r.absmax[axis] - 100;
 
-	vectoangles(dir, angles);
+	VectorCopy(other->client->ps.origin, origin);
 
+	if (origin[axis] < doorMin || origin[axis] > doorMax) return;
+
+	if (fabs(origin[axis] - doorMax) < fabs(origin[axis] - doorMin)) {
+		origin[axis] = doorMin - 25; // 10
+	} else {
+		origin[axis] = doorMax + 25; // 10
+	}
+	
 	VectorSet(pMins, -15.0f, -15.0f, DEFAULT_MINS_2);
 	VectorSet(pMaxs, 15.0f, 15.0f, DEFAULT_MAXS_2);
 	trap->Trace(&tr, origin, pMins, pMaxs, origin, other->s.number, other->clipmask, qfalse, 0, 0);
@@ -1082,7 +1080,7 @@ static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_
 		tr.fraction == 1.0f &&
 		tr.entityNum == ENTITYNUM_NONE)
 	{
-		TeleportPlayer(other, origin, angles );
+		TeleportPlayer( other, origin, doorangles );
 	}
 }
 
@@ -1499,7 +1497,7 @@ PLAT
 ==============
 Touch_Plat
 
-Don't allow decent if a living player is on it
+Don't allow descent if a living player is on it
 ===============
 */
 void Touch_Plat( gentity_t *ent, gentity_t *other, trace_t *trace ) {

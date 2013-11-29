@@ -21,14 +21,15 @@ This file is part of Jedi Knight 2.
 // leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
 
-
-
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 #include "g_local.h"
 #include "fields.h"
 #include "objectives.h"
 #include "../cgame/cg_camera.h"
 #include "g_icarus.h"
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 
@@ -220,7 +221,7 @@ int GetGEntityNum(gentity_t* ent)
 	return iReturnIndex;
 }
 
-gentity_t *GetGEntityPtr(int iEntNum)
+gentity_t *GetGEntityPtr(intptr_t iEntNum)
 {
 	if (iEntNum == -1)
 	{
@@ -230,11 +231,6 @@ gentity_t *GetGEntityPtr(int iEntNum)
 	assert(iEntNum < MAX_GENTITIES);
 	return (g_entities + iEntNum);
 }
-//
-//
-////////////////////////////////
-
-
 
 static int GetGroupNumber(AIGroupInfo_t *pGroup)
 {
@@ -529,7 +525,7 @@ void EvaluateField(field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may 
 
 			for (int i=0; i<MAX_ALERT_EVENTS; i++)
 			{
-				p[i].owner = GetGEntityPtr((int)(p[i].owner));
+				p[i].owner = GetGEntityPtr((intptr_t)(p[i].owner));
 			}
 		}
 		break;
@@ -540,8 +536,8 @@ void EvaluateField(field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may 
 
 			for (int i=0; i<MAX_FRAME_GROUPS; i++)
 			{
-				p[i].enemy		= GetGEntityPtr((int)(p[i].enemy));
-				p[i].commander	= GetGEntityPtr((int)(p[i].commander));
+				p[i].enemy		= GetGEntityPtr((intptr_t)(p[i].enemy));
+				p[i].commander	= GetGEntityPtr((intptr_t)(p[i].commander));
 			}
 		}
 		break;

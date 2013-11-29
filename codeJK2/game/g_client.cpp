@@ -402,6 +402,69 @@ void ForceClientSkin( gclient_t *client, char *model, const char *skin ) {
 
 /*
 ===========
+ClientCheckName
+============
+*/
+static void ClientCleanName( const char *in, char *out, int outSize )
+{
+	int outpos = 0, colorlessLen = 0, spaces = 0;
+
+	// discard leading spaces
+	for ( ; *in == ' '; in++);
+
+	// discard leading asterisk's (fail raven for using * as a skipnotify)
+	// apparently .* causes the issue too so... derp
+	//for(; *in == '*'; in++);
+	
+	for(; *in && outpos < outSize - 1; in++)
+	{
+		out[outpos] = *in;
+
+		if ( *in == ' ' )
+		{// don't allow too many consecutive spaces
+			if ( spaces > 2 )
+				continue;
+
+			spaces++;
+		}
+		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
+		{
+			if ( Q_IsColorStringExt( &out[outpos-1] ) )
+			{
+				colorlessLen--;
+				
+#if 0
+				if ( ColorIndex( *in ) == 0 )
+				{// Disallow color black in names to prevent players from getting advantage playing in front of black backgrounds
+					outpos--;
+					continue;
+				}
+#endif
+			}
+			else
+			{
+				spaces = 0;
+				colorlessLen++;
+			}
+		}
+		else
+		{
+			spaces = 0;
+			colorlessLen++;
+		}
+		
+		outpos++;
+	}
+
+	out[outpos] = '\0';
+
+	// don't allow empty names
+	if ( *out == '\0' || colorlessLen == 0 )
+		Q_strncpyz( out, "Padawan", outSize );
+}
+
+/*
+===========
 ClientUserInfoChanged
 
 Called from ClientConnect when the player first connects and
@@ -412,63 +475,32 @@ if desired.
 ============
 */
 void ClientUserinfoChanged( int clientNum ) {
-	gentity_t *ent;
-	char	*s;
-	char	headModel[MAX_QPATH];
-	char	torsoModel[MAX_QPATH];
-	char	legsModel[MAX_QPATH];
-	char	sound[MAX_QPATH];
-	char	oldname[MAX_STRING_CHARS];
-	gclient_t	*client;
-	char	*sex;
-	char	userinfo[MAX_INFO_STRING];
-
-	ent = g_entities + clientNum;
-	client = ent->client;
+	gentity_t	*ent = g_entities + clientNum;
+	gclient_t	*client = ent->client;
+	int			health=100, maxHealth=100;
+	const char	*s=NULL, *sex=NULL;
+	char		userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},
+				oldname[34]={0};
 
 	gi.GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	// check for malformed or illegal info strings
-	if ( !Info_Validate(userinfo) ) {
+	/*if ( !Info_Validate(userinfo) ) {
 		strcpy (userinfo, "\\name\\badinfo");
-	}
-
-	// check for lcoal client
-	s = Info_ValueForKey( userinfo, "ip" );
-	if ( !strcmp( s, "localhost" ) ) {
-		client->pers.localClient = qtrue;
-	}
+	}*/
 
 	// set name
 	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey (userinfo, "name");
-	Q_strncpyz( client->pers.netname, s, sizeof(client->pers.netname) );
-
-	if ( client->pers.connected == CON_CONNECTED ) {
-		if ( strcmp( oldname, client->pers.netname ) ) {
-			gi.SendServerCommand( -1, "print \"%s renamed to %s\n\"", oldname, 
-				client->pers.netname );
-		}
-	}
+	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 
 	// set max health
-	client->pers.maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > 100 ) {
+	maxHealth = 100;
+	health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	client->pers.maxHealth = health;
+	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
 		client->pers.maxHealth = 100;
-	}
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
-
-	// sounds
-	Q_strncpyz( sound, Info_ValueForKey (userinfo, "snd"), sizeof( sound ) );
-
-
-	// set model
-	//Q_strncpyz( headModel, Info_ValueForKey (userinfo, "headModel"), sizeof( headModel ) );
-	//Q_strncpyz( torsoModel, Info_ValueForKey (userinfo, "torsoModel"), sizeof( torsoModel ) );
-	//Q_strncpyz( legsModel, Info_ValueForKey (userinfo, "legsModel"), sizeof( legsModel ) );
-	memset( headModel, 0, sizeof( headModel ) );
-	memset( torsoModel, 0, sizeof( torsoModel ) );
-	memset( legsModel, 0, sizeof( legsModel ) );
 
 	// sex
 	sex = Info_ValueForKey( userinfo, "sex" );
@@ -478,11 +510,16 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	s = va("n\\%s\\t\\%i\\headModel\\%s\\torsoModel\\%s\\legsModel\\%s\\sex\\%s\\hc\\%i",
-		client->pers.netname, client->sess.sessionTeam, headModel, torsoModel, legsModel, sex,
-		client->pers.maxHealth );
+	buf[0] = '\0';
+	Q_strcat( buf, sizeof( buf ), va( "n\\%s\\", client->pers.netname ) );
+	Q_strcat( buf, sizeof( buf ), va( "t\\%i\\", client->sess.sessionTeam ) );
+	Q_strcat( buf, sizeof( buf ),	  "headModel\\\\" );
+	Q_strcat( buf, sizeof( buf ),	  "torsoModel\\\\" );
+	Q_strcat( buf, sizeof( buf ),	  "legsModel\\\\" );
+	Q_strcat( buf, sizeof( buf ), va( "sex\\%s\\", sex ) );
+	Q_strcat( buf, sizeof( buf ), va( "hc\\%i\\", client->pers.maxHealth ) );
 
-	gi.SetConfigstring( CS_PLAYERS+clientNum, s );
+	gi.SetConfigstring( CS_PLAYERS+clientNum, buf );
 }
 
 
@@ -508,23 +545,19 @@ restarts.
 */
 char *ClientConnect( int clientNum, qboolean firstTime, SavedGameJustLoaded_e eSavedGameJustLoaded ) 
 {
-	gclient_t	*client;
-	char		userinfo[MAX_INFO_STRING];
-	gentity_t	*ent;
-	clientSession_t		savedSess;
+	gentity_t	*ent = &g_entities[ clientNum ];
+	char		userinfo[MAX_INFO_STRING] = {0};
 
-	ent = &g_entities[ clientNum ];
 	gi.GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
-
 
 	// they can connect
 	ent->client = level.clients + clientNum;
-	client = ent->client;
+	gclient_t *client = ent->client;
 
 //	if (!qbFromSavedGame)
 	if (eSavedGameJustLoaded != eFULL)
 	{
-		savedSess = client->sess;	// 
+		clientSession_t savedSess = client->sess;	// 
 		memset( client, 0, sizeof(*client) );
 		client->sess = savedSess; 
 	}
@@ -833,6 +866,7 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 		if ( surfOff && surfOff[0] )
 		{
 			p = surfOff;
+			COM_BeginParseSession();
 			while ( 1 ) 
 			{
 				token = COM_ParseExt( &p, qtrue );
@@ -843,10 +877,12 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 				//turn off this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 			}
+			COM_EndParseSession();
 		}
 		if ( surfOn && surfOn[0] )
 		{
 			p = surfOn;
+			COM_BeginParseSession();
 			while ( 1 )
 			{
 				token = COM_ParseExt( &p, qtrue );
@@ -857,6 +893,7 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 				//turn on this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0 );
 			}
+			COM_EndParseSession();
 		}
 		if ( ent->client->NPC_class == CLASS_IMPERIAL && ent->message )
 		{//carrying a key, turn on the key sleeve surface (assuming we have one)

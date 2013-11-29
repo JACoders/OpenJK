@@ -136,7 +136,7 @@ dma_t		dma;
 
 int			listener_number;
 vec3_t		listener_origin;
-vec3_t		listener_axis[3];
+matrix3_t	listener_axis;
 
 int			s_soundtime;		// sample PAIRS
 int   		s_paintedtime; 		// sample PAIRS
@@ -169,14 +169,19 @@ cvar_t		*s_language;	// note that this is distinct from "g_language"
 cvar_t		*s_dynamix;
 cvar_t		*s_debugdynamic;
 
+cvar_t		*s_doppler;
+
 typedef struct 
 { 
 	unsigned char	volume;
 	vec3_t			origin;
 	vec3_t			velocity;
-/*	const*/ sfx_t		*sfx;
+	sfx_t		*sfx;
 	int				mergeFrame;
 	int			entnum;
+
+	qboolean	doppler;
+	float		dopplerScale;
 
 	// For Open AL
 	bool	bProcessed;
@@ -445,6 +450,8 @@ void S_Init( void ) {
 	s_lip_threshold_4 = Cvar_Get("s_threshold4" , "8.0",0);
 
 	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+
+	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE);
 
 	MP3_InitCvars();
 
@@ -1086,12 +1093,6 @@ static sboolean S_CheckChannelStomp( int chan1, int chan2 )
 S_PickChannel
 =================
 */
-// there were 2 versions of this, one for A3D and one normal, but the normal one wouldn't compile because
-//	it hadn't been updated for some time, so rather than risk anything weird/out of date, I just removed the 
-//	A3D lines from this version and deleted the other one. 
-//
-// If this really bothers you then feel free to play with it. -Ste.
-//
 channel_t *S_PickChannel(int entnum, int entchannel)
 {
     int			ch_idx;
@@ -1356,9 +1357,9 @@ Used for spatializing s_channels
 */
 void S_SpatializeOrigin (const vec3_t origin, float master_vol, int *left_vol, int *right_vol, int channel)
 {
-    vec_t		dot;
-    vec_t		dist;
-    vec_t		lscale, rscale, scale;
+    float		dot;
+    float		dist;
+    float		lscale, rscale, scale;
     vec3_t		source_vec;
 	float		dist_mult = SOUND_ATTENUATE;
 
@@ -1549,7 +1550,7 @@ S_StartSound
 
 Validates the parms and ques the sound up
 if pos is NULL, the sound will be dynamically sourced from the entity
-Entchannel 0 will never override a playing sound
+entchannel 0 will never override a playing sound
 ====================
 */
 void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfxHandle ) 
@@ -1923,6 +1924,8 @@ void S_StopLoopingSound( int entityNum )
 	}
 }
 
+#define MAX_DOPPLER_SCALE 50.0f //arbitrary
+
 /*
 ==================
 S_AddLoopingSound
@@ -1946,7 +1949,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 	}
 
 	sfx = &s_knownSfx[ sfxHandle ];
-	if (sfx->bInMemory == qfalse){
+	if (sfx->bInMemory == qfalse) {
 		S_memoryLoad(sfx);
 	}
 	SND_TouchSFX(sfx);
@@ -1957,9 +1960,29 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 	assert(!sfx->pMP3StreamHeader);
 	VectorCopy( origin, loopSounds[numLoopSounds].origin );
 	VectorCopy( velocity, loopSounds[numLoopSounds].velocity );
+	loopSounds[numLoopSounds].doppler = qfalse;
+	loopSounds[numLoopSounds].dopplerScale = 1.0;
 	loopSounds[numLoopSounds].sfx = sfx;
 	loopSounds[numLoopSounds].volume = SOUND_MAXVOL;
 	loopSounds[numLoopSounds].entnum = entityNum;
+
+	if ( s_doppler->integer && VectorLengthSquared(velocity) > 0.0 ) {
+		vec3_t	out;
+		float	lena, lenb;
+
+		loopSounds[numLoopSounds].doppler = qtrue;
+		lena = DistanceSquared(listener_origin, loopSounds[numLoopSounds].origin);
+		VectorAdd(loopSounds[numLoopSounds].origin, loopSounds[numLoopSounds].velocity, out);
+		lenb = DistanceSquared(listener_origin, out);
+
+		loopSounds[numLoopSounds].dopplerScale = lenb/(lena*100);
+		if (loopSounds[numLoopSounds].dopplerScale > MAX_DOPPLER_SCALE) {
+			loopSounds[numLoopSounds].dopplerScale = MAX_DOPPLER_SCALE;
+		} else if (loopSounds[numLoopSounds].dopplerScale <= 1.0) {
+			loopSounds[numLoopSounds].doppler = qfalse;			// don't bother doing the math
+		}
+	}
+
 	numLoopSounds++;
 }
 
@@ -2002,6 +2025,8 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		Com_Error( ERR_DROP, "%s has length 0", sfx->sSoundName );
 	}
 	VectorCopy( origin, loopSounds[numLoopSounds].origin );
+	loopSounds[numLoopSounds].doppler = qfalse;
+	loopSounds[numLoopSounds].dopplerScale = 1.0;
 	loopSounds[numLoopSounds].sfx = sfx;
 	assert(!sfx->pMP3StreamHeader);
 	
@@ -2069,6 +2094,9 @@ void S_AddLoopSounds (void)
 		ch->loopSound = qtrue;	// remove next frame
 		ch->thesfx = loop->sfx;
 
+		ch->doppler = loop->doppler;
+		ch->dopplerScale = loop->dopplerScale;
+
 		// you cannot use MP3 files here because they offer only streaming access, not random
 		//
 		if (loop->sfx->pMP3StreamHeader)
@@ -2088,7 +2116,7 @@ void S_AddLoopSounds (void)
 =================
 S_ByteSwapRawSamples
 
-If raw data has been loaded in little endien binary form, this must be done.
+If raw data has been loaded in little endian binary form, this must be done.
 If raw data was calculated, as with ADPCM, this should not be called.
 =================
 */
@@ -2485,7 +2513,7 @@ S_Respatialize
 Change the volumes of all the playing sounds for changes in their positions
 ============
 */
-void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwater )
+void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwater )
 {
 #ifdef _WIN32
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
@@ -2778,7 +2806,11 @@ void S_GetSoundtime(void)
 
 	if( CL_VideoRecording( ) )
 	{
-		s_soundtime += (int)ceil( dma.speed / cl_aviFrameRate->value );
+		float fps = min(cl_aviFrameRate->value, 1000.0f);
+		float frameDuration = max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
+		int msec = (int)frameDuration;
+		s_soundtime += msec;
+		clc.aviSoundFrameRemainder = frameDuration - msec;
 		return;
 	}
 
@@ -4056,7 +4088,6 @@ static void S_StopBackgroundTrack_Actual( MusicInfo_t *pMusicInfo )
 	{
 		if ( pMusicInfo->s_backgroundFile != -1)
 		{
-			Sys_EndStreamedFile( pMusicInfo->s_backgroundFile );
 			FS_FCloseFile( pMusicInfo->s_backgroundFile );
 		}
 		pMusicInfo->s_backgroundFile = 0;	
@@ -4284,11 +4315,6 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 		pMusicInfo->s_backgroundInfo.samples = len / (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
 
 		pMusicInfo->s_backgroundSamples = pMusicInfo->s_backgroundInfo.samples;
-
-		//
-		// start the background streaming
-		//
-		Sys_BeginStreamedFile( pMusicInfo->s_backgroundFile, 0x10000 );
 	}
 
 	return qtrue;
@@ -4772,7 +4798,7 @@ static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolea
 		{
 			// streaming a WAV off disk...
 			//
-			r = Sys_StreamedRead( raw, 1, fileBytes, pMusicInfo->s_backgroundFile );
+			r = FS_Read ( raw, fileBytes, pMusicInfo->s_backgroundFile );
 			if ( r != fileBytes ) {
 				Com_Printf(S_COLOR_RED"StreamedRead failure on music track\n");
 				S_StopBackgroundTrack();

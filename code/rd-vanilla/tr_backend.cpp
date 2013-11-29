@@ -57,7 +57,7 @@ void GL_Bind( image_t *image ) {
 	int texnum;
 
 	if ( !image ) {
-		VID_Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
+		ri.Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
 		texnum = tr.defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
@@ -204,9 +204,9 @@ void GL_TexEnv( int env )
 ** This routine is responsible for setting the most commonly changed state
 ** in Q3.
 */
-void GL_State( unsigned long stateBits )
+void GL_State( uint32_t stateBits )
 {
-	unsigned long diff = stateBits ^ glState.glStateBits;
+	uint32_t diff = stateBits ^ glState.glStateBits;
 
 	if ( !diff )
 	{
@@ -1445,7 +1445,7 @@ void RB_ShowImages( void ) {
 	qglFinish();
 
 	//end = ri.Milliseconds();
-	//VID_Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
+	//ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
 

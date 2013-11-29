@@ -22,7 +22,7 @@ This file is part of Jedi Knight 2.
 #include "g_headers.h"
 
 
-
+#include "../icarus/instance.h"
 #include "g_local.h"
 #include "Q3_Interface.h"
 #include "g_roff.h"
@@ -205,7 +205,7 @@ void ICARUS_FreeEnt( gentity_t *ent )
 		strncpy( (char *) temp, ent->script_targetname, 1023 );
 		temp[ 1023 ] = 0;
 
-		entlist_t::iterator it = ICARUS_EntList.find( strupr(temp) );
+		entlist_t::iterator it = ICARUS_EntList.find( Q_strupr(temp) );
 
 		if (it != ICARUS_EntList.end())
 		{
@@ -270,7 +270,7 @@ void ICARUS_AssociateEnt( gentity_t *ent )
 	strncpy( (char *) temp, ent->script_targetname, 1023 );
 	temp[ 1023 ] = 0;
 
-	ICARUS_EntList[ strupr( (char *) temp ) ] = ent->s.number;
+	ICARUS_EntList[ Q_strupr( (char *) temp ) ] = ent->s.number;
 }
 
 /*
@@ -447,7 +447,7 @@ void ICARUS_InterrogateScript( const char *filename )
 			
 			sVal1 = (const char *) block.GetMemberData( 0 );
 			
-			COM_StripExtension( sVal1, (char *) temp );
+			COM_StripExtension( sVal1, (char *) temp, sizeof( temp ) );
 			ICARUS_InterrogateScript( (const char *) &temp );
 			
 			break;
@@ -508,7 +508,7 @@ extern	cvar_t	*com_buildScript;
 						} else {
 							Com_sprintf (name, sizeof(name), "%s", sVal2);
 						}
-						COM_StripExtension(name,name);
+						COM_StripExtension(name,name,sizeof(name));
 						COM_DefaultExtension(name,sizeof(name),".roq");
 
 						gi.FS_FOpenFile( name, &file, FS_READ );	// trigger the file copy

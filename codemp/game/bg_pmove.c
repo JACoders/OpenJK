@@ -3540,7 +3540,7 @@ static void PM_NoclipMove( void ) {
 ================
 PM_FootstepForSurface
 
-Returns an event number apropriate for the groundsurface
+Returns an event number appropriate for the groundsurface
 ================
 */
 static int PM_FootstepForSurface( void )
@@ -5162,7 +5162,6 @@ PM_Footsteps
 static void PM_Footsteps( void ) {
 	float		bobmove;
 	int			old;
-	qboolean	footstep;
 	int			setAnimFlags = 0;
 
 	if ( (PM_InSaberAnim( (pm->ps->legsAnim) ) && !BG_SpinningSaberAnim( (pm->ps->legsAnim) )) 
@@ -5291,9 +5290,6 @@ static void PM_Footsteps( void ) {
 		}
 		return;
 	}
-	
-
-	footstep = qfalse;
 
 	if (pm->ps->saberMove == LS_SPINATTACK)
 	{
@@ -5538,7 +5534,6 @@ static void PM_Footsteps( void ) {
 				}
 #endif
 			}
-			footstep = qtrue;
 		}
 		else
 		{
@@ -5680,7 +5675,7 @@ static void PM_Footsteps( void ) {
 	old = pm->ps->bobCycle;
 	pm->ps->bobCycle = (int)( old + bobmove * pml.msec ) & 255;
 
-	// if we just crossed a cycle boundary, play an apropriate footstep event
+	// if we just crossed a cycle boundary, play an appropriate footstep event
 	if ( ( ( old + 64 ) ^ ( pm->ps->bobCycle + 64 ) ) & 128 )
 	{
 		pm->ps->footstepTime = pm->cmd.serverTime + 300;
@@ -9107,7 +9102,7 @@ qboolean BG_InRoll2( entityState_t *es )
 
 extern qboolean BG_SaberLockBreakAnim( int anim ); //bg_panimate.c
 void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int time, vec3_t cent_lerpOrigin,
-					   vec3_t cent_lerpAngles, vec3_t legs[3], vec3_t legsAngles, qboolean *tYawing,
+					   vec3_t cent_lerpAngles, matrix3_t legs, vec3_t legsAngles, qboolean *tYawing,
 					   qboolean *tPitching, qboolean *lYawing, float *tYawAngle, float *tPitchAngle,
 					   float *lYawAngle, int frametime, vec3_t turAngles, vec3_t modelScale, int ciLegs,
 					   int ciTorso, int *corrTime, vec3_t lookAngles, vec3_t lastHeadAngles, int lookTime,
@@ -9238,7 +9233,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 	// --------- roll -------------
 
 	if ( speed ) {
-		vec3_t	axis[3];
+		matrix3_t	axis;
 		float	side;
 
 		speed *= 0.05f;
@@ -10025,10 +10020,10 @@ void BG_VehicleAdjustBBoxForOrientation( Vehicle_t *veh, vec3_t origin, vec3_t m
 	}
 	else
 	{
-		vec3_t	axis[3], point[8];
-		vec3_t	newMins, newMaxs;
-		int		curAxis = 0, i;
-		trace_t trace;
+		matrix3_t	axis;
+		vec3_t		point[8], newMins, newMaxs;
+		int			curAxis = 0, i;
+		trace_t		trace;
 
 		AnglesToAxis( veh->m_vOrientation, axis );
 		VectorMA( origin, veh->m_pVehicleInfo->length/2.0f, axis[0], point[0] );

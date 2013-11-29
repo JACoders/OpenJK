@@ -233,7 +233,7 @@ qboolean ReachedGoal( gentity_t *goal )
 /*
 static gentity_t *UpdateGoal( void ) 
 
-Id removed a lot of shit here... doesn't seem to handle waypoints independantly of goalentity
+Id removed a lot of shit here... doesn't seem to handle waypoints independently of goalentity
 
 In fact, doesn't seem to be any waypoint info on entities at all any more?
 

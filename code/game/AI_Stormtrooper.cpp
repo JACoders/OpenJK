@@ -15,15 +15,12 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
@@ -42,7 +39,6 @@ extern qboolean FlyingCreature( gentity_t *ent );
 extern void NPC_EvasionSaber( void );
 extern qboolean RT_Flying( gentity_t *self );
 
-//extern	CNavigator	navigator;
 extern	cvar_t		*d_asynchronousGroupAI;
 
 #define	MAX_VIEW_DIST		1024
