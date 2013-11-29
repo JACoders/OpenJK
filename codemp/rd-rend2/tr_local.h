@@ -355,7 +355,7 @@ typedef struct dlight_s {
 
 // a trRefEntity_t has all the information passed in by
 // the client game, as well as some locally derived info
-typedef struct {
+typedef struct trRefEntity_s {
 	refEntity_t	e;
 
 	float		axisLength;		// compensate for non-normalized axis
