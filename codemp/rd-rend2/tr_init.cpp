@@ -1535,7 +1535,7 @@ void R_Init( void ) {
 
 	R_InitVBOs();
 
-	R_InitShaders();
+	R_InitShaders (qfalse);
 
 	R_InitSkins();
 
@@ -1725,8 +1725,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.LerpTag = R_LerpTag;
 	re.ModelBounds = R_ModelBounds;
 
-	// RE_RotatePic
-	// RE_RotatePic2
+	re.DrawRotatePic = RE_RotatePic;
+	re.DrawRotatePic2 = RE_RotatePic2;
 
 	re.ClearScene = RE_ClearScene;
 	// RE_ClearDecals
@@ -1777,9 +1777,9 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;
 
-	/*
-	Ghoul2 Insert Start
-	*/
+	re.InitSkins							= R_InitSkins;
+	re.InitShaders							= R_InitShaders;
+
 	re.G2API_AddBolt						= G2API_AddBolt;
 	re.G2API_AddBoltSurfNum					= G2API_AddBoltSurfNum;
 	re.G2API_AddSurface						= G2API_AddSurface;

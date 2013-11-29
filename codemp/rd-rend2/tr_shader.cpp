@@ -4005,14 +4005,17 @@ static void CreateExternalShaders( void ) {
 R_InitShaders
 ==================
 */
-void R_InitShaders( void ) {
+void R_InitShaders( qboolean server ) {
 	ri->Printf( PRINT_ALL, "Initializing Shaders\n" );
 
 	Com_Memset(hashTable, 0, sizeof(hashTable));
 
-	CreateInternalShaders();
+	if ( !server )
+	{
+		CreateInternalShaders();
 
-	ScanAndLoadShaderFiles();
+		ScanAndLoadShaderFiles();
 
-	CreateExternalShaders();
+		CreateExternalShaders();
+	}
 }
