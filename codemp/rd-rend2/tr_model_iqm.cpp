@@ -691,7 +691,7 @@ R_CullIQM
 */
 static int R_CullIQM( iqmData_t *data, trRefEntity_t *ent ) {
 	vec3_t		bounds[2];
-	vec_t		*oldBounds, *newBounds;
+	float		*oldBounds, *newBounds;
 	int		i;
 
 	if (!data->bounds) {
@@ -733,11 +733,11 @@ R_ComputeIQMFogNum
 int R_ComputeIQMFogNum( iqmData_t *data, trRefEntity_t *ent ) {
 	int			i, j;
 	fog_t			*fog;
-	const vec_t		*bounds;
-	const vec_t		defaultBounds[6] = { -8, -8, -8, 8, 8, 8 };
+	const float		*bounds;
+	const float		defaultBounds[6] = { -8, -8, -8, 8, 8, 8 };
 	vec3_t			diag, center;
 	vec3_t			localOrigin;
-	vec_t			radius;
+	float			radius;
 
 	if ( tr.refdef.rdflags & RDF_NOWORLDMODEL ) {
 		return 0;

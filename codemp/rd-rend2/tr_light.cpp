@@ -490,12 +490,12 @@ int R_CubemapForPoint( vec3_t point )
 	if (r_cubeMapping->integer && tr.numCubemaps) 
 	{ 
 		int i; 
-		vec_t shortest = (float)WORLD_SIZE * (float)WORLD_SIZE; 
+		float shortest = (float)WORLD_SIZE * (float)WORLD_SIZE; 
 
 		for (i = 0; i < tr.numCubemaps; i++) 
 		{ 
 			vec3_t diff; 
-			vec_t length; 
+			float length; 
 
 			VectorSubtract(point, tr.cubemapOrigins[i], diff); 
 			length = DotProduct(diff, diff); 

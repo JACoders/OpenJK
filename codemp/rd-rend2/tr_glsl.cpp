@@ -648,19 +648,19 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 				size += sizeof(GLfloat) * uniformsInfo[i].size;
 				break;
 			case GLSL_FLOAT5:
-				size += sizeof(vec_t) * 5 * uniformsInfo[i].size;
+				size += sizeof(float) * 5 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC2:
-				size += sizeof(vec_t) * 2 * uniformsInfo[i].size;
+				size += sizeof(float) * 2 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC3:
-				size += sizeof(vec_t) * 3 * uniformsInfo[i].size;
+				size += sizeof(float) * 3 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC4:
-				size += sizeof(vec_t) * 4 * uniformsInfo[i].size;
+				size += sizeof(float) * 4 * uniformsInfo[i].size;
 				break;
 			case GLSL_MAT16:
-				size += sizeof(vec_t) * 16 * uniformsInfo[i].size;
+				size += sizeof(float) * 16 * uniformsInfo[i].size;
 				break;
 			default:
 				break;
@@ -728,7 +728,7 @@ void GLSL_SetUniformFloat(shaderProgram_t *program, int uniformNum, GLfloat valu
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -753,7 +753,7 @@ void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t 
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -777,7 +777,7 @@ void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t 
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -801,7 +801,7 @@ void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t 
 void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_t v)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -825,7 +825,7 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare;
+	float *compare;
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -840,12 +840,12 @@ void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const flo
 		return;
 
 	compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
-	if (memcmp (matrix, compare, sizeof (vec_t) * 16 * numElements) == 0)
+	if (memcmp (matrix, compare, sizeof (float) * 16 * numElements) == 0)
 	{
 		return;
 	}
 
-	Com_Memcpy (compare, matrix, sizeof (vec_t) * 16 * numElements);
+	Com_Memcpy (compare, matrix, sizeof (float) * 16 * numElements);
 
 	qglUniformMatrix4fvARB(uniforms[uniformNum], numElements, GL_FALSE, matrix);
 }

@@ -1674,7 +1674,7 @@ void RE_SetLightStyle(int style, int color)
 	}
 }
 
-void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, vec_t *normal) {}
+void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, float *normal) {}
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}

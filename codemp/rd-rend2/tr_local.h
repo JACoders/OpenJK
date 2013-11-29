@@ -696,7 +696,7 @@ typedef struct {
 
 	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
-	unsigned		stateBits;					// GLS_xxxx mask
+	uint32_t		stateBits;					// GLS_xxxx mask
 
 	acff_t			adjustColorsForFog;
 
@@ -1916,7 +1916,7 @@ typedef struct glstate_s {
 	qboolean	finishCalled;
 	int			texEnv[2];
 	int			faceCulling;
-	unsigned long	glStateBits;
+	uint32_t	glStateBits;
 	uint32_t		vertexAttribsState;
 	uint32_t		vertexAttribPointersSet;
 	uint32_t        vertexAttribsNewFrame;
@@ -2450,7 +2450,7 @@ void	GL_SelectTexture( int unit );
 void	GL_TextureMode( const char *string );
 void	GL_CheckErrs( char *file, int line );
 #define GL_CheckErrors(...) GL_CheckErrs(__FILE__, __LINE__)
-void	GL_State( unsigned long stateVector );
+void	GL_State( uint32_t stateVector );
 void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
 void	GL_TexEnv( int env );
@@ -2959,22 +2959,22 @@ RENDERER BACK END COMMAND QUEUE
 
 #define	MAX_RENDER_COMMANDS	0x40000
 
-typedef struct {
+typedef struct renderCommandList_s {
 	byte	cmds[MAX_RENDER_COMMANDS];
 	int		used;
 } renderCommandList_t;
 
-typedef struct {
+typedef struct setColorCommand_s {
 	int		commandId;
 	float	color[4];
 } setColorCommand_t;
 
-typedef struct {
+typedef struct drawBufferCommand_s {
 	int		commandId;
 	int		buffer;
 } drawBufferCommand_t;
 
-typedef struct {
+typedef struct subImageCommand_s {
 	int		commandId;
 	image_t	*image;
 	int		width;
@@ -2982,16 +2982,16 @@ typedef struct {
 	void	*data;
 } subImageCommand_t;
 
-typedef struct {
+typedef struct swapBuffersCommand_s {
 	int		commandId;
 } swapBuffersCommand_t;
 
-typedef struct {
+typedef struct endFrameCommand_s {
 	int		commandId;
 	int		buffer;
 } endFrameCommand_t;
 
-typedef struct {
+typedef struct stretchPicCommand_s {
 	int		commandId;
 	shader_t	*shader;
 	float	x, y;
@@ -3010,7 +3010,7 @@ typedef struct rotatePicCommand_s {
 	float	a;
 } rotatePicCommand_t;
 
-typedef struct {
+typedef struct drawSurfsCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
 	viewParms_t	viewParms;
@@ -3018,7 +3018,7 @@ typedef struct {
 	int		numDrawSurfs;
 } drawSurfsCommand_t;
 
-typedef struct {
+typedef struct screenShotCommand_s {
 	int commandId;
 	int x;
 	int y;
@@ -3028,7 +3028,7 @@ typedef struct {
 	qboolean jpeg;
 } screenshotCommand_t;
 
-typedef struct {
+typedef struct videoFrameCommand_s {
 	int						commandId;
 	int						width;
 	int						height;
@@ -3037,25 +3037,23 @@ typedef struct {
 	qboolean			motionJpeg;
 } videoFrameCommand_t;
 
-typedef struct
-{
+typedef struct colorMaskCommand_s {
 	int commandId;
 
 	GLboolean rgba[4];
 } colorMaskCommand_t;
 
-typedef struct
-{
+typedef struct clearDepthCommand_s {
 	int commandId;
 } clearDepthCommand_t;
 
-typedef struct {
+typedef struct capShadowmapCommand_s {
 	int commandId;
 	int map;
 	int cubeSide;
 } capShadowmapCommand_t;
 
-typedef struct {
+typedef struct postProcessCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
 	viewParms_t	viewParms;
@@ -3086,8 +3084,8 @@ typedef enum {
 #define	MAX_POLYVERTS	3000
 
 // all of the information needed by the back end must be
-// contained in a backEndData_t
-typedef struct {
+// contained in a backEndData_t.
+typedef struct backEndData_s {
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];
 	trRefEntity_t	entities[MAX_REFENTITIES];
@@ -3100,7 +3098,7 @@ typedef struct {
 extern	int		max_polys;
 extern	int		max_polyverts;
 
-extern	backEndData_t	*backEndData;	// the second one may not be allocated
+extern	backEndData_t	*backEndData;
 
 
 void *R_GetCommandBuffer( int bytes );
