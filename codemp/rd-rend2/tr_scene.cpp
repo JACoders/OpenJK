@@ -224,6 +224,24 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	r_numentities++;
 }
 
+/*
+=====================
+RE_AddMiniRefEntityToScene
+
+1:1 with how vanilla does it --eez
+=====================
+*/
+void RE_AddMiniRefEntityToScene( const miniRefEntity_t *miniRefEnt ) {
+	refEntity_t entity;
+	if(!tr.registered)
+		return;
+	if(!miniRefEnt)
+		return;
+	memset(&entity, 0, sizeof(entity));
+	memcpy(&entity, miniRefEnt, sizeof(*miniRefEnt));
+	RE_AddRefEntityToScene(&entity);
+}
+
 
 /*
 =====================

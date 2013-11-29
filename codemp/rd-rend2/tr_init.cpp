@@ -1731,7 +1731,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.ClearScene = RE_ClearScene;
 	// RE_ClearDecals
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
-	re.AddMiniRefEntityToScene = stub_RE_AddMiniRefEntityToScene;
+	re.AddMiniRefEntityToScene = RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;
 	re.AddDecalToScene = RE_AddDecalToScene;
 	re.LightForPoint = R_LightForPoint;
