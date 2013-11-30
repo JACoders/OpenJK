@@ -1697,7 +1697,6 @@ void RE_SetLightStyle(int style, int color)
 
 void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, float *normal) {}
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
-void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
 
 /*
@@ -1752,7 +1751,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.ClearScene = RE_ClearScene;
 	// RE_ClearDecals
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
-	re.AddMiniRefEntityToScene = stub_RE_AddMiniRefEntityToScene;
+	re.AddMiniRefEntityToScene = RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;
 	re.AddDecalToScene = RE_AddDecalToScene;
 	re.LightForPoint = R_LightForPoint;
