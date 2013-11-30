@@ -100,7 +100,7 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	}
 
 	int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
-	if ( *ppFileBuffer == nullptr )
+	if ( *ppFileBuffer == NULL )
 	{
 		return qfalse;
 	}
