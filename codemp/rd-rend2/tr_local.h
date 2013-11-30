@@ -1247,7 +1247,6 @@ typedef enum {
 	SF_TRIANGLES,
 	SF_POLY,
 	SF_MDV,
-	SF_MD4,
 	SF_MDR,
 	SF_IQM,
 	SF_MDX,
@@ -1767,7 +1766,6 @@ typedef enum {
 	MOD_BAD,
 	MOD_BRUSH,
 	MOD_MESH,
-	MOD_MD4,
 	MOD_MDR,
 	MOD_IQM,
 /*
@@ -1821,7 +1819,6 @@ typedef struct model_s {
 	{
 		bmodel_t		*bmodel;			// type == MOD_BRUSH
 		mdvModel_t		*mdv[MD3_MAX_LODS];	// type == MOD_MESH
-		md4Header_t		*md4;				// type == MOD_MD4
 		mdrHeader_t		*mdr;				// type == MOD_MDR
 		iqmData_t		*iqm;				// type == MOD_IQM
 		mdxmData_t		*glm;				// type == MOD_MDXM
@@ -2817,11 +2814,8 @@ ANIMATED MODELS
 =============================================================
 */
 
-// void R_MakeAnimModel( model_t *model );      haven't seen this one really, so not needed I guess.
-void R_AddAnimSurfaces( trRefEntity_t *ent );
-void RB_SurfaceAnim( md4Surface_t *surfType );
 void R_MDRAddAnimSurfaces( trRefEntity_t *ent );
-void RB_MDRSurfaceAnim( md4Surface_t *surface );
+void RB_MDRSurfaceAnim( mdrSurface_t *surface );
 qboolean R_LoadIQM (model_t *mod, void *buffer, int filesize, const char *name );
 void R_AddIQMSurfaces( trRefEntity_t *ent );
 void RB_IQMSurfaceAnim( surfaceType_t *surface );
@@ -3019,6 +3013,12 @@ typedef struct drawSurfsCommand_s {
 	int		numDrawSurfs;
 } drawSurfsCommand_t;
 
+typedef enum {
+	SSF_JPEG,
+	SSF_TGA,
+	SSF_PNG
+} screenshotFormat_t;
+
 typedef struct screenShotCommand_s {
 	int commandId;
 	int x;
@@ -3026,7 +3026,7 @@ typedef struct screenShotCommand_s {
 	int width;
 	int height;
 	char *fileName;
-	qboolean jpeg;
+	screenshotFormat_t format;
 } screenshotCommand_t;
 
 typedef struct videoFrameCommand_s {

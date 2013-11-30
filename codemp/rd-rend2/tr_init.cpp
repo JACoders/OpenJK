@@ -603,10 +603,25 @@ void RB_TakeScreenshot(int x, int y, int width, int height, char *fileName)
 	ri->Hunk_FreeTempMemory(allbuf);
 }
 
-/* 
+/*
 ================== 
+R_TakeScreenshotPNG
+================== 
+*/
+void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) {
+	byte *buffer;
+	size_t offset = 0;
+	int padlen;
+
+	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
+	RE_SavePNG( fileName, buffer, width, height, 3 );
+	ri->Hunk_FreeTempMemory( buffer );
+}
+
+/*
+==================
 RB_TakeScreenshotJPEG
-================== 
+==================
 */
 
 void RB_TakeScreenshotJPEG(int x, int y, int width, int height, char *fileName)
@@ -640,11 +655,17 @@ const void *RB_TakeScreenshotCmd( const void *data ) {
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (cmd->jpeg)
-		RB_TakeScreenshotJPEG( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName);
-	else
-		RB_TakeScreenshot( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName);
-	
+	switch( cmd->format ) {
+		case SSF_JPEG:
+			RB_TakeScreenshotJPEG( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName );
+			break;
+		case SSF_TGA:
+			RB_TakeScreenshot( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName );
+			break;
+		case SSF_PNG:
+			break;
+	}
+
 	return (const void *)(cmd + 1);	
 }
 
@@ -653,7 +674,7 @@ const void *RB_TakeScreenshotCmd( const void *data ) {
 R_TakeScreenshot
 ==================
 */
-void R_TakeScreenshot( int x, int y, int width, int height, char *name, qboolean jpeg ) {
+void R_TakeScreenshot( int x, int y, int width, int height, char *name, screenshotFormat_t format ) {
 	static char	fileName[MAX_OSPATH]; // bad things if two screenshots per frame?
 	screenshotCommand_t	*cmd;
 
@@ -669,7 +690,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *name, qboolean
 	cmd->height = height;
 	Q_strncpyz( fileName, name, sizeof(fileName) );
 	cmd->fileName = fileName;
-	cmd->jpeg = jpeg;
+	cmd->format = format;
 }
 
 /* 
@@ -1674,7 +1695,7 @@ void RE_SetLightStyle(int style, int color)
 	}
 }
 
-void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, float *normal) {}
+void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, vec_t *normal) {}
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
@@ -1731,7 +1752,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.ClearScene = RE_ClearScene;
 	// RE_ClearDecals
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
-	re.AddMiniRefEntityToScene = RE_AddMiniRefEntityToScene;
+	re.AddMiniRefEntityToScene = stub_RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;
 	re.AddDecalToScene = RE_AddDecalToScene;
 	re.LightForPoint = R_LightForPoint;
