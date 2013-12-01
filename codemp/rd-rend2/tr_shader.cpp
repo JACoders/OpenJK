@@ -39,9 +39,14 @@ static char **shaderTextHashTable[MAX_SHADERTEXT_HASH];
 
 qhandle_t RE_RegisterShaderLightMap( const char *name, int lightmapIndex );
 
+void KillTheShaderHashTable(void)
+{
+	memset(shaderTextHashTable, 0, sizeof(shaderTextHashTable));
+}
+
 qboolean ShaderHashTableExists(void)
 {
-	if (shaderTextHashTable[0][0])
+	if (shaderTextHashTable[0])
 	{
 		return qtrue;
 	}
@@ -2732,73 +2737,76 @@ to be rendered with bad shaders. To fix this, need to go through all render comm
 sortedIndex.
 ==============
 */
+extern bool gServerSkinHack;
 static void FixRenderCommandList( int newShader ) {
-	renderCommandList_t	*cmdList = &backEndData->commands;
+	if( !gServerSkinHack ) {
+		renderCommandList_t	*cmdList = &backEndData->commands;
 
-	if( cmdList ) {
-		const void *curCmd = cmdList->cmds;
+		if( cmdList ) {
+			const void *curCmd = cmdList->cmds;
 
-		while ( 1 ) {
-			curCmd = PADP(curCmd, sizeof(void *));
+			while ( 1 ) {
+				curCmd = PADP(curCmd, sizeof(void *));
 
-			switch ( *(const int *)curCmd ) {
-			case RC_SET_COLOR:
-				{
-				const setColorCommand_t *sc_cmd = (const setColorCommand_t *)curCmd;
-				curCmd = (const void *)(sc_cmd + 1);
-				break;
-				}
-			case RC_STRETCH_PIC:
-				{
-				const stretchPicCommand_t *sp_cmd = (const stretchPicCommand_t *)curCmd;
-				curCmd = (const void *)(sp_cmd + 1);
-				break;
-				}
-			case RC_ROTATE_PIC:
-			case RC_ROTATE_PIC2:
-				{
-					const rotatePicCommand_t *sp_cmd = (const rotatePicCommand_t *)curCmd;
+				switch ( *(const int *)curCmd ) {
+				case RC_SET_COLOR:
+					{
+					const setColorCommand_t *sc_cmd = (const setColorCommand_t *)curCmd;
+					curCmd = (const void *)(sc_cmd + 1);
+					break;
+					}
+				case RC_STRETCH_PIC:
+					{
+					const stretchPicCommand_t *sp_cmd = (const stretchPicCommand_t *)curCmd;
 					curCmd = (const void *)(sp_cmd + 1);
 					break;
-				}
-			case RC_DRAW_SURFS:
-				{
-				int i;
-				drawSurf_t	*drawSurf;
-				shader_t	*shader;
-				int			fogNum;
-				int			entityNum;
-				int			dlightMap;
-				int         pshadowMap;
-				int			sortedIndex;
-				const drawSurfsCommand_t *ds_cmd =  (const drawSurfsCommand_t *)curCmd;
-
-				for( i = 0, drawSurf = ds_cmd->drawSurfs; i < ds_cmd->numDrawSurfs; i++, drawSurf++ ) {
-					R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlightMap, &pshadowMap );
-                    sortedIndex = (( drawSurf->sort >> QSORT_SHADERNUM_SHIFT ) & (MAX_SHADERS-1));
-					if( sortedIndex >= newShader ) {
-						sortedIndex++;
-						drawSurf->sort = (sortedIndex << QSORT_SHADERNUM_SHIFT) | entityNum | ( fogNum << QSORT_FOGNUM_SHIFT ) | ( (int)pshadowMap << QSORT_PSHADOW_SHIFT) | (int)dlightMap;
 					}
+				case RC_ROTATE_PIC:
+				case RC_ROTATE_PIC2:
+					{
+						const rotatePicCommand_t *sp_cmd = (const rotatePicCommand_t *)curCmd;
+						curCmd = (const void *)(sp_cmd + 1);
+						break;
+					}
+				case RC_DRAW_SURFS:
+					{
+					int i;
+					drawSurf_t	*drawSurf;
+					shader_t	*shader;
+					int			fogNum;
+					int			entityNum;
+					int			dlightMap;
+					int         pshadowMap;
+					int			sortedIndex;
+					const drawSurfsCommand_t *ds_cmd =  (const drawSurfsCommand_t *)curCmd;
+
+					for( i = 0, drawSurf = ds_cmd->drawSurfs; i < ds_cmd->numDrawSurfs; i++, drawSurf++ ) {
+						R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlightMap, &pshadowMap );
+						sortedIndex = (( drawSurf->sort >> QSORT_SHADERNUM_SHIFT ) & (MAX_SHADERS-1));
+						if( sortedIndex >= newShader ) {
+							sortedIndex++;
+							drawSurf->sort = (sortedIndex << QSORT_SHADERNUM_SHIFT) | entityNum | ( fogNum << QSORT_FOGNUM_SHIFT ) | ( (int)pshadowMap << QSORT_PSHADOW_SHIFT) | (int)dlightMap;
+						}
+					}
+					curCmd = (const void *)(ds_cmd + 1);
+					break;
+					}
+				case RC_DRAW_BUFFER:
+					{
+					const drawBufferCommand_t *db_cmd = (const drawBufferCommand_t *)curCmd;
+					curCmd = (const void *)(db_cmd + 1);
+					break;
+					}
+				case RC_SWAP_BUFFERS:
+					{
+					const swapBuffersCommand_t *sb_cmd = (const swapBuffersCommand_t *)curCmd;
+					curCmd = (const void *)(sb_cmd + 1);
+					break;
+					}
+				case RC_END_OF_LIST:
+				default:
+					return;
 				}
-				curCmd = (const void *)(ds_cmd + 1);
-				break;
-				}
-			case RC_DRAW_BUFFER:
-				{
-				const drawBufferCommand_t *db_cmd = (const drawBufferCommand_t *)curCmd;
-				curCmd = (const void *)(db_cmd + 1);
-				break;
-				}
-			case RC_SWAP_BUFFERS:
-				{
-				const swapBuffersCommand_t *sb_cmd = (const swapBuffersCommand_t *)curCmd;
-				curCmd = (const void *)(sb_cmd + 1);
-				break;
-				}
-			case RC_END_OF_LIST:
-			default:
-				return;
 			}
 		}
 	}
@@ -3466,6 +3474,44 @@ shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImag
 	return FinishShader();
 }
 
+shader_t *R_FindServerShader( const char *name, int lightmapIndex, qboolean mipRawImage ) 
+{
+	char		strippedName[MAX_QPATH];
+	int			hash;
+	shader_t	*sh;
+
+	if ( name[0] == 0 ) {
+		return tr.defaultShader;
+	}
+
+	COM_StripExtension( name, strippedName, sizeof( strippedName ) );
+
+	hash = generateHashValue(strippedName, FILE_HASH_SIZE);
+
+	//
+	// see if the shader is already loaded
+	//
+	for (sh = hashTable[hash]; sh; sh = sh->next) {
+		// NOTE: if there was no shader or image available with the name strippedName
+		// then a default shader is created with lightmapIndex == LIGHTMAP_NONE, so we
+		// have to check all default shaders otherwise for every call to R_FindShader
+		// with that same strippedName a new default shader is created.
+		if ( (sh->lightmapIndex == lightmapIndex || sh->defaultShader) &&
+		     !Q_stricmp(sh->name, strippedName)) {
+			// match found
+			return sh;
+		}
+	}
+
+	// clear the global shader
+	Com_Memset( &shader, 0, sizeof( shader ) );
+	Com_Memset( &stages, 0, sizeof( stages ) );
+	Q_strncpyz(shader.name, strippedName, sizeof(shader.name));
+	shader.lightmapIndex = lightmapIndex;
+	
+	shader.defaultShader = qtrue;
+	return FinishShader();
+}
 
 qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage) {
 	int			i, hash;

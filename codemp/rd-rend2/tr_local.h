@@ -2467,7 +2467,9 @@ void		RE_BeginFrame( stereoFrame_t stereoFrame );
 void		RE_BeginRegistration( glconfig_t *glconfig );
 void		RE_LoadWorldMap( const char *mapname );
 void		RE_SetWorldVisData( const byte *vis );
+qhandle_t	RE_RegisterServerModel( const char *name );
 qhandle_t	RE_RegisterModel( const char *name );
+qhandle_t	RE_RegisterServerSkin( const char *name );
 qhandle_t	RE_RegisterSkin( const char *name );
 void		RE_Shutdown( qboolean destroyWindow );
 
@@ -2501,6 +2503,7 @@ skin_t	*R_GetSkinByHandle( qhandle_t hSkin );
 int R_ComputeLOD( trRefEntity_t *ent );
 
 const void *RB_TakeVideoFrameCmd( const void *data );
+void RE_HunkClearCrap(void);
 
 //
 // tr_shader.c

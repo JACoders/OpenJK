@@ -387,6 +387,413 @@ qhandle_t RE_RegisterModel( const char *name ) {
 	return hModel;
 }
 
+//rww - Please forgive me for all of the below. Feel free to destroy it and replace it with something better.
+//You obviously can't touch anything relating to shaders or ri-> functions here in case a dedicated
+//server is running, which is the entire point of having these seperate functions. If anything major
+//is changed in the non-server-only versions of these functions it would be wise to incorporate it
+//here as well.
+
+/*
+=================
+R_LoadMDXA_Server - load a Ghoul 2 animation file
+=================
+*/
+qboolean R_LoadMDXA_Server( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
+
+	mdxaHeader_t		*pinmodel, *mdxa;
+	int					version;
+	int					size;
+
+ 	pinmodel = (mdxaHeader_t *)buffer;
+	//
+	// read some fields from the binary, but only LittleLong() them when we know this wasn't an already-cached model...
+	//	
+	version = (pinmodel->version);
+	size	= (pinmodel->ofsEnd);
+
+	if (!bAlreadyCached)
+	{
+		LL(version);
+		LL(size);
+	}
+	
+	if (version != MDXA_VERSION) {
+		return qfalse;
+	}
+
+	mod->type		= MOD_MDXA;
+	mod->dataSize  += size;
+
+	qboolean bAlreadyFound = qfalse;
+	mdxa = (mdxaHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA );
+	mod->data.gla = mdxa;
+
+	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
+
+	if (!bAlreadyFound)
+	{
+		// horrible new hackery, if !bAlreadyFound then we've just done a tag-morph, so we need to set the 
+		//	bool reference passed into this function to true, to tell the caller NOT to do an ri->FS_Freefile since
+		//	we've hijacked that memory block...
+		//
+		// Aaaargh. Kill me now...
+		//
+		bAlreadyCached = qtrue;
+		assert( mdxa == buffer );
+//		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
+
+		LL(mdxa->ident);
+		LL(mdxa->version);
+		LL(mdxa->numFrames);
+		LL(mdxa->numBones);
+		LL(mdxa->ofsFrames);
+		LL(mdxa->ofsEnd);
+	}
+
+ 	if ( mdxa->numFrames < 1 ) {
+		return qfalse;
+	}
+
+	if (bAlreadyFound)
+	{
+		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
+	}
+
+	return qtrue;
+}
+
+/*
+=================
+R_LoadMDXM_Server - load a Ghoul 2 Mesh file
+=================
+*/
+qboolean R_LoadMDXM_Server( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
+	int					i,l, j;
+	mdxmHeader_t		*pinmodel, *mdxm;
+	mdxmLOD_t			*lod;
+	mdxmSurface_t		*surf;
+	int					version;
+	int					size;
+	//shader_t			*sh;
+	mdxmSurfHierarchy_t	*surfInfo;
+    
+	pinmodel= (mdxmHeader_t *)buffer;
+	//
+	// read some fields from the binary, but only LittleLong() them when we know this wasn't an already-cached model...
+	//	
+	version = (pinmodel->version);
+	size	= (pinmodel->ofsEnd);
+
+	if (!bAlreadyCached)
+	{
+		LL(version);
+		LL(size);
+	}
+
+	if (version != MDXM_VERSION) {
+		return qfalse;
+	}
+
+	mod->type	   = MOD_MDXM;
+	mod->dataSize += size;	
+	
+	qboolean bAlreadyFound = qfalse;
+	mdxm = (mdxmHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM );
+	mod->data.glm = (mdxmData_t *)ri->Hunk_Alloc (sizeof (mdxmData_t), h_low);
+	mod->data.glm->header = mdxm;
+
+	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
+
+	if (!bAlreadyFound)
+	{
+		// horrible new hackery, if !bAlreadyFound then we've just done a tag-morph, so we need to set the 
+		//	bool reference passed into this function to true, to tell the caller NOT to do an ri->FS_Freefile since
+		//	we've hijacked that memory block...
+		//
+		// Aaaargh. Kill me now...
+		//
+		bAlreadyCached = qtrue;
+		assert( mdxm == buffer );
+//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
+
+		LL(mdxm->ident);
+		LL(mdxm->version);
+		LL(mdxm->numLODs);
+		LL(mdxm->ofsLODs);
+		LL(mdxm->numSurfaces);
+		LL(mdxm->ofsSurfHierarchy);
+		LL(mdxm->ofsEnd);
+	}
+		
+	// first up, go load in the animation file we need that has the skeletal animation info for this model
+	mdxm->animIndex = RE_RegisterServerModel(va ("%s.gla",mdxm->animName));
+	if (!mdxm->animIndex) 
+	{
+		return qfalse;
+	}
+
+	mod->numLods = mdxm->numLODs -1 ;	//copy this up to the model for ease of use - it wil get inced after this.
+
+	if (bAlreadyFound)
+	{
+		return qtrue;	// All done. Stop, go no further, do not LittleLong(), do not pass Go...
+	}
+
+	surfInfo = (mdxmSurfHierarchy_t *)( (byte *)mdxm + mdxm->ofsSurfHierarchy);
+ 	for ( i = 0 ; i < mdxm->numSurfaces ; i++) 
+	{
+		LL(surfInfo->numChildren);
+		LL(surfInfo->parentIndex);
+
+		// do all the children indexs
+		for (j=0; j<surfInfo->numChildren; j++)
+		{
+			LL(surfInfo->childIndexes[j]);
+		}
+
+		// We will not be using shaders on the server.
+		//sh = 0;
+		// insert it in the surface list
+		
+		surfInfo->shaderIndex = 0;
+
+		CModelCache->StoreShaderRequest(mod_name, &surfInfo->shader[0], &surfInfo->shaderIndex);
+
+		// find the next surface
+		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + (intptr_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surfInfo->numChildren ] ));
+  	}
+	
+	// swap all the LOD's	(we need to do the middle part of this even for intel, because of shader reg and err-check)
+	lod = (mdxmLOD_t *) ( (byte *)mdxm + mdxm->ofsLODs );
+	for ( l = 0 ; l < mdxm->numLODs ; l++)
+	{
+		int	triCount = 0;
+
+		LL(lod->ofsEnd);
+		// swap all the surfaces
+		surf = (mdxmSurface_t *) ( (byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof(mdxmLODSurfOffset_t)) );
+		for ( i = 0 ; i < mdxm->numSurfaces ; i++) 
+		{
+			LL(surf->numTriangles);
+			LL(surf->ofsTriangles);
+			LL(surf->numVerts);
+			LL(surf->ofsVerts);
+			LL(surf->ofsEnd);
+			LL(surf->ofsHeader);
+			LL(surf->numBoneReferences);
+			LL(surf->ofsBoneReferences);
+//			LL(surf->maxVertBoneWeights);
+
+			triCount += surf->numTriangles;
+										
+			if ( surf->numVerts > SHADER_MAX_VERTEXES ) {
+				return qfalse;
+			}
+			if ( surf->numTriangles*3 > SHADER_MAX_INDEXES ) {
+				return qfalse;
+			}
+		
+			// change to surface identifier
+			surf->ident = SF_MDX;
+
+			// register the shaders
+
+			// find the next surface
+			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
+		}
+
+		// find the next LOD
+		lod = (mdxmLOD_t *)( (byte *)lod + lod->ofsEnd );
+	}
+
+	return qtrue;
+}
+
+/*
+====================
+R_RegisterMDX_Server
+====================
+*/
+qhandle_t R_RegisterMDX_Server(const char *name, model_t *mod)
+{
+	unsigned	*buf;
+	int			lod;
+	int			ident;
+	qboolean	loaded = qfalse;
+	int			numLoaded;
+	char filename[MAX_QPATH], namebuf[MAX_QPATH+20];
+	char *fext, defex[] = "md3";
+
+	numLoaded = 0;
+
+	strcpy(filename, name);
+
+	fext = strchr(filename, '.');
+	if(!fext)
+		fext = defex;
+	else
+	{
+		*fext = '\0';
+		fext++;
+	}
+
+	for (lod = MD3_MAX_LODS - 1 ; lod >= 0 ; lod--)
+	{
+		if(lod)
+			Com_sprintf(namebuf, sizeof(namebuf), "%s_%d.%s", filename, lod, fext);
+		else
+			Com_sprintf(namebuf, sizeof(namebuf), "%s.%s", filename, fext);
+
+		qboolean bAlreadyCached = qfalse;
+		if( !CModelCache->LoadFile( namebuf, (void**)&buf, &bAlreadyCached ) )
+			continue;
+
+		const char *blah = (const char *)(*buf);
+		ident = *(unsigned *)buf;
+		if( !bAlreadyCached )
+			ident = LittleLong(ident);
+		
+		switch(ident)
+		{
+			case MDXA_IDENT:
+				loaded = R_LoadMDXA_Server(mod, buf, namebuf, bAlreadyCached);
+				break;
+			case MDXM_IDENT:
+				loaded = R_LoadMDXM_Server(mod, buf, namebuf, bAlreadyCached);
+				break;
+			default:
+				//ri->Printf(PRINT_WARNING, "R_RegisterMDX_Server: unknown ident for %s\n", name);
+				break;
+		}
+
+		if(loaded)
+		{
+			mod->numLods++;
+			numLoaded++;
+		}
+		else
+			break;
+	}
+
+	if(numLoaded)
+	{
+		// duplicate into higher lod spots that weren't
+		// loaded, in case the user changes r_lodbias on the fly
+		for(lod--; lod >= 0; lod--)
+		{
+			mod->numLods++;
+			mod->data.mdv[lod] = mod->data.mdv[lod + 1];
+		}
+
+		return mod->index;
+	}
+
+/*#ifdef _DEBUG
+	ri->Printf(PRINT_WARNING,"R_RegisterMDX_Server: couldn't load %s\n", name);
+#endif*/
+
+	mod->type = MOD_BAD;
+	return 0;
+}
+
+// Note that the ordering indicates the order of preference used
+// when there are multiple models of different formats available
+static modelExtToLoaderMap_t serverModelLoaders[ ] =
+{
+	/* 
+	Ghoul 2 Insert Start
+	*/
+	{ "glm", R_RegisterMDX_Server },
+	{ "gla", R_RegisterMDX_Server },
+	/*
+	Ghoul 2 Insert End
+	*/
+};
+
+static int numServerModelLoaders = ARRAY_LEN(serverModelLoaders);
+
+qhandle_t RE_RegisterServerModel( const char *name ) {
+	model_t		*mod;
+	qhandle_t	hModel;
+	int			i;
+	char		localName[ MAX_QPATH ];
+	const char	*ext;
+
+	if (!r_noServerGhoul2)
+	{ //keep it from choking when it gets to these checks in the g2 code. Registering all r_ cvars for the server would be a Bad Thing though.
+		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0);
+	}
+
+	if ( !name || !name[0] ) {
+		return 0;
+	}
+
+	if ( strlen( name ) >= MAX_QPATH ) {
+		return 0;
+	}
+
+	// search the currently loaded models
+	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+		return hModel;
+
+	if ( name[0] == '*' )
+	{
+		if ( strcmp (name, "*default.gla") != 0 )
+		{
+			return 0;
+		}
+	}
+
+	// allocate a new model_t
+	if ( ( mod = R_AllocModel() ) == NULL ) {
+		ri->Printf( PRINT_WARNING, "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
+		return 0;
+	}
+
+	// only set the name after the model has been successfully loaded
+	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
+
+	R_IssuePendingRenderCommands();
+
+	mod->type = MOD_BAD;
+	mod->numLods = 0;
+
+	//
+	// load the files
+	//
+	Q_strncpyz( localName, name, MAX_QPATH );
+
+	ext = COM_GetExtension( localName );
+
+	if( *ext )
+	{
+		// Look for the correct loader and use it
+		for( i = 0; i < numServerModelLoaders; i++ )
+		{
+			if( !Q_stricmp( ext, serverModelLoaders[ i ].ext ) )
+			{
+				// Load
+				hModel = serverModelLoaders[ i ].ModelLoader( localName, mod );
+				break;
+			}
+		}
+
+		// A loader was found
+		if( i < numServerModelLoaders )
+		{
+			if( hModel )
+			{
+				// Something loaded
+				CModelCache->InsertLoaded( name, hModel );
+				return mod->index;
+			}
+		}
+	}
+
+	CModelCache->InsertLoaded( name, hModel );
+	return hModel;
+}
+
 /*
 =================
 R_LoadMD3
@@ -1187,6 +1594,11 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 
 //=============================================================================
 
+void R_SVModelInit()
+{
+	R_ModelInit();
+}
+
 /*
 ===============
 R_ModelInit
@@ -1202,6 +1614,16 @@ void R_ModelInit( void ) {
 
 	mod = R_AllocModel();
 	mod->type = MOD_BAD;
+}
+
+extern void KillTheShaderHashTable(void);
+void RE_HunkClearCrap(void)
+{ //get your dirty sticky assets off me, you damn dirty hunk!
+	KillTheShaderHashTable();
+	tr.numModels = 0;
+	CModelCache->DeleteAll();
+	tr.numShaders = 0;
+	tr.numSkins = 0;
 }
 
 

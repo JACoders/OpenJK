@@ -18,7 +18,10 @@ RE_RegisterSkin
 ===============
 */
 
-shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
+bool gServerSkinHack = false;
+
+
+shader_t *R_FindServerShader( const char *name, int lightmapIndex, qboolean mipRawImage );
 static char *CommaParse( char **data_p );
 /*
 ===============
@@ -140,7 +143,9 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		skin->surfaces[skin->numSurfaces] = (_skinSurface_t *)surf;
 
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
-		surf->shader = R_FindShader( token, LIGHTMAP_NONE, qtrue );
+
+		if (gServerSkinHack)	surf->shader = R_FindServerShader( token, LIGHTMAP_NONE, qtrue );
+		else					surf->shader = R_FindShader( token, LIGHTMAP_NONE, qtrue );
 		skin->numSurfaces++;
 	}
 
@@ -232,7 +237,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 CommaParse
 
 This is unfortunate, but the skin files aren't
-compatable with our normal parsing rules.
+compatible with our normal parsing rules.
 ==================
 */
 static char *CommaParse( char **data_p ) {
@@ -332,6 +337,30 @@ static char *CommaParse( char **data_p ) {
 
 	*data_p = ( char * ) data;
 	return com_token;
+}
+
+/*
+===============
+RE_RegisterServerSkin
+
+Mangled version of the above function to load .skin files on the server.
+===============
+*/
+qhandle_t RE_RegisterServerSkin( const char *name ) {
+	qhandle_t r;
+
+	if (ri->Cvar_VariableIntegerValue( "cl_running" ) &&
+		ri->Com_TheHunkMarkHasBeenMade() &&
+		ShaderHashTableExists())
+	{ //If the client is running then we can go straight into the normal registerskin func
+		return RE_RegisterSkin(name);
+	}
+
+	gServerSkinHack = true;
+	r = RE_RegisterSkin(name);
+	gServerSkinHack = false;
+
+	return r;
 }
 
 /*

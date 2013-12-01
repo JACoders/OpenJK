@@ -1611,6 +1611,8 @@ static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod =
 
 static float GetDistanceCull( void ) { return 6000/*tr.distanceCull*/; }
 
+extern void R_SVModelInit( void ); //tr_model.cpp
+
 static void GetRealRes( int *w, int *h ) {
 	*w = glConfig.vidWidth;
 	*h = glConfig.vidHeight;
@@ -1620,18 +1622,6 @@ extern IGhoul2InfoArray &TheGhoul2InfoArray();
 const CGhoul2Info NullG2;
 
 // STUBS, REPLACEME
-qhandle_t stub_RegisterServerModel( const char *name )
-{
-	//ri->Printf( PRINT_ALL, "stub_RegisterServerModel\n" );
-	return 0;
-}
-
-qhandle_t stub_RegisterServerSkin( const char *name )
-{
-	//ri->Printf( PRINT_ALL, "stub_RegisterServerSkin\n" );
-	return 0;
-}
-
 qboolean stub_InitializeWireframeAutomap() { return qtrue; }
 
 void RE_GetLightStyle(int style, color4ub_t color)
@@ -1690,11 +1680,9 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.BeginRegistration = RE_BeginRegistration;
 	re.RegisterModel = RE_RegisterModel;
-	// RE_RegisterServerModel
-	re.RegisterServerModel = stub_RegisterServerModel;
+	re.RegisterServerModel = RE_RegisterServerModel;
 	re.RegisterSkin = RE_RegisterSkin;
-	// RE_RegisterServerSkin
-	re.RegisterServerSkin = stub_RegisterServerSkin;
+	re.RegisterServerSkin = RE_RegisterServerSkin;
 	re.RegisterShader = RE_RegisterShader;
 	re.RegisterShaderNoMip = RE_RegisterShaderNoMip;
 	re.ShaderNameFromIndex = RE_ShaderNameFromIndex;
@@ -1763,6 +1751,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.InitSkins							= R_InitSkins;
 	re.InitShaders							= R_InitShaders;
+	re.SVModelInit							= R_SVModelInit;
+	re.HunkClearCrap						= RE_HunkClearCrap;
 
 	re.G2API_AddBolt						= G2API_AddBolt;
 	re.G2API_AddBoltSurfNum					= G2API_AddBoltSurfNum;
