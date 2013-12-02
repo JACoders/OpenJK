@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-typedef std::vector<cvar_t *> cvarfloat;
+typedef std::vector<cvar_t *> cvarvec_t;
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
@@ -945,7 +945,7 @@ with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables( fileHandle_t f ) {
-	cvarfloat cvar_vec;
+	cvarvec_t cvar_vec;
 	for (cvar_t *var = cvar_vars ; var ; var = var->next) {
 		if( !var->name )
 			continue;
@@ -957,7 +957,7 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 
 	std::sort(cvar_vec.begin(), cvar_vec.end(), CvarSort);
 
-	cvarfloat::const_iterator itr;
+	cvarvec_t::const_iterator itr;
 	char buffer[1024];
 	for (itr = cvar_vec.begin(); itr != cvar_vec.end(); ++itr)
 	{
@@ -1025,7 +1025,7 @@ void Cvar_List_f( void ) {
 void Cvar_ListModified_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
-	cvarfloat cvar_vec;
+	cvarvec_t cvar_vec;
 
 	// build a list of cvars that are modified
 	for ( var=cvar_vars, i=0;
@@ -1043,7 +1043,7 @@ void Cvar_ListModified_f( void ) {
 	std::sort( cvar_vec.begin(), cvar_vec.end(), CvarSort );
 
 	// print them
-	cvarfloat::const_iterator itr;
+	cvarvec_t::const_iterator itr;
 	for ( itr = cvar_vec.begin();
 		itr != cvar_vec.end();
 		++itr )
