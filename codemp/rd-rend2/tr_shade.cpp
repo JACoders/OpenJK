@@ -445,7 +445,7 @@ static void ProjectDlightTexture( void ) {
 }
 
 
-static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t vertColor )
+static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t baseColor, vec4_t vertColor )
 {
 	baseColor[0] =  
    	baseColor[1] = 
@@ -460,7 +460,12 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	//
 	// rgbGen
 	//
-	switch ( pStage->rgbGen )
+	if ( !forceRGBGen )
+	{
+		forceRGBGen = pStage->rgbGen;
+	}
+
+	switch ( forceRGBGen )
 	{
 		case CGEN_IDENTITY_LIGHTING:
 			baseColor[0] = 
@@ -565,8 +570,10 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 		case AGEN_SKIP:
 			break;
 		case AGEN_CONST:
-			baseColor[3] = pStage->constantColor[3] / 255.0f;
-			vertColor[3] = 0.0f;
+			if ( forceRGBGen != CGEN_CONST ) {
+				baseColor[3] = pStage->constantColor[3] / 255.0f;
+				vertColor[3] = 0.0f;
+			}
 			break;
 		case AGEN_WAVEFORM:
 			baseColor[3] = RB_CalcWaveAlphaSingle( &pStage->alphaWave );
@@ -587,8 +594,10 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			vertColor[3] = 0.0f;
 			break;
 		case AGEN_VERTEX:
-			baseColor[3] = 0.0f;
-			vertColor[3] = 1.0f;
+			if ( forceRGBGen != CGEN_VERTEX ) {
+				baseColor[3] = 0.0f;
+				vertColor[3] = 1.0f;
+			}
 			break;
 		case AGEN_ONE_MINUS_VERTEX:
 			baseColor[3] = 1.0f;
@@ -771,7 +780,7 @@ static void ForwardDlight( void ) {
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, baseColor, vertColor);
+			ComputeShaderColors(pStage, 0, baseColor, vertColor);
 
 			GLSL_SetUniformVec4(sp, UNIFORM_BASECOLOR, baseColor);
 			GLSL_SetUniformVec4(sp, UNIFORM_VERTCOLOR, vertColor);
@@ -1217,7 +1226,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, baseColor, vertColor);
+			ComputeShaderColors(pStage, forceRGBGen, baseColor, vertColor);
 
 			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 			{
@@ -1253,7 +1262,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			GLSL_SetUniformFloat(sp, UNIFORM_PORTALRANGE, tess.shader->portalRange);
 		}
 
-		GLSL_SetUniformInt(sp, UNIFORM_COLORGEN, pStage->rgbGen);
+		GLSL_SetUniformInt(sp, UNIFORM_COLORGEN, forceRGBGen ? forceRGBGen : pStage->rgbGen);
 		GLSL_SetUniformInt(sp, UNIFORM_ALPHAGEN, pStage->alphaGen);
 
 		if ( input->fogNum )
