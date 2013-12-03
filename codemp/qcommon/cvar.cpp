@@ -642,7 +642,6 @@ cvar_t *Cvar_User_Set( const char *var_name, const char *value) {
 	return Cvar_Set2 (var_name, value, CVAR_USER_CREATED, qfalse);
 }
 
-/* This array MUST be sorted correctly by alphabetical name field */
 static const char *legacyCvars[] = {
 	"bg_fighterAltControl",
 	"g_dlURL",
@@ -658,8 +657,12 @@ static const char *legacyCvars[] = {
 
 static const size_t numLegacyCvars = ARRAY_LEN( legacyCvars );
 
-int cvarcmp( const void *a, const void *b ) {
-	return Q_stricmp( (const char *)a, *(const char * const *)b );
+static bool FindLegacyCvar( const char *var_name ) {
+	for ( size_t i=0; i<numLegacyCvars; i++ ) {
+		if ( !Q_stricmp( legacyCvars[i], var_name ) )
+			return true;
+	}
+	return false;
 }
 
 /*
@@ -673,24 +676,26 @@ void Cvar_Server_Set( const char *var_name, const char *value )
 {
 	int flags = Cvar_Flags( var_name );
 
-	// If this cvar may not be modified by a server discard the value.
-	// But check for ones where the legacy gamecode might still need to be allowed
-	if((unsigned)(flags != CVAR_NONEXISTENT) && !(flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED | CVAR_USER_CREATED)))
+	if((unsigned)(flags != CVAR_NONEXISTENT))
 	{
-		const char *var = (const char *)bsearch( var_name, legacyCvars, numLegacyCvars, sizeof( legacyCvars[0] ), cvarcmp );
-		if ( !var ) {
-			Com_Printf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", var_name, value);
+		// If this cvar may not be modified by a server discard the value.
+		// But check for ones where the legacy gamecode might still need to be allowed
+		if(!(flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED | CVAR_USER_CREATED)))
+		{
+			if ( !FindLegacyCvar( var_name ) ) {
+				Com_Printf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", var_name, value);
+				return;
+			}
+		}
+
+		if((flags & CVAR_PROTECTED))
+		{
+			if( value )
+				Com_Error( ERR_DROP, "Server tried to set \"%s\" to \"%s\"", var_name, value );
+			else
+				Com_Error( ERR_DROP, "Server tried to modify \"%s\"", var_name );
 			return;
 		}
-	}
-
-	if((unsigned)(flags != CVAR_NONEXISTENT) && (flags & CVAR_PROTECTED))
-	{
-		if( value )
-			Com_Error( ERR_DROP, "Server tried to set \"%s\" to \"%s\"", var_name, value );
-		else
-			Com_Error( ERR_DROP, "Server tried to modify \"%s\"", var_name );
-		return;
 	}
 
 	Cvar_Set2( var_name, value, CVAR_SERVER_CREATED, qtrue );
@@ -706,7 +711,7 @@ static const char *vmStrs[MAX_VM] = {
 ============
 Cvar_VM_Set
 
-Set cvar for game or cgame vm.
+Set cvar for game, cgame, or ui vm.
 ============
 */
 void Cvar_VM_Set( const char *var_name, const char *value, vmSlots_t vmslot )
