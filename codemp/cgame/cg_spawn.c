@@ -250,17 +250,17 @@ void SP_misc_weather_zone( void ) {
 	trap->WE_AddWeatherZone( mins, maxs );
 }
 typedef struct spawn_s {
-	char *name;
-	void ( *spawn )( void );
+	const char	*name;
+	void		(*spawn)( void );
 } spawn_t;
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 spawn_t spawns [] = {
-	{ "misc_model_static",	   SP_misc_model_static		  },
-	{ "misc_skyportal",	   SP_misc_skyportal		  },
-	{ "misc_skyportal_orient", SP_misc_skyportal_orient	  },
-	{ "misc_weather_zone",	   SP_misc_weather_zone		  },
-
-	{ NULL,							0 },
+	{ "misc_model_static",		SP_misc_model_static		  },
+	{ "misc_skyportal",			SP_misc_skyportal		  },
+	{ "misc_skyportal_orient",	SP_misc_skyportal_orient	  },
+	{ "misc_weather_zone",		SP_misc_weather_zone		  },
 };
 
 /*
@@ -271,6 +271,10 @@ Spawn an entity and fill in all of the level fields from
 cg.spawnVars[], then call the class specfic spawn function
 ===================
 */
+static int spawncmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((spawn_t*)b)->name );
+}
+
 void CG_ParseEntityFromSpawnVars( void ) {
 	spawn_t *s;
 	int i;
@@ -312,12 +316,9 @@ void CG_ParseEntityFromSpawnVars( void ) {
 	}
 
 	if( CG_SpawnString( "classname", "", &classname ) ) {
-		for( s = spawns; s->name; s++ ) {
-			if( !Q_stricmp( s->name, classname ) ) {
-				s->spawn();
-				break;
-			}
-		}
+		s = (spawn_t *)bsearch( classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
+		if ( s )
+			s->spawn();
 	}
 }
 /*
