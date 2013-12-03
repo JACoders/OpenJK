@@ -600,7 +600,7 @@ This is called to remove all decals from the world
 ===================
 */
 
-static void RE_ClearDecals ( void ) 
+void RE_ClearDecals ( void )
 {
 	memset( re_decalPolys, 0, sizeof(re_decalPolys) );
 	memset( re_decalPolyHead, 0, sizeof(re_decalPolyHead) );

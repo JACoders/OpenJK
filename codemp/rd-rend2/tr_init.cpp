@@ -1701,7 +1701,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.DrawRotatePic2 = RE_RotatePic2;
 
 	re.ClearScene = RE_ClearScene;
-	// RE_ClearDecals
+	re.ClearDecals = RE_ClearDecals;
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
 	re.AddMiniRefEntityToScene = RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;

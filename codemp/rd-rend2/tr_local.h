@@ -1833,6 +1833,7 @@ typedef struct model_s {
 
 void		R_ModelInit (void);
 void		R_InitDecals (void);
+void		RE_ClearDecals ( void );
 
 model_t		*R_GetModelByHandle( qhandle_t hModel );
 int			R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFrame, 
