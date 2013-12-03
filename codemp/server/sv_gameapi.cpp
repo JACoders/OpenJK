@@ -1719,6 +1719,12 @@ static void SV_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelInde
 	strcpy( fillBuf, tmp );
 }
 
+static void GVM_Cvar_Set( const char *var_name, const char *value ) {
+	Cvar_VM_Set( var_name, value, VM_GAME );
+}
+
+// legacy syscall
+
 intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	switch( args[0] ) {
 
@@ -1806,7 +1812,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_CVAR_SET:
-		Cvar_Set( (const char *)VMA(1), (const char *)VMA(2) );
+		Cvar_VM_Set( (const char *)VMA(1), (const char *)VMA(2), VM_GAME );
 		return 0;
 
 	case G_CVAR_VARIABLE_INTEGER_VALUE:
@@ -2895,7 +2901,7 @@ void SV_BindGame( void ) {
 		gi.TrueFree								= VM_Shifted_Free;
 		gi.SnapVector							= Sys_SnapVector;
 		gi.Cvar_Register						= Cvar_Register;
-		gi.Cvar_Set								= Cvar_Set;
+		gi.Cvar_Set								= GVM_Cvar_Set;
 		gi.Cvar_Update							= Cvar_Update;
 		gi.Cvar_VariableIntegerValue			= Cvar_VariableIntegerValue;
 		gi.Cvar_VariableStringBuffer			= Cvar_VariableStringBuffer;

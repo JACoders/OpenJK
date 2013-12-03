@@ -838,8 +838,6 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin)
 
 void SiegeRespawn(gentity_t *ent)
 {
-	gentity_t *tent;
-
 	if (ent->client->sess.sessionTeam != ent->client->sess.siegeDesiredTeam)
 	{
 		SetTeamQuick(ent, ent->client->sess.siegeDesiredTeam, qtrue);
@@ -847,9 +845,6 @@ void SiegeRespawn(gentity_t *ent)
 	else
 	{
 		ClientSpawn(ent);
-		// add a teleportation effect
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
 	}
 }
 
