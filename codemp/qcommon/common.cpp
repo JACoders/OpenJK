@@ -385,23 +385,16 @@ be after execing the config and default.
 ===============
 */
 void Com_StartupVariable( const char *match ) {
-	char	*s;
-
 	for (int i=0 ; i < com_numConsoleLines ; i++) {
 		Cmd_TokenizeString( com_consoleLines[i] );
 		if ( strcmp( Cmd_Argv(0), "set" ) ) {
 			continue;
 		}
 
-		s = Cmd_Argv(1);
+		char *s = Cmd_Argv(1);
 
-		if(!match || !strcmp(s, match))
-		{
-			if((unsigned)Cvar_Flags(s) == CVAR_NONEXISTENT)
-				Cvar_Get(s, Cmd_Argv(2), CVAR_USER_CREATED);
-			else
-				Cvar_Set2(s, Cmd_Argv(2), qfalse);
-		}
+		if ( !match || !strcmp( s, match ) )
+			Cvar_User_Set( s, Cmd_Argv( 2 ) );
 	}
 }
 

@@ -770,6 +770,10 @@ static void CL_Key_SetCatcher( int catcher ) {
 	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
 }
 
+static void CGVM_Cvar_Set( const char *var_name, const char *value ) {
+	Cvar_VM_Set( var_name, value, VM_CGAME );
+}
+
 // legacy syscall
 
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
@@ -860,7 +864,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CVAR_SET:
-		Cvar_Set( (const char *)VMA(1), (const char *)VMA(2) );
+		Cvar_VM_Set( (const char *)VMA(1), (const char *)VMA(2), VM_CGAME );
 		return 0;
 
 	case CG_CVAR_VARIABLESTRINGBUFFER:
@@ -1657,7 +1661,7 @@ void CL_BindCGame( void ) {
 		cgi.PrecisionTimerStart					= CL_PrecisionTimerStart;
 		cgi.PrecisionTimerEnd					= CL_PrecisionTimerEnd;
 		cgi.Cvar_Register						= Cvar_Register;
-		cgi.Cvar_Set							= Cvar_Set;
+		cgi.Cvar_Set							= CGVM_Cvar_Set;
 		cgi.Cvar_Update							= Cvar_Update;
 		cgi.Cvar_VariableStringBuffer			= Cvar_VariableStringBuffer;
 		cgi.AddCommand							= CL_AddCgameCommand;
