@@ -433,26 +433,26 @@ void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultVa
 void	Cvar_Update( vmCvar_t *vmCvar );
 // updates an interpreted modules' version of a cvar
 
-void 	Cvar_Set( const char *var_name, const char *value );
+cvar_t	*Cvar_Set2(const char *var_name, const char *value, int defaultFlags, qboolean force);
+//
+
+cvar_t	*Cvar_Set( const char *var_name, const char *value );
 // will create the variable with no flags if it doesn't exist
 
-cvar_t	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
-// same as Cvar_Set, but allows more control over setting of cvar
+cvar_t	*Cvar_SetSafe( const char *var_name, const char *value );
+// same as Cvar_Set, but doesn't force setting the value (respects CVAR_ROM, etc)
 
-void	Cvar_SetSafe( const char *var_name, const char *value );
+cvar_t	*Cvar_User_Set( const char *var_name, const char *value );
+// same as Cvar_SetSafe, but defaults to CVAR_USER_CREATED
+
+void	Cvar_Server_Set( const char *var_name, const char *value );
+void	Cvar_VM_Set( const char *var_name, const char *value, vmSlots_t vmslot );
 // sometimes we set variables from an untrusted source: fail if flags & CVAR_PROTECTED
 
-cvar_t	*Cvar_Set2Safe( const char *var_name, const char *value, qboolean force );
-// same as Cvar_Set, but allows more control over setting of cvar
-// sometimes we set variables from an untrusted source: fail if flags & CVAR_PROTECTED
-
-void	Cvar_SetValue( const char *var_name, float value );
-void	Cvar_SetValueSafe( const char *var_name, float value );
-// expands value to a string and calls Cvar_Set/Cvar_SetSafe
-
-void Cvar_SetValue2( const char *var_name, float value, qboolean force );
-void Cvar_SetValue2Safe( const char *var_name, float value, qboolean force );
-// expands value to a string and calls Cvar_Set2/Cvar_Set2Safe
+cvar_t	*Cvar_SetValue( const char *var_name, float value );
+void	Cvar_User_SetValue( const char *var_name, float value );
+void	Cvar_VM_SetValue( const char *var_name, float value, vmSlots_t vmslot );
+// expands value to a string and calls Cvar_Set/Cvar_User_Set/Cvar_VM_Set
 
 float	Cvar_VariableValue( const char *var_name );
 int		Cvar_VariableIntegerValue( const char *var_name );
@@ -917,6 +917,9 @@ void CL_FlushMemory( void );
 
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
+
+qboolean CL_ConnectedToServer( void );
+// returns qtrue if connected to a server
 
 void Key_KeynameCompletion ( void(*callback)( const char *s ) );
 // for keyname autocompletion

@@ -432,6 +432,14 @@ static void CL_Key_SetCatcher( int catcher ) {
 	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
 }
 
+static void UIVM_Cvar_Set( const char *var_name, const char *value ) {
+	Cvar_VM_Set( var_name, value, VM_UI );
+}
+
+static void UIVM_Cvar_SetValue( const char *var_name, float value ) {
+	Cvar_VM_SetValue( var_name, value, VM_UI );
+}
+
 // legacy syscall
 
 intptr_t CL_UISystemCalls( intptr_t *args ) {
@@ -513,7 +521,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_CVAR_SET:
-		Cvar_Set( (const char *)VMA(1), (const char *)VMA(2) );
+		Cvar_VM_Set( (const char *)VMA(1), (const char *)VMA(2), VM_UI );
 		return 0;
 
 	case UI_CVAR_VARIABLEVALUE:
@@ -524,7 +532,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case UI_CVAR_SETVALUE:
-		Cvar_SetValue( (const char *)VMA(1), VMF(2) );
+		Cvar_VM_SetValue( (const char *)VMA(1), VMF(2), VM_UI );
 		return 0;
 
 	case UI_CVAR_RESET:
@@ -1038,8 +1046,8 @@ void CL_BindUI( void ) {
 		uii.Cvar_InfoStringBuffer				= Cvar_InfoStringBuffer;
 		uii.Cvar_Register						= Cvar_Register;
 		uii.Cvar_Reset							= Cvar_Reset;
-		uii.Cvar_Set							= Cvar_Set;
-		uii.Cvar_SetValue						= Cvar_SetValue;
+		uii.Cvar_Set							= UIVM_Cvar_Set;
+		uii.Cvar_SetValue						= UIVM_Cvar_SetValue;
 		uii.Cvar_Update							= Cvar_Update;
 		uii.Cvar_VariableStringBuffer			= Cvar_VariableStringBuffer;
 		uii.Cvar_VariableValue					= Cvar_VariableValue;

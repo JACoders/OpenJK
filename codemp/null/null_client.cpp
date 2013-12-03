@@ -59,3 +59,6 @@ void CL_FlushMemory( void ) {
 void CL_StartHunkUsers( void ) {
 }
 
+qboolean CL_ConnectedToServer( void ) {
+	return qfalse;
+}
