@@ -838,8 +838,6 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin)
 
 void SiegeRespawn(gentity_t *ent)
 {
-	gentity_t *tent;
-
 	if (ent->client->sess.sessionTeam != ent->client->sess.siegeDesiredTeam)
 	{
 		SetTeamQuick(ent, ent->client->sess.siegeDesiredTeam, qtrue);
