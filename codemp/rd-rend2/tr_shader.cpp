@@ -1066,11 +1066,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			else if ( !Q_stricmp( token, "lightingDiffuseEntity" ) )
 			{
-				//if (shader.lightmapIndex[0] != LIGHTMAP_NONE)
-				//{
-				//	Com_Printf( S_COLOR_RED "ERROR: rgbGen lightingDiffuseEntity used on a misc_model! in shader '%s'\n", shader.name );
-				//}
-				//stage->rgbGen = CGEN_LIGHTING_DIFFUSE_ENTITY;
+				if (shader.lightmapIndex != LIGHTMAP_NONE)
+				{
+					Com_Printf( S_COLOR_RED "ERROR: rgbGen lightingDiffuseEntity used on a misc_model! in shader '%s'\n", shader.name );
+				}
+				stage->rgbGen = CGEN_LIGHTING_DIFFUSE_ENTITY;
 			}
 			else if ( !Q_stricmp( token, "oneMinusVertex" ) )
 			{
@@ -2149,6 +2149,7 @@ static void ComputeVertexAttribs(void)
 				break;
 
 			case CGEN_LIGHTING_DIFFUSE:
+			case CGEN_LIGHTING_DIFFUSE_ENTITY:
 				shader.vertexAttribs |= ATTR_NORMAL;
 				break;
 
@@ -2577,7 +2578,8 @@ static qboolean CollapseStagesToGLSL(void)
 			}
 
 			diffuselit = qfalse;
-			if (diffuse->rgbGen == CGEN_LIGHTING_DIFFUSE)
+			if (diffuse->rgbGen == CGEN_LIGHTING_DIFFUSE ||
+				diffuse->rgbGen == CGEN_LIGHTING_DIFFUSE_ENTITY)
 			{
 				diffuselit = qtrue;
 			}
@@ -2692,7 +2694,8 @@ static qboolean CollapseStagesToGLSL(void)
 			if (pStage->adjustColorsForFog)
 				continue;
 
-			if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE)
+			if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE ||
+				pStage->rgbGen == CGEN_LIGHTING_DIFFUSE_ENTITY)
 			{
 				pStage->glslShaderGroup = tr.lightallShader;
 				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHT_VECTOR;

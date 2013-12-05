@@ -445,8 +445,11 @@ static void ProjectDlightTexture( void ) {
 }
 
 
-static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t baseColor, vec4_t vertColor )
+static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t vertColor, colorGen_t *forceRGBGen, alphaGen_t *forceAlphaGen )
 {
+	colorGen_t rgbGen = pStage->rgbGen;
+	alphaGen_t alphaGen = pStage->alphaGen;
+
 	baseColor[0] =  
    	baseColor[1] = 
    	baseColor[2] = 
@@ -457,15 +460,17 @@ static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t 
    	vertColor[2] = 
    	vertColor[3] = 0.0f;
 
-	//
-	// rgbGen
-	//
-	if ( !forceRGBGen )
+	if ( forceRGBGen != NULL && *forceRGBGen != CGEN_BAD )
 	{
-		forceRGBGen = pStage->rgbGen;
+		rgbGen = *forceRGBGen;
 	}
 
-	switch ( forceRGBGen )
+	if ( forceAlphaGen != NULL && *forceAlphaGen != AGEN_IDENTITY )
+	{
+		alphaGen = *forceAlphaGen;
+	}
+
+	switch ( rgbGen )
 	{
 		case CGEN_IDENTITY_LIGHTING:
 			baseColor[0] = 
@@ -539,12 +544,19 @@ static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t 
 			baseColor[2] = RB_CalcWaveColorSingle( &pStage->rgbWave );
 			break;
 		case CGEN_ENTITY:
+		case CGEN_LIGHTING_DIFFUSE_ENTITY:
 			if (backEnd.currentEntity)
 			{
 				baseColor[0] = ((unsigned char *)backEnd.currentEntity->e.shaderRGBA)[0] / 255.0f;
 				baseColor[1] = ((unsigned char *)backEnd.currentEntity->e.shaderRGBA)[1] / 255.0f;
 				baseColor[2] = ((unsigned char *)backEnd.currentEntity->e.shaderRGBA)[2] / 255.0f;
 				baseColor[3] = ((unsigned char *)backEnd.currentEntity->e.shaderRGBA)[3] / 255.0f;
+
+				if ( alphaGen == AGEN_IDENTITY &&
+					backEnd.currentEntity->e.shaderRGBA[3] == 255 )
+				{
+					alphaGen = AGEN_SKIP;
+				}
 			}
 			break;
 		case CGEN_ONE_MINUS_ENTITY:
@@ -565,12 +577,12 @@ static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t 
 	//
 	// alphaGen
 	//
-	switch ( pStage->alphaGen )
+	switch ( alphaGen )
 	{
 		case AGEN_SKIP:
 			break;
 		case AGEN_CONST:
-			if ( forceRGBGen != CGEN_CONST ) {
+			if ( rgbGen != CGEN_CONST ) {
 				baseColor[3] = pStage->constantColor[3] / 255.0f;
 				vertColor[3] = 0.0f;
 			}
@@ -594,7 +606,7 @@ static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t 
 			vertColor[3] = 0.0f;
 			break;
 		case AGEN_VERTEX:
-			if ( forceRGBGen != CGEN_VERTEX ) {
+			if ( rgbGen != CGEN_VERTEX ) {
 				baseColor[3] = 0.0f;
 				vertColor[3] = 1.0f;
 			}
@@ -610,6 +622,16 @@ static void ComputeShaderColors( shaderStage_t *pStage, int forceRGBGen, vec4_t 
 			baseColor[3] = 1.0f;
 			vertColor[3] = 0.0f;
 			break;
+	}
+
+	if ( forceAlphaGen != NULL )
+	{
+		*forceAlphaGen = alphaGen;
+	}
+
+	if ( forceRGBGen != NULL )
+	{
+		*forceRGBGen = rgbGen;
 	}
 
 	// FIXME: find some way to implement this.
@@ -780,7 +802,7 @@ static void ForwardDlight( void ) {
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, 0, baseColor, vertColor);
+			ComputeShaderColors(pStage, baseColor, vertColor, NULL, NULL);
 
 			GLSL_SetUniformVec4(sp, UNIFORM_BASECOLOR, baseColor);
 			GLSL_SetUniformVec4(sp, UNIFORM_VERTCOLOR, vertColor);
@@ -1071,7 +1093,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		vec4_t texMatrix;
 		vec4_t texOffTurb;
 		int stateBits;
-		int forceRGBGen = 0;
+		colorGen_t forceRGBGen = CGEN_BAD;
+		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
+		float forceAlpha = 0.0f;
 
 		if ( !pStage )
 		{
@@ -1220,13 +1244,25 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			{//want to use RGBGen from ent
 				forceRGBGen = CGEN_ENTITY;
 			}
+
+			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
+			{
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
+				{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
+					//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
+					stateBits |= GLS_DEPTHMASK_TRUE;
+				}
+			}
 		}
+
+		GL_State( stateBits );
 
 		{
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, forceRGBGen, baseColor, vertColor);
+			ComputeShaderColors(pStage, baseColor, vertColor, &forceRGBGen, &forceAlphaGen);
 
 			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 			{
@@ -1235,11 +1271,18 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				VectorScale(vertColor, backEnd.refdef.colorScale, vertColor);
 			}
 
+			if ( backEnd.currentEntity != NULL &&
+				(backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA) )
+			{
+				vertColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f;
+			}
+
 			GLSL_SetUniformVec4(sp, UNIFORM_BASECOLOR, baseColor);
 			GLSL_SetUniformVec4(sp, UNIFORM_VERTCOLOR, vertColor);
 		}
 
-		if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE)
+		if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE ||
+			pStage->rgbGen == CGEN_LIGHTING_DIFFUSE_ENTITY)
 		{
 			vec4_t vec;
 
@@ -1262,8 +1305,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			GLSL_SetUniformFloat(sp, UNIFORM_PORTALRANGE, tess.shader->portalRange);
 		}
 
-		GLSL_SetUniformInt(sp, UNIFORM_COLORGEN, forceRGBGen ? forceRGBGen : pStage->rgbGen);
-		GLSL_SetUniformInt(sp, UNIFORM_ALPHAGEN, pStage->alphaGen);
+		GLSL_SetUniformInt(sp, UNIFORM_COLORGEN, forceRGBGen);
+		GLSL_SetUniformInt(sp, UNIFORM_ALPHAGEN, forceAlphaGen);
 
 		if ( input->fogNum )
 		{
@@ -1419,24 +1462,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		//
 		if (!(tr.viewParms.flags & VPF_NOCUBEMAPS) && input->cubemapIndex && r_cubeMapping->integer)
 			GL_BindToTMU( tr.cubemaps[input->cubemapIndex - 1], TB_CUBEMAP);
-
-		if (backEnd.currentEntity && (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA))
-		{
-			ForceAlpha((unsigned char *) tess.svars.colors, backEnd.currentEntity->e.shaderRGBA[3]);
-			if (backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH)
-			{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
-				//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
-				GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE);
-			}
-			else
-			{
-				GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-			}
-		}
-		else
-		{
-			GL_State( stateBits );
-		}
 
 		//
 		// draw
