@@ -332,12 +332,12 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, int pshadowBits
 	}
 
 	// check for pshadows
-	/*if ( pshadowBits ) */{
+	/*if ( pshadowBits ) *//*{
 		pshadowBits = R_PshadowSurface( surf, pshadowBits);
 		pshadowBits = ( pshadowBits != 0 );
-	}
+	}*/
 
-	R_AddDrawSurf( surf->data, surf->shader, surf->fogIndex, dlightBits, pshadowBits, surf->cubemapIndex );
+	R_AddDrawSurf( surf->data, surf->shader, surf->fogIndex, dlightBits, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), surf->cubemapIndex );
 }
 
 /*

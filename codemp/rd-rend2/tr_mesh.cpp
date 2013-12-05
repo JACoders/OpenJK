@@ -390,7 +390,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 		{
 			srfVBOMDVMesh_t *vboSurface = &model->vboSurfaces[i];
 
-			R_AddDrawSurf((surfaceType_t *)vboSurface, shader, fogNum, qfalse, qfalse, cubemapIndex );
+			R_AddDrawSurf((surfaceType_t *)vboSurface, shader, fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, ent), cubemapIndex );
 		}
 
 		surface++;

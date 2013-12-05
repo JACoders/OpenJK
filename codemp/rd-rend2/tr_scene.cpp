@@ -98,7 +98,7 @@ void R_AddPolygonSurfaces( void ) {
 
 	for ( i = 0, poly = tr.refdef.polys; i < tr.refdef.numPolys ; i++, poly++ ) {
 		sh = R_GetShaderByHandle( poly->hShader );
-		R_AddDrawSurf( ( surfaceType_t * )poly, sh, poly->fogIndex & fogMask, qfalse, qfalse, 0 /* cubemapIndex */ );
+		R_AddDrawSurf( ( surfaceType_t * )poly, sh, poly->fogIndex & fogMask, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), 0 /* cubemapIndex */ );
 	}
 }
 

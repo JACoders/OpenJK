@@ -1878,13 +1878,16 @@ the bits are allocated as follows:
 1     : pshadow flag
 0     : dlight flag
 */
-#define	QSORT_FOGNUM_SHIFT	2
-#define	QSORT_REFENTITYNUM_SHIFT	7
+#define	QSORT_FOGNUM_SHIFT	1
+#define	QSORT_REFENTITYNUM_SHIFT	6
 #define	QSORT_SHADERNUM_SHIFT	(QSORT_REFENTITYNUM_SHIFT+REFENTITYNUM_BITS)
 #if (QSORT_SHADERNUM_SHIFT+SHADERNUM_BITS) > 32
 	#error "Need to update sorting, too many bits."
 #endif
-#define QSORT_PSHADOW_SHIFT     1
+#define QSORT_POSTRENDER_SHIFT     (QSORT_SHADERNUM_SHIFT + SHADERNUM_BITS)
+#if QSORT_POSTRENDER_SHIFT >= 32
+	#error "Sort field needs to be expanded"
+#endif
 
 extern	int			gl_filter_min, gl_filter_max;
 
@@ -2417,7 +2420,8 @@ void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader,
 					 int *fogNum, int *dlightMap, int *pshadowMap );
 
 void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader, 
-				   int fogIndex, int dlightMap, int pshadowMap, int cubemap );
+				   int fogIndex, int dlightMap, int postRender, int cubemap );
+bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
 
 void R_CalcTangentSpace(vec3_t tangent, vec3_t bitangent, vec3_t normal,
                         const vec3_t v0, const vec3_t v1, const vec3_t v2, const vec2_t t0, const vec2_t t1, const vec2_t t2);
