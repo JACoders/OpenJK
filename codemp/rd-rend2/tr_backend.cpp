@@ -1209,28 +1209,28 @@ const void *RB_RotatePic2 ( const void *data )
 	VectorSet (xlat, cmd->x, cmd->y, 0.0f);
 
 	VectorSet (point, -cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
 	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts]);
 
 	tess.texCoords[ numVerts ][0][0] = cmd->s1;
 	tess.texCoords[ numVerts ][0][1] = cmd->t1;
 
 	VectorSet (point, cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
 	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 1]);
 
 	tess.texCoords[ numVerts + 1 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 1 ][0][1] = cmd->t1;
 
 	VectorSet (point, cmd->w * 0.5f, cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
 	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 2]);
 
 	tess.texCoords[ numVerts + 2 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 2 ][0][1] = cmd->t2;
 
 	VectorSet (point, -cmd->w * 0.5f, cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
 	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 3]);
 
 	tess.texCoords[ numVerts + 3 ][0][0] = cmd->s1;
