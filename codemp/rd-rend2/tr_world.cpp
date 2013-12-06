@@ -382,6 +382,11 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 	}
 }
 
+void RE_SetRangedFog ( float range )
+{
+	tr.rangedFog = range;
+}
+
 
 /*
 =============================================================

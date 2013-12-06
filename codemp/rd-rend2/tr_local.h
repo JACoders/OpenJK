@@ -2223,6 +2223,8 @@ typedef struct trGlobals_s {
 	float					inverseSawToothTable[FUNCTABLE_SIZE];
 	float					fogTable[FOG_TABLE_SIZE];
 
+	float					rangedFog;
+
 #ifdef _WIN32
 	WinVars_t *wv;
 #endif
@@ -2468,6 +2470,7 @@ typedef _skinSurface_t skinSurface_t;
 
 void	RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
 void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qboolean dirty);
+void	RE_SetRangedFog ( float range );
 
 void		RE_BeginFrame( stereoFrame_t stereoFrame );
 void		RE_BeginRegistration( glconfig_t *glconfig );
