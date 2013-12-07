@@ -796,6 +796,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 			stage->bundle[0].imageAnimationSpeed = atof( token );
+			stage->bundle[0].oneShotAnimMap = (qboolean)(type == ANIMMAP_ONESHOT);
 
 			// parse up to MAX_IMAGE_ANIMATIONS animations
 			while ( 1 ) {

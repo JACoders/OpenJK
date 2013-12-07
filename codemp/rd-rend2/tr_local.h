@@ -653,6 +653,7 @@ typedef struct {
 
 	int				videoMapHandle;
 	qboolean		isLightmap;
+	qboolean		oneShotAnimMap;
 	qboolean		vertexLightmap;
 	qboolean		isVideoMap;
 } textureBundle_t;

@@ -116,15 +116,35 @@ static void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 		return;
 	}
 
-	// it is necessary to do this messy calc to make sure animations line up
-	// exactly with waveforms of the same frequency
-	index = Q_ftol(tess.shaderTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE);
-	index >>= FUNCTABLE_SIZE2;
-
-	if ( index < 0 ) {
-		index = 0;	// may happen with shader time offsets
+	if (backEnd.currentEntity->e.renderfx & RF_SETANIMINDEX )
+	{
+		index = backEnd.currentEntity->e.skinNum;
 	}
-	index %= bundle->numImageAnimations;
+	else
+	{
+		// it is necessary to do this messy calc to make sure animations line up
+		// exactly with waveforms of the same frequency
+		index = Q_ftol( tess.shaderTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE );
+		index >>= FUNCTABLE_SIZE2;
+
+		if ( index < 0 ) {
+			index = 0;	// may happen with shader time offsets
+		}
+	}
+
+	if ( bundle->oneShotAnimMap )
+	{
+		if ( index >= bundle->numImageAnimations )
+		{
+			// stick on last frame
+			index = bundle->numImageAnimations - 1;
+		}
+	}
+	else
+	{
+		// loop
+		index %= bundle->numImageAnimations;
+	}
 
 	GL_BindToTMU( bundle->image[ index ], tmu );
 }
