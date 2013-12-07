@@ -2037,6 +2037,7 @@ static void R_AddEntitySurface (int entityNum)
 			case MOD_MDXM:
 				if (ent->e.ghoul2)
 					R_AddGhoulSurfaces(ent);
+				break;
 			case MOD_BAD:		// null model axis
 				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
 					break;
