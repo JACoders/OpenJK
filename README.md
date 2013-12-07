@@ -9,9 +9,15 @@ Major enhancement changes are very low priority at this time unless patches are 
 
 Please use discretion when making issue requests on github. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
 
-## 64-Bit Support (lack there-of)
+## Jedi Outcast Support ##
 
-64-bit is currently limited and still requires a number of changes before being complete. If you would like to submit pull request to correct this in part or in full, please feel free to do so as it would be appreciated.
+_Do not make issues regarding Jedi Outcast support problems at this time.  It is considered mostly unfinished, broken and use at your own risk!  (We know things like saving and using the JK2 Mode are broken for sure)_
+
+There is no Multi-Player code for JK2MP at all on our repository at this time.   The Single-Player support must be explicitly turned on in your own compile.  The prebuilt versions will not include this.
+
+## 64-bit Support
+
+64-bit is now mostly working on non-Windows platforms.
 
 ## Installation ##
 
