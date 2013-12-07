@@ -327,6 +327,13 @@ typedef enum
 	IMGFLAG_GENNORMALMAP   = 0x0100,
 } imgFlags_t;
 
+typedef enum
+{
+	ANIMMAP_NORMAL,
+	ANIMMAP_CLAMP,
+	ANIMMAP_ONESHOT
+} animMapType_t;
+
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
 	int			width, height;				// source image

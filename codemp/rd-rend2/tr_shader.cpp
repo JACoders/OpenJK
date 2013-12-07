@@ -53,6 +53,20 @@ qboolean ShaderHashTableExists(void)
 	return qfalse;
 }
 
+static void ClearGlobalShader(void)
+{
+	int	i;
+
+	memset( &shader, 0, sizeof( shader ) );
+	memset( &stages, 0, sizeof( stages ) );
+	for ( i = 0 ; i < MAX_SHADER_STAGES ; i++ ) {
+		stages[i].bundle[0].texMods = texMods[i];
+		//stages[i].mGLFogColorOverride = GLFOGOVERRIDE_NONE;
+	}
+
+	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
+}
+
 /*
 ================
 return a hash value for the filename
@@ -380,10 +394,10 @@ static void ParseWaveForm( const char **text, waveForm_t *wave )
 ParseTexMod
 ===================
 */
-static void ParseTexMod( char *_text, shaderStage_t *stage )
+static void ParseTexMod( const char *_text, shaderStage_t *stage )
 {
 	const char *token;
-	const char **text = (const char **)&_text;
+	const char **text = &_text;
 	texModInfo_t *tmi;
 
 	if ( stage->bundle[0].numTexMods == TR_MAX_TEXMODS ) {
@@ -604,6 +618,18 @@ static void ParseTexMod( char *_text, shaderStage_t *stage )
 	}
 }
 
+static animMapType_t AnimMapType( const char *token )
+{
+	if ( !Q_stricmp( token, "clampanimMap" ) ) { return ANIMMAP_CLAMP; }
+	else if ( !Q_stricmp( token, "oneshotanimMap" ) ) { return ANIMMAP_ONESHOT; }
+	else { return ANIMMAP_NORMAL; }
+}
+
+static const char *animMapNames[] = {
+	"animMap",
+	"clapanimMap",
+	"oneshotanimMap"
+};
 
 /*
 ===================
@@ -762,10 +788,11 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if ( !Q_stricmp( token, "animMap" ) || !Q_stricmp( token, "clampanimMap" ) || !Q_stricmp( token, "oneshotanimMap" ) )
 		{
+			animMapType_t type = AnimMapType( token );
 			token = COM_ParseExt( text, qfalse );
 			if ( !token[0] )
 			{
-				ri->Printf( PRINT_WARNING, "WARNING: missing parameter for 'animMmap' keyword in shader '%s'\n", shader.name );
+				ri->Printf( PRINT_WARNING, "WARNING: missing parameter for '%s' keyword in shader '%s'\n", animMapNames[type], shader.name );
 				return qfalse;
 			}
 			stage->bundle[0].imageAnimationSpeed = atof( token );
@@ -780,7 +807,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
-					int flags = IMGFLAG_NONE;
+					int flags = type == ANIMMAP_CLAMP ? IMGFLAG_CLAMPTOEDGE : IMGFLAG_NONE;
 
 					if (!shader.noMipMaps)
 						flags |= IMGFLAG_MIPMAP;
@@ -3366,13 +3393,9 @@ shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImag
 	}
 
 	// clear the global shader
-	Com_Memset( &shader, 0, sizeof( shader ) );
-	Com_Memset( &stages, 0, sizeof( stages ) );
+	ClearGlobalShader();
 	Q_strncpyz(shader.name, strippedName, sizeof(shader.name));
 	shader.lightmapIndex = lightmapIndex;
-	for ( i = 0 ; i < MAX_SHADER_STAGES ; i++ ) {
-		stages[i].bundle[0].texMods = texMods[i];
-	}
 
 	//
 	// attempt to define shader from an explicit parameter file
@@ -3507,8 +3530,7 @@ shader_t *R_FindServerShader( const char *name, int lightmapIndex, qboolean mipR
 	}
 
 	// clear the global shader
-	Com_Memset( &shader, 0, sizeof( shader ) );
-	Com_Memset( &stages, 0, sizeof( stages ) );
+	ClearGlobalShader();
 	Q_strncpyz(shader.name, strippedName, sizeof(shader.name));
 	shader.lightmapIndex = lightmapIndex;
 	
@@ -3546,13 +3568,9 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_
 	}
 
 	// clear the global shader
-	Com_Memset( &shader, 0, sizeof( shader ) );
-	Com_Memset( &stages, 0, sizeof( stages ) );
+	ClearGlobalShader();
 	Q_strncpyz(shader.name, name, sizeof(shader.name));
 	shader.lightmapIndex = lightmapIndex;
-	for ( i = 0 ; i < MAX_SHADER_STAGES ; i++ ) {
-		stages[i].bundle[0].texMods = texMods[i];
-	}
 
 	//
 	// create the default shading commands
