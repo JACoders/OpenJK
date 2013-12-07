@@ -3355,7 +3355,7 @@ most world construction surfaces.
 */
 shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImage ) {
 	char		strippedName[MAX_QPATH];
-	int			i, hash, flags;
+	int			hash, flags;
 	const char	*shaderText;
 	image_t		*image;
 	shader_t	*sh;
@@ -3540,7 +3540,7 @@ shader_t *R_FindServerShader( const char *name, int lightmapIndex, qboolean mipR
 }
 
 qhandle_t RE_RegisterShaderFromImage(const char *name, int lightmapIndex, image_t *image, qboolean mipRawImage) {
-	int			i, hash;
+	int			hash;
 	shader_t	*sh;
 
 	hash = generateHashValue(name, FILE_HASH_SIZE);
