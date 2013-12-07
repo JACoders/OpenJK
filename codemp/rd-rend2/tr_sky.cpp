@@ -357,7 +357,6 @@ static void MakeSkyVec( float s, float t, int axis, float outSt[2], vec3_t outXY
 	}
 }
 
-static int	sky_texorder[6] = {0,1,2,3,4,5};
 static vec3_t	s_skyPoints[SKY_SUBDIVISIONS+1][SKY_SUBDIVISIONS+1];
 static float	s_skyTexCoords[SKY_SUBDIVISIONS+1][SKY_SUBDIVISIONS+1][2];
 
@@ -543,7 +542,7 @@ static void DrawSkyBox( shader_t *shader )
 			}
 		}
 
-		DrawSkySide( shader->sky.outerbox[sky_texorder[i]],
+		DrawSkySide( shader->sky.outerbox[i],
 			         sky_mins_subd,
 					 sky_maxs_subd );
 	}
