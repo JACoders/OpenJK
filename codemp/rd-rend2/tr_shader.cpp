@@ -1525,8 +1525,8 @@ skyParms <outerbox> <cloudheight> <innerbox>
 ===============
 */
 static void ParseSkyParms( const char **text ) {
-	char		*token;
-	static char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+	char				*token;
+	static const char	*suf[6] = {"rt", "lf", "bk", "ft", "up", "dn"};
 	char		pathname[MAX_QPATH];
 	int			i;
 	int imgFlags = IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
@@ -1542,12 +1542,14 @@ static void ParseSkyParms( const char **text ) {
 	}
 	if ( strcmp( token, "-" ) ) {
 		for (i=0 ; i<6 ; i++) {
-			Com_sprintf( pathname, sizeof(pathname), "%s_%s.tga"
-				, token, suf[i] );
+			Com_sprintf( pathname, sizeof(pathname), "%s_%s", token, suf[i] );
 			shader.sky.outerbox[i] = R_FindImageFile( ( char * ) pathname, IMGTYPE_COLORALPHA, imgFlags | IMGFLAG_CLAMPTOEDGE );
 
 			if ( !shader.sky.outerbox[i] ) {
-				shader.sky.outerbox[i] = tr.defaultImage;
+				if ( i )
+					shader.sky.outerbox[i] = shader.sky.outerbox[i-1];	//not found, so let's use the previous image
+				else
+					shader.sky.outerbox[i] = tr.defaultImage;
 			}
 		}
 	}
@@ -1555,7 +1557,7 @@ static void ParseSkyParms( const char **text ) {
 	// cloudheight
 	token = COM_ParseExt( text, qfalse );
 	if ( token[0] == 0 ) {
-		ri->Printf( PRINT_WARNING, "WARNING: 'skyParms' missing parameter in shader '%s'\n", shader.name );
+		ri->Printf( PRINT_WARNING, "WARNING: 'skyParms' missing cloudheight in shader '%s'\n", shader.name );
 		return;
 	}
 	shader.sky.cloudHeight = atof( token );
@@ -1564,22 +1566,10 @@ static void ParseSkyParms( const char **text ) {
 	}
 	R_InitSkyTexCoords( shader.sky.cloudHeight );
 
-
 	// innerbox
 	token = COM_ParseExt( text, qfalse );
-	if ( token[0] == 0 ) {
-		ri->Printf( PRINT_WARNING, "WARNING: 'skyParms' missing parameter in shader '%s'\n", shader.name );
-		return;
-	}
 	if ( strcmp( token, "-" ) ) {
-		for (i=0 ; i<6 ; i++) {
-			Com_sprintf( pathname, sizeof(pathname), "%s_%s.tga"
-				, token, suf[i] );
-			shader.sky.innerbox[i] = R_FindImageFile( ( char * ) pathname, IMGTYPE_COLORALPHA, imgFlags );
-			if ( !shader.sky.innerbox[i] ) {
-				shader.sky.innerbox[i] = tr.defaultImage;
-			}
-		}
+		ri->Printf( PRINT_WARNING, "WARNING: in shader '%s' 'skyParms', innerbox is not supported!", shader.name );
 	}
 
 	shader.isSky = qtrue;
