@@ -711,6 +711,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				if (!shader.noPicMip)
 					flags |= IMGFLAG_PICMIP;
 
+				if (shader.noTC)
+					flags |= IMGFLAG_NO_COMPRESSION;
+
 				if (stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP)
 				{
 					type = IMGTYPE_NORMAL;
@@ -757,6 +760,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 			if (!shader.noPicMip)
 				flags |= IMGFLAG_PICMIP;
+
+			if (shader.noTC)
+				flags |= IMGFLAG_NO_COMPRESSION;
 
 			if (stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP)
 			{
@@ -818,6 +824,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 
 					if (r_srgb->integer)
 						flags |= IMGFLAG_SRGB;
+
+					if (shader.noTC)
+						flags |= IMGFLAG_NO_COMPRESSION;
 
 					stage->bundle[0].image[num] = R_FindImageFile( token, IMGTYPE_COLORALPHA, flags );
 					if ( !stage->bundle[0].image[num] )
@@ -1531,6 +1540,9 @@ static void ParseSkyParms( const char **text ) {
 	int			i;
 	int imgFlags = IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
 
+	if (shader.noTC)
+		imgFlags |= IMGFLAG_NO_COMPRESSION;
+
 	if (r_srgb->integer)
 		imgFlags |= IMGFLAG_SRGB;
 
@@ -1906,7 +1918,7 @@ static qboolean ParseShader( const char **text )
 		}
 		else if ( !Q_stricmp( token, "noTC" ) )
 		{
-			//shader.noTC = true;
+			shader.noTC = qtrue;
 			continue;
 		}
 		// entityMergable, allowing sprite surfaces from multiple entities
