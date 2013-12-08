@@ -4008,6 +4008,10 @@ static void CreateInternalShaders( void ) {
 	Q_strncpyz( shader.name, "<default>", sizeof( shader.name ) );
 
 	shader.lightmapIndex = LIGHTMAP_NONE;
+	for ( int i = 0 ; i < MAX_SHADER_STAGES ; i++ ) {
+		stages[i].bundle[0].texMods = texMods[i];
+	}
+
 	stages[0].bundle[0].image[0] = tr.defaultImage;
 	stages[0].active = qtrue;
 	stages[0].stateBits = GLS_DEFAULT;
@@ -4015,8 +4019,15 @@ static void CreateInternalShaders( void ) {
 
 	// shadow shader is just a marker
 	Q_strncpyz( shader.name, "<stencil shadow>", sizeof( shader.name ) );
-	shader.sort = SS_STENCIL_SHADOW;
+	shader.sort = SS_BANNER; //SS_STENCIL_SHADOW;
 	tr.shadowShader = FinishShader();
+
+	// distortion shader is just a marker
+	Q_strncpyz( shader.name, "internal_distortion", sizeof( shader.name ) );
+	shader.sort = SS_BLEND0;
+	shader.defaultShader = qfalse;
+	tr.distortionShader = FinishShader();
+	shader.defaultShader = qtrue;
 }
 
 static void CreateExternalShaders( void ) {
