@@ -517,6 +517,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 					chunkModel = cgs.media.chunkModels[CHUNK_METAL2][Q_irand(0, 3)];
 				}
 				break;
+			default:
+				break;
 			}
 		}
 
