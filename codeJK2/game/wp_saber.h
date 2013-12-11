@@ -74,7 +74,7 @@ extern float forceSpeedRangeMod[];
 extern float forceSpeedFOVMod[];
 #define FORCE_SPEED_DURATION 10000.0f
 
-typedef enum
+enum
 {
 	FORCE_LEVEL_0,
 	FORCE_LEVEL_1,
@@ -85,7 +85,7 @@ typedef enum
 #define	FORCE_LEVEL_4 (FORCE_LEVEL_3+1)
 #define	FORCE_LEVEL_5 (FORCE_LEVEL_4+1)
 
-typedef enum
+enum
 {
 	FJ_FORWARD,
 	FJ_BACKWARD,

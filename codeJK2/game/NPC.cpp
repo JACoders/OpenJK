@@ -1755,7 +1755,8 @@ void NPC_RunBehavior( int team, int bState )
 			case CLASS_GALAKMECH:
 				NPC_BSGM_Default();
 				return;
-
+			default:
+				break;
 			}
 
 			if ( NPC->enemy && NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
@@ -2125,6 +2126,8 @@ void NPC_Think ( gentity_t *self)//, int msec )
 					break;
 				case CLASS_GONK:				// droid
 					G_SoundOnEnt(self, CHAN_AUTO, va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2)) );
+					break;
+				default:
 					break;
 				}
 				TIMER_Set( self, "patrolNoise", Q_irand( 2000, 4000 ) );

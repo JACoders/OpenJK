@@ -59,7 +59,7 @@ OBJ_SaveMissionObjectives
 */
 void OBJ_SaveMissionObjectives( gclient_t *client )
 {
-	gi.AppendToSaveGame('OBJT', client->sess.mission_objectives, sizeof(client->sess.mission_objectives));
+	gi.AppendToSaveGame(INT_ID('O','B','J','T'), client->sess.mission_objectives, sizeof(client->sess.mission_objectives));
 }
 
 
@@ -84,7 +84,7 @@ OBJ_LoadMissionObjectives
 */
 void OBJ_LoadMissionObjectives( gclient_t *client )
 {
-	gi.ReadFromSaveGame('OBJT', (void *) &client->sess.mission_objectives, sizeof(client->sess.mission_objectives), NULL);
+	gi.ReadFromSaveGame(INT_ID('O','B','J','T'), (void *) &client->sess.mission_objectives, sizeof(client->sess.mission_objectives), NULL);
 }
 
 

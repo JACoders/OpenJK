@@ -88,13 +88,13 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other )
 	if ( ent->item->giTag == INV_SECURITY_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @INGAME_YOU_TOOK_SECURITY_KEY" );
+		gi.SendServerCommand( 0, "cp @INGAME_YOU_TOOK_SECURITY_KEY" );
 		INV_SecurityKeyGive( other, ent->message );
 	}
 	else if ( ent->item->giTag == INV_GOODIE_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @INGAME_YOU_TOOK_SUPPLY_KEY" );
+		gi.SendServerCommand( 0, "cp @INGAME_YOU_TOOK_SUPPLY_KEY" );
 		INV_GoodieKeyGive( other );
 	}
 	else

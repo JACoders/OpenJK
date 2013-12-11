@@ -73,7 +73,7 @@ void TIMER_Save( void )
 		int	i;
 
 		//Write out the timer information
-		gi.AppendToSaveGame('TIME', (void *)&numTimers, sizeof(numTimers));
+		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
 		
 		timer_m::iterator	ti;
 
@@ -83,11 +83,11 @@ void TIMER_Save( void )
 			int			length = strlen( id );
 
 			//Write out the string size and data
-			gi.AppendToSaveGame('TSLN', (void *) &length, sizeof(length) );
-			gi.AppendToSaveGame('TSNM', (void *) id, length );
+			gi.AppendToSaveGame(INT_ID('T','S','L','N'), (void *) &length, sizeof(length) );
+			gi.AppendToSaveGame(INT_ID('T','S','N','M'), (void *) id, length );
 
 			//Write out the timer data
-			gi.AppendToSaveGame('TDTA', (void *) &(*ti).second, sizeof( (*ti).second ) );
+			gi.AppendToSaveGame(INT_ID('T','D','T','A'), (void *) &(*ti).second, sizeof( (*ti).second ) );
 		}
 	}
 }
@@ -107,7 +107,7 @@ void TIMER_Load( void )
 	{
 		int numTimers;
 
-		gi.ReadFromSaveGame( 'TIME', (void *)&numTimers, sizeof(numTimers), NULL );
+		gi.ReadFromSaveGame( INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers), NULL );
 
 		//Make sure there's something to read
 		if ( numTimers == 0 )
@@ -119,7 +119,7 @@ void TIMER_Load( void )
 			int		length, time;
 			char	tempBuffer[1024];	//FIXME: Blech!
 
-			gi.ReadFromSaveGame( 'TSLN', (void *) &length, sizeof( length ), NULL );
+			gi.ReadFromSaveGame( INT_ID('T','S','L','N'), (void *) &length, sizeof( length ), NULL );
 
 			//Validity check, though this will never happen (unless of course you pass in gibberish)
 			if ( length >= 1024 )
@@ -129,8 +129,8 @@ void TIMER_Load( void )
 			}
 
 			//Read the id and time
-			gi.ReadFromSaveGame( 'TSNM', (char *) tempBuffer, length, NULL );
-			gi.ReadFromSaveGame( 'TDTA', (void *) &time, sizeof( time ), NULL );
+			gi.ReadFromSaveGame( INT_ID('T','S','N','M'), (char *) tempBuffer, length, NULL );
+			gi.ReadFromSaveGame( INT_ID('T','D','T','A'), (void *) &time, sizeof( time ), NULL );
 
 			//Restore it
 			g_timers[ j ][(const char *) tempBuffer ] = time;
