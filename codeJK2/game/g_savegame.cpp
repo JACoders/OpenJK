@@ -178,7 +178,7 @@ char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		memset(sString,0, sizeof(sString));
 
-		assert(iStrlen+1<=sizeof(sString));
+		assert(iStrlen+1<=(int)sizeof(sString));
 		
 		gi.ReadFromSaveGame(INT_ID('S','T','R','G'), sString, iStrlen, NULL);
 
