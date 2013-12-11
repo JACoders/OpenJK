@@ -51,7 +51,7 @@ extern forceTicPos_t ammoTicPos[];
 
 #define NUM_CHUNK_MODELS	4
 
-typedef enum 
+enum 
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,

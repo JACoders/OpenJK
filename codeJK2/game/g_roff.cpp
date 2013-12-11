@@ -603,15 +603,15 @@ void G_SaveCachedRoffs()
 	int i, len;
 
 	// Write out the number of cached ROFFs
-	gi.AppendToSaveGame( 'ROFF', (void *)&num_roffs, sizeof(num_roffs) );
+	gi.AppendToSaveGame( INT_ID('R','O','F','F'), (void *)&num_roffs, sizeof(num_roffs) );
 
 	// Now dump out the cached ROFF file names in order so they can be loaded on the other end
 	for ( i = 0; i < num_roffs; i++ )
 	{
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
 		len = strlen( roffs[i].fileName ) + 1;
-		gi.AppendToSaveGame( 'SLEN', (void *)&len, sizeof(len) );
-		gi.AppendToSaveGame( 'RSTR', (void *)(*roffs[i].fileName), len );
+		gi.AppendToSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len) );
+		gi.AppendToSaveGame( INT_ID('R','S','T','R'), (void *)(*roffs[i].fileName), len );
 	}
 }
 
@@ -628,13 +628,13 @@ void G_LoadCachedRoffs()
 	char	buffer[MAX_QPATH];
 
 	// Get the count of goodies we need to revive
-	gi.ReadFromSaveGame( 'ROFF', (void *)&count, sizeof(count), NULL );
+	gi.ReadFromSaveGame( INT_ID('R','O','F','F'), (void *)&count, sizeof(count), NULL );
 
 	// Now bring 'em back to life
 	for ( i = 0; i < count; i++ )
 	{
-		gi.ReadFromSaveGame( 'SLEN', (void *)&len, sizeof(len), NULL );
-		gi.ReadFromSaveGame( 'RSTR', (void *)(buffer), len, NULL );
+		gi.ReadFromSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len), NULL );
+		gi.ReadFromSaveGame( INT_ID('R','S','T','R'), (void *)(buffer), len, NULL );
 		G_LoadRoff( buffer );
 	}
 }

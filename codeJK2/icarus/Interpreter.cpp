@@ -2,13 +2,19 @@
 //
 //	-- jweier
 
-#include <direct.h>	//For getcwd()
-#include <conio.h>	//For getch()
+#ifdef _WIN32
+	#include <direct.h>	//For getcwd()
+	#include <conio.h>	//For getch()
+#else
+	#include <curses.h>
+	#include <unistd.h>
+#endif
+
 #include <stdio.h>
 
-#include "Tokenizer.h"
-#include "BlockStream.h"
-#include "Interpreter.h"
+#include "tokenizer.h"
+#include "blockstream.h"
+#include "interpreter.h"
 
 /*
 ===================================================================================================

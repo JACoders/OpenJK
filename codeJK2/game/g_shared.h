@@ -33,7 +33,7 @@ typedef struct centity_s centity_t;
 class CSequencer;
 class CTaskManager;
 
-typedef enum 
+enum 
 {
 	HL_NONE = 0,
 	HL_FOOT_RT,

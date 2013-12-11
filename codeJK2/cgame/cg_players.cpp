@@ -3410,6 +3410,8 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 			case CLASS_ATST:
 				fxOrg[2] += 120;
 				break;
+			default:
+				break;
 			}
 		}
 	}
