@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 2.8.8)
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
-#    Project name
-project("OpenJK")
+# Project name
+set(ProjectName "OpenJK" CACHE STRING "Project Name")
+project(${ProjectName})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
-#    Customizable options
+# Customizable options
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
 
 option(BuildJK2Support "Build JK2 support" OFF)
@@ -186,14 +187,14 @@ endif()
 
 set(ReleaseDefines "FINAL_BUILD")
 
-#    Add projects
+# Add projects
 add_subdirectory(${SPDir})
 if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif(BuildJK2SPGame)
 add_subdirectory(${MPDir})
 
-#    CPack for installer creation
+# CPack for installer creation
 # TODO: Which version are we?
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
