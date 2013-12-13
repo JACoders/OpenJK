@@ -22,15 +22,23 @@ This file is part of Jedi Knight 2.
 #ifndef __TOKENIZER_H
 #define __TOKENIZER_H
 
-#pragma warning( disable : 4786 )	// identifier was truncated 
+#ifdef _WIN32
+	#define WIN32_FILE_IO
+#endif
 
-#pragma warning (push, 3)			// go back down to 3 for the stl include
-#pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#ifdef _MSC_VER
+	#pragma warning( disable : 4786 )	// identifier was truncated 
+
+	#pragma warning (push, 3)			// go back down to 3 for the stl include
+	#pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 #include <string>
 #include <vector>
 #include <map>
-#pragma warning (pop)
-#pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#ifdef _MSC_VER
+	#pragma warning (pop)
+	#pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 
 using namespace std;
 
@@ -127,7 +135,7 @@ public:
 	virtual bool IsThisDefinition(void* theDefinition);
 
 protected:
-	virtual bool Init();
+	bool InitBaseStream();
 
 	CParseStream*		m_next;
 };
@@ -148,7 +156,7 @@ public:
 	virtual float GetFloatValue();
 
 protected:
-	virtual void Init();
+	virtual void InitBaseToken();
 
 	char*			m_string;
 	CToken*			m_next;
@@ -165,7 +173,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(byte theByte);
+	void Init(byte theByte);
 };
 
 class CStringToken : public CToken
@@ -179,7 +187,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(const char *theString);
+	void Init(const char *theString);
 };
 
 class CIntToken : public CToken
@@ -196,7 +204,7 @@ public:
 	virtual const char *GetStringValue();
 
 protected:
-	virtual void Init(long value);
+	void Init(long value);
 	
 	long			m_value;
 };
@@ -230,7 +238,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(const char *name);
+	void Init(const char *name);
 };
 
 class CCommentToken : public CToken
@@ -244,7 +252,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(const char *name);
+	void Init(const char *name);
 };
 
 class CUserToken : public CToken
@@ -258,7 +266,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(int value, const char *string);
+	void Init(int value, const char *string);
 
 	int				m_value;
 };
@@ -274,7 +282,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(const char *string);
+	void Init(const char *string);
 };
 
 class CSymbol
@@ -288,7 +296,7 @@ public:
 	const char *GetName();
 
 protected:
-	virtual void Init(const char *symbolName);
+	void Init(const char *symbolName);
 
 	char*			m_symbolName;
 };
@@ -307,7 +315,7 @@ public:
 	const char *GetValue();
 
 protected:
-	virtual void Init(const char *symbolName);
+	void Init(const char *symbolName);
 
 	char*			m_value;
 };
@@ -322,7 +330,7 @@ public:
 	int GetValue();
 
 protected:
-	virtual void Init(const char *symbolName, int value);
+	void Init(const char *symbolName, int value);
 
 	int				m_value;
 };
@@ -510,7 +518,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(byte theByte, int curLine, const char *filename);
+	void Init(byte theByte, int curLine, const char *filename);
 
 	byte			m_byte;
 	bool			m_consumed;
@@ -531,7 +539,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(byte* data, long datasize);
+	void Init(byte* data, long datasize);
 
 	byte*			m_data;
 	int				m_curLine;
@@ -565,7 +573,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(CToken* token);
+	void Init(CToken* token);
 
 	byte*			m_data;
 	int				m_curLine;
@@ -605,20 +613,24 @@ public:
 	virtual bool NextChar(byte& theByte);
 
 protected:
-	virtual bool Init();
-	virtual bool Init(const char *filename, CTokenizer* tokenizer);
+	bool Init();
+	bool Init(const char *filename, CTokenizer* tokenizer);
 //	virtual void Init(CFile* file, CTokenizer* tokenizer);
 	DWORD GetFileSize();
 	void Read(void* buff, unsigned buffsize);
 
 //	CFile*			m_file;
+#ifdef WIN32_FILE_IO
 	HANDLE			m_fileHandle;
+#else
+	FILE*			m_fileHandle;
+#endif
 	char*			m_fileName;
 	int				m_curLine;
 	int				m_curPos;
 	byte*			m_buff;
-	DWORD			m_curByte;
-	DWORD			m_filesize;
+	unsigned int	m_curByte;
+	unsigned int	m_filesize;
 	bool			m_ownsFile;
 };
 

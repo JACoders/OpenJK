@@ -57,6 +57,8 @@ void rocketThink( gentity_t *ent )
 			case CLASS_PROBE:
 				org[2] += 60;
 				break;
+			default:
+				break;
 			}
 		}
 

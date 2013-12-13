@@ -262,7 +262,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 	}
 	else 
 	{
-		if ( other && other->s.weapon == WP_SABER || mod == MOD_ELECTROCUTE || mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/ )
+		if ( other && (other->s.weapon == WP_SABER || mod == MOD_ELECTROCUTE || mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/) )
 		{
 			pain_chance = 1.0f;//always take pain from saber
 		}
@@ -569,8 +569,7 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 				G_Sound( player, G_SoundIndex( "sound/weapons/key_pkup.wav" ) );
 				//FIXME: need some event to pass to cgame for sound/graphic/message?
 			}
-			//FIXME: temp message
-			gi.SendServerCommand( NULL, text );
+			gi.SendServerCommand( 0, text );
 		}
 	}
 
@@ -896,6 +895,8 @@ void NPC_Respond( gentity_t *self, int userNum )
 		break;
 	case CLASS_GONK:				// droid
 		G_Sound(self, G_SoundIndex(va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2))));
+		break;
+	default:
 		break;
 	}
 	

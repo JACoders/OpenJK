@@ -6998,6 +6998,8 @@ void ForceGrip( gentity_t *self )
 				return;
 			}
 			break;
+		default:
+			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )
 		{//FIXME: maybe can pull them out?
