@@ -17,7 +17,6 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_local.h"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
-	"${MPDir}/rd-rend2/glsl_shaders.cpp"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"
@@ -57,6 +56,10 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_world.cpp"
 	)
 source_group("renderer" FILES ${MPRend2Files})
+
+file(GLOB MPRend2GLSLFiles "${MPDir}/rd-rend2/glsl/*.glsl")
+source_group("renderer\\glsl" FILES ${MPRend2GLSLFiles})
+set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
 
 set(MPRend2Ghoul2Files
 	"${MPDir}/ghoul2/G2_gore.cpp"
@@ -156,6 +159,9 @@ else(WIN32)
 	set(MPRend2Files ${MPRend2Files} ${MPRend2SysFiles})
 endif(WIN32)
 
+source_group("renderer" FILES ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+set(MPRend2Files ${MPRend2Files} ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
+
 set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OpenJKLibDir})
 add_library(${MPRend2} SHARED ${MPRend2Files})
 
@@ -180,3 +186,10 @@ set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SharedD
 set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
 target_link_libraries(${MPRend2} ${MPRend2Libraries})
+
+# GLSL shader file generator
+add_executable(compact_glsl ${MPDir}/rd-rend2/glsl/compact.cpp)
+add_custom_command(
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
+	COMMAND compact_glsl ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp ${MPRend2GLSLFiles}
+	DEPENDS compact_glsl ${MPRend2GLSLFiles})
