@@ -171,10 +171,12 @@ void main()
 #elif defined(USE_SKELETAL_ANIMATION)
 	vec4 position4 = vec4(0.0);
 	vec4 normal4 = vec4(0.0);
-	vec4 tangent4 = vec4(0.0);
 	vec4 originalPosition = vec4(attr_Position, 1.0);
-	vec4 originalNormal = vec4(attr_Normal, 0.0);
-	vec4 originalTangent = vec4(attr_Tangent, 0.0);
+	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
+#if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
+	vec4 tangent4 = vec4(0.0);
+	vec4 originalTangent = vec4(attr_Tangent.xyz, 0.0);
+#endif
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -182,12 +184,16 @@ void main()
 
 		position4 += (u_BoneMatrices[boneIndex] * originalPosition) * attr_BoneWeights[i];
 		normal4 += (u_BoneMatrices[boneIndex] * originalNormal) * attr_BoneWeights[i];
+#if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 		tangent4 += (u_BoneMatrices[boneIndex] * originalTangent) * attr_BoneWeights[i];
+#endif
 	}
 
 	vec3 position = position4.xyz;
-	vec3 normal = normal4.xyz;
+	vec3 normal = normalize (normal4.xyz);
+#if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 	vec3 tangent = tangent4.xyz;
+#endif
 #else
 	vec3 position  = attr_Position;
 	vec3 normal    = attr_Normal;

@@ -3387,9 +3387,6 @@ void RE_LoadWorldMap( const char *name ) {
 	R_LoadLightGrid( &header->lumps[LUMP_LIGHTGRID] );
 	R_LoadLightGridArray( &header->lumps[LUMP_LIGHTARRAY] );
 
-	// determine vertex light directions
-	R_CalcVertexLightDirs();
-
 	// determine which parts of the map are in sunlight
 #if 0
 	if (0)
@@ -3607,6 +3604,9 @@ void RE_LoadWorldMap( const char *name ) {
 
 	// only set tr.world now that we know the entire level has loaded properly
 	tr.world = &s_worldData;
+
+	// determine vertex light directions
+	R_CalcVertexLightDirs();
 
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();

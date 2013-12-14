@@ -4438,12 +4438,12 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		mdxmVBOMesh_t *vboMeshes;
 
 		vec3_t *verts;
-		vec3_t *normals;
+		uint32_t *normals;
 		vec2_t *texcoords;
 		vec4_t *bonerefs;
 		vec4_t *weights;
 #ifdef USE_VERT_TANGENT_SPACE
-		vec3_t *tangents;
+		uint32_t *tangents;
 #endif
 
 		byte *data;
@@ -4496,7 +4496,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		ofsPosition = stride;
 		stride += sizeof (*verts);
 
-		normals = (vec3_t *)(data + stride);
+		normals = (uint32_t *)(data + stride);
 		ofsNormals = stride;
 		stride += sizeof (*normals);
 
@@ -4513,7 +4513,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		stride += sizeof (*weights);
 
 #ifdef USE_VERT_TANGENT_SPACE
-		tangents = (vec3_t *)(data + stride);
+		tangents = (uint32_t *)(data + stride);
 		ofs_tangent = stride;
 		stride += sizeof (*tangents);
 #endif
@@ -4527,15 +4527,15 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
 				VectorCopy (v[k].vertCoords, *verts);
-				VectorCopy (v[k].normal, *normals);
+				*normals = R_VboPackNormal (v[k].normal);
 #ifdef USE_VERT_TANGENT_SPACE
-				VectorCopy (v[k].normal, *tangents);
+				*tangents = R_VboPackNormal (v[k].normal);
 #endif
 
 				verts = (vec3_t *)((byte *)verts + stride);
-				normals = (vec3_t *)((byte *)normals + stride);
+				normals = (uint32_t *)((byte *)normals + stride);
 #ifdef USE_VERT_TANGENT_SPACE
-				tangents = (vec3_t *)((byte *)tangents + stride);
+				tangents = (uint32_t *)((byte *)tangents + stride);
 #endif
 			}
 
@@ -4604,8 +4604,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #endif
 
 		// Fill in the index buffer
-		srfTriangle_t *triangles = (srfTriangle_t *)ri->Hunk_AllocateTempMemory (sizeof (srfTriangle_t) * numTriangles);
-		srfTriangle_t *triangle = triangles;
+		glIndex_t *indices = (glIndex_t *)ri->Hunk_AllocateTempMemory (sizeof (glIndex_t) * numTriangles * 3);
+		glIndex_t *index = indices;
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 
@@ -4613,26 +4613,26 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
 
-			for ( int k = 0; k < surf->numTriangles; k++, triangle++ )
+			for ( int k = 0; k < surf->numTriangles; k++, index += 3 )
 			{
-				triangle->indexes[0] = t[k].indexes[0] + baseVertexes[n];
-				assert (triangle->indexes[0] >= 0 && triangle->indexes[0] < numVerts);
+				index[0] = t[k].indexes[0] + baseVertexes[n];
+				assert (index[0] >= 0 && index[0] < numVerts);
 
-				triangle->indexes[1] = t[k].indexes[1] + baseVertexes[n];
-				assert (triangle->indexes[1] >= 0 && triangle->indexes[1] < numVerts);
+				index[1] = t[k].indexes[1] + baseVertexes[n];
+				assert (index[1] >= 0 && index[1] < numVerts);
 
-				triangle->indexes[2] = t[k].indexes[2] + baseVertexes[n];
-				assert (triangle->indexes[2] >= 0 && triangle->indexes[2] < numVerts);
+				index[2] = t[k].indexes[2] + baseVertexes[n];
+				assert (index[2] >= 0 && index[2] < numVerts);
 			}
 
 			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
 		}
 
-		assert (triangle == (triangles + numTriangles));
+		assert (index == (indices + numTriangles * 3));
 
-		IBO_t *ibo = R_CreateIBO2 (va ("MDXM IBO LOD %d '%s'", l, modelName), numTriangles, triangles, VBO_USAGE_STATIC);
+		IBO_t *ibo = R_CreateIBO2 (va ("MDXM IBO LOD %d '%s'", l, modelName), numTriangles * 3, indices, VBO_USAGE_STATIC);
 
-		ri->Hunk_FreeTempMemory (triangles);
+		ri->Hunk_FreeTempMemory (indices);
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 

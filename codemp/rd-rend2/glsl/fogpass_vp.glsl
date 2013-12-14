@@ -109,10 +109,10 @@ void main()
 	vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
 	normal = normalize(normal - vec3(0.5));
 #elif defined(USE_SKELETAL_ANIMATION)
-	vec3 position4 = vec4(0.0);
+	vec4 position4 = vec4(0.0);
 	vec4 normal4 = vec4(0.0);
 	vec4 originalPosition = vec4(attr_Position, 1.0);
-	vec4 originalNormal = vec4(attr_Normal, 0.0);
+	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -123,7 +123,7 @@ void main()
 	}
 
 	vec3 position = position4.xyz;
-	vec3 normal = normalize(normal4.xyz - vec3(0.5));
+	vec3 normal = normalize(normal4.xyz);
 #else
 	vec3 position = attr_Position;
 	vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
