@@ -2760,7 +2760,7 @@ qboolean R_GetEntityToken( char *buffer, int size ) {
 #endif
 
 // derived from G_ParseSpawnVars() in g_spawn.c
-qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int *numSpawnVars, char *spawnVars[MAX_SPAWN_VARS][2] )
+static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int *numSpawnVars, char *spawnVars[MAX_SPAWN_VARS][2] )
 {
 	char    keyname[MAX_TOKEN_CHARS];
 	char	com_token[MAX_TOKEN_CHARS];
@@ -2829,7 +2829,7 @@ qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int *numSp
 	return qtrue;
 }
 
-void R_LoadCubemapEntities(char *cubemapEntityName)
+static void R_LoadCubemapEntities(const char *cubemapEntityName)
 {
 	char spawnVarChars[2048];
 	int numSpawnVars;
@@ -2885,7 +2885,7 @@ void R_LoadCubemapEntities(char *cubemapEntityName)
 	}
 }
 
-void R_AssignCubemapsToWorldSurfaces(void)
+static void R_AssignCubemapsToWorldSurfaces(void)
 {
 	world_t	*w;
 	int i;
@@ -2919,7 +2919,7 @@ void R_AssignCubemapsToWorldSurfaces(void)
 }
 
 
-void R_RenderAllCubemaps(void)
+static void R_RenderAllCubemaps(void)
 {
 	int i, j;
 
