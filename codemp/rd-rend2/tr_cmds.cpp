@@ -493,12 +493,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 						qglClear(GL_COLOR_BUFFER_BIT);
 					}
 
-					if (tr.screenScratchFbo)
-					{
-						FBO_Bind(tr.screenScratchFbo);
-						qglClear(GL_COLOR_BUFFER_BIT);
-					}
-
 					FBO_Bind(NULL);
 				}
 

@@ -78,6 +78,7 @@ void RE_ClearScene( void ) {
 DISCRETE POLYS
 
 ===========================================================================
+*/
 
 /*
 =====================
@@ -290,7 +291,7 @@ void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, flo
 	RE_AddDynamicLightToScene( org, intensity, r, g, b, qtrue );
 }
 
-void RE_BeginScene(const refdef_t *fd) 
+void RE_BeginScene(const refdef_t *fd)
 {
 	Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
 
@@ -446,13 +447,13 @@ void RE_BeginScene(const refdef_t *fd)
 	tr.sceneCount++;
 }
 
-void RE_EndScene() 
-{ 
-	// the next scene rendered in this frame will tack on after this one 
-	r_firstSceneDrawSurf = tr.refdef.numDrawSurfs; 
-	r_firstSceneEntity = r_numentities; 
-	r_firstSceneDlight = r_numdlights; 
-	r_firstScenePoly = r_numpolys; 
+void RE_EndScene()
+{
+	// the next scene rendered in this frame will tack on after this one
+	r_firstSceneDrawSurf = tr.refdef.numDrawSurfs;
+	r_firstSceneEntity = r_numentities;
+	r_firstSceneDlight = r_numdlights;
+	r_firstScenePoly = r_numpolys;
 }
 
 /*
@@ -507,20 +508,20 @@ void RE_RenderScene( const refdef_t *fd ) {
 		R_RenderSunShadowMaps(fd, 2);
 	}
 
-	// playing with cube maps 
-   	// this is where dynamic cubemaps would be rendered 
-   	if (0) //(glRefConfig.framebufferObject && !( fd->rdflags & RDF_NOWORLDMODEL )) 
-   	{ 
-   		int i, j; 
-   	
-   		for (i = 0; i < tr.numCubemaps; i++) 
-   		{ 
-   			for (j = 0; j < 6; j++) 
-   			{ 
-   				R_RenderCubemapSide(i, j, qtrue); 
-   			} 
-   		} 
-   	}
+	// playing with cube maps
+	// this is where dynamic cubemaps would be rendered
+	if (0) //(glRefConfig.framebufferObject && !( fd->rdflags & RDF_NOWORLDMODEL ))
+	{
+		int i, j;
+
+		for (i = 0; i < tr.numCubemaps; i++)
+		{
+			for (j = 0; j < 6; j++)
+			{
+				R_RenderCubemapSide(i, j, qtrue);
+			}
+		}
+	}
 
 	// setup view parms for the initial view
 	//

@@ -46,9 +46,9 @@ R_DrawElements
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
 	if (glRefConfig.drawRangeElements)
-		qglDrawRangeElementsEXT(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(GL_INDEX_TYPE)));
+		qglDrawRangeElementsEXT(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
 	else
-		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(GL_INDEX_TYPE)));
+		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
 	
 }
 
@@ -249,16 +249,16 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 	float matrix[6], currentmatrix[6];
 	textureBundle_t *bundle = &pStage->bundle[bundleNum];
 
-	matrix[0] = 1.0f; matrix[2] = 0.0f; matrix[4] = 0.0f; 
-   	matrix[1] = 0.0f; matrix[3] = 1.0f; matrix[5] = 0.0f; 
-   	
-   	currentmatrix[0] = 1.0f; currentmatrix[2] = 0.0f; currentmatrix[4] = 0.0f; 
-   	currentmatrix[1] = 0.0f; currentmatrix[3] = 1.0f; currentmatrix[5] = 0.0f; 
-   	
-   	outMatrix[0] = 1.0f; outMatrix[2] = 0.0f; 
-   	outMatrix[1] = 0.0f; outMatrix[3] = 1.0f; 
+	matrix[0] = 1.0f; matrix[2] = 0.0f; matrix[4] = 0.0f;
+	matrix[1] = 0.0f; matrix[3] = 1.0f; matrix[5] = 0.0f;
 
-   	outOffTurb[0] = 0.0f; outOffTurb[1] = 0.0f; outOffTurb[2] = 0.0f; outOffTurb[3] = 0.0f;
+	currentmatrix[0] = 1.0f; currentmatrix[2] = 0.0f; currentmatrix[4] = 0.0f;
+	currentmatrix[1] = 0.0f; currentmatrix[3] = 1.0f; currentmatrix[5] = 0.0f;
+
+	outMatrix[0] = 1.0f; outMatrix[2] = 0.0f;
+	outMatrix[1] = 0.0f; outMatrix[3] = 1.0f;
+
+	outOffTurb[0] = 0.0f; outOffTurb[1] = 0.0f; outOffTurb[2] = 0.0f; outOffTurb[3] = 0.0f;
 
 	for ( tm = 0; tm < bundle->numTexMods ; tm++ ) {
 		switch ( bundle->texMods[tm].type )
@@ -306,36 +306,36 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 			break;
 		}
 
-		switch ( bundle->texMods[tm].type ) 
-   		{   
-   			case TMOD_NONE: 
-   			case TMOD_TURBULENT: 
-   			default: 
-   				break; 
-   		 
-   			case TMOD_ENTITY_TRANSLATE: 
-   			case TMOD_SCROLL: 
-   			case TMOD_SCALE: 
-   			case TMOD_STRETCH: 
-   			case TMOD_TRANSFORM: 
-   			case TMOD_ROTATE: 
-   				outMatrix[0] = matrix[0] * currentmatrix[0] + matrix[2] * currentmatrix[1]; 
-   				outMatrix[1] = matrix[1] * currentmatrix[0] + matrix[3] * currentmatrix[1]; 
-   		 
-   				outMatrix[2] = matrix[0] * currentmatrix[2] + matrix[2] * currentmatrix[3]; 
-   				outMatrix[3] = matrix[1] * currentmatrix[2] + matrix[3] * currentmatrix[3]; 
-   		 
-   				outOffTurb[0] = matrix[0] * currentmatrix[4] + matrix[2] * currentmatrix[5] + matrix[4]; 
-   				outOffTurb[1] = matrix[1] * currentmatrix[4] + matrix[3] * currentmatrix[5] + matrix[5]; 
-   	 
-   				currentmatrix[0] = outMatrix[0]; 
-   				currentmatrix[1] = outMatrix[1]; 
-   				currentmatrix[2] = outMatrix[2]; 
-   				currentmatrix[3] = outMatrix[3]; 
-   				currentmatrix[4] = outOffTurb[0]; 
-   				currentmatrix[5] = outOffTurb[1]; 
-   				break; 
-   		}
+		switch ( bundle->texMods[tm].type )
+		{	
+		case TMOD_NONE:
+		case TMOD_TURBULENT:
+		default:
+			break;
+
+		case TMOD_ENTITY_TRANSLATE:
+		case TMOD_SCROLL:
+		case TMOD_SCALE:
+		case TMOD_STRETCH:
+		case TMOD_TRANSFORM:
+		case TMOD_ROTATE:
+			outMatrix[0] = matrix[0] * currentmatrix[0] + matrix[2] * currentmatrix[1];
+			outMatrix[1] = matrix[1] * currentmatrix[0] + matrix[3] * currentmatrix[1];
+
+			outMatrix[2] = matrix[0] * currentmatrix[2] + matrix[2] * currentmatrix[3];
+			outMatrix[3] = matrix[1] * currentmatrix[2] + matrix[3] * currentmatrix[3];
+
+			outOffTurb[0] = matrix[0] * currentmatrix[4] + matrix[2] * currentmatrix[5] + matrix[4];
+			outOffTurb[1] = matrix[1] * currentmatrix[4] + matrix[3] * currentmatrix[5] + matrix[5];
+
+			currentmatrix[0] = outMatrix[0];
+			currentmatrix[1] = outMatrix[1];
+			currentmatrix[2] = outMatrix[2];
+			currentmatrix[3] = outMatrix[3];
+			currentmatrix[4] = outOffTurb[0];
+			currentmatrix[5] = outOffTurb[1];
+			break;
+		}
 	}
 }
 
@@ -465,7 +465,7 @@ static void ProjectDlightTexture( void ) {
 }
 
 
-static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t vertColor, colorGen_t *forceRGBGen, alphaGen_t *forceAlphaGen )
+static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t vertColor, int blend, colorGen_t *forceRGBGen, alphaGen_t *forceAlphaGen )
 {
 	colorGen_t rgbGen = pStage->rgbGen;
 	alphaGen_t alphaGen = pStage->alphaGen;
@@ -653,6 +653,23 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 	{
 		*forceRGBGen = rgbGen;
 	}
+	
+	// multiply color by overbrightbits if this isn't a blend
+	if (r_softOverbright->integer && tr.overbrightBits 
+	 && !((blend & GLS_SRCBLEND_BITS) == GLS_SRCBLEND_DST_COLOR)
+	 && !((blend & GLS_SRCBLEND_BITS) == GLS_SRCBLEND_ONE_MINUS_DST_COLOR)
+	 && !((blend & GLS_DSTBLEND_BITS) == GLS_DSTBLEND_SRC_COLOR)
+	 && !((blend & GLS_DSTBLEND_BITS) == GLS_DSTBLEND_ONE_MINUS_SRC_COLOR))
+	{
+		float scale = 1 << tr.overbrightBits;
+
+		baseColor[0] *= scale;
+		baseColor[1] *= scale;
+		baseColor[2] *= scale;
+		vertColor[0] *= scale;
+		vertColor[1] *= scale;
+		vertColor[2] *= scale;
+	}
 
 	// FIXME: find some way to implement this.
 #if 0
@@ -783,7 +800,7 @@ static void ForwardDlight( void ) {
 		{
 			int index = pStage->glslShaderIndex;
 
-			index &= ~(LIGHTDEF_LIGHTTYPE_MASK | LIGHTDEF_USE_DELUXEMAP);
+			index &= ~LIGHTDEF_LIGHTTYPE_MASK;
 			index |= LIGHTDEF_USE_LIGHT_VECTOR;
 
 			sp = &tr.lightallShader[index];
@@ -822,7 +839,7 @@ static void ForwardDlight( void ) {
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, baseColor, vertColor, NULL, NULL);
+			ComputeShaderColors(pStage, baseColor, vertColor, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE, NULL, NULL);
 
 			GLSL_SetUniformVec4(sp, UNIFORM_BASECOLOR, baseColor);
 			GLSL_SetUniformVec4(sp, UNIFORM_VERTCOLOR, vertColor);
@@ -1067,7 +1084,6 @@ static unsigned int RB_CalcShaderVertexAttribs( shaderCommands_t *input )
 			vertexAttribs |= ATTR_NORMAL2;
 #ifdef USE_VERT_TANGENT_SPACE
 			vertexAttribs |= ATTR_TANGENT2;
-			vertexAttribs |= ATTR_BITANGENT2;
 #endif
 		}
 	}
@@ -1202,11 +1218,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				index |= LIGHTDEF_USE_SHADOWMAP;
 			}
 
-			if (!(tr.viewParms.flags & VPF_NOCUBEMAPS) && (index & LIGHTDEF_LIGHTTYPE_MASK) && input->cubemapIndex)
-			{
-				index |= LIGHTDEF_USE_CUBEMAP;
-			}
-
 			if (r_lightmap->integer && index & LIGHTDEF_USE_LIGHTMAP)
 			{
 				index = LIGHTDEF_USE_LIGHTMAP;
@@ -1283,7 +1294,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			vec4_t baseColor;
 			vec4_t vertColor;
 
-			ComputeShaderColors(pStage, baseColor, vertColor, &forceRGBGen, &forceAlphaGen);
+			ComputeShaderColors(pStage, baseColor, vertColor, stateBits, &forceRGBGen, &forceAlphaGen);
 
 			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
 			{
@@ -1372,6 +1383,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		else if ( pStage->glslShaderGroup == tr.lightallShader )
 		{
 			int i;
+			vec4_t enableTextures;
 
 			if ((backEnd.viewParms.flags & VPF_USESUNLIGHT) && (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
 			{
@@ -1381,72 +1393,78 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				GLSL_SetUniformVec4(sp, UNIFORM_PRIMARYLIGHTORIGIN,  backEnd.refdef.sunDir);
 			}
 
+			VectorSet4(enableTextures, 0, 0, 0, 0);
 			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) && pStage->bundle[TB_LIGHTMAP].image[0])
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (pStage->bundle[i].image[0])
-					{
-						switch(i) 
-						{ 
-							case TB_LIGHTMAP: 
-								R_BindAnimatedImageToTMU( &pStage->bundle[TB_LIGHTMAP], i); 
-								break; 
-
-							case TB_DIFFUSEMAP: 
-							case TB_SPECULARMAP: 
-							case TB_SHADOWMAP: 
-							case TB_CUBEMAP: 
-							default: 
-								GL_BindToTMU( tr.whiteImage, i); 
-								break; 
-
-							case TB_NORMALMAP: 
-							case TB_DELUXEMAP: 
-								GL_BindToTMU( tr.greyImage, i); 
-								break; 
-						}
-					}
+					if (i == TB_LIGHTMAP)
+						R_BindAnimatedImageToTMU( &pStage->bundle[TB_LIGHTMAP], i);
+					else
+						GL_BindToTMU( tr.whiteImage, i );
 				}
 			}
 			else if (r_lightmap->integer == 3 && pStage->bundle[TB_DELUXEMAP].image[0])
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
-					if (pStage->bundle[i].image[0])
-					{
-						switch(i)
-						{
-							case TB_LIGHTMAP: 
-								R_BindAnimatedImageToTMU( &pStage->bundle[TB_DELUXEMAP], i); 
-								break; 
-
-							case TB_DIFFUSEMAP: 
-							case TB_SPECULARMAP: 
-							case TB_SHADOWMAP: 
-							case TB_CUBEMAP: 
-							default: 
-								GL_BindToTMU( tr.whiteImage, i); 
-								break; 
-
-							case TB_NORMALMAP: 
-							case TB_DELUXEMAP: 
-								GL_BindToTMU( tr.greyImage, i); 
-								break;
-						}
-					}
+					if (i == TB_LIGHTMAP)
+						R_BindAnimatedImageToTMU( &pStage->bundle[TB_DELUXEMAP], i);
+					else
+						GL_BindToTMU( tr.whiteImage, i );
 				}
 			}
 			else
 			{
-				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
+				qboolean light = (qboolean)((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) != 0);
+				qboolean fastLight = (qboolean)!(r_normalMapping->integer || r_specularMapping->integer);
+
+				if (pStage->bundle[TB_DIFFUSEMAP].image[0])
+					R_BindAnimatedImageToTMU( &pStage->bundle[TB_DIFFUSEMAP], TB_DIFFUSEMAP);
+
+				if (pStage->bundle[TB_LIGHTMAP].image[0])
+					R_BindAnimatedImageToTMU( &pStage->bundle[TB_LIGHTMAP], TB_LIGHTMAP);
+
+				// bind textures that are sampled and used in the glsl shader, and
+				// bind whiteImage to textures that are sampled but zeroed in the glsl shader
+				//
+				// alternatives:
+				//  - use the last bound texture
+				//     -> costs more to sample a higher res texture then throw out the result
+				//  - disable texture sampling in glsl shader with #ifdefs, as before
+				//     -> increases the number of shaders that must be compiled
+				//
+				if (light && !fastLight)
 				{
-					if (pStage->bundle[i].image[0])
+					if (pStage->bundle[TB_NORMALMAP].image[0])
 					{
-						R_BindAnimatedImageToTMU( &pStage->bundle[i], i);
+						R_BindAnimatedImageToTMU( &pStage->bundle[TB_NORMALMAP], TB_NORMALMAP);
+						enableTextures[0] = 1.0f;
 					}
+					else if (r_normalMapping->integer)
+						GL_BindToTMU( tr.whiteImage, TB_NORMALMAP );
+
+					if (pStage->bundle[TB_DELUXEMAP].image[0])
+					{
+						R_BindAnimatedImageToTMU( &pStage->bundle[TB_DELUXEMAP], TB_DELUXEMAP);
+						enableTextures[1] = 1.0f;
+					}
+					else if (r_deluxeMapping->integer)
+						GL_BindToTMU( tr.whiteImage, TB_DELUXEMAP );
+
+					if (pStage->bundle[TB_SPECULARMAP].image[0])
+					{
+						R_BindAnimatedImageToTMU( &pStage->bundle[TB_SPECULARMAP], TB_SPECULARMAP);
+						enableTextures[2] = 1.0f;
+					}
+					else if (r_specularMapping->integer)
+						GL_BindToTMU( tr.whiteImage, TB_SPECULARMAP );
 				}
+
+				enableTextures[3] = (r_cubeMapping->integer && !(tr.viewParms.flags & VPF_NOCUBEMAPS) && input->cubemapIndex) ? 1.0f : 0.0f;
 			}
+
+			GLSL_SetUniformVec4(sp, UNIFORM_ENABLETEXTURES, enableTextures);
 		}
 		else if ( pStage->bundle[1].image[0] != 0 )
 		{
@@ -1468,12 +1486,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			//
 			// set state
 			//
-			if ( pStage->bundle[0].vertexLightmap && (r_vertexLight->integer && !r_uiFullScreen->integer) && r_lightmap->integer )
-			{
-				GL_BindToTMU( tr.whiteImage, 0 );
-			}
-			else 
-				R_BindAnimatedImageToTMU( &pStage->bundle[0], 0 );
+			R_BindAnimatedImageToTMU( &pStage->bundle[0], 0 );
 
 			GLSL_SetUniformInt(sp, UNIFORM_TEXTURE1ENV, 0);
 		}
@@ -1497,7 +1510,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		}
 
 		// allow skipping out to show just lightmaps during development
-		if ( r_lightmap->integer && ( pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap || pStage->bundle[0].vertexLightmap ) )
+		if ( r_lightmap->integer && ( pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap ) )
 		{
 			break;
 		}

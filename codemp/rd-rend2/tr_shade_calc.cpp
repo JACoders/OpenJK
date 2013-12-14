@@ -126,27 +126,27 @@ void RB_CalcDeformVertexes( deformStage_t *ds )
 	vec3_t	offset;
 	float	scale;
 	float	*xyz = ( float * ) tess.xyz;
-	float	*normal = ( float * ) tess.normal;
+	uint32_t	*normal = ( uint32_t * ) tess.normal;
 	float	*table;
 
 	if ( ds->deformationWave.frequency == 0 )
 	{
 		scale = EvalWaveForm( &ds->deformationWave );
 
-		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 )
+		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal++ )
 		{
-			VectorScale( normal, scale, offset );
+			R_VboUnpackNormal(offset, *normal);
 			
-			xyz[0] += offset[0];
-			xyz[1] += offset[1];
-			xyz[2] += offset[2];
+			xyz[0] += offset[0] * scale;
+			xyz[1] += offset[1] * scale;
+			xyz[2] += offset[2] * scale;
 		}
 	}
 	else
 	{
 		table = TableForFunc( ds->deformationWave.func );
 
-		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 )
+		for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal++ )
 		{
 			float off = ( xyz[0] + xyz[1] + xyz[2] ) * ds->deformationSpread;
 
@@ -155,11 +155,11 @@ void RB_CalcDeformVertexes( deformStage_t *ds )
 				ds->deformationWave.phase + off,
 				ds->deformationWave.frequency );
 
-			VectorScale( normal, scale, offset );
-			
-			xyz[0] += offset[0];
-			xyz[1] += offset[1];
-			xyz[2] += offset[2];
+			R_VboUnpackNormal(offset, *normal);
+
+			xyz[0] += offset[0] * scale;
+			xyz[1] += offset[1] * scale;
+			xyz[2] += offset[2] * scale;
 		}
 	}
 }
@@ -175,25 +175,31 @@ void RB_CalcDeformNormals( deformStage_t *ds ) {
 	int i;
 	float	scale;
 	float	*xyz = ( float * ) tess.xyz;
-	float	*normal = ( float * ) tess.normal;
+	uint32_t	*normal = ( uint32_t * ) tess.normal;
 
-	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal += 4 ) {
+	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, normal++ ) {
+		vec3_t fNormal;
+
+		R_VboUnpackNormal(fNormal, *normal);
+
 		scale = 0.98f;
 		scale = R_NoiseGet4f( xyz[0] * scale, xyz[1] * scale, xyz[2] * scale,
 			tess.shaderTime * ds->deformationWave.frequency );
-		normal[ 0 ] += ds->deformationWave.amplitude * scale;
+		fNormal[ 0 ] += ds->deformationWave.amplitude * scale;
 
 		scale = 0.98f;
 		scale = R_NoiseGet4f( 100 + xyz[0] * scale, xyz[1] * scale, xyz[2] * scale,
 			tess.shaderTime * ds->deformationWave.frequency );
-		normal[ 1 ] += ds->deformationWave.amplitude * scale;
+		fNormal[ 1 ] += ds->deformationWave.amplitude * scale;
 
 		scale = 0.98f;
 		scale = R_NoiseGet4f( 200 + xyz[0] * scale, xyz[1] * scale, xyz[2] * scale,
 			tess.shaderTime * ds->deformationWave.frequency );
-		normal[ 2 ] += ds->deformationWave.amplitude * scale;
+		fNormal[ 2 ] += ds->deformationWave.amplitude * scale;
 
-		VectorNormalizeFast( normal );
+		VectorNormalizeFast( fNormal );
+
+		*normal = R_VboPackNormal(fNormal);
 	}
 }
 
@@ -207,22 +213,25 @@ void RB_CalcBulgeVertexes( deformStage_t *ds ) {
 	int i;
 	const float *st = ( const float * ) tess.texCoords[0];
 	float		*xyz = ( float * ) tess.xyz;
-	float		*normal = ( float * ) tess.normal;
+	uint32_t		*normal = ( uint32_t * ) tess.normal;
 	float		now;
 
 	now = backEnd.refdef.time * ds->bulgeSpeed * 0.001f;
 
-	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += 4, normal += 4 ) {
+	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += 4, normal++ ) {
 		int		off;
 		float scale;
+		vec3_t fNormal;
+
+		R_VboUnpackNormal(fNormal, *normal);
 
 		off = (float)( FUNCTABLE_SIZE / (M_PI*2) ) * ( st[0] * ds->bulgeWidth + now );
 
 		scale = tr.sinTable[ off & FUNCTABLE_MASK ] * ds->bulgeHeight;
 			
-		xyz[0] += normal[0] * scale;
-		xyz[1] += normal[1] * scale;
-		xyz[2] += normal[2] * scale;
+		xyz[0] += fNormal[0] * scale;
+		xyz[1] += fNormal[1] * scale;
+		xyz[2] += fNormal[2] * scale;
 	}
 }
 
@@ -272,11 +281,14 @@ void DeformText( const char *text ) {
 	float	color[4];
 	float	bottom, top;
 	vec3_t	mid;
+	vec3_t fNormal;
 
 	height[0] = 0;
 	height[1] = 0;
 	height[2] = -1;
-	CrossProduct( tess.normal[0], height, width );
+
+	R_VboUnpackNormal(fNormal, tess.normal[0]);
+	CrossProduct( fNormal, height, width );
 
 	// find the midpoint of the box
 	VectorClear( mid );
@@ -769,7 +781,6 @@ void RB_CalcScaleTexMatrix( const float scale[2], float *matrix )
 /*
 ** RB_CalcScrollTexMatrix
 */
-
 void RB_CalcScrollTexMatrix( const float scrollSpeed[2], float *matrix )
 {
 	float timeScale = tess.shaderTime;
@@ -815,7 +826,3 @@ void RB_CalcRotateTexMatrix( float degsPerSecond, float *matrix )
 	matrix[0] = cosValue; matrix[2] = -sinValue; matrix[4] = 0.5 - 0.5 * cosValue + 0.5 * sinValue;
 	matrix[1] = sinValue; matrix[3] = cosValue;  matrix[5] = 0.5 - 0.5 * sinValue - 0.5 * cosValue;
 }
-
-
-
-

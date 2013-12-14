@@ -456,6 +456,8 @@ qboolean R_CalcTangentVectors(srfVert_t * dv[3])
 	/* do each vertex */
 	for(i = 0; i < 3; i++)
 	{
+		vec3_t bitangent, nxt;
+
 		// calculate s tangent vector
 		s = dv[i]->st[0] + 10.0f;
 		t = dv[i]->st[1];
@@ -477,12 +479,16 @@ qboolean R_CalcTangentVectors(srfVert_t * dv[3])
 		bary[1] = ((dv[2]->st[0] - s) * (dv[0]->st[1] - t) - (dv[0]->st[0] - s) * (dv[2]->st[1] - t)) / bb;
 		bary[2] = ((dv[0]->st[0] - s) * (dv[1]->st[1] - t) - (dv[1]->st[0] - s) * (dv[0]->st[1] - t)) / bb;
 
-		dv[i]->bitangent[0] = bary[0] * dv[0]->xyz[0] + bary[1] * dv[1]->xyz[0] + bary[2] * dv[2]->xyz[0];
-		dv[i]->bitangent[1] = bary[0] * dv[0]->xyz[1] + bary[1] * dv[1]->xyz[1] + bary[2] * dv[2]->xyz[1];
-		dv[i]->bitangent[2] = bary[0] * dv[0]->xyz[2] + bary[1] * dv[1]->xyz[2] + bary[2] * dv[2]->xyz[2];
+		bitangent[0] = bary[0] * dv[0]->xyz[0] + bary[1] * dv[1]->xyz[0] + bary[2] * dv[2]->xyz[0];
+		bitangent[1] = bary[0] * dv[0]->xyz[1] + bary[1] * dv[1]->xyz[1] + bary[2] * dv[2]->xyz[1];
+		bitangent[2] = bary[0] * dv[0]->xyz[2] + bary[1] * dv[1]->xyz[2] + bary[2] * dv[2]->xyz[2];
 
-		VectorSubtract(dv[i]->bitangent, dv[i]->xyz, dv[i]->bitangent);
-		VectorNormalize(dv[i]->bitangent);
+		VectorSubtract(bitangent, dv[i]->xyz, bitangent);
+		VectorNormalize(bitangent);
+
+		// store bitangent handedness
+		CrossProduct(dv[i]->normal, dv[i]->tangent, nxt);
+		dv[i]->tangent[3] = (DotProduct(nxt, bitangent) < 0.0f) ? -1.0f : 1.0f;
 
 		// debug code
 		//% Sys_FPrintf( SYS_VRB, "%d S: (%f %f %f) T: (%f %f %f)\n", i,
@@ -492,99 +498,6 @@ qboolean R_CalcTangentVectors(srfVert_t * dv[3])
 	return qtrue;
 }
 #endif
-
-
-/*
-=================
-R_FindSurfaceTriangleWithEdge
-
-Recoded from Q2E
-=================
-*/
-static int R_FindSurfaceTriangleWithEdge(int numTriangles, srfTriangle_t * triangles, int start, int end, int ignore)
-{
-	srfTriangle_t  *tri;
-	int             count, match;
-	int             i;
-
-	count = 0;
-	match = -1;
-
-	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
-	{
-		if((tri->indexes[0] == start && tri->indexes[1] == end) ||
-		   (tri->indexes[1] == start && tri->indexes[2] == end) || (tri->indexes[2] == start && tri->indexes[0] == end))
-		{
-			if(i != ignore)
-			{
-				match = i;
-			}
-
-			count++;
-		}
-		else if((tri->indexes[1] == start && tri->indexes[0] == end) ||
-				(tri->indexes[2] == start && tri->indexes[1] == end) || (tri->indexes[0] == start && tri->indexes[2] == end))
-		{
-			count++;
-		}
-	}
-
-	// detect edges shared by three triangles and make them seams
-	if(count > 2)
-	{
-		match = -1;
-	}
-
-	return match;
-}
-
-
-/*
-=================
-R_CalcSurfaceTriangleNeighbors
-
-Recoded from Q2E
-=================
-*/
-void R_CalcSurfaceTriangleNeighbors(int numTriangles, srfTriangle_t * triangles)
-{
-	int             i;
-	srfTriangle_t  *tri;
-
-	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
-	{
-		tri->neighbors[0] = R_FindSurfaceTriangleWithEdge(numTriangles, triangles, tri->indexes[1], tri->indexes[0], i);
-		tri->neighbors[1] = R_FindSurfaceTriangleWithEdge(numTriangles, triangles, tri->indexes[2], tri->indexes[1], i);
-		tri->neighbors[2] = R_FindSurfaceTriangleWithEdge(numTriangles, triangles, tri->indexes[0], tri->indexes[2], i);
-	}
-}
-
-/*
-=================
-R_CalcSurfaceTrianglePlanes
-=================
-*/
-void R_CalcSurfaceTrianglePlanes(int numTriangles, srfTriangle_t * triangles, srfVert_t * verts)
-{
-	int             i;
-	srfTriangle_t  *tri;
-
-	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
-	{
-		float          *v1, *v2, *v3;
-		vec3_t          d1, d2;
-
-		v1 = verts[tri->indexes[0]].xyz;
-		v2 = verts[tri->indexes[1]].xyz;
-		v3 = verts[tri->indexes[2]].xyz;
-
-		VectorSubtract(v2, v1, d1);
-		VectorSubtract(v3, v1, d2);
-
-		CrossProduct(d2, d1, tri->plane);
-		tri->plane[3] = DotProduct(tri->plane, v1);
-	}
-}
 
 
 /*
@@ -1367,7 +1280,7 @@ R_PlaneForSurface
 =============
 */
 void R_PlaneForSurface (surfaceType_t *surfType, cplane_t *plane) {
-	srfTriangles_t	*tri;
+	srfBspSurface_t	*tri;
 	srfPoly_t		*poly;
 	srfVert_t		*v1, *v2, *v3;
 	vec4_t			plane4;
@@ -1379,13 +1292,13 @@ void R_PlaneForSurface (surfaceType_t *surfType, cplane_t *plane) {
 	}
 	switch (*surfType) {
 	case SF_FACE:
-		*plane = ((srfSurfaceFace_t *)surfType)->plane;
+		*plane = ((srfBspSurface_t *)surfType)->cullPlane;
 		return;
 	case SF_TRIANGLES:
-		tri = (srfTriangles_t *)surfType;
-		v1 = tri->verts + tri->triangles[0].indexes[0];
-		v2 = tri->verts + tri->triangles[0].indexes[1];
-		v3 = tri->verts + tri->triangles[0].indexes[2];
+		tri = (srfBspSurface_t *)surfType;
+		v1 = tri->verts + tri->indexes[0];
+		v2 = tri->verts + tri->indexes[1];
+		v3 = tri->verts + tri->indexes[2];
 		PlaneFromPoints( plane4, v1->xyz, v2->xyz, v3->xyz );
 		VectorCopy( plane4, plane->normal ); 
 		plane->dist = plane4[3];
@@ -1651,7 +1564,8 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 
 	for ( i = 0; i < tess.numIndexes; i += 3 )
 	{
-		vec3_t normal;
+		vec3_t normal, tNormal;
+
 		float len;
 
 		VectorSubtract( tess.xyz[tess.indexes[i]], tr.viewParms.or.origin, normal );
@@ -1662,7 +1576,9 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 			shortest = len;
 		}
 
-		if ( DotProduct( normal, tess.normal[tess.indexes[i]] ) >= 0 )
+		R_VboUnpackNormal(tNormal, tess.normal[tess.indexes[i]]);
+
+		if ( DotProduct( normal, tNormal ) >= 0 )
 		{
 			numTriangles--;
 		}
@@ -2912,129 +2828,129 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 	}
 }
 
-void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene ) 
-{ 
-	refdef_t refdef; 
-	viewParms_t  parms; 
-	float oldColorScale = tr.refdef.colorScale; 
+void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene )
+{
+	refdef_t refdef;
+	viewParms_t	parms;
+	float oldColorScale = tr.refdef.colorScale;
 
-	memset( &refdef, 0, sizeof( refdef ) ); 
-	refdef.rdflags = 0; 
-	VectorCopy(tr.cubemapOrigins[cubemapIndex], refdef.vieworg); 
+	memset( &refdef, 0, sizeof( refdef ) );
+	refdef.rdflags = 0;
+	VectorCopy(tr.cubemapOrigins[cubemapIndex], refdef.vieworg);
 
-	switch(cubemapSide) 
-	{ 
-		case 0: 
-			// -X 
-			VectorSet( refdef.viewaxis[0], -1,  0,  0); 
-			VectorSet( refdef.viewaxis[1],  0,  0, -1); 
-			VectorSet( refdef.viewaxis[2],  0,  1,  0); 
-			break; 
-		case 1:  
-			// +X 
-			VectorSet( refdef.viewaxis[0],  1,  0,  0); 
-			VectorSet( refdef.viewaxis[1],  0,  0,  1); 
-			VectorSet( refdef.viewaxis[2],  0,  1,  0); 
-			break; 
-		case 2:  
-			// -Y 
-			VectorSet( refdef.viewaxis[0],  0, -1,  0); 
-			VectorSet( refdef.viewaxis[1],  1,  0,  0); 
-			VectorSet( refdef.viewaxis[2],  0,  0, -1); 
-			break; 
-		case 3:  
-			// +Y 
-			VectorSet( refdef.viewaxis[0],  0,  1,  0); 
-			VectorSet( refdef.viewaxis[1],  1,  0,  0); 
-			VectorSet( refdef.viewaxis[2],  0,  0,  1); 
-			break; 
-		case 4: 
-			// -Z 
-			VectorSet( refdef.viewaxis[0],  0,  0, -1); 
-			VectorSet( refdef.viewaxis[1],  1,  0,  0); 
-			VectorSet( refdef.viewaxis[2],  0,  1,  0); 
-			break; 
-		case 5: 
-			// +Z 
-			VectorSet( refdef.viewaxis[0],  0,  0,  1); 
-			VectorSet( refdef.viewaxis[1], -1,  0,  0); 
-			VectorSet( refdef.viewaxis[2],  0,  1,  0); 
-			break; 
-	} 
+	switch(cubemapSide)
+	{
+		case 0:
+			// -X
+			VectorSet( refdef.viewaxis[0], -1,  0,  0);
+			VectorSet( refdef.viewaxis[1],  0,  0, -1);
+			VectorSet( refdef.viewaxis[2],  0,  1,  0);
+			break;
+		case 1: 
+			// +X
+			VectorSet( refdef.viewaxis[0],  1,  0,  0);
+			VectorSet( refdef.viewaxis[1],  0,  0,  1);
+			VectorSet( refdef.viewaxis[2],  0,  1,  0);
+			break;
+		case 2: 
+			// -Y
+			VectorSet( refdef.viewaxis[0],  0, -1,  0);
+			VectorSet( refdef.viewaxis[1],  1,  0,  0);
+			VectorSet( refdef.viewaxis[2],  0,  0, -1);
+			break;
+		case 3: 
+			// +Y
+			VectorSet( refdef.viewaxis[0],  0,  1,  0);
+			VectorSet( refdef.viewaxis[1],  1,  0,  0);
+			VectorSet( refdef.viewaxis[2],  0,  0,  1);
+			break;
+		case 4:
+			// -Z
+			VectorSet( refdef.viewaxis[0],  0,  0, -1);
+			VectorSet( refdef.viewaxis[1],  1,  0,  0);
+			VectorSet( refdef.viewaxis[2],  0,  1,  0);
+			break;
+		case 5:
+			// +Z
+			VectorSet( refdef.viewaxis[0],  0,  0,  1);
+			VectorSet( refdef.viewaxis[1], -1,  0,  0);
+			VectorSet( refdef.viewaxis[2],  0,  1,  0);
+			break;
+	}
 
-	refdef.fov_x = 90; 
-	refdef.fov_y = 90; 
+	refdef.fov_x = 90;
+	refdef.fov_y = 90;
 
-	refdef.x = 0; 
-	refdef.y = 0; 
-	refdef.width = tr.renderCubeFbo->width; 
-	refdef.height = tr.renderCubeFbo->height; 
+	refdef.x = 0;
+	refdef.y = 0;
+	refdef.width = tr.renderCubeFbo->width;
+	refdef.height = tr.renderCubeFbo->height;
 
-	refdef.time = 0; 
+	refdef.time = 0;
 
-	if (!subscene) 
-	{ 
-		RE_BeginScene(&refdef); 
+	if (!subscene)
+	{
+		RE_BeginScene(&refdef);
 
-		// FIXME: sun shadows aren't rendered correctly in cubemaps 
-		// fix involves changing r_FBufScale to fit smaller cubemap image size, or rendering cubemap to framebuffer first 
-		if(0) //(glRefConfig.framebufferObject && (r_forceSun->integer || tr.sunShadows)) 
-		{ 
-			R_RenderSunShadowMaps(&refdef, 0); 
-			R_RenderSunShadowMaps(&refdef, 1); 
-			R_RenderSunShadowMaps(&refdef, 2); 
-		} 
-	} 
+		// FIXME: sun shadows aren't rendered correctly in cubemaps
+		// fix involves changing r_FBufScale to fit smaller cubemap image size, or rendering cubemap to framebuffer first
+		if(0) //(glRefConfig.framebufferObject && (r_forceSun->integer || tr.sunShadows))
+		{
+			R_RenderSunShadowMaps(&refdef, 0);
+			R_RenderSunShadowMaps(&refdef, 1);
+			R_RenderSunShadowMaps(&refdef, 2);
+		}
+	}
 
+	{
+		vec3_t ambient, directed, lightDir;
+		R_LightForPoint(tr.refdef.vieworg, ambient, directed, lightDir);
+		tr.refdef.colorScale = 766.0f / (directed[0] + directed[1] + directed[2] + 1.0f);
+		if (directed[0] + directed[1] + directed[2] == 0)
+		{
+			ri->Printf(PRINT_ALL, "cubemap %d (%f, %f, %f) is outside the lightgrid!\n", cubemapIndex, tr.refdef.vieworg[0], tr.refdef.vieworg[1], tr.refdef.vieworg[2]);
+		}
+	}
 
-	vec3_t ambient, directed, lightDir; 
-	R_LightForPoint(tr.refdef.vieworg, ambient, directed, lightDir); 
-	tr.refdef.colorScale = 766.0f / (directed[0] + directed[1] + directed[2] + 1.0f); 
-	if (directed[0] + directed[1] + directed[2] == 0) 
-	{ 
-		ri->Printf(PRINT_ALL, "cubemap %d (%f, %f, %f) is outside the lightgrid!\n", cubemapIndex, tr.refdef.vieworg[0], tr.refdef.vieworg[1], tr.refdef.vieworg[2]); 
-	} 
+	Com_Memset( &parms, 0, sizeof( parms ) );
 
+	parms.viewportX = 0;
+	parms.viewportY = 0;
+	parms.viewportWidth = tr.renderCubeFbo->width;
+	parms.viewportHeight = tr.renderCubeFbo->height;
+	parms.isPortal = qfalse;
+	parms.isMirror = qtrue;
+	parms.flags =  VPF_NOVIEWMODEL | VPF_NOCUBEMAPS;
 
-	Com_Memset( &parms, 0, sizeof( parms ) ); 
+	parms.fovX = 90;
+	parms.fovY = 90;
 
-	parms.viewportX = 0; 
-	parms.viewportY = 0; 
-	parms.viewportWidth = tr.renderCubeFbo->width; 
-	parms.viewportHeight = tr.renderCubeFbo->height; 
-	parms.isPortal = qfalse; 
-	parms.isMirror = qtrue; 
-	parms.flags =  VPF_NOVIEWMODEL | VPF_NOCUBEMAPS; 
+	VectorCopy( refdef.vieworg, parms.or.origin );
+	VectorCopy( refdef.viewaxis[0], parms.or.axis[0] );
+	VectorCopy( refdef.viewaxis[1], parms.or.axis[1] );
+	VectorCopy( refdef.viewaxis[2], parms.or.axis[2] );
 
-	parms.fovX = 90; 
-	parms.fovY = 90; 
+	VectorCopy( refdef.vieworg, parms.pvsOrigin );
 
-	VectorCopy( refdef.vieworg, parms.or.origin ); 
-	VectorCopy( refdef.viewaxis[0], parms.or.axis[0] ); 
-	VectorCopy( refdef.viewaxis[1], parms.or.axis[1] ); 
-	VectorCopy( refdef.viewaxis[2], parms.or.axis[2] ); 
+	// FIXME: sun shadows aren't rendered correctly in cubemaps
+	// fix involves changing r_FBufScale to fit smaller cubemap image size, or rendering cubemap to framebuffer first
+	if (0) //(r_depthPrepass->value && ((r_forceSun->integer) || tr.sunShadows))
+	{
+		parms.flags = VPF_USESUNLIGHT;
+	}
 
-	VectorCopy( refdef.vieworg, parms.pvsOrigin ); 
+	parms.targetFbo = tr.renderCubeFbo;
+	parms.targetFboLayer = cubemapSide;
+	parms.targetFboCubemapIndex = cubemapIndex;
 
-	// FIXME: sun shadows aren't rendered correctly in cubemaps 
-	// fix involves changing r_FBufScale to fit smaller cubemap image size, or rendering cubemap to framebuffer first 
-	if (0) //(r_depthPrepass->value && ((r_forceSun->integer) || tr.sunShadows)) 
-	{ 
-		parms.flags = VPF_USESUNLIGHT; 
-	} 
+	R_RenderView(&parms);
 
-	parms.targetFbo = tr.renderCubeFbo; 
-	parms.targetFboLayer = cubemapSide; 
-	parms.targetFboCubemapIndex = cubemapIndex; 
-
-	R_RenderView(&parms); 
-
-	if (subscene) 
-	{ 
-		tr.refdef.colorScale = oldColorScale; 
-	} 
-	else 
-	{ 
-		RE_EndScene(); 
-	} 
+	if (subscene)
+	{
+		tr.refdef.colorScale = oldColorScale;
+	}
+	else
+	{
+		RE_EndScene();
+	}
 }

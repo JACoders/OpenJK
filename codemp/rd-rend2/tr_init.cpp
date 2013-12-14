@@ -32,7 +32,7 @@ qboolean    textureFilterAnisotropic = qfalse;
 int         maxAnisotropy = 0;
 float       displayAspect = 0.0f;
 
-glstate_s	glState;
+glstate_t	glState;
 
 static void GfxInfo_f( void );
 static void GfxMemInfo_f( void );
@@ -103,6 +103,8 @@ cvar_t  *r_ext_framebuffer_object;
 cvar_t  *r_ext_texture_float;
 cvar_t  *r_arb_half_float_pixel;
 cvar_t  *r_ext_framebuffer_multisample;
+cvar_t  *r_arb_seamless_cube_map;
+cvar_t  *r_arb_vertex_type_2_10_10_10_rev;
 
 cvar_t  *r_mergeMultidraws;
 cvar_t  *r_mergeLeafSurfaces;
@@ -135,10 +137,10 @@ cvar_t  *r_normalMapping;
 cvar_t  *r_specularMapping;
 cvar_t  *r_deluxeMapping;
 cvar_t  *r_parallaxMapping;
-cvar_t  *r_cubeMapping; 
-cvar_t  *r_deluxeSpecular; 
-cvar_t  *r_specularIsMetallic; 
-cvar_t  *r_baseSpecular; 
+cvar_t  *r_cubeMapping;
+cvar_t  *r_deluxeSpecular;
+cvar_t  *r_specularIsMetallic;
+cvar_t  *r_baseSpecular;
 cvar_t  *r_baseGloss;
 cvar_t  *r_recalcMD3Normals;
 cvar_t  *r_mergeLightmaps;
@@ -223,7 +225,6 @@ cvar_t	*r_debugLight;
 cvar_t	*r_debugSort;
 cvar_t	*r_printShaders;
 cvar_t	*r_saveFontData;
-cvar_t  *r_arb_seamless_cube_map;
 
 /*
 Ghoul2 Insert Start
@@ -1195,6 +1196,7 @@ void R_Register( void )
 	r_arb_half_float_pixel = ri->Cvar_Get( "r_arb_half_float_pixel", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_framebuffer_multisample = ri->Cvar_Get( "r_ext_framebuffer_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_seamless_cube_map = ri->Cvar_Get( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH);
+	r_arb_vertex_type_2_10_10_10_rev = ri->Cvar_Get( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH);
 
 	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic",
 			"0", CVAR_ARCHIVE | CVAR_LATCH );

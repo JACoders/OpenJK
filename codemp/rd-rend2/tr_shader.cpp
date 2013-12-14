@@ -2129,7 +2129,7 @@ static void ComputeVertexAttribs(void)
 #ifdef USE_VERT_TANGENT_SPACE
 			if ((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) && !(r_normalMapping->integer == 0 && r_specularMapping->integer == 0))
 			{
-				shader.vertexAttribs |= ATTR_BITANGENT | ATTR_TANGENT;
+				shader.vertexAttribs |= ATTR_TANGENT;
 			}
 #endif
 
@@ -2383,7 +2383,6 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 		//ri->Printf(PRINT_ALL, ", deluxemap");
 		diffuse->bundle[TB_DELUXEMAP] = lightmap->bundle[0];
 		diffuse->bundle[TB_DELUXEMAP].image[0] = tr.deluxemaps[shader.lightmapIndex];
-		defs |= LIGHTDEF_USE_DELUXEMAP;
 	}
 
 	if (r_normalMapping->integer)
@@ -2701,8 +2700,6 @@ static qboolean CollapseStagesToGLSL(void)
 			{
 				pStage->glslShaderGroup = tr.lightallShader;
 				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHTMAP;
-				if (r_deluxeMapping->integer && tr.worldDeluxeMapping)
-					pStage->glslShaderIndex |= LIGHTDEF_USE_DELUXEMAP;
 				pStage->bundle[TB_LIGHTMAP] = pStage->bundle[TB_DIFFUSEMAP];
 				pStage->bundle[TB_DIFFUSEMAP].image[0] = tr.whiteImage;
 				pStage->bundle[TB_DIFFUSEMAP].isLightmap = qfalse;
@@ -2736,25 +2733,28 @@ static qboolean CollapseStagesToGLSL(void)
 		}
 	}
 
-	// insert default normal and specular textures if necessary
-   	for (i = 0; i < MAX_SHADER_STAGES; i++) 
-   	{ 
-   		shaderStage_t *pStage = &stages[i]; 
-   	
-   		if (!pStage->active) 
-   			continue; 
-   	
-   		if (pStage->glslShaderGroup != tr.lightallShader) 
-   			continue; 
+	// insert default material info if needed
+	for (i = 0; i < MAX_SHADER_STAGES; i++)
+	{
+		shaderStage_t *pStage = &stages[i];
 
-   		if ((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) == 0) 
-   			continue; 
-   		 
-   		if (!pStage->bundle[TB_NORMALMAP].image[0] && r_normalMapping->integer)
+		if (!pStage->active)
+			continue;
+
+		if (pStage->glslShaderGroup != tr.lightallShader)
+			continue;
+
+		if ((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) == 0)
+			continue;
+
+		if (!pStage->bundle[TB_SPECULARMAP].image[0] && r_specularMapping->integer)
 		{
-			pStage->bundle[TB_NORMALMAP].image[0] = tr.greyImage;
+			if (!pStage->materialInfo[0])
+				pStage->materialInfo[0] = r_baseSpecular->value;
+			if (!pStage->materialInfo[1])
+				pStage->materialInfo[1] = r_baseGloss->value;
 		}
-   	}
+	}
 
 	return (qboolean)numStages;
 }
@@ -3036,11 +3036,7 @@ from the current global working shader
 */
 static shader_t *FinishShader( void ) {
 	int stage;
-	qboolean		hasLightmapStage;
-	qboolean		vertexLightmap;
-
-	hasLightmapStage = qfalse;
-	vertexLightmap = qfalse;
+	qboolean hasLightmapStage = qfalse;
 
 	//
 	// set sky stuff appropriate
@@ -3113,15 +3109,6 @@ static shader_t *FinishShader( void ) {
 				pStage->bundle[0].tcGen = TCGEN_TEXTURE;
 			}
 		}
-
-
-    // not a true lightmap but we want to leave existing 
-    // behaviour in place and not print out a warning
-    //if (pStage->rgbGen == CGEN_VERTEX) {
-    //  vertexLightmap = qtrue;
-    //}
-
-
 
 		//
 		// determine sort order and fog color adjustment
@@ -3197,13 +3184,9 @@ static shader_t *FinishShader( void ) {
 	stage = CollapseStagesToGLSL();
 
 	if ( shader.lightmapIndex >= 0 && !hasLightmapStage ) {
-		if (vertexLightmap) {
-			ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has VERTEX forced lightmap!\n", shader.name );
-		} else {
-			ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
-			// Don't set this, it will just add duplicate shaders to the hash
-  			//shader.lightmapIndex = LIGHTMAP_NONE;
-		}
+		ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
+		// Don't set this, it will just add duplicate shaders to the hash
+  		//shader.lightmapIndex = LIGHTMAP_NONE;
 	}
 
 

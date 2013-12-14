@@ -162,7 +162,7 @@ void RB_ShadowTessEnd( void ) {
 		return;
 	}
 
-	if ( r_stencilbits->integer < 4 ) {
+	if ( glConfig.stencilBits < 4 ) {
 		return;
 	}
 
@@ -265,7 +265,7 @@ void RB_ShadowFinish( void ) {
 	if ( r_shadows->integer != 2 ) {
 		return;
 	}
-	if ( r_stencilbits->integer < 4 ) {
+	if ( glConfig.stencilBits < 4 ) {
 		return;
 	}
 	qglEnable( GL_STENCIL_TEST );

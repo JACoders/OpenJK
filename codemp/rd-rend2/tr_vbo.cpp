@@ -22,6 +22,75 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_vbo.c
 #include "tr_local.h"
 
+
+uint32_t R_VboPackTangent(vec4_t v)
+{
+	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
+	{
+		return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)
+		     | (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
+		     | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
+		     | (((uint32_t)(v[0] * 511.5f + 512.0f)));
+	}
+	else
+	{
+		return (((uint32_t)(v[3] * 127.5f + 128.0f)) << 24)
+		     | (((uint32_t)(v[2] * 127.5f + 128.0f)) << 16)
+		     | (((uint32_t)(v[1] * 127.5f + 128.0f)) << 8)
+		     | (((uint32_t)(v[0] * 127.5f + 128.0f)));
+	}
+}
+
+uint32_t R_VboPackNormal(vec3_t v)
+{
+	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
+	{
+		return (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
+		     | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
+		     | (((uint32_t)(v[0] * 511.5f + 512.0f)));
+	}
+	else
+	{
+		return (((uint32_t)(v[2] * 127.5f + 128.0f)) << 16)
+		     | (((uint32_t)(v[1] * 127.5f + 128.0f)) << 8)
+		     | (((uint32_t)(v[0] * 127.5f + 128.0f)));
+	}
+}
+
+void R_VboUnpackTangent(vec4_t v, uint32_t b)
+{
+	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
+	{
+		v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
+		v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
+		v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
+		v[3] = ((b >> 30) & 0x3)   * 1.0f/1.5f   - 1.0f;
+	}
+	else
+	{
+		v[0] = ((b)       & 0xff) * 1.0f/127.5f - 1.0f;
+		v[1] = ((b >> 8)  & 0xff) * 1.0f/127.5f - 1.0f;
+		v[2] = ((b >> 16) & 0xff) * 1.0f/127.5f - 1.0f;
+		v[3] = ((b >> 24) & 0xff) * 1.0f/127.5f - 1.0f;
+	}
+}
+
+void R_VboUnpackNormal(vec3_t v, uint32_t b)
+{
+	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
+	{
+		v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
+		v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
+		v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
+	}
+	else
+	{
+		v[0] = ((b)       & 0xff) * 1.0f/127.5f - 1.0f;
+		v[1] = ((b >> 8)  & 0xff) * 1.0f/127.5f - 1.0f;
+		v[2] = ((b >> 16) & 0xff) * 1.0f/127.5f - 1.0f;
+	}
+}
+
 /*
 ============
 R_CreateVBO
@@ -142,20 +211,14 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 		if(stateBits & ATTR_NORMAL)
 		{
 			vbo->ofs_normal = dataSize;
-			dataSize += sizeof(verts[0].normal);
+			dataSize += sizeof(uint32_t);
 		}
 
 #ifdef USE_VERT_TANGENT_SPACE
 		if(stateBits & ATTR_TANGENT)
 		{
 			vbo->ofs_tangent = dataSize;
-			dataSize += sizeof(verts[0].tangent);
-		}
-
-		if(stateBits & ATTR_BITANGENT)
-		{
-			vbo->ofs_bitangent = dataSize;
-			dataSize += sizeof(verts[0].bitangent);
+			dataSize += sizeof(uint32_t);
 		}
 #endif
 
@@ -180,14 +243,13 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 		if(stateBits & ATTR_LIGHTDIRECTION)
 		{
 			vbo->ofs_lightdir = dataSize;
-			dataSize += sizeof(verts[0].lightdir);
+			dataSize += sizeof(uint32_t);
 		}
 
 		vbo->stride_xyz         = dataSize;
 		vbo->stride_normal      = dataSize;
 #ifdef USE_VERT_TANGENT_SPACE
 		vbo->stride_tangent     = dataSize;
-		vbo->stride_bitangent   = dataSize;
 #endif
 		vbo->stride_st          = dataSize;
 		vbo->stride_lightmap    = dataSize;
@@ -211,23 +273,22 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 			// normal
 			if(stateBits & ATTR_NORMAL)
 			{
-				memcpy(data + dataOfs, &verts[i].normal, sizeof(verts[i].normal));
-				dataOfs += sizeof(verts[i].normal);
+				uint32_t *p = (uint32_t *)(data + dataOfs);
+
+				*p = R_VboPackNormal(verts[i].normal);
+
+				dataOfs += sizeof(uint32_t);
 			}
 
 #ifdef USE_VERT_TANGENT_SPACE
 			// tangent
 			if(stateBits & ATTR_TANGENT)
 			{
-				memcpy(data + dataOfs, &verts[i].tangent, sizeof(verts[i].tangent));
-				dataOfs += sizeof(verts[i].tangent);
-			}
+				uint32_t *p = (uint32_t *)(data + dataOfs);
 
-			// bitangent
-			if(stateBits & ATTR_BITANGENT)
-			{
-				memcpy(data + dataOfs, &verts[i].bitangent, sizeof(verts[i].bitangent));
-				dataOfs += sizeof(verts[i].bitangent);
+				*p = R_VboPackTangent(verts[i].tangent);
+
+				dataOfs += sizeof(uint32_t);
 			}
 #endif
 
@@ -255,8 +316,11 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 			// feed vertex light directions
 			if(stateBits & ATTR_LIGHTDIRECTION)
 			{
-				memcpy(data + dataOfs, &verts[i].lightdir, sizeof(verts[i].lightdir));
-				dataOfs += sizeof(verts[i].lightdir);
+				uint32_t *p = (uint32_t *)(data + dataOfs);
+
+				*p = R_VboPackNormal(verts[i].lightdir);
+
+				dataOfs += sizeof(uint32_t);
 			}
 		}
 	}
@@ -267,18 +331,13 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		if(stateBits & ATTR_NORMAL)
 		{
-			dataSize += sizeof(verts[0].normal);
+			dataSize += sizeof(uint32_t);
 		}
 
 #ifdef USE_VERT_TANGENT_SPACE
 		if(stateBits & ATTR_TANGENT)
 		{
-			dataSize += sizeof(verts[0].tangent);
-		}
-
-		if(stateBits & ATTR_BITANGENT)
-		{
-			dataSize += sizeof(verts[0].bitangent);
+			dataSize += sizeof(uint32_t);
 		}
 #endif
 
@@ -299,7 +358,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		if(stateBits & ATTR_LIGHTDIRECTION)
 		{
-			dataSize += sizeof(verts[0].lightdir);
+			dataSize += sizeof(uint32_t);
 		}
 
 		// create VBO
@@ -311,7 +370,6 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 		vbo->ofs_normal         = 0;
 #ifdef USE_VERT_TANGENT_SPACE
 		vbo->ofs_tangent        = 0;
-		vbo->ofs_bitangent      = 0;
 #endif
 		vbo->ofs_st             = 0;
 		vbo->ofs_lightmap       = 0;
@@ -319,15 +377,14 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 		vbo->ofs_lightdir       = 0;
 
 		vbo->stride_xyz         = sizeof(verts[0].xyz);
-		vbo->stride_normal      = sizeof(verts[0].normal);
+		vbo->stride_normal      = sizeof(uint32_t);
 #ifdef USE_VERT_TANGENT_SPACE
-		vbo->stride_tangent     = sizeof(verts[0].tangent);
-		vbo->stride_bitangent   = sizeof(verts[0].bitangent);
+		vbo->stride_tangent     = sizeof(uint32_t);
 #endif
 		vbo->stride_vertexcolor = sizeof(verts[0].vertexColors);
 		vbo->stride_st          = sizeof(verts[0].st);
 		vbo->stride_lightmap    = sizeof(verts[0].lightmap);
-		vbo->stride_lightdir    = sizeof(verts[0].lightdir);
+		vbo->stride_lightdir    = sizeof(uint32_t);
 
 		//ri->Printf(PRINT_ALL, "2CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
 			//vbo->stride_xyz, vbo->stride_normal, vbo->stride_st, vbo->stride_lightmap, vbo->stride_vertexcolor);
@@ -345,8 +402,11 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 			vbo->ofs_normal = dataOfs;
 			for (i = 0; i < numVertexes; i++)
 			{
-				memcpy(data + dataOfs, &verts[i].normal, sizeof(verts[i].normal));
-				dataOfs += sizeof(verts[i].normal);
+				uint32_t *p = (uint32_t *)(data + dataOfs);
+
+				*p = R_VboPackNormal(verts[i].normal);
+
+				dataOfs += sizeof(uint32_t);
 			}
 		}
 
@@ -357,19 +417,11 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 			vbo->ofs_tangent = dataOfs;
 			for (i = 0; i < numVertexes; i++)
 			{
-				memcpy(data + dataOfs, &verts[i].tangent, sizeof(verts[i].tangent));
-				dataOfs += sizeof(verts[i].tangent);
-			}
-		}
+				uint32_t *p = (uint32_t *)(data + dataOfs);
 
-		// bitangent
-		if(stateBits & ATTR_BITANGENT)
-		{
-			vbo->ofs_bitangent = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				memcpy(data + dataOfs, &verts[i].bitangent, sizeof(verts[i].bitangent));
-				dataOfs += sizeof(verts[i].bitangent);
+				*p = R_VboPackTangent(verts[i].tangent);
+
+				dataOfs += sizeof(uint32_t);
 			}
 		}
 #endif
@@ -413,8 +465,11 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 			vbo->ofs_lightdir = dataOfs;
 			for (i = 0; i < numVertexes; i++)
 			{
-				memcpy(data + dataOfs, &verts[i].lightdir, sizeof(verts[i].lightdir));
-				dataOfs += sizeof(verts[i].lightdir);
+				uint32_t *p = (uint32_t *)(data + dataOfs);
+
+				*p = R_VboPackNormal(verts[i].lightdir);
+
+				dataOfs += sizeof(uint32_t);
 			}
 		}
 	}
@@ -501,17 +556,14 @@ IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, v
 R_CreateIBO2
 ============
 */
-IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t * triangles, vboUsage_t usage)
+IBO_t          *R_CreateIBO2(const char *name, int numIndexes, glIndex_t * inIndexes, vboUsage_t usage)
 {
 	IBO_t          *ibo;
-	int             i, j;
+	int             i;
 
-	byte           *indexes;
+	glIndex_t       *indexes;
 	int             indexesSize;
-	int             indexesOfs;
 
-	srfTriangle_t  *tri;
-	glIndex_t       index;
 	int				glUsage;
 
 	switch (usage)
@@ -529,7 +581,7 @@ IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t *
 			return NULL;
 	}
 
-	if(!numTriangles)
+	if(!numIndexes)
 		return NULL;
 
 	if(strlen(name) >= MAX_QPATH)
@@ -548,18 +600,12 @@ IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t *
 
 	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
 
-	indexesSize = numTriangles * 3 * sizeof(int);
-	indexes = (byte *)ri->Hunk_AllocateTempMemory(indexesSize);
-	indexesOfs = 0;
+	indexesSize = numIndexes * sizeof(glIndex_t);
+	indexes = (glIndex_t *)ri->Hunk_AllocateTempMemory(indexesSize);
 
-	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
+	for(i = 0; i < numIndexes; i++)
 	{
-		for(j = 0; j < 3; j++)
-		{
-			index = tri->indexes[j];
-			memcpy(indexes + indexesOfs, &index, sizeof(glIndex_t));
-			indexesOfs += sizeof(glIndex_t);
-		}
+		indexes[i] = inIndexes[i];
 	}
 
 	ibo->indexesSize = indexesSize;
@@ -701,7 +747,6 @@ void R_InitVBOs(void)
 	dataSize += sizeof(tess.normal[0]);
 #ifdef USE_VERT_TANGENT_SPACE
 	dataSize += sizeof(tess.tangent[0]);
-	dataSize += sizeof(tess.bitangent[0]);
 #endif
 	dataSize += sizeof(tess.vertexColors[0]);
 	dataSize += sizeof(tess.texCoords[0][0]) * 2;
@@ -716,7 +761,6 @@ void R_InitVBOs(void)
 	tess.vbo->ofs_normal      = offset; offset += sizeof(tess.normal[0])           * SHADER_MAX_VERTEXES;
 #ifdef USE_VERT_TANGENT_SPACE
 	tess.vbo->ofs_tangent     = offset; offset += sizeof(tess.tangent[0])          * SHADER_MAX_VERTEXES;
-	tess.vbo->ofs_bitangent   = offset; offset += sizeof(tess.bitangent[0])        * SHADER_MAX_VERTEXES;
 #endif
 	// these next two are actually interleaved
 	tess.vbo->ofs_st          = offset; 
@@ -730,7 +774,6 @@ void R_InitVBOs(void)
 	tess.vbo->stride_normal      = sizeof(tess.normal[0]);
 #ifdef USE_VERT_TANGENT_SPACE
 	tess.vbo->stride_tangent     = sizeof(tess.tangent[0]);
-	tess.vbo->stride_bitangent   = sizeof(tess.bitangent[0]);
 #endif
 	tess.vbo->stride_vertexcolor = sizeof(tess.vertexColors[0]);
 	tess.vbo->stride_st          = sizeof(tess.texCoords[0][0]) * 2;
@@ -888,12 +931,6 @@ void RB_UpdateVBOs(unsigned int attribBits)
 				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_tangent, tess.numVertexes * sizeof(tess.tangent[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_tangent,     tess.numVertexes * sizeof(tess.tangent[0]),          tess.tangent);
 			}
-
-			if(attribBits & ATTR_BITANGENT)
-			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_bitangent, tess.numVertexes * sizeof(tess.bitangent[0]));
-				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_bitangent,   tess.numVertexes * sizeof(tess.bitangent[0]),        tess.bitangent);
-			}
 #endif
 
 			if(attribBits & ATTR_COLOR)
@@ -915,7 +952,6 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_normal,      tess.numVertexes * sizeof(tess.normal[0]),           tess.normal);
 #ifdef USE_VERT_TANGENT_SPACE
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_tangent,     tess.numVertexes * sizeof(tess.tangent[0]),          tess.tangent);
-			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_bitangent,   tess.numVertexes * sizeof(tess.bitangent[0]),        tess.bitangent);
 #endif
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]),     tess.vertexColors);
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_lightdir,    tess.numVertexes * sizeof(tess.lightdir[0]),         tess.lightdir);

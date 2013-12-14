@@ -4444,14 +4444,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		vec4_t *weights;
 #ifdef USE_VERT_TANGENT_SPACE
 		vec3_t *tangents;
-		vec3_t *bitangents;
 #endif
 
 		byte *data;
 		int dataSize = 0;
 		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights;
 #ifdef USE_VERT_TANGENT_SPACE
-		int ofs_tangent, ofs_bitangent;
+		int ofs_tangent;
 #endif
 		int stride = 0;
 		int numVerts = 0;
@@ -4488,7 +4487,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		dataSize += numVerts * sizeof (*bonerefs);
 #ifdef USE_VERT_TANGENT_SPACE
 		dataSize += numVerts * sizeof (*tangents);
-		dataSize += numVerts * sizeof (*bitangents);
 #endif
 
 		// Allocate and write to memory
@@ -4518,10 +4516,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		tangents = (vec3_t *)(data + stride);
 		ofs_tangent = stride;
 		stride += sizeof (*tangents);
-
-		bitangents = (vec3_t *)(data + stride);
-		ofs_bitangent = stride;
-		stride += sizeof (*bitangents);
 #endif
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
@@ -4536,14 +4530,12 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				VectorCopy (v[k].normal, *normals);
 #ifdef USE_VERT_TANGENT_SPACE
 				VectorCopy (v[k].normal, *tangents);
-				VectorCopy (v[k].normal, *bitangents);
 #endif
 
 				verts = (vec3_t *)((byte *)verts + stride);
 				normals = (vec3_t *)((byte *)normals + stride);
 #ifdef USE_VERT_TANGENT_SPACE
 				tangents = (vec3_t *)((byte *)tangents + stride);
-				bitangents = (vec3_t *)((byte *)bitangents + stride);
 #endif
 			}
 
@@ -4600,7 +4592,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		vbo->ofs_boneweights = ofsWeights;
 #ifdef USE_VERT_TANGENT_SPACE
 		vbo->ofs_tangent = ofs_tangent;
-		vbo->ofs_bitangent = ofs_bitangent;
 #endif
 
 		vbo->stride_xyz = stride;
@@ -4610,7 +4601,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		vbo->stride_boneweights = stride;
 #ifdef USE_VERT_TANGENT_SPACE
 		vbo->stride_tangent = stride;
-		vbo->stride_bitangent = stride;
 #endif
 
 		// Fill in the index buffer
