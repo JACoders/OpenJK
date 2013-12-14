@@ -981,7 +981,7 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 		}
 
 		// swap all the triangles
-		surf->numIndexes = md3Surf->numTriangles;
+		surf->numIndexes = md3Surf->numTriangles * 3;
 		surf->indexes = tri = (glIndex_t *)ri->Hunk_Alloc(sizeof(*tri) * 3 * md3Surf->numTriangles, h_low);
 
 		md3Tri = (md3Triangle_t *) ((byte *) md3Surf + md3Surf->ofsTriangles);
