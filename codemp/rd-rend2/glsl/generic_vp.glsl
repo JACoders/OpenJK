@@ -4,6 +4,9 @@ attribute vec3 attr_Normal;
 #if defined(USE_VERTEX_ANIMATION)
 attribute vec4 attr_Position2;
 attribute vec3 attr_Normal2;
+#elif defined(USE_SKELETAL_ANIMATION)
+attribute vec4 attr_BoneIndexes;
+attribute vec4 attr_BoneWeights;
 #endif
 
 attribute vec4 attr_Color;
@@ -54,6 +57,8 @@ uniform float  u_PortalRange;
 
 #if defined(USE_VERTEX_ANIMATION)
 uniform float  u_VertexLerp;
+#elif defined(USE_SKELETAL_ANIMATION)
+uniform mat4   u_BoneMatrices[80];
 #endif
 
 varying vec2   var_DiffuseTex;
@@ -204,6 +209,20 @@ void main()
 #if defined(USE_VERTEX_ANIMATION)
 	vec4 position = mix(attr_Position, attr_Position2, u_VertexLerp);
 	vec3 normal = normalize(mix(attr_Normal, attr_Normal2, u_VertexLerp));
+#elif defined(USE_SKELETAL_ANIMATION)
+	vec4 position = vec4(0.0);
+	vec4 normal4 = vec4(0.0);
+	vec4 originalNormal = vec4(attr_Normal, 0.0);
+
+	for (int i = 0; i < 4; i++)
+	{
+		int boneIndex = int(attr_BoneIndexes[i]);
+
+		position += (u_BoneMatrices[boneIndex] * attr_Position) * attr_BoneWeights[i];
+		normal4 += (u_BoneMatrices[boneIndex] * originalNormal) * attr_BoneWeights[i];
+	}
+
+	vec3 normal = normal4.xyz;
 #else
 	vec4 position = attr_Position;
 	vec3 normal = attr_Normal;

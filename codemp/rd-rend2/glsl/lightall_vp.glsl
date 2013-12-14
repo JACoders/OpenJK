@@ -14,6 +14,9 @@ attribute vec3 attr_Position2;
 attribute vec3 attr_Normal2;
 attribute vec3 attr_Tangent2;
 attribute vec3 attr_Bitangent2;
+#elif defined(USE_SKELETAL_ANIMATION)
+attribute vec4 attr_BoneIndexes;
+attribute vec4 attr_BoneWeights;
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_LIGHT_VECTOR)
@@ -46,6 +49,8 @@ uniform mat4   u_ModelMatrix;
 
 #if defined(USE_VERTEX_ANIMATION)
 uniform float  u_VertexLerp;
+#elif defined(USE_SKELETAL_ANIMATION)
+uniform mat4   u_BoneMatrices[80];
 #endif
 
 #if defined(USE_LIGHT_VECTOR)
@@ -154,6 +159,30 @@ void main()
 	vec3 normal    = normalize(mix(attr_Normal,    attr_Normal2,    u_VertexLerp));
 	vec3 tangent   = normalize(mix(attr_Tangent,   attr_Tangent2,   u_VertexLerp));
 	vec3 bitangent = normalize(mix(attr_Bitangent, attr_Bitangent2, u_VertexLerp));
+#elif defined(USE_SKELETAL_ANIMATION)
+	vec4 position4 = vec4(0.0);
+	vec4 normal4 = vec4(0.0);
+	vec4 tangent4 = vec4(0.0);
+	vec4 bitangent4 = vec4(0.0);
+	vec4 originalPosition = vec4(attr_Position, 1.0);
+	vec4 originalNormal = vec4(attr_Normal, 0.0);
+	vec4 originalTangent = vec4(attr_Tangent, 0.0);
+	vec4 originalBitangent = vec4(attr_Bitangent, 0.0);
+
+	for (int i = 0; i < 4; i++)
+	{
+		int boneIndex = int(attr_BoneIndexes[i]);
+
+		position4 += (u_BoneMatrices[boneIndex] * originalPosition) * attr_BoneWeights[i];
+		normal4 += (u_BoneMatrices[boneIndex] * originalNormal) * attr_BoneWeights[i];
+		tangent4 += (u_BoneMatrices[boneIndex] * originalTangent) * attr_BoneWeights[i];
+		bitangent4 += (u_BoneMatrices[boneIndex] * originalBitangent) * attr_BoneWeights[i];
+	}
+
+	vec3 position = position4.xyz;
+	vec3 normal = normal4.xyz;
+	vec3 tangent = tangent4.xyz;
+	vec3 bitangent = bitangent4.xyz;
 #else
 	vec3 position  = attr_Position;
 	vec3 normal    = attr_Normal;
