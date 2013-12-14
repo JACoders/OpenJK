@@ -3271,7 +3271,7 @@ void R_MergeLeafSurfaces(void)
 }
 
 
-void R_CalcVertexLightDirs( void )
+static void R_CalcVertexLightDirs( void )
 {
 	int i, k;
 	msurface_t *surface;
@@ -3386,6 +3386,9 @@ void RE_LoadWorldMap( const char *name ) {
 	R_LoadVisibility( &header->lumps[LUMP_VISIBILITY] );
 	R_LoadLightGrid( &header->lumps[LUMP_LIGHTGRID] );
 	R_LoadLightGridArray( &header->lumps[LUMP_LIGHTARRAY] );
+	
+	// determine vertex light directions
+	R_CalcVertexLightDirs();
 
 	// determine which parts of the map are in sunlight
 #if 0
@@ -3604,9 +3607,6 @@ void RE_LoadWorldMap( const char *name ) {
 
 	// only set tr.world now that we know the entire level has loaded properly
 	tr.world = &s_worldData;
-
-	// determine vertex light directions
-	R_CalcVertexLightDirs();
 
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();

@@ -171,7 +171,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 	gridStep[0] = 1;
 	gridStep[1] = 1 * world->lightGridBounds[0];
 	gridStep[2] = 1 * world->lightGridBounds[0] * world->lightGridBounds[1];
-	startGridPos = tr.world->lightGridArray + (pos[0] * gridStep[0] + pos[1] * gridStep[1] + pos[2] * gridStep[2]);
+	startGridPos = world->lightGridArray + (pos[0] * gridStep[0] + pos[1] * gridStep[1] + pos[2] * gridStep[2]);
 
 	totalFactor = 0;
 	for ( i = 0 ; i < 8 ; i++ ) {
@@ -197,12 +197,12 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent, world_t *world ) {
 			}
 		}
 
-		if (gridPos >= tr.world->lightGridArray + tr.world->numGridArrayElements)
+		if (gridPos >= world->lightGridArray + world->numGridArrayElements)
 		{//we've gone off the array somehow
 			continue;
 		}
 
-		data = tr.world->lightGridData + *gridPos;
+		data = world->lightGridData + *gridPos;
 		if ( data->styles[0] == LS_LSNONE ) 
 		{
 			continue;	// ignore samples in walls
