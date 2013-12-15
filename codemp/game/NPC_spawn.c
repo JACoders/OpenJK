@@ -4165,7 +4165,7 @@ void Cmd_NPC_f( gentity_t *ent )
 	if ( !cmd[0] ) 
 	{
 		Com_Printf( "Valid NPC commands are:\n" );
-		Com_Printf( " spawn [NPC type (from NCPCs.cfg)]\n" );
+		Com_Printf( " spawn [NPC type (from NPCs.cfg)]\n" );
 		Com_Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
 		Com_Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
 		Com_Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
