@@ -58,7 +58,6 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/g_combat.cpp"
 	"${JK2SPDir}/game/g_functions.cpp"
 	"${JK2SPDir}/game/g_fx.cpp"
-	"${JK2SPDir}/game/g_headers.cpp"
 	"${JK2SPDir}/game/g_inventory.cpp"
 	"${JK2SPDir}/game/g_itemLoad.cpp"
 	"${JK2SPDir}/game/g_items.cpp"
@@ -174,8 +173,6 @@ set(JK2SPGameCGameFiles
 	"${JK2SPDir}/cgame/cg_effects.cpp"
 	"${JK2SPDir}/cgame/cg_ents.cpp"
 	"${JK2SPDir}/cgame/cg_event.cpp"
-	"${JK2SPDir}/cgame/cg_headers.cpp"
-	"${JK2SPDir}/cgame/cg_headers.h"
 	"${JK2SPDir}/cgame/cg_info.cpp"
 	"${JK2SPDir}/cgame/cg_lights.cpp"
 	"${JK2SPDir}/cgame/cg_lights.h"
@@ -195,7 +192,6 @@ set(JK2SPGameCGameFiles
 	"${JK2SPDir}/cgame/cg_text.cpp"
 	"${JK2SPDir}/cgame/cg_view.cpp"
 	"${JK2SPDir}/cgame/cg_weapons.cpp"
-	"${JK2SPDir}/cgame/common_headers.h"
 	"${JK2SPDir}/cgame/strip_objectives.h"
 	)
 source_group("cgame" FILES ${JK2SPGameCGameFiles})

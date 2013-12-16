@@ -15,10 +15,7 @@ This file is part of Jedi Knight 2.
     along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-//#include "cg_local.h"
+#include "cg_local.h"
 
 #if !defined(CG_LIGHTS_H_INC)
 	#include "cg_lights.h"

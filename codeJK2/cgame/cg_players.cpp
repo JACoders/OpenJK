@@ -16,12 +16,10 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
+#include "cg_local.h"
+#include "../game/g_local.h"
+#include "../game/b_local.h"
 #define	CG_PLAYERS_CPP
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "../game/ghoul2_shared.h"

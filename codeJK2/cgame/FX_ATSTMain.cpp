@@ -18,10 +18,7 @@ This file is part of Jedi Knight 2.
 
 // Bowcaster Weapon
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 

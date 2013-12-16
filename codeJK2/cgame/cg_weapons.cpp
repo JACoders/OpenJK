@@ -16,14 +16,11 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "../game/wp_saber.h"
-
+#include "../game/g_local.h"
 #include "../game/anims.h"
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
@@ -966,6 +963,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 
 	// drop gun lower at higher fov
 	float actualFOV;
+		gentity_t	*player = &g_entities[0];
 	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson && 
 	{
 		actualFOV = CG_ForceSpeedFOV();
