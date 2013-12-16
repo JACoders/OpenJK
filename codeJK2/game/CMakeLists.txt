@@ -195,7 +195,6 @@ set(JK2SPGameCGameFiles
 	"${JK2SPDir}/cgame/cg_text.cpp"
 	"${JK2SPDir}/cgame/cg_view.cpp"
 	"${JK2SPDir}/cgame/cg_weapons.cpp"
-	"${JK2SPDir}/cgame/common_headers.h"
 	"${JK2SPDir}/cgame/strip_objectives.h"
 	)
 source_group("cgame" FILES ${JK2SPGameCGameFiles})
