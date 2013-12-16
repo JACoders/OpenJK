@@ -15,12 +15,7 @@ This file is part of Jedi Knight 2.
     along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-//#include "../ui/ui_shared.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 
@@ -3641,6 +3636,7 @@ CG_DrawDataPadForceSelect
 */
 void CG_DrawDataPadForceSelect( void ) 
 {
+  	gentity_t	*player = &g_entities[0];
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;

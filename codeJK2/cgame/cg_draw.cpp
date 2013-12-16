@@ -19,10 +19,8 @@ This file is part of Jedi Knight 2.
 // cg_draw.c -- draw all of the graphical elements during
 // active (after loading) gameplay
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "../game/g_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "../game/objectives.h"
 
