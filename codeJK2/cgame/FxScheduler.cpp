@@ -280,6 +280,24 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 // Return:
 //	int handle of the effect
 //------------------------------------------------------
+
+struct primitiveType_s { const char *name; EPrimType type; } primitiveTypes[] = {
+	{ "particle", Particle },
+	{ "line", Line },
+	{ "tail", Tail },
+	{ "sound", Sound },
+	{ "cylinder", Cylinder },
+	{ "electricity", Electricity },
+	{ "emitter", Emitter },
+	{ "decal", Decal },
+	{ "orientedparticle", OrientedParticle },
+	{ "fxrunner", FxRunner },
+	{ "light", Light },
+	{ "cameraShake", CameraShake },
+	{ "flash", ScreenFlash },
+};
+static const size_t numPrimitiveTypes = ARRAY_LEN( primitiveTypes );
+
 int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 {
 	CGPGroup			*primitiveGroup;
@@ -303,64 +321,14 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	{
 		grpName = primitiveGroup->GetName();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( grpName, "particle" ))
-		{
-			type = Particle;
+		type = None;
+		for ( size_t i=0; i<numPrimitiveTypes; i++ ) {
+			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
+				type = primitiveTypes[i].type;
+				break;
+			}
 		}
-		else if ( !stricmp( grpName, "line" ))
-		{
-			type = Line;
-		}
-		else if ( !stricmp( grpName, "tail" ))
-		{
-			type = Tail;
-		}
-		else if ( !stricmp( grpName, "sound" ))
-		{
-			type = Sound;
-		}
-		else if ( !stricmp( grpName, "cylinder" ))
-		{
-			type = Cylinder;
-		}
-		else if ( !stricmp( grpName, "electricity" ))
-		{
-			type = Electricity;
-		}
-		else if ( !stricmp( grpName, "emitter" ))
-		{
-			type = Emitter;
-		}
-		else if ( !stricmp( grpName, "decal" ))
-		{
-			type = Decal;
-		}
-		else if ( !stricmp( grpName, "orientedparticle" ))
-		{
-			type = OrientedParticle;
-		}
-		else if ( !stricmp( grpName, "fxrunner" ))
-		{
-			type = FxRunner;
-		}
-		else if ( !stricmp( grpName, "light" ))
-		{
-			type = Light;
-		}
-		else if ( !stricmp( grpName, "cameraShake" ))
-		{
-			type = CameraShake;
-		}
-		else if ( !stricmp( grpName, "flash" ))
-		{
-			type = ScreenFlash;
-		}
-		else 
-		{
-			type = None;
-		}
-		
+
 		if ( type != None )
 		{
 			prim = new CPrimitiveTemplate;
