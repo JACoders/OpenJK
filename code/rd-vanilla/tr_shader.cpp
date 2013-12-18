@@ -3300,7 +3300,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 		return lightmapIndex; 
 
 	// bail if no world dir 
-	if( tr.worldDir == NULL ) 
+	if( tr.worldDir == NULL || !*tr.worldDir ) 
 	{ 
 		return lightmapsVertex; 
 	} 

@@ -664,16 +664,16 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 
 	in = (dsurface_t *)(fileBase + surfs->fileofs);
 	if (surfs->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = surfs->filelen / sizeof(*in);
 
 	dv = (mapVert_t *)(fileBase + verts->fileofs);
 	if (verts->filelen % sizeof(*dv))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 
 	indexes = (int *)(fileBase + indexLump->fileofs);
 	if ( indexLump->filelen % sizeof(*indexes))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 
 	out = (struct msurface_s *) Hunk_Alloc ( count * sizeof(*out), qtrue );	
 
@@ -748,7 +748,7 @@ static	void R_LoadSubmodels( lump_t *l, world_t &worldData, int index  ) {
 
 	in = (dmodel_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
 
 	worldData.bmodels = out = (bmodel_t *) Hunk_Alloc( count * sizeof(*out), qtrue );
@@ -823,7 +823,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 	in = (dnode_t *)(fileBase + nodeLump->fileofs);
 	if (nodeLump->filelen % sizeof(dnode_t) ||
 		leafLump->filelen % sizeof(dleaf_t) ) {
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	}
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
@@ -897,7 +897,7 @@ static	void R_LoadShaders( lump_t *l, world_t &worldData ) {
 	
 	in = (dshader_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
 	out = (dshader_t *) Hunk_Alloc ( count*sizeof(*out), qfalse );
 
@@ -926,7 +926,7 @@ static	void R_LoadMarksurfaces (lump_t *l, world_t &worldData)
 	
 	in = (int *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
 	out = (struct msurface_s **) Hunk_Alloc ( count*sizeof(*out), qtrue );	
 
@@ -955,7 +955,7 @@ static	void R_LoadPlanes( lump_t *l, world_t &worldData ) {
 	
 	in = (dplane_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
 	out = (struct cplane_s *) Hunk_Alloc ( count*2*sizeof(*out), qtrue );	
 	
@@ -999,7 +999,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 
 	fogs = (dfog_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*fogs)) {
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	}
 	count = l->filelen / sizeof(*fogs);
 
@@ -1027,13 +1027,13 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 
 	brushes = (dbrush_t *)(fileBase + brushesLump->fileofs);
 	if (brushesLump->filelen % sizeof(*brushes)) {
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	}
 	brushesCount = brushesLump->filelen / sizeof(*brushes);
 
 	sides = (dbrushside_t *)(fileBase + sidesLump->fileofs);
 	if (sidesLump->filelen % sizeof(*sides)) {
-		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",tr.worldDir);
+		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	}
 	sidesCount = sidesLump->filelen / sizeof(*sides);
 
@@ -1043,7 +1043,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 		{
 			if(index)
 			{
-				Com_Error (ERR_DROP, "LoadMap: global fog not allowed in bsp instances - %s", tr.worldDir);
+				Com_Error (ERR_DROP, "LoadMap: global fog not allowed in bsp instances - %s", worldData.name);
 			}
 			VectorSet(out->bounds[0], MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
 			VectorSet(out->bounds[1], MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
@@ -1374,6 +1374,8 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 			loadedSubBSP = qtrue;
 		}
 	}
+
+	tr.worldDir[0] = '\0';
 	
 	if (buffer == NULL)
 	{
@@ -1386,8 +1388,11 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 
 	memset( &worldData, 0, sizeof( worldData ) );
-
+	Q_strncpyz( worldData.name, name, sizeof( worldData.name ) );
 	Q_strncpyz( tr.worldDir, name, sizeof( tr.worldDir ) );
+	Q_strncpyz( worldData.baseName, COM_SkipPath( worldData.name ), sizeof( worldData.name ) );
+
+	COM_StripExtension( worldData.baseName, worldData.baseName, sizeof( worldData.baseName ) );
 	COM_StripExtension( tr.worldDir, tr.worldDir, sizeof( tr.worldDir ) );
 
 	c_gridVerts = 0;
