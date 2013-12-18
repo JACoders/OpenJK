@@ -1574,6 +1574,10 @@ struct PNGFileReader
 
 		// Setup reading information, and read header
 		png_set_read_fn (png_ptr, (png_voidp)this, &user_read_data);
+#ifdef PNG_HANDLE_AS_UNKNOWN_SUPPORTED
+		// This generic "ignore all, except required chunks" requires 1.6.0 or newer"
+		png_set_keep_unknown_chunks (png_ptr, PNG_HANDLE_CHUNK_NEVER, NULL, -1);
+#endif
 		png_set_sig_bytes (png_ptr, SIGNATURE_LEN);
 		png_read_info (png_ptr, info_ptr);
 
