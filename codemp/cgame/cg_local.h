@@ -1965,20 +1965,6 @@ void		BG_CycleInven(playerState_t *ps, int direction);
 int			BG_ProperForceIndex(int power);
 void		BG_CycleForce(playerState_t *ps, int direction);
 
-typedef enum q3print_e {
-  SYSTEM_PRINT,
-  CHAT_PRINT,
-  TEAMCHAT_PRINT
-} q3print_t; // bk001201 - warning: useless keyword or type name in empty declaration
-
-//
-// system traps
-// These functions are how the cgame communicates with the main game system
-//
-
-void trap_Print( const char *fmt );
-void trap_Error( const char *fmt );
-
 const char *CG_GetStringEdString(char *refSection, char *refName);
 
 void FX_TurretProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon );
