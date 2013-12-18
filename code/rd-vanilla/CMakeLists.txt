@@ -53,7 +53,7 @@ if(UseInternalPNG)
 	source_group("libpng" FILES ${SPRDVanillaLibPngFiles})
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/libpng")
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaLibPngFiles})
-else()
+else(UseInternalPNG)
 	find_package(PNG REQUIRED)
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${PNG_INCLUDE_DIR})
 	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${PNG_LIBRARIES})
@@ -95,14 +95,6 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
 
 # main files
 set(SPRDVanillaMainFiles
-	"${SPDir}/rd-common/mdx_format.h"
-	"${SPDir}/rd-common/tr_common.h"
-	"${SPDir}/rd-common/tr_font.cpp"
-	"${SPDir}/rd-common/tr_font.h"
-	"${SPDir}/rd-common/tr_noise.cpp"
-	"${SPDir}/rd-common/tr_public.h"
-	"${SPDir}/rd-common/tr_types.h"
-
 	"${SPDir}/rd-vanilla/glext.h"
 	"${SPDir}/rd-vanilla/qgl.h"
 	"${SPDir}/rd-vanilla/tr_arioche.cpp"
@@ -115,8 +107,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_ghoul2.cpp"
 	"${SPDir}/rd-vanilla/tr_image.cpp"
 	"${SPDir}/rd-vanilla/tr_init.cpp"
-	"${SPDir}/rd-vanilla/tr_jpeg_interface.cpp"
-	"${SPDir}/rd-vanilla/tr_jpeg_interface.h"
 	"${SPDir}/rd-vanilla/tr_landscape.h"
 	"${SPDir}/rd-vanilla/tr_light.cpp"
 	"${SPDir}/rd-vanilla/tr_local.h"
@@ -144,6 +134,22 @@ set(SPRDVanillaMainFiles
 	)
 source_group("renderer" FILES ${SPRDVanillaMainFiles})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMainFiles})
+
+set(SPRDVanillaRdCommonFiles
+	"${SPDir}/rd-common/mdx_format.h"
+	"${SPDir}/rd-common/tr_common.h"
+	"${SPDir}/rd-common/tr_font.cpp"
+	"${SPDir}/rd-common/tr_font.h"
+	"${SPDir}/rd-common/tr_image_load.cpp"
+	"${SPDir}/rd-common/tr_image_manipulation.cpp"
+	"${SPDir}/rd-common/tr_image_jpg.cpp"
+	"${SPDir}/rd-common/tr_image_tga.cpp"
+	"${SPDir}/rd-common/tr_image_png.cpp"
+	"${SPDir}/rd-common/tr_noise.cpp"
+	"${SPDir}/rd-common/tr_public.h"
+	"${SPDir}/rd-common/tr_types.h")
+source_group("rd-common" FILES ${SPRDVanillaRdCommonFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaRdCommonFiles})
 
 if(WIN32)
     set(SPRDVanillaWin32Files

@@ -1903,20 +1903,6 @@ void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 Ghoul2 Insert End
 */
 
-#define	MAX_VERTS_ON_DECAL_POLY	10
-#define	MAX_DECAL_POLYS			500
-
-typedef struct decalPoly_s 
-{
-	int					time;
-	int					fadetime;
-	qhandle_t			shader;
-	float				color[4];
-	poly_t				poly;
-	polyVert_t			verts[MAX_VERTS_ON_DECAL_POLY];
-
-} decalPoly_t;
-
 void R_InitDecals( void );
 void RE_ClearDecals( void );
 void RE_AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t dir, float orientation, float r, float g, float b, float a, qboolean alphaFade, float radius, qboolean temporary );
