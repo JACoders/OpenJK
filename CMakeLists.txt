@@ -164,11 +164,11 @@ else(WIN32)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
 	endif()
+endif()
 
-	if (NOT CMAKE_BUILD_TYPE)
-		message("No build type selected, default to RELEASE")
-		set(CMAKE_BUILD_TYPE "RELEASE")
-	endif()
+if (NOT CMAKE_BUILD_TYPE)
+	message("No build type selected, default to RELEASE")
+	set(CMAKE_BUILD_TYPE "RELEASE")
 endif()
 
 # Settings
