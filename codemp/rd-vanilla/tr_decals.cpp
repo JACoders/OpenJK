@@ -1,5 +1,18 @@
 #include "tr_local.h"
 
+#define	MAX_VERTS_ON_DECAL_POLY	10
+#define	MAX_DECAL_POLYS			500
+
+typedef struct decalPoly_s 
+{
+	int					time;
+	int					fadetime;
+	qhandle_t			shader;
+	float				color[4];
+	poly_t				poly;
+	polyVert_t			verts[MAX_VERTS_ON_DECAL_POLY];
+} decalPoly_t;
+
 enum
 {
 	DECALPOLY_TYPE_NORMAL,
