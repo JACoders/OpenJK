@@ -342,7 +342,7 @@ typedef struct image_s {
 	int			TMU;				// only needed for voodoo2
 
 	imgType_t   type;
-	imgFlags_t  flags;
+	int			flags;
 
 	struct image_s*	next;
 } image_t;

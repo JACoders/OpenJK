@@ -1728,7 +1728,7 @@ static qboolean RawImage_HasAlpha(const byte *scan, int numPixels)
 	return qfalse;
 }
 
-static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean lightMap, imgType_t type, imgFlags_t flags)
+static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean lightMap, imgType_t type, int flags)
 {
 	int samples = 3;
 	GLenum internalFormat = GL_RGB;
@@ -2159,7 +2159,7 @@ done:
 }
 
 
-static void EmptyTexture( int width, int height, imgType_t type, imgFlags_t flags,
+static void EmptyTexture( int width, int height, imgType_t type, int flags,
 	qboolean lightMap, GLenum internalFormat, int *pUploadWidth, int *pUploadHeight )
 {
 	int			scaled_width, scaled_height;
@@ -2238,7 +2238,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 	tr.numImages++;
 
 	image->type = type;
-	image->flags = (imgFlags_t)flags;
+	image->flags = flags;
 
 	strcpy (image->imgName, name);
 
