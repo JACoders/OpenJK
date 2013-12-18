@@ -1456,9 +1456,6 @@ extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
-void trap_Print( const char *fmt );
-void trap_Error( const char *fmt );
-
 // userinfo validation bitflags
 // default is all except extended ascii
 // numUserinfoFields + USERINFO_VALIDATION_MAX should not exceed 31
