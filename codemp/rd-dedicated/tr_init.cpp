@@ -252,20 +252,18 @@ static void R_ModeList_f( void )
 	Com_Printf ("\n" );
 }
 
-/*
-==============================================================================
-
-						SCREEN SHOTS
-
-==============================================================================
-*/
-
 #ifdef _DEBUG
 #define MIN_PRIMITIVES -1
 #else
 #define MIN_PRIMITIVES 0
 #endif
 #define MAX_PRIMITIVES 3
+
+#ifdef _WIN32
+#define SWAPINTERVAL_FLAGS CVAR_ARCHIVE
+#else
+#define SWAPINTERVAL_FLAGS CVAR_ARCHIVE | CVAR_LATCH
+#endif
 
 /*
 ===============
@@ -335,7 +333,7 @@ void R_Register( void )
 //	r_dlightBacks						= ri->Cvar_Get( "r_dlightBacks",					"1",						CVAR_CHEAT );
 	r_finish							= ri->Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE );
 	r_textureMode						= ri->Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_NEAREST",	CVAR_ARCHIVE );
-	r_swapInterval						= ri->Cvar_Get( "r_swapInterval",					"0",						CVAR_ARCHIVE );
+	r_swapInterval						= ri->Cvar_Get( "r_swapInterval",					"0",						SWAPINTERVAL_FLAGS );
 	r_markcount							= ri->Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE );
 	r_gamma								= ri->Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE );
 	r_facePlaneCull						= ri->Cvar_Get( "r_facePlaneCull",					"1",						CVAR_ARCHIVE );
