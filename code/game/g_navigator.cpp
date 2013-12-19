@@ -4116,9 +4116,11 @@ void			STEER::Activate(gentity_t* actor)
 		suser.mMaxSpeed	= actor->NPC->stats.walkSpeed;
 	}
 
+#ifdef _DEBUG
 	assert(suser.mPosition.IsFinite());
 	assert(suser.mOrientation.IsFinite());
 	assert(suser.mVelocity.IsFinite());
+#endif
 
 
 	// Find Our Neighbors
@@ -4187,10 +4189,12 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 	SSteerUser& suser = mSteerUsers[mSteerUserIndex[actor->s.number]];
 
 
+#ifdef _DEBUG
 	assert(suser.mPosition.IsFinite());
 	assert(suser.mOrientation.IsFinite());
 	assert(suser.mSteering.IsFinite());
 	assert(suser.mMass!=0.0f);
+#endif
 
 
 
@@ -4241,8 +4245,10 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 
 			Angles = NewAngles;//((Angles + NewAngles)*0.75f);
 		}
+#ifdef _DEBUG
 		assert(MoveDir.IsFinite());
 		assert(Angles.IsFinite());
+#endif
 
 
 
@@ -4653,7 +4659,9 @@ float			STEER::Stop(gentity_t* actor, float weight)
 		}
 	}
 
+#ifdef _DEBUG
 	assert(suser.mSteering.IsFinite());
+#endif
 
 	return 0.0f;
 }
@@ -4672,7 +4680,9 @@ float			STEER::MatchSpeed(gentity_t* actor, float speed, float weight)
 	suser.mDesiredSpeed		=  0.0f;
 	suser.mSteering			+= ((suser.mDesiredVelocity - suser.mVelocity) * weight);
 
+#ifdef _DEBUG
 	assert(suser.mSteering.IsFinite());
+#endif
 
 	return 0.0f;
 
@@ -4720,7 +4730,9 @@ float			STEER::Seek(gentity_t* actor, const CVec3& pos, float slowingDistance, f
 
 	suser.mSteering			+= ((suser.mDesiredVelocity - suser.mVelocity) * weight);
 
+#ifdef _DEBUG
 	assert(suser.mSteering.IsFinite());
+#endif
 
 	return suser.mDistance;
 }
@@ -4746,7 +4758,9 @@ float			STEER::Flee(gentity_t* actor,		const CVec3& pos, float weight)
 	suser.mSeekLocation		= pos + suser.mDesiredVelocity;
 
 
+#ifdef _DEBUG
 	assert(suser.mSteering.IsFinite());
+#endif
 
 	return suser.mDistance;
 }
@@ -4907,7 +4921,9 @@ float			STEER::Separation(gentity_t* actor, float Scale)
 		}
 	}
 
+#ifdef _DEBUG
 	assert(suser.mSteering.IsFinite());
+#endif
 
 	return 0.0f;
 }
@@ -5202,7 +5218,9 @@ bool		TestCollision(gentity_t* actor, SSteerUser& suser, const CVec3& ProjectVel
 						suser.mDesiredVelocity.Truncate(ContactSpeed);
 						suser.mSteering			+= ((suser.mDesiredVelocity - ProjectVelocity) * DirectionSimilarity);
 						suser.mIgnoreEntity		= ContactNum;	// So The Side Trace Does Not Care About This Guy
+#ifdef _DEBUG
 						assert(suser.mSteering.IsFinite());
+#endif
 						Safe = true;	// We'll Say It's Safe For Now
 					}
 				}
@@ -5229,7 +5247,9 @@ bool		TestCollision(gentity_t* actor, SSteerUser& suser, const CVec3& ProjectVel
 					//-----------------------------------
 					suser.mSteering			-= ProjectVelocity;
 					suser.mIgnoreEntity		= ContactNum;
+#ifdef _DEBUG
 					assert(suser.mSteering.IsFinite());
+#endif
 
 					Safe = true;	// We say it is "Safe" because We Don't Want To Try And Steer Around
 				}
