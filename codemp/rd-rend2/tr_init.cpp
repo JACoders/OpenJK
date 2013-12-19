@@ -1232,6 +1232,7 @@ void R_Register( void )
 	r_vertexLight = ri->Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_uiFullScreen = ri->Cvar_Get( "r_uifullscreen", "0", 0);
 	r_subdivisions = ri->Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
+	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
 	r_stereo = ri->Cvar_Get( "r_stereo", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_greyscale = ri->Cvar_Get("r_greyscale", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	ri->Cvar_CheckRange(r_greyscale, 0, 1, qfalse);
@@ -1300,7 +1301,7 @@ void R_Register( void )
 	r_intensity = ri->Cvar_Get ("r_intensity", "1", CVAR_LATCH );
 	r_singleShader = ri->Cvar_Get ("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH );
 	r_displayRefresh = ri->Cvar_Get( "r_displayRefresh", "0", CVAR_LATCH );
-	ri->Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
+	ri->Cvar_CheckRange( r_displayRefresh, 0, 240, qtrue );
 
 	//
 	// archived variables that can change at any time
