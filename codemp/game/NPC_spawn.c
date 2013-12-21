@@ -2541,7 +2541,7 @@ void SP_NPC_Cultist_Saber( gentity_t *self)
 				self->NPC_type = "cultist_saber_strong";
 			}
 		}
-		else if ( (self->spawnflags&2) )
+		else if ( (self->spawnflags&4) )
 		{
 			if ( (self->spawnflags&8) )
 			{
@@ -2610,7 +2610,7 @@ void SP_NPC_Cultist_Saber_Powers( gentity_t *self)
 				self->NPC_type = "cultist_saber_strong2";
 			}
 		}
-		else if ( (self->spawnflags&2) )
+		else if ( (self->spawnflags&4) )
 		{
 			if ( (self->spawnflags&8) )
 			{

@@ -75,11 +75,6 @@ CEdge
 -------------------------
 */
 
-CEdge::CEdge( void )
-{
-	CEdge( -1, -1, -1 );
-}
-
 CEdge::CEdge( int first, int second, int cost )
 {
 	m_first		= first;

@@ -1425,7 +1425,7 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 			idleAnim = BOTH_STAND2IDLE2;
 		}
 
-		if ( idleAnim != -1 && /*PM_HasAnimation( ent, idleAnim )*/idleAnim > 0 && idleAnim < MAX_ANIMATIONS )
+		if ( /*PM_HasAnimation( ent, idleAnim )*/idleAnim > 0 && idleAnim < MAX_ANIMATIONS )
 		{
 			G_SetAnim(ent, ucmd, SETANIM_BOTH, idleAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
 

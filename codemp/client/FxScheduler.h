@@ -72,7 +72,7 @@ public:
 	int		GetHandle()				{ if (mMediaList.size()==0) {return 0;}
 										else {return mMediaList[irand(0,mMediaList.size()-1)];} }
 
-	void operator=(const CMediaHandles &that );
+	CMediaHandles &operator=(const CMediaHandles &that );
 };
 
 
@@ -333,7 +333,7 @@ public:
 
 	bool ParsePrimitive( CGPGroup *grp );
 
-	void operator=(const CPrimitiveTemplate &that);
+	CPrimitiveTemplate &operator=(const CPrimitiveTemplate &that);
 };
 
 // forward declaration
@@ -353,7 +353,7 @@ struct SEffectTemplate
 	{
 		return !Q_stricmp( mEffectName, name );
 	}
-	void operator=(const SEffectTemplate &that);
+	SEffectTemplate &operator=(const SEffectTemplate &that);
 };
 
 
