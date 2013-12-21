@@ -211,8 +211,8 @@ void G_CheckFields( void ) {
 }
 
 typedef struct spawn_s {
-	char	*name;
-	void	(*spawn)(gentity_t *ent);
+	const char	*name;
+	void		(*spawn)(gentity_t *ent);
 } spawn_t;
 
 void SP_info_player_start (gentity_t *ent);

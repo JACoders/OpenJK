@@ -1439,6 +1439,7 @@ int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, int hit
 	case BOTH_DEADBACKWARD1:		//# First thrown backward death finished pose
 	case BOTH_DEADBACKWARD2:		//# Second thrown backward death finished pose
 		deathAnim = -2;
+		break;
 		/*
 		if ( PM_FinishedCurrentLegsAnim( self ) )
 		{//done with the anim
@@ -1460,6 +1461,7 @@ int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, int hit
 	case BOTH_DEADFORWARD1:		//# First thrown forward death finished pose
 	case BOTH_DEADFORWARD2:		//# Second thrown forward death finished pose
 		deathAnim = -2;
+		break;
 		/*
 		if ( PM_FinishedCurrentLegsAnim( self ) )
 		{//done with the anim
@@ -2464,7 +2466,6 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	else
 		Q_strcat( buf, sizeof( buf ), va( "%s by %s\n", self->client->pers.netname, obit ) );
 	G_LogPrintf( "%s", buf );
-	buf[0] = '\0';
 
 	if ( g_austrian.integer 
 		&& level.gametype == GT_DUEL
@@ -3719,7 +3720,6 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			|| ent->client->NPC_class == CLASS_MOUSE
 			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_INTERROGATOR
-			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_PROBE ) )
 	{//we don't care about per-surface hit-locations or dismemberment for these guys 
 		return qfalse;

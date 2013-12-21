@@ -143,7 +143,6 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 
 		if ( duck_ok )
 		{//duck and don't shoot
-			attack_ok = qfalse;
 			NPCS.ucmd.upmove = -127;
 			NPCS.NPCInfo->duckDebounceTime = level.time + 1000;//duck for a full second
 		}
@@ -505,7 +504,6 @@ void NPC_BSPointShoot (qboolean shoot)
 	{//FIXME: should still keep shooting for a second or two after they actually die...
 		trap->ICARUS_TaskIDComplete( (sharedEntity_t *)NPCS.NPC, TID_BSTATE );
 		goto finished;
-		return;
 	}
 
 	CalcEntitySpot(NPCS.NPC, SPOT_WEAPON, muzzle);

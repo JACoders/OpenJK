@@ -3236,7 +3236,7 @@ char npcParseBuffer[MAX_NPC_DATA_SIZE];
 
 void NPC_LoadParms( void ) 
 {
-	int			len, totallen, npcExtFNLen, mainBlockLen, fileCnt, i;
+	int			len, totallen, npcExtFNLen, fileCnt, i;
 //	const char	*filename = "ext_data/NPC2.cfg";
 	char		/**buffer,*/ *holdChar, *marker;
 	char		npcExtensionListBuf[2048];			//	The list of file names read in
@@ -3244,7 +3244,7 @@ void NPC_LoadParms( void )
 	len = 0;
 
 	//remember where to store the next one
-	totallen = mainBlockLen = len;
+	totallen = len;
 	marker = NPCParms+totallen;
 	*marker = 0;
 

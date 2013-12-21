@@ -409,37 +409,20 @@ void CParticle::UpdateSize(void)
 	mRefEnt.radius = (mSizeStart * perc1) + (mSizeEnd * (1.0f - perc1));
 }
 
-inline int VectorToInt(vec3_t vec)
+void ClampRGB( const vec3_t in, byte *out )
 {
-	int retval = 0;
-	// FIXME: unix compatibility needed
-#if defined(_MSC_VER) && !defined(idx64)
-	int			tmp;
-	_asm
-	{
-		push	edx
-		mov		edx, [vec]
-		fld		dword ptr[edx + 0]
-		fld		dword ptr[edx + 4]
-		fld		dword ptr[edx + 8]
+	int r;
 
-		mov		eax, 0xff00
+	for ( int i=0; i<3; i++ ) {
+		r = Q_ftol(in[i] * 255.0f);
 
-		fistp	tmp	   
-		mov		al, byte ptr [tmp]
-		shl		eax, 16
-		
-		fistp	tmp
-		mov		ah, byte ptr [tmp]
+		if ( r < 0 )
+			r = 0;
+		else if ( r > 255 )
+			r = 255;
 
-		fistp	tmp
-		mov		al, byte ptr [tmp]
-
-		mov		[retval], eax
-		pop		edx
-	}
-#endif
-	return(retval);
+		out[i] = (byte)r;
+	}	
 }
 
 //----------------------------
@@ -517,18 +500,7 @@ void CParticle::UpdateRGB(void)
 	VectorScale( mRGBStart, perc1, res );
 	VectorMA( res, 1.0f - perc1, mRGBEnd, res );
 
-	res[0] = Com_Clamp(0.0f, 1.0f, res[0]) * 255.0f;
-	res[1] = Com_Clamp(0.0f, 1.0f, res[1]) * 255.0f;
-	res[2] = Com_Clamp(0.0f, 1.0f, res[2]) * 255.0f;
-
-#if defined(_MSC_VER) && !defined(idx64)
-	*(int *)mRefEnt.shaderRGBA = VectorToInt(res);
-#else
-    mRefEnt.shaderRGBA[0] = (char)res[0];
-    mRefEnt.shaderRGBA[1] = (char)res[1];
-    mRefEnt.shaderRGBA[2] = (char)res[2];
-#endif
-
+	ClampRGB( res, (byte*)(&mRefEnt.shaderRGBA) );
 }
 
 //----------------------------

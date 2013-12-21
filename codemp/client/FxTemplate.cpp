@@ -66,7 +66,7 @@ CPrimitiveTemplate::CPrimitiveTemplate()
 }
 
 //-----------------------------------------------------------
-void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
+CPrimitiveTemplate &CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 {
 	// I'm assuming that doing a memcpy wouldn't work here
 	// If you are looking at this and know a better way to do this, please tell me.
@@ -160,6 +160,8 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 
 	mSoundRadius		= that.mSoundRadius;
 	mSoundVolume		= that.mSoundVolume;
+
+	return *this;
 }
 
 //------------------------------------------------------
@@ -2060,7 +2062,6 @@ bool CPrimitiveTemplate::ParseLength( CGPGroup *grp )
 
 	return true;
 }
-
 
 // Parse a primitive, apply defaults first, grab any base level
 //	key pairs, then process any sub groups we may contain.

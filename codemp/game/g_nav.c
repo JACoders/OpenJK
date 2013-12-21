@@ -529,7 +529,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t *trace, int clipma
 	{
 		gentity_t	*blocker = &g_entities[trace->entityNum];
 		
-		if VALIDSTRING( blocker->classname )
+		if ( VALIDSTRING( blocker->classname ) )
 		{
 			if ( G_EntIsUnlockedDoor( blocker->s.number ) )
 			//if ( Q_stricmp( blocker->classname, "func_door" ) == 0 )
