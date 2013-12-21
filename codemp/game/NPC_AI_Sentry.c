@@ -400,7 +400,7 @@ void Sentry_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = SENTRY_FORWARD_BASE_SPEED + SENTRY_FORWARD_MULTIPLIER * g_npcspskill.integer;

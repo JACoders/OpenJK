@@ -747,8 +747,7 @@ void PM_HoverTrace( void )
 	else
 	{
 		int traceContents;
-		float minNormal = (float)MIN_WALK_NORMAL;
-		minNormal = pVeh->m_pVehicleInfo->maxSlope;
+		float minNormal = pVeh->m_pVehicleInfo->maxSlope;
 
 		point[0] = pm->ps->origin[0];
 		point[1] = pm->ps->origin[1];
