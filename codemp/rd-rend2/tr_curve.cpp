@@ -51,13 +51,16 @@ static void LerpDrawVert( srfVert_t *a, srfVert_t *b, srfVert_t *out ) {
 	out->st[0] = 0.5f * (a->st[0] + b->st[0]);
 	out->st[1] = 0.5f * (a->st[1] + b->st[1]);
 
-	out->lightmap[0] = 0.5f * (a->lightmap[0] + b->lightmap[0]);
-	out->lightmap[1] = 0.5f * (a->lightmap[1] + b->lightmap[1]);
+	for ( int i = 0; i < MAXLIGHTMAPS; i++ )
+	{
+		out->lightmap[i][0] = 0.5f * (a->lightmap[i][0] + b->lightmap[i][0]);
+		out->lightmap[i][1] = 0.5f * (a->lightmap[i][1] + b->lightmap[i][1]);
 
-	out->vertexColors[0] = 0.5f * (a->vertexColors[0] + b->vertexColors[0]);
-	out->vertexColors[1] = 0.5f * (a->vertexColors[1] + b->vertexColors[1]);
-	out->vertexColors[2] = 0.5f * (a->vertexColors[2] + b->vertexColors[2]);
-	out->vertexColors[3] = 0.5f * (a->vertexColors[3] + b->vertexColors[3]);
+		out->vertexColors[i][0] = 0.5f * (a->vertexColors[i][0] + b->vertexColors[i][0]);
+		out->vertexColors[i][1] = 0.5f * (a->vertexColors[i][1] + b->vertexColors[i][1]);
+		out->vertexColors[i][2] = 0.5f * (a->vertexColors[i][2] + b->vertexColors[i][2]);
+		out->vertexColors[i][3] = 0.5f * (a->vertexColors[i][3] + b->vertexColors[i][3]);
+	}
 }
 
 /*

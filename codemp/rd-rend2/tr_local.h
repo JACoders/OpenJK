@@ -552,13 +552,17 @@ typedef enum {
 	CGEN_LIGHTING_DIFFUSE,
 	CGEN_LIGHTING_DIFFUSE_ENTITY, // diffuse lighting * entity
 	CGEN_FOG,				// standard fog
-	CGEN_CONST				// fixed color
+	CGEN_CONST,				// fixed color
+	CGEN_LIGHTMAPSTYLE,		// lightmap style
 } colorGen_t;
 
 typedef enum {
 	TCGEN_BAD,
 	TCGEN_IDENTITY,			// clear to 0,0
 	TCGEN_LIGHTMAP,
+	TCGEN_LIGHTMAP1,
+	TCGEN_LIGHTMAP2,
+	TCGEN_LIGHTMAP3,
 	TCGEN_TEXTURE,
 	TCGEN_ENVIRONMENT_MAPPED,
 	TCGEN_FOG,
@@ -703,6 +707,7 @@ typedef struct {
 	acff_t			adjustColorsForFog;
 
 	qboolean		isDetail;
+	int				lightmapStyle;
 
 	stageType_t     type;
 	struct shaderProgram_s *glslShaderGroup;
@@ -737,7 +742,8 @@ typedef struct {
 
 typedef struct shader_s {
 	char		name[MAX_QPATH];		// game path, including extension
-	int			lightmapIndex;			// for a shader to match, both name and lightmapIndex must match
+	int			lightmapIndex[MAXLIGHTMAPS];	// for a shader to match, both name and all lightmapIndex must match
+	byte		styles[MAXLIGHTMAPS];
 
 	int			index;					// this shader == tr.shaders[index]
 	int			sortedIndex;			// this shader == tr.sortedShaders[sortedIndex]
@@ -1279,13 +1285,13 @@ typedef struct
 {
 	vec3_t          xyz;
 	vec2_t          st;
-	vec2_t          lightmap;
+	vec2_t          lightmap[MAXLIGHTMAPS];
 	vec3_t          normal;
 #ifdef USE_VERT_TANGENT_SPACE
 	vec4_t          tangent;
 #endif
 	vec3_t          lightdir;
-	vec4_t			vertexColors;
+	vec4_t			vertexColors[MAXLIGHTMAPS];
 
 #if DEBUG_OPTIMIZEVERTICES
 	unsigned int    id;
@@ -2410,7 +2416,13 @@ void RE_HunkClearCrap(void);
 //
 // tr_shader.c
 //
-shader_t	*R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImage );
+extern const int lightmapsNone[MAXLIGHTMAPS];
+extern const int lightmaps2d[MAXLIGHTMAPS];
+extern const int lightmapsVertex[MAXLIGHTMAPS];
+extern const int lightmapsFullBright[MAXLIGHTMAPS];
+extern const byte stylesDefault[MAXLIGHTMAPS];
+
+shader_t	*R_FindShader( const char *name, const int *lightmapIndexes, const byte *styles, qboolean mipRawImage );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 shader_t	*R_GetShaderByState( int index, long *cycleTime );
 shader_t *R_FindShaderByName( const char *name );

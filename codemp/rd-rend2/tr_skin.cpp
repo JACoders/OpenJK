@@ -21,7 +21,7 @@ RE_RegisterSkin
 bool gServerSkinHack = false;
 
 
-shader_t *R_FindServerShader( const char *name, int lightmapIndex, qboolean mipRawImage );
+shader_t *R_FindServerShader( const char *name, const int *lightmapIndexes, const byte *styles, qboolean mipRawImage ) ;
 static char *CommaParse( char **data_p );
 /*
 ===============
@@ -144,8 +144,8 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 
-		if (gServerSkinHack)	surf->shader = R_FindServerShader( token, LIGHTMAP_NONE, qtrue );
-		else					surf->shader = R_FindShader( token, LIGHTMAP_NONE, qtrue );
+		if (gServerSkinHack)	surf->shader = R_FindServerShader( token, lightmapsNone, stylesDefault, qtrue );
+		else					surf->shader = R_FindShader( token, lightmapsNone, stylesDefault, qtrue );
 		skin->numSurfaces++;
 	}
 

@@ -1449,6 +1449,8 @@ void R_ShutDownQueries(void)
 		qglDeleteQueriesARB(ARRAY_LEN(tr.sunFlareQuery), tr.sunFlareQuery);
 }
 
+void RE_SetLightStyle (int style, int color);
+
 /*
 ===============
 R_Init
@@ -1518,6 +1520,11 @@ void R_Init( void ) {
 	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
 	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
 	R_InitNextFrame();
+
+	for ( int i = 0; i < MAXLIGHTMAPS; i++ )
+	{
+		RE_SetLightStyle (i, -1);
+	}
 
 	InitOpenGL();
 
@@ -1639,7 +1646,7 @@ void RE_GetLightStyle(int style, color4ub_t color)
 {
 	if (style >= MAX_LIGHT_STYLES)
 	{
-	    Com_Error( ERR_FATAL, "RE_GetLightStyle: %d is out of range", (int)style );
+	    Com_Error( ERR_FATAL, "RE_GetLightStyle: %d is out of range", style );
 		return;
 	}
 
@@ -1650,7 +1657,7 @@ void RE_SetLightStyle(int style, int color)
 {
 	if (style >= MAX_LIGHT_STYLES)
 	{
-	    Com_Error( ERR_FATAL, "RE_SetLightStyle: %d is out of range", (int)style );
+	    Com_Error( ERR_FATAL, "RE_SetLightStyle: %d is out of range", style );
 		return;
 	}
 

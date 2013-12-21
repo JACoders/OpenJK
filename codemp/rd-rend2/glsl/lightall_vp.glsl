@@ -56,7 +56,7 @@ uniform mat4   u_ModelMatrix;
 #if defined(USE_VERTEX_ANIMATION)
 uniform float  u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4   u_BoneMatrices[80];
+uniform mat4   u_BoneMatrices[20];
 #endif
 
 #if defined(USE_LIGHT_VECTOR)

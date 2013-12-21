@@ -588,6 +588,9 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 				baseColor[3] = 1.0f - ((unsigned char *)backEnd.currentEntity->e.shaderRGBA)[3] / 255.0f;
 			}
 			break;
+		case CGEN_LIGHTMAPSTYLE:
+			VectorScale4 (styleColors[pStage->lightmapStyle], 1.0f / 255.0f, baseColor);
+			break;
 		case CGEN_IDENTITY:
 		case CGEN_LIGHTING_DIFFUSE:
 		case CGEN_BAD:

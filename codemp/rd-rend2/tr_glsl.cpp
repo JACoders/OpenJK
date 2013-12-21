@@ -277,12 +277,18 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 					 va("#ifndef tcGen_t\n"
 						"#define tcGen_t\n"
 						"#define TCGEN_LIGHTMAP %i\n"
+						"#define TCGEN_LIGHTMAP1 %i\n"
+						"#define TCGEN_LIGHTMAP2 %i\n"
+						"#define TCGEN_LIGHTMAP3 %i\n"
 						"#define TCGEN_TEXTURE %i\n"
 						"#define TCGEN_ENVIRONMENT_MAPPED %i\n"
 						"#define TCGEN_FOG %i\n"
 						"#define TCGEN_VECTOR %i\n"
 						"#endif\n",
 						TCGEN_LIGHTMAP,
+						TCGEN_LIGHTMAP1,
+						TCGEN_LIGHTMAP2,
+						TCGEN_LIGHTMAP3,
 						TCGEN_TEXTURE,
 						TCGEN_ENVIRONMENT_MAPPED,
 						TCGEN_FOG,

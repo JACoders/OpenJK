@@ -211,13 +211,19 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 	else
 	{
 		tr.worldDeluxeMapping = qtrue;
-		for( i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
-			i < surfs->filelen / sizeof(dsurface_t); i++, surf++ ) {
-			int lightmapNum = LittleLong( surf->lightmapNum[0] );
 
-			if ( lightmapNum >= 0 && (lightmapNum & 1) != 0 ) {
-				tr.worldDeluxeMapping = qfalse;
-				break;
+		// Check that none of the deluxe maps are referenced by any of the map surfaces.
+		for( i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
+			tr.worldDeluxeMapping && i < surfs->filelen / sizeof(dsurface_t);
+			i++, surf++ ) {
+			for ( int j = 0; j < MAXLIGHTMAPS; j++ )
+			{
+				int lightmapNum = LittleLong( surf->lightmapNum[j] );
+
+				if ( lightmapNum >= 0 && (lightmapNum & 1) != 0 ) {
+					tr.worldDeluxeMapping = qfalse;
+					break;
+				}
 			}
 		}
 	}
@@ -227,13 +233,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;
 
-	if(numLightmaps == 1)
-	{
-		//FIXME: HACK: maps with only one lightmap turn up fullbright for some reason.
-		//this avoids this, but isn't the correct solution.
-		numLightmaps++;
-	}
-	else if (r_mergeLightmaps->integer && numLightmaps >= 1024 )
+	if (r_mergeLightmaps->integer && numLightmaps >= 1024 )
 	{
 		// FIXME: fat light maps don't support more than 1024 light maps
 		ri->Printf(PRINT_WARNING, "WARNING: number of lightmaps > 1024\n");
@@ -618,9 +618,10 @@ static	void R_LoadVisibility( lump_t *l ) {
 ShaderForShaderNum
 ===============
 */
-static shader_t *ShaderForShaderNum( int shaderNum, int lightmapNum ) {
+static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNums, const byte *lightmapStyles, const byte *vertexStyles ) {
 	shader_t	*shader;
 	dshader_t	*dsh;
+	const byte	*styles = lightmapStyles;
 
 	int _shaderNum = LittleLong( shaderNum );
 	if ( _shaderNum < 0 || _shaderNum >= s_worldData.numShaders ) {
@@ -628,15 +629,20 @@ static shader_t *ShaderForShaderNum( int shaderNum, int lightmapNum ) {
 	}
 	dsh = &s_worldData.shaders[ _shaderNum ];
 
+	if ( lightmapNums[0] == LIGHTMAP_BY_VERTEX ) {
+		styles = vertexStyles;
+	}
+
 	if ( r_vertexLight->integer ) {
-		lightmapNum = LIGHTMAP_BY_VERTEX;
+		lightmapNums = lightmapsVertex;
+		styles = vertexStyles;
 	}
 
 	if ( r_fullbright->integer ) {
-		lightmapNum = LIGHTMAP_WHITEIMAGE;
+		lightmapNums = lightmapsFullBright;
 	}
 
-	shader = R_FindShader( dsh->shader, lightmapNum, qtrue );
+	shader = R_FindShader( dsh->shader, lightmapNums, styles, qtrue );
 
 	// if the shader had errors, just use default shader
 	if ( shader->defaultShader ) {
@@ -656,15 +662,18 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 	srfBspSurface_t	*cv;
 	glIndex_t  *tri;
 	int			numVerts, numIndexes, badTriangles;
-	int realLightmapNum;
+	int realLightmapNum[MAXLIGHTMAPS];
 
-	realLightmapNum = LittleLong( ds->lightmapNum[0] );
+	for ( j = 0; j < MAXLIGHTMAPS; j++ )
+	{
+		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
+	}
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
 	// get shader value
-	surf->shader = ShaderForShaderNum( ds->shaderNum, FatLightmap(realLightmapNum) );
+	surf->shader = ShaderForShaderNum( ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles);
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
 		surf->shader = tr.defaultShader;
 	}
@@ -701,41 +710,46 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 			cv->verts[i].xyz[j] = LittleFloat(verts[i].xyz[j]);
 			cv->verts[i].normal[j] = LittleFloat(verts[i].normal[j]);
 		}
+
 		AddPointToBounds(cv->verts[i].xyz, surf->cullinfo.bounds[0], surf->cullinfo.bounds[1]);
+
 		for(j = 0; j < 2; j++)
 		{
 			cv->verts[i].st[j] = LittleFloat(verts[i].st[j]);
-			//cv->verts[i].lightmap[j] = LittleFloat(verts[i].lightmap[j]);
 		}
-		cv->verts[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0][0]), realLightmapNum);
-		cv->verts[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[0][1]), realLightmapNum);
 
-		if (hdrVertColors)
+		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-			color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-			color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
-		}
-		else
-		{
-			//hack: convert LDR vertex colors to HDR
-			if (r_hdr->integer)
+			cv->verts[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), realLightmapNum[j]);
+			cv->verts[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), realLightmapNum[j]);
+
+			if (hdrVertColors)
 			{
-				color[0] = verts[i].color[0][0] + 1.0f;
-				color[1] = verts[i].color[0][1] + 1.0f;
-				color[2] = verts[i].color[0][2] + 1.0f;
+				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
+				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
+				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
 			}
 			else
 			{
-				color[0] = verts[i].color[0][0];
-				color[1] = verts[i].color[0][1];
-				color[2] = verts[i].color[0][2];
+				//hack: convert LDR vertex colors to HDR
+				if (r_hdr->integer)
+				{
+					color[0] = verts[i].color[j][0] + 1.0f;
+					color[1] = verts[i].color[j][1] + 1.0f;
+					color[2] = verts[i].color[j][2] + 1.0f;
+				}
+				else
+				{
+					color[0] = verts[i].color[j][0];
+					color[1] = verts[i].color[j][1];
+					color[2] = verts[i].color[j][2];
+				}
+
 			}
+			color[3] = verts[i].color[j][3] / 255.0f;
 
+			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], 1.0f / 255.0f );
 		}
-		color[3] = verts[i].color[0][3] / 255.0f;
-
-		R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors, 1.0f / 255.0f );
 	}
 
 	// copy triangles
@@ -808,15 +822,18 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 	vec3_t			bounds[2];
 	vec3_t			tmpVec;
 	static surfaceType_t	skipData = SF_SKIP;
-	int realLightmapNum;
+	int realLightmapNum[MAXLIGHTMAPS];
 
-	realLightmapNum = LittleLong( ds->lightmapNum[0] );
+	for ( j = 0; j < MAXLIGHTMAPS; j++ )
+	{
+		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
+	}
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
 	// get shader value
-	surf->shader = ShaderForShaderNum( ds->shaderNum, FatLightmap(realLightmapNum) );
+	surf->shader = ShaderForShaderNum( ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
 		surf->shader = tr.defaultShader;
 	}
@@ -849,36 +866,39 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 		for(j = 0; j < 2; j++)
 		{
 			points[i].st[j] = LittleFloat(verts[i].st[j]);
-			//points[i].lightmap[j] = LittleFloat(verts[i].lightmap[j]);
 		}
-		points[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0][0]), realLightmapNum);
-		points[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[0][1]), realLightmapNum);
 
-		if (hdrVertColors)
+		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-			color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-			color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
-		}
-		else
-		{
-			//hack: convert LDR vertex colors to HDR
-			if (r_hdr->integer)
+			points[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), realLightmapNum[j]);
+			points[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), realLightmapNum[j]);
+
+			if (hdrVertColors)
 			{
-				color[0] = verts[i].color[0][0] + 1.0f;
-				color[1] = verts[i].color[0][1] + 1.0f;
-				color[2] = verts[i].color[0][2] + 1.0f;
+				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
+				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
+				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
 			}
 			else
 			{
-				color[0] = verts[i].color[0][0];
-				color[1] = verts[i].color[0][1];
-				color[2] = verts[i].color[0][2];
+				//hack: convert LDR vertex colors to HDR
+				if (r_hdr->integer)
+				{
+					color[0] = verts[i].color[j][0] + 1.0f;
+					color[1] = verts[i].color[j][1] + 1.0f;
+					color[2] = verts[i].color[j][2] + 1.0f;
+				}
+				else
+				{
+					color[0] = verts[i].color[j][0];
+					color[1] = verts[i].color[j][1];
+					color[2] = verts[i].color[j][2];
+				}
 			}
-		}
-		color[3] = verts[i].color[0][3] / 255.0f;
+			color[3] = verts[i].color[j][3] / 255.0f;
 
-		R_ColorShiftLightingFloats( color, points[i].vertexColors, 1.0f / 255.0f );
+			R_ColorShiftLightingFloats( color, points[i].vertexColors[j], 1.0f / 255.0f );
+		}
 	}
 
 	// pre-tesseleate
@@ -913,7 +933,7 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
 	// get shader
-	surf->shader = ShaderForShaderNum( ds->shaderNum, LIGHTMAP_BY_VERTEX );
+	surf->shader = ShaderForShaderNum( ds->shaderNum, lightmapsVertex, ds->lightmapStyles, ds->vertexStyles );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
 		surf->shader = tr.defaultShader;
 	}
@@ -952,34 +972,39 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 		for(j = 0; j < 2; j++)
 		{
 			cv->verts[i].st[j] = LittleFloat(verts[i].st[j]);
-			cv->verts[i].lightmap[j] = LittleFloat(verts[i].lightmap[0][j]);
 		}
 
-		if (hdrVertColors)
+		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
-			color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
-			color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
-		}
-		else
-		{
-			//hack: convert LDR vertex colors to HDR
-			if (r_hdr->integer)
+			cv->verts[i].lightmap[j][0] = LittleFloat(verts[i].lightmap[j][0]);
+			cv->verts[i].lightmap[j][1] = LittleFloat(verts[i].lightmap[j][1]);
+
+			if (hdrVertColors)
 			{
-				color[0] = verts[i].color[0][0] + 1.0f;
-				color[1] = verts[i].color[0][1] + 1.0f;
-				color[2] = verts[i].color[0][2] + 1.0f;
+				color[0] = hdrVertColors[(ds->firstVert + i) * 3    ];
+				color[1] = hdrVertColors[(ds->firstVert + i) * 3 + 1];
+				color[2] = hdrVertColors[(ds->firstVert + i) * 3 + 2];
 			}
 			else
 			{
-				color[0] = verts[i].color[0][0];
-				color[1] = verts[i].color[0][1];
-				color[2] = verts[i].color[0][2];
+				//hack: convert LDR vertex colors to HDR
+				if (r_hdr->integer)
+				{
+					color[0] = verts[i].color[j][0] + 1.0f;
+					color[1] = verts[i].color[j][1] + 1.0f;
+					color[2] = verts[i].color[j][2] + 1.0f;
+				}
+				else
+				{
+					color[0] = verts[i].color[j][0];
+					color[1] = verts[i].color[j][1];
+					color[2] = verts[i].color[j][2];
+				}
 			}
-		}
-		color[3] = verts[i].color[0][3] / 255.0f;
+			color[3] = verts[i].color[j][3] / 255.0f;
 
-		R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors, 1.0f / 255.0f );
+			R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors[j], 1.0f / 255.0f );
+		}
 	}
 
 	// copy triangles
@@ -1040,7 +1065,7 @@ static void ParseFlare( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
 	// get shader
-	surf->shader = ShaderForShaderNum( ds->shaderNum, LIGHTMAP_BY_VERTEX );
+	surf->shader = ShaderForShaderNum( ds->shaderNum, lightmapsVertex, ds->lightmapStyles, ds->vertexStyles );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
 		surf->shader = tr.defaultShader;
 	}
@@ -1822,12 +1847,12 @@ static void CopyVert(const srfVert_t * in, srfVert_t * out)
 	for(j = 0; j < 2; j++)
 	{
 		out->st[j] = in->st[j];
-		out->lightmap[j] = in->lightmap[j];
+		Com_Memcpy (out->lightmap[j], in->lightmap[j], sizeof (out->lightmap[0]));
 	}
 
 	for(j = 0; j < 4; j++)
 	{
-		out->vertexColors[j] = in->vertexColors[j];
+		Com_Memcpy (out->vertexColors[j], in->vertexColors[j], sizeof (out->vertexColors[0]));
 	}
 }
 
@@ -2507,7 +2532,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 		}
 
 		// get information from the shader for fog parameters
-		shader = R_FindShader( fogs->shader, LIGHTMAP_NONE, qtrue );
+		shader = R_FindShader( fogs->shader, lightmapsNone, stylesDefault, qtrue );
 
 		out->parms = shader->fogParms;
 
