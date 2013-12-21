@@ -3099,7 +3099,7 @@ int GetNumStylesInShader ( const shader_t *shader )
 		}
 	}
 
-	return 0;
+	return MAXLIGHTMAPS - 1;
 }
 
 /*
@@ -3148,7 +3148,7 @@ static shader_t *FinishShader( void ) {
 				 lmStage->stateBits = GLS_DEFAULT;
 			}
 
-			lmStage->rgbGen = CGEN_EXACT_VERTEX;
+			lmStage->rgbGen = CGEN_EXACT_VERTEX_LIT;
 			lmStage->alphaGen = AGEN_SKIP;
 
 			firstLightmapStage = MAX_SHADER_STAGES;
