@@ -4456,6 +4456,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		int numVerts = 0;
 		int numTriangles = 0;
 
+#ifdef USE_VERT_TANGENT_SPACE
+		vec3_t *tangentsf;
+		vec3_t *bitangentsf;
+#endif
+
 		// +1 to add total vertex count
 		int *baseVertexes = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
 		int *indexOffsets = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
@@ -4479,6 +4484,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
+
+#ifdef USE_VERT_TANGENT_SPACE
+		tangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);
+		bitangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);;
+#endif
 
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
@@ -4524,19 +4534,14 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			// Positions and normals
 			mdxmVertex_t *v = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
+
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
 				VectorCopy (v[k].vertCoords, *verts);
 				*normals = R_VboPackNormal (v[k].normal);
-#ifdef USE_VERT_TANGENT_SPACE
-				*tangents = R_VboPackNormal (v[k].normal);
-#endif
 
 				verts = (vec3_t *)((byte *)verts + stride);
 				normals = (uint32_t *)((byte *)normals + stride);
-#ifdef USE_VERT_TANGENT_SPACE
-				tangents = (uint32_t *)((byte *)tangents + stride);
-#endif
 			}
 
 			// Weights
@@ -4570,6 +4575,68 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				texcoords = (vec2_t *)((byte *)texcoords + stride);
 			}
 
+#ifdef USE_VERT_TANGENT_SPACE
+			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
+			for ( int k = 0; k < surf->numTriangles; k++ )
+			{
+				int index[3];
+				float *v0, *v1, *v2;
+				float *uv0, *uv1, *uv2;
+				vec3_t normal = { 0.0f, 0.0f, 0.0f };
+				vec3_t tangent = { 0.0f, 0.0f, 0.0f };
+				vec3_t bitangent = { 0.0f, 0.0f, 0.0f };
+
+				index[0] = t[k].indexes[0];
+				index[1] = t[k].indexes[1];
+				index[2] = t[k].indexes[2];
+
+				v0 = v[index[0]].vertCoords;
+				v1 = v[index[1]].vertCoords;
+				v2 = v[index[2]].vertCoords;
+
+				uv0 = tc[index[0]].texCoords;
+				uv1 = tc[index[1]].texCoords;
+				uv2 = tc[index[2]].texCoords;
+
+				VectorAdd (normal, v[index[0]].normal, normal);
+				VectorAdd (normal, v[index[1]].normal, normal);
+				VectorAdd (normal, v[index[2]].normal, normal);
+				VectorNormalize (normal);
+
+				R_CalcTangentSpace (tangent, bitangent, normal, v0, v1, v2, uv0, uv1, uv2);
+
+				for ( int i = 0; i < 3; i++ )
+				{
+					VectorAdd (tangentsf[baseVertexes[n] + index[i]],
+						tangent,
+						tangentsf[baseVertexes[n] + index[i]]);
+
+					VectorAdd (bitangentsf[baseVertexes[n] + index[i]],
+						bitangent,
+						bitangentsf[baseVertexes[n] + index[i]]);
+				}
+			}
+
+			// Finally add it to the vertex buffer data
+			for ( int k = 0; k < surf->numVerts; k++ )
+			{
+				vec3_t& tangent = tangentsf[baseVertexes[n] + k];
+				vec3_t& bitangent = bitangentsf[baseVertexes[n] + k];
+				vec3_t NxT;
+				vec4_t T;
+
+				VectorNormalize (tangent);
+				VectorNormalize (bitangent);
+
+				CrossProduct (v[k].normal, tangent, NxT);
+				VectorCopy (tangent, T);
+				T[3] = DotProduct (NxT, bitangent) < 0.0f ? -1.0f : 1.0f;
+
+				*tangents = R_VboPackTangent (T);
+				tangents = (uint32_t *)((byte *)tangents + stride);
+			}
+#endif
+
 			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
 		}
 
@@ -4584,6 +4651,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		VBO_t *vbo = R_CreateVBO (va ("MDXM VBO LOD %d '%s'", l, modelName), data, dataSize, VBO_USAGE_STATIC);
 
 		ri->Hunk_FreeTempMemory (data);
+		ri->Hunk_FreeTempMemory (tangentsf);
+		ri->Hunk_FreeTempMemory (bitangentsf);
 
 		vbo->ofs_xyz = ofsPosition;
 		vbo->ofs_normal = ofsNormals;
