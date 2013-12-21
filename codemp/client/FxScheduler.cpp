@@ -15,7 +15,7 @@
 CFxScheduler	theFxScheduler;
 
 //-----------------------------------------------------------
-void CMediaHandles::operator=(const CMediaHandles &that )
+CMediaHandles &CMediaHandles::operator=(const CMediaHandles &that )
 {
 	mMediaList.clear();
 
@@ -23,6 +23,7 @@ void CMediaHandles::operator=(const CMediaHandles &that )
 	{
 		mMediaList.push_back( that.mMediaList[i] );
 	}
+	return *this;
 }
 
 //------------------------------------------------------
@@ -140,7 +141,7 @@ void CFxScheduler::AddLoopedEffects()
 }
 
 //-----------------------------------------------------------
-void SEffectTemplate::operator=(const SEffectTemplate &that)
+SEffectTemplate &SEffectTemplate::operator=(const SEffectTemplate &that)
 {
 	mCopy = true;
 
@@ -155,6 +156,7 @@ void SEffectTemplate::operator=(const SEffectTemplate &that)
 		// Mark use as a copy so that we know that we should be chucked when used up
 		mPrimitives[i]->mCopy = true;
 	}
+	return *this;
 }
 
 //------------------------------------------------------

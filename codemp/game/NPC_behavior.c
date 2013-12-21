@@ -159,8 +159,6 @@ void NPC_BSAdvanceFight (void)
 				NPCS.enemyVisibility = VIS_SHOOT;
 				WeaponThink(qtrue);
 			}
-			else
-				attack_ok = qfalse;
 		}
 //Don't do this- only for when stationary and trying to shoot an enemy
 //		else
@@ -1524,7 +1522,6 @@ void NPC_BSFlee( void )
 		if ( moved == qfalse )
 		{
 			vec3_t	dir;
-			float	dist;
 			if ( reverseCourse )
 			{
 				VectorSubtract( NPCS.NPC->r.currentOrigin, goal->r.currentOrigin, dir );
@@ -1533,7 +1530,7 @@ void NPC_BSFlee( void )
 			{
 				VectorSubtract( goal->r.currentOrigin, NPCS.NPC->r.currentOrigin, dir );
 			}
-			NPCS.NPCInfo->distToGoal = dist = VectorNormalize( dir );
+			NPCS.NPCInfo->distToGoal = VectorNormalize( dir );
 			NPCS.NPCInfo->desiredYaw = vectoyaw( dir );
 			NPCS.NPCInfo->desiredPitch = 0;
 			NPCS.ucmd.forwardmove = 127;
