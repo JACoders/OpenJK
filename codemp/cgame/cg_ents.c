@@ -3191,37 +3191,6 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	}
 }
 
-/*
-===============
-CG_TeamBase
-===============
-*/
-static void CG_TeamBase( centity_t *cent ) {
-	refEntity_t model;
-	if ( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY ) {
-		// show the flag base
-		memset(&model, 0, sizeof(model));
-		model.reType = RT_MODEL;
-		VectorCopy( cent->lerpOrigin, model.lightingOrigin );
-		VectorCopy( cent->lerpOrigin, model.origin );
-		AnglesToAxis( cent->currentState.angles, model.axis );
-		if ( cent->currentState.modelindex == TEAM_RED ) {
-			model.hModel = cgs.media.redFlagBaseModel;
-		}
-		else if ( cent->currentState.modelindex == TEAM_BLUE ) {
-			model.hModel = cgs.media.blueFlagBaseModel;
-		}
-		else {
-			model.hModel = cgs.media.neutralFlagBaseModel;
-		}
-
-		if (cent->currentState.eType != ET_NPC)
-		{ //do not do this for g2animents
-			trap->R_AddRefEntityToScene( &model );
-		}
-	}
-}
-
 void CG_G2Animated( centity_t *cent );
 
 static void CG_FX( centity_t *cent ) 
@@ -3401,7 +3370,6 @@ Ghoul2 Insert End
 		CG_G2Animated( cent );
 		break;
 	case ET_TEAM:
-		CG_TeamBase( cent );
 		break;
 	case ET_BODY:
 		CG_General( cent );
