@@ -1347,15 +1347,13 @@ void PM_SaberLocked( void )
 			animation_t *anim;
 			float		currentFrame;
 			int			curFrame;
-			int			strength = 1;
+			int			strength = pm->ps->fd.forcePowerLevel[FP_SABER_OFFENSE]+1;
 
 			pm->ps->saberLockAdvance = qfalse;
 
 			anim = &pm->animations[pm->ps->torsoAnim];
 
 			currentFrame = pm->ps->saberLockFrame;
-
-			strength = pm->ps->fd.forcePowerLevel[FP_SABER_OFFENSE]+1;
 
 			//advance/decrement my frame number
 			if ( BG_InSaberLockOld( pm->ps->torsoAnim ) )
