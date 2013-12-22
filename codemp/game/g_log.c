@@ -325,8 +325,6 @@ void G_LogWeaponOutput(void)
 
 	G_LogPrintf("\n");
 
-
-
 	// Write the whole weapon statistic log out to a file.
 	trap->FS_Open( g_statLogFile.string, &weaponfile, FS_APPEND );
 	if (!weaponfile) {	//failed to open file, let's not crash, shall we?
