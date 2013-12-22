@@ -1407,7 +1407,7 @@ static void CG_RegisterGraphics( void ) {
 			cgs.media.redFlagModel = trap->R_RegisterModel( "models/flags/r_flag.md3" );
 			cgs.media.blueFlagModel = trap->R_RegisterModel( "models/flags/b_flag.md3" );
 		}
-		else
+		else if(cgs.gametype == GT_CTY)
 		{
 			cgs.media.redFlagModel = trap->R_RegisterModel( "models/flags/r_flag_ysal.md3" );
 			cgs.media.blueFlagModel = trap->R_RegisterModel( "models/flags/b_flag_ysal.md3" );
@@ -1423,13 +1423,6 @@ static void CG_RegisterGraphics( void ) {
 		trap->R_RegisterShaderNoMip( "gfx/hud/mpi_bflag" );
 
 		trap->R_RegisterShaderNoMip("gfx/2d/net.tga");
-
-		cgs.media.flagPoleModel = trap->R_RegisterModel( "models/flag2/flagpole.md3" );
-		cgs.media.flagFlapModel = trap->R_RegisterModel( "models/flag2/flagflap3.md3" );
-
-		cgs.media.redFlagBaseModel = trap->R_RegisterModel( "models/mapobjects/flagbase/red_base.md3" );
-		cgs.media.blueFlagBaseModel = trap->R_RegisterModel( "models/mapobjects/flagbase/blue_base.md3" );
-		cgs.media.neutralFlagBaseModel = trap->R_RegisterModel( "models/mapobjects/flagbase/ntrl_base.md3" );
 	}
 
 	if ( cgs.gametype >= GT_TEAM || com_buildScript.integer ) {
