@@ -1393,31 +1393,34 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 Info_NextPair
 
 Used to itterate through all the key/value pairs in an info string
+Return qfalse if we discover the infostring is invalid
 ===================
 */
-void Info_NextPair( const char **head, char *key, char *value ) {
-	char	*o;
-	const char	*s;
+qboolean Info_NextPair( const char **head, char *key, char *value ) {
+	char *o;
+	const char *s = *head;
 
-	s = *head;
-
-	if ( *s == '\\' ) {
+	if ( *s == '\\' )
 		s++;
-	}
 	key[0] = 0;
 	value[0] = 0;
 
 	o = key;
 	while ( *s != '\\' ) {
 		if ( !*s ) {
-			*o = 0;
-			*head = s;
-			return;
+			key[0] = 0;
+			*head  = s;
+			return qtrue;
 		}
 		*o++ = *s++;
 	}
 	*o = 0;
 	s++;
+
+	// If they key is empty at this point with a slash after it
+	// then this is considered invalid, possibly an attempt at hacked userinfo strings
+	if ( !key[0] )
+		return qfalse;
 
 	o = value;
 	while ( *s != '\\' && *s ) {
@@ -1426,6 +1429,8 @@ void Info_NextPair( const char **head, char *key, char *value ) {
 	*o = 0;
 
 	*head = s;
+
+	return qtrue;
 }
 
 /*
