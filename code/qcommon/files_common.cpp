@@ -602,6 +602,7 @@ void FS_Shutdown( void ) {
 	Cmd_RemoveCommand( "dir" );
 	Cmd_RemoveCommand( "fdir" );
 	Cmd_RemoveCommand( "touchFile" );
+	Cmd_RemoveCommand( "which" );
 
 	initialized = qfalse;
 }
