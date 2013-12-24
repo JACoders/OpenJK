@@ -76,7 +76,6 @@ typedef struct qfile_us {
 typedef struct {
 	qfile_ut	handleFiles;
 	qboolean	handleSync;
-	int			baseOffset;
 	int			fileSize;
 	int			zipFilePos;
 	qboolean	zipFile;
