@@ -1641,6 +1641,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	searchpath_t	*sp;
 	int				i;
 	searchpath_t	*search;
+	searchpath_t	*thedir;
 	pack_t			*pak;
 	char			*pakfile;
 	int				numfiles;
