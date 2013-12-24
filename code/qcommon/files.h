@@ -76,7 +76,6 @@ typedef struct qfile_us {
 typedef struct {
 	qfile_ut	handleFiles;
 	qboolean	handleSync;
-	int			baseOffset;
 	int			fileSize;
 	int			zipFilePos;
 	qboolean	zipFile;
@@ -101,6 +100,7 @@ extern cvar_t		*fs_basegame;
 extern cvar_t		*fs_cdpath;
 extern cvar_t		*fs_copyfiles;
 extern cvar_t		*fs_gamedirvar;
+extern cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
 extern int			fs_readCount;			// total bytes read
 extern int			fs_loadCount;			// total files read
 extern int			fs_packFiles;			// total number of files in packs

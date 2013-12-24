@@ -884,7 +884,8 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 	unz_global_info gi;
 	char			filename_inzip[MAX_ZPATH];
 	unz_file_info	file_info;
-	unsigned int	i, len;
+	int				len;
+	size_t			i;
 	long			hash;
 	int				fs_numHeaderLongs;
 	int				*fs_headerLongs;
@@ -900,7 +901,7 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 
 	fs_packFiles += gi.number_entry;
 
-	len = 0;	//find the length of all filenames
+	len = 0;
 	unzGoToFirstFile(uf);
 	for (i = 0; i < gi.number_entry; i++)
 	{
@@ -925,9 +926,11 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 	}
 
 	pack = (pack_t*)Z_Malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *), TAG_FILESYS, qtrue );
-	memset (pack, 0, sizeof( pack_t ) + i * sizeof(fileInPack_t *));
 	pack->hashSize = i;
 	pack->hashTable = (fileInPack_t **) (((char *) pack) + sizeof( pack_t ));
+	for(int j = 0; j < pack->hashSize; j++) {
+		pack->hashTable[j] = NULL;
+	}
 
 	Q_strncpyz( pack->pakFilename, zipfile, sizeof( pack->pakFilename ) );
 
@@ -957,7 +960,7 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 		unzGoToNextFile(uf);
 	}
 
-	pack->checksum = Com_BlockChecksum( fs_headerLongs, 4 * fs_numHeaderLongs );
+	pack->checksum = Com_BlockChecksum( fs_headerLongs, sizeof(*fs_headerLongs) * fs_numHeaderLongs );
 	pack->checksum = LittleLong( pack->checksum );
 
 	Z_Free(fs_headerLongs);
@@ -1611,6 +1614,77 @@ void FS_TouchFile_f( void ) {
 	}
 }
 
+/*
+============
+FS_Which_f
+============
+*/
+void FS_Which_f( void ) {
+	searchpath_t	*search;
+	char		*filename;
+
+	filename = Cmd_Argv(1);
+
+	if ( !filename[0] ) {
+		Com_Printf( "Usage: which <file>\n" );
+		return;
+	}
+
+	// qpaths are not supposed to have a leading slash
+	if ( filename[0] == '/' || filename[0] == '\\' ) {
+		filename++;
+	}
+
+	// make absolutely sure that it can't back up the path.
+	// The searchpaths do guarantee that something will always
+	// be prepended, so we don't need to worry about "c:" or "//limbo" 
+	if ( strstr( filename, ".." ) || strstr( filename, "::" ) ) {
+		return;
+	}
+
+	// just wants to see if file is there
+	for ( search=fs_searchpaths; search; search=search->next ) {
+		if ( search->pack ) {
+			long hash = FS_HashFileName( filename, search->pack->hashSize );
+
+			// is the element a pak file?
+			if ( search->pack->hashTable[hash]) {
+				// look through all the pak file elements
+				pack_t* pak = search->pack;
+				fileInPack_t* pakFile = pak->hashTable[hash];
+
+				do {
+					// case and separator insensitive comparisons
+					if ( !FS_FilenameCompare( pakFile->name, filename ) ) {
+						// found it!
+						Com_Printf( "File \"%s\" found in \"%s\"\n", filename, pak->pakFilename );
+						return;
+					}
+
+					pakFile = pakFile->next;
+				} while ( pakFile != NULL );
+			}
+		} else if (search->dir) {
+			directory_t* dir = search->dir;
+
+			char* netpath = FS_BuildOSPath( dir->path, dir->gamedir, filename );
+			FILE* filep = fopen(netpath, "rb");
+
+			if ( filep ) {
+				fclose( filep );
+
+				char buf[MAX_OSPATH];
+				Com_sprintf( buf, sizeof( buf ), "%s%c%s", dir->path, PATH_SEP, dir->gamedir );
+				FS_ReplaceSeparators( buf );
+				Com_Printf( "File \"%s\" found at \"%s\"\n", filename, buf );
+				return;
+			}
+		}
+	}
+
+	Com_Printf( "File not found: \"%s\"\n", filename );
+}
+
 //===========================================================================
 
 
@@ -1638,6 +1712,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	searchpath_t	*sp;
 	int				i;
 	searchpath_t	*search;
+	searchpath_t	*thedir;
 	pack_t			*pak;
 	char			*pakfile;
 	int				numfiles;
@@ -1659,7 +1734,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	//
 	search = (searchpath_t *)Z_Malloc (sizeof(searchpath_t), TAG_FILESYS, qtrue );
 	search->dir = (directory_t*)Z_Malloc( sizeof( *search->dir ), TAG_FILESYS, qtrue );
-	search->pack = 0;
+
 	Q_strncpyz( search->dir->path, path, sizeof( search->dir->path ) );
 	Q_strncpyz( search->dir->gamedir, dir, sizeof( search->dir->gamedir ) );
 	search->next = fs_searchpaths;
@@ -1671,6 +1746,8 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	// find all pak files in this directory
 	pakfile = FS_BuildOSPath( path, dir, "" );
 	pakfile[ strlen(pakfile) - 1 ] = 0;	// strip the trailing slash
+
+	thedir = search;
 
 	pakfiles = Sys_ListFiles( pakfile, ".pk3", NULL, &numfiles, qfalse );
 
@@ -1691,9 +1768,24 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 			continue;
 		search = (searchpath_t*)Z_Malloc(sizeof(searchpath_t), TAG_FILESYS, qtrue );
 		search->pack = pak;
-		search->dir = 0;
-		search->next = fs_searchpaths;
-		fs_searchpaths = search;		
+
+		if (fs_dirbeforepak && fs_dirbeforepak->integer && thedir)
+		{
+			searchpath_t *oldnext = thedir->next;
+			thedir->next = search;
+
+			while (oldnext)
+			{
+				search->next = oldnext;
+				search = search->next;
+				oldnext = oldnext->next;
+			}
+		}
+		else
+		{
+			search->next = fs_searchpaths;
+			fs_searchpaths = search;
+		}
 	}
 
 	// done
@@ -1723,7 +1815,8 @@ void FS_Startup( const char *gameName ) {
 	}
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	//Cvar_Get( "com_demo", "", CVAR_INIT );
+
+	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT);
 
 	// add search path elements in reverse priority order
 	if (fs_cdpath->string[0]) {
@@ -1779,6 +1872,7 @@ void FS_Startup( const char *gameName ) {
 	Cmd_AddCommand ("dir", FS_Dir_f );
 	Cmd_AddCommand ("fdir", FS_NewDir_f );
 	Cmd_AddCommand ("touchFile", FS_TouchFile_f );
+	Cmd_AddCommand ("which", FS_Which_f );
 
 	// print the current search paths
 	FS_Path_f();
@@ -1865,11 +1959,6 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 	}
 
 	if ( *f ) {
-		if (fsh[*f].zipFile == (int)qtrue) {
-			fsh[*f].baseOffset = unztell(fsh[*f].handleFiles.file.z);
-		} else {
-			fsh[*f].baseOffset = ftell(fsh[*f].handleFiles.file.o);
-		}
 		fsh[*f].fileSize = r;
 	}
 	fsh[*f].handleSync = sync;
