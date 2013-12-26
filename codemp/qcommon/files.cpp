@@ -3984,7 +3984,7 @@ bool FS_LoadMachOBundle( const char *name )
 
 	Com_sprintf( dllName, sizeof(dllName), "%s_pk3" DLL_EXT, name );
 
-	f = FS_FOpenFileWrite( dllName );
+	f = FS_FOpenFileWrite( dllName, qfalse );
 
 	if ( !f )
 	{
