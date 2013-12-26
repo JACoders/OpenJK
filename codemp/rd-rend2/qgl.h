@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define __QGL_H__
 
 #ifndef _WIN32
-#include "SDL/SDL_opengl.h"
+#include <SDL_opengl.h>
 #else
 #include <Windows.h>
 #include <gl/GL.h>
