@@ -545,10 +545,10 @@ void RB_BeginDrawingView (void) {
 		plane[2] = backEnd.viewParms.portalPlane.normal[2];
 		plane[3] = backEnd.viewParms.portalPlane.dist;
 
-		plane2[0] = DotProduct (backEnd.viewParms.or.axis[0], plane);
-		plane2[1] = DotProduct (backEnd.viewParms.or.axis[1], plane);
-		plane2[2] = DotProduct (backEnd.viewParms.or.axis[2], plane);
-		plane2[3] = DotProduct (plane, backEnd.viewParms.or.origin) - plane[3];
+		plane2[0] = DotProduct (backEnd.viewParms.ori.axis[0], plane);
+		plane2[1] = DotProduct (backEnd.viewParms.ori.axis[1], plane);
+		plane2[2] = DotProduct (backEnd.viewParms.ori.axis[2], plane);
+		plane2[3] = DotProduct (plane, backEnd.viewParms.ori.origin) - plane[3];
 #endif
 		GL_SetModelviewMatrix( s_flipMatrix );
 	}
@@ -650,11 +650,11 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 
 				// set up the transformation matrix
-				R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.or );
+				R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.ori );
 
 				// set up the dynamic lighting if needed
 				if ( backEnd.currentEntity->needDlights ) {
-					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
+					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
 				}
 
 				if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
@@ -668,14 +668,14 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			} else {
 				backEnd.currentEntity = &tr.worldEntity;
 				backEnd.refdef.floatTime = originalTime;
-				backEnd.or = backEnd.viewParms.world;
+				backEnd.ori = backEnd.viewParms.world;
 				// we have to reset the shaderTime as well otherwise image animations on
 				// the world (like water) continue with the wrong frame
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
+				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
 			}
 
-			GL_SetModelviewMatrix( backEnd.or.modelMatrix );
+			GL_SetModelviewMatrix( backEnd.ori.modelMatrix );
 
 			//
 			// change depthrange. Also change projection matrix so first person weapon does not look like coming
@@ -1916,7 +1916,7 @@ const void *RB_PostProcess(const void *data)
 	if (r_cubeMapping->integer && tr.numCubemaps)
 	{
 		vec4i_t dstBox;
-		int cubemapIndex = R_CubemapForPoint( backEnd.viewParms.or.origin );
+		int cubemapIndex = R_CubemapForPoint( backEnd.viewParms.ori.origin );
 
 		if (cubemapIndex)
 		{
