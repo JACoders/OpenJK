@@ -311,6 +311,8 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
 		FinishSpawningItem( it_ent );
+		if ( !it_ent || !it_ent->inuse )
+			return;
 		memset( &trace, 0, sizeof( trace ) );
 		Touch_Item( it_ent, ent, &trace );
 		if ( it_ent->inuse )
