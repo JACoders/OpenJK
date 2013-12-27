@@ -1216,6 +1216,7 @@ and for each vertex of transparent shaders in fog dynamically
 */
 float	R_FogFactor( float s, float t ) {
 	float	d;
+	int index;
 
 	s -= 1.0/512;
 	if ( s < 0 ) {
@@ -1231,11 +1232,15 @@ float	R_FogFactor( float s, float t ) {
 	// we need to leave a lot of clamp range
 	s *= 8;
 
-	if ( s > 1.0 ) {
-		s = 1.0;
+	index = (int)( s * (FOG_TABLE_SIZE-1));
+	if ( index > FOG_TABLE_SIZE-1 ) {
+		index = FOG_TABLE_SIZE-1;
+	}
+	if( index < 0 ){
+		index = 0;
 	}
 
-	d = tr.fogTable[ (int)(s * (FOG_TABLE_SIZE-1)) ];
+	d = tr.fogTable[ index ];
 
 	return d;
 }
