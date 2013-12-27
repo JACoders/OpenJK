@@ -11,7 +11,7 @@
 
 #define CLIENT_WINDOW_TITLE "OpenJK (MP)"
 #define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
-#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_UNIX "openjk"
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
