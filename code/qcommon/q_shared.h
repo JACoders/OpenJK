@@ -56,7 +56,7 @@ This file is part of Jedi Academy.
 
 #define CLIENT_WINDOW_TITLE "OpenJK (SP)"
 #define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
-#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_UNIX "openjk"
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 

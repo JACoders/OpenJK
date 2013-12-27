@@ -529,31 +529,65 @@ void	Sys_Init (void) {
 }
 
 /*
- ==================
- Sys_DefaultHomePath
- ==================
- */
+==================
+Sys_DefaultHomePath
+==================
+*/
+#ifdef MACOS_X
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
     
-	if( !*homePath)
+	if( !*homePath && com_homepath != NULL )
 	{
 		if( ( p = getenv( "HOME" ) ) != NULL )
 		{
 			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
-#ifdef MACOS_X
 			Q_strcat(homePath, sizeof(homePath),
                      "Library/Application Support/");
-			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
-#else
-			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
-#endif
+            
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
 		}
 	}
     
 	return homePath;
 }
+#else
+char *Sys_DefaultHomePath(void)
+{
+	char *p;
+    
+	if( !*homePath && com_homepath != NULL )
+	{
+		if( ( p = getenv( "XDG_DATA_HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+
+			return homePath;
+		}
+
+		if( ( p = getenv( "HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c.local%cshare%c", p, PATH_SEP, PATH_SEP, PATH_SEP);
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+
+			return homePath;
+		}
+	}
+    
+	return homePath;
+}
+#endif
 
 char *Sys_ConsoleInput(void)
 {
