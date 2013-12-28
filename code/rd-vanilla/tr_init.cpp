@@ -1630,6 +1630,7 @@ void RE_SetRangedFog( float dist )
 	}
 }
 
+bool inServer = false;
 void RE_SVModelInit( void )
 {
 	//ri.CM_ShaderTableCleanup();
@@ -1637,7 +1638,9 @@ void RE_SVModelInit( void )
 	tr.numShaders = 0;
 	tr.numSkins = 0;
 	R_InitImages();
+	inServer = true;
 	R_InitShaders();
+	inServer = false;
 	R_ModelInit();
 }
 
