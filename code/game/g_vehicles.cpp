@@ -1464,14 +1464,9 @@ static void DeathUpdate( Vehicle_t *pVeh )
 #endif
 			if ( pVeh->m_pVehicleInfo->iExplodeFX )
 			{
-#ifdef _JK2MP
-				vec3_t fxAng;
+				vec3_t fxAng = { -90.0f, 0.0f, 0.0f };
+				G_PlayEffect( pVeh->m_pVehicleInfo->iExplodeFX, parent->currentOrigin, fxAng );
 
-				VectorSet(fxAng, -90.0f, 0.0f, 0.0f);
-				G_PlayEffectID( pVeh->m_pVehicleInfo->iExplodeFX, parent->currentOrigin, fxAng );
-#else
-				G_PlayEffect( pVeh->m_pVehicleInfo->iExplodeFX, parent->currentOrigin, vec3_origin );
-#endif
 				//trace down and place mark
 				VectorCopy( parent->currentOrigin, bottom );
 				bottom[2] -= 80;
