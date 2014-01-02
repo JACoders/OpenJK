@@ -586,7 +586,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 	ent->client->ps.fd.forceDeactivateAll = 0;
 
 	ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax = FORCE_POWER_MAX;
-	ent->client->ps.fd.forcePowerRegenDebounceTime = 0;
+	ent->client->ps.fd.forcePowerRegenDebounceTime = level.time;
 	ent->client->ps.fd.forceGripEntityNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceMindtrickTargetIndex = 0;
 	ent->client->ps.fd.forceMindtrickTargetIndex2 = 0;
@@ -634,7 +634,6 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 		i++;
 	}
 
-	ent->client->ps.fd.forcePowerRegenDebounceTime = 0;
 	ent->client->ps.fd.forceJumpZStart = 0;
 	ent->client->ps.fd.forceJumpCharge = 0;
 	ent->client->ps.fd.forceJumpSound = 0;
