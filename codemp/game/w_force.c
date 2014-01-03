@@ -135,34 +135,17 @@ const int mindTrickTime[NUM_FORCE_POWER_LEVELS] =
 
 void WP_InitForcePowers( gentity_t *ent )
 {
-	int i;
-	int i_r;
-	int maxRank = g_maxForceRank.integer;
+	int i, i_r, lastFPKnown = -1;
 	qboolean warnClient = qfalse;
 	qboolean warnClientLimit = qfalse;
-	char userinfo[MAX_INFO_STRING];
-	char forcePowers[256];
-	char readBuf[256];
-	int lastFPKnown = -1;
+	char userinfo[MAX_INFO_STRING], forcePowers[256], readBuf[256];
 	qboolean didEvent = qfalse;
 
-	if (!maxRank)
-	{ //if server has no max rank, default to max (50)
-		maxRank = FORCE_MASTERY_JEDI_MASTER;
+	if ( g_maxForceRank.integer <= 0 || g_maxForceRank.integer >= NUM_FORCE_MASTERY_LEVELS ) {
+		// ack, prevent user from being dumb
+		trap->Cvar_Set( "g_maxForceRank", va( "%i", FORCE_MASTERY_JEDI_MASTER ) );
+		trap->Cvar_Update( &g_maxForceRank );
 	}
-	else if (maxRank >= NUM_FORCE_MASTERY_LEVELS)
-	{//ack, prevent user from being dumb
-		maxRank = FORCE_MASTERY_JEDI_MASTER;
-		trap->Cvar_Set( "g_maxForceRank", va("%i", maxRank) );
-	}
-
-	/*
-	if (g_forcePowerDisable.integer)
-	{
-		maxRank = FORCE_MASTERY_UNINITIATED;
-	}
-	*/
-	//rww - don't do this
 
 	if ( !ent || !ent->client )
 	{
@@ -282,20 +265,20 @@ void WP_InitForcePowers( gentity_t *ent )
 	{
 		if (ent->client->sess.sessionTeam == TEAM_RED)
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_DARKSIDE, level.gametype, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, g_maxForceRank.integer, HasSetSaberOnly(), FORCE_DARKSIDE, level.gametype, g_forcePowerDisable.integer));
 		}
 		else if (ent->client->sess.sessionTeam == TEAM_BLUE)
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_LIGHTSIDE, level.gametype, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, g_maxForceRank.integer, HasSetSaberOnly(), FORCE_LIGHTSIDE, level.gametype, g_forcePowerDisable.integer));
 		}
 		else
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
 		}
 	}
 	else
 	{
-		warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
+		warnClient = !(BG_LegalizedForcePowers(forcePowers, g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
 	}
 
 	i_r = 0;
@@ -468,7 +451,7 @@ void WP_InitForcePowers( gentity_t *ent )
 
 				te->r.svFlags |= SVF_BROADCAST;
 				te->s.trickedentindex = ent->s.number;
-				te->s.eventParm = maxRank;
+				te->s.eventParm = g_maxForceRank.integer;
 				te->s.bolt1 = 0;
 #endif
 				didEvent = qtrue;
@@ -493,7 +476,7 @@ void WP_InitForcePowers( gentity_t *ent )
 #else
 				//Event isn't very reliable, I made it a string. This way I can send it to just one
 				//client also, as opposed to making a broadcast event.
-				trap->SendServerCommand(ent->s.number, va("nfr %i %i %i", maxRank, 1, ent->client->sess.sessionTeam));
+				trap->SendServerCommand(ent->s.number, va("nfr %i %i %i", g_maxForceRank.integer, 1, ent->client->sess.sessionTeam));
 				//Arg1 is new max rank, arg2 is non-0 if force menu should be shown, arg3 is the current team
 #endif
 			}
@@ -507,11 +490,11 @@ void WP_InitForcePowers( gentity_t *ent )
 
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.trickedentindex = ent->s.number;
-			te->s.eventParm = maxRank;
+			te->s.eventParm = g_maxForceRank.integer;
 			te->s.bolt1 = 1;
 			te->s.bolt2 = ent->client->sess.sessionTeam;
 #else
-			trap->SendServerCommand(ent->s.number, va("nfr %i %i %i", maxRank, 0, ent->client->sess.sessionTeam));
+			trap->SendServerCommand(ent->s.number, va("nfr %i %i %i", g_maxForceRank.integer, 0, ent->client->sess.sessionTeam));
 #endif
 		}
 
