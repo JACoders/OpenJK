@@ -348,7 +348,6 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// if we are going into the intermission, don't start any voices
-	//Raz: also check PM_INTERMISSION
 	if ( cg.intermissionStarted || (cg.snap && cg.snap->ps.pm_type == PM_INTERMISSION) ) {
 		return;
 	}

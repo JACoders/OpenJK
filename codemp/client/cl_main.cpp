@@ -101,7 +101,7 @@ refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
 const CGhoul2Info NullG2;
-//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+//FIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
 IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
 	return re->TheGhoul2InfoArray();
 }
@@ -2465,7 +2465,7 @@ void CL_InitRef( void ) {
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
 
-	//RAZFIXME: Might have to do something about this...
+	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	G2VertSpaceServer = &CMiniHeap_singleton;
 

@@ -457,9 +457,7 @@ void Svcmd_Say_f( void ) {
 
 	p = ConcatArgs( 1 );
 
-	//Raz: BOF
-	if ( strlen( p ) >= MAX_SAY_TEXT )
-	{
+	if ( strlen( p ) >= MAX_SAY_TEXT ) {
 		p[MAX_SAY_TEXT-1] = '\0';
 		G_SecurityLogPrintf( "Cmd_Say_f from -1 (server) has been truncated: %s\n", p );
 	}

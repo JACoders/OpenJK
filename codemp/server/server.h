@@ -209,7 +209,7 @@ typedef struct serverStatic_s {
 extern	serverStatic_t	svs;				// persistant server info across maps
 extern	server_t		sv;					// cleared each map
 
-//RAZFIXME: dedi server probably can't have this..
+//FIXME: dedi server probably can't have this..
 extern	refexport_t		*re;					// interface to refresh .dll
 
 #define	MAX_MASTER_SERVERS	5

@@ -218,7 +218,6 @@ static void CG_CalculateWeaponPosition( vec3_t origin, vec3_t angles ) {
 		scale = cg.xyspeed;
 	}
 
-	// Ensiform: Allow toggling of this feature
 	if ( cg_weaponBob.value ) {
 		// gun angles from bobbing
 		angles[ROLL] += scale * cg.bobfracsin * 0.005;
@@ -226,7 +225,6 @@ static void CG_CalculateWeaponPosition( vec3_t origin, vec3_t angles ) {
 		angles[PITCH] += cg.xyspeed * cg.bobfracsin * 0.005;
 	}
 
-	// Ensiform: Allow toggling of this feature
 	if ( cg_fallingBob.value ) {
 		// drop the weapon when landing
 		delta = cg.time - cg.landTime;
@@ -248,7 +246,6 @@ static void CG_CalculateWeaponPosition( vec3_t origin, vec3_t angles ) {
 	}
 #endif
 
-	// Ensiform: Allow toggling of this feature
 	if ( cg_weaponBob.value ) {
 		// idle drift
 		scale = cg.xyspeed + 40;

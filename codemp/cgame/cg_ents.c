@@ -242,14 +242,6 @@ void CG_S_UpdateLoopingSounds(int entityNum)
 		VectorCopy(cent->lerpOrigin, lerpOrg);
 	}
 
-	//Raz: Looping sounds fix from Sil
-	/*	Sil: well with looping sounds, you would notice it playing with force powers
-		Sil: when someone turns on speed
-		Sil: or rage
-		Sil: etc
-		Sil: you will hear it in origin where he turned it on
-		Sil: even if he is not there anymore
-	*/
 	if ( (cent->currentState.eFlags & EF_SOUNDTRACKER)
 		&& (!cg.snap || cent->currentState.trickedentindex != cg.snap->ps.clientNum) )
 	{//keep sound for this entity updated in accordance with its attached entity at all times
@@ -331,7 +323,6 @@ static void CG_EntityEffects( centity_t *cent ) {
 
 
 	// constant light glow
-	//Raz: Fix the glow from charging weapons being stuck to players
 	if ( cent->currentState.constantLight && cent->currentState.eType != ET_PLAYER && cent->currentState.eType != ET_BODY && cent->currentState.eType != ET_NPC ) {
 		int		cl;
 		float	i, r, g, b;
@@ -2994,7 +2985,6 @@ void CG_AdjustPositionForMover( const vec3_t in, int moverNum, int fromTime, int
 	vec3_t	oldOrigin, origin, deltaOrigin;
 	vec3_t	oldAngles, angles, deltaAngles;
 
-	//Raz: Don't bother if we're a spectator
 	if ( cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
 	{
 		VectorCopy( in, out );
@@ -3295,7 +3285,7 @@ static void CG_AddCEntity( centity_t *cent ) {
 		}
 	}
 
-	//Raz: don't render when we are in spec, happens occasionally on map_restart and such
+	// don't render when we are in spec, happens occasionally on map_restart and such
 	if ( cg.predictedPlayerState.clientNum == cent->currentState.number && cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
 		return;
 

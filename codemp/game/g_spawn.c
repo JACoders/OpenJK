@@ -781,7 +781,7 @@ char *G_NewString( const char *string )
 }
 
 char *G_NewString_Safe( const char *string )
-{//JAC: This version uses malloc() and is safe to free() to avoid memory leaks or internal memory pool overflow
+{
 	char *newb=NULL, *new_p=NULL;
 	int i=0, len=0;
 	
@@ -1491,22 +1491,11 @@ void SP_worldspawn( void )
 		trap->Cvar_Set( "g_restarted", "0" );
 		level.warmupTime = 0;
 	} 
-	//Raz: Fix warmup
-#if 0
-	/*
-	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL ) { // Turn it on
-		level.warmupTime = -1;
-		trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
-		G_LogPrintf( "Warmup:\n" );
-	}
-	*/
-#else
 	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype != GT_SIEGE ) { // Turn it on
 		level.warmupTime = -1;
 		trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 		G_LogPrintf( "Warmup:\n" );
 	}
-#endif
 
 	trap->SetConfigstring(CS_LIGHT_STYLES+(LS_STYLES_START*3)+0, defaultStyles[0][0]);
 	trap->SetConfigstring(CS_LIGHT_STYLES+(LS_STYLES_START*3)+1, defaultStyles[0][1]);

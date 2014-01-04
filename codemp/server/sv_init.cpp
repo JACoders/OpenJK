@@ -872,7 +872,7 @@ static void SV_InitRef( void ) {
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
 
-	//RAZFIXME: Might have to do something about this...
+	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	G2VertSpaceServer = &CMiniHeap_singleton;
 

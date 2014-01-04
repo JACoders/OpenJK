@@ -2755,17 +2755,18 @@ void charge_stick (gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 
 	//if we get here I guess we hit hte world so we can stick to it
-	//Raz: This fix requires a bit of explaining..
-	//	When you suicide, all of the detpacks you have placed (either on a wall, or still falling in the air) will
-	//		have their ent->think() set to DetPackBlow and ent->nextthink will be between 100 <-> 300
-	//	If your detpacks land on a surface (i.e. charge_stick gets called) within that 100<->300 ms then ent->think()
-	//		will be overwritten (set to DetpackBlow) and ent->nextthink will be 30000
-	//	The end result is your detpacks won't explode, but will be stuck to the wall for 30 seconds without
-	//		being able to detonate them (or shoot them)
-	//	The fix Sil came up with is to check the think() function in charge_stick, and only overwrite it
-	//		if they haven't been primed to detonate
-	if ( self->think == G_RunObject )
-	{
+
+	// This requires a bit of explaining.
+	// When you suicide, all of the detpacks you have placed (either on a wall, or still falling in the air) will have
+	//	their ent->think() set to DetPackBlow and ent->nextthink will be between 100 <-> 300
+	// If your detpacks land on a surface (i.e. charge_stick gets called) within that 100<->300 ms then ent->think()
+	//	will be overwritten (set to DetpackBlow) and ent->nextthink will be 30000
+	// The end result is your detpacks won't explode, but will be stuck to the wall for 30 seconds without being able to
+	//	detonate them (or shoot them)
+	// The fix Sil came up with is to check the think() function in charge_stick, and only overwrite it if they haven't
+	//	been primed to detonate
+
+	if ( self->think == G_RunObject ) {
 		self->touch = 0;
 		self->think = DetPackBlow;
 		self->nextthink = level.time + 30000;

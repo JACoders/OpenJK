@@ -865,7 +865,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 				player->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 
 			}
-			//Raz: Was 'else if' meaning people were missing out on some assist scores
 			if (player->client->pers.teamState.lastfraggedcarrier + 
 				CTF_FRAG_CARRIER_ASSIST_TIMEOUT > level.time) {
 				AddScore(player, ent->r.currentOrigin, CTF_FRAG_CARRIER_ASSIST_BONUS);

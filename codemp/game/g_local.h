@@ -427,7 +427,6 @@ typedef struct clientSession_s {
 	int			duelTeam;
 	int			siegeDesiredTeam;
 
-	//JAC: Added
 	char		IP[NET_ADDRSTRMAXLEN];
 } clientSession_t;
 
@@ -456,13 +455,9 @@ typedef struct clientPersistant_s {
 	playerTeamState_t teamState;	// status in teamplay games
 	qboolean	teamInfo;			// send team overlay updates?
 
-	//JAC: Added
 	int			connectTime;
 
-	//Raz: Moved this out of session data.
-	//		userinfo -> pers in ClientUserinfoChanged
-	char		saber1[MAX_QPATH];
-	char		saber2[MAX_QPATH];
+	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
 
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 
@@ -942,7 +937,6 @@ typedef struct level_locals_s {
 
 	char		mTeamFilter[MAX_QPATH];
 
-	//JAC: added
 	struct {
 		fileHandle_t	log;
 	} security;

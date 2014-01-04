@@ -1913,7 +1913,7 @@ void G2_LerpAngles(CGhoul2Info_v &ghoul2,CGhoul2Info_v &nextGhoul2, float interp
 	}
 }
 
-//Raz: Chucking this in here from ghoul2_shared
+// chucking this in here from ghoul2_shared
 IGhoul2InfoArray &TheGhoul2InfoArray();
 IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
 	return TheGhoul2InfoArray();

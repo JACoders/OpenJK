@@ -460,8 +460,7 @@ void NPC_BSST_Sleep( void )
 			gentity_t	*bestCl		= NULL;
 			gentity_t	*ent		= NULL;
 
-			for ( i=0; i<MAX_CLIENTS; i++ )
-			{//Raz: Now we care about all clients >_>
+			for ( i=0; i<MAX_CLIENTS; i++ ) {
 				ent = &g_entities[i];
 				if ( ent->inuse && ent->health > 0 && !(ent->client->ps.eFlags & EF_DEAD) &&
 					G_ClearLOS( NPCS.NPC, NPCS.NPC->s.origin, ent->s.origin ) )

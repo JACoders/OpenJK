@@ -1516,7 +1516,7 @@ qboolean CalculateSection31Award(gentity_t *ent)
 }
 
 #if 0
-// Ensiform this stuff is all unused but leaving incase someone wants
+
 #define AWARDS_MSG_LENGTH		256
 
 void CalculateAwards(gentity_t *ent, char *msg)

@@ -942,9 +942,7 @@ XIFuncPointer XI_SetState = NULL;
 IN_LoadXInput
 
 Uses direct DLL loading as opposed to static linkage
-This is because, as Ensiform pointed out, Windows 8
-and Windows 7 use different XInput versions, hence
-different linkage.
+This is because Windows 8 and Windows 7 use different XInput versions, hence different linkage.
 ===============
 */
 

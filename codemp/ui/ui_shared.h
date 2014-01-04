@@ -6,7 +6,6 @@
 
 #include "ui/menudef.h"
 
-//Raz: Drastically increased some of these
 #define MAX_MENUNAME				32
 #define MAX_ITEMTEXT				64
 #define MAX_ITEMACTION				64

@@ -4109,7 +4109,6 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 	}
 }
 
-//JAC: sets the time between lightning/drain hit shots on the server so that we can alter the sv_fps without issues.
 #define FORCE_DEBOUNCE_TIME 50 // sv_fps 20 = 50msec frametime, basejka balance/timing
 
 static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd_t *cmd )
@@ -4260,7 +4259,6 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		{
 			WP_ForcePowerStop( self, forcePower );
 		}
-		//JAC: consistent drain regardless of sv_fps
 		else
 		{
 			while ( self->client->force.drainDebounce < level.time )
@@ -4290,7 +4288,6 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		{
 			WP_ForcePowerStop( self, forcePower );
 		}
-		//JAC: consistent lightning regardless of sv_fps
 		else
 		{
 			while ( self->client->force.lightningDebounce < level.time )
