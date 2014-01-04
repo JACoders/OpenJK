@@ -5535,61 +5535,61 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	if ( !(self->client->ps.fd.forcePowersActive & (1<<FP_LIGHTNING)) )
 		self->client->force.lightningDebounce = level.time;
 
-	if ( !self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN) )
+	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) &&
+			!self->client->ps.saberInFlight && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 	{//when not using the force, regenerate at 1 point per half second
-		if ( !self->client->ps.saberInFlight && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
+		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
 		{
-			while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
+			if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)
 			{
-				if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)
-				{
-					if ( self->client->ps.powerups[PW_FORCE_BOON] )
-						WP_ForcePowerRegenerate( self, 6 );
-					else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
-						WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
-					else
-						WP_ForcePowerRegenerate( self, 0 );
-				}
+				if ( self->client->ps.powerups[PW_FORCE_BOON] )
+					WP_ForcePowerRegenerate( self, 6 );
+				else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
+					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 				else
-				{ //regenerate based on the number of holocrons carried
-					holoregen = 0;
-					holo = 0;
-					while (holo < NUM_FORCE_POWERS)
-					{
-						if (self->client->ps.holocronsCarried[holo])
-							holoregen++;
-						holo++;
-					}
-
-					WP_ForcePowerRegenerate(self, holoregen);
+					WP_ForcePowerRegenerate( self, 0 );
+			}
+			else
+			{ //regenerate based on the number of holocrons carried
+				holoregen = 0;
+				holo = 0;
+				while (holo < NUM_FORCE_POWERS)
+				{
+					if (self->client->ps.holocronsCarried[holo])
+						holoregen++;
+					holo++;
 				}
 
-				if (level.gametype == GT_SIEGE)
+				WP_ForcePowerRegenerate(self, holoregen);
+			}
+
+			if (level.gametype == GT_SIEGE)
+			{
+				if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
+					self->client->ps.fd.forcePowerRegenDebounceTime += 7000; //1 point per 7 seconds.. super slow
+				else if (self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
+					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.2, 1); //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
+				else
+					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
+			}
+			else
+			{
+				if ( level.gametype == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
 				{
-					if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
-						self->client->ps.fd.forcePowerRegenDebounceTime += 7000; //1 point per 7 seconds.. super slow
-					else if (self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
-						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.2, 1); //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
+					if ( duel_fraglimit.integer )
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);
 					else
-						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
 				}
 				else
-				{
-					if ( level.gametype == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
-					{
-						if ( duel_fraglimit.integer )
-							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);
-						else
-							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
-					}
-					else
-						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
-				}
+					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 			}
 		}
 	}
 	else
+	{
 		self->client->ps.fd.forcePowerRegenDebounceTime = level.time;
+	}
 
 powersetcheck:
 
