@@ -1084,7 +1084,7 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,
 		fogIndex = 0;
 	}
 
-	// Ensiform: FIXME implement RDF_ForceSightOn
+	//FIXME: implement RDF_ForceSightOn
 	if ( (shader->surfaceFlags & SURF_FORCESIGHT) /*&& !(tr.refdef.rdflags & RDF_ForceSightOn)*/ )
 	{	//if shader is only seen with ForceSight and we don't have ForceSight on, then don't draw
 		return;

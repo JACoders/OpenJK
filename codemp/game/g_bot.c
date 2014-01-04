@@ -310,7 +310,7 @@ void G_LoadArenas( void ) {
 
 	G_RefreshNextMap(level.gametype, qfalse);
 
-#else // Ensiform's version
+#else
 
 	int			numFiles;
 	char		filelist[MAPSBUFSIZE];
@@ -411,7 +411,6 @@ void G_AddRandomBot( int team ) {
 			if ( cl->pers.connected != CON_CONNECTED ) {
 				continue;
 			}
-			//JAC: Invalid clientNum was being used
 			if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 				continue;
 			}
@@ -444,7 +443,6 @@ void G_AddRandomBot( int team ) {
 			if ( cl->pers.connected != CON_CONNECTED ) {
 				continue;
 			}
-			//JAC: Invalid clientNum was being used
 			if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 				continue;
 			}
@@ -494,12 +492,9 @@ int G_RemoveRandomBot( int team ) {
 		if ( cl->pers.connected != CON_CONNECTED ) {
 			continue;
 		}
-		//JAC: Invalid clientNum was being used
 		if ( !(g_entities[i].r.svFlags & SVF_BOT) )
 			continue;
 
-		//JAC: this entity is actually following another entity so the ps data is for a different entity.
-		//		Bots never spectate like this so, skip this player.
 		if ( cl->sess.sessionTeam == TEAM_SPECTATOR && cl->sess.spectatorState == SPECTATOR_FOLLOW )
 			continue;
 
@@ -883,7 +878,6 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	if ( !*s )	s = "none";
 	Info_SetValueForKey( userinfo, key, s );
 
-	//Raz: Added
 	key = "forcepowers";
 	s = Info_ValueForKey( botinfo, key );
 	if ( !*s )	s = DEFAULT_FORCEPOWERS;

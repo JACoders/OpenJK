@@ -244,7 +244,6 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 
     if (cgs.gametype >= GT_TEAM || com_buildScript.integer)
 	{ //siege only
-		//Raz: Fixed potential buffer overrun of bg_customSiegeSoundNames
 		for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -1015,7 +1014,6 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	int			clientNum;
 	int			i;
 	char		teamname[MAX_QPATH];
-	//Raz: Show jan for unknown female skins
 	char		*fallbackModel = DEFAULT_MODEL;
 	
 	if ( ci->gender == GENDER_FEMALE )
@@ -1575,7 +1573,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	// bot skill
 	v = Info_ValueForKey( configstring, "skill" );
-	//Raz: Players now have -1 skill so you can determine the bots from the scoreboard code
+	// players have -1 skill so you can determine the bots from the scoreboard code
 	if ( v && v[0] )
 		newInfo.botSkill = atoi( v );
 	else
@@ -1603,7 +1601,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 		trap->Cvar_Set("ui_team", v);
 	}
 
-	//Raz: Gender hints
+	// Gender hints
 	if ( (v = Info_ValueForKey( configstring, "ds" )) )
 	{
 		if ( *v == 'm' )

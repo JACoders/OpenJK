@@ -197,7 +197,7 @@ void G2_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t renderSkin)
 	for ( j = 0 ; j < skin->numSurfaces ; j++ )
 	{
 		// the names have both been lowercased
-		//Raz: why is this using the shader name and not the surface name?
+		//FIXME: why is this using the shader name and not the surface name?
 		if ( !strcmp( ((shader_t *)skin->surfaces[j]->shader)->name, "*off") ) {
 			G2_SetSurfaceOnOff(ghlInfo, ghlInfo->mSlist, skin->surfaces[j]->name, G2SURFACEFLAG_OFF);
 		}

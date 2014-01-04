@@ -2711,7 +2711,6 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	assert(boneCache.mod);
 	boltInfo_v &boltList=ghoul2.mBltlist;
 
-	//Raz: This was causing a client crash when rendering a model with no valid g2 bolts, such as Ragnos =]
 	if ( boltList.size() < 1 ) {
 		retMatrix=identityMatrix;
 		return;

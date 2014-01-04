@@ -326,9 +326,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		BotAILoadMap( restart );
 		G_InitBots( );
 	} else {
-		//JAC: We still want to load arenas even if bot_enable is off so that
-		//		g_autoMapCycle can work let alone any other code that relies on
-		//		using arena information that normally wouldn't be loaded
 		G_LoadArenas();
 	}
 
@@ -1082,16 +1079,8 @@ void CalculateRanks( void ) {
 		}
 	}
 
-	//Raz: Fix warmup
-#if 0
-	//if (!g_warmup.integer)
-	if (1)
-#else
 	if ( !g_warmup.integer || level.gametype == GT_SIEGE )
-#endif
-	{
 		level.warmupTime = 0;
-	}
 
 	/*
 	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && level.gametype == GT_DUEL && !level.warmupTime)
@@ -2625,13 +2614,6 @@ void CheckVote( void ) {
 		}
 
 		// same behavior as a timeout
-		//Raz: Fix uneven vote bug
-		/*	"that reminds me another bug that enty discovered recently,
-			if you have odd amount of players, lets say 3 for example,
-			and vote is called, then only 1 vote of No will fail the vote,
-			i.e. if player A calls vote, player B votes No, then vote fails,
-			even if player C would vote Yes and it should have been 2:1 and passed" */
-	//	else if ( level.voteNo >= level.numVotingClients/2 )
 		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 

@@ -1260,8 +1260,6 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 }
 #endif
 
-//Raz: Patched version of Com_sprintf
-//Ensiform: But this is better
 int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;

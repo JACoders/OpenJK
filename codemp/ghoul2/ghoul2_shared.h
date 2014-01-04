@@ -326,7 +326,7 @@ public:
 	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
-//Raz: externing this out of headers for re access :/
+//externing this out of headers for re access :/
 IGhoul2InfoArray &_TheGhoul2InfoArray();
 
 extern const CGhoul2Info NullG2;

@@ -558,7 +558,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 			maxClients -= (team1MaxCl+team2MaxCl);
 		}
-		//Raz: Fix spectators not being shown on team scoreboard by preserving maxClients
 		maxClients = realMaxClients;
 		n1 = CG_TeamScoreboard( y, TEAM_SPECTATOR, fade, maxClients, lineHeight, qfalse );
 		y += (n1 * lineHeight) + BIGCHAR_HEIGHT;

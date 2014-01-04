@@ -45,7 +45,6 @@
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 #define VALIDENT( e )		( ( e != NULL ) && ( (e)->inuse ) )
 
-//JAC: Added
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
 #define STRING( a ) #a
 #define XSTRING( a ) STRING( a )
@@ -63,7 +62,7 @@
 */
 
 #ifndef FINAL_BUILD
-	//RAZFIXME: may want to enable timing and leak checking again. requires G2API changes.
+	// may want to enable timing and leak checking again. requires G2API changes.
 //	#define G2_PERFORMANCE_ANALYSIS
 //	#define _FULL_G2_LEAK_CHECKING
 //	extern int g_Ghoul2Allocations;
@@ -163,8 +162,6 @@ typedef int		clipHandle_t;
 #define NULL_FILE			((fileHandle_t) 0)
 #define NULL_CLIP			((clipHandle_t) 0)
 
-//Raz: can't think of a better place to put this atm,
-//		should probably be in the platform specific definitions
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
 	#include <stdint.h>
@@ -238,7 +235,7 @@ typedef int		clipHandle_t;
 
 #define NET_ADDRSTRMAXLEN 48 // maximum length of an IPv6 address string including trailing '\0'
 
-//Raz: moved these from ui_local.h so we can access them everywhere
+// moved these from ui_local.h so we can access them everywhere
 #define MAX_ADDRESSLENGTH		256//64
 #define MAX_HOSTNAMELENGTH		256//22
 #define MAX_MAPNAMELENGTH		256//16
@@ -849,7 +846,6 @@ void ByteToDir( int b, vec3_t dir );
 #define minimum( x, y ) ((x) < (y) ? (x) : (y))
 #define maximum( x, y ) ((x) > (y) ? (x) : (y))
 
-//JAC: Moved to q_math.c
 #define DEG2RAD( deg ) ( ((deg)*M_PI) / 180.0f )
 #define RAD2DEG( rad ) ( ((rad)*180.0f) / M_PI )
 

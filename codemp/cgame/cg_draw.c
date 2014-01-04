@@ -538,9 +538,6 @@ void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean fo
 	qhandle_t		handle;
 
 	if ( !force2D && cg_draw3DIcons.integer ) {
-
-		//Raz: need to adjust the coords only for 3d models
-		//		2d icons use virtual screen coords
 		x *= cgs.screenXScale;
 		y *= cgs.screenYScale;
 		w *= cgs.screenXScale;
@@ -3908,7 +3905,6 @@ static void CG_DrawPowerupIcons(int y)
 	int xOffset = 0;
 	gitem_t	*item;
 
-	//Raz: was missing this
 	trap->R_SetColor( NULL );
 
 	if (!cg.snap)
@@ -3918,7 +3914,6 @@ static void CG_DrawPowerupIcons(int y)
 
 	y += 16;
 
-	//Raz: fixed potential buffer overrun of cg.snap->ps.powerups
 	for (j = 0; j < PW_NUM_POWERUPS; j++)
 	{
 		if (cg.snap->ps.powerups[j] > cg.time)
@@ -5186,7 +5181,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 			w, h, 0, 0, 1, 1, cgs.media.forceCoronaShader );
 	}
 
-	//Raz: Was missing this
 	trap->R_SetColor( NULL );
 }
 
@@ -6168,7 +6162,6 @@ static void CG_ScanForCrosshairEntity( void ) {
 		}
 	}
 
-	//Raz: Put this back in so fading works again
 	if ( trace.entityNum >= MAX_CLIENTS ) {
 		return;
 	}
@@ -6451,7 +6444,7 @@ static void CG_DrawVote(void) {
 		sParm = cgs.voteString+5;
 	}
 	else
-	{//Raz: Added an else case for custom votes like ampoll, cointoss, etc
+	{// custom votes like ampoll, cointoss, etc
 		sParm = cgs.voteString;
 	}
 
@@ -7873,9 +7866,7 @@ static void CG_Draw2D( void ) {
 		cgYsalFadeVal = 0;
 	}
 
-	if ( cg_draw2D.integer == 0 ) {
-		//Raz: If you fall to your death, then turn cg_draw2D off, your camera will not update
-		//		Clear the fall vector to avoid that.
+	if ( !cg_draw2D.integer ) {
 		gCGHasFallVector = qfalse;
 		VectorClear( gCGFallVector );
 		return;

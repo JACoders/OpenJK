@@ -4480,12 +4480,10 @@ static void PM_CheckDuck (void)
 		}
 		else if (pm->ps->pm_flags & PMF_ROLLING)
 		{
-			// Xycaleth's fix for crochjumping through roof
-            if ( PM_CanStand() )
-            {
-                pm->maxs[2] = pm->ps->standheight;
-                pm->ps->pm_flags &= ~PMF_ROLLING;
-            }
+			if ( PM_CanStand() ) {
+				pm->maxs[2] = pm->ps->standheight;
+				pm->ps->pm_flags &= ~PMF_ROLLING;
+			}
 		}
 		else if (pm->cmd.upmove < 0 ||
 			pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
@@ -4498,12 +4496,10 @@ static void PM_CheckDuck (void)
 		{	// stand up if possible 
 			if (pm->ps->pm_flags & PMF_DUCKED)
 			{
-				// Xycaleth's fix for crochjumping through roof
-                if ( PM_CanStand() )
-	            {
-		            pm->maxs[2] = pm->ps->standheight;
-		            pm->ps->pm_flags &= ~PMF_DUCKED;
-	            }
+				if ( PM_CanStand() ) {
+					pm->maxs[2] = pm->ps->standheight;
+					pm->ps->pm_flags &= ~PMF_DUCKED;
+				}
 			}
 		}
 	}
@@ -9124,7 +9120,6 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		forcedAngles[ROLL] = cent_lerpAngles[ROLL];
 		AnglesToAxis( forcedAngles, legs );
 		VectorCopy(forcedAngles, legsAngles);
-		//JAC: turAngles should be updated as well.
 		VectorCopy(legsAngles, turAngles);
 
 		if (cent->number < MAX_CLIENTS)
@@ -10172,7 +10167,6 @@ void PmoveSingle (pmove_t *pmove) {
 
 	pm = pmove;
 
-	//JAC: This fixes the bug where you can infinitely charge a shot if you're holding BUTTON_USE_HOLDABLE
 	if (pm->cmd.buttons & BUTTON_ATTACK && pm->cmd.buttons & BUTTON_USE_HOLDABLE)
 	{
 		pm->cmd.buttons &= ~BUTTON_ATTACK;

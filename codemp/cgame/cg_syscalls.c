@@ -199,7 +199,7 @@ qhandle_t trap_R_RegisterFont( const char *fontName ) {
 	return Q_syscall( CG_R_REGISTERFONT, fontName);
 }
 int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
-	//Raz: HACK! RE_Font_StrLenPixels only works correctly with 1.0f scale
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
 	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
 	return width * scale;
 }
