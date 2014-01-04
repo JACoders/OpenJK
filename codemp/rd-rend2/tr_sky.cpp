@@ -269,7 +269,7 @@ void RB_ClipSkyPolygons( shaderCommands_t *input )
 		for (j = 0 ; j < 3 ; j++) 
 		{
 			VectorSubtract( input->xyz[input->indexes[i+j]],
-							backEnd.viewParms.or.origin, 
+							backEnd.viewParms.ori.origin, 
 							p[j] );
 		}
 		ClipSkyPolygon( 3, p[0], 0 );
@@ -562,7 +562,7 @@ static void FillCloudySkySide( const int mins[2], const int maxs[2], qboolean ad
 	{
 		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
-			VectorAdd( s_skyPoints[t][s], backEnd.viewParms.or.origin, tess.xyz[tess.numVertexes] );
+			VectorAdd( s_skyPoints[t][s], backEnd.viewParms.ori.origin, tess.xyz[tess.numVertexes] );
 			tess.texCoords[tess.numVertexes][0][0] = s_skyTexCoords[t][s][0];
 			tess.texCoords[tess.numVertexes][0][1] = s_skyTexCoords[t][s][1];
 
@@ -802,12 +802,12 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 	}
 
 	//qglLoadMatrixf( backEnd.viewParms.world.modelMatrix );
-	//qglTranslatef (backEnd.viewParms.or.origin[0], backEnd.viewParms.or.origin[1], backEnd.viewParms.or.origin[2]);
+	//qglTranslatef (backEnd.viewParms.ori.origin[0], backEnd.viewParms.ori.origin[1], backEnd.viewParms.ori.origin[2]);
 	{
 		// FIXME: this could be a lot cleaner
 		matrix_t translation, modelview;
 
-		Matrix16Translation( backEnd.viewParms.or.origin, translation );
+		Matrix16Translation( backEnd.viewParms.ori.origin, translation );
 		Matrix16Multiply( backEnd.viewParms.world.modelMatrix, translation, modelview );
 		GL_SetModelviewMatrix( modelview );
 	}
@@ -871,14 +871,14 @@ void RB_StageIteratorSky( void ) {
 		matrix_t oldmodelview;
 		
 		GL_State( 0 );
-		//qglTranslatef (backEnd.viewParms.or.origin[0], backEnd.viewParms.or.origin[1], backEnd.viewParms.or.origin[2]);
+		//qglTranslatef (backEnd.viewParms.ori.origin[0], backEnd.viewParms.ori.origin[1], backEnd.viewParms.ori.origin[2]);
 
 		{
 			// FIXME: this could be a lot cleaner
 			matrix_t trans, product;
 
 			Matrix16Copy( glState.modelview, oldmodelview );
-			Matrix16Translation( backEnd.viewParms.or.origin, trans );
+			Matrix16Translation( backEnd.viewParms.ori.origin, trans );
 			Matrix16Multiply( glState.modelview, trans, product );
 			GL_SetModelviewMatrix( product );
 
