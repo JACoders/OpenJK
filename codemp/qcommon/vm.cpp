@@ -168,9 +168,9 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 
 	// find the module api
 	FS_FindPureDLL( vm->name );
-	Com_Printf( "VM_Create: %s"ARCH_STRING DLL_EXT, vm->name );
 	vm->dllHandle = Sys_LoadGameDll( vm->name, &vm->GetModuleAPI );
 
+	Com_Printf( "VM_Create: %s"ARCH_STRING DLL_EXT, vm->name );
 	if ( vm->dllHandle ) {
 		if ( com_developer->integer )	Com_Printf( " succeeded [0x%X+0x%X]\n", vm->dllHandle, (intptr_t)vm->GetModuleAPI - (intptr_t)vm->dllHandle );
 		else							Com_Printf( " succeeded\n" );
