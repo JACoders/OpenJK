@@ -1383,10 +1383,15 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 		}
 		else if ( *in == '@' )
 		{// don't allow too many consecutive at signs
-			if ( ats > 2 )
+			if ( ++ats > 2 ) {
+				outpos -= 2;
+				ats = 0;
 				continue;
-
-			ats++;
+			}
+		}
+		else if ( *in < 0x20 ) {
+			outpos--;
+			continue;
 		}
 		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
 		{
