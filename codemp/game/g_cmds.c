@@ -157,7 +157,7 @@ Returns a player number for either a number or name string
 Returns -1 if invalid
 ==================
 */
-int ClientNumberFromString( gentity_t *to, const char *s ) {
+int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecting ) {
 	gclient_t	*cl;
 	int			idnum;
 	char		cleanInput[MAX_NETNAME];
@@ -168,7 +168,7 @@ int ClientNumberFromString( gentity_t *to, const char *s ) {
 		if ( idnum >= 0 && idnum < level.maxclients )
 		{
 			cl = &level.clients[idnum];
-			if ( cl->pers.connected == CON_CONNECTED )
+			if ( allowconnecting ? ( cl->pers.connected >= CON_CONNECTING ) : ( cl->pers.connected == CON_CONNECTED ) )
 				return idnum;
 		}
 	}
@@ -178,7 +178,7 @@ int ClientNumberFromString( gentity_t *to, const char *s ) {
 
 	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
 	{// check for a name match
-		if ( cl->pers.connected != CON_CONNECTED )
+		if ( allowconnecting ? ( cl->pers.connected < CON_CONNECTING ) : ( cl->pers.connected != CON_CONNECTED ) )
 			continue;
 
 		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
@@ -335,24 +335,26 @@ void Cmd_GiveOther_f( gentity_t *ent )
 	char		otherindex[MAX_TOKEN_CHARS];
 	gentity_t	*otherEnt = NULL;
 
-	trap->Argv( 1, otherindex, sizeof( otherindex ) );
-	if ( !otherindex[0] )
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"giveother requires that the second argument be a client index number.\n\"" );
+	if ( trap->Argc () < 3 ) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: giveother <player id> <givestring>\n\"" );
 		return;
 	}
 
-	i = atoi( otherindex );
-	if ( i < 0 || i >= MAX_CLIENTS )
-	{
-		trap->SendServerCommand( ent-g_entities, va( "print \"%i is not a client index.\n\"", i ) );
+	trap->Argv( 1, otherindex, sizeof( otherindex ) );
+	i = ClientNumberFromString( ent, otherindex, qfalse );
+	if ( i == -1 ) {
 		return;
 	}
 
 	otherEnt = &g_entities[i];
-	if ( !otherEnt->inuse || !otherEnt->client )
+	if ( !otherEnt->inuse || !otherEnt->client ) {
+		return;
+	}
+
+	if ( (otherEnt->health <= 0 || otherEnt->client->tempSpectate >= level.time || otherEnt->client->sess.sessionTeam == TEAM_SPECTATOR) )
 	{
-		trap->SendServerCommand( ent-g_entities, va( "print \"%i is not an active client.\n\"", i ) );
+		// Intentionally displaying for the command user
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
 		return;
 	}
 
@@ -481,13 +483,7 @@ void Cmd_TeamTask_f( gentity_t *ent ) {
 }
 #endif
 
-
-/*
-=================
-Cmd_Kill_f
-=================
-*/
-void Cmd_Kill_f( gentity_t *ent ) {
+void G_Kill( gentity_t *ent ) {
 	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) &&
 		level.numPlayingClients > 1 && !level.warmupTime)
 	{
@@ -503,49 +499,45 @@ void Cmd_Kill_f( gentity_t *ent ) {
 	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
 }
 
-/* fixme this is so bad... killother's code too */
-static int G_ClientNumFromNetname(char *name)
-{
-	int i = 0;
-	gentity_t *ent;
-
-	while (i < MAX_CLIENTS)
-	{
-		ent = &g_entities[i];
-
-		if (ent->inuse && ent->client &&
-			!Q_stricmp(ent->client->pers.netname, name))
-		{
-			return ent->s.number;
-		}
-		i++;
-	}
-
-	return -1;
+/*
+=================
+Cmd_Kill_f
+=================
+*/
+void Cmd_Kill_f( gentity_t *ent ) {
+	G_Kill( ent );
 }
 
-void Cmd_KillOther_f( gentity_t *ent ) {
-	if ( trap->Argc() > 1 )
-	{
-		char sArg[MAX_STRING_CHARS] = {0};
-		int entNum = 0;
+void Cmd_KillOther_f( gentity_t *ent )
+{
+	int			i;
+	char		otherindex[MAX_TOKEN_CHARS];
+	gentity_t	*otherEnt = NULL;
 
-		trap->Argv( 1, sArg, sizeof( sArg ) );
-
-		entNum = G_ClientNumFromNetname( sArg );
-
-		if ( entNum >= 0 && entNum < MAX_GENTITIES )
-		{
-			gentity_t *kEnt = &g_entities[entNum];
-
-			if ( kEnt->inuse && kEnt->client )
-			{
-				kEnt->flags &= ~FL_GODMODE;
-				kEnt->client->ps.stats[STAT_HEALTH] = kEnt->health = -999;
-				player_die( kEnt, kEnt, kEnt, 100000, MOD_SUICIDE );
-			}
-		}
+	if ( trap->Argc () < 2 ) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: killother <player id>\n\"" );
+		return;
 	}
+
+	trap->Argv( 1, otherindex, sizeof( otherindex ) );
+	i = ClientNumberFromString( ent, otherindex, qfalse );
+	if ( i == -1 ) {
+		return;
+	}
+
+	otherEnt = &g_entities[i];
+	if ( !otherEnt->inuse || !otherEnt->client ) {
+		return;
+	}
+
+	if ( (otherEnt->health <= 0 || otherEnt->client->tempSpectate >= level.time || otherEnt->client->sess.sessionTeam == TEAM_SPECTATOR) )
+	{
+		// Intentionally displaying for the command user
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		return;
+	}
+
+	G_Kill( otherEnt );
 }
 
 gentity_t *G_GetDuelWinner(gclient_t *client)
@@ -1400,7 +1392,7 @@ void Cmd_Follow_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	i = ClientNumberFromString( ent, arg );
+	i = ClientNumberFromString( ent, arg, qfalse );
 	if ( i == -1 ) {
 		return;
 	}
@@ -1724,7 +1716,7 @@ static void Cmd_Tell_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	targetNum = ClientNumberFromString( ent, arg );
+	targetNum = ClientNumberFromString( ent, arg, qfalse );
 	if ( targetNum == -1 ) {
 		return;
 	}
@@ -1842,7 +1834,7 @@ void Cmd_GameCommand_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	targetNum = ClientNumberFromString( ent, arg );
+	targetNum = ClientNumberFromString( ent, arg, qfalse );
 	if ( targetNum == -1 )
 		return;
 
@@ -1993,7 +1985,7 @@ qboolean G_VoteGametype( gentity_t *ent, int numArgs, const char *arg1, const ch
 }
 
 qboolean G_VoteKick( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
-	int clientid = ClientNumberFromString( ent, arg2 );
+	int clientid = ClientNumberFromString( ent, arg2, qtrue );
 	gentity_t *target = NULL;
 
 	if ( clientid == -1 )
@@ -2346,7 +2338,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 }
 
 qboolean G_TeamVoteLeader( gentity_t *ent, int cs_offset, team_t team, int numArgs, const char *arg1, const char *arg2 ) {
-	int clientid = numArgs == 2 ? ent->s.number : ClientNumberFromString( ent, arg2 );
+	int clientid = numArgs == 2 ? ent->s.number : ClientNumberFromString( ent, arg2, qfalse );
 	gentity_t *target = NULL;
 
 	if ( clientid == -1 )
@@ -3404,10 +3396,10 @@ command_t commands[] = {
 	{ "forcechanged",		Cmd_ForceChanged_f,			0 },
 	{ "gc",					Cmd_GameCommand_f,			CMD_NOINTERMISSION },
 	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
