@@ -1883,34 +1883,6 @@ static const char *gameNames[] = {
 
 /*
 ==================
-G_ClientNumberFromName
-
-Finds the client number of the client with the given name
-==================
-*/
-int G_ClientNumberFromName ( const char* name )
-{
-	char		cleanInput[MAX_NETNAME];
-	int			i;
-	gclient_t*	cl;
-
-	Q_strncpyz( cleanInput, name, sizeof( cleanInput ) );
-	Q_StripColor( cleanInput );
-	for ( i=0,cl=level.clients; i < level.maxclients; i++,cl++ )
-	{// check for a name match
-		if ( cl->pers.connected != CON_CONNECTED )
-			continue;
-		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/*
-==================
 Cmd_CallVote_f
 ==================
 */
@@ -1927,7 +1899,7 @@ qboolean G_VoteCapturelimit( gentity_t *ent, int numArgs, const char *arg1, cons
 qboolean G_VoteClientkick( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	int n = atoi ( arg2 );
 
-	if ( n < 0 || n >= MAX_CLIENTS ) {
+	if ( n < 0 || n >= level.maxclients ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"invalid client number %d.\n\"", n ) );
 		return qfalse;
 	}
@@ -1936,7 +1908,7 @@ qboolean G_VoteClientkick( gentity_t *ent, int numArgs, const char *arg1, const 
 		trap->SendServerCommand( ent-g_entities, va( "print \"there is no client with the client number %d.\n\"", n ) );
 		return qfalse;
 	}
-		
+
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, arg2 );
 	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, g_entities[n].client->pers.netname );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
