@@ -1389,7 +1389,10 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 				continue;
 			}
 		}
-		else if ( (unsigned)*in < 0x20 ) {
+		else if ( (byte)*in < 0x20
+				|| (byte)*in == 0x81 || (byte)*in == 0x8D || (byte)*in == 0x8F || (byte)*in == 0x90 || (byte)*in == 0x9D
+				|| (byte)*in == 0xA0 || (byte)*in == 0xAD )
+		{
 			continue;
 		}
 		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
