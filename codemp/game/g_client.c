@@ -1389,8 +1389,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 				continue;
 			}
 		}
-		else if ( *in < 0x20 ) {
-			outpos--;
+		else if ( (unsigned)*in < 0x20 ) {
 			continue;
 		}
 		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
