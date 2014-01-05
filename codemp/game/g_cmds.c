@@ -971,6 +971,7 @@ void StopFollowing( gentity_t *ent ) {
 	ent->client->ps.zoomMode = 0;
 	ent->client->ps.zoomLocked = 0;
 	ent->client->ps.zoomLockTime = 0;
+	ent->client->ps.saberMove = LS_NONE;
 	ent->client->ps.legsAnim = 0;
 	ent->client->ps.legsTimer = 0;
 	ent->client->ps.torsoAnim = 0;
