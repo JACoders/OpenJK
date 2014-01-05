@@ -388,7 +388,7 @@ ClientForString
 gclient_t	*ClientForString( const char *s ) {
 	gclient_t	*cl;
 	int			idnum;
-	char		cleanName[MAX_STRING_CHARS];
+	char		cleanInput[MAX_STRING_CHARS];
 
 	// numeric values could be slot numbers
 	if ( StringIsInteger( s ) ) {
@@ -401,15 +401,15 @@ gclient_t	*ClientForString( const char *s ) {
 		}
 	}
 
+	Q_strncpyz( cleanInput, s, sizeof(cleanInput) );
+	Q_StripColor( cleanInput );
+
 	// check for a name match
 	for ( idnum=0,cl=level.clients ; idnum < level.maxclients ; idnum++,cl++ ) {
 		if ( cl->pers.connected != CON_CONNECTED ) {
 			continue;
 		}
-		Q_strncpyz(cleanName, cl->pers.netname, sizeof(cleanName));
-		Q_StripColor(cleanName);
-		//Q_CleanStr(cleanName);
-		if ( !Q_stricmp( cleanName, s ) ) {
+		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) ) {
 			return cl;
 		}
 	}
