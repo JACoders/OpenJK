@@ -628,10 +628,6 @@ static void PM_SetVehicleAngles( vec3_t normal )
 	}
 }
 
-#ifdef _CGAME
-extern vmCvar_t cg_paused;
-#endif
-
 void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOverride, float *mYawOverride )
 {
 	if ( pVeh && pVeh->m_pVehicleInfo )
@@ -1074,9 +1070,7 @@ static void PM_Friction( void ) {
 	}
 	newspeed /= speed;
 
-	vel[0] = vel[0] * newspeed;
-	vel[1] = vel[1] * newspeed;
-	vel[2] = vel[2] * newspeed;
+	VectorScale( vel, newspeed, vel );
 }
 
 
@@ -4486,12 +4480,10 @@ static void PM_CheckDuck (void)
 		}
 		else if (pm->ps->pm_flags & PMF_ROLLING)
 		{
-			// Xycaleth's fix for crochjumping through roof
-            if ( PM_CanStand() )
-            {
-                pm->maxs[2] = pm->ps->standheight;
-                pm->ps->pm_flags &= ~PMF_ROLLING;
-            }
+			if ( PM_CanStand() ) {
+				pm->maxs[2] = pm->ps->standheight;
+				pm->ps->pm_flags &= ~PMF_ROLLING;
+			}
 		}
 		else if (pm->cmd.upmove < 0 ||
 			pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
@@ -4504,12 +4496,10 @@ static void PM_CheckDuck (void)
 		{	// stand up if possible 
 			if (pm->ps->pm_flags & PMF_DUCKED)
 			{
-				// Xycaleth's fix for crochjumping through roof
-                if ( PM_CanStand() )
-	            {
-		            pm->maxs[2] = pm->ps->standheight;
-		            pm->ps->pm_flags &= ~PMF_DUCKED;
-	            }
+				if ( PM_CanStand() ) {
+					pm->maxs[2] = pm->ps->standheight;
+					pm->ps->pm_flags &= ~PMF_DUCKED;
+				}
 			}
 		}
 	}
@@ -8409,20 +8399,13 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		ps->speed *= 0.5f;
 	}
 
-	if (ps->fd.forceGripCripple)
-	{
-		if (ps->fd.forcePowersActive & (1 << FP_RAGE))
-		{
+	if ( ps->fd.forceGripCripple && pm->ps->persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
+		if ( ps->fd.forcePowersActive & (1 << FP_RAGE) )
 			ps->speed *= 0.9f;
-		}
-		else if (ps->fd.forcePowersActive & (1 << FP_SPEED))
-		{ //force speed will help us escape
+		else if ( ps->fd.forcePowersActive & (1 << FP_SPEED) )
 			ps->speed *= 0.8f;
-		}
 		else
-		{
 			ps->speed *= 0.2f;
-		}
 	}
 
 	if ( BG_SaberInAttack( ps->saberMove ) && cmd->forwardmove < 0 )
@@ -9137,7 +9120,6 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		forcedAngles[ROLL] = cent_lerpAngles[ROLL];
 		AnglesToAxis( forcedAngles, legs );
 		VectorCopy(forcedAngles, legsAngles);
-		//JAC: turAngles should be updated as well.
 		VectorCopy(legsAngles, turAngles);
 
 		if (cent->number < MAX_CLIENTS)
@@ -10185,7 +10167,6 @@ void PmoveSingle (pmove_t *pmove) {
 
 	pm = pmove;
 
-	//JAC: This fixes the bug where you can infinitely charge a shot if you're holding BUTTON_USE_HOLDABLE
 	if (pm->cmd.buttons & BUTTON_ATTACK && pm->cmd.buttons & BUTTON_USE_HOLDABLE)
 	{
 		pm->cmd.buttons &= ~BUTTON_ATTACK;
@@ -10562,9 +10543,9 @@ void PmoveSingle (pmove_t *pmove) {
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
 #ifdef _GAME
-		Com_Printf( "^1 SERVER N%i msec %d\n", pm->ps->clientNum, pml.msec );
+		Com_Printf( S_C0LOR_RED" SERVER N%i msec %d\n", pm->ps->clientNum, pml.msec );
 #else
-		Com_Printf( "^2 CLIENT N%i msec %d\n", pm->ps->clientNum, pml.msec );
+		Com_Printf( S_COLOR_GREEN" CLIENT N%i msec %d\n", pm->ps->clientNum, pml.msec );
 #endif
 	}
 	*/
@@ -10675,7 +10656,6 @@ void PmoveSingle (pmove_t *pmove) {
 	/*
 	if (pm->ps->fd.saberAnimLevel == SS_STAFF &&
 		(pm->cmd.buttons & BUTTON_ALT_ATTACK) &&
-
 		pm->cmd.upmove > 0)
 	{ //this is how you do kick-for-condition
 		pm->cmd.upmove = 0;

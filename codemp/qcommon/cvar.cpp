@@ -507,13 +507,6 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, int defaultFlags, qb
 		return Cvar_Get( var_name, value, defaultFlags );
 	}
 
-	// Dont display the update when its internal
-	// Ensiform: Don't display this "update" at all :\
-	//if ( !(var->flags & CVAR_INTERNAL) )
-	//{
-	//	Com_DPrintf( "Cvar_Set2: %s %s\n", var_name, value );
-	//}
-
 	if (!value ) {
 		value = var->resetString;
 	}

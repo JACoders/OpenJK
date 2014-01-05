@@ -292,7 +292,6 @@ int WeaponAttackAnim[WP_NUM_WEAPONS] =
 	BOTH_ATTACK3,//BOTH_ATTACK11,//WP_TRIP_MINE,
 	BOTH_ATTACK3,//BOTH_ATTACK12,//WP_DET_PACK,
 	#ifndef BASE_COMPAT
-		//JAC: Raven forgot the Concussion's firing animation
 		BOTH_ATTACK3,//WP_CONCUSSION,
 	#endif // BASE_COMPAT
 	BOTH_ATTACK2,//WP_BRYAR_OLD,
@@ -385,7 +384,7 @@ fpDisabled is actually only expected (needed) from the server, because the ui di
 force power selection anyway when force powers are disabled on the server.
 ================
 */
-qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled)
+qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled)
 {
 	char powerBuf[128];
 	char readBuf[128];
@@ -410,7 +409,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber
 		Q_strncpyz( powerBuf, powerOut, sizeof( powerBuf ) ); //copy it as the original
 
 	//first of all, print the max rank into the string as the rank
-	Q_strncpyz( powerOut, va( "%i-", maxRank ), 128 );
+	Q_strncpyz( powerOut, va( "%i-", maxRank ), powerOutSize );
 
 	while (i < sizeof( powerBuf ) && powerBuf[i] && powerBuf[i] != '-')
 	{
@@ -647,7 +646,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber
 	//We finally have all the force powers legalized and stored locally.
 	//Put them all into the string and return the result. We already have
 	//the rank there, so print the side and the powers now.
-	Q_strcat(powerOut, 128, va("%i-", final_Side));
+	Q_strcat(powerOut, powerOutSize, va("%i-", final_Side));
 
 	i = strlen(powerOut);
 	c = 0;
@@ -2659,7 +2658,7 @@ qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName)
 
 qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team, float *colors )
 {
-	if (!Q_stricmpn(modelName, "jedi_",5))
+	if (strlen (modelName) > 5 && Q_stricmpn (modelName, "jedi_", 5) == 0)
 	{ //argh, it's a custom player skin!
 		if (team == TEAM_RED && colors)
 		{

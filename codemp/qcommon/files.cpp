@@ -1516,8 +1516,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 	return -1;
 }
 
-// Ensiform: This is a bit of a hack but it is used for other 
-// OS'/arch to still be acceptable with pure servers.
+// This is a bit of a hack but it is used for other OS'/arch to still be acceptable with pure servers.
 // Intentionally looking for x86.dll because this is all that exists in pk3s.
 qboolean FS_FindPureDLL(const char *name)
 {

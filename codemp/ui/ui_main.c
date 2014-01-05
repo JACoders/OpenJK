@@ -862,12 +862,9 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 				trap->Key_SetCatcher( KEYCATCH_UI );
 				//	trap->S_StartLocalSound( trap_S_RegisterSound("sound/misc/menu_background.wav", qfalse) , CHAN_LOCAL_SOUND );
 				//	trap->S_StartBackgroundTrack("sound/misc/menu_background.wav", NULL);
-				if (uiInfo.inGameLoad) 
-				{
-					//Raz: Not loading menus was causing issues when connecting to invalid hostnames.
+				if (uiInfo.inGameLoad)
 					UI_LoadNonIngame();
-				}
-
+\
 				Menus_CloseAll();
 				Menus_ActivateByName("main");
 				trap->Cvar_VariableStringBuffer("com_errorMessage", buf, sizeof(buf));
@@ -893,10 +890,8 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 		case UIMENU_POSTGAME:
 			//trap->Cvar_Set( "sv_killserver", "1" );
 			trap->Key_SetCatcher( KEYCATCH_UI );
-			if (uiInfo.inGameLoad) {
-				//Raz: Not loading menus was causing issues when connecting to invalid hostnames.
+			if (uiInfo.inGameLoad)
 				UI_LoadNonIngame();
-			}
 			Menus_CloseAll();
 			Menus_ActivateByName("endofgame");
 			return;
@@ -2814,7 +2809,6 @@ static void UI_DrawCrosshair(rectDef_t *rect, float scale, vec4_t color) {
 		uiInfo.currentCrosshair = 0;
 	}
 
-	//Raz: Don't stretch crosshairs
 	size = min( rect->w, rect->h );
 	UI_DrawHandlePic( rect->x, rect->y, size, size, uiInfo.uiDC.Assets.crosshairShader[uiInfo.currentCrosshair]);
  	trap->R_SetColor( NULL );
@@ -4682,12 +4676,7 @@ static void UI_Update(const char *name) {
 		return;
 	}
 
-	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
-	if (Q_stricmp(name, "ui_SetName") == 0)
-		trap->Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
-		*/
-	if ( !Q_stricmp( name, "ui_SetName" ) )
-	{
+	if ( !Q_stricmp( name, "ui_SetName" ) ) {
 		char buf[MAX_NETNAME] = {0};
 		Q_strncpyz( buf, UI_Cvar_VariableString( "ui_Name" ), sizeof( buf ) );
 		trap->Cvar_Set( "name", buf );
@@ -4705,12 +4694,7 @@ static void UI_Update(const char *name) {
 			trap->Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
 		}
 	}
-	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
-	else if (Q_stricmp(name, "ui_GetName") == 0) 
-		trap->Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));
-		*/
-	else if ( !Q_stricmp( name, "ui_GetName" ) )
-	{
+	else if ( !Q_stricmp( name, "ui_GetName" ) ) {
 		char buf[MAX_NETNAME] = {0};
 		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );
 		trap->Cvar_Set( "ui_Name", buf );
@@ -9734,6 +9718,23 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	}	
 }
 
+static qhandle_t UI_RegisterShaderNoMip ( const char *name )
+{
+	if (name[0] == '*')
+	{
+		char buf[1024];
+
+		trap->Cvar_VariableStringBuffer (name + 1, buf, sizeof (buf));
+
+		if ( buf[0] )
+		{
+			return trap->R_RegisterShaderNoMip (buf);
+		}
+	}
+
+	return trap->R_RegisterShaderNoMip (name);
+}
+
 /*
 =================
 UI_Init
@@ -9777,7 +9778,7 @@ void UI_Init( qboolean inGameLoad ) {
 	}
 
 	//UI_Load();
-	uiInfo.uiDC.registerShaderNoMip				= trap->R_RegisterShaderNoMip;
+	uiInfo.uiDC.registerShaderNoMip				= UI_RegisterShaderNoMip;
 	uiInfo.uiDC.setColor						= &UI_SetColor;
 	uiInfo.uiDC.drawHandlePic					= &UI_DrawHandlePic;
 	uiInfo.uiDC.drawStretchPic					= trap->R_DrawStretchPic;
@@ -9872,9 +9873,6 @@ void UI_Init( qboolean inGameLoad ) {
 	UI_LoadMenus("ui/jampingame.txt", qtrue);
 #endif
 	
-	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
-	trap->Cvar_Register(NULL, "ui_name", UI_Cvar_VariableString("name"), CVAR_INTERNAL );	//get this now, jic the menus change again trying to setName before getName
-	*/
 	{
 		char buf[MAX_NETNAME] = {0};
 		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );

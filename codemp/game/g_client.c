@@ -1383,10 +1383,17 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 		}
 		else if ( *in == '@' )
 		{// don't allow too many consecutive at signs
-			if ( ats > 2 )
+			if ( ++ats > 2 ) {
+				outpos -= 2;
+				ats = 0;
 				continue;
-
-			ats++;
+			}
+		}
+		else if ( (byte)*in < 0x20
+				|| (byte)*in == 0x81 || (byte)*in == 0x8D || (byte)*in == 0x8F || (byte)*in == 0x90 || (byte)*in == 0x9D
+				|| (byte)*in == 0xA0 || (byte)*in == 0xAD )
+		{
+			continue;
 		}
 		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
 		{
@@ -1640,7 +1647,6 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 
 					if ( level.gametype >= GT_TEAM && level.gametype != GT_SIEGE && !g_jediVmerc.integer )
 					{
-						//JAC: Also adjust customRGBA for team colors.
 						float colorOverride[3];
 
 						colorOverride[0] = colorOverride[1] = colorOverride[2] = 0.0f;
@@ -2158,7 +2164,6 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	Q_strncpyz( forcePowers, Info_ValueForKey( userinfo, "forcepowers" ), sizeof( forcePowers ) );
 
-	//JAC: update our customRGBA for team colors. 
 	if ( level.gametype >= GT_TEAM && level.gametype != GT_SIEGE && !g_jediVmerc.integer )
 	{
 		char skin[MAX_QPATH] = {0};
@@ -2243,8 +2248,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else
 		Q_strncpyz( className, "none", sizeof( className ) );
 
-	//Raz: only set the saber name on the first connect.
-	//		it will be read from userinfo on ClientSpawn and stored in client->pers.saber1/2
+	// only set the saber name on the first connect.
+	//	it will be read from userinfo on ClientSpawn and stored in client->pers.saber1/2
 	if ( !VALIDSTRING( client->pers.saber1 ) || !VALIDSTRING( client->pers.saber2 ) )
 	{
 		G_SetSaber( ent, 0, Info_ValueForKey( userinfo, "saber1" ), qfalse );
@@ -2292,7 +2297,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strncpyz( color1, Info_ValueForKey( userinfo, "color1" ), sizeof( color1 ) );
 	Q_strncpyz( color2, Info_ValueForKey( userinfo, "color2" ), sizeof( color2 ) );
 
-	//Raz: Gender hints
+	// gender hints
 	s = Info_ValueForKey( userinfo, "sex" );
 	if ( !Q_stricmp( s, "female" ) )
 		female = qtrue;
@@ -2494,7 +2499,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	Q_strncpyz( client->pers.guid, guid, sizeof( client->pers.guid ) );
 
 	client->pers.connected = CON_CONNECTING;
-	client->pers.connectTime = level.time; //JAC: Added
+	client->pers.connectTime = level.time;
 
 	// read or initialize the session data
 	if ( firstTime || level.newSession ) {
@@ -3275,7 +3280,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.customRGBA[3]=255;
 
-	//JAC: update our customRGBA for team colors. 
 	if ( level.gametype >= GT_TEAM && level.gametype != GT_SIEGE && !g_jediVmerc.integer )
 	{
 		char skin[MAX_QPATH] = {0}, model[MAX_QPATH] = {0};
@@ -3924,21 +3928,7 @@ void ClientDisconnect( int clientNum ) {
 	}
 	i = 0;
 
-	//JAC: Correctly leave vehicles
 	G_LeaveVehicle( ent, qtrue );
-	/*if (ent->client->ps.m_iVehicleNum)
-	{ //tell it I'm getting off
-		gentity_t *veh = &g_entities[ent->client->ps.m_iVehicleNum];
-
-		if (veh->inuse && veh->client && veh->m_pVehicle)
-		{
-			int pCon = ent->client->pers.connected;
-
-			ent->client->pers.connected = 0;
-			veh->m_pVehicle->m_pVehicleInfo->Eject(veh->m_pVehicle, (bgEntity_t *)ent, qtrue);
-			ent->client->pers.connected = pCon;
-		}
-	}*/
 
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {

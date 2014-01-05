@@ -2556,7 +2556,6 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 			return qtrue;
 		}
 
-		//Raz: Added
 		if ( key == A_MWHEELUP ) 
 		{
 			scrollPtr->startPos--;
@@ -3239,7 +3238,6 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 				return qtrue;
 			}
 
-			//Raz: Added
 			if ( key == A_MWHEELUP ) 
 			{
 				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
@@ -3472,9 +3470,7 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 	{
 		if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS) 
 		{
-			//Raz: Scroll on multi buttons!
 			if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3 || key == A_MWHEELDOWN || key == A_MWHEELUP) 
-//			if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3) 
 			{
 				int current = Item_Multi_FindCvarByValue(item);
 				int max = Item_Multi_CountSettings(item);
@@ -3696,7 +3692,6 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 			}
 		}
 
-		//Raz: Don't get stuck in overstrike/insert mode
 	//	if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE)  {
 		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE || (key == A_MOUSE1 && !Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) )) {
 			DC->setOverstrikeMode( qfalse );
@@ -4015,7 +4010,6 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down) {
 			}
 		}
 	}
-	//Raz: Removed leftover debug print
 	//DC->Print("slider handle key exit\n");
 	return qfalse;
 }
@@ -5820,7 +5814,6 @@ void Item_ListBox_Paint(itemDef_t *item) {
 			// draw scrollbar to right side of the window
 			x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE - 1;
 
-			//Raz: adjust x position for the model selection feeder
 			if ( (int)item->special == FEEDER_Q3HEADS )
 				x -= 2;
 
@@ -6683,8 +6676,7 @@ void Item_Paint(itemDef_t *item)
 		break;
 	}
 
-	//Raz: Ran into an issue where ITEM_TYPE_MULTI wasn't resetting the color
-	//		resulting in successive elements being tinted
+	//FIXME: this might be bad
 	DC->setColor( NULL );
 }
 

@@ -101,30 +101,6 @@ static void CG_ScoresUp_f( void ) {
 	}
 }
 
-#if 0
-static void CG_spWin_f( void) {
-	trap->Cvar_Set("cg_cameraOrbit", "2");
-	trap->Cvar_Set("cg_cameraOrbitDelay", "35");
-	trap->Cvar_Set("cg_thirdPerson", "1");
-	trap->Cvar_Set("cg_thirdPersonAngle", "0");
-	trap->Cvar_Set("cg_thirdPersonRange", "100");
-	CG_AddBufferedSound(cgs.media.winnerSound);
-	//trap_S_StartLocalSound(cgs.media.winnerSound, CHAN_ANNOUNCER);
-	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_WIN"), SCREEN_HEIGHT * .30, 0);
-}
-
-static void CG_spLose_f( void) {
-	trap->Cvar_Set("cg_cameraOrbit", "2");
-	trap->Cvar_Set("cg_cameraOrbitDelay", "35");
-	trap->Cvar_Set("cg_thirdPerson", "1");
-	trap->Cvar_Set("cg_thirdPersonAngle", "0");
-	trap->Cvar_Set("cg_thirdPersonRange", "100");
-	CG_AddBufferedSound(cgs.media.loserSound);
-	//trap_S_StartLocalSound(cgs.media.loserSound, CHAN_ANNOUNCER);
-	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_LOSE"), SCREEN_HEIGHT * .30, 0);
-}
-#endif
-
 void CG_ClientList_f( void )
 {
 	clientInfo_t *ci;
@@ -301,9 +277,6 @@ static consoleCommand_t	commands[] = {
 	{ "siegeCvarUpdate",			CG_SiegeCvarUpdate_f },
 	{ "sizedown",					CG_SizeDown_f },
 	{ "sizeup",						CG_SizeUp_f },
-	//JAC - Disable spWin and spLose as they're just used to troll people.
-	//{ "spWin",						CG_spWin_f },
-	//{ "spLose",						CG_spLose_f },
 	{ "startOrbit",					CG_StartOrbit_f },
 	{ "tcmd",						CG_TargetCommand_f },
 	{ "tell_attacker",				CG_TellAttacker_f },

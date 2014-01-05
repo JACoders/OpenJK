@@ -729,9 +729,7 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	} else if (!Q_stricmp(c, "connect")) {
 		SV_DirectConnect( from );
 	} else if (!Q_stricmp(c, "ipAuthorize")) {
-		//Ensiform: There isnt even an auth server in JA
-		//So why were we still accepting these packets
-		//SV_AuthorizeIpPacket( from );
+		// ...
 	} else if (!Q_stricmp(c, "rcon")) {
 		SVC_RemoteCommand( from, msg );
 	} else if (!Q_stricmp(c, "disconnect")) {

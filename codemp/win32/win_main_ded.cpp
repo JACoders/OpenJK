@@ -681,6 +681,9 @@ void * QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(
 
 	if (!Sys_UnpackDLL(filename))
 	{
+		if ( com_developer->integer )
+			Com_Printf ("Sys_LoadLegacyGameDll: Failed to unpack %s" ARCH_STRING DLL_EXT " from PK3.\n", name);
+
 		return NULL;
 	}
 
@@ -714,6 +717,9 @@ void * QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(
 	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )GetProcAddress( libHandle, "dllEntry" ); 
 	*vmMain = (intptr_t (QDECL *)(int,...))GetProcAddress( libHandle, "vmMain" );
 	if ( !*vmMain || !dllEntry ) {
+		if ( com_developer->integer )
+			Com_Printf ("Sys_LoadLegacyGameDll: Entry point not found in %s" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", name, GetLastError());
+
 		FreeLibrary( libHandle );
 		return NULL;
 	}
@@ -732,6 +738,9 @@ void *QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ..
 
 	if (!Sys_UnpackDLL(filename))
 	{
+		if ( com_developer->integer )
+			Com_Printf ("Sys_LoadGameDll: Failed to unpack %s" ARCH_STRING DLL_EXT " from PK3.\n", name);
+
 		return NULL;
 	}
 
@@ -764,6 +773,9 @@ void *QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ..
 
 	*moduleAPI = (void *(QDECL *)(int,...))GetProcAddress( libHandle, "GetModuleAPI" );
 	if ( !*moduleAPI ) {
+		if ( com_developer->integer )
+			Com_Printf ("Sys_LoadGameDll: Entry point not found in %s" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", name, GetLastError());
+
 		FreeLibrary( libHandle );
 		return NULL;
 	}

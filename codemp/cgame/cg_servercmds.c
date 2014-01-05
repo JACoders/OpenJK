@@ -213,11 +213,9 @@ void CG_ParseServerinfo( void ) {
 		}
 	}
 
-	//Raz: Fix bogus vote strings
 	Q_strncpyz( cgs.voteString, CG_ConfigString( CS_VOTE_STRING ), sizeof( cgs.voteString ) );
 
-	//Raz: Synchronise our expected snaps/sec with the server's framerate
-	//		OpenJK servers will try to match us to the sv_fps too (sv_client.cpp -> SV_UserinfoChanged)
+	// synchronise our expected snaps/sec with the server's framerate
 	i = atoi( Info_ValueForKey( info, "sv_fps" ) );
 	if ( i )
 		trap->Cvar_Set( "snaps", va( "%i", i ) );
@@ -240,7 +238,7 @@ static void CG_ParseWarmup( void ) {
 	cg.warmup = warmup;
 }
 
-//Raz: This is a reverse map of flag statuses as seen in g_team.c
+// this is a reverse map of flag statuses as seen in g_team.c
 //static char ctfFlagStatusRemap[] = { '0', '1', '*', '*', '2' };
 static char ctfFlagStatusRemap[] = { 	
 	FLAG_ATBASE,
@@ -904,7 +902,6 @@ static void CG_ConfigStringModified( void ) {
 			// format is rb where its red/blue, 0 is at base, 1 is taken, 2 is dropped
 			int redflagId = str[0] - '0', blueflagId = str[1] - '0';
 
-			//Raz: improved flag status remapping
 			if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
 				cgs.redflag = ctfFlagStatusRemap[redflagId];
 

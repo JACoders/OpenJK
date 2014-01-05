@@ -674,7 +674,7 @@ static void R_LevelShot( void ) {
 			r = g = b = 0;
 			for ( yy = 0 ; yy < 3 ; yy++ ) {
 				for ( xx = 0 ; xx < 4 ; xx++ ) {
-					src = source + ( 3 * glConfig.vidWidth + padlen ) * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale );
+					src = source + 3 * ( glConfig.vidWidth * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale ) );
 					r += src[0];
 					g += src[1];
 					b += src[2];
@@ -1630,6 +1630,7 @@ void RE_SetRangedFog( float dist )
 	}
 }
 
+bool inServer = false;
 void RE_SVModelInit( void )
 {
 	//ri.CM_ShaderTableCleanup();
@@ -1637,7 +1638,9 @@ void RE_SVModelInit( void )
 	tr.numShaders = 0;
 	tr.numSkins = 0;
 	R_InitImages();
+	inServer = true;
 	R_InitShaders();
+	inServer = false;
 	R_ModelInit();
 }
 

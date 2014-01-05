@@ -30,6 +30,7 @@
 #define	STEPSIZE		18
 
 #define DEFAULT_FORCEPOWERS	"5-1-000000000000000000"
+#define DEFAULT_FORCEPOWERS_LEN (22) // numPowers + rank + side + separators
 //"rank-side-heal.lev.speed.push.pull.tele.grip.lightning.rage.protect.absorb.teamheal.teamforce.drain.see"
 
 #define	DEFAULT_GRAVITY		800
@@ -1646,7 +1647,7 @@ typedef struct saberInfo_s {
 
 bgEntity_t *PM_BGEntForNum( int num );
 qboolean BG_KnockDownable(playerState_t *ps);
-qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled);
+qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled);
 
 
 // given a boltmatrix, return in vec a normalised vector for the axis requested in flags

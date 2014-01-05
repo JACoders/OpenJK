@@ -177,12 +177,14 @@ bool CParticle::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else
@@ -677,12 +679,14 @@ bool COrientedParticle::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else
@@ -791,12 +795,14 @@ bool CLine::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else
@@ -908,12 +914,14 @@ bool CElectricity::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else
@@ -1006,12 +1014,14 @@ bool CTail::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else
@@ -1281,12 +1291,14 @@ bool CCylinder::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.gent->ghoul2.IsValid())
+			if (!cent.gent->ghoul2.IsValid())
 			{
-				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
-				{	//could not get bolt
-					return false;
-				}
+				return false;
+			}
+
+			if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, mOrigin1, ax))
+			{	//could not get bolt
+				return false;
 			}
 		}
 		else

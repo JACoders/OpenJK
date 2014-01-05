@@ -1677,9 +1677,7 @@ static void Cmd_Say_f( gentity_t *ent ) {
 
 	p = ConcatArgs( 1 );
 
-	//Raz: BOF
-	if ( strlen( p ) >= MAX_SAY_TEXT )
-	{
+	if ( strlen( p ) >= MAX_SAY_TEXT ) {
 		p[MAX_SAY_TEXT-1] = '\0';
 		G_SecurityLogPrintf( "Cmd_Say_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
 	}
@@ -1700,9 +1698,7 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 
 	p = ConcatArgs( 1 );
 
-	//Raz: BOF
-	if ( strlen( p ) >= MAX_SAY_TEXT )
-	{
+	if ( strlen( p ) >= MAX_SAY_TEXT ) {
 		p[MAX_SAY_TEXT-1] = '\0';
 		G_SecurityLogPrintf( "Cmd_SayTeam_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
 	}
@@ -1739,9 +1735,7 @@ static void Cmd_Tell_f( gentity_t *ent ) {
 
 	p = ConcatArgs( 2 );
 
-	//Raz: BOF
-	if ( strlen( p ) >= MAX_SAY_TEXT )
-	{
+	if ( strlen( p ) >= MAX_SAY_TEXT ) {
 		p[MAX_SAY_TEXT-1] = '\0';
 		G_SecurityLogPrintf( "Cmd_Tell_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
 	}
@@ -2245,7 +2239,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			}
 		}
 
-		//RAZTODO: buffer and send in multiple messages in case of overflow
+		//FIXME: buffer and send in multiple messages in case of overflow
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
 		return;
 	}

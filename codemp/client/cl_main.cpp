@@ -101,7 +101,7 @@ refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
 const CGhoul2Info NullG2;
-//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+//FIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
 IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
 	return re->TheGhoul2InfoArray();
 }
@@ -881,10 +881,8 @@ void CL_RequestMotd( void ) {
 		return;
 	}
 	cls.updateServer.port = BigShort( PORT_UPDATE );
-	Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", UPDATE_SERVER_NAME,
-		cls.updateServer.ip[0], cls.updateServer.ip[1],
-		cls.updateServer.ip[2], cls.updateServer.ip[3],
-		BigShort( cls.updateServer.port ) );
+	Com_Printf( "%s resolved to %s\n", UPDATE_SERVER_NAME,
+		NET_AdrToString( cls.updateServer ) );
 	
 	info[0] = 0;
   // NOTE TTimo xoring against Com_Milliseconds, otherwise we may not have a true randomization
@@ -2465,7 +2463,7 @@ void CL_InitRef( void ) {
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
 
-	//RAZFIXME: Might have to do something about this...
+	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	G2VertSpaceServer = &CMiniHeap_singleton;
 
@@ -3130,10 +3128,8 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "%s", s);
 
 	if (serverStatus->print) {
-		Com_Printf( "Server (%i.%i.%i.%i:%i)\n", 
-			serverStatus->address.ip[0], serverStatus->address.ip[1],
-			serverStatus->address.ip[2], serverStatus->address.ip[3],
-			BigShort( serverStatus->address.port ) );
+		Com_Printf( "Server (%s)\n", 
+			NET_AdrToString( serverStatus->address ) );
 		Com_Printf("Server settings:\n");
 		// print cvars
 		while (*s) {

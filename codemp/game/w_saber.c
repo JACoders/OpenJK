@@ -28,12 +28,10 @@ qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum );
 void WP_SaberAddG2Model( gentity_t *saberent, const char *saberModel, qhandle_t saberSkin );
 void WP_SaberRemoveG2Model( gentity_t *saberent );
 
-//Raz: Fixing this in several ways. Some communities like the 'broken' behaviour.
 //	g_randFix 0 == Same as basejka. Broken on Linux, fine on Windows
 //	g_randFix 1 == Use proper behaviour of RAND_MAX. Fine on Linux, fine on Windows
 //	g_randFix 2 == Intentionally break RAND_MAX. Broken on Linux, broken on Windows.
 float RandFloat( float min, float max ) {
-	//JAC: Fixed an issue where linux was producing undesired results due to not using RAND_MAX, which is platform-dependant
 	int randActual = rand();
 	float randMax = 32768.0f;
 #ifdef _WIN32
@@ -6738,7 +6736,6 @@ qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner
 			&& other->client->saber[1].model[0]
 			&& !other->client->ps.saberHolstered )
 		{
-			//JAC: Fixed second sabers not being accounted for in disarm bonuses.
 			disarmChance += other->client->saber[1].disarmBonus;
 		}
 	}
@@ -6824,7 +6821,6 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 				&& other->client->saber[1].model[0]
 				&& !other->client->ps.saberHolstered )
 			{
-				//JAC: Fixed second sabers not being accounted for in disarm bonuses.
 				disarmChance += other->client->saber[1].disarmBonus;
 			}
 		}

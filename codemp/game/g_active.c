@@ -3838,12 +3838,10 @@ void ClientEndFrame( gentity_t *ent ) {
 	P_DamageFeedback (ent);
 
 	// add the EF_CONNECTION flag if we haven't gotten commands recently
-	//Raz: add to ps instead of s
-	if ( level.time - ent->client->lastCmdTime > 1000 ) {
+	if ( level.time - ent->client->lastCmdTime > 1000 )
 		ent->client->ps.eFlags |= EF_CONNECTION;
-	} else {
+	else
 		ent->client->ps.eFlags &= ~EF_CONNECTION;
-	}
 
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;	// FIXME: get rid of ent->health...
 

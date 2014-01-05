@@ -188,8 +188,7 @@ cvar_t	*broadsword_dircap=0;
 Ghoul2 Insert End
 */
 
-//RAZFIXME: renderer has a copy of this now because stringed is common code and
-// we use it for fonts
+//FIXME: renderer has a copy of this now because stringed is common code and we use it for fonts
 cvar_t *se_language;
 
 cvar_t *r_aviMotionJpegQuality;
@@ -1032,7 +1031,7 @@ R_Register
 void R_Register( void ) 
 {
 
-	//RAZFIXME: lol badness
+	//FIXME: lol badness
 	se_language = ri->Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
 	//
 	// latched and archived variables

@@ -441,9 +441,6 @@ static void SV_Kick_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
-		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
-//		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
 		Com_Printf("Cannot kick host player\n");
 		return;
 	}
@@ -539,9 +536,6 @@ static void SV_KickNum_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
-		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
-//		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
 		Com_Printf("Cannot kick host player\n");
 		return;
 	}
@@ -568,9 +562,7 @@ static void SV_Status_f( void )
 	// make sure server is running
 	if ( !com_sv_running->integer ) 
 	{
-		//Ensiform: Why raven why, you didn't do this in other cmds.
 		Com_Printf( "Server is not running.\n" );
-		//Com_Printf( SE_GetString("STR_SERVER_SERVER_NOT_RUNNING") );
 		return;
 	}
 

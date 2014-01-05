@@ -80,7 +80,7 @@ public:
 	}
 	bool empty() const
 	{
-		return mStorage.data[0] == '\0'; //Raz: might want to check MaxSize instead?
+		return mStorage.data[0] == '\0'; //FIXME: might want to check MaxSize instead?
 	}
 	bool operator==(const sstring<MaxSize> &o) const
 	{

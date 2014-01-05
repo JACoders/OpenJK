@@ -261,7 +261,7 @@ Ghoul2 Insert Start
 #include "qcommon/qfiles.h"
 
 // skins allow models to be retextured without modifying the model file
-//Raz: this is a mock copy, renderers may have their own implementation.
+//this is a mock copy, renderers may have their own implementation.
 // try not to break the ghoul2 code which is very implicit :/
 typedef struct _skinSurface_s {
 	char		name[MAX_QPATH];

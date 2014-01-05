@@ -693,9 +693,6 @@ void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
 	}
 }
 
-
-//JAC: Moved some math functions from q_shared.h
-
 void VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 	vecOut[0] = vec1[0]+vec2[0];
 	vecOut[1] = vec1[1]+vec2[1];

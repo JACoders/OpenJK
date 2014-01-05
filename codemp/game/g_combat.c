@@ -2409,8 +2409,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	//if he was charging or anything else, kill the sound
 	G_MuteSound(self->s.number, CHAN_WEAPON);
 
-	//Raz: Siege exploit where you could place detpack on your own objectives, change team, and instantly win.
-	//OJKFIXME: this may not be enough
+	//FIXME: this may not be enough
 	if ( level.gametype == GT_SIEGE && meansOfDeath == MOD_TEAM_CHANGE )
 		RemoveDetpacks( self );
 	else
@@ -2873,7 +2872,6 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	// Start any necessary death fx for this entity
-	// ensiform - only call if they are an npc
 	if ( self->NPC )
 		DeathFX( self );
 
@@ -3514,7 +3512,6 @@ void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, 
 		trap->G2API_SetSurfaceOnOff(ent->ghoul2, stubCapName, 0);
 	}
 
-	//Raz: Limbs now have team colours.
 	if ( level.gametype >= GT_TEAM && ent->s.eType != ET_NPC )
 	{//Team game
 		switch ( ent->client->sess.sessionTeam )
@@ -5682,10 +5679,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			continue;
 		}
 
-		//JAC: Avoid infinite loop
-		//Ensiform: disabling this for now as it breaks corpse shooting
-		//if ( ent->health <= 0 )
-		//	continue;
+	//	if ( ent->health <= 0 )
+	//		continue;
 
 		points = damage * ( 1.0 - dist / radius );
 

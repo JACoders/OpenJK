@@ -1066,7 +1066,6 @@ static void CG_RegisterSounds( void ) {
 	}
 
 	// only register the items that the server says we need
-	//Raz: Fixed buffer overflow
 	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
@@ -2726,7 +2725,6 @@ Ghoul2 Insert End
 
 	CG_InitConsoleCommands();
 
-	//Raz: initialise third person setting
 	cg.renderingThirdPerson = cg_thirdPerson.integer;
 
 	cg.weaponSelect = WP_BRYAR_PISTOL;
@@ -2812,7 +2810,6 @@ Ghoul2 Insert End
 
 	CG_ParseEntitiesFromString();
 
-	//Raz: warn for poor settings
 	trap->Cvar_VariableStringBuffer( "rate", buf, sizeof( buf ) );
 	if ( atoi( buf ) == 4000 )
 		trap->Print( "^3WARNING: Default /rate value detected. Suggest typing /rate 25000 for a smoother connection!\n" );
