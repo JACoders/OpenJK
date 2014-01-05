@@ -180,8 +180,9 @@ int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecti
 
 	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
 	{// check for a name match
-		if ( cl->pers.connected != CON_CONNECTED || ( allowconnecting && cl->pers.connected < CON_CONNECTING ) )
-			continue;
+		if ( cl->pers.connected != CON_CONNECTED )
+			if ( !allowconnecting || cl->pers.connected < CON_CONNECTING )
+				continue;
 
 		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
 			return idnum;
