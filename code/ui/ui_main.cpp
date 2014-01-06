@@ -3755,7 +3755,22 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 		case UI_ALLMAPS_SELECTION://saved game thumbnail
 
 			int levelshot;
-			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+			levelshot = 0;
+			if (s_savedata[s_savegame.currentLine].currentSaveFileName)
+			{
+				//To avoid error messages when these screenshots are missing
+				fileHandle_t fp;
+				ui.FS_FOpenFile(va( "saves/screenshots/%s.jpg", s_savedata[s_savegame.currentLine].currentSaveFileName ), &fp, FS_READ);
+				if (fp)
+				{
+					ui.FS_FCloseFile(fp);
+					levelshot = ui.R_RegisterShaderNoMip( va( "saves/screenshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileName ) );
+				}
+			}
+			if (!levelshot)
+			{
+				levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+			}
 			if (levelshot)
 			{
 				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
@@ -4021,6 +4036,8 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
+	ui.PrecacheScreenshot();
+
 	Menus_CloseByName("mainhud");
 
 	if (menuID)

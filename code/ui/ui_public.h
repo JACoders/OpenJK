@@ -91,6 +91,9 @@ typedef struct {
 
 	// force a screen update, only used during gamestate load
 	void		(*UpdateScreen)( void );
+	
+	// stuff for savegame screenshots...
+	void		(*PrecacheScreenshot)( void );
 
 	//========= model collision ===============
 

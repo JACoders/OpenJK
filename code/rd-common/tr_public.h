@@ -256,6 +256,7 @@ typedef struct {
 	void	(*R_LoadDataImage)(const char *name, byte **pic, int *width, int *height);
 	void	(*R_InvertImage)(byte *data, int width, int height, int depth);
 	int		(*SavePNG)( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
+	void		(*SaveJPG)( const char * filename, int quality, int image_width, int image_height, byte *image_buffer, int padding );
 	void	(*R_InitWorldEffects)(void);
 	void	(*R_CreateAutomapImage)( const char *name, const byte *pic, int width, int height,
 		qboolean mipmap, qboolean allowPicmip, qboolean allowTC, qboolean glWrapClampMode );

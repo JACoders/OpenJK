@@ -1783,6 +1783,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.R_LoadDataImage = R_LoadDataImage;
 	re.R_InvertImage = R_InvertImage;
 	re.SavePNG = RE_SavePNG;
+	re.SaveJPG = RE_SaveJPG;
 	re.R_InitWorldEffects = R_InitWorldEffects;
 	re.R_CreateAutomapImage = R_CreateAutomapImage;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;

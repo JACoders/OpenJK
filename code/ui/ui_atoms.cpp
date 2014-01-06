@@ -404,7 +404,7 @@ UI_SaveMenu_f
 */
 static void UI_SaveMenu_f( void ) 
 {
-//	ui.PrecacheScreenshot();
+	ui.PrecacheScreenshot();
 
 	trap_Key_SetCatcher( KEYCATCH_UI );
 	Menus_ActivateByName("ingamesaveMenu");
