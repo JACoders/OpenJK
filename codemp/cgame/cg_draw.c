@@ -5210,13 +5210,16 @@ qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
     return qtrue;
 }
 
-qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y )
-{
-	float	xF, yF;
-	qboolean retVal = CG_WorldCoordToScreenCoordFloat( worldCoord, &xF, &yF );
-	*x = (int)xF;
-	*y = (int)yF;
-	return retVal;
+qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y ) {
+	float xF, yF;
+
+	if ( CG_WorldCoordToScreenCoordFloat( worldCoord, &xF, &yF ) ) {
+		*x = (int)xF;
+		*y = (int)yF;
+		return qtrue;
+	}
+
+	return qfalse;
 }
 
 /*
