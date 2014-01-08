@@ -389,7 +389,7 @@ int GVM_BG_GetItemIndexByTag( int tag, int type ) {
 //
 
 static int FloatAsInt( float f ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = f;
 	return fi.i;
 }

@@ -4467,7 +4467,6 @@ CG_PlayerPowerups
 */
 static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 	int		powerups;
-	clientInfo_t	*ci;
 
 	powerups = cent->currentState.powerups;
 	if ( !powerups ) {
@@ -4481,14 +4480,8 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 	#endif // BASE_COMPAT
 
 	if (cent->currentState.eType == ET_NPC)
-	{
-		ci = cent->npcClient;
-		assert(ci);
-	}
-	else
-	{
-		ci = &cgs.clientinfo[ cent->currentState.clientNum ];
-	}
+		assert(cent->npcClient);
+
 	// redflag
 	if ( powerups & ( 1 << PW_REDFLAG ) ) {
 		CG_PlayerFlag( cent, cgs.media.redFlagModel );
