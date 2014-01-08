@@ -277,7 +277,7 @@ void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {
 }
 
 float _vmf( intptr_t x ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.i = (int) x;
 	return fi.f;
 }

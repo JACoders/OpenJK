@@ -583,14 +583,10 @@ static void FillCloudBox( const shader_t *shader, int stage )
 /*
 ** R_BuildCloudData
 */
-void R_BuildCloudData( shaderCommands_t *input )
-{
-	int			i;
-	shader_t	*shader;
+void R_BuildCloudData( shaderCommands_t *input ) {
+	int i;
 
-	shader = input->shader;
-
-	assert( shader->sky );
+	assert( input->shader->sky );
 
 	sky_min = 1.0 / 256.0f;		// FIXME: not correct?
 	sky_max = 255.0 / 256.0f;
@@ -599,12 +595,9 @@ void R_BuildCloudData( shaderCommands_t *input )
 	tess.numIndexes = 0;
 	tess.numVertexes = 0;
 
-	if ( input->shader->sky->cloudHeight )
-	{
-		for ( i = 0; i < input->shader->numUnfoggedPasses; i++ )
-		{
+	if ( input->shader->sky->cloudHeight ) {
+		for ( i=0; i<input->shader->numUnfoggedPasses; i++ )
 			FillCloudBox( input->shader, i );
-		}
 	}
 }
 

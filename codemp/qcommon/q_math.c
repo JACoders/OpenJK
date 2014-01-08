@@ -442,7 +442,7 @@ void VectorRotate( const vec3_t in, matrix3_t matrix, vec3_t out )
 */
 float Q_rsqrt( float number )
 {
-	floatint_t t;
+	byteAlias_t t;
 	float x2, y;
 	const float threehalfs = 1.5F;
 
@@ -461,7 +461,7 @@ float Q_rsqrt( float number )
 }
 
 float Q_fabs( float f ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = f;
 	fi.i &= 0x7FFFFFFF;
 	return fi.f;
