@@ -5960,7 +5960,7 @@ void WP_SaberImpact( gentity_t *owner, gentity_t *saber, trace_t *trace )
 			// decrement number of bounces and then see if it should be done bouncing
 			if ( --saber->bounceCount <= 0 ) {
 				// He (or she) will bounce no more (after this current bounce, that is).
-				saber->s.eFlags &= !( EF_BOUNCE | EF_BOUNCE_HALF );
+				saber->s.eFlags &= ~( EF_BOUNCE | EF_BOUNCE_HALF );
 				if ( saber->s.pos.trType == TR_LINEAR && owner && owner->client && owner->client->ps.saberEntityState == SES_RETURNING )
 				{
 					WP_SaberDrop( saber->owner, saber );
