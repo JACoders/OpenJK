@@ -1469,7 +1469,7 @@ void WP_LoadWeaponParms (void)
 	}
 
 	// initialise the data area
-	memset(weaponData, 0, WP_NUM_WEAPONS * sizeof(weaponData_t));	
+	memset(weaponData, 0, sizeof(weaponData));	
 
 	// put in the default values, because backwards compatibility is awesome!
 	for(int i = 0; i < WP_NUM_WEAPONS; i++)
