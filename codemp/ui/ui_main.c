@@ -1803,21 +1803,15 @@ static void UI_DrawForceSide(rectDef_t *rect, float scale, vec4_t color, int tex
 	Text_Paint(rect->x, rect->y, scale, color, s,0, 0, textStyle, iMenuFont);
 }
 
-qboolean UI_HasSetSaberOnly( void )
+qboolean UI_HasSetSaberOnly( const char *info, const int gametype )
 {
-	char	info[MAX_INFO_STRING];
 	int i = 0;
 	int wDisable = 0;
-	int	gametype = 0;
-
-	gametype = atoi(Info_ValueForKey(info, "g_gametype"));
 
 	if ( gametype == GT_JEDIMASTER )
 	{ //set to 0 
 		return qfalse;
 	}
-
-	trap->GetConfigString( CS_SERVERINFO, info, sizeof(info) );
 
 	if (gametype == GT_DUEL || gametype == GT_POWERDUEL)
 	{
@@ -1864,7 +1858,7 @@ static qboolean UI_AllForceDisabled(int force)
 
 qboolean UI_TrueJediEnabled( void )
 {
-	char	info[MAX_INFO_STRING];
+	char	info[MAX_INFO_STRING] = {0};
 	int		gametype = 0, disabledForce = 0, trueJedi = 0;
 	qboolean saberOnly = qfalse, allForceDisabled = qfalse;
 
@@ -1876,7 +1870,7 @@ qboolean UI_TrueJediEnabled( void )
 	disabledForce = atoi(Info_ValueForKey(info, "g_forcePowerDisable"));
 	allForceDisabled = UI_AllForceDisabled(disabledForce);
 	gametype = atoi(Info_ValueForKey(info, "g_gametype"));
-	saberOnly = UI_HasSetSaberOnly();
+	saberOnly = UI_HasSetSaberOnly(info, gametype);
 
 	if ( gametype == GT_HOLOCRON 
 		|| gametype == GT_JEDIMASTER 
