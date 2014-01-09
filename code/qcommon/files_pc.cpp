@@ -20,23 +20,6 @@ This file is part of Jedi Academy.
 #include "qcommon.h"
 #include "files.h"
 
-
-#define	MAX_SEARCH_PATHS	2048
-#define MAX_FILEHASH_SIZE	1024
-
-
-#define	DEMOGAME			"demo"
-
-// every time a new demo pk3 file is built, this checksum must be updated.
-// the easiest way to get it is to just run the game and see what it spits out
-#define	DEMO_PAK_CHECKSUM	4102795916u
-#define	DEMO_PAK_MAXFILES	5174u
-
-
-//static int		fs_numServerPaks;
-//static int		fs_serverPaks[MAX_SEARCH_PATHS];
-
-
 /*
 ================
 return a hash value for the filename
@@ -425,6 +408,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						// open the file in the zip
 						unzOpenCurrentFile( fsh[*file].handleFiles.file.z );
 						fsh[*file].zipFilePos = pakFile->pos;
+						fsh[*file].zipFileLen = pakFile->len;
 
 						if ( fs_debug->integer ) {
 							Com_Printf( "FS_FOpenFileRead: %s (found in '%s')\n", 
@@ -657,7 +641,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	return len;
 }
 
-
+#define PK3_SEEK_BUFFER_SIZE 65536
 /*
 =================
 FS_Seek
@@ -673,19 +657,63 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 	}
 
 	if (fsh[f].zipFile == qtrue) {
-		char	foo[65536];
-		if (offset == 0 && origin == FS_SEEK_SET) {
-			// set the file position in the zip file (also sets the current file info)
-			unzSetOffset(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
-			return unzOpenCurrentFile(fsh[f].handleFiles.file.z);
-		} else if (offset<65536) {
-			// set the file position in the zip file (also sets the current file info)
-			unzSetOffset(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
-			unzOpenCurrentFile(fsh[f].handleFiles.file.z);
-			return FS_Read(foo, offset, f);
+		//FIXME: this is really, really crappy
+		//(but better than what was here before)
+		byte	buffer[PK3_SEEK_BUFFER_SIZE];
+		int		remainder;
+		int		currentPosition = FS_FTell( f );
+
+		// change negative offsets into FS_SEEK_SET
+		if ( offset < 0 ) {
+			switch( origin ) {
+				case FS_SEEK_END:
+					remainder = fsh[f].zipFileLen + offset;
+					break;
+
+				case FS_SEEK_CUR:
+					remainder = currentPosition + offset;
+					break;
+
+				case FS_SEEK_SET:
+				default:
+					remainder = 0;
+					break;
+			}
+
+			if ( remainder < 0 ) {
+				remainder = 0;
+			}
+
+			origin = FS_SEEK_SET;
 		} else {
-			Com_Error( ERR_FATAL, "ZIP FILE FSEEK NOT YET IMPLEMENTED for big offsets(%s)\n", fsh[f].name);
-			return -1;
+			if ( origin == FS_SEEK_END ) {
+				remainder = fsh[f].zipFileLen - currentPosition + offset;
+			} else {
+				remainder = offset;
+			}
+		}
+
+		switch( origin ) {
+			case FS_SEEK_SET:
+				if ( remainder == currentPosition ) {
+					return offset;
+				}
+				unzSetOffset(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
+				unzOpenCurrentFile(fsh[f].handleFiles.file.z);
+				//fallthrough
+
+			case FS_SEEK_END:
+			case FS_SEEK_CUR:
+				while( remainder > PK3_SEEK_BUFFER_SIZE ) {
+					FS_Read( buffer, PK3_SEEK_BUFFER_SIZE, f );
+					remainder -= PK3_SEEK_BUFFER_SIZE;
+				}
+				FS_Read( buffer, remainder, f );
+				return offset;
+
+			default:
+				Com_Error( ERR_FATAL, "Bad origin in FS_Seek" );
+				return -1;
 		}
 	} else {
 		FILE *file;
@@ -709,7 +737,6 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 		return fseek( file, offset, _origin );
 	}
 }
-
 
 /*
 ======================================================================================
@@ -856,8 +883,6 @@ void FS_FreeFile( void *buffer ) {
 
 	Z_Free( buffer );
 }
-
-
 
 /*
 ==========================================================================
@@ -1792,7 +1817,22 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	Sys_FreeFileList( pakfiles );
 }
 
+/*
+================
+FS_CheckDirTraversal
 
+Check whether the string contains stuff like "../" to prevent directory traversal bugs
+and return qtrue if it does.
+================
+*/
+
+qboolean FS_CheckDirTraversal(const char *checkdir)
+{
+	if(strstr(checkdir, "../") || strstr(checkdir, "..\\"))
+		return qtrue;
+	
+	return qfalse;
+}
 
 /*
 ================
@@ -1923,6 +1963,20 @@ void FS_Restart( void ) {
 
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
 	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
+}
+
+/*
+=================
+FS_ConditionalRestart
+restart if necessary
+=================
+*/
+qboolean FS_ConditionalRestart( void ) {
+	if( fs_gamedirvar->modified ) {
+		FS_Restart( );
+		return qtrue;
+	}
+	return qfalse;
 }
 
 /*

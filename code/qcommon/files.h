@@ -29,12 +29,13 @@ This file is part of Jedi Academy.
 #include "unzip.h"
 
 #define MAX_ZPATH			256
-
-
+#define	MAX_SEARCH_PATHS	4096
+#define MAX_FILEHASH_SIZE	1024
 
 typedef struct fileInPack_s {
 	char					*name;		// name of the file
 	unsigned long			pos;		// file info position in zip
+	unsigned long			len;		// uncompress file size
 	struct	fileInPack_s*	next;		// next file in the hash
 } fileInPack_t;
 
@@ -61,7 +62,7 @@ typedef struct searchpath_s {
 } searchpath_t;
 
 
-#define	MAX_FILE_HANDLES	16
+#define	MAX_FILE_HANDLES	64
 
 typedef union qfile_gus {
 	FILE*		o;
@@ -78,6 +79,7 @@ typedef struct {
 	qboolean	handleSync;
 	int			fileSize;
 	int			zipFilePos;
+	int			zipFileLen;
 	qboolean	zipFile;
 	char		name[MAX_QPATH];
 } fileHandleData_t;
