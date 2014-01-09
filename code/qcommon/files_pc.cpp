@@ -70,6 +70,28 @@ void	FS_ForceFlush( fileHandle_t f ) {
 
 /*
 ================
+FS_fplength
+================
+*/
+
+long FS_fplength(FILE *h)
+{
+	long		pos;
+	long		end;
+
+	pos = ftell(h);
+	if ( pos == EOF )
+		return EOF;
+
+	fseek(h, 0, SEEK_END);
+	end = ftell(h);
+	fseek(h, pos, SEEK_SET);
+
+	return end;
+}
+
+/*
+================
 FS_filelength
 
 If this is called on a non-unique FILE (from a pak file),
@@ -78,17 +100,14 @@ size of the file.
 ================
 */
 int FS_filelength( fileHandle_t f ) {
-	int		pos;
-	int		end;
-	FILE*	h;
+	FILE	*h;
 
 	h = FS_FileForHandle(f);
-	pos = ftell (h);
-	fseek (h, 0, SEEK_END);
-	end = ftell (h);
-	fseek (h, pos, SEEK_SET);
-
-	return end;
+	
+	if(h == NULL)
+		return EOF;
+	else
+		return FS_fplength(h);
 }
 
 /*
@@ -116,6 +135,15 @@ qboolean FS_CopyFile( char *fromOSPath, char *toOSPath, qboolean qbSilent ) {
 	fseek (f, 0, SEEK_END);
 	len = ftell (f);
 	fseek (f, 0, SEEK_SET);
+
+	if ( len == EOF )
+	{
+		fclose(f);
+		if (qbSilent){
+			return qfalse;
+		}
+		Com_Error( ERR_FATAL, "Bad file length in FS_CopyFile()" );
+	}
 	
 	buf = (unsigned char *) Z_Malloc( len, TAG_FILESYS, qfalse);
 	if (fread( buf, 1, len, f ) != (size_t) len)
@@ -516,7 +544,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					break;	// and re-read the local copy, not the net version
 				}
 
-				return FS_filelength (*file);
+				return FS_fplength(fsh[*file].handleFiles.file.o);
 			}
 		}
 	}
