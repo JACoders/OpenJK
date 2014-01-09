@@ -935,12 +935,11 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 
 	if ( ent->client 
 		&& ( ent->client->NPC_class == CLASS_R2D2 
-			|| ent->client->NPC_class == CLASS_R2D2 
+			|| ent->client->NPC_class == CLASS_R5D2 
 			|| ent->client->NPC_class == CLASS_GONK
 			|| ent->client->NPC_class == CLASS_MOUSE
 			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_INTERROGATOR
-			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_PROBE ) )
 	{//we don't care about per-surface hit-locations or dismemberment for these guys 
 		return qfalse;
