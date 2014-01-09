@@ -32,7 +32,6 @@ clipHandle_t CM_TempBoxModel( const vec3_t mins, const vec3_t maxs );//, const i
 int		CM_ModelContents( clipHandle_t model, int subBSPIndex );
 
 
-int			CM_NumClusters (void);
 int			CM_NumInlineModels( void );
 char		*CM_EntityString (void);
 char		*CM_SubBSPEntityString (int index);
