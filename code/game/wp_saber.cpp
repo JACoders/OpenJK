@@ -13575,7 +13575,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 					trace_t gripTrace;
 					gi.trace( &gripTrace, self->client->renderInfo.handLPoint, NULL, NULL, gripEntOrg, ENTITYNUM_NONE, MASK_FORCE_PUSH, (EG2_Collision)0, 0 );
 					if ( gripTrace.startsolid
-						|| gripTrace.startsolid
+						|| gripTrace.allsolid
 						|| gripTrace.fraction < 1.0f )
 					{//no clear trace, drop them
 						WP_ForcePowerStop( self, FP_GRIP );
