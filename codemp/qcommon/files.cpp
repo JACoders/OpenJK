@@ -386,6 +386,9 @@ long FS_fplength(FILE *h)
 	long		end;
 
 	pos = ftell(h);
+	if ( pos == EOF )
+		return EOF;
+
 	fseek(h, 0, SEEK_END);
 	end = ftell(h);
 	fseek(h, pos, SEEK_SET);
@@ -408,7 +411,7 @@ int FS_filelength( fileHandle_t f ) {
 	h = FS_FileForHandle(f);
 	
 	if(h == NULL)
-		return -1;
+		return EOF;
 	else
 		return FS_fplength(h);
 }
@@ -568,6 +571,12 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 	fseek (f, 0, SEEK_END);
 	len = ftell (f);
 	fseek (f, 0, SEEK_SET);
+
+	if ( len == EOF )
+	{
+		fclose( f );
+		Com_Error( ERR_FATAL, "Bad file length in FS_CopyFile()" );
+	}
 
 	// we are using direct malloc instead of Z_Malloc here, so it
 	// probably won't work on a mac... Its only for developers anyway...
