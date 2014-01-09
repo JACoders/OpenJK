@@ -172,31 +172,6 @@ int	CM_BoxLeafnums( const vec3_t mins, const vec3_t maxs, int *boxList, int list
 	return ll.count;
 }
 
-/*
-==================
-CM_BoxBrushes
-==================
-*/
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxList, int listsize ) {
-	//rwwRMG - changed to boxList to not conflict with list type
-	leafList_t	ll;
-
-	cmg.checkcount++;
-
-	VectorCopy( mins, ll.bounds[0] );
-	VectorCopy( maxs, ll.bounds[1] );
-	ll.count = 0;
-	ll.maxcount = listsize;
-	ll.list = (int *)boxList;
-	ll.storeLeafs = CM_StoreBrushes;
-	ll.lastLeaf = 0;
-	ll.overflowed = qfalse;
-	
-	CM_BoxLeafnums_r( &ll, 0 );
-
-	return ll.count;
-}
-
 
 //====================================================================
 
