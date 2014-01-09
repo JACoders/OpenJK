@@ -188,9 +188,6 @@ typedef struct leafList_s {
 } leafList_t;
 
 
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxList, int listsize );
-//rwwRMG - changed to boxList to not conflict with list type
-
 bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds); //rwwRMG - added
 
 void CM_StoreLeafs( leafList_t *ll, int nodenum );
