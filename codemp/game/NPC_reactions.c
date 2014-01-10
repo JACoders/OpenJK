@@ -1045,7 +1045,7 @@ void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 			Jedi_Ambush( NPCS.NPC );
 		}
 		//Run any use instructions
-		if ( activator && activator->s.number >= MAX_CLIENTS && self->client->NPC_class == CLASS_GONK )
+		if ( activator && activator->s.number >= 0 && activator->s.number < MAX_CLIENTS && self->client->NPC_class == CLASS_GONK )
 		{
 			// must be using the gonk, so attempt to give battery power.
 			// NOTE: this will steal up to MAX_BATTERIES for the activator, leaving the residual on the gonk for potential later use.
