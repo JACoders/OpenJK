@@ -451,7 +451,7 @@ void RE_RegisterModels_Info_f( void )
 {	
 	int iTotalBytes = 0;
 	if(!CachedModels) {
-		Com_Printf ("%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
+		ri->Printf( PRINT_ALL, "%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
 		return;
 	}
 
@@ -462,15 +462,15 @@ void RE_RegisterModels_Info_f( void )
 	{	
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
-		Com_Printf ("%d/%d: \"%s\" (%d bytes)",iModel,iModels,(*itModel).first.c_str(),CachedModel.iAllocSize );
+		ri->Printf( PRINT_ALL, "%d/%d: \"%s\" (%d bytes)",iModel,iModels,(*itModel).first.c_str(),CachedModel.iAllocSize );
 
 		#ifdef _DEBUG
-		Com_Printf (", lvl %d\n",CachedModel.iLastLevelUsedOn);
+		ri->Printf( PRINT_ALL, ", lvl %d\n",CachedModel.iLastLevelUsedOn);
 		#endif
 
 		iTotalBytes += CachedModel.iAllocSize;
 	}
-	Com_Printf ("%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
+	ri->Printf( PRINT_ALL, "%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
 }
 
 
@@ -1156,7 +1156,7 @@ Ghoul2 Insert End
 */
 
 	if ( !name || !name[0] ) {
-		Com_Printf ("RE_RegisterModel: NULL name\n" );
+		ri->Printf( PRINT_ALL, "RE_RegisterModel: NULL name\n" );
 		return 0;
 	}
 
@@ -1169,7 +1169,7 @@ Ghoul2 Insert End
 Ghoul2 Insert Start
 */
 //	if (!tr.registered) {
-//		Com_Printf (S_COLOR_YELLOW  "RE_RegisterModel (%s) called before ready!\n",name );
+//		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "RE_RegisterModel (%s) called before ready!\n",name );
 //		return 0;
 //	}
 	//
@@ -1230,7 +1230,7 @@ Ghoul2 Insert End
 	// allocate a new model_t
 
 	if ( ( mod = R_AllocModel() ) == NULL ) {
-		Com_Printf (S_COLOR_YELLOW  "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
 		return 0;
 	}
 
@@ -1302,7 +1302,7 @@ Ghoul2 Insert End
 				break;
 
 			default:
-				Com_Printf (S_COLOR_YELLOW"RE_RegisterModel: unknown fileid for %s\n", filename);
+				ri->Printf( PRINT_ALL, S_COLOR_YELLOW"RE_RegisterModel: unknown fileid for %s\n", filename);
 				goto fail;
 		}
 		
@@ -1355,7 +1355,7 @@ Ghoul2 Insert End
 	}
 #ifdef _DEBUG
 	else {
-		Com_Printf (S_COLOR_YELLOW"RE_RegisterModel: couldn't load %s\n", name);
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW"RE_RegisterModel: couldn't load %s\n", name);
 	}
 #endif
 
@@ -1422,7 +1422,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	}
 	
 	if (version != MD3_VERSION) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMD3: %s has wrong version (%i should be %i)\n",
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMD3: %s has wrong version (%i should be %i)\n",
 				 mod_name, version, MD3_VERSION);
 		return qfalse;
 	}
@@ -1460,7 +1460,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	}
 
 	if ( mod->md3[lod]->numFrames < 1 ) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMD3: %s has no frames\n", mod_name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMD3: %s has no frames\n", mod_name );
 		return qfalse;
 	}
 
@@ -1511,13 +1511,13 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
         LL(surf->ofsXyzNormals);
         LL(surf->ofsEnd);
 		
-		if ( surf->numVerts > SHADER_MAX_VERTEXES ) {
-			Com_Error (ERR_DROP, "R_LoadMD3: %s has more than %i verts on a surface (%i)",
-				mod_name, SHADER_MAX_VERTEXES, surf->numVerts );
+		if ( surf->numVerts >= SHADER_MAX_VERTEXES ) {
+			Com_Error (ERR_DROP, "R_LoadMD3: %s has more than %i verts on %s (%i)",
+				mod_name, SHADER_MAX_VERTEXES - 1, surf->name[0] ? surf->name : "a surface", surf->numVerts );
 		}
-		if ( surf->numTriangles*3 > SHADER_MAX_INDEXES ) {
-			Com_Error (ERR_DROP, "R_LoadMD3: %s has more than %i triangles on a surface (%i)",
-				mod_name, SHADER_MAX_INDEXES / 3, surf->numTriangles );
+		if ( surf->numTriangles*3 >= SHADER_MAX_INDEXES ) {
+			Com_Error (ERR_DROP, "R_LoadMD3: %s has more than %i triangles on %s (%i)",
+				mod_name, ( SHADER_MAX_INDEXES / 3 ) - 1, surf->name[0] ? surf->name : "a surface", surf->numTriangles );
 		}
 	
 		// change to surface identifier
@@ -1684,14 +1684,14 @@ void R_Modellist_f( void ) {
 				lods++;
 			}
 		}
-		Com_Printf ("%8i : (%i) %s\n",mod->dataSize, lods, mod->name );
+		ri->Printf( PRINT_ALL, "%8i : (%i) %s\n",mod->dataSize, lods, mod->name );
 		total += mod->dataSize;
 	}
-	Com_Printf ("%8i : Total models\n", total );
+	ri->Printf( PRINT_ALL, "%8i : Total models\n", total );
 
 #if	0		// not working right with new hunk
 	if ( tr.world ) {
-		Com_Printf ("\n%8i : %s\n", tr.world->dataSize, tr.world->name );
+		ri->Printf( PRINT_ALL, "\n%8i : %s\n", tr.world->dataSize, tr.world->name );
 	}
 #endif
 }

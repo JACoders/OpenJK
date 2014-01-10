@@ -56,7 +56,7 @@ void G2Time_ResetTimers(void)
 
 void G2Time_ReportTimers(void)
 {
-	Com_Printf("\n---------------------------------\nRenderSurfaces: %i\nR_AddGhoulSurfaces: %i\nG2_TransformGhoulBones: %i\nG2_ProcessGeneratedSurfaceBolts: %i\nProcessModelBoltSurfaces: %i\nG2_ConstructGhoulSkeleton: %i\nRB_SurfaceGhoul: %i\nG2_SetupModelPointers: %i\n\nPrecise frame time: %i\nTransformGhoulBones calls: %i\n---------------------------------\n\n",
+	ri->Printf( PRINT_ALL, "\n---------------------------------\nRenderSurfaces: %i\nR_AddGhoulSurfaces: %i\nG2_TransformGhoulBones: %i\nG2_ProcessGeneratedSurfaceBolts: %i\nProcessModelBoltSurfaces: %i\nG2_ConstructGhoulSkeleton: %i\nRB_SurfaceGhoul: %i\nG2_SetupModelPointers: %i\n\nPrecise frame time: %i\nTransformGhoulBones calls: %i\n---------------------------------\n\n",
 		G2Time_RenderSurfaces,
 		G2Time_R_AddGHOULSurfaces,
 		G2Time_G2_TransformGhoulBones,
@@ -1343,7 +1343,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 		if (bListIndex == -1)
 		{
 #ifdef _RAG_PRINT_TEST
-			Com_Printf("Attempting to add %s\n", skel->name);
+			ri->Printf( PRINT_ALL, "Attempting to add %s\n", skel->name);
 #endif
 			bListIndex = G2_Add_Bone(ghoul2.animModel, ghoul2.mBlist, skel->name);
 		}
@@ -1400,7 +1400,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 		}
 		else
 		{
-			Com_Printf("BAD LIST INDEX: %s, %s [%i]\n", skel->name, pskel->name, parent);
+			ri->Printf( PRINT_ALL, "BAD LIST INDEX: %s, %s [%i]\n", skel->name, pskel->name, parent);
 		}
 #endif
 	}
@@ -1414,7 +1414,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 		}
 		else
 		{
-			Com_Printf("BAD LIST INDEX: %s\n", skel->name);
+			ri->Printf( PRINT_ALL, "BAD LIST INDEX: %s\n", skel->name);
 		}
 #endif
 		//bone.animFrameMatrix = ghoul2.mBoneCache->mFinalBones[boneNum].boneMatrix;
@@ -1429,7 +1429,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 #ifdef _RAG_PRINT_TEST
 	if (!actuallySet)
 	{
-		Com_Printf("SET FAILURE\n");
+		ri->Printf( PRINT_ALL, "SET FAILURE\n");
 		G2_RagPrintMatrix(&bone.animFrameMatrix);
 	}
 #endif
@@ -4197,7 +4197,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 
 	if (version != MDXM_VERSION) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXM: %s has wrong version (%i should be %i)\n",
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMDXM: %s has wrong version (%i should be %i)\n",
 				 mod_name, version, MDXM_VERSION);
 		return qfalse;
 	}
@@ -4237,7 +4237,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (!mdxm->animIndex) 
 	{
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
 		return qfalse;
 	}
 
@@ -4633,7 +4633,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 	
 	if (version != MDXA_VERSION) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXA: %s has wrong version (%i should be %i)\n",
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMDXA: %s has wrong version (%i should be %i)\n",
 				 mod_name, version, MDXA_VERSION);
 		return qfalse;
 	}
@@ -4798,7 +4798,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #endif //CREATE_LIMB_HIERARCHY
 
  	if ( mdxa->numFrames < 1 ) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXA: %s has no frames\n", mod_name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "R_LoadMDXA: %s has no frames\n", mod_name );
 		return qfalse;
 	}
 

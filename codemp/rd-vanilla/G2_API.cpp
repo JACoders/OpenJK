@@ -41,7 +41,7 @@ void G2_DEBUG_ReportLeaks(void)
 
 	if (!g_G2AllocTrackInit)
 	{
-		Com_Printf("g2 leak tracker was never initialized!\n");
+		ri->Printf( PRINT_ALL, "g2 leak tracker was never initialized!\n");
 		return;
 	}
 
@@ -49,17 +49,17 @@ void G2_DEBUG_ReportLeaks(void)
 	{
 		if (g_G2AllocTrack[i])
 		{
-			Com_Printf("Bad guy found in slot %i, attempting to access...", i);
+			ri->Printf( PRINT_ALL, "Bad guy found in slot %i, attempting to access...", i);
 			CGhoul2Info_v &g2v = *g_G2AllocTrack[i];
 			CGhoul2Info &g2 = g2v[0];
 
 			if (g2v.IsValid() && g2.mFileName && g2.mFileName[0])
 			{
-				Com_Printf("Bad guy's filename is %s\n", g2.mFileName);
+				ri->Printf( PRINT_ALL, "Bad guy's filename is %s\n", g2.mFileName);
 			}
 			else
 			{
-				Com_Printf("He's not valid! BURN HIM!\n");
+				ri->Printf( PRINT_ALL, "He's not valid! BURN HIM!\n");
 			}
 		}
 		i++;
@@ -94,11 +94,11 @@ void G2_DEBUG_ShovePtrInTracker(CGhoul2Info_v *g2)
 
 	if (g2v[0].currentModel && g2v[0].currentModel->name && g2v[0].currentModel->name[0])
 	{
-		Com_Printf("%s could not be fit into g2 debug instance tracker.\n", g2v[0].currentModel->name);
+		ri->Printf( PRINT_ALL, "%s could not be fit into g2 debug instance tracker.\n", g2v[0].currentModel->name);
 	}
 	else
 	{
-		Com_Printf("Crap g2 instance passed to instance tracker (in).\n");
+		ri->Printf( PRINT_ALL, "Crap g2 instance passed to instance tracker (in).\n");
 	}
 }
 
@@ -125,11 +125,11 @@ void G2_DEBUG_RemovePtrFromTracker(CGhoul2Info_v *g2)
 
 	if (g2v[0].currentModel && g2v[0].currentModel->name && g2v[0].currentModel->name[0])
 	{
-		Com_Printf("%s not in g2 debug instance tracker.\n", g2v[0].currentModel->name);
+		ri->Printf( PRINT_ALL, "%s not in g2 debug instance tracker.\n", g2v[0].currentModel->name);
 	}
 	else
 	{
-		Com_Printf("Crap g2 instance passed to instance tracker (out).\n");
+		ri->Printf( PRINT_ALL, "Crap g2 instance passed to instance tracker (out).\n");
 	}
 }
 #endif
@@ -146,7 +146,7 @@ void G2API_SetTime(int currentTime,int clock)
 {
 	assert(clock>=0&&clock<NUM_G2T_TIME);
 #if G2_DEBUG_TIME
-	Com_Printf("Set Time: before c%6d  s%6d",G2TimeBases[1],G2TimeBases[0]);
+	ri->Printf( PRINT_ALL, "Set Time: before c%6d  s%6d",G2TimeBases[1],G2TimeBases[0]);
 #endif
 	G2TimeBases[clock]=currentTime;
 	if (G2TimeBases[1]>G2TimeBases[0]+200)
@@ -155,7 +155,7 @@ void G2API_SetTime(int currentTime,int clock)
 		return;
 	}
 #if G2_DEBUG_TIME
-	Com_Printf(" after c%6d  s%6d\n",G2TimeBases[1],G2TimeBases[0]);
+	ri->Printf( PRINT_ALL, " after c%6d  s%6d\n",G2TimeBases[1],G2TimeBases[0]);
 #endif
 }
 
@@ -504,8 +504,8 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v **ghoul2Ptr)
 					strcpy(fName, "None?!");
 				}
 
-				Com_Printf("ERROR, GHOUL2 INSTANCE BEING REMOVED BELONGS TO A REFENTITY!\nThis is in caps because it's important. Tell Rich and save the following text.\n\n");
-				Com_Printf("Ref num: %i\nModel: %s\nFilename: %s\n", i, mName, fName);
+				ri->Printf( PRINT_ALL, "ERROR, GHOUL2 INSTANCE BEING REMOVED BELONGS TO A REFENTITY!\nThis is in caps because it's important. Tell Rich and save the following text.\n\n");
+				ri->Printf( PRINT_ALL, "Ref num: %i\nModel: %s\nFilename: %s\n", i, mName, fName);
 
 				R_SetRNumEntities(0); //avoid recursive error
 				Com_Error(ERR_DROP, "Write down or save this error message, show it to Rich\nRef num: %i\nModel: %s\nFilename: %s\n", i, mName, fName);
@@ -1422,7 +1422,7 @@ void G2API_AnimateG2ModelsRag(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUp
 	/*
 	if (ragTraceTime)
 	{
-		Com_Printf("Rag trace time: %i (%i STARTSOLID, %i TOTAL)\n", ragTraceTime, ragSSCount, ragTraceCount);
+		ri->Printf( PRINT_ALL, "Rag trace time: %i (%i STARTSOLID, %i TOTAL)\n", ragTraceTime, ragSSCount, ragTraceCount);
 	}
 	*/
 
@@ -2349,7 +2349,7 @@ char *G2API_GetSurfaceName(CGhoul2Info *ghlInfo, int surfNumber)
 		//may have.. but how did they get that surf index to begin with? Oh well.
 		if (surfNumber < 0 || surfNumber >= mod->mdxm->numSurfaces)
 		{
-			Com_Printf("G2API_GetSurfaceName: You passed in an invalid surface number (%i) for model %s.\n", surfNumber, ghlInfo->mFileName);
+			ri->Printf( PRINT_ALL, "G2API_GetSurfaceName: You passed in an invalid surface number (%i) for model %s.\n", surfNumber, ghlInfo->mFileName);
 			return noSurface;
 		}
 

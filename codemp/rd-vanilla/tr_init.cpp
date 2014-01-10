@@ -448,14 +448,14 @@ static void R_ModeList_f( void )
 {
 	int i;
 
-	Com_Printf ("\n" );
-	Com_Printf ("Mode -2: Use desktop resolution\n" );
-	Com_Printf ("Mode -1: Use r_customWidth and r_customHeight variables\n" );
+	ri->Printf( PRINT_ALL, "\n" );
+	ri->Printf( PRINT_ALL, "Mode -2: Use desktop resolution\n" );
+	ri->Printf( PRINT_ALL, "Mode -1: Use r_customWidth and r_customHeight variables\n" );
 	for ( i = 0; i < s_numVidModes; i++ )
 	{
-		Com_Printf ("%s\n", r_vidModes[i].description );
+		ri->Printf( PRINT_ALL, "%s\n", r_vidModes[i].description );
 	}
-	Com_Printf ("\n" );
+	ri->Printf( PRINT_ALL, "\n" );
 }
 
 /*
@@ -684,7 +684,7 @@ static void R_LevelShot( void ) {
 	ri->Hunk_FreeTempMemory( buffer );
 	ri->Hunk_FreeTempMemory( allsource );
 
-	Com_Printf ("Wrote %s\n", checkname );
+	ri->Printf( PRINT_ALL, "[skipnotify]Wrote %s\n", checkname );
 }
 
 /* 
@@ -720,7 +720,7 @@ void R_ScreenShotTGA_f (void) {
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".tga" );
 
 		if ( ri->FS_FileExists( checkname ) ) {
-			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
+			ri->Printf( PRINT_ALL, "ScreenShot: Couldn't create a file\n"); 
 			return;
  		}
 	}
@@ -728,7 +728,7 @@ void R_ScreenShotTGA_f (void) {
 	R_TakeScreenshot( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
 
 	if ( !silent )
-		Com_Printf( "Wrote %s\n", checkname );
+		ri->Printf( PRINT_ALL, "[skipnotify]Wrote %s\n", checkname );
 }
 
 /* 
@@ -764,7 +764,7 @@ void R_ScreenShotPNG_f (void) {
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".png" );
 
 		if ( ri->FS_FileExists( checkname ) ) {
-			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
+			ri->Printf( PRINT_ALL, "ScreenShot: Couldn't create a file\n"); 
 			return;
  		}
 	}
@@ -772,10 +772,9 @@ void R_ScreenShotPNG_f (void) {
 	R_TakeScreenshotPNG( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
 
 	if ( !silent )
-		Com_Printf( "Wrote %s\n", checkname );
+		ri->Printf( PRINT_ALL, "[skipnotify]Wrote %s\n", checkname );
 } 
 
-//jpeg  vession
 void R_ScreenShot_f (void) {
 	char checkname[MAX_OSPATH] = {0};
 	qboolean silent = qfalse;
@@ -796,7 +795,7 @@ void R_ScreenShot_f (void) {
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".jpg" );
 
 		if ( ri->FS_FileExists( checkname ) ) {
-			Com_Printf( "ScreenShot: Couldn't create a file\n" );
+			ri->Printf( PRINT_ALL, "ScreenShot: Couldn't create a file\n" );
 			return;
  		}
 	}
@@ -804,7 +803,7 @@ void R_ScreenShot_f (void) {
 	R_TakeScreenshotJPEG( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
 
 	if ( !silent )
-		Com_Printf( "Wrote %s\n", checkname );
+		ri->Printf( PRINT_ALL, "[skipnotify]Wrote %s\n", checkname );
 } 
 
 /*
@@ -955,7 +954,7 @@ void R_PrintLongString(const char *string) {
 	while(size > 0)
 	{
 		Q_strncpyz(buffer, p, sizeof (buffer) );
-		Com_Printf( "%s", buffer );
+		ri->Printf( PRINT_ALL, "%s", buffer );
 		p += 1023;
 		size -= 1023;
 	}
@@ -986,30 +985,30 @@ void GfxInfo_f( void )
 		"GL_EXT_texture_compression_s3tc",
 	};
 
-	Com_Printf ("\nGL_VENDOR: %s\n", glConfig.vendor_string );
-	Com_Printf ("GL_RENDERER: %s\n", glConfig.renderer_string );
-	Com_Printf ("GL_VERSION: %s\n", glConfig.version_string );
+	ri->Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
+	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
+	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
 	R_PrintLongString( glConfig.extensions_string );
-	Com_Printf ("\n");
-	Com_Printf ("GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
-	Com_Printf ("GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
-	Com_Printf ("\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
-	Com_Printf ("MODE: %d, %d x %d %s%s hz:", r_mode->integer, glConfig.vidWidth, glConfig.vidHeight, r_fullscreen->integer == 0 ? noborderstrings[r_noborder->integer == 1] : noborderstrings[0] ,fsstrings[r_fullscreen->integer == 1] );
+	ri->Printf( PRINT_ALL, "\n");
+	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
+	ri->Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
+	ri->Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
+	ri->Printf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:", r_mode->integer, glConfig.vidWidth, glConfig.vidHeight, r_fullscreen->integer == 0 ? noborderstrings[r_noborder->integer == 1] : noborderstrings[0] ,fsstrings[r_fullscreen->integer == 1] );
 	if ( glConfig.displayFrequency )
 	{
-		Com_Printf ("%d\n", glConfig.displayFrequency );
+		ri->Printf( PRINT_ALL, "%d\n", glConfig.displayFrequency );
 	}
 	else
 	{
-		Com_Printf ("N/A\n" );
+		ri->Printf( PRINT_ALL, "N/A\n" );
 	}
 	if ( glConfig.deviceSupportsGamma )
 	{
-		Com_Printf ("GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
+		ri->Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
 	}
 	else
 	{
-		Com_Printf ("GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
+		ri->Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
 	}
 
 	// rendering primitives
@@ -1017,7 +1016,7 @@ void GfxInfo_f( void )
 		int		primitives;
 
 		// default is to use triangles if compiled vertex arrays are present
-		Com_Printf ("rendering primitives: " );
+		ri->Printf( PRINT_ALL, "rendering primitives: " );
 		primitives = r_primitives->integer;
 		if ( primitives == 0 ) {
 			if ( qglLockArraysEXT ) {
@@ -1027,51 +1026,51 @@ void GfxInfo_f( void )
 			}
 		}
 		if ( primitives == -1 ) {
-			Com_Printf ("none\n" );
+			ri->Printf( PRINT_ALL, "none\n" );
 		} else if ( primitives == 2 ) {
-			Com_Printf ("single glDrawElements\n" );
+			ri->Printf( PRINT_ALL, "single glDrawElements\n" );
 		} else if ( primitives == 1 ) {
-			Com_Printf ("multiple glArrayElement\n" );
+			ri->Printf( PRINT_ALL, "multiple glArrayElement\n" );
 		} else if ( primitives == 3 ) {
-			Com_Printf ("multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
+			ri->Printf( PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
 		}
 	}
 
-	Com_Printf ("texturemode: %s\n", r_textureMode->string );
-	Com_Printf ("picmip: %d\n", r_picmip->integer );
-	Com_Printf ("texture bits: %d\n", r_texturebits->integer );
-	Com_Printf ("lightmap texture bits: %d\n", r_texturebitslm->integer );
-	Com_Printf ("multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
-	Com_Printf ("compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
-	Com_Printf ("texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
-	Com_Printf ("compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
-	Com_Printf ("compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
-	Com_Printf ("texture compression method: %s\n", tc_table[glConfig.textureCompression] );
-	Com_Printf ("anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
+	ri->Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
+	ri->Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
+	ri->Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
+	ri->Printf( PRINT_ALL, "lightmap texture bits: %d\n", r_texturebitslm->integer );
+	ri->Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
+	ri->Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
+	ri->Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
+	ri->Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
+	ri->Printf( PRINT_ALL, "compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
+	ri->Printf( PRINT_ALL, "texture compression method: %s\n", tc_table[glConfig.textureCompression] );
+	ri->Printf( PRINT_ALL, "anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
 	if (r_ext_texture_filter_anisotropic->integer != 0 && glConfig.maxTextureFilterAnisotropy)
 	{
 		if (Q_isintegral(r_ext_texture_filter_anisotropic->value))
-			Com_Printf ("(%i of ", (int)r_ext_texture_filter_anisotropic->value);
+			ri->Printf( PRINT_ALL, "(%i of ", (int)r_ext_texture_filter_anisotropic->value);
 		else
-			Com_Printf ("(%f of ", r_ext_texture_filter_anisotropic->value);
+			ri->Printf( PRINT_ALL, "(%f of ", r_ext_texture_filter_anisotropic->value);
 
 		if (Q_isintegral(glConfig.maxTextureFilterAnisotropy))
-			Com_Printf ("%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
+			ri->Printf( PRINT_ALL, "%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
 		else
-			Com_Printf ("%f)\n", glConfig.maxTextureFilterAnisotropy);
+			ri->Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
 	}
-	Com_Printf ("Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
-	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
+	ri->Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	if (g_bTextureRectangleHack) ri->Printf( PRINT_ALL, "Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
-		Com_Printf ("Forcing glFinish\n" );
+		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );
 	}
 	if ( r_displayRefresh ->integer ) {
-		Com_Printf ("Display refresh set to %d\n", r_displayRefresh->integer );
+		ri->Printf( PRINT_ALL, "Display refresh set to %d\n", r_displayRefresh->integer );
 	}
 	if (tr.world)
 	{
-		Com_Printf ("Light Grid size set to (%.2f %.2f %.2f)\n", tr.world->lightGridSize[0], tr.world->lightGridSize[1], tr.world->lightGridSize[2] );
+		ri->Printf( PRINT_ALL, "Light Grid size set to (%.2f %.2f %.2f)\n", tr.world->lightGridSize[0], tr.world->lightGridSize[1], tr.world->lightGridSize[2] );
 	}
 }
 
@@ -1156,6 +1155,7 @@ void R_Register( void )
 	r_lodbias							= ri->Cvar_Get( "r_lodbias",						"0",						CVAR_ARCHIVE );
 	r_autolodscalevalue					= ri->Cvar_Get( "r_autolodscalevalue",				"0",						CVAR_ROM );
 	r_flares							= ri->Cvar_Get( "r_flares",							"1",						CVAR_ARCHIVE );
+
 	r_znear								= ri->Cvar_Get( "r_znear",							"4",						CVAR_CHEAT );
 	ri->Cvar_CheckRange( r_znear, 0.001f, 10, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
 	r_ignoreGLErrors					= ri->Cvar_Get( "r_ignoreGLErrors",					"1",						CVAR_ARCHIVE );
@@ -1270,11 +1270,11 @@ Ghoul2 Insert End
 	ri->Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
 	ri->Cmd_AddCommand( "gfxinfo", GfxInfo_f );
 	ri->Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
-	ri->Cmd_AddCommand( "r_we", R_WorldEffect_f);
-	ri->Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
+	ri->Cmd_AddCommand( "r_we", R_WorldEffect_f );
+	ri->Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f );
 	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
 	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
+	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f );
 	ri->Cmd_AddCommand( "minimize", GLimp_Minimize );
 
 }
@@ -1290,7 +1290,7 @@ void R_Init( void ) {
 	int i;
 	byte *ptr;
 
-//	Com_Printf ("----- R_Init -----\n" );
+//	ri->Printf( PRINT_ALL, "----- R_Init -----\n" );
 	// clear all our internal state
 	memset( &tr, 0, sizeof( tr ) );
 	memset( &backEnd, 0, sizeof( backEnd ) );
@@ -1304,7 +1304,7 @@ void R_Init( void ) {
 
 #ifndef FINAL_BUILD
 	if ( (intptr_t)tess.xyz & 15 ) {
-		Com_Printf( "WARNING: tess.xyz not 16 byte aligned (%x)\n",(intptr_t)tess.xyz & 15 );
+		ri->Printf( PRINT_ALL, "WARNING: tess.xyz not 16 byte aligned (%x)\n",(intptr_t)tess.xyz & 15 );
 	}
 #endif
 	//
@@ -1376,9 +1376,9 @@ void R_Init( void ) {
 
 	int	err = qglGetError();
 	if ( err != GL_NO_ERROR )
-		Com_Printf ( "glGetError() = 0x%x\n", err);
+		ri->Printf( PRINT_ALL,  "glGetError() = 0x%x\n", err);
 
-//	Com_Printf ("----- finished R_Init -----\n" );
+//	ri->Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
 
 /*
@@ -1388,7 +1388,7 @@ RE_Shutdown
 */
 void RE_Shutdown( qboolean destroyWindow ) {	
 
-//	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
+//	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
 	ri->Cmd_RemoveCommand ("imagelist");
 	ri->Cmd_RemoveCommand ("shaderlist");
@@ -1550,7 +1550,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	memset( &re, 0, sizeof( re ) );
 
 	if ( apiVersion != REF_API_VERSION ) {
-		Com_Printf ( "Mismatched REF_API_VERSION: expected %i, got %i\n", REF_API_VERSION, apiVersion );
+		ri->Printf( PRINT_ALL,  "Mismatched REF_API_VERSION: expected %i, got %i\n", REF_API_VERSION, apiVersion );
 		return NULL;
 	}
 
