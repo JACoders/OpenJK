@@ -90,7 +90,7 @@ void PM_ForceLegsAnim( int anim );
 void PM_BeginWeaponChange( int weapon );
 void PM_FinishWeaponChange( void );
 
-void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags, int blendTime);
+void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags);
 
 void PM_WeaponLightsaber(void);
 void PM_SetSaberMove(short newMove);

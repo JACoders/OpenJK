@@ -868,7 +868,7 @@ int PM_SaberLockWinAnim( qboolean victory, qboolean superBreak )
 	}
 	if ( winAnim != -1 )
 	{
-		PM_SetAnim( SETANIM_BOTH, winAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+		PM_SetAnim( SETANIM_BOTH, winAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		pm->ps->weaponTime = pm->ps->torsoTimer;
 		pm->ps->saberBlocked = BLOCKED_NONE;
 		pm->ps->weaponstate = WEAPON_FIRING;
@@ -1068,14 +1068,14 @@ int PM_SaberLockResultAnim( playerState_t *duelist, qboolean superBreak, qboolea
 	//server-side: set it on the other guy, too
 	if ( duelist->clientNum == pm->ps->clientNum )
 	{//me
-		PM_SetAnim( SETANIM_BOTH, baseAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+		PM_SetAnim( SETANIM_BOTH, baseAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	}
 	else
 	{//other guy
 		NPC_SetAnim( &g_entities[duelist->clientNum], SETANIM_BOTH, baseAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	}
 #else
-	PM_SetAnim( SETANIM_BOTH, baseAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+	PM_SetAnim( SETANIM_BOTH, baseAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 #endif
 
 	if ( superBreak
@@ -2805,7 +2805,7 @@ void PM_WeaponLightsaber(void)
 				)
 			{
 				pm->ps->torsoTimer = 0;
-				PM_SetAnim(SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_OVERRIDE, 100);
+				PM_SetAnim(SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_OVERRIDE);
 				pm->ps->saberLockFrame = 0;
 			}
 		}
@@ -2842,11 +2842,11 @@ void PM_WeaponLightsaber(void)
 		if ((pm->ps->legsAnim) != (pm->ps->torsoAnim) && !BG_InSlopeAnim(pm->ps->legsAnim) &&
 			pm->ps->torsoTimer <= 0)
 		{
-			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE, 100);
+			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE);
 		}
 		else if (BG_InSlopeAnim(pm->ps->legsAnim) && pm->ps->torsoTimer <= 0)
 		{
-			PM_SetAnim(SETANIM_TORSO,PM_GetSaberStance(),SETANIM_FLAG_OVERRIDE, 100);
+			PM_SetAnim(SETANIM_TORSO,PM_GetSaberStance(),SETANIM_FLAG_OVERRIDE);
 		}
 
 		if (pm->ps->weaponTime < 1 && ((pm->cmd.buttons & BUTTON_ALT_ATTACK) || (pm->cmd.buttons & BUTTON_ATTACK)))
@@ -2885,12 +2885,12 @@ void PM_WeaponLightsaber(void)
 
 		if ((pm->ps->legsAnim) != (pm->ps->torsoAnim) && !BG_InSlopeAnim(pm->ps->legsAnim))
 		{
-			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE, 100);
+			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE);
 		}
 
 		if (BG_InSaberStandAnim(pm->ps->torsoAnim) || pm->ps->torsoAnim == BOTH_SABERPULL)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_OVERRIDE, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_STAND1,SETANIM_FLAG_OVERRIDE);
 		}
 
 		return;
@@ -2987,7 +2987,7 @@ void PM_WeaponLightsaber(void)
 			  )
 			)
 		{
-			PM_SetAnim(SETANIM_TORSO, BOTH_SABERPULL, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+			PM_SetAnim(SETANIM_TORSO, BOTH_SABERPULL, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			pm->ps->torsoTimer = 1;
 			return;
 		}
@@ -3021,7 +3021,7 @@ void PM_WeaponLightsaber(void)
 	{
 		if ((pm->ps->torsoAnim) != (pm->ps->legsAnim))
 		{
-			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE, 100);
+			PM_SetAnim(SETANIM_TORSO,(pm->ps->legsAnim),SETANIM_FLAG_OVERRIDE);
 		}
 	}
 	*/
@@ -3047,7 +3047,7 @@ void PM_WeaponLightsaber(void)
 		//This was stupid and didn't work right. Looks like things are fine without it.
 	//	if (pm->ps->saberBlocked && pm->ps->torsoAnim != saberMoveData[pm->ps->saberMove].animToUse)
 	//	{ //rww - keep him in the blocking pose until he can attack again
-	//		PM_SetAnim(SETANIM_TORSO,saberMoveData[pm->ps->saberMove].animToUse,saberMoveData[pm->ps->saberMove].animSetFlags|SETANIM_FLAG_HOLD, saberMoveData[pm->ps->saberMove].blendTime);
+	//		PM_SetAnim(SETANIM_TORSO,saberMoveData[pm->ps->saberMove].animToUse,saberMoveData[pm->ps->saberMove].animSetFlags|SETANIM_FLAG_HOLD);
 	//		return;
 	//	}
 	}
@@ -3326,43 +3326,43 @@ weapChecks:
 		pm->ps->weaponstate = WEAPON_IDLE;
 		if((pm->ps->legsAnim) == BOTH_WALK1 )
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_WALK1,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_WALK1,SETANIM_FLAG_NORMAL);
 		}
 		else if((pm->ps->legsAnim) == BOTH_RUN1 )
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_RUN1,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_RUN1,SETANIM_FLAG_NORMAL);
 		}
 		else if((pm->ps->legsAnim) == BOTH_RUN2 )
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_RUN2,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_RUN2,SETANIM_FLAG_NORMAL);
 		}
 		else if( pm->ps->legsAnim == BOTH_RUN_STAFF)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_RUN_STAFF,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_RUN_STAFF,SETANIM_FLAG_NORMAL);
 		}
 		else if( pm->ps->legsAnim == BOTH_RUN_DUAL)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_RUN_DUAL,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_RUN_DUAL,SETANIM_FLAG_NORMAL);
 		}
 		else if((pm->ps->legsAnim) == BOTH_WALK1 )
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_WALK1,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_WALK1,SETANIM_FLAG_NORMAL);
 		}
 		else if( pm->ps->legsAnim == BOTH_WALK2)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_WALK2,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_WALK2,SETANIM_FLAG_NORMAL);
 		}
 		else if( pm->ps->legsAnim == BOTH_WALK_STAFF)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_WALK_STAFF,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_WALK_STAFF,SETANIM_FLAG_NORMAL);
 		}
 		else if( pm->ps->legsAnim == BOTH_WALK_DUAL)
 		{
-			PM_SetAnim(SETANIM_TORSO,BOTH_WALK_DUAL,SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,BOTH_WALK_DUAL,SETANIM_FLAG_NORMAL);
 		}
 		else
 		{
-			PM_SetAnim(SETANIM_TORSO,PM_GetSaberStance(),SETANIM_FLAG_NORMAL, 100);
+			PM_SetAnim(SETANIM_TORSO,PM_GetSaberStance(),SETANIM_FLAG_NORMAL);
 		}
 
 		if (pm->ps->weaponstate == WEAPON_RAISING)
@@ -3660,7 +3660,7 @@ weapChecks:
 
 			if ( both && pm->ps->torsoAnim == anim )
 			{
-				PM_SetAnim(SETANIM_LEGS,anim,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+				PM_SetAnim(SETANIM_LEGS,anim,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 
 			//don't fire again until anim is done
@@ -3907,7 +3907,7 @@ void PM_SetSaberMove(short newMove)
 			}
 		}
 
-		PM_SetAnim(parts, anim, setflags, saberMoveData[newMove].blendTime);
+		PM_SetAnim(parts, anim, setflags);
 		if (parts != SETANIM_LEGS &&
 			(pm->ps->legsAnim == BOTH_ARIAL_LEFT ||
 			pm->ps->legsAnim == BOTH_ARIAL_RIGHT))
