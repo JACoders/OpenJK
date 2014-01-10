@@ -117,38 +117,31 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
 {
-	int		len;
-	char	work[MAX_QPATH];
-
+	char work[MAX_QPATH] = {0};
 	*pic = NULL;
 	*width = 0;
 	*height = 0;
 
-	len = strlen(name);
-	if(len >= MAX_QPATH)
+	const ImageLoaderMap *imageLoader = FindImageLoader( "jpg" );
+	if ( imageLoader != NULL )
 	{
-		return;
+		COM_DefaultExtension( work, sizeof( work ), ".jpg" );
+		imageLoader->loader( work, pic, width, height );
+		if ( *pic )
+		{
+			return;
+		}
 	}
-	if (len < 5)
+
+	imageLoader = FindImageLoader( "tga" );
+	if ( imageLoader != NULL )
 	{
-		return;
-	}
-
-	strcpy(work, name);
-
-	COM_DefaultExtension( work, sizeof( work ), ".jpg" );
-	LoadJPG( work, pic, width, height );
-
-	if (!pic || !*pic)
-	{ //jpeg failed, try targa
-		strcpy(work, name);
 		COM_DefaultExtension( work, sizeof( work ), ".tga" );
-		LoadTGA( work, pic, width, height );
-	}
-
-	if(*pic)
-	{
-		return;
+		imageLoader->loader( work, pic, width, height );
+		if ( *pic )
+		{
+			return;
+		}
 	}
 
 	// Dataimage loading failed
