@@ -82,11 +82,11 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 		// didn't find it? Error
 		//assert(0);
 #ifdef _DEBUG
-		Com_Printf("WARNING: Failed to add bone %s\n", boneName);
+		ri->Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
 #endif
 
 #ifdef _RAG_PRINT_TEST
-		Com_Printf("WARNING: Failed to add bone %s\n", boneName);
+		ri->Printf( PRINT_ALL, "WARNING: Failed to add bone %s\n", boneName);
 #endif
 		return -1;
 	}
@@ -114,7 +114,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	}
 
 #ifdef _RAG_PRINT_TEST
-	Com_Printf("New bone added for %s\n", boneName);
+	ri->Printf( PRINT_ALL, "New bone added for %s\n", boneName);
 #endif
 	// ok, we didn't find an existing bone of that name, or an empty slot. Lets add an entry
 	tempBone.boneNumber = x;
@@ -3331,7 +3331,7 @@ void G2_RagPrintMatrix(mdxaBone_t *mat)
 		n++;
 	}
 	strcat(x, "\n");
-	Com_Printf(x);
+	ri->Printf( PRINT_ALL, x);
 }
 #endif
 
@@ -3693,7 +3693,7 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 				VectorCopy(basePos, goalSpot);
 				goalSpot[2] = (params->position[2]-23)-testMins[2];
 #endif
-				//Com_Printf("%i: %f %f %f\n", bone.boneNumber, basePos[0], basePos[1], basePos[2]);
+				//ri->Printf( PRINT_ALL, "%i: %f %f %f\n", bone.boneNumber, basePos[0], basePos[1], basePos[2]);
 			}
 			else
 			{ //if deep in solid want to try to rise up out of solid before hinting back to base
@@ -3815,7 +3815,7 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 
 				assert(debugBoneName);
 
-				Com_Printf("High bone (%s, %i) solid count: %i\n", debugBoneName, bone.boneNumber, bone.solidCount);
+				ri->Printf( PRINT_ALL, "High bone (%s, %i) solid count: %i\n", debugBoneName, bone.boneNumber, bone.solidCount);
 
 				VectorAdd(e.currentOrigin, testMins, absmin);
 				VectorAdd(e.currentOrigin, testMaxs, absmax);

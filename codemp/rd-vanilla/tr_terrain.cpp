@@ -505,7 +505,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	CGPGroup		*basegroup, *classes, *items;
 
 	Com_sprintf(terrainDef, MAX_QPATH, "ext_data/RMG/%s.terrain", td);
-	Com_Printf("R_Terrain: Loading and parsing terrainDef %s.....\n", td);
+	ri->Printf( PRINT_ALL, "R_Terrain: Loading and parsing terrainDef %s.....\n", td);
 
 	mWaterShader = NULL;
 	mFlatShader  = NULL_HANDLE;
@@ -515,7 +515,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 		Com_sprintf(terrainDef, MAX_QPATH, "ext_data/arioche/%s.terrain", td);
 		if(!Com_ParseTextFile(terrainDef, parse))
 		{
-			Com_Printf("Could not open %s\n", terrainDef);
+			ri->Printf( PRINT_ALL, "Could not open %s\n", terrainDef);
 			return;
 		}
 	}
@@ -899,7 +899,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	// Calculate texture coords (not projected - real)
 	CalculateTextureCoords();
 
-	Com_Printf ("R_Terrain: Creating renderer patches.....\n");
+	ri->Printf( PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
 	// Initialise all terrain patches
 	mTRPatches = (CTRPatch *)Z_Malloc(sizeof(CTRPatch) * common->GetBlockCount(), TAG_R_TERRAIN); 
 
@@ -998,11 +998,11 @@ void RE_InitRendererTerrain( const char *info )
 
 	if ( !info || !info[0] )
 	{
-		Com_Printf( "RE_RegisterTerrain: NULL name\n" );
+		ri->Printf( PRINT_ALL, "RE_RegisterTerrain: NULL name\n" );
 		return;
 	}
 
-	Com_Printf("R_Terrain: Creating RENDERER data.....\n");
+	ri->Printf( PRINT_ALL, "R_Terrain: Creating RENDERER data.....\n");
 
 	// Create and register a new landscape structure
 	/*ls = */new CTRLandScape(info);
@@ -1026,7 +1026,7 @@ void R_TerrainShutdown(void)
 {
 	CTRLandScape	*ls;
 
-//	Com_Printf("R_Terrain: Shutting down RENDERER terrain.....\n");
+//	ri->Printf( PRINT_ALL, "R_Terrain: Shutting down RENDERER terrain.....\n");
 	ls = tr.landScape.landscape;
 	if(ls)
 	{

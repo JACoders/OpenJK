@@ -116,7 +116,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 	}
 
 	if ( !hShader ) {
-		Com_Printf (S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: NULL poly shader\n");
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: NULL poly shader\n");
 		return;
 	}
 
@@ -233,7 +233,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 
 		if (!ghoul2[0].mModel)
 		{
-			Com_Printf("Your ghoul2 instance has no model!\n");
+			ri->Printf( PRINT_ALL, "Your ghoul2 instance has no model!\n");
 		}
 	}
 

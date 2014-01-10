@@ -386,10 +386,10 @@ static void AutospriteDeform( void ) {
 	vec3_t	leftDir, upDir;
 
 	if ( tess.numVertexes & 3 ) {
-		Com_Printf (S_COLOR_YELLOW  "Autosprite shader %s had odd vertex count", tess.shader->name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "Autosprite shader %s had odd vertex count", tess.shader->name );
 	}
 	if ( tess.numIndexes != ( tess.numVertexes >> 2 ) * 6 ) {
-		Com_Printf (S_COLOR_YELLOW  "Autosprite shader %s had odd index count", tess.shader->name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "Autosprite shader %s had odd index count", tess.shader->name );
 	}
 
 	oldVerts = tess.numVertexes;
@@ -463,10 +463,10 @@ static void Autosprite2Deform( void ) {
 	vec3_t	forward;
 
 	if ( tess.numVertexes & 3 ) {
-		Com_Printf (S_COLOR_YELLOW  "Autosprite2 shader %s had odd vertex count", tess.shader->name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "Autosprite2 shader %s had odd vertex count", tess.shader->name );
 	}
 	if ( tess.numIndexes != ( tess.numVertexes >> 2 ) * 6 ) {
-		Com_Printf (S_COLOR_YELLOW  "Autosprite2 shader %s had odd index count", tess.shader->name );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "Autosprite2 shader %s had odd index count", tess.shader->name );
 	}
 
 	if ( backEnd.currentEntity != &tr.worldEntity ) {

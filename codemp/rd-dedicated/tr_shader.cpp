@@ -344,12 +344,12 @@ R_CreateExtendedName
 ===============
 */
 //rwwRMG - added
-void R_CreateExtendedName(char *extendedName, const char *name, const int *lightmapIndex, const byte *styles)
+void R_CreateExtendedName(char *extendedName, int extendedNameSize, const char *name, const int *lightmapIndex, const byte *styles)
 {
 	int		i;
 
 	// Set the basename
-	COM_StripExtension( name, extendedName, MAX_QPATH );
+	COM_StripExtension( name, extendedName, extendedNameSize );
 
 	// Add in lightmaps
 	if(lightmapIndex && styles)

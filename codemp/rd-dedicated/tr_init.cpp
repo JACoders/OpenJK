@@ -423,7 +423,7 @@ Ghoul2 Insert End
 	// removed in R_Shutdown
 	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
 	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
+	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f );
 
 }
 
