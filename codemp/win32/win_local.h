@@ -5,7 +5,6 @@
 #include <dinput.h>
 #include <dsound.h>
 #include <winsock.h>
-#include <wsipx.h>
 #ifndef NO_XINPUT
 #include <xinput.h>
 #endif

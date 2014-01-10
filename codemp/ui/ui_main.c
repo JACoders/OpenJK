@@ -495,7 +495,6 @@ static const int numGameTypes = ARRAY_LEN( gameTypes );
 static char* netNames[] = {
 	"???",
 	"UDP",
-	"IPX",
 	NULL
 };
 

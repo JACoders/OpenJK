@@ -102,9 +102,7 @@ typedef enum {
 	NA_BOT,
 	NA_LOOPBACK,
 	NA_BROADCAST,
-	NA_IP,
-	NA_IPX,
-	NA_BROADCAST_IPX
+	NA_IP
 } netadrtype_t;
 
 typedef enum {
@@ -116,7 +114,6 @@ typedef struct netadr_s {
 	netadrtype_t	type;
 
 	byte	ip[4];
-	byte	ipx[10];
 
 	unsigned short	port;
 } netadr_t;
