@@ -136,31 +136,24 @@ CG_MapTorsoToWeaponFrame
 static int CG_MapTorsoToWeaponFrame( clientInfo_t *ci, int frame, int animNum ) {
 	animation_t *animations = bgHumanoidAnimations;
 #ifdef WEAPON_FORCE_BUSY_HOLSTER
-	if (cg.snap->ps.forceHandExtend != HANDEXTEND_NONE || cgWeapFrameTime > cg.time)
-	{ //the reason for the after delay is so that it doesn't snap the weapon frame to the "idle" (0) frame
-		//for a very quick moment
-		if (cgWeapFrame < 6)
-		{
+	if ( cg.snap->ps.forceHandExtend != HANDEXTEND_NONE || cgWeapFrameTime > cg.time ) {
+		// the reason for the after delay is so that it doesn't snap the weapon frame to the "idle" (0) frame for a very quick moment
+		if ( cgWeapFrame < 6 ) {
 			cgWeapFrame = 6;
 			cgWeapFrameTime = cg.time + 10;
 		}
 
-		if (cgWeapFrameTime < cg.time && cgWeapFrame < 10)
-		{
+		else if ( cgWeapFrameTime < cg.time && cgWeapFrame < 10 ) {
 			cgWeapFrame++;
 			cgWeapFrameTime = cg.time + 10;
 		}
 
-		if (cg.snap->ps.forceHandExtend != HANDEXTEND_NONE &&
-			cgWeapFrame == 10)
-		{
+		else if ( cg.snap->ps.forceHandExtend != HANDEXTEND_NONE && cgWeapFrame == 10 )
 			cgWeapFrameTime = cg.time + 100;
-		}
 
 		return cgWeapFrame;
 	}
-	else
-	{
+	else {
 		cgWeapFrame = 0;
 		cgWeapFrameTime = 0;
 	}
