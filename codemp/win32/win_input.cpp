@@ -1018,7 +1018,7 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( &xiState, sizeof(XINPUT_GAMEPAD) );
+	ZeroMemory( &xiState, sizeof(XINPUT_STATE) );
 
 	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
 															// I'll probably add a splitscreen mode just for lulz --eez
