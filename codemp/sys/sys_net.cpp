@@ -108,9 +108,9 @@ Sys_StringToAdr
 */
 qboolean	Sys_StringToAdr (const char *s, netadr_t *a)
 {
-	struct sockaddr_in sadr;
+	struct sockaddr sadr;
 	
-	if (!Sys_StringToSockaddr (s, (struct sockaddr *)&sadr))
+	if (!Sys_StringToSockaddr (s, &sadr))
 		return qfalse;
 	
 	SockadrToNetadr (&sadr, a);
@@ -168,7 +168,7 @@ void	Sys_SendPacket( int length, const void *data, netadr_t to )
 		return;
 	}
 
-	if ( ip_socket == INVALID_SOCKET )
+	if ( ip_socket == -1 )
 		return;
 
 	NetadrToSockadr (&to, &addr);
@@ -176,7 +176,7 @@ void	Sys_SendPacket( int length, const void *data, netadr_t to )
 	ret = sendto (ip_socket, data, length, 0, (struct sockaddr *)&addr, sizeof(addr) );
 	if (ret == -1)
 	{
-		err = errno;
+		int err = errno;
 
 		// wouldblock is silent
 		if( err == EAGAIN ) {
@@ -585,14 +585,9 @@ void NET_Config( qboolean enableNetworking ) {
 	}
 
 	if( stop ) {
-		if ( ip_socket && ip_socket != INVALID_SOCKET ) {
-			closesocket( ip_socket );
-			ip_socket = INVALID_SOCKET;
-		}
-
-		if ( socks_socket && socks_socket != INVALID_SOCKET ) {
-			closesocket( socks_socket );
-			socks_socket = INVALID_SOCKET;
+		if ( ip_socket && ip_socket != -1 ) {
+			close( ip_socket );
+			ip_socket = -1;
 		}
 	}
 
