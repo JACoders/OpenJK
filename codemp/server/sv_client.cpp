@@ -53,18 +53,20 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-	// Prevent using getchallenge as an amplifier
-	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
-			NET_AdrToString( from ) );
-		return;
-	}
+	if (sv_floodProtect->integer & (1<<1)) {
+		// Prevent using getchallenge as an amplifier
+		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+			Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
+				NET_AdrToString( from ) );
+			return;
+		}
 
-	// Allow getchallenge to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
-		return;
+		// Allow getchallenge to be DoSed relatively easily, but prevent
+		// excess outbound bandwidth usage when being flooded inbound
+		if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+			Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
+			return;
+		}
 	}
 
 	oldest = 0;
@@ -1383,7 +1385,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// normal to spam a lot of commands when downloading
 	if ( !com_cl_running->integer && 
 		cl->state >= CS_ACTIVE &&
-		sv_floodProtect->integer && 
+		(sv_floodProtect->integer & (1<<0)) && 
 		svs.time < cl->nextReliableTime ) {
 		// ignore any other text messages from this client but let them keep playing
 		// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
