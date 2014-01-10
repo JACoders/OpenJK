@@ -10110,6 +10110,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->scriptFlags&SCF_IGNORE_ALERTS);
+		break;
 
 	case SET_DONTSHOOT://## %t="BOOL_TYPES" # Others won't shoot you
 		*value = (ent->flags&FL_DONT_SHOOT);
@@ -10217,6 +10218,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->aiFlags&NPCAI_SHIELDS);
+		break;
 	case SET_SABERACTIVE:
 		if ( ent->client == NULL )
 		{
