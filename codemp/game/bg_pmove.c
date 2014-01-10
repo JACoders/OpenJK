@@ -1286,7 +1286,7 @@ static void PM_JumpForDir( void )
 	}
 	if(!BG_InDeathAnim(pm->ps->legsAnim))
 	{
-		PM_SetAnim(SETANIM_LEGS,anim,SETANIM_FLAG_OVERRIDE, 100);
+		PM_SetAnim(SETANIM_LEGS,anim,SETANIM_FLAG_OVERRIDE);
 	}
 }
 
@@ -1400,11 +1400,11 @@ qboolean PM_AdjustAngleForWallRun( playerState_t *ps, usercmd_t *ucmd, qboolean 
 		{//stop it
 			if ( (ps->legsAnim) == BOTH_WALL_RUN_RIGHT )
 			{
-				PM_SetAnim(SETANIM_BOTH, BOTH_WALL_RUN_RIGHT_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+				PM_SetAnim(SETANIM_BOTH, BOTH_WALL_RUN_RIGHT_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 			else if ( (ps->legsAnim) == BOTH_WALL_RUN_LEFT )
 			{
-				PM_SetAnim(SETANIM_BOTH, BOTH_WALL_RUN_LEFT_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+				PM_SetAnim(SETANIM_BOTH, BOTH_WALL_RUN_LEFT_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 		}
 	}
@@ -1453,7 +1453,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 			{//cool, do the alt-flip and land on whetever it is we just scaled up
 				VectorScale( fwd, 100, pm->ps->velocity );
 				pm->ps->velocity[2] += 400;
-				PM_SetAnim(SETANIM_BOTH, BOTH_FORCEWALLRUNFLIP_ALT, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+				PM_SetAnim(SETANIM_BOTH, BOTH_FORCEWALLRUNFLIP_ALT, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				pm->ps->pm_flags |= PMF_JUMP_HELD;
 				//ent->client->ps.pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 				//ent->client->ps.forcePowersActive |= (1<<FP_LEVITATION);
@@ -1534,7 +1534,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 			ps->velocity[2] += 200;
 			//NPC_SetAnim( ent, SETANIM_BOTH, BOTH_FORCEWALLRUNFLIP_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			//why?!?#?#@!%$R@$KR#F:Hdl;asfm
-			PM_SetAnim(SETANIM_BOTH, BOTH_FORCEWALLRUNFLIP_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+			PM_SetAnim(SETANIM_BOTH, BOTH_FORCEWALLRUNFLIP_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			ps->pm_flags |= PMF_JUMP_HELD;
 			//ent->client->ps.pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 
@@ -1616,7 +1616,7 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 					if ( ps->legsTimer <= 300 )
 					{
 						ps->saberHolstered = 2;
-						PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+						PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						ps->legsTimer = ps->torsoTimer = 150;
 					}
 				}
@@ -1691,12 +1691,12 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 
 			if ( BG_InReboundHold( ps->legsAnim ) )
 			{//if was in hold pose, release now
-				PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+				PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			}
 			else
 			{
 				//PM_JumpForDir();
-				PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART, 0);
+				PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART);
 			}
 
 			//return qtrue;
@@ -1726,7 +1726,7 @@ float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] =
 
 void PM_GrabWallForJump( int anim )
 {//NOTE!!! assumes an appropriate anim is being passed in!!!
-	PM_SetAnim( SETANIM_BOTH, anim, SETANIM_FLAG_RESTART|SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+	PM_SetAnim( SETANIM_BOTH, anim, SETANIM_FLAG_RESTART|SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	PM_AddEvent( EV_JUMP );//make sound for grab
 	pm->ps->pm_flags |= PMF_STUCK_TO_WALL;
 }
@@ -1865,7 +1865,7 @@ static qboolean PM_CheckJump( void )
 			parts = SETANIM_LEGS;
 		}
 
-		PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+		PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		pm->ps->forceJumpFlip = qfalse;
 		return qtrue;
 	}
@@ -1922,7 +1922,7 @@ static qboolean PM_CheckJump( void )
 									parts = SETANIM_LEGS;
 								}
 
-								PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+								PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 							}
 							else if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
 							{
@@ -1966,7 +1966,7 @@ static qboolean PM_CheckJump( void )
 										parts = SETANIM_LEGS;
 									}
 
-									PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+									PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								}
 							}
 						}
@@ -1999,7 +1999,7 @@ static qboolean PM_CheckJump( void )
 										parts = SETANIM_LEGS;
 									}
 
-									PM_SetAnim( parts, newAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+									PM_SetAnim( parts, newAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								}
 							}
 						}
@@ -2061,7 +2061,7 @@ static qboolean PM_CheckJump( void )
 		if ( trace.fraction <= 1.0f )
 		{
 			VectorMA( pm->ps->velocity, JUMP_VELOCITY*2, forward, pm->ps->velocity );
-			PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART, 150);
+			PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART);
 		}//else no surf close enough to push off of
 		pm->cmd.upmove = 0;
 	}
@@ -2281,7 +2281,7 @@ static qboolean PM_CheckJump( void )
 						{
 							parts = SETANIM_BOTH;
 						}
-						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						if ( anim == BOTH_BUTTERFLY_LEFT )
 						{
 							pm->ps->weaponTime = pm->ps->torsoTimer;
@@ -2358,7 +2358,7 @@ static qboolean PM_CheckJump( void )
 						{
 							parts = SETANIM_BOTH;
 						}
-						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						pm->cmd.upmove = 0;
 					}
 				}
@@ -2403,7 +2403,7 @@ static qboolean PM_CheckJump( void )
 						{//not attacking, set anim on both
 							parts = SETANIM_BOTH;
 						}
-						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+						PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						//FIXME: do damage to traceEnt, like above?
 						//pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 						//ha ha, so silly with your silly jumpy fally flags.
@@ -2450,7 +2450,7 @@ static qboolean PM_CheckJump( void )
 					{
 						parts = SETANIM_BOTH;
 					}
-					PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+					PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 
 					pm->ps->legsTimer -= 600; //I force this anim to play to the end to prevent landing on your head and suddenly flipping over.
 											  //It is a bit too long at the end though, so I'll just shorten it.
@@ -2527,7 +2527,7 @@ static qboolean PM_CheckJump( void )
 								pm->ps->velocity[2] += 150.0f;
 							}
 							//animate me
-							PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+							PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	//						pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 							//again with the flags!
 							//G_SoundOnEnt( pm->gent, CHAN_BODY, "sound/weapons/force/jump.wav" );
@@ -3740,11 +3740,11 @@ static void PM_CrashLand( void ) {
 		{
 			if ( pm->ps->torsoAnim == pm->ps->legsAnim )
 			{
-				PM_SetAnim(SETANIM_BOTH, landAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+				PM_SetAnim(SETANIM_BOTH, landAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 			else
 			{
-				PM_SetAnim(SETANIM_LEGS, landAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+				PM_SetAnim(SETANIM_LEGS, landAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 		}
 	}
@@ -3769,7 +3769,7 @@ static void PM_CrashLand( void ) {
 			fjAnim = BOTH_LAND1;
 			break;
 		}
-		PM_SetAnim(SETANIM_BOTH, fjAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+		PM_SetAnim(SETANIM_BOTH, fjAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 	}
 	// decide which landing animation to use
 	else if (!BG_InRoll(pm->ps, pm->ps->legsAnim) && pm->ps->inAirAnim && !pm->ps->m_iVehicleNum)
@@ -3858,7 +3858,7 @@ static void PM_CrashLand( void ) {
 				anim = 0;
 				pm->ps->legsTimer = 0;
 				pm->ps->legsAnim = 0;
-				PM_SetAnim(SETANIM_BOTH,BOTH_LAND1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150);
+				PM_SetAnim(SETANIM_BOTH,BOTH_LAND1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				pm->ps->legsTimer = TIMER_LAND;
 			}
 
@@ -3871,7 +3871,7 @@ static void PM_CrashLand( void ) {
 				{ //get out of it on torso
 					pm->ps->torsoTimer = 0;
 				}
-				PM_SetAnim(SETANIM_BOTH,anim,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150);
+				PM_SetAnim(SETANIM_BOTH,anim,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				didRoll = qtrue;
 			}
 		}
@@ -4013,13 +4013,13 @@ static void PM_GroundTraceMissed( void ) {
 
 		//rww - also don't use SETANIM_FLAG_HOLD, it will cause the legs to float around a bit before going into
 		//a proper anim even when on the ground.
-		PM_SetAnim(parts, BOTH_CHOKE3, SETANIM_FLAG_OVERRIDE, 100);
+		PM_SetAnim(parts, BOTH_CHOKE3, SETANIM_FLAG_OVERRIDE);
 	}
 	else if ( pm->ps->pm_type == PM_JETPACK ) 
 	{//jetpacking
 		//rww - also don't use SETANIM_FLAG_HOLD, it will cause the legs to float around a bit before going into
 		//a proper anim even when on the ground.
-		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE, 100);
+		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
 	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
 	else if ( pm->ps->groundEntityNum != ENTITYNUM_NONE || (pm->ps->legsAnim) == BOTH_CHOKE3 ) 
@@ -4038,18 +4038,18 @@ static void PM_GroundTraceMissed( void ) {
 		if ( trace.fraction == 1.0 || pm->ps->pm_type == PM_FLOAT ) {
 			if ( pm->ps->velocity[2] <= 0 && !(pm->ps->pm_flags&PMF_JUMP_HELD))
 			{
-				//PM_SetAnim(SETANIM_LEGS,BOTH_INAIR1,SETANIM_FLAG_OVERRIDE, 100);
-				PM_SetAnim(SETANIM_LEGS,BOTH_INAIR1,0, 100);
+				//PM_SetAnim(SETANIM_LEGS,BOTH_INAIR1,SETANIM_FLAG_OVERRIDE);
+				PM_SetAnim(SETANIM_LEGS,BOTH_INAIR1,0);
 				pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 			}
 			else if ( pm->cmd.forwardmove >= 0 ) 
 			{
-				PM_SetAnim(SETANIM_LEGS,BOTH_JUMP1,SETANIM_FLAG_OVERRIDE, 100);
+				PM_SetAnim(SETANIM_LEGS,BOTH_JUMP1,SETANIM_FLAG_OVERRIDE);
 				pm->ps->pm_flags &= ~PMF_BACKWARDS_JUMP;
 			} 
 			else 
 			{
-				PM_SetAnim(SETANIM_LEGS,BOTH_JUMPBACK1,SETANIM_FLAG_OVERRIDE, 100);
+				PM_SetAnim(SETANIM_LEGS,BOTH_JUMPBACK1,SETANIM_FLAG_OVERRIDE);
 				pm->ps->pm_flags |= PMF_BACKWARDS_JUMP;
 			}
 
@@ -4073,7 +4073,7 @@ static void PM_GroundTraceMissed( void ) {
 	if (PM_InRollComplete(pm->ps, pm->ps->legsAnim))
 	{ //Client won't catch an animation restart because it only checks frame against incoming frame, so if you roll when you land after rolling
 	  //off of something it won't replay the roll anim unless we switch it off in the air. This fixes that.
-		PM_SetAnim(SETANIM_BOTH,BOTH_INAIR1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150);
+		PM_SetAnim(SETANIM_BOTH,BOTH_INAIR1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 		pm->ps->inAirAnim = qtrue;
 	}
 
@@ -5071,7 +5071,7 @@ qboolean PM_AdjustStandAnimForSlope( void )
 		}
 	}
 	//step 7: set the anim
-	//PM_SetAnim( SETANIM_LEGS, destAnim, SETANIM_FLAG_NORMAL, 100 );
+	//PM_SetAnim( SETANIM_LEGS, destAnim, SETANIM_FLAG_NORMAL );
 	PM_ContinueLegsAnim(destAnim);
 
 	return qtrue;
@@ -5237,7 +5237,7 @@ static void PM_Footsteps( void ) {
 			else if ( (pm->ps->pm_flags & PMF_DUCKED) || (pm->ps->pm_flags & PMF_ROLLING) ) {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1IDLE)
 				{
-					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1IDLE, setAnimFlags, 100);
+					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1IDLE, setAnimFlags);
 				}
 				else
 				{
@@ -5301,7 +5301,7 @@ static void PM_Footsteps( void ) {
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1WALKBACK)
 				{
-					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags, 100);
+					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags);
 				}
 				else
 				{
@@ -5311,7 +5311,7 @@ static void PM_Footsteps( void ) {
 			else {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1WALK)
 				{
-					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags, 100);
+					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags);
 				}
 				else
 				{
@@ -5323,7 +5323,7 @@ static void PM_Footsteps( void ) {
 		{ //otherwise send us into the roll
 			pm->ps->legsTimer = 0;
 			pm->ps->legsAnim = 0;
-			PM_SetAnim(SETANIM_BOTH,rolled,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150);
+			PM_SetAnim(SETANIM_BOTH,rolled,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			PM_AddEventWithParm( EV_ROLL, 0 );
 			pm->maxs[2] = pm->ps->crouchheight;//CROUCH_MAXS_2;
 			pm->ps->viewheight = DEFAULT_VIEWHEIGHT;
@@ -5340,7 +5340,7 @@ static void PM_Footsteps( void ) {
 		{
 			if ((pm->ps->legsAnim) != BOTH_CROUCH1WALKBACK)
 			{
-				PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags, 100);
+				PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags);
 			}
 			else
 			{
@@ -5351,7 +5351,7 @@ static void PM_Footsteps( void ) {
 		{
 			if ((pm->ps->legsAnim) != BOTH_CROUCH1WALK)
 			{
-				PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags, 100);
+				PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags);
 			}
 			else
 			{
@@ -5651,7 +5651,7 @@ static void PM_Footsteps( void ) {
 
 			if ((pm->ps->legsAnim) != desiredAnim && ires == desiredAnim)
 			{
-				PM_SetAnim(SETANIM_LEGS, desiredAnim, setAnimFlags, 100);
+				PM_SetAnim(SETANIM_LEGS, desiredAnim, setAnimFlags);
 			}
 			else
 			{
@@ -5807,7 +5807,7 @@ void PM_BeginWeaponChange( int weapon ) {
 	pm->ps->weaponstate = WEAPON_DROPPING;
 	pm->ps->weaponTime += 200;
 	//PM_StartTorsoAnim( TORSO_DROPWEAP1 );
-	PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE, 0);
+	PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE);
 
 	BG_ClearRocketLock( pm->ps );
 }
@@ -5837,7 +5837,7 @@ void PM_FinishWeaponChange( void ) {
 	else
 	{
 		//PM_StartTorsoAnim( TORSO_RAISEWEAP1);
-		PM_SetAnim(SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE, 0);
+		PM_SetAnim(SETANIM_TORSO, TORSO_RAISEWEAP1, SETANIM_FLAG_OVERRIDE);
 	}
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
@@ -6396,7 +6396,7 @@ void PM_VehicleWeaponAnimate(void)
 {
 	bgEntity_t *veh = pm_entVeh;
 	Vehicle_t *pVeh;
-	int iFlags = 0, iBlend = 0, Anim = -1;
+	int iFlags = 0, Anim = -1;
 
 	if (!veh ||
 		!veh->m_pVehicle ||
@@ -6419,7 +6419,6 @@ backAgain:
 	if ( pm->cmd.buttons & ( BUTTON_ATTACK | BUTTON_ALT_ATTACK ) )
 	{
 		iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
-		iBlend = 200;
 
 		switch ( pm->ps->weapon )
 		{
@@ -6508,13 +6507,11 @@ backAgain:
 		pVeh->m_pVehicleInfo->type == VH_ANIMAL)
 	{ //tauntaun is going backwards
 		Anim = BOTH_VT_WALK_REV;
-		iBlend = 600;
 	}
 	else if (veh->playerState && veh->playerState->speed < 0 &&
 		pVeh->m_pVehicleInfo->type == VH_SPEEDER)
 	{ //speeder is going backwards
 		Anim = BOTH_VS_REV;
-		iBlend = 600;
 	}
 	// They're not firing so play the Idle for the weapon.
 	else
@@ -6532,7 +6529,6 @@ backAgain:
 				//else if ( pVeh->m_ulFlags & VEH_FLYING )
 				else if (0)
 				{
-					iBlend = 800;
 					Anim = BOTH_VS_AIR_G;
 					iFlags = SETANIM_FLAG_OVERRIDE;
 				}
@@ -6541,7 +6537,6 @@ backAgain:
 				else if (0)
 				{
 					pVeh->m_ulFlags &= ~VEH_CRASHING;	// Remove the flag, we are doing the animation.
-					iBlend = 800;
 					Anim = BOTH_VS_LAND_SR;
 					iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
 				}
@@ -6556,7 +6551,6 @@ backAgain:
 				//if ( pVeh->m_ulFlags & VEH_FLYING )
 				if (0)
 				{
-					iBlend = 800;
 					Anim = BOTH_VS_AIR_G;
 					iFlags = SETANIM_FLAG_OVERRIDE;
 				}
@@ -6565,7 +6559,6 @@ backAgain:
 				else if (0)
 				{
 					pVeh->m_ulFlags &= ~VEH_CRASHING;	// Remove the flag, we are doing the animation.
-					iBlend = 800;
 					Anim = BOTH_VS_LAND_G;
 					iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
 				}
@@ -6640,7 +6633,7 @@ backAgain:
 			}
 		}
 
-		PM_SetAnim(SETANIM_BOTH, Anim, iFlags, iBlend);
+		PM_SetAnim(SETANIM_BOTH, Anim, iFlags);
 	}
 }
 
@@ -6934,13 +6927,13 @@ static void PM_Weapon( void )
 
 		if (!seperateOnTorso)
 		{ //of seperateOnTorso, handle it after setting the legs
-			PM_SetAnim(SETANIM_TORSO, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+			PM_SetAnim(SETANIM_TORSO, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			pm->ps->torsoTimer = 1;
 		}
 
 		if (playFullBody)
 		{ //sorry if all these exceptions are getting confusing. This one just means play on both legs and torso.
-			PM_SetAnim(SETANIM_BOTH, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+			PM_SetAnim(SETANIM_BOTH, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			pm->ps->legsTimer = pm->ps->torsoTimer = 1;
 		}
 		else if (pm->ps->forceHandExtend == HANDEXTEND_DODGE || pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
@@ -6948,15 +6941,15 @@ static void PM_Weapon( void )
 		{ //special case, play dodge anim on whole body, choke anim too if off ground
 			if (seperateOnTorso)
 			{
-				PM_SetAnim(SETANIM_LEGS, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+				PM_SetAnim(SETANIM_LEGS, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				pm->ps->legsTimer = 1;
 
-				PM_SetAnim(SETANIM_TORSO, desiredOnTorso, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+				PM_SetAnim(SETANIM_TORSO, desiredOnTorso, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				pm->ps->torsoTimer = 1;
 			}
 			else
 			{
-				PM_SetAnim(SETANIM_LEGS, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100);
+				PM_SetAnim(SETANIM_LEGS, desiredAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				pm->ps->legsTimer = 1;
 			}
 		}
@@ -7477,8 +7470,8 @@ static void PM_Weapon( void )
 
 				if (icandoit)
 				{
-					//G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
-					PM_SetAnim(SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+					//G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
+					PM_SetAnim(SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 					if (pm->ps->torsoAnim == BOTH_KYLE_GRAB)
 					{ //providing the anim set succeeded..
 						pm->ps->torsoTimer += 500; //make the hand stick out a little longer than it normally would
@@ -7561,7 +7554,7 @@ static void PM_Weapon( void )
 
 						if (kickAnim != -1)
 						{
-							PM_SetAnim(SETANIM_BOTH, kickAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+							PM_SetAnim(SETANIM_BOTH, kickAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 							if (pm->ps->legsAnim == kickAnim)
 							{
 								pm->ps->weaponTime = pm->ps->legsTimer;
@@ -7574,7 +7567,7 @@ static void PM_Weapon( void )
 				//if got here then no move to do so put torso into leg idle or whatever
 				if (pm->ps->torsoAnim != pm->ps->legsAnim)
 				{
-					PM_SetAnim(SETANIM_BOTH, pm->ps->legsAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
+					PM_SetAnim(SETANIM_BOTH, pm->ps->legsAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 				}
 				pm->ps->weaponTime = 0;
 				return;
@@ -10323,7 +10316,7 @@ void PmoveSingle (pmove_t *pmove) {
 			if ( pm->ps->legsAnim == BOTH_MEDITATE
 				&& pm->ps->torsoAnim == BOTH_MEDITATE )
 			{
-				PM_SetAnim( SETANIM_BOTH, BOTH_MEDITATE_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+				PM_SetAnim( SETANIM_BOTH, BOTH_MEDITATE_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			}
 			else
 			{
