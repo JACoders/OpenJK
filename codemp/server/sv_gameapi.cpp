@@ -1801,7 +1801,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_PRECISIONTIMER_END:
-		SV_PrecisionTimerEnd( (void *)args[1] );
+		return SV_PrecisionTimerEnd( (void *)args[1] );
 
 	case G_CVAR_REGISTER:
 		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] ); 
@@ -2173,8 +2173,10 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return navigator.CheckedNode(args[1], args[2]);
 	case G_NAV_SETCHECKEDNODE:
 		navigator.SetCheckedNode(args[1], args[2], args[3]);
+		return 0;
 	case G_NAV_FLAGALLNODES:
 		navigator.FlagAllNodes(args[1]);
+		return 0;
 	case G_NAV_GETPATHSCALCULATED:
 		return navigator.pathsCalculated;
 	case G_NAV_SETPATHSCALCULATED:
