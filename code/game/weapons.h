@@ -157,7 +157,7 @@ typedef struct weaponData_s
 
 typedef struct ammoData_s
 {
-	char	icon[32];	// Name of ammo icon file
+	char	icon[64];	// Name of ammo icon file
 	int		max;		// Max amount player can hold of ammo
 } ammoData_t;
 
