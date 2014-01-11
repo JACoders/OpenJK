@@ -19,3 +19,4 @@ All features will be able to be configured, so that no gameplay changes will int
 ###Credits###
 Raz0r, for all his help.
 Source, Kane, and Pivot, for testing.
+Valar, for his server/web hosting and support.
