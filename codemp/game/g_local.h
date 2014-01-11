@@ -131,6 +131,121 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
+//[JAPRO - Serverside - All - Jcinfo bitvalues
+#define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)
+#define JAPRO_CINFO_FIXROLL1		(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
+#define JAPRO_CINFO_FIXROLL2		(1<<2)	//Grip whilst rolling + chainable rolls
+#define JAPRO_CINFO_FIXROLL3		(1<<3)	//Long roll + breakable
+#define JAPRO_CINFO_YELLOWDFA		(1<<4)	//improve yellow dfa
+#define JAPRO_CINFO_HEADSLIDE		(1<<5)	//jp_slideonplayer set
+#define JAPRO_CINFO_FIXSIDEKICK		(1<<6)	//allow flipkick with slow sidekick style
+#define JAPRO_CINFO_FASTGRIP		(1<<7)	//0.8grip speed instead of 0.4
+#define JAPRO_CINFO_BACKSLASH		(1<<8)	//unlock backslash aim
+#define JAPRO_CINFO_REDDFA			(1<<9)	//unlock DFA aim
+#define JAPRO_CINFO_BHOP1			(1<<10)	//force bhop only mode
+#define JAPRO_CINFO_LG				(1<<11)	//Lightning Gun 
+#define JAPRO_CINFO_JETPACK			(1<<12)	//jetpack physics
+#define JAPRO_CINFO_UNLAGGEDPROJ	(1<<13)	//allow unlagged
+#define JAPRO_CINFO_SCREENSHAKE		(1<<14)	//remove screenshake
+#define JAPRO_CINFO_FORCECOMBO		(1<<15)	//option for only bhop mode
+#define JAPRO_CINFO_UNLAGGEDHITSCAN	(1<<16)	//allow unlagged hitscan
+#define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
+#define JAPRO_CINFO_CPM				(1<<18)	//allow air control
+#define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
+#define JAPRO_CINFO_HL2				(1<<20) //Hl2 Aircontrol
+#define JAPRO_CINFO_NOSTRAFE		(1<<21) //Siege aircontrol
+#define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
+#define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
+#define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
+#define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
+#define JAPRO_CINFO_DODGE			(1<<26) //Dodge +button13
+#define JAPRO_CINFO_DASH			(1<<27) //Also Dash +button13
+#define JAPRO_CINFO_RAMPJUMP		(1<<28) //My own style of rampjump
+#define JAPRO_CINFO_BHOP2			(1<<29)	//option for only bhop mode
+
+//JAPRO - Serverside - Tweak Weapons bitvalues
+#define DEMP2_RANDOM		(1<<0)
+#define DEMP2_DAM			(1<<1)
+#define DISRUPTOR_DAM		(1<<2)
+#define BOWCASTER_SPRD		(1<<3)
+#define REPEATER_ALT_DAM	(1<<4)
+#define FLECHETTE_SPRD		(1<<5)
+#define FLECHETTE_ALT_DAM	(1<<6)
+#define FLECHETTE_ALT_SPRD	(1<<7)
+#define CONC_ALT_DAM		(1<<8)
+#define PROJECTILE_KNOCKBACK (1<<9)
+#define STUN_LG				(1<<10)
+#define STUN_SHOCKLANCE		(1<<11)
+#define PROJECTILE_GRAVITY	(1<<12)
+#define CENTER_MUZZLEPOINT	(1<<13)
+#define PSEUDORANDOM_FIRE	(1<<14)
+#define ROCKET_MORTAR		(1<<15)
+#define ROCKET_REDEEMER		(1<<16)
+#define PLASMACLIMB			(1<<17)
+
+//JAPRO - Serverside - Unlagged bitvalues
+#define UNLAGGED_PROJ_NUDGE	(1<<0)
+#define UNLAGGED_HITSCAN	(1<<1)
+#define UNLAGGED_PUSHPULL	(1<<2)
+
+//JAPRO - Serverside - Voting bits
+#define VOTE_GAMETYPE			(1<<0)
+#define VOTE_MAP			(1<<1)
+#define VOTE_KICK			(1<<3)
+#define VOTE_NEXTMAP		(1<<4)
+#define VOTE_TIMELIMIT		(1<<5)
+#define VOTE_FRAGLIMIT		(1<<6)
+#define VOTE_CAPTURELIMIT	(1<<7)
+
+//JAPRO - Serverside - Admin bitrates
+typedef enum {
+	A_ADMINTELE,
+	A_FREEZE,
+	A_TELEMARK,
+	A_ADMINBAN,
+	A_ADMINKICK,
+	A_NPC,
+	A_NOCLIP,
+	A_GRANTADMIN,
+	A_CHANGEMAP,
+	A_CSPRINT,
+	A_FORCETEAM,
+	A_LOCKTEAM,
+	A_VSTR,
+	A_STATUS,
+	A_RENAME
+} admin_type_t;
+
+//JAPRO - Serverside - Emote bitrates
+typedef enum {
+	E_BEG,
+	E_BEG2,
+	E_BREAKDANCE,
+	E_BREAKDANCE2,
+	E_BREAKDANCE3,
+	E_BREAKDANCE4,
+	E_CHEER,
+	E_COWER,
+	E_DANCE,
+	E_HUG,
+	E_NOISY,
+	E_POINT,
+	E_RAGE,
+	E_SIT,
+	E_SIT2,
+	E_SIT3,
+	E_SIT4,
+	E_SIT5,
+	E_SURRENDER,
+	E_SMACK,
+	E_TAUNT,
+	E_TAUNT2,
+	E_VICTORY,
+	E_JAWARUN,
+	E_BERNIE,
+	E_ALL
+} emote_type_t;
+
 struct gentity_s {
 	//rww - entstate must be first, to correspond with the bg shared entity structure
 	entityState_t	s;				// communicated by server to clients

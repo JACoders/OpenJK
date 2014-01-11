@@ -159,20 +159,40 @@ XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORE
 //JAPRO CTF
 
 //JAPRO Saber
+XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 
 //JAPRO FORCE
+XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 
 //JAPRO GUNS
+XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 
 //JAPRO MOVEMENT
-XCVAR_DEF( g_flipKick,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_fixRoll,					"0",			CVU_Roll,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_movementStyle,				"0",			CVU_MovementStyle,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_rampJump,					"1",			CVU_RampJump,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 
 //JAPRO DUELING
 
 //JAPRO ADMIN
 
 //JAPRO OTHER
-XCVAR_DEF( g_newBotAI,						"0",			NULL,				CVAR_ARCHIVE,								qtrue )
-XCVAR_DEF( g_newBotAITarget,				"0",			NULL,				CVAR_ARCHIVE,								qtrue )
+XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue )
+XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_newBotAITarget,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+
 
 #undef XCVAR_DEF

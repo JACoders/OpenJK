@@ -55,6 +55,12 @@ float	pm_waterfriction = 1.0f;
 float	pm_flightfriction = 3.0f;
 float	pm_spectatorfriction = 5.0f;
 
+float	cpm_pm_airstopaccelerate = 2.5f;
+float	cpm_pm_aircontrol = 150.0f;
+float	cpm_pm_strafeaccelerate = 70.0f;
+float	cpm_pm_wishspeed = 30.0f;
+float	pm_qw_airaccel = 0.7f;
+
 int		c_pmove = 0;
 
 float forceSpeedLevels[4] = 
@@ -1136,7 +1142,46 @@ static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 	}
 }
 
+void CPM_UpdateSettings(int num)
+{
+	pm_accelerate = 10;
+	pm_friction = 6;
 
+	if (num == 3)
+	{
+		pm_accelerate = 15;
+		pm_friction = 8;
+	}
+}
+
+void CPM_PM_Aircontrol (pmove_t *pm, vec3_t wishdir, float wishspeed )
+{
+	float	zspeed, speed, dot, k;
+	int		i;
+
+	if ( (pm->ps->movementDir && pm->ps->movementDir !=4) || wishspeed == 0.0) 
+		return; // can't control movement if not moveing forward or backward
+
+	zspeed = pm->ps->velocity[2];
+	pm->ps->velocity[2] = 0;
+	speed = VectorNormalize(pm->ps->velocity);
+
+	dot = DotProduct(pm->ps->velocity,wishdir);
+	k = 32; 
+	k *= cpm_pm_aircontrol*dot*dot*pml.frametime;
+	
+	
+	if (dot > 0) {	// we can't change direction while slowing down
+		for (i=0; i < 2; i++)
+			pm->ps->velocity[i] = pm->ps->velocity[i]*speed + wishdir[i]*k;
+		VectorNormalize(pm->ps->velocity);
+	}
+	
+	for (i=0; i < 2; i++) 
+		pm->ps->velocity[i] *=speed;
+
+	pm->ps->velocity[2] = zspeed;
+}
 
 /*
 ============

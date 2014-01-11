@@ -71,6 +71,58 @@
 #define	WAVE_AMPLITUDE	1
 #define	WAVE_FREQUENCY	0.4
 
+//[JAPRO - Clientside - All - Define JAPLUS cinfo bits]
+#define JAPLUS_CINFO_FLIPKICK			(1<<0)	//Allow player flipkicking
+#define JAPLUS_CINFO_FIXROLL1			(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
+#define JAPLUS_CINFO_FIXROLL2			(1<<2)	//Grip whilst rolling + chainable rolls
+#define JAPLUS_CINFO_FIXROLL3			(1<<3)	//Long roll + breakable
+#define JAPLUS_CINFO_YELLOWDFA			(1<<4)	//improve yellow dfa
+#define JAPLUS_CINFO_HEADSLIDE			(1<<5)	//jp_slideonplayer set
+#define JAPLUS_CINFO_SPATTACKS			(1<<6)	//allow sp attacks
+#define JAPLUS_CINFO_NEWDFA				(1<<7)	//new close range dfa
+#define JAPLUS_CINFO_MODELSCALE			(1<<8)	//allow modelscale
+#define JAPLUS_CINFO_DMGSPEEDSCALE		(1<<9)	//allow damage speed scale for modelscale
+#define JAPLUS_CINFO_MACROSCAN1			(1<<10)	//macroscan 1
+#define JAPLUS_CINFO_MACROSCAN2			(1<<11)	//macroscan 2
+#define JAPLUS_CINFO_JK2DFA				(1<<12)	//jk2 dfa
+#define JAPLUS_CINFO_NOKATA				(1<<13)	//no kata
+#define JAPLUS_CINFO_NO_AUTO_REPLIER	(1<<14)	//no auto replier
+#define JAPLUS_CINFO_GLA_ANIMS			(1<<15)	//new gla anims
+#define JAPLUS_CINFO_LEDGEGRAB			(1<<16)	//Ledgegrab allowed
+#define JAPLUS_CINFO_ALTDIM				(1<<17)	//Any jp_altdim is set
+
+//[JAPRO - Clientside - All - Jcinfo bitvalues
+#define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)
+#define JAPRO_CINFO_FIXROLL1		(1<<1)	//Grip whilst rolling (even fixroll 0 is not basejka, because of how backwards roll is activated)
+#define JAPRO_CINFO_FIXROLL2		(1<<2)	//Grip whilst rolling + chainable rolls
+#define JAPRO_CINFO_FIXROLL3		(1<<3)	//Long roll + breakable
+#define JAPRO_CINFO_YELLOWDFA		(1<<4)	//improve yellow dfa
+#define JAPRO_CINFO_HEADSLIDE		(1<<5)	//jp_slideonplayer set
+#define JAPRO_CINFO_FIXSIDEKICK		(1<<6)	//allow flipkick with slow sidekick style
+#define JAPRO_CINFO_FASTGRIP		(1<<7)	//0.8grip speed instead of 0.4
+#define JAPRO_CINFO_BACKSLASH		(1<<8)	//unlock backslash aim
+#define JAPRO_CINFO_REDDFA			(1<<9)	//unlock DFA aim
+#define JAPRO_CINFO_BHOP1			(1<<10)	//force bhop only mode
+#define JAPRO_CINFO_LG				(1<<11)	//Lightning Gun 
+#define JAPRO_CINFO_JETPACK			(1<<12)	//jetpack physics
+#define JAPRO_CINFO_UNLAGGEDPROJ	(1<<13)	//allow unlagged
+#define JAPRO_CINFO_SCREENSHAKE		(1<<14)	//remove screenshake
+#define JAPRO_CINFO_FORCECOMBO		(1<<15)	//allow forcecombo
+#define JAPRO_CINFO_UNLAGGEDHITSCAN	(1<<16)	//allow unlagged hitscan
+#define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
+#define JAPRO_CINFO_CPM				(1<<18)	//allow air control
+#define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
+#define JAPRO_CINFO_HL2				(1<<20) //Hl2 Aircontrol
+#define JAPRO_CINFO_NOSTRAFE		(1<<21) //Siege aircontrol
+#define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
+#define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
+#define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
+#define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
+#define JAPRO_CINFO_DODGE			(1<<26) //Dodge +button13
+#define JAPRO_CINFO_DASH			(1<<27) //Also Dash +button13
+#define JAPRO_CINFO_RAMPJUMP		(1<<28) //My own style of rampjump
+#define JAPRO_CINFO_BHOP2			(1<<29)	//option for only bhop mode
+
 typedef enum {
 	FOOTSTEP_STONEWALK,
 	FOOTSTEP_STONERUN,
