@@ -2946,29 +2946,15 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (level.gametype != GT_CTF &&
-		level.gametype != GT_CTY &&
-		ent->item->giType == IT_TEAM)
-	{
-		int killMe = 0;
-
-		switch (ent->item->giTag)
-		{
-		case PW_REDFLAG:
-			killMe = 1;
-			break;
-		case PW_BLUEFLAG:
-			killMe = 1;
-			break;
-		case PW_NEUTRALFLAG:
-			killMe = 1;
-			break;
-		default:
-			break;
+	if (g_gametype.integer != GT_CTF &&	g_gametype.integer != GT_CTY &&	ent->item->giType == IT_TEAM) {
+		if (ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_REDFLAG) {//always remove red/blu flags if not ctf/cty
+			G_FreeEntity( ent );
+			return;
 		}
+	}
 
-		if (killMe)
-		{
+	if (g_gametype.integer != GT_FFA || !g_rabbit.integer) {
+		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
 			G_FreeEntity( ent );
 			return;
 		}

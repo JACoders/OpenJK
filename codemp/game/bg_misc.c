@@ -1749,7 +1749,7 @@ qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t
 				break;
 			}
 		}
-#else
+#elif defined _CGAME
 	if (ps->duelInProgress) // consider duel types.
 	{
 		switch ( cg_dueltypes[ps->clientNum]) {

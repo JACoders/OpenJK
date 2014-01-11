@@ -3,6 +3,12 @@
 #include "bg_local.h"
 #include "w_saber.h"
 
+//JAPRO - Serverside - Fullforce Duels - Start
+#ifdef _CGAME
+extern int cg_dueltypes[MAX_CLIENTS];
+#endif
+//JAPRO - Serverside - Fullforce Duels - End
+
 extern qboolean BG_SabersOff( playerState_t *ps );
 saberInfo_t *BG_MySaber( int clientNum, int saberNum );
 

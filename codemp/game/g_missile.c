@@ -157,7 +157,10 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	}
 	else if ( ent->flags & FL_BOUNCE_HALF ) 
 	{
-		VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
+		if (ent->s.weapon == WP_REPEATER && g_tweakWeapons.integer & ROCKET_MORTAR)
+			VectorScale( ent->s.pos.trDelta, 0.4f, ent->s.pos.trDelta );
+		else
+			VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
 		// check for stop
 		if ( trace->plane.normal[2] > 0.2 && VectorLength( ent->s.pos.trDelta ) < 40 ) 
 		{
@@ -306,6 +309,62 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 	return missile;
 }
 
+//[JAPRO - Serverside - Weapons - Add missile inheritance function - Start]
+//-----------------------------------------------------------------------------
+gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire)
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*missile;
+	//gclient_t	*client;//JAPRO - Unlagged
+	float dspeed;
+
+	missile = G_Spawn();
+
+	missile->nextthink = level.time + life;
+	missile->think = G_FreeEntity;
+	missile->s.eType = ET_MISSILE;
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	missile->parent = owner;
+	missile->r.ownerNum = owner->s.number;
+
+	if (altFire)
+		missile->s.eFlags |= EF_ALT_FIRING;
+
+	missile->s.pos.trType = TR_LINEAR;
+	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
+	missile->target_ent = NULL;
+
+//[JAPRO - Serverside - Weapons - Unlagged - Start]
+	if (owner->client->pers.isJAPRO)
+	{
+		if (owner->client->ps.ping > 150)
+			missile->s.eventParm = 135;
+		else
+			missile->s.eventParm = owner->client->ps.ping * 0.9; //fixme
+	}
+	else
+		missile->s.eventParm = 0;
+//[JAPRO - Serverside - Weapons - Unlagged - End]
+
+	SnapVector(org);
+	VectorCopy( org, missile->s.pos.trBase );
+
+	if (g_fullInheritance.integer) {
+		VectorMA(dir, g_projectileInheritance.value/vel, owner->client->ps.velocity, dir);
+		VectorScale( dir, vel, missile->s.pos.trDelta );
+	}
+	else {
+		dspeed = DotProduct( dir, owner->client->ps.velocity );
+		VectorScale( dir, vel + dspeed*g_projectileInheritance.value, missile->s.pos.trDelta );
+	}
+
+	VectorCopy( org, missile->r.currentOrigin);
+	SnapVector(missile->s.pos.trDelta);
+
+	return missile;
+}
+//[JAPRO - Serverside - Weapons - Add missile inheritance function - End]
+
 void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 {
 	//FIXME: have an EV_BOUNCE_MISSILE event that checks the s.weapon and does the appropriate effect
@@ -348,10 +407,13 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	// check for bounce
 	if ( !other->takedamage &&
 		(ent->bounceCount > 0 || ent->bounceCount == -5) &&
-		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) ) {
-		G_BounceMissile( ent, trace );
-		G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
-		return;
+		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) ) { //only on the first bounce vv
+		if (!(g_tweakWeapons.integer & ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime < level.time - 1000))//give this mortar a 1 second 'fuse' until its armed
+		{
+			G_BounceMissile( ent, trace );
+			G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
+			return;
+		}
 	}
 	else if (ent->neverFree && ent->s.weapon == WP_SABER && (ent->flags & FL_BOUNCE_HALF))
 	{ //this is a knocked-away saber
@@ -836,7 +898,12 @@ void G_RunMissile( gentity_t *ent ) {
 	}
 
 	// get current position
-	BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
+//[JAPRO - Serverside - Weapons - Unlagged - Start]
+	if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE)
+		BG_EvaluateTrajectory( &ent->s.pos, level.time + ent->s.eventParm, origin );
+	else
+		BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
+//[JAPRO - Serverside - Weapons - Unlagged - End]
 
 	// if this missile bounced off an invulnerability sphere
 	if ( ent->target_ent ) {
@@ -856,7 +923,7 @@ void G_RunMissile( gentity_t *ent ) {
 		}
 	}
 	// trace a line from the previous position to the current position
-	if (d_projectileGhoul2Collision.integer)
+	if (d_projectileGhoul2Collision.integer == 1) //JAPRO - Serverside - Weapons - New Hitbox Option
 	{
 		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 

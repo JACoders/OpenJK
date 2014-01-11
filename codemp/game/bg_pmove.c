@@ -6680,9 +6680,17 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK) 
 				&& pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] >= weaponData[pm->ps->weapon].altEnergyPerShot )
 			{
+#ifdef _GAME
+				if (!(g_tweakWeapons.integer & ROCKET_MORTAR)) {
+					PM_RocketLock(2048,qfalse);
+					charging = qtrue;
+				}
+				altFire = qtrue;
+#else
 				PM_RocketLock(2048,qfalse);
 				charging = qtrue;
 				altFire = qtrue;
+#endif
 			}
 			break;
 
@@ -8230,6 +8238,11 @@ if (pm->ps->duelInProgress)
 
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
+#ifdef _GAME
+		if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+			amount = 1;//JAPRO mortar meh
+		else
+#endif
 		amount = weaponData[pm->ps->weapon].altEnergyPerShot;
 	}
 	else
@@ -8281,7 +8294,14 @@ if (pm->ps->duelInProgress)
 			{ //do not fire melee events at all when on vehicle
 				PM_AddEvent( EV_ALT_FIRE );
 			}
-			addTime = weaponData[pm->ps->weapon].altFireTime;
+#ifdef _GAME
+			if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_SHOCKLANCE)
+				addTime = 1500;
+			else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+				addTime = 3000;
+			else
+#endif
+				addTime = weaponData[pm->ps->weapon].altFireTime;
 		}
 	}
 	else {
@@ -8290,6 +8310,11 @@ if (pm->ps->duelInProgress)
 		{ //do not fire melee events at all when on vehicle
 			PM_AddEvent( EV_FIRE_WEAPON );
 		}
+#ifdef _GAME
+		if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
+			addTime = 50;
+		else
+#endif
 		addTime = weaponData[pm->ps->weapon].fireTime;
 		if ( pm->gametype == GT_SIEGE && pm->ps->weapon == WP_DET_PACK )
 		{	// were far too spammy before?  So says Rick.

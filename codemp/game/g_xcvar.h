@@ -161,6 +161,8 @@ XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowFlagThrow,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixCTFScores,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixFlagHitbox,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_rabbit,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -170,6 +172,9 @@ XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE|CVAR_SERVERINFO,		
 XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
 
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -185,12 +190,15 @@ XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
-XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+//XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_weaponDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileVelocityScale,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_selfDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_tweakWeapons,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO MOVEMENT
 XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -211,6 +219,7 @@ XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelStartArmor,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelDistanceLimit,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowUseInDuel,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+//add nonsolid duels!
 
 //JAPRO ADMIN
 XCVAR_DEF( g_juniorAdminLevel,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )

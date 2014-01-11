@@ -65,17 +65,47 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 		}
 		perfect = ( cl->ps.persistant[PERS_RANK] == 0 && cl->ps.persistant[PERS_KILLED] == 0 ) ? 1 : 0;
 
-		Com_sprintf (entry, sizeof(entry),
-			" %i %i %i %i %i %i %i %i %i %i %i %i %i %i", level.sortedClients[i],
-			cl->ps.persistant[PERS_SCORE], ping, (level.time - cl->pers.enterTime)/60000,
-			scoreFlags, g_entities[level.sortedClients[i]].s.powerups, accuracy, 
-			cl->ps.persistant[PERS_IMPRESSIVE_COUNT],
-			cl->ps.persistant[PERS_EXCELLENT_COUNT],
-			cl->ps.persistant[PERS_GAUNTLET_FRAG_COUNT], 
-			cl->ps.persistant[PERS_DEFEND_COUNT], 
-			cl->ps.persistant[PERS_ASSIST_COUNT], 
-			perfect,
-			cl->ps.persistant[PERS_CAPTURES]);
+//JAPRO - Serverside - Scoreboard Deaths - Start
+		if (ent->client->pers.isJAPRO == qtrue)
+		{
+			Com_sprintf (entry, sizeof(entry),
+				" %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", 
+				level.sortedClients[i], 
+				cl->ps.persistant[PERS_SCORE], 
+				ping, 
+				(level.time - cl->pers.enterTime)/60000,
+				scoreFlags,
+				g_entities[level.sortedClients[i]].s.powerups,
+				accuracy, 
+				cl->ps.persistant[PERS_IMPRESSIVE_COUNT],
+				cl->ps.persistant[PERS_EXCELLENT_COUNT],
+				cl->ps.persistant[PERS_GAUNTLET_FRAG_COUNT], 
+				cl->ps.persistant[PERS_DEFEND_COUNT], 
+				cl->ps.persistant[PERS_ASSIST_COUNT], 
+				perfect,
+				cl->ps.persistant[PERS_CAPTURES],
+				cl->ps.persistant[PERS_KILLED]);
+		}
+		else
+		{
+			Com_sprintf (entry, sizeof(entry),
+				" %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+				level.sortedClients[i],
+				cl->ps.persistant[PERS_SCORE],
+				ping,
+				(level.time - cl->pers.enterTime)/60000,
+				scoreFlags,
+				g_entities[level.sortedClients[i]].s.powerups,
+				accuracy, 
+				cl->ps.persistant[PERS_IMPRESSIVE_COUNT],
+				cl->ps.persistant[PERS_EXCELLENT_COUNT],
+				cl->ps.persistant[PERS_GAUNTLET_FRAG_COUNT], 
+				cl->ps.persistant[PERS_DEFEND_COUNT], 
+				cl->ps.persistant[PERS_ASSIST_COUNT], 
+				perfect,
+				cl->ps.persistant[PERS_CAPTURES]);
+		}
+//JAPRO - Serverside - Scoreboard Deaths - End
 		j = strlen(entry);
 		if (stringlength + j > 1022)
 			break;
@@ -1749,7 +1779,16 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	if ( other->client->pers.connected != CON_CONNECTED ) {
 		return;
 	}
-	if ( mode == SAY_TEAM  && !OnSameTeam(ent, other) ) {
+	if ( mode == SAY_TEAM && ((g_gametype.integer >= GT_TEAM && !OnSameTeam(ent, other)) || (g_gametype.integer < GT_TEAM && (ent->client->sess.sessionTeam != other->client->sess.sessionTeam)))) {
+		return;
+	}
+
+	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->pers.clanpass, other->client->pers.clanpass) || ent->client->pers.clanpass[0] == 0 || other->client->pers.clanpass[0] == 0)))//Idk
+		return;//Ignore it
+	if (mode == SAY_ADMIN && !(other->r.svFlags & SVF_FULLADMIN || other->r.svFlags & SVF_FULLADMIN) && ent != other)
+		return;
+
+	if (ClientIsIgnored(other-g_entities, ent-g_entities)) {//Also make sure clanpass is set?
 		return;
 	}
 	/*
@@ -1795,8 +1834,15 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	char		location[64];
 	char		*locMsg = NULL;
 
-	if ( level.gametype < GT_TEAM && mode == SAY_TEAM ) {
-		mode = SAY_ALL;
+	//if ( level.gametype < GT_TEAM && mode == SAY_TEAM ) {
+	//	mode = SAY_ALL;
+	//}
+
+	if (mode == SAY_TEAM) {
+		if (ent->client->pers.sayteammod == 1)//clanpass
+			mode = SAY_CLAN;
+		if (ent->client->pers.sayteammod == 2)//clanpass
+			mode = SAY_ADMIN;
 	}
 
 	Q_strncpyz( text, chatText, sizeof(text) );
@@ -1839,6 +1885,36 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		}
 		color = COLOR_MAGENTA;
 		break;
+	case SAY_CLAN:
+		G_LogPrintf( "sayclan: %s: %s\n", ent->client->pers.netname, chatText );
+		if (Team_GetLocationMsg(ent, location, sizeof(location)))
+		{
+			Com_sprintf (name, sizeof(name), EC"^1<Clan>^7(%s%c%c"EC")"EC": ", 
+				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+			locMsg = location;
+		}
+		else
+		{
+			Com_sprintf (name, sizeof(name), EC"^1<Clan>^7(%s%c%c"EC")"EC": ", 
+				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+		}
+		color = COLOR_RED;
+		break;
+	case SAY_ADMIN:
+		G_LogPrintf( "sayadmin: %s: %s\n", ent->client->pers.netname, chatText );
+		if (Team_GetLocationMsg(ent, location, sizeof(location)))
+		{
+			Com_sprintf (name, sizeof(name), EC"^3<Admin>^7(%s%c%c"EC")"EC": ", 
+				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+			locMsg = location;
+		}
+		else
+		{
+			Com_sprintf (name, sizeof(name), EC"^3<Admin>^7(%s%c%c"EC")"EC": ", 
+				ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+		}
+		color = COLOR_YELLOW;
+		break;
 	}
 
 	if ( target ) {
@@ -1878,6 +1954,42 @@ static void Cmd_Say_f( gentity_t *ent ) {
 	}
 
 	G_Say( ent, NULL, SAY_ALL, p );
+}
+
+static void Cmd_Clansay_f( gentity_t *ent ) {
+	char *p = NULL;
+
+	if ( trap->Argc () < 2 )
+		return;
+
+	p = ConcatArgs( 1 );
+
+	//Raz: BOF
+	if ( strlen( p ) > MAX_SAY_TEXT )
+	{
+		p[MAX_SAY_TEXT-1] = '\0';
+		G_SecurityLogPrintf( "Cmd_Say_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
+	}
+
+	G_Say( ent, NULL, SAY_CLAN, p );
+}
+
+static void Cmd_Amsay_f( gentity_t *ent ) {
+	char *p = NULL;
+
+	if ( trap->Argc () < 2 )
+		return;
+
+	p = ConcatArgs( 1 );
+
+	//Raz: BOF
+	if ( strlen( p ) > MAX_SAY_TEXT )
+	{
+		p[MAX_SAY_TEXT-1] = '\0';
+		G_SecurityLogPrintf( "Cmd_Say_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
+	}
+
+	G_Say( ent, NULL, SAY_ADMIN, p );
 }
 
 /*
@@ -3187,6 +3299,80 @@ qboolean G_OtherPlayersDueling(void)
 	}
 
 	return qfalse;
+}
+
+//JAPRO - Serverside - Fullforce Duels - Start
+void Cmd_ForceDuel_f(gentity_t *ent)
+{
+	Cmd_EngageDuel_f(ent, 1);
+}
+
+void Cmd_GunDuel_f(gentity_t *ent)
+{
+	char weapStr[64];//Idk, could be less
+	int weap = WP_NONE;
+
+	if (trap->Argc() > 2)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /engage_gunduel or engage_gunduel <weapon name>.\n\"" );
+		return;
+	}
+
+	if (trap->Argc() == 1)//Use current weapon
+	{
+		weap = ent->s.weapon;
+		if (weap == 17)//fuck off
+			weap = WP_NONE;
+	}
+	else if (trap->Argc() == 2)//Use specified weapon
+	{
+		int i = 0;
+		trap->Argv(1, weapStr, sizeof(weapStr));
+
+		while (weapStr[i]) {
+			weapStr[i] = tolower(weapStr[i]);
+			i++;
+		}
+
+		if (!Q_stricmp( "melee", weapStr) || !Q_stricmp( "fists", weapStr) || !Q_stricmp( "fisticuffs", weapStr))
+			weap = WP_MELEE;
+		else if (!Q_stricmp( "stun", weapStr) || !Q_stricmp( "stunbaton", weapStr))
+			weap = WP_STUN_BATON + 16;
+		else if (!Q_stricmp( "pistol", weapStr) || !Q_stricmp( "dl44", weapStr))
+			weap = WP_BRYAR_PISTOL;
+		else if (!Q_stricmp( "bryar", weapStr) || !Q_stricmp( "bryarpistol", weapStr) )
+			weap = WP_BRYAR_OLD;
+		else if (!Q_stricmp( "blaster", weapStr) || !Q_stricmp( "e11", weapStr))
+			weap = WP_BLASTER;
+		else if (!Q_stricmp( "sniper", weapStr) || !Q_stricmp( "disruptor", weapStr))
+			weap = WP_DISRUPTOR;
+		else if (!Q_stricmp( "bowcaster", weapStr))
+			weap = WP_BOWCASTER;
+		else if (!Q_stricmp( "repeater", weapStr))
+			weap = WP_REPEATER;
+		else if (!Q_stricmp( "demp2", weapStr) || !Q_stricmp( "demp", weapStr))
+			weap = WP_DEMP2;
+		else if (!Q_stricmp( "flechette", weapStr) || !Q_stricmp( "shotgun", weapStr))
+			weap = WP_FLECHETTE;
+		else if (!Q_stricmp( "concussion", weapStr) || !Q_stricmp( "conc", weapStr))
+			weap = WP_CONCUSSION;
+		else if (!Q_stricmp( "rocket", weapStr) || !Q_stricmp( "rockets", weapStr) || !Q_stricmp( "rocketlauncher", weapStr))
+			weap = WP_ROCKET_LAUNCHER;
+		else if (!Q_stricmp( "detpack", weapStr) || !Q_stricmp( "detpacks", weapStr))
+			weap = WP_DET_PACK;
+		else if (!Q_stricmp( "thermal", weapStr) || !Q_stricmp( "thermals", weapStr) || !Q_stricmp( "grenade", weapStr) || !Q_stricmp( "grenades", weapStr) || !Q_stricmp( "dets", weapStr))
+			weap = WP_THERMAL;
+		else if (!Q_stricmp( "tripmine", weapStr) || !Q_stricmp( "trip", weapStr) || !Q_stricmp( "trips", weapStr))
+			weap = WP_TRIP_MINE;
+
+	}
+
+	if (weap == WP_NONE || weap == WP_SABER || (weap > WP_BRYAR_OLD && weap != 17)) {
+		//trap_SendServerCommand( ent-g_entities, "print \"Invalid weapon specified, using default case: Bryar\n\"" );
+		weap = WP_BRYAR_PISTOL;//pff
+	}
+
+	Cmd_EngageDuel_f(ent, weap + 2);//Fuck it right here
 }
 
 void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullforce Duels
@@ -5610,8 +5796,6 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 			trap->SendServerCommand(ent-g_entities, "print \"     ^5Rocket launcher is replaced with mortar\n\"");
 		else if (g_tweakWeapons.integer & ROCKET_REDEEMER)
 			trap->SendServerCommand(ent-g_entities, "print \"     ^5Rocket launcher is replaced with redeemer\n\"");
-		if (g_tweakWeapons.integer & PLASMACLIMB)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Splash damage added to repeater primary fire\n\"");
 	}
 
 	//CTF changes
@@ -5771,42 +5955,97 @@ int cmdcmp( const void *a, const void *b ) {
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
 	{ "addbot",				Cmd_AddBot_f,				0 },
+	{ "amban",				Cmd_Amban_f,				0 },
+	{ "ambeg",				Cmd_EmoteBeg_f,				CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambeg2",				Cmd_EmoteBeg2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambernie",			Cmd_EmoteBernie_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambreakdance",		Cmd_EmoteBreakdance_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambreakdance2",		Cmd_EmoteBreakdance2_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambreakdance3",		Cmd_EmoteBreakdance3_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ambreakdance4",		Cmd_EmoteBreakdance4_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amcheer",			Cmd_EmoteCheer_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amcower",			Cmd_EmoteCower_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amdance",			Cmd_EmoteDance_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amforceteam",		Cmd_Amforceteam_f,			CMD_NOINTERMISSION },
+	{ "amfreeze",			Cmd_Amfreeze_f,				CMD_NOINTERMISSION },
+	{ "amgrantadmin",		Cmd_Amgrantadmin_f,			0 },
+	{ "amhug",				Cmd_EmoteHug_f,				CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "aminfo",				Cmd_Aminfo_f,				0 },
+	{ "amkick",				Cmd_Amkick_f,				0 },
+	{ "amlockteam",			Cmd_Amlockteam_f,			CMD_NOINTERMISSION },
+	{ "amlogin",			Cmd_Amlogin_f,				0 },
+	{ "amlogout",			Cmd_Amlogout_f,				0 },
+	{ "ammap",				Cmd_Ammap_f,				CMD_NOINTERMISSION },
+	{ "ammotd",				Cmd_Showmotd_f,				CMD_NOINTERMISSION },
+	{ "amnoisy",			Cmd_EmoteNoisy_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ampoint",			Cmd_EmotePoint_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "ampsay",				Cmd_Ampsay_f,				CMD_NOINTERMISSION },
+	{ "amrage",				Cmd_EmoteRage_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amrename",			Cmd_Amrename_f,				CMD_NOINTERMISSION },
+	{ "amrun",				Cmd_AmRun_f,				CMD_NOINTERMISSION},//EMOTE
+	{ "amsay",				Cmd_Amsay_f,				0 },
+	{ "amsit",				Cmd_EmoteSit_f,				CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsit2",				Cmd_EmoteSit2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsit3",				Cmd_EmoteSit3_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsit4",				Cmd_EmoteSit4_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsit5",				Cmd_EmoteSit5_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsmack",			Cmd_EmoteSmack_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amstatus",			Cmd_Amstatus_f,				0 },
+	{ "amsurrender",		Cmd_EmoteSurrender_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amtaunt",			Cmd_EmoteTaunt_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amtaunt2",			Cmd_EmoteTaunt2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amtele",				Cmd_Amtele_f,				CMD_NOINTERMISSION },
+	{ "amtelemark",			Cmd_Amtelemark_f,			CMD_NOINTERMISSION },
+	{ "amvictory",			Cmd_EmoteVictory_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
+	{ "clanpass",			Cmd_Clanpass_f,				CMD_NOINTERMISSION },
+	{ "clansay",			Cmd_Clansay_f,				0 },
+	{ "clanwhois",			Cmd_Clanwhois_f,			0 },
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Forward",	Cmd_BotMoveForward_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Right",	Cmd_BotMoveRight_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
+	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
+	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels
+	{ "engage_gunduel",		Cmd_GunDuel_f,				CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels
 	{ "follow",				Cmd_Follow_f,				CMD_NOINTERMISSION },
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
 	{ "forcechanged",		Cmd_ForceChanged_f,			0 },
 	{ "gc",					Cmd_GameCommand_f,			CMD_NOINTERMISSION },
 	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
+	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "ignore",				Cmd_Ignore_f,				0 },//[JAPRO - Serverside - All - Ignore]
+	{ "jetpack",			Cmd_Jetpack_f,				CMD_NOINTERMISSION|CMD_ALIVE },
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
+	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
-	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
+	{ "npc",				Cmd_NPC_f,					CMD_ALIVE },//removed cheat for admin
+	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
+	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
+	{ "say_team_mod",		Cmd_SayTeamMod_f,			0 },
 	{ "score",				Cmd_Score_f,				0 },
-	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_CHEAT|CMD_NOINTERMISSION },
+	{ "serverconfig",		Cmd_ServerConfig_f,			0 },
+	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_NOINTERMISSION },
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
 	{ "teamvote",			Cmd_TeamVote_f,				CMD_NOINTERMISSION },
 	{ "tell",				Cmd_Tell_f,					0 },
-	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE },
+	{ "throwflag",			Cmd_Throwflag_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
-	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
+	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 };

@@ -19,6 +19,8 @@ int killPlayerTimer = 0;
 gentity_t		g_entities[MAX_GENTITIES];
 gclient_t		g_clients[MAX_CLIENTS];
 
+int	dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
+
 qboolean gDuelExit = qfalse;
 
 void G_InitGame					( int levelTime, int randomSeed, int restart );
@@ -3137,6 +3139,11 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
+		/*if ( !(g_unlagged.integer & UNLAGGED_PROJ_REC) && (ent->s.eType == ET_MISSILE) ) {//loda fixme?
+			G_RunMissile( ent );
+			continue;
+		}*/
+
 		if ( ent->s.eType == ET_MISSILE ) {
 			G_RunMissile( ent );
 			continue;
@@ -3387,6 +3394,37 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		G_RunThink( ent );
+
+	//unlagged - backward reconciliation #2
+	// NOW run the missiles, with all players backward-reconciled
+	// to the positions they were in exactly 50ms ago, at the end
+	// of the last server frame
+	
+	/*
+	if (g_unlagged.integer & UNLAGGED_PROJ_REC)
+	{
+		G_TimeShiftAllClients( level.previousTime, NULL );
+
+		ent = &g_entities[0];
+		for (i=0 ; i<level.num_entities ; i++, ent++) {
+			if ( !ent->inuse ) {
+				continue;
+			}
+
+			// temporary entities don't think
+			if ( ent->freeAfterEvent ) {
+				continue;
+			}
+
+			if ( ent->s.eType == ET_MISSILE ) {
+				G_RunMissile( ent );
+			}
+		}
+
+		G_UnTimeShiftAllClients( NULL );
+	}
+//unlagged - backward reconciliation #2
+*/
 
 		if (g_allowNPC.integer)
 		{

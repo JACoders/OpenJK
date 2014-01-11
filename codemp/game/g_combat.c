@@ -2591,9 +2591,24 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					}
 				}
 			}
+			else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)//loda rabbit points
+			{
+				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
+					AddScore( attacker, self->r.currentOrigin, 1 ); 
+					attacker->client->pers.stats.kills++;//JAPRO STATS
+				}
+				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
+					AddScore( attacker, self->r.currentOrigin, 2 ); 
+					attacker->client->pers.stats.kills++;//JAPRO STATS
+				}
+				else 
+					attacker->client->pers.stats.kills++;//JAPRO STATS
+					//AddScore( attacker, self->r.currentOrigin, 1 ); //we dont care about other kills? just rabbit?
+			}
 			else
 			{
 				AddScore( attacker, self->r.currentOrigin, 1 );
+				attacker->client->pers.stats.kills++;//JAPRO STATS
 			}
 
 			if( meansOfDeath == MOD_STUN_BATON ) {
@@ -4342,7 +4357,11 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	case HL_WAIST:
 	case HL_BACK_RT:
 	case HL_BACK_LT:
+		break;//loda
 	case HL_BACK:
+		if (g_tweakWeapons.integer & STUN_SHOCKLANCE && mod == MOD_TURBLAST)
+			*damage *= 3.3;
+		 break;
 	case HL_CHEST_RT:
 	case HL_CHEST_LT:
 	case HL_CHEST:
@@ -4456,7 +4475,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			else if ( targ->s.NPC_class != CLASS_VEHICLE 
 				|| (targ->m_pVehicle && targ->m_pVehicle->m_pVehicleInfo->type != VH_FIGHTER) )
 			{//don't do this to fighters
-				targ->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Demp2 Randomness - Start]
+				if (g_tweakWeapons.integer & DEMP2_RANDOM)
+					targ->client->ps.electrifyTime = level.time + 550;
+				else
+					targ->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Demp2 Randomness - End]
 			}
 		}
 	}
@@ -4485,6 +4509,16 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 
 	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
+		return;
+
+	if (g_gametype.integer == GT_FFA && !g_friendlyFire.integer && g_rabbit.integer) {
+		if (attacker && attacker->client && !attacker->client->ps.powerups[PW_NEUTRALFLAG] && targ && targ->client && !targ->client->ps.powerups[PW_NEUTRALFLAG])
+			return;
+	}
+
+	if (attacker && attacker->client && attacker->client->pers.raceMode)
+		return;
+	if (targ && targ->client && targ->client->pers.raceMode)
 		return;
 
 	if ( targ->client )
@@ -4714,7 +4748,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 			}
 			VectorScale (dir, (g_knockback.value * (float)knockback / mass)*saberKnockbackScale, kvel);
+
 		}
+//[JAPRO - Serverside - Weapons - Remove Projectile/disruptor Knockback - Start]
+		else if ((g_tweakWeapons.integer & PROJECTILE_KNOCKBACK) && (mod == MOD_BLASTER || mod == MOD_BRYAR_PISTOL || mod == MOD_REPEATER || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || mod == MOD_STUN_BATON))
+				VectorScale (dir, 0.01 * g_knockback.value * (float)knockback / mass, kvel);
+//[JAPRO - Serverside - Weapons - Remove Projectile/disruptor Knockback - End]
 		else
 		{
 			VectorScale (dir, g_knockback.value * (float)knockback / mass, kvel);
@@ -5234,7 +5273,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				{
 					if (take > 0)
 					{
-						take /= 3;
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Demp2 - Start]
+						if (g_tweakWeapons.integer & DEMP2_DAM)
+							take /= 2;
+						else
+							take /= 3;
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Demp2 - End]
 						if (take < 1)
 						{
 							take = 1;

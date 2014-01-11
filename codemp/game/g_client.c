@@ -3300,6 +3300,8 @@ void ClientSpawn(gentity_t *ent) {
 
 	// clear everything but the persistant data
 
+	G_ResetTrail( ent );//unlagged
+
 	saved = client->pers;
 	savedSess = client->sess;
 	savedPing = client->ps.ping;

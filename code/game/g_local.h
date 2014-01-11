@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"japro"
+#define	GAMEVERSION	"OpenJK"
 
 #define BODY_QUEUE_SIZE		8
 

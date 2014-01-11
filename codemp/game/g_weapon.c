@@ -287,6 +287,9 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire )
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 /*
@@ -430,6 +433,9 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 //---------------------------------------------------------
@@ -498,7 +504,7 @@ void WP_FireEmplacedMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean 
 }
 
 //---------------------------------------------------------
-static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
+static void WP_FireBlaster( gentity_t *ent, qboolean altFire, int seed )
 //---------------------------------------------------------
 {
 	vec3_t  dir, angs;
@@ -508,8 +514,16 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
 	if ( altFire )
 	{
 		// add some slop to the alt-fire direction
-		angs[PITCH] += crandom() * BLASTER_SPREAD;
-		angs[YAW]       += crandom() * BLASTER_SPREAD;
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) // Loda japro seed
+		{
+			angs[PITCH] += Q_crandom(&seed) * BLASTER_SPREAD;
+			angs[YAW]       += Q_crandom(&seed) * BLASTER_SPREAD;
+		}
+		else
+		{
+			angs[PITCH] += crandom() * BLASTER_SPREAD;
+			angs[YAW]       += crandom() * BLASTER_SPREAD;
+		}
 	}
 
 	AngleVectors( angs, dir, NULL, NULL );
@@ -551,6 +565,9 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	start[2] += ent->client->ps.viewheight;//By eyes
 
 	VectorMA( start, shotRange, forward, end );
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
 
 	ignore = ent->s.number;
 	traces = 0;
@@ -629,6 +646,9 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		break;
 	}
 
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_UnTimeShiftAllClients( ent );
+
 	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
 	{
 		render_impact = qfalse;
@@ -703,7 +723,10 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	int			traces = DISRUPTOR_ALT_TRACES;
 	qboolean	fullCharge = qfalse;
 
-	damage = DISRUPTOR_ALT_DAMAGE-30;
+	if (g_tweakWeapons.integer & DISRUPTOR_DAM)
+		damage = DISRUPTOR_ALT_DAMAGE-40;//60
+	else
+		damage = DISRUPTOR_ALT_DAMAGE-30;//70
 
 	VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
@@ -718,6 +741,12 @@ void WP_DisruptorAltFire( gentity_t *ent )
 			//maxCount = ceil((200.0f-(float)damage)/2.0f);//cap at 200 damage total
 			maxCount = 200;//the previous line ALWAYS evaluated to 135 - was that on purpose?
 		}
+//[JAPRO - Serverside - Weapons - Tweak weapons Nerf Sniper Max Scope Dmg - Start]
+		if (g_tweakWeapons.integer & DISRUPTOR_DAM)
+		{
+			maxCount = 40;
+		}
+//[JAPRO - Serverside - Weapons - Tweak weapons Nerf Sniper Max Scope Dmg - End]
 	}
 	else
 	{
@@ -753,6 +782,9 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	
 	skip = ent->s.number;
 
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+
 	for (i = 0; i < traces; i++ )
 	{
 		VectorMA( start, shotRange, forward, end );
@@ -764,6 +796,12 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		else
 		{
 			trap->Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
+		}
+
+		if ( tr.entityNum == ENTITYNUM_NONE ) { //loda fixme?
+			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+				G_UnTimeShiftAllClients( ent );
+			return;
 		}
 
 		// fix: shooting ourselves shouldn't be allowed 
@@ -936,6 +974,9 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		VectorCopy( tr.endpos, start );
 		skip = tr.entityNum;
 	}
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_UnTimeShiftAllClients( ent );
 }
 
 
@@ -992,10 +1033,13 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 
 	missile->flags |= FL_BOUNCE;
 	missile->bounceCount = 3;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 //---------------------------------------------------------
-static void WP_BowcasterMainFire( gentity_t *ent )
+static void WP_BowcasterMainFire( gentity_t *ent, int seed )
 //---------------------------------------------------------
 {
 	int			damage	= BOWCASTER_DAMAGE, count;
@@ -1053,17 +1097,50 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 	for (i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
-		vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) // Loda japro seed
+			vel = BOWCASTER_VELOCITY * ( Q_crandom(&seed) * BOWCASTER_VEL_RANGE + 1.0f );
+		else
+			vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
 
 		vectoangles( forward, angs );
 
 		// add some slop to the alt-fire direction
-		angs[PITCH] += crandom() * BOWCASTER_ALT_SPREAD * 0.2f;
-		angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Bowcaster Randomness - Start]
+		if (g_tweakWeapons.integer & BOWCASTER_SPRD) {
+			if (i == 1) {
+				angs[PITCH] += 0.65f * BOWCASTER_ALT_SPREAD;
+				angs[YAW]	+= 0.65f * BOWCASTER_ALT_SPREAD;
+			}
+			else if (i == 2) {
+				angs[PITCH] += 0.65f * BOWCASTER_ALT_SPREAD;
+				angs[YAW]	-= 0.65f * BOWCASTER_ALT_SPREAD;
+			}
+			else if (i == 3) {
+				angs[PITCH] -= 0.65f * BOWCASTER_ALT_SPREAD;
+				angs[YAW]	+= 0.65f * BOWCASTER_ALT_SPREAD;
+			}
+			else if (i == 4) {
+				angs[PITCH] -= 0.65f * BOWCASTER_ALT_SPREAD;
+				angs[YAW]	-= 0.65f * BOWCASTER_ALT_SPREAD;
+			}
+		}
+		else {
+			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+				angs[PITCH] += Q_crandom(&seed) * BOWCASTER_ALT_SPREAD * 0.2f;
+				angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
+			}
+			else {
+				angs[PITCH] += crandom() * BOWCASTER_ALT_SPREAD * 0.2f;
+				angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
+			}
+		}
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Bowcaster Randomness - End]
 		
 		AngleVectors( angs, dir, NULL, NULL );
 
-		missile = CreateMissile( muzzle, dir, vel, 10000, ent, qtrue );
+//[JAPRO - Serverside - Weapons - Add inheritance to bowcaster primary fire - Start]
+		missile = CreateMissileInheritance( muzzle, dir, vel, 10000, ent, qtrue );
+//[JAPRO - Serverside - Weapons - Add inheritance to bowcaster primary fire - End]
 
 		missile->classname = "bowcaster_alt_proj";
 		missile->s.weapon = WP_BOWCASTER;
@@ -1078,11 +1155,14 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 
 		// we don't want it to bounce
 		missile->bounceCount = 0;
+
+		if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+			missile->s.pos.trType = TR_GRAVITY;
 	}
 }
 
 //---------------------------------------------------------
-static void WP_FireBowcaster( gentity_t *ent, qboolean altFire )
+static void WP_FireBowcaster( gentity_t *ent, qboolean altFire, int seed )
 //---------------------------------------------------------
 {
 	if ( altFire )
@@ -1091,7 +1171,7 @@ static void WP_FireBowcaster( gentity_t *ent, qboolean altFire )
 	}
 	else
 	{
-		WP_BowcasterMainFire( ent );
+		WP_BowcasterMainFire( ent, seed );
 	}
 }
 
@@ -1111,7 +1191,8 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 {
 	int	damage	= REPEATER_DAMAGE;
 
-	gentity_t *missile = CreateMissile( muzzle, dir, REPEATER_VELOCITY, 10000, ent, qfalse );
+//[JAPRO - Serverside - Weapons - Add inheritance to repeater main fire]
+	gentity_t *missile = CreateMissileInheritance( muzzle, dir, REPEATER_VELOCITY, 10000, ent, qfalse );
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -1123,6 +1204,9 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 //---------------------------------------------------------
@@ -1131,7 +1215,19 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 {
 	int	damage	= REPEATER_ALT_DAMAGE;
 
-	gentity_t *missile = CreateMissile( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
+//[JAPRO - Serverside - Weapons - Add inheritance to repeater alt fire]
+	gentity_t *missile = CreateMissileInheritance( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
+
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Repeater Orb Dmg - Start]
+	if (g_tweakWeapons.integer & REPEATER_ALT_DAM) {
+		missile->damage = REPEATER_ALT_DAMAGE + 10;
+		missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE + 10;
+	}
+	else {
+		missile->damage = REPEATER_ALT_DAMAGE;
+		missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
+	}
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Repeater Orb Dmg - End]
 
 	missile->classname = "repeater_alt_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -1140,12 +1236,10 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	VectorScale( missile->r.maxs, -1, missile->r.mins );
 	missile->s.pos.trType = TR_GRAVITY;
 	missile->s.pos.trDelta[2] += 40.0f; //give a slight boost in the upward direction
-	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_REPEATER_ALT;
 	missile->splashMethodOfDeath = MOD_REPEATER_ALT_SPLASH;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
 	if ( level.gametype == GT_SIEGE )	// we've been having problems with this being too hyper-potent because of it's radius
 	{
 		missile->splashRadius = REPEATER_ALT_SPLASH_RAD_SIEGE;
@@ -1160,7 +1254,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 }
 
 //---------------------------------------------------------
-static void WP_FireRepeater( gentity_t *ent, qboolean altFire )
+static void WP_FireRepeater( gentity_t *ent, qboolean altFire, int seed )
 //---------------------------------------------------------
 {
 	vec3_t	dir, angs;
@@ -1174,8 +1268,14 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire )
 	else
 	{
 		// add some slop to the alt-fire direction
-		angs[PITCH] += crandom() * REPEATER_SPREAD;
-		angs[YAW]	+= crandom() * REPEATER_SPREAD;
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+			angs[PITCH] += Q_crandom(&seed) * REPEATER_SPREAD;
+			angs[YAW]	+= Q_crandom(&seed) * REPEATER_SPREAD;
+		}
+		else {
+			angs[PITCH] += crandom() * REPEATER_SPREAD;
+			angs[YAW]	+= crandom() * REPEATER_SPREAD;
+		}
 
 		AngleVectors( angs, dir, NULL, NULL );
 
@@ -1196,7 +1296,8 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 {
 	int	damage	= DEMP2_DAMAGE;
 
-	gentity_t *missile = CreateMissile( muzzle, forward, DEMP2_VELOCITY, 10000, ent, qfalse);
+	//[JAPRO - Serverside - Weapons - Add inheritance to demp2 primary fire]
+	gentity_t *missile = CreateMissileInheritance( muzzle, forward, DEMP2_VELOCITY, 10000, ent, qfalse);
 
 	missile->classname = "demp2_proj";
 	missile->s.weapon = WP_DEMP2;
@@ -1210,6 +1311,9 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 static gentity_t *ent_list[MAX_GENTITIES];
@@ -1332,7 +1436,12 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 					else if ( gent->s.NPC_class != CLASS_VEHICLE 
 						|| (gent->m_pVehicle && gent->m_pVehicle->m_pVehicleInfo->type != VH_FIGHTER) )
 					{//don't do this to fighters
-						gent->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Demp2 Randomness - Start]
+						if (g_tweakWeapons.integer & DEMP2_RANDOM)
+							gent->client->ps.electrifyTime = level.time + 550;
+						else
+							gent->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Demp2 Randomness - End]
 					}
 				}
 				if ( gent->client->ps.powerups[PW_CLOAKED] )
@@ -1480,7 +1589,7 @@ FLECHETTE
 */
 
 //---------------------------------------------------------
-static void WP_FlechetteMainFire( gentity_t *ent )
+static void WP_FlechetteMainFire( gentity_t *ent, int seed )
 //---------------------------------------------------------
 {
 	vec3_t		fwd, angs;
@@ -1491,15 +1600,43 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 	{
 		vectoangles( forward, angs );
 
-		if (i != 0)
-		{ //do nothing on the first shot, it will hit the crosshairs
-			angs[PITCH] += crandom() * FLECHETTE_SPREAD;
-			angs[YAW]	+= crandom() * FLECHETTE_SPREAD;
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Flechette Randomness - Start]
+		if (!(g_tweakWeapons.integer & FLECHETTE_SPRD)) {
+			if (i != 0) { //do nothing on the first shot, it will hit the crosshairs
+				if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+					angs[PITCH] += Q_crandom(&seed) * FLECHETTE_SPREAD;
+					angs[YAW]	+= Q_crandom(&seed) * FLECHETTE_SPREAD;
+				}
+				else {
+					angs[PITCH] += crandom() * FLECHETTE_SPREAD;
+					angs[YAW]	+= crandom() * FLECHETTE_SPREAD;
+				}
+			}
 		}
+		else {
+			if (i == 1) {
+				angs[PITCH] += 0.65f* FLECHETTE_SPREAD;
+				angs[YAW]	+= 0.65f* FLECHETTE_SPREAD;
+			}
+			else if (i == 2) {
+				angs[PITCH] += 0.65f* FLECHETTE_SPREAD;
+				angs[YAW]	-= 0.65f* FLECHETTE_SPREAD;
+			}
+			else if (i == 3) {
+				angs[PITCH] -= 0.65f* FLECHETTE_SPREAD;
+				angs[YAW]	+= 0.65f* FLECHETTE_SPREAD;
+			}
+			else if (i == 4) {
+				angs[PITCH] -= 0.65f* FLECHETTE_SPREAD;
+				angs[YAW]	-= 0.65f* FLECHETTE_SPREAD;
+			}
+		}
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Flechette Randomness - End]
 
 		AngleVectors( angs, fwd, NULL, NULL );
 
-		missile = CreateMissile( muzzle, fwd, FLECHETTE_VEL, 10000, ent, qfalse);
+//[JAPRO - Serverside - Weapons - Add inheritance to flechette primary fire]
+		missile = CreateMissileInheritance( muzzle, fwd, FLECHETTE_VEL, 10000, ent, qfalse);
 
 		missile->classname = "flech_proj";
 		missile->s.weapon = WP_FLECHETTE;
@@ -1516,6 +1653,9 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 		missile->bounceCount = Q_irand(5,8);
 
 		missile->flags |= FL_BOUNCE_SHRAPNEL;
+
+		if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+			missile->s.pos.trType = TR_GRAVITY;
 	}
 }
 
@@ -1610,10 +1750,14 @@ void WP_flechette_alt_blow( gentity_t *ent )
 }
 
 //------------------------------------------------------------------------------
-static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *self )
+static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *self, int i )
 //------------------------------------------------------------------------------
 {
-	gentity_t	*missile = CreateMissile( start, fwd, 700 + random() * 700, 1500 + random() * 2000, self, qtrue );
+	gentity_t	*missile;
+	if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
+		missile = CreateMissileInheritance( start, fwd, ((1000 + 100*(i)) * g_projectileVelocityScale.value), 1500 + random() * 2000, self, qtrue ); //mean of 1050
+	else 
+		missile = CreateMissileInheritance( start, fwd, (700 * g_projectileVelocityScale.value) + random() * 700, 1500 + random() * 2000, self, qtrue );
 	
 	missile->think = WP_flechette_alt_blow;
 
@@ -1624,8 +1768,18 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 	missile->mass = 4;
 
 	// How 'bout we give this thing a size...
-	VectorSet( missile->r.mins, -3.0f, -3.0f, -3.0f );
-	VectorSet( missile->r.maxs, 3.0f, 3.0f, 3.0f );
+//[JAPRO - Serverside - Weapons - New Hitbox Option - Start]
+	if (d_projectileGhoul2Collision.integer > 1)
+	{
+		VectorSet( missile->r.mins, -1.0f, -1.0f, -1.0f );
+		VectorSet( missile->r.maxs, 1.0f, 1.0f, 1.0f );
+	}
+	else
+	{
+		VectorSet( missile->r.mins, -3.0f, -3.0f, -3.0f );
+		VectorSet( missile->r.maxs, 3.0f, 3.0f, 3.0f );
+	}
+//[JAPRO - Serverside - Weapons - New Hitbox Option - End]
 	missile->clipmask = MASK_SHOT;
 
 	missile->touch = touch_NULL;
@@ -1638,9 +1792,18 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 
 	missile->bounceCount = 50;
 
-	missile->damage = FLECHETTE_ALT_DAMAGE;
+//[JAPRO - Serverside - Weapons - Tweak weapons Nerf Alt Flechette Dmg - Start]
+	if (g_tweakWeapons.integer & FLECHETTE_ALT_DAM) {
+		missile->damage = FLECHETTE_ALT_DAMAGE - 10;
+		missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM - 10;
+	}
+	else {
+		missile->damage = FLECHETTE_ALT_DAMAGE;
+		missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
+	}
+//[JAPRO - Serverside - Weapons - Tweak weapons Nerf Alt Flechette Dmg - End]
+
 	missile->dflags = 0;
-	missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
 	missile->splashRadius = FLECHETTE_ALT_SPLASH_RAD;
 
 	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
@@ -1652,7 +1815,7 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 }
 
 //---------------------------------------------------------
-static void WP_FlechetteAltFire( gentity_t *self )
+static void WP_FlechetteAltFire( gentity_t *self, int seed )
 //---------------------------------------------------------
 {
 	vec3_t 	dir, fwd, start, angs;
@@ -1667,26 +1830,39 @@ static void WP_FlechetteAltFire( gentity_t *self )
 	{
 		VectorCopy( angs, dir );
 
-		dir[PITCH] -= random() * 4 + 8; // make it fly upwards
-		dir[YAW] += crandom() * 2;
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Flechette Alt Randomness - Start]
+		if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
+			dir[PITCH] -= 10;
+		else {
+			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+				dir[PITCH] -= Q_random(&seed) * 4 + 8; // make it fly upwards
+				dir[YAW] += Q_crandom(&seed) * 2;
+			}
+			else {
+				dir[PITCH] -= random() * 4 + 8; // make it fly upwards
+				dir[YAW] += crandom() * 2;
+			}
+		}
+//[JAPRO - Serverside - Weapons - Tweak weapons Remove Flechette Alt Randomness - End]
+
 		AngleVectors( dir, fwd, NULL, NULL );
 
-		WP_CreateFlechetteBouncyThing( start, fwd, self );
+		WP_CreateFlechetteBouncyThing( start, fwd, self, i );
 	}
 }
 
 //---------------------------------------------------------
-static void WP_FireFlechette( gentity_t *ent, qboolean altFire )
+static void WP_FireFlechette( gentity_t *ent, qboolean altFire, int seed )
 //---------------------------------------------------------
 {
 	if ( altFire )
 	{
 		//WP_FlechetteProxMine( ent );
-		WP_FlechetteAltFire(ent);
+		WP_FlechetteAltFire(ent, seed);
 	}
 	else
 	{
-		WP_FlechetteMainFire( ent );
+		WP_FlechetteMainFire( ent, seed );
 	}
 }
 
@@ -1723,10 +1899,10 @@ void rocketThink( gentity_t *ent )
 		}
 		return;
 	}
-	if ( !ent->enemy 
+	if (!(g_tweakWeapons.integer & ROCKET_REDEEMER) && ( !ent->enemy 
 		|| !ent->enemy->client 
 		|| ent->enemy->health <= 0 
-		|| ent->enemy->client->ps.powerups[PW_CLOAKED] )
+		|| ent->enemy->client->ps.powerups[PW_CLOAKED] ))
 	{//no enemy or enemy not a client or enemy dead or enemy cloaked
 		if ( !ent->genericValue1  )
 		{//doesn't have its own self-kill time
@@ -1747,7 +1923,7 @@ void rocketThink( gentity_t *ent )
 		}
 	}
 
-	if ( ent->enemy && ent->enemy->inuse )
+	if ( !(g_tweakWeapons.integer & ROCKET_REDEEMER) && ent->enemy && ent->enemy->inuse )
 	{	
 		float newDirMult = ent->angle?ent->angle*2.0f:1.0f;
 		float oldDirMult = ent->angle?(1.0f-ent->angle)*2.0f:1.0f;
@@ -1858,6 +2034,48 @@ void rocketThink( gentity_t *ent )
 		VectorCopy( ent->r.currentOrigin, ent->s.pos.trBase );
 		ent->s.pos.trTime = level.time;
 	}
+	else if (g_tweakWeapons.integer & ROCKET_REDEEMER)
+	{
+		vec3_t fwd, traceFrom, traceTo, dir;
+		trace_t tr;
+
+		if (!g_entities[ent->r.ownerNum].client)
+			return;
+		if (g_entities[ent->r.ownerNum].client->sess.sessionTeam == TEAM_SPECTATOR)
+			return;
+		else if (g_entities[ent->r.ownerNum].health < 1)
+			return;
+
+		AngleVectors(g_entities[ent->r.ownerNum].client->ps.viewangles, fwd, 0, 0);
+		VectorCopy(g_entities[ent->r.ownerNum].client->ps.origin, traceFrom);
+		traceFrom[2] += g_entities[ent->r.ownerNum].client->ps.viewheight;
+
+		VectorCopy(traceFrom, traceTo);
+		traceTo[0] += fwd[0]*4096;
+		traceTo[1] += fwd[1]*4096;
+		traceTo[2] += fwd[2]*4096;
+
+		VectorCopy(ent->r.currentOrigin, ent->s.pos.trBase);
+
+		trap->Trace(&tr, traceFrom, NULL, NULL, traceTo, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+
+		VectorSubtract(tr.endpos, ent->r.currentOrigin, dir);
+
+		if (VectorLength(dir) < 128) {//sad hack time, stop rocket from getting 'stuck' 'inside' player.
+			dir[0] += crandom() * 10;
+			dir[1] += crandom() * 10;
+			dir[2] += crandom() * 10;
+		}
+
+		VectorNormalize(dir);
+
+		//ent->speed = ROCKET_VELOCITY * 0.5 * g_projectileVelocityScale.integer;
+		//ent->speed = ent->speed + 1.0f;
+
+		VectorScale(dir, ROCKET_VELOCITY * 0.5, ent->s.pos.trDelta );
+		ent->s.pos.trTime = level.time;
+
+	}
 
 	ent->nextthink = level.time + ROCKET_ALT_THINK_TIME;	// Nothing at all spectacular happened, continue.
 	return;
@@ -1886,11 +2104,13 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	gentity_t *missile;
 
 	if ( altFire )
-	{
 		vel *= 0.5f;
-	}
 
-	missile = CreateMissile( muzzle, forward, vel, 30000, ent, altFire );
+	if (altFire && g_tweakWeapons.integer & ROCKET_REDEEMER)
+		damage *= 2;
+
+//[JAPRO - Serverside - Weapons - Add inheritance to rocket]
+	missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
@@ -1925,6 +2145,13 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		ent->client->ps.rocketLockTime = 0;
 		ent->client->ps.rocketTargetTime = 0;
 	}
+	else if (altFire && g_tweakWeapons.integer & ROCKET_REDEEMER) 
+	{
+		missile->angle = 0.5f;
+		missile->think = rocketThink;
+		missile->nextthink = level.time + ROCKET_ALT_THINK_TIME;
+	}
+
 
 	missile->classname = "rocket_proj";
 	missile->s.weapon = WP_ROCKET_LAUNCHER;
@@ -1959,6 +2186,84 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
 }
+
+
+//------------------------------------------------------------------------------
+static void WP_CreateMortar( vec3_t start, vec3_t fwd, gentity_t *self)
+//------------------------------------------------------------------------------
+{
+	gentity_t	*missile;
+	float velocity = 1400 * g_projectileVelocityScale.value;
+	int lifetime = 3500, damage = 140 * g_weaponDamageScale.value, splashdamage = 140 * g_weaponDamageScale.value, splashradius = 384;
+
+	missile = CreateMissileInheritance( start, fwd, velocity, lifetime, self, qtrue );
+
+	missile->think = WP_flechette_alt_blow;
+
+	missile->activator = self;
+
+	missile->s.weapon = WP_REPEATER;
+	missile->classname = "flech_alt";
+	missile->mass = 4;
+	missile->setTime = level.time;
+
+	// How 'bout we give this thing a size...
+	VectorSet( missile->r.mins, -3.0f, -3.0f, -3.0f );
+	VectorSet( missile->r.maxs, 3.0f, 3.0f, 3.0f );
+
+	//===testing being able to shoot rockets out of the air==================================
+	missile->health = 10;
+	missile->takedamage = qtrue;
+	missile->r.contents = MASK_SHOT;
+	missile->die = RocketDie;
+//===testing being able to shoot rockets out of the air==================================
+
+	missile->clipmask = MASK_SHOT;
+
+	missile->touch = touch_NULL;
+
+	// normal ones bounce, alt ones explode on impact
+	missile->s.pos.trType = TR_GRAVITY;
+
+	missile->flags |= FL_BOUNCE_HALF;
+	missile->s.eFlags |= EF_ALT_FIRING;
+	
+	missile->bounceCount = 50;
+
+	missile->damage = damage;
+	missile->splashDamage = splashdamage;
+
+	missile->dflags |= DAMAGE_NO_HIT_LOC;
+	missile->splashRadius = splashradius;
+
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+
+	missile->methodOfDeath = MOD_FLECHETTE_ALT_SPLASH;
+	missile->splashMethodOfDeath = MOD_FLECHETTE_ALT_SPLASH;
+
+	VectorCopy( start, missile->pos2 );
+}
+
+//---------------------------------------------------------
+static void WP_FireMortar( gentity_t *self )
+//---------------------------------------------------------
+{
+	vec3_t 	dir, fwd, start, angs;
+
+	vectoangles( forward, angs );
+	VectorCopy( muzzle, start );
+
+	WP_TraceSetStart( self, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
+
+	VectorCopy( angs, dir );
+
+	//dir[PITCH] -= 10;
+
+	AngleVectors( dir, fwd, NULL, NULL );
+
+	WP_CreateMortar( start, fwd, self );
+}
+
 
 /*
 ======================================================================
@@ -3060,6 +3365,11 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	vec3_t shot_mins, shot_maxs;
 	int			i;
 
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - Start]
+	if (g_tweakWeapons.integer & CONC_ALT_DAM)
+		damage = CONC_ALT_DAMAGE + 25;
+//[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - End]
+
 	//Shove us backwards for half a second
 	VectorMA( ent->client->ps.velocity, -200, forward, ent->client->ps.velocity );
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
@@ -3092,6 +3402,9 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	VectorSet( shot_mins, -1, -1, -1 );
 	VectorSet( shot_maxs, 1, 1, 1 );
 
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+
 	for ( i = 0; i < traces; i++ )
 	{
 		VectorMA( start, shotRange, forward, end );
@@ -3106,6 +3419,12 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		else
 		{
 			trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
+		}
+
+		if ( tr.entityNum == ENTITYNUM_NONE ) { //loda fixme?
+			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+				G_UnTimeShiftAllClients( ent );
+			return;
 		}
 
 		traceEnt = &g_entities[tr.entityNum];
@@ -3272,6 +3591,10 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		skip = tr.entityNum;
 		hitDodged = qfalse;
 	}
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_UnTimeShiftAllClients( ent );
+
 	//just draw one beam all the way to the end
 //	tent = G_TempEntity( tr.endpos, EV_CONC_ALT_SHOT );
 //	tent->svFlags |= SVF_BROADCAST;
@@ -3357,6 +3680,9 @@ static void WP_FireConcussion( gentity_t *ent )
 
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
+
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		missile->s.pos.trType = TR_GRAVITY;
 }
 
 
@@ -3528,6 +3854,197 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	}
 }
 
+//---------------------------------------------------------
+static void WP_FireLightningGun( gentity_t *ent )
+//---------------------------------------------------------
+{
+	int			damage = 5 * g_weaponDamageScale.value;
+	qboolean	render_impact = qtrue;
+	vec3_t		start, end;
+	trace_t		tr;
+	gentity_t	*traceEnt, *tent;
+	float		shotRange = LIGHTNING_RANGE;
+	int			ignore;
+
+
+	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
+
+	VectorCopy( ent->client->ps.origin, start ); //loda
+	start[2] += ent->client->ps.viewheight;//By eyes - but why???
+	VectorMA( start, shotRange, forward, end );
+
+	VectorMA( start, 1, vright, start ); // loda fix test 
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+
+	ignore = ent->s.number;
+
+	if (d_projectileGhoul2Collision.integer)
+		trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+	else
+		trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+
+	if ( tr.entityNum == ENTITYNUM_NONE )
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+			G_UnTimeShiftAllClients( ent );
+		return;
+	}
+	//fix: shooting ourselves shouldn't be allowed 
+	if (tr.entityNum == ent->s.number)
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+			G_UnTimeShiftAllClients( ent );
+		return;
+	}
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+	{ //g2 collision checks -rww
+		if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
+		{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
+			traceEnt->client->g2LastSurfaceHit = tr.surfaceFlags;
+			traceEnt->client->g2LastSurfaceTime = level.time;
+		}
+
+		if (traceEnt->ghoul2)
+		{
+			tr.surfaceFlags = 0; //clear the surface flags after, since we actually care about them in here.
+		}
+	}
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_UnTimeShiftAllClients( ent );
+
+	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+	{
+		render_impact = qfalse;
+	}
+
+	// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
+	tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT );
+	VectorCopy( muzzle, tent->s.origin2 );
+	tent->s.eventParm = ent->s.number;
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if ( render_impact )
+	{
+		if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+		{
+			if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+			{
+				ent->client->accuracy_hits++;
+			} 
+
+			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_STUN_BATON );
+			
+			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
+			tent->s.eventParm = DirToByte( tr.plane.normal );
+			if (traceEnt->client)
+			{
+				tent->s.weapon = 1;
+			}
+		}
+		//else 
+		//{
+			 // Hmmm, maybe don't make any marks on things that could break
+			//tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );
+			//tent->s.eventParm = DirToByte( tr.plane.normal );
+			//tent->s.weapon = 1;
+		//}
+	}
+	
+}
+
+//---------------------------------------------------------
+static void WP_FireShockLance( gentity_t *ent )
+//---------------------------------------------------------
+{
+	int			damage = 60 * g_weaponDamageScale.value;
+	qboolean	render_impact = qtrue;
+	vec3_t		start, end;
+	trace_t		tr;
+	gentity_t	*traceEnt, *tent;
+	float		shotRange = 256;
+	int			ignore;
+
+	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
+
+	VectorCopy( ent->client->ps.origin, start ); //loda
+	start[2] += ent->client->ps.viewheight;//By eyes - but why???
+	VectorMA( start, shotRange, forward, end );
+	VectorMA( start, 1, vright, start ); // loda fix test 
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+
+	ignore = ent->s.number;
+
+	trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+
+	if ( tr.entityNum == ENTITYNUM_NONE )
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+			G_UnTimeShiftAllClients( ent );
+		return;
+	}
+	//fix: shooting ourselves shouldn't be allowed 
+	if (tr.entityNum == ent->s.number)
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+			G_UnTimeShiftAllClients( ent );
+		return;
+	}
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
+		G_UnTimeShiftAllClients( ent );
+
+	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+	{
+		render_impact = qfalse;
+	}
+
+	// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
+	tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT );
+	VectorCopy( muzzle, tent->s.origin2 );
+	tent->s.eventParm = ent->s.number;
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if ( render_impact )
+	{
+		if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+		{
+			if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+			{
+				ent->client->accuracy_hits++;
+			} 
+
+			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST ); // loda
+			
+			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
+			tent->s.eventParm = DirToByte( tr.plane.normal );
+			if (traceEnt->client)
+			{
+				tent->s.weapon = 1;
+			}
+		}
+		else 
+		{
+			 // Hmmm, maybe don't make any marks on things that could break
+			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );
+			tent->s.eventParm = DirToByte( tr.plane.normal );
+			tent->s.weapon = 1;
+		}
+	}
+	
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -3623,13 +4140,44 @@ void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRi
 
 	if (weapontype > WP_NONE && weapontype < WP_NUM_WEAPONS)
 	{	// Use the table to generate the muzzlepoint;
+		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT && ent->client->pers.centerMuzzle)
+		{
+			switch (weapontype)
+			{
+			case WP_STUN_BATON:
+			case WP_DISRUPTOR:
+				break;
+			case WP_BRYAR_PISTOL:
+			case WP_BLASTER:
+			case WP_DEMP2:
+			case WP_FLECHETTE:
+			case WP_CONCUSSION:
+			case WP_BRYAR_OLD:
+				muzzleOffPoint[1] -= 6;
+				muzzleOffPoint[2] += 6;
+				break;
+			case WP_BOWCASTER:
+				muzzleOffPoint[1] -= 2;
+				muzzleOffPoint[2] += 6;
+				break;
+			case WP_REPEATER:
+				muzzleOffPoint[1] -= 4.5;
+				muzzleOffPoint[2] += 6;
+				break;
+			case WP_ROCKET_LAUNCHER:
+				muzzleOffPoint[1] -= 8;
+				muzzleOffPoint[2] += 4;
+				break;
+			default:
+				break;
+			}
+		}
 		{	// Crouching.  Use the add-to-Z method to adjust vertically.
 			VectorMA(muzzlePoint, muzzleOffPoint[0], inForward, muzzlePoint);
 			VectorMA(muzzlePoint, muzzleOffPoint[1], inRight, muzzlePoint);
 			muzzlePoint[2] += ent->client->ps.viewheight + muzzleOffPoint[2];
 		}
 	}
-
 	// snap to integer coordinates for more efficient network bandwidth usage
 	SnapVector( muzzlePoint );
 }
@@ -4464,8 +5012,15 @@ FireWeapon
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
-	// track shots taken for accuracy tracking. melee weapons are not tracked.
-	if( ent->s.weapon != WP_SABER && ent->s.weapon != WP_STUN_BATON && ent->s.weapon != WP_MELEE ) 
+	int seed = ent->client->pers.cmd.serverTime % 256; //JAPRO seed
+
+	if (ent->client && ent->client->pers.amfreeze)//memes
+		return;
+	if (ent->client && ent->client->pers.raceMode)//memes
+		return;
+
+	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
+	if( ent->s.weapon != WP_SABER && (ent->s.weapon != WP_STUN_BATON || ((g_tweakWeapons.integer && STUN_LG) || (g_tweakWeapons.integer && STUN_SHOCKLANCE))) && ent->s.weapon != WP_MELEE ) 
 	{
 		if( ent->s.weapon == WP_FLECHETTE ) {
 			ent->client->accuracy_shots += FLECHETTE_SHOTS;
@@ -4550,7 +5105,12 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 		// fire the specific weapon
 		switch( ent->s.weapon ) {
 		case WP_STUN_BATON:
-			WP_FireStunBaton( ent, altFire );
+			if (g_tweakWeapons.integer & STUN_LG && !altFire)//JAPRO - Lightning Gun
+				WP_FireLightningGun(ent);
+			else if (g_tweakWeapons.integer & STUN_SHOCKLANCE && altFire)//JAPRO - Shocklance
+				WP_FireShockLance(ent);
+			else
+				WP_FireStunBaton(ent, altFire);
 			break;
 
 		case WP_MELEE:
@@ -4576,7 +5136,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_BLASTER:
-			WP_FireBlaster( ent, altFire );
+			WP_FireBlaster( ent, altFire, seed );
 			break;
 
 		case WP_DISRUPTOR:
@@ -4584,11 +5144,11 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_BOWCASTER:
-			WP_FireBowcaster( ent, altFire );
+			WP_FireBowcaster( ent, altFire, seed );
 			break;
 
 		case WP_REPEATER:
-			WP_FireRepeater( ent, altFire );
+			WP_FireRepeater( ent, altFire, seed );
 			break;
 
 		case WP_DEMP2:
@@ -4596,11 +5156,14 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_FLECHETTE:
-			WP_FireFlechette( ent, altFire );
+			WP_FireFlechette( ent, altFire, seed );
 			break;
 
 		case WP_ROCKET_LAUNCHER:
-			WP_FireRocket( ent, altFire );
+			if (g_tweakWeapons.integer & ROCKET_MORTAR && altFire)//JAPRO - Lightning Gun
+				WP_FireMortar(ent);
+			else
+				WP_FireRocket( ent, altFire );
 			break;
 
 		case WP_THERMAL:

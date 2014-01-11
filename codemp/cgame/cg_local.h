@@ -670,6 +670,7 @@ typedef struct score_s {
 	int				defendCount;
 	int				assistCount;
 	int				captures;
+	int				deaths; //JAPRO - Scoreboard Deaths
 	qboolean	perfect;
 	int				team;
 } score_t;

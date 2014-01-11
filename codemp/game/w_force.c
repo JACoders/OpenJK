@@ -3195,6 +3195,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 			if (ent)
 			{ //not in the arc, don't consider it
+				if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
+					G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self );
+
 				VectorCopy(self->client->ps.origin, tto);
 				tto[2] += self->client->ps.viewheight;
 				VectorSubtract(thispush_org, tto, a);
@@ -3204,9 +3207,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					ForcePowerUsableOn(self, ent, powerUse))
 				{ //only bother with arc rules if the victim is a client
 					entityList[e] = ENTITYNUM_NONE;
+
+					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
+						G_UnTimeShiftAllClients( self );
 				}
 				else if (ent->client)
 				{
+					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
+						G_UnTimeShiftAllClients( self );
+
 					if (pull)
 					{
 						if (!ForcePowerUsableOn(self, ent, FP_PULL))
@@ -3221,6 +3230,10 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							entityList[e] = ENTITYNUM_NONE;
 						}
 					}
+				}
+				else {
+					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
+						G_UnTimeShiftAllClients( self );
 				}
 			}
 			e++;

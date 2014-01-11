@@ -106,11 +106,115 @@ void trap_SetServerCull(float cullDistance) {
 void trap_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	Q_syscall( G_SET_BRUSH_MODEL, ent, name );
 }
+
+/*
+==============================
+saved - used to hold ownerNums
+==============================
+*/
+static int saved[MAX_GENTITIES];
+
+/*
+============================================
+BeginHack
+This abuses ownerNum to allow nonsolid duels 
+(used by trace functions)
+============================================
+*/
+static void BeginHack(int entityNum)
+{
+	// since we are in a duel, make everyone else nonsolid
+	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+					saved[i] = ent->r.ownerNum;
+					ent->r.ownerNum = entityNum;
+				}
+			}
+		}
+	} 
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].pers.raceMode) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+					saved[i] = ent->r.ownerNum;
+					ent->r.ownerNum = entityNum;
+				}
+			}
+		}
+	}
+	else { // we are not dueling but make those that are nonsolid
+		int i;
+		for (i = 0; i < level.maxclients; i++) {
+			if (i != entityNum) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse && 
+					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) {
+					saved[i] = ent->r.ownerNum;
+					ent->r.ownerNum = entityNum;
+				}
+			}
+		}
+	}
+}
+
+/*
+==========================================
+EndHack
+This cleans up the damage BeginHack caused
+==========================================
+*/
+static void EndHack(int entityNum) {
+	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+					ent->r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].pers.raceMode) {
+		int i;
+		for (i = 0; i < level.num_entities; i++) {
+			if (i != entityNum) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+					ent->r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+	else {
+		int i;
+		for (i = 0; i < level.maxclients; i++) {
+			if (i != entityNum) {
+				gentity_t *ent = &g_entities[i];
+				if (ent->inuse &&
+					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) {
+					ent->r.ownerNum = saved[i];
+				}
+			}
+		}
+	}
+}
+
 void trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask ) {
+	BeginHack(passEntityNum);
 	Q_syscall( G_TRACE, results, start, mins, maxs, end, passEntityNum, contentmask, 0, 10 );
+	EndHack(passEntityNum);
 }
 void trap_G2Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int g2TraceType, int traceLod ) {
+	BeginHack(passEntityNum);
 	Q_syscall( G_G2TRACE, results, start, mins, maxs, end, passEntityNum, contentmask, g2TraceType, traceLod );
+	EndHack(passEntityNum);
 }
 int trap_PointContents( const vec3_t point, int passEntityNum ) {
 	return Q_syscall( G_POINT_CONTENTS, point, passEntityNum );

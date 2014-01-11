@@ -1948,6 +1948,7 @@ static void Q3_SetOrigin( int entID, vec3_t origin )
 		ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 		
 		ent->client->ps.eFlags ^= EF_TELEPORT_BIT;
+		G_ResetTrail( ent );//unlagged
 
 //		G_KillBox (ent);
 	}

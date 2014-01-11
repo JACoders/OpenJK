@@ -22,7 +22,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
+#define	GAMEVERSION	"japro"
 
 #define SECURITY_LOG "security.log"
 #define DUEL_LOG "duels.log" //duellog
@@ -186,7 +186,6 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
 #define PSEUDORANDOM_FIRE	(1<<14)
 #define ROCKET_MORTAR		(1<<15)
 #define ROCKET_REDEEMER		(1<<16)
-#define PLASMACLIMB			(1<<17)
 
 //JAPRO - Serverside - Unlagged bitvalues
 #define UNLAGGED_PROJ_NUDGE	(1<<0)
@@ -1334,8 +1333,8 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward );
 
 void G_RunMissile( gentity_t *ent );
 
-gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, 
-							gentity_t *owner, qboolean altFire);
+gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire);
+gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire);
 void G_BounceProjectile( vec3_t start, vec3_t impact, vec3_t dir, vec3_t endout );
 void G_ExplodeMissile( gentity_t *ent );
 

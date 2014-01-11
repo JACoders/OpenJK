@@ -2258,6 +2258,8 @@ typedef enum {
 #define SAY_ALL		0
 #define SAY_TEAM	1
 #define SAY_TELL	2
+#define SAY_CLAN	3
+#define SAY_ADMIN	4
 
 #define QRAND_MAX 32768
 

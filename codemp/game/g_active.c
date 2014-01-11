@@ -677,6 +677,46 @@ static void SV_PMTrace( trace_t *results, const vec3_t start, const vec3_t mins,
 	trap->Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
 }
 
+int SpectatorFind(gentity_t *self) // loda japro fixme - add unlagged (could this be exploited?)
+{
+	int i;
+
+	for ( i = 0; i < level.numConnectedClients; i ++ )
+	{
+		gentity_t *ent = &g_entities[level.sortedClients[i]];
+		float	  dist;
+		vec3_t	  angles;
+
+		if ( ent == self ) {
+			continue;
+		}
+
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+			continue;
+
+		VectorSubtract( ent->client->ps.origin, self->client->ps.origin, angles );
+		dist = VectorLengthSquared ( angles );
+		vectoangles ( angles, angles );
+
+		// Out of range
+		if ( dist > 4096*4096 ) {
+			continue;
+		}
+		
+		// Not in our FOV
+		if ( !InFieldOfVision ( self->client->ps.viewangles, 30, angles ) ) {
+			continue;
+		}
+
+		// Not in line of sight?
+			//break;
+
+		// Return the first guy that fits the requirements
+		return level.sortedClients[i];
+	}
+	return -1;
+}
+
 /*
 =================
 SpectatorThink
@@ -685,6 +725,7 @@ SpectatorThink
 void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	pmove_t	pmove;
 	gclient_t	*client;
+	int match;
 
 	client = ent->client;
 
@@ -734,10 +775,19 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 
 	if (client->tempSpectate < level.time)
 	{
-		// attack button cycles through spectators
-		if ( (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) )
-			Cmd_FollowCycle_f( ent, 1 );
-
+		if ( client->sess.spectatorState == SPECTATOR_FOLLOW && (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) )
+			Cmd_FollowCycle_f( ent, 1 ); // Clicked while following a guy -> go to next guy
+		else if ( (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) ) {
+			G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+			match = SpectatorFind(ent);
+			G_UnTimeShiftAllClients( ent );
+			if (match == -1) // Clicked while not following a guy -> Follow guy you are aiming at.
+				Cmd_FollowCycle_f( ent, 1 );
+			else {
+				client->sess.spectatorClient = match;
+				client->sess.spectatorState = SPECTATOR_FOLLOW;
+			}
+		}
 		else if ( client->sess.spectatorState == SPECTATOR_FOLLOW && (client->buttons & BUTTON_ALT_ATTACK) && !(client->oldbuttons & BUTTON_ALT_ATTACK) )
 			Cmd_FollowCycle_f( ent, -1 );
 
@@ -3873,6 +3923,7 @@ while a slow client may have multiple ClientEndFrame between ClientThink.
 void ClientEndFrame( gentity_t *ent ) {
 	int			i;
 	qboolean isNPC = qfalse;
+	int frames; //japro smoothclients
 
 	if (ent->s.eType == ET_NPC)
 	{
@@ -3890,14 +3941,6 @@ void ClientEndFrame( gentity_t *ent ) {
 			ent->client->ps.powerups[ i ] = 0;
 		}
 	}
-
-	// save network bandwidth
-#if 0
-	if ( !g_synchronousClients->integer && (ent->client->ps.pm_type == PM_NORMAL || ent->client->ps.pm_type == PM_JETPACK || ent->client->ps.pm_type == PM_FLOAT) ) {
-		// FIXME: this must change eventually for non-sync demo recording
-		VectorClear( ent->client->ps.viewangles );
-	}
-#endif
 
 	//
 	// If the end of unit layout is displayed, don't give
@@ -3945,6 +3988,35 @@ void ClientEndFrame( gentity_t *ent ) {
 
 	SendPendingPredictableEvents( &ent->client->ps );
 
+	//unlagged - smooth clients #1 - loda
+	// mark as not missing updates initially
+	ent->client->ps.eFlags &= ~EF_CONNECTION;
+
+	// see how many frames the client has missed
+	frames = level.framenum - ent->client->lastUpdateFrame - 1;
+
+	// don't extrapolate more than two frames
+	if ( frames > 2 ) {
+		frames = 2;
+
+		// if they missed more than two in a row, show the phone jack
+		if (g_lagIcon.integer)
+			ent->client->ps.eFlags |= EF_CONNECTION;
+		ent->s.eFlags |= EF_CONNECTION;
+	}
+
+	// did the client miss any frames?
+	if ( frames > 0 && g_smoothClients.integer && VectorLength(ent->client->ps.velocity) >= 90 && !(ent->r.svFlags & SVF_BOT)) { // loda - sad hack fix this
+		// yep, missed one or more, so extrapolate the player's movement
+		//G_PredictPlayerMove( ent, (float)frames / sv_fps.integer );
+		G_PredictPlayerStepSlideMove( ent, (float)frames / sv_fps.integer );
+		// save network bandwidth
+		SnapVector( ent->s.pos.trBase );
+	}
+//unlagged - smooth clients #1 - loda
+
+
+	G_StoreTrail( ent );
 	// set the bit for the reachability area the client is currently in
 //	i = trap->AAS_PointReachabilityAreaIndex( ent->client->ps.origin );
 //	ent->client->areabits[i >> 3] |= 1 << (i & 7);
