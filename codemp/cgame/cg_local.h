@@ -1610,6 +1610,12 @@ typedef struct cgs_s {
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
+	int				cinfo;
+	int				jcinfo;
+	int				restricts;
+	qboolean		isJAPro;
+	qboolean		isJAPlus;
+
 	qboolean  newHud;
 
 	//

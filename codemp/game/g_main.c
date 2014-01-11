@@ -12,6 +12,7 @@ level_locals_t	level;
 int		eventClearTime = 0;
 static int navCalcPathTime = 0;
 extern int fatalErrors;
+qboolean BG_CanJetpack(playerState_t *ps);
 
 int killPlayerTimer = 0;
 
@@ -3239,12 +3240,34 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;
 				}
 			}
-			else if (ent->client->ps.jetpackFuel < 100)
+			else if (!g_tweakJetpack.integer && ent->client->ps.jetpackFuel < 100)
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
 					ent->client->ps.jetpackFuel++;
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;
+				}
+			}
+			else if (g_tweakJetpack.integer && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
+			{ //using jetpack, drain fuel
+				if (ent->client->jetPackDebReduce < level.time)
+				{
+					ent->client->ps.jetpackFuel -= 6;
+					
+					if (ent->client->ps.jetpackFuel <= 0)
+					{ //turn it off
+						ent->client->ps.jetpackFuel = 0;
+						//Jetpack_Off(ent);
+					}
+					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;//Defuel rate
+				}
+			}
+			else if (ent->client->ps.jetpackFuel < 100)
+			{ //recharge jetpack
+				if (ent->client->jetPackDebRecharge < level.time)
+				{
+					ent->client->ps.jetpackFuel += 4;
+					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;//Refuel rate
 				}
 			}
 

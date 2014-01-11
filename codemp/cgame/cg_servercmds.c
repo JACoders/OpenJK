@@ -161,8 +161,23 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = i;
 
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
-	mapname = Info_ValueForKey( info, "mapname" );
 
+	cgs.isJAPlus = qfalse;
+	cgs.isJAPro = qfalse;
+	cgs.cinfo = 0;
+	cgs.jcinfo = 0;
+	cgs.restricts = 0;
+	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 )) {	//uag :s - yes its fatz
+		cgs.isJAPlus = qtrue;
+		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
+	} 
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 7)) {
+		cgs.isJAPro = qtrue;
+		cgs.jcinfo= atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+	}
+	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+
+	mapname = Info_ValueForKey( info, "mapname" );
 	//rww - You must do this one here, Info_ValueForKey always uses the same memory pointer.
 	trap->Cvar_Set ( "ui_about_mapname", mapname );
 

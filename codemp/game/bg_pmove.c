@@ -243,6 +243,21 @@ qboolean BG_KnockDownable(playerState_t *ps)
 	return qtrue;
 }
 
+qboolean BG_CanJetpack(playerState_t *ps)
+{
+	if (!(ps->stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
+		return qfalse;
+	if (ps->jetpackFuel < 10)
+		return qfalse;
+	if (BG_SaberInSpecial(ps->saberMove))
+		return qfalse;
+	if (BG_InRoll(ps, ps->legsAnim))
+		return qfalse;
+	if (BG_InSpecialJump(ps->legsAnim))
+		return qfalse;	
+	return qtrue;
+}
+
 //hacky assumption check, assume any client non-humanoid is a rocket trooper
 qboolean QINLINE PM_IsRocketTrooper(void)
 {
@@ -1054,7 +1069,20 @@ static void PM_Friction( void ) {
 	// If on a client then there is no friction
 	else if ( pm->ps->groundEntityNum < MAX_CLIENTS )
 	{
-		drop = 0;
+#ifdef _GAME
+		if (g_slideOnPlayer.integer)
+#else
+		if (cgs.isJAPro) {
+			if (cgs.jcinfo & JAPRO_CINFO_HEADSLIDE)
+				drop = 0;
+		}
+		else if (cgs.isJAPlus) {
+			if (cgs.cinfo & JAPLUS_CINFO_HEADSLIDE)
+				drop = 0;
+		}
+		else
+#endif
+			drop = 0;
 	}
 
 	if ( pm->ps->pm_type == PM_SPECTATOR || pm->ps->pm_type == PM_FLOAT )
@@ -1079,6 +1107,32 @@ static void PM_Friction( void ) {
 	VectorScale( vel, newspeed, vel );
 }
 
+void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
+{
+        int		i;
+        float	addspeed, accelspeed, currentspeed, wishspd = wishspeed;
+                
+		if (pm->ps->pm_type == PM_DEAD)
+			return;
+		if (pm->ps->pm_flags & PMF_TIME_WATERJUMP)
+			return;
+        
+        if (wishspd > 30)
+                wishspd = 30;
+
+        currentspeed = DotProduct (pm->ps->velocity, wishdir);
+        addspeed = wishspd - currentspeed;// See how much to add
+        if (addspeed <= 0)// If not adding any, done.
+                return;
+
+        accelspeed = accel * wishspeed * pml.frametime * 4.0f;// QUAKECLASSIC: accelspeed = accel * wishspeed * pmove->frametime * pmove->friction;
+        
+        if (accelspeed > addspeed) // Cap it
+                accelspeed = addspeed;
+        
+        for (i=0 ; i<3 ; i++)// Adjust pmove vel.
+               pm->ps->velocity[i] += accelspeed*wishdir[i];        
+}
 
 /*
 ==============
@@ -1089,10 +1143,13 @@ Handles user intended acceleration
 */
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
-	if (pm->gametype != GT_SIEGE 
-		|| pm->ps->m_iVehicleNum 
-		|| pm->ps->clientNum >= MAX_CLIENTS 
-		|| pm->ps->pm_type != PM_NORMAL)
+#ifdef _GAME
+	if (g_movementStyle.integer != 0 || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
+#else
+		if ((cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOSTRAFE) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL))
+			||
+		((!cgs.isJAPro) && (pm->gametype != GT_DUEL || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)))
+#endif
 	{ //standard method, allows "bunnyhopping" and whatnot
 		int			i;
 		float		addspeed, accelspeed, currentspeed;
@@ -1807,6 +1864,13 @@ static qboolean PM_CheckJump( void )
 	{ //there's no actual jumping while we jetpack
 		return qfalse;
 	}
+
+#ifdef QAGAME
+	if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#elif CGAME
+	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+		return qfalse;
 
 	//Don't allow jump until all buttons are up
 	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
@@ -3241,6 +3305,20 @@ static void PM_AirMove( void ) {
             VectorScale(wishvel, 2.0f, wishvel);
 		}
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{ //reduced air control while not jetting
+		for ( i = 0 ; i < 2 ; i++ )
+		{
+			wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
+		}
+		wishvel[2] = 0;
+
+        VectorScale(wishvel, 0.9f, wishvel);
+	}
 	else
 	{
 		for ( i = 0 ; i < 2 ; i++ )
@@ -3265,7 +3343,48 @@ static void PM_AirMove( void ) {
 		}
 	}
 	// not on ground, so little effect on velocity
-	PM_Accelerate (wishdir, wishspeed, accelerate);
+#ifdef _GAME
+	if (g_movementStyle.integer == 2) // QW or HL1.. idk fuck this
+#else
+	if (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_HL2) 
+#endif
+		PM_AirAccelerate(wishdir, wishspeed, pm_qw_airaccel);
+#ifdef _GAME
+	else if (g_movementStyle.integer == 3)
+#else
+	else if (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_CPM) 
+#endif
+	{
+		float		accel;
+		float		wishspeed2;
+
+		wishspeed2 = wishspeed;
+		if (DotProduct(pm->ps->velocity, wishdir) < 0)
+			accel = cpm_pm_airstopaccelerate;
+		else
+			accel = pm_airaccelerate;
+		if (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)
+		{
+			if (wishspeed > cpm_pm_wishspeed)
+				wishspeed = cpm_pm_wishspeed;	
+			accel = cpm_pm_strafeaccelerate;
+		}
+
+		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
+		CPM_PM_Aircontrol (pm, wishdir, wishspeed2);
+	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif)
+	{
+		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
+	}
+	else // movement style is 0 or 1
+	{
+		PM_Accelerate(wishdir, wishspeed, accelerate);
+	}
 
 	// we may have a ground plane that is very steep, even
 	// though we don't have a groundentity
@@ -4066,6 +4185,13 @@ static void PM_GroundTraceMissed( void ) {
 		//a proper anim even when on the ground.
 		//PM_SetAnim(SETANIM_LEGS,BOTH_FORCEJUMP1,SETANIM_FLAG_OVERRIDE);
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{//Jetpacking with new jetpack
+	}
 	//If the anim is choke3, act like we just went into the air because we aren't in a float
 	else if ( pm->ps->groundEntityNum != ENTITYNUM_NONE || (pm->ps->legsAnim) == BOTH_CHOKE3 ) 
 	{
@@ -4162,6 +4288,18 @@ static void PM_GroundTrace( void ) {
 	}
 
 	if (pm->ps->pm_type == PM_FLOAT || pm->ps->pm_type == PM_JETPACK)
+	{
+		PM_GroundTraceMissed();
+		pml.groundPlane = qfalse;
+		pml.walking = qfalse;
+		return;
+	}
+
+#ifdef _GAME
+	if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
 	{
 		PM_GroundTraceMissed();
 		pml.groundPlane = qfalse;
@@ -10756,6 +10894,15 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->gravity *= 0.25f;
 		}
 	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{
+		savedGravity = pm->ps->gravity;
+		pm->ps->gravity *= 0.01f;
+	}
 	else if (gPMDoSlowFall)
 	{
 		savedGravity = pm->ps->gravity;
@@ -10841,6 +10988,63 @@ void PmoveSingle (pmove_t *pmove) {
 					pm->ps->velocity[2] += 2;
 				}
 			}
+		}
+	}
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
+	{
+		if (pm->cmd.rightmove > 0)
+			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
+		else if (pm->cmd.rightmove < 0)
+            PM_ContinueLegsAnim(BOTH_INAIRLEFT1);
+		else if (pm->cmd.forwardmove > 0)
+			PM_ContinueLegsAnim(BOTH_INAIR1);
+		else if (pm->cmd.forwardmove < 0)
+			PM_ContinueLegsAnim(BOTH_INAIRBACK1);
+		else
+			PM_ContinueLegsAnim(BOTH_INAIR1);
+		if (pm->cmd.rightmove || pm->cmd.forwardmove) {//Directional thrust vector
+			if (pm->ps->velocity[2] < -512)
+				pm->ps->velocity[2] += 8.0f;
+			else if (pm->ps->velocity[2] < -256)
+				pm->ps->velocity[2] += 6.0f;
+			else if (pm->ps->velocity[2] < -128)
+				pm->ps->velocity[2] += 5.0f;
+			else if (pm->ps->velocity[2] < -64)
+				pm->ps->velocity[2] += 4.0f;
+			else if (pm->ps->velocity[2] < 0)
+				pm->ps->velocity[2] += 3.0f;
+			else if (pm->ps->velocity[2] < 128)
+				pm->ps->velocity[2] += 2.0f;
+			else if (pm->ps->velocity[2] < 256)
+				pm->ps->velocity[2] += 1.0f;
+			else
+				pm->ps->velocity[2] += 0.5f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING;
+		}
+		else { //Strong "up jet"
+			if (pm->ps->velocity[2] < -512)
+				pm->ps->velocity[2] += 12.0f;
+			else if (pm->ps->velocity[2] < -256)
+				pm->ps->velocity[2] += 10.0f;
+			else if (pm->ps->velocity[2] < -128)
+				pm->ps->velocity[2] += 8.0f;
+			else if (pm->ps->velocity[2] < -64)
+				pm->ps->velocity[2] += 7.0f;
+			else if (pm->ps->velocity[2] < 0)
+				pm->ps->velocity[2] += 5.0f;
+			else if (pm->ps->velocity[2] < 128)
+				pm->ps->velocity[2] += 4.0f;
+			else if (pm->ps->velocity[2] < 256)
+				pm->ps->velocity[2] += 3.0f;
+			else if (pm->ps->velocity[2] < 512)
+				pm->ps->velocity[2] += 2.0f;
+			else
+				pm->ps->velocity[2] += 1.0f;
+			pm->ps->eFlags |= EF_JETPACK_FLAMING;
 		}
 	}
 
@@ -11164,6 +11368,15 @@ void PmoveSingle (pmove_t *pmove) {
 		trap->SnapVector( pm->ps->velocity );
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
+	{
+		pm->ps->gravity = savedGravity;
+	}
+
+#ifdef _GAME
+	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#else
+	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
+#endif
 	{
 		pm->ps->gravity = savedGravity;
 	}
