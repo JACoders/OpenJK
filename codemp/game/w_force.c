@@ -780,6 +780,9 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		return -1;
 	}
 
+	if (g_fixGripAbsorb.integer && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever
+		return -1;
+
 //[JAPRO - Serverside - Saber - Tweak force lightning - Start]
 	if (!atdAbsLevel)
 	{ //looks like attacker doesn't have any absorb power
@@ -1545,15 +1548,20 @@ void ForceProtect( gentity_t *self )
 		return;
 	}
 
+//JAPRO - Serverside - Allow force combos - Start
 	// Make sure to turn off Force Rage and Force Absorb.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+	if (!g_forceCombo.integer)
 	{
-		WP_ForcePowerStop( self, FP_RAGE );
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+		{
+			WP_ForcePowerStop( self, FP_RAGE );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
+		{
+			WP_ForcePowerStop( self, FP_ABSORB );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
-	{
-		WP_ForcePowerStop( self, FP_ABSORB );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1581,15 +1589,19 @@ void ForceAbsorb( gentity_t *self )
 		return;
 	}
 
-	// Make sure to turn off Force Rage and Force Protection.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
-	{
-		WP_ForcePowerStop( self, FP_RAGE );
+//JAPRO - Serverside - Allow force combos - Start
+	if (!g_forceCombo.integer)
+	{// Make sure to turn off Force Rage and Force Protection.
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
+		{
+			WP_ForcePowerStop( self, FP_RAGE );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+		{
+			WP_ForcePowerStop( self, FP_PROTECT );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
-	{
-		WP_ForcePowerStop( self, FP_PROTECT );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1627,15 +1639,20 @@ void ForceRage( gentity_t *self )
 		return;
 	}
 
-	// Make sure to turn off Force Protection and Force Absorb.
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+//JAPRO - Serverside - Allow force combos - Start
+	//Make sure to turn off Force Protection and Force Absorb.
+	if (!g_forceCombo.integer)
 	{
-		WP_ForcePowerStop( self, FP_PROTECT );
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
+		{
+			WP_ForcePowerStop( self, FP_PROTECT );
+		}
+		if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
+		{
+			WP_ForcePowerStop( self, FP_ABSORB );
+		}
 	}
-	if (self->client->ps.fd.forcePowersActive & (1 << FP_ABSORB) )
-	{
-		WP_ForcePowerStop( self, FP_ABSORB );
-	}
+//JAPRO - Serverside - Allow force combos - End
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -3227,7 +3244,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			continue;
 		if (ent == self)
 			continue;
-		if (ent->client && OnSameTeam(ent, self))
+		if (ent->client && OnSameTeam(ent, self) && !g_friendlyFire.integer)//JAPRO - Allow push/pull teammates when friendlyfire is on
 		{
 			continue;
 		}
@@ -3579,8 +3596,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					//fullbody push effect
 					push_list[x]->client->pushEffectTime = level.time + 600;
 
-					push_list[x]->client->ps.velocity[0] = pushDir[0]*pushPowerMod;
-					push_list[x]->client->ps.velocity[1] = pushDir[1]*pushPowerMod;
+					if (g_fixPullStrength.integer && pull) {
+						push_list[x]->client->ps.velocity[0] += pushDir[0]*pushPowerMod;
+						push_list[x]->client->ps.velocity[1] += pushDir[1]*pushPowerMod;
+					}
+					else {
+						push_list[x]->client->ps.velocity[0] = pushDir[0]*pushPowerMod;
+						push_list[x]->client->ps.velocity[1] = pushDir[1]*pushPowerMod;
+					}
 
 					if ((int)push_list[x]->client->ps.velocity[2] == 0)
 					{ //if not going anywhere vertically, boost them up a bit
@@ -3593,7 +3616,10 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 					else
 					{
-						push_list[x]->client->ps.velocity[2] = pushDir[2]*pushPowerMod;
+						if (g_fixPullStrength.integer && pull)
+							push_list[x]->client->ps.velocity[2] += pushDir[2]*pushPowerMod;
+						else
+							push_list[x]->client->ps.velocity[2] = pushDir[2]*pushPowerMod;
 					}
 				}
 			}
@@ -3607,6 +3633,60 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					G_ReflectMissile( self, push_list[x], forward );
 				}
 			}
+//JAPRO - Serverside - Flag push/pull physics - Start
+			else if (g_allowFlagThrow.integer && push_list[x]->s.eType == ET_ITEM && push_list[x]->s.modelindex2 != 0)
+			{
+				if ( pull )
+				{//pull the item
+
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					VectorScale( forward, -325.0f, push_list[x]->s.pos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+				else 
+				{
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					VectorScale( forward, 325.0f, push_list[x]->s.pos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+			}
+//JAPRO - Serverside - Flag push/pull physics - End
+//JAPRO - Serverside - Item push/pull physics - Start
+			else if ( g_pushPullItems.integer && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
+			{
+				push_list[x]->nextthink = level.time + 30000;
+				push_list[x]->think = ResetItem;//incase it falls off a cliff
+				if ( pull )
+				{//pull the item
+
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					push_list[x]->s.apos.trType = TR_GRAVITY;
+					VectorScale( forward, -650.0f, push_list[x]->s.pos.trDelta );
+					VectorScale( forward, -650.0f, push_list[x]->s.apos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					push_list[x]->s.apos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.apos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+				else 
+				{
+					push_list[x]->s.pos.trType = TR_GRAVITY;
+					push_list[x]->s.apos.trType = TR_GRAVITY;
+					VectorScale( forward, 650.0f, push_list[x]->s.pos.trDelta );
+					VectorScale( forward, 650.0f, push_list[x]->s.apos.trDelta );
+					push_list[x]->s.pos.trTime = level.time;		// move a bit on the very first frame
+					push_list[x]->s.apos.trTime = level.time;		// move a bit on the very first frame
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.pos.trBase );
+					VectorCopy( push_list[x]->r.currentOrigin, push_list[x]->s.apos.trBase );
+					push_list[x]->s.eFlags = FL_BOUNCE_HALF;
+				}
+			}
+//JAPRO - Serverside - Item push/pull physics - End
 			else if ( !Q_stricmp( "func_static", push_list[x]->classname ) )
 			{//force-usable func_static
 				if ( !pull && (push_list[x]->spawnflags&1/*F_PUSH*/) )
@@ -3895,9 +3975,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		return;
 	}
 
-	if (tr.fraction != 1.0f &&
-		tr.entityNum != gripEnt->s.number /*&&
-		gripLevel < FORCE_LEVEL_3*/)
+	if (!g_jk2Grip.integer && tr.fraction != 1.0f && tr.entityNum != gripEnt->s.number)
 	{
 		WP_ForcePowerStop(self, forcePower);
 		return;

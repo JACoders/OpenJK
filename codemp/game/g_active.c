@@ -808,6 +808,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		if ( client->ps.stats[STAT_ARMOR] > client->ps.stats[STAT_MAX_HEALTH] ) {
 			client->ps.stats[STAT_ARMOR]--;
 		}
+
+		if (client->csTimeLeft) {//japro send message and count down a second
+			trap->SendServerCommand( ent-g_entities, va("cp \"^7%s\n\"", ent->client->csMessage ));
+			client->csTimeLeft--;
+		}
 	}
 }
 
@@ -1121,36 +1126,29 @@ static void G_UpdateForceSightBroadcasts ( gentity_t *self )
 		vec3_t	  angles;
 	
 		if ( ent == self )
-		{
 			continue;
-		}
 
-		// Not using force sight so we shouldnt broadcast to this one
-		if ( !(ent->client->ps.fd.forcePowersActive & (1<<FP_SEE) ) )
+		if (!g_removeSpectatorPortals.integer || ent->client->sess.sessionTeam != TEAM_SPECTATOR) // Setting is off, or they are not in spec. (this is only skipped if setting is on and they are in spec)
 		{
-			continue;
-		}
+			// Not using force sight so we shouldnt broadcast to this one
+			if ( !(ent->client->ps.fd.forcePowersActive & (1<<FP_SEE) ) )
+				continue;
 
-		VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
-		dist = VectorLengthSquared ( angles );
-		vectoangles ( angles, angles );
+			VectorSubtract( self->client->ps.origin, ent->client->ps.origin, angles );
+			dist = VectorLengthSquared ( angles );
+			vectoangles ( angles, angles );
 
-		// Too far away then just forget it
-		if ( dist > MAX_SIGHT_DISTANCE * MAX_SIGHT_DISTANCE )
-		{
-			continue;
-		}
+			// Too far away then just forget it
+			if ( dist > MAX_SIGHT_DISTANCE * MAX_SIGHT_DISTANCE )
+				continue;
 		
-		// If not within the field of view then forget it
-		if ( !InFieldOfVision ( ent->client->ps.viewangles, MAX_SIGHT_FOV, angles ) )
-		{
-			break;
+			// If not within the field of view then forget it
+			if ( !InFieldOfVision ( ent->client->ps.viewangles, MAX_SIGHT_FOV, angles ) )
+				break;
 		}
-
 		// Turn on the broadcast bit for the master and since there is only one
 		// master we are done
 		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
-	
 		break;
 	}
 }
@@ -2157,6 +2155,26 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
+	if (ent && ent->client && g_gametype.integer == GT_FFA && !ent->client->ps.powerups[PW_NEUTRALFLAG] && ent->client->sess.sessionTeam == TEAM_FREE) {//JAPRO - Serverside - God chat :(
+		if ((ent->client->ps.eFlags & EF_TALK) && !ent->client->pers.chatting) {
+			ent->client->pers.chatting = qtrue;
+			ent->client->pers.lastChatTime = level.time;
+		}
+		else if (!(ent->client->ps.eFlags & EF_TALK)) {
+			ent->client->pers.chatting = qfalse;
+			if (!sv_cheats.integer)
+				ent->flags &= ~FL_GODMODE;
+			ent->takedamage = qtrue;
+		}	
+		else if (g_godChat.integer && (ent->client->ps.eFlags & EF_TALK) && (ent->client->pers.lastChatTime + 3000) < level.time) { //Only god chat them 3 seconds after their chatbox goes up to prevent some abuse :/
+			if (!ent->client->ps.duelInProgress) {
+				if (!sv_cheats.integer)
+					ent->flags |= FL_GODMODE;
+				ent->takedamage = qfalse;
+			}
+		}
+	} // Godchat end
+
 	if (ent->s.eType != ET_NPC)
 	{
 		// check for inactivity timer, but never drop the local client of a non-dedicated server
@@ -2591,15 +2609,27 @@ void ClientThink_real( gentity_t *ent ) {
 			trap->SendServerCommand( ent-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
 			trap->SendServerCommand( duelAgainst-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
 			*/
-			//Private duel announcements are now made globally because we only want one duel at a time.
+//[JAPRO - Serverside - Duel - Improve/fix duel end print - Start]
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				trap->SendServerCommand( -1, va("cp \"%s %s %s!\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname) );
+				G_DuelLogPrintf("%s ; (%s) (%i ping) has defeated ; %s ; (%s) (%i ping) in type %i duel, with %i health and %i armor remaining.\n", ent->client->pers.netname, ent->client->sess.IP, ent->client->ps.ping, duelAgainst->client->pers.netname, duelAgainst->client->sess.IP, duelAgainst->client->ps.ping, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				if (dueltypes[ent->client->ps.clientNum] == 0)//Saber
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
+				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
+				else
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
-				trap->SendServerCommand( -1, va("cp \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELTIE")) );
+				if (dueltypes[ent->client->ps.clientNum] == 0)//Saber
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				else 
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
 			}
+//[JAPRO - Serverside - Duel - Improve/fix duel end print - End]
 		}
 		else
 		{
@@ -3244,7 +3274,7 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			else
 			{
-				Cmd_EngageDuel_f(ent);
+				Cmd_EngageDuel_f(ent, 0);
 			}
 			break;
 		case GENCMD_FORCE_HEAL:
@@ -3669,7 +3699,7 @@ void G_CheckClientTimeouts ( gentity_t *ent )
 	// longer than the timeout to spectator then force this client into spectator mode
 	if ( level.time - ent->client->pers.cmd.serverTime > g_timeouttospec.integer * 1000 )
 	{
-		SetTeam ( ent, "spectator" );
+		SetTeam ( ent, "spectator", qfalse );
 	}
 }
 
@@ -3888,8 +3918,10 @@ void ClientEndFrame( gentity_t *ent ) {
 	P_DamageFeedback (ent);
 
 	// add the EF_CONNECTION flag if we haven't gotten commands recently
-	if ( level.time - ent->client->lastCmdTime > 1000 )
-		ent->client->ps.eFlags |= EF_CONNECTION;
+	if ( level.time - ent->client->lastCmdTime > 1000 ) {
+		if (g_lagIcon.integer) //Loda fixme should be up here ^ ?
+			ent->client->ps.eFlags |= EF_CONNECTION;
+	}
 	else
 		ent->client->ps.eFlags &= ~EF_CONNECTION;
 

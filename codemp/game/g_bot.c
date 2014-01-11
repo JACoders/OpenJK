@@ -1002,7 +1002,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 		}
 
 		bot->client->sess.sessionTeam = TEAM_SPECTATOR;
-		SetTeam(bot, "s");
+		SetTeam(bot, "s", qfalse);
 	}
 	else
 	{

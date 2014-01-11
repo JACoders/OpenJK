@@ -376,9 +376,12 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 	if (team == TEAM_RED) {
 		flag_pw = PW_REDFLAG;
 		enemy_flag_pw = PW_BLUEFLAG;
-	} else {
+	} else if (team == TEAM_BLUE){
 		flag_pw = PW_BLUEFLAG;
 		enemy_flag_pw = PW_REDFLAG;
+	} else { //rabbit ?
+		flag_pw = PW_NEUTRALFLAG;
+		enemy_flag_pw = PW_NEUTRALFLAG;
 	}
 
 	// did the attacker frag the flag carrier?
@@ -387,6 +390,8 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 		attacker->client->pers.teamState.lastfraggedcarrier = level.time;
 		AddScore(attacker, targ->r.currentOrigin, CTF_FRAG_CARRIER_BONUS);
 		attacker->client->pers.teamState.fragcarrier++;
+		if (g_fixCTFScores.integer)
+			attacker->client->ps.persistant[PERS_DEFEND_COUNT]++;
 		//PrintMsg(NULL, "%s" S_COLOR_WHITE " fragged %s's flag carrier!\n",
 		//	attacker->client->pers.netname, TeamName(team));
 		PrintCTFMessage(attacker->s.number, team, CTFMESSAGE_FRAGGED_FLAG_CARRIER);
@@ -839,7 +844,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	other->client->ps.persistant[PERS_CAPTURES]++;
 
 	// other gets another 10 frag bonus
-	AddScore(other, ent->r.currentOrigin, CTF_CAPTURE_BONUS);
+	if (g_fixCTFScores.integer)
+		AddScore(other, ent->r.currentOrigin, 60);
+	else
+		AddScore(other, ent->r.currentOrigin, CTF_CAPTURE_BONUS);
 
 	Team_CaptureFlagSound( ent, team );
 
@@ -854,7 +862,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 			player->client->pers.teamState.lasthurtcarrier = -5;
 		} else if (player->client->sess.sessionTeam ==
 			cl->sess.sessionTeam) {
-			AddScore(player, ent->r.currentOrigin, CTF_TEAM_BONUS);
+			if (!g_fixCTFScores.integer)
+				AddScore(player, ent->r.currentOrigin, CTF_TEAM_BONUS);
 			// award extra points for capture assists
 			if (player->client->pers.teamState.lastreturnedflag + 
 				CTF_RETURN_FLAG_ASSIST_TIMEOUT > level.time) {
@@ -942,7 +951,9 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	Team_SetFlagStatus( team, FLAG_TAKEN );
 
-	AddScore(other, ent->r.currentOrigin, CTF_FLAG_BONUS);
+	if (!g_allowFlagThrow.integer)
+		AddScore(other, ent->r.currentOrigin, CTF_FLAG_BONUS);
+
 	cl->pers.teamState.flagsince = level.time;
 	Team_TakeFlagSound( ent, team );
 

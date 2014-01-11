@@ -25,6 +25,7 @@ extern vec3_t gPainPoint;
 #define	GAMEVERSION	"OpenJK"
 
 #define SECURITY_LOG "security.log"
+#define DUEL_LOG "duels.log" //duellog
 
 #define BODY_QUEUE_SIZE		8
 
@@ -130,6 +131,10 @@ extern void *g2SaberInstance;
 
 extern qboolean gEscaping;
 extern int gEscapeTime;
+
+#include "g_unlagged.h"//testunlagged
+
+extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
 
 //[JAPRO - Serverside - All - Jcinfo bitvalues
 #define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)
@@ -474,6 +479,9 @@ struct gentity_s {
 
 	gitem_t		*item;			// for bonus items
 
+	vec3_t		origOrigin; //japro pushpullitems
+	qboolean    spawnedBefore; //japro pushpullitems
+
 	// OpenJK add
 	int			useDebounceTime;	// for cultist_destroyer
 };
@@ -541,6 +549,11 @@ typedef struct clientSession_s {
 	char		siegeClass[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
+
+//[JAPRO - Serverside - All - Ignore - Start]
+	unsigned int  ignore;      // contains bits of all clients to be ignored, 0 - no one ignored, 0xFFFFFFFF - ignore all
+	qboolean	  sawMOTD;	   // japro has the client been shown the MOTD?
+//[JAPRO - Serverside - All - Ignore - End]
 
 	char		IP[NET_ADDRSTRMAXLEN];
 } clientSession_t;
@@ -1098,6 +1111,20 @@ typedef struct level_locals_s {
 
 	char		mTeamFilter[MAX_QPATH];
 
+//JAPRO - Serverside - Amlockteam - Start
+	qboolean	isLockedred;			
+	qboolean	isLockedblue;			
+	qboolean	isLockedspec;			
+	qboolean	isLockedfree;	
+	fileHandle_t	duelLog;
+//JAPRO - Serverside - Amlockteam - End
+
+	int         frameStartTime;
+	struct {
+		int state; // loda fixme, not needed?	
+		int time;
+	} pause;
+
 	struct {
 		fileHandle_t	log;
 	} security;
@@ -1134,12 +1161,12 @@ char *G_NewString( const char *string );
 void Cmd_Score_f (gentity_t *ent);
 void StopFollowing( gentity_t *ent );
 void BroadcastTeamChange( gclient_t *client, int oldTeam );
-void SetTeam( gentity_t *ent, char *s );
+void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin );
 void Cmd_FollowCycle_f( gentity_t *ent, int dir );
 void Cmd_SaberAttackCycle_f(gentity_t *ent);
 int G_ItemUsable(playerState_t *ps, int forcedUse);
 void Cmd_ToggleSaber_f(gentity_t *ent);
-void Cmd_EngageDuel_f(gentity_t *ent);
+void Cmd_EngageDuel_f(gentity_t *ent, int dueltype);
 
 gentity_t *G_GetDuelWinner(gclient_t *client);
 
@@ -1165,8 +1192,10 @@ void ItemUse_MedPack_Big(gentity_t *ent);
 void G_CheckTeamItems( void );
 void G_RunItem( gentity_t *ent );
 void RespawnItem( gentity_t *ent );
+void ResetItem( gentity_t *ent ); //PushPullItems
 
 gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle );
+gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, float angle );
 gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity );
 void G_SpawnItem (gentity_t *ent, gitem_t *item);
 void FinishSpawningItem( gentity_t *ent );
@@ -1362,6 +1391,7 @@ int TAG_GetRadius( const char *owner, const char *name );
 int TAG_GetFlags( const char *owner, const char *name );
 
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 
 //
 // g_weapon.c
@@ -1440,6 +1470,7 @@ void G_RunThink (gentity_t *ent);
 void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
+void QDECL G_DuelLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
 const char *G_GetStringEdString(char *refSection, char *refName);
 

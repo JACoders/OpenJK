@@ -2014,7 +2014,7 @@ static qboolean PM_CheckJump( void )
 				{//can still go up
 #ifdef _CGAME
 					if (cg_jumpHeight.integer && curHeight + (pm->ps->velocity[2] * (float)cg.frametime / 1000.0f) > cg_jumpHeight.integer) //idk
-						trap_SendConsoleCommand("-moveup\n");
+						trap->SendConsoleCommand("-moveup\n");
 #endif
 					if ( curHeight > forceJumpHeight[0] )
 					{//passed normal jump height  *2?
@@ -2068,7 +2068,7 @@ static qboolean PM_CheckJump( void )
 									parts = SETANIM_LEGS;
 								}
 
-								PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+								PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 							}
 							else if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
 							{
@@ -2112,7 +2112,7 @@ static qboolean PM_CheckJump( void )
 										parts = SETANIM_LEGS;
 									}
 
-									PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+									PM_SetAnim( parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								}
 							}
 						}
@@ -2146,7 +2146,7 @@ static qboolean PM_CheckJump( void )
 										parts = SETANIM_LEGS;
 									}
 
-									PM_SetAnim( parts, newAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150 );
+									PM_SetAnim( parts, newAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								}
 							}
 						}
@@ -2696,7 +2696,7 @@ static qboolean PM_CheckJump( void )
 						if ( !pm->ps->weaponTime )
 							parts = SETANIM_BOTH;
 
-						PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+						PM_SetAnim( parts, BOTH_WALL_FLIP_BACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 
 #ifdef _GAME
 						if (g_flipKick.integer > 2)
@@ -2737,6 +2737,12 @@ static qboolean PM_CheckJump( void )
 					int parts = SETANIM_LEGS;
 					int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
 					qboolean kick = qtrue;//JAPRO - Serverside + Clientside - Re add flipkick
+
+					vec3_t fwd, traceto, mins, maxs, fwdAngles;
+					trace_t	trace;
+					vec3_t	idealNormal;
+					bgEntity_t *traceEnt;
+
 					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 ) {
 						wallWalkAnim = BOTH_FORCEWALLRUNFLIP_START;
 						parts = SETANIM_BOTH;
@@ -2746,10 +2752,6 @@ static qboolean PM_CheckJump( void )
 						if ( !pm->ps->weaponTime )
 							parts = SETANIM_BOTH;
 					}
-					vec3_t fwd, traceto, mins, maxs, fwdAngles;
-					trace_t	trace;
-					vec3_t	idealNormal;
-					bgEntity_t *traceEnt;
 
 					VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
 					VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
@@ -2776,7 +2778,7 @@ static qboolean PM_CheckJump( void )
 							VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
 							pm->ps->velocity[2] += 150.0f;
 						}
-						PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 ); //animate me
+						PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD ); //animate me
 						PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
 						pm->cmd.upmove = 0;
 						pm->ps->fd.forceJumpSound = 1;
@@ -2887,9 +2889,35 @@ static qboolean PM_CheckJump( void )
 	{
 		return qfalse;
 	}
-	if ( pm->cmd.upmove > 0 )
+if ( pm->cmd.upmove > 0 )
 	{//no special jumps
-		pm->ps->velocity[2] = JUMP_VELOCITY;
+#ifdef _GAME
+		if (g_rampJump.integer) //rampjump
+#else
+		if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_RAMPJUMP))
+#endif
+		{
+			vec3_t hVel;
+			float added, xyspeed;
+
+			hVel[0] = pm->ps->velocity[0];
+			hVel[1] = pm->ps->velocity[1];
+			hVel[2] = 0;
+			xyspeed = sqrt(hVel[0] * hVel[0] + hVel[1] * hVel[1]);
+			added = -DotProduct(hVel, pml.groundTrace.plane.normal);
+			pm->ps->velocity[2] = JUMP_VELOCITY;
+
+			if (added > xyspeed)
+				added = xyspeed;//Sad sanity check hack
+
+			if (added > 0)
+				pm->ps->velocity[2] += (added * 1.5);//Make rampjump stronger
+
+			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
+
+		}
+		else
+			pm->ps->velocity[2] = JUMP_VELOCITY;
 		PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
 		pm->ps->pm_flags |= PMF_JUMP_HELD;
 	}
@@ -3486,6 +3514,107 @@ static void PM_AirMove( void ) {
 	else
 	{
 		PM_StepSlideMove( qtrue );
+	}
+}
+
+static void PM_DodgeMove(int forward, int right)
+{
+	vec3_t dodgedir;
+	static const int DODGE_SPEED = 380;
+	static const int DODGE_JUMP_SPEED = 150;
+
+	VectorMA( vec3_origin, right, pml.right, dodgedir );
+	VectorMA( dodgedir, forward, pml.forward, dodgedir );
+	VectorNormalizeFast( dodgedir );
+	VectorScale( dodgedir, DODGE_SPEED, dodgedir );
+
+	VectorCopy( dodgedir, pm->ps->velocity );
+
+	pm->ps->velocity[2] = DODGE_JUMP_SPEED; 
+}
+
+static void PM_DashMove(void)
+{
+	vec3_t dashdir;
+	static const int DASH_SPEED = 475;
+	static const int DASH_JUMP_SPEED = 200;
+	float xyspeed;
+
+	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
+
+	VectorMA(vec3_origin, 1, pml.forward, dashdir);
+	VectorNormalizeFast( dashdir );
+	if(xyspeed <= DASH_SPEED)
+		VectorScale(dashdir, DASH_SPEED, dashdir);
+	else
+		VectorScale(dashdir, xyspeed, dashdir);
+
+	VectorCopy(dashdir, pm->ps->velocity);
+
+	pm->ps->velocity[2] = DASH_JUMP_SPEED;
+}
+
+static void PM_CheckDash(void)
+{
+	static const int DASH_DELAY = 800;
+
+	if (pm->ps->groundEntityNum == ENTITYNUM_NONE)
+		return;
+
+	if (pm->ps->weaponTime > 0)
+		return;
+
+#ifdef _GAME
+	if (!g_allowDodge.integer)
+#else
+	if (!(cgs.jcinfo & JAPRO_CINFO_DODGE))
+#endif
+		return;
+
+	if (pm->ps->stats[STAT_DASHTIME] > 0)
+		return;
+
+	pm->ps->stats[STAT_DASHTIME] = DASH_DELAY;
+
+	if (pm->cmd.forwardmove > 0) {//W
+		if (pm->cmd.rightmove > 0) //D
+			PM_DodgeMove(1, 1);
+		else if (pm->cmd.rightmove < 0) //A
+			PM_DodgeMove(1, -1);
+		else {//only W, do "dash" instead of dodge
+#ifdef _GAME
+			if (g_allowDodge.integer > 1)
+#else
+			if (cgs.jcinfo & JAPRO_CINFO_DASH)
+#endif
+				PM_DashMove();
+			else
+				PM_DodgeMove(1, 0);
+		}
+	}
+	else if (pm->cmd.forwardmove < 0) {//S
+		if (pm->cmd.rightmove > 0) //D
+			PM_DodgeMove(-1, 1);
+		else if (pm->cmd.rightmove < 0) //A
+			PM_DodgeMove(-1, -1);
+		else
+			PM_DodgeMove(-1, 0);
+	}
+	else {
+		if (pm->cmd.rightmove > 0) //D
+			PM_DodgeMove(0, 1);
+		else if (pm->cmd.rightmove < 0) //A
+			PM_DodgeMove(0, -1);
+		else {
+#ifdef _GAME
+			if (g_allowDodge.integer > 1)
+#else
+			if (cgs.jcinfo & JAPRO_CINFO_DASH)
+#endif
+				PM_DashMove();
+			else
+				PM_DodgeMove(1, 0);
+		}
 	}
 }
 
@@ -5046,6 +5175,23 @@ qboolean PM_AdjustStandAnimForSlope( void )
 	int		legsAnim;
 	#define SLOPERECALCVAR pm->ps->slopeRecalcTime //this is purely convenience
 
+
+
+#ifdef _GAME
+    gclient_t *client = NULL;
+    {
+		int clientNum = pm->ps->clientNum;
+		if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+			client = g_entities[clientNum].client;
+		}
+	}
+	if (g_fixLegDangle.integer && client && client->pers.isJAPRO)
+#else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_LEGDANGLE)) // Loda fixme, maybe give clients option to choose? idk why they would want to..
+#endif
+		return qfalse;
+
+
 	if (!pm->ghoul2)
 	{ //probably just changed models and not quite in sync yet
 		return qfalse;
@@ -5414,6 +5560,16 @@ static void PM_Footsteps( void ) {
 	int			old;
 	int			setAnimFlags = 0;
 
+#ifdef _GAME
+    gclient_t *client = NULL;
+    {
+		int clientNum = pm->ps->clientNum;
+		if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+			client = g_entities[clientNum].client;
+		}
+	}
+#endif
+
 	if ( (PM_InSaberAnim( (pm->ps->legsAnim) ) && !BG_SpinningSaberAnim( (pm->ps->legsAnim) )) 
 		|| (pm->ps->legsAnim) == BOTH_STAND1 
 		|| (pm->ps->legsAnim) == BOTH_STAND1TO2 
@@ -5608,7 +5764,7 @@ static void PM_Footsteps( void ) {
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN ) {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1WALKBACK)
 				{
-					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags, 100);
+					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALKBACK, setAnimFlags);
 				}
 				else
 				{
@@ -5618,7 +5774,7 @@ static void PM_Footsteps( void ) {
 			else {
 				if ((pm->ps->legsAnim) != BOTH_CROUCH1WALK)
 				{
-					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags, 100);
+					PM_SetAnim(SETANIM_LEGS, BOTH_CROUCH1WALK, setAnimFlags);
 				}
 				else
 				{
@@ -5630,7 +5786,7 @@ static void PM_Footsteps( void ) {
 		{ //otherwise send us into the roll
 			pm->ps->legsTimer = 0;
 			pm->ps->legsAnim = 0;
-			PM_SetAnim(SETANIM_BOTH,rolled,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 150);
+			PM_SetAnim(SETANIM_BOTH,rolled,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			PM_AddEventWithParm( EV_ROLL, 0 );
 			pm->maxs[2] = pm->ps->crouchheight;//CROUCH_MAXS_2;
 			pm->ps->viewheight = DEFAULT_VIEWHEIGHT;
@@ -5732,35 +5888,89 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 ) 
 					{//saber off
-						desiredAnim = BOTH_RUNBACK1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
 						//desiredAnim = BOTH_RUNBACK_STAFF;
 						//hmm.. stuff runback anim is pretty messed up for some reason.
-						desiredAnim = BOTH_RUNBACK2;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 ) 
 					{//sabers off
-						desiredAnim = BOTH_RUNBACK1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
 						//desiredAnim = BOTH_RUNBACK_DUAL;
 						//and so is the dual
-						desiredAnim = BOTH_RUNBACK2;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				default:
 					if ( pm->ps->saberHolstered ) 
 					{//saber off
-						desiredAnim = BOTH_RUNBACK1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUNBACK2;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUNBACK2;
 					}
 					break;
 				}
@@ -5783,20 +5993,56 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-						desiredAnim = BOTH_RUN1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 blade on
-						desiredAnim = BOTH_RUN2;
+						#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN2;
 					}
 					else
 					{
 						if (pm->ps->fd.forcePowersActive & (1<<FP_SPEED))
 						{
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
 							desiredAnim = BOTH_RUN1;
 						}
 						else
 						{
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
 							desiredAnim = BOTH_RUN_STAFF;
 						}
 					}
@@ -5804,25 +6050,70 @@ static void PM_Footsteps( void ) {
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-						desiredAnim = BOTH_RUN1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 saber on
-						desiredAnim = BOTH_RUN2;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+						desiredAnim = BOTH_RUN1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUN_DUAL;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN_DUAL;
 					}
 					break;
 				default:
 					if ( pm->ps->saberHolstered )
 					{//saber off
-						desiredAnim = BOTH_RUN1;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN1;
 					}
 					else
 					{
-						desiredAnim = BOTH_RUN2;
+#if _GAME
+						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
+							desiredAnim = BOTH_RUN4;
+						else
+#else
+						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+							desiredAnim = BOTH_RUN4;
+						else
+#endif
+							desiredAnim = BOTH_RUN2;
 					}
 					break;
 				}
@@ -7296,12 +7587,25 @@ static void PM_Weapon( void )
 		}
 	}
 
-	if (pm->ps->duelInProgress)
+if (pm->ps->duelInProgress)
 	{
-		pm->cmd.weapon = WP_SABER;
-		pm->ps->weapon = WP_SABER;
+#ifdef _CGAME
+		if (cg_dueltypes[pm->ps->clientNum] > 2) {
+			pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+		}
+#else
+		if (dueltypes[pm->ps->clientNum] > 2) {
+			pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+			pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+		}
+#endif
+		else {//Japro - gun duels start
+			pm->cmd.weapon = WP_SABER;
+			pm->ps->weapon = WP_SABER;
+		}
 
-		if (pm->ps->duelTime >= pm->cmd.serverTime)
+		if (pm->ps->duelTime >= pm->cmd.serverTime)//gun duel - why isnt this working?
 		{
 			pm->cmd.upmove = 0;
 			pm->cmd.forwardmove = 0;
@@ -7468,6 +7772,17 @@ static void PM_Weapon( void )
 
 	if (pm->ps->isJediMaster || pm->ps->duelInProgress || pm->ps->trueJedi)
 	{
+#ifdef _CGAME
+		if (cg_dueltypes[pm->ps->clientNum] > 2) {
+			pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+		}
+#else
+		if (dueltypes[pm->ps->clientNum] > 2) {
+			pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+			pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+		}
+#endif
 		pm->cmd.weapon = WP_SABER;
 		pm->ps->weapon = WP_SABER;
 

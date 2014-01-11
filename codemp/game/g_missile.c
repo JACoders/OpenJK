@@ -629,6 +629,38 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		return;
 	}
 
+//JAPRO - Serverside - Flag punting - Start
+	if (g_allowFlagThrow.integer && !other->takedamage && other->s.eType == ET_ITEM)
+	{
+		vec3_t velocity;
+
+		if (ent->s.weapon == WP_REPEATER && (ent->s.eFlags & EF_ALT_FIRING))
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.7f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+		else if (ent->s.weapon == WP_ROCKET_LAUNCHER && (ent->s.eFlags & EF_ALT_FIRING))
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 2.5f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+		else if (ent->s.weapon == WP_ROCKET_LAUNCHER)
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.9f, other->s.pos.trDelta );
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
+	}
+//JAPRO - Serverside - Flag punting - End
+
 	// impact damage
 	if (other->takedamage && !isKnockedSaber) {
 		// FIXME: wrong damage direction?

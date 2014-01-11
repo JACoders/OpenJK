@@ -631,10 +631,12 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	  //If jump is disabled, down-cap it to level 1. Otherwise don't do a thing.
 		if (fpDisabled & (1 << FP_LEVITATION))
 			final_Powers[FP_LEVITATION] = 1;
+//[JAPRO - Serverside - Saber - Fix Block/attack Level defaulting to highest - Start]
 		if (fpDisabled & (1 << FP_SABER_OFFENSE))
-			final_Powers[FP_SABER_OFFENSE] = 3;
+			final_Powers[FP_SABER_OFFENSE] = 1;
 		if (fpDisabled & (1 << FP_SABER_DEFENSE))
-			final_Powers[FP_SABER_DEFENSE] = 3;
+			final_Powers[FP_SABER_DEFENSE] = 1;
+//[JAPRO - Serverside - Saber - Fix Block/attack Level defaulting to highest - End]
 	}
 
 	if (final_Powers[FP_SABER_OFFENSE] < 1)
@@ -642,6 +644,13 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 		final_Powers[FP_SABER_DEFENSE] = 0;
 		final_Powers[FP_SABERTHROW] = 0;
 	}
+
+//[JAPRO - Serverside - Saber - Allow server to cap block level - End]
+#ifdef _GAME
+	if (g_maxSaberDefense.integer && (final_Powers[FP_SABER_DEFENSE] > g_maxSaberDefense.integer))//my block is middle[2], forced max is 2, 
+		final_Powers[FP_SABER_DEFENSE] = g_maxSaberDefense.integer;
+#endif
+//[JAPRO - Serverside - Saber - Allow server to cap block level - End]
 
 	//We finally have all the force powers legalized and stored locally.
 	//Put them all into the string and return the result. We already have
@@ -1693,6 +1702,12 @@ qboolean BG_HasYsalamiri(int gametype, playerState_t *ps)
 	return qfalse;
 }
 
+//JAPRO - Serverside - Fullforce Dueling - Start
+#ifndef _GAME
+extern int cg_dueltypes[MAX_CLIENTS];
+#endif
+//JAPRO - Serverside - Fullforce Dueling - End
+
 qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t power)
 {
 	if (BG_HasYsalamiri(gametype, ps))
@@ -1715,17 +1730,44 @@ qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t
 		return qfalse;
 	}
 
-	if (ps->duelInProgress)
-	{
-		if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && /*power != FP_SABERTHROW &&*/
-			power != FP_LEVITATION)
+//JAPRO - Serverside - Add fullforce duels - Start
+#ifdef _GAME
+	if (ps->duelInProgress) // consider duel types.
 		{
-			if (!ps->saberLockFrame || power != FP_PUSH)
-			{
-				return qfalse;
+			switch (dueltypes[ps->clientNum]) {
+			case 1: //force duel
+				break;
+			case 0: //normal duel
+			default:
+					if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && power != FP_LEVITATION)
+					{
+						if (!ps->saberLockFrame || power != FP_PUSH)
+						{
+							return qfalse;
+						}
+					}
+				break;
 			}
 		}
+#else
+	if (ps->duelInProgress) // consider duel types.
+	{
+		switch ( cg_dueltypes[ps->clientNum]) {
+					case 0: //normal duel
+			if (power != FP_SABER_OFFENSE && power != FP_SABER_DEFENSE && power != FP_LEVITATION)
+			{
+				if (!ps->saberLockFrame || power != FP_PUSH)
+				{
+					return qfalse;
+				}
+			}
+			break;
+		case 1: //force duel
+			break;
+		}
 	}
+#endif
+//JAPRO - Serverside - Add fullforce duels - End
 
 	if (ps->saberLockFrame || ps->saberLockTime > time)
 	{

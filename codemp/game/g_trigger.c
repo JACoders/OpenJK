@@ -375,6 +375,11 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 //		return;
 //	}
 
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - Start
+	if (other->client->ps.duelInProgress && !g_allowUseInDuel.integer)//Loda fixme, make this spawnflags 5 for button? or should it block all triggers?
+		return;
+//JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
+
 	if ( self->spawnflags & 1 )
 	{
 		if ( other->s.eType == ET_NPC )

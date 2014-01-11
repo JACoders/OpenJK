@@ -2762,7 +2762,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		ent->client->renderInfo.lastG2 = NULL; //update the renderinfo bolts next update.
 
 	if ( level.gametype == GT_POWERDUEL && client->sess.sessionTeam != TEAM_SPECTATOR && client->sess.duelTeam == DUELTEAM_FREE )
-		SetTeam( ent, "s" );
+		SetTeam( ent, "s", qfalse);
 	else
 	{
 		if ( level.gametype == GT_SIEGE && (!gSiegeRoundBegun || gSiegeRoundEnded) )
@@ -2781,6 +2781,24 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	// count current clients and rank for scoreboard
 	CalculateRanks();
+
+	if (client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.sawMOTD == qfalse)
+	{
+		//char arg1[MAX_STRING_TOKENS];
+
+		if (client->pers.isJAPRO == qfalse)
+			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin.  Download at www.upsgaming.com\n\"" ) );
+
+		//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
+		if (Q_stricmp(g_consoleMOTD.string, ""))
+			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", g_consoleMOTD.string));
+
+		if (Q_stricmp(g_centerMOTD.string, "")) {
+			strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string )));
+			ent->client->csTimeLeft = g_centerMOTDTime.integer;
+		}
+		ent->client->sess.sawMOTD = qtrue;
+	}
 
 	G_ClearClientLog(clientNum);
 }
@@ -3470,7 +3488,7 @@ void ClientSpawn(gentity_t *ent) {
 				{//using force but not on right team, switch him over
 					const char *teamName = TeamName( forceTeam );
 					//client->sess.sessionTeam = forceTeam;
-					SetTeam( ent, (char *)teamName );
+					SetTeam( ent, (char *)teamName, qfalse );
 					return;
 				}
 			}
@@ -3943,6 +3961,15 @@ void ClientSpawn(gentity_t *ent) {
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
+
+	if (!g_allowRaceMode.integer && client->pers.raceMode) 
+		client->pers.raceMode = qfalse;
+
+	if (client->pers.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
+
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;
 	ClientThink( ent-g_entities, NULL );
@@ -4034,8 +4061,8 @@ void ClientDisconnect( int clientNum ) {
 	{
 		attacker = &g_entities[ent->client->ps.otherKiller];
 		if (attacker->client) {
-			trap_SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
-			trap_SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
+			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
+			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
 			AddScore( attacker, ent->r.currentOrigin, 1 );
 			attacker->client->pers.stats.kills++;//JAPRO STATS
 		}	

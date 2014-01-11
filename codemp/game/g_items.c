@@ -2320,6 +2320,14 @@ void RespawnItem( gentity_t *ent ) {
 			;
 	}
 
+	if (g_pushPullItems.integer)
+	{
+		VectorCopy(ent->origOrigin, ent->s.origin);
+		VectorCopy(ent->origOrigin, ent->s.pos.trBase);
+		VectorCopy(ent->origOrigin, ent->s.apos.trBase);
+		VectorCopy(ent->origOrigin, ent->r.currentOrigin);
+	}
+
 	ent->r.contents = CONTENTS_TRIGGER;
 	//ent->s.eFlags &= ~EF_NODRAW;
 	ent->s.eFlags &= ~(EF_NODRAW | EF_ITEMPLACEHOLDER);
@@ -2368,6 +2376,18 @@ qboolean CheckItemCanBePickedUpByNPC( gentity_t *item, gentity_t *pickerupper )
 	return qfalse;
 }
 
+void ResetItem( gentity_t *ent ) { //PushPullItems
+	VectorCopy(ent->origOrigin, ent->s.origin);
+	VectorCopy(ent->origOrigin, ent->s.pos.trBase);
+	VectorCopy(ent->origOrigin, ent->s.apos.trBase);
+	VectorCopy(ent->origOrigin, ent->r.currentOrigin);
+
+	trap->LinkEntity ((sharedEntity_t *)ent);
+
+	ent->think = RespawnItem;
+	ent->nextthink = level.time + 30000;
+}
+
 /*
 ===============
 Touch_Item
@@ -2393,6 +2413,11 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	{
 		return;
 	}
+
+//JAPRO - Serverside - Flagthrow - Debounce time to stop flag from being picked up immediatly after throwing - Start
+	if (g_allowFlagThrow.integer && (ent->item->giTag == PW_REDFLAG || ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_NEUTRALFLAG) && other->client->lastThrowTime + 1000 > level.time)
+		return;
+//JAPRO - Serverside - Flagthrow - Debounce time to stop flag from being picked up immediatly after throwing - End
 
 	if (ent->item->giType == IT_WEAPON &&
 		ent->s.powerups &&
@@ -2697,7 +2722,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if ((level.gametype == GT_CTF || level.gametype == GT_CTY) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (((g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY) || ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
@@ -2723,6 +2748,13 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 		dropped->s.eFlags |= EF_DROPPEDWEAPON;
 	}
 
+//JAPRO - Serverside - Flagthrow - Physics bounce - Start
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		dropped->physicsBounce = 0.6f;
+	}
+//JAPRO - Serverside - Flagthrow - Physics bounce - End
+
 	vectoangles(velocity, dropped->s.angles);
 	dropped->s.angles[PITCH] = 0;
 
@@ -2738,6 +2770,13 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	{
 		dropped->s.angles[ROLL] = -90;
 	}
+
+//JAPRO - Serverside - Flaghtrow - Correct angle drop - Start
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		dropped->s.angles[ROLL] = 0;
+	}
+//JAPRO - Serverside - Flaghtrow - Correct angle drop - End
 
 	dropped->physicsObject = qtrue;
 
@@ -2759,14 +2798,45 @@ gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle ) {
 
 	VectorCopy( ent->s.apos.trBase, angles );
 	angles[YAW] += angle;
-	angles[PITCH] = 0;	// always forward
+
+	if (!g_allowFlagThrow.integer || item->giType != IT_TEAM)
+		angles[PITCH] = 0;	// always forward
 
 	AngleVectors( angles, velocity, NULL, NULL );
-	VectorScale( velocity, 150, velocity );
-	velocity[2] += 200 + crandom() * 50;
+
+	if (g_allowFlagThrow.integer && item->giType == IT_TEAM)
+	{
+		velocity[0] += 0.25 * ent->client->ps.velocity[0];
+		velocity[1] += 0.25 * ent->client->ps.velocity[1];
+		velocity[2] += 0.5 * ent->client->ps.velocity[2];
+	}
+	else
+	{
+		VectorScale( velocity, 150, velocity );
+		velocity[2] += 200 + crandom() * 50;	
+	}
 	
 	return LaunchItem( item, ent->s.pos.trBase, velocity );
 }
+
+gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, float angle ) {
+	vec3_t	velocity;
+	vec3_t	angles;
+
+	VectorCopy( ent->s.apos.trBase, angles );
+	angles[YAW] += angle;
+
+	AngleVectors( angles, velocity, NULL, NULL );
+
+	VectorScale( velocity, 625, velocity );
+
+	velocity[0] += 0.25 * ent->client->ps.velocity[0];
+	velocity[1] += 0.25 * ent->client->ps.velocity[1];
+	velocity[2] += 50 + 0.5 * ent->client->ps.velocity[2];
+	
+	return LaunchItem( item, ent->s.pos.trBase, velocity );
+}
+
 
 
 /*
@@ -2973,6 +3043,12 @@ void FinishSpawningItem( gentity_t *ent ) {
 	}
 	*/
 
+	if (!ent->spawnedBefore) //pushpullitems
+	{
+		ent->spawnedBefore = qtrue;
+		VectorCopy(tr.endpos, ent->origOrigin);
+	}
+
 	trap->LinkEntity ((sharedEntity_t *)ent);
 }
 
@@ -3119,6 +3195,11 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	RegisterItem( item );
 	if ( G_ItemDisabled(item) )
 		return;
+
+	if (ent->spawnedBefore)//PushPullItems
+	{
+		VectorCopy(ent->origOrigin, ent->s.origin);
+	}
 
 	ent->item = item;
 	// some movers spawn on the second frame, so delay item

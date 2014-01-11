@@ -818,13 +818,11 @@ gentity_t *G_Spawn( void ) {
 		}
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL ) {
-		/*
-		for (i = 0; i < MAX_GENTITIES; i++) {
-			trap->Print("%4i: %s\n", i, g_entities[i].classname);
-		}
-		*/
-		G_SpewEntList();
-		trap->Error( ERR_DROP, "G_Spawn: no free entities" );
+		trap->SendServerCommand(-1, "print \"Warning: Entity limit reached!\n\"");
+		trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+		return e;
+		//G_SpewEntList();
+		//trap->Error( ERR_DROP, "G_Spawn: no free entities" );
 	}
 	
 	// open up a new slot

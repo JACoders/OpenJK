@@ -4481,6 +4481,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 	}
 
+	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
+		return;
+
+	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
+		return;
+
 	if ( targ->client )
 	{//don't take damage when in a walker, or fighter
 		//unless the walker/fighter is dead!!! -rww
@@ -4545,28 +4551,28 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (targ && targ->client && targ->client->ps.duelInProgress)
-	{
-		if (attacker && attacker->client && attacker->s.number != targ->client->ps.duelIndex)
+//JAPRO - Fix dueling so falling to death dosnt loop - Start
+	if (mod != MOD_FALLING) {
+		if (targ && targ->client && targ->client->ps.duelInProgress)//Target is dueling
 		{
-			return;
+			if (attacker && attacker->client) {//always kill him if he dies by falling
+				if (attacker->s.number != targ->client->ps.duelIndex)//Dont dmg him if its not his duelpartner doing the dmg
+					return;	
+				else if (mod != MOD_SABER && dueltypes[attacker->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
+					return;
+			}
 		}
-		else if (attacker && attacker->client && mod != MOD_SABER)
+		if (attacker && attacker->client && attacker->client->ps.duelInProgress)//Attacker is dueling
 		{
-			return;
+			if (targ && targ->client) {//always kill him if he dies by falling
+				if (targ->s.number != attacker->client->ps.duelIndex)//Dont dmg him if its not his duelpartner doing the dmg
+					return;	
+				else if (mod != MOD_SABER && dueltypes[targ->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
+					return;
+			}
 		}
 	}
-	if (attacker && attacker->client && attacker->client->ps.duelInProgress)
-	{
-		if (targ && targ->client && targ->s.number != attacker->client->ps.duelIndex)
-		{
-			return;
-		}
-		else if (targ && targ->client && mod != MOD_SABER)
-		{
-			return;
-		}
-	}
+//JAPRO - Fix dueling so falling to death dosnt loop - End
 
 	if ( !(dflags & DAMAGE_NO_PROTECTION) ) 
 	{//rage overridden by no_protection
@@ -4971,6 +4977,26 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = 1;
 	}
 	take = damage;
+
+	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1 && !attacker->client->pers.noDamageNumbers) { //JAPRO - Serverside - Damage numbers  - Start
+		if (g_damageNumbers.integer == 1 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 6) 
+			trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take, targ->client->pers.netname));
+		if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5)
+			trap->SendServerCommand( attacker-g_entities, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", take));
+		if (g_damageNumbers.integer == 4)
+			trap->SendServerCommand( attacker-g_entities, va( "chat \"^3%i ^7damage given to (%s^7)\"", take, targ->client->pers.netname ) );
+		if (g_damageNumbers.integer == 3 || g_damageNumbers.integer == 6) {
+			vec3_t damageorigin = {targ->r.currentOrigin[0] + crandom() * 8, targ->r.currentOrigin[1] + crandom() * 8, targ->r.currentOrigin[2] + 16};
+			ScorePlum(attacker, damageorigin, take);
+		}
+
+	}//JAPRO - Serverside - Damage numbers - End
+	if (g_gametype.integer == GT_TEAM || g_gametype.integer == GT_CTF) {//JAPRO STATS
+		if (attacker->client)
+			attacker->client->pers.stats.damageGiven += take;
+		if (targ->client)
+			targ->client->pers.stats.damageTaken += take;
+	}
 
 	// save some from armor
 	asave = CheckArmor (targ, take, dflags);

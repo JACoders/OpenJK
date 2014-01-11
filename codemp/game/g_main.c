@@ -220,6 +220,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	else
 		trap->Print( "Not logging security events to disk.\n" );
 
+	if ( g_duelLog.integer )
+	{
+		if ( g_duelLog.integer == 1 )
+			trap->FS_Open( DUEL_LOG, &level.duelLog, FS_APPEND );
+		else if ( g_duelLog.integer == 2 )
+			trap->FS_Open( DUEL_LOG, &level.duelLog, FS_APPEND_SYNC );
+
+		if ( level.duelLog )
+			trap->Print( "Logging to "DUEL_LOG"\n" );
+		else
+			trap->Print( "WARNING: Couldn't open logfile: "DUEL_LOG"\n" );
+	}
+
 	
 	G_LogWeaponInit();
 
@@ -470,6 +483,13 @@ void G_ShutdownGame( int restart ) {
 		level.security.log = 0;
 	}
 
+	if ( level.duelLog )
+	{
+		G_DuelLogPrintf( "ShutdownGame\n\n" );
+		trap->FS_Close( level.duelLog );
+		level.duelLog = 0;
+	}
+
 	// write all the client session data so we can get it back
 	G_WriteSessionData();
 
@@ -543,7 +563,7 @@ void AddTournamentPlayer( void ) {
 	level.warmupTime = -1;
 
 	// set them to free-for-all team
-	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+	SetTeam( &g_entities[ nextInLine - level.clients ], "f", qfalse );
 }
 
 /*
@@ -594,7 +614,7 @@ void RemoveTournamentLoser( void ) {
 	}
 
 	// make them a spectator
-	SetTeam( &g_entities[ clientNum ], "s" );
+	SetTeam( &g_entities[ clientNum ], "s", qfalse );
 }
 
 void G_PowerDuelCount(int *loners, int *doubles, qboolean countSpec)
@@ -696,7 +716,7 @@ void AddPowerDuelPlayers( void )
 	level.warmupTime = -1;
 
 	// set them to free-for-all team
-	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+	SetTeam( &g_entities[ nextInLine - level.clients ], "f", qfalse );
 
 	//Call recursively until everyone is in
 	AddPowerDuelPlayers();
@@ -738,7 +758,7 @@ void RemovePowerDuelLosers(void)
 	i = 0;
 	while (i < remNum)
 	{ //set them all to spectator
-		SetTeam( &g_entities[ remClients[i] ], "s" );
+		SetTeam( &g_entities[ remClients[i] ], "s" , qfalse);
 		i++;
 	}
 
@@ -781,11 +801,11 @@ void RemoveDuelDrawLoser(void)
 
 	if (clFailure != 2)
 	{
-		SetTeam( &g_entities[ level.sortedClients[clFailure] ], "s" );
+		SetTeam( &g_entities[ level.sortedClients[clFailure] ], "s" , qfalse);
 	}
 	else
 	{ //we could be more elegant about this, but oh well.
-		SetTeam( &g_entities[ level.sortedClients[1] ], "s" );
+		SetTeam( &g_entities[ level.sortedClients[1] ], "s" , qfalse);
 	}
 }
 
@@ -808,7 +828,7 @@ void RemoveTournamentWinner( void ) {
 	}
 
 	// make them a spectator
-	SetTeam( &g_entities[ clientNum ], "s" );
+	SetTeam( &g_entities[ clientNum ], "s" , qfalse);
 }
 
 /*
@@ -1537,6 +1557,31 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	trap->FS_Write( string, strlen( string ), level.security.log );
 }
 
+void QDECL G_DuelLogPrintf( const char *fmt, ... ) {
+	va_list		argptr;
+	char		string[1024] = {0};
+	time_t		rawtime;
+	struct tm	*timeinfo;
+	int			timeLen=0;
+
+	time( &rawtime );
+	timeinfo = localtime( &rawtime );
+	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
+	timeLen = strlen( string );
+
+	va_start( argptr, fmt );
+	Q_vsnprintf( string+timeLen, sizeof( string ) - timeLen, fmt, argptr );
+	va_end( argptr );
+
+	if ( dedicated.integer )
+		trap->Print( "%s", string + timeLen );
+
+	if ( !level.duelLog )
+		return;
+
+	trap->FS_Write( string, strlen( string ), level.duelLog );
+}
+
 /*
 ================
 LogExit
@@ -2229,7 +2274,7 @@ void G_RemoveDuelist(int team)
 		if (ent->inuse && ent->client && ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
 			ent->client->sess.duelTeam == team)
 		{
-			SetTeam(ent, "s");
+			SetTeam(ent, "s", qfalse);
 		}
         i++;
 	}

@@ -202,8 +202,14 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 	// spit the player out
 	if ( !noAngles ) {
-		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-		VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
+		if (g_quakeStyleTeleport.integer) {
+			AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
+		}
+		else {
+			AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
+		}
 		player->client->ps.pm_time = 160;		// hold time
 		player->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 
@@ -233,6 +239,61 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		trap->LinkEntity ((sharedEntity_t *)player);
 	}
 }
+
+//JAPRO - Serverside - New teleport Function - Start
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
+	gentity_t	*tent;
+	qboolean wasNoClip = qfalse;
+
+	if (player->client->noclip)
+		wasNoClip = qtrue;
+
+	player->client->noclip = qtrue;
+
+	// use temp events at source and destination to prevent the effect
+	// from getting dropped by a second player event
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		tent = G_TempEntity( player->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
+		tent->s.clientNum = player->s.clientNum;
+
+		tent = G_TempEntity( origin, EV_PLAYER_TELEPORT_IN );
+		tent->s.clientNum = player->s.clientNum;
+	}
+
+	// unlink to make sure it can't possibly interfere with G_KillBox
+	trap->UnlinkEntity ((sharedEntity_t *)player);
+
+	VectorCopy ( origin, player->client->ps.origin );
+	player->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
+
+	VectorClear(player->client->ps.velocity);
+
+	// toggle the teleport bit so the client knows to not lerp
+	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
+	G_ResetTrail( player );//unlagged
+
+	// set angles
+	SetClientViewAngle( player, angles );
+
+	// kill anything at the destination
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		G_KillBox (player);
+	}
+
+	// save results of pmove
+	BG_PlayerStateToEntityState( &player->client->ps, &player->s, qtrue );
+
+	// use the precise origin for linking
+	VectorCopy( player->client->ps.origin, player->r.currentOrigin );
+
+	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		trap->LinkEntity ((sharedEntity_t *)player);
+	}
+
+	if (!wasNoClip)
+		player->client->noclip = qfalse;
+}
+//JAPRO - Serverside - New teleport Function - End
 
 
 /*QUAKED misc_teleporter_dest (1 0 0) (-32 -32 -24) (32 32 -16)

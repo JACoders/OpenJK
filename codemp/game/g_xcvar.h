@@ -159,6 +159,8 @@ XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORE
 //JAPRO CTF
 XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowFlagThrow,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixCTFScores,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -166,14 +168,29 @@ XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE|CVAR_SERVERINFO,	
 XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_pushPullKnockdown,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixGripAbsorb,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixLightning,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixGetups,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixPullStrength,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
 XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_weaponDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_projectileVelocityScale,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_selfDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO MOVEMENT
 XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -185,17 +202,52 @@ XCVAR_DEF( g_movementStyle,				"0",			CVU_MovementStyle,	CVAR_ARCHIVE|CVAR_SERVE
 XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_rampJump,					"1",			CVU_RampJump,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowDodge,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
+XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_duelStartArmor,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_duelDistanceLimit,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowUseInDuel,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO ADMIN
+XCVAR_DEF( g_juniorAdminLevel,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_fullAdminLevel,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_juniorAdminPass,			"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_fullAdminPass,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_juniorAdminMsg,			"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 
-//JAPRO OTHER
+
+//JAPRO OTHER Gameplay
+XCVAR_DEF( g_flipKickDamageScale,		"0",			CVU_ForceCombo,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowRaceMode,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+//JAPRO Other
 XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue )
 XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_newBotAITarget,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-
+XCVAR_DEF( bot_nochat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_corpseRemovalTime,			"30",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowSaberSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowTeamSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_removeSpectatorPortals,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_godChat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_consoleMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_centerMOTDTime,			"5",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_centerMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_fakeClients,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_votesDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_lagIcon,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #undef XCVAR_DEF

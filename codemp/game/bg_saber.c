@@ -1725,6 +1725,52 @@ qboolean PM_SomeoneInFront(trace_t *tr)
 	return qfalse;
 }
 
+saberMoveName_t PM_SaberAirLungeAttackMove( void )
+{
+	vec3_t fwdAngles, jumpFwd;
+
+	saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
+	saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
+	//see if we have an overridden (or cancelled) lunge move
+	if ( saber1
+		&& saber1->lungeAtkMove != LS_INVALID )
+	{
+		if ( saber1->lungeAtkMove != LS_NONE )
+		{
+			return (saberMoveName_t)saber1->lungeAtkMove;
+		}
+	}
+	if ( saber2
+		&& saber2->lungeAtkMove != LS_INVALID )
+	{
+		if ( saber2->lungeAtkMove != LS_NONE )
+		{
+			return (saberMoveName_t)saber2->lungeAtkMove;
+		}
+	}
+	//no overrides, cancelled?
+	if ( saber1
+		&& saber1->lungeAtkMove == LS_NONE )
+	{
+		return LS_A_T2B;//LS_NONE;
+	}
+	if ( saber2
+	&& saber2->lungeAtkMove == LS_NONE )
+	{
+		return LS_A_T2B;//LS_NONE;
+	}
+
+	VectorCopy( pm->ps->viewangles, fwdAngles );
+	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
+	//do the lunge
+	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
+	VectorScale( jumpFwd, 150, pm->ps->velocity );
+	//pm->ps->velocity[2] = 50;
+	PM_AddEvent( EV_JUMP );
+
+	return LS_A_LUNGE;
+}
+
 saberMoveName_t PM_SaberLungeAttackMove( qboolean noSpecials )
 {
 	vec3_t fwdAngles, jumpFwd;
@@ -2369,7 +2415,13 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					}
 				}
 			}
-			else if (!noSpecials&&
+			else if (
+#ifdef _GAME
+				!g_jk2DFA.integer 
+#else
+				((cgs.isJAPro && !(cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
+#endif
+				&& !noSpecials&&
 				pm->ps->fd.saberAnimLevel == SS_STRONG &&
 				pm->ps->velocity[2] > 100 &&
 				PM_GroundDistance() < 32 &&
@@ -2389,6 +2441,32 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					}
 				}
 			}
+
+			else if ( //Loda fixme, why isnt this easy to do like jk2?
+#ifdef _GAME
+				g_jk2DFA.integer 
+#else
+				((cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
+#endif
+				&& !noSpecials && //JAPRO, JK2 RED DFA
+				pm->ps->fd.saberAnimLevel == SS_STRONG &&
+				(PM_GroundDistance() < 32) &&
+				(PM_GroundDistance() > 0) && //This should be (pm->cmd.upmove > 0), but it does not seem to work right??? idk
+				!BG_InSpecialJump(pm->ps->legsAnim) &&
+				!BG_SaberInSpecialAttack(pm->ps->torsoAnim) &&
+				BG_SaberInAttack(pm->ps->saberMove) &&
+				BG_EnoughForcePowerForMove( SABER_ALT_ATTACK_POWER_FB ))
+			{ //DFA
+				float animLength = PM_AnimLength( 0, (animNumber_t)pm->ps->torsoAnim );
+				if ( animLength - pm->ps->torsoTimer < 500 )
+				{
+					newmove = PM_SaberJumpAttackMove();
+					if ( newmove != LS_A_T2B && newmove != LS_NONE )
+					{
+						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
+					}
+				}
+			}
 			else if ((pm->ps->fd.saberAnimLevel == SS_FAST || pm->ps->fd.saberAnimLevel == SS_DUAL || pm->ps->fd.saberAnimLevel == SS_STAFF) &&
 				pm->ps->groundEntityNum != ENTITYNUM_NONE &&
 				(pm->ps->pm_flags & PMF_DUCKED) &&
@@ -2397,6 +2475,24 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				BG_EnoughForcePowerForMove(SABER_ALT_ATTACK_POWER_FB))
 			{ //LUNGE (weak)
 				newmove = PM_SaberLungeAttackMove( noSpecials );
+				if ( newmove != LS_A_T2B
+					&& newmove != LS_NONE )
+				{
+					BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
+				}
+			}
+			else if ((pm->ps->fd.saberAnimLevel == SS_FAST || pm->ps->fd.saberAnimLevel == SS_DUAL) &&
+#ifdef _GAME
+				g_jk2Lunge.integer && //japro idk
+#else
+				(cgs.jcinfo & JAPRO_CINFO_JK2LUNGE) && //japro idk
+#endif
+				(pm->ps->pm_flags & PMF_DUCKED) &&
+				pm->ps->weaponTime <= 0 &&
+				!BG_SaberInSpecialAttack(pm->ps->torsoAnim)&&
+				BG_EnoughForcePowerForMove(SABER_ALT_ATTACK_POWER_FB))
+			{ //LUNGE (weak)
+				newmove = PM_SaberAirLungeAttackMove();
 				if ( newmove != LS_A_T2B
 					&& newmove != LS_NONE )
 				{
