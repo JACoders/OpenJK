@@ -727,12 +727,8 @@ static void GLimp_InitExtensions( void )
 	}
 
 	// GL_EXT_clamp_to_edge
-	glConfig.clampToEdgeAvailable = qfalse;
-	if ( GL_CheckForExtension( "GL_EXT_texture_edge_clamp" ) )
-	{
-		glConfig.clampToEdgeAvailable = qtrue;
-		Com_Printf ("...Using GL_EXT_texture_edge_clamp\n" );
-	}
+	glConfig.clampToEdgeAvailable = qtrue;
+	Com_Printf ("...using GL_EXT_texture_edge_clamp\n" );
 
 	// GL_ARB_multitexture
 	qglMultiTexCoord2fARB = NULL;
