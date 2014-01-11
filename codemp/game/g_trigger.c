@@ -1362,8 +1362,16 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	{
 		if (other->client->ps.otherKillerTime > level.time)
 		{ //we're as good as dead, so if someone pushed us into this then remember them
-			other->client->ps.otherKillerTime = level.time + 20000;
-			other->client->ps.otherKillerDebounceTime = level.time + 10000;
+//JAPRO - Serverside - Fixkillcredit - Start
+			if (g_fixKillCredit.integer) {
+				other->client->ps.otherKillerTime = level.time + 2000;
+				other->client->ps.otherKillerDebounceTime = level.time + 100;
+			}
+			else {
+				other->client->ps.otherKillerTime = level.time + 20000;
+				other->client->ps.otherKillerDebounceTime = level.time + 10000;
+			}
+//JAPRO - Serverside - Fixkillcredit - End
 		}
 		other->client->ps.fallingToDeath = level.time;
 

@@ -971,22 +971,22 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 					}
 				}
 
-				if (knockDownage)
-				{
-					damage = delta*1; //you suffer for falling unprepared. A lot. Makes throws and things useful, and more realistic I suppose.
+//[JAPRO - Serverside - Fall damage Splat cap - Start]
+				if (knockDownage) {
+					if (g_maxFallDmg.integer && delta >= g_maxFallDmg.integer)
+						damage = g_maxFallDmg.value; //knockdown splat damage gets capped
+					else damage = delta*1; 
 				}
-				else
-				{
-					if (level.gametype == GT_SIEGE &&
-						delta > 60)
-					{ //longer falls hurt more
+				else {
+					if (g_gametype.integer == GT_SIEGE && delta > 60)
 						damage = delta*1; //good enough for now, I guess
-					}
-					else
-					{
-						damage = delta*0.16; //good enough for now, I guess
+					else {
+						if (g_maxFallDmg.integer && delta * 0.16 >= g_maxFallDmg.integer)
+							damage = g_maxFallDmg.integer;
+						else damage = delta*0.16; //good enough for now, I guess
 					}
 				}
+//[JAPRO - Serverside - Fall damage cap - End]
 
 				VectorSet (dir, 0, 0, 1);
 				ent->pain_debounce_time = level.time + 200;	// no normal pain sound
@@ -2111,11 +2111,11 @@ void ClientThink_real( gentity_t *ent ) {
 		msec = 200;
 	}
 
-	if ( pmove_msec.integer < 8 ) {
-		trap->Cvar_Set("pmove_msec", "8");
+	if ( pmove_msec.integer < 1 ) {
+		trap->Cvar_Set("pmove_msec", "1");
 	}
-	else if (pmove_msec.integer > 33) {
-		trap->Cvar_Set("pmove_msec", "33");
+	else if (pmove_msec.integer > 66) {
+		trap->Cvar_Set("pmove_msec", "66");
 	}
 
 	if ( pmove_fixed.integer || client->pers.pmoveFixed ) {
@@ -2123,6 +2123,9 @@ void ClientThink_real( gentity_t *ent ) {
 		//if (ucmd->serverTime - client->ps.commandTime <= 0)
 		//	return;
 	}
+
+	else if (g_fixHighFPSAbuse.integer && msec < 5)
+		ucmd->serverTime = (ucmd->serverTime + 4);
 
 	//
 	// check for exiting intermission
@@ -2606,7 +2609,7 @@ void ClientThink_real( gentity_t *ent ) {
 			VectorSubtract(ent->client->ps.origin, duelAgainst->client->ps.origin, vSub);
 			subLen = VectorLength(vSub);
 
-			if (subLen >= 1024)
+			if (subLen >= 1024 && g_duelDistanceLimit.integer)//[JAPRO - Serverside - Duel - Remove duel distance limit]
 			{
 				ent->client->ps.duelInProgress = 0;
 				duelAgainst->client->ps.duelInProgress = 0;
@@ -2758,7 +2761,12 @@ void ClientThink_real( gentity_t *ent ) {
 
 					//Set the thrower as the "other killer", so if we die from fall/impact damage he is credited.
 					ent->client->ps.otherKiller = thrower->s.number;
-					ent->client->ps.otherKillerTime = level.time + 8000;
+//JAPRO - Serverside - Change otherkiller time if fixkillcredit is on - Start
+					if (!g_fixKillCredit.integer)
+						ent->client->ps.otherKillerTime = level.time + 8000;
+					else
+						ent->client->ps.otherKillerTime = level.time + 2000;
+//JAPRO - Serverside - Change otherkiller time if fixkillcredit is on - End
 					ent->client->ps.otherKillerDebounceTime = level.time + 100;
 				}
 				else
@@ -2875,21 +2883,38 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-	if (ent->client->ps.otherKillerTime > level.time &&
-		ent->client->ps.groundEntityNum != ENTITYNUM_NONE &&
-		ent->client->ps.otherKillerDebounceTime < level.time)
+//JAPRO - Fixkillcredit stuff , im not sure actually - Start
+	if (!g_fixKillCredit.integer)
 	{
-		ent->client->ps.otherKillerTime = 0;
-		ent->client->ps.otherKiller = ENTITYNUM_NONE;
-	}
-	else if (ent->client->ps.otherKillerTime > level.time &&
-		ent->client->ps.groundEntityNum == ENTITYNUM_NONE)
-	{
-		if (ent->client->ps.otherKillerDebounceTime < (level.time + 100))
+		if (ent->client->ps.otherKillerTime > level.time &&
+			ent->client->ps.groundEntityNum != ENTITYNUM_NONE &&
+			ent->client->ps.otherKillerDebounceTime < level.time)
 		{
-			ent->client->ps.otherKillerDebounceTime = level.time + 100;
+			ent->client->ps.otherKillerTime = 0;
+			ent->client->ps.otherKiller = ENTITYNUM_NONE;
+		}
+		else if (ent->client->ps.otherKillerTime > level.time &&
+			ent->client->ps.groundEntityNum == ENTITYNUM_NONE)
+		{
+			if (ent->client->ps.otherKillerDebounceTime < (level.time + 100))
+			{
+				ent->client->ps.otherKillerDebounceTime = level.time + 100;
+			}
 		}
 	}
+	else if (ent->client->ps.otherKiller != ENTITYNUM_NONE)
+	{
+		if (ent->client->ps.otherKillerTime < level.time)
+				ent->client->ps.otherKiller = ENTITYNUM_NONE;
+		else if (ent->client->ps.groundEntityNum == ENTITYNUM_NONE)
+		{
+			if (ent->client->ps.otherKillerTime < level.time + 100)
+				ent->client->ps.otherKillerTime = level.time + 100;
+			if (ent->client->ps.otherKillerDebounceTime < level.time + 100)
+				ent->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
+	}
+//JAPRO - Fixkillcredit stuff - End
 
 //	WP_ForcePowersUpdate( ent, msec, ucmd); //update any active force powers
 //	WP_SaberPositionUpdate(ent, ucmd); //check the server-side saber point, do apprioriate server-side actions (effects are cs-only)
@@ -3490,8 +3515,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 //	G_VehicleAttachDroidUnit( ent );
 
-	// Did we kick someone in our pmove sequence?
-	if (client->ps.forceKickFlip)
+		// Did we kick someone in our pmove sequence?
+	if (client->ps.forceKickFlip && !client->pers.raceMode)
 	{
 		gentity_t *faceKicked = &g_entities[client->ps.forceKickFlip-1];
 
@@ -3499,16 +3524,28 @@ void ClientThink_real( gentity_t *ent ) {
 			(!faceKicked->client->ps.duelInProgress || faceKicked->client->ps.duelIndex == ent->s.number) &&
 			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number))
 		{
-			if ( faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage )
+			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->pers.raceMode && !faceKicked->client->noclip)
 			{//push them away and do pain
 				vec3_t oppDir;
 				int strength = (int)VectorNormalize2( client->ps.velocity, oppDir );
 
-				strength *= 0.05;
+				strength *= 0.05 * g_flipKickDamageScale.value;
 
 				VectorScale( oppDir, -1, oppDir );
 
-				G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, strength, DAMAGE_NO_ARMOR, MOD_MELEE );
+//JAPRO - Serverside - New flipkick damage options - Start
+				if (g_flipKick.integer < 2)
+					G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, strength, DAMAGE_NO_ARMOR, MOD_MELEE );//default flipkick dmg
+				else if (g_flipKick.integer == 2)
+				{
+					if (strength > (10 * g_flipKickDamageScale.value))
+					{
+						strength = 20 * g_flipKickDamageScale.value;
+					}
+					G_Damage( faceKicked, ent, ent, 0, 0, strength, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg
+				}
+				else G_Damage( faceKicked, ent, ent, 0, 0, 20, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
+//JAPRO - Serverside - New flipkick damage options - End
 
 				if ( faceKicked->client->ps.weapon != WP_SABER ||
 					 faceKicked->client->ps.fd.saberAnimLevel != FORCE_LEVEL_3 ||
@@ -3525,16 +3562,20 @@ void ClientThink_real( gentity_t *ent ) {
 							faceKicked->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 						}
 
-						faceKicked->client->ps.otherKiller = ent->s.number;
-						faceKicked->client->ps.otherKillerTime = level.time + 5000;
-						faceKicked->client->ps.otherKillerDebounceTime = level.time + 100;
+//JAPRO - Serverside - Fix killcredit stuff - Start
+						if (!g_fixKillCredit.integer)
+						{
+							faceKicked->client->ps.otherKiller = ent->s.number;
+							faceKicked->client->ps.otherKillerTime = level.time + 5000;
+							faceKicked->client->ps.otherKillerDebounceTime = level.time + 100;
+						}
+//JAPRO - Serverside - Fix killcredit stuff - End
 
 						faceKicked->client->ps.velocity[0] = oppDir[0]*(strength*40);
 						faceKicked->client->ps.velocity[1] = oppDir[1]*(strength*40);
 						faceKicked->client->ps.velocity[2] = 200;
 					}
 				}
-
 				G_Sound( faceKicked, CHAN_AUTO, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
 			}
 		}

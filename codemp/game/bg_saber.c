@@ -1169,9 +1169,15 @@ void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 				genemy->forceHandExtendTime = pm->cmd.serverTime + 1100;
 				genemy->forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 
-				genemy->otherKiller = pm->ps->clientNum;
-				genemy->otherKillerTime = pm->cmd.serverTime + 5000;
-				genemy->otherKillerDebounceTime = pm->cmd.serverTime + 100;
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - Start
+#ifdef _GAME
+				if (!g_fixKillCredit.integer) {
+					genemy->otherKiller = pm->ps->clientNum;
+					genemy->otherKillerTime = pm->cmd.serverTime + 5000;
+					genemy->otherKillerDebounceTime = pm->cmd.serverTime + 100;
+				}
+#endif
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - End
 
 				genemy->velocity[0] = oppDir[0]*(newstrength*40);
 				genemy->velocity[1] = oppDir[1]*(newstrength*40);
@@ -2545,32 +2551,13 @@ int PM_KickMoveForConditions(void)
 	}
 	else
 	{
-		//if (pm->cmd.buttons & BUTTON_ATTACK)
-		//if (pm->ps->pm_flags & PMF_JUMP_HELD)
-		if (0)
-		{ //ok, let's try some fancy kicks
-			//qboolean is actually of type int anyway, but just for safeness.
-			int front = (int)PM_CheckEnemyPresence( DIR_FRONT, 100.0f );
-			int back = (int)PM_CheckEnemyPresence( DIR_BACK, 100.0f );
-			int right = (int)PM_CheckEnemyPresence( DIR_RIGHT, 100.0f );
-			int left = (int)PM_CheckEnemyPresence( DIR_LEFT, 100.0f );
-			int numEnemy = front+back+right+left;
-
-			if (numEnemy >= 3 ||
-				((!right || !left) && numEnemy >= 2))
-			{ //> 2 enemies near, or, >= 2 enemies near and they are not to the right and left.
-                kickMove = LS_KICK_S;
-			}
-			else if (right && left)
-			{ //enemies on both sides
-				kickMove = LS_KICK_RL;
-			}
-			else
-			{ //oh well, just do a forward kick
-				kickMove = LS_KICK_F;
-			}
-
-			pm->cmd.upmove = 0;
+#ifdef _GAME
+		if (g_flipKick.integer) //if we are not pressing any keys and we alt attack in staff it should default to forward kick like in ja+, not just sit there (link this to flipKick? :/)
+#else
+		if (cgs.isJAPlus || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK))
+#endif
+		{
+			kickMove = LS_KICK_F;
 		}
 	}
 

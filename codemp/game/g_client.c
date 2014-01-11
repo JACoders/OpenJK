@@ -976,7 +976,8 @@ BODYQUE
 =======================================================================
 */
 
-#define BODY_SINK_TIME		30000//45000
+//[JAPRO - Serverside - All - Corpse Removal Time]
+#define BODY_SINK_TIME		1000 * g_corpseRemovalTime.integer
 
 /*
 ===============
@@ -2103,6 +2104,47 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	s = Info_ValueForKey( userinfo, "cg_predictItems" );
 	if ( !atoi( s ) )	client->pers.predictItemPickup = qfalse;
 	else				client->pers.predictItemPickup = qtrue;
+
+//JAPRO - Serverside - Get Clients Mod version, if any - Start
+	s = Info_ValueForKey( userinfo, "cjp_client" );
+	if ( !strcmp( s, "1.4JAPRO" ) ) {
+		client->pers.isJAPRO = qtrue;
+	} else {
+		client->pers.isJAPRO = qfalse;
+	}
+
+	if (client && client->pers.isJAPRO) {
+		s = Info_ValueForKey( userinfo, "cg_newRunAnim" );
+		if ( atoi( s ) ) {
+			client->pers.JAWARUN = qtrue;
+		} else {
+			client->pers.JAWARUN = qfalse;
+		}
+	}
+
+	if (client && client->pers.isJAPRO) {
+		s = Info_ValueForKey( userinfo, "cg_onlyBhop" );
+		if ( atoi( s ) ) {
+				client->pers.onlyBhop = qtrue;
+		} else {
+				client->pers.onlyBhop = qfalse;
+		}
+	}
+
+	s = Info_ValueForKey( userinfo, "cg_centerMuzzle" );
+	if ( !atoi( s ) ) {
+		client->pers.centerMuzzle = qfalse;
+	} else {
+		client->pers.centerMuzzle = qtrue;
+	}
+
+	s = Info_ValueForKey( userinfo, "cg_noDamageNumbers" );
+	if ( !atoi( s ) ) {
+		client->pers.noDamageNumbers = qfalse;
+	} else {
+		client->pers.noDamageNumbers = qtrue;
+	}
+//JAPRO - Serverside - Get Clients Mod version, if any - End
 
 	// set name
 	Q_strncpyz( oldname, client->pers.netname, sizeof( oldname ) );
@@ -3484,15 +3526,75 @@ void ClientSpawn(gentity_t *ent) {
 			}
 		}
 
-		if (level.gametype != GT_SIEGE)
-		{
-			if (!wDisable || !(wDisable & (1 << WP_BRYAR_PISTOL)))
-			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL );
+		if (g_gametype.integer != GT_SIEGE) {
+			if (client->pers.raceMode) {
+				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_OLD);
 			}
-			else if (level.gametype == GT_JEDIMASTER)
-			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL );
+			else {
+				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_STUN_BATON);
+				if (g_startingWeapons.integer & (1 << WP_MELEE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_MELEE);
+				if (g_startingWeapons.integer & (1 << WP_BRYAR_PISTOL))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_PISTOL);
+				if (g_startingWeapons.integer & (1 << WP_BLASTER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BLASTER);
+				if (g_startingWeapons.integer & (1 << WP_DISRUPTOR))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DISRUPTOR);
+				if (g_startingWeapons.integer & (1 << WP_BOWCASTER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BOWCASTER);
+				if (g_startingWeapons.integer & (1 << WP_REPEATER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_REPEATER);
+				if (g_startingWeapons.integer & (1 << WP_DEMP2))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DEMP2);
+				if (g_startingWeapons.integer & (1 << WP_FLECHETTE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_FLECHETTE);
+				if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ROCKET_LAUNCHER);
+				if (g_startingWeapons.integer & (1 << WP_CONCUSSION))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_CONCUSSION);
+				if (g_startingWeapons.integer & (1 << WP_THERMAL))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_THERMAL);
+				if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_TRIP_MINE);
+				if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_DET_PACK);
+				if (g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_OLD);
+
+				if (!(g_startingWeapons.integer & (1 << 0))) {
+					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+						client->ps.ammo[AMMO_BLASTER] = 300;
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER))
+						client->ps.ammo[AMMO_POWERCELL] = 200;
+					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
+						client->ps.ammo[AMMO_METAL_BOLTS] = 200;
+					if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+						client->ps.ammo[AMMO_ROCKETS] = 2;
+					if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+						client->ps.ammo[AMMO_DETPACK] = 1;
+					if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+						client->ps.ammo[AMMO_TRIPMINE] = 1;
+					if (g_startingWeapons.integer & (1 << WP_THERMAL))
+						client->ps.ammo[AMMO_THERMAL] = 1;
+				}
+				else {
+					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
+						client->ps.ammo[AMMO_BLASTER] = 600;
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER))
+						client->ps.ammo[AMMO_POWERCELL] = 600;
+					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
+						client->ps.ammo[AMMO_METAL_BOLTS] = 600;
+					if (g_startingWeapons.integer & (1 << WP_ROCKET_LAUNCHER))
+						client->ps.ammo[AMMO_ROCKETS] = 25;
+					if (g_startingWeapons.integer & (1 << WP_DET_PACK))
+						client->ps.ammo[AMMO_DETPACK] = 10;
+					if (g_startingWeapons.integer & (1 << WP_TRIP_MINE))
+						client->ps.ammo[AMMO_TRIPMINE] = 10;
+					if (g_startingWeapons.integer & (1 << WP_THERMAL))
+						client->ps.ammo[AMMO_THERMAL] = 10;
+				}
 			}
 		}
 
@@ -3601,6 +3703,27 @@ void ClientSpawn(gentity_t *ent) {
 	{
 		client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
 		client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
+//JAPRO - Serverside - Clan arena type spawn with items - Start
+		if (g_startingItems.integer & (1 << HI_SEEKER))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SEEKER);
+		if (g_startingItems.integer & (1 << HI_SHIELD))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SHIELD);
+		if (g_startingItems.integer & (1 << HI_MEDPAC))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC);
+		if (g_startingItems.integer & (1 << HI_MEDPAC_BIG))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC_BIG);
+		if (g_startingItems.integer & (1 << HI_BINOCULARS))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_BINOCULARS);
+		if (g_startingItems.integer & (1 << HI_SENTRY_GUN))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SENTRY_GUN);
+		if (g_startingItems.integer & (1 << HI_JETPACK))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_JETPACK);
+		if (g_startingItems.integer & (1 << HI_AMMODISP))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_AMMODISP);
+		if (g_startingItems.integer & (1 << HI_EWEB))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_EWEB);
+		if (g_startingItems.integer & (1 << HI_CLOAK))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
 	}
 
 	if (level.gametype == GT_SIEGE &&
@@ -3627,7 +3750,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 
 // nmckenzie: DESERT_SIEGE... or well, siege generally.  This was over-writing the max value, which was NOT good for siege.
-	if ( inSiegeWithClass == qfalse )
+	if (!g_startingWeapons.integer && inSiegeWithClass == qfalse)//loda fixme?
 	{
 		client->ps.ammo[AMMO_BLASTER] = 100; //ammoData[AMMO_BLASTER].max; //100 seems fair.
 	}
@@ -3894,6 +4017,7 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
+	gentity_t	*attacker;//JAPRO - Serverside - Fixkillcredit
 	int			i;
 
 	// cleanup if we are kicking a bot that
@@ -3904,6 +4028,19 @@ void ClientDisconnect( int clientNum ) {
 	if ( !ent->client || ent->client->pers.connected == CON_DISCONNECTED ) {
 		return;
 	}
+
+//JAPRO - Serverside - Stop those pesky reconnect whores - Start
+	if (g_fixKillCredit.integer > 1 && ent->client && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	{
+		attacker = &g_entities[ent->client->ps.otherKiller];
+		if (attacker->client) {
+			trap_SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
+			trap_SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
+			AddScore( attacker, ent->r.currentOrigin, 1 );
+			attacker->client->pers.stats.kills++;//JAPRO STATS
+		}	
+	}
+//JAPRO - Serverside - Stop those pesky reconnect whores - End
 
 	i = 0;
 

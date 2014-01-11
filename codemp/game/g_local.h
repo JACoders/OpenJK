@@ -553,6 +553,23 @@ typedef struct clientSession_s {
 #define MAX_NETNAME			36
 #define	MAX_VOTE_COUNT		3
 
+typedef struct {//JAPRO - Serverside - Stats
+	int kills;
+	int teamKills;
+	int damageTaken;
+	int damageGiven;
+
+	int startTimeFlag;//could be float?
+	int displacementFlag;
+	int topSpeedFlag;
+
+	int	startTime;//For timers that are not flags
+	int	displacement;
+	int topSpeed;
+	int lastCheckpointTime;//For checkpoint floodprotect
+
+} stats_t;
+
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct clientPersistant_s {
@@ -572,11 +589,26 @@ typedef struct clientPersistant_s {
 
 	int			connectTime;
 
+	qboolean	isJAPRO;//JAPRO - Serverside - Add Clientside Version
+	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
+	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
+	qboolean	noDamageNumbers;//Japro
+	qboolean	amfreeze;//JAPRO - Serverside - Admin - Amfreeze admin cmd
+	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
+	int			telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
+	char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
+	int			sayteammod;//0 = normal, 1 = clan, 2 = admin
+	int			lastChatTime;//godchat fuck idk why im doing this
+	qboolean	chatting;
+	qboolean	raceMode;
+	qboolean	onlyBhop;
+
 	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
 
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 
 	char		guid[33];
+	stats_t		stats;
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -862,6 +894,20 @@ struct gclient_s {
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
+
+	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
+	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
+	qboolean	emote_freeze;//JAPRO - Amfreeze Anim
+	int			lastUpdateFrame; // JAPRO - Smooth clients loda
+	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
+	int			csTimeLeft;						// JAPRO - Time left for client's CenterScreen
+
+	//Testunlagged
+	struct {
+		int				trailHead;
+		clientTrail_t	trail[NUM_CLIENT_TRAILS];
+		clientTrail_t	saved; // used to restore after time shift
+	} unlagged;
 
 	struct force {
 		int		regenDebounce;

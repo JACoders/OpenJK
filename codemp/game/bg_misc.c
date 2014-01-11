@@ -1864,16 +1864,40 @@ grabbing them easier
 */
 qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTime ) {
 	vec3_t		origin;
+	gitem_t *gitem;
 
 	BG_EvaluateTrajectory( &item->pos, atTime, origin );
 
+	if (item->modelindex < 1 || item->modelindex >= bg_numItems) {
+		Com_Error(ERR_DROP, "BG_CanItemBeGrabbed: index out of range");
+	}
+
+	gitem = &bg_itemlist[item->modelindex];
+
+	// if it is a flag
+	if ((gitem->giTag == PW_REDFLAG || gitem->giTag == PW_BLUEFLAG || gitem->giTag == PW_NEUTRALFLAG)
+#if defined(QAGAME)
+		&& g_fixFlagHitbox.integer
+#elif defined(CGAME)
+		&& cgs.isJAPro
+#endif
+		) {//Flag hitbox
+			if (ps->origin[0] - origin[0] > 52
+			   || ps->origin[0] - origin[0] < -52
+			   || ps->origin[1] - origin[1] > 52
+			   || ps->origin[1] - origin[1] < -52
+			   || ps->origin[2] - origin[2] > 68
+			   || ps->origin[2] - origin[2] < -36) {
+				return qfalse;
+			}
+	}
 	// we are ignoring ducked differences here
-	if ( ps->origin[0] - origin[0] > 44
+	else if (ps->origin[0] - origin[0] > 44
 		|| ps->origin[0] - origin[0] < -50
 		|| ps->origin[1] - origin[1] > 36
 		|| ps->origin[1] - origin[1] < -36
 		|| ps->origin[2] - origin[2] > 36
-		|| ps->origin[2] - origin[2] < -36 ) {
+		|| ps->origin[2] - origin[2] < -36) {
 		return qfalse;
 	}
 

@@ -507,9 +507,13 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 							hitEnt->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 						}
 
-						hitEnt->client->ps.otherKiller = pEnt->s.number;
-						hitEnt->client->ps.otherKillerTime = pm->cmd.serverTime + 5000;
-						hitEnt->client->ps.otherKillerDebounceTime = pm->cmd.serverTime + 100;
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - Start
+						if (!g_fixKillCredit.integer) {
+							hitEnt->client->ps.otherKiller = pEnt->s.number;
+							hitEnt->client->ps.otherKillerTime = pm->cmd.serverTime + 5000;
+							hitEnt->client->ps.otherKillerDebounceTime = pm->cmd.serverTime + 100;
+						}
+//JAPRO - Serverside - Remove otherkiller info from everything but g_damage (which will cover everything) if fixkillcredit is on - End
 
 						//add my velocity into his to force him along in the correct direction from impact
 						VectorAdd(hitEnt->client->ps.velocity, pm->ps->velocity, hitEnt->client->ps.velocity);

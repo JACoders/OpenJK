@@ -157,6 +157,8 @@ XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARC
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
 //JAPRO CTF
+XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -171,6 +173,7 @@ XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE|CVAR_SERVERINFO
 
 //JAPRO GUNS
 XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO MOVEMENT
 XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )

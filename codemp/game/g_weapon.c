@@ -3226,7 +3226,12 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 									traceEnt->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 								}
 								traceEnt->client->ps.otherKiller = ent->s.number;
-								traceEnt->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - fixkillcredit - Start
+								if (g_fixKillCredit.integer)
+									traceEnt->client->ps.otherKillerTime = level.time + 2000;
+								else
+									traceEnt->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - fixkillcredit - End
 								traceEnt->client->ps.otherKillerDebounceTime = level.time + 100;
 
 								traceEnt->client->ps.velocity[0] += pushDir[0]*pStr;

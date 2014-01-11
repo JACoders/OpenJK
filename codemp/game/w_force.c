@@ -563,15 +563,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		}
 	}
 
-	if (other && other->client &&
-		(forcePower == FP_PUSH ||
-		forcePower == FP_PULL))
+//[JAPRO - Serverside - Force - Allow push/pull on knocked down players - Start]
+	if (!g_pushPullKnockdown.integer && other && other->client && (forcePower == FP_PUSH ||	forcePower == FP_PULL))
 	{
 		if (BG_InKnockDown(other->client->ps.legsAnim))
-		{
 			return 0;
-		}
 	}
+//[JAPRO - Serverside - Force - Allow push/pull on knocked down players - End]
 
 	if (other && other->client && other->s.eType == ET_NPC &&
 		other->s.NPC_class == CLASS_VEHICLE)
@@ -782,15 +780,47 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		return -1;
 	}
 
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
 	if (!atdAbsLevel)
 	{ //looks like attacker doesn't have any absorb power
-		return -1;
+		if (g_fixLightning.integer && atPower == FP_LIGHTNING)
+		{
+			addTot = (atForceSpent);
+
+			if (addTot < 1 && atForceSpent >= 1)
+			{
+				addTot = 1;
+			}
+			attacked->client->ps.fd.forcePower += addTot;
+			if (attacked->client->ps.fd.forcePower > 100)
+			{
+				attacked->client->ps.fd.forcePower = 100;
+			}
+			return -1;
+		}
+		else return -1;
 	}
 
 	if (!(attacked->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)))
 	{ //absorb is not active
-		return -1;
+		if (g_fixLightning.integer && atPower == FP_LIGHTNING)
+		{
+			addTot = (atForceSpent);
+
+			if (addTot < 1 && atForceSpent >= 1)
+			{
+				addTot = 1;
+			}
+			attacked->client->ps.fd.forcePower += addTot;
+			if (attacked->client->ps.fd.forcePower > 100)
+			{
+			attacked->client->ps.fd.forcePower = 100;
+			}
+			return -1;
+		}
+		else return -1;
 	}
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]
 
 	//Subtract absorb power level from the offensive force power
 	getLevel = atPowerLevel;
@@ -1365,10 +1395,21 @@ void ForceGrip( gentity_t *self )
 		return;
 	}
 
+//[JAPRO - Serverside - Force - Allow grip while in getup - Start]
 	if (self->client->ps.weaponTime > 0)
 	{
-		return;
+		if (g_fixGetups.integer && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
+		{
+		}
+		else if (g_fixRoll.integer && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L)))
+		{
+		}
+		else 
+		{
+			return;
+		}
 	}
+//[JAPRO - Serverside - Force - Allow grip while in getup - End]
 
 	if (self->client->ps.fd.forceGripUseTime > level.time)
 	{
@@ -1670,10 +1711,16 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			}
 			if (ForcePowerUsableOn(self, traceEnt, FP_LIGHTNING))
 			{
-				int	dmg = Q_irand(1,2); //Q_irand( 1, 3 );
-				
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
+				int	dmg;
 				int modPowerLevel = -1;
-				
+
+				if (g_fixLightning.integer > 1)//2,3 has nerfed dmg
+					dmg = 1;
+				else
+					dmg = Q_irand(1,2);
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]	
+
 				if (traceEnt->client)
 				{
 					modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_LIGHTNING, self->client->ps.fd.forcePowerLevel[FP_LIGHTNING], 1);
@@ -1702,7 +1749,10 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					&& self->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_2 )
 				{//2-handed lightning
 					//jackin' 'em up, Palpatine-style
-					dmg *= 2;
+//[JAPRO - Serverside - Saber - Tweak force lightning - Start]
+					if (g_fixLightning.integer < 3)//0,1,2 has buffed melee dmg
+						dmg *= 2;
+//[JAPRO - Serverside - Saber - Tweak force lightning - End]
 				}
 
 				if (dmg)
@@ -2928,10 +2978,13 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		return;
 	}
 
+//[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
 	if (self->client->ps.weaponTime > 0)
 	{
-		return;
+		if (!(g_fixGetups.integer > 1 && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B)))
+			return;
 	}
+//[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
 
 	if ( self->health <= 0 )
 	{
@@ -3509,7 +3562,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 
 					push_list[x]->client->ps.otherKiller = self->s.number;
-					push_list[x]->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - Fixkillcredit - Start
+					if (g_fixKillCredit.integer)
+						push_list[x]->client->ps.otherKillerTime = level.time + 2000;
+					else
+						push_list[x]->client->ps.otherKillerTime = level.time + 5000;
+//JAPRO - Serverside - Fixkillcredit - End
 					push_list[x]->client->ps.otherKillerDebounceTime = level.time + 100;
 
 					pushPowerMod -= (dirLen*0.7);
@@ -3875,9 +3933,14 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 			gripEnt->client->ps.forceGripMoveInterval = level.time + 300; //only update velocity every 300ms, so as to avoid heavy bandwidth usage
 		}
 
-		gripEnt->client->ps.otherKiller = self->s.number;
-		gripEnt->client->ps.otherKillerTime = level.time + 5000;
-		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
+		if (!g_fixKillCredit.integer)
+		{
+			gripEnt->client->ps.otherKiller = self->s.number;
+			gripEnt->client->ps.otherKillerTime = level.time + 5000;
+			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -3908,9 +3971,14 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	{
 		gripEnt->client->ps.fd.forceGripBeingGripped = level.time + 1000;
 
-		gripEnt->client->ps.otherKiller = self->s.number;
-		gripEnt->client->ps.otherKillerTime = level.time + 5000;
-		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
+		if (!g_fixKillCredit.integer)
+		{
+			gripEnt->client->ps.otherKiller = self->s.number;
+			gripEnt->client->ps.otherKillerTime = level.time + 5000;
+			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
+//JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -5223,10 +5291,12 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.forceGripCripple = 1;
 
 		//keep the saber off during this period
-		if (self->client->ps.weapon == WP_SABER && !self->client->ps.saberHolstered)
+//[JAPRO - Serverside - Force - Fix Saber in grip - Start]
+		if (!g_fixSaberInGrip.integer && self->client->ps.weapon == WP_SABER && !self->client->ps.saberHolstered) 
 		{
 			Cmd_ToggleSaber_f(self);
 		}
+//[JAPRO - Serverside - Force - Fix Saber in grip - End]
 	}
 	else
 	{

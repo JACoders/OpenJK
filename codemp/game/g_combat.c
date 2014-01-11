@@ -2424,6 +2424,18 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		attacker = &g_entities[self->client->ps.otherKiller];
 	}
 
+//JAPRO - Serverside - Fixkillcredit for suiciders and teamchangers - Start
+	else if ((self == attacker || !attacker->client) && g_fixKillCredit.integer &&
+		(meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && 
+		self->client->ps.otherKillerTime > level.time)
+	{
+		if (OnSameTeam (self, &g_entities[self->client->ps.otherKiller]) && g_friendlyFire.integer)
+				attacker = &g_entities[self->client->ps.otherKiller];
+		else
+			attacker = &g_entities[self->client->ps.otherKiller]; // loda - fixme?
+	}
+//JAPRO - Serverside - Fixkillcredit for suiciders and teamchangers - End
+
 	// check for an almost capture
 	CheckAlmostCapture( self, attacker );
 
@@ -2648,7 +2660,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	Team_FragBonuses(self, inflictor, attacker);
 
 	// if I committed suicide, the flag does not fall, it returns.
-	if (meansOfDeath == MOD_SUICIDE) {
+	if (meansOfDeath == MOD_SUICIDE && !g_fixFlagSuicide.integer) {
 		if ( self->client->ps.powerups[PW_NEUTRALFLAG] ) {		// only happens in One Flag CTF
 			Team_ReturnFlag( TEAM_FREE );
 			self->client->ps.powerups[PW_NEUTRALFLAG] = 0;
@@ -4707,10 +4719,19 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			float dur = 5000;
 			float dur2 = 100;
-			if (targ->client && targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE)
-			{
-				dur = 25000;
-				dur2 = 25000;
+//JAPRO - Serverside - Fixkillcredit - Start
+			if (g_fixKillCredit.integer)
+				dur = 2000;
+			if (targ->client && targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE) {
+				if (!g_fixKillCredit.integer) {
+					dur = 25000;
+					dur2 = 25000;
+				}
+				else {
+					dur = 2000;//Loda fixme, increase for force grip?
+					dur2 = 2000;
+				}
+//JAPRO - Serverside - Fixkillcredit - End
 			}
 			targ->client->ps.otherKiller = attacker->s.number;
 			targ->client->ps.otherKillerTime = level.time + dur;
@@ -4735,8 +4756,16 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	else if (targ->client && targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE && attacker != targ)
 	{
 		targ->client->ps.otherKiller = attacker->s.number;
-		targ->client->ps.otherKillerTime = level.time + 25000;
-		targ->client->ps.otherKillerDebounceTime = level.time + 25000;
+//JAPRO - Serverside - Fix Kill credit - Start
+		if (g_fixKillCredit.integer) {
+			targ->client->ps.otherKillerTime = level.time + 2000;
+			targ->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
+		else {
+			targ->client->ps.otherKillerTime = level.time + 25000;
+			targ->client->ps.otherKillerDebounceTime = level.time + 25000;
+		}
+//JAPRO - Serverside - Fix Kill credit - End
 	}
 
 	
@@ -4933,13 +4962,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// calculated after knockback, so rocket jumping works
 	if ( targ == attacker && !(dflags & DAMAGE_NO_SELF_PROTECTION)) {
 		if ( level.gametype == GT_SIEGE )
-		{
 			damage *= 1.5;
-		}
 		else
-		{
-			damage *= 0.5;
-		}
+			damage *= g_selfDamageScale.value;
 	}
 
 	if ( damage < 1 ) {

@@ -246,10 +246,12 @@ void WP_ActivateSaber( gentity_t *self )
 		self->client->ps.forceHandExtend = HANDEXTEND_NONE;
 		self->client->ps.forceHandExtendTime = 0;
 	}
-	else if (self->client->ps.fd.forceGripCripple)
+//[JAPRO - Serverside - Force - Fix Saber in grip - Start]
+	else if (g_fixSaberInGrip.integer > 1 && self->client->ps.fd.forceGripCripple)
 	{ //can't activate saber while being gripped
 		return;
 	}
+//[JAPRO - Serverside - Force - Fix Saber in grip - End]
 
 	if ( self->client->ps.saberHolstered )
 	{
