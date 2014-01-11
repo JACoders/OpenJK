@@ -16,14 +16,14 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
-#include "common_headers.h"
-
 // define GAME_INCLUDE so that g_public.h does not define the
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define GAME_INCLUDE
 #include "../../code/qcommon/q_shared.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
+#include "g_local.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "anims.h"

@@ -18,10 +18,6 @@ This file is part of Jedi Knight 2.
 
 // Filename:-	genericparser2.cpp
 
-// leave this at the top for PCH reasons...
-
-#include "common_headers.h"
-
 #ifdef _JK2EXE
 #include "../qcommon/qcommon.h"
 #else

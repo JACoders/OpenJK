@@ -16,9 +16,6 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
-#include "common_headers.h"
-
 // bg_pmove.c -- both games player movement code
 // takes a playerstate and a usercmd as input and returns a modifed playerstate
 
@@ -27,6 +24,7 @@ This file is part of Jedi Knight 2.
 // because we define the full size ones in this file
 #define	GAME_INCLUDE
 #include "../../code/qcommon/q_shared.h"
+#include "b_local.h"
 #include "g_shared.h"
 #include "bg_local.h"			   
 #include "g_local.h"			   

@@ -115,7 +115,6 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/bstate.h"
 	"${JK2SPDir}/game/channels.h"
 	"${JK2SPDir}/game/characters.h"
-	"${JK2SPDir}/game/common_headers.h"
 	"${JK2SPDir}/game/dmstates.h"
 	"${JK2SPDir}/game/events.h"
 	"${JK2SPDir}/game/fields.h"
