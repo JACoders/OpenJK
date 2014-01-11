@@ -2264,7 +2264,7 @@ int BotGetWeaponRange(bot_state_t *bs)
 	case WP_BLASTER:
 		return BWEAPONRANGE_MID;
 	case WP_DISRUPTOR:
-		return BWEAPONRANGE_MID;
+		return BWEAPONRANGE_LONG;
 	case WP_BOWCASTER:
 		return BWEAPONRANGE_LONG;
 	case WP_REPEATER:
@@ -2272,7 +2272,7 @@ int BotGetWeaponRange(bot_state_t *bs)
 	case WP_DEMP2:
 		return BWEAPONRANGE_LONG;
 	case WP_FLECHETTE:
-		return BWEAPONRANGE_LONG;
+		return BWEAPONRANGE_MID;
 	case WP_ROCKET_LAUNCHER:
 		return BWEAPONRANGE_LONG;
 	case WP_THERMAL:
@@ -4573,7 +4573,11 @@ float BotWeaponCanLead(bot_state_t *bs)
 	case WP_DEMP2:
 		return 0.35f;
 	case WP_ROCKET_LAUNCHER:
-		return 0.7f;
+		return 0.9f;
+	case WP_FLECHETTE:
+		return 0.3f;
+	case WP_DISRUPTOR:
+		return 0.03f;
 	default:
 		return 0.0f;
 	}
@@ -4841,15 +4845,15 @@ int ShouldSecondaryFire(bot_state_t *bs)
 	{
 		return 1;
 	}
-	else if (weap == WP_REPEATER && bs->frame_Enemy_Len < 600 && bs->frame_Enemy_Len > 250)
+	else if (weap == WP_REPEATER && bs->frame_Enemy_Len < 500 && bs->frame_Enemy_Len > 250)
 	{
 		return 1;
 	}
-	else if (weap == WP_BLASTER && bs->frame_Enemy_Len < 300)
+	else if (weap == WP_BLASTER && bs->frame_Enemy_Len < 1000)
 	{
 		return 1;
 	}
-	else if (weap == WP_ROCKET_LAUNCHER && bs->frame_Enemy_Len > 250)
+	else if (weap == WP_FLECHETTE && bs->frame_Enemy_Len < 500 && bs->frame_Enemy_Len > 250)
 	{
 		return 1;
 	}
@@ -5095,6 +5099,22 @@ qboolean BotWeaponSelectable(bot_state_t *bs, int weapon)
 	return qfalse;
 }
 
+qboolean BotWeaponSelectableAltFire(bot_state_t *bs, int weapon)
+{
+	if (weapon == WP_NONE)
+	{
+		return qfalse;
+	}
+
+	if (bs->cur_ps.ammo[weaponData[weapon].ammoIndex] >= weaponData[weapon].altEnergyPerShot &&
+		(bs->cur_ps.stats[STAT_WEAPONS] & (1 << weapon)))
+	{
+		return qtrue;
+	}
+	
+	return qfalse;
+}
+
 //select the best weapon we can
 int BotSelectIdealWeapon(bot_state_t *bs)
 {
@@ -5129,46 +5149,83 @@ int BotSelectIdealWeapon(bot_state_t *bs)
 	}
 
 	if ( bs->currentEnemy && bs->frame_Enemy_Len < 300 &&
-		(bestweapon == WP_BRYAR_PISTOL || bestweapon == WP_BLASTER || bestweapon == WP_BOWCASTER) &&
+		bestweapon == WP_BRYAR_PISTOL &&
 		(bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_SABER)) )
 	{
 		bestweapon = WP_SABER;
 		bestweight = 1;
 	}
 
-	if ( bs->currentEnemy && bs->frame_Enemy_Len > 300 &&
-		bs->currentEnemy->client && bs->currentEnemy->client->ps.weapon != WP_SABER &&
-		(bestweapon == WP_SABER) )
-	{ //if the enemy is far away, and we have our saber selected, see if we have any good distance weapons instead
-		if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+	if ( bs->currentEnemy )
+	{
+		if (bs->frame_Enemy_Len > 1000)
 		{
-			bestweapon = WP_DISRUPTOR;
-			bestweight = 1;
+			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+			{
+				bestweapon = WP_DISRUPTOR;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_DEMP2))
+			{
+				bestweapon = WP_DEMP2;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_BLASTER))
+			{
+				bestweapon = WP_BLASTER;
+				bestweight = 1;
+			}
 		}
-		else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+		else if (bs->frame_Enemy_Len > 300 && bs->frame_Enemy_Len < 900)
 		{
-			bestweapon = WP_ROCKET_LAUNCHER;
-			bestweight = 1;
+			if (BotWeaponSelectableAltFire(bs, WP_BLASTER))
+			{
+				bestweapon = WP_BLASTER;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectableAltFire(bs, WP_REPEATER))
+			{
+				bestweapon = WP_REPEATER;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+			{
+				bestweapon = WP_DISRUPTOR;
+				bestweight = 1;
+			}
 		}
-		else if (BotWeaponSelectable(bs, WP_BOWCASTER))
+		else if (bs->frame_Enemy_Len < 150)
 		{
-			bestweapon = WP_BOWCASTER;
-			bestweight = 1;
-		}
-		else if (BotWeaponSelectable(bs, WP_BLASTER))
-		{
-			bestweapon = WP_BLASTER;
-			bestweight = 1;
-		}
-		else if (BotWeaponSelectable(bs, WP_REPEATER))
-		{
-			bestweapon = WP_REPEATER;
-			bestweight = 1;
-		}
-		else if (BotWeaponSelectable(bs, WP_DEMP2))
-		{
-			bestweapon = WP_DEMP2;
-			bestweight = 1;
+			if (BotWeaponSelectable(bs, WP_FLECHETTE))
+			{
+				bestweapon = WP_FLECHETTE;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_REPEATER))
+			{
+				bestweapon = WP_REPEATER;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+			{
+				bestweapon = WP_ROCKET_LAUNCHER;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
+			{
+				bestweapon = WP_CONCUSSION;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_BLASTER))
+			{
+				bestweapon = WP_BLASTER;
+				bestweight = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+			{
+				bestweapon = WP_DISRUPTOR;
+				bestweight = 1;
+			}
 		}
 	}
 
@@ -6877,7 +6934,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 		if (bs->currentEnemy->client)
 		{
 			VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
-			headlevel[2] += bs->currentEnemy->client->ps.viewheight;
+			headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;
 		}
 		else
 		{
@@ -7551,7 +7608,7 @@ int BotAISetup( int restart ) {
 	//rww - new bot cvars..
 	trap->Cvar_Register(&bot_forcepowers, "bot_forcepowers", "1", CVAR_CHEAT);
 	trap->Cvar_Register(&bot_forgimmick, "bot_forgimmick", "0", CVAR_CHEAT);
-	trap->Cvar_Register(&bot_honorableduelacceptance, "bot_honorableduelacceptance", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&bot_honorableduelacceptance, "bot_honorableduelacceptance", "0", CVAR_ARCHIVE);
 	trap->Cvar_Register(&bot_pvstype, "bot_pvstype", "1", CVAR_CHEAT);
 #ifndef FINAL_BUILD
 	trap->Cvar_Register(&bot_getinthecarrr, "bot_getinthecarrr", "0", 0);
