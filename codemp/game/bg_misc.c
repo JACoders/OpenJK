@@ -2258,20 +2258,32 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		return qtrue;	// powerups are always picked up
 
 	case IT_TEAM: // team items, such as flags
-		if( gametype == GT_CTF || gametype == GT_CTY ) {
+		if( gametype == GT_CTF || gametype == GT_CTY)
+		{//JAPRO RABBIT
 			// ent->modelindex2 is non-zero on items if they are dropped
 			// we need to know this because we can pick up our dropped flag (and return it)
 			// but we can't pick up our flag at base
-			if (ps->persistant[PERS_TEAM] == TEAM_RED) {
+			if (ps && ps->persistant[PERS_TEAM] == TEAM_RED) {
 				if (item->giTag == PW_BLUEFLAG ||
 					(item->giTag == PW_REDFLAG && ent->modelindex2) ||
 					(item->giTag == PW_REDFLAG && ps->powerups[PW_BLUEFLAG]) )
 					return qtrue;
-			} else if (ps->persistant[PERS_TEAM] == TEAM_BLUE) {
+			} else if (ps && ps->persistant[PERS_TEAM] == TEAM_BLUE) {
 				if (item->giTag == PW_REDFLAG ||
 					(item->giTag == PW_BLUEFLAG && ent->modelindex2) ||
 					(item->giTag == PW_BLUEFLAG && ps->powerups[PW_REDFLAG]) )
 					return qtrue;
+			} 
+		}
+		else if (gametype == GT_FFA || gametype == GT_TEAM)
+		{
+			if (ps->persistant[PERS_TEAM] == TEAM_FREE || ps->persistant[PERS_TEAM] == TEAM_BLUE || ps->persistant[PERS_TEAM] == TEAM_RED)
+			{
+				if (item->giTag == PW_NEUTRALFLAG)
+				{
+					if (ps && !ps->duelInProgress)//if we are not dueling, ok grab it!?
+						return qtrue;
+				}
 			}
 		}
 

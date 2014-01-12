@@ -210,7 +210,6 @@ XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE|CVAR_SERVERINFO,
 XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_rampJump,					"1",			CVU_RampJump,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_allowDodge,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING

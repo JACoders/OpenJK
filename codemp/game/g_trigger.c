@@ -380,7 +380,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 		return;
 //JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
 
-	if (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer == 2)//loda
+	if (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer == 2)
 		return;
 
 	if ( self->spawnflags & 1 )
@@ -1166,6 +1166,73 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	}
 }
 
+void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
+	if ( !activator->client )
+		return;
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+		return;
+
+	activator->client->pers.stats.startTime = trap->Milliseconds();
+	activator->client->pers.stats.topSpeed = 0;
+	activator->client->pers.stats.displacement = 0;
+}
+
+void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
+	if ( !activator->client )
+		return;
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT ) 
+		return;
+
+
+	if (activator->client->pers.stats.startTime) {
+		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
+		activator->client->pers.stats.displacement /= (1000.0f / (float)(level.time - level.previousTime));
+
+		//if (self->message[0]) //loda fixme
+			//trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
+		//else
+			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
+
+		activator->client->pers.stats.startTime = 0;
+		activator->client->pers.stats.topSpeed = 0;
+		activator->client->pers.stats.displacement = 0;
+	}
+}
+
+void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
+	if ( !activator->client )
+		return;
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+		return;
+
+	if (activator->client->pers.stats.startTime && (level.time - activator->client->pers.stats.lastCheckpointTime > 1000)) {
+		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
+		float displacement = activator->client->pers.stats.displacement;
+
+		displacement /= (1000 / (level.time - level.previousTime));
+		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\"", time, activator->client->pers.stats.topSpeed, displacement/time));
+		activator->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
+	}
+}
+
+void Use_target_onlybhop_on( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO OnlyBhop
+	if ( !activator->client )
+		return;
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+		return;
+
+	activator->client->ps.stats[STAT_ONLYBHOP] = 1;
+}
+
+void Use_target_onlybhop_off( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO OnlyBhop
+	if ( !activator->client )
+		return;
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+		return;
+
+	activator->client->ps.stats[STAT_ONLYBHOP] = 0;
+}
+
 /*QUAKED target_push (.5 .5 .5) (-8 -8 -8) (8 8 8) bouncepad CONSTANT
 CONSTANT will push activator in direction of 'target' at constant 'speed'
 
@@ -1192,6 +1259,29 @@ void SP_target_push( gentity_t *self ) {
 		self->nextthink = level.time + FRAMETIME;
 	}
 	self->use = Use_target_push;
+}
+
+void SP_target_timer_start(gentity_t *self)//JAPRO Timers
+{
+	self->use = Use_target_timer_start;
+}
+
+void SP_target_timer_stop(gentity_t *self)//JAPRO Timers
+{
+	self->use = Use_target_timer_stop;
+}
+
+void SP_target_timer_checkpoint(gentity_t *self)//JAPRO Timers
+{
+	self->use = Use_target_timer_checkpoint;
+}
+
+void SP_target_onlybhop(gentity_t *self)//JAPRO Onlybhop
+{
+	if (self->spawnflags & 1)
+		self->use = Use_target_onlybhop_off;
+	else
+		self->use = Use_target_onlybhop_on;
 }
 
 /*

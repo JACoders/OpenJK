@@ -600,7 +600,7 @@ void Team_ResetFlags( void ) {
 		Team_ResetFlag( TEAM_RED );
 		Team_ResetFlag( TEAM_BLUE );
 	}
-	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)//loda
+	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)
 		Team_ResetFlag( TEAM_FREE );
 }
 
@@ -755,8 +755,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	if (cl->sess.sessionTeam == TEAM_RED) {
 		enemy_flag = PW_BLUEFLAG;
-	} else {
+	} else if (cl->sess.sessionTeam == TEAM_BLUE) {
 		enemy_flag = PW_REDFLAG;
+	} else { //rabbit
+		enemy_flag = PW_NEUTRALFLAG;
 	}
 
 	if ( ent->flags & FL_DROPPED_ITEM ) {
@@ -830,7 +832,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 
 	//PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the %s flag!\n", cl->pers.netname, TeamName(OtherTeam(team)));
-	PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_CAPTURED_FLAG);
 
 	cl->ps.powerups[enemy_flag] = 0;
 
@@ -851,6 +852,17 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		AddScore(other, ent->r.currentOrigin, 60);
 	else
 		AddScore(other, ent->r.currentOrigin, CTF_CAPTURE_BONUS);
+
+	if (cl->pers.stats.startTimeFlag) {//JAPRO SHITTY FLAG TIMER
+		float time = (trap->Milliseconds() - cl->pers.stats.startTimeFlag) / 1000.0f;
+		cl->pers.stats.displacementFlag /= (1000 / (level.time - level.previousTime));
+		trap->SendServerCommand( -1, va("print \"%s^5 has captured the %s^5 flag in ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", cl->pers.netname, team == 2 ? "^1red" : "^4blue", time, cl->pers.stats.topSpeedFlag, cl->pers.stats.displacementFlag/time));
+		cl->pers.stats.startTimeFlag = 0;//Idk if we need this
+		cl->pers.stats.topSpeedFlag = 0;
+		cl->pers.stats.displacementFlag = 0;
+	}
+	else
+		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_CAPTURED_FLAG); 
 
 	Team_CaptureFlagSound( ent, team );
 
@@ -908,11 +920,12 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	dist = Distance(ent->s.pos.trBase, other->client->ps.origin);
 
-	if (other->client->sess.sessionTeam == TEAM_RED){
-		ourFlag   = PW_REDFLAG;
-	} else {
-		ourFlag   = PW_BLUEFLAG;
-	}		
+	if (other->client->sess.sessionTeam == TEAM_RED)
+		ourFlag = PW_REDFLAG;
+	else if (other->client->sess.sessionTeam == TEAM_BLUE)
+		ourFlag = PW_BLUEFLAG;
+	else 
+		ourFlag = PW_NEUTRALFLAG;//rabbit
 
 	for(j = 0; j < num; ++j){
 		enemy = (g_entities + touch[j]);
@@ -949,8 +962,23 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	if (team == TEAM_RED)
 		cl->ps.powerups[PW_REDFLAG] = INT_MAX; // flags never expire
-	else
+	else if (team == TEAM_BLUE)
 		cl->ps.powerups[PW_BLUEFLAG] = INT_MAX; // flags never expire
+	else//Rabbit
+		cl->ps.powerups[PW_NEUTRALFLAG] = INT_MAX; // flags never expire
+
+	if (team == TEAM_RED && teamgame.redStatus == FLAG_ATBASE) {//JAPRO SHITTY FLAG TIMER
+		cl->pers.stats.startTimeFlag = trap->Milliseconds();
+		cl->pers.stats.topSpeedFlag = 0;
+		cl->pers.stats.displacementFlag = 0;
+	}
+	else if (team == TEAM_BLUE && teamgame.blueStatus == FLAG_ATBASE) {
+		cl->pers.stats.startTimeFlag = trap->Milliseconds();
+		cl->pers.stats.topSpeedFlag = 0;
+		cl->pers.stats.displacementFlag = 0;
+	}
+	else 
+		cl->pers.stats.startTimeFlag = 0;
 
 	Team_SetFlagStatus( team, FLAG_TAKEN );
 
@@ -984,7 +1012,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
 		if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)
-			return Team_TouchEnemyFlag( ent, other, team );//loda
+			return Team_TouchEnemyFlag( ent, other, team );
 		else 
 			return Team_TouchOurFlag( ent, other, team );
 	}

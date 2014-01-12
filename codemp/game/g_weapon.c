@@ -514,7 +514,7 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire, int seed )
 	if ( altFire )
 	{
 		// add some slop to the alt-fire direction
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) // Loda japro seed
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
 		{
 			angs[PITCH] += Q_crandom(&seed) * BLASTER_SPREAD;
 			angs[YAW]       += Q_crandom(&seed) * BLASTER_SPREAD;
@@ -798,7 +798,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 			trap->Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
 		}
 
-		if ( tr.entityNum == ENTITYNUM_NONE ) { //loda fixme?
+		if ( tr.entityNum == ENTITYNUM_NONE ) {
 			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
 				G_UnTimeShiftAllClients( ent );
 			return;
@@ -1097,7 +1097,7 @@ static void WP_BowcasterMainFire( gentity_t *ent, int seed )
 	for (i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) // Loda japro seed
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
 			vel = BOWCASTER_VELOCITY * ( Q_crandom(&seed) * BOWCASTER_VEL_RANGE + 1.0f );
 		else
 			vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
@@ -1125,7 +1125,7 @@ static void WP_BowcasterMainFire( gentity_t *ent, int seed )
 			}
 		}
 		else {
-			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
 				angs[PITCH] += Q_crandom(&seed) * BOWCASTER_ALT_SPREAD * 0.2f;
 				angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
 			}
@@ -1268,7 +1268,7 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire, int seed )
 	else
 	{
 		// add some slop to the alt-fire direction
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
 			angs[PITCH] += Q_crandom(&seed) * REPEATER_SPREAD;
 			angs[YAW]	+= Q_crandom(&seed) * REPEATER_SPREAD;
 		}
@@ -1603,7 +1603,7 @@ static void WP_FlechetteMainFire( gentity_t *ent, int seed )
 //[JAPRO - Serverside - Weapons - Tweak weapons Remove Flechette Randomness - Start]
 		if (!(g_tweakWeapons.integer & FLECHETTE_SPRD)) {
 			if (i != 0) { //do nothing on the first shot, it will hit the crosshairs
-				if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+				if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
 					angs[PITCH] += Q_crandom(&seed) * FLECHETTE_SPREAD;
 					angs[YAW]	+= Q_crandom(&seed) * FLECHETTE_SPREAD;
 				}
@@ -1834,7 +1834,7 @@ static void WP_FlechetteAltFire( gentity_t *self, int seed )
 		if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
 			dir[PITCH] -= 10;
 		else {
-			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {// Loda japro seed
+			if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
 				dir[PITCH] -= Q_random(&seed) * 4 + 8; // make it fly upwards
 				dir[YAW] += Q_crandom(&seed) * 2;
 			}
@@ -3421,7 +3421,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 			trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
 		}
 
-		if ( tr.entityNum == ENTITYNUM_NONE ) { //loda fixme?
+		if ( tr.entityNum == ENTITYNUM_NONE ) {
 			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
 				G_UnTimeShiftAllClients( ent );
 			return;
@@ -3869,11 +3869,11 @@ static void WP_FireLightningGun( gentity_t *ent )
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
 
-	VectorCopy( ent->client->ps.origin, start ); //loda
+	VectorCopy( ent->client->ps.origin, start );
 	start[2] += ent->client->ps.viewheight;//By eyes - but why???
 	VectorMA( start, shotRange, forward, end );
 
-	VectorMA( start, 1, vright, start ); // loda fix test 
+	VectorMA( start, 1, vright, start );
 
 	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
 		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
@@ -3973,10 +3973,10 @@ static void WP_FireShockLance( gentity_t *ent )
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
 
-	VectorCopy( ent->client->ps.origin, start ); //loda
+	VectorCopy( ent->client->ps.origin, start );
 	start[2] += ent->client->ps.viewheight;//By eyes - but why???
 	VectorMA( start, shotRange, forward, end );
-	VectorMA( start, 1, vright, start ); // loda fix test 
+	VectorMA( start, 1, vright, start );
 
 	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
 		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
@@ -4025,7 +4025,7 @@ static void WP_FireShockLance( gentity_t *ent )
 				ent->client->accuracy_hits++;
 			} 
 
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST ); // loda
+			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST );
 			
 			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
 			tent->s.eventParm = DirToByte( tr.plane.normal );

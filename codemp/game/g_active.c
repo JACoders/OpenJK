@@ -677,7 +677,7 @@ static void SV_PMTrace( trace_t *results, const vec3_t start, const vec3_t mins,
 	trap->Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
 }
 
-int SpectatorFind(gentity_t *self) // loda japro fixme - add unlagged (could this be exploited?)
+int SpectatorFind(gentity_t *self)
 {
 	int i;
 
@@ -3992,7 +3992,7 @@ void ClientEndFrame( gentity_t *ent ) {
 
 	SendPendingPredictableEvents( &ent->client->ps );
 
-//unlagged - smooth clients #1 - loda
+//unlagged - smooth clients #1 - japro
 	// mark as not missing updates initially
 	ent->client->ps.eFlags &= ~EF_CONNECTION;
 
@@ -4017,7 +4017,7 @@ void ClientEndFrame( gentity_t *ent ) {
 		// save network bandwidth
 		SnapVector( ent->s.pos.trBase );
 	}
-//unlagged - smooth clients #1 - loda
+//unlagged - smooth clients #1 - japro
 
 
 	G_StoreTrail( ent );

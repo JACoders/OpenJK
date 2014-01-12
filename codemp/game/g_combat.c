@@ -2432,7 +2432,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		if (OnSameTeam (self, &g_entities[self->client->ps.otherKiller]) && g_friendlyFire.integer)
 				attacker = &g_entities[self->client->ps.otherKiller];
 		else
-			attacker = &g_entities[self->client->ps.otherKiller]; // loda - fixme?
+			attacker = &g_entities[self->client->ps.otherKiller];
 	}
 //JAPRO - Serverside - Fixkillcredit for suiciders and teamchangers - End
 
@@ -2556,6 +2556,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			else
 			{
 				AddScore( attacker, self->r.currentOrigin, -1 );
+				if (attacker != self  && attacker->client)//JAPRO STATS
+					attacker->client->pers.stats.teamKills++;
 			}
 			if (level.gametype == GT_JEDIMASTER)
 			{
@@ -2591,7 +2593,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					}
 				}
 			}
-			else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)//loda rabbit points
+			else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)//rabbit points
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
@@ -2672,7 +2674,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	// Add team bonuses
-	Team_FragBonuses(self, inflictor, attacker);
+	if (g_gametype.integer != GT_FFA)//Rabbit, meh
+		Team_FragBonuses(self, inflictor, attacker);
 
 	// if I committed suicide, the flag does not fall, it returns.
 	if (meansOfDeath == MOD_SUICIDE && !g_fixFlagSuicide.integer) {
@@ -4357,7 +4360,7 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	case HL_WAIST:
 	case HL_BACK_RT:
 	case HL_BACK_LT:
-		break;//loda
+		break;
 	case HL_BACK:
 		if (g_tweakWeapons.integer & STUN_SHOCKLANCE && mod == MOD_TURBLAST)
 			*damage *= 3.3;

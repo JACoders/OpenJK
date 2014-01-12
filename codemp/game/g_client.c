@@ -3842,7 +3842,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 
 // nmckenzie: DESERT_SIEGE... or well, siege generally.  This was over-writing the max value, which was NOT good for siege.
-	if (!g_startingWeapons.integer && inSiegeWithClass == qfalse)//loda fixme?
+	if (!g_startingWeapons.integer && inSiegeWithClass == qfalse)
 	{
 		client->ps.ammo[AMMO_BLASTER] = 100; //ammoData[AMMO_BLASTER].max; //100 seems fair.
 	}

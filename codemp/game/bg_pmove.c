@@ -3599,7 +3599,7 @@ static void PM_CheckDash(void)
 		return;
 
 #ifdef _GAME
-	if (!g_allowDodge.integer)
+	if (!g_dodge.integer)
 #else
 	if (!(cgs.jcinfo & JAPRO_CINFO_DODGE))
 #endif
@@ -3617,7 +3617,7 @@ static void PM_CheckDash(void)
 			PM_DodgeMove(1, -1);
 		else {//only W, do "dash" instead of dodge
 #ifdef _GAME
-			if (g_allowDodge.integer > 1)
+			if (g_dodge.integer > 1)
 #else
 			if (cgs.jcinfo & JAPRO_CINFO_DASH)
 #endif
@@ -3641,7 +3641,7 @@ static void PM_CheckDash(void)
 			PM_DodgeMove(0, -1);
 		else {
 #ifdef _GAME
-			if (g_allowDodge.integer > 1)
+			if (g_dodge.integer > 1)
 #else
 			if (cgs.jcinfo & JAPRO_CINFO_DASH)
 #endif

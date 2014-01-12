@@ -1924,6 +1924,102 @@ qboolean ScoreIsTied( void ) {
 	return a == b;
 }
 
+void PrintStats(int gametype) //JAPRO STATS, MEMES
+{
+	int			i;
+	char		msg[1024-128] = {0};
+	gclient_t	*cl;
+
+	if (gametype != GT_CTF && gametype != GT_TEAM)
+		return;
+
+	trap->SendServerCommand(-1, "print \"\n\"");
+
+	if (gametype == GT_TEAM) {//tffa
+		if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Name^7\n" );
+		else
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Accuracy     Name^7\n" );
+	}
+	else {//ctf
+		if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Fastest Speed     Name^7\n" );
+		else
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Fastest Speed     Accuracy     Name^7\n" );
+	}
+
+	for (i=0; i<MAX_CLIENTS; i++)
+	{//Build a list of clients
+		char *tmpMsg = NULL;
+		if (!g_entities[i].inuse)
+			continue;
+
+		cl = &level.clients[i];
+		if (cl->pers.netname[0]) //sad
+		{
+			char strName[MAX_NETNAME] = {0};
+			char strDG[32] = {0};
+			char strDT[32] = {0};
+			char strKills[32] = {0};
+			char accuracyStr[32] = {0};
+			float accuracy = 0;
+
+			if (g_weaponDisable.integer < (1<<WP_CONCUSSION)) {//Weps enabled?
+				if(cl->accuracy_shots) 
+					accuracy = (float)cl->accuracy_hits * 100.0f / (float)cl->accuracy_shots;
+				Com_sprintf(accuracyStr, sizeof(accuracyStr), "%.1f", accuracy);
+			}
+
+			Q_strncpyz(strName, cl->pers.netname, sizeof(strName)); //SORT PLAYERS BY PERS[RANK] ?
+			Com_sprintf(strDG, sizeof(strDG), "%i", cl->pers.stats.damageGiven);
+			Com_sprintf(strDT, sizeof(strDT), "%i", cl->pers.stats.damageTaken);
+
+			if (gametype == GT_TEAM) {
+				char strDeaths[32] = {0};
+				char strSuicides[32] = {0};
+				char strTK[32] = {0};
+				char strNet[32] = {0};
+
+				//Sad fucking hack since stats.kills is 1 frame behind, but pers_score is up to date.  have to use this for TFFA since round will end on fraglimit reach, but for CTF we can use stats.kills.
+				Com_sprintf(strKills, sizeof(strKills), "%i", (cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides)); 
+				Com_sprintf(strDeaths, sizeof(strDeaths), "%i", cl->ps.persistant[PERS_KILLED]);	
+				Com_sprintf(strSuicides, sizeof(strSuicides), "%i", cl->ps.fd.suicides);
+				Com_sprintf(strTK, sizeof(strTK), "%i", cl->pers.stats.teamKills);
+				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
+				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
+					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+				else {
+					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%-10s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+				}
+			}
+			else {
+				char strCaps[32] = {0};
+				char strReturns[32] = {0};
+				char strFlagKills[32] = {0};
+				char strSpeed[32] = {0};
+
+				Com_sprintf(strKills, sizeof(strKills), "%i", cl->pers.stats.kills);
+				Com_sprintf(strCaps, sizeof(strCaps), "%i", cl->pers.teamState.captures);
+				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
+				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
+				Com_sprintf(strSpeed, sizeof(strSpeed), "%i", cl->pers.stats.topSpeedFlag);
+				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
+					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strSpeed, strName);
+				else {
+					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-18s%-17s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strSpeed, accuracyStr, strName);
+				}
+			}
+
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand(-1, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+		}
+	}
+	trap->SendServerCommand(-1, va("print \"%s\n\"", msg));
+}
+
 /*
 =================
 CheckExitRules
@@ -2034,6 +2130,7 @@ void CheckExitRules( void ) {
 					Com_Printf("POWERDUEL WIN CONDITION: Timelimit hit (1)\n");
 				}
 				LogExit( "Timelimit hit." );
+				PrintStats(level.gametype);//JAPRO STATS
 				return;
 			}
 		}
@@ -2181,6 +2278,7 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
 			}
 			LogExit( sKillLimit );
+			PrintStats(level.gametype);//JAPRO STATS
 			return;
 		}
 
@@ -2191,6 +2289,7 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
 			}
 			LogExit( sKillLimit );
+			PrintStats(level.gametype);//JAPRO STATS
 			return;
 		}
 
@@ -2243,6 +2342,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
+			PrintStats(level.gametype);//JAPRO STATS
 			return;
 		}
 
@@ -2250,6 +2350,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
+			PrintStats(level.gametype);//JAPRO STATS
 			return;
 		}
 	}
@@ -3364,6 +3465,25 @@ void G_RunFrame( int levelTime ) {
 				WP_ForcePowersUpdate(ent, &ent->client->pers.cmd );
 				WP_SaberPositionUpdate(ent, &ent->client->pers.cmd);
 				WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
+
+				if (g_gametype.integer == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
+					if (ent->client->pers.stats.startTimeFlag) {
+						int xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
+						ent->client->pers.stats.displacementFlag += xyspeed;
+						if (xyspeed > ent->client->pers.stats.topSpeedFlag)
+							ent->client->pers.stats.topSpeedFlag = xyspeed;
+					}
+					else {
+						ent->client->pers.stats.displacementFlag = 0;
+						ent->client->pers.stats.topSpeedFlag = 0;
+					}
+				}
+				if (ent->client->pers.stats.startTime) {
+					int xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
+					ent->client->pers.stats.displacement += xyspeed;//Maybe we should divide this by sv_fps right here? more expensive, but allows more time to be stored before 32bits are filled?
+					if (xyspeed > ent->client->pers.stats.topSpeed)
+						ent->client->pers.stats.topSpeed = xyspeed;             
+				}	
 			}
 
 			if (g_allowNPC.integer)

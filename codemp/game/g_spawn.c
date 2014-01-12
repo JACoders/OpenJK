@@ -289,6 +289,11 @@ void SP_target_level_change( gentity_t *self );
 void SP_target_play_music( gentity_t *self );
 void SP_target_push (gentity_t *ent);
 
+void SP_target_timer_start (gentity_t *ent);//JAPRO Timers
+void SP_target_timer_stop (gentity_t *ent);//JAPRO Timers
+void SP_target_timer_checkpoint (gentity_t *ent);//JAPRO Timers
+void SP_target_onlybhop (gentity_t *ent);//JAPRO Onlybhop
+
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
 void SP_info_notnull (gentity_t *self);
@@ -460,9 +465,13 @@ void SP_gametype_item ( gentity_t* ent )
 				{
 					item = BG_FindItem("team_CTF_redflag");
 				}
-				else
-				{ //blue
+				else if (team == TEAM_BLUE)
+				{ 
 					item = BG_FindItem("team_CTF_blueflag");
+				}
+				else
+				{
+					item = BG_FindItem("team_CTF_neutralflag");//RABBIT
 				}
 			}
 		}
@@ -473,6 +482,10 @@ void SP_gametype_item ( gentity_t* ent )
 		else if (strstr(ent->targetname, "blue_flag"))
 		{
 			item = BG_FindItem("team_CTF_blueflag");
+		}
+		else if (strstr(ent->targetname, "neutral_flag"))//rabbit?
+		{
+			item = BG_FindItem("team_CTF_neutralflag");
 		}
 		else
 		{
@@ -643,6 +656,9 @@ spawn_t	spawns[] = {
 	{ "target_laser",						SP_target_laser },
 	{ "target_level_change",				SP_target_level_change },
 	{ "target_location",					SP_target_location },
+
+	{"target_onlybhop",						SP_target_onlybhop},//JAPRO Onlybhop
+
 	{ "target_play_music",					SP_target_play_music },
 	{ "target_position",					SP_target_position },
 	{ "target_print",						SP_target_print },
@@ -656,6 +672,11 @@ spawn_t	spawns[] = {
 	{ "target_siege_end",					SP_target_siege_end },
 	{ "target_speaker",						SP_target_speaker },
 	{ "target_teleporter",					SP_target_teleporter },
+
+	{"target_timer_checkpoint",				SP_target_timer_checkpoint},//JAPRO Timers
+	{"target_timer_start",					SP_target_timer_start},//JAPRO Timers
+	{"target_timer_stop",					SP_target_timer_stop},//JAPRO Timers
+
 	{ "team_CTF_blueplayer",				SP_team_CTF_blueplayer },
 	{ "team_CTF_bluespawn",					SP_team_CTF_bluespawn },
 	{ "team_CTF_redplayer",					SP_team_CTF_redplayer },

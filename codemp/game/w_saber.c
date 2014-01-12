@@ -4321,7 +4321,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		}
 //[JAPRO - Serverside - Saber - Remove Saber Touch Damage - Start]
 		else if (BG_SaberInReturn( self->client->ps.saberMove))
-			dmg = 10 * g_saberDamageScale.value;//AH HA -- LODA
+			dmg = 10 * g_saberDamageScale.value;
 		else if (g_saberTouchDmg.integer)
 			dmg = SABER_NONATTACK_DAMAGE;
 		else 

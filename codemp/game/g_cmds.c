@@ -2035,7 +2035,8 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 		G_SecurityLogPrintf( "Cmd_SayTeam_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
 	}
 
-	G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
+	//G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
+	G_Say( ent, NULL, SAY_TEAM, p );
 }
 
 /*
@@ -3450,7 +3451,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	fwdOrg[1] = ent->client->ps.origin[1] + forward[1]*256;
 	fwdOrg[2] = (ent->client->ps.origin[2]+ent->client->ps.viewheight) + forward[2]*256;
 
-	trap->Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);//loda fixme
+	trap->Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.fraction != 1 && tr.entityNum < MAX_CLIENTS)
 	{
@@ -4822,7 +4823,8 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 
 void Cmd_Showmotd_f(gentity_t *ent)
 {
-	strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string )));
+	if (Q_stricmp(g_centerMOTD.string, "" ))
+		strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string )));//Loda fixme, resize this so it does not allocate more than it needs (game_memory crash eventually?)
 	ent->client->csTimeLeft = g_centerMOTDTime.integer;
 }
 
@@ -5622,7 +5624,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		}
 
 }
-//[JAPRO - Serverside - All - Amtele Function - End] //loda test to see if amtele works right D:
+//[JAPRO - Serverside - All - Amtele Function - End]
 //[JAPRO - Serverside - All - Amrename - Start]
 void Cmd_Amrename_f(gentity_t *ent)
 {
@@ -5848,7 +5850,10 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"     ^5Tweaked jetpack physics\n\"");
 	if (g_movementStyle.integer == 3)
 		trap->SendServerCommand(ent-g_entities, "print \"     ^5CPM style air control\n\"");
-	//loda else if,, else if..
+	else if (g_movementStyle.integer == 2)
+		trap->SendServerCommand(ent-g_entities, "print \"     ^5QuakeWorld style air control\n\"");
+	else if (g_movementStyle.integer == 0)
+		trap->SendServerCommand(ent-g_entities, "print \"     ^5Siege style air control\n\"");
 	if (g_fixRoll.integer == 1)
 		trap->SendServerCommand(ent-g_entities, "print \"     ^5Tweaked roll\n\""); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)

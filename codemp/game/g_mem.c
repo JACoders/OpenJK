@@ -21,7 +21,7 @@
   http://www.altdevblogaday.com/2011/02/12/alternatives-to-malloc-and-new/
 */
 
-#define POOLSIZE	(256 * 1024)
+#define POOLSIZE	(512 * 1024)//[JAPRO - Serverside - All - Increase game_memory poolsize x2]
 
 static char		memoryPool[POOLSIZE];
 static int		allocPoint;

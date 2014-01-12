@@ -328,7 +328,7 @@ qboolean G_PredictPlayerSlideMove( gentity_t *ent, float frametime ) {
 		VectorMA( origin, time_left, velocity, end );
 
 		// see if we can make it there
-		trap->Trace( &trace, origin, ent->r.mins, ent->r.maxs, end, ent->s.number, ent->clipmask, qfalse, 0, 0 );//Loda fixme, last 3 params?
+		trap->Trace( &trace, origin, ent->r.mins, ent->r.maxs, end, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 
 		if (trace.allsolid) {
 			// entity is completely trapped in another solid
@@ -481,7 +481,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	up[2] += STEPSIZE;
 
 	// test the player position if they were a stepheight higher
-	trap->Trace( &trace, start_o, ent->r.mins, ent->r.maxs, up, ent->s.number, ent->clipmask, qfalse, 0, 0); //Loda fixme, the last params?
+	trap->Trace( &trace, start_o, ent->r.mins, ent->r.maxs, up, ent->s.number, ent->clipmask, qfalse, 0, 0);
 	if ( trace.allsolid ) {
 		return;		// can't step up
 	}
@@ -497,7 +497,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	// push down the final amount
 	VectorCopy( ent->s.pos.trBase, down );
 	down[2] -= stepSize;
-	trap->Trace( &trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, ent->clipmask, qfalse, 0, 0 );//loda fixme
+	trap->Trace( &trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 	if ( !trace.allsolid ) {
 		VectorCopy( trace.endpos, ent->s.pos.trBase );
 	}

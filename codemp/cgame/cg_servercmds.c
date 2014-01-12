@@ -18,7 +18,7 @@ CG_ParseScores
 */
 #define SCORE_OFFSET (14)
 static void CG_ParseScores( void ) {
-	int i, powerups, readScores;
+	int		i, powerups, readScores, scoreOffset;//JAPRO - Clientside - Scoreboard Deaths
 
 	cg.numScores = atoi( CG_Argv( 1 ) );
 
@@ -37,20 +37,29 @@ static void CG_ParseScores( void ) {
 
 	memset( cg.scores, 0, sizeof( cg.scores ) );
 	for ( i=0; i<readScores; i++ ) {
-		cg.scores[i].client				= atoi( CG_Argv( i*SCORE_OFFSET +  4 ) );
-		cg.scores[i].score				= atoi( CG_Argv( i*SCORE_OFFSET +  5 ) );
-		cg.scores[i].ping				= atoi( CG_Argv( i*SCORE_OFFSET +  6 ) );
-		cg.scores[i].time				= atoi( CG_Argv( i*SCORE_OFFSET +  7 ) );
-		cg.scores[i].scoreFlags			= atoi( CG_Argv( i*SCORE_OFFSET +  8 ) );
-		powerups						= atoi( CG_Argv( i*SCORE_OFFSET +  9 ) );
-		cg.scores[i].accuracy			= atoi( CG_Argv( i*SCORE_OFFSET + 10 ) );
-		cg.scores[i].impressiveCount	= atoi( CG_Argv( i*SCORE_OFFSET + 11 ) );
-		cg.scores[i].excellentCount		= atoi( CG_Argv( i*SCORE_OFFSET + 12 ) );
-		cg.scores[i].gauntletCount		= atoi( CG_Argv( i*SCORE_OFFSET + 13 ) );
-		cg.scores[i].defendCount		= atoi( CG_Argv( i*SCORE_OFFSET + 14 ) );
-		cg.scores[i].assistCount		= atoi( CG_Argv( i*SCORE_OFFSET + 15 ) );
-		cg.scores[i].perfect			= atoi( CG_Argv( i*SCORE_OFFSET + 16 ) );
-		cg.scores[i].captures			= atoi( CG_Argv( i*SCORE_OFFSET + 17 ) );
+//JAPRO - Clientside - Scoreboard Deaths - Start
+		if (cgs.isJAPlus || cgs.isJAPro) {
+			scoreOffset = 15;
+			cg.scores[i].deaths = atoi(CG_Argv(i * scoreOffset + 18));
+		}
+		else
+			scoreOffset = 14;
+
+		cg.scores[i].client = atoi( CG_Argv( i * scoreOffset + 4 ) );
+		cg.scores[i].score = atoi( CG_Argv( i * scoreOffset + 5 ) );
+		cg.scores[i].ping = atoi( CG_Argv( i * scoreOffset + 6 ) );
+		cg.scores[i].time = atoi( CG_Argv( i * scoreOffset + 7 ) );
+		cg.scores[i].scoreFlags = atoi( CG_Argv( i * scoreOffset + 8 ) );
+		powerups = atoi( CG_Argv( i * scoreOffset + 9 ) );
+		cg.scores[i].accuracy = atoi(CG_Argv(i * scoreOffset + 10));
+		cg.scores[i].impressiveCount = atoi(CG_Argv(i * scoreOffset + 11));
+		cg.scores[i].excellentCount = atoi(CG_Argv(i * scoreOffset + 12));
+		cg.scores[i].gauntletCount = atoi(CG_Argv(i * scoreOffset + 13));
+		cg.scores[i].defendCount = atoi(CG_Argv(i * scoreOffset + 14));
+		cg.scores[i].assistCount = atoi(CG_Argv(i * scoreOffset + 15));
+		cg.scores[i].perfect = (qboolean)atoi(CG_Argv(i * scoreOffset + 16));
+		cg.scores[i].captures = atoi(CG_Argv(i * scoreOffset + 17));
+//JAPRO - Clientside - Scoreboard Deaths - End
 
 		if ( cg.scores[i].client < 0 || cg.scores[i].client >= MAX_CLIENTS )
 			cg.scores[i].client = 0;
