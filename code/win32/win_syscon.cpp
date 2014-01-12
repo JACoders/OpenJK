@@ -80,6 +80,12 @@ typedef struct
 	
 	WNDPROC		SysInputLineWndProc;
 
+	// console
+	field_t		g_consoleField;
+	int			nextHistoryLine;	// the last line in the history buffer, not masked
+	int			historyLine;		// the line being displayed from history buffer will be <= nextHistoryLine
+	field_t		historyEditLines[COMMAND_HISTORY];
+
 } WinConData;
 
 static WinConData s_wcd;
@@ -201,8 +207,6 @@ static LRESULT CALLBACK ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 static LRESULT CALLBACK InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	char inputBuffer[1024];
-
 	switch ( uMsg )
 	{
 	case WM_KILLFOCUS:
@@ -215,57 +219,67 @@ static LRESULT CALLBACK InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, L
 		break;
 
 	case WM_CHAR:
-		if ( wParam == 13 )
+		GetWindowText( s_wcd.hwndInputLine, s_wcd.g_consoleField.buffer, sizeof( s_wcd.g_consoleField.buffer ) );
+		SendMessage( s_wcd.hwndInputLine, EM_GETSEL, (WPARAM) NULL, (LPARAM) &s_wcd.g_consoleField.cursor );
+
+		if ( wParam == VK_RETURN )
 		{
-			GetWindowText( s_wcd.hwndInputLine, inputBuffer, sizeof( inputBuffer ) );
-			strncat( s_wcd.consoleText, inputBuffer, sizeof( s_wcd.consoleText ) - strlen( s_wcd.consoleText ) - 5 );
-			Q_strcat( s_wcd.consoleText, 512, "\n" );
+			strncat( s_wcd.consoleText, s_wcd.g_consoleField.buffer, sizeof( s_wcd.consoleText ) - strlen( s_wcd.consoleText ) - 5 );
+			strcat( s_wcd.consoleText, "\n" );
 			SetWindowText( s_wcd.hwndInputLine, "" );
 
-			Sys_Print( va( "]%s\n", inputBuffer ) );
+			Sys_Print( va( "%c%s\n", CONSOLE_PROMPT_CHAR, s_wcd.g_consoleField.buffer ) );
 
-			if (!inputBuffer[0])
-			{
-				return 0; // empty lines just scroll the console without adding to history
-			}
+			// empty lines just scroll the console without adding to history
+			if ( !s_wcd.g_consoleField.buffer[0] )
+				return 0;
 
-			strcpy(g_consoleField.buffer, inputBuffer);
-			historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
-			nextHistoryLine++;
-			historyLine = nextHistoryLine;
+			// copy line to history buffer
+			s_wcd.historyEditLines[s_wcd.nextHistoryLine % COMMAND_HISTORY] = s_wcd.g_consoleField;
+			s_wcd.nextHistoryLine++;
+			s_wcd.historyLine = s_wcd.nextHistoryLine;
+			Field_Clear( &s_wcd.g_consoleField );
+			s_wcd.g_consoleField.widthInChars = g_console_field_width;
+
 			return 0;
 		}
-		else if (wParam == 9 )
+
+		if ( wParam == VK_TAB )
 		{
-			GetWindowText( s_wcd.hwndInputLine, inputBuffer, sizeof( inputBuffer ) );
-			strcpy(g_consoleField.buffer, inputBuffer);
-			Field_AutoComplete( &g_consoleField );
-			SetWindowText( s_wcd.hwndInputLine, g_consoleField.buffer);
-			SendMessage(s_wcd.hwndInputLine, EM_SETSEL, strlen(g_consoleField.buffer) , MAKELONG(0xffff, 0xffff) );
+			Field_AutoComplete( &s_wcd.g_consoleField );
+			SetWindowText( s_wcd.hwndInputLine, s_wcd.g_consoleField.buffer );
+			SendMessage( s_wcd.hwndInputLine, EM_SETSEL, s_wcd.g_consoleField.cursor, s_wcd.g_consoleField.cursor );
+			return 0;
 		}
 		break;
 	case WM_KEYDOWN:
-		if (wParam == VK_UP)
-		{
-			if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 ) 
-			{
-				historyLine--;
-			}
-			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
-			SetWindowText( s_wcd.hwndInputLine, g_consoleField.buffer);
-			SendMessage(s_wcd.hwndInputLine, EM_SETSEL, strlen(g_consoleField.buffer) , MAKELONG(0xffff, 0xffff) );
+		// history scrolling
+		if ( wParam == VK_UP )
+		{// scroll up: arrow-up
+			if ( s_wcd.nextHistoryLine - s_wcd.historyLine < COMMAND_HISTORY && s_wcd.historyLine > 0 ) 
+				s_wcd.historyLine--;
+			s_wcd.g_consoleField = s_wcd.historyEditLines[s_wcd.historyLine % COMMAND_HISTORY];
+			SetWindowText( s_wcd.hwndInputLine, s_wcd.g_consoleField.buffer );
+			SendMessage( s_wcd.hwndInputLine, EM_SETSEL, s_wcd.g_consoleField.cursor, s_wcd.g_consoleField.cursor );
+
 			return 0;
 		}
-		else if (wParam == VK_DOWN)
-		{
-			if (historyLine == nextHistoryLine)
-			{
+
+		if ( wParam == VK_DOWN )
+		{// scroll down: arrow-down
+			s_wcd.historyLine++;
+			if (s_wcd.historyLine >= s_wcd.nextHistoryLine) {
+				s_wcd.historyLine = s_wcd.nextHistoryLine;
+				Field_Clear( &s_wcd.g_consoleField );
+				s_wcd.g_consoleField.widthInChars = g_console_field_width;
+				SetWindowText( s_wcd.hwndInputLine, s_wcd.g_consoleField.buffer );
+				SendMessage( s_wcd.hwndInputLine, EM_SETSEL, s_wcd.g_consoleField.cursor, s_wcd.g_consoleField.cursor );
 				return 0;
 			}
-			historyLine++;
-			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
-			SetWindowText( s_wcd.hwndInputLine, g_consoleField.buffer);
-			SendMessage(s_wcd.hwndInputLine, EM_SETSEL, strlen(g_consoleField.buffer) , MAKELONG(0xffff, 0xffff) );
+			s_wcd.g_consoleField = s_wcd.historyEditLines[s_wcd.historyLine % COMMAND_HISTORY];
+			SetWindowText( s_wcd.hwndInputLine, s_wcd.g_consoleField.buffer );
+			SendMessage( s_wcd.hwndInputLine, EM_SETSEL, s_wcd.g_consoleField.cursor, s_wcd.g_consoleField.cursor );
+
 			return 0;
 		}
 		break;
@@ -410,6 +424,13 @@ void Sys_CreateConsole( void )
 	UpdateWindow( s_wcd.hWnd );
 	SetForegroundWindow( s_wcd.hWnd );
 	SetFocus( s_wcd.hwndInputLine );
+
+	Field_Clear( &s_wcd.g_consoleField );
+	s_wcd.g_consoleField.widthInChars = g_console_field_width;
+	for ( int i = 0 ; i < COMMAND_HISTORY ; i++ ) {
+		Field_Clear( &s_wcd.historyEditLines[i] );
+		s_wcd.historyEditLines[i].widthInChars = g_console_field_width;
+	}
 
 	s_wcd.visLevel = 1;
 }

@@ -1586,7 +1586,7 @@ qboolean WP_SabersCheckLock( gentity_t *ent1, gentity_t *ent2 )
 	{
 		ent1BlockingPlayer = qtrue;
 	}
-	if ( ent2->s.number >= 0 && ent1->s.number < MAX_CLIENTS &&
+	if ( ent2->s.number >= 0 && ent2->s.number < MAX_CLIENTS &&
 		ent2->client->ps.saberBlocking == BLK_WIDE && ent2->client->ps.weaponTime <= 0 )
 	{
 		ent2BlockingPlayer = qtrue;

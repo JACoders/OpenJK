@@ -43,7 +43,7 @@ void GL_Bind( image_t *image ) {
 	int texnum;
 
 	if ( !image ) {
-		Com_Printf (S_COLOR_YELLOW  "GL_Bind: NULL image\n" );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "GL_Bind: NULL image\n" );
 		texnum = tr.defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
@@ -1206,6 +1206,10 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 	R_IssuePendingRenderCommands();
 
+	if ( tess.numIndexes ) {
+		RB_EndSurface();
+	}
+
 	// we definately want to sync every frame for the cinematics
 	qglFinish();
 
@@ -1241,7 +1245,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	if ( r_speeds->integer ) {
 		end = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
-		Com_Printf ("qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
+		ri->Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
 	}
 
 	RB_SetGL2D();
@@ -1444,7 +1448,7 @@ const void *RB_RotatePic2 ( const void *data )
 		image = &shader->stages[0].bundle[0].image[0];
 
 		if ( image )
-	{
+		{
 			if ( !backEnd.projection2D )
 			{
 				RB_SetGL2D();
@@ -1701,7 +1705,7 @@ void RB_ShowImages( void ) {
 	qglFinish();
 
 //	end = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
-//	Com_Printf ("%i msec to draw all images\n", end - start );
+//	ri->Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
 

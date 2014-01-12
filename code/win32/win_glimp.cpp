@@ -1183,12 +1183,8 @@ static void GLW_InitExtensions( void )
 	}
 
 	// GL_EXT_clamp_to_edge
-	glConfig.clampToEdgeAvailable = qfalse;
-	if ( GL_CheckForExtension( "GL_EXT_texture_edge_clamp" ) )
-	{
-		glConfig.clampToEdgeAvailable = qtrue;
-		ri.Printf( PRINT_ALL, "...Using GL_EXT_texture_edge_clamp\n" );
-	}
+	glConfig.clampToEdgeAvailable = qtrue;
+	Com_Printf ("...using GL_EXT_texture_edge_clamp\n" );
 
 	// WGL_EXT_swap_control
 	qwglSwapIntervalEXT = ( BOOL (WINAPI *)(int)) qwglGetProcAddress( "wglSwapIntervalEXT" );

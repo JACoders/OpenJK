@@ -108,38 +108,6 @@ float CM_DistanceFromLineSquared(vec3_t p, vec3_t lp1, vec3_t lp2, vec3_t dir) {
 	return VectorLengthSquared(t);
 }
 
-/*
-================
-CM_VectorDistanceSquared
-================
-*/
-float CM_VectorDistanceSquared(vec3_t p1, vec3_t p2) {
-	vec3_t dir;
-
-	VectorSubtract(p2, p1, dir);
-	return VectorLengthSquared(dir);
-}
-
-/*
-================
-SquareRootFloat
-================
-*/
-float SquareRootFloat(float number) {
-	floatint_t t;
-	float x, y;
-	const float f = 1.5F;
-
-	x = number * 0.5F;
-	y  = number;
-	t.f  = number;
-	t.i  = 0x5f3759df - ( t.i >> 1 );
-	y  = t.f;
-	y  = y * ( f - ( x * y * y ) );
-	y  = y * ( f - ( x * y * y ) );
-	return number * y;
-}
-
 
 /*
 ===============================================================================
@@ -1060,7 +1028,7 @@ void CM_TraceThroughSphere( traceWork_t *tw, trace_t &trace, vec3_t origin, floa
 
 	d = b * b - 4.0f * c;// * a;
 	if (d > 0) {
-		sqrtd = SquareRootFloat(d);
+		sqrtd = sqrtf(d);
 		// = (- b + sqrtd) * 0.5f; // / (2.0f * a);
 		fraction = (- b - sqrtd) * 0.5f; // / (2.0f * a);
 		//
@@ -1158,7 +1126,7 @@ void CM_TraceThroughVerticalCylinder( traceWork_t *tw, trace_t &trace, vec3_t or
 
 	d = b * b - 4.0f * c;// * a;
 	if (d > 0) {
-		sqrtd = SquareRootFloat(d);
+		sqrtd = sqrtf(d);
 		// = (- b + sqrtd) * 0.5f;// / (2.0f * a);
 		fraction = (- b - sqrtd) * 0.5f;// / (2.0f * a);
 		//

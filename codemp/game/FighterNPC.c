@@ -13,13 +13,12 @@ extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
 	extern vec3_t playerMins;
 	extern vec3_t playerMaxs;
 	extern void ChangeWeapon( gentity_t *ent, int newWeapon );
-	extern void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime);
 	extern int PM_AnimLength( int index, animNumber_t anim );
 	extern void G_VehicleTrace( trace_t *results, const vec3_t start, const vec3_t tMins, const vec3_t tMaxs, const vec3_t end, int passEntityNum, int contentmask );
 #endif
 
 extern qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh );
-extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
+extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags);
 extern int BG_GetTime(void);
 
 //this stuff has got to be predicted, so..
@@ -1661,13 +1660,11 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 
 #ifdef _GAME //ONLY on server, not cgame
 
-extern void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime);
-
 // This function makes sure that the vehicle is properly animated.
 static void AnimateVehicle( Vehicle_t *pVeh )
 {
 	int Anim = -1; 
-	int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
+	int iFlags = SETANIM_FLAG_NORMAL;
 	qboolean isLanding = qfalse, isLanded = qfalse;
 	playerState_t *parentPS = pVeh->m_pParentEntity->playerState;
 	int curTime = level.time;
@@ -1739,7 +1736,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	if ( Anim != -1 )
 	{
-		BG_SetAnim(pVeh->m_pParentEntity->playerState, bgAllAnims[pVeh->m_pParentEntity->localAnimIndex].anims, SETANIM_BOTH, Anim, iFlags, iBlend);
+		BG_SetAnim(pVeh->m_pParentEntity->playerState, bgAllAnims[pVeh->m_pParentEntity->localAnimIndex].anims, SETANIM_BOTH, Anim, iFlags);
 	}
 }
 

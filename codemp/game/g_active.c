@@ -317,7 +317,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf )
 				force=10;
 			*/
 
-			if( ( force >= 1 && other->s.number != 0 ) || force >= 10)
+			if( ( force >= 1 && other->s.number >= MAX_CLIENTS ) || force >= 10)
 			{
 	/*			
 				dprint("Damage other (");
@@ -357,7 +357,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf )
 				}
 			}
 			//if(self.classname!="monster_mezzoman"&&self.netname!="spider")//Cats always land on their feet
-				if( ( magnitude >= 100 + self->health && self->s.number != 0 && self->s.weapon != WP_SABER ) || ( magnitude >= 700 ) )//&& self.safe_time < level.time ))//health here is used to simulate structural integrity
+				if( ( magnitude >= 100 + self->health && self->s.number >= MAX_CLIENTS && self->s.weapon != WP_SABER ) || ( magnitude >= 700 ) )//&& self.safe_time < level.time ))//health here is used to simulate structural integrity
 				{
 					if ( (self->s.weapon == WP_SABER) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
 					{//players and jedi take less impact damage

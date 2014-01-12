@@ -542,7 +542,7 @@ public:
 		//---------------------------------------------------------------------
 		if (!mWeatherZones.size())
 		{
-			Com_Printf("WARNING: No Weather Zones Encountered\n");
+			ri->Printf( PRINT_ALL, "WARNING: No Weather Zones Encountered\n");
 			AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
 		}
 
@@ -1443,7 +1443,7 @@ void RB_RenderWorldEffects(void)
 		}
 		if (false)
 		{
-			Com_Printf( "Weather: %d Particles Rendered\n", mParticlesRendered);
+			ri->Printf( PRINT_ALL, "Weather: %d Particles Rendered\n", mParticlesRendered);
 		}
 	}
 }
@@ -1857,26 +1857,26 @@ void RE_WorldEffectCommand(const char *command)
 	}
 	else
 	{
-		Com_Printf( "Weather Effect: Please enter a valid command.\n" );
-		Com_Printf( "	clear\n" );
-		Com_Printf( "	freeze\n" );
-		Com_Printf( "	zone (mins) (maxs)\n" );
-		Com_Printf( "	wind\n" );
-		Com_Printf( "	constantwind (velocity)\n" );
-		Com_Printf( "	gustingwind\n" );
-		Com_Printf( "	windzone (mins) (maxs) (velocity)\n" );
-		Com_Printf( "	lightrain\n" );
-		Com_Printf( "	rain\n" );
-		Com_Printf( "	acidrain\n" );
-		Com_Printf( "	heavyrain\n" );
-		Com_Printf( "	snow\n" );
-		Com_Printf( "	spacedust\n" );
-		Com_Printf( "	sand\n" );
-		Com_Printf( "	fog\n" );
-		Com_Printf( "	heavyrainfog\n" );
-		Com_Printf( "	light_fog\n" );
-		Com_Printf( "	outsideshake\n" );
-		Com_Printf( "	outsidepain\n" );
+		ri->Printf( PRINT_ALL, "Weather Effect: Please enter a valid command.\n" );
+		ri->Printf( PRINT_ALL, "	clear\n" );
+		ri->Printf( PRINT_ALL, "	freeze\n" );
+		ri->Printf( PRINT_ALL, "	zone (mins) (maxs)\n" );
+		ri->Printf( PRINT_ALL, "	wind\n" );
+		ri->Printf( PRINT_ALL, "	constantwind (velocity)\n" );
+		ri->Printf( PRINT_ALL, "	gustingwind\n" );
+		ri->Printf( PRINT_ALL, "	windzone (mins) (maxs) (velocity)\n" );
+		ri->Printf( PRINT_ALL, "	lightrain\n" );
+		ri->Printf( PRINT_ALL, "	rain\n" );
+		ri->Printf( PRINT_ALL, "	acidrain\n" );
+		ri->Printf( PRINT_ALL, "	heavyrain\n" );
+		ri->Printf( PRINT_ALL, "	snow\n" );
+		ri->Printf( PRINT_ALL, "	spacedust\n" );
+		ri->Printf( PRINT_ALL, "	sand\n" );
+		ri->Printf( PRINT_ALL, "	fog\n" );
+		ri->Printf( PRINT_ALL, "	heavyrainfog\n" );
+		ri->Printf( PRINT_ALL, "	light_fog\n" );
+		ri->Printf( PRINT_ALL, "	outsideshake\n" );
+		ri->Printf( PRINT_ALL, "	outsidepain\n" );
 	}
 }
 

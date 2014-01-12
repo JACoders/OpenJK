@@ -421,6 +421,8 @@ qboolean FS_Initialized();
 void	FS_InitFilesystem (void);
 void	FS_Shutdown( void );
 
+qboolean FS_ConditionalRestart( void );
+
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
 // directory should not have either a leading or trailing /
 // if extension is "/", only subdirectories will be returned
@@ -494,7 +496,7 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
 // opens a file for reading, writing, or appending depending on the value of mode
 
 int		FS_Seek( fileHandle_t f, long offset, int origin );
-// seek on a file (doesn't work for zip files!!!!!!!!)
+// seek on a file
 
 qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 
@@ -502,6 +504,8 @@ qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 //
 void		FS_DeleteUserGenFile( const char *filename );
 qboolean	FS_MoveUserGenFile  ( const char *filename_src, const char *filename_dst );
+
+qboolean FS_CheckDirTraversal(const char *checkdir);
 
 /*
 ==============================================================

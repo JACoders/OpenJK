@@ -16,10 +16,8 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
-#include "common_headers.h"
-
 #include "../../code/qcommon/q_shared.h"
+#include "../cgame/cg_local.h"
 #include "bg_public.h"
 #include "bg_local.h"
 

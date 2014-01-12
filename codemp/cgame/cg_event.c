@@ -1279,7 +1279,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	vec3_t			dir;
 	const char		*s;
 	int				clientNum;
-	clientInfo_t	*ci;
 	int				eID = 0;
 	int				isnd = 0;
 	centity_t		*cl_ent;
@@ -1319,13 +1318,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			cent->npcClient->ghoul2Model = NULL;
 		}
 
-		ci = cent->npcClient;
-
-		assert(ci);
-	}
-	else
-	{
-		ci = &cgs.clientinfo[ clientNum ];
+		assert( cent->npcClient );
 	}
 
 	switch ( event ) {

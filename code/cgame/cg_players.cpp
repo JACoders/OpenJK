@@ -1218,7 +1218,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		{
 			//more precise, slower
 			oldAnim = PM_LegsAnimForFrame( &g_entities[entNum], oldFrame );
-			anim = PM_TorsoAnimForFrame( &g_entities[entNum], frame );
+			anim = PM_LegsAnimForFrame( &g_entities[entNum], frame );
 		}
 
 		if ( anim != oldAnim )

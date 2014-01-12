@@ -29,36 +29,37 @@ FX_RunLightStyles
 */
 void CG_RunLightStyles (void)
 {
-	int		ofs;
-	int		i;
-	clightstyle_t	*ls;
+	int ofs, i, j;
+	clightstyle_t *ls;
 
 	ofs = cg.time / 50;
-//	if (ofs == lastofs)
+//	if ( ofs == lastofs )
 //		return;
 	lastofs = ofs;
 
-	for (i=0,ls=cl_lightstyle ; i<MAX_LIGHT_STYLES ; i++, ls++)
-	{
-		if (!ls->length)
-		{
-			ls->value[0] = ls->value[1] = ls->value[2] = ls->value[3] = 255;
+	for ( i=0, ls=cl_lightstyle; i<MAX_LIGHT_STYLES; i++, ls++ ) {
+		union { byte b[4]; int32_t i; } a;
+
+		ls->value[3] = 255;
+		if ( !ls->length ) {
+			ls->value[0] = ls->value[1] = ls->value[2] = 255;
 		}
-		else if (ls->length == 1)
-		{
+		else if ( ls->length == 1 ) {
 			ls->value[0] = ls->map[0][0];
 			ls->value[1] = ls->map[0][1];
 			ls->value[2] = ls->map[0][2];
-			ls->value[3] = 255; //ls->map[0][3];
+		//	ls->value[3] = ls->map[0][3];
 		}
-		else
-		{
+		else {
 			ls->value[0] = ls->map[ofs%ls->length][0];
 			ls->value[1] = ls->map[ofs%ls->length][1];
 			ls->value[2] = ls->map[ofs%ls->length][2];
-			ls->value[3] = 255; //ls->map[ofs%ls->length][3];
+		//	ls->value[3] = ls->map[ofs%ls->length][3];
 		}
-		trap->R_SetLightStyle(i, *(int*)ls->value);
+
+		for ( j=0; j<4; j++ )
+			a.b[j] = ls->value[j];
+		trap->R_SetLightStyle( i, a.i );
 	}
 }
 

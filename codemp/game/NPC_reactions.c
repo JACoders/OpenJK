@@ -953,8 +953,7 @@ void NPC_UseResponse( gentity_t *self, gentity_t *user, qboolean useWhenDone )
 		return;
 	}
 
-	//OJKFIXME: clientnum 0
-	if ( user->s.number != 0 )
+	if ( user->s.number >= MAX_CLIENTS )
 	{//not used by the player
 		if ( useWhenDone )
 		{

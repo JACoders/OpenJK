@@ -5960,7 +5960,7 @@ void WP_SaberImpact( gentity_t *owner, gentity_t *saber, trace_t *trace )
 			// decrement number of bounces and then see if it should be done bouncing
 			if ( --saber->bounceCount <= 0 ) {
 				// He (or she) will bounce no more (after this current bounce, that is).
-				saber->s.eFlags &= !( EF_BOUNCE | EF_BOUNCE_HALF );
+				saber->s.eFlags &= ~( EF_BOUNCE | EF_BOUNCE_HALF );
 				if ( saber->s.pos.trType == TR_LINEAR && owner && owner->client && owner->client->ps.saberEntityState == SES_RETURNING )
 				{
 					WP_SaberDrop( saber->owner, saber );
@@ -13575,7 +13575,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 					trace_t gripTrace;
 					gi.trace( &gripTrace, self->client->renderInfo.handLPoint, NULL, NULL, gripEntOrg, ENTITYNUM_NONE, MASK_FORCE_PUSH, (EG2_Collision)0, 0 );
 					if ( gripTrace.startsolid
-						|| gripTrace.startsolid
+						|| gripTrace.allsolid
 						|| gripTrace.fraction < 1.0f )
 					{//no clear trace, drop them
 						WP_ForcePowerStop( self, FP_GRIP );

@@ -211,6 +211,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/matcomp.h"
 		"${MPDir}/qcommon/matcomp.cpp"
 		"${MPDir}/qcommon/net_chan.cpp"
+		"${MPDir}/qcommon/net_ip.cpp"
 		"${MPDir}/qcommon/q_math.cpp"
 		"${MPDir}/qcommon/q_shared.cpp"
 		"${MPDir}/qcommon/qcommon.h"
@@ -336,7 +337,6 @@ if(BuildMPEngine OR BuildMPDed)
 	if(WIN32)
 		set(MPEngineAndDedWin32Files
 			"${MPDir}/win32/win_local.h"
-			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
 			"${MPDir}/sys/snapvector.cpp"
 			)
@@ -527,7 +527,6 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_loadlib.h"
 			"${MPDir}/sys/sys_local.h"
 			"${MPDir}/sys/sys_main.cpp"
-			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
@@ -644,7 +643,6 @@ if(BuildMPDed)
 	else(WIN32)
 		set(MPDedSysFiles
 			"${MPDir}/sys/sys_main.cpp"
-			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)

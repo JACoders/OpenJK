@@ -227,7 +227,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 	}
 
 	if ( r_lightmap->integer == 2 )	{
-		Com_Printf ("Brightest lightmap value: %d\n", ( int ) ( maxIntensity * 255 ) );
+		ri->Printf( PRINT_ALL, "Brightest lightmap value: %d\n", ( int ) ( maxIntensity * 255 ) );
 	}
 }
 
@@ -288,7 +288,7 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
 
 	if ( (shaderNum < 0) || (shaderNum >= worldData.numShaders) ) 
 	{
-		Com_Printf( "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
+		ri->Printf( PRINT_ALL, "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
 		return(0);
 	}
 	shader = RE_RegisterShader(worldData.shaders[ shaderNum ].shader);
@@ -367,7 +367,7 @@ static void ParseFace( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, int *
 
 	numPoints = LittleLong( ds->numVerts );
 	if (numPoints > MAX_FACE_POINTS) {
-		Com_Printf (S_COLOR_YELLOW  "WARNING: MAX_FACE_POINTS exceeded: %i\n", numPoints);
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: MAX_FACE_POINTS exceeded: %i\n", numPoints);
 		numPoints = MAX_FACE_POINTS;
 		surf->shader = tr.defaultShader;
 	}
@@ -851,7 +851,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert column into grid2 right after after column l
 					if (m) row = grid2->height-1;
 					else row = 0;
@@ -897,7 +897,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert row into grid2 right after after row l
 					if (m) column = grid2->width-1;
 					else column = 0;
@@ -952,7 +952,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert column into grid2 right after after column l
 					if (m) row = grid2->height-1;
 					else row = 0;
@@ -998,7 +998,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert row into grid2 right after after row l
 					if (m) column = grid2->width-1;
 					else column = 0;
@@ -1054,7 +1054,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert column into grid2 right after after column l
 					if (m) row = grid2->height-1;
 					else row = 0;
@@ -1100,7 +1100,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert row into grid2 right after after row l
 					if (m) column = grid2->width-1;
 					else column = 0;
@@ -1157,7 +1157,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert column into grid2 right after after column l
 					if (m) row = grid2->height-1;
 					else row = 0;
@@ -1203,7 +1203,7 @@ int R_StitchPatches( int grid1num, int grid2num, world_t &worldData ) {
 							fabs(v1[2] - v2[2]) < .01)
 						continue;
 					//
-					//Com_Printf ("found highest LoD crack between two patches\n" );
+					//ri->Printf( PRINT_ALL, "found highest LoD crack between two patches\n" );
 					// insert row into grid2 right after after row l
 					if (m) column = grid2->width-1;
 					else column = 0;
@@ -1288,7 +1288,7 @@ void R_StitchAllPatches( world_t &worldData ) {
 		}
 	}
 	while (stitched);
-//	Com_Printf ("stitched %d LoD cracks\n", numstitches );
+//	ri->Printf( PRINT_ALL, "stitched %d LoD cracks\n", numstitches );
 }
 
 /*
@@ -1393,7 +1393,7 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 	R_MovePatchSurfacesToHunk(worldData);
 #endif
 
-	Com_Printf ("...loaded %d faces, %i meshes, %i trisurfs, %i flares\n", numFaces, numMeshes, numTriSurfs, numFlares );
+	ri->Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n", numFaces, numMeshes, numTriSurfs, numFlares );
 }
 
 
@@ -1848,7 +1848,7 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 	w->numGridArrayElements = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
 
 	if ( (unsigned)l->filelen != w->numGridArrayElements * sizeof(*w->lightGridArray) ) {
-		Com_Printf (S_COLOR_YELLOW  "WARNING: light grid array mismatch\n" );
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: light grid array mismatch\n" );
 		w->lightGridData = NULL;
 		return;
 	}
@@ -1915,7 +1915,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 		if (!Q_strncmp(keyname, s, strlen(s)) ) {
 			s = strchr(value, ';');
 			if (!s) {
-				Com_Printf (S_COLOR_YELLOW  "WARNING: no semi colon in vertexshaderremap '%s'\n", value );
+				ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: no semi colon in vertexshaderremap '%s'\n", value );
 				break;
 			}
 			*s++ = 0;
@@ -1929,7 +1929,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 		if (!Q_strncmp(keyname, s, strlen(s)) ) {
 			s = strchr(value, ';');
 			if (!s) {
-				Com_Printf (S_COLOR_YELLOW  "WARNING: no semi colon in shaderremap '%s'\n", value );
+				ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: no semi colon in shaderremap '%s'\n", value );
 				break;
 			}
 			*s++ = 0;
@@ -2036,8 +2036,8 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 	memset( &worldData, 0, sizeof( worldData ) );
 	Q_strncpyz( worldData.name, name, sizeof( worldData.name ) );
-
 	Q_strncpyz( worldData.baseName, COM_SkipPath( worldData.name ), sizeof( worldData.name ) );
+
 	COM_StripExtension( worldData.baseName, worldData.baseName, sizeof( worldData.baseName ) );
 
 	startMarker = (byte *)Hunk_Alloc(0, h_low);

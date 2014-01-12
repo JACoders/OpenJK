@@ -1,4 +1,6 @@
 # JACoders "OpenJK" project #
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
+
 IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
 
 Forum: http://jkhub.org/forum/51-discussion/

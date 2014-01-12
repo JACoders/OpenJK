@@ -15,7 +15,7 @@ Q_EXPORT void dllEntry( intptr_t (QDECL *syscallptr)( intptr_t arg,... ) ) {
 }
 
 int PASSFLOAT( float x ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = x;
 	return fi.i;
 }
@@ -39,7 +39,7 @@ void trap_Cvar_Set( const char *var_name, const char *value ) {
 	Q_syscall( UI_CVAR_SET, var_name, value );
 }
 float trap_Cvar_VariableValue( const char *var_name ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.i = Q_syscall( UI_CVAR_VARIABLEVALUE, var_name );
 	return fi.f;
 }

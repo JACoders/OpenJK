@@ -7810,7 +7810,7 @@ void	CQuake3GameInterface::DebugPrint( e_DebugPrintLevel level, const char *form
 				buffer = (char *) text;
 				buffer += 5;
 
-				if ( ( entNum < 0 ) || ( entNum > MAX_GENTITIES ) )
+				if ( ( entNum < 0 ) || ( entNum >= MAX_GENTITIES ) )
 					entNum = 0;
 
 				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", g_entities[entNum].script_targetname, entNum, buffer );
@@ -10110,6 +10110,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->scriptFlags&SCF_IGNORE_ALERTS);
+		break;
 
 	case SET_DONTSHOOT://## %t="BOOL_TYPES" # Others won't shoot you
 		*value = (ent->flags&FL_DONT_SHOOT);
@@ -10217,6 +10218,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->aiFlags&NPCAI_SHIELDS);
+		break;
 	case SET_SABERACTIVE:
 		if ( ent->client == NULL )
 		{

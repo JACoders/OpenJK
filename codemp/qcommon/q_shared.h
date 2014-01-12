@@ -129,17 +129,11 @@ float FloatSwap( const float *f );
 // TYPE DEFINITIONS
 // ================================================================
 
-typedef unsigned char 		byte;
-typedef unsigned short		word;
-typedef unsigned long		ulong;
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long ulong;
 
 typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
-
-typedef union {
-	float f;
-	int i;
-	unsigned int ui;
-} floatint_t;
 
 #ifndef min
 	#define min(x,y) ((x)<(y)?(x):(y))
@@ -147,20 +141,6 @@ typedef union {
 #ifndef max
 	#define max(x,y) ((x)>(y)?(x):(y))
 #endif
-
-typedef int		qhandle_t;
-typedef int		thandle_t; //rwwRMG - inserted
-typedef int		fxHandle_t;
-typedef int		sfxHandle_t;
-typedef int		fileHandle_t;
-typedef int		clipHandle_t;
-
-#define NULL_HANDLE		((qhandle_t) 0)
-#define NULL_SOUND		((sfxHandle_t) 0)
-#define NULL_FX				((fxHandle_t) 0)
-#define NULL_SFX			((sfxHandle_t) 0)
-#define NULL_FILE			((fileHandle_t) 0)
-#define NULL_CLIP			((clipHandle_t) 0)
 
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
@@ -193,6 +173,24 @@ typedef int		clipHandle_t;
 	#define Q_vsnprintf vsnprintf
 
 #endif
+
+// 32 bit field aliasing
+typedef union byteAlias_u {
+	float f;
+	int32_t i;
+	uint32_t ui;
+	byte b[4];
+	char c[4];
+} byteAlias_t;
+
+typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
+
+#define NULL_HANDLE ((qhandle_t)0)
+#define NULL_SOUND ((sfxHandle_t)0)
+#define NULL_FX ((fxHandle_t)0)
+#define NULL_SFX ((sfxHandle_t)0)
+#define NULL_FILE ((fileHandle_t)0)
+#define NULL_CLIP ((clipHandle_t)0)
 
 #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
