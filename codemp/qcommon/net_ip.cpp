@@ -1,11 +1,62 @@
-// net_wins.c
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#include "win_local.h"
+#ifdef _WIN32
+	#include <winsock.h>
 
-static WSADATA	winsockdata;
-static qboolean	winsockInitialized = qfalse;
+	typedef int socklen_t;
+
+	#undef EAGAIN
+	#undef EADDRNOTAVAIL
+	#undef EAFNOSUPPORT
+	#undef ECONNRESET
+
+	#define EAGAIN WSAEWOULDBLOCK
+	#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
+	#define EAFNOSUPPORT WSAEAFNOSUPPORT
+	#define ECONNRESET WSAECONNRESET
+
+	#define socketError WSAGetLastError( )
+
+	static WSADATA	winsockdata;
+	static qboolean	winsockInitialized = qfalse;
+#else
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED == 1020
+        // needed for socklen_t on OSX 10.2
+#        define _BSD_SOCKLEN_T_
+#endif
+
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#ifdef MACOS_X
+#include <sys/sockio.h>
+#include <net/if.h>
+#include <net/if_types.h>
+#include <net/if_dl.h>         // for 'struct sockaddr_dl'
+#endif
+
+#ifdef __sun
+#include <sys/filio.h>
+#endif
+
+typedef int SOCKET;
+#define INVALID_SOCKET                -1
+#define SOCKET_ERROR                        -1
+#define closesocket                                close
+#define ioctlsocket                                ioctl
+#define socketError                                errno
+
+#endif
+
 static qboolean usingSocks = qfalse;
 static qboolean networkingEnabled = qfalse;
 
@@ -33,10 +84,8 @@ NET_ErrorString
 ====================
 */
 char *NET_ErrorString( void ) {
-	int		code;
-
-	code = WSAGetLastError();
-	switch( code ) {
+#ifdef _WIN32
+	switch( socketError ) {
 	case WSAEINTR: return "WSAEINTR";
 	case WSAEBADF: return "WSAEBADF";
 	case WSAEACCES: return "WSAEACCES";
@@ -84,6 +133,9 @@ char *NET_ErrorString( void ) {
 	case WSAEHOSTUNREACH: return "WSAEHOSTUNREACH";
 	default: return "NO ERROR";
 	}
+#else
+	return strerror ( socketError );
+#endif
 }
 
 static void NetadrToSockadr( netadr_t *a, struct sockaddr *s ) {
@@ -162,26 +214,32 @@ Sys_GetPacket
 Never called by the game logic, just the system event queing
 ==================
 */
+#ifdef _DEBUG
 int	recvfromCount;
+#endif
 
 qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
-	int 	ret;
+	int ret, err;
+	socklen_t fromlen;
 	struct sockaddr from;
-	int		fromlen;
-	int		err;
 
-	fromlen = sizeof(from);
+	if ( ip_socket == INVALID_SOCKET ) {
+		return qfalse;
+	}
+
+	fromlen = sizeof( from );
+#ifdef _DEBUG
 	recvfromCount++;		// performance check
+#endif
 	ret = recvfrom( ip_socket, (char *)net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen );
 
-	if (ret == SOCKET_ERROR)
-	{
-		err = WSAGetLastError();
+	if ( ret == SOCKET_ERROR ) {
+		err = socketError;
 
-		if( err == WSAEWOULDBLOCK || err == WSAECONNRESET )
+		if( err == EAGAIN || err == ECONNRESET )
 			return qfalse;
 
-		Com_Printf( "NET_GetPacket: %s\n", NET_ErrorString() );
+		Com_Printf( "NET_GetPacket: %s from %s\n", NET_ErrorString(), NET_AdrToString(*net_from) );
 		return qfalse;
 	}
 
@@ -251,15 +309,15 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		ret = sendto( ip_socket, (const char *)data, length, 0, &addr, sizeof(addr) );
 	}
 	if( ret == SOCKET_ERROR ) {
-		int err = WSAGetLastError();
+		int err = socketError;
 
 		// wouldblock is silent
-		if( err == WSAEWOULDBLOCK ) {
+		if( err == EAGAIN ) {
 			return;
 		}
 
 		// some PPP links do not allow broadcasts and return an error
-		if( err == WSAEADDRNOTAVAIL && to.type == NA_BROADCAST ) {
+		if( err == EADDRNOTAVAIL && to.type == NA_BROADCAST ) {
 			return;
 		}
 
@@ -267,9 +325,7 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 	}
 }
 
-
 //=============================================================================
-
 
 /*
 ==================
@@ -279,84 +335,39 @@ LAN clients will have their rate var ignored
 ==================
 */
 qboolean Sys_IsLANAddress( netadr_t adr ) {
-	int		i;
-
-	if (!net_forcenonlocal)
-	{
+	if ( !net_forcenonlocal )
 		net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", 0 );
-	}
 
-	if (net_forcenonlocal && net_forcenonlocal->integer)
-	{
+	if ( net_forcenonlocal && net_forcenonlocal->integer )
 		return qfalse;
-	}
 
-	if( adr.type == NA_LOOPBACK ) {
+	if( adr.type == NA_LOOPBACK )
 		return qtrue;
-	}
 
-	if( adr.type != NA_IP ) {
+	if( adr.type != NA_IP )
 		return qfalse;
-	}
+
+	// RFC1918:
+	// 10.0.0.0        -   10.255.255.255  (10/8 prefix)
+	// 172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
+	// 192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
+	if ( adr.ip[0] == 10 )
+		return qtrue;
+	if ( adr.ip[0] == 172 && (adr.ip[1]&0xf0) == 16 )
+		return qtrue;
+	if ( adr.ip[0] == 192 && adr.ip[1] == 168 )
+		return qtrue;
+
+	if ( adr.ip[0] == 127 )
+		return qtrue;
 
 	// choose which comparison to use based on the class of the address being tested
 	// any local adresses of a different class than the address being tested will fail based on the first byte
 
-	if( adr.ip[0] == 127 && adr.ip[1] == 0 && adr.ip[2] == 0 && adr.ip[3] == 1 ) {
-		return qtrue;
-	}
-
-	if ( (adr.ip[0] == 192 && adr.ip[1] == 168) || 
-		 (adr.ip[0] == 10 && adr.ip[1] == 100)  ||
-		 (adr.ip[0] == 172 && adr.ip[1] == 16)      )
-	{
-		return qtrue;
-	} 
-
-	/*
-	// Class A
-	if( (adr.ip[0] & 0x80) == 0x00 ) {
-		for ( i = 0 ; i < numIP ; i++ ) {
-			if( adr.ip[0] == localIP[i][0] ) {
-				return qtrue;
-			}
-		}
-		// the RFC1918 class a block will pass the above test
-		return qfalse;
-	}
-
-	// Class B
-	if( (adr.ip[0] & 0xc0) == 0x80 ) {
-		for ( i = 0 ; i < numIP ; i++ ) {
-			if( adr.ip[0] == localIP[i][0] && adr.ip[1] == localIP[i][1] ) {
-				return qtrue;
-			}
-			// also check against the RFC1918 class b blocks
-			if( adr.ip[0] == 172 && localIP[i][0] == 172 && (adr.ip[1] & 0xf0) == 16 && (localIP[i][1] & 0xf0) == 16 ) {
-				return qtrue;
-			}
-		}
-		return qfalse;
-	}
-	*/
-	//we only look at class C since ISPs and Universities are using class A but we don't want to consider them on the same LAN.
-
 	// Class C
-	for ( i = 0 ; i < numIP ; i++ ) {
-		if( adr.ip[0] == localIP[i][0] && adr.ip[1] == localIP[i][1] && adr.ip[2] == localIP[i][2] ) {
+	for ( int i=0; i<numIP; i++ ) {
+		if( memcmp( adr.ip, localIP[i], 3 ) == 0 )
 			return qtrue;
-		}
-		
-		//check for both on a local lan type thing
-		if( adr.ip[0] == 10 && localIP[i][0] == 10 ) 
-		{
-			return qtrue;
-		}
-
-		// also check against the RFC1918 class c blocks
-//		if( adr.ip[0] == 192 && localIP[i][0] == 192 && adr.ip[1] == 168 && localIP[i][1] == 168 ) {
-//			return qtrue;
-//		}
 	}
 	return qfalse;
 }
@@ -367,16 +378,11 @@ Sys_ShowIP
 ==================
 */
 void Sys_ShowIP(void) {
-	int i;
-
-	for (i = 0; i < numIP; i++) {
+	for ( int i=0; i<numIP; i++ )
 		Com_Printf( "IP: %i.%i.%i.%i\n", localIP[i][0], localIP[i][1], localIP[i][2], localIP[i][3] );
-	}
 }
 
-
 //=============================================================================
-
 
 /*
 ====================
@@ -398,8 +404,8 @@ SOCKET NET_IPSocket( char *net_interface, int port ) {
 	}
 
 	if( ( newsocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) == INVALID_SOCKET ) {
-		err = WSAGetLastError();
-		if( err != WSAEAFNOSUPPORT ) {
+		err = socketError;
+		if( err != EAFNOSUPPORT ) {
 			Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
 		}
 		return INVALID_SOCKET;
@@ -444,7 +450,6 @@ SOCKET NET_IPSocket( char *net_interface, int port ) {
 	return newsocket;
 }
 
-
 /*
 ====================
 NET_OpenSocks
@@ -463,14 +468,14 @@ void NET_OpenSocks( int port ) {
 	Com_Printf( "Opening connection to SOCKS server.\n" );
 
 	if ( ( socks_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: socket: %s\n", NET_ErrorString() );
 		return;
 	}
 
 	h = gethostbyname( net_socksServer->string );
 	if ( h == NULL ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: gethostbyname: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -483,7 +488,7 @@ void NET_OpenSocks( int port ) {
 	address.sin_port = htons( (short)net_socksPort->integer );
 
 	if ( connect( socks_socket, (struct sockaddr *)&address, sizeof( address ) ) == SOCKET_ERROR ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "NET_OpenSocks: connect: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -511,7 +516,7 @@ void NET_OpenSocks( int port ) {
 		buf[2] = 2;		// method #2 - method id #02: username/password
 	}
 	if ( send( socks_socket, (const char *)buf, len, 0 ) == SOCKET_ERROR ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -519,7 +524,7 @@ void NET_OpenSocks( int port ) {
 	// get the response
 	len = recv( socks_socket, (char *)buf, 64, 0 );
 	if ( len == SOCKET_ERROR ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -558,7 +563,7 @@ void NET_OpenSocks( int port ) {
 
 		// send it
 		if ( send( socks_socket, (const char *)buf, 3 + ulen + plen, 0 ) == SOCKET_ERROR ) {
-			err = WSAGetLastError();
+			err = socketError;
 			Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 			return;
 		}
@@ -566,7 +571,7 @@ void NET_OpenSocks( int port ) {
 		// get the response
 		len = recv( socks_socket, (char *)buf, 64, 0 );
 		if ( len == SOCKET_ERROR ) {
-			err = WSAGetLastError();
+			err = socketError;
 			Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 			return;
 		}
@@ -588,7 +593,7 @@ void NET_OpenSocks( int port ) {
 	*(int *)&buf[4] = INADDR_ANY;
 	*(short *)&buf[8] = htons( (short)port );		// port
 	if ( send( socks_socket, (const char *)buf, 10, 0 ) == SOCKET_ERROR ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -596,7 +601,7 @@ void NET_OpenSocks( int port ) {
 	// get the response
 	len = recv( socks_socket, (char *)buf, 64, 0 );
 	if( len == SOCKET_ERROR ) {
-		err = WSAGetLastError();
+		err = socketError;
 		Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -621,12 +626,123 @@ void NET_OpenSocks( int port ) {
 	usingSocks = qtrue;
 }
 
-
 /*
 =====================
 NET_GetLocalAddress
 =====================
 */
+#ifdef MACOS_X
+// Don't do a forward mapping from the hostname of the machine to the IP.  The reason is that we might have obtained an IP address from DHCP and there might not be any name registered for the machine.  On Mac OS X, the machine name defaults to 'localhost' and NetInfo has 127.0.0.1 listed for this name.  Instead, we want to get a list of all the IP network interfaces on the machine.
+// This code adapted from OmniNetworking.
+
+#ifdef _SIZEOF_ADDR_IFREQ
+	// tjw: OSX 10.4 does not have sa_len
+	#define IFR_NEXT(ifr)	\
+	((struct ifreq *) ((char *) ifr + _SIZEOF_ADDR_IFREQ(*ifr)))
+#else
+	// tjw: assume that once upon a time some version did have sa_len
+	#define IFR_NEXT(ifr)	\
+	((struct ifreq *) ((char *) (ifr) + sizeof(*(ifr)) + \
+	max(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
+#endif
+
+
+void NET_GetLocalAddress( void ) {
+	struct ifreq requestBuffer[MAX_IPS], *linkInterface, *inetInterface;
+	struct ifconf ifc;
+	struct ifreq ifr;
+	struct sockaddr_dl *sdl;
+	int interfaceSocket;
+	int family;
+
+	// Set this early so we can just return if there is an error
+	numIP = 0;
+
+	ifc.ifc_len = sizeof(requestBuffer);
+	ifc.ifc_buf = (caddr_t)requestBuffer;
+
+	// Since we get at this info via an ioctl, we need a temporary little socket.
+	// This will only get AF_INET interfaces, but we probably don't care about
+	// anything else.  If we do end up caring later, we should add a
+	// ONAddressFamily and at a -interfaces method to it.
+	family = AF_INET;
+	if ((interfaceSocket = socket(family, SOCK_DGRAM, 0)) < 0) {
+		Com_Printf("NET_GetLocalAddress: Unable to create temporary socket, errno = %d\n", errno);
+		return;
+	}
+
+	if (ioctl(interfaceSocket, SIOCGIFCONF, &ifc) != 0) {
+		Com_Printf("NET_GetLocalAddress: Unable to get list of network interfaces, errno = %d\n", errno);
+		return;
+	}
+
+	linkInterface = (struct ifreq *) ifc.ifc_buf;
+	while ((char *) linkInterface < &ifc.ifc_buf[ifc.ifc_len]) {
+		unsigned int nameLength;
+
+		// The ioctl returns both the entries having the address (AF_INET)
+		// and the link layer entries (AF_LINK).  The AF_LINK entry has the
+		// link layer address which contains the interface type.  This is the
+		// only way I can see to get this information.  We cannot assume that
+		// we will get bot an AF_LINK and AF_INET entry since the interface
+		// may not be configured.  For example, if you have a 10Mb port on
+		// the motherboard and a 100Mb card, you may not configure the
+		// motherboard port.
+
+		// For each AF_LINK entry...
+		if (linkInterface->ifr_addr.sa_family == AF_LINK) {
+			// if there is a matching AF_INET entry
+			inetInterface = (struct ifreq *) ifc.ifc_buf;
+			while ((char *) inetInterface < &ifc.ifc_buf[ifc.ifc_len]) {
+				if (inetInterface->ifr_addr.sa_family == AF_INET &&
+						!strncmp(inetInterface->ifr_name, linkInterface->ifr_name,
+							sizeof(linkInterface->ifr_name))) {
+
+					for (nameLength = 0; nameLength < IFNAMSIZ; nameLength++)
+						if (!linkInterface->ifr_name[nameLength])
+							break;
+
+					sdl = (struct sockaddr_dl *)&linkInterface->ifr_addr;
+					// Skip loopback interfaces
+					if (sdl->sdl_type != IFT_LOOP) {
+						// Get the local interface address
+						strncpy(ifr.ifr_name, inetInterface->ifr_name, sizeof(ifr.ifr_name));
+						if (ioctl(interfaceSocket, SIOCGIFADDR, (caddr_t)&ifr) < 0) {
+							Com_Printf("NET_GetLocalAddress: Unable to get local address "
+									"for interface '%s', errno = %d\n", inetInterface->ifr_name, errno);
+						} else {
+							struct sockaddr_in *sin;
+							int ip;
+
+							sin = (struct sockaddr_in *)&ifr.ifr_addr;
+
+							ip = ntohl(sin->sin_addr.s_addr);
+							localIP[ numIP ][0] = (ip >> 24) & 0xff;
+							localIP[ numIP ][1] = (ip >> 16) & 0xff;
+							localIP[ numIP ][2] = (ip >>  8) & 0xff;
+							localIP[ numIP ][3] = (ip >>  0) & 0xff;
+							Com_Printf( "IP: %i.%i.%i.%i (%s)\n",
+									localIP[ numIP ][0], localIP[ numIP ][1],
+									localIP[ numIP ][2], localIP[ numIP ][3],
+									inetInterface->ifr_name);
+							numIP++;
+						}
+					}
+
+					// We will assume that there is only one AF_INET entry per AF_LINK entry.
+					// What happens when we have an interface that has multiple IP addresses, or
+					// can that even happen?
+					// break;
+				}
+				inetInterface = IFR_NEXT(inetInterface);
+			}
+		}
+		linkInterface = IFR_NEXT(linkInterface);
+	}
+
+	close(interfaceSocket);
+}
+#else
 void NET_GetLocalAddress( void )
 {
 	char				hostname[256];
@@ -640,13 +756,13 @@ void NET_GetLocalAddress( void )
 	numIP = 0;
 
 	if( gethostname( hostname, 256 ) == SOCKET_ERROR ) {
-		error = WSAGetLastError();
+		error = socketError;
 		return;
 	}
 
 	hostInfo = gethostbyname( hostname );
 	if( !hostInfo ) {
-		error = WSAGetLastError();
+		error = socketError;
 		return;
 	}
 
@@ -670,6 +786,7 @@ void NET_GetLocalAddress( void )
 		numIP++;
 	}
 }
+#endif
 
 /*
 ====================
@@ -704,16 +821,13 @@ void NET_OpenIP( void )
 
 //===================================================================
 
-
 /*
 ====================
 NET_GetCvars
 ====================
 */
 static qboolean NET_GetCvars( void ) {
-	qboolean	modified;
-
-	modified = qfalse;
+	qboolean	modified = qfalse;
 
 	if( net_noudp && net_noudp->modified ) {
 		modified = qtrue;
@@ -724,7 +838,6 @@ static qboolean NET_GetCvars( void ) {
 		modified = qtrue;
 	}
 	net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", CVAR_LATCH | CVAR_ARCHIVE );
-
 
 	if( net_socksEnabled && net_socksEnabled->modified ) {
 		modified = qtrue;
@@ -751,10 +864,8 @@ static qboolean NET_GetCvars( void ) {
 	}
 	net_socksPassword = Cvar_Get( "net_socksPassword", "", CVAR_LATCH | CVAR_ARCHIVE );
 
-
 	return modified;
 }
-
 
 /*
 ====================
@@ -813,7 +924,7 @@ void NET_Config( qboolean enableNetworking ) {
 	}
 
 	if( start ) {
-		if (! net_noudp->integer ) {
+		if ( !net_noudp->integer ) {
 			NET_OpenIP();
 		}
 	}
@@ -825,9 +936,8 @@ NET_Init
 ====================
 */
 void NET_Init( void ) {
-	int		r;
-
-	r = WSAStartup( MAKEWORD( 1, 1 ), &winsockdata );
+#ifdef _WIN32
+	int r = WSAStartup( MAKEWORD( 1, 1 ), &winsockdata );
 	if( r ) {
 		Com_Printf( "WARNING: Winsock initialization failed, returned %d\n", r );
 		return;
@@ -835,13 +945,13 @@ void NET_Init( void ) {
 
 	winsockInitialized = qtrue;
 	Com_Printf( "Winsock Initialized\n" );
+#endif
 
 	// this is really just to get the cvars registered
 	NET_GetCvars();
 
 	NET_Config( qtrue );
 }
-
 
 /*
 ====================
@@ -854,10 +964,11 @@ void NET_Shutdown( void ) {
 	}
 
 	NET_Config( qfalse );
+#ifdef _WIN32
 	WSACleanup();
 	winsockInitialized = qfalse;
+#endif
 }
-
 
 /*
 ====================
@@ -867,6 +978,25 @@ sleeps msec or until net socket is ready
 ====================
 */
 void NET_Sleep( int msec ) {
+#ifndef _WIN32
+	struct timeval timeout;
+	fd_set	fdset;
+	extern qboolean stdin_active;
+
+	if ( !com_dedicated->integer )
+		return; // we're not a server, just run full speed
+
+	if ( ip_socket == -1 )
+		return;
+
+	FD_ZERO(&fdset);
+	if (stdin_active)
+		FD_SET(0, &fdset); // stdin is processed too
+	FD_SET(ip_socket, &fdset); // network socket
+	timeout.tv_sec = msec/1000;
+	timeout.tv_usec = (msec%1000)*1000;
+	select(ip_socket+1, &fdset, NULL, NULL, &timeout);
+#endif
 }
 
 /*
@@ -875,5 +1005,5 @@ NET_Restart_f
 ====================
 */
 void NET_Restart( void ) {
-	NET_Config( networkingEnabled );
+	NET_Config( qtrue );
 }
