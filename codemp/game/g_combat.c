@@ -4375,7 +4375,10 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		break;
 	case HL_HAND_RT:
 	case HL_HAND_LT:
-		*damage *= 0.6;
+		if (g_locationBasedDamage.integer == 2)//JAPRO - Serverside - Change location based damage to not give such low dmg for hand hits as it is pretty random wether you are awarded torso or hand hit.
+			*damage *= 0.85;
+		else
+			*damage *= 0.6;
 		break;
 	case HL_HEAD:
 		*damage *= 1.3;
@@ -5022,6 +5025,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1 && !attacker->client->pers.noDamageNumbers) { //JAPRO - Serverside - Damage numbers  - Start
 		if (g_damageNumbers.integer == 1 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 6) 
+			//loda , if targ->client ? wat..
 			trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take, targ->client->pers.netname));
 		if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5)
 			trap->SendServerCommand( attacker-g_entities, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", take));

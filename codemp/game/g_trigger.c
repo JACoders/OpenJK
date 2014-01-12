@@ -1188,9 +1188,9 @@ void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activa
 		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
 		activator->client->pers.stats.displacement /= (1000.0f / (float)(level.time - level.previousTime));
 
-		//if (self->message[0]) //loda fixme
-			//trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
-		//else
+		if (self->message)
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
+		else
 			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
 
 		activator->client->pers.stats.startTime = 0;

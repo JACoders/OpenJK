@@ -2913,12 +2913,12 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 	s->forcePowersActive = ps->fd.forcePowersActive;
 
 	if (ps->duelInProgress)
-	{
 		s->bolt1 = 1;
-	}
-	else
-	{
-		s->bolt1 = 0;
+	else {
+		if (ps->stats[STAT_RACEMODE])
+			s->bolt1 = 2;
+		else
+			s->bolt1 = 0;
 	}
 
 	s->otherEntityNum2 = ps->emplacedIndex;

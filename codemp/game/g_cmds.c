@@ -429,7 +429,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
 		if ( argc == 3 )
-			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, 16383, atoi( args ) );
 		else
 		{
 			if ( level.gametype == GT_SIEGE && ent->client->siegeClass != -1 )
@@ -552,7 +552,7 @@ void Cmd_GiveOther_f( gentity_t *ent )
 	if ( (otherEnt->health <= 0 || otherEnt->client->tempSpectate >= level.time || otherEnt->client->sess.sessionTeam == TEAM_SPECTATOR) )
 	{
 		// Intentionally displaying for the command user
-		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		trap->SendServerCommand( ent-g_entities, "print \"Target must be alive to use this command.\n\"" );
 		return;
 	}
 

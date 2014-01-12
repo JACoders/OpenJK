@@ -634,6 +634,9 @@ qboolean WP_ForcePowerInUse( gentity_t *self, forcePowers_t forcePower )
 
 qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 {
+	if (self->client && self->client->pers.raceMode)
+		return qfalse;
+
 	if (BG_HasYsalamiri(level.gametype, &self->client->ps))
 	{
 		return qfalse;

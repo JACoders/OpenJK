@@ -2148,6 +2148,8 @@ void ClientThink_real( gentity_t *ent ) {
 		ucmd->serverTime = client->ps.commandTime + 100;
 	}
 
+	client->lastUpdateFrame = level.framenum; //Unlagged
+
 	msec = ucmd->serverTime - client->ps.commandTime;
 	// following others may result in bad times, but we still want
 	// to check for follow toggles

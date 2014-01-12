@@ -3998,6 +3998,7 @@ void NPC_Spawn_f( gentity_t *ent )
 	char	npc_type[1024];
 	char	targetname[1024];
 	qboolean	isVehicle = qfalse;
+	int i = 0;
 
 	trap->Argv(2, npc_type, 1024);
 	if ( Q_stricmp( "vehicle", npc_type ) == 0 )
@@ -4010,6 +4011,18 @@ void NPC_Spawn_f( gentity_t *ent )
 	{
 		trap->Argv(3, targetname, 1024);
 	}
+
+	while (npc_type[i]) {
+		npc_type[i] = tolower(npc_type[i]);
+		i++;
+	}
+
+	if (Q_stricmp("ragnos", npc_type) == 0) //Sad hack, but even tho spawning ragnos is fixed, it will still crash people when it starts doing stuff
+		return;
+	if (Q_stricmp("saber_droid", npc_type) == 0)
+		return;
+	if (Q_stricmp("saber_droid_training", npc_type) == 0) 
+		return;
 
 	NPC_SpawnType( ent, npc_type, targetname, isVehicle );
 }

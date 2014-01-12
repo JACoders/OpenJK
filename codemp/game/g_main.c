@@ -3642,6 +3642,13 @@ void G_RunFrame( int levelTime ) {
 		iTimer_Queues);
 #endif
 
+//unlagged - backward reconciliation #4
+	// record the time at the end of this frame - it should be about
+	// the time the next frame begins - when the server starts
+	// accepting commands from connected clients
+	level.frameStartTime = trap->Milliseconds();
+//unlagged - backward reconciliation #4
+
 	g_LastFrameTime = level.time;
 }
 

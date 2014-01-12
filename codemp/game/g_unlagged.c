@@ -61,7 +61,7 @@ void G_StoreTrail( gentity_t *ent ) {
 	} else {
 		// calculate the actual server time
 		// (we set level.frameStartTime every G_RunFrame)
-		newtime = level.previousTime + trap->Milliseconds() - level.frameStartTime; //Loda fixme, this is never set?
+		newtime = level.previousTime + trap->Milliseconds() - level.frameStartTime;
 		if ( newtime > level.time ) {
 			newtime = level.time;
 		} else if ( newtime <= level.previousTime ) {
