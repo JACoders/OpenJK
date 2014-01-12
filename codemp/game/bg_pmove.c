@@ -21,7 +21,10 @@
 #ifdef _GAME
 	extern void G_CheapWeaponFire(int entNum, int ev);
 	extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
-#endif // _GAME
+#elif defined _CGAME
+	void PM_CosbyBot();
+	extern int cg_dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Dueling
+#endif
 
 extern qboolean BG_FullBodyTauntAnim( int anim );
 extern float PM_WalkableGroundDistance(void);
@@ -1709,7 +1712,37 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 			return qfalse;
 			break;
 		}
-		if ( pm->debugMelee )
+//[JAPRO - Serverside + Clientside - Physics - Change g_debugmelee 1 so that it has kungfu moves but keeps normal wallgrab.  Create g_debugmelee 2 for kung fu moves and infinite wallgrab - Start]
+#ifdef _GAME
+		if (1) //uhhh
+#else
+		if (cgs.isJAPlus || cgs.isJAPro)
+#endif
+		{
+			if ( pm->debugMelee > 1)
+			{//uber-skillz
+				if ( ucmd->upmove > 0 )
+				{//hold on until you let go manually
+					if ( BG_InReboundHold( ps->legsAnim ) )
+					{//keep holding
+						if ( ps->legsTimer < 150 )
+						{
+							ps->legsTimer = 150;
+						}
+					}
+					else
+					{//if got to hold part of anim, play hold anim
+						if ( ps->legsTimer <= 300 )
+						{
+							ps->saberHolstered = 2;
+							PM_SetAnim( SETANIM_BOTH, BOTH_FORCEWALLRELEASE_FORWARD+(ps->legsAnim-BOTH_FORCEWALLHOLD_FORWARD), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+							ps->legsTimer = ps->torsoTimer = 150;
+						}
+					}
+				}
+			}
+		}
+		else if ( pm->debugMelee )
 		{//uber-skillz
 			if ( ucmd->upmove > 0 )
 			{//hold on until you let go manually
@@ -1731,6 +1764,7 @@ qboolean PM_AdjustAngleForWallJump( playerState_t *ps, usercmd_t *ucmd, qboolean
 				}
 			}
 		}
+//[JAPRO - Serverside + Clientside - Physics - Change g_debugmelee 1 so that it has kungfu moves but keeps normal wallgrab.  Create g_debugmelee 2 for kung fu moves and infinite wallgrab - End]
 		VectorMA( ps->origin, dist, checkDir, traceTo );
 		pm->trace( &trace, ps->origin, mins, maxs, traceTo, ps->clientNum, MASK_PLAYERSOLID );
 		if ( //ucmd->upmove <= 0 && 

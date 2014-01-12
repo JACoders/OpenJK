@@ -152,7 +152,7 @@ XCVAR_DEF( pmove_float,					"0",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qt
 XCVAR_DEF( pmove_msec,					"8",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qtrue )
 XCVAR_DEF( RMG,							"0",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( sv_cheats,					"1",			NULL,				CVAR_NONE,										qfalse )
-XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue ) //Should be systeminfo, well not really but make client set their sv_fps to this
 XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
@@ -190,7 +190,7 @@ XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
-//XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_weaponDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -198,7 +198,6 @@ XCVAR_DEF( g_projectileVelocityScale,	"0",			NULL,				CVAR_ARCHIVE,									qtru
 XCVAR_DEF( g_selfDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_tweakWeapons,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO MOVEMENT
 XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
@@ -258,5 +257,6 @@ XCVAR_DEF( g_votesDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_lagIcon,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #undef XCVAR_DEF

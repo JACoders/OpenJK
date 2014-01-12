@@ -108,9 +108,9 @@ XCVAR_DEF( cg_stats,							"0",					NULL,					CVAR_NONE )
 XCVAR_DEF( cg_teamChatBeep,						"1",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_teamChatsOnly,					"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPerson,						"0",					NULL,					CVAR_ARCHIVE )
-XCVAR_DEF( cg_thirdPersonAlpha,					"1.0",					NULL,					CVAR_CHEAT )
+XCVAR_DEF( cg_thirdPersonAlpha,					"1.0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonAngle,					"0",					NULL,					CVAR_ARCHIVE )
-XCVAR_DEF( cg_thirdPersonCameraDamp,			"0.3",					NULL,					CVAR_NONE )
+XCVAR_DEF( cg_thirdPersonCameraDamp,			"0.3",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonHorzOffset,			"0",					NULL,					CVAR_CHEAT )
 XCVAR_DEF( cg_thirdPersonPitchOffset,			"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_thirdPersonRange,					"80",					NULL,					CVAR_ARCHIVE )
@@ -167,4 +167,14 @@ XCVAR_DEF( ui_tm2_c4_cnt,						"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm2_c5_cnt,						"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm2_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( ui_tm3_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
+
+//Gameplay
+
+//Movement
+XCVAR_DEF( cg_jumpHeight,						"0",					NULL,					CVAR_ARCHIVE )
+XCVAR_DEF( cg_newRunAnim,						"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
+XCVAR_DEF( cg_onlyBhop,							"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
+
+//Other
+
 #undef XCVAR_DEF

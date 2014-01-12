@@ -3520,13 +3520,15 @@ void ClientThink_real( gentity_t *ent ) {
 	if ( ent->client->ps.eventSequence != oldEventSequence ) {
 		ent->eventTime = level.time;
 	}
+	/*
 	if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qfalse );
 		//rww - 12-03-02 - Don't snap the origin of players! It screws prediction all up.
 	}
 	else {
+	*/
 		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qfalse );
-	}
+	//}
 
 	if (isNPC)
 	{
@@ -3973,13 +3975,15 @@ void ClientEndFrame( gentity_t *ent ) {
 	G_SetClientSound (ent);
 
 	// set the latest infor
+	/*
 	if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qfalse );
 		//rww - 12-03-02 - Don't snap the origin of players! It screws prediction all up.
 	}
 	else {
+	*/
 		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qfalse );
-	}
+	//}
 
 	if (isNPC)
 	{
@@ -3988,7 +3992,7 @@ void ClientEndFrame( gentity_t *ent ) {
 
 	SendPendingPredictableEvents( &ent->client->ps );
 
-	//unlagged - smooth clients #1 - loda
+//unlagged - smooth clients #1 - loda
 	// mark as not missing updates initially
 	ent->client->ps.eFlags &= ~EF_CONNECTION;
 

@@ -1913,6 +1913,75 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	}
 }
 
+//JAPRO - Serverside - Same player names fix - Start
+static QINLINE qboolean IsColorCode(const char *s) {
+	return (qboolean) (*s == '^' && '0' <= *(s+1) && *(s+1) <= '9');
+}
+
+static void StripColors(const char *s, char *out) {
+	while (*s) {
+		if (IsColorCode(s)) s += 2;
+		else {
+			*out = *s;
+			out += 1;
+			s += 1;
+		}
+	}
+	*out = 0;
+}
+
+static qboolean ClientNameEquals(const char *n1, const char *n2) {
+	char o1[MAX_NETNAME];
+	char o2[MAX_NETNAME];
+	StripColors(n1, o1);
+	StripColors(n2, o2);
+	return (qboolean) (Q_stricmp(o1, o2) == 0);
+}
+
+static qboolean ClientNameInUse(const char *netname, int ignore) {
+	int i;
+	for (i = 0; i < level.maxclients; ++i) {
+		if (i != ignore
+			&& level.clients[i].pers.connected != CON_DISCONNECTED
+			&& ClientNameEquals(level.clients[i].pers.netname, netname)) {
+				return qtrue;
+		}
+	}
+	return qfalse;
+}
+
+static void CheckDuplicateName(int clientNum) {
+	char *netname = level.clients[clientNum].pers.netname;
+	//char userinfo[MAX_INFO_STRING]; 
+	if (ClientNameInUse(netname, clientNum)) {
+		char bufname[MAX_NETNAME];
+		int num = 0;
+		int len = strlen(netname);
+		// make room for a number
+		// assuming a number will be 2 digits in length
+		// format will be like "%s ^7[%d]"
+		if (len > 28) netname[28] = 0;
+		do {
+			// move the new name to the buffer, since we shouldn't read and write in same location
+			Com_sprintf(bufname, MAX_NETNAME, "%s^7[%d]", netname, num);
+		} 
+		while (num++ < level.maxclients && ClientNameInUse(bufname, clientNum));
+		{
+			// move bufname back to netname
+			Q_strncpyz(netname, bufname, MAX_NETNAME);
+
+			//level.clients[clientNum].pers.netnameTime = level.time - 5000;
+			/*trap_GetUserinfo(clientNum, userinfo, sizeof(userinfo)); 
+			Info_SetValueForKey(userinfo, "name", bufname);
+			trap_SetUserinfo(clientNum, userinfo); 
+			ClientUserinfoChanged(clientNum); */
+		}
+
+
+	}
+}
+//JAPRO - Serverside - Same player names fix - End
+
 
 
 
@@ -2152,6 +2221,9 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 	Q_strncpyz( client->pers.netname_nocolor, client->pers.netname, sizeof( client->pers.netname_nocolor ) );
 	Q_StripColor( client->pers.netname_nocolor );
+
+	if (!g_allowSamePlayerNames.integer)//JAPRO - Serverside - Same player name fix
+		CheckDuplicateName(clientNum);
 
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR && client->sess.spectatorState == SPECTATOR_SCOREBOARD )
 	{

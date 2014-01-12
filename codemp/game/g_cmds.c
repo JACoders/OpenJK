@@ -356,11 +356,11 @@ int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecti
 	return -1;
 }
 
-qboolean ClientIsIgnored(const int selfID, const int targetID) {  // Loda fixme, Inline errors?
+qboolean QINLINE ClientIsIgnored(const int selfID, const int targetID) {
 	return (qboolean) (selfID != targetID && ((level.clients[selfID].sess.ignore ^ 0xFFFFFFFF) == 0 || (level.clients[selfID].sess.ignore & (1 << targetID))));
 }
 
-qboolean ClientIgnore(const int selfID, const int targetID) {
+qboolean QINLINE ClientIgnore(const int selfID, const int targetID) {
 	qboolean ignored;
 	const int targetFlag = (1 << targetID);
 	if (level.clients[selfID].sess.ignore & targetFlag) {
@@ -373,7 +373,7 @@ qboolean ClientIgnore(const int selfID, const int targetID) {
 	return ignored;
 }
 
-qboolean ClientIgnoreAll(const int selfID) {
+qboolean QINLINE ClientIgnoreAll(const int selfID) {
 	qboolean ignoredAll;
 	if (level.clients[selfID].sess.ignore ^ 0xFFFFFFFF) {
 		level.clients[selfID].sess.ignore = 0xFFFFFFFF;
@@ -614,6 +614,31 @@ argv(0) noclip
 */
 void Cmd_Noclip_f( gentity_t *ent ) {
 	char *msg = NULL;
+
+	if (!sv_cheats.integer)
+	{
+		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		{
+			if (!(g_fullAdminLevel.integer & (1 << A_NOCLIP)))
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
+				return;
+			}
+		}
+		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		{
+			if (!(g_juniorAdminLevel.integer & (1 << A_NOCLIP)))
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
+				return;
+			}
+		}
+		else//Not logged in
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (noclip).\n\"" );//replaces "Cheats are not enabled on this server." msg
+			return;
+		}
+	}
 
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
