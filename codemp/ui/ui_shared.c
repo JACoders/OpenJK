@@ -6541,10 +6541,10 @@ void Item_Paint(itemDef_t *item)
 	//		else
 			{	// Draw the desctext
 				const char *textPtr = item->descText;
+				char temp[MAX_STRING_CHARS] = {0};
 				if (*textPtr == '@')	// string reference
 				{
-					char temp[MAX_STRING_CHARS];
-					trap->SE_GetStringTextString( &textPtr[1]  , temp, sizeof(temp));
+					trap->SE_GetStringTextString( &textPtr[1], temp, sizeof(temp));
 					textPtr = temp;
 				}
 
