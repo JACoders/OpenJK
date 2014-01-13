@@ -7298,7 +7298,6 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 }
 
 qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
-	const char *temp;
 	int animRunLength;
 	pc_token_t token;
 
@@ -7307,19 +7306,18 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
-	temp = token.string;
 
 #ifdef _UI
 	if (!Q_stricmp(token.string,"ui_char_model") )
 	{
-		char modelPath[MAX_QPATH];
-		char ui_char_model[MAX_QPATH];
+		char modelPath[MAX_QPATH] = {0};
+		char ui_char_model[MAX_QPATH] = {0};
 		trap->Cvar_VariableStringBuffer("ui_char_model", ui_char_model, sizeof(ui_char_model) );
 		Com_sprintf( modelPath, sizeof( modelPath ), "models/players/%s/model.glm", ui_char_model );
-		temp = modelPath;
+		return (ItemParse_asset_model_go( item, modelPath, &animRunLength ));
 	}
 #endif
-	return (ItemParse_asset_model_go( item, temp, &animRunLength ));
+	return (ItemParse_asset_model_go( item, token.string, &animRunLength ));
 }
 
 // asset_shader <string>
