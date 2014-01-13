@@ -5161,36 +5161,26 @@ void UI_FindCurrentSiegeTeamClass( void )
 	baseClass = (int)trap->Cvar_VariableValue("ui_siege_class");
 
 	// Find correct class button and activate it.
-	if (baseClass == SPC_INFANTRY)
-	{
+	switch ( baseClass ) {
+	case SPC_INFANTRY:
 		itemname = "class1_button";
-	}
-	else if (baseClass == SPC_HEAVY_WEAPONS)
-	{
+		break;
+	case SPC_HEAVY_WEAPONS:
 		itemname = "class2_button";
-	}
-	else if (baseClass == SPC_DEMOLITIONIST)
-	{
+		break;
+	case SPC_DEMOLITIONIST:
 		itemname = "class3_button";
-	}
-	else if (baseClass == SPC_VANGUARD)
-	{
+		break;
+	case SPC_VANGUARD:
 		itemname = "class4_button";
-	}
-	else if (baseClass == SPC_SUPPORT)
-	{
+		break;
+	case SPC_SUPPORT:
 		itemname = "class5_button";
-	}
-	else if (baseClass == SPC_SUPPORT)
-	{
-		itemname = "class5_button";
-	}
-	else if (baseClass == SPC_JEDI)
-	{
+		break;
+	case SPC_JEDI:
 		itemname = "class6_button";
-	}
-	else 
-	{
+		break;
+	default:
 		return;
 	}
 
@@ -5199,7 +5189,6 @@ void UI_FindCurrentSiegeTeamClass( void )
 	{
 		Item_RunScript(item, item->action);
 	}
-
 }
 
 void UI_UpdateSiegeObjectiveGraphics( void )
