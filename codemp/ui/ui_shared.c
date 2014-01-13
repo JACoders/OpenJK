@@ -4270,16 +4270,9 @@ void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down) {
 void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 	int i;
 	itemDef_t *item = NULL;
-	qboolean inHandler = qfalse;
 
-	if (inHandler) {
-		return;
-	}
-
-	inHandler = qtrue;
 	if (g_waitingForKey && down) {
 		Item_Bind_HandleKey(g_bindItem, key, down);
-		inHandler = qfalse;
 		return;
 	}
 
@@ -4289,7 +4282,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 		{
 			g_editingField = qfalse;
 			g_editItem = NULL;
-			inHandler = qfalse;
 			return;
 		} 
 		else if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3) 
@@ -4307,7 +4299,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 	}
 
 	if (menu == NULL) {
-		inHandler = qfalse;
 		return;
 	}
 		// see if the mouse is within the window bounds and if so is this a mouse click
@@ -4319,7 +4310,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 			inHandleKey = qtrue;
 			Menus_HandleOOBClick(menu, key, down);
 			inHandleKey = qfalse;
-			inHandler = qfalse;
 			return;
 		}
 	}
@@ -4345,13 +4335,11 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 			{
 				Item_Action(item);
 			}
-			inHandler = qfalse;
 			return;
 		}
 	}
 
 	if (!down) {
-		inHandler = qfalse;
 		return;
 	}
 
@@ -4479,7 +4467,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 			}
 			break;
 	}
-	inHandler = qfalse;
 }
 
 void ToWindowCoords(float *x, float *y, windowDef_t *window) {
