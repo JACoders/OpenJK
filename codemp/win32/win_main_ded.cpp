@@ -22,10 +22,6 @@
 void Sys_SetBinaryPath(const char *path);
 char *Sys_BinaryPath(void);
 
-//static char		sys_cmdline[MAX_STRING_CHARS];
-clientStatic_t	cls;
-
-
 void *Sys_GetBotAIAPI (void *parms ) {
 	return NULL;
 }
@@ -966,11 +962,7 @@ void Sys_Init( void ) {
 //int	totalMsec, countMsec;
 
 #ifndef DEFAULT_BASEDIR
-#	ifdef MACOS_X
-#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
-#	else
-#		define DEFAULT_BASEDIR Sys_BinaryPath()
-#	endif
+#	define DEFAULT_BASEDIR Sys_BinaryPath()
 #endif
 
 int main( int argc, char **argv )
