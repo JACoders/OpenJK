@@ -415,7 +415,7 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	if (isHumanoid)
 	{
 		bgAllAnims[0].anims = animset;
-		strcpy(bgAllAnims[0].filename, filename);
+		Q_strncpyz(bgAllAnims[0].filename, filename, sizeof(bgAllAnims[0].filename));
 		UIPAFtextLoaded = qtrue;
 
 		usedIndex = 0;
@@ -423,7 +423,7 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	else
 	{
 		bgAllAnims[nextIndex].anims = animset;
-		strcpy(bgAllAnims[nextIndex].filename, filename);
+		Q_strncpyz(bgAllAnims[nextIndex].filename, filename, sizeof(bgAllAnims[nextIndex].filename));
 
 		usedIndex = nextIndex;
 
