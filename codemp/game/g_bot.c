@@ -9,12 +9,10 @@
 
 #define BOT_SPAWN_QUEUE_DEPTH	16
 
-typedef struct botSpawnQueue_s {
+static struct botSpawnQueue_s {
 	int		clientNum;
 	int		spawnTime;
-} botSpawnQueue_t;
-
-static botSpawnQueue_t	botSpawnQueue[BOT_SPAWN_QUEUE_DEPTH];
+} botSpawnQueue[BOT_SPAWN_QUEUE_DEPTH];
 
 vmCvar_t bot_minplayers;
 
@@ -283,7 +281,6 @@ G_LoadArenas
 void G_LoadArenas( void ) {
 #if 0
 	int			numdirs;
-	char		filename[128];
 	char		filename[MAX_QPATH];
 	char		dirlist[1024];
 	char*		dirptr;
@@ -297,7 +294,6 @@ void G_LoadArenas( void ) {
 	dirptr  = dirlist;
 	for (i = 0; i < numdirs; i++, dirptr += dirlen+1) {
 		dirlen = strlen(dirptr);
-		strcpy(filename, "scripts/");
 		Q_strncpyz( filename, "scripts/", sizeof( filename ) );
 		strcat(filename, dirptr);
 		G_LoadArenasFromFile(filename);

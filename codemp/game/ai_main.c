@@ -6138,14 +6138,14 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 	}
 
 	if (bs->revengeEnemy && bs->revengeEnemy->client &&
-		bs->revengeEnemy->client->pers.connected != CON_CONNECTED)
+		bs->revengeEnemy->client->pers.connected != CON_CONNECTED && bs->revengeEnemy->client->pers.connected != CON_CONNECTING)
 	{
 		bs->revengeEnemy = NULL;
 		bs->revengeHateLevel = 0;
 	}
 
 	if (bs->currentEnemy && bs->currentEnemy->client &&
-		bs->currentEnemy->client->pers.connected != CON_CONNECTED)
+		bs->currentEnemy->client->pers.connected != CON_CONNECTED && bs->currentEnemy->client->pers.connected != CON_CONNECTING)
 	{
 		bs->currentEnemy = NULL;
 	}

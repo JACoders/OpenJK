@@ -253,11 +253,6 @@ typedef struct playerSpeciesInfo_s {
 
 typedef struct uiInfo_s {
 	displayContextDef_t		uiDC;
-	int						newHighScoreTime;
-	int						newBestTime;
-	qboolean				newHighScore;
-	qboolean				demoAvailable;
-	qboolean				soundHighScore;
 
 	int						characterCount;
 	int						botIndex;
@@ -345,8 +340,6 @@ typedef struct uiInfo_s {
 	int						forceConfigDarkIndexBegin; //mark the index number dark configs start at
 	int						forceConfigLightIndexBegin; //mark the index number light configs start at
 
-	int						effectsColor;
-
 	qboolean				inGameLoad;
 
 	int						playerSpeciesCount;
@@ -366,7 +359,6 @@ qboolean	UI_ConsoleCommand( int realTime );
 void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
 void		UI_FillRect( float x, float y, float width, float height, const float *color );
 char		*UI_Cvar_VariableString( const char *var_name );
-void		UI_LoadBestScores( const char *map, int game );
 
 
 //
@@ -387,25 +379,5 @@ qboolean UI_SaberTypeForSaber( const char *saberName, char *saberType );
 
 
 // new ui 
-
-// for tracking sp game info in Team Arena
-typedef struct postGameInfo_s {
-	int score;
-	int redScore;
-	int blueScore;
-	int perfects;
-	int accuracy;
-	int impressives;
-	int excellents;
-	int defends;
-	int assists;
-	int gauntlets;
-	int	captures;
-	int time;
-	int timeBonus;
-	int shutoutBonus;
-	int skillBonus;
-	int baseScore;
-} postGameInfo_t;
 
 extern uiImport_t *trap;
