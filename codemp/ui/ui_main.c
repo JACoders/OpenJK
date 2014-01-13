@@ -2908,20 +2908,18 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 
 static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle,int iMenuFont) 
 {
-	char * eptr;
-	char buff[4096];
+	char buff[4096] = {0};
+	char * eptr = buff;
 	const char *lines[128];
-	int y, numLines, i;
+	int y, numLines=0, i=0;
 
 	Text_Paint(rect->x + 2, rect->y, scale, color, va("GL_VENDOR: %s", uiInfo.uiDC.glconfig.vendor_string), 0, rect->w, textStyle,iMenuFont);
 	Text_Paint(rect->x + 2, rect->y + 15, scale, color, va("GL_VERSION: %s: %s", uiInfo.uiDC.glconfig.version_string,uiInfo.uiDC.glconfig.renderer_string), 0, rect->w, textStyle,iMenuFont);
 	Text_Paint(rect->x + 2, rect->y + 30, scale, color, va ("GL_PIXELFORMAT: color(%d-bits) Z(%d-bits) stencil(%d-bits)", uiInfo.uiDC.glconfig.colorBits, uiInfo.uiDC.glconfig.depthBits, uiInfo.uiDC.glconfig.stencilBits), 0, rect->w, textStyle,iMenuFont);
 
 	// build null terminated extension strings
-	Q_strncpyz(buff, uiInfo.uiDC.glconfig.extensions_string, 4096);
-	eptr = buff;
+	Q_strncpyz(buff, uiInfo.uiDC.glconfig.extensions_string, sizeof(buff));
 	y = rect->y + 45;
-	numLines = 0;
 	while ( y < rect->y + rect->h && *eptr )
 	{
 		while ( *eptr && *eptr == ' ' )
@@ -2937,7 +2935,6 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 			eptr++;
 	}
 
-	i = 0;
 	while (i < numLines) 
 	{
 		Text_Paint(rect->x + 2, y, scale, color, lines[i++], 0, (rect->w/2), textStyle,iMenuFont);
