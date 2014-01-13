@@ -954,43 +954,7 @@ void Sys_Init( void ) {
 	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
 	Cmd_AddCommand ("net_restart", Sys_Net_Restart_f);
 
-//	g_wv.osversion.dwOSVersionInfoSize = sizeof( g_wv.osversion );
-
-//	if (!GetVersionEx (&g_wv.osversion))
-//		Sys_Error ("Couldn't get OS info");
-
-//	if (g_wv.osversion.dwMajorVersion < 4)
-//		Sys_Error ("This game requires Windows version 4 or greater");
-//	if (g_wv.osversion.dwPlatformId == VER_PLATFORM_WIN32s)
-//		Sys_Error ("This game doesn't run on Win32s");
-
-//	if ( g_wv.osversion.dwPlatformId == VER_PLATFORM_WIN32_NT )
-//	{
-//		Cvar_Set( "arch", "winnt" );
-//	}
-//	else if ( g_wv.osversion.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS )
-//	{
-//		if ( LOWORD( g_wv.osversion.dwBuildNumber ) >= WIN98_BUILD_NUMBER )
-//		{
-//			Cvar_Set( "arch", "win98" );
-//		}
-//		else if ( LOWORD( g_wv.osversion.dwBuildNumber ) >= OSR2_BUILD_NUMBER )
-//		{
-//			Cvar_Set( "arch", "win95 osr2.x" );
-//		}
-//		else
-//		{
-//			Cvar_Set( "arch", "win95" );
-//		}
-//	}
-//	else
-//	{
-//		Cvar_Set( "arch", "unknown Windows variant" );
-//	}
-
-	// save out a couple things in rom cvars for the renderer to access
-//	Cvar_Get( "win_hinstance", va("%i", (int)g_wv.hInstance), CVAR_ROM );
-//	Cvar_Get( "win_wndproc", va("%i", (int)MainWndProc), CVAR_ROM );
+	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 
 	Cvar_Set( "username", Sys_GetCurrentUser() );
 
