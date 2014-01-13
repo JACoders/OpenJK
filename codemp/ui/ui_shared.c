@@ -694,141 +694,110 @@ void Fade(int *flags, float *f, float clamp, int *nextTime, int offsetTime, qboo
   }
 }
 
-
-
 void Window_Paint(windowDef_t *w, float fadeAmount, float fadeClamp, float fadeCycle) 
 {
 	//float bordersize = 0;
 	vec4_t color;
-	rectDef_t fillRect = w->rect;
+	rectDef_t fillRect;
 
-
-	if (debugMode) 
-	{
+	if ( debugMode ) {
 		color[0] = color[1] = color[2] = color[3] = 1;
 		DC->drawRect(w->rect.x, w->rect.y, w->rect.w, w->rect.h, 1, color);
 	}
 
-	if (w == NULL || (w->style == 0 && w->border == 0)) 
-	{
+	if ( w == NULL || ( w->style == 0 && w->border == 0 ) ) 
 		return;
-	}
 
-	if (w->border != 0) 
-	{
+	fillRect = w->rect;
+	if ( w->border != 0 ) {
 		fillRect.x += w->borderSize;
 		fillRect.y += w->borderSize;
 		fillRect.w -= w->borderSize + 1;
 		fillRect.h -= w->borderSize + 1;
 	}
 
-	if (w->style == WINDOW_STYLE_FILLED) 
-	{
+	if ( w->style == WINDOW_STYLE_FILLED ) {
 		// box, but possible a shader that needs filled
-		if (w->background) 
-		{
-			Fade(&w->flags, &w->backColor[3], fadeClamp, &w->nextTime, fadeCycle, qtrue, fadeAmount);
-			DC->setColor(w->backColor);
-			DC->drawHandlePic(fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->background);
-			DC->setColor(NULL);
+		if ( w->background ) {
+			Fade( &w->flags, &w->backColor[3], fadeClamp, &w->nextTime, fadeCycle, qtrue, fadeAmount );
+			DC->setColor( w->backColor );
+			DC->drawHandlePic( fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->background );
+			DC->setColor( NULL );
 		} 
-		else 
-		{
-			DC->fillRect(fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->backColor);
+		else {
+			DC->fillRect( fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->backColor );
 		}
 	} 
-	else if (w->style == WINDOW_STYLE_GRADIENT) 
-	{
+	else if ( w->style == WINDOW_STYLE_GRADIENT ) {
 		GradientBar_Paint(&fillRect, w->backColor);
-	// gradient bar
 	} 
-	else if (w->style == WINDOW_STYLE_SHADER) 
-	{
+	else if ( w->style == WINDOW_STYLE_SHADER ) {
 #ifndef _CGAME
-		if (w->flags & WINDOW_PLAYERCOLOR) 
-		{
+		if ( w->flags & WINDOW_PLAYERCOLOR ) {
 			vec4_t	color;
 			color[0] = ui_char_color_red.integer/255.0f;
 			color[1] = ui_char_color_green.integer/255.0f;
 			color[2] = ui_char_color_blue.integer/255.0f;
 			color[3] = 1;
-			DC->setColor(color);
+			DC->setColor( color );
 		}
 #endif // 
 
-		if (w->flags & WINDOW_FORECOLORSET) 
-		{
+		if ( w->flags & WINDOW_FORECOLORSET )
 			DC->setColor(w->foreColor);
-		}
-		DC->drawHandlePic(fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->background);
-		DC->setColor(NULL);
+		DC->drawHandlePic( fillRect.x, fillRect.y, fillRect.w, fillRect.h, w->background );
+		DC->setColor( NULL );
 	} 
-	else if (w->style == WINDOW_STYLE_TEAMCOLOR) 
-	{
-		if (DC->getTeamColor) 
-		{
-			DC->getTeamColor(&color);
-			DC->fillRect(fillRect.x, fillRect.y, fillRect.w, fillRect.h, color);
+	else if ( w->style == WINDOW_STYLE_TEAMCOLOR ) {
+		if ( DC->getTeamColor ) {
+			DC->getTeamColor( &color );
+			DC->fillRect( fillRect.x, fillRect.y, fillRect.w, fillRect.h, color );
 		}
 	} 
-	else if (w->style == WINDOW_STYLE_CINEMATIC) 
-	{
-		if (w->cinematic == -1) 
-		{
-			w->cinematic = DC->playCinematic(w->cinematicName, fillRect.x, fillRect.y, fillRect.w, fillRect.h);
-			if (w->cinematic == -1) 
-			{
+	else if ( w->style == WINDOW_STYLE_CINEMATIC ) {
+		if ( w->cinematic == -1 ) {
+			w->cinematic = DC->playCinematic( w->cinematicName, fillRect.x, fillRect.y, fillRect.w, fillRect.h );
+			if ( w->cinematic == -1 )
 				w->cinematic = -2;
-			}
 		} 
-		if (w->cinematic >= 0) 
-		{
-			DC->runCinematicFrame(w->cinematic);
-			DC->drawCinematic(w->cinematic, fillRect.x, fillRect.y, fillRect.w, fillRect.h);
+		if ( w->cinematic >= 0 ) {
+			DC->runCinematicFrame( w->cinematic );
+			DC->drawCinematic( w->cinematic, fillRect.x, fillRect.y, fillRect.w, fillRect.h );
 		}
 	}
 
-	if (w->border == WINDOW_BORDER_FULL) 
-	{
+	if ( w->border == WINDOW_BORDER_FULL ) {
 		// full
 		// HACK HACK HACK
-		if (w->style == WINDOW_STYLE_TEAMCOLOR) 
-		{
-			if (color[0] > 0) 
-			{				
+		if ( w->style == WINDOW_STYLE_TEAMCOLOR ) {
+			if ( color[0] > 0 ) {				
 				// red
 				color[0] = 1;
 				color[1] = color[2] = .5;
 			} 
-			else 
-			{
+			else {
 				color[2] = 1;
 				color[0] = color[1] = .5;
 			}
 			color[3] = 1;
-			DC->drawRect(w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize, color);
+			DC->drawRect( w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize, color );
 		} 
-		else 
-		{
-			DC->drawRect(w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize, w->borderColor);
-		}
+		else
+			DC->drawRect( w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize, w->borderColor );
 	} 
-	else if (w->border == WINDOW_BORDER_HORZ) 
-	{
+	else if (w->border == WINDOW_BORDER_HORZ) {
 		// top/bottom
-		DC->setColor(w->borderColor);
-		DC->drawTopBottom(w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize);
+		DC->setColor( w->borderColor );
+		DC->drawTopBottom( w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize );
 		DC->setColor( NULL );
 	} 
-	else if (w->border == WINDOW_BORDER_VERT) 
-	{
+	else if (w->border == WINDOW_BORDER_VERT) {
 		// left right
-		DC->setColor(w->borderColor);
-		DC->drawSides(w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize);
+		DC->setColor( w->borderColor );
+		DC->drawSides( w->rect.x, w->rect.y, w->rect.w, w->rect.h, w->borderSize );
 		DC->setColor( NULL );
 	} 
-	else if (w->border == WINDOW_BORDER_KCGRADIENT) 
-	{
+	else if ( w->border == WINDOW_BORDER_KCGRADIENT ) {
 		// this is just two gradient bars along each horz edge
 		rectDef_t r = w->rect;
 		r.h = w->borderSize;
