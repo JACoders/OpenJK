@@ -790,7 +790,6 @@ cvar_t	*cl_run;
 
 cvar_t	*cl_anglespeedkey;
 
-
 /*
 ================
 CL_AdjustAngles
