@@ -398,7 +398,6 @@ static void blit8_32( byte *src, byte *dst, int spl  )
 * Description:	
 *
 ******************************************************************************/
-
 static void blit4_32( byte *src, byte *dst, int spl  )
 {
 	int i;
@@ -1546,7 +1545,8 @@ int CIN_PlayCinematic( const char *arg, int x, int y, int w, int h, int systemBi
 		
 		Con_Close();
 
-		s_rawend = s_soundtime;
+		if ( !cinTable[currentHandle].silent )
+			s_rawend = s_soundtime;
 
 		return currentHandle;
 	}
