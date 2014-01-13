@@ -7261,7 +7261,7 @@ qboolean UI_hasSkinForBase(const char *base, const char *team) {
 UI_HeadCountByColor
 ==================
 */
-static int UI_HeadCountByColor() {
+static int UI_HeadCountByColor(void) {
 	int i, c;
 	char *teamname;
 
@@ -7282,7 +7282,7 @@ static int UI_HeadCountByColor() {
 	// Count each head with this color
 	for (i=0; i<uiInfo.q3HeadCount; i++)
 	{
-		if (uiInfo.q3HeadNames[i] && strstr(uiInfo.q3HeadNames[i], teamname))
+		if (uiInfo.q3HeadNames[i][0] && strstr(uiInfo.q3HeadNames[i], teamname))
 		{
 			c++;
 		}
@@ -8086,7 +8086,7 @@ static const char *UI_SelectedTeamHead(int index, int *actual) {
 
 	for (i=0; i<uiInfo.q3HeadCount; i++)
 	{
-		if (uiInfo.q3HeadNames[i] && strstr(uiInfo.q3HeadNames[i], teamname))
+		if (uiInfo.q3HeadNames[i][0] && strstr(uiInfo.q3HeadNames[i], teamname))
 		{
 			if (c==index)
 			{
