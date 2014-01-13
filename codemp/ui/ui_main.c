@@ -5886,7 +5886,7 @@ void UI_ClampMaxPlayers( void ) {
 void UI_UpdateSiegeStatusIcons( void ) {
     menuDef_t *menu = Menu_GetFocused();
 
-	if ( (menu=Menu_GetFocused()) ) {
+	if ( menu ) {
 		int i=0;
 		for ( i= 0; i< 7; i++ )		Menu_SetItemBackground( menu, va( "wpnicon0%d", i ),	va( "*ui_class_weapon%d", i ) );
 		for ( i= 0; i< 7; i++ )		Menu_SetItemBackground( menu, va( "itemicon0%d", i ),	va( "*ui_class_item%d", i ) );
