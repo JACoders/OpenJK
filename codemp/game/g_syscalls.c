@@ -1083,7 +1083,15 @@ void trap_Bot_CalculatePaths(int rmg) {
 int SVSyscall_FS_Read( void *buffer, int len, fileHandle_t f ) { trap_FS_Read( buffer, len, f ); return 0; }
 int SVSyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_Write( buffer, len, f ); return 0; }
 qboolean SVSyscall_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *ent, int capsule ) { if ( capsule ) return trap_EntityContactCapsule( mins, maxs, ent ); else return trap_EntityContact( mins, maxs, ent ); }
-void SVSyscall_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod ) { if ( capsule ) trap_TraceCapsule( results, start, mins, maxs, end, passEntityNum, contentmask ); else trap_Trace( results, start, mins, maxs, end, passEntityNum, contentmask ); }
+
+void SVSyscall_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod ) {
+	if ( capsule )
+		trap_TraceCapsule( results, start, mins, maxs, end, passEntityNum, contentmask );
+	else if ( traceFlags )
+		trap_G2Trace( results, start, mins, maxs, end, passEntityNum, contentmask, traceFlags, useLod );
+	else
+		trap_Trace( results, start, mins, maxs, end, passEntityNum, contentmask );
+}
 
 void QDECL G_Error( int errorLevel, const char *error, ... ) {
 	va_list argptr;

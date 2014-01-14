@@ -424,6 +424,7 @@ SOCKET NET_IPSocket( char *net_interface, int port ) {
 	}
 
 	if( !net_interface || !net_interface[0] || !Q_stricmp(net_interface, "localhost") ) {
+		memset( &address, 0, sizeof( address ) );
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = INADDR_ANY;
 	}
@@ -483,6 +484,7 @@ void NET_OpenSocks( int port ) {
 		Com_Printf( "WARNING: NET_OpenSocks: gethostbyname: address type was not AF_INET\n" );
 		return;
 	}
+	memset( &address, 0, sizeof( address ) );
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = *(int *)h->h_addr_list[0];
 	address.sin_port = htons( (short)net_socksPort->integer );
@@ -618,6 +620,7 @@ void NET_OpenSocks( int port ) {
 		Com_Printf( "NET_OpenSocks: relay address is not IPV4: %i\n", buf[3] );
 		return;
 	}
+	memset( &socksRelayAddr, 0, sizeof( socksRelayAddr ) );
 	((struct sockaddr_in *)&socksRelayAddr)->sin_family = AF_INET;
 	((struct sockaddr_in *)&socksRelayAddr)->sin_addr.s_addr = *(int *)&buf[4];
 	((struct sockaddr_in *)&socksRelayAddr)->sin_port = *(short *)&buf[8];
