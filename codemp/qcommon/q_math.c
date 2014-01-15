@@ -1094,7 +1094,7 @@ float Q_asin(float c)
 // eg the typical tint = (rand() * 255) / 32768
 // becomes tint = irand(0, 255)
 
-static uint32_t	holdrand = 0x89abcdef; // 64 bit support for iojamp
+static uint32_t	holdrand = 0x89abcdef;
 
 void Rand_Init(int seed)
 {
