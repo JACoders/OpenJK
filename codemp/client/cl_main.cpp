@@ -77,7 +77,9 @@ cvar_t	*cl_framerate;
 
 cvar_t	*cl_guidServerUniq;
 
+cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 cvar_t	*m_repeatDelay;//JAPRO ENGINE
+
 cvar_t	*cl_autolodscale;
 
 #ifndef _WIN32
@@ -2673,7 +2675,7 @@ void CL_Init( void ) {
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE);
 
-	cl_maxpackets = Cvar_Get ("cl_maxpackets", "63", CVAR_ARCHIVE );
+	cl_maxpackets = Cvar_Get ("cl_maxpackets", "30", CVAR_ARCHIVE );//JAPRO ENGINE :S
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
@@ -2717,8 +2719,11 @@ void CL_Init( void ) {
 
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
+	cg_demoRecordMsg = Cvar_Get ("cg_demoRecordMsg", "3", CVAR_ARCHIVE);//JAPRO ENGINE
+
 	m_repeatDelay = Cvar_Get( "m_repeatDelay",	"800",	CVAR_ARCHIVE );
 	Cvar_CheckRange( m_repeatDelay, 0, 5000, qtrue );
+
 #ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);

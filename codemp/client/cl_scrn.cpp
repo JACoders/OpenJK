@@ -296,7 +296,14 @@ void SCR_DrawDemoRecording( void ) {
 	}
 
 	pos = FS_FTell( clc.demofile );
-	Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
+	if (cg_demoRecordMsg->integer > 2)//JAPRO ENGINE
+		Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
+	else if (cg_demoRecordMsg->integer == 2)
+		Com_sprintf( string, sizeof(string), "%s: %ik", clc.demoName, pos / 1024 );
+	else if (cg_demoRecordMsg->integer == 1)
+		Com_sprintf( string, sizeof(string), "%s", clc.demoName);
+	else if (cg_demoRecordMsg->integer < 1)
+		Com_sprintf( string, sizeof(string), "REC" );
 
 	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue, qfalse );
 }

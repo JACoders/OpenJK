@@ -564,7 +564,7 @@ void Svcmd_Say_f( void ) {
 	Q_strncpyz( text, p, sizeof(text) );
 	Q_strstrip( text, "\n\r", "  " );
 
-	//G_LogPrintf( "say: server: %s\n", text );
+	G_LogPrintf( "say: server: %s\n", text );
 	trap->SendServerCommand( -1, va("print \"server: %s\n\"", text ) );
 }
 

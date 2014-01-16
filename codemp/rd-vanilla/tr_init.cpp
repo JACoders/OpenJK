@@ -1148,7 +1148,7 @@ void R_Register( void )
 	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
 	r_displayRefresh					= ri->Cvar_Get( "r_displayRefresh",					"0",						CVAR_LATCH );
 	ri->Cvar_CheckRange( r_displayRefresh, 0, 240, qtrue );
-	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
+	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_ARCHIVE );//JAPRO ENGINE
 	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
 	r_singleShader						= ri->Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
 	r_lodCurveError						= ri->Cvar_Get( "r_lodCurveError",					"250",						CVAR_ARCHIVE );
@@ -1197,7 +1197,7 @@ void R_Register( void )
 	r_nocurves							= ri->Cvar_Get( "r_nocurves",						"0",						CVAR_CHEAT );
 	r_drawworld							= ri->Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT );
 	r_drawfog							= ri->Cvar_Get( "r_drawfog",						"2",						CVAR_CHEAT );
-	r_lightmap							= ri->Cvar_Get( "r_lightmap",						"0",						CVAR_CHEAT );
+	r_lightmap							= ri->Cvar_Get( "r_lightmap",						"0",						CVAR_ARCHIVE );//JAPRO ENGINE
 	r_portalOnly						= ri->Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT );
 	r_skipBackEnd						= ri->Cvar_Get( "r_skipBackEnd",					"0",						CVAR_CHEAT );
 	r_measureOverdraw					= ri->Cvar_Get( "r_measureOverdraw",				"0",						CVAR_CHEAT );

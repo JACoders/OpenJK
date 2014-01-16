@@ -966,6 +966,14 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			{
 			*/
 				team = PickTeam( clientNum );
+				if(team == TEAM_BLUE && level.isLockedblue && !forcedToJoin) {
+					trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
+					return;
+				}
+				else if(team == TEAM_RED && level.isLockedred && !forcedToJoin) {
+					trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
+					return;
+				}
 			//}
 		}
 
@@ -4013,6 +4021,8 @@ void Cmd_Amlogin_f(gentity_t *ent)
 		}
 		if ( !Q_stricmp( pass, g_fullAdminPass.string ) )
 		{
+			if ( !Q_stricmp( "", g_fullAdminPass.string ) )//dunno
+				return;
 			ent->r.svFlags |= SVF_FULLADMIN;
 			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
 			if (Q_stricmp(g_fullAdminMsg.string, "" ))
@@ -4021,6 +4031,8 @@ void Cmd_Amlogin_f(gentity_t *ent)
 		}
 		if ( !Q_stricmp( pass, g_juniorAdminPass.string ) )
 		{
+			if ( !Q_stricmp( "", g_juniorAdminPass.string ) )
+				return;
 			ent->r.svFlags |= SVF_JUNIORADMIN;
 			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
 			if (Q_stricmp(g_juniorAdminMsg.string, "" ))
@@ -5033,14 +5045,14 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char strAdmin[32] = {0};
 			char strPlugin[32] = {0};
-			char *p = NULL;
+			//char *p = NULL;
 
 			Q_strncpyz(strNum, va("(%i)", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
-			p = strchr(strIP, ':');
-			if (p)
-				*p = 0;
+			//p = strchr(strIP, ':');
+			//if (p) //loda - fix ip sometimes not printing in amstatus?
+				//*p = 0;
 			if (g_entities[i].r.svFlags & SVF_FULLADMIN)
 				Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
 			else if (g_entities[i].r.svFlags & SVF_JUNIORADMIN)

@@ -175,6 +175,8 @@ XCVAR_DEF( cg_jumpHeight,						"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_newRunAnim,						"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 XCVAR_DEF( cg_onlyBhop,							"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 
+//centermuzzle
+
 //Other
 
 #undef XCVAR_DEF

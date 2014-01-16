@@ -1385,8 +1385,8 @@ qboolean CL_ReadyToSendPacket( void ) {
 	// check for exceeding cl_maxpackets
 	if ( cl_maxpackets->integer < 15 ) {
 		Cvar_Set( "cl_maxpackets", "15" );
-	} else if ( cl_maxpackets->integer > 100 ) {
-		Cvar_Set( "cl_maxpackets", "100" );
+	} else if ( cl_maxpackets->integer > 125 ) { //JAPRO ENGINE
+		Cvar_Set( "cl_maxpackets", "125" );
 	}
 	oldPacketNum = (clc.netchan.outgoingSequence - 1) & PACKET_MASK;
 	delta = cls.realtime -  cl.outPackets[ oldPacketNum ].p_realtime;

@@ -152,7 +152,7 @@ XCVAR_DEF( pmove_float,					"0",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qt
 XCVAR_DEF( pmove_msec,					"8",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qtrue )
 XCVAR_DEF( RMG,							"0",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( sv_cheats,					"1",			NULL,				CVAR_NONE,										qfalse )
-XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue ) //Should be systeminfo, well not really but make client set their sv_fps to this
+XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
@@ -205,7 +205,7 @@ XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE|CVAR_SERVERINFO,		
 XCVAR_DEF( g_fixRoll,					"0",			CVU_Roll,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_movementStyle,				"0",			CVU_MovementStyle,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_movementStyle,				"1",			CVU_MovementStyle,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
