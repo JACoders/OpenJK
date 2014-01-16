@@ -728,7 +728,7 @@ void IN_MouseEvent (int mstate)
 			s_wmv.lastButtonTime[i] = Sys_Milliseconds();//JAPRO ENGINE
 			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], true, 0, NULL );
 		}
-		else if ( (mstate & (1 << i)) && (s_wmv.lastButtonTime[i] + m_repeatDelay->integer < Sys_Milliseconds()) )//JAPRO ENGINE
+		else if ( m_repeatDelay->integer && (mstate & (1 << i)) && (s_wmv.lastButtonTime[i] + m_repeatDelay->integer < Sys_Milliseconds()) )//JAPRO ENGINE
 		{
 			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], true, 0, NULL );
 		}

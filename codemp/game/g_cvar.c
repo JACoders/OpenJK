@@ -109,6 +109,12 @@ static void CVU_TweakJetpack(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+static void CVU_ScreenShake(void) {
+	g_screenShake.integer ?
+		(jcinfo.integer |= JAPRO_CINFO_SCREENSHAKE) : (jcinfo.integer &= ~JAPRO_CINFO_SCREENSHAKE);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
 //FIXME loda - Screenshake stuff?
 
 static void CVU_ForceCombo(void) { //Only needed to predict speed+darkrage runspeed :/

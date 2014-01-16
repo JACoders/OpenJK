@@ -165,11 +165,11 @@ XCVAR_DEF( g_fixFlagHitbox,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_rabbit,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
-XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -177,7 +177,7 @@ XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 
 //JAPRO FORCE
-XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_pushPullKnockdown,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -190,7 +190,7 @@ XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
-XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_weaponDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -200,15 +200,15 @@ XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue
 XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO MOVEMENT
-XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_fixRoll,					"0",			CVU_Roll,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_movementStyle,				"1",			CVU_MovementStyle,	CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
-XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixRoll,					"0",			CVU_Roll,			CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_movementStyle,				"1",			CVU_MovementStyle,	CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
@@ -229,18 +229,19 @@ XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 
 
 //JAPRO OTHER Gameplay
-XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowRaceMode,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Other
 XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue )
 XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_newBotAITarget,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_SERVERINFO|CVAR_LATCH,		qtrue )
-XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
+XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_nochat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_corpseRemovalTime,			"30",			NULL,				CVAR_ARCHIVE,									qtrue )
