@@ -77,6 +77,7 @@ cvar_t	*cl_framerate;
 
 cvar_t	*cl_guidServerUniq;
 
+cvar_t	*m_repeatDelay;//JAPRO ENGINE
 cvar_t	*cl_autolodscale;
 
 #ifndef _WIN32
@@ -2716,6 +2717,8 @@ void CL_Init( void ) {
 
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
+	m_repeatDelay = Cvar_Get( "m_repeatDelay",	"800",	CVAR_ARCHIVE );
+	Cvar_CheckRange( m_repeatDelay, 0, 5000, qtrue );
 #ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);

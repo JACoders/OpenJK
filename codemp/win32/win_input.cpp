@@ -6,12 +6,14 @@
 #include "client/client.h"
 #include "win_local.h"
 
+#define MAX_MOUSE_BUTTONS	5//JAPRO ENGINE moved this up here
 
 typedef struct WinMouseVars_s {
 	int			oldButtonState;
 
 	qboolean	mouseActive;
 	qboolean	mouseInitialized;
+	int			lastButtonTime[MAX_MOUSE_BUTTONS];//JAPRO ENGINE
 } WinMouseVars_t;
 
 static WinMouseVars_t s_wmv;
@@ -700,8 +702,6 @@ void IN_StartupMouse( void )
 IN_MouseEvent
 ===========
 */
-#define MAX_MOUSE_BUTTONS	5
-
 static int mouseConvert[MAX_MOUSE_BUTTONS] =
 {
 	A_MOUSE1,
@@ -711,6 +711,36 @@ static int mouseConvert[MAX_MOUSE_BUTTONS] =
 	A_MOUSE5
 };
 
+void IN_MouseEvent (int mstate)
+{
+	int		i;
+
+	if ( !s_wmv.mouseInitialized )
+	{
+		return;
+	}
+
+	// perform button actions
+	for  (i = 0 ; i < MAX_MOUSE_BUTTONS ; i++ )
+	{
+		if ( (mstate & (1 << i)) && !(s_wmv.oldButtonState & (1 << i)) ) //We are pressing button for the first time
+		{
+			s_wmv.lastButtonTime[i] = Sys_Milliseconds();//JAPRO ENGINE
+			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], true, 0, NULL );
+		}
+		else if ( (mstate & (1 << i)) && (s_wmv.lastButtonTime[i] + m_repeatDelay->integer < Sys_Milliseconds()) )//JAPRO ENGINE
+		{
+			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], true, 0, NULL );
+		}
+		if ( !(mstate & (1 << i)) && (s_wmv.oldButtonState & (1 << i)) ) //We are letting go of button for the first time
+		{
+			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], false, 0, NULL );
+		}
+	}	
+	s_wmv.oldButtonState = mstate;
+}
+
+/* //OLD
 void IN_MouseEvent (int mstate)
 {
 	int		i;
@@ -734,6 +764,7 @@ void IN_MouseEvent (int mstate)
 	}	
 	s_wmv.oldButtonState = mstate;
 }
+*/
 
 
 /*
