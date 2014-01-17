@@ -1593,7 +1593,14 @@ saberMoveName_t PM_SaberFlipOverAttackMove(void)
 	VectorCopy( pm->ps->viewangles, fwdAngles );
 	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
 	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
-	VectorScale( jumpFwd, 150, pm->ps->velocity );//was 50
+#ifdef _GAME
+	if (g_tweakYellowDFA.integer)
+#else
+	if ((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA))
+#endif
+		VectorScale( jumpFwd, 50, pm->ps->velocity );
+	else
+		VectorScale( jumpFwd, 150, pm->ps->velocity );
 	pm->ps->velocity[2] = 400;
 
 	/*

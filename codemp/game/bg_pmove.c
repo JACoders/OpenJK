@@ -11095,16 +11095,12 @@ void PmoveSingle (pmove_t *pmove) {
 			{
 //[JAPRO - Serverside - Saber - Tweak yellow dfa - Start]
 #ifdef _GAME
-				if (g_tweakYellowDFA.integer)
+				if (!g_tweakYellowDFA.integer)
 #else
-				if ((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA))
+				if (!((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA)))
 #endif
 
 				{
-					pm->ps->velocity[0] *= 0.98f;
-					pm->ps->velocity[1] *= 0.98f;
-				}
-				else {
 					pm->ps->viewangles[YAW] += pml.frametime*240.0f;
 					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 				}
