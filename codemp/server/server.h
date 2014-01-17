@@ -255,7 +255,6 @@ struct leakyBucket_s {
 
 	union {
 		byte	_4[4];
-		byte	_x[10];
 	} ipv;
 
 	int					lastTime;
