@@ -1635,7 +1635,8 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				ucmd->forwardmove = 0;
+				if (!pmove_fixed.integer)//JAPRO Fix Pmove Wallrun
+					ucmd->forwardmove = 0;
 				return qtrue;
 			}
 		}

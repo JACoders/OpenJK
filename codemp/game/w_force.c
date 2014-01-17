@@ -595,7 +595,12 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 
 qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt )
 {
-	int	drain = overrideAmt ? overrideAmt :
+	int	drain;
+
+	if (forcePower < FP_FIRST || forcePower >= NUM_FORCE_POWERS)
+		return qfalse;
+	
+	drain = overrideAmt ? overrideAmt :
 				forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower];
 
 	if (self->client->ps.fd.forcePowersActive & (1 << forcePower))

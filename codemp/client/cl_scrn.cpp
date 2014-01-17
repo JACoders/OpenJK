@@ -305,7 +305,7 @@ void SCR_DrawDemoRecording( void ) {
 	else if (cg_demoRecordMsg->integer < 1)
 		Com_sprintf( string, sizeof(string), "REC" );
 
-	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue, qfalse );
+	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue, qfalse );//Loda fixme, draw in a better spot?
 }
 
 
