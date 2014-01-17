@@ -4984,7 +4984,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		}
 	}
 
-	if (self->client->ps.fd.forcePowerSelected < 0)
+	if (self->client->ps.fd.forcePowerSelected < 0 || self->client->ps.fd.forcePowerSelected >= NUM_FORCE_POWERS)
 	{ //bad
 		self->client->ps.fd.forcePowerSelected = 0;
 	}
