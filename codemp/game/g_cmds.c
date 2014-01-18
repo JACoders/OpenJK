@@ -5649,7 +5649,6 @@ void Cmd_Amrename_f(gentity_t *ent)
 	int		clientid = -1; 
 	char	arg[MAX_STRING_CHARS];
 	char	userinfo[MAX_INFO_STRING]; 
-	gentity_t *player;
    
 	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 	{

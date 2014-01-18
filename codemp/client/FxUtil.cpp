@@ -93,6 +93,7 @@ int	FX_Init( refdef_t* refdef )
 	fx_debug = Cvar_Get("fx_debug", "0", CVAR_TEMP);
 	fx_countScale = Cvar_Get("fx_countScale", "1", CVAR_ARCHIVE);
 	fx_nearCull = Cvar_Get("fx_nearCull", "16", CVAR_ARCHIVE);
+	fx_physics = Cvar_Get("fx_physics", "0", CVAR_ARCHIVE);//JAPRO ENGINE
 
 	theFxHelper.ReInit(refdef);
 

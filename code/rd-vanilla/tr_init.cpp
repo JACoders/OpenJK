@@ -171,7 +171,6 @@ cvar_t	*r_debugSort;
 cvar_t	*r_debugStyle;
 
 cvar_t	*r_modelpoolmegs;
-
 /*
 Ghoul2 Insert Start
 */
@@ -1292,7 +1291,6 @@ void R_Register( void )
 	r_noportals = ri.Cvar_Get ("r_noportals", "0", CVAR_CHEAT);
 	r_shadows = ri.Cvar_Get( "cg_shadows", "1", 0 );
 	r_shadowRange = ri.Cvar_Get( "r_shadowRange", "1000", CVAR_ARCHIVE );
-
 /*
 Ghoul2 Insert Start
 */

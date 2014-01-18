@@ -207,11 +207,11 @@ bool CParticle::UpdateOrigin(void)
 	new_origin[2] = mOrigin1[2] + (theFxHelper.mRealTime * mVel[2]);// + (theFxHelper.mHalfRealTimeSq * mVel[2]);
 
 	// Only perform physics if this object is tagged to do so
-	if ( (mFlags & FX_APPLY_PHYSICS) && !(mFlags & FX_PLAYER_VIEW) )
+	if ( ((mFlags & FX_APPLY_PHYSICS) || (fx_physics && fx_physics->integer > 1)) && !(mFlags & FX_PLAYER_VIEW) )
 	{
 		bool solid;
 
-		if ( mFlags & FX_EXPENSIVE_PHYSICS )
+		if ( mFlags & FX_EXPENSIVE_PHYSICS || (fx_physics && fx_physics->integer) )
 		{
 			solid = true; // by setting this to true, we force a real trace to happen
 		}
