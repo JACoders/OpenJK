@@ -3555,7 +3555,7 @@ static void PM_AirMove( void ) {
 static void PM_DodgeMove(int forward, int right)
 {
 	vec3_t dodgedir;
-	static const int DODGE_SPEED = 380;
+	static const int DODGE_SPEED = 320;
 	static const int DODGE_JUMP_SPEED = 150;
 
 	VectorMA( vec3_origin, right, pml.right, dodgedir );
@@ -3571,7 +3571,7 @@ static void PM_DodgeMove(int forward, int right)
 static void PM_DashMove(void)
 {
 	vec3_t dashdir;
-	static const int DASH_SPEED = 475;
+	static const int DASH_SPEED = 380;
 	static const int DASH_JUMP_SPEED = 200;
 	float xyspeed;
 
@@ -3610,6 +3610,8 @@ static void PM_CheckDash(void)
 		return;
 
 	pm->ps->stats[STAT_DASHTIME] = DASH_DELAY;
+
+	//PM_AddEvent( EV_FALL );
 
 	if (pm->cmd.forwardmove > 0) {//W
 		if (pm->cmd.rightmove > 0) //D
@@ -3652,6 +3654,88 @@ static void PM_CheckDash(void)
 		}
 	}
 }
+
+
+
+
+
+
+
+static void PM_CheckWallJump( void )//loda fixme, wip
+{
+	vec3_t normal;
+	float hspeed;
+	static const int WJ_DELAY = 1600;
+	static const int DODGE_SPEED = 380;
+	static const int MIN_WJSPEED = 200;
+	static const int WJ_UPSPEED = 370;
+	static const float WJ_BOUNCEFACTOR = 0.5;//0.3?
+	trace_t trace;
+	vec3_t point;
+	vec3_t xyspeed;
+
+	if (pm->ps->groundEntityNum != ENTITYNUM_NONE)//Wut? this should be entitynum_none?
+		return;//only in air?
+
+	if (pm->ps->weaponTime > 0)
+		return;
+
+#ifdef _GAME
+	if (g_dodge.integer <= 1)
+#else
+	if (!(cgs.jcinfo & JAPRO_CINFO_DASH))
+#endif
+		return;
+
+	if (pm->ps->stats[STAT_DASHTIME] > 0)
+		return;
+
+	point[0] = pm->ps->origin[0];
+	point[1] = pm->ps->origin[1];
+	point[2] = pm->ps->origin[2] - STEPSIZE;
+
+	// don't walljump if our height is smaller than a step 
+	// unless the player is moving faster than dash speed and upwards
+	xyspeed[0] = pm->ps->velocity[0];
+	xyspeed[1] = pm->ps->velocity[1];
+	xyspeed[2] = 0;
+
+	hspeed = VectorLength(xyspeed);
+
+	pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, CONTENTS_SOLID);
+		
+	if((hspeed > DODGE_SPEED && pm->ps->velocity[2] > 8) || (trace.fraction == 1) || /*(!ISWALKABLEPLANE(&trace.plane)*/ !trace.startsolid)
+	{
+		float oldupvelocity = pm->ps->velocity[2];
+		VectorClear( normal );
+
+		//dont do this if we arnt touching a wall... FIXME?
+
+		pm->ps->velocity[2] = 0;
+
+		hspeed = VectorNormalize(xyspeed);
+				
+		PM_ClipVelocity( pm->ps->velocity, normal, pm->ps->velocity, 1.0005f );
+		VectorMA( pm->ps->velocity, WJ_BOUNCEFACTOR, normal, pm->ps->velocity );
+
+		if( hspeed < MIN_WJSPEED )
+			hspeed = MIN_WJSPEED;
+
+		VectorNormalize( pm->ps->velocity );
+
+		VectorScale( pm->ps->velocity, hspeed, pm->ps->velocity );
+		pm->ps->velocity[2] = ( oldupvelocity > WJ_UPSPEED ) ? oldupvelocity : WJ_UPSPEED; // jal: if we had a faster upwards speed, keep it
+				
+		pm->ps->stats[STAT_DASHTIME] = WJ_DELAY;
+		
+		//PM_AddEvent( EV_FALL );
+#ifdef _GAME
+		G_PlayEffect( EFFECT_LANDING_SAND, trace.endpos, trace.plane.normal );//Should be spot on wall, and wallnormal, a better, predicted way to do this?
+#endif
+	}
+}
+
+
 
 /*
 ===================
@@ -8483,6 +8567,9 @@ static void PM_DropTimers( void ) {
 			pm->ps->torsoTimer = 0;
 		}
 	}
+
+	if(pm->ps->stats[STAT_DASHTIME] > 0)//JAPRO dodge/dash/wj
+		pm->ps->stats[STAT_DASHTIME] -= pml.msec;
 }
 
 // Following function is stateless (at the moment). And hoisting it out
@@ -11599,6 +11686,11 @@ void PmoveSingle (pmove_t *pmove) {
 	{
 		savedGravity = pm->ps->gravity;
 		pm->ps->gravity *= 0.5;
+	}
+
+	if (pm->cmd.buttons & BUTTON_DASH) { //JAPRO DASH
+		PM_CheckDash();
+		PM_CheckWallJump();
 	}
 
 	//if we're in jetpack mode then see if we should be jetting around

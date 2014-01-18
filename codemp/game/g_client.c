@@ -1967,14 +1967,13 @@ static void CheckDuplicateName(int clientNum) {
 		} 
 		while (num++ < level.maxclients && ClientNameInUse(bufname, clientNum));
 		{
-			// move bufname back to netname
-			Q_strncpyz(netname, bufname, MAX_NETNAME);
+			char	userinfo[MAX_INFO_STRING]; 
 
-			//level.clients[clientNum].pers.netnameTime = level.time - 5000;
-			/*trap_GetUserinfo(clientNum, userinfo, sizeof(userinfo)); 
+			Q_strncpyz(netname, bufname, MAX_NETNAME);// move bufname back to netname
+			trap->GetUserinfo(clientNum, userinfo, sizeof(userinfo)); 
 			Info_SetValueForKey(userinfo, "name", bufname);
-			trap_SetUserinfo(clientNum, userinfo); 
-			ClientUserinfoChanged(clientNum); */
+			trap->SetUserinfo(clientNum, userinfo); 
+			ClientUserinfoChanged(clientNum); 
 		}
 
 

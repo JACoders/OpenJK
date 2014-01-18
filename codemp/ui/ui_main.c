@@ -933,7 +933,7 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
 
-			if (trap->Cvar_VariableValue( "g_gametype" ) < GT_TEAM)
+			if (trap->Cvar_VariableValue( "g_gametype" ) < GT_TEAM)//loda fixme?
 			{
 				return;
 			}

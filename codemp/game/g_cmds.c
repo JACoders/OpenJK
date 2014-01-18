@@ -5094,16 +5094,19 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 Cmd_Clanwhois_f
 =================
 */
-static void Cmd_Clanwhois_f(gentity_t *ent)
+static void Cmd_Clanwhois_f(gentity_t *ent)//loda fixme, testme
 {
 		gclient_t *client;
 		const int clientNum = ent - g_entities;
+		char clanPass[MAX_QPATH];//meh
 		int i;
 
 		if (!ent->client)
 			return;
 
-		if (ent->client->pers.clanpass[0] == 0)//no clanpass
+		if (trap->Argc() > 1)//Clanwhois <clanpass>
+			trap->Argv(1, clanPass, sizeof(clanPass));
+		else if (ent->client->pers.clanpass[0] == 0)//Normal clanwhois, and we have no clanpass
 			return;
 
 		for (i = 0, client = level.clients; i < level.maxclients; ++i, ++client)
@@ -5114,7 +5117,10 @@ static void Cmd_Clanwhois_f(gentity_t *ent)
 			if (i == ent->client->ps.clientNum)
 				continue;
 
-			if (Q_stricmp(ent->client->pers.clanpass, client->pers.clanpass))
+			if (trap->Argc() <= 1)
+				Q_strncpyz(clanPass, ent->client->pers.clanpass, sizeof(clanPass));
+
+			if (Q_stricmp(clanPass, client->pers.clanpass))
 				continue;
 
 			trap->SendServerCommand(clientNum, va("print \"^5%i ^1- ^7(%s^7)\n\"", i, client->pers.netname)); 
@@ -5685,8 +5691,7 @@ void Cmd_Amrename_f(gentity_t *ent)
    Info_SetValueForKey(userinfo, "name", arg);
    trap->SetUserinfo(clientid, userinfo); 
    ClientUserinfoChanged(clientid); 
-   player = &g_entities[clientid];
-   player->client->pers.netnameTime = level.time + 5000; // hmmm... 
+   level.clients[clientid].pers.netnameTime = level.time + 5000;
 }
 //[JAPRO - Serverside - All - Amrename - End]
 void Cmd_Race_f(gentity_t *ent)
