@@ -53,6 +53,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 		return;
 	}
 
+	if ( weaponNum >= WP_NUM_WEAPONS ) {
+		return;
+	}
+
 	if ( weaponInfo->registered ) {
 		return;
 	}
