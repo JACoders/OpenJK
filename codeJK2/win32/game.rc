@@ -72,11 +72,11 @@ BEGIN
         BEGIN
             VALUE "Comments", "Raven Software"
             VALUE "CompanyName", "Activision Inc"
-            VALUE "FileDescription", "OpenJK JKA Mode DLL"
+            VALUE "FileDescription", "OpenJK JK2 Mode DLL"
             VALUE "FileVersion", VERSION_STRING
-            VALUE "InternalName", "ja game.dll"
+            VALUE "InternalName", "jk2 game.dll"
             VALUE "LegalCopyright", "Copyright (C) 2003"
-            VALUE "OriginalFilename", "jagamex86.dll"
+            VALUE "OriginalFilename", "jk2gamex86.dll"
             VALUE "ProductName", "OpenJK Singleplayer"
             VALUE "ProductVersion", VERSION_STRING
         END

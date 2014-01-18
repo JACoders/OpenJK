@@ -1811,7 +1811,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 			}
 			else
 			{
-				extern void CalcMuzzlePoint( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint, float lead_in );
+				extern void CalcMuzzlePoint( gentity_t *const ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint, float lead_in );
 				AngleVectors( cg_entities[0].lerpAngles, d_f, d_rt, d_up );
 				CalcMuzzlePoint( &g_entities[0], d_f, d_rt, d_up, start , 0 );
 			}
