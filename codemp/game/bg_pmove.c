@@ -11690,7 +11690,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 	if (pm->cmd.buttons & BUTTON_DASH) { //JAPRO DASH
 		PM_CheckDash();
-		PM_CheckWallJump();
+		//PM_CheckWallJump();
 	}
 
 	//if we're in jetpack mode then see if we should be jetting around

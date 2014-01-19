@@ -1185,13 +1185,14 @@ void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activa
 
 
 	if (activator->client->pers.stats.startTime) {
-		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
-		activator->client->pers.stats.displacement /= (1000.0f / (float)(level.time - level.previousTime));
+		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
+		float average = (activator->client->pers.stats.displacement / (1000.0f / (float)(level.time - level.previousTime))) / time;
+		average = (activator->client->pers.stats.topSpeed > average) ? average : activator->client->pers.stats.topSpeed; //Loda fixme sad hack
 
 		if (self->message)
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));
 		else
-			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, activator->client->pers.stats.displacement/time));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));
 
 		activator->client->pers.stats.startTime = 0;
 		activator->client->pers.stats.topSpeed = 0;
@@ -1206,11 +1207,11 @@ void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *
 		return;
 
 	if (activator->client->pers.stats.startTime && (level.time - activator->client->pers.stats.lastCheckpointTime > 1000)) {
-		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
-		float displacement = activator->client->pers.stats.displacement;
+		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
+		float average = (activator->client->pers.stats.displacement / (1000.0f / (float)(level.time - level.previousTime))) / time;
+		average = (activator->client->pers.stats.topSpeed > average) ? average : activator->client->pers.stats.topSpeed; //Loda fixme sad hack
 
-		displacement /= (1000 / (level.time - level.previousTime));
-		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\"", time, activator->client->pers.stats.topSpeed, displacement/time));
+		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
 		activator->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }
