@@ -2871,6 +2871,13 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		ent->client->sess.sawMOTD = qtrue;
 	}
 
+	if (g_raceMode.integer == 1)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
+		client->pers.raceMode = qtrue;
+	if (client->pers.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
+
 	G_ClearClientLog(clientNum);
 }
 
@@ -4036,9 +4043,10 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	if (!g_allowRaceMode.integer && client->pers.raceMode) 
+	if (g_raceMode.integer == 1)
+		client->pers.raceMode = qtrue;
+	else if (!g_raceMode.integer && client->pers.raceMode) 
 		client->pers.raceMode = qfalse;
-
 	if (client->pers.raceMode) 
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else

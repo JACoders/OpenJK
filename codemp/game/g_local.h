@@ -134,7 +134,7 @@ extern int gEscapeTime;
 
 #include "g_unlagged.h"//testunlagged
 
-extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels
+extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is this extern
 
 //[JAPRO - Serverside - All - Jcinfo bitvalues
 #define JAPRO_CINFO_FLIPKICK		(1<<0)	//Allow player flipkicking (normal style)

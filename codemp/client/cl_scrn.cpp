@@ -286,7 +286,7 @@ SCR_DrawDemoRecording
 */
 void SCR_DrawDemoRecording( void ) {
 	char	string[1024];
-	int		pos;
+	int		pos, xpos, ypos;
 
 	if ( !clc.demorecording ) {
 		return;
@@ -305,7 +305,16 @@ void SCR_DrawDemoRecording( void ) {
 	else if (cg_demoRecordMsg->integer < 1)
 		Com_sprintf( string, sizeof(string), "REC" );
 
-	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue, qfalse );//Loda fixme, draw in a better spot?
+	if (cg_demoRecordMsg->integer < 3) {
+		xpos = 5;
+		ypos = 36;
+	}
+	else {
+		xpos = 320 - strlen( string ) * 4;
+		ypos = 20;
+	}
+
+	SCR_DrawStringExt( xpos, ypos, 8, string, g_color_table[7], qtrue, qfalse );//Loda fixme, draw in a better spot?
 }
 
 

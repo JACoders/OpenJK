@@ -4868,7 +4868,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		trap->SendServerCommand( ent-g_entities, "print \"engage_FullForceDuel \"" ); 
 		trap->SendServerCommand( ent-g_entities, "print \"engage_gunDuel \"" ); 
 	}
-	if (g_allowRaceMode.integer) 
+	if (g_raceMode.integer > 1) 
 		trap->SendServerCommand( ent-g_entities, "print \"race \"" ); 
 	if (g_allowSaberSwitch.integer) 
 		trap->SendServerCommand( ent-g_entities, "print \"saber \"" ); 
@@ -5094,7 +5094,7 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 Cmd_Clanwhois_f
 =================
 */
-static void Cmd_Clanwhois_f(gentity_t *ent)//loda fixme, testme
+static void Cmd_Clanwhois_f(gentity_t *ent)
 {
 		gclient_t *client;
 		const int clientNum = ent - g_entities;
@@ -5698,7 +5698,7 @@ void Cmd_Race_f(gentity_t *ent)
 	if (!ent->client)
 		return;
 
-	if (!g_allowRaceMode.integer) {
+	if (g_raceMode.integer < 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed!\n\"");
 		ent->client->pers.raceMode = qfalse;
 		return;
@@ -5743,8 +5743,10 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Corpses dissapear after ^2%i ^5seconds\n\"", g_corpseRemovalTime.integer));
 	if (g_newBotAI.integer)
 		trap->SendServerCommand(ent-g_entities, va("print \"     ^5New bot AI for force and saber-only combat\n\"", g_corpseRemovalTime.integer));
-	if (g_allowRaceMode.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5/race mode option is enabled\n\"", g_corpseRemovalTime.integer));
+	if (g_raceMode.integer == 1)
+		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode is enabled\n\"");
+	else if (g_raceMode.integer > 1)
+		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode option is enabled\n\"");
 
 	//Saber changes
 	trap->SendServerCommand(ent-g_entities, "print \" ^3Saber Changes:\n\"");
@@ -5924,12 +5926,9 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 	gentity_t	*thrown;
 	gitem_t		*item;
 
-	//loda - clean this
-	if (g_gametype.integer == GT_CTF)
-	{
+	if (g_gametype.integer == GT_CTF) {
 	}
-	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)
-	{
+	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer) {
 	}
 	else return;
 	

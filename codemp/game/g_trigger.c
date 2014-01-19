@@ -1166,6 +1166,13 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	}
 }
 
+//Well this should be somewhere else but this is the only place it gets called so whatever
+qboolean ValidRaceSettings(void)
+{
+	//How 2 check if cvars were valid the whole time of run? :S
+	return qtrue;
+}
+
 void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
 	if ( !activator->client )
 		return;
@@ -1189,7 +1196,11 @@ void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activa
 		float average = (activator->client->pers.stats.displacement / (1000.0f / (float)(level.time - level.previousTime))) / time;
 		average = (activator->client->pers.stats.topSpeed > average) ? average : activator->client->pers.stats.topSpeed; //Loda fixme sad hack
 
-		if (self->message)
+		if (ValidRaceSettings()) {
+			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
+		}
+
+		if (self->message) //loda fixme redo this shit
 			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));
 		else
 			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));

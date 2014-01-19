@@ -477,6 +477,12 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 		return;
 	}
 
+	if (self->client->ps.duelInProgress)//gun duel
+		return;
+
+	if (self->client->pers.raceMode)//racemode
+		return;
+
 	if (weapon <= WP_BRYAR_PISTOL)
 	{ //can't have this
 		return;
@@ -5025,7 +5031,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1 && !attacker->client->pers.noDamageNumbers) { //JAPRO - Serverside - Damage numbers  - Start
 		if (g_damageNumbers.integer == 1 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 6) 
-			//loda , if targ->client ? wat..
+			//loda , if targ->client ? fix NPC msg? wat..
 			trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take, targ->client->pers.netname));
 		if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5)
 			trap->SendServerCommand( attacker-g_entities, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", take));

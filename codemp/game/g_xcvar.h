@@ -232,7 +232,7 @@ XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_allowRaceMode,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_raceMode,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue )
 

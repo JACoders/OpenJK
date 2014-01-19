@@ -3655,12 +3655,6 @@ static void PM_CheckDash(void)
 	}
 }
 
-
-
-
-
-
-
 static void PM_CheckWallJump( void )//loda fixme, wip
 {
 	vec3_t normal;
@@ -3734,8 +3728,6 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 #endif
 	}
 }
-
-
 
 /*
 ===================
