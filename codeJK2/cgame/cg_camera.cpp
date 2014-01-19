@@ -677,7 +677,7 @@ void CGCam_FollowUpdate ( void )
 
 			if ( num_subjects >= MAX_CAMERA_GROUP_SUBJECTS )
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s", client_camera.cameraGroup);
+				gi.Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s\n", client_camera.cameraGroup);
 				break;
 			}
 

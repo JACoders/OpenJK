@@ -389,7 +389,7 @@ void ref_link ( gentity_t *ent )
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)", ent->targetname, ent->target );
+			gi.Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)\n", ent->targetname, ent->target );
 		}
 	}
 	
