@@ -175,7 +175,7 @@ static void CVU_Jawarun(void) {
 	(g_emotesDisable.integer & (1 << E_JAWARUN)) ?
 		(jcinfo.integer |= JAPRO_CINFO_NOJAWARUN) : (jcinfo.integer &= ~JAPRO_CINFO_NOJAWARUN);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
+}	
 
 static void CVU_Dodge(void) {
 	if (g_dodge.integer == 1) {

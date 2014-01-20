@@ -2181,7 +2181,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.isJAPRO = qfalse;
 	}
 
-	if (client && client->pers.isJAPRO) {
+	if (client && client->pers.isJAPRO) {//eh
 		s = Info_ValueForKey( userinfo, "cg_newRunAnim" );
 		if ( atoi( s ) ) {
 			client->pers.JAWARUN = qtrue;
@@ -2190,13 +2190,11 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 
-	if (client && client->pers.isJAPRO) {
-		s = Info_ValueForKey( userinfo, "cg_onlyBhop" );
-		if ( atoi( s ) ) {
-				client->pers.onlyBhop = qtrue;
-		} else {
-				client->pers.onlyBhop = qfalse;
-		}
+	s = Info_ValueForKey( userinfo, "cg_onlyBhop" );
+	if ( atoi( s ) ) {
+			client->pers.onlyBhop = qtrue;
+	} else {
+			client->pers.onlyBhop = qfalse;
 	}
 
 	s = Info_ValueForKey( userinfo, "cg_centerMuzzle" );
@@ -2211,6 +2209,18 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.noDamageNumbers = qfalse;
 	} else {
 		client->pers.noDamageNumbers = qtrue;
+	}
+
+	if (client && client->pers.isJAPRO) {//eh
+		s = Info_ValueForKey( userinfo, "cg_movementStyle" );//rename this ew
+		if (atoi(s) < 1)
+			client->pers.movementStyle = 0;
+		else if (atoi(s) == 1)
+			client->pers.movementStyle = 1;
+		else if (atoi(s) == 2)
+			client->pers.movementStyle = 2;
+		else if (atoi(s) > 2)
+			client->pers.movementStyle = 3;
 	}
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
@@ -2877,6 +2887,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
+
+	client->pers.movementStyle = 1;//Loda fixme, i want this to default to 1... so just do this here?
 
 	G_ClearClientLog(clientNum);
 }

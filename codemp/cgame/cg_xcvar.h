@@ -174,6 +174,7 @@ XCVAR_DEF( ui_tm3_cnt,							"0",					NULL,					CVAR_ROM|CVAR_INTERNAL )
 XCVAR_DEF( cg_jumpHeight,						"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_newRunAnim,						"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 XCVAR_DEF( cg_onlyBhop,							"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
+XCVAR_DEF( cg_movementStyle,					"1",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 
 //centermuzzle
 
