@@ -84,7 +84,28 @@ extern vec3_t gPainPoint;
 #define EC "\x19"
 
 #define	MAX_G_SHARED_BUFFER_SIZE		8192
-extern char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
+// used for communication with the engine
+typedef union sharedBuffer_u {
+	char							raw[MAX_G_SHARED_BUFFER_SIZE];
+	T_G_ICARUS_PLAYSOUND			playSound;
+	T_G_ICARUS_SET					set;
+	T_G_ICARUS_LERP2POS				lerp2Pos;
+	T_G_ICARUS_LERP2ORIGIN			lerp2Origin;
+	T_G_ICARUS_LERP2ANGLES			lerp2Angles;
+	T_G_ICARUS_GETTAG				getTag;
+	T_G_ICARUS_LERP2START			lerp2Start;
+	T_G_ICARUS_LERP2END				lerp2End;
+	T_G_ICARUS_USE					use;
+	T_G_ICARUS_KILL					kill;
+	T_G_ICARUS_REMOVE				remove;
+	T_G_ICARUS_PLAY					play;
+	T_G_ICARUS_GETFLOAT				getFloat;
+	T_G_ICARUS_GETVECTOR			getVector;
+	T_G_ICARUS_GETSTRING			getString;
+	T_G_ICARUS_SOUNDINDEX			soundIndex;
+	T_G_ICARUS_GETSETIDFORSTRING	getSetIDForString;
+} sharedBuffer_t;
+extern sharedBuffer_t gSharedBuffer;
 
 // movers are things like doors, plats, buttons, etc
 typedef enum {
