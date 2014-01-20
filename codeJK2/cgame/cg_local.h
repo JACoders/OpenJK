@@ -583,6 +583,8 @@ extern	vmCvar_t		cg_drawGun;
 extern	vmCvar_t		cg_autoswitch;
 extern	vmCvar_t		cg_simpleItems;
 extern	vmCvar_t		cg_fov;
+extern	vmCvar_t		cg_fovViewmodel;
+extern	vmCvar_t		cg_fovViewmodelAdjust;
 extern	vmCvar_t		cg_missionstatusscreen;
 extern	vmCvar_t		cg_endcredits;
 extern	vmCvar_t		cg_updatedDataPadForcePower1;
