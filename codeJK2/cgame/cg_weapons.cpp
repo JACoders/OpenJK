@@ -897,7 +897,13 @@ void CG_AddViewWeapon( playerState_t *ps )
 	weaponData_t  *wData;
 	centity_t	*cent;
 	float		fovOffset, leanOffset;
+	float		cgFov = (cg_fovViewmodel.integer) ? cg_fovViewmodel.integer : cg_fov.integer;
 	int i;
+
+	if (cgFov < 1)
+		cgFov = 1;
+	else if (cgFov > 130)
+		cgFov = 130;
 
 	// no gun if in third person view
 	if ( cg.renderingThirdPerson )
@@ -971,13 +977,14 @@ void CG_AddViewWeapon( playerState_t *ps )
 	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson && 
 	{
 		actualFOV = CG_ForceSpeedFOV();
+		actualFOV = (cg_fovViewmodel.integer) ? actualFOV + (cg_fovViewmodel.integer - cg_fov.integer) : actualFOV;
 	}
 	else
 	{
 		actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
 	}
 
-	if ( actualFOV > 80 ) 
+	if ( cg_fovViewmodelAdjust.integer && actualFOV > 80 ) 
 	{
 		fovOffset = -0.1 * ( actualFOV - 80 );
 	} 
@@ -1024,6 +1031,13 @@ void CG_AddViewWeapon( playerState_t *ps )
 	VectorMA( hand.origin, (cg_gun_z.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
+
+	if ( cg_fovViewmodel.integer )
+	{
+		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
+		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+	}
 
 	// map torso animations to weapon animations
 	if ( cg_gun_frame.integer ) 
