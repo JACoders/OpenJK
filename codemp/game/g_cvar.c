@@ -33,11 +33,10 @@ static const cvarTable_t gameCvarTable[] = {
 		#include "g_xcvar.h"
 	#undef XCVAR_LIST
 };
-static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
-
+static const size_t gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 
 void G_RegisterCvars( void ) {
-	int i = 0;
+	size_t i = 0;
 	const cvarTable_t *cv = NULL;
 
 	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
@@ -48,7 +47,7 @@ void G_RegisterCvars( void ) {
 }
 
 void G_UpdateCvars( void ) {
-	int i = 0;
+	size_t i = 0;
 	const cvarTable_t *cv = NULL;
 
 	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
