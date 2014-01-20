@@ -3396,7 +3396,7 @@ command_t commands[] = {
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 };
-static size_t numCommands = ARRAY_LEN( commands );
+static const size_t numCommands = ARRAY_LEN( commands );
 
 void ClientCommand( int clientNum ) {
 	gentity_t	*ent = NULL;
