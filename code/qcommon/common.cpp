@@ -146,8 +146,12 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	CL_ConsolePrint( msg );
 
+	// Strip out color codes because these aren't needed in the log/viewlog or in the output window --eez
+	Q_StripColor( msg );
+
 	// echo to dedicated console and early console
 	Sys_Print( msg );
+
 
 #ifdef OUTPUT_TO_BUILD_WINDOW
 	OutputDebugString(msg);

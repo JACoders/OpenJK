@@ -117,23 +117,23 @@ void TIMER_Load( void )
 		for ( int i = 0; i < numTimers; i++ )
 		{
 			int		length, time;
-			char	tempBuffer[1024];	//FIXME: Blech!
+			char	*tempBuffer;
 
 			gi.ReadFromSaveGame( INT_ID('T','S','L','N'), (void *) &length, sizeof( length ), NULL );
+			if(length <= 0)
+				continue; // ? shouldn't happen
 
-			//Validity check, though this will never happen (unless of course you pass in gibberish)
-			if ( length >= 1024 )
-			{
-				assert(0);
-				continue;
-			}
+			tempBuffer = (char*)gi.Malloc(length, TAG_TEMP_WORKSPACE, qfalse);
+			assert(tempBuffer);
 
 			//Read the id and time
-			gi.ReadFromSaveGame( INT_ID('T','S','N','M'), (char *) tempBuffer, length, NULL );
+			gi.ReadFromSaveGame( INT_ID('T','S','N','M'), (void *) tempBuffer, length, NULL );
 			gi.ReadFromSaveGame( INT_ID('T','D','T','A'), (void *) &time, sizeof( time ), NULL );
 
 			//Restore it
 			g_timers[ j ][(const char *) tempBuffer ] = time;
+
+			gi.Free(tempBuffer);
 		}
 	}
 }

@@ -1880,102 +1880,60 @@ qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTim
 	return qtrue;
 }
 
-int BG_ProperForceIndex(int power)
-{
-	int i = 0;
+int BG_ProperForceIndex( int power ) {
+	int i;
 
-	while (i < NUM_FORCE_POWERS)
-	{
-		if (forcePowerSorted[i] == power)
-		{
+	for ( i=0; i<NUM_FORCE_POWERS; i++ ) {
+		if ( forcePowerSorted[i] == power )
 			return i;
-		}
-
-		i++;
 	}
 
 	return -1;
 }
 
-void BG_CycleForce(playerState_t *ps, int direction)
-{
-	int i = ps->fd.forcePowerSelected;
-	int x = i;
-	int presel = i;
+void BG_CycleForce( playerState_t *ps, int direction ) {
+	int i, x, presel;
 	int foundnext = -1;
 
-	// This is actually correct otherwise breaks some forcepower strings from working with cycle
-	// If there is a better fix for correcting the bad code + fixing warning on linux please investigate
-	if (!ps->fd.forcePowersKnown & (1 << x) ||
-	//if (!(ps->fd.forcePowersKnown & (1 << x)) ||
-		x >= NUM_FORCE_POWERS ||
-		x == -1)
-	{ //apparently we have no valid force powers
+	presel = x = i = ps->fd.forcePowerSelected;
+
+	// no valid force powers
+	if ( x >= NUM_FORCE_POWERS || x == -1 )
 		return;
-	}
 
-	x = BG_ProperForceIndex(x);
-	presel = x;
+	presel = x = BG_ProperForceIndex( x );
 
-	if (direction == 1)
-	{ //get the next power
-		x++;
-	}
-	else
-	{ //get the previous power
-		x--;
-	}
-
-	if (x >= NUM_FORCE_POWERS)
-	{ //cycled off the end.. cycle around to the first
-		x = 0;
-	}
-	if (x < 0)
-	{ //cycled off the beginning.. cycle around to the last
-		x = NUM_FORCE_POWERS-1;
-	}
+	// get the next/prev power and handle overflow
+	if ( direction == 1 )	x++;
+	else					x--;
+	if ( x >= NUM_FORCE_POWERS )	x = 0;
+	if ( x < 0 )					x = NUM_FORCE_POWERS-1;
 
 	i = forcePowerSorted[x]; //the "sorted" value of this power
 
-	while (x != presel)
-	{ //loop around to the current force power
-		if (ps->fd.forcePowersKnown & (1 << i) && i != ps->fd.forcePowerSelected)
-		{ //we have the force power
-			if (i != FP_LEVITATION &&
-				i != FP_SABER_OFFENSE &&
-				i != FP_SABER_DEFENSE &&
-				i != FP_SABERTHROW)
-			{ //it's selectable
+	while ( x != presel ) {
+		// loop around to the current force power
+		if ( ps->fd.forcePowersKnown & (1 << i) && i != (signed)ps->fd.forcePowerSelected ) {
+			// we have this power
+			if ( i != FP_LEVITATION && i != FP_SABER_OFFENSE && i != FP_SABER_DEFENSE && i != FP_SABERTHROW ) {
+				// it's selectable
 				foundnext = i;
 				break;
 			}
 		}
 
-		if (direction == 1)
-		{ //next
-			x++;
-		}
-		else
-		{ //previous
-			x--;
-		}
-	
-		if (x >= NUM_FORCE_POWERS)
-		{ //loop around
-			x = 0;
-		}
-		if (x < 0)
-		{ //loop around
-			x = NUM_FORCE_POWERS-1;
-		}
+		// get the next/prev power and handle overflow
+		if ( direction == 1 )	x++;
+		else					x--;
+		if ( x >= NUM_FORCE_POWERS )	x = 0;
+		if ( x < 0 )					x = NUM_FORCE_POWERS-1;
 
 		i = forcePowerSorted[x]; //set to the sorted value again
 	}
 
-	if (foundnext != -1)
-	{ //found one, select it
+	// if we found one, select it
+	if ( foundnext != -1 )
 		ps->fd.forcePowerSelected = foundnext;
-	}
 }
 
 int BG_GetItemIndexByTag(int tag, int type)

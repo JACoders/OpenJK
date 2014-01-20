@@ -357,7 +357,7 @@ typedef struct shaderStage_s {
 
 	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
-	unsigned int	stateBits;					// GLS_xxxx mask
+	uint32_t		stateBits;					// GLS_xxxx mask
 
 	acff_t			adjustColorsForFog;
 
@@ -930,7 +930,7 @@ typedef struct glstate_s {
 	qboolean	finishCalled;
 	int			texEnv[2];
 	int			faceCulling;
-	unsigned long	glStateBits;
+	uint32_t	glStateBits;
 } glstate_t;
 
 
@@ -1298,7 +1298,7 @@ void	GL_SetDefaultState (void);
 void	GL_SelectTexture( int unit );
 void	GL_TextureMode( const char *string );
 void	GL_CheckErrors( void );
-void	GL_State( unsigned long stateVector );
+void	GL_State( uint32_t stateVector );
 void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
 
