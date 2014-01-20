@@ -2462,7 +2462,7 @@ typedef struct stageVars
 
 #define MAX_MULTIDRAW_PRIMITIVES	16384
 
-typedef struct shaderCommands_s 
+struct shaderCommands_s 
 {
 	glIndex_t	indexes[SHADER_MAX_INDEXES] QALIGN(16);
 	vec4_t		xyz[SHADER_MAX_VERTEXES] QALIGN(16);
@@ -2511,8 +2511,13 @@ typedef struct shaderCommands_s
 
 	// JA specific
 	bool		fading;
-} shaderCommands_t;
+};
 
+#ifdef _WIN32
+	typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
+#else
+	typedef struct shaderCommands_s  shaderCommands_t;
+#endif
 extern	shaderCommands_t	tess;
 extern	color4ub_t	styleColors[MAX_LIGHT_STYLES];
 
