@@ -870,7 +870,7 @@ void Com_ShutdownZoneMemory(void)
 
 	if(TheZone.Stats.iCount)
 	{
-		//Com_Printf("Automatically freeing %d blocks making up %d bytes\n", TheZone.Stats.iCount, TheZone.Stats.iCurrent);
+		Com_Printf("Automatically freeing %d blocks making up %d bytes\n", TheZone.Stats.iCount, TheZone.Stats.iCurrent);
 		Z_TagFree(TAG_ALL);
 
 		assert(!TheZone.Stats.iCount);
