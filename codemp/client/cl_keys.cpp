@@ -1047,7 +1047,6 @@ Key_Bind_f
 ===================
 */
 void Key_Bind_f( void ) {
-	char cmd[MAX_STRING_CHARS] = {0};
 	int c = Cmd_Argc();
 
 	if ( c < 2 ) {
@@ -1068,16 +1067,8 @@ void Key_Bind_f( void ) {
 			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
 		return;
 	}
-	
-	// copy the rest of the command line
-	cmd[0] = '\0';		// start out with a null string
-	for ( int i=2; i<c; i++ ) {
-		strcat( cmd, Cmd_Argv( i ) );
-		if ( i != (c-1) )
-			strcat( cmd, " " );
-	}
 
-	Key_SetBinding( b, cmd );
+	Key_SetBinding( b, Cmd_ArgsFrom( 2 ) );
 }
 
 /*
