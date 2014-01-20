@@ -2119,25 +2119,23 @@ void CIN_UploadCinematic(int handle) {
 			}
 		}
 
-		// TODO: bring over the ioquake/mp Hunk_ functions
-		// to enable this
 		// Resample the video if needed
-		// if (cinTable[handle].dirty && (cinTable[handle].CIN_WIDTH != cinTable[handle].drawX || cinTable[handle].CIN_HEIGHT != cinTable[handle].drawY))  {
-		// int *buf2;
+		if (cinTable[handle].dirty && (cinTable[handle].CIN_WIDTH != cinTable[handle].drawX || cinTable[handle].CIN_HEIGHT != cinTable[handle].drawY))  {
+			int *buf2;
 
-		// buf2 = (int *)Hunk_AllocateTempMemory( 256*256*4 );
-		//
-		//	CIN_ResampleCinematic(handle, buf2);
-		//
-		//	re.UploadCinematic( 256, 256, (byte *)buf2, handle, qtrue);
-		//	cinTable[handle].dirty = qfalse;
-		//	Hunk_FreeTempMemory(buf2);
-		//} else {
+			buf2 = (int *)Z_Malloc(256*256*4, TAG_TEMP_WORKSPACE, qfalse);
+
+			CIN_ResampleCinematic(handle, buf2);
+
+			re.UploadCinematic( 256, 256, (byte *)buf2, handle, qtrue);
+			cinTable[handle].dirty = qfalse;
+			Z_Free(buf2);
+		} else {
 			// Upload video at normal resolution
 			re.UploadCinematic( cinTable[handle].drawX, cinTable[handle].drawY,
 					cinTable[handle].buf, handle, cinTable[handle].dirty);
-		//	cinTable[handle].dirty = qfalse;
-		//}
+			cinTable[handle].dirty = qfalse;
+		}
 
 		if (cl_inGameVideo->integer == 0 && cinTable[handle].playonwalls == 1) {
 			cinTable[handle].playonwalls--;
