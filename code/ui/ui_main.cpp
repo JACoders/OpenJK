@@ -998,7 +998,9 @@ static qboolean UI_RunMenuScript ( const char **args )
 				}
 				else
 #endif
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
+				// DT EDIT: DF2 - changed start up map
+				//ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
+				ui.Cmd_ExecuteText( EXEC_APPEND, "map 01narshadda\n");
 			}
 		} 
 		else if (Q_stricmp(name, "startmap") == 0) 

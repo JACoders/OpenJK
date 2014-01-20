@@ -863,7 +863,9 @@ void CG_DrawInformation( void ) {
 		}
 	}
 
-	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"yavin1") || !strcmp(s,"demo")) )//special case for first map!
+	// DT EDIT: DF2 - changed start up map
+	//if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"yavin1") || !strcmp(s,"demo")) )//special case for first map!
+	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"01narshadda") || !strcmp(s,"demo")) )//special case for first map!
 	{
 		char	text[1024]={0};
 

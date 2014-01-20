@@ -6923,15 +6923,19 @@ Ghoul2 Insert Start
 			{//no viewentity
 				if ( cent->currentState.number == cg.snap->ps.clientNum )
 				{//I am the player
-					if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
-					{//not using saber or fists
+					//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+					//if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+					if ( cg.snap->ps.weapon != WP_SABER )
+					{//not using saber
 						ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 					}
 				}
 			}
 			else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 			{//I am the view entity
-				if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+				//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+				//if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+				if ( cg.snap->ps.weapon != WP_SABER )
 				{//not using first person saber test or, if so, not using saber
 					ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
@@ -7273,7 +7277,9 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 		if ( cent->currentState.number != 0 
 			|| cg.renderingThirdPerson 
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0 
-			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
+			//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+			//|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
+			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER) )//First person saber
 			)
 		{//in some third person mode or NPC
 			//we don't override thes in pure 1st person because they will be set before this func
@@ -7489,7 +7495,9 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 		if ( cent->currentState.number != 0 
 			|| cg.renderingThirdPerson 
 			|| cg.snap->ps.stats[STAT_HEALTH] <= 0 
-			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
+			//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+			//|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER||cg.snap->ps.weapon == WP_MELEE) )//First person saber
+			|| ( !cg.renderingThirdPerson && (cg.snap->ps.weapon == WP_SABER) )//First person saber
 			)
 		{//if NPC, third person, or dead, unless using saber
 			//Get eyePoint & eyeAngles
@@ -8019,16 +8027,20 @@ Ghoul2 Insert End
 		{//no viewentity
 			if ( cent->currentState.number == cg.snap->ps.clientNum )
 			{//I am the player
-				if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
-				{//not using saber or fists
+				//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+				//if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+				if ( cg.snap->ps.weapon != WP_SABER )
+				{//not using saber
 					renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 				}
 			}
 		}
 		else if ( cent->currentState.number == cg.snap->ps.viewEntity )
 		{//I am the view entity
-			if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
-			{//not using saber or fists
+			//DT EDIT: DF2 - removed WP_MELEE from this for no 3P auto switch
+			//if ( cg.snap->ps.weapon != WP_SABER && cg.snap->ps.weapon != WP_MELEE )
+			if ( cg.snap->ps.weapon != WP_SABER )
+			{//not using saber
 				renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 			}
 		}
