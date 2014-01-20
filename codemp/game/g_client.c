@@ -2214,13 +2214,13 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	if (client && client->pers.isJAPRO) {//eh
 		s = Info_ValueForKey( userinfo, "cg_movementStyle" );//rename this ew
 		if (atoi(s) < 1)
-			client->pers.movementStyle = 0;
+			client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
 		else if (atoi(s) == 1)
-			client->pers.movementStyle = 1;
+			client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
 		else if (atoi(s) == 2)
-			client->pers.movementStyle = 2;
+			client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
 		else if (atoi(s) > 2)
-			client->pers.movementStyle = 3;
+			client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
 	}
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
@@ -2839,6 +2839,13 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
+	if (g_raceMode.integer == 1)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
+		client->pers.raceMode = qtrue;
+	if (client->pers.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
+
 	if ( ent->ghoul2 && ent->client )
 		ent->client->renderInfo.lastG2 = NULL; //update the renderinfo bolts next update.
 
@@ -2881,14 +2888,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		ent->client->sess.sawMOTD = qtrue;
 	}
 
-	if (g_raceMode.integer == 1)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
-		client->pers.raceMode = qtrue;
-	if (client->pers.raceMode) 
-		client->ps.stats[STAT_RACEMODE] = 1;
-	else
-		client->ps.stats[STAT_RACEMODE] = 0;
-
-	client->pers.movementStyle = 1;//Loda fixme, i want this to default to 1... so just do this here?
+	client->ps.stats[STAT_MOVEMENTSTYLE] = 1;//Loda fixme, i want this to default to 1... so just do this here?
 
 	G_ClearClientLog(clientNum);
 }

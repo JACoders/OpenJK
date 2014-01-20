@@ -5418,13 +5418,13 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
 	if (!Q_stricmp("siege", mStyle) || atoi(mStyle) < 1)
-		ent->client->pers.movementStyle = 0;
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
 	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || atoi(mStyle) == 1)
-		ent->client->pers.movementStyle = 1;
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
 	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || atoi(mStyle) == 2)
-		ent->client->pers.movementStyle = 2;
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
 	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || atoi(mStyle) == 3)
-		ent->client->pers.movementStyle = 3;
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
@@ -6098,6 +6098,7 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_ALIVE },//removed cheat for admin

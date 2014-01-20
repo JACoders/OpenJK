@@ -1154,9 +1154,9 @@ Handles user intended acceleration
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
 #ifdef _GAME
-	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 0) || (pm->ps->stats[STAT_RACEMODE] && ((gentity_t *)pm_entSelf)->client->pers.movementStyle != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
+	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 0) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
 #else
-		if ((cgs.isJAPro && ((!(cgs.jcinfo & JAPRO_CINFO_NOSTRAFE) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && cg_movementStyle.integer != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL))
+		if ((cgs.isJAPro && ((!(cgs.jcinfo & JAPRO_CINFO_NOSTRAFE) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL))
 			||
 		((!cgs.isJAPro) && (pm->gametype != GT_DUEL || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)))
 #endif
@@ -2225,9 +2225,9 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 #ifdef _GAME
-				if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 3) || (pm->ps->stats[STAT_RACEMODE] && ((gentity_t *)pm_entSelf)->client->pers.movementStyle != 3))
+				if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
 #else
-				if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && cg_movementStyle.integer != 3))))
+				if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))))
 #endif
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 				return qfalse;
@@ -2247,9 +2247,9 @@ static qboolean PM_CheckJump( void )
 	{
 		// clear upmove so cmdscale doesn't lower running speed
 #ifdef _GAME
-		if ((((g_movementStyle.integer != 3) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && ((gentity_t *)pm_entSelf)->client->pers.movementStyle != 3)))
+		if ((((g_movementStyle.integer != 3) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3)))
 #else
-		if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && cg_movementStyle.integer != 3)))
+		if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3)))
 #endif
 		{
 			pm->cmd.upmove = 0;
@@ -3492,15 +3492,15 @@ static void PM_AirMove( void ) {
 	}
 	// not on ground, so little effect on velocity
 #ifdef _GAME
-	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 2) || (pm->ps->stats[STAT_RACEMODE] && ((gentity_t *)pm_entSelf)->client->pers.movementStyle == 2)) // QW or HL1.. idk fuck this
+	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 2)) // QW or HL1.. idk fuck this
 #else
-	if (cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_HL2) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && cg_movementStyle.integer == 2)))
+	if (cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_HL2) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 2)))
 #endif
 		PM_AirAccelerate(wishdir, wishspeed, pm_qw_airaccel);
 #ifdef _GAME
-	else if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 3) || (pm->ps->stats[STAT_RACEMODE] && ((gentity_t *)pm_entSelf)->client->pers.movementStyle == 3))
+	else if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
 #else
-	else if ((cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE])) || (pm->ps->stats[STAT_RACEMODE] && cg_movementStyle.integer == 3)))
+	else if ((cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE])) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)))
 #endif
 	{
 		float		accel;
