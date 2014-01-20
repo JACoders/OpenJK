@@ -500,7 +500,7 @@ static cvarTable_t cvarTable[] = {
 		#include "cg_xcvar.h"
 	#undef XCVAR_LIST
 };
-static int cvarTableSize = ARRAY_LEN( cvarTable );
+static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
 
 /*
 =================
@@ -508,8 +508,8 @@ CG_RegisterCvars
 =================
 */
 void CG_RegisterCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+	size_t		i;
+	cvarTable_t	*cv = NULL;
 
 	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		trap->Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
@@ -524,8 +524,8 @@ CG_UpdateCvars
 =================
 */
 void CG_UpdateCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+	size_t		i = 0;
+	cvarTable_t	*cv = NULL;
 
 	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		if ( cv->vmCvar ) {
