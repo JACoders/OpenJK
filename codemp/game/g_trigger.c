@@ -1195,6 +1195,8 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	VectorCopy(activator->client->ps.origin, interpOrigin);
 	VectorScale(activator->s.pos.trDelta, 0.001f, delta);//Delta is how much they travel in 1 ms.
 
+	VectorSubtract(interpOrigin, delta, interpOrigin);//Do it once before we loop
+
 	while (InStopTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
 		lessTime++; //Add one more ms to be subtracted
 		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
@@ -1205,10 +1207,10 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	return lessTime;
 }
 
-void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
-	if ( !activator->client )
+void Use_target_timer_start(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO Timers
+	if (!activator->client)
 		return;
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+	if (activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT)
 		return;
 
 	activator->client->pers.stats.startTime = trap->Milliseconds();
@@ -1218,11 +1220,12 @@ void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activ
 	activator->client->pers.stats.displacement = 0;
 }
 
-void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
+void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO Timers
+	char style[32] = {0};
 	qboolean valid = qfalse;
-	if ( !activator->client )
+	if (!activator->client)
 		return;
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT ) 
+	if (activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT) 
 		return;
 
 	if (activator->client->pers.stats.startTime) {
@@ -1240,12 +1243,21 @@ void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activa
 			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}
 
+		if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+			Q_strncpyz(style, "siege", sizeof(style));
+		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+			Q_strncpyz(style, "vq3", sizeof(style));
+		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+			Q_strncpyz(style, "qw", sizeof(style));
+		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+			Q_strncpyz(style, "cpm", sizeof(style));
+
 		if (self->message) //loda fixme redo this shit
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups (%s^5)\n\"",
-				self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, (valid ? "^2Legit" : "^1Not Legit")));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups using (^3%s^5) style (%s^5)\n\"",
+				self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 		else
-			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups (%s^5)\n\"",
-				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, (valid ? "^2Legit" : "^1Not Legit")));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups using (^3%s^5) style (%s^5)\n\"",
+				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 
 		activator->client->pers.stats.startTime = 0;
 		activator->client->pers.stats.topSpeed = 0;

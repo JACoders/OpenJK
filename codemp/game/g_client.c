@@ -2211,17 +2211,19 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.noDamageNumbers = qtrue;
 	}
 
+	/*
 	if (client && client->pers.isJAPRO) {//eh
 		s = Info_ValueForKey( userinfo, "cg_movementStyle" );//rename this ew
 		if (atoi(s) < 1)
-			client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
+			client->pers.movementStyle = 0;
 		else if (atoi(s) == 1)
-			client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
+			client->pers.movementStyle = 1;
 		else if (atoi(s) == 2)
-			client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
+			client->pers.movementStyle = 2;
 		else if (atoi(s) > 2)
-			client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
+			client->pers.movementStyle = 3;
 	}
+	*/
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
 	// set name
@@ -4063,6 +4065,15 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
+
+	if (client->pers.movementStyle == 0)
+		client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
+	else if (client->pers.movementStyle == 1)
+		client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
+	else if (client->pers.movementStyle == 2)
+		client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
+	else if (client->pers.movementStyle == 3)
+		client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
 
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;

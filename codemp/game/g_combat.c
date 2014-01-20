@@ -581,6 +581,12 @@ void TossClientItems( gentity_t *self ) {
 		return;
 	}
 
+	if (self->client->ps.duelInProgress)//gun duel
+		return;
+
+	if (self->client->pers.raceMode)//racemode
+		return;
+
 	// drop the weapon if not a gauntlet or machinegun
 	weapon = self->s.weapon;
 

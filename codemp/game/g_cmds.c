@@ -5407,24 +5407,28 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	if (!ent->client)
 		return;
 
-	if (ent->client->pers.isJAPRO)//Client is doing all this clientside with prediction, return.
-		return;
-
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, vq3, qw, or cpm>.\n\"" );
 		return;
 	}
 
+	if (!g_raceMode.integer) {
+		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");//also check to see if they are in racemode??
+		return;
+	}
+
+	trap->SendServerCommand(ent-g_entities, "print \"Your movement style will be updated at next respawn.\n\"");//also check to see if they are in racemode??
+
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
-	if (!Q_stricmp("siege", mStyle) || atoi(mStyle) < 1)
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
-	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || atoi(mStyle) == 1)
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
-	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || atoi(mStyle) == 2)
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
-	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || atoi(mStyle) == 3)
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
+	if (!Q_stricmp("siege", mStyle) || !Q_stricmp("0", mStyle))
+		ent->client->pers.movementStyle = 0;
+	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle))
+		ent->client->pers.movementStyle = 1;
+	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || !Q_stricmp("2", mStyle))
+		ent->client->pers.movementStyle = 2;
+	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || !Q_stricmp("3", mStyle))
+		ent->client->pers.movementStyle = 3;
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]

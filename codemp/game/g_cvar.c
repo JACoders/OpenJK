@@ -6,15 +6,19 @@
 
 //[JAPRO - Serverside - jcinfo update]
 static void CVU_Flipkick(void) {
-	if (g_flipKick.integer > 2) {
+	if (g_flipKick.integer > 2) {//3
 		jcinfo.integer |= JAPRO_CINFO_FLIPKICK;
 		jcinfo.integer |= JAPRO_CINFO_FIXSIDEKICK;
 	}
-	else if (g_flipKick.integer == 1) {
+	else if (g_flipKick.integer == 2) {//1
 		jcinfo.integer |= JAPRO_CINFO_FLIPKICK;
 		jcinfo.integer &= ~JAPRO_CINFO_FIXSIDEKICK;
 	}
-	else {
+	else if (g_flipKick.integer == 1) {//1
+		jcinfo.integer |= JAPRO_CINFO_FLIPKICK;
+		jcinfo.integer &= ~JAPRO_CINFO_FIXSIDEKICK;
+	}
+	else {//0
 		jcinfo.integer &= ~JAPRO_CINFO_FLIPKICK;
 		jcinfo.integer &= ~JAPRO_CINFO_FIXSIDEKICK;
 	}
