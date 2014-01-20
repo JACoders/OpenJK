@@ -100,7 +100,7 @@ void G_FindTeams( void ) {
 //	trap->Print ("%i teams with %i entities\n", c, c2);
 }
 
-char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
+sharedBuffer_t gSharedBuffer;
 
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
@@ -157,7 +157,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	B_InitAlloc(); //make sure everything is clean
 
-	trap->SV_RegisterSharedMemory(gSharedBuffer);
+	trap->SV_RegisterSharedMemory( gSharedBuffer.raw );
 
 	//Load external vehicle data
 	BG_VehicleLoadParms();
@@ -3447,63 +3447,63 @@ static void _G_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 }
 
 static int G_ICARUS_PlaySound( void ) {
-	T_G_ICARUS_PLAYSOUND *sharedMem = (T_G_ICARUS_PLAYSOUND *)gSharedBuffer;
+	T_G_ICARUS_PLAYSOUND *sharedMem = &gSharedBuffer.playSound;
 	return Q3_PlaySound( sharedMem->taskID, sharedMem->entID, sharedMem->name, sharedMem->channel );
 }
 static qboolean G_ICARUS_Set( void ) {
-	T_G_ICARUS_SET *sharedMem = (T_G_ICARUS_SET *)gSharedBuffer;
+	T_G_ICARUS_SET *sharedMem = &gSharedBuffer.set;
 	return Q3_Set( sharedMem->taskID, sharedMem->entID, sharedMem->type_name, sharedMem->data );
 }
 static void G_ICARUS_Lerp2Pos( void ) {
-	T_G_ICARUS_LERP2POS *sharedMem = (T_G_ICARUS_LERP2POS *)gSharedBuffer;
+	T_G_ICARUS_LERP2POS *sharedMem = &gSharedBuffer.lerp2Pos;
 	Q3_Lerp2Pos( sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->nullAngles ? NULL : sharedMem->angles, sharedMem->duration );
 }
 static void G_ICARUS_Lerp2Origin( void ) {
-	T_G_ICARUS_LERP2ORIGIN *sharedMem = (T_G_ICARUS_LERP2ORIGIN *)gSharedBuffer;
+	T_G_ICARUS_LERP2ORIGIN *sharedMem = &gSharedBuffer.lerp2Origin;
 	Q3_Lerp2Origin( sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->duration );
 }
 static void G_ICARUS_Lerp2Angles( void ) {
-	T_G_ICARUS_LERP2ANGLES *sharedMem = (T_G_ICARUS_LERP2ANGLES *)gSharedBuffer;
+	T_G_ICARUS_LERP2ANGLES *sharedMem = &gSharedBuffer.lerp2Angles;
 	Q3_Lerp2Angles( sharedMem->taskID, sharedMem->entID, sharedMem->angles, sharedMem->duration );
 }
 static int G_ICARUS_GetTag( void ) {
-	T_G_ICARUS_GETTAG *sharedMem = (T_G_ICARUS_GETTAG *)gSharedBuffer;
+	T_G_ICARUS_GETTAG *sharedMem = &gSharedBuffer.getTag;
 	return Q3_GetTag( sharedMem->entID, sharedMem->name, sharedMem->lookup, sharedMem->info );
 }
 static void G_ICARUS_Lerp2Start( void ) {
-	T_G_ICARUS_LERP2START *sharedMem = (T_G_ICARUS_LERP2START *)gSharedBuffer;
+	T_G_ICARUS_LERP2START *sharedMem = &gSharedBuffer.lerp2Start;
 	Q3_Lerp2Start( sharedMem->entID, sharedMem->taskID, sharedMem->duration );
 }
 static void G_ICARUS_Lerp2End( void ) {
-	T_G_ICARUS_LERP2END *sharedMem = (T_G_ICARUS_LERP2END *)gSharedBuffer;
+	T_G_ICARUS_LERP2END *sharedMem = &gSharedBuffer.lerp2End;
 	Q3_Lerp2End( sharedMem->entID, sharedMem->taskID, sharedMem->duration );
 }
 static void G_ICARUS_Use( void ) {
-	T_G_ICARUS_USE *sharedMem = (T_G_ICARUS_USE *)gSharedBuffer;
+	T_G_ICARUS_USE *sharedMem = &gSharedBuffer.use;
 	Q3_Use( sharedMem->entID, sharedMem->target );
 }
 static void G_ICARUS_Kill( void ) {
-	T_G_ICARUS_KILL *sharedMem = (T_G_ICARUS_KILL *)gSharedBuffer;
+	T_G_ICARUS_KILL *sharedMem = &gSharedBuffer.kill;
 	Q3_Kill( sharedMem->entID, sharedMem->name );
 }
 static void G_ICARUS_Remove( void ) {
-	T_G_ICARUS_REMOVE *sharedMem = (T_G_ICARUS_REMOVE *)gSharedBuffer;
+	T_G_ICARUS_REMOVE *sharedMem = &gSharedBuffer.remove;
 	Q3_Remove( sharedMem->entID, sharedMem->name );
 }
 static void G_ICARUS_Play( void ) {
-	T_G_ICARUS_PLAY *sharedMem = (T_G_ICARUS_PLAY *)gSharedBuffer;
+	T_G_ICARUS_PLAY *sharedMem = &gSharedBuffer.play;
 	Q3_Play( sharedMem->taskID, sharedMem->entID, sharedMem->type, sharedMem->name );
 }
 static int G_ICARUS_GetFloat( void ) {
-	T_G_ICARUS_GETFLOAT *sharedMem = (T_G_ICARUS_GETFLOAT *)gSharedBuffer;
+	T_G_ICARUS_GETFLOAT *sharedMem = &gSharedBuffer.getFloat;
 	return Q3_GetFloat( sharedMem->entID, sharedMem->type, sharedMem->name, &sharedMem->value );
 }
 static int G_ICARUS_GetVector( void ) {
-	T_G_ICARUS_GETVECTOR *sharedMem = (T_G_ICARUS_GETVECTOR *)gSharedBuffer;
+	T_G_ICARUS_GETVECTOR *sharedMem = &gSharedBuffer.getVector;
 	return Q3_GetVector( sharedMem->entID, sharedMem->type, sharedMem->name, sharedMem->value );
 }
 static int G_ICARUS_GetString( void ) {
-	T_G_ICARUS_GETSTRING *sharedMem = (T_G_ICARUS_GETSTRING *)gSharedBuffer;
+	T_G_ICARUS_GETSTRING *sharedMem = &gSharedBuffer.getString;
 	char *crap = NULL; //I am sorry for this -rww
 	char **morecrap = &crap; //and this
 	int r = Q3_GetString( sharedMem->entID, sharedMem->type, sharedMem->name, morecrap );
@@ -3514,11 +3514,11 @@ static int G_ICARUS_GetString( void ) {
 	return r;
 }
 static void G_ICARUS_SoundIndex( void ) {
-	T_G_ICARUS_SOUNDINDEX *sharedMem = (T_G_ICARUS_SOUNDINDEX *)gSharedBuffer;
+	T_G_ICARUS_SOUNDINDEX *sharedMem = &gSharedBuffer.soundIndex;
 	G_SoundIndex( sharedMem->filename );
 }
 static int G_ICARUS_GetSetIDForString( void ) {
-	T_G_ICARUS_GETSETIDFORSTRING *sharedMem = (T_G_ICARUS_GETSETIDFORSTRING *)gSharedBuffer;
+	T_G_ICARUS_GETSETIDFORSTRING *sharedMem = &gSharedBuffer.getSetIDForString;
 	return GetIDForString( setTable, sharedMem->string );
 }
 static qboolean G_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEnt ) {

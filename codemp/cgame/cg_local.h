@@ -970,7 +970,25 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-	char				sharedBuffer[MAX_CG_SHARED_BUFFER_SIZE];
+	// used for communication with the engine
+	union {
+		char						raw[MAX_CG_SHARED_BUFFER_SIZE];
+		TCGPointContents			pointContents;
+		TCGVectorData				vectorData;
+		TCGGetBoltData				getBoltData;
+		TCGTrace					trace;
+		TCGG2Mark					g2Mark;
+		TCGImpactMark				impactMark;
+		ragCallbackDebugBox_t		rcbDebugBox;
+		ragCallbackDebugLine_t		rcbDebugLine;
+		ragCallbackBoneSnap_t		rcbBoneSnap;
+		ragCallbackBoneInSolid_t	rcbBoneInSolid;
+		ragCallbackTraceLine_t		rcbTraceLine;
+		TCGMiscEnt					miscEnt;
+		TCGIncomingConsoleCommand	icc;
+		autoMapInput_t				autoMapInput;
+		TCGCameraShake				cameraShake;
+	} sharedBuffer;
 
 	short				radarEntityCount;
 	short				radarEntities[MAX_CLIENTS+16];
