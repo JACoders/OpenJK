@@ -1170,7 +1170,39 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 qboolean ValidRaceSettings(void)
 {
 	//How 2 check if cvars were valid the whole time of run? :S
-	return qtrue;
+	return qfalse;
+}
+
+qboolean InStopTrigger(vec3_t interpOrigin, gentity_t *trigger)
+{
+	vec3_t		mins, maxs;
+	static const vec3_t	pmins = {-15, -15, DEFAULT_MINS_2};
+	static const vec3_t	pmaxs = {15, 15, DEFAULT_MAXS_2};
+
+	VectorAdd( interpOrigin, pmins, mins );
+	VectorAdd( interpOrigin, pmaxs, maxs );
+
+	if (trap->EntityContact(mins, maxs, (sharedEntity_t *)trigger, qfalse))//Not sure what the qfalse is
+		return qtrue;
+	return qfalse;
+}
+
+int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
+{ //We know that last client frame, they were not touching the flag, but now they are.  Last client frame was pmoveMsec ms ago, so we only want to interp inbetween that range.
+	vec3_t	interpOrigin, delta;
+	int lessTime = 0;
+
+	VectorCopy(activator->client->ps.origin, interpOrigin);
+	VectorScale(activator->s.pos.trDelta, 0.001f, delta);//Delta is how much they travel in 1 ms.
+
+	while (InStopTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
+		lessTime++; //Add one more ms to be subtracted
+		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
+		if (lessTime >= activator->client->pmoveMsec) {
+			break; //In theory, this should never happen, but just incase stop it here.
+		}
+	}
+	return lessTime;
 }
 
 void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
@@ -1180,30 +1212,40 @@ void Use_target_timer_start( gentity_t *self, gentity_t *other, gentity_t *activ
 		return;
 
 	activator->client->pers.stats.startTime = trap->Milliseconds();
+	activator->client->pers.stats.startTime -= InterpolateTouchTime(activator, other);
+
 	activator->client->pers.stats.topSpeed = 0;
 	activator->client->pers.stats.displacement = 0;
 }
 
 void Use_target_timer_stop( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
+	qboolean valid = qfalse;
 	if ( !activator->client )
 		return;
 	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT ) 
 		return;
 
-
 	if (activator->client->pers.stats.startTime) {
-		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
-		float average = (activator->client->pers.stats.displacement / (1000.0f / (float)(level.time - level.previousTime))) / time;
+		float time = trap->Milliseconds() - activator->client->pers.stats.startTime;
+		float average;
+
+		time -= InterpolateTouchTime(activator, other);//Other is the trigger_multiple that set this off
+		time /= 1000.0f;
+
+		average = (activator->client->pers.stats.displacement / (1000.0f / (float)(level.time - level.previousTime))) / time;
 		average = (activator->client->pers.stats.topSpeed > average) ? average : activator->client->pers.stats.topSpeed; //Loda fixme sad hack
 
 		if (ValidRaceSettings()) {
+			valid = qtrue;
 			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}
 
 		if (self->message) //loda fixme redo this shit
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups (%s^5)\n\"",
+				self->message, activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, (valid ? "^2Legit" : "^1Not Legit")));
 		else
-			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups (%s^5)\n\"",
+				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, (valid ? "^2Legit" : "^1Not Legit")));
 
 		activator->client->pers.stats.startTime = 0;
 		activator->client->pers.stats.topSpeed = 0;
@@ -1227,8 +1269,8 @@ void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *
 	}
 }
 
-void Use_target_onlybhop_on( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO OnlyBhop
-	if ( !activator->client )
+void Use_target_onlybhop_on(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO OnlyBhop
+	if ( !activator->client)
 		return;
 	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
 		return;

@@ -930,6 +930,7 @@ struct gclient_s {
 	int			lastUpdateFrame; // JAPRO - Smooth clients loda
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
 	int			csTimeLeft;						// JAPRO - Time left for client's CenterScreen
+	int			pmoveMsec;//Japro timers
 
 	//Testunlagged
 	struct {

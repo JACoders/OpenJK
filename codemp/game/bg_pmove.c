@@ -11472,6 +11472,10 @@ void PmoveSingle (pmove_t *pmove) {
 		pml.msec = 200;
 	}
 
+#ifdef _GAME
+	((gentity_t *)pm_entSelf)->client->pmoveMsec = pml.msec;
+#endif
+
 	/*
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{

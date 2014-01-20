@@ -854,11 +854,11 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		AddScore(other, ent->r.currentOrigin, CTF_CAPTURE_BONUS);
 
 	if (cl->pers.stats.startTimeFlag) {//JAPRO SHITTY FLAG TIMER
-		const float time = (trap->Milliseconds() - cl->pers.stats.startTimeFlag) / 1000.0f;
+		const float time = (level.time - cl->pers.stats.startTimeFlag) / 1000.0f;
 		float average = (cl->pers.stats.displacementFlag / (1000.0f / (float)(level.time - level.previousTime))) / time;
 		average = (cl->pers.stats.topSpeedFlag > average) ? average : cl->pers.stats.topSpeedFlag; //Loda fixme sad hack
 
-		trap->SendServerCommand( -1, va("print \"%s^5 has captured the %s^5 flag in ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", cl->pers.netname, team == 2 ? "^1red" : "^4blue", time, cl->pers.stats.topSpeedFlag, average));
+		trap->SendServerCommand( -1, va("print \"%s^5 has captured the %s^5 flag in ^3%.2f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\n\"", cl->pers.netname, team == 2 ? "^1red" : "^4blue", time, cl->pers.stats.topSpeedFlag, average));
 		cl->pers.stats.startTimeFlag = 0;//Idk if we need this
 		cl->pers.stats.topSpeedFlag = 0;
 		cl->pers.stats.displacementFlag = 0;
@@ -970,12 +970,12 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 		cl->ps.powerups[PW_NEUTRALFLAG] = INT_MAX; // flags never expire
 
 	if (team == TEAM_RED && teamgame.redStatus == FLAG_ATBASE) {//JAPRO SHITTY FLAG TIMER
-		cl->pers.stats.startTimeFlag = trap->Milliseconds();
+		cl->pers.stats.startTimeFlag = level.time;
 		cl->pers.stats.topSpeedFlag = 0;
 		cl->pers.stats.displacementFlag = 0;
 	}
 	else if (team == TEAM_BLUE && teamgame.blueStatus == FLAG_ATBASE) {
-		cl->pers.stats.startTimeFlag = trap->Milliseconds();
+		cl->pers.stats.startTimeFlag = level.time;
 		cl->pers.stats.topSpeedFlag = 0;
 		cl->pers.stats.displacementFlag = 0;
 	}
