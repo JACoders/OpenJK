@@ -1589,6 +1589,9 @@ void ForceThrow( gentity_t *self, qboolean pull );
 void ForceTelepathy(gentity_t *self);
 qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc );
 
+//syscalls japro
+extern void JP_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod );
+
 // g_log.c
 void QDECL G_LogWeaponPickup(int client, int weaponid);
 void QDECL G_LogWeaponFire(int client, int weaponid);

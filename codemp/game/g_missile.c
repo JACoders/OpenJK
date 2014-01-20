@@ -925,7 +925,7 @@ void G_RunMissile( gentity_t *ent ) {
 	// trace a line from the previous position to the current position
 	if (d_projectileGhoul2Collision.integer == 1) //JAPRO - Serverside - Weapons - New Hitbox Option
 	{
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 
 		if (tr.fraction != 1.0 && tr.entityNum < ENTITYNUM_WORLD)
 		{
@@ -945,12 +945,12 @@ void G_RunMissile( gentity_t *ent ) {
 	}
 	else
 	{
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, passent, ent->clipmask, qfalse, 0, 0 );
 	}
 
 	if ( tr.startsolid || tr.allsolid ) {
 		// make sure the tr.entityNum is set to the entity we're stuck in
-		trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, passent, ent->clipmask, qfalse, 0, 0 );
 		tr.fraction = 0;
 	}
 	else {
@@ -973,7 +973,7 @@ void G_RunMissile( gentity_t *ent ) {
 
 		VectorCopy(ent->r.currentOrigin, lowerOrg);
 		lowerOrg[2] -= 1;
-		trap->Trace( &trG, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, lowerOrg, passent, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &trG, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, lowerOrg, passent, ent->clipmask, qfalse, 0, 0 );
 
 		VectorCopy(trG.endpos, groundSpot);
 

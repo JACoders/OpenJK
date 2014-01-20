@@ -206,15 +206,17 @@ static void EndHack(int entityNum) {
 	}
 }
 
-void trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask ) {
+void JP_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod ) {
 	BeginHack(passEntityNum);
-	Q_syscall( G_TRACE, results, start, mins, maxs, end, passEntityNum, contentmask, 0, 10 );
+	trap->Trace( results, start, mins, maxs, end, passEntityNum, contentmask, capsule, traceFlags, useLod );
 	EndHack(passEntityNum);
 }
+
+void trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask ) {
+	Q_syscall( G_TRACE, results, start, mins, maxs, end, passEntityNum, contentmask, 0, 10 );
+}
 void trap_G2Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int g2TraceType, int traceLod ) {
-	BeginHack(passEntityNum);
 	Q_syscall( G_G2TRACE, results, start, mins, maxs, end, passEntityNum, contentmask, g2TraceType, traceLod );
-	EndHack(passEntityNum);
 }
 int trap_PointContents( const vec3_t point, int passEntityNum ) {
 	return Q_syscall( G_POINT_CONTENTS, point, passEntityNum );

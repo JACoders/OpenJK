@@ -202,14 +202,11 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 	// spit the player out
 	if ( !noAngles ) {
-		if (g_quakeStyleTeleport.integer) {
-			AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+		if (g_quakeStyleTeleport.integer)
 			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
-		}
-		else {
-			AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+		else
 			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
-		}
 		player->client->ps.pm_time = 160;		// hold time
 		player->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 
@@ -455,7 +452,7 @@ void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor )
 		top[2] += 1;
 		VectorCopy( ent->r.currentOrigin, bottom );
 		bottom[2] = MIN_WORLD_COORD;
-		trap->Trace( &tr, top, ent->r.mins, ent->r.maxs, bottom, ent->s.number, MASK_NPCSOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, top, ent->r.mins, ent->r.maxs, bottom, ent->s.number, MASK_NPCSOLID, qfalse, 0, 0 );
 		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
 		{
 			G_SetOrigin( ent, tr.endpos );
@@ -884,7 +881,7 @@ void G_PortalifyEntities(gentity_t *ent)
 		{
 			trace_t tr;
 
-			trap->Trace(&tr, ent->s.origin, vec3_origin, vec3_origin, scan->r.currentOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
+			JP_Trace(&tr, ent->s.origin, vec3_origin, vec3_origin, scan->r.currentOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
 
 			if (tr.fraction == 1.0 || (tr.entityNum == scan->s.number && tr.entityNum != ENTITYNUM_NONE && tr.entityNum != ENTITYNUM_WORLD))
 			{
@@ -1257,7 +1254,7 @@ void SP_misc_holocron(gentity_t *ent)
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_holocron: misc_holocron startsolid at %s\n", vtos(ent->s.origin));
@@ -1760,7 +1757,7 @@ void SP_misc_ammo_floor_unit(gentity_t *ent)
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_ammo_floor_unit: misc_ammo_floor_unit startsolid at %s\n", vtos(ent->s.origin));
@@ -1855,7 +1852,7 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-	trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 	if ( tr.startsolid )
 	{
 		trap->Print ("SP_misc_shield_floor_unit: misc_shield_floor_unit startsolid at %s\n", vtos(ent->s.origin));
@@ -2900,7 +2897,7 @@ void maglock_link( gentity_t *self )
 	VectorMA( self->s.origin, 128, forward, end );
 	VectorMA( self->s.origin, -4, forward, start );
 
-	trap->Trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( trace.allsolid || trace.startsolid )
 	{

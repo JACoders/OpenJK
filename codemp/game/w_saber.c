@@ -1397,7 +1397,7 @@ static QINLINE qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *def
 	//try to move attacker half the diff towards the defender
 	VectorMA( attacker->r.currentOrigin, diff*0.5f, defDir, newOrg );
 
-	trap->Trace( &trace, attacker->r.currentOrigin, attacker->r.mins, attacker->r.maxs, newOrg, attacker->s.number, attacker->clipmask, qfalse, 0, 0 );
+	JP_Trace( &trace, attacker->r.currentOrigin, attacker->r.mins, attacker->r.maxs, newOrg, attacker->s.number, attacker->clipmask, qfalse, 0, 0 );
 	if ( !trace.startsolid && !trace.allsolid )
 	{
 		G_SetOrigin( attacker, trace.endpos );
@@ -1412,7 +1412,7 @@ static QINLINE qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *def
 	diff = VectorNormalize( attDir ) - idealDist;//diff will be the total error in dist
 	//try to move defender all of the remaining diff towards the attacker
 	VectorMA( defender->r.currentOrigin, diff, attDir, newOrg );
-	trap->Trace( &trace, defender->r.currentOrigin, defender->r.mins, defender->r.maxs, newOrg, defender->s.number, defender->clipmask, qfalse, 0, 0 );
+	JP_Trace( &trace, defender->r.currentOrigin, defender->r.mins, defender->r.maxs, newOrg, defender->s.number, defender->clipmask, qfalse, 0, 0 );
 	if ( !trace.startsolid && !trace.allsolid )
 	{
 		if (defender->client)
@@ -3909,7 +3909,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			oldSaberEnd[1] = oldSaberStart[1] - (oldSaberDif[1]*trDif);
 			oldSaberEnd[2] = oldSaberStart[2] - (oldSaberDif[2]*trDif);
 
-			trap->Trace(&tr, saberEnd, saberTrMins, saberTrMaxs, saberStart, self->s.number, trMask, qfalse, 0, 0);
+			JP_Trace(&tr, saberEnd, saberTrMins, saberTrMaxs, saberStart, self->s.number, trMask, qfalse, 0, 0);
 
 			VectorCopy(saberEnd, lastValidStart);
 			VectorCopy(saberStart, lastValidEnd);
@@ -3956,7 +3956,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				oldSaberEnd[1] = oldSaberStart[1] - (oldSaberDif[1]*trDif);
 				oldSaberEnd[2] = oldSaberStart[2] - (oldSaberDif[2]*trDif);
 
-				trap->Trace(&tr, saberEnd, saberTrMins, saberTrMaxs, saberStart, self->s.number, trMask, qfalse, 0, 0);
+				JP_Trace(&tr, saberEnd, saberTrMins, saberTrMaxs, saberStart, self->s.number, trMask, qfalse, 0, 0);
 				
 				VectorCopy(saberEnd, lastValidStart);
 				VectorCopy(saberStart, lastValidEnd);
@@ -3992,7 +3992,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			{
 				VectorCopy( saberEnd, saberEndExtrapolated );
 			}
-			trap->Trace(&tr, saberStart, saberTrMins, saberTrMaxs, saberEndExtrapolated, self->s.number, trMask, qfalse, 0, 0);
+			JP_Trace(&tr, saberStart, saberTrMins, saberTrMaxs, saberEndExtrapolated, self->s.number, trMask, qfalse, 0, 0);
 
 			VectorCopy(saberStart, lastValidStart);
 			VectorCopy(saberEndExtrapolated, lastValidEnd);
@@ -5612,7 +5612,7 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 				VectorCopy(self->client->ps.origin, myEyes);
 				myEyes[2] += self->client->ps.viewheight;
 
-				trap->Trace(&tr, myEyes, NULL, NULL, ent->client->ps.origin, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+				JP_Trace(&tr, myEyes, NULL, NULL, ent->client->ps.origin, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 				if (tr.fraction == 1.0f || tr.entityNum == ent->s.number)
 				{ //we have a clear line of sight to him, so it's all good.
@@ -5773,12 +5773,12 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		{
 			VectorCopy( self->r.currentOrigin, traceTo );
 			traceTo[2] = self->r.absmax[2] - 4;
-			trap->Trace( &trace, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, traceTo, ent->s.number, ent->clipmask, qfalse, 0, 0 );
+			JP_Trace( &trace, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, traceTo, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 			if ( trace.allsolid || trace.startsolid || (trace.fraction < 1.0f && trace.entityNum != self->s.number && trace.entityNum != self->client->ps.saberEntityNum) )
 			{//okay, try one more check
 				VectorNormalize2( ent->s.pos.trDelta, entDir );
 				VectorMA( ent->r.currentOrigin, radius, entDir, traceTo );
-				trap->Trace( &trace, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, traceTo, ent->s.number, ent->clipmask, qfalse, 0, 0 );
+				JP_Trace( &trace, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, traceTo, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 				if ( trace.allsolid || trace.startsolid || (trace.fraction < 1.0f && trace.entityNum != self->s.number && trace.entityNum != self->client->ps.saberEntityNum) )
 				{//can't hit me, ignore it
 					continue;
@@ -5917,7 +5917,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 		{ //within range
 			trace_t tr;
 
-			trap->Trace(&tr, saberent->r.currentOrigin, NULL, NULL, ent->client->ps.origin, saberent->s.number, MASK_SHOT, qfalse, 0, 0);
+			JP_Trace(&tr, saberent->r.currentOrigin, NULL, NULL, ent->client->ps.origin, saberent->s.number, MASK_SHOT, qfalse, 0, 0);
 
 			if (tr.fraction == 1 || tr.entityNum == ent->s.number)
 			{ //Slice them
@@ -6036,7 +6036,7 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 				VectorCopy(ent->r.currentOrigin, entOrigin);
 			}
 
-			trap->Trace(&tr, saberent->r.currentOrigin, NULL, NULL, entOrigin, saberent->s.number, MASK_SHOT, qfalse, 0, 0);
+			JP_Trace(&tr, saberent->r.currentOrigin, NULL, NULL, entOrigin, saberent->s.number, MASK_SHOT, qfalse, 0, 0);
 
 			if (tr.fraction == 1 || tr.entityNum == ent->s.number)
 			{
@@ -6183,7 +6183,7 @@ static QINLINE void saberMoveBack( gentity_t *ent, qboolean goingBack )
 		compensatedOrigin[1] = oldOrg[1] + calcComp[1]*(originalLength+iCompensationLength);
 		compensatedOrigin[2] = oldOrg[2] + calcComp[2]*(originalLength+iCompensationLength);
 
-		trap->Trace(&tr, oldOrg, mins, maxs, compensatedOrigin, ent->r.ownerNum, MASK_PLAYERSOLID, qfalse, 0, 0);
+		JP_Trace(&tr, oldOrg, mins, maxs, compensatedOrigin, ent->r.ownerNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if ((tr.fraction != 1 || tr.startsolid || tr.allsolid) && tr.entityNum != ent->r.ownerNum && !(g_entities[tr.entityNum].r.contents & CONTENTS_LIGHTSABER))
 		{
@@ -6273,11 +6273,11 @@ void MakeDeadSaber(gentity_t *ent)
 	//unfortunately, it's a fairly regular occurance that current saber location
 	//(normally at the player's right hand) could result in the saber being stuck 
 	//in the the map and then freaking out.
-	trap->Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs, startorg, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
+	JP_Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs, startorg, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
 	if(tr.startsolid || tr.fraction != 1)
 	{//bad position, try popping our origin up a bit
 		startorg[2] += 20;
-		trap->Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs, startorg, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
+		JP_Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs, startorg, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
 		if(tr.startsolid || tr.fraction != 1)
 		{//still no luck, try using our owner's origin
 			owner = &g_entities[ent->r.ownerNum];
@@ -6537,12 +6537,12 @@ void saberKnockDown(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other
 	//unfortunately, it's a fairly regular occurance that current saber location
 	//(normally at the player's right hand) could result in the saber being stuck 
 	//in the the map and then freaking out.
-	trap->Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs, saberent->r.currentOrigin, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
+	JP_Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs, saberent->r.currentOrigin, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
 	if(tr.startsolid || tr.fraction != 1)
 	{//bad position, try popping our origin up a bit
 		saberent->r.currentOrigin[2] += 20;
 		G_SetOrigin(saberent, saberent->r.currentOrigin);
-		trap->Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs, saberent->r.currentOrigin, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
+		JP_Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs, saberent->r.currentOrigin, saberent->s.number, saberent->clipmask, qfalse, 0, 0);
 		if(tr.startsolid || tr.fraction != 1)
 		{//still no luck, try using our owner's origin
 			G_SetOrigin(saberent, saberOwner->client->ps.origin); 
@@ -7255,11 +7255,11 @@ void saberFirstThrown(gentity_t *saberent)
 
 		if (saberOwn->client->ps.fd.forcePowerLevel[FP_SABERTHROW] >= FORCE_LEVEL_3)
 		{ //if highest saber throw rank, we can direct the saber toward players directly by looking at them
-			trap->Trace(&tr, traceFrom, NULL, NULL, traceTo, saberOwn->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+			JP_Trace(&tr, traceFrom, NULL, NULL, traceTo, saberOwn->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 		}
 		else
 		{
-			trap->Trace(&tr, traceFrom, NULL, NULL, traceTo, saberOwn->s.number, MASK_SOLID, qfalse, 0, 0);
+			JP_Trace(&tr, traceFrom, NULL, NULL, traceTo, saberOwn->s.number, MASK_SOLID, qfalse, 0, 0);
 		}
 
 		VectorSubtract(tr.endpos, saberent->r.currentOrigin, dir);
@@ -7575,11 +7575,11 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 
 	if (d_saberKickTweak.integer)
 	{
-		trap->Trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+		JP_Trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 	}
 	else
 	{
-		trap->Trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	}
 
 	//G_TestLine(traceOrg, traceEnd, 0x0000ff, 5000);
@@ -8034,7 +8034,7 @@ static void G_GrabSomeMofos(gentity_t *self)
 	VectorSet(grabMaxs, 4.0f, 4.0f, 4.0f);
 
 	//trace from my origin to my hand, if we hit anyone then get 'em
-	trap->Trace( &trace, self->client->ps.origin, grabMins, grabMaxs, pos, self->s.number, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+	JP_Trace( &trace, self->client->ps.origin, grabMins, grabMaxs, pos, self->s.number, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
     
 	if (trace.fraction != 1.0f &&
 		trace.entityNum < ENTITYNUM_WORLD)
@@ -8258,7 +8258,7 @@ void WP_SaberPositionUpdate( gentity_t *self, usercmd_t *ucmd )
 					AngleVectors(grappler->client->ps.viewangles, gFwd, 0, 0);
 					VectorMA(grappler->client->ps.origin, idealDist, gFwd, idealSpot);
 
-					trap->Trace(&trace, self->client->ps.origin, self->r.mins, self->r.maxs, idealSpot, self->s.number, self->clipmask, qfalse, 0, 0);
+					JP_Trace(&trace, self->client->ps.origin, self->r.mins, self->r.maxs, idealSpot, self->s.number, self->clipmask, qfalse, 0, 0);
 					if (!trace.startsolid && !trace.allsolid && trace.fraction == 1.0f)
 					{ //go there
 						G_SetOrigin(self, idealSpot);

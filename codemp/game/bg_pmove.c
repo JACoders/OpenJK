@@ -6720,6 +6720,9 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 	qboolean	charging = qfalse,
 				altFire = qfalse;
 
+	if (pm->ps->stats[STAT_RACEMODE])
+		return qfalse;
+
 	if ( vehicleRocketLock )
 	{
 		if ( (pm->cmd.buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK)) )

@@ -347,7 +347,7 @@ qboolean G_PredictPlayerSlideMove( gentity_t *ent, float frametime ) {
 		VectorMA( origin, time_left, velocity, end );
 
 		// see if we can make it there
-		trap->Trace( &trace, origin, ent->r.mins, ent->r.maxs, end, ent->s.number, ent->clipmask, qfalse, 0, 0 );
+		JP_Trace( &trace, origin, ent->r.mins, ent->r.maxs, end, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 
 		if (trace.allsolid) {
 			// entity is completely trapped in another solid
@@ -500,7 +500,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	up[2] += STEPSIZE;
 
 	// test the player position if they were a stepheight higher
-	trap->Trace( &trace, start_o, ent->r.mins, ent->r.maxs, up, ent->s.number, ent->clipmask, qfalse, 0, 0);
+	JP_Trace( &trace, start_o, ent->r.mins, ent->r.maxs, up, ent->s.number, ent->clipmask, qfalse, 0, 0);
 	if ( trace.allsolid ) {
 		return;		// can't step up
 	}
@@ -516,7 +516,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	// push down the final amount
 	VectorCopy( ent->s.pos.trBase, down );
 	down[2] -= stepSize;
-	trap->Trace( &trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, ent->clipmask, qfalse, 0, 0 );
+	JP_Trace( &trace, ent->s.pos.trBase, ent->r.mins, ent->r.maxs, down, ent->s.number, ent->clipmask, qfalse, 0, 0 );
 	if ( !trace.allsolid ) {
 		VectorCopy( trace.endpos, ent->s.pos.trBase );
 	}
@@ -1189,7 +1189,7 @@ void G_MoverTouchPushTriggers( gentity_t *ent, vec3_t oldOrg )
 }
 
 static void SV_PMTrace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ) {
-	trap->Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
+	JP_Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
 }
 
 int SpectatorFind(gentity_t *self)
@@ -3380,8 +3380,8 @@ void ClientThink_real( gentity_t *ent ) {
 					intendedOrigin[1] = pBoltOrg[1] + vDif[1]*pDif;
 					intendedOrigin[2] = thrower->client->ps.origin[2];
 
-					trap->Trace(&tr, intendedOrigin, ent->r.mins, ent->r.maxs, intendedOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
-					trap->Trace(&tr2, ent->client->ps.origin, ent->r.mins, ent->r.maxs, intendedOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
+					JP_Trace(&tr, intendedOrigin, ent->r.mins, ent->r.maxs, intendedOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
+					JP_Trace(&tr2, ent->client->ps.origin, ent->r.mins, ent->r.maxs, intendedOrigin, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
 
 					if (tr.fraction == 1.0 && !tr.startsolid && tr2.fraction == 1.0 && !tr2.startsolid)
 					{

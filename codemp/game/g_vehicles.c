@@ -25,7 +25,7 @@ void Vehicle_SetAnim(gentity_t *ent,int setAnimParts,int anim,int setAnimFlags, 
 
 void G_VehicleTrace( trace_t *results, const vec3_t start, const vec3_t tMins, const vec3_t tMaxs, const vec3_t end, int passEntityNum, int contentmask )
 {
-	trap->Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask, qfalse, 0, 0);
+	JP_Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask, qfalse, 0, 0);
 }
 
 Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt )
@@ -1978,7 +1978,7 @@ void G_VehicleDamageBoxSizing(Vehicle_t *pVeh)
 	VectorMA(nose, -hDist, up, back);
 
 	//and now, let's trace and see if our new mins/maxs are safe..
-	trap->Trace(&trace, parent->client->ps.origin, back, nose, parent->client->ps.origin, parent->s.number, parent->clipmask, qfalse, 0, 0);
+	JP_Trace(&trace, parent->client->ps.origin, back, nose, parent->client->ps.origin, parent->s.number, parent->clipmask, qfalse, 0, 0);
 	if (!trace.allsolid && !trace.startsolid && trace.fraction == 1.0f)
 	{ //all clear!
 		VectorCopy(nose, parent->r.maxs);
@@ -2015,7 +2015,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 
 	//do a trace to determine if the nose is clear
 	VectorMA(veh->client->ps.origin, 256.0f, fwd, fPos);
-	trap->Trace(&localTrace, veh->client->ps.origin, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+	JP_Trace(&localTrace, veh->client->ps.origin, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 	if (!localTrace.startsolid && !localTrace.allsolid && localTrace.fraction == 1.0f)
 	{ //otherwise I guess it's not clear..
 		noseClear = qtrue;
@@ -2034,7 +2034,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 			!(pVeh->m_iRemovedSurfaces & SHIPSURF_BROKEN_F))
 		{
 			VectorMA(rWing, 256.0f, fwd, fPos);
-			trap->Trace(&localTrace, rWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+			JP_Trace(&localTrace, rWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 			if (localTrace.startsolid || localTrace.allsolid || localTrace.fraction != 1.0f)
 			{ //impact
 				return SHIPSURF_RIGHT;
@@ -2046,7 +2046,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 			!(pVeh->m_iRemovedSurfaces & SHIPSURF_BROKEN_D))
 		{
 			VectorMA(lWing, 256.0f, fwd, fPos);
-			trap->Trace(&localTrace, lWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+			JP_Trace(&localTrace, lWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 			if (localTrace.startsolid || localTrace.allsolid || localTrace.fraction != 1.0f)
 			{ //impact
 				return SHIPSURF_LEFT;

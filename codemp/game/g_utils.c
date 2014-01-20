@@ -483,7 +483,7 @@ void G_SetAnim(gentity_t *ent, usercmd_t *ucmd, int setAnimParts, int anim, int 
 	{
 		pmv.cmd = *ucmd;
 	}
-	pmv.trace = trap->Trace;
+	pmv.trace = JP_Trace;
 	pmv.pointcontents = trap->PointContents;
 	pmv.gametype = level.gametype;
 
@@ -1647,7 +1647,7 @@ void TryUse( gentity_t *ent )
 	VectorMA( src, USE_DISTANCE, vf, dest );
 
 	//Trace ahead to find a valid target
-	trap->Trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE, qfalse, 0, 0 );
+	JP_Trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE, qfalse, 0, 0 );
 	
 	if ( trace.fraction == 1.0f || trace.entityNum == ENTITYNUM_NONE )
 	{
@@ -1820,7 +1820,7 @@ tryJetPack:
 		AngleVectors(fAng, fwd, 0, 0);
 
         VectorMA(ent->client->ps.origin, 64.0f, fwd, fwd);		
-		trap->Trace(&trToss, ent->client->ps.origin, playerMins, playerMaxs, fwd, ent->s.number, ent->clipmask, qfalse, 0, 0);
+		JP_Trace(&trToss, ent->client->ps.origin, playerMins, playerMaxs, fwd, ent->s.number, ent->clipmask, qfalse, 0, 0);
 		if (trToss.fraction == 1.0f && !trToss.allsolid && !trToss.startsolid)
 		{
 			ItemUse_UseDisp(ent, HI_AMMODISP);
@@ -1891,7 +1891,7 @@ qboolean G_ClearTrace( vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int i
 {
 	static	trace_t	tr;
 
-	trap->Trace( &tr, start, mins, maxs, end, ignore, clipmask, qfalse, 0, 0 );
+	JP_Trace( &tr, start, mins, maxs, end, ignore, clipmask, qfalse, 0, 0 );
 
 	if ( tr.allsolid || tr.startsolid || tr.fraction < 1.0 )
 	{
@@ -1928,7 +1928,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 	VectorCopy(self->r.mins, mins);
 	mins[2] = 0;
 
-	trap->Trace(&trace, self->r.currentOrigin, mins, self->r.maxs, end, self->s.number, self->clipmask, qfalse, 0, 0);
+	JP_Trace(&trace, self->r.currentOrigin, mins, self->r.maxs, end, self->s.number, self->clipmask, qfalse, 0, 0);
 	if(trace.allsolid || trace.startsolid)
 	{
 		return qtrue;
@@ -2052,7 +2052,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 	{
 		VectorCopy( start, end );
 		end[i] += mins[i];
-		trap->Trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, qfalse, 0, 0 );
+		JP_Trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, qfalse, 0, 0 );
 		if ( tr.allsolid || tr.startsolid )
 		{
 			return qfalse;
@@ -2061,7 +2061,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 		{
 			VectorCopy( start, end );
 			end[i] += maxs[i]-(mins[i]*tr.fraction);
-			trap->Trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, qfalse, 0, 0 );
+			JP_Trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, qfalse, 0, 0 );
 			if ( tr.allsolid || tr.startsolid )
 			{
 				return qfalse;
@@ -2074,7 +2074,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 		}
 	}
 	//expanded it, now see if it's all clear
-	trap->Trace( &tr, start, mins, maxs, start, ignore, clipmask, qfalse, 0, 0 );
+	JP_Trace( &tr, start, mins, maxs, start, ignore, clipmask, qfalse, 0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return qfalse;

@@ -3459,7 +3459,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	fwdOrg[1] = ent->client->ps.origin[1] + forward[1]*256;
 	fwdOrg[2] = (ent->client->ps.origin[2]+ent->client->ps.viewheight) + forward[2]*256;
 
-	trap->Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+	JP_Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.fraction != 1 && tr.entityNum < MAX_CLIENTS)
 	{

@@ -201,7 +201,7 @@ void W_TraceSetStart( gentity_t *ent, vec3_t start, vec3_t mins, vec3_t maxs )
 	VectorCopy( ent->s.pos.trBase, eyePoint);
 	eyePoint[2] += ent->client->ps.viewheight;
 		
-	trap->Trace( &tr, eyePoint, mins, maxs, start, ent->s.number, MASK_SOLID|CONTENTS_SHOTCLIP, qfalse, 0, 0 );
+	JP_Trace( &tr, eyePoint, mins, maxs, start, ent->s.number, MASK_SOLID|CONTENTS_SHOTCLIP, qfalse, 0, 0 );
 
 	if ( tr.startsolid || tr.allsolid )
 	{
@@ -575,11 +575,11 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	{//need to loop this in case we hit a Jedi who dodges the shot
 		if (d_projectileGhoul2Collision.integer)
 		{
-			trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+			JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 		}
 		else
 		{
-			trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
 		}
 
 		traceEnt = &g_entities[tr.entityNum];
@@ -791,11 +791,11 @@ void WP_DisruptorAltFire( gentity_t *ent )
 
 		if (d_projectileGhoul2Collision.integer)
 		{
-			trap->Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+			JP_Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 		}
 		else
 		{
-			trap->Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
 		}
 
 		if ( tr.entityNum == ENTITYNUM_NONE ) {
@@ -1534,7 +1534,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 		damage = 1;
 	}
 
-	trap->Trace( &tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
+	JP_Trace( &tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
 
 	missile = G_Spawn();
 	G_SetOrigin(missile, tr.endpos);
@@ -1720,7 +1720,7 @@ static void WP_TraceSetStart( gentity_t *ent, vec3_t start, vec3_t mins, vec3_t 
 		return;
 	}
 
-	trap->Trace( &tr, ent->client->ps.origin, mins, maxs, start, ent->s.number, MASK_SOLID|CONTENTS_SHOTCLIP, qfalse, 0, 0 );
+	JP_Trace( &tr, ent->client->ps.origin, mins, maxs, start, ent->s.number, MASK_SOLID|CONTENTS_SHOTCLIP, qfalse, 0, 0 );
 
 	if ( tr.startsolid || tr.allsolid )
 	{
@@ -2057,7 +2057,7 @@ void rocketThink( gentity_t *ent )
 
 		VectorCopy(ent->r.currentOrigin, ent->s.pos.trBase);
 
-		trap->Trace(&tr, traceFrom, NULL, NULL, traceTo, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+		JP_Trace(&tr, traceFrom, NULL, NULL, traceTo, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		VectorSubtract(tr.endpos, ent->r.currentOrigin, dir);
 
@@ -2505,7 +2505,7 @@ qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, 
 					elapsedTime = floor( travelTime );
 				}
 				BG_EvaluateTrajectory( &tr, level.time + elapsedTime, testPos );
-				trap->Trace( &trace, lastPos, mins, maxs, testPos, ignoreEntNum, clipmask, qfalse, 0, 0 );
+				JP_Trace( &trace, lastPos, mins, maxs, testPos, ignoreEntNum, clipmask, qfalse, 0, 0 );
 
 				if ( trace.allsolid || trace.startsolid )
 				{
@@ -2742,7 +2742,7 @@ void laserTrapThink ( gentity_t *ent )
 
 	// Find the main impact point
 	VectorMA ( ent->s.pos.trBase, 1024, ent->movedir, end );
-	trap->Trace ( &tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
+	JP_Trace ( &tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
 	
 	traceEnt = &g_entities[ tr.entityNum ];
 
@@ -3414,11 +3414,11 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		//trap->trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
 		if (d_projectileGhoul2Collision.integer)
 		{
-			trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+			JP_Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 		}
 		else
 		{
-			trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
+			JP_Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
 		}
 
 		if ( tr.entityNum == ENTITYNUM_NONE ) {
@@ -3715,7 +3715,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 	VectorSet( maxs, 6, 6, 6 );
 	VectorScale( maxs, -1, mins );
 
-	trap->Trace ( &tr, muzzleStun, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace ( &tr, muzzleStun, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( tr.entityNum >= ENTITYNUM_WORLD )
 	{
@@ -3811,7 +3811,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	VectorSet( maxs, 6, 6, 6 );
 	VectorScale( maxs, -1, mins );
 
-	trap->Trace ( &tr, muzzlePunch, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace ( &tr, muzzlePunch, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 	if (tr.entityNum != ENTITYNUM_NONE)
 	{ //hit something
@@ -3881,9 +3881,9 @@ static void WP_FireLightningGun( gentity_t *ent )
 	ignore = ent->s.number;
 
 	if (d_projectileGhoul2Collision.integer)
-		trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+		JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 	else
-		trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+		JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( tr.entityNum == ENTITYNUM_NONE )
 	{
@@ -3983,7 +3983,7 @@ static void WP_FireShockLance( gentity_t *ent )
 
 	ignore = ent->s.number;
 
-	trap->Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( tr.entityNum == ENTITYNUM_NONE )
 	{
@@ -4529,7 +4529,7 @@ void G_EstimateCamPos( vec3_t viewAngles, vec3_t cameraFocusLoc, float viewheigh
 
 	//NOTE: on cgame, this uses the thirdpersontargetdamp value, we ignore that here
 	VectorCopy( cameraIdealTarget, cameraCurTarget );
-	trap->Trace( &trace, cameraFocusLoc, cameramins, cameramaxs, cameraCurTarget, ignoreEntNum, MASK_CAMERACLIP, qfalse, 0, 0 );
+	JP_Trace( &trace, cameraFocusLoc, cameramins, cameramaxs, cameraCurTarget, ignoreEntNum, MASK_CAMERACLIP, qfalse, 0, 0 );
 	if (trace.fraction < 1.0)
 	{
 		VectorCopy(trace.endpos, cameraCurTarget);
@@ -4538,7 +4538,7 @@ void G_EstimateCamPos( vec3_t viewAngles, vec3_t cameraFocusLoc, float viewheigh
 	VectorMA(cameraIdealTarget, -(thirdPersonRange), camerafwd, cameraIdealLoc);
 	//NOTE: on cgame, this uses the thirdpersoncameradamp value, we ignore that here
 	VectorCopy( cameraIdealLoc, cameraCurLoc );
-	trap->Trace(&trace, cameraCurTarget, cameramins, cameramaxs, cameraCurLoc, ignoreEntNum, MASK_CAMERACLIP, qfalse, 0, 0);
+	JP_Trace(&trace, cameraCurTarget, cameramins, cameramaxs, cameraCurLoc, ignoreEntNum, MASK_CAMERACLIP, qfalse, 0, 0);
 	if (trace.fraction < 1.0)
 	{
 		VectorCopy( trace.endpos, cameraCurLoc );
@@ -4681,7 +4681,7 @@ qboolean WP_VehCheckTraceFromCamPos( gentity_t *ent, const vec3_t shotStart, vec
 			VectorCopy( ent->r.currentOrigin, start );
 		}
 		VectorMA( start, g_cullDistance, dir, end );
-		trap->Trace( &trace, start, vec3_origin, vec3_origin, end, ent->s.number, CONTENTS_SOLID|CONTENTS_BODY, qfalse, 0, 0 );
+		JP_Trace( &trace, start, vec3_origin, vec3_origin, end, ent->s.number, CONTENTS_SOLID|CONTENTS_BODY, qfalse, 0, 0 );
 
 		if ( ent->m_pVehicle->m_pVehicleInfo->type == VH_WALKER )
 		{//just use the result of that one trace since walkers don't do the extra trace
@@ -4902,7 +4902,7 @@ void FireVehicleWeapon( gentity_t *ent, qboolean alt_fire )
 							AngleVectors( ang, fixedDir, NULL, NULL );
 							VectorMA( ent->r.currentOrigin, 32768, fixedDir, end );
 							//VectorMA( ent->r.currentOrigin, 8192, dir, end );
-							trap->Trace( &trace, ent->r.currentOrigin, vec3_origin, vec3_origin, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+							JP_Trace( &trace, ent->r.currentOrigin, vec3_origin, vec3_origin, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 							if ( trace.fraction < 1.0f && !trace.allsolid && !trace.startsolid )
 							{
 								vec3_t newEnd;
@@ -5549,7 +5549,7 @@ void SP_emplaced_gun( gentity_t *ent )
 
 	down[2] -= 1024;
 
-	trap->Trace(&tr, ent->s.origin, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_SOLID, qfalse, 0, 0);
+	JP_Trace(&tr, ent->s.origin, ent->r.mins, ent->r.maxs, down, ent->s.number, MASK_SOLID, qfalse, 0, 0);
 
 	if (tr.fraction != 1 && !tr.allsolid && !tr.startsolid)
 	{
