@@ -1166,12 +1166,15 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	}
 }
 
-qboolean ValidRaceSettings(void)
+qboolean ValidRaceSettings(gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
+	if (!player->client)
+		return qfalse;
+
 	if (g_speed.integer != 250)
 		return qfalse;
 	if (g_gravity.integer != 800)
-		return qfalse;
+		return qfalse;	
 	if (sv_cheats.integer)
 		return qfalse;
 	if (!g_stepSlideFix.integer)
@@ -1190,13 +1193,15 @@ qboolean ValidRaceSettings(void)
 		return qfalse;
 	if (g_debugMelee.integer != 1)
 		return qfalse;
-	if (g_fixRoll.integer != 0)
-		return qfalse;
 	if (g_forceRegenTime.integer < 50)//ehh
 		return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
 
+	if (!player->client->ps.stats[STAT_RACEMODE])
+		return qfalse;
+
+	//type of roll?
 	//dmflags fall dmg?, max falldmg?
 	//g_forceClientUpdateRate?
 	//pmove?
@@ -1269,7 +1274,7 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 		time /= 1000.0f;
 		average = activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f);//Should use level time for this 
 
-		if (ValidRaceSettings()) {
+		if (ValidRaceSettings(activator)) {
 			valid = qtrue;
 			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}

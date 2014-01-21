@@ -640,6 +640,14 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		}
 	}
 
+	ent->client->pers.stats.startLevelTime = 0;//no cheating!
+	ent->client->pers.stats.startTime = 0;
+	ent->client->pers.stats.topSpeed = 0;
+	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.startTimeFlag = 0;
+	ent->client->pers.stats.topSpeedFlag = 0;
+	ent->client->pers.stats.displacementFlag = 0;
+
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
 		msg = "noclip OFF";
