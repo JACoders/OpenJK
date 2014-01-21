@@ -471,7 +471,7 @@ void RB_BeginDrawingView (void) {
 			FBO_Bind(backEnd.viewParms.targetFbo);
 
 			// FIXME: hack for cubemap testing
-			if (backEnd.viewParms.targetFbo == tr.renderCubeFbo)
+			if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 			{
 				//qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
 				qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
@@ -511,7 +511,7 @@ void RB_BeginDrawingView (void) {
 	}
 
 	// clear to black for cube maps
-	if (backEnd.viewParms.targetFbo == tr.renderCubeFbo)
+	if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 	{
 		clearBits |= GL_COLOR_BUFFER_BIT;
 		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
@@ -1300,7 +1300,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 			FBO_BlitFromTexture(tr.renderDepthImage, NULL, NULL, tr.hdrDepthFbo, NULL, NULL, NULL, 0);
 		}
 
-		if (backEnd.viewParms.flags & VPF_USESUNLIGHT)
+		if (r_sunlightMode->integer && backEnd.viewParms.flags & VPF_USESUNLIGHT)
 		{
 			vec4_t quadVerts[4];
 			vec2_t texCoords[4];
@@ -1515,7 +1515,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 		RB_RenderFlares();
 	}
 
-	if (glRefConfig.framebufferObject && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
+	if (glRefConfig.framebufferObject && tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 	{
 		FBO_Bind(NULL);
 		GL_SelectTexture(TB_CUBEMAP);
@@ -1777,13 +1777,19 @@ const void *RB_CapShadowMap(const void *data)
 		GL_SelectTexture(0);
 		if (cmd->cubeSide != -1)
 		{
-			GL_Bind(tr.shadowCubemaps[cmd->map]);
-			qglCopyTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+			if (tr.shadowCubemaps[cmd->map] != NULL)
+			{
+				GL_Bind(tr.shadowCubemaps[cmd->map]);
+				qglCopyTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+			}
 		}
 		else
 		{
-			GL_Bind(tr.pshadowMaps[cmd->map]);
-			qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+			if (tr.pshadowMaps[cmd->map] != NULL)
+			{
+				GL_Bind(tr.pshadowMaps[cmd->map]);
+				qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+			}
 		}
 	}
 
@@ -1885,7 +1891,7 @@ const void *RB_PostProcess(const void *data)
 	else
 		RB_GaussianBlur(backEnd.refdef.blurFactor);
 
-	if (0)
+	if (0 && r_sunlightMode->integer)
 	{
 		vec4i_t dstBox;
 		VectorSet4(dstBox, 0, 0, 128, 128);

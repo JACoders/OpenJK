@@ -277,10 +277,20 @@ static int NameToSrcBlendMode( const char *name )
 	}
 	else if ( !Q_stricmp( name, "GL_DST_ALPHA" ) )
 	{
+		if ( r_ignoreDstAlpha->integer )
+		{
+			return GLS_DSTBLEND_ONE;
+		}
+
 		return GLS_SRCBLEND_DST_ALPHA;
 	}
 	else if ( !Q_stricmp( name, "GL_ONE_MINUS_DST_ALPHA" ) )
 	{
+		if ( r_ignoreDstAlpha->integer )
+		{
+			return GLS_DSTBLEND_ZERO;
+		}
+
 		return GLS_SRCBLEND_ONE_MINUS_DST_ALPHA;
 	}
 	else if ( !Q_stricmp( name, "GL_SRC_ALPHA_SATURATE" ) )
@@ -317,10 +327,20 @@ static int NameToDstBlendMode( const char *name )
 	}
 	else if ( !Q_stricmp( name, "GL_DST_ALPHA" ) )
 	{
+		if ( r_ignoreDstAlpha->integer )
+		{
+			return GLS_DSTBLEND_ONE;
+		}
+
 		return GLS_DSTBLEND_DST_ALPHA;
 	}
 	else if ( !Q_stricmp( name, "GL_ONE_MINUS_DST_ALPHA" ) )
 	{
+		if ( r_ignoreDstAlpha->integer )
+		{
+			return GLS_DSTBLEND_ZERO;
+		}
+
 		return GLS_DSTBLEND_ONE_MINUS_DST_ALPHA;
 	}
 	else if ( !Q_stricmp( name, "GL_SRC_COLOR" ) )
