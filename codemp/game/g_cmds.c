@@ -5432,12 +5432,6 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
- /*
-==================
-Cmd_Amtele_f
-
-==================
-*/
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
 		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
@@ -5468,15 +5462,9 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 		ent->client->pers.telemarkAngle = (int)ent->client->ps.viewangles[YAW];
 		trap->SendServerCommand( ent-g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i\n\"", (int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], ent->client->pers.telemarkAngle ));
 }
-//[JAPRO - Serverside - All - Amtele Function - End]
+//[JAPRO - Serverside - All - Amtelemark Function - End]
 
 //[JAPRO - Serverside - All - Amtele Function - Start]
- /*
-==================
-Cmd_Amtele_f
-
-==================
-*/
 void Cmd_Amtele_f(gentity_t *ent)
 {
 	gentity_t	*teleporter;// = NULL;
@@ -5525,6 +5513,14 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 			return;
 		}
+
+		ent->client->pers.stats.startLevelTime = 0;
+		ent->client->pers.stats.startTime = 0;//Dont let admins cheat on timers with this ;d
+		ent->client->pers.stats.topSpeed = 0;
+		ent->client->pers.stats.displacement = 0;
+		ent->client->pers.stats.startTimeFlag = 0;
+		ent->client->pers.stats.topSpeedFlag = 0;
+		ent->client->pers.stats.displacementFlag = 0;
 
 		if (trap->Argc() == 2)//Amtele to player
 		{ 

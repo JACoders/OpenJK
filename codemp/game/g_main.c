@@ -3469,7 +3469,7 @@ void G_RunFrame( int levelTime ) {
 				if (g_gametype.integer == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
 					if (ent->client->pers.stats.startTimeFlag) {
 						float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);//Is this before snapvector??
-						ent->client->pers.stats.displacementFlag += (int)floorf(xyspeed + 0.5f);
+						ent->client->pers.stats.displacementFlag += xyspeed/sv_fps.value;
 
 						if (xyspeed > ent->client->pers.stats.topSpeedFlag)
 							ent->client->pers.stats.topSpeedFlag = xyspeed;
@@ -3481,7 +3481,7 @@ void G_RunFrame( int levelTime ) {
 				}
 				if (ent->client->pers.stats.startTime) {
 					float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
-					ent->client->pers.stats.displacement += (int)floorf(xyspeed + 0.5f); //Maybe we should divide this by sv_fps right here? more expensive/errory, but allows more time to be stored before 32bits are filled?
+					ent->client->pers.stats.displacement += xyspeed/sv_fps.value;
 					if (xyspeed > ent->client->pers.stats.topSpeed)
 						ent->client->pers.stats.topSpeed = xyspeed; //uhh, round?           
 				}	
