@@ -2211,19 +2211,6 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.noDamageNumbers = qtrue;
 	}
 
-	/*
-	if (client && client->pers.isJAPRO) {//eh
-		s = Info_ValueForKey( userinfo, "cg_movementStyle" );//rename this ew
-		if (atoi(s) < 1)
-			client->pers.movementStyle = 0;
-		else if (atoi(s) == 1)
-			client->pers.movementStyle = 1;
-		else if (atoi(s) == 2)
-			client->pers.movementStyle = 2;
-		else if (atoi(s) > 2)
-			client->pers.movementStyle = 3;
-	}
-	*/
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
 	// set name
@@ -2890,6 +2877,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		ent->client->sess.sawMOTD = qtrue;
 	}
 
+	client->pers.movementStyle = 1;
 	client->ps.stats[STAT_MOVEMENTSTYLE] = 1;//Loda fixme, i want this to default to 1... so just do this here?
 
 	G_ClearClientLog(clientNum);

@@ -4870,6 +4870,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	}
 	if (g_raceMode.integer > 1) 
 		trap->SendServerCommand( ent-g_entities, "print \"race \"" ); 
+	if (g_raceMode.integer) 
+		trap->SendServerCommand( ent-g_entities, "print \"movementStyle \"" ); 
 	if (g_allowSaberSwitch.integer) 
 		trap->SendServerCommand( ent-g_entities, "print \"saber \"" ); 
 	if (g_allowFlagThrow.integer) 
@@ -5413,22 +5415,51 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	}
 
 	if (!g_raceMode.integer) {
-		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");//also check to see if they are in racemode??
+		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");
 		return;
 	}
 
-	trap->SendServerCommand(ent-g_entities, "print \"Your movement style will be updated at next respawn.\n\"");//also check to see if they are in racemode??
+	if (!ent->client->pers.raceMode) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+		ent->client->pers.stats.startLevelTime = 0;
+		ent->client->pers.stats.startTime = 0;
+		ent->client->pers.stats.topSpeed = 0;
+		ent->client->pers.stats.displacement = 0;
+		ent->client->pers.stats.startTimeFlag = 0;
+		ent->client->pers.stats.topSpeedFlag = 0;
+		ent->client->pers.stats.displacementFlag = 0;
+	}
+	else 
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
-	if (!Q_stricmp("siege", mStyle) || !Q_stricmp("0", mStyle))
+	if (!Q_stricmp("siege", mStyle) || !Q_stricmp("0", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
 		ent->client->pers.movementStyle = 0;
-	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle))
+	}
+	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
 		ent->client->pers.movementStyle = 1;
-	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || !Q_stricmp("2", mStyle))
+	}
+	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || !Q_stricmp("2", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
 		ent->client->pers.movementStyle = 2;
-	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || !Q_stricmp("3", mStyle))
+	}
+	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || !Q_stricmp("3", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
 		ent->client->pers.movementStyle = 3;
+	}
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
