@@ -26,7 +26,7 @@ extern vec3_t gPainPoint;
 
 #define SECURITY_LOG "security.log"
 #define DUEL_LOG "duels.log" //duellog
-#define RACE_LOG "races.log" //duellog
+#define RACE_LOG "races.log" //racelog
 
 #define BODY_QUEUE_SIZE		8
 

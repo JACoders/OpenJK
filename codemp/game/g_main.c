@@ -1988,9 +1988,9 @@ void PrintStats(int gametype) //JAPRO STATS, MEMES
 	}
 	else {//ctf
 		if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Fastest Speed     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Name^7\n" );
 		else
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Fastest Speed     Accuracy     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Accuracy     Name^7\n" );
 	}
 
 	for (i=0; i<MAX_CLIENTS; i++)
@@ -2034,24 +2034,22 @@ void PrintStats(int gametype) //JAPRO STATS, MEMES
 				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
 					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				else {
-					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%-10s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%-13s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 				}
 			}
 			else {
 				char strCaps[32] = {0};
 				char strReturns[32] = {0};
 				char strFlagKills[32] = {0};
-				char strSpeed[32] = {0};
 
 				Com_sprintf(strKills, sizeof(strKills), "%i", cl->pers.stats.kills);
 				Com_sprintf(strCaps, sizeof(strCaps), "%i", cl->pers.teamState.captures);
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
-				Com_sprintf(strSpeed, sizeof(strSpeed), "%i", cl->pers.stats.topSpeedFlag);
 				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
-					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strSpeed, strName);
+					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strName);
 				else {
-					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-18s%-17s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strSpeed, accuracyStr, strName);
+					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-13s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
 				}
 			}
 
