@@ -5539,6 +5539,14 @@ void Cmd_Amtele_f(gentity_t *ent)
 			trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele or /amTele <client> or /amTele <client> <client> or /amTele <X> <Y> <Z> <YAW> or /amTele <player> <X> <Y> <Z> <YAW>.\n\"" );
 			return;
 		}
+		
+		ent->client->pers.stats.startLevelTime = 0;
+		ent->client->pers.stats.startTime = 0;//Dont let admins cheat on timers with this ;d
+		ent->client->pers.stats.topSpeed = 0;
+		ent->client->pers.stats.displacement = 0;
+		ent->client->pers.stats.startTimeFlag = 0;
+		ent->client->pers.stats.topSpeedFlag = 0;
+		ent->client->pers.stats.displacementFlag = 0;
 
 		if (trap->Argc() == 1)//Amtele to telemark
 		{ 
@@ -5552,14 +5560,6 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 			return;
 		}
-
-		ent->client->pers.stats.startLevelTime = 0;
-		ent->client->pers.stats.startTime = 0;//Dont let admins cheat on timers with this ;d
-		ent->client->pers.stats.topSpeed = 0;
-		ent->client->pers.stats.displacement = 0;
-		ent->client->pers.stats.startTimeFlag = 0;
-		ent->client->pers.stats.topSpeedFlag = 0;
-		ent->client->pers.stats.displacementFlag = 0;
 
 		if (trap->Argc() == 2)//Amtele to player
 		{ 

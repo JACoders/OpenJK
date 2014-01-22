@@ -235,6 +235,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			trap->Print( "WARNING: Couldn't open logfile: "DUEL_LOG"\n" );
 	}
 
+	if ( g_raceLog.integer )
+	{
+		if ( g_raceLog.integer == 1 )
+			trap->FS_Open( RACE_LOG, &level.raceLog, FS_APPEND );
+		else if ( g_raceLog.integer == 2 )
+			trap->FS_Open( RACE_LOG, &level.raceLog, FS_APPEND_SYNC );
+
+		if ( level.raceLog )
+			trap->Print( "Logging to "RACE_LOG"\n" );
+		else
+			trap->Print( "WARNING: Couldn't open logfile: "RACE_LOG"\n" );
+	}
+
 	
 	G_LogWeaponInit();
 
@@ -490,6 +503,13 @@ void G_ShutdownGame( int restart ) {
 		G_DuelLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.duelLog );
 		level.duelLog = 0;
+	}
+
+	if ( level.raceLog )
+	{
+		G_DuelLogPrintf( "ShutdownGame\n\n" );
+		trap->FS_Close( level.raceLog );
+		level.raceLog = 0;
 	}
 
 	// write all the client session data so we can get it back
@@ -1582,6 +1602,31 @@ void QDECL G_DuelLogPrintf( const char *fmt, ... ) {
 		return;
 
 	trap->FS_Write( string, strlen( string ), level.duelLog );
+}
+
+void QDECL G_RaceLogPrintf( const char *fmt, ... ) {
+	va_list		argptr;
+	char		string[1024] = {0};
+	time_t		rawtime;
+	struct tm	*timeinfo;
+	int			timeLen=0;
+
+	time( &rawtime );
+	timeinfo = localtime( &rawtime );
+	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
+	timeLen = strlen( string );
+
+	va_start( argptr, fmt );
+	Q_vsnprintf( string+timeLen, sizeof( string ) - timeLen, fmt, argptr );
+	va_end( argptr );
+
+	if ( dedicated.integer )
+		trap->Print( "%s", string + timeLen );
+
+	if ( !level.raceLog )
+		return;
+
+	trap->FS_Write( string, strlen( string ), level.raceLog );
 }
 
 /*

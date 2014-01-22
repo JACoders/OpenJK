@@ -3630,7 +3630,7 @@ void ClientSpawn(gentity_t *ent) {
 		if (g_gametype.integer != GT_SIEGE) {
 			if (client->pers.raceMode) {
 				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_OLD);
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 			}
 			else {
 				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))

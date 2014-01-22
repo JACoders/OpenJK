@@ -26,6 +26,7 @@ extern vec3_t gPainPoint;
 
 #define SECURITY_LOG "security.log"
 #define DUEL_LOG "duels.log" //duellog
+#define RACE_LOG "races.log" //duellog
 
 #define BODY_QUEUE_SIZE		8
 
@@ -1137,6 +1138,7 @@ typedef struct level_locals_s {
 	qboolean	isLockedspec;			
 	qboolean	isLockedfree;	
 	fileHandle_t	duelLog;
+	fileHandle_t	raceLog;
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;
@@ -1491,6 +1493,7 @@ void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void QDECL G_DuelLogPrintf( const char *fmt, ... );
+void QDECL G_RaceLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
 const char *G_GetStringEdString(char *refSection, char *refName);
 

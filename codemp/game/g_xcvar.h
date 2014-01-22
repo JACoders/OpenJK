@@ -257,6 +257,7 @@ XCVAR_DEF( g_votesDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_lagIcon,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_raceLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #undef XCVAR_DEF
