@@ -2781,19 +2781,73 @@ void ClientThink_real( gentity_t *ent ) {
 		{
 			client->ps.pm_type = client->ps.forceGripChangeMovetype;
 		}
-		else
+		else//Start
 		{
-			if (client->jetPackOn)
+			if (client->pers.amfreeze)
+			{
+				if (!client->ps.duelInProgress)
+				{
+					client->ps.pm_type = PM_FREEZE;
+					client->ps.saberAttackWound = 0;
+					client->ps.saberIdleWound = 0;
+					client->ps.saberCanThrow = qfalse;
+					client->ps.forceRestricted = qtrue;
+					ent->takedamage = qfalse;
+					if (client->ps.weapon == WP_SABER)
+					{ //make sure their saber is shut off
+						if ( client->ps.saberHolstered < 2 )
+						{
+							client->ps.saberHolstered = 2;
+							client->ps.weaponTime = 400;
+						}
+					}
+				}
+			}
+			else if (client->emote_freeze)
+			{
+				if (client->pers.cmd.forwardmove ||	client->pers.cmd.rightmove || client->pers.cmd.upmove || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->buttons & BUTTON_ATTACK || client->buttons & BUTTON_ALT_ATTACK)
+				{
+					client->emote_freeze = qfalse;
+					client->ps.saberCanThrow = qtrue;
+					client->ps.saberBlocked = 1;
+					client->ps.saberBlocking = 1;
+					client->ps.forceRestricted = qfalse;
+				}
+				else 
+				{
+					client->ps.pm_type = PM_FREEZE;
+					client->ps.forceRestricted = qtrue;
+					if (ent->client->ps.weapon == WP_SABER && ent->client->ps.saberHolstered < 2)
+					{
+						if (ent->client->saber[0].soundOff)
+						{
+							G_Sound(ent, CHAN_AUTO, ent->client->saber[0].soundOff);
+						}
+						if (ent->client->saber[1].soundOff && ent->client->saber[1].model[0])
+						{
+							G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOff);
+						}
+						ent->client->ps.saberHolstered = 2;
+						ent->client->ps.weaponTime = 400;
+					}
+				}
+			}
+			//End
+			else if (client->jetPackOn)
 			{
 				client->ps.pm_type = PM_JETPACK;
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
 			}
+
+//JAPRO - Serverside - jetpack - Effects - Start
 			else if (g_tweakJetpack.integer && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
 			{
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
 			}
+//JAPRO - Serverside - jetpack - Effects - End
+
 			else
 			{
 				client->ps.pm_type = PM_NORMAL;

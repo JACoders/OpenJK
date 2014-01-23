@@ -4527,7 +4527,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 		{
 			g_entities[clientid].client->pers.amfreeze = qtrue;
 			trap->SendServerCommand(clientid, "cp \"You have been frozen\n\""); 
-			G_ScreenShake(g_entities[clientid].client->ps.origin, &g_entities[clientid],  3.0f, 2000, qtrue); 
+			G_ScreenShake(g_entities[clientid].client->ps.origin, &g_entities[clientid], 3.0f, 2000, qtrue); 
 			G_Sound(&g_entities[clientid], CHAN_AUTO, G_SoundIndex("sound/ambience/thunder_close1"));
 		 }
 	  }
@@ -5055,14 +5055,14 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char strAdmin[32] = {0};
 			char strPlugin[32] = {0};
-			//char *p = NULL;
+			char *p = NULL;
 
 			Q_strncpyz(strNum, va("(%i)", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
-			//p = strchr(strIP, ':');
-			//if (p) //loda - fix ip sometimes not printing in amstatus?
-				//*p = 0;
+			p = strchr(strIP, ':');
+			if (p) //loda - fix ip sometimes not printing in amstatus?
+				*p = 0;
 			if (g_entities[i].r.svFlags & SVF_FULLADMIN)
 				Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
 			else if (g_entities[i].r.svFlags & SVF_JUNIORADMIN)

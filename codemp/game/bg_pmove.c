@@ -5159,7 +5159,7 @@ qboolean PM_RunningAnim( int anim )
 	case BOTH_RUNSTRAFE_RIGHT1:	//# Sidestep right: should loop
 		return qtrue;
 	case BOTH_RUN4:
-#if _GAME
+#ifdef _GAME
 		return qtrue;
 #else
 		if (cgs.isJAPro)
@@ -6069,7 +6069,7 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 ) 
 					{//saber off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6084,7 +6084,7 @@ static void PM_Footsteps( void ) {
 					{
 						//desiredAnim = BOTH_RUNBACK_STAFF;
 						//hmm.. stuff runback anim is pretty messed up for some reason.
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6099,7 +6099,7 @@ static void PM_Footsteps( void ) {
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 ) 
 					{//sabers off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6114,7 +6114,7 @@ static void PM_Footsteps( void ) {
 					{
 						//desiredAnim = BOTH_RUNBACK_DUAL;
 						//and so is the dual
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6129,7 +6129,7 @@ static void PM_Footsteps( void ) {
 				default:
 					if ( pm->ps->saberHolstered ) 
 					{//saber off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6142,7 +6142,7 @@ static void PM_Footsteps( void ) {
 					}
 					else
 					{
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6174,7 +6174,7 @@ static void PM_Footsteps( void ) {
 				case SS_STAFF:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6187,7 +6187,7 @@ static void PM_Footsteps( void ) {
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 blade on
-						#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6202,7 +6202,7 @@ static void PM_Footsteps( void ) {
 					{
 						if (pm->ps->fd.forcePowersActive & (1<<FP_SPEED))
 						{
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6215,7 +6215,7 @@ static void PM_Footsteps( void ) {
 						}
 						else
 						{
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6231,7 +6231,7 @@ static void PM_Footsteps( void ) {
 				case SS_DUAL:
 					if ( pm->ps->saberHolstered > 1 )
 					{//blades off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6244,7 +6244,7 @@ static void PM_Footsteps( void ) {
 					}
 					else if ( pm->ps->saberHolstered == 1 )
 					{//1 saber on
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6257,7 +6257,7 @@ static void PM_Footsteps( void ) {
 					}
 					else
 					{
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6272,7 +6272,7 @@ static void PM_Footsteps( void ) {
 				default:
 					if ( pm->ps->saberHolstered )
 					{//saber off
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
@@ -6285,7 +6285,7 @@ static void PM_Footsteps( void ) {
 					}
 					else
 					{
-#if _GAME
+#ifdef _GAME
 						if (client && client->pers.JAWARUN && !(g_emotesDisable.integer & (1 << E_JAWARUN)))//JAPRO - Jawarun Emote
 							desiredAnim = BOTH_RUN4;
 						else
