@@ -498,16 +498,17 @@ void G_ShutdownGame( int restart ) {
 		level.security.log = 0;
 	}
 
+
 	if ( level.duelLog )
 	{
-		G_DuelLogPrintf( "ShutdownGame\n\n" );
+		//G_DuelLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.duelLog );
 		level.duelLog = 0;
 	}
 
 	if ( level.raceLog )
 	{
-		G_DuelLogPrintf( "ShutdownGame\n\n" );
+		//G_RaceLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.raceLog );
 		level.raceLog = 0;
 	}

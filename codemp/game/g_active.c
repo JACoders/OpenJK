@@ -3179,7 +3179,8 @@ void ClientThink_real( gentity_t *ent ) {
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - Start]
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				G_DuelLogPrintf("%s ; (%s) (%i ping) has defeated ; %s ; (%s) (%i ping) in type %i duel, with %i health and %i armor remaining.\n", ent->client->pers.netname, ent->client->sess.IP, ent->client->ps.ping, duelAgainst->client->pers.netname, duelAgainst->client->sess.IP, duelAgainst->client->ps.ping, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				G_DuelLogPrintf("%s ; (%s) (%i ping) has defeated ; %s ; (%s) (%i ping) in type %i duel, with %i health and %i armor remaining.\n", 
+					ent->client->pers.netname, ent->client->sess.IP, ent->client->ps.ping, duelAgainst->client->pers.netname, duelAgainst->client->sess.IP, duelAgainst->client->ps.ping, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
 				if (dueltypes[ent->client->ps.clientNum] == 0)//Saber
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
 				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
