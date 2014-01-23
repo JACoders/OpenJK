@@ -5141,7 +5141,6 @@ qboolean PM_WalkingAnim( int anim )
 	}
 	return qfalse;
 }
-
 qboolean PM_RunningAnim( int anim )
 {
 	switch ( (anim) )
@@ -5159,6 +5158,13 @@ qboolean PM_RunningAnim( int anim )
 	case BOTH_RUNSTRAFE_LEFT1:	//# Sidestep left: should loop
 	case BOTH_RUNSTRAFE_RIGHT1:	//# Sidestep right: should loop
 		return qtrue;
+	case BOTH_RUN4:
+#if _GAME
+		return qtrue;
+#else
+		if (cgs.isJAPro)
+			return qtrue;
+#endif
 		break;
 	}
 	return qfalse;
