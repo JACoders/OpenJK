@@ -2828,7 +2828,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
-	if (g_raceMode.integer == 1)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
+	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
 		client->pers.raceMode = qtrue;
 	if (client->pers.raceMode) 
 		client->ps.stats[STAT_RACEMODE] = 1;
@@ -4045,7 +4045,7 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	if (g_raceMode.integer == 1)
+	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)
 		client->pers.raceMode = qtrue;
 	else if (!g_raceMode.integer && client->pers.raceMode) 
 		client->pers.raceMode = qfalse;

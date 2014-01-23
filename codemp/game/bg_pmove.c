@@ -3662,6 +3662,53 @@ static void PM_CheckDash(void)
 	}
 }
 
+static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal)
+{
+	vec3_t min, max, dir;
+	int i, j;
+	trace_t trace;
+	float dist = 1.0;
+
+	#define M_TWOPI	6.28318530717958647692
+
+	for(i = 0;i < nbTestDir;i++) {
+		dir[0] = pm->ps->origin[0] + ( pm->maxs[0]*cos( ( M_TWOPI/nbTestDir )*i ) + pm->ps->velocity[0] * 0.015f );
+		dir[1] = pm->ps->origin[1] + ( pm->maxs[1]*sin( ( M_TWOPI/nbTestDir )*i ) + pm->ps->velocity[1] * 0.015f );
+		dir[2] = pm->ps->origin[2];
+
+		for(j = 0;j < 2; j++) {
+			min[j] = pm->mins[j];
+			max[j] = pm->maxs[j];
+		}
+		min[2] = max[2] = 0;
+		VectorScale(dir, 1.002f, dir);
+
+		pm->trace(&trace, pm->ps->origin, min, max, dir, pm->ps->clientNum, CONTENTS_SOLID);
+
+		if(trace.allsolid)
+			return;
+
+		if(trace.fraction == 1)
+			continue; // no wall in this direction
+	
+		if(trace.surfaceFlags & (SURF_SKY))
+			continue;
+
+		if(trace.entityNum > 0) {//!= entitynum_none? or entitynum_world ?
+			bgEntity_t *bgEnt = PM_BGEntForNum(trace.entityNum);
+			if (bgEnt && (bgEnt->s.eType == ET_PLAYER))
+					continue;
+		}
+
+		if(trace.fraction > 0) {
+			if(dist > trace.fraction && fabs( trace.plane.normal[2]) < maxZnormal) {
+				dist = trace.fraction;
+				VectorCopy(trace.plane.normal, *normal);
+			}
+		}
+	}
+}
+
 static void PM_CheckWallJump( void )//loda fixme, wip
 {
 	vec3_t normal;
@@ -3679,6 +3726,12 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		return;//only in air?
 
 	if (pm->ps->weaponTime > 0)
+		return;
+
+	if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
+		return;
+
+	if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
 		return;
 
 #ifdef _GAME
@@ -3708,7 +3761,11 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	if((hspeed > DODGE_SPEED && pm->ps->velocity[2] > 8) || (trace.fraction == 1) || /*(!ISWALKABLEPLANE(&trace.plane)*/ !trace.startsolid)
 	{
 		float oldupvelocity = pm->ps->velocity[2];
-		VectorClear( normal );
+
+		VectorClear(normal);
+		PlayerTouchWall( 12, 0.3f, &normal );
+		if(!VectorLength(normal))
+			return;
 
 		//dont do this if we arnt touching a wall... FIXME?
 
@@ -11696,7 +11753,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 	if (pm->cmd.buttons & BUTTON_DASH) { //JAPRO DASH
 		PM_CheckDash();
-		//PM_CheckWallJump();
+		PM_CheckWallJump();
 	}
 
 	//if we're in jetpack mode then see if we should be jetting around

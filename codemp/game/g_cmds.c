@@ -4876,9 +4876,9 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		trap->SendServerCommand( ent-g_entities, "print \"engage_FullForceDuel \"" ); 
 		trap->SendServerCommand( ent-g_entities, "print \"engage_gunDuel \"" ); 
 	}
-	if (g_raceMode.integer > 1) 
+	if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA) 
 		trap->SendServerCommand( ent-g_entities, "print \"race \"" ); 
-	if (g_raceMode.integer) 
+	if (g_raceMode.integer && g_gametype.integer == GT_FFA) 
 		trap->SendServerCommand( ent-g_entities, "print \"movementStyle \"" ); 
 	if (g_allowSaberSwitch.integer) 
 		trap->SendServerCommand( ent-g_entities, "print \"saber \"" ); 
@@ -5427,6 +5427,11 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
+	if (g_gametype.integer != GT_FFA) {
+		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
+		return;
+	}
+
 	if (!ent->client->pers.raceMode) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
 		return;
@@ -5809,9 +5814,9 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Corpses dissapear after ^2%i ^5seconds\n\"", g_corpseRemovalTime.integer));
 	if (g_newBotAI.integer)
 		trap->SendServerCommand(ent-g_entities, va("print \"     ^5New bot AI for force and saber-only combat\n\"", g_corpseRemovalTime.integer));
-	if (g_raceMode.integer == 1)
+	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)
 		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode is enabled\n\"");
-	else if (g_raceMode.integer > 1)
+	else if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA)
 		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode option is enabled\n\"");
 
 	//Saber changes
