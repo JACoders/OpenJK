@@ -82,7 +82,7 @@ void G_ReadSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -96,7 +96,8 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.duelTeam,
 		&client->sess.siegeDesiredTeam,
 		client->sess.siegeClass,
-		client->sess.IP
+		client->sess.IP,
+		client->sess.ignore//[JAPRO - Serverside - All - Ignore]
 		);
 
 	client->sess.sessionTeam	= (team_t)tempSessionTeam;
@@ -178,8 +179,8 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			case GT_HOLOCRON:
 			case GT_JEDIMASTER:
 			case GT_SINGLE_PLAYER:
-				if ( g_maxGameClients.integer > 0 && 
-					level.numNonSpectatorClients >= g_maxGameClients.integer ) {
+				if (!isBot && (!g_maxGameClients.integer || (g_maxGameClients.integer > 0 && //loda fixme - this should fix clients showing ingame when they really arnt , when first connect?
+					level.numNonSpectatorClients >= g_maxGameClients.integer))) {
 					sess->sessionTeam = TEAM_SPECTATOR;
 				} else {
 					sess->sessionTeam = TEAM_FREE;
@@ -220,6 +221,8 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	AddTournamentQueue(client);
 
 	sess->siegeClass[0] = 0;
+
+	sess->ignore = 0;//[JAPRO - Serverside - All - Ignore]
 
 	G_WriteClientSessionData( client );
 }

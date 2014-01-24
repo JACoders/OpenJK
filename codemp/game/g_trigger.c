@@ -1181,7 +1181,7 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (g_jediVmerc.integer)
 		return qfalse;
-	if (g_dodge.integer)
+	if (g_dodge.integer)//Have to check setting since player can cheat by doing this before the start line as a headstart :/
 		return qfalse;
 	if (g_rampJump.integer)
 		return qfalse;
@@ -1259,16 +1259,15 @@ void Use_target_timer_start(gentity_t *self, gentity_t *other, gentity_t *activa
 }
 
 void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO Timers
-	char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
-	qboolean valid = qfalse;
 	if (!activator->client)
 		return;
 	if (activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT) 
 		return;
 
 	if (activator->client->pers.stats.startTime) {
-		float time = trap->Milliseconds() - activator->client->pers.stats.startTime;
-		float average;
+		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
+		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime), average;
+		qboolean valid = qfalse;
 
 		time -= InterpolateTouchTime(activator, other);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
@@ -1298,13 +1297,20 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 				activator->client->pers.netname, self->message, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 		}
 		else {
+			Q_strcat(courseName, sizeof(courseName), " ()");
 			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups using (^3%s^5) style (%s^5)\n\"",
 				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 
 		}
 		if (valid) {
+			char strIP[NET_ADDRSTRMAXLEN] = {0};
+			char *p = NULL;
+			Q_strncpyz(strIP, activator->client->sess.IP, sizeof(strIP));
+			p = strchr(strIP, ':');
+			if (p) //loda - fix me
+				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %.1f\n",
-				activator->client->pers.netname, activator->client->sess.IP, courseName, time, style, activator->client->pers.stats.topSpeed, average);
+				activator->client->pers.netname, strIP, courseName, time, style, activator->client->pers.stats.topSpeed, average);
 		}
 
 		activator->client->pers.stats.startLevelTime = 0;

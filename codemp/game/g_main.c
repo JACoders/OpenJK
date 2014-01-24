@@ -1584,11 +1584,10 @@ void QDECL G_DuelLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
 	time_t		rawtime;
-	struct tm	*timeinfo;
 	int			timeLen=0;
 
 	time( &rawtime );
-	timeinfo = localtime( &rawtime );
+	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
 	timeLen = strlen( string );
 
@@ -1609,11 +1608,10 @@ void QDECL G_RaceLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
 	time_t		rawtime;
-	struct tm	*timeinfo;
 	int			timeLen=0;
 
 	time( &rawtime );
-	timeinfo = localtime( &rawtime );
+	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
 	timeLen = strlen( string );
 

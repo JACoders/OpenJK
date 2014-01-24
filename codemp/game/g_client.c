@@ -4080,6 +4080,17 @@ void ClientSpawn(gentity_t *ent) {
 	trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
 }
 
+//[JAPRO - Serverside - All - Ignore subfunction - Start]
+void QINLINE ClientRemoveIgnore(const int targetID) {
+	int i;
+	for (i = 0; i < level.maxclients; ++i) {
+		if (level.clients[i].pers.connected == CON_CONNECTED) {
+			level.clients[i].sess.ignore &= ~(1 << targetID);
+		}
+	}
+}
+//[JAPRO - Serverside - All - Ignore subfunction - End]
+
 
 /*
 ===========
@@ -4275,6 +4286,8 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	G_ClearClientLog(clientNum);
+
+	ClientRemoveIgnore(clientNum);//JAPRO IGNORE
 }
 
 

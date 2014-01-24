@@ -3,7 +3,7 @@
 The main goals of this mod are as follows, in order of priority:
 
 * To recreate the fast-paced fullforce combat seen in JK2, and the JA+ mod for JKA.
-* To improve the basejka MP saber hit detection, as seen in JA+.
+* To improve the MP style saber hit detection, as seen in JA+.
 * To remove certain gameplay related exploits.
 * To improve the weapon (gun) combat and balance.
 * To add netcode features such as lag compensation for hitscan and projectiles, clientside simulated projectiles, etc.
