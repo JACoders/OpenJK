@@ -1266,12 +1266,13 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 
 	if (activator->client->pers.stats.startTime) {
 		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
-		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime), average;
+		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime);
+		int average;
 		qboolean valid = qfalse;
 
 		time -= InterpolateTouchTime(activator, other);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
-		average = activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f);//Should use level time for this 
+		average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
 		if (ValidRaceSettings(activator)) {
 			valid = qtrue;
@@ -1293,12 +1294,12 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 		if (self->message) {
 			Com_sprintf(message, sizeof(message), " (%s)", self->message);
 			Q_strcat(courseName, sizeof(courseName), message);
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups using (^3%s^5) style (%s^5)\n\"",
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups using (^3%s^5) style (%s^5)\n\"",
 				activator->client->pers.netname, self->message, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups using (^3%s^5) style (%s^5)\n\"",
+			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups using (^3%s^5) style (%s^5)\n\"",
 				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 
 		}
@@ -1309,7 +1310,7 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 			p = strchr(strIP, ':');
 			if (p) //loda - fix me
 				*p = 0;
-			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %.1f\n",
+			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
 				activator->client->pers.netname, strIP, courseName, time, style, activator->client->pers.stats.topSpeed, average);
 		}
 
@@ -1328,9 +1329,9 @@ void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *
 
 	if (activator->client->pers.stats.startTime && (level.time - activator->client->pers.stats.lastCheckpointTime > 1000)) {
 		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
-		float average = activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f);
+		int average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
 
-		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%.1f^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
+		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
 		activator->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }
