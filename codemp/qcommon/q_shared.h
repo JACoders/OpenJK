@@ -179,9 +179,16 @@ typedef union byteAlias_u {
 	float f;
 	int32_t i;
 	uint32_t ui;
+	qboolean qb;
 	byte b[4];
 	char c[4];
 } byteAlias_t;
+
+typedef union fileBuffer_u {
+	void *v;
+	char *c;
+	byte *b;
+} fileBuffer_t;
 
 typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
 

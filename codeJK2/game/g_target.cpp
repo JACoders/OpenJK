@@ -949,7 +949,7 @@ void SP_target_level_change( gentity_t *self )
 {
 	if ( !self->message )
 	{
-		G_Error( "target_level_change with no mapname!\n");
+		G_Error( "target_level_change with no mapname!");
 		return;
 	}
 	G_SetOrigin( self, self->s.origin );

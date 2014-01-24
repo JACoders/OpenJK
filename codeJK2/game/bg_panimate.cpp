@@ -2192,7 +2192,7 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 	{
 		assert( 0&&"anim out of range!!!" );
 #ifndef FINAL_BUILD
-		G_Error( "%s tried to play invalid anim %d\n", gent->NPC_type, anim );
+		G_Error( "%s tried to play invalid anim %d", gent->NPC_type, anim );
 #endif
 		return;
 	}

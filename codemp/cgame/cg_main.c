@@ -155,95 +155,80 @@ qboolean CG_NoUseableForce(void)
 	return qtrue;
 }
 
-static int C_PointContents(void)
-{
-	TCGPointContents	*data = (TCGPointContents *)cg.sharedBuffer;
-
+static int C_PointContents( void ) {
+	TCGPointContents *data = &cg.sharedBuffer.pointContents;
 	return CG_PointContents( data->mPoint, data->mPassEntityNum );
 }
 
-static void C_GetLerpOrigin(void)
-{
-	TCGVectorData		*data = (TCGVectorData *)cg.sharedBuffer;
-
-	VectorCopy(cg_entities[data->mEntityNum].lerpOrigin, data->mPoint);
+static void C_GetLerpOrigin( void ) {
+	TCGVectorData *data = &cg.sharedBuffer.vectorData;
+	VectorCopy( cg_entities[data->mEntityNum].lerpOrigin, data->mPoint );
 }
 
-static void C_GetLerpData(void)
-{//only used by FX system to pass to getboltmat
-	TCGGetBoltData		*data = (TCGGetBoltData *)cg.sharedBuffer;
+// only used by FX system to pass to getboltmat
+static void C_GetLerpData( void ) {
+	TCGGetBoltData *data = &cg.sharedBuffer.getBoltData;
 
-	VectorCopy(cg_entities[data->mEntityNum].lerpOrigin, data->mOrigin);
-	VectorCopy(cg_entities[data->mEntityNum].modelScale, data->mScale);
-	VectorCopy(cg_entities[data->mEntityNum].lerpAngles, data->mAngles);
-	if (cg_entities[data->mEntityNum].currentState.eType == ET_PLAYER)
-	{ //normal player
+	VectorCopy( cg_entities[data->mEntityNum].lerpOrigin, data->mOrigin );
+	VectorCopy( cg_entities[data->mEntityNum].modelScale, data->mScale );
+	VectorCopy( cg_entities[data->mEntityNum].lerpAngles, data->mAngles );
+	if ( cg_entities[data->mEntityNum].currentState.eType == ET_PLAYER ) {
+		// normal player
 		data->mAngles[PITCH] = 0.0f;
 		data->mAngles[ROLL] = 0.0f;
 	}
-	else if (cg_entities[data->mEntityNum].currentState.eType == ET_NPC)
-	{ //an NPC
+	else if ( cg_entities[data->mEntityNum].currentState.eType == ET_NPC ) {
+		// an NPC
 		Vehicle_t *pVeh = cg_entities[data->mEntityNum].m_pVehicle;
-		if (!pVeh)
-		{ //for vehicles, we may or may not want to 0 out pitch and roll
+		if ( !pVeh ) {
+			// for vehicles, we may or may not want to 0 out pitch and roll
 			data->mAngles[PITCH] = 0.0f;
 			data->mAngles[ROLL] = 0.0f;
 		}
-		else if (pVeh->m_pVehicleInfo->type == VH_SPEEDER)
-		{ //speeder wants no pitch but a roll
+		else if ( pVeh->m_pVehicleInfo->type == VH_SPEEDER ) {
+			// speeder wants no pitch but a roll
 			data->mAngles[PITCH] = 0.0f;
 		}
-		else if (pVeh->m_pVehicleInfo->type != VH_FIGHTER)
-		{ //fighters want all angles
+		else if ( pVeh->m_pVehicleInfo->type != VH_FIGHTER ) {
+			// fighters want all angles
 			data->mAngles[PITCH] = 0.0f;
 			data->mAngles[ROLL] = 0.0f;
 		}
 	}
 }
 
-static void C_Trace(void)
-{
-	TCGTrace	*td = (TCGTrace *)cg.sharedBuffer;
-
-	CG_Trace(&td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask);
+static void C_Trace( void ) {
+	TCGTrace *td = &cg.sharedBuffer.trace;
+	CG_Trace( &td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask );
 }
 
-static void C_G2Trace(void)
-{
-	TCGTrace	*td = (TCGTrace *)cg.sharedBuffer;
-
-	CG_G2Trace(&td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask);
+static void C_G2Trace( void ) {
+	TCGTrace *td = &cg.sharedBuffer.trace;
+	CG_G2Trace( &td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask );
 }
 
-static void C_G2Mark(void)
-{
-	TCGG2Mark	*td = (TCGG2Mark *)cg.sharedBuffer;
-	trace_t		tr;
-	vec3_t		end;
+static void C_G2Mark( void ) {
+	TCGG2Mark *td = &cg.sharedBuffer.g2Mark;
+	trace_t tr;
+	vec3_t end;
 
-	VectorMA(td->start, 64, td->dir, end);
-	CG_G2Trace(&tr, td->start, NULL, NULL, end, ENTITYNUM_NONE, MASK_PLAYERSOLID);
+	VectorMA( td->start, 64.0f, td->dir, end );
+	CG_G2Trace( &tr, td->start, NULL, NULL, end, ENTITYNUM_NONE, MASK_PLAYERSOLID );
 
-	if (tr.entityNum < ENTITYNUM_WORLD &&
-		cg_entities[tr.entityNum].ghoul2)
-	{ //hit someone with a ghoul2 instance, let's project the decal on them then.
+	if ( tr.entityNum < ENTITYNUM_WORLD && cg_entities[tr.entityNum].ghoul2 ) {
+		// hit someone with a ghoul2 instance, let's project the decal on them then.
 		centity_t *cent = &cg_entities[tr.entityNum];
 
-		//CG_TestLine(tr.endpos, end, 2000, 0x0000ff, 1);
+	//	CG_TestLine( tr.endpos, end, 2000, 0x0000ff, 1 );
 
-		CG_AddGhoul2Mark(td->shader, td->size, tr.endpos, end, tr.entityNum,
-			cent->lerpOrigin, cent->lerpAngles[YAW], cent->ghoul2, cent->modelScale,
-			Q_irand(2000, 4000));
-		//I'm making fx system decals have a very short lifetime.
+		CG_AddGhoul2Mark( td->shader, td->size, tr.endpos, end, tr.entityNum, cent->lerpOrigin, cent->lerpAngles[YAW],
+			cent->ghoul2, cent->modelScale, Q_irand( 2000, 4000 ) );
+		// I'm making fx system decals have a very short lifetime.
 	}
 }
 
-static void CG_DebugBoxLines(vec3_t mins, vec3_t maxs, int duration)
-{
-	vec3_t start;
-	vec3_t end;
-	vec3_t vert;
-
+static void CG_DebugBoxLines( vec3_t mins, vec3_t maxs, int duration ) {
+	vec3_t start, end, vert;
 	float x = maxs[0] - mins[0];
 	float y = maxs[1] - mins[1];
 
@@ -307,21 +292,21 @@ static int CG_RagCallback(int callType)
 	{
 	case RAG_CALLBACK_DEBUGBOX:
 		{
-			ragCallbackDebugBox_t *callData = (ragCallbackDebugBox_t *)cg.sharedBuffer;
+			ragCallbackDebugBox_t *callData = &cg.sharedBuffer.rcbDebugBox;
 
 			CG_DebugBoxLines(callData->mins, callData->maxs, callData->duration);
 		}
 		break;
 	case RAG_CALLBACK_DEBUGLINE:
 		{
-			ragCallbackDebugLine_t *callData = (ragCallbackDebugLine_t *)cg.sharedBuffer;
+			ragCallbackDebugLine_t *callData = &cg.sharedBuffer.rcbDebugLine;
 
 			CG_TestLine(callData->start, callData->end, callData->time, callData->color, callData->radius);
 		}
 		break;
 	case RAG_CALLBACK_BONESNAP:
 		{
-			ragCallbackBoneSnap_t *callData = (ragCallbackBoneSnap_t *)cg.sharedBuffer;
+			ragCallbackBoneSnap_t *callData = &cg.sharedBuffer.rcbBoneSnap;
 			centity_t *cent = &cg_entities[callData->entNum];
 			int snapSound = trap->S_RegisterSound(va("sound/player/bodyfall_human%i.wav", Q_irand(1, 3)));
 
@@ -332,7 +317,7 @@ static int CG_RagCallback(int callType)
 	case RAG_CALLBACK_BONEINSOLID:
 #if 0
 		{
-			ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)cg.sharedBuffer;
+			ragCallbackBoneInSolid_t *callData = &cg.sharedBuffer.rcbBoneInSolid;
 
 			if (callData->solidCount > 16)
 			{ //don't bother if we're just tapping into solidity, we'll probably recover on our own
@@ -349,7 +334,7 @@ static int CG_RagCallback(int callType)
 		break;
 	case RAG_CALLBACK_TRACELINE:
 		{
-			ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)cg.sharedBuffer;
+			ragCallbackTraceLine_t *callData = &cg.sharedBuffer.rcbTraceLine;
 
 			CG_Trace(&callData->tr, callData->start, callData->mins, callData->maxs,
 				callData->end, callData->ignore, callData->mask);
@@ -363,23 +348,19 @@ static int CG_RagCallback(int callType)
 	return 0;
 }
 
-static void C_ImpactMark(void)
-{
-	TCGImpactMark	*data = (TCGImpactMark *)cg.sharedBuffer;
+static void C_ImpactMark( void ) {
+	TCGImpactMark *data = &cg.sharedBuffer.impactMark;
 
-	/*
-	CG_ImpactMark((int)arg0, (const float *)arg1, (const float *)arg2, (float)arg3,
-		(float)arg4, (float)arg5, (float)arg6, (float)arg7, qtrue, (float)arg8, qfalse);
-	*/
-	CG_ImpactMark(data->mHandle, data->mPoint, data->mAngle, data->mRotation,
-		data->mRed, data->mGreen, data->mBlue, data->mAlphaStart, qtrue, data->mSizeStart, qfalse);
+//	CG_ImpactMark( (int)arg0, (const float *)arg1, (const float *)arg2, (float)arg3, (float)arg4, (float)arg5, (float)arg6,
+//		(float)arg7, qtrue, (float)arg8, qfalse );
+
+	CG_ImpactMark( data->mHandle, data->mPoint, data->mAngle, data->mRotation, data->mRed, data->mGreen, data->mBlue,
+		data->mAlphaStart, qtrue, data->mSizeStart, qfalse );
 }
 
-void CG_MiscEnt(void)
-{
-	int i;
-	int modelIndex;
-	TCGMiscEnt *data = (TCGMiscEnt *)cg.sharedBuffer;
+void CG_MiscEnt( void ) {
+	int i, modelIndex;
+	TCGMiscEnt *data = &cg.sharedBuffer.miscEnt;
 	cg_staticmodel_t *staticmodel;
 
 	if( cgs.numMiscStaticModels >= MAX_STATIC_MODELS ) {
@@ -502,7 +483,7 @@ static cvarTable_t cvarTable[] = {
 		#include "cg_xcvar.h"
 	#undef XCVAR_LIST
 };
-static int cvarTableSize = ARRAY_LEN( cvarTable );
+static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
 
 /*
 =================
@@ -510,8 +491,8 @@ CG_RegisterCvars
 =================
 */
 void CG_RegisterCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+	size_t		i;
+	cvarTable_t	*cv = NULL;
 
 	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		trap->Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
@@ -526,8 +507,8 @@ CG_UpdateCvars
 =================
 */
 void CG_UpdateCvars( void ) {
-	int			i;
-	cvarTable_t	*cv;
+	size_t		i = 0;
+	cvarTable_t	*cv = NULL;
 
 	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		if ( cv->vmCvar ) {
@@ -2592,7 +2573,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 
 	BG_InitAnimsets(); //clear it out
 
-	trap->RegisterSharedMemory(cg.sharedBuffer);
+	trap->RegisterSharedMemory( cg.sharedBuffer.raw );
 
 	//Load external vehicle data
 	BG_VehicleLoadParms();
@@ -3062,7 +3043,7 @@ static qboolean CG_IncomingConsoleCommand( void ) {
 	//qfalse to not execute anything, or you can fill conCommand in with something valid and return 0
 	//in order to have that string executed in place. Some example code:
 #if 0
-	TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cg.sharedBuffer;
+	TCGIncomingConsoleCommand *icc = &cg.sharedBuffer.icc;
 	if ( strstr( icc->conCommand, "wait" ) )
 	{ //filter out commands contaning wait
 		Com_Printf( "You can't use commands containing the string wait with MyMod v1.0\n" );
@@ -3105,7 +3086,7 @@ static void CG_MapChange( void ) {
 }
 
 static void CG_AutomapInput( void ) {
-	autoMapInput_t *autoInput = (autoMapInput_t *)cg.sharedBuffer;
+	autoMapInput_t *autoInput = &cg.sharedBuffer.autoMapInput;
 
 	memcpy( &cg_autoMapInput, autoInput, sizeof( autoMapInput_t ) );
 
@@ -3123,7 +3104,7 @@ static void CG_AutomapInput( void ) {
 }
 
 static void CG_FX_CameraShake( void ) {
-	TCGCameraShake *data = (TCGCameraShake *)cg.sharedBuffer;
+	TCGCameraShake *data = &cg.sharedBuffer.cameraShake;
 	CG_DoCameraShake( data->mOrigin, data->mIntensity, data->mRadius, data->mTime );
 }
 

@@ -40,7 +40,7 @@ extern void G_LoadSave_WriteMiscData(void);
 extern void G_LoadSave_ReadMiscData(void);
 
 
-field_t savefields_gEntity[] =
+static const field_t savefields_gEntity[] =
 {
 	{strFOFS(client),			F_GCLIENT},
 	{strFOFS(owner),			F_GENTITY},
@@ -87,7 +87,7 @@ field_t savefields_gEntity[] =
 	{NULL, 0, F_IGNORE}
 };
 
-field_t savefields_gNPC[] =
+static const field_t savefields_gNPC[] =
 {
 //	{strNPCOFS(pendingEnemy),		F_GENTITY},
 	{strNPCOFS(touchedByPlayer),	F_GENTITY},
@@ -106,7 +106,7 @@ field_t savefields_gNPC[] =
 	{NULL, 0, F_IGNORE}
 };
 
-field_t savefields_LevelLocals[] =
+static const field_t savefields_LevelLocals[] =
 {
 	{strLLOFS(locationHead),	F_GENTITY},	
 	{strLLOFS(alertEvents),		F_ALERTEVENT},
@@ -132,7 +132,7 @@ ok	renderInfo_t	renderInfo;
 */
 // I'll keep a blank one for now in case I need to add anything...
 //
-field_t savefields_gClient[] =
+static const field_t savefields_gClient[] =
 {
 	{strCLOFS(ps.saberModel),	F_STRING},
 	{strCLOFS(squadname),		F_STRING},
@@ -149,7 +149,7 @@ field_t savefields_gClient[] =
 };
 
 
-list<sstring_t> strList;
+static list<sstring_t>* strList = NULL;
 
 
 /////////// char * /////////////
@@ -166,7 +166,7 @@ int GetStringNum(const char *psString)
 		return -1;
 	}
 
-	strList.push_back( psString );
+	strList->push_back( psString );
 	return strlen(psString) + 1;	// this gives us the chunk length for the reader later
 }
 
@@ -328,7 +328,7 @@ gitem_t *GetGItemPtr(int iItem)
 ////////////////////////////////
 
 
-void EnumerateField(field_t *pField, byte *pbBase)
+void EnumerateField(const field_t *pField, byte *pbBase)
 {
 	void *pv = (void *)(pbBase + pField->iOffset);
 
@@ -438,15 +438,15 @@ void EnumerateField(field_t *pField, byte *pbBase)
 	}
 }
 
-void EnumerateFields(field_t *pFields, byte *pbData, unsigned int ulChid, int iLen)
+static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, int iLen)
 {
-	assert(strList.empty());
+	strList = new list<sstring_t>;
 
 	// enumerate all the fields...
 	//
 	if (pFields)
 	{
-		for (field_t *pField = pFields; pField->psName; pField++)
+		for (const field_t *pField = pFields; pField->psName; pField++)
 		{
 			assert(pField->iOffset < iLen);
 			EnumerateField(pField, pbData);
@@ -459,17 +459,17 @@ void EnumerateFields(field_t *pFields, byte *pbData, unsigned int ulChid, int iL
 
 	// save out any associated strings..
 	//
-	list<sstring_t>::iterator it = strList.begin();
-	for (unsigned int i=0; i<strList.size(); i++, ++it)
+	for (auto it = strList->begin(); it != strList->end(); ++it)
 	{
-		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);
+		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void*)it->c_str(), it->length()+1);
 	}
 	
-	strList.clear();	// make sure everything is cleaned up nicely
+	delete strList;
+	strList = NULL;
 }
 
 
-void EvaluateField(field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)
+static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)
 {
 	void *pv		 = (void *)(pbBase			  + pField->iOffset);
 	void *pvOriginal = (void *)(pbOriginalRefData + pField->iOffset);
@@ -568,7 +568,7 @@ static LPCSTR SG_GetChidText(unsigned int chid)
 	return chidtext;
 }
 
-void EvaluateFields(field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
+static void EvaluateFields(const field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {	
 	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
 
@@ -596,7 +596,7 @@ void EvaluateFields(field_t *pFields, byte *pbData, byte *pbOriginalRefData, uns
 	
 	if (pFields)
 	{
-		for (field_t *pField = pFields; pField->psName; pField++)
+		for (const field_t *pField = pFields; pField->psName; pField++)
 		{
 			EvaluateField(pField, pbData, pbOriginalRefData);
 		}
@@ -610,11 +610,13 @@ WriteLevelLocals
 All pointer variables (except function pointers) must be handled specially.
 ==============
 */
-void WriteLevelLocals ()
+static void WriteLevelLocals ()
 {
-	level_locals_t temp = level;	// copy out all data into a temp space
+	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
+	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, (byte *)&temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
+	EnumerateFields(savefields_LevelLocals, (byte *)temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));
+	gi.Free(temp);
 }
 
 /*
@@ -624,20 +626,22 @@ ReadLevelLocals
 All pointer variables (except function pointers) must be handled specially.
 ==============
 */
-void ReadLevelLocals ()
+static void ReadLevelLocals ()
 {
 	// preserve client ptr either side of the load, because clients are already saved/loaded through Read/Writegame...
 	//
 	gclient_t *pClients = level.clients;	// save clients
 
-	level_locals_t temp = level;	// struct copy
-	EvaluateFields(savefields_LevelLocals, (byte *)&temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
-	level = temp;					// struct copy
+	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
+	*temp = level;
+	EvaluateFields(savefields_LevelLocals, (byte *)temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
+	level = *temp;					// struct copy
 
 	level.clients = pClients;				// restore clients
+	gi.Free(temp);
 }
 
-void WriteGEntities(qboolean qbAutosave)
+static void WriteGEntities(qboolean qbAutosave)
 {
 	int iCount = 0;
 	int i;
@@ -722,7 +726,7 @@ void WriteGEntities(qboolean qbAutosave)
 	}
 }
 
-void ReadGEntities(qboolean qbAutosave)
+static void ReadGEntities(qboolean qbAutosave)
 {
 	int		iCount;
 	int		i;
@@ -859,14 +863,7 @@ void ReadGEntities(qboolean qbAutosave)
 		//
 		{
 			char *pGhoul2Data = NULL;
-			int   iGhoul2Size = 0;
-			gi.ReadFromSaveGame(INT_ID('G','L','2','S'), &iGhoul2Size, sizeof(iGhoul2Size), NULL);
-			pGhoul2Data = (char *) gi.Malloc(iGhoul2Size, TAG_TEMP_WORKSPACE, qfalse);
-/*			if (pGhoul2Data == 0)
-			{
-				G_Error("ReadGEntities(): ent %d/%d (targetname: '%s'), failed to alloc %d bytes for Ghoul2 load",i,iCount,pEnt->targetname,iGhoul2Size);
-			}
-*/			gi.ReadFromSaveGame(INT_ID('G','H','L','2'), pGhoul2Data, iGhoul2Size, NULL);
+			gi.ReadFromSaveGame(INT_ID('G','H','L','2'), 0, 0, (void**)&pGhoul2Data);
 			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
 			gi.Free(pGhoul2Data);
 		}

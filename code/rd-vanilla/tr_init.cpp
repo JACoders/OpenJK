@@ -1400,7 +1400,7 @@ void R_Init( void ) {
 
 #ifndef FINAL_BUILD
 	if ( (intptr_t)tess.xyz & 15 ) {
-		Com_Printf( "WARNING: tess.xyz not 16 byte aligned (%x)\n",(intptr_t)tess.xyz & 15 );
+		Com_Printf( "WARNING: tess.xyz not 16 byte aligned\n" );
 	}
 #endif
 
