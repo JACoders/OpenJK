@@ -5154,7 +5154,7 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 	}
 	if (BG_InKnockDown(ent->s.legsAnim))
 		return;
-	if (BG_InRoll(&ent->client->ps, ent->s.legsAnim))//memes, is this crashing? if ps is null or something?
+	if (BG_InRoll(&ent->client->ps, ent->s.legsAnim))//is this crashing? if ps is null or something?
 		return;
 
 	if (freeze) { // Do the anim and freeze it, or cancel if already in it

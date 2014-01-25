@@ -1210,7 +1210,7 @@ qboolean ValidRaceSettings(gentity_t *player)
 	return qtrue;
 }
 
-qboolean InStopTrigger(vec3_t interpOrigin, gentity_t *trigger)
+qboolean InTrigger(vec3_t interpOrigin, gentity_t *trigger)
 {
 	vec3_t		mins, maxs;
 	static const vec3_t	pmins = {-15, -15, DEFAULT_MINS_2};
@@ -1219,9 +1219,9 @@ qboolean InStopTrigger(vec3_t interpOrigin, gentity_t *trigger)
 	VectorAdd( interpOrigin, pmins, mins );
 	VectorAdd( interpOrigin, pmaxs, maxs );
 
-	if (trap->EntityContact(mins, maxs, (sharedEntity_t *)trigger, qfalse))//Not sure what the qfalse is
-		return qtrue;
-	return qfalse;
+	if (trap->EntityContact(mins, maxs, (sharedEntity_t *)trigger, qfalse))
+		return qtrue;//Player is touching the trigger
+	return qfalse;//Player is not touching the trigger
 }
 
 int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
@@ -1234,7 +1234,7 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 
 	VectorSubtract(interpOrigin, delta, interpOrigin);//Do it once before we loop
 
-	while (InStopTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
+	while (InTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
 		lessTime++; //Add one more ms to be subtracted
 		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
 		if (lessTime >= activator->client->pmoveMsec) {
@@ -1274,10 +1274,8 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 		time /= 1000.0f;
 		average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
-		if (ValidRaceSettings(activator)) {
+		if (ValidRaceSettings(activator))
 			valid = qtrue;
-			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
-		}
 
 		if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
@@ -1294,12 +1292,12 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 		if (self->message) {
 			Com_sprintf(message, sizeof(message), " (%s)", self->message);
 			Q_strcat(courseName, sizeof(courseName), message);
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups using (^3%s^5) style (%s^5)\n\"",
+			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
 				activator->client->pers.netname, self->message, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%s^5 finished with time: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups using (^3%s^5) style (%s^5)\n\"",
+			trap->SendServerCommand( -1, va("print \"%s^5 finished in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
 				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 
 		}
@@ -1312,6 +1310,7 @@ void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activat
 				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
 				activator->client->pers.netname, strIP, courseName, time, style, activator->client->pers.stats.topSpeed, average);
+			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}
 
 		activator->client->pers.stats.startLevelTime = 0;
@@ -1331,7 +1330,7 @@ void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *
 		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
 		int average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
 
-		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5 seconds with max of ^3%i^5 ups and average ^3%i^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
+		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
 		activator->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }
