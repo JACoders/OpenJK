@@ -2227,7 +2227,7 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 				if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
 #else
-				if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))))
+				if ((!(cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
 #endif
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 				return qfalse;
@@ -2249,7 +2249,7 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 		if ((((g_movementStyle.integer != 3) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3)))
 #else
-		if (!(cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3)))
+		if ((!(cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
 #endif
 		{
 			pm->cmd.upmove = 0;

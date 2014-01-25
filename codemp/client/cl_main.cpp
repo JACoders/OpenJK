@@ -79,6 +79,7 @@ cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 cvar_t	*m_repeatDelay;//JAPRO ENGINE
+cvar_t	*m_repeat;//JAPRO ENGINE
 
 cvar_t	*cl_autolodscale;
 
@@ -2722,6 +2723,7 @@ void CL_Init( void ) {
 	cg_demoRecordMsg = Cvar_Get ("cg_demoRecordMsg", "3", CVAR_ARCHIVE);//JAPRO ENGINE
 
 	m_repeatDelay = Cvar_Get( "m_repeatDelay",	"800",	CVAR_ARCHIVE );
+	m_repeat = Cvar_Get( "m_repeat",	"0",	CVAR_INTERNAL );
 	Cvar_CheckRange( m_repeatDelay, 0, 5000, qtrue );
 
 #ifndef _WIN32
