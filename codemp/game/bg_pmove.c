@@ -2283,8 +2283,21 @@ static qboolean PM_CheckJump( void )
 	{
 		qboolean allowWallRuns = qtrue;
 		qboolean allowWallFlips = qtrue;
-	//	qboolean allowFlips = qtrue;
+	//	qboolean allowFlips = qtrue; //loda fixme, why is this commented
 		qboolean allowWallGrabs = qtrue;
+
+#ifdef _GAME
+		if (pm->ps->stats[STAT_ONLYBHOP])
+#else
+		if (cgs.isJAPro && pm->ps->stats[STAT_ONLYBHOP])
+#endif
+		{
+			allowWallRuns = qfalse;
+			allowWallFlips = qfalse;
+			allowFlips = qfalse;
+			allowWallGrabs = qfalse;
+		}
+
 		if ( pm->ps->weapon == WP_SABER )
 		{
 			saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
