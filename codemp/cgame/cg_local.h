@@ -1374,10 +1374,8 @@ typedef struct cgMedia_s {
 	qhandle_t campShader;
 	qhandle_t followShader;
 	qhandle_t defendShader;
-	qhandle_t teamLeaderShader;
 	qhandle_t retrieveShader;
 	qhandle_t escortShader;
-	qhandle_t flagShaders[3];
 
 	qhandle_t halfShieldModel;
 	qhandle_t halfShieldShader;
