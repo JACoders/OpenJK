@@ -2599,6 +2599,10 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		ClientDisconnect( clientNum );
 	}
 
+	//JAPRO - Serverside - Admin
+	ent->r.svFlags &= ~SVF_JUNIORADMIN; // prevent admin from being carried over to new players and bots
+	ent->r.svFlags &= ~SVF_FULLADMIN;
+
 	// they can connect
 	client = &level.clients[ clientNum ];
 	ent->client = client;
