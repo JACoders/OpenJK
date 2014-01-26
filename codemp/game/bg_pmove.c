@@ -11174,6 +11174,11 @@ void PM_MoveForKata(usercmd_t *ucmd)
 	}
 }
 
+static QINLINE float bg_roundfloat(float n)
+{
+	return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f);
+}
+
 void PmoveSingle (pmove_t *pmove) {
 	qboolean stiffenedUp = qfalse;
 	float gDist = 0;
@@ -12243,6 +12248,8 @@ void PmoveSingle (pmove_t *pmove) {
 	// snap velocity to integer coordinates to save network bandwidth
 	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
 		trap->SnapVector( pm->ps->velocity );
+	else
+		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{
@@ -12322,8 +12329,12 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 
-
-		if ( pmove->pmove_fixed ) {
+		if (pmove->ps->stats[STAT_RACEMODE]) {
+			if ( msec > 8 ) {
+				msec = 8;
+			}
+		}
+		else if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}
