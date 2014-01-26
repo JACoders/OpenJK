@@ -940,7 +940,7 @@ JOYSTICK
  #ifndef NO_XINPUT
 
 static XINPUT_STATE xiState;
-static int xiButtonDebounce[16];
+static DWORD dwLastXIButtonState;
 
 static HMODULE xiLibrary = NULL;
 
@@ -1039,7 +1039,6 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( xiButtonDebounce, sizeof(xiButtonDebounce) );
 	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
 
 }
@@ -1372,9 +1371,9 @@ void IN_DoXInput( void )
 	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
 	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
 	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
-	int dX = 0, dY = 0;
+	float dX = 0, dY = 0;
 
-	/* hi microsoft, go fuck yourself for flipping the Y axis for no reason... */
+	/* hi microsoft, go fuck yourself for flipping left stick's Y axis for no reason... */
 	leftThumbY *= -1.0f;
 	rightThumbY *= -1.0f;
 
@@ -1388,17 +1387,15 @@ void IN_DoXInput( void )
 		// Left stick behavior
 		if( abs(leftThumbX) > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
 		{
-			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value;
 		}
 		if( abs(leftThumbY) > joy_threshold->value )
 		{
-			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
 		}
-		// Square it.
-		dX *= abs(dX);
-		dY *= abs(dY);
 		
-		Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
 
 		// Right stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
@@ -1419,56 +1416,78 @@ void IN_DoXInput( void )
 		// Right stick behavior
 		if( abs(rightThumbX) > joy_threshold->value )
 		{
-			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+			float factor = abs(rightThumbX*128);
+			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbX: %f\tfactor: %f\tdX: %f\n", rightThumbX, factor, dX);
 		}
 		if( abs(rightThumbY) > joy_threshold->value )
 		{
-			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+			float factor = abs(rightThumbY*128);
+			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
 		}
-		// Square it.
-		dX *= abs(dX);
-		dY *= abs(dY);
+		
+		// ...but cap it at a reasonable amount.
+		if(dX < -2.5f) dX = -2.5f;
+		if(dX > 2.5f) dX = 2.5f;
+		if(dY < -2.5f) dY = -2.5f;
+		if(dY > 2.5f) dY = 2.5f;
 
-		if(dX || dY)
-			Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+		dX *= 1024;
+		dY *= 1024;
+
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, dX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
 	}
 
 
 	// BUTTONS
-
 	for(int i = 0; i < 14; i++)
 	{
 		if( xiState.Gamepad.wButtons & (1 << i) &&
-			xiButtonDebounce[i] < g_wv.sysMsgTime )
+			!(dwLastXIButtonState & (1 << i)) )
 		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qtrue, 0, NULL);
-			xiButtonDebounce[i] = g_wv.sysMsgTime + 50;
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qtrue, 0, NULL);
+			
 		}
-		else if( !(xiState.Gamepad.wButtons & (1 << i)) )
+		if( !(xiState.Gamepad.wButtons & (1 << i)) &&
+			dwLastXIButtonState & (1 << i))
 		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qfalse, 0, NULL);
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qfalse, 0, NULL);
 		}
+		if( xiState.Gamepad.wButtons & (1 << i) )
+			dwLastXIButtonState |= (1 << i);
+		else
+			dwLastXIButtonState &= ~(1 << i);
 	}
 	// extra magic required for the triggers
-	if( xiState.Gamepad.bLeftTrigger && xiButtonDebounce[14] < g_wv.sysMsgTime )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
-		xiButtonDebounce[14] = g_wv.sysMsgTime + 50;
-	}
-	else if( !xiState.Gamepad.bLeftTrigger )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
-	}
-
-	if( xiState.Gamepad.bRightTrigger && xiButtonDebounce[15] < g_wv.sysMsgTime )
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 16)) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bRightTrigger )
+	else if( !xiState.Gamepad.bLeftTrigger && dwLastXIButtonState & (1 << 16) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
-		xiButtonDebounce[15] = g_wv.sysMsgTime + 50;
 	}
+	if( xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState |= (1 << 16);
+	if( !xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState &= ~(1 << 16);
+
+	if( xiState.Gamepad.bRightTrigger && !(dwLastXIButtonState & (1 << 17)) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bRightTrigger && dwLastXIButtonState & (1 << 17) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qfalse, 0, NULL);
+	}
+	if( xiState.Gamepad.bRightTrigger )
+		dwLastXIButtonState |= (1 << 17);
+	else
+		dwLastXIButtonState &= ~(1 << 17);
 }
 #endif
 
