@@ -211,6 +211,7 @@ XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_overBounce,				"0",			CVU_OverBounce,		CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )

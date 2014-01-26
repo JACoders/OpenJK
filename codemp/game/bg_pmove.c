@@ -4512,6 +4512,16 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
+#ifdef _GAME
+	if (g_overBounce.integer)//|| ((g_overBounce.integer > 1) && pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
+#else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_OVERBOUNCE))
+#endif
+	{
+		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel
+			pm->ps->velocity[2] = -vel;
+	}
+
 	// start footstep cycle over
 	pm->ps->bobCycle = 0;
 }

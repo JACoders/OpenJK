@@ -203,6 +203,12 @@ static void CVU_RampJump(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+static void CVU_OverBounce(void) {
+	g_overBounce.integer ?
+		(jcinfo.integer |= JAPRO_CINFO_OVERBOUNCE) : (jcinfo.integer &= ~JAPRO_CINFO_OVERBOUNCE);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
 
 //
 // Cvar table

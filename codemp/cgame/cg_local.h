@@ -122,6 +122,7 @@
 #define JAPRO_CINFO_DASH			(1<<27) //Also Dash +button13
 #define JAPRO_CINFO_RAMPJUMP		(1<<28) //My own style of rampjump
 #define JAPRO_CINFO_BHOP2			(1<<29)	//option for only bhop mode
+#define JAPRO_CINFO_OVERBOUNCE		(1<<30) //Overbounce
 
 typedef enum {
 	FOOTSTEP_STONEWALK,
