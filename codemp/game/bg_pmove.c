@@ -1635,7 +1635,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				if (!pmove_fixed.integer && !ps->stats[STAT_RACEMODE])//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
+				if (!pmove_fixed.integer)//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
 					ucmd->forwardmove = 0;
 				return qtrue;
 			}
@@ -12241,7 +12241,7 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_WaterEvents();
 
 	// snap velocity to integer coordinates to save network bandwidth
-	if ( !pm->pmove_float )
+	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
 		trap->SnapVector( pm->ps->velocity );
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
@@ -12323,12 +12323,7 @@ void Pmove (pmove_t *pmove) {
 		msec = finalTime - pmove->ps->commandTime;
 
 
-		if (pmove->ps->stats[STAT_RACEMODE]) {//JAPRO force pmove_fixed 125fps for racemode
-			if ( msec > 8 ) {
-				msec = 8;
-			}
-		}
-		else if ( pmove->pmove_fixed ) {
+		if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}
