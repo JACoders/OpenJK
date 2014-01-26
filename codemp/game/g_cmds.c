@@ -5039,7 +5039,10 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 		return;
 	}
 
-	Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Name^7\n" );
+	if (g_raceMode.integer)
+		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Race    Style    Name^7\n" );
+	else
+		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Name^7\n" );
 
 	for (i=0; i<MAX_CLIENTS; i++)
 	{//Build a list of clients
@@ -5055,6 +5058,8 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char strAdmin[32] = {0};
 			char strPlugin[32] = {0};
+			char strRace[32] = {0};
+			char strStyle[32] = {0};
 			char *p = NULL;
 
 			Q_strncpyz(strNum, va("(%i)", i), sizeof(strNum));
@@ -5070,8 +5075,24 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			else
 				Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));
 
+			if (g_raceMode.integer) {
+				Q_strncpyz(strRace, (cl->ps.stats[STAT_RACEMODE]) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+				if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+					Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+					Q_strncpyz(strStyle, "^7vq3^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+					Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
+				else
+					Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
+			}
+
 			Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
-			tmpMsg = va( "%-5s%-18s^7%-14s%-16s%s^7\n", strNum, strIP, strPlugin, strAdmin, strName);
+
+			if (g_raceMode.integer)
+				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%-12s%-13s%s^7\n", strNum, strIP, strPlugin, strAdmin, strRace, strStyle, strName);
+			else
+				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%s^7\n", strNum, strIP, strPlugin, strAdmin, strName);
 
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
