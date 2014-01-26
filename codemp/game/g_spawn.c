@@ -266,6 +266,10 @@ void SP_trigger_shipboundary(gentity_t *self);
 void SP_trigger_hyperspace(gentity_t *self);
 void SP_trigger_asteroid_field(gentity_t *self);
 
+void SP_trigger_timer_start(gentity_t *self);
+void SP_trigger_timer_checkpoint(gentity_t *self);
+void SP_trigger_timer_stop(gentity_t *self);
+
 void SP_target_remove_powerups( gentity_t *ent );
 void SP_target_give (gentity_t *ent);
 void SP_target_delay (gentity_t *ent);
@@ -506,6 +510,10 @@ void SP_emplaced_gun( gentity_t *ent );
 /* This array MUST be sorted correctly by alphabetical name field */
 /* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
+	{ "df_trigger_checkpoint",				SP_trigger_timer_checkpoint },//JAPRO TIMERS
+	{ "df_trigger_finish",					SP_trigger_timer_stop },//JAPRO TIMERS
+	{ "df_trigger_start",					SP_trigger_timer_start },//JAPRO TIMERS
+
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
 	{ "func_breakable",						SP_func_breakable },

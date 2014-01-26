@@ -1244,94 +1244,100 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	return lessTime;
 }
 
-void Use_target_timer_start(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO Timers
-	if (!activator->client)
+void TimerStart(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+	if (!player->client)
 		return;
-	if (activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT)
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+		return;
+	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
-	activator->client->pers.stats.startLevelTime = level.time;
-	activator->client->pers.stats.startTime = trap->Milliseconds();
-	activator->client->pers.stats.startTime -= InterpolateTouchTime(activator, other);
-
-	activator->client->pers.stats.topSpeed = 0;
-	activator->client->pers.stats.displacement = 0;
+	player->client->pers.stats.startLevelTime = level.time;
+	player->client->pers.stats.startTime = trap->Milliseconds();
+	player->client->pers.stats.startTime -= InterpolateTouchTime(player, trigger);
+	player->client->pers.stats.topSpeed = 0;
+	player->client->pers.stats.displacement = 0;
 }
 
-void Use_target_timer_stop(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO Timers
-	if (!activator->client)
+void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPRO Timers
+	if (!player->client)
 		return;
-	if (activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT) 
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT) 
 		return;
 
-	if (activator->client->pers.stats.startTime) {
+	if (player->client->pers.stats.startTime) {
 		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
-		float time = (trap->Milliseconds() - activator->client->pers.stats.startTime);
+		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average;
 		qboolean valid = qfalse;
 
-		time -= InterpolateTouchTime(activator, other);//Other is the trigger_multiple that set this off
+		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
-		average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
+		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
-		if (ValidRaceSettings(activator))
+		if (ValidRaceSettings(player))
 			valid = qtrue;
 
-		if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+		if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
-		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
 			Q_strncpyz(style, "vq3", sizeof(style));
-		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
 			Q_strncpyz(style, "qw", sizeof(style));
-		else if (activator->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
 			Q_strncpyz(style, "cpm", sizeof(style));
 
 		trap->GetServerinfo(info, sizeof(info));
 		Q_strncpyz(courseName, Info_ValueForKey( info, "mapname" ), sizeof(courseName));
 
-		if (self->message) {
-			Com_sprintf(message, sizeof(message), " (%s)", self->message);
+		if (trigger->message || (target && target->message)) {
+			if (target && target->message) {
+				Com_sprintf(message, sizeof(message), " (%s)", target->message);
+			}
+			else if (trigger->message) {
+				Com_sprintf(message, sizeof(message), " (%s)", trigger->message);
+			}
 			Q_strcat(courseName, sizeof(courseName), message);
-			trap->SendServerCommand( -1, va("print \"%s^5 finished ^3%s^5 in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
-				activator->client->pers.netname, self->message, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
+			trap->SendServerCommand( -1, va("print \"%s^5 finished^3%s^5 in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
+				player->client->pers.netname, message, time, player->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
 			trap->SendServerCommand( -1, va("print \"%s^5 finished in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
-				activator->client->pers.netname, time, activator->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
+				player->client->pers.netname, time, player->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
 
 		}
 		if (valid) {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char *p = NULL;
-			Q_strncpyz(strIP, activator->client->sess.IP, sizeof(strIP));
+			Q_strncpyz(strIP, player->client->sess.IP, sizeof(strIP));
 			p = strchr(strIP, ':');
 			if (p) //loda - fix me
 				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
-				activator->client->pers.netname, strIP, courseName, time, style, activator->client->pers.stats.topSpeed, average);
+				player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
 			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}
 
-		activator->client->pers.stats.startLevelTime = 0;
-		activator->client->pers.stats.startTime = 0;
-		activator->client->pers.stats.topSpeed = 0;
-		activator->client->pers.stats.displacement = 0;
+		player->client->pers.stats.startLevelTime = 0;
+		player->client->pers.stats.startTime = 0;
+		player->client->pers.stats.topSpeed = 0;
+		player->client->pers.stats.displacement = 0;
 	}
 }
 
-void Use_target_timer_checkpoint( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO Timers
-	if ( !activator->client )
+void TimerCheckpoint(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+	if ( !player->client )
 		return;
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+	if ( player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT )
 		return;
 
-	if (activator->client->pers.stats.startTime && (level.time - activator->client->pers.stats.lastCheckpointTime > 1000)) {
-		const float time = (trap->Milliseconds() - activator->client->pers.stats.startTime) / 1000.0f;
-		int average = floorf(activator->client->pers.stats.displacement / ((level.time - activator->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
+	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) {
+		const float time = (trap->Milliseconds() - player->client->pers.stats.startTime) / 1000.0f;
+		int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
 
-		trap->SendServerCommand( activator-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", time, activator->client->pers.stats.topSpeed, average));
-		activator->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
+		trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", time, player->client->pers.stats.topSpeed, average));
+		player->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }
 
@@ -1381,19 +1387,88 @@ void SP_target_push( gentity_t *self ) {
 	self->use = Use_target_push;
 }
 
-void SP_target_timer_start(gentity_t *self)//JAPRO Timers
-{
-	self->use = Use_target_timer_start;
+void target_to_timer_start(gentity_t *self, gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+	TimerStart(trigger, player);
 }
 
-void SP_target_timer_stop(gentity_t *self)//JAPRO Timers
-{
-	self->use = Use_target_timer_stop;
+void trigger_to_timer_start(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	TimerStart(trigger, player);
 }
 
-void SP_target_timer_checkpoint(gentity_t *self)//JAPRO Timers
+void target_to_timer_checkpoint(gentity_t *self, gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+	TimerCheckpoint(trigger, player);
+}
+
+void trigger_to_timer_checkpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	TimerCheckpoint(trigger, player);
+}
+
+void target_to_timer_stop(gentity_t *self, gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+	TimerStop(trigger, self, player);
+}
+
+void trigger_to_timer_stop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	TimerStop(trigger, NULL, player);
+}
+
+void SP_target_timer_start(gentity_t *self) {//JAPRO Timers
+	self->use = target_to_timer_start;
+}
+
+void SP_target_timer_checkpoint(gentity_t *self) {//JAPRO Timers
+	self->use = target_to_timer_checkpoint;
+}
+
+void SP_target_timer_stop(gentity_t *self) {//JAPRO Timers
+	self->use = target_to_timer_stop;
+}
+
+void SP_trigger_timer_start( gentity_t *self )
 {
-	self->use = Use_target_timer_checkpoint;
+	char	*s;
+	InitTrigger(self);
+
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+
+	self->touch = trigger_to_timer_start;
+	trap->LinkEntity ((sharedEntity_t *)self);
+}
+
+void SP_trigger_timer_checkpoint( gentity_t *self )
+{
+	char	*s;
+	InitTrigger(self);
+
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+
+	self->touch = trigger_to_timer_checkpoint;
+	trap->LinkEntity ((sharedEntity_t *)self);
+}
+
+void SP_trigger_timer_stop( gentity_t *self )
+{
+	char	*s;
+	InitTrigger(self);
+
+	if ( G_SpawnString( "noise", "", &s ) ) {
+		if (s && s[0])
+			self->noise_index = G_SoundIndex(s);
+		else
+			self->noise_index = 0;
+	}
+
+	self->touch = trigger_to_timer_stop;
+	trap->LinkEntity ((sharedEntity_t *)self);
 }
 
 void SP_target_onlybhop(gentity_t *self)//JAPRO Onlybhop
