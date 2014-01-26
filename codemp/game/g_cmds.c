@@ -4872,6 +4872,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	trap->SendServerCommand( ent-g_entities, "print \"   ^3Game commands: \"" );
 	trap->SendServerCommand( ent-g_entities, "print \"amMOTD \"" ); 
+	trap->SendServerCommand( ent-g_entities, "print \"mapList \"" ); 
 	if (g_privateDuel.integer) {
 		trap->SendServerCommand( ent-g_entities, "print \"engage_FullForceDuel \"" ); 
 		trap->SendServerCommand( ent-g_entities, "print \"engage_gunDuel \"" ); 
@@ -5817,6 +5818,7 @@ void Cmd_Race_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled on.\n\"");
 	}
 }
+
 //[JAPRO - Serverside - All - Serverconfig - Start]
 void Cmd_ServerConfig_f(gentity_t *ent)
 {
@@ -6163,6 +6165,7 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
