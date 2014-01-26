@@ -5,6 +5,8 @@
 #include "qcommon/stringed_ingame.h"
 #include "server/sv_gameapi.h"
 #include "qcommon/game_version.h"
+#include "RMG/RM_Headers.h"
+#include "zlib/zlib.h"
 
 /*
 ===============================================================================
@@ -851,6 +853,296 @@ static void SV_KillServer_f( void ) {
 	SV_Shutdown( "killserver" );
 }
 
+void SV_WriteDemoMessage ( client_t *cl, msg_t *msg, int headerBytes ) {
+	int		len, swlen;
+
+	// write the packet sequence
+	len = cl->netchan.outgoingSequence;
+	swlen = LittleLong( len );
+	FS_Write (&swlen, 4, cl->demo.demofile);
+
+	// skip the packet sequencing information
+	len = msg->cursize - headerBytes;
+	swlen = LittleLong(len);
+	FS_Write (&swlen, 4, cl->demo.demofile);
+	FS_Write ( msg->data + headerBytes, len, cl->demo.demofile );
+}
+
+/*
+====================
+SV_StopRecording_f
+
+stop recording a demo
+====================
+*/
+void SV_StopRecord_f( void ) {
+	int		len;
+	int		i;
+
+	client_t *cl = NULL;
+	if ( Cmd_Argc() == 2 ) {
+		int clIndex = atoi( Cmd_Argv( 1 ) );
+		if ( clIndex < 0 || clIndex >= sv_maxclients->integer ) {
+			Com_Printf( "Unknown client number %d.\n", clIndex );
+			return;
+		}
+		cl = &svs.clients[clIndex];
+	} else {
+		for (i = 0; i < sv_maxclients->integer; i++) {
+			if ( svs.clients[i].demo.demorecording ) {
+				cl = &svs.clients[i];
+				break;
+			}
+		}
+		if ( cl == NULL ) {
+			Com_Printf( "No demo being recorded.\n" );
+			return;
+		}
+	}
+
+	if ( !cl->demo.demorecording ) {
+		Com_Printf( "Client %d is not recording a demo.\n", cl - svs.clients );
+		return;
+	}
+
+	// finish up
+	len = -1;
+	FS_Write (&len, 4, cl->demo.demofile);
+	FS_Write (&len, 4, cl->demo.demofile);
+	FS_FCloseFile (cl->demo.demofile);
+	cl->demo.demofile = 0;
+	cl->demo.demorecording = qfalse;
+	Com_Printf ("Stopped demo for client %d.\n", cl - svs.clients);
+}
+
+/* 
+================== 
+SV_DemoFilename
+================== 
+*/  
+void SV_DemoFilename( int number, char *fileName ) {
+	int		a,b,c,d;
+
+	if ( number < 0 || number > 9999 ) {
+		Com_sprintf( fileName, MAX_OSPATH, "demo9999" );
+		return;
+	}
+
+	a = number / 1000;
+	number -= a*1000;
+	b = number / 100;
+	number -= b*100;
+	c = number / 10;
+	number -= c*10;
+	d = number;
+
+	Com_sprintf( fileName, MAX_OSPATH, "demo%i%i%i%i"
+		, a, b, c, d );
+}
+
+// defined in sv_client.cpp
+extern void SV_WriteRMGAutomapSymbols ( msg_t* msg );
+// code is a merge of the cl_main.cpp function of the same name and SV_SendClientGameState in sv_client.cpp
+static void SV_Record_f( void ) {
+	char		name[MAX_OSPATH];
+	byte		bufData[MAX_MSGLEN];
+	msg_t	buf;
+	int			i;
+	int			len;
+	entityState_t	*ent;
+	entityState_t	nullstate;
+	char		*s;
+	int			start;
+	entityState_t	*base;
+
+	if ( svs.clients == NULL ) {
+		Com_Printf ("cannot record server demo - null svs.clients\n");
+		return;
+	}
+
+	if ( Cmd_Argc() > 3 ) {
+		Com_Printf ("record <demoname> <clientnum>\n");
+		return;
+	}
+
+	client_t *cl;
+
+	if ( Cmd_Argc() == 3 ) {
+		int clIndex = atoi( Cmd_Argv( 1 ) );
+		if ( clIndex < 0 || clIndex >= sv_maxclients->integer ) {
+			Com_Printf( "Unknown client number %d.\n", clIndex );
+			return;
+		}
+		cl = &svs.clients[clIndex];
+	} else {
+		for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
+		{
+			if (!cl->state)
+			{
+				continue;
+			}
+
+			if (cl->demo.demorecording) {
+				continue;
+			}
+
+			if (cl->state == CS_ACTIVE)
+			{
+				break;
+			}
+		}
+	}
+
+	if (cl - svs.clients >= sv_maxclients->integer) {
+		Com_Printf( "No active client could be found.\n" );
+		return;
+	}
+
+	if ( cl->demo.demorecording ) {
+		Com_Printf( "Already recording.\n" );
+		return;
+	}
+
+	if ( cl->state != CS_ACTIVE ) {
+		Com_Printf( "Client is not active.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() >= 2 ) {
+		s = Cmd_Argv(1);
+		Q_strncpyz( cl->demo.demoName, s, sizeof( cl->demo.demoName ) );
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
+	} else {
+		int		number;
+
+		// scan for a free demo name
+		for ( number = 0 ; number <= 9999 ; number++ ) {
+			SV_DemoFilename( number, cl->demo.demoName );
+			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
+
+			len = FS_ReadFile( name, NULL );
+			if ( len <= 0 ) {
+				break;	// file doesn't exist
+			}
+		}
+	}
+
+	// open the demo file
+
+	Com_Printf ("recording to %s.\n", name);
+	cl->demo.demofile = FS_FOpenFileWrite( name );
+	if ( !cl->demo.demofile ) {
+		Com_Printf ("ERROR: couldn't open.\n");
+		return;
+	}
+	cl->demo.demorecording = qtrue;
+
+	// don't start saving messages until a non-delta compressed message is received
+	cl->demo.demowaiting = qtrue;
+
+	cl->demo.botReliableAcknowledge = cl->reliableSequence;
+
+	// write out the gamestate message
+	MSG_Init (&buf, bufData, sizeof(bufData));
+	MSG_Bitstream(&buf);
+
+	// NOTE, MRE: all server->client messages now acknowledge
+	MSG_WriteLong( &buf, cl->lastClientCommand );
+
+	MSG_WriteByte (&buf, svc_gamestate);
+	MSG_WriteLong (&buf, cl->reliableSequence );
+
+	// write the configstrings
+	for ( start = 0 ; start < MAX_CONFIGSTRINGS ; start++ ) {
+		if (sv.configstrings[start][0]) {
+			MSG_WriteByte( &buf, svc_configstring );
+			MSG_WriteShort( &buf, start );
+			MSG_WriteBigString( &buf, sv.configstrings[start] );
+		}
+	}
+
+	// write the baselines
+	Com_Memset( &nullstate, 0, sizeof( nullstate ) );
+	for ( start = 0 ; start < MAX_GENTITIES; start++ ) {
+		base = &sv.svEntities[start].baseline;
+		if ( !base->number ) {
+			continue;
+		}
+		MSG_WriteByte( &buf, svc_baseline );
+		MSG_WriteDeltaEntity( &buf, &nullstate, base, qtrue );
+	}
+
+	MSG_WriteByte( &buf, svc_EOF );
+	
+	// finished writing the gamestate stuff
+
+	// write the client num
+	MSG_WriteLong(&buf, cl - svs.clients);
+	// write the checksum feed
+	MSG_WriteLong(&buf, sv.checksumFeed);
+
+	//rwwRMG - send info for the terrain
+	if ( TheRandomMissionManager )
+	{
+		z_stream zdata;
+
+		// Send the height map
+		memset(&zdata, 0, sizeof(z_stream));
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
+
+		unsigned char heightmap[15000];
+		zdata.next_out = (unsigned char*)heightmap;
+		zdata.avail_out = 15000;
+		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetHeightMap();
+		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
+		deflate(&zdata, Z_SYNC_FLUSH);
+
+		MSG_WriteShort ( &buf, (unsigned short)zdata.total_out );
+		MSG_WriteBits ( &buf, 1, 1 );
+		MSG_WriteData ( &buf, heightmap, zdata.total_out);
+
+		deflateEnd(&zdata);
+
+		// Send the flatten map
+		memset(&zdata, 0, sizeof(z_stream));
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
+
+		zdata.next_out = (unsigned char*)heightmap;
+		zdata.avail_out = 15000;
+		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetFlattenMap();
+		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
+		deflate(&zdata, Z_SYNC_FLUSH);
+
+		MSG_WriteShort ( &buf, (unsigned short)zdata.total_out );
+		MSG_WriteBits ( &buf, 1, 1 );
+		MSG_WriteData ( &buf, heightmap, zdata.total_out);
+
+		deflateEnd(&zdata);
+
+		// Seed is needed for misc ents and noise
+		MSG_WriteLong ( &buf, TheRandomMissionManager->GetLandScape()->get_rand_seed ( ) );
+
+		SV_WriteRMGAutomapSymbols ( &buf );
+	}
+	else
+	{
+		MSG_WriteShort ( &buf, 0 );
+	}
+
+	// finished writing the client packet
+	MSG_WriteByte( &buf, svc_EOF );
+
+	// write it to the demo file
+	len = LittleLong( cl->reliableSequence - 1 );
+	FS_Write (&len, 4, cl->demo.demofile);
+
+	len = LittleLong (buf.cursize);
+	FS_Write (&len, 4, cl->demo.demofile);
+	FS_Write (buf.data, buf.cursize, cl->demo.demofile);
+
+	// the rest of the demo file will be copied from net messages
+}
+
 //===========================================================
 
 /*
@@ -901,6 +1193,8 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("svsay", SV_ConSay_f);
 
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
+	Cmd_AddCommand ("svrecord", SV_Record_f);
+	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
 }
 
 /*
