@@ -2683,12 +2683,13 @@ void ClientThink_real( gentity_t *ent ) {
 		trap->Cvar_Set("pmove_msec", "66");
 	}
 
-	if ( pmove_fixed.integer || client->pers.pmoveFixed ) {
+	if (client->ps.stats[STAT_RACEMODE])//Japro - force pmove_fixed 125fps for racemode
+		ucmd->serverTime = ((ucmd->serverTime + 7) / 8) * 8;
+	else if ( pmove_fixed.integer || client->pers.pmoveFixed ) {
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 		//if (ucmd->serverTime - client->ps.commandTime <= 0)
 		//	return;
 	}
-
 	else if (g_fixHighFPSAbuse.integer && msec < 5)
 		ucmd->serverTime = (ucmd->serverTime + 4);
 

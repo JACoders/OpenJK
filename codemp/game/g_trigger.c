@@ -1171,6 +1171,9 @@ qboolean ValidRaceSettings(gentity_t *player)
 	if (!player->client)
 		return qfalse;
 
+	if (!player->client->ps.stats[STAT_RACEMODE])
+		return qfalse;
+
 	if (g_speed.integer != 250)
 		return qfalse;
 	if (g_gravity.integer != 800)
@@ -1181,12 +1184,12 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (g_jediVmerc.integer)
 		return qfalse;
-	if (g_dodge.integer)//Have to check setting since player can cheat by doing this before the start line as a headstart :/
-		return qfalse;
+	//if (g_dodge.integer)//Have to check setting since player can cheat by doing this before the start line as a headstart :/
+		//return qfalse;
 	if (g_rampJump.integer)
 		return qfalse;
-	if (!g_fixHighFPSAbuse.integer)//Should actually probly just force pmove_fixed, msec 8.. float? etc
-		return qfalse;
+	//if (!g_fixHighFPSAbuse.integer)//Should actually probly just force pmove_fixed, msec 8.. float? etc
+		//return qfalse;
 	if (g_startingItems.integer & (1 << HI_JETPACK))
 		return qfalse;
 	if (g_quakeStyleTeleport.integer)
@@ -1196,9 +1199,6 @@ qboolean ValidRaceSettings(gentity_t *player)
 	if (g_forceRegenTime.integer < 50)//ehh
 		return qfalse;
 	if (!g_smoothClients.integer)
-		return qfalse;
-
-	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
 
 	//type of roll?

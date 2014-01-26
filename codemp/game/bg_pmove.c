@@ -1635,7 +1635,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				if (!pmove_fixed.integer)//JAPRO Fix Pmove Wallrun
+				if (!pmove_fixed.integer && !ps->stats[STAT_RACEMODE])//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
 					ucmd->forwardmove = 0;
 				return qtrue;
 			}
@@ -3619,6 +3619,9 @@ static void PM_CheckDash(void)
 	if (pm->ps->weaponTime > 0)
 		return;
 
+	if (pm->ps->stats[STAT_RACEMODE])
+		return;
+
 #ifdef _GAME
 	if (!g_dodge.integer)
 #else
@@ -3739,6 +3742,9 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		return;//only in air?
 
 	if (pm->ps->weaponTime > 0)
+		return;
+
+	if (pm->ps->stats[STAT_RACEMODE])
 		return;
 
 	if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
@@ -12316,7 +12322,13 @@ void Pmove (pmove_t *pmove) {
 
 		msec = finalTime - pmove->ps->commandTime;
 
-		if ( pmove->pmove_fixed ) {
+
+		if (pmove->ps->stats[STAT_RACEMODE]) {//JAPRO force pmove_fixed 125fps for racemode
+			if ( msec > 8 ) {
+				msec = 8;
+			}
+		}
+		else if ( pmove->pmove_fixed ) {
 			if ( msec > pmove->pmove_msec ) {
 				msec = pmove->pmove_msec;
 			}
