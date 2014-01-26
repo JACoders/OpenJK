@@ -1635,7 +1635,7 @@ qboolean PM_AdjustAngleForWallRunUp( playerState_t *ps, usercmd_t *ucmd, qboolea
 						}
 					}
 				}
-				if (!pmove_fixed.integer)//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
+				if (!pmove_fixed.integer && !ps->stats[STAT_RACEMODE])//JAPRO Fix Pmove Wallrun, only if they are in pmove or racemode
 					ucmd->forwardmove = 0;
 				return qtrue;
 			}
