@@ -481,6 +481,9 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	{
 		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
 		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		cl.viewangles[YAW] -= (cl_yawspeed->value / 100.0f) * (cl.joystickAxis[AXIS_YAW]/1024.0f);
+		cl.viewangles[PITCH] += (cl_pitchspeed->value / 100.0f) * (cl.joystickAxis[AXIS_PITCH]/1024.0f);
 	}
 	else
 	{

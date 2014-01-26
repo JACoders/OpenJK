@@ -1666,15 +1666,11 @@ Ghoul2 Insert End
 	cgs.media.campShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/camp.tga");
 	cgs.media.followShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/follow.tga");
 	cgs.media.defendShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/defend.tga");
-	cgs.media.teamLeaderShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/team_leader.tga");
 	cgs.media.retrieveShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/retrieve.tga");
 	cgs.media.escortShader = trap->R_RegisterShaderNoMip("ui/assets/statusbar/escort.tga");
 	cgs.media.cursor = trap->R_RegisterShaderNoMip( "menu/art/3_cursor2" );
 	cgs.media.sizeCursor = trap->R_RegisterShaderNoMip( "ui/assets/sizecursor.tga" );
 	cgs.media.selectCursor = trap->R_RegisterShaderNoMip( "ui/assets/selectcursor.tga" );
-	cgs.media.flagShaders[0] = trap->R_RegisterShaderNoMip("ui/assets/statusbar/flag_in_base.tga");
-	cgs.media.flagShaders[1] = trap->R_RegisterShaderNoMip("ui/assets/statusbar/flag_capture.tga");
-	cgs.media.flagShaders[2] = trap->R_RegisterShaderNoMip("ui/assets/statusbar/flag_missing.tga");
 
 	cgs.media.halfShieldModel	= trap->R_RegisterModel ( "models/weaphits/testboom.md3" );
 	cgs.media.halfShieldShader	= trap->R_RegisterShader( "halfShieldShell" );

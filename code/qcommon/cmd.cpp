@@ -241,7 +241,7 @@ void Cbuf_Execute (void)
 
 // execute the command line
 
-		Cmd_ExecuteString (line);		
+		Cmd_ExecuteString (line);
 	}
 }
 
@@ -378,10 +378,10 @@ Cmd_Argv
 ============
 */
 char	*Cmd_Argv( int arg ) {
-	if ( (unsigned)arg >= (unsigned)cmd_argc ) {
+	if ( (unsigned)arg >= (unsigned)cmd_argc )
 		return "";
-	}
-	return cmd_argv[arg];	
+
+	return cmd_argv[arg];
 }
 
 /*
@@ -396,23 +396,24 @@ void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength ) {
 	Q_strncpyz( buffer, Cmd_Argv( arg ), bufferLength );
 }
 
-
 /*
 ============
-Cmd_Args
+Cmd_ArgsFrom
 
-Returns a single string containing argv(1) to argv(argc()-1)
+Returns a single string containing argv(arg) to argv(argc()-1)
 ============
 */
-char	*Cmd_Args( void ) {
-	static	char		cmd_args[MAX_STRING_CHARS];
+char *Cmd_ArgsFrom( int arg ) {
+	static	char	cmd_args[BIG_INFO_STRING];
 	int		i;
 
-	cmd_args[0] = 0;
-	for ( i = 1 ; i < cmd_argc ; i++ ) {
-		strcat( cmd_args, cmd_argv[i] );
+	cmd_args[0] = '\0';
+	if (arg < 0)
+		arg = 0;
+	for ( i = arg ; i < cmd_argc ; i++ ) {
+		Q_strcat( cmd_args, sizeof( cmd_args ), cmd_argv[i] );
 		if ( i != cmd_argc-1 ) {
-			strcat( cmd_args, " " );
+			Q_strcat( cmd_args, sizeof( cmd_args ), " " );
 		}
 	}
 
@@ -423,24 +424,11 @@ char	*Cmd_Args( void ) {
 ============
 Cmd_Args
 
-Returns a single string containing argv(arg) to argv(argc()-1)
+Returns a single string containing argv(1) to argv(argc()-1)
 ============
 */
-char *Cmd_ArgsFrom( int arg ) {
-	static	char		cmd_args[BIG_INFO_STRING];
-	int		i;
-
-	cmd_args[0] = 0;
-	if (arg < 0)
-		arg = 0;
-	for ( i = arg ; i < cmd_argc ; i++ ) {
-		strcat( cmd_args, cmd_argv[i] );
-		if ( i != cmd_argc-1 ) {
-			strcat( cmd_args, " " );
-		}
-	}
-
-	return cmd_args;
+char	*Cmd_Args( void ) {
+	return Cmd_ArgsFrom( 1 );
 }
 
 /*
@@ -452,7 +440,19 @@ they can't have pointers returned to them
 ============
 */
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength ) {
-	Q_strncpyz( buffer, Cmd_Args(), bufferLength );
+	Q_strncpyz( buffer, Cmd_ArgsFrom( 1 ), bufferLength );
+}
+
+/*
+============
+Cmd_ArgsFromBuffer
+
+The interpreted versions use this because
+they can't have pointers returned to them
+============
+*/
+void	Cmd_ArgsFromBuffer( int arg, char *buffer, int bufferLength ) {
+	Q_strncpyz( buffer, Cmd_Args( ), bufferLength );
 }
 
 /*
