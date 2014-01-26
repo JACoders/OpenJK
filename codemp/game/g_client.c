@@ -1228,6 +1228,7 @@ void ClientRespawn( gentity_t *ent ) {
 				}
 				ent->client->tempSpectate = level.time + minDel;
 				ent->health = ent->client->ps.stats[STAT_HEALTH] = 1;
+				ent->waterlevel = ent->watertype = 0;
 				ent->client->ps.weapon = WP_NONE;
 				ent->client->ps.stats[STAT_WEAPONS] = 0;
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
