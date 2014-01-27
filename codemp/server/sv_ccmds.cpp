@@ -947,11 +947,7 @@ static void SV_Record_f( void ) {
 	msg_t		msg;
 	int			i;
 	int			len;
-	entityState_t	*ent;
-	entityState_t	nullstate;
 	char		*s;
-	int			start;
-	entityState_t	*base;
 
 	if ( svs.clients == NULL ) {
 		Com_Printf( "cannot record server demo - null svs.clients\n" );
