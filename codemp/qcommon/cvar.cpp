@@ -533,7 +533,7 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, int defaultFlags, qb
 
 	if (!force)
 	{
-		if ( (var->flags & (CVAR_SYSTEMINFO|CVAR_SERVER_CREATED)) && !com_sv_running->integer && CL_ConnectedToServer() )
+		if ( (var->flags & (CVAR_SYSTEMINFO|CVAR_SERVER_CREATED)) && com_sv_running && !com_sv_running->integer && CL_ConnectedToServer() )
 		{
 			Com_Printf ("%s can only be set by server.\n", var_name);
 			return var;
