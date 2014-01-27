@@ -4551,7 +4551,7 @@ void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent )
 		{
 			team = cent->gent->client->playerTeam;
 		}
-		else if ( cent->gent->owner )
+		else if ( cent->gent && cent->gent->owner )
 		{
 			if ( cent->gent->owner->client )
 			{
