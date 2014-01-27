@@ -408,7 +408,8 @@ void SV_SendMapChange(void)
 		{
 			if (svs.clients[i].state >= CS_CONNECTED) 
 			{
-				if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ) 
+				if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ||
+					svs.clients[i].demo.demorecording ) 
 				{
 					SV_SendClientMapChange( &svs.clients[i] ) ;
 				}
@@ -417,6 +418,7 @@ void SV_SendMapChange(void)
 	}
 }
 
+extern void SV_SendClientGameState( client_t *client );
 /*
 ================
 SV_SpawnServer
@@ -720,6 +722,14 @@ Ghoul2 Insert End
 		CL_StartHunkUsers();
 	}
 	*/
+
+	for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++) {
+		// bots will not request gamestate, so it must be manually sent
+		// cannot do this above where it says it will because mapname is not set at that time
+		if ( client->netchan.remoteAddress.type == NA_BOT && client->demo.demorecording ) {
+			SV_SendClientGameState( client );
+		}
+	}
 }
 
 
