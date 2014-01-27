@@ -445,7 +445,7 @@ wpnParms_t WpnParms[] =
 	{ "selectforce",		WPN_FuncSkip },
 };
 
-const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
+static const size_t numWpnParms = ARRAY_LEN(WpnParms);
 
 void WPN_FuncSkip( const char **holdBuf)
 {
@@ -990,7 +990,7 @@ void WPN_BarrelCount(const char **holdBuf)
 static void WP_ParseWeaponParms(const char **holdBuf)
 {
 	const char	*token;
-	int		i;
+	size_t	i;
 
 
 	while (holdBuf)
@@ -1001,7 +1001,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 			break;
 
 		// Loop through possible parameters
-		for (i=0;i<WPN_PARM_MAX;++i)
+		for (i=0;i<numWpnParms;++i)
 		{
 			if (!Q_stricmp(token,WpnParms[i].parmName))	
 			{
@@ -1010,7 +1010,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 			}
 		}
 
-		if (i < WPN_PARM_MAX)	// Find parameter???
+		if (i < numWpnParms)	// Find parameter???
 		{
 			continue;
 		}
