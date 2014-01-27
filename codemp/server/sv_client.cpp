@@ -474,6 +474,102 @@ void SV_WriteRMGAutomapSymbols ( msg_t* msg )
 	}
 }
 
+void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg, qboolean updateServerCommands ) {
+	int			start;
+	entityState_t	*base, nullstate;
+
+	// NOTE, MRE: all server->client messages now acknowledge
+	// let the client know which reliable clientCommands we have received
+	MSG_WriteLong( msg, client->lastClientCommand );
+
+	if ( updateServerCommands ) {
+		// send any server commands waiting to be sent first.
+		// we have to do this cause we send the client->reliableSequence
+		// with a gamestate and it sets the clc.serverCommandSequence at
+		// the client side
+		SV_UpdateServerCommandsToClient( client, msg );
+	}
+
+	// send the gamestate
+	MSG_WriteByte( msg, svc_gamestate );
+	MSG_WriteLong( msg, client->reliableSequence );
+
+	// write the configstrings
+	for ( start = 0 ; start < MAX_CONFIGSTRINGS ; start++ ) {
+		if (sv.configstrings[start][0]) {
+			MSG_WriteByte( msg, svc_configstring );
+			MSG_WriteShort( msg, start );
+			MSG_WriteBigString( msg, sv.configstrings[start] );
+		}
+	}
+
+	// write the baselines
+	Com_Memset( &nullstate, 0, sizeof( nullstate ) );
+	for ( start = 0 ; start < MAX_GENTITIES; start++ ) {
+		base = &sv.svEntities[start].baseline;
+		if ( !base->number ) {
+			continue;
+		}
+		MSG_WriteByte( msg, svc_baseline );
+		MSG_WriteDeltaEntity( msg, &nullstate, base, qtrue );
+	}
+
+	MSG_WriteByte( msg, svc_EOF );
+
+	MSG_WriteLong( msg, client - svs.clients);
+
+	// write the checksum feed
+	MSG_WriteLong( msg, sv.checksumFeed);
+
+	//rwwRMG - send info for the terrain
+	if ( TheRandomMissionManager )
+	{
+		z_stream zdata;
+
+		// Send the height map
+		memset(&zdata, 0, sizeof(z_stream));
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
+
+		unsigned char heightmap[15000];
+		zdata.next_out = (unsigned char*)heightmap;
+		zdata.avail_out = 15000;
+		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetHeightMap();
+		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
+		deflate(&zdata, Z_SYNC_FLUSH);
+
+		MSG_WriteShort ( msg, (unsigned short)zdata.total_out );
+		MSG_WriteBits ( msg, 1, 1 );
+		MSG_WriteData ( msg, heightmap, zdata.total_out);
+
+		deflateEnd(&zdata);
+
+		// Send the flatten map
+		memset(&zdata, 0, sizeof(z_stream));
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
+
+		zdata.next_out = (unsigned char*)heightmap;
+		zdata.avail_out = 15000;
+		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetFlattenMap();
+		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
+		deflate(&zdata, Z_SYNC_FLUSH);
+
+		MSG_WriteShort ( msg, (unsigned short)zdata.total_out );
+		MSG_WriteBits ( msg, 1, 1 );
+		MSG_WriteData ( msg, heightmap, zdata.total_out);
+
+		deflateEnd(&zdata);
+
+		// Seed is needed for misc ents and noise
+		MSG_WriteLong ( msg, TheRandomMissionManager->GetLandScape()->get_rand_seed ( ) );
+
+		SV_WriteRMGAutomapSymbols ( msg );
+	}
+	else
+	{
+		MSG_WriteShort ( msg, 0 );
+	}
+}
+
 /*
 ================
 SV_SendClientGameState
@@ -486,10 +582,10 @@ the wrong gamestate.
 ================
 */
 void SV_SendClientGameState( client_t *client ) {
-	int			start;
-	entityState_t	*base, nullstate;
 	msg_t		msg;
 	byte		msgBuffer[MAX_MSGLEN];
+
+	MSG_Init( &msg, msgBuffer, sizeof( msgBuffer ) );
 
 	// MW - my attempt to fix illegible server message errors caused by 
 	// packet fragmentation of initial snapshot.
@@ -514,96 +610,7 @@ void SV_SendClientGameState( client_t *client ) {
 	// gamestate message was not just sent, forcing a retransmit
 	client->gamestateMessageNum = client->netchan.outgoingSequence;
 
-	MSG_Init( &msg, msgBuffer, sizeof( msgBuffer ) );
-
-	// NOTE, MRE: all server->client messages now acknowledge
-	// let the client know which reliable clientCommands we have received
-	MSG_WriteLong( &msg, client->lastClientCommand );
-
-	// send any server commands waiting to be sent first.
-	// we have to do this cause we send the client->reliableSequence
-	// with a gamestate and it sets the clc.serverCommandSequence at
-	// the client side
-	SV_UpdateServerCommandsToClient( client, &msg );
-
-	// send the gamestate
-	MSG_WriteByte( &msg, svc_gamestate );
-	MSG_WriteLong( &msg, client->reliableSequence );
-
-	// write the configstrings
-	for ( start = 0 ; start < MAX_CONFIGSTRINGS ; start++ ) {
-		if (sv.configstrings[start][0]) {
-			MSG_WriteByte( &msg, svc_configstring );
-			MSG_WriteShort( &msg, start );
-			MSG_WriteBigString( &msg, sv.configstrings[start] );
-		}
-	}
-
-	// write the baselines
-	Com_Memset( &nullstate, 0, sizeof( nullstate ) );
-	for ( start = 0 ; start < MAX_GENTITIES; start++ ) {
-		base = &sv.svEntities[start].baseline;
-		if ( !base->number ) {
-			continue;
-		}
-		MSG_WriteByte( &msg, svc_baseline );
-		MSG_WriteDeltaEntity( &msg, &nullstate, base, qtrue );
-	}
-
-	MSG_WriteByte( &msg, svc_EOF );
-
-	MSG_WriteLong( &msg, client - svs.clients);
-
-	// write the checksum feed
-	MSG_WriteLong( &msg, sv.checksumFeed);
-
-	//rwwRMG - send info for the terrain
-	if ( TheRandomMissionManager )
-	{
-		z_stream zdata;
-
-		// Send the height map
-		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_BEST_COMPRESSION );
-
-		unsigned char heightmap[15000];
-		zdata.next_out = (unsigned char*)heightmap;
-		zdata.avail_out = 15000;
-		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetHeightMap();
-		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
-
-		MSG_WriteShort ( &msg, (unsigned short)zdata.total_out );
-		MSG_WriteBits ( &msg, 1, 1 );
-		MSG_WriteData ( &msg, heightmap, zdata.total_out);
-
-		deflateEnd(&zdata);
-
-		// Send the flatten map
-		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_BEST_COMPRESSION );
-
-		zdata.next_out = (unsigned char*)heightmap;
-		zdata.avail_out = 15000;
-		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetFlattenMap();
-		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
-
-		MSG_WriteShort ( &msg, (unsigned short)zdata.total_out );
-		MSG_WriteBits ( &msg, 1, 1 );
-		MSG_WriteData ( &msg, heightmap, zdata.total_out);
-
-		deflateEnd(&zdata);
-
-		// Seed is needed for misc ents and noise
-		MSG_WriteLong ( &msg, TheRandomMissionManager->GetLandScape()->get_rand_seed ( ) );
-
-		SV_WriteRMGAutomapSymbols ( &msg );
-	}
-	else
-	{
-		MSG_WriteShort ( &msg, 0 );
-	}
+	SV_CreateClientGameStateMessage( client, &msg, qtrue );
 
 	// deliver this to the client
 	SV_SendMessageToClient( &msg, client );
