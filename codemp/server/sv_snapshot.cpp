@@ -109,12 +109,13 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	// this is the snapshot we are creating
 	frame = &client->frames[ client->netchan.outgoingSequence & PACKET_MASK ];
-
+	
 	// bots never acknowledge, but it doesn't matter since the only use case is for serverside demos
 	// in which case we can delta against the very last message every time
-	deltaMessage = ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) ?
-		client->netchan.outgoingSequence - 1 :
-		client->deltaMessage;
+	deltaMessage = client->deltaMessage;
+	if ( client->demo.isBot ) {
+		client->deltaMessage = client->netchan.outgoingSequence;
+	}
 
 	// try to use a previous frame as the source for delta compressing the snapshot
 	if ( deltaMessage <= 0 || client->state != CS_ACTIVE ) {
@@ -251,7 +252,7 @@ void SV_UpdateServerCommandsToClient( client_t *client, msg_t *msg ) {
 	int		i;
 	int		reliableAcknowledge;
 
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT && client->demo.demorecording ) {
+	if ( client->demo.isBot && client->demo.demorecording ) {
 		reliableAcknowledge = client->demo.botReliableAcknowledge;
 	} else {
 		reliableAcknowledge = client->reliableAcknowledge;
@@ -686,7 +687,7 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 
 	// bots need to have their snapshots built, but
 	// they query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) {
+	if ( client->demo.isBot ) {
 		client->netchan.outgoingSequence++;
 		client->demo.botReliableAcknowledge = client->reliableSent;
 		return;
