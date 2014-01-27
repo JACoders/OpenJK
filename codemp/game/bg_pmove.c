@@ -4513,9 +4513,9 @@ static void PM_CrashLand( void ) {
 	pm->ps->velocity[2] = 0;
 
 #ifdef _GAME
-	if (g_overBounce.integer)//|| ((g_overBounce.integer > 1) && pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
+	if (g_overBounce.integer && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))//|| ((g_overBounce.integer > 1) && pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
 #else
-	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_OVERBOUNCE))
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_OVERBOUNCE) && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
 #endif
 	{
 		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel

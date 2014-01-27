@@ -4536,7 +4536,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && attacker->client->pers.raceMode)
 		return;
-	if (targ && targ->client && targ->client->pers.raceMode)
+	if (targ && targ->client && targ->client->pers.raceMode && mod != MOD_TRIGGER_HURT && mod != MOD_LAVA && mod != MOD_CRUSH)
 		return;
 
 	if ( targ->client )

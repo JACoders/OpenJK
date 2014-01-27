@@ -2354,6 +2354,126 @@ void Cmd_MapList_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
 }
 
+typedef struct mapname_s {
+	const char	*name;
+} mapname_t;
+
+int mapnamecmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((mapname_t*)b)->name );
+}
+
+mapname_t defaultMaps[] = {
+	{"academy1.bsp"},
+	{"academy2.bsp"},
+	{"academy3.bsp"},
+	{"academy4.bsp"},
+	{"academy6.bsp"},
+	{"hoth2.bsp"},
+	{"hoth3.bsp"},
+	{"kor1.bsp"},
+	{"kor2.bsp"},
+	{"mp/ctf1.bsp"},//MP maps
+	{"mp/ctf2.bsp"},
+	{"mp/ctf3.bsp"},
+	{"mp/ctf4.bsp"},
+	{"mp/ctf5.bsp"},
+	{"mp/duel1.bsp"},
+	{"mp/duel2.bsp"},
+	{"mp/duel3.bsp"},
+	{"mp/duel4.bsp"},
+	{"mp/duel5.bsp"},
+	{"mp/duel6.bsp"},
+	{"mp/duel7.bsp"},
+	{"mp/duel8.bsp"},
+	{"mp/duel9.bsp"},
+	{"mp/ffa1.bsp"},
+	{"mp/ffa2.bsp"},
+	{"mp/ffa3.bsp"},
+	{"mp/ffa4.bsp"},
+	{"mp/ffa5.bsp"},
+	{"mp/siege_desert.bsp"},
+	{"mp/siege_hoth.bsp"},
+	{"mp/siege_korriban.bsp"},//MP
+	{"t1_danger.bsp"},
+	{"t1_fatal.bsp"},
+	{"t1_inter.bsp"},
+	{"t1_rail.bsp"},
+	{"t1_sour.bsp"},
+	{"t1_surprise.bsp"},
+	{"t2_dpred.bsp"},
+	{"t2_rancor.bsp"},
+	{"t2_rogue.bsp"},
+	{"t2_trip.bsp"},
+	{"t2_wedge.bsp"},
+	{"t3_bounty.bsp"},
+	{"t3_byss.bsp"},
+	{"t3_hevil.bsp"},
+	{"t3_rift.bsp"},
+	{"t3_stamp.bsp"},
+	{"taspir1.bsp"},
+	{"taspir2.bsp"},
+	{"vjun1.bsp"},
+	{"vjun2.bsp"},
+	{"vjun3.bsp"},
+	{"yavin1.bsp"},
+	{"yavin1b.bsp"},
+	{"yavin2.bsp"}
+};
+static const size_t numMaps = ARRAY_LEN(defaultMaps);
+
+qboolean IsBaseMap(char *s)
+{
+	if ((mapname_t *)bsearch( s, defaultMaps, numMaps, sizeof( defaultMaps[0]), mapnamecmp ))
+		return qtrue;
+	return qfalse;
+}
+
+void Cmd_GoodMapList_f(gentity_t *ent)
+{
+	char	maplist[4096], mapname[MAX_QPATH], buf[256] = {0};
+	int		i, maplen, numMaps;
+	char*	mapptr;
+	char*	p = NULL;
+	const unsigned int limit = 192;
+	unsigned int count = 0;
+
+	//floodprotect because fuck this
+
+	numMaps = trap->FS_GetFileList("maps", ".bsp", maplist, sizeof(maplist));
+	mapptr = maplist;
+	Q_strcat( buf, sizeof( buf ), "^5Map list:\n   " );
+
+	for ( i = 0; i < numMaps; i++, mapptr += maplen+1) {
+		char *tmpMsg = NULL;
+
+		maplen = strlen(mapptr);
+		strcpy(mapname, "");
+		strcat(mapname, mapptr);
+
+		if (IsBaseMap(mapname))
+			continue;
+		p = strchr(mapname, '.');//Get rid of file extension
+		if (p)
+			*p = 0;
+		tmpMsg = va( " ^3%-32s    ", mapname );
+
+		if ( count >= limit ) {//newline if we reach limit
+			tmpMsg = va( "\n   %s", tmpMsg );
+			count = 0;
+		}
+		if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
+			trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
+			buf[0] = '\0';
+		}
+
+		count += strlen( tmpMsg );
+		Q_strcat( buf, sizeof( buf ), tmpMsg );
+	}
+	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+	trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
+}
+
+
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
 	fileHandle_t fp = NULL_FILE;
@@ -4887,6 +5007,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		trap->SendServerCommand( ent-g_entities, "print \"throwFlag \"" ); 
 	if (g_tweakJetpack.integer) 
 		trap->SendServerCommand( ent-g_entities, "print \"+button12 (jetpack) \"" ); 
+	if (g_dodge.integer == 1) 
+		trap->SendServerCommand( ent-g_entities, "print \"+button13 (dodge) \"" ); 
+	else if (g_dodge.integer > 1) 
+		trap->SendServerCommand( ent-g_entities, "print \"+button13 (dodge/dash/walljump) \"" ); 
 	trap->SendServerCommand( ent-g_entities, "print \"\n\"" );
 
 	trap->SendServerCommand( ent-g_entities, "print \"   ^3Emote commands: \"" );
@@ -5567,14 +5691,6 @@ void Cmd_Amtele_f(gentity_t *ent)
 			return;
 		}
 		
-		ent->client->pers.stats.startLevelTime = 0;
-		ent->client->pers.stats.startTime = 0;//Dont let admins cheat on timers with this ;d
-		ent->client->pers.stats.topSpeed = 0;
-		ent->client->pers.stats.displacement = 0;
-		ent->client->pers.stats.startTimeFlag = 0;
-		ent->client->pers.stats.topSpeedFlag = 0;
-		ent->client->pers.stats.displacementFlag = 0;
-
 		if (trap->Argc() == 1)//Amtele to telemark
 		{ 
 			if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
@@ -6165,7 +6281,7 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
+	{ "maplist",			Cmd_GoodMapList_f,			CMD_NOINTERMISSION },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },

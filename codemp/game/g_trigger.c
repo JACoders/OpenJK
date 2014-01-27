@@ -1188,6 +1188,8 @@ qboolean ValidRaceSettings(gentity_t *player)
 		//return qfalse;
 	if (g_rampJump.integer)
 		return qfalse;
+	if (g_overBounce.integer)
+		return qfalse;
 	//if (!g_fixHighFPSAbuse.integer)//Should actually probly just force pmove_fixed, msec 8.. float? etc
 		//return qfalse;
 	if (g_startingItems.integer & (1 << HI_JETPACK))
@@ -1196,8 +1198,8 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (g_debugMelee.integer != 1)
 		return qfalse;
-	if (g_forceRegenTime.integer < 50)//ehh
-		return qfalse;
+	//if (g_forceRegenTime.integer < 50)//ehh
+		//return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
 
@@ -1244,13 +1246,16 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	return lessTime;
 }
 
-void TimerStart(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
+void TimerStart(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPRO Timers
 	if (!player->client)
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
+
+	if (!target && trigger->noise_index) 
+		G_Sound( trigger->activator, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
 	player->client->pers.stats.startLevelTime = level.time;
 	player->client->pers.stats.startTime = trap->Milliseconds();
@@ -1277,6 +1282,9 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 
 		if (ValidRaceSettings(player))
 			valid = qtrue;
+
+		if (!target && trigger->noise_index) 
+			G_Sound( trigger->activator, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
 		if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
@@ -1388,11 +1396,11 @@ void SP_target_push( gentity_t *self ) {
 }
 
 void target_to_timer_start(gentity_t *self, gentity_t *trigger, gentity_t *player) {//JAPRO Timers
-	TimerStart(trigger, player);
+	TimerStart(trigger, self, player);
 }
 
 void trigger_to_timer_start(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
-	TimerStart(trigger, player);
+	TimerStart(trigger, NULL,  player);
 }
 
 void target_to_timer_checkpoint(gentity_t *self, gentity_t *trigger, gentity_t *player) {//JAPRO Timers
