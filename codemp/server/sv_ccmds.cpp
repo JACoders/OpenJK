@@ -948,6 +948,7 @@ static void SV_Record_f( void ) {
 	int			i;
 	int			len;
 	char		*s;
+	client_t	*cl;
 
 	if ( svs.clients == NULL ) {
 		Com_Printf( "cannot record server demo - null svs.clients\n" );
@@ -959,10 +960,9 @@ static void SV_Record_f( void ) {
 		return;
 	}
 
-	client_t *cl;
 
 	if ( Cmd_Argc() == 3 ) {
-		int clIndex = atoi( Cmd_Argv( 1 ) );
+		int clIndex = atoi( Cmd_Argv( 2 ) );
 		if ( clIndex < 0 || clIndex >= sv_maxclients->integer ) {
 			Com_Printf( "Unknown client number %d.\n", clIndex );
 			return;
@@ -1035,7 +1035,8 @@ static void SV_Record_f( void ) {
 	// don't start saving messages until a non-delta compressed message is received
 	cl->demo.demowaiting = qtrue;
 
-	cl->demo.botReliableAcknowledge = cl->reliableSequence;
+	cl->demo.isBot = ( cl->netchan.remoteAddress.type == NA_BOT ) ? qtrue : qfalse;
+	cl->demo.botReliableAcknowledge = cl->reliableSent;
 
 	// write out the gamestate message
 	MSG_Init( &msg, bufData, sizeof( bufData ) );

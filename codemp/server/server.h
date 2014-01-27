@@ -105,6 +105,7 @@ typedef struct {
 	qboolean	demorecording;
 	qboolean	demowaiting;	// don't record until a non-delta message is received
 	fileHandle_t	demofile;
+	qboolean	isBot;
 	int			botReliableAcknowledge; // for bots, need to maintain a separate reliableAcknowledge to record server messages into the demo file
 } demoInfo_t;
 
