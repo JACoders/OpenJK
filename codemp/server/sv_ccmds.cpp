@@ -1048,7 +1048,7 @@ static void SV_Record_f( void ) {
 	MSG_WriteByte( &msg, svc_EOF );
 
 	// write it to the demo file
-	len = LittleLong( cl->reliableSequence - 1 );
+	len = LittleLong( cl->reliableSent - 1 );
 	FS_Write( &len, 4, cl->demo.demofile );
 
 	len = LittleLong( msg.cursize );
