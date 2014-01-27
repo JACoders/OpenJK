@@ -1313,7 +1313,7 @@ XI_ThumbFloat
 Gets the percentage going one way or the other (as normalized float)
 ===========
 */
-float __inline XI_ThumbFloat( signed short thumbValue )	// ID_INLINE is not defined in this scope? WTF... I guess __inline works here
+float QINLINE XI_ThumbFloat( signed short thumbValue )
 {
 	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
 }
