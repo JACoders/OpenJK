@@ -720,8 +720,7 @@ static qboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 //		"sound/chr_d/"	// no need for this now, or any other language, since we'll always compare against english
 	};
 
-	unsigned int i;
-	for (i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
+	for (size_t i=0; i< ARRAY_LEN(psAllowedDirs); i++)
 	{
 		if (Q_stricmpn(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
 			return qtrue;	// found a dir that's allowed to keep MP3s

@@ -322,7 +322,7 @@ int G2_AddSurface(CGhoul2Info *ghoul2, int surfaceNumber, int polyNumber, float 
 	lod = G2_DecideTraceLod(*ghoul2, lod);
 
 	// first up, see if we have a free one already set up  - look only from the end of the constant surfaces onwards
-	unsigned int i;
+	size_t i;
 	for (i=0; i<ghoul2->mSlist.size(); i++)
 	{
 		// is the surface count -1? That would indicate it's free
