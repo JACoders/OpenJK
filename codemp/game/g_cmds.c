@@ -2378,6 +2378,7 @@ mapname_t defaultMaps[] = {
 	{"mp/ctf4"},
 	{"mp/ctf5"},
 	{"mp/duel1"},
+	{"mp/duel10"},
 	{"mp/duel2"},
 	{"mp/duel3"},
 	{"mp/duel4"},
@@ -5654,27 +5655,36 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK)))
+		if ((g_raceMode.integer < 2) || !ent->client->ps.stats[STAT_RACEMODE]) {//Skip admin stuff if its optional racemode setting and client is racing
+			if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
+				if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK)))
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
+					return;
+				}
+			}
+			else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+			{
+				if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK)))
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
+					return;
+				}
+			}
+			else//Not logged in
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTelemark).\n\"" );
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTelemark).\n\"" );
+
+		/*
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR) { //Ehh. bandaid fix to stop a lot of potential abuse.. droptoground fixes this?
+			trap->SendServerCommand( ent-g_entities, "print \"You must be ingame to use this command (amTelemark).\n\"" ); 
 			return;
 		}
+		*/
 
 		VectorCopy(ent->client->ps.origin, ent->client->pers.telemarkOrigin);
 		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW))
@@ -5683,6 +5693,33 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 		trap->SendServerCommand( ent-g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i\n\"", (int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], ent->client->pers.telemarkAngle ));
 }
 //[JAPRO - Serverside - All - Amtelemark Function - End]
+
+void Cmd_RaceTele_f(gentity_t *ent)
+{
+	vec3_t	angles = {0, 0, 0};
+
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele to teleport to your telemark.\n\"" );
+		return;
+	}		
+	if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
+		vec3_t	angles = {0, 0, 0};
+		trace_t tr;
+		vec3_t down;
+
+		VectorCopy(pm->ps->origin, down);//Drop them to floor so they cant abuse?
+		down[2] -= 4096;
+		pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+		ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
+
+		angles[YAW] = ent->client->pers.telemarkAngle;
+		AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
+	}
+	else
+		trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
+	return;
+}
+
 
 //[JAPRO - Serverside - All - Amtele Function - Start]
 void Cmd_Amtele_f(gentity_t *ent)
@@ -5693,93 +5730,140 @@ void Cmd_Amtele_f(gentity_t *ent)
 	int clientid1 = -1, clientid2 = -1;
 	vec3_t	angles = {0, 0, 0}, origin;
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	{
+		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
+			if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) {
+				Cmd_RaceTele_f(ent);
 				return;
 			}
-		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
 		}
+	}
+	else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+	{
+		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
+		{
+			if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) {
+				Cmd_RaceTele_f(ent);
+				return;
+			}
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
+			return;
+		}
+	}
+	else if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) { //Only fallback to cmd_racetele_f if they dont have admin or dont have admin privledges
+		Cmd_RaceTele_f(ent);
+		return;
+	}
+	else //Not logged in
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
+		return;
+	}
 
-		if (trap->Argc() > 6)
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele or /amTele <client> or /amTele <client> <client> or /amTele <X> <Y> <Z> <YAW> or /amTele <player> <X> <Y> <Z> <YAW>.\n\"" );
-			return;
-		}
+	if (trap->Argc() > 6)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele or /amTele <client> or /amTele <client> <client> or /amTele <X> <Y> <Z> <YAW> or /amTele <player> <X> <Y> <Z> <YAW>.\n\"" );
+		return;
+	}
 		
-		if (trap->Argc() == 1)//Amtele to telemark
-		{ 
-			if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
+	if (trap->Argc() == 1)//Amtele to telemark
+	{ 
+		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
+		{
+			trace_t tr;
+			vec3_t down;
+
+			if (ent->client->ps.stats[STAT_RACEMODE]) 
 			{
-				angles[YAW] = ent->client->pers.telemarkAngle;
-				AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
-			}
-			else
-				trap->SendServerCommand( ent-g_entities, "print \"No telemark set!.\n\"" );
-
-			return;
-		}
-
-		if (trap->Argc() == 2)//Amtele to player
-		{ 
-			trap->Argv(1, client1, sizeof(client1));
-			clientid1 = JP_ClientNumberFromString(ent, client1);
-
-			if (clientid1 == -1 || clientid1 == -2)  
-				return; 
-
-			origin[0] = g_entities[clientid1].client->ps.origin[0];
-			origin[1] = g_entities[clientid1].client->ps.origin[1];
-			origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
-			AmTeleportPlayer( ent, origin, angles );
-			return;
-		}
-
-		if (trap->Argc() == 3)//Amtele player to player
-		{ 
-			trap->Argv(1, client1, sizeof(client1));
-			trap->Argv(2, client2, sizeof(client2));
-			clientid1 = JP_ClientNumberFromString(ent, client1);
-			clientid2 = JP_ClientNumberFromString(ent, client2);
-
-			if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
-				return; 
-
-			if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
-			{	
-				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
-				{
-					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"" );
-					return;
-				}
+				VectorCopy(pm->ps->origin, down);//Drop them to floor so they cant abuse?
+				down[2] -= 4096;
+				pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+				ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
 			}
 
-			teleporter = &g_entities[clientid1];
+			angles[YAW] = ent->client->pers.telemarkAngle;
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
+		}
+		else
+			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
+		return;
+	}
 
-			origin[0] = g_entities[clientid2].client->ps.origin[0];
-			origin[1] = g_entities[clientid2].client->ps.origin[1];
-			origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
+	if (trap->Argc() == 2)//Amtele to player
+	{ 
+		trap->Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
 
-			AmTeleportPlayer( teleporter, origin, angles );
-			return;
+		if (clientid1 == -1 || clientid1 == -2)  
+			return; 
+
+		origin[0] = g_entities[clientid1].client->ps.origin[0];
+		origin[1] = g_entities[clientid1].client->ps.origin[1];
+		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
+		AmTeleportPlayer( ent, origin, angles );
+		return;
+	}
+
+	if (trap->Argc() == 3)//Amtele player to player
+	{ 
+		trap->Argv(1, client1, sizeof(client1));
+		trap->Argv(2, client2, sizeof(client2));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+		clientid2 = JP_ClientNumberFromString(ent, client2);
+
+		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
+			return; 
+
+		if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
+		{	
+			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"" );
+				return;
+			}
 		}
 
-		if (trap->Argc() == 4)//|| trap->Argc() == 5)//Amtele to origin (if no angle specified, default 0?)
-		{ 
+		teleporter = &g_entities[clientid1];
+
+		origin[0] = g_entities[clientid2].client->ps.origin[0];
+		origin[1] = g_entities[clientid2].client->ps.origin[1];
+		origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
+
+		AmTeleportPlayer( teleporter, origin, angles );
+		return;
+	}
+
+	if (trap->Argc() == 4)//|| trap->Argc() == 5)//Amtele to origin (if no angle specified, default 0?)
+	{ 
+		trap->Argv(1, x, sizeof(x));
+		trap->Argv(2, y, sizeof(y));
+		trap->Argv(3, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+
+		/*if (trap->Argc() == 5)
+		{
+			trap->Argv(4, yaw, sizeof(yaw));
+			angles[YAW] = atoi(yaw);
+		}*/
+			
+		AmTeleportPlayer( ent, origin, angles );
+		return;
+	}
+
+	if (trap->Argc() == 5)//Amtele to angles + origin, OR Amtele player to origin
+	{
+		trap->Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+
+		if (clientid1 == -1 || clientid1 == -2)//Amtele to origin + angles
+		{
 			trap->Argv(1, x, sizeof(x));
 			trap->Argv(2, y, sizeof(y));
 			trap->Argv(3, z, sizeof(z));
@@ -5788,72 +5872,14 @@ void Cmd_Amtele_f(gentity_t *ent)
 			origin[1] = atoi(y);
 			origin[2] = atoi(z);
 
-			/*if (trap->Argc() == 5)
-			{
-				trap->Argv(4, yaw, sizeof(yaw));
-				angles[YAW] = atoi(yaw);
-			}*/
+			trap->Argv(4, yaw, sizeof(yaw));
+			angles[YAW] = atoi(yaw);
 			
 			AmTeleportPlayer( ent, origin, angles );
-			return;
 		}
 
-		if (trap->Argc() == 5)//Amtele to angles + origin, OR Amtele player to origin
+		else//Amtele other player to origin
 		{
-			trap->Argv(1, client1, sizeof(client1));
-			clientid1 = JP_ClientNumberFromString(ent, client1);
-
-			if (clientid1 == -1 || clientid1 == -2)//Amtele to origin + angles
-			{
-				trap->Argv(1, x, sizeof(x));
-				trap->Argv(2, y, sizeof(y));
-				trap->Argv(3, z, sizeof(z));
-
-				origin[0] = atoi(x);
-				origin[1] = atoi(y);
-				origin[2] = atoi(z);
-
-				trap->Argv(4, yaw, sizeof(yaw));
-				angles[YAW] = atoi(yaw);
-			
-				AmTeleportPlayer( ent, origin, angles );
-			}
-
-			else//Amtele other player to origin
-			{
-				if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
-				{	
-					if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
-					{
-						trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"" );
-						return;
-					}
-				}
-
-				teleporter = &g_entities[clientid1];
-
-				trap->Argv(2, x, sizeof(x));
-				trap->Argv(3, y, sizeof(y));
-				trap->Argv(4, z, sizeof(z));
-
-				origin[0] = atoi(x);
-				origin[1] = atoi(y);
-				origin[2] = atoi(z);
-
-				AmTeleportPlayer( teleporter, origin, angles );
-			}
-			return;
-
-		}
-
-		if (trap->Argc() == 6)//Amtele player to angles + origin
-		{
-			trap->Argv(1, client1, sizeof(client1));
-			clientid1 = JP_ClientNumberFromString(ent, client1);
-
-			if (clientid1 == -1 || clientid1 == -2)
-				return;
-
 			if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
 			{	
 				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
@@ -5873,12 +5899,45 @@ void Cmd_Amtele_f(gentity_t *ent)
 			origin[1] = atoi(y);
 			origin[2] = atoi(z);
 
-			trap->Argv(5, yaw, sizeof(yaw));
-			angles[YAW] = atoi(yaw);
-			
 			AmTeleportPlayer( teleporter, origin, angles );
-			return;
 		}
+		return;
+
+	}
+
+	if (trap->Argc() == 6)//Amtele player to angles + origin
+	{
+		trap->Argv(1, client1, sizeof(client1));
+		clientid1 = JP_ClientNumberFromString(ent, client1);
+
+		if (clientid1 == -1 || clientid1 == -2)
+			return;
+
+		if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
+		{	
+			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command on this player (amTele).\n\"" );
+				return;
+			}
+		}
+
+		teleporter = &g_entities[clientid1];
+
+		trap->Argv(2, x, sizeof(x));
+		trap->Argv(3, y, sizeof(y));
+		trap->Argv(4, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+
+		trap->Argv(5, yaw, sizeof(yaw));
+		angles[YAW] = atoi(yaw);
+			
+		AmTeleportPlayer( teleporter, origin, angles );
+		return;
+	}
 
 }
 //[JAPRO - Serverside - All - Amtele Function - End]
