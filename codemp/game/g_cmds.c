@@ -5138,7 +5138,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS))) 
 			Q_strcat(buf, sizeof(buf), "amListMaps ");  
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) 
-			Q_strcat(buf, sizeof(buf), "amListMaps "); 
+			Q_strcat(buf, sizeof(buf), "amListMaps ");
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
