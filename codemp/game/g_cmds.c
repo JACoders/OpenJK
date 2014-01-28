@@ -2353,7 +2353,7 @@ void Cmd_MapList_f( gentity_t *ent ) {
 
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
 }
-
+#if 0
 typedef struct mapname_s {
 	const char	*name;
 } mapname_t;
@@ -2595,6 +2595,7 @@ void Cmd_GoodMapList_f(gentity_t *ent)
         trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
         trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
 }
+#endif
 
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
@@ -6408,7 +6409,7 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "maplist",			Cmd_GoodMapList_f,			CMD_NOINTERMISSION },
+	//{ "maplist",			Cmd_GoodMapList_f,			CMD_NOINTERMISSION },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
