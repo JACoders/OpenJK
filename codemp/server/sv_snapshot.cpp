@@ -105,25 +105,37 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	int					lastframe;
 	int					i;
 	int					snapFlags;
+	int					deltaMessage;
 
 	// this is the snapshot we are creating
 	frame = &client->frames[ client->netchan.outgoingSequence & PACKET_MASK ];
+	
+	// bots never acknowledge, but it doesn't matter since the only use case is for serverside demos
+	// in which case we can delta against the very last message every time
+	deltaMessage = client->deltaMessage;
+	if ( client->demo.isBot ) {
+		client->deltaMessage = client->netchan.outgoingSequence;
+	}
 
 	// try to use a previous frame as the source for delta compressing the snapshot
-	if ( client->deltaMessage <= 0 || client->state != CS_ACTIVE ) {
+	if ( deltaMessage <= 0 || client->state != CS_ACTIVE ) {
 		// client is asking for a retransmit
 		oldframe = NULL;
 		lastframe = 0;
-	} else if ( client->netchan.outgoingSequence - client->deltaMessage 
+	} else if ( client->netchan.outgoingSequence - deltaMessage 
 		>= (PACKET_BACKUP - 3) ) {
 		// client hasn't gotten a good message through in a long time
 		Com_DPrintf ("%s: Delta request from out of date packet.\n", client->name);
 		oldframe = NULL;
 		lastframe = 0;
+	} else if ( client->demo.demorecording && client->demo.demowaiting ) {
+		// demo is waiting for a non-delta-compressed frame for this client, so don't delta compress
+		oldframe = NULL;
+		lastframe = 0;
 	} else {
 		// we have a valid snapshot to delta from
-		oldframe = &client->frames[ client->deltaMessage & PACKET_MASK ];
-		lastframe = client->netchan.outgoingSequence - client->deltaMessage;
+		oldframe = &client->frames[ deltaMessage & PACKET_MASK ];
+		lastframe = client->netchan.outgoingSequence - deltaMessage;
 
 		// the snapshot's entities may still have rolled off the buffer, though
 		if ( oldframe->first_entity <= svs.nextSnapshotEntities - svs.numSnapshotEntities ) {
@@ -131,6 +143,10 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 			oldframe = NULL;
 			lastframe = 0;
 		}
+	}
+
+	if ( oldframe == NULL ) {
+		client->demo.demowaiting = qfalse;
 	}
 
 	MSG_WriteByte (msg, svc_snapshot);
@@ -141,7 +157,8 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	// send over the current server time so the client can drift
 	// its view of time to try to match
-	if( client->oldServerTime ) {
+	if( client->oldServerTime &&
+		!( client->demo.demorecording && client->demo.isBot ) ) {
 		// The server has not yet got an acknowledgement of the
 		// new gamestate from this client, so continue to send it
 		// a time as if the server has not restarted. Note from
@@ -234,9 +251,16 @@ SV_UpdateServerCommandsToClient
 */
 void SV_UpdateServerCommandsToClient( client_t *client, msg_t *msg ) {
 	int		i;
+	int		reliableAcknowledge;
+
+	if ( client->demo.isBot && client->demo.demorecording ) {
+		reliableAcknowledge = client->demo.botReliableAcknowledge;
+	} else {
+		reliableAcknowledge = client->reliableAcknowledge;
+	}
 
 	// write any unacknowledged serverCommands
-	for ( i = client->reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
+	for ( i = reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
 		MSG_WriteByte( msg, svc_serverCommand );
 		MSG_WriteLong( msg, i );
 		MSG_WriteString( msg, client->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
@@ -629,6 +653,7 @@ static int SV_RateMsec( client_t *client, int messageSize ) {
 	return rateMsec;
 }
 
+extern void SV_WriteDemoMessage ( client_t *cl, msg_t *msg, int headerBytes );
 /*
 =======================
 SV_SendMessageToClient
@@ -653,6 +678,21 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSize = msg->cursize;
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSent = svs.time;
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageAcked = -1;
+
+	// save the message to demo.  this must happen before sending over network as that encodes the backing databuf
+	if (client->demo.demorecording && !client->demo.demowaiting) {
+		msg_t msgcopy = *msg;
+		MSG_WriteByte( &msgcopy, svc_EOF );
+		SV_WriteDemoMessage(client, &msgcopy, 0);
+	}
+
+	// bots need to have their snapshots built, but
+	// they query them directly without needing to be sent
+	if ( client->demo.isBot ) {
+		client->netchan.outgoingSequence++;
+		client->demo.botReliableAcknowledge = client->reliableSent;
+		return;
+	}
 
 	// send the datagram
 	SV_Netchan_Transmit( client, msg );	//msg->cursize, msg->data );
@@ -750,9 +790,9 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
-	// bots need to have their snapshots build, but
-	// the query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) {
+	// bots need to have their snapshots built, but
+	// they query them directly without needing to be sent
+	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT && !client->demo.demorecording ) {
 		return;
 	}
 

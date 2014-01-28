@@ -75,6 +75,7 @@ CSetGroup::CSetGroup(void)
 {
 	m_ambientSets = new vector<ambientSet_t*>;
 	m_setMap = new map<sstring_t, ambientSet_t*>;
+	m_numSets = 0;
 }
 
 
@@ -310,7 +311,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 		//Get the data
 		sscanf( parseBuffer+parsePos, "%s", waveBuffer );
 
-		if ( set.numSubWaves > MAX_WAVES_PER_GROUP )
+		if ( set.numSubWaves >= MAX_WAVES_PER_GROUP )
 		{
 			#ifndef FINAL_BUILD
 			Com_Printf(S_COLOR_YELLOW"WARNING: Too many subwaves on set \"%s\"\n", set.name );
@@ -600,7 +601,7 @@ static sboolean AS_ParseSet( int setID, CSetGroup *sg )
 	const char		*name;
 
 	//Make sure we're not overstepping the name array
-	if ( setID > NUM_AS_SETS )
+	if ( setID >= NUM_AS_SETS )
 		return qfalse;
 
 	//Reset the pointers for this run through

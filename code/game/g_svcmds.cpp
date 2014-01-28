@@ -1240,6 +1240,23 @@ qboolean	ConsoleCommand( void ) {
 		}
 		return qtrue;
 	}
+	if ( Q_stricmp( cmd, "setSaberAll" ) == 0 )	
+	{
+		if ( !g_cheats->integer ) 
+		{
+			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
+			return qtrue;
+		}
+
+		Svcmd_SaberThrow_f();
+		Svcmd_SaberDefense_f();
+		Svcmd_SaberOffense_f();
+		for ( int i = SS_NONE+1; i < SS_NUM_SABER_STYLES; i++ )
+		{
+			g_entities[0].client->ps.saberStylesKnown |= (1<<i);
+		}
+		return qtrue;
+	}
 	if ( Q_stricmp( cmd, "saberAttackCycle" ) == 0 )	
 	{
 		Svcmd_SaberAttackCycle_f();

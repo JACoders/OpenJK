@@ -1229,6 +1229,7 @@ void ClientRespawn( gentity_t *ent ) {
 				}
 				ent->client->tempSpectate = level.time + minDel;
 				ent->health = ent->client->ps.stats[STAT_HEALTH] = 1;
+				ent->waterlevel = ent->watertype = 0;
 				ent->client->ps.weapon = WP_NONE;
 				ent->client->ps.stats[STAT_WEAPONS] = 0;
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
@@ -2506,7 +2507,7 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-	char		*s = NULL, *value = NULL;
+	char		*value = NULL;
 	gentity_t	*ent = NULL, *te = NULL;
 	gclient_t	*client;
 	char		userinfo[MAX_INFO_STRING] = {0},
@@ -2534,19 +2535,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	Q_strncpyz( tmpIP, isBot ? "Bot" : value, sizeof( tmpIP ) );
 	if ( G_FilterPacket( value ) ) {
 		return "Banned.";
-	}
-
-	// check for malformed or illegal info strings
-	s = G_ValidateUserinfo( userinfo );
-	if ( s && *s )
-	{
-		value = Info_ValueForKey (userinfo, "name");
-		if( value[0] )
-			Q_strncpyz( name, value, sizeof( name ) );
-		else
-			Q_strncpyz( name, "Padawan", sizeof( name ) );
-		G_SecurityLogPrintf( "Connecting Client %d (%s) failed userinfo validation: %s [IP: %s]\n", clientNum, name, s, tmpIP );
-		return va( "Failed userinfo validation: %s", s );
 	}
 
 	if ( !isBot && g_needpass.integer ) {

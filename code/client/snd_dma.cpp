@@ -223,7 +223,7 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 #define DEFAULT_REF_DISTANCE		300.0f		// Default reference distance
 #define DEFAULT_VOICE_REF_DISTANCE	1500.0f		// Default voice reference distance
 
-int			s_UseOpenAL	= false;	// Determines if using Open AL or the default software mixer
+int			s_UseOpenAL	= 0;	// Determines if using Open AL or the default software mixer
 
 #ifdef _WIN32
 ALfloat		listener_pos[3];		// Listener Position
@@ -464,7 +464,7 @@ void S_Init( void ) {
 
 	MP3_InitCvars();
 
-	cv = Cvar_Get ("s_initsound", "1", CVAR_ROM);
+	cv = Cvar_Get ("s_initsound", "1", 0);
 	if ( !cv->integer ) {
 		s_soundStarted = 0;	// needed in case you set s_initsound to 0 midgame then snd_restart (div0 err otherwise later)
 		Com_Printf ("not initializing.\n");
@@ -481,12 +481,17 @@ void S_Init( void ) {
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
 
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
+#ifdef _WIN32
 	s_UseOpenAL = !!(cv->integer);
+#else
+	s_UseOpenAL = 0;
+#endif
 
 #ifdef _WIN32
 	if (s_UseOpenAL)
-	{	
+	{
 		int i, j;
+
 		ALCdevice *ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
 		if (!ALCDevice)
 			return;
@@ -502,7 +507,7 @@ void S_Init( void ) {
 			return;
 
 		s_soundStarted = 1;
-		s_soundMuted = 1;
+		s_soundMuted = qtrue;
 		s_soundtime = 0;
 		s_paintedtime = 0;
 		s_rawend = 0;
@@ -615,7 +620,7 @@ void S_Init( void ) {
 
 		if ( r ) {
 			s_soundStarted = 1;
-			s_soundMuted = 1;
+			s_soundMuted = qtrue;
 	//		s_numSfx = 0;	// do NOT do this here now!!!
 
 			s_soundtime = 0;
@@ -5082,6 +5087,7 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 {
 	int iBytesFreed = 0;
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		alGetError();
@@ -5107,6 +5113,7 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 									sfx->lipSyncData = NULL;
 		}
 	}
+#endif
 
 	if (						sfx->pSoundData) {
 		iBytesFreed +=	Z_Free(	sfx->pSoundData );
