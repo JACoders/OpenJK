@@ -5596,7 +5596,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
 				}
 				else if (self->client->ps.stats[STAT_RACEMODE])
-					self->client->ps.fd.forcePowerRegenDebounceTime += max(10, 1);//Hardcoded regentime of 10ms for racers.. idk
+					self->client->ps.fd.forcePowerRegenDebounceTime += max(10, 1);//Hardcoded regentime of 10ms for racers..idk
 				else
 					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 			}
