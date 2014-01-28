@@ -2419,29 +2419,53 @@ mapname_t defaultMaps[] = {
 	{"yavin1b.bsp"},
 	{"yavin2.bsp"}
 };
-static const size_t numMaps = ARRAY_LEN(defaultMaps);
+static const size_t numDefaultMaps = ARRAY_LEN(defaultMaps);
 
 qboolean IsBaseMap(char *s)
 {
-	if ((mapname_t *)bsearch( s, defaultMaps, numMaps, sizeof( defaultMaps[0]), mapnamecmp ))
+	if ((mapname_t *)bsearch( s, defaultMaps, numDefaultMaps, sizeof( defaultMaps[0]), mapnamecmp ))
 		return qtrue;
 	return qfalse;
 }
 
+/*
+int compcstr(const void * a, const void * b)
+{
+	const char * aa = * (const char * *) a;
+	const char * bb = * (const char * *) b;
+	return strcmp(aa, bb);
+}
+
+int compacstr(const void * a, const void * b)
+{
+	return strcmp((const char *) a, (const char *) b);
+}
+*/
+
+/*
 void Cmd_GoodMapList_f(gentity_t *ent)
 {
-	char	maplist[4096], mapname[MAX_QPATH], buf[256] = {0};
+	char	maplist[4096], mapname[MAX_QPATH], sorted[4096], buf[256] = {0};
 	int		i, maplen, numMaps;
 	char*	mapptr;
 	char*	p = NULL;
 	const unsigned int limit = 192;
 	unsigned int count = 0;
+	char sortedMaps[512][64];
 
 	//floodprotect because fuck this
 
 	numMaps = trap->FS_GetFileList("maps", ".bsp", maplist, sizeof(maplist));
+
+	for ( i = 0 ; i < numMaps ; i++ )
+		sorted[i] = maplist[i];
+
 	mapptr = maplist;
+
+	//qsort(mapptr, numMaps, sizeof(char *), compcstr);
+
 	Q_strcat( buf, sizeof( buf ), "^5Map list:\n   " );
+
 
 	for ( i = 0; i < numMaps; i++, mapptr += maplen+1) {
 		char *tmpMsg = NULL;
@@ -2455,7 +2479,13 @@ void Cmd_GoodMapList_f(gentity_t *ent)
 		p = strchr(mapname, '.');//Get rid of file extension
 		if (p)
 			*p = 0;
-		tmpMsg = va( " ^3%-32s    ", mapname );
+
+		sortedMaps[i][64] = *mapname;
+
+		//tmpMsg = va( " ^3%-32s    ", mapname );
+
+		/*
+		Com_Printf("%s\n",mapname);
 
 		if ( count >= limit ) {//newline if we reach limit
 			tmpMsg = va( "\n   %s", tmpMsg );
@@ -2466,13 +2496,105 @@ void Cmd_GoodMapList_f(gentity_t *ent)
 			buf[0] = '\0';
 		}
 
+
 		count += strlen( tmpMsg );
 		Q_strcat( buf, sizeof( buf ), tmpMsg );
 	}
-	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
-	trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
-}
 
+	for(i = 0; i <= numMaps;i++)
+		Com_Printf("sortedMaps[%i] = %s\n", i, sortedMaps[i]);
+
+	//trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+	//trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
+}
+*/
+
+/*
+void Cmd_GoodMapList_f(gentity_t *ent)
+{
+	int i, size, numMaps, row = 0, col = 0;
+	char unsortedMaps[4096];// = {"bb:aa:cc:ee:dd:gg:nn:zz:ww:hh:xx"};
+	char sortedMaps[512][64]; //[Num elements][size of element]
+	char temp;
+
+	size = strlen(unsortedMaps);
+
+	numMaps = trap->FS_GetFileList("maps", ".bsp",	 unsortedMaps, sizeof(unsortedMaps));
+
+	Com_Printf("numMaps = %i\n", numMaps);
+
+	for (i = 0; i < numMaps; i++) {
+		temp = unsortedMaps[i];    
+		if(temp == '\0') {
+			sortedMaps[row][col]='\0';
+			row++;
+			col = 0;
+		}
+		else {
+			sortedMaps[row][col] = temp;
+			++col;
+		}
+	}
+	
+	sortedMaps[row][col]='\0';
+	//d[row] contains a string between colons
+	for(i=0;i<=row;i++)
+		Com_Printf("unsortedMaps[%i] = %s\n", i, sortedMaps[i]);
+
+        qsort(sortedMaps, numMaps, sizeof(sortedMaps[0]), compacstr);
+
+	Com_Printf("\n");
+
+	for(i=0;i<=row;i++)
+		Com_Printf("sortedMaps[%i] = %s\n", i, sortedMaps[i]);
+ 
+}
+*/
+
+void Cmd_GoodMapList_f(gentity_t *ent)
+{
+        char        maplist[4096], mapname[MAX_QPATH], buf[256] = {0};
+        int                i, maplen, numMaps;
+        char*        mapptr;
+        char*        p = NULL;
+        const unsigned int limit = 192;
+        unsigned int count = 0;
+
+        //floodprotect because fuck this
+
+        numMaps = trap->FS_GetFileList("maps", ".bsp", maplist, sizeof(maplist));
+        mapptr = maplist;
+        Q_strcat( buf, sizeof( buf ), "^5Map list:\n   " );
+
+        for ( i = 0; i < numMaps; i++, mapptr += maplen+1) {
+                char *tmpMsg = NULL;
+
+                maplen = strlen(mapptr);
+                strcpy(mapname, "");
+                strcat(mapname, mapptr);
+
+                if (IsBaseMap(mapname))
+                        continue;
+                p = strchr(mapname, '.');//Get rid of file extension
+                if (p)
+                        *p = 0;
+                tmpMsg = va( " ^3%-32s    ", mapname );
+
+                if ( count >= limit ) {//newline if we reach limit
+                        tmpMsg = va( "\n   %s", tmpMsg );
+                        count = 0;
+                }
+                if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
+                        trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
+                        buf[0] = '\0';
+                }
+
+                count += strlen( tmpMsg );
+                Q_strcat( buf, sizeof( buf ), tmpMsg );
+        }
+        trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+        trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
+}
 
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
@@ -4977,160 +5099,165 @@ Cmd_Aminfo_f
 */
 void Cmd_Aminfo_f(gentity_t *ent)
 {
-	if (ent && ent->client)
-		trap->SendServerCommand( ent-g_entities, va("print \"^5 Hi there, %s^5.  This server is using the jaPRO mod.\n\"", ent->client->pers.netname));
-	trap->SendServerCommand( ent-g_entities, "print \"   ^3To display server settings, type ^7serverConfig\n\"" );
+	char buf[MAX_STRING_CHARS-64] = {0};
 
-	trap->SendServerCommand( ent-g_entities, "print \"   ^3Chat commands: \"" );
-	trap->SendServerCommand( ent-g_entities, "print \"ignore \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"clanPass \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"clanWhoIs \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"clanSay \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"amSay \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"say_team_mod \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"\n\"" );
+	if (!ent || !ent->client)
+		return;
 
-	trap->SendServerCommand( ent-g_entities, "print \"   ^3Game commands: \"" );
-	trap->SendServerCommand( ent-g_entities, "print \"amMOTD \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"mapList \"" ); 
+	Q_strncpyz(buf, "^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", sizeof(buf));
+	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig\n" );
+
+	Q_strcat(buf, sizeof(buf), "   ^3Chat commands: ");
+	Q_strcat(buf, sizeof(buf), "ignore ");
+	Q_strcat(buf, sizeof(buf), "clanPass ");
+	Q_strcat(buf, sizeof(buf), "clanWhoIs ");
+	Q_strcat(buf, sizeof(buf), "clanSay ");
+	Q_strcat(buf, sizeof(buf), "amSay ");
+	Q_strcat(buf, sizeof(buf), "say_team_mod\n");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+
+	Q_strncpyz(buf, "   ^3Game commands: ", sizeof(buf));
+	Q_strcat(buf, sizeof(buf), "amMOTD ");
+	Q_strcat(buf, sizeof(buf), "mapList ");
 	if (g_privateDuel.integer) {
-		trap->SendServerCommand( ent-g_entities, "print \"engage_FullForceDuel \"" ); 
-		trap->SendServerCommand( ent-g_entities, "print \"engage_gunDuel \"" ); 
+		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
+		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
 	}
 	if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA) 
-		trap->SendServerCommand( ent-g_entities, "print \"race \"" ); 
+		Q_strcat(buf, sizeof(buf), "race ");
 	if (g_raceMode.integer && g_gametype.integer == GT_FFA) 
-		trap->SendServerCommand( ent-g_entities, "print \"movementStyle \"" ); 
+		Q_strcat(buf, sizeof(buf), "movementStyle ");
 	if (g_allowSaberSwitch.integer) 
-		trap->SendServerCommand( ent-g_entities, "print \"saber \"" ); 
+		Q_strcat(buf, sizeof(buf), "saber ");
 	if (g_allowFlagThrow.integer) 
-		trap->SendServerCommand( ent-g_entities, "print \"throwFlag \"" ); 
+		Q_strcat(buf, sizeof(buf), "throwFlag ");
 	if (g_tweakJetpack.integer) 
-		trap->SendServerCommand( ent-g_entities, "print \"+button12 (jetpack) \"" ); 
+		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
 	if (g_dodge.integer == 1) 
-		trap->SendServerCommand( ent-g_entities, "print \"+button13 (dodge) \"" ); 
+		Q_strcat(buf, sizeof(buf), "+button13 (dodge) ");
 	else if (g_dodge.integer > 1) 
-		trap->SendServerCommand( ent-g_entities, "print \"+button13 (dodge/dash/walljump) \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"\n\"" );
+		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)\n");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
-	trap->SendServerCommand( ent-g_entities, "print \"   ^3Emote commands: \"" );
+	Q_strncpyz(buf, "   ^3Emote commands: ", sizeof(buf));
 	if (!(g_emotesDisable.integer & (1 << E_BEG)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBeg \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBeg "); 
 	if (!(g_emotesDisable.integer & (1 << E_BEG2)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBeg2 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBeg2 "); 
 	if (!(g_emotesDisable.integer & (1 << E_BERNIE)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBernie \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBernie "); 
 	if (!(g_emotesDisable.integer & (1 << E_BREAKDANCE)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBreakdance \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBreakdance "); 
 	if (!(g_emotesDisable.integer & (1 << E_BREAKDANCE2)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBreakdance2 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBreakdance2 "); 
 	if (!(g_emotesDisable.integer & (1 << E_BREAKDANCE3)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBreakdance3 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBreakdance3 "); 
 	if (!(g_emotesDisable.integer & (1 << E_BREAKDANCE4)))
-		trap->SendServerCommand( ent-g_entities, "print \"amBreakdance4 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amBreakdance4 "); 
 	if (!(g_emotesDisable.integer & (1 << E_CHEER)))
-		trap->SendServerCommand( ent-g_entities, "print \"amCheer \"" ); 
+		Q_strcat(buf, sizeof(buf), "amCheer "); 
 	if (!(g_emotesDisable.integer & (1 << E_COWER)))
-		trap->SendServerCommand( ent-g_entities, "print \"amCower \"" ); 
+		Q_strcat(buf, sizeof(buf), "amCower "); 
 	if (!(g_emotesDisable.integer & (1 << E_DANCE)))
-		trap->SendServerCommand( ent-g_entities, "print \"amDance \"" ); 
+		Q_strcat(buf, sizeof(buf), "amDance "); 
 	if (!(g_emotesDisable.integer & (1 << E_HUG)))
-		trap->SendServerCommand( ent-g_entities, "print \"amHug \"" ); 
+		Q_strcat(buf, sizeof(buf), "amHug "); 
 	if (!(g_emotesDisable.integer & (1 << E_NOISY)))
-		trap->SendServerCommand( ent-g_entities, "print \"amNoisy \"" ); 
+		Q_strcat(buf, sizeof(buf), "amNoisy "); 
 	if (!(g_emotesDisable.integer & (1 << E_POINT)))
-		trap->SendServerCommand( ent-g_entities, "print \"amPoint \"" ); 
+		Q_strcat(buf, sizeof(buf), "amPoint "); 
 	if (!(g_emotesDisable.integer & (1 << E_RAGE)))
-		trap->SendServerCommand( ent-g_entities, "print \"amRage \"" ); 
+		Q_strcat(buf, sizeof(buf), "amRage "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSit \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSit "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT2)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSit2 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSit2 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT3)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSit3 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSit3 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT4)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSit4 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSit4 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT5)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSit5 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSit5 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SURRENDER)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSurrender \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSurrender "); 
 	if (!(g_emotesDisable.integer & (1 << E_SMACK)))
-		trap->SendServerCommand( ent-g_entities, "print \"amSmack \"" ); 
+		Q_strcat(buf, sizeof(buf), "amSmack "); 
 	if (!(g_emotesDisable.integer & (1 << E_TAUNT)))
-		trap->SendServerCommand( ent-g_entities, "print \"amTaunt \"" ); 
+		Q_strcat(buf, sizeof(buf), "amTaunt "); 
 	if (!(g_emotesDisable.integer & (1 << E_TAUNT2)))
-		trap->SendServerCommand( ent-g_entities, "print \"amTaunt2 \"" ); 
+		Q_strcat(buf, sizeof(buf), "amTaunt2 "); 
 	if (!(g_emotesDisable.integer & (1 << E_VICTORY)))
-		trap->SendServerCommand( ent-g_entities, "print \"amVictory \"" ); 
+		Q_strcat(buf, sizeof(buf), "amVictory "); 
 	if (!(g_emotesDisable.integer & (1 << E_JAWARUN)))
-		trap->SendServerCommand( ent-g_entities, "print \"amRun \"" ); 
-	trap->SendServerCommand( ent-g_entities, "print \"\n\"" );
+		Q_strcat(buf, sizeof(buf), "amRun\n"); 
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
-	trap->SendServerCommand( ent-g_entities, "print \"   ^3Admin commands: \"" );
+	Q_strncpyz(buf, "   ^3Admin commands: ", sizeof(buf));
 	if (!(ent->r.svFlags & SVF_FULLADMIN) && !(ent->r.svFlags & SVF_JUNIORADMIN))
-		trap->SendServerCommand( ent-g_entities, "print \"you are not an administrator on this server.\n\"" );
+		Q_strcat(buf, sizeof(buf), "you are not an administrator on this server.\n");
 	else {
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINTELE))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amTele \"" ); 
+			Q_strcat(buf, sizeof(buf), "amTele "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amTele \"" ); 
+			Q_strcat(buf, sizeof(buf), "amTele "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_TELEMARK))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amTeleMark \"" ); 
+			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_TELEMARK))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amTeleMark \"" ); 
+			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FREEZE))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amFreeze \"" ); 
+			Q_strcat(buf, sizeof(buf), "amFreeze "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_FREEZE))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amFreeze \"" ); 
+			Q_strcat(buf, sizeof(buf), "amFreeze "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINBAN))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amBan \"" ); 
+			Q_strcat(buf, sizeof(buf), "amBan "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINBAN))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amBan \"" ); 
+			Q_strcat(buf, sizeof(buf), "amBan "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINKICK))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amKick \"" ); 
+			Q_strcat(buf, sizeof(buf), "amKick "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amKick \"" ); 
+			Q_strcat(buf, sizeof(buf), "amKick "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NPC))) 
-			trap->SendServerCommand( ent-g_entities, "print \"NPC \"" ); 
+			Q_strcat(buf, sizeof(buf), "NPC "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_NPC))) 
-			trap->SendServerCommand( ent-g_entities, "print \"NPC \"" ); 
+			Q_strcat(buf, sizeof(buf), "NPC "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NOCLIP))) 
-			trap->SendServerCommand( ent-g_entities, "print \"Noclip \"" ); 
+			Q_strcat(buf, sizeof(buf), "Noclip "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_NOCLIP))) 
-			trap->SendServerCommand( ent-g_entities, "print \"Noclip \"" ); 
+			Q_strcat(buf, sizeof(buf), "Noclip "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_GRANTADMIN))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amGrantAdmin \"" ); 
+			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_GRANTADMIN))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amGrantAdmin \"" ); 
+			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CHANGEMAP))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amMap \"" ); 
+			Q_strcat(buf, sizeof(buf), "amMap "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amMap \"" ); 
+			Q_strcat(buf, sizeof(buf), "amMap "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amPsay \"" ); 
+			Q_strcat(buf, sizeof(buf), "amPsay "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amPsay \"" ); 
+			Q_strcat(buf, sizeof(buf), "amPsay "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FORCETEAM))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amForceTeam \"" ); 
+			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_FORCETEAM))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amForceTeam \"" ); 
+			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOCKTEAM))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amLockTeam \"" ); 
+			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amLockTeam \"" ); 
+			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_VSTR))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amVstr \"" ); 
+			Q_strcat(buf, sizeof(buf), "amVstr "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amVstr \"" ); 
+			Q_strcat(buf, sizeof(buf), "amVstr "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amStatus \"" ); 
+			Q_strcat(buf, sizeof(buf), "amStatus "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amStatus \"" ); 
+			Q_strcat(buf, sizeof(buf), "amStatus "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amRename \"" ); 
+			Q_strcat(buf, sizeof(buf), "amRename "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
-			trap->SendServerCommand( ent-g_entities, "print \"amRename \"" ); 
-		trap->SendServerCommand( ent-g_entities, "print \"\n\"" );
+			Q_strcat(buf, sizeof(buf), "amRename\n"); 
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+		buf[0] = '\0';
 	}
 	
 	if (ent->client->pers.isJAPRO)
