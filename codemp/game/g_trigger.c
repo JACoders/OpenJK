@@ -1249,6 +1249,8 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 void TimerStart(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPRO Timers
 	if (!player->client)
 		return;
+	if (player->r.svFlags & SVF_BOT)
+		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
@@ -1266,6 +1268,8 @@ void TimerStart(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAP
 
 void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPRO Timers
 	if (!player->client)
+		return;
+	if (player->r.svFlags & SVF_BOT)
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT) 
 		return;
@@ -1339,8 +1343,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
 		return;
 	if ( player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT )
 		return;
+	if (player->r.svFlags & SVF_BOT)
+		return;
 
-	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) {
+	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
 		const float time = (trap->Milliseconds() - player->client->pers.stats.startTime) / 1000.0f;
 		int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
 

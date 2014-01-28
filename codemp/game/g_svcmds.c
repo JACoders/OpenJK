@@ -594,7 +594,7 @@ svcmd_t svcmds[] = {
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "say",						Svcmd_Say_f,						qtrue },
-	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
+	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse }
 };
 static const size_t numsvcmds = ARRAY_LEN( svcmds );
 

@@ -257,7 +257,8 @@ typedef enum {
 	A_LOCKTEAM,
 	A_VSTR,
 	A_STATUS,
-	A_RENAME
+	A_RENAME,
+	A_LISTMAPS
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates

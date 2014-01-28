@@ -2353,7 +2353,7 @@ void Cmd_MapList_f( gentity_t *ent ) {
 
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
 }
-#if 0
+
 typedef struct mapname_s {
 	const char	*name;
 } mapname_t;
@@ -2363,239 +2363,141 @@ int mapnamecmp( const void *a, const void *b ) {
 }
 
 mapname_t defaultMaps[] = {
-	{"academy1.bsp"},
-	{"academy2.bsp"},
-	{"academy3.bsp"},
-	{"academy4.bsp"},
-	{"academy6.bsp"},
-	{"hoth2.bsp"},
-	{"hoth3.bsp"},
-	{"kor1.bsp"},
-	{"kor2.bsp"},
-	{"mp/ctf1.bsp"},//MP maps
-	{"mp/ctf2.bsp"},
-	{"mp/ctf3.bsp"},
-	{"mp/ctf4.bsp"},
-	{"mp/ctf5.bsp"},
-	{"mp/duel1.bsp"},
-	{"mp/duel2.bsp"},
-	{"mp/duel3.bsp"},
-	{"mp/duel4.bsp"},
-	{"mp/duel5.bsp"},
-	{"mp/duel6.bsp"},
-	{"mp/duel7.bsp"},
-	{"mp/duel8.bsp"},
-	{"mp/duel9.bsp"},
-	{"mp/ffa1.bsp"},
-	{"mp/ffa2.bsp"},
-	{"mp/ffa3.bsp"},
-	{"mp/ffa4.bsp"},
-	{"mp/ffa5.bsp"},
-	{"mp/siege_desert.bsp"},
-	{"mp/siege_hoth.bsp"},
-	{"mp/siege_korriban.bsp"},//MP
-	{"t1_danger.bsp"},
-	{"t1_fatal.bsp"},
-	{"t1_inter.bsp"},
-	{"t1_rail.bsp"},
-	{"t1_sour.bsp"},
-	{"t1_surprise.bsp"},
-	{"t2_dpred.bsp"},
-	{"t2_rancor.bsp"},
-	{"t2_rogue.bsp"},
-	{"t2_trip.bsp"},
-	{"t2_wedge.bsp"},
-	{"t3_bounty.bsp"},
-	{"t3_byss.bsp"},
-	{"t3_hevil.bsp"},
-	{"t3_rift.bsp"},
-	{"t3_stamp.bsp"},
-	{"taspir1.bsp"},
-	{"taspir2.bsp"},
-	{"vjun1.bsp"},
-	{"vjun2.bsp"},
-	{"vjun3.bsp"},
-	{"yavin1.bsp"},
-	{"yavin1b.bsp"},
-	{"yavin2.bsp"}
+	{"academy1"},
+	{"academy2"},
+	{"academy3"},
+	{"academy4"},
+	{"academy6"},
+	{"hoth2"},
+	{"hoth3"},
+	{"kor1"},
+	{"kor2"},
+	{"mp/ctf1"},//MP maps
+	{"mp/ctf2"},
+	{"mp/ctf3"},
+	{"mp/ctf4"},
+	{"mp/ctf5"},
+	{"mp/duel1"},
+	{"mp/duel2"},
+	{"mp/duel3"},
+	{"mp/duel4"},
+	{"mp/duel5"},
+	{"mp/duel6"},
+	{"mp/duel7"},
+	{"mp/duel8"},
+	{"mp/duel9"},
+	{"mp/ffa1"},
+	{"mp/ffa2"},
+	{"mp/ffa3"},
+	{"mp/ffa4"},
+	{"mp/ffa5"},
+	{"mp/siege_desert"},
+	{"mp/siege_hoth"},
+	{"mp/siege_korriban"},//MP
+	{"t1_danger"},
+	{"t1_fatal"},
+	{"t1_inter"},
+	{"t1_rail"},
+	{"t1_sour"},
+	{"t1_surprise"},
+	{"t2_dpred"},
+	{"t2_rancor"},
+	{"t2_rogue"},
+	{"t2_trip"},
+	{"t2_wedge"},
+	{"t3_bounty"},
+	{"t3_byss"},
+	{"t3_hevil"},
+	{"t3_rift"},
+	{"t3_stamp"},
+	{"taspir1"},
+	{"taspir2"},
+	{"vjun1"},
+	{"vjun2"},
+	{"vjun3"},
+	{"yavin1"},
+	{"yavin1b"},
+	{"yavin2"}
 };
 static const size_t numDefaultMaps = ARRAY_LEN(defaultMaps);
 
-qboolean IsBaseMap(char *s)
-{
+qboolean IsBaseMap(char *s) {
 	if ((mapname_t *)bsearch( s, defaultMaps, numDefaultMaps, sizeof( defaultMaps[0]), mapnamecmp ))
 		return qtrue;
 	return qfalse;
 }
 
-/*
-int compcstr(const void * a, const void * b)
-{
+int compcstr(const void * a, const void * b) {
 	const char * aa = * (const char * *) a;
 	const char * bb = * (const char * *) b;
 	return strcmp(aa, bb);
 }
 
-int compacstr(const void * a, const void * b)
+void Cmd_AmMapList_f(gentity_t *ent)
 {
-	return strcmp((const char *) a, (const char *) b);
-}
-*/
+	char				unsortedMaps[4096], buf[512] = {0};
+	char*				mapname;
+	char*				sortedMaps[512];
+	int					i, len, numMaps;
+	unsigned int		count = 0, baseMapCount = 0;
+	const unsigned int limit = 192, MAX_MAPS = 512;
 
-/*
-void Cmd_GoodMapList_f(gentity_t *ent)
-{
-	char	maplist[4096], mapname[MAX_QPATH], sorted[4096], buf[256] = {0};
-	int		i, maplen, numMaps;
-	char*	mapptr;
-	char*	p = NULL;
-	const unsigned int limit = 192;
-	unsigned int count = 0;
-	char sortedMaps[512][64];
-
-	//floodprotect because fuck this
-
-	numMaps = trap->FS_GetFileList("maps", ".bsp", maplist, sizeof(maplist));
-
-	for ( i = 0 ; i < numMaps ; i++ )
-		sorted[i] = maplist[i];
-
-	mapptr = maplist;
-
-	//qsort(mapptr, numMaps, sizeof(char *), compcstr);
-
-	Q_strcat( buf, sizeof( buf ), "^5Map list:\n   " );
-
-
-	for ( i = 0; i < numMaps; i++, mapptr += maplen+1) {
-		char *tmpMsg = NULL;
-
-		maplen = strlen(mapptr);
-		strcpy(mapname, "");
-		strcat(mapname, mapptr);
-
-		if (IsBaseMap(mapname))
-			continue;
-		p = strchr(mapname, '.');//Get rid of file extension
-		if (p)
-			*p = 0;
-
-		sortedMaps[i][64] = *mapname;
-
-		//tmpMsg = va( " ^3%-32s    ", mapname );
-
-		/*
-		Com_Printf("%s\n",mapname);
-
-		if ( count >= limit ) {//newline if we reach limit
-			tmpMsg = va( "\n   %s", tmpMsg );
-			count = 0;
-		}
-		if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
-			trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
-			buf[0] = '\0';
-		}
-
-
-		count += strlen( tmpMsg );
-		Q_strcat( buf, sizeof( buf ), tmpMsg );
-	}
-
-	for(i = 0; i <= numMaps;i++)
-		Com_Printf("sortedMaps[%i] = %s\n", i, sortedMaps[i]);
-
-	//trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
-	//trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
-}
-*/
-
-/*
-void Cmd_GoodMapList_f(gentity_t *ent)
-{
-	int i, size, numMaps, row = 0, col = 0;
-	char unsortedMaps[4096];// = {"bb:aa:cc:ee:dd:gg:nn:zz:ww:hh:xx"};
-	char sortedMaps[512][64]; //[Num elements][size of element]
-	char temp;
-
-	size = strlen(unsortedMaps);
-
-	numMaps = trap->FS_GetFileList("maps", ".bsp",	 unsortedMaps, sizeof(unsortedMaps));
-
-	Com_Printf("numMaps = %i\n", numMaps);
-
-	for (i = 0; i < numMaps; i++) {
-		temp = unsortedMaps[i];    
-		if(temp == '\0') {
-			sortedMaps[row][col]='\0';
-			row++;
-			col = 0;
-		}
-		else {
-			sortedMaps[row][col] = temp;
-			++col;
+	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+		if (!(g_fullAdminLevel.integer & (1 << A_LISTMAPS))) {
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
+			return;
 		}
 	}
+	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+		if (!(g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) {
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
+			return;
+		}
+	}
+	else {//Not logged in
+		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amListMaps).\n\"" );
+		return;
+	}
+
+	numMaps = trap->FS_GetFileList( "maps", ".bsp", unsortedMaps, sizeof(unsortedMaps) );
+	if (numMaps) {
+		if (numMaps > MAX_MAPS)
+			numMaps = MAX_MAPS;
+		mapname = unsortedMaps;
+		for (i = 0; i < numMaps; i++) {
+			len = strlen(mapname);
+			if (!Q_stricmp(mapname + len - 4, ".bsp"))
+				mapname[len-4] = '\0';
+			sortedMaps[i] = mapname;//String_Alloc(mapname);
+			mapname += len + 1;
+		}
 	
-	sortedMaps[row][col]='\0';
-	//d[row] contains a string between colons
-	for(i=0;i<=row;i++)
-		Com_Printf("unsortedMaps[%i] = %s\n", i, sortedMaps[i]);
+		qsort(sortedMaps, numMaps, sizeof(sortedMaps[0]), compcstr);
+		Q_strncpyz(buf, "   ", sizeof(buf));
 
-        qsort(sortedMaps, numMaps, sizeof(sortedMaps[0]), compacstr);
+		for (i = 0; i < numMaps; i++) {
+			char *tmpMsg = NULL;
 
-	Com_Printf("\n");
-
-	for(i=0;i<=row;i++)
-		Com_Printf("sortedMaps[%i] = %s\n", i, sortedMaps[i]);
- 
+			if (IsBaseMap(sortedMaps[i])) { //Ideally this could be done before the qsort, but that likes to crash it since it changes the array size or something
+				baseMapCount++;
+				continue;
+			}
+			tmpMsg = va( " ^3%-32s    ", sortedMaps[i]);
+			if (count >= limit) {
+				tmpMsg = va("\n   %s", tmpMsg);
+				count = 0;
+			}
+			if (strlen(buf) + strlen(tmpMsg) >= sizeof(buf)) {
+				trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+				buf[0] = '\0';
+			}
+			count += strlen( tmpMsg );
+			Q_strcat( buf, sizeof( buf ), tmpMsg );
+		}
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+		trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps - baseMapCount));
+	}
 }
-*/
-
-void Cmd_GoodMapList_f(gentity_t *ent)
-{
-        char        maplist[4096], mapname[MAX_QPATH], buf[256] = {0};
-        int                i, maplen, numMaps;
-        char*        mapptr;
-        char*        p = NULL;
-        const unsigned int limit = 192;
-        unsigned int count = 0;
-
-        //floodprotect because fuck this
-
-        numMaps = trap->FS_GetFileList("maps", ".bsp", maplist, sizeof(maplist));
-        mapptr = maplist;
-        Q_strcat( buf, sizeof( buf ), "^5Map list:\n   " );
-
-        for ( i = 0; i < numMaps; i++, mapptr += maplen+1) {
-                char *tmpMsg = NULL;
-
-                maplen = strlen(mapptr);
-                strcpy(mapname, "");
-                strcat(mapname, mapptr);
-
-                if (IsBaseMap(mapname))
-                        continue;
-                p = strchr(mapname, '.');//Get rid of file extension
-                if (p)
-                        *p = 0;
-                tmpMsg = va( " ^3%-32s    ", mapname );
-
-                if ( count >= limit ) {//newline if we reach limit
-                        tmpMsg = va( "\n   %s", tmpMsg );
-                        count = 0;
-                }
-                if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
-                        trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
-                        buf[0] = '\0';
-                }
-
-                count += strlen( tmpMsg );
-                Q_strcat( buf, sizeof( buf ), tmpMsg );
-        }
-        trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
-        trap->SendServerCommand(ent-g_entities, va("print \"^5%i maps listed\n\"", numMaps));
-}
-#endif
 
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
@@ -6355,6 +6257,7 @@ command_t commands[] = {
 	{ "amhug",				Cmd_EmoteHug_f,				CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "aminfo",				Cmd_Aminfo_f,				0 },
 	{ "amkick",				Cmd_Amkick_f,				0 },
+	{ "amlistmaps",			Cmd_AmMapList_f,			CMD_NOINTERMISSION },
 	{ "amlockteam",			Cmd_Amlockteam_f,			CMD_NOINTERMISSION },
 	{ "amlogin",			Cmd_Amlogin_f,				0 },
 	{ "amlogout",			Cmd_Amlogout_f,				0 },
@@ -6409,7 +6312,6 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "maplist",			Cmd_MapList_f,			CMD_NOINTERMISSION },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
