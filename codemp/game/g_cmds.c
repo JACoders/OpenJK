@@ -5022,7 +5022,6 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	Q_strncpyz(buf, "   ^3Game commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "amMOTD ");
-	Q_strcat(buf, sizeof(buf), "mapList ");
 	if (g_privateDuel.integer) {
 		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
 		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
@@ -5136,6 +5135,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amMap "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP))) 
 			Q_strcat(buf, sizeof(buf), "amMap "); 
+		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS))) 
+			Q_strcat(buf, sizeof(buf), "amListMaps "); 
+		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) 
+			Q_strcat(buf, sizeof(buf), "amListMaps "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
