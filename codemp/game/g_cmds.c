@@ -5706,16 +5706,15 @@ void Cmd_RaceTele_f(gentity_t *ent)
 	if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
 		vec3_t	angles = {0, 0, 0}, down, mins, maxs;
 		trace_t tr;
-		VectorSet(mins, -8, -8, 0);
-		VectorSet(maxs, 8, 8, 24);
+		VectorSet(mins, -15, -15, DEFAULT_MINS_2);
+		VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
 
-		VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
+		VectorCopy(ent->client->pers.telemarkOrigin, down);//Drop them to floor so they cant abuse?
 		down[2] -= 4096;
-		trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
-		ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
+		trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		angles[YAW] = ent->client->pers.telemarkAngle;
-		AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
+		AmTeleportPlayer( ent, tr.endpos, angles );
 	}
 	else
 		trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -5779,17 +5778,20 @@ void Cmd_Amtele_f(gentity_t *ent)
 			if (ent->client->ps.stats[STAT_RACEMODE]) {
 				trace_t tr;
 				vec3_t down, mins, maxs;
-				VectorSet(mins, -8, -8, 0);
-				VectorSet(maxs, 8, 8, 24);
+				VectorSet(mins, -15, -15, DEFAULT_MINS_2);
+				VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
 
-				VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
+				VectorCopy(ent->client->pers.telemarkOrigin, down);//Drop them to floor so they cant abuse?
 				down[2] -= 4096;
-				trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
-				ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
-			}
+				trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 
-			angles[YAW] = ent->client->pers.telemarkAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
+				angles[YAW] = ent->client->pers.telemarkAngle;
+				AmTeleportPlayer( ent, tr.endpos, angles );
+			}
+			else {
+				angles[YAW] = ent->client->pers.telemarkAngle;
+				AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
+			}
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
