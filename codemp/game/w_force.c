@@ -601,6 +601,11 @@ qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int 
 	int drain = overrideAmt ? overrideAmt :
 				forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower];
 
+	if (self->client->ps.stats[STAT_ONLYBHOP]) {
+		if ((forcePower == FP_SPEED) || (forcePower == FP_RAGE))
+			return qfalse;
+	}
+
 	if (self->client->ps.fd.forcePowersActive & (1 << forcePower))
 	{ //we're probably going to deactivate it..
 		return qtrue;
@@ -4325,6 +4330,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		break;
 	case FP_SPEED:
 		//This is handled in PM_WalkMove and PM_StepSlideMove
+		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+			WP_ForcePowerStop( self, forcePower );
+			break;
+		}
 		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS  
 			&& self->client->holdingObjectiveItem < ENTITYNUM_WORLD )
 		{
@@ -4373,6 +4382,10 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		if (self->health < 1)
 		{
 			WP_ForcePowerStop(self, forcePower);
+			break;
+		}
+		if (self->client->ps.stats[STAT_ONLYBHOP]) {
+			WP_ForcePowerStop( self, forcePower );
 			break;
 		}
 		if (self->client->ps.forceRageDrainTime < level.time)
