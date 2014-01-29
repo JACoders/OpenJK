@@ -5704,13 +5704,14 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		return;
 	}		
 	if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
-		vec3_t	angles = {0, 0, 0};
+		vec3_t	angles = {0, 0, 0}, down, mins, maxs;
 		trace_t tr;
-		vec3_t down;
+		VectorSet(mins, -8, -8, 0);
+		VectorSet(maxs, 8, 8, 24);
 
-		VectorCopy(pm->ps->origin, down);//Drop them to floor so they cant abuse?
+		VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
 		down[2] -= 4096;
-		pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+		trap->Trace(&tr, ent->client->ps.origin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
 		ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
 
 		angles[YAW] = ent->client->pers.telemarkAngle;
@@ -5775,14 +5776,15 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{ 
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
-			trace_t tr;
-			vec3_t down;
+			if (ent->client->ps.stats[STAT_RACEMODE]) {
+				trace_t tr;
+				vec3_t down, mins, maxs;
+				VectorSet(mins, -8, -8, 0);
+				VectorSet(maxs, 8, 8, 24);
 
-			if (ent->client->ps.stats[STAT_RACEMODE]) 
-			{
-				VectorCopy(pm->ps->origin, down);//Drop them to floor so they cant abuse?
+				VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
 				down[2] -= 4096;
-				pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+				trap->Trace(&tr, ent->client->ps.origin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
 				ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
 			}
 
