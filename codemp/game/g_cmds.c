@@ -907,10 +907,7 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 		}
 	}
 
-	G_LogPrintf ( "setteam:  %i %s %s\n",
-				  client - &level.clients[0],
-				  TeamName ( oldTeam ),
-				  TeamName ( client->sess.sessionTeam ) );
+	G_LogPrintf( "ChangeTeam: %i [%s] (%s) \"%s^7\" %s -> %s\n", (int)(client - level.clients), client->sess.IP, client->pers.guid, client->pers.netname, TeamName( oldTeam ), TeamName( client->sess.sessionTeam ) );
 }
 
 qboolean G_PowerDuelCheckFail(gentity_t *ent)
