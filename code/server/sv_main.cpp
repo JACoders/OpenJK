@@ -67,10 +67,10 @@ Converts newlines to "\n" so a line prints nicer
 */
 char	*SV_ExpandNewlines( char *in ) {
 	static	char	string[1024];
-	int		l;
+	size_t		l;
 
 	l = 0;
-	while ( *in && l < (int)(sizeof(string) - 3) ) {
+	while ( *in && l < sizeof(string) - 3 ) {
 		if ( *in == '\n' ) {
 			string[l++] = '\\';
 			string[l++] = 'n';

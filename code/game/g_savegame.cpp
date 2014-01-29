@@ -517,7 +517,7 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 	// save out any associated strings..
 	//
 	list<sstring_t>::iterator it = strList->begin();
-	for (unsigned int i=0; i<strList->size(); i++, ++it)
+	for (size_t i=0; i<strList->size(); i++, ++it)
 	{
 		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);
 	}

@@ -99,6 +99,17 @@ typedef enum {
 } clientState_t;
 
 
+// struct to hold demo data for a single demo
+typedef struct {
+	char		demoName[MAX_QPATH];
+	qboolean	demorecording;
+	qboolean	demowaiting;	// don't record until a non-delta message is received
+	fileHandle_t	demofile;
+	qboolean	isBot;
+	int			botReliableAcknowledge; // for bots, need to maintain a separate reliableAcknowledge to record server messages into the demo file
+} demoInfo_t;
+
+
 typedef struct client_s {
 	clientState_t	state;
 	char			userinfo[MAX_INFO_STRING];		// name, etc
@@ -156,6 +167,7 @@ typedef struct client_s {
 	int				oldServerTime;
 	qboolean		csUpdated[MAX_CONFIGSTRINGS];	
 
+	demoInfo_t		demo;
 } client_t;
 
 //=============================================================================
