@@ -5699,8 +5699,6 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 
 void Cmd_RaceTele_f(gentity_t *ent)
 {
-	vec3_t	angles = {0, 0, 0};
-
 	if (trap->Argc() != 1) {
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele to teleport to your telemark.\n\"" );
 		return;
