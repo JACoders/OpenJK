@@ -5711,7 +5711,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 
 		VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
 		down[2] -= 4096;
-		trap->Trace(&tr, ent->client->ps.origin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
+		trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
 		ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
 
 		angles[YAW] = ent->client->pers.telemarkAngle;
@@ -5784,7 +5784,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 				VectorCopy(ent->client->ps.origin, down);//Drop them to floor so they cant abuse?
 				down[2] -= 4096;
-				trap->Trace(&tr, ent->client->ps.origin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
+				trap->Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_SOLID, qfalse, 0, 0);
 				ent->client->pers.telemarkOrigin[2] = tr.endpos[2];
 			}
 
