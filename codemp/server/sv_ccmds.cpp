@@ -918,11 +918,11 @@ void SV_StopRecord_f( void ) {
 SV_DemoFilename
 ================== 
 */  
-void SV_DemoFilename( int number, char *fileName ) {
+void SV_DemoFilename( int number, char *fileName, int fileNameSize ) {
 	int		a,b,c,d;
 
 	if ( number < 0 || number > 9999 ) {
-		Com_sprintf( fileName, MAX_OSPATH, "demo9999" );
+		Com_sprintf( fileName, fileNameSize, "demo9999" );
 		return;
 	}
 
@@ -934,7 +934,7 @@ void SV_DemoFilename( int number, char *fileName ) {
 	number -= c*10;
 	d = number;
 
-	Com_sprintf( fileName, MAX_OSPATH, "demo%i%i%i%i"
+	Com_sprintf( fileName, fileNameSize, "demo%i%i%i%i"
 		, a, b, c, d );
 }
 
@@ -1012,7 +1012,7 @@ static void SV_Record_f( void ) {
 
 		// scan for a free demo name
 		for ( number = 0 ; number <= 9999 ; number++ ) {
-			SV_DemoFilename( number, cl->demo.demoName );
+			SV_DemoFilename( number, cl->demo.demoName, sizeof( cl->demo.demoName ) );
 			Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
 
 			len = FS_ReadFile( name, NULL );
