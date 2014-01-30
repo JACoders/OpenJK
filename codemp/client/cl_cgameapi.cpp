@@ -1672,7 +1672,7 @@ void CL_BindCGame( void ) {
 		cgi.Cmd_Argc							= Cmd_Argc;
 		cgi.Cmd_Args							= Cmd_ArgsBuffer;
 		cgi.Cmd_Argv							= Cmd_ArgvBuffer;
-		cgi.RemoveCommand						= Cmd_RemoveCommand;
+		cgi.RemoveCommand						= CGVM_Cmd_RemoveCommand;
 		cgi.SendClientCommand					= CL_AddReliableCommand2;
 		cgi.SendConsoleCommand					= Cbuf_AddText;
 		cgi.FS_Close							= FS_FCloseFile;
