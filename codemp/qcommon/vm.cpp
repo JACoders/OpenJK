@@ -10,6 +10,12 @@ static const char *vmNames[MAX_VM] = {
 	"ui"
 };
 
+const char *vmStrs[MAX_VM] = {
+	"GameVM",
+	"CGameVM",
+	"UIVM",
+};
+
 // VM slots are automatically allocated by VM_Create, and freed by VM_Free
 // The VM table should never be directly accessed from other files.
 

@@ -774,6 +774,10 @@ static void CGVM_Cvar_Set( const char *var_name, const char *value ) {
 	Cvar_VM_Set( var_name, value, VM_CGAME );
 }
 
+static void CGVM_Cmd_RemoveCommand( const char *cmd_name ) {
+	Cmd_VM_RemoveCommand( cmd_name, VM_CGAME );
+}
+
 // legacy syscall
 
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
@@ -912,7 +916,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_REMOVECOMMAND:
-		Cmd_RemoveCommand( (const char *)VMA(1) );
+		Cmd_VM_RemoveCommand( (const char *)VMA(1), VM_CGAME );
 		return 0;
 
 	case CG_SENDCLIENTCOMMAND:
