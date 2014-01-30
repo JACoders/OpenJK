@@ -3177,7 +3177,7 @@ static shader_t *FinishShader( void ) {
 		} 
 		else 
 		{
-			Com_Printf ( "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
+			Com_DPrintf ( "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 			memcpy(shader.lightmapIndex, lightmapsNone, sizeof(shader.lightmapIndex));
 			memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
 		}
