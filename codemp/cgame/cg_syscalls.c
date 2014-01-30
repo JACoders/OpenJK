@@ -3,7 +3,7 @@
 // cg_syscalls.c -- this file is only included when building a dll
 // cg_syscalls.asm is included instead when building a qvm
 #include "cg_local.h"
- 
+
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
 static void TranslateSyscalls( void );
@@ -28,7 +28,7 @@ void trap_Error( const char *fmt ) {
 	exit(1);
 }
 int trap_Milliseconds( void ) {
-	return Q_syscall( CG_MILLISECONDS ); 
+	return Q_syscall( CG_MILLISECONDS );
 }
 void trap_PrecisionTimer_Start( void **theNewTimer ) {
 	Q_syscall( CG_PRECISIONTIMER_START, theNewTimer );
@@ -36,7 +36,7 @@ void trap_PrecisionTimer_Start( void **theNewTimer ) {
 int trap_PrecisionTimer_End( void *theTimer ) {
 	return Q_syscall(CG_PRECISIONTIMER_END, theTimer);
 }
-void trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags ) {
+void trap_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags ) {
 	Q_syscall( CG_CVAR_REGISTER, vmCvar, varName, defaultValue, flags );
 }
 void trap_Cvar_Update( vmCvar_t *vmCvar ) {
@@ -436,7 +436,7 @@ void trap_FX_AddScheduledEffects( qboolean skyPortal ) {
 }
 void trap_FX_Draw2DEffects ( float screenXScale, float screenYScale ) {
 	Q_syscall( CG_FX_DRAW_2D_EFFECTS, PASSFLOAT(screenXScale), PASSFLOAT(screenYScale) );
-}	
+}
 int	trap_FX_InitSystem( refdef_t* refdef ) {
 	return Q_syscall( CG_FX_INIT_SYSTEM, refdef );
 }

@@ -5,7 +5,7 @@
 
 // g_public.h -- game module information visible to server
 
-#define Q3_INFINITE			16777216 
+#define Q3_INFINITE			16777216
 
 #define	GAME_API_VERSION	1
 
@@ -178,7 +178,7 @@ typedef enum //# bSet_e
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
-typedef struct parms_s {	
+typedef struct parms_s {
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
@@ -263,7 +263,7 @@ typedef struct T_G_ICARUS_SET_s {
 
 typedef struct T_G_ICARUS_LERP2POS_s {
 	int taskID;
-	int entID; 
+	int entID;
 	vec3_t origin;
 	vec3_t angles;
 	float duration;
@@ -749,7 +749,7 @@ typedef struct gameImport_s {
 	void		(*SnapVector)							( float *v );
 
 	// cvar
-	void		(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+	void		(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags );
 	void		(*Cvar_Set)								( const char *var_name, const char *value );
 	void		(*Cvar_Update)							( vmCvar_t *vmCvar );
 	int			(*Cvar_VariableIntegerValue)			( const char *var_name );
@@ -866,7 +866,7 @@ typedef struct gameImport_s {
 	void		(*Nav_FlagAllNodes)						( int newFlag );
 	qboolean	(*Nav_GetPathsCalculated)				( void );
 	void		(*Nav_SetPathsCalculated)				( qboolean newVal );
-	
+
 	// botlib
 	int			(*BotAllocateClient)					( void );
 	void		(*BotFreeClient)						( int clientNum );
@@ -959,7 +959,7 @@ typedef struct gameImport_s {
 	void		(*BotUserCommand)						( int clientNum, usercmd_t *ucmd );
 	void		(*BotUpdateWaypoints)					( int wpnum, wpobject_t **wps );
 	void		(*BotCalculatePaths)					( int rmg );
-	
+
 	// area awareness system
 	int			(*AAS_EnableRoutingArea)				( int areanum, int enable );
 	int			(*AAS_BBoxAreas)						( vec3_t absmins, vec3_t absmaxs, int *areas, int maxareas );
@@ -983,7 +983,7 @@ typedef struct gameImport_s {
 	int			(*AAS_AlternativeRouteGoals)			( vec3_t start, int startareanum, vec3_t goal, int goalareanum, int travelflags, void *altroutegoals, int maxaltroutegoals, int type );
 	int			(*AAS_PredictRoute)						( void *route, int areanum, vec3_t origin, int goalareanum, int travelflags, int maxareas, int maxtime, int stopevent, int stopcontents, int stoptfl, int stopareanum );
 	int			(*AAS_PointReachabilityAreaIndex)		( vec3_t point );
-	
+
 	// elementary action
 	void		(*EA_Say)								( int client, char *str );
 	void		(*EA_SayTeam)							( int client, char *str );
@@ -1011,7 +1011,7 @@ typedef struct gameImport_s {
 	void		(*EA_EndRegular)						( int client, float thinktime );
 	void		(*EA_GetInput)							( int client, float thinktime, void *input );
 	void		(*EA_ResetInput)						( int client );
-	
+
 	// botlib preprocessor
 	int			(*PC_LoadSource)						( const char *filename );
 	int			(*PC_FreeSource)						( int handle );
