@@ -1191,7 +1191,7 @@ void Com_Init( char *commandLine ) {
 
 	  // get dedicated here for proper hunk megs initialization
 	#ifdef DEDICATED
-		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_ROM);
+		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_INIT);
 		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
 	#else
 		//OJKFIXME: Temporarily disabled dedicated server when not using the dedicated server binary.
