@@ -694,12 +694,6 @@ void Cvar_Server_Set( const char *var_name, const char *value )
 	Cvar_Set2( var_name, value, CVAR_SERVER_CREATED, qtrue );
 }
 
-static const char *vmStrs[MAX_VM] = {
-	"GameVM",
-	"CGameVM",
-	"UIVM",
-};
-
 /*
 ============
 Cvar_VM_Set
