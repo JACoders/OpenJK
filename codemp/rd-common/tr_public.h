@@ -255,7 +255,7 @@ typedef struct refimport_s {
 	void			(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
 	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
 	cvar_t *		(*Cvar_Set)							( const char *var_name, const char *value );
-	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, int flags );
+	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, uint32_t flags );
 	cvar_t *		(*Cvar_SetValue)					( const char *name, float value );
 	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
@@ -267,9 +267,9 @@ typedef struct refimport_s {
 	void			(*FS_FreeFile)						( void *buffer );
 	void			(*FS_FreeFileList)					( char **fileList );
 	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	long				(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long			(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void			(*FS_FCloseFile)					( fileHandle_t f );
-	long				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	long			(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
 	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int				(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean		(*FS_FileExists)					( const char *file );
@@ -311,7 +311,7 @@ typedef struct refimport_s {
 
 	// ugly win32 backend
 	void *			(*GetWinVars)						( void ); //g_wv
-    
+
     // input event handling
 	void            (*IN_Init)                          ( void *windowData );
 	void            (*IN_Shutdown)                      ( void );

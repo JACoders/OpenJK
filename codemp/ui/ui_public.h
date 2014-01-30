@@ -213,9 +213,9 @@ typedef struct uiImport_s {
 	int				(*RealTime)								( qtime_t *qtime );
 	int				(*MemoryRemaining)						( void );
 
-	void			(*Cvar_Create)							( const char *var_name, const char *var_value, int flags );
+	void			(*Cvar_Create)							( const char *var_name, const char *var_value, uint32_t flags );
 	void			(*Cvar_InfoStringBuffer)				( int bit, char *buffer, int bufsize );
-	void			(*Cvar_Register)						( vmCvar_t *cvar, const char *var_name, const char *value, int flags );
+	void			(*Cvar_Register)						( vmCvar_t *cvar, const char *var_name, const char *value, uint32_t flags );
 	void			(*Cvar_Reset)							( const char *name );
 	void			(*Cvar_Set)								( const char *var_name, const char *value );
 	void			(*Cvar_SetValue)						( const char *var_name, float value );

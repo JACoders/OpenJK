@@ -20,7 +20,7 @@ typedef struct cvarTable_s {
 	char		*cvarName;
 	char		*defaultString;
 	void		(*update)( void );
-	int			cvarFlags;
+	uint32_t	cvarFlags;
 	qboolean	trackChange; // announce if value changes
 } cvarTable_t;
 
