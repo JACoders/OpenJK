@@ -238,6 +238,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	}
 }
 
+extern void ResetPlayerTimers(gentity_t *ent);
 //JAPRO - Serverside - New teleport Function - Start
 void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
@@ -247,14 +248,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		wasNoClip = qtrue;
 
 	player->client->noclip = qtrue;
-
-	player->client->pers.stats.startLevelTime = 0;
-	player->client->pers.stats.startTime = 0;//Dont let admins cheat on timers with this ;d
-	player->client->pers.stats.topSpeed = 0;
-	player->client->pers.stats.displacement = 0;
-	player->client->pers.stats.startTimeFlag = 0;
-	player->client->pers.stats.topSpeedFlag = 0;
-	player->client->pers.stats.displacementFlag = 0;
+	ResetPlayerTimers(player);
 
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event

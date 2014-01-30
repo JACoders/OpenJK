@@ -1170,10 +1170,8 @@ qboolean ValidRaceSettings(gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
 	if (!player->client)
 		return qfalse;
-
 	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
-
 	if (g_speed.integer != 250)
 		return qfalse;
 	if (g_gravity.integer != 800)
@@ -1184,30 +1182,23 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (g_jediVmerc.integer)
 		return qfalse;
-	//if (g_dodge.integer)//Have to check setting since player can cheat by doing this before the start line as a headstart :/
-		//return qfalse;
 	if (g_rampJump.integer)
 		return qfalse;
 	if (g_overBounce.integer)
 		return qfalse;
-	//if (!g_fixHighFPSAbuse.integer)//Should actually probly just force pmove_fixed, msec 8.. float? etc
-		//return qfalse;
 	if (g_startingItems.integer & (1 << HI_JETPACK))
 		return qfalse;
 	if (g_quakeStyleTeleport.integer)
 		return qfalse;
 	if (g_debugMelee.integer != 1)
 		return qfalse;
-	//if (g_forceRegenTime.integer < 50)//ehh
-		//return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
 
 	//type of roll?
 	//dmflags fall dmg?, max falldmg?
 	//g_forceClientUpdateRate?
-	//pmove?
-	//sv fps?
+	//sv_fps?
 
 	return qtrue;
 }
@@ -1257,7 +1248,7 @@ void TimerStart(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAP
 		return;
 
 	if (!target && trigger->noise_index) 
-		G_Sound( trigger->activator, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
+		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
 	player->client->pers.stats.startLevelTime = level.time;
 	player->client->pers.stats.startTime = trap->Milliseconds();
@@ -1288,7 +1279,7 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 			valid = qtrue;
 
 		if (!target && trigger->noise_index) 
-			G_Sound( trigger->activator, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
+			G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
 		if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
