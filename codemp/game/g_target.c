@@ -183,7 +183,7 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 #endif
 
 	G_ActivateBehavior(ent,BSET_USE);
-	if ( ( ent->spawnflags & 4 ) ) 
+	if ( ( ent->spawnflags & 4 ) )
 	{//private, to one client only
 		if (!activator || !activator->inuse)
 		{
@@ -368,7 +368,7 @@ void target_laser_think (gentity_t *self) {
 
 	if ( tr.entityNum ) {
 		// hurt it if we can
-		G_Damage ( &g_entities[tr.entityNum], self, self->activator, self->movedir, 
+		G_Damage ( &g_entities[tr.entityNum], self, self->activator, self->movedir,
 			tr.endpos, self->damage, DAMAGE_NO_KNOCKBACK, MOD_TARGET_LASER);
 	}
 
@@ -480,11 +480,11 @@ wait - set to -1 to use it only once
 */
 void target_relay_use (gentity_t *self, gentity_t *other, gentity_t *activator) {
 	qboolean ranscript = qfalse;
-	if ( ( self->spawnflags & 1 ) && activator->client 
+	if ( ( self->spawnflags & 1 ) && activator->client
 		&& activator->client->sess.sessionTeam != TEAM_RED ) {
 		return;
 	}
-	if ( ( self->spawnflags & 2 ) && activator->client 
+	if ( ( self->spawnflags & 2 ) && activator->client
 		&& activator->client->sess.sessionTeam != TEAM_BLUE ) {
 		return;
 	}
@@ -558,7 +558,7 @@ static void target_location_linkup(gentity_t *ent)
 	int i;
 	int n;
 
-	if (level.locationLinked) 
+	if (level.locationLinked)
 		return;
 
 	level.locationLinked = qtrue;
@@ -616,7 +616,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	{
 		return;
 	}
-	
+
 	//trap->Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 	self->count--;
 
@@ -634,7 +634,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		}
 		return;
 	}
-	
+
 	G_ActivateBehavior( self,BSET_USE );
 
 	if ( self->spawnflags & 128 )
@@ -654,7 +654,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		self->count = self->genericValue1;
 		if ( self->bounceCount > 0 )
 		{//-1 means bounce back forever
-			self->bounceCount--; 
+			self->bounceCount--;
 		}
 	}
 }
@@ -725,7 +725,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 		{
 			continue;
 		}
-		
+
 		if (t == self)
 		{
 //				trap->Printf ("WARNING: Entity used itself.\n");
@@ -757,7 +757,7 @@ void scriptrunner_run (gentity_t *self)
 {
 	/*
 	if (self->behaviorSet[BSET_USE])
-	{	
+	{
 		char	newname[MAX_FILENAME_LENGTH];
 
 		sprintf((char *) &newname, "%s/%s", Q3_SCRIPT_DIR, self->behaviorSet[BSET_USE] );

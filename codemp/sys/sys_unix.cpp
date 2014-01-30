@@ -51,7 +51,7 @@ int Sys_Milliseconds (bool baseTime)
 	}
 
 	curtime = (tp.tv_sec - sys_timeBase)*1000 + tp.tv_usec/1000;
-    
+
     static int sys_timeBase = curtime;
 	if (!baseTime)
 	{
@@ -139,7 +139,7 @@ void Sys_BeginProfiling( void ) {
 char *Sys_GetCurrentUser( void )
 {
 	struct passwd *p;
-    
+
 	if ( (p = getpwuid( getuid() )) == NULL ) {
 		return "player";
 	}
@@ -536,7 +536,7 @@ Sys_DefaultHomePath
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
-    
+
 	if( !*homePath && com_homepath != NULL )
 	{
 		if( ( p = getenv( "HOME" ) ) != NULL )
@@ -544,21 +544,21 @@ char *Sys_DefaultHomePath(void)
 			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
 			Q_strcat(homePath, sizeof(homePath),
                      "Library/Application Support/");
-            
+
 			if(com_homepath->string[0])
 				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
 			else
 				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
 		}
 	}
-    
+
 	return homePath;
 }
 #else
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
-    
+
 	if( !*homePath && com_homepath != NULL )
 	{
 		if( ( p = getenv( "XDG_DATA_HOME" ) ) != NULL )
@@ -583,7 +583,7 @@ char *Sys_DefaultHomePath(void)
 			return homePath;
 		}
 	}
-    
+
 	return homePath;
 }
 #endif

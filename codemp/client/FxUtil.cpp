@@ -21,7 +21,7 @@ SFxHelper		theFxHelper;
 
 int				activeFx = 0;
 int				drawnFx;
-qboolean		fxInitialized = qfalse;	
+qboolean		fxInitialized = qfalse;
 
 //-------------------------
 // FX_Free
@@ -74,7 +74,7 @@ void FX_Stop( void )
 // Preps system for use
 //-------------------------
 int	FX_Init( refdef_t* refdef )
-{ 
+{
 //	FX_Free( true );
 	if ( fxInitialized == qfalse )
 	{
@@ -168,14 +168,14 @@ void FX_Add( bool portal )
 {
 	int			i;
 	SEffectList	*ef;
-	
+
 	drawnFx = 0;
 
 	int numFx = activeFx;	//but stop when there can't be any more left!
 	for ( i = 0, ef = effectList; i < MAX_EFFECTS && numFx; i++, ef++ )
 	{
 		if ( ef->mEffect != 0)
-		{ 
+		{
 			--numFx;
 			if (portal != ef->mPortal)
 			{
@@ -183,10 +183,10 @@ void FX_Add( bool portal )
 			}
 			// Effect is active
 			if ( theFxHelper.mTime > ef->mKillTime )
-			{ 
+			{
 				// Clean up old effects, calling any death effects as needed
 				// this flag just has to be cleared otherwise death effects might not happen correctly
-				ef->mEffect->ClearFlags( FX_KILL_ON_IMPACT ); 
+				ef->mEffect->ClearFlags( FX_KILL_ON_IMPACT );
 				FX_FreeMember( ef );
 			}
 			else
@@ -237,13 +237,13 @@ void FX_AddPrimitive( CEffect **pEffect, int killTime )
 //-------------------------
 //  FX_AddParticle
 //-------------------------
-CParticle *FX_AddParticle( vec3_t org, vec3_t vel, vec3_t accel, float size1, float size2, float sizeParm, 
-							float alpha1, float alpha2, float alphaParm, 
+CParticle *FX_AddParticle( vec3_t org, vec3_t vel, vec3_t accel, float size1, float size2, float sizeParm,
+							float alpha1, float alpha2, float alphaParm,
 							vec3_t sRGB, vec3_t eRGB, float rgbParm,
 							float rotation, float rotationDelta,
 							vec3_t min, vec3_t max, float elasticity,
 							int deathID, int impactID,
-							int killTime, qhandle_t shader, int flags = 0, 
+							int killTime, qhandle_t shader, int flags = 0,
 							EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 							int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/ )
 {
@@ -338,7 +338,7 @@ CParticle *FX_AddParticle( vec3_t org, vec3_t vel, vec3_t accel, float size1, fl
 CLine *FX_AddLine( vec3_t start, vec3_t end, float size1, float size2, float sizeParm,
 									float alpha1, float alpha2, float alphaParm,
 									vec3_t sRGB, vec3_t eRGB, float rgbParm,
-									int killTime, qhandle_t shader, int flags = 0, 
+									int killTime, qhandle_t shader, int flags = 0,
 									EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 									int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/)
 {
@@ -424,7 +424,7 @@ CLine *FX_AddLine( vec3_t start, vec3_t end, float size1, float size2, float siz
 CElectricity *FX_AddElectricity( vec3_t start, vec3_t end, float size1, float size2, float sizeParm,
 								float alpha1, float alpha2, float alphaParm,
 								vec3_t sRGB, vec3_t eRGB, float rgbParm,
-								float chaos, int killTime, qhandle_t shader, int flags = 0, 
+								float chaos, int killTime, qhandle_t shader, int flags = 0,
 								EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 								int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/ )
 {
@@ -502,7 +502,7 @@ CElectricity *FX_AddElectricity( vec3_t start, vec3_t end, float size1, float si
 		// in the editor, fx may now be NULL?
 		if ( fx )
 		{
-			fx->Initialize(); 
+			fx->Initialize();
 		}
 	}
 
@@ -513,14 +513,14 @@ CElectricity *FX_AddElectricity( vec3_t start, vec3_t end, float size1, float si
 //-------------------------
 //  FX_AddTail
 //-------------------------
-CTail *FX_AddTail( vec3_t org, vec3_t vel, vec3_t accel, 
-							float size1, float size2, float sizeParm, 
+CTail *FX_AddTail( vec3_t org, vec3_t vel, vec3_t accel,
+							float size1, float size2, float sizeParm,
 							float length1, float length2, float lengthParm,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t sRGB, vec3_t eRGB, float rgbParm,
-							vec3_t min, vec3_t max, float elasticity, 
+							vec3_t min, vec3_t max, float elasticity,
 							int deathID, int impactID,
-							int killTime, qhandle_t shader, int flags = 0, 
+							int killTime, qhandle_t shader, int flags = 0,
 							EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 							int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/ )
 {
@@ -620,13 +620,13 @@ CTail *FX_AddTail( vec3_t org, vec3_t vel, vec3_t accel,
 //-------------------------
 //  FX_AddCylinder
 //-------------------------
-CCylinder *FX_AddCylinder( vec3_t start, vec3_t normal, 
+CCylinder *FX_AddCylinder( vec3_t start, vec3_t normal,
 							float size1s, float size1e, float size1Parm,
 							float size2s, float size2e, float size2Parm,
 							float length1, float length2, float lengthParm,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
-							int killTime, qhandle_t shader, int flags, 
+							int killTime, qhandle_t shader, int flags,
 							EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 							int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/,
 							qboolean traceEnd)
@@ -735,15 +735,15 @@ CCylinder *FX_AddCylinder( vec3_t start, vec3_t normal,
 //-------------------------
 //  FX_AddEmitter
 //-------------------------
-CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel, 
+CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel,
 								float size1, float size2, float sizeParm,
 								float alpha1, float alpha2, float alphaParm,
 								vec3_t rgb1, vec3_t rgb2, float rgbParm,
 								vec3_t angs, vec3_t deltaAngs,
-								vec3_t min, vec3_t max, float elasticity, 
+								vec3_t min, vec3_t max, float elasticity,
 								int deathID, int impactID, int emitterID,
 								float density, float variance,
-								int killTime, qhandle_t model, int flags = 0, 
+								int killTime, qhandle_t model, int flags = 0,
 								EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 								int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/ )
 {
@@ -835,7 +835,7 @@ CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel,
 //-------------------------
 CLight *FX_AddLight( vec3_t org, float size1, float size2, float sizeParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
-							int killTime, int flags = 0, 
+							int killTime, int flags = 0,
 							EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 							int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/)
 {
@@ -908,7 +908,7 @@ COrientedParticle *FX_AddOrientedParticle( vec3_t org, vec3_t norm, vec3_t vel, 
 						float rotation, float rotationDelta,
 						vec3_t min, vec3_t max, float bounce,
 						int deathID, int impactID,
-						int killTime, qhandle_t shader, int flags = 0, 
+						int killTime, qhandle_t shader, int flags = 0,
 						EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/,
 						int iGhoul2/*0*/, int entNum/*-1*/, int modelNum/*-1*/, int boltNum/*-1*/ )
 {
@@ -998,7 +998,7 @@ COrientedParticle *FX_AddOrientedParticle( vec3_t org, vec3_t norm, vec3_t vel, 
 //-------------------------
 //  FX_AddPoly
 //-------------------------
-CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts, 
+CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 							vec3_t vel, vec3_t accel,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
@@ -1071,11 +1071,11 @@ CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 //-------------------------
 //  FX_AddFlash
 //-------------------------
-CFlash *FX_AddFlash( vec3_t origin, 
+CFlash *FX_AddFlash( vec3_t origin,
 					float size1, float size2, float sizeParm,
 					float alpha1, float alpha2, float alphaParm,
 					vec3_t sRGB, vec3_t eRGB, float rgbParm,
-					int killTime, qhandle_t shader, int flags, 
+					int killTime, qhandle_t shader, int flags,
 					EMatImpactEffect matImpactFX /*MATIMPACTFX_NONE*/, int fxParm /*-1*/ )
 {
 	if ( theFxHelper.mFrameTime < 1 )
@@ -1141,7 +1141,7 @@ CFlash *FX_AddFlash( vec3_t origin,
 		fx->SetFlags( flags );
 
 //		fx->SetSTScale( 1.0f, 1.0f );
-		
+
 		fx->Init();
 
 		FX_AddPrimitive( (CEffect**)&fx, killTime );
@@ -1153,7 +1153,7 @@ CFlash *FX_AddFlash( vec3_t origin,
 //-------------------------
 //  FX_AddBezier
 //-------------------------
-CBezier *FX_AddBezier( vec3_t start, vec3_t end, 
+CBezier *FX_AddBezier( vec3_t start, vec3_t end,
 								vec3_t control1, vec3_t control1Vel,
 								vec3_t control2, vec3_t control2Vel,
 								float size1, float size2, float sizeParm,

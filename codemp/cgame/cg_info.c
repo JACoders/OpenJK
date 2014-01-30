@@ -70,7 +70,7 @@ void CG_LoadingClient( int clientNum ) {
 		}
 
 		Com_sprintf( iconName, MAX_QPATH, "models/players/%s/icon_%s.tga", model, skin );
-		
+
 		loadingPlayerIcons[loadingPlayerIconCount] = trap->R_RegisterShaderNoMip( iconName );
 		if ( !loadingPlayerIcons[loadingPlayerIconCount] ) {
 			Com_sprintf( iconName, MAX_QPATH, "models/players/characters/%s/icon_%s.tga", model, skin );
@@ -116,7 +116,7 @@ void CG_DrawInformation( void ) {
 	qhandle_t	levelshot;
 	char		buf[1024];
 	int			iPropHeight = 18;	// I know, this is total crap, but as a post release asian-hack....  -Ste
-	
+
 	info = CG_ConfigString( CS_SERVERINFO );
 	sysInfo = CG_ConfigString( CS_SYSTEMINFO );
 
@@ -137,10 +137,10 @@ void CG_DrawInformation( void ) {
 	// screen to write into
 	if ( cg.infoScreenText[0] ) {
 		const char *psLoading = CG_GetStringEdString("MENUS", "LOADING_MAPNAME");
-		CG_DrawProportionalString( 320, 128-32, va(/*"Loading... %s"*/ psLoading, cg.infoScreenText), UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );		
+		CG_DrawProportionalString( 320, 128-32, va(/*"Loading... %s"*/ psLoading, cg.infoScreenText), UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 	} else {
 		const char *psAwaitingSnapshot = CG_GetStringEdString("MENUS", "AWAITING_SNAPSHOT");
-		CG_DrawProportionalString( 320, 128-32, /*"Awaiting snapshot..."*/psAwaitingSnapshot, UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );			
+		CG_DrawProportionalString( 320, 128-32, /*"Awaiting snapshot..."*/psAwaitingSnapshot, UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 	}
 
 	// draw info string information
@@ -203,7 +203,7 @@ void CG_DrawInformation( void ) {
 	s = BG_GetGametypeString( cgs.gametype );
 	CG_DrawProportionalString( 320, y, s, UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 	y += iPropHeight;
-		
+
 	if (cgs.gametype != GT_SIEGE)
 	{
 		value = atoi( Info_ValueForKey( info, "timelimit" ) );
@@ -253,7 +253,7 @@ void CG_DrawInformation( void ) {
 
 		value = atoi( Info_ValueForKey( info, "g_maxForceRank" ) );
 		if ( value && !valueNOFP && (value < NUM_FORCE_MASTERY_LEVELS) ) {
-			char fmStr[1024]; 
+			char fmStr[1024];
 
 			trap->SE_GetStringTextString("MP_INGAME_MAXFORCERANK",fmStr, sizeof(fmStr));
 
@@ -291,7 +291,7 @@ void CG_DrawInformation( void ) {
 	// Display the rules based on type
 		y += iPropHeight;
 	switch ( cgs.gametype ) {
-	case GT_FFA:					
+	case GT_FFA:
 		CG_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_FFA_1")), UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 		break;

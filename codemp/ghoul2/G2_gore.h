@@ -29,8 +29,8 @@ struct SGoreSurface
 	int			mGoreGrowStartTime;
 	int			mGoreGrowEndTime;    // set this to -1 to disable growing
 	//curscale = (curtime-mGoreGrowStartTime)*mGoreGrowFactor + mGoreGrowOffset;
-	float		mGoreGrowFactor;	
-	float		mGoreGrowOffset;	
+	float		mGoreGrowFactor;
+	float		mGoreGrowOffset;
 };
 
 class CGoreSet
@@ -82,25 +82,25 @@ public:
 	int settleFrame;
 
 	//at some point I'll want to make VM callbacks in here. For now I am just doing nothing.
-	virtual void EffectorCollision(const SRagDollEffectorCollision &data) 
+	virtual void EffectorCollision(const SRagDollEffectorCollision &data)
 	{
 	//	assert(0); // you probably meant to override this
 	}
-	virtual void RagDollBegin() 
+	virtual void RagDollBegin()
 	{
 	//	assert(0); // you probably meant to override this
 	}
-	virtual void RagDollSettled() 
+	virtual void RagDollSettled()
 	{
 	//	assert(0); // you probably meant to override this
 	}
 
-	virtual void Collision() 
+	virtual void Collision()
 	{
 	//	assert(0); // you probably meant to override this
 		// we had a collision, uhh I guess call SetRagDoll RP_DEATH_COLLISION
-	}  
-	
+	}
+
 #ifdef _DEBUG
 	virtual void DebugLine(const vec3_t p1,const vec3_t p2,bool bbox) {assert(0);}
 #endif
@@ -136,7 +136,7 @@ public:
 	int startFrame;
 	int endFrame;
 
-	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum 
+	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum
 
 	qboolean CallRagDollBegin; // a return value, means that we are now begininng ragdoll and the NPC stuff needs to happen
 

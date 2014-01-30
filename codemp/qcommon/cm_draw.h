@@ -54,24 +54,24 @@ public:
 #define IMAGE_SIZE(width,height) ((width)*(height)*(PIX32_SIZE))
 
 
-inline CPixel32 AVE_PIX (CPixel32 x, CPixel32 y) 
-	{ CPixel32 t; t.r = (byte)(((int)x.r + (int)y.r)>>1); 
-				  t.g = (byte)(((int)x.g + (int)y.g)>>1); 
-				  t.b = (byte)(((int)x.b + (int)y.b)>>1); 
+inline CPixel32 AVE_PIX (CPixel32 x, CPixel32 y)
+	{ CPixel32 t; t.r = (byte)(((int)x.r + (int)y.r)>>1);
+				  t.g = (byte)(((int)x.g + (int)y.g)>>1);
+				  t.b = (byte)(((int)x.b + (int)y.b)>>1);
 				  t.a = (byte)(((int)x.a + (int)y.a)>>1); return t;}
 
-inline CPixel32 ALPHA_PIX (CPixel32 x, CPixel32 y, long alpha, long inv_alpha) 
-	{ CPixel32 t; t.r = (byte)((x.r*alpha + y.r*inv_alpha)>>8); 
-				  t.g = (byte)((x.g*alpha + y.g*inv_alpha)>>8); 
-				  t.b = (byte)((x.b*alpha + y.b*inv_alpha)>>8); 
+inline CPixel32 ALPHA_PIX (CPixel32 x, CPixel32 y, long alpha, long inv_alpha)
+	{ CPixel32 t; t.r = (byte)((x.r*alpha + y.r*inv_alpha)>>8);
+				  t.g = (byte)((x.g*alpha + y.g*inv_alpha)>>8);
+				  t.b = (byte)((x.b*alpha + y.b*inv_alpha)>>8);
 //				  t.a = (byte)((x.a*alpha + y.a*inv_alpha)>>8);  return t;}
 				  t.a = y.a;  return t;}
 
-inline CPixel32 LIGHT_PIX (CPixel32 p, long light) 
-{ CPixel32 t; 
-  t.r = (byte)CLAMP(((p.r * light)>>10) + p.r, 0, 255); 
-  t.g = (byte)CLAMP(((p.g * light)>>10) + p.g, 0, 255); 
-  t.b = (byte)CLAMP(((p.b * light)>>10) + p.b, 0, 255); 
+inline CPixel32 LIGHT_PIX (CPixel32 p, long light)
+{ CPixel32 t;
+  t.r = (byte)CLAMP(((p.r * light)>>10) + p.r, 0, 255);
+  t.g = (byte)CLAMP(((p.g * light)>>10) + p.g, 0, 255);
+  t.b = (byte)CLAMP(((p.b * light)>>10) + p.b, 0, 255);
   t.a = p.a;  return t;}
 
 // Colors are 32-bit RGBA
@@ -91,8 +91,8 @@ public: // static drawing context - static so we set only ONCE for many draw cal
 	static	long*	row_off;				// Table for quick Y calculations
 
 private:
-	void BlitClip(long& dstX, long& dstY, 
-		 		  long& width, long& height, 
+	void BlitClip(long& dstX, long& dstY,
+		 		  long& width, long& height,
 				  long& srcX, long& srcY);
 
 protected:
@@ -116,7 +116,7 @@ public:
 	static bool	SetBufferSize(long width,long height,long stride_len);
 
 	// call this to free the table for quick y calcs before the program ends
-	static void CleanUp(void) 
+	static void CleanUp(void)
 		{if (row_off) delete [] row_off; row_off=NULL; buf_width=0; buf_height=0;}
 
 	// set a pixel at (x,y) to color (no clipping)
@@ -180,7 +180,7 @@ public:
 
 	// draw a solid colored line, no clipping
 	void				DrawLineNC(long x1, long y1, long x2, long y2, CPixel32 color);
-	
+
 	// draw a solid color line
 	void				DrawLine(long x1, long y1, long x2, long y2, CPixel32 color)
 		{	if (ClipLine(x1,y1,x2,y2)) DrawLineNC(x1,y1,x2,y2,color);}
@@ -200,7 +200,7 @@ public:
 
 	// draw a filled rectangle, no clipping
 	void				DrawRectNC(long ulx, long uly, long width, long height,CPixel32 color);
-	
+
 	// draw a filled rectangle
 	void				DrawRect(long ulx, long uly, long width, long height, CPixel32 color);
 
@@ -216,27 +216,27 @@ public:
 	// draw a box (unfilled rectangle)
 	void				DrawBoxAve(long ulx, long uly, long width, long height, CPixel32 color);
 
-	// draw a circle with fill and edge colors 
+	// draw a circle with fill and edge colors
 	void				DrawCircle(long xc, long yc, long r, CPixel32 edge, CPixel32 fill);
 
-	// draw a circle with fill and edge colors averaged with dest 
+	// draw a circle with fill and edge colors averaged with dest
 	void				DrawCircleAve(long xc, long yc, long r, CPixel32 edge, CPixel32 fill);
 
-	// draw a polygon (complex) with fill and edge colors 
+	// draw a polygon (complex) with fill and edge colors
 	void				DrawPolygon(long nvert, Point *point, CPixel32 edge, CPixel32 fill);
 
 	// simple blit function
-	void				BlitNC(long dstX, long dstY, long dstWidth, long dstHeight, 
+	void				BlitNC(long dstX, long dstY, long dstWidth, long dstHeight,
 							   CPixel32* srcImage, long srcX, long srcY, long srcStride);
 
-	void				Blit(long dstX, long dstY, long dstWidth, long dstHeight, 
+	void				Blit(long dstX, long dstY, long dstWidth, long dstHeight,
 							   CPixel32* srcImage, long srcX, long srcY, long srcStride);
 
 	// blit image times color
-	void				BlitColor(long dstX, long dstY, long dstWidth, long dstHeight, 
+	void				BlitColor(long dstX, long dstY, long dstWidth, long dstHeight,
 								  CPixel32* srcImage, long srcX, long srcY, long srcStride, CPixel32 color);
 
-	void				Emboss(long dstX, long dstY, long width, long height, 
+	void				Emboss(long dstX, long dstY, long width, long height,
 							    CPixel32* clrImage, long clrX, long clrY, long clrStride);
 };
 

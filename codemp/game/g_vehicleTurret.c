@@ -8,11 +8,11 @@ extern gentity_t *WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir
 
 extern void G_VehMuzzleFireFX( gentity_t *ent, gentity_t *broadcaster, int muzzlesFired );
 //-----------------------------------------------------
-void VEH_TurretCheckFire( Vehicle_t *pVeh, 
+void VEH_TurretCheckFire( Vehicle_t *pVeh,
 						 gentity_t *parent,
 						 //gentity_t *turretEnemy,
-						 turretStats_t *turretStats, 
-						 vehWeaponInfo_t *vehWeapon, 
+						 turretStats_t *turretStats,
+						 vehWeaponInfo_t *vehWeapon,
 						 int turretNum, int curMuzzle )
 {
 	// if it's time to fire and we have an enemy, then gun 'em down!  pushDebounce time controls next fire time
@@ -20,7 +20,7 @@ void VEH_TurretCheckFire( Vehicle_t *pVeh,
 	{//invalid muzzle?
 		return;
 	}
-	
+
 	if ( pVeh->m_iMuzzleWait[curMuzzle] >= level.time )
 	{//can't fire yet
 		return;
@@ -30,7 +30,7 @@ void VEH_TurretCheckFire( Vehicle_t *pVeh,
 	{//no ammo, can't fire
 		return;
 	}
-	
+
 	//if ( turretEnemy )
 	{
 		//FIXME: check to see if I'm aiming generally where I want to
@@ -85,11 +85,11 @@ void VEH_TurretAnglesToEnemy( Vehicle_t *pVeh, int curMuzzle, float fSpeed, gent
 }
 
 //-----------------------------------------------------
-qboolean VEH_TurretAim( Vehicle_t *pVeh, 
-						 gentity_t *parent, 
+qboolean VEH_TurretAim( Vehicle_t *pVeh,
+						 gentity_t *parent,
 						 gentity_t *turretEnemy,
-						 turretStats_t *turretStats, 
-						 vehWeaponInfo_t *vehWeapon, 
+						 turretStats_t *turretStats,
+						 vehWeaponInfo_t *vehWeapon,
 						 int turretNum, int curMuzzle, vec3_t desiredAngles )
 //-----------------------------------------------------
 {
@@ -107,7 +107,7 @@ qboolean VEH_TurretAim( Vehicle_t *pVeh,
 		aimCorrect = qtrue;
 		// ...then we'll calculate what new aim adjustments we should attempt to make this frame
 		// Aim at enemy
-		VEH_TurretAnglesToEnemy( pVeh, curMuzzle, vehWeapon->fSpeed, turretEnemy, turretStats->bAILead, desiredAngles ); 
+		VEH_TurretAnglesToEnemy( pVeh, curMuzzle, vehWeapon->fSpeed, turretEnemy, turretStats->bAILead, desiredAngles );
 	}
 	//subtract out the vehicle's angles to get the relative desired alignment
 	AnglesSubtract( desiredAngles, pVeh->m_vOrientation, desiredAngles );
@@ -189,9 +189,9 @@ qboolean VEH_TurretAim( Vehicle_t *pVeh,
 }
 
 //-----------------------------------------------------
-static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh, 
-						 gentity_t *parent, 
-						 turretStats_t *turretStats, 
+static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
+						 gentity_t *parent,
+						 turretStats_t *turretStats,
 						 int turretNum, int curMuzzle )
 //-----------------------------------------------------
 {
@@ -213,9 +213,9 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 		trace_t	tr;
 		target = entity_list[i];
 
-		if ( target == parent 
-			|| !target->takedamage 
-			|| target->health <= 0 
+		if ( target == parent
+			|| !target->takedamage
+			|| target->health <= 0
 			|| ( target->flags & FL_NOTARGET ))
 		{
 			continue;
@@ -257,7 +257,7 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 			if ( target->client )
 			{
 				if ( target->client->sess.sessionTeam == parent->client->sess.sessionTeam )
-				{ 
+				{
 					// A bot/client/NPC we don't want to shoot
 					continue;
 				}
@@ -334,14 +334,14 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 	vehWeaponInfo_t	*vehWeapon = NULL;
 	gentity_t	*turretEnemy = NULL;
 	int			curMuzzle = 0;//?
-	
+
 
 	if ( !turretStats || !turretStats->iAmmoMax )
 	{//not a valid turret
 		return;
 	}
-	
-	if ( turretStats->passengerNum 
+
+	if ( turretStats->passengerNum
 		&& pVeh->m_iNumPassengers >= turretStats->passengerNum )
 	{//the passenger that has control of this turret is on the ship
 		VEH_TurretObeyPassengerControl( pVeh, parent, turretNum );
@@ -359,7 +359,7 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 	if ( pVeh->turretStatus[turretNum].enemyEntNum < ENTITYNUM_WORLD )
 	{
 		turretEnemy = &g_entities[pVeh->turretStatus[turretNum].enemyEntNum];
-		if ( turretEnemy->health < 0 
+		if ( turretEnemy->health < 0
 			|| !turretEnemy->inuse
 			|| turretEnemy == ((gentity_t*)pVeh->m_pPilot)//enemy became my pilot///?
 			|| turretEnemy == parent

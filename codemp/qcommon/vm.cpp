@@ -64,7 +64,7 @@ Dlls will call this directly
 
   For speed, we just grab 15 arguments, and don't worry about exactly
    how many the syscall actually needs; the extra is thrown away.
- 
+
 ============
 */
 intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
@@ -72,14 +72,14 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
   // rcg010206 - see commentary above
   intptr_t args[16];
   va_list ap;
-  
+
   args[0] = arg;
-  
+
   va_start(ap, arg);
   for (size_t i = 1; i < ARRAY_LEN (args); i++)
     args[i] = va_arg(ap, intptr_t);
   va_end(ap);
-  
+
   return currentVM->legacy.syscall( args );
 #else // original id code
 	return currentVM->legacy.syscall( &arg );

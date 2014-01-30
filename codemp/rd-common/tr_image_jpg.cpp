@@ -102,8 +102,8 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 
 	/* Step 4: set parameters for decompression */
 
- 
-	/* Make sure it always converts images to RGB color space. This will 
+
+	/* Make sure it always converts images to RGB color space. This will
 	* automatically convert 8-bit greyscale images to RGB as well.	*/
 	cinfo.out_color_space = JCS_RGB;
 
@@ -119,20 +119,20 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	* output image dimensions available, as well as the output colormap
 	* if we asked for color quantization.
 	* In this example, we need to make an output work buffer of the right size.
-	*/ 
+	*/
 	/* JSAMPLEs per row in output buffer */
 	pixelcount = cinfo.output_width * cinfo.output_height;
 
-	if(!cinfo.output_width || !cinfo.output_height 
-		|| ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height 
-		|| pixelcount > 0x1FFFFFFF || cinfo.output_components != 3 
-		) 
-	{ 
-		// Free the memory to make sure we don't leak memory 
-		ri->FS_FreeFile (fbuffer.v); 
-		jpeg_destroy_decompress(&cinfo); 
+	if(!cinfo.output_width || !cinfo.output_height
+		|| ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height
+		|| pixelcount > 0x1FFFFFFF || cinfo.output_components != 3
+		)
+	{
+		// Free the memory to make sure we don't leak memory
+		ri->FS_FreeFile (fbuffer.v);
+		jpeg_destroy_decompress(&cinfo);
 
-		Com_Printf("LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
+		Com_Printf("LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename,
 			cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
 		return;
 	}
@@ -165,9 +165,9 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	// Expand from RGB to RGBA
 	sindex = pixelcount * cinfo.output_components;
 	dindex = memcount;
- 
+
 	do {
-		buf[--dindex] = 255; 
+		buf[--dindex] = 255;
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
@@ -329,7 +329,7 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 	cinfo.err = jpeg_std_error(&jerr);
 	cinfo.err->error_exit = R_JPGErrorExit;
 	cinfo.err->output_message = R_JPGOutputMessage;
-	
+
 	/* Now we can initialize the JPEG compression object. */
 	jpeg_create_compress(&cinfo);
 

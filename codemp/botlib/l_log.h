@@ -6,7 +6,7 @@
  * desc:		log file
  *
  * $Archive: /source/code/botlib/l_log.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $

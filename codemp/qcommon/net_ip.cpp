@@ -185,7 +185,7 @@ static qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 			return qfalse;
 		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
 	}
-	
+
 	return qtrue;
 }
 
@@ -196,11 +196,11 @@ Sys_StringToAdr
 */
 qboolean Sys_StringToAdr( const char *s, netadr_t *a ) {
 	struct sockaddr sadr;
-	
+
 	if ( !Sys_StringToSockaddr( s, &sadr ) ) {
 		return qfalse;
 	}
-	
+
 	SockadrToNetadr( &sadr, a );
 	return qtrue;
 }

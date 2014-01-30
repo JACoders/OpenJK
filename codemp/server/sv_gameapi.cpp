@@ -427,7 +427,7 @@ static void SV_GameDropClient( int clientNum, const char *reason ) {
 	if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 		return;
 	}
-	SV_DropClient( svs.clients + clientNum, reason );	
+	SV_DropClient( svs.clients + clientNum, reason );
 }
 
 static void SV_GameSendServerCommand( int clientNum, const char *text ) {
@@ -437,7 +437,7 @@ static void SV_GameSendServerCommand( int clientNum, const char *text ) {
 		if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 			return;
 		}
-		SV_SendServerCommand( svs.clients + clientNum, "%s", text );	
+		SV_SendServerCommand( svs.clients + clientNum, "%s", text );
 	}
 }
 
@@ -461,7 +461,7 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	clipHandle_t	h;
 	vec3_t			mins, maxs;
 
-	if (!name) 
+	if (!name)
 	{
 		Com_Error( ERR_DROP, "SV_SetBrushModel: NULL" );
 	}
@@ -605,11 +605,11 @@ static const char *SV_SetActiveSubBSP( int index ) {
 
 static qboolean SV_GetEntityToken( char *buffer, int bufferSize ) {
 	char *s;
-	
+
 	if ( sv.mLocalSubBSPIndex == -1 ) {
 		s = COM_Parse( (const char **)&sv.entityParsePoint );
 		Q_strncpyz( buffer, s, bufferSize );
-		if ( !sv.entityParsePoint && !s[0] ) 
+		if ( !sv.entityParsePoint && !s[0] )
 			return qfalse;
 		else
 			return qtrue;
@@ -617,7 +617,7 @@ static qboolean SV_GetEntityToken( char *buffer, int bufferSize ) {
 	else {
 		s = COM_Parse( (const char **)&sv.mLocalSubBSPEntityParsePoint);
 		Q_strncpyz( buffer, s, bufferSize );
-		if ( !sv.mLocalSubBSPEntityParsePoint && !s[0] ) 
+		if ( !sv.mLocalSubBSPEntityParsePoint && !s[0] )
 			return qfalse;
 		else
 			return qtrue;
@@ -1804,7 +1804,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return SV_PrecisionTimerEnd( (void *)args[1] );
 
 	case G_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
 		return 0;
 
 	case G_CVAR_UPDATE:
@@ -1983,14 +1983,14 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	case G_ROFF_CLEAN:
 		return SV_ROFF_Clean();
-	
+
 	case G_ROFF_UPDATE_ENTITIES:
 		SV_ROFF_UpdateEntities();
 		return 0;
 
 	case G_ROFF_CACHE:
 		return SV_ROFF_Cache( (char *)VMA(1) );
-		
+
 	case G_ROFF_PLAY:
 		return SV_ROFF_Play( args[1], args[2], (qboolean)args[3] );
 
@@ -2599,7 +2599,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[2];
-			
+
 			return re->G2API_SetSkin(&g2[modelIndex], args[3], args[4]);
 		}
 
@@ -2618,7 +2618,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return re->G2API_SetBoneAngles(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
 							 (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8],
 							 (qhandle_t *)VMA(9), args[10], args[11] );
-	
+
 	case G_G2_PLAYANIM:
 		return re->G2API_SetBoneAnim(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], args[5],
 								args[6], VMF(7), args[8], VMF(9), args[10]);
@@ -3238,6 +3238,6 @@ void SV_RestartGame( void ) {
 		Com_Error( ERR_DROP, "VM_Restart on game failed" );
 		return;
 	}
-	
+
 	SV_InitGame( qtrue );
 }

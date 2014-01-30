@@ -5,7 +5,7 @@
  *
  * desc:		Clientgame-side module for Siege gametype.
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.5 $
  *
  *****************************************************************************/
@@ -175,7 +175,7 @@ void CG_InitSiegeMode(void)
 
 	levelname[i] = '\0'; //kill the ".bsp"
 
-	Com_sprintf(levelname, sizeof(levelname), "%s.siege\0", levelname); 
+	Com_sprintf(levelname, sizeof(levelname), "%s.siege\0", levelname);
 
 	if (!levelname[0])
 	{
@@ -406,7 +406,7 @@ void CG_InitSiegeMode(void)
 					trap->R_RegisterSkin(useSkinName);
 				}
 			}
-			
+
 			j++;
 		}
 		i++;
@@ -757,7 +757,7 @@ void CG_SiegeBriefingDisplay(int team, int dontshow)
 	{ //do up to 16 objectives I suppose
 		//Get the value for this objective on this team
 		//Now set the cvar for the menu to display.
-		
+
 		//primary = (CG_SiegeGetObjectiveFinal(useTeam, i)>-1)?qtrue:qfalse;
 		primary = (CG_SiegeGetObjectiveFinal(useTeam, i)>0)?qtrue:qfalse;
 

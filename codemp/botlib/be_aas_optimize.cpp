@@ -6,7 +6,7 @@
  *				been calculated, just dumps all the faces, edges and vertexes
  *
  * $Archive: /MissionPack/code/botlib/be_aas_optimize.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 5 $
  * $Modtime: 11/22/00 8:50a $
  * $Date: 11/22/00 8:55a $

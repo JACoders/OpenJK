@@ -5,7 +5,7 @@
  * desc:		weapon AI
  *
  * $Archive: /MissionPack/code/botlib/be_ai_weap.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 6 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $

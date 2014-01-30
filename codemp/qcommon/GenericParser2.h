@@ -98,7 +98,7 @@ private:
 	CGPGroup			*mParent;
 	bool				mWriteable;
 
-	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList, 
+	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList,
 					   CGPObject **lastObject);
 
 public:
@@ -107,10 +107,10 @@ public:
 
 	CGPGroup	*GetParent(void) { return mParent; }
 	CGPGroup	*GetNext(void) { return (CGPGroup *)mNext; }
-	int			GetNumSubGroups(void); 
+	int			GetNumSubGroups(void);
 	int			GetNumPairs(void);
 
-	void		Clean(void); 
+	void		Clean(void);
 	CGPGroup	*Duplicate(CTextPool **textPool = 0, CGPGroup *initParent = 0);
 
 	void		SetWriteable(const bool writeable) { mWriteable = writeable; }

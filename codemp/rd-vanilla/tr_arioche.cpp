@@ -68,8 +68,8 @@ void R_RMGInit(void)
 			{
 				gfog->tcScale = 1.0f;
 			}
-			gfog->colorInt = ColorBytes4 ( gfog->parms.color[0], 
-										  gfog->parms.color[1], 
+			gfog->colorInt = ColorBytes4 ( gfog->parms.color[0],
+										  gfog->parms.color[1],
 										  gfog->parms.color[2], 1.0f );
 		}
 	}

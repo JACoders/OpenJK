@@ -6,7 +6,7 @@
  * desc:		botlib vars
  *
  * $Archive: /source/code/botlib/l_libvar.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $

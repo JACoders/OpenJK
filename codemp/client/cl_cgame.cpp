@@ -234,7 +234,7 @@ void CL_ConfigstringModified( void ) {
 
 	// leave the first 0 for uninitialized strings
 	cl.gameState.dataCount = 1;
-		
+
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
 		if ( i == index ) {
 			dup = s;
@@ -556,7 +556,7 @@ void CL_InitCGame( void ) {
 	re->EndRegistration();
 
 	// make sure everything is paged in
-//	if (!Sys_LowPhysicalMemory()) 
+//	if (!Sys_LowPhysicalMemory())
 	{
 		Com_TouchMemory();
 	}
@@ -704,7 +704,7 @@ void CL_FirstSnapshot( void ) {
 		Cbuf_AddText( cl_activeAction->string );
 		Cvar_Set( "activeAction", "" );
 	}
-	
+
 	Sys_BeginProfiling();
 }
 
@@ -735,7 +735,7 @@ void CL_SetCGameTime( void ) {
 		if ( cls.state != CA_ACTIVE ) {
 			return;
 		}
-	}	
+	}
 
 	// if we have gotten to this point, cl.snap is guaranteed to be valid
 	if ( !cl.snap.valid ) {
@@ -761,10 +761,10 @@ void CL_SetCGameTime( void ) {
 	} else
 	{
 		// cl_timeNudge is a user adjustable cvar that allows more
-		// or less latency to be added in the interest of better 
+		// or less latency to be added in the interest of better
 		// smoothness or better responsiveness.
 		int tn;
-		
+
 		tn = cl_timeNudge->integer;
 #ifdef _DEBUG
 		if (tn<-900) {

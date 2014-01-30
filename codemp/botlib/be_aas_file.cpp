@@ -5,7 +5,7 @@
  * desc:		AAS file loading/writing
  *
  * $Archive: /MissionPack/code/botlib/be_aas_file.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 5 $
  * $Modtime: 5/16/01 2:36p $
  * $Date: 5/16/01 2:41p $
@@ -483,7 +483,7 @@ int AAS_WriteAASLump(fileHandle_t fp, aas_header_t *h, int lumpnum, void *data, 
 	aas_lump_t *lump;
 
 	lump = &h->lumps[lumpnum];
-	
+
 	lump->fileofs = LittleLong(AAS_WriteAASLump_offset);	//LittleLong(ftell(fp));
 	lump->filelen = LittleLong(length);
 

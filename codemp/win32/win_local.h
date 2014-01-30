@@ -47,8 +47,8 @@ void SNDDMA_Activate( qboolean bAppActive );
 int  SNDDMA_InitDS ();
 
 typedef struct WinVars_s {
-	
-	HINSTANCE		reflib_library;		// Handle to refresh DLL 
+
+	HINSTANCE		reflib_library;		// Handle to refresh DLL
 	qboolean		reflib_active;
 
 	HWND			hWnd;

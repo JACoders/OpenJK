@@ -7,7 +7,7 @@
  * desc:		pre compiler
  *
  * $Archive: /MissionPack/code/botlib/l_precomp.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 20 $
  * $Modtime: 5/15/01 4:10a $
  * $Date: 5/15/01 4:10a $
@@ -1068,7 +1068,7 @@ int PC_ReadLine(source_t *source, token_t *token)
 	do
 	{
 		if (!PC_ReadSourceToken(source, token)) return qfalse;
-		
+
 		if (token->linescrossed > crossline)
 		{
 			PC_UnreadSourceToken(source, token);
@@ -1135,7 +1135,7 @@ int PC_Directive_undef(source_t *source)
 			if (define->flags & DEFINE_FIXED)
 			{
 				SourceWarning(source, "can't undef %s", token.string);
-			} //end if			
+			} //end if
 			else
 			{
 				if (lastdefine) lastdefine->hashnext = define->hashnext;
@@ -1460,8 +1460,8 @@ void PC_RemoveAllGlobalDefines(void)
 				define = globaldefines[i];
 				globaldefines[i] = globaldefines[i]->globalnext;
 				PC_FreeDefine(define);
-			} 
-		} 
+			}
+		}
 	}
 #else //DEFINEHASHING
 	for (define = globaldefines; define; define = globaldefines)
@@ -1535,8 +1535,8 @@ void PC_AddGlobalDefinesToSource(source_t *source)
 			PC_AddDefineToHash(define, source->definehash);
 
 			define = define->globalnext;
-		} 
-	} 
+		}
+	}
 #else //DEFINEHASHING
 	define_t* newdefine;
 	for (define = globaldefines; define; define = define->next)
@@ -1781,7 +1781,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 				AllocValue(v);
 #if DEFINEHASHING
 				if (PC_FindHashedDefine(source->definehash, t->string))
-#else			
+#else
 				if (PC_FindDefine(source->defines, t->string))
 #endif //DEFINEHASHING
 				{
@@ -1909,7 +1909,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 							break;
 						} //end if
 					} //end case
-					
+
 					case P_MUL:
 					case P_DIV:
 					case P_MOD:
@@ -3142,7 +3142,7 @@ void FreeSource(source_t *source)
 		define = source->definehash[i];
 		while(define)
 		{
-			nextdefine = define->hashnext; 			
+			nextdefine = define->hashnext;
 
 			if ( !(define->flags & DEFINE_GLOBAL) )
 			{

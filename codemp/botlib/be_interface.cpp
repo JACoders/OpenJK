@@ -5,7 +5,7 @@
  * desc:		bot library interface
  *
  * $Archive: /MissionPack/code/botlib/be_interface.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 16 $
  * $Modtime: 5/16/01 2:36p $
  * $Date: 5/16/01 2:41p $
@@ -119,7 +119,7 @@ qboolean BotLibSetup(char *str)
 int Export_BotLibSetup(void)
 {
 	int		errnum;
-	
+
 	botDeveloper = LibVarGetValue("bot_developer");
   memset( &botlibglobals, 0, sizeof(botlibglobals) ); // bk001207 - init
 	//initialize byte swapping (litte endian etc.)
@@ -145,7 +145,7 @@ int Export_BotLibSetup(void)
 		}
 		else
 			Com_sprintf(logfilename, sizeof(logfilename), "botlib.log");
-	
+
 		Log_Open(logfilename);
 	}
 	//
@@ -622,7 +622,7 @@ int BotExportTest(int parm0, char *parm1, vec3_t parm2, vec3_t parm3)
 		{
 			AAS_ShowFace(face - aasworld.faces);
 		} //end if
-		
+
 		AAS_DrawPlaneCross(bsptrace.endpos,
 									bsptrace.plane.normal,
 									bsptrace.plane.dist + bsptrace.exp_dist,
@@ -708,7 +708,7 @@ static void Init_AAS_Export( aas_export_t *aas ) {
 	aas->AAS_PredictClientMovement = AAS_PredictClientMovement;
 }
 
-  
+
 /*
 ============
 Init_EA_Export

@@ -150,14 +150,14 @@ void Sys_Error( const char *error, ... )
 {
 	va_list argptr;
 	char    string[1024];
-    
+
 	va_start (argptr,error);
 	Q_vsnprintf (string, sizeof(string), error, argptr);
 	va_end (argptr);
-    
+
 	//Sys_ErrorDialog( string );
 	Sys_Print( string );
-    
+
 	Sys_Exit( 3 );
 }
 
@@ -201,44 +201,44 @@ from executable path, then fs_basepath.
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle = NULL;
-	
+
 	if(useSystemLib)
 		Com_Printf("Trying to load \"%s\"...\n", name);
-	
+
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
 		const char *topDir;
 		char libPath[MAX_OSPATH];
-        
+
 		topDir = Sys_BinaryPath();
-        
+
 		if(!*topDir)
 			topDir = ".";
-        
+
 		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
 		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
-        
+
 		if(!(dllhandle = Sys_LoadLibrary(libPath)))
 		{
 			const char *basePath = Cvar_VariableString("fs_basepath");
-			
+
 			if(!basePath || !*basePath)
 				basePath = ".";
-			
+
 			if(FS_FilenameCompare(topDir, basePath))
 			{
 				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
 				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
 				dllhandle = Sys_LoadLibrary(libPath);
 			}
-			
+
 			if(!dllhandle)
 			{
 				Com_Printf("Loading \"%s\" failed\n", name);
 			}
 		}
 	}
-	
+
 	return dllhandle;
 }
 
@@ -270,7 +270,7 @@ void *Sys_LoadMachOBundle( const char *name )
 /*
  =================
  Sys_LoadGameDll
- 
+
  Used to load a development dll instead of a virtual machine
  =================
  */
@@ -296,7 +296,7 @@ void *Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ..
 #if 0
 	libHandle = Sys_LoadLibrary( filename );
 #endif
-    
+
 #ifdef MACOS_X
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
@@ -412,7 +412,7 @@ void *Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) )
 #if 0
 	libHandle = Sys_LoadLibrary( filename );
 #endif
-    
+
 #ifdef MACOS_X
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
@@ -534,7 +534,7 @@ void    Sys_ConfigureFPU() { // bk001213 - divide by zero
 /*
  =================
  Sys_StripAppBundle
- 
+
  Discovers if passed dir is suffixed with the directory structure of a Mac OS X
  .app bundle. If it is, the .app directory structure is stripped off the end and
  the result is returned. If not, dir is returned untouched.
@@ -543,7 +543,7 @@ void    Sys_ConfigureFPU() { // bk001213 - divide by zero
 char *Sys_StripAppBundle( char *dir )
 {
 	static char cwd[MAX_OSPATH];
-	
+
 	Q_strncpyz(cwd, dir, sizeof(cwd));
 	if(strcmp(Sys_Basename(cwd), "MacOS"))
 		return dir;
@@ -573,10 +573,10 @@ int main ( int argc, char* argv[] )
 
 	// done before Com/Sys_Init since we need this for error output
 	//Sys_CreateConsole();
-    
+
 	// no abort/retry/fail errors
 	//SetErrorMode (SEM_FAILCRITICALERRORS);
-    
+
 	// get the initial time base
 	Sys_Milliseconds();
 
@@ -588,7 +588,7 @@ int main ( int argc, char* argv[] )
 
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
-    
+
 	// Concatenate the command line for passing to Com_Init
 	for( i = 1; i < argc; i++ )
 	{
@@ -605,9 +605,9 @@ int main ( int argc, char* argv[] )
 	}
 
 	Com_Init (commandLine);
-    
+
 	NET_Init();
-    
+
 #ifdef DEDICATED
     fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
 #else
@@ -618,7 +618,7 @@ int main ( int argc, char* argv[] )
 		Sys_ShowConsole(0, qfalse);
 	}
 #endif
-    
+
 	// main game loop
 	while (1)
 	{
@@ -627,10 +627,10 @@ int main ( int argc, char* argv[] )
 #endif
 		// make sure mouse and joystick are only called once a frame
 		IN_Frame();
-        
+
 		// run the game
 		Com_Frame();
 	}
-    
+
 	// never gets here
 }

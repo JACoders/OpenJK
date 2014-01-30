@@ -30,12 +30,12 @@ qhandle_t CG_StatusHandle(int task) {
 		h = cgs.media.campShader;
 		break;
 	case TEAMTASK_RETRIEVE :
-		h = cgs.media.retrieveShader; 
+		h = cgs.media.retrieveShader;
 		break;
 	case TEAMTASK_ESCORT :
-		h = cgs.media.escortShader; 
+		h = cgs.media.escortShader;
 		break;
-	default : 
+	default :
 		h = cgs.media.assaultShader;
 		break;
 	}
@@ -64,7 +64,7 @@ float CG_GetValue(int ownerDraw) {
 		return ps->stats[STAT_ARMOR];
 		break;
 	case CG_PLAYER_AMMO_VALUE:
-		if ( cent->currentState.weapon ) 
+		if ( cent->currentState.weapon )
 		{
 			return ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
 		}
@@ -118,8 +118,8 @@ qboolean CG_YourTeamHasFlag(void) {
 	return qfalse;
 }
 
-// THINKABOUTME: should these be exclusive or inclusive.. 
-// 
+// THINKABOUTME: should these be exclusive or inclusive..
+//
 qboolean CG_OwnerDrawVisible(int flags) {
 
 	if (flags & CG_SHOW_TEAMINFO) {
@@ -215,10 +215,10 @@ const char *CG_GetGameStatusText(void) {
 	if (cgs.gametype == GT_POWERDUEL)
 	{
 		s = "";
-	}	
+	}
 	else if ( cgs.gametype < GT_TEAM)
 	{
-		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
+		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR )
 		{
 			char sPlaceWith[256];
 			trap->SE_GetStringTextString("MP_INGAME_PLACE_WITH", sPlaceWith, sizeof(sPlaceWith));
@@ -243,7 +243,7 @@ extern int MenuFontToHandle(int iMenuFont);
 
 // maxX param is initially an X limit, but is also used as feedback. 0 = text was clipped to fit within, else maxX = next pos
 //
-static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t color, const char* text, float adjust, int limit, int iMenuFont) 
+static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t color, const char* text, float adjust, int limit, int iMenuFont)
 {
 	qboolean bIsTrailingPunctuation;
 
@@ -264,12 +264,12 @@ static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4
 		char *psOutLastGood = psOut;
 		unsigned int uiLetter;
 
-		while (*psText && (x + trap->R_Font_StrLenPixels(sTemp, iFontIndex, scale)<=*maxX) 
+		while (*psText && (x + trap->R_Font_StrLenPixels(sTemp, iFontIndex, scale)<=*maxX)
 			&& psOut < &sTemp[sizeof(sTemp)-1]	// sanity
 		)
 		{
 			int iAdvanceCount;
-			psOutLastGood = psOut;			
+			psOutLastGood = psOut;
 
 			uiLetter = trap->R_AnyLanguage_ReadCharFromString(psText, &iAdvanceCount, &bIsTrailingPunctuation);
 			psText += iAdvanceCount;
@@ -293,7 +293,7 @@ static void CG_Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4
 	{
 		// whole text fits fine, so print it all...
 		//
-		*maxX = x + iPixelLen;	// feedback the next position, as the caller expects		
+		*maxX = x + iPixelLen;	// feedback the next position, as the caller expects
 		CG_Text_Paint(x, y, scale, color, text, adjust, limit, ITEM_TEXTSTYLE_NORMAL, iMenuFont);
 	}
 }
@@ -364,7 +364,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 			CG_DrawPic( xx, y + 1, PIC_WIDTH - 2, PIC_WIDTH - 2, cgs.media.heartShader );
 
 			//Com_sprintf (st, sizeof(st), "%3i %3i", ci->health,	ci->armor);
-			//CG_Text_Paint(xx, y + text_y, scale, hcolor, st, 0, 0); 
+			//CG_Text_Paint(xx, y + text_y, scale, hcolor, st, 0, 0);
 
 			// draw weapon icon
 			xx += PIC_WIDTH + 1;
@@ -392,7 +392,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 
 
 
-			CG_Text_Paint_Limit(&maxx, xx, y + text_y, scale, color, ci->name, 0, 0, FONT_MEDIUM); 
+			CG_Text_Paint_Limit(&maxx, xx, y + text_y, scale, color, ci->name, 0, 0, FONT_MEDIUM);
 
 			p = CG_GetLocationString(CG_ConfigString(CS_LOCATIONS+ci->location));
 			if (!p || !*p) {
@@ -402,7 +402,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 			xx += leftOver / 3 + 2;
 			maxx = rect->w - 4;
 
-			CG_Text_Paint_Limit(&maxx, xx, y + text_y, scale, color, p, 0, 0, FONT_MEDIUM); 
+			CG_Text_Paint_Limit(&maxx, xx, y + text_y, scale, color, p, 0, 0, FONT_MEDIUM);
 			y += text_y + 2;
 			if ( y + text_y + 2 > rect->y + rect->h ) {
 				break;
@@ -453,10 +453,10 @@ void CG_DrawTeamSpectators(rectDef_t *rect, float scale, vec4_t color, qhandle_t
 		}
 
 		maxX = rect->x + rect->w - 2;
-		CG_Text_Paint_Limit(&maxX, cg.spectatorPaintX, rect->y + rect->h - 3, scale, color, &cg.spectatorList[cg.spectatorOffset], 0, 0, FONT_MEDIUM); 
+		CG_Text_Paint_Limit(&maxX, cg.spectatorPaintX, rect->y + rect->h - 3, scale, color, &cg.spectatorList[cg.spectatorOffset], 0, 0, FONT_MEDIUM);
 		if (cg.spectatorPaintX2 >= 0) {
 			float maxX2 = rect->x + rect->w - 2;
-			CG_Text_Paint_Limit(&maxX2, cg.spectatorPaintX2, rect->y + rect->h - 3, scale, color, cg.spectatorList, 0, cg.spectatorOffset, FONT_MEDIUM); 
+			CG_Text_Paint_Limit(&maxX2, cg.spectatorPaintX2, rect->y + rect->h - 3, scale, color, cg.spectatorList, 0, cg.spectatorOffset, FONT_MEDIUM);
 		}
 		if (cg.spectatorOffset && maxX > 0) {
 			// if we have an offset ( we are skipping the first part of the string ) and we fit the string
@@ -530,7 +530,7 @@ void CG_DrawMedal(int ownerDraw, rectDef_t *rect, float scale, vec4_t color, qha
 	if (text) {
 		color[3] = 1.0;
 		value = CG_Text_Width(text, scale, 0);
-		CG_Text_Paint(rect->x + (rect->w - value) / 2, rect->y + rect->h + 10 , scale, color, text, 0, 0, 0, FONT_MEDIUM); 
+		CG_Text_Paint(rect->x + (rect->w - value) / 2, rect->y + rect->h + 10 , scale, color, text, 0, 0, 0, FONT_MEDIUM);
 	}
 	trap->R_SetColor(NULL);
 
@@ -857,7 +857,7 @@ void CG_ShowResponseHead(void) {
 void CG_RunMenuScript(char **args) {
 }
 
-qboolean CG_DeferMenuScript (char **args) 
+qboolean CG_DeferMenuScript (char **args)
 {
 	return qfalse;
 }

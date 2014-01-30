@@ -75,7 +75,7 @@ void TIMER_Clear2( gentity_t *ent )
 
 
 //New C "lookup" func.
-//Returns existing timer in array if 
+//Returns existing timer in array if
 gtimer_t *TIMER_GetNew(int num, const char *identifier)
 {
 	gtimer_t *p = g_timers[num];
@@ -116,9 +116,9 @@ gtimer_t *TIMER_GetExisting(int num, const char *identifier)
 
 		p = p->next;
 	}
-	
+
 	return NULL;
-}	
+}
 
 /*
 -------------------------
@@ -214,8 +214,8 @@ void TIMER_RemoveHelper( int num, gtimer_t *timer )
 -------------------------
 TIMER_Done2
 
-Returns false if timer has been 
-started but is not done...or if 
+Returns false if timer has been
+started but is not done...or if
 timer was never started
 -------------------------
 */

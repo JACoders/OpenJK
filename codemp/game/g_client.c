@@ -419,7 +419,7 @@ void JMSaberTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	other->client->ps.zoomMode = 0;
 	G_AddEvent(other, EV_BECOME_JEDIMASTER, 0);
 
-	// Track the jedi master 
+	// Track the jedi master
 	trap->SetConfigstring ( CS_CLIENT_JEDIMASTER, va("%i", other->s.number ) );
 
 	if (g_spawnInvulnerability.integer)
@@ -552,7 +552,7 @@ qboolean SpotWouldTelefrag( gentity_t *spot ) {
 	return qfalse;
 }
 
-qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest ) 
+qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest )
 {
 	int			i, num;
 	int			touch[MAX_GENTITIES];
@@ -563,7 +563,7 @@ qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest )
 	VectorAdd( dest, mover->r.maxs, maxs );
 	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
 
-	for (i=0 ; i<num ; i++) 
+	for (i=0 ; i<num ; i++)
 	{
 		hit = &g_entities[touch[i]];
 		if ( hit == mover )
@@ -672,8 +672,8 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 	spot = NULL;
 
 	//in Team DM, look for a team start spot first, if any
-	if ( level.gametype == GT_TEAM 
-		&& team != TEAM_FREE 
+	if ( level.gametype == GT_TEAM
+		&& team != TEAM_FREE
 		&& team != TEAM_SPECTATOR )
 	{
 		char *classname = NULL;
@@ -894,7 +894,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, t
 		if ( spot == nearestSpot ) {
 			// last try
 			spot = SelectRandomDeathmatchSpawnPoint ( );
-		}		
+		}
 	}
 
 	// find a single player start spot
@@ -1008,7 +1008,7 @@ void BodySink( gentity_t *ent ) {
 		// the body ques are never actually freed, they are just unlinked
 		trap->UnlinkEntity( (sharedEntity_t *)ent );
 		ent->physicsObject = qfalse;
-		return;	
+		return;
 	}
 //	ent->nextthink = level.time + 100;
 //	ent->s.pos.trBase[2] -= 1;
@@ -1370,7 +1370,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 	// discard leading asterisk's (fail raven for using * as a skipnotify)
 	// apparently .* causes the issue too so... derp
 	//for(; *in == '*'; in++);
-	
+
 	for(; *in && outpos < outSize - 1; in++)
 	{
 		out[outpos] = *in;
@@ -1401,7 +1401,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 			if ( Q_IsColorStringExt( &out[outpos-1] ) )
 			{
 				colorlessLen--;
-				
+
 #if 0
 				if ( ColorIndex( *in ) == 0 )
 				{// Disallow color black in names to prevent players from getting advantage playing in front of black backgrounds
@@ -1421,7 +1421,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 			spaces = ats = 0;
 			colorlessLen++;
 		}
-		
+
 		outpos++;
 	}
 
@@ -1507,7 +1507,7 @@ qboolean G_SaberModelSetup(gentity_t *ent)
 				}
 
 				//Copy it into the main instance
-				trap->G2API_CopySpecificGhoul2Model(ent->client->weaponGhoul2[i], 0, ent->ghoul2, i+1); 
+				trap->G2API_CopySpecificGhoul2Model(ent->client->weaponGhoul2[i], 0, ent->ghoul2, i+1);
 			}
 		}
 		else
@@ -1525,8 +1525,8 @@ qboolean G_SaberModelSetup(gentity_t *ent)
 ===========
 SetupGameGhoul2Model
 
-There are two ghoul2 model instances per player (actually three).  One is on the clientinfo (the base for the client side 
-player, and copied for player spawns and for corpses).  One is attached to the centity itself, which is the model acutally 
+There are two ghoul2 model instances per player (actually three).  One is on the clientinfo (the base for the client side
+player, and copied for player spawns and for corpses).  One is attached to the centity itself, which is the model acutally
 animated and rendered by the system.  The final is the game ghoul2 model.  This is animated by pmove on the server, and
 is used for determining where the lightsaber should be, and for per-poly collision tests.
 ===========
@@ -1864,7 +1864,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 			}
 		}
 	}
-	
+
 	if (ent->client->ps.weapon == WP_SABER || ent->s.number < MAX_CLIENTS)
 	{ //a player or NPC saber user
 		trap->G2API_AddBolt(ent->ghoul2, 0, "*r_hand");
@@ -1899,7 +1899,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		{
 			if (g2SaberInstance)
 			{
-				trap->G2API_CopySpecificGhoul2Model(g2SaberInstance, 0, ent->ghoul2, 1); 
+				trap->G2API_CopySpecificGhoul2Model(g2SaberInstance, 0, ent->ghoul2, 1);
 			}
 		}
 	}
@@ -2120,20 +2120,20 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	if ( client->pers.connected == CON_CONNECTED )
 	{
-		if ( strcmp( oldname, client->pers.netname ) ) 
+		if ( strcmp( oldname, client->pers.netname ) )
 		{
 			if ( client->pers.netnameTime > level.time  )
 			{
 				trap->SendServerCommand( clientNum, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NONAMECHANGE")) );
 
 				Info_SetValueForKey( userinfo, "name", oldname );
-				trap->SetUserinfo( clientNum, userinfo );			
+				trap->SetUserinfo( clientNum, userinfo );
 				Q_strncpyz( client->pers.netname, oldname, sizeof( client->pers.netname ) );
 				Q_strncpyz( client->pers.netname_nocolor, oldname, sizeof( client->pers.netname_nocolor ) );
 				Q_StripColor( client->pers.netname_nocolor );
 			}
 			else
-			{				
+			{
 				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 				G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 				client->pers.netnameTime = level.time + 5000;
@@ -2712,7 +2712,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	{
 		if ( level.gametype == GT_SIEGE && (!gSiegeRoundBegun || gSiegeRoundEnded) )
 			SetTeamQuick( ent, TEAM_SPECTATOR, qfalse );
-        
+
 		// locate ent at a spawn point
 		ClientSpawn( ent );
 	}
@@ -2927,7 +2927,7 @@ tryTorso:
 
 		self->client->torsoAnimExecute = torsoAnim;
 		self->client->torsoLastFlip = self->client->ps.torsoFlip;
-		
+
 		setTorso = qtrue;
 	}
 
@@ -3177,21 +3177,21 @@ void ClientSpawn(gentity_t *ent) {
 	// do it before setting health back up, so farthest
 	// ranging doesn't count this client
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		spawnPoint = SelectSpectatorSpawnPoint ( 
+		spawnPoint = SelectSpectatorSpawnPoint (
 						spawn_origin, spawn_angles);
 	} else if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
 		// all base oriented team games use the CTF spawn points
-		spawnPoint = SelectCTFSpawnPoint ( 
-						client->sess.sessionTeam, 
-						client->pers.teamState.state, 
+		spawnPoint = SelectCTFSpawnPoint (
+						client->sess.sessionTeam,
+						client->pers.teamState.state,
 						spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 	}
 	else if (level.gametype == GT_SIEGE)
 	{
 		spawnPoint = SelectSiegeSpawnPoint (
 						client->siegeClass,
-						client->sess.sessionTeam, 
-						client->pers.teamState.state, 
+						client->sess.sessionTeam,
+						client->pers.teamState.state,
 						spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 	}
 	else {
@@ -3200,7 +3200,7 @@ void ClientSpawn(gentity_t *ent) {
 			spawnPoint = SelectDuelSpawnPoint(client->sess.duelTeam, client->ps.origin, spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 		}
 		else if (level.gametype == GT_DUEL)
-		{	// duel 
+		{	// duel
 			spawnPoint = SelectDuelSpawnPoint(DUELTEAM_SINGLE, client->ps.origin, spawn_origin, spawn_angles, !!(ent->r.svFlags & SVF_BOT));
 		}
 		else
@@ -3211,8 +3211,8 @@ void ClientSpawn(gentity_t *ent) {
 				spawnPoint = SelectInitialSpawnPoint( spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
 			} else {
 				// don't spawn near existing origin if possible
-				spawnPoint = SelectSpawnPoint ( 
-					client->ps.origin, 
+				spawnPoint = SelectSpawnPoint (
+					client->ps.origin,
 					spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
 			}
 		}
@@ -3354,7 +3354,7 @@ void ClientSpawn(gentity_t *ent) {
 	ent->waterlevel = 0;
 	ent->watertype = 0;
 	ent->flags = 0;
-	
+
 	VectorCopy (playerMins, ent->r.mins);
 	VectorCopy (playerMaxs, ent->r.maxs);
 	client->ps.crouchheight = CROUCH_MAXS_2;
@@ -3375,8 +3375,8 @@ void ClientSpawn(gentity_t *ent) {
 
 
 
-	if ( level.gametype != GT_HOLOCRON 
-		&& level.gametype != GT_JEDIMASTER 
+	if ( level.gametype != GT_HOLOCRON
+		&& level.gametype != GT_JEDIMASTER
 		&& !HasSetSaberOnly()
 		&& !AllForceDisabled( g_forcePowerDisable.integer )
 		&& g_jediVmerc.integer )
@@ -3386,12 +3386,12 @@ void ClientSpawn(gentity_t *ent) {
 			if ( level.numPlayingClients > 0 )
 			{//already someone in the game
 				int forceTeam = TEAM_SPECTATOR;
-				for ( i = 0 ; i < level.maxclients ; i++ ) 
+				for ( i = 0 ; i < level.maxclients ; i++ )
 				{
 					if ( level.clients[i].pers.connected == CON_DISCONNECTED ) {
 						continue;
 					}
-					if ( level.clients[i].sess.sessionTeam == TEAM_BLUE || level.clients[i].sess.sessionTeam == TEAM_RED ) 
+					if ( level.clients[i].sess.sessionTeam == TEAM_BLUE || level.clients[i].sess.sessionTeam == TEAM_RED )
 					{//in-game
 						if ( WP_HasForcePowers( &level.clients[i].ps ) )
 						{//this side is using force
@@ -3543,7 +3543,7 @@ void ClientSpawn(gentity_t *ent) {
 
 				if (m >= WP_BRYAR_PISTOL)
 				{ //Max his ammo out for all the weapons he has.
-					if ( level.gametype == GT_SIEGE 
+					if ( level.gametype == GT_SIEGE
 						&& m == WP_ROCKET_LAUNCHER )
 					{//don't give full ammo!
 						//FIXME: extern this and check it when getting ammo from supplier, pickups or ammo stations!
@@ -3559,7 +3559,7 @@ void ClientSpawn(gentity_t *ent) {
 					}
 					else
 					{
-						if ( level.gametype == GT_SIEGE 
+						if ( level.gametype == GT_SIEGE
 							&& client->siegeClass != -1
 							&& (bgSiegeClasses[client->siegeClass].classflags & (1<<CFL_EXTRA_AMMO)) )
 						{//double ammo
@@ -3668,7 +3668,7 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			if ( duel_fraglimit.integer )
 			{
-				
+
 				ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] =
 					g_powerDuelStartHealth.integer - ((g_powerDuelStartHealth.integer - g_powerDuelEndHealth.integer) * (float)client->sess.wins / (float)duel_fraglimit.integer);
 			}
@@ -3927,7 +3927,7 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	// send effect if they were completely connected
-	if ( ent->client->pers.connected == CON_CONNECTED 
+	if ( ent->client->pers.connected == CON_CONNECTED
 		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
 		tent->s.clientNum = ent->s.clientNum;

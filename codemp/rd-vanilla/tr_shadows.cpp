@@ -185,7 +185,7 @@ void RB_ShadowTessEnd( void )
 
 			RB_DoShadowTessEnd(dl->transformed);
 		}
-        
+
 		i++;
 	}
 	*/

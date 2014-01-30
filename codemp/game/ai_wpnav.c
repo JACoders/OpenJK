@@ -254,7 +254,7 @@ void BotWaypointRender(void)
 			plum = G_TempEntity( gWPArray[i]->origin, EV_SCOREPLUM );
 			plum->r.svFlags |= SVF_BROADCAST;
 			plum->s.time = i;
-			
+
 			n = 0;
 
 			while (n < gWPArray[i]->neighbornum)
@@ -925,7 +925,7 @@ int CanGetToVectorTravel(vec3_t org1, vec3_t moveTo, vec3_t mins, vec3_t maxs)
 				didMove = 1;
 			}
 		}
-		
+
 		if (didMove != 1)
 		{ //stair check
 			vec3_t trFrom;
@@ -2082,7 +2082,7 @@ int LoadPathData(const char *filename)
 
 			nei_num++;
 		}
-		
+
 		while (fileString[i] != ' ')
 		{
 			currentVar[i_cv] = fileString[i];
@@ -3232,7 +3232,7 @@ void BeginAutoPathRoutine(void)
 	}
 
 	G_RMGPathing();
-	
+
 	//rww - Using a faster in-engine version because we're having to wait for this stuff to get done as opposed to just saving it once.
 	trap->BotUpdateWaypoints(gWPNum, gWPArray);
 	trap->BotCalculatePaths(RMG.integer);

@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: cupl3.c,v 1.8 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -70,8 +70,8 @@ static const int mp_br_tableL3[2][16] =
 
 /*-- global band tables */
 /*-- short portion is 3*x !! --*/
-////@@@@int nBand[2][22];		/* [long/short][cb] */		
-////@@@@int sfBandIndex[2][22];		/* [long/short][cb] */	
+////@@@@int nBand[2][22];		/* [long/short][cb] */
+////@@@@int sfBandIndex[2][22];		/* [long/short][cb] */
 
 /*====================================================================*/
 
@@ -88,8 +88,8 @@ extern DEC_INFO decinfo;	////@@@@ this is ok, only written to during init, then 
 ////@@@@static int pMP3Stream->band_limit21 = (576);	// limit for sf band 21	// L3 only
 ////@@@@static int pMP3Stream->band_limit12 = (576);	// limit for sf band 12 short	//L3 only
 
-////@@@@int band_limit_nsb = 32;	/* global for hybrid */	
-////@@@@static int pMP3Stream->nsb_limit = 32;	
+////@@@@int band_limit_nsb = 32;	/* global for hybrid */
+////@@@@static int pMP3Stream->nsb_limit = 32;
 ////@@@@static int pMP3Stream->gain_adjust = 0;	/* adjust gain e.g. cvt to mono */	// L3 only
 ////@@@@static int id; // L3 only
 ////@@@@static int pMP3Stream->ncbl_mixed;		/* number of long cb's in mixed block 8 or 6 */		// L3 only
@@ -782,7 +782,7 @@ IN_OUT L3audio_decode_MPEG1(unsigned char *bs, unsigned char *pcm)
    int nbytes;
 
    int padframebytes;	////@@@@
-   
+
 //   iframe++;
 
    bitget_init(bs);		/* initialize bit getter */
@@ -804,9 +804,9 @@ IN_OUT L3audio_decode_MPEG1(unsigned char *bs, unsigned char *pcm)
    in_out.in_bytes = padframebytes;
 
 /*-- load main data and update buf pointer --*/
-/*------------------------------------------- 
-   if start point < 0, must just cycle decoder 
-   if jumping into middle of stream, 
+/*-------------------------------------------
+   if start point < 0, must just cycle decoder
+   if jumping into middle of stream,
 w---------------------------------------------*/
    pMP3Stream->buf_ptr0 = pMP3Stream->buf_ptr1 - side_info.main_data_begin;	/* decode start point */
    if (pMP3Stream->buf_ptr1 > BUF_TRIGGER)
@@ -1148,7 +1148,7 @@ int L3audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
    samprate = sr_table[4 * h->id + h->sr_index];
    if ((h->sync & 1) == 0)
-      samprate = samprate / 2;	// mpeg 2.5 
+      samprate = samprate / 2;	// mpeg 2.5
 /*----- compute pMP3Stream->nsb_limit --------*/
    pMP3Stream->nsb_limit = (freq_limit * 64L + samprate / 2) / samprate;
 /*- caller limit -*/
@@ -1161,7 +1161,7 @@ int L3audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
    k = h->id;
    if ((h->sync & 1) == 0)
-      k = 2;			// mpeg 2.5 
+      k = 2;			// mpeg 2.5
 
    if (k == 1)
    {
@@ -1238,7 +1238,7 @@ int L3audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
    k = h->id;
    if ((h->sync & 1) == 0)
-      k = 2;			// mpeg 2.5 
+      k = 2;			// mpeg 2.5
 
    for (i = 0; i < 22; i++)
       pMP3Stream->sfBandIndex[0][i] = sfBandIndexTable[k][h->sr_index].l[i + 1];

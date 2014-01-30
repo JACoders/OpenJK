@@ -14,10 +14,10 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(FACE_TALK2),			//# semi-quiet
 	ENUM2STRING(FACE_TALK3),			//# semi-loud
 	ENUM2STRING(FACE_TALK4),			//# loud
-	ENUM2STRING(FACE_ALERT),				//# 
-	ENUM2STRING(FACE_SMILE),				//# 
-	ENUM2STRING(FACE_FROWN),				//# 
-	ENUM2STRING(FACE_DEAD),				//# 
+	ENUM2STRING(FACE_ALERT),				//#
+	ENUM2STRING(FACE_SMILE),				//#
+	ENUM2STRING(FACE_FROWN),				//#
+	ENUM2STRING(FACE_DEAD),				//#
 
 	//=================================================
 	//ANIMS IN WHICH UPPER AND LOWER OBJECTS ARE IN MD3
@@ -30,24 +30,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DEATH5),			//# Fifth Death anim
 	ENUM2STRING(BOTH_DEATH6),			//# Sixth Death anim
 	ENUM2STRING(BOTH_DEATH7),			//# Seventh Death anim
-	ENUM2STRING(BOTH_DEATH8),			//# 
-	ENUM2STRING(BOTH_DEATH9),			//# 
-	ENUM2STRING(BOTH_DEATH10),			//# 
+	ENUM2STRING(BOTH_DEATH8),			//#
+	ENUM2STRING(BOTH_DEATH9),			//#
+	ENUM2STRING(BOTH_DEATH10),			//#
 	ENUM2STRING(BOTH_DEATH11),			//#
-	ENUM2STRING(BOTH_DEATH12),			//# 
-	ENUM2STRING(BOTH_DEATH13),			//# 
-	ENUM2STRING(BOTH_DEATH14),			//# 
-	ENUM2STRING(BOTH_DEATH15),			//# 
-	ENUM2STRING(BOTH_DEATH16),			//# 
-	ENUM2STRING(BOTH_DEATH17),			//# 
-	ENUM2STRING(BOTH_DEATH18),			//# 
-	ENUM2STRING(BOTH_DEATH19),			//# 
-	ENUM2STRING(BOTH_DEATH20),			//# 
-	ENUM2STRING(BOTH_DEATH21),			//# 
-	ENUM2STRING(BOTH_DEATH22),			//# 
-	ENUM2STRING(BOTH_DEATH23),			//# 
-	ENUM2STRING(BOTH_DEATH24),			//# 
-	ENUM2STRING(BOTH_DEATH25),			//# 
+	ENUM2STRING(BOTH_DEATH12),			//#
+	ENUM2STRING(BOTH_DEATH13),			//#
+	ENUM2STRING(BOTH_DEATH14),			//#
+	ENUM2STRING(BOTH_DEATH15),			//#
+	ENUM2STRING(BOTH_DEATH16),			//#
+	ENUM2STRING(BOTH_DEATH17),			//#
+	ENUM2STRING(BOTH_DEATH18),			//#
+	ENUM2STRING(BOTH_DEATH19),			//#
+	ENUM2STRING(BOTH_DEATH20),			//#
+	ENUM2STRING(BOTH_DEATH21),			//#
+	ENUM2STRING(BOTH_DEATH22),			//#
+	ENUM2STRING(BOTH_DEATH23),			//#
+	ENUM2STRING(BOTH_DEATH24),			//#
+	ENUM2STRING(BOTH_DEATH25),			//#
 
 	ENUM2STRING(BOTH_DEATHFORWARD1),		//# First Death in which they get thrown forward
 	ENUM2STRING(BOTH_DEATHFORWARD2),		//# Second Death in which they get thrown forward
@@ -79,24 +79,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_DEAD5),				//# Fifth Death finished pose
 	ENUM2STRING(BOTH_DEAD6),				//# Sixth Death finished pose
 	ENUM2STRING(BOTH_DEAD7),				//# Seventh Death finished pose
-	ENUM2STRING(BOTH_DEAD8),				//# 
-	ENUM2STRING(BOTH_DEAD9),				//# 
-	ENUM2STRING(BOTH_DEAD10),			//# 
+	ENUM2STRING(BOTH_DEAD8),				//#
+	ENUM2STRING(BOTH_DEAD9),				//#
+	ENUM2STRING(BOTH_DEAD10),			//#
 	ENUM2STRING(BOTH_DEAD11),			//#
-	ENUM2STRING(BOTH_DEAD12),			//# 
-	ENUM2STRING(BOTH_DEAD13),			//# 
-	ENUM2STRING(BOTH_DEAD14),			//# 
-	ENUM2STRING(BOTH_DEAD15),			//# 
-	ENUM2STRING(BOTH_DEAD16),			//# 
-	ENUM2STRING(BOTH_DEAD17),			//# 
-	ENUM2STRING(BOTH_DEAD18),			//# 
-	ENUM2STRING(BOTH_DEAD19),			//# 
-	ENUM2STRING(BOTH_DEAD20),			//# 
-	ENUM2STRING(BOTH_DEAD21),			//# 
-	ENUM2STRING(BOTH_DEAD22),			//# 
-	ENUM2STRING(BOTH_DEAD23),			//# 
-	ENUM2STRING(BOTH_DEAD24),			//# 
-	ENUM2STRING(BOTH_DEAD25),			//# 
+	ENUM2STRING(BOTH_DEAD12),			//#
+	ENUM2STRING(BOTH_DEAD13),			//#
+	ENUM2STRING(BOTH_DEAD14),			//#
+	ENUM2STRING(BOTH_DEAD15),			//#
+	ENUM2STRING(BOTH_DEAD16),			//#
+	ENUM2STRING(BOTH_DEAD17),			//#
+	ENUM2STRING(BOTH_DEAD18),			//#
+	ENUM2STRING(BOTH_DEAD19),			//#
+	ENUM2STRING(BOTH_DEAD20),			//#
+	ENUM2STRING(BOTH_DEAD21),			//#
+	ENUM2STRING(BOTH_DEAD22),			//#
+	ENUM2STRING(BOTH_DEAD23),			//#
+	ENUM2STRING(BOTH_DEAD24),			//#
+	ENUM2STRING(BOTH_DEAD25),			//#
 	ENUM2STRING(BOTH_DEADFORWARD1),		//# First thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADFORWARD2),		//# Second thrown forward death finished pose
 	ENUM2STRING(BOTH_DEADBACKWARD1),		//# First thrown backward death finished pose
@@ -122,16 +122,16 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_PAIN6),				//# Sixth take pain anim - from behind
 	ENUM2STRING(BOTH_PAIN7),				//# Seventh take pain anim - from behind
 	ENUM2STRING(BOTH_PAIN8),				//# Eigth take pain anim - from behind
-	ENUM2STRING(BOTH_PAIN9),				//# 
-	ENUM2STRING(BOTH_PAIN10),			//# 
-	ENUM2STRING(BOTH_PAIN11),			//# 
-	ENUM2STRING(BOTH_PAIN12),			//# 
-	ENUM2STRING(BOTH_PAIN13),			//# 
-	ENUM2STRING(BOTH_PAIN14),			//# 
-	ENUM2STRING(BOTH_PAIN15),			//# 
-	ENUM2STRING(BOTH_PAIN16),			//# 
-	ENUM2STRING(BOTH_PAIN17),			//# 
-	ENUM2STRING(BOTH_PAIN18),			//# 
+	ENUM2STRING(BOTH_PAIN9),				//#
+	ENUM2STRING(BOTH_PAIN10),			//#
+	ENUM2STRING(BOTH_PAIN11),			//#
+	ENUM2STRING(BOTH_PAIN12),			//#
+	ENUM2STRING(BOTH_PAIN13),			//#
+	ENUM2STRING(BOTH_PAIN14),			//#
+	ENUM2STRING(BOTH_PAIN15),			//#
+	ENUM2STRING(BOTH_PAIN16),			//#
+	ENUM2STRING(BOTH_PAIN17),			//#
+	ENUM2STRING(BOTH_PAIN18),			//#
 
 	//# #sep ENUM2STRING(BOTH_ ATTACKS
 	ENUM2STRING(BOTH_ATTACK1),			//# Attack with stun baton
@@ -868,7 +868,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_LK_S_S_T_SB_1_L),	//super break I lost
 	ENUM2STRING(BOTH_LK_S_S_T_SB_1_W),	//super break I won
 //===Dual Saber locks==================================================================
-//DUAL vs. DUAL	
+//DUAL vs. DUAL
 	//side locks
 	ENUM2STRING(BOTH_LK_DL_DL_S_B_1_L),	//normal break I lost
 	ENUM2STRING(BOTH_LK_DL_DL_S_B_1_W),	//normal break I won
@@ -1059,9 +1059,9 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_STAND5TOSIT3),		//# transition from stand 5 to sit 3
 	ENUM2STRING(BOTH_STAND1TOSTAND5),	//# Transition from stand1 to stand5
 	ENUM2STRING(BOTH_STAND5TOSTAND1),	//# Transition from stand5 to stand1
-	ENUM2STRING(BOTH_STAND5TOAIM),		//# Transition of Kye aiming his gun at Desann (cin #9) 
-	ENUM2STRING(BOTH_STAND5STARTLEDLOOKLEFT),	//# Kyle turning to watch the bridge drop (cin #9) 
-	ENUM2STRING(BOTH_STARTLEDLOOKLEFTTOSTAND5),	//# Kyle returning to stand 5 from watching the bridge drop (cin #9) 
+	ENUM2STRING(BOTH_STAND5TOAIM),		//# Transition of Kye aiming his gun at Desann (cin #9)
+	ENUM2STRING(BOTH_STAND5STARTLEDLOOKLEFT),	//# Kyle turning to watch the bridge drop (cin #9)
+	ENUM2STRING(BOTH_STARTLEDLOOKLEFTTOSTAND5),	//# Kyle returning to stand 5 from watching the bridge drop (cin #9)
 	ENUM2STRING(BOTH_STAND5TOSTAND8),	//# Transition from stand5 to stand8
 	ENUM2STRING(BOTH_STAND7TOSTAND8),	//# Tavion putting hands on back of chair (cin #11)
 	ENUM2STRING(BOTH_STAND8TOSTAND5),	//# Transition from stand8 to stand5
@@ -1080,11 +1080,11 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_CONSOLE1START),	//# typing at a console
 	ENUM2STRING(BOTH_CONSOLE1),			//# typing at a console
 	ENUM2STRING(BOTH_CONSOLE1STOP),		//# typing at a console
-	ENUM2STRING(BOTH_CONSOLE2START),	//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2),			//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2STOP),		//# typing at a console with comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTART),	//# lean in to type at console while holding comm link in hand (cin #5) 
-	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTOP),	//# lean away after typing at console while holding comm link in hand (cin #5) 
+	ENUM2STRING(BOTH_CONSOLE2START),	//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2),			//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2STOP),		//# typing at a console with comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTART),	//# lean in to type at console while holding comm link in hand (cin #5)
+	ENUM2STRING(BOTH_CONSOLE2HOLDCOMSTOP),	//# lean away after typing at console while holding comm link in hand (cin #5)
 
 	ENUM2STRING(BOTH_GUARD_LOOKAROUND1),	//# Cradling weapon and looking around
 	ENUM2STRING(BOTH_GUARD_IDLE1),		//# Cradling weapon and standing
@@ -1152,102 +1152,102 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 
 	// Swoop Vehicle animations.
 	//* #sep BOTH_ SWOOP ANIMS
-	ENUM2STRING(BOTH_VS_MOUNT_L),			//# Mount from left		
-	ENUM2STRING(BOTH_VS_DISMOUNT_L),		//# Dismount to left		
-	ENUM2STRING(BOTH_VS_MOUNT_R),			//# Mount from  right (symmetry)		
-	ENUM2STRING(BOTH_VS_DISMOUNT_R),		//# Dismount to  right (symmetry)		
+	ENUM2STRING(BOTH_VS_MOUNT_L),			//# Mount from left
+	ENUM2STRING(BOTH_VS_DISMOUNT_L),		//# Dismount to left
+	ENUM2STRING(BOTH_VS_MOUNT_R),			//# Mount from  right (symmetry)
+	ENUM2STRING(BOTH_VS_DISMOUNT_R),		//# Dismount to  right (symmetry)
 
 	ENUM2STRING(BOTH_VS_MOUNTJUMP_L),		//#
 	ENUM2STRING(BOTH_VS_MOUNTTHROW),		//# Land on an occupied vehicle & throw off current pilot
 	ENUM2STRING(BOTH_VS_MOUNTTHROW_L),		//# Land on an occupied vehicle & throw off current pilot
 	ENUM2STRING(BOTH_VS_MOUNTTHROW_R),		//# Land on an occupied vehicle & throw off current pilot
 	ENUM2STRING(BOTH_VS_MOUNTTHROWEE),		//# Current pilot getting thrown off by another guy
-				
-	ENUM2STRING(BOTH_VS_LOOKLEFT),			//# Turn & Look behind and to the left (no weapon)		
-	ENUM2STRING(BOTH_VS_LOOKRIGHT),			//# Turn & Look behind and to the right (no weapon)		
+
+	ENUM2STRING(BOTH_VS_LOOKLEFT),			//# Turn & Look behind and to the left (no weapon)
+	ENUM2STRING(BOTH_VS_LOOKRIGHT),			//# Turn & Look behind and to the right (no weapon)
 
 	ENUM2STRING(BOTH_VS_TURBO),				//# Hit The Turbo Button
 
-	ENUM2STRING(BOTH_VS_REV),				//# Player looks back as swoop reverses		
+	ENUM2STRING(BOTH_VS_REV),				//# Player looks back as swoop reverses
 
-	ENUM2STRING(BOTH_VS_AIR),				//# Player stands up when swoop is airborn		
+	ENUM2STRING(BOTH_VS_AIR),				//# Player stands up when swoop is airborn
 	ENUM2STRING(BOTH_VS_AIR_G),				//# "" with Gun
 	ENUM2STRING(BOTH_VS_AIR_SL),			//# "" with Saber Left
 	ENUM2STRING(BOTH_VS_AIR_SR),			//# "" with Saber Right
 
-	ENUM2STRING(BOTH_VS_LAND),				//# Player bounces down when swoop lands		
+	ENUM2STRING(BOTH_VS_LAND),				//# Player bounces down when swoop lands
 	ENUM2STRING(BOTH_VS_LAND_G),			//#  "" with Gun
 	ENUM2STRING(BOTH_VS_LAND_SL),			//#  "" with Saber Left
 	ENUM2STRING(BOTH_VS_LAND_SR),			//#  "" with Saber Right
 
 	ENUM2STRING(BOTH_VS_IDLE),				//# Sit
 	ENUM2STRING(BOTH_VS_IDLE_G),			//# Sit (gun)
-	ENUM2STRING(BOTH_VS_IDLE_SL),			//# Sit (saber left)		
-	ENUM2STRING(BOTH_VS_IDLE_SR),			//# Sit (saber right)		
+	ENUM2STRING(BOTH_VS_IDLE_SL),			//# Sit (saber left)
+	ENUM2STRING(BOTH_VS_IDLE_SR),			//# Sit (saber right)
 
 	ENUM2STRING(BOTH_VS_LEANL),				//# Lean left
-	ENUM2STRING(BOTH_VS_LEANL_G),			//# Lean left (gun)		
-	ENUM2STRING(BOTH_VS_LEANL_SL),			//# Lean left (saber left)		
-	ENUM2STRING(BOTH_VS_LEANL_SR),			//# Lean left (saber right)		
+	ENUM2STRING(BOTH_VS_LEANL_G),			//# Lean left (gun)
+	ENUM2STRING(BOTH_VS_LEANL_SL),			//# Lean left (saber left)
+	ENUM2STRING(BOTH_VS_LEANL_SR),			//# Lean left (saber right)
 
-	ENUM2STRING(BOTH_VS_LEANR),				//# Lean right		
-	ENUM2STRING(BOTH_VS_LEANR_G),			//# Lean right (gun)		
-	ENUM2STRING(BOTH_VS_LEANR_SL),			//# Lean right (saber left)		
-	ENUM2STRING(BOTH_VS_LEANR_SR),			//# Lean right (saber right)		
-				
-	ENUM2STRING(BOTH_VS_ATL_S),				//# Attack left with saber		
-	ENUM2STRING(BOTH_VS_ATR_S),				//# Attack right with saber		
+	ENUM2STRING(BOTH_VS_LEANR),				//# Lean right
+	ENUM2STRING(BOTH_VS_LEANR_G),			//# Lean right (gun)
+	ENUM2STRING(BOTH_VS_LEANR_SL),			//# Lean right (saber left)
+	ENUM2STRING(BOTH_VS_LEANR_SR),			//# Lean right (saber right)
+
+	ENUM2STRING(BOTH_VS_ATL_S),				//# Attack left with saber
+	ENUM2STRING(BOTH_VS_ATR_S),				//# Attack right with saber
 	ENUM2STRING(BOTH_VS_ATR_TO_L_S),		//# Attack toss saber from right to left hand
 	ENUM2STRING(BOTH_VS_ATL_TO_R_S),		//# Attack toss saber from left to right hand
-	ENUM2STRING(BOTH_VS_ATR_G),				//# Attack right with gun (90)		
-	ENUM2STRING(BOTH_VS_ATL_G),				//# Attack left with gun (90)		
-	ENUM2STRING(BOTH_VS_ATF_G),				//# Attack forward with gun		
+	ENUM2STRING(BOTH_VS_ATR_G),				//# Attack right with gun (90)
+	ENUM2STRING(BOTH_VS_ATL_G),				//# Attack left with gun (90)
+	ENUM2STRING(BOTH_VS_ATF_G),				//# Attack forward with gun
 
-	ENUM2STRING(BOTH_VS_PAIN1),				//# Pain		
+	ENUM2STRING(BOTH_VS_PAIN1),				//# Pain
 
 	// Added 12/04/02 by Aurelio.
 	//* #sep BOTH_ TAUNTAUN ANIMS
-	ENUM2STRING(BOTH_VT_MOUNT_L),			//# Mount from left	
-	ENUM2STRING(BOTH_VT_MOUNT_R),			//# Mount from right	
+	ENUM2STRING(BOTH_VT_MOUNT_L),			//# Mount from left
+	ENUM2STRING(BOTH_VT_MOUNT_R),			//# Mount from right
 	ENUM2STRING(BOTH_VT_MOUNT_B),			//# Mount from air, behind
 	ENUM2STRING(BOTH_VT_DISMOUNT),			//# Dismount for tauntaun
-	ENUM2STRING(BOTH_VT_DISMOUNT_L),		//# Dismount to tauntauns left	
-	ENUM2STRING(BOTH_VT_DISMOUNT_R),		//# Dismount to tauntauns right (symmetry)	
+	ENUM2STRING(BOTH_VT_DISMOUNT_L),		//# Dismount to tauntauns left
+	ENUM2STRING(BOTH_VT_DISMOUNT_R),		//# Dismount to tauntauns right (symmetry)
 
-	ENUM2STRING(BOTH_VT_WALK_FWD),			//# Walk forward	
-	ENUM2STRING(BOTH_VT_WALK_REV),			//# Walk backward	
+	ENUM2STRING(BOTH_VT_WALK_FWD),			//# Walk forward
+	ENUM2STRING(BOTH_VT_WALK_REV),			//# Walk backward
 	ENUM2STRING(BOTH_VT_WALK_FWD_L),		//# walk lean left
 	ENUM2STRING(BOTH_VT_WALK_FWD_R),		//# walk lean right
-	ENUM2STRING(BOTH_VT_RUN_FWD),			//# Run forward	
-	ENUM2STRING(BOTH_VT_RUN_REV),			//# Look backwards while running (not weapon specific)	
+	ENUM2STRING(BOTH_VT_RUN_FWD),			//# Run forward
+	ENUM2STRING(BOTH_VT_RUN_REV),			//# Look backwards while running (not weapon specific)
 	ENUM2STRING(BOTH_VT_RUN_FWD_L),			//# run lean left
 	ENUM2STRING(BOTH_VT_RUN_FWD_R),			//# run lean right
 
-	ENUM2STRING(BOTH_VT_SLIDEF),			//# Tauntaun slides forward with abrupt stop	
-	ENUM2STRING(BOTH_VT_AIR),				//# Tauntaun jump	
-	ENUM2STRING(BOTH_VT_ATB),				//# Tauntaun tail swipe	
-	ENUM2STRING(BOTH_VT_PAIN1),				//# Pain	
-	ENUM2STRING(BOTH_VT_DEATH1),			//# Die	
-	ENUM2STRING(BOTH_VT_STAND),				//# Stand still and breath	
-	ENUM2STRING(BOTH_VT_BUCK),				//# Tauntaun bucking loop animation	
+	ENUM2STRING(BOTH_VT_SLIDEF),			//# Tauntaun slides forward with abrupt stop
+	ENUM2STRING(BOTH_VT_AIR),				//# Tauntaun jump
+	ENUM2STRING(BOTH_VT_ATB),				//# Tauntaun tail swipe
+	ENUM2STRING(BOTH_VT_PAIN1),				//# Pain
+	ENUM2STRING(BOTH_VT_DEATH1),			//# Die
+	ENUM2STRING(BOTH_VT_STAND),				//# Stand still and breath
+	ENUM2STRING(BOTH_VT_BUCK),				//# Tauntaun bucking loop animation
 
-	ENUM2STRING(BOTH_VT_LAND),				//# Player bounces down when tauntaun lands	
+	ENUM2STRING(BOTH_VT_LAND),				//# Player bounces down when tauntaun lands
 	ENUM2STRING(BOTH_VT_TURBO),				//# Hit The Turbo Button
-	ENUM2STRING(BOTH_VT_IDLE_SL),			//# Sit (saber left)		
-	ENUM2STRING(BOTH_VT_IDLE_SR),			//# Sit (saber right)		
-	ENUM2STRING(BOTH_VT_IDLE),				//# Sit with no weapon selected	
-	ENUM2STRING(BOTH_VT_IDLE1),				//# Sit with no weapon selected	
-	ENUM2STRING(BOTH_VT_IDLE_S),			//# Sit with saber selected	
-	ENUM2STRING(BOTH_VT_IDLE_G),			//# Sit with gun selected	
+	ENUM2STRING(BOTH_VT_IDLE_SL),			//# Sit (saber left)
+	ENUM2STRING(BOTH_VT_IDLE_SR),			//# Sit (saber right)
+	ENUM2STRING(BOTH_VT_IDLE),				//# Sit with no weapon selected
+	ENUM2STRING(BOTH_VT_IDLE1),				//# Sit with no weapon selected
+	ENUM2STRING(BOTH_VT_IDLE_S),			//# Sit with saber selected
+	ENUM2STRING(BOTH_VT_IDLE_G),			//# Sit with gun selected
 	ENUM2STRING(BOTH_VT_IDLE_T),			//# Sit with thermal grenade selected
 
-	ENUM2STRING(BOTH_VT_ATL_S),				//# Attack left with saber	
-	ENUM2STRING(BOTH_VT_ATR_S),				//# Attack right with saber	
+	ENUM2STRING(BOTH_VT_ATL_S),				//# Attack left with saber
+	ENUM2STRING(BOTH_VT_ATR_S),				//# Attack right with saber
 	ENUM2STRING(BOTH_VT_ATR_TO_L_S),		//# Attack toss saber from right to left hand
 	ENUM2STRING(BOTH_VT_ATL_TO_R_S),		//# Attack toss saber from left to right hand
-	ENUM2STRING(BOTH_VT_ATR_G),				//# Attack right with gun (90)	
-	ENUM2STRING(BOTH_VT_ATL_G),				//# Attack left with gun (90)	
-	ENUM2STRING(BOTH_VT_ATF_G),				//# Attack forward with gun	
+	ENUM2STRING(BOTH_VT_ATR_G),				//# Attack right with gun (90)
+	ENUM2STRING(BOTH_VT_ATL_G),				//# Attack left with gun (90)
+	ENUM2STRING(BOTH_VT_ATF_G),				//# Attack forward with gun
 
 
 	// Added 2/26/02 by Aurelio.
@@ -1303,7 +1303,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_WALKBACK2),			//# Walk2 backwards
 	ENUM2STRING(BOTH_RUNBACK1),			//# Run1 backwards
 	ENUM2STRING(BOTH_RUNBACK2),			//# Run1 backwards
-	
+
 	//# #sep BOTH_ JUMPING
 	ENUM2STRING(BOTH_JUMP1),				//# Jump - wind-up and leave ground
 	ENUM2STRING(BOTH_INAIR1),			//# In air loop (from jump)
@@ -1382,24 +1382,24 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_VICTORY_DUAL),
 	ENUM2STRING(BOTH_VICTORY_STAFF),
 	//other saber/acro anims
-	ENUM2STRING(BOTH_ARIAL_LEFT),		//# 
-	ENUM2STRING(BOTH_ARIAL_RIGHT),		//# 
-	ENUM2STRING(BOTH_CARTWHEEL_LEFT),	//# 
-	ENUM2STRING(BOTH_CARTWHEEL_RIGHT),	//# 
-	ENUM2STRING(BOTH_FLIP_LEFT),			//# 
-	ENUM2STRING(BOTH_FLIP_BACK1),		//# 
-	ENUM2STRING(BOTH_FLIP_BACK2),		//# 
-	ENUM2STRING(BOTH_FLIP_BACK3),		//# 
-	ENUM2STRING(BOTH_BUTTERFLY_LEFT),	//# 
-	ENUM2STRING(BOTH_BUTTERFLY_RIGHT),	//# 
-	ENUM2STRING(BOTH_WALL_RUN_RIGHT),	//# 
+	ENUM2STRING(BOTH_ARIAL_LEFT),		//#
+	ENUM2STRING(BOTH_ARIAL_RIGHT),		//#
+	ENUM2STRING(BOTH_CARTWHEEL_LEFT),	//#
+	ENUM2STRING(BOTH_CARTWHEEL_RIGHT),	//#
+	ENUM2STRING(BOTH_FLIP_LEFT),			//#
+	ENUM2STRING(BOTH_FLIP_BACK1),		//#
+	ENUM2STRING(BOTH_FLIP_BACK2),		//#
+	ENUM2STRING(BOTH_FLIP_BACK3),		//#
+	ENUM2STRING(BOTH_BUTTERFLY_LEFT),	//#
+	ENUM2STRING(BOTH_BUTTERFLY_RIGHT),	//#
+	ENUM2STRING(BOTH_WALL_RUN_RIGHT),	//#
 	ENUM2STRING(BOTH_WALL_RUN_RIGHT_FLIP),//#
-	ENUM2STRING(BOTH_WALL_RUN_RIGHT_STOP),//# 
-	ENUM2STRING(BOTH_WALL_RUN_LEFT),		//# 
+	ENUM2STRING(BOTH_WALL_RUN_RIGHT_STOP),//#
+	ENUM2STRING(BOTH_WALL_RUN_LEFT),		//#
 	ENUM2STRING(BOTH_WALL_RUN_LEFT_FLIP),//#
-	ENUM2STRING(BOTH_WALL_RUN_LEFT_STOP),//# 
-	ENUM2STRING(BOTH_WALL_FLIP_RIGHT),	//# 
-	ENUM2STRING(BOTH_WALL_FLIP_LEFT),	//# 
+	ENUM2STRING(BOTH_WALL_RUN_LEFT_STOP),//#
+	ENUM2STRING(BOTH_WALL_FLIP_RIGHT),	//#
+	ENUM2STRING(BOTH_WALL_FLIP_LEFT),	//#
 	ENUM2STRING(BOTH_KNOCKDOWN1),		//# knocked backwards
 	ENUM2STRING(BOTH_KNOCKDOWN2),		//# knocked backwards hard
 	ENUM2STRING(BOTH_KNOCKDOWN3),		//#	knocked forwards
@@ -1445,32 +1445,32 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_BUTTERFLY_FL1),//#
 
 	//NEW SABER/JEDI/FORCE ANIMS
-	ENUM2STRING(BOTH_BACK_FLIP_UP),	//# back flip up Bonus Animation!!!!	
+	ENUM2STRING(BOTH_BACK_FLIP_UP),	//# back flip up Bonus Animation!!!!
 	ENUM2STRING(BOTH_LOSE_SABER),	//# player losing saber (pulled from hand by force pull 4 - Kyle?)
-	ENUM2STRING(BOTH_STAFF_TAUNT),	//# taunt saberstaff			
+	ENUM2STRING(BOTH_STAFF_TAUNT),	//# taunt saberstaff
 	ENUM2STRING(BOTH_DUAL_TAUNT),		//# taunt dual
-	ENUM2STRING(BOTH_A6_FB),				//# dual attack front/back		
+	ENUM2STRING(BOTH_A6_FB),				//# dual attack front/back
 	ENUM2STRING(BOTH_A6_LR),				//# dual attack left/right
 	ENUM2STRING(BOTH_A7_HILT),			//# saber knock (alt + stand still)
-	//Alora			
-	ENUM2STRING(BOTH_ALORA_SPIN),		//#jump spin attack	death ballet	
-	ENUM2STRING(BOTH_ALORA_FLIP_1),		//# gymnast move 1		
-	ENUM2STRING(BOTH_ALORA_FLIP_2),		//# gymnast move 2		
-	ENUM2STRING(BOTH_ALORA_FLIP_3),		//# gymnast move3		
-	ENUM2STRING(BOTH_ALORA_FLIP_B),		//# gymnast move back		
-	ENUM2STRING(BOTH_ALORA_SPIN_THROW),	//# dual saber throw		
-	ENUM2STRING(BOTH_ALORA_SPIN_SLASH),	//# spin slash	special bonus animation!! :)	
+	//Alora
+	ENUM2STRING(BOTH_ALORA_SPIN),		//#jump spin attack	death ballet
+	ENUM2STRING(BOTH_ALORA_FLIP_1),		//# gymnast move 1
+	ENUM2STRING(BOTH_ALORA_FLIP_2),		//# gymnast move 2
+	ENUM2STRING(BOTH_ALORA_FLIP_3),		//# gymnast move3
+	ENUM2STRING(BOTH_ALORA_FLIP_B),		//# gymnast move back
+	ENUM2STRING(BOTH_ALORA_SPIN_THROW),	//# dual saber throw
+	ENUM2STRING(BOTH_ALORA_SPIN_SLASH),	//# spin slash	special bonus animation!! :)
 	ENUM2STRING(BOTH_ALORA_TAUNT),		//# special taunt
-	//Rosh (Kothos battle)			
-	ENUM2STRING(BOTH_ROSH_PAIN),	//# hurt animation (exhausted)		
-	ENUM2STRING(BOTH_ROSH_HEAL),	//# healed/rejuvenated		
-	//Tavion			
+	//Rosh (Kothos battle)
+	ENUM2STRING(BOTH_ROSH_PAIN),	//# hurt animation (exhausted)
+	ENUM2STRING(BOTH_ROSH_HEAL),	//# healed/rejuvenated
+	//Tavion
 	ENUM2STRING(BOTH_TAVION_SCEPTERGROUND), //# stabbing ground with sith sword shoots electricity everywhere
 	ENUM2STRING(BOTH_TAVION_SWORDPOWER),//# Tavion doing the He-Man(tm) thing
 	ENUM2STRING(BOTH_SCEPTER_START),	//#Point scepter and attack start
 	ENUM2STRING(BOTH_SCEPTER_HOLD),	//#Point scepter and attack hold
 	ENUM2STRING(BOTH_SCEPTER_STOP),	//#Point scepter and attack stop
-	//Kyle Boss			
+	//Kyle Boss
 	ENUM2STRING(BOTH_KYLE_GRAB),		//# grab
 	ENUM2STRING(BOTH_KYLE_MISS),		//# miss
 	ENUM2STRING(BOTH_KYLE_PA_1),		//# hold 1
@@ -1511,13 +1511,13 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_SWIM_IDLE1),		//# Swimming Idle 1
 	ENUM2STRING(BOTH_SWIMFORWARD),		//# Swim forward loop
 	ENUM2STRING(BOTH_SWIMBACKWARD),		//# Swim backward loop
-	
+
 	//# #sep ENUM2STRING(BOTH_ LYING
 	ENUM2STRING(BOTH_SLEEP1),			//# laying on back-rknee up-rhand on torso
 	ENUM2STRING(BOTH_SLEEP6START),		//# Kyle leaning back to sleep (cin 20)
 	ENUM2STRING(BOTH_SLEEP6STOP),		//# Kyle waking up and shaking his head (cin 21)
 	ENUM2STRING(BOTH_SLEEP1GETUP),		//# alarmed and getting up out of sleep1 pose to stand
-	ENUM2STRING(BOTH_SLEEP1GETUP2),		//# 
+	ENUM2STRING(BOTH_SLEEP1GETUP2),		//#
 
 	ENUM2STRING(BOTH_CHOKE1START),		//# tavion in force grip choke
 	ENUM2STRING(BOTH_CHOKE1STARTHOLD),		//# loop of tavion in force grip choke
@@ -1783,7 +1783,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_CIN_48),		//# Level specific cinematic
 	ENUM2STRING(BOTH_CIN_49),		//# Level specific cinematic
 	ENUM2STRING(BOTH_CIN_50),		//# Level specific cinematic
-										
+
 	//must be terminated
 	{NULL,-1}
 };

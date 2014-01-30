@@ -82,7 +82,7 @@ private:
 	float			mHeight;
 
 public:
-	
+
 	CRMAreaManager ( const vec3_t mins, const vec3_t maxs );
 	~CRMAreaManager ( );
 

@@ -5,7 +5,7 @@
  * desc:		lexicographical parser
  *
  * $Archive: /MissionPack/code/botlib/l_script.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 9 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -691,14 +691,14 @@ int PS_ReadNumber(script_t *script, token_t *token)
 	{
 		c = *script->script_p;
 		//check for a LONG number
-		if ( (c == 'l' || c == 'L') // bk001204 - brackets 
+		if ( (c == 'l' || c == 'L') // bk001204 - brackets
 		     && !(token->subtype & TT_LONG))
 		{
 			script->script_p++;
 			token->subtype |= TT_LONG;
 		} //end if
 		//check for an UNSIGNED number
-		else if ( (c == 'u' || c == 'U') // bk001204 - brackets 
+		else if ( (c == 'u' || c == 'U') // bk001204 - brackets
 			  && !(token->subtype & (TT_UNSIGNED | TT_FLOAT)))
 		{
 			script->script_p++;
@@ -1149,7 +1149,7 @@ long double ReadSignedFloat(script_t *script)
 
 		sign = -1;
 	}
-	
+
 	if (token.type != TT_NUMBER)
 	{
 		ScriptError(script, "expected float value, found %s", token.string);
@@ -1186,7 +1186,7 @@ signed long int ReadSignedInt(script_t *script)
 		ScriptError(script, "expected integer value, found %s", token.string);
 		return 0;
 	}
-	
+
 	return sign * token.intvalue;
 } //end of the function ReadSignedInt
 //============================================================================

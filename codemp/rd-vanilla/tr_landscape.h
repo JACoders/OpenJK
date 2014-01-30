@@ -82,8 +82,8 @@ public:
 	bool isVisible(void) { return(misVisible); }
 	void SetTLShader(qhandle_t in) { mTLShader = R_GetShaderByHandle(in); }
 	void SetBRShader(qhandle_t in) { mBRShader = R_GetShaderByHandle(in); }
-	void SetOwner(CCMLandScape *in) { owner = in; } 
-	void SetLocalOwner(CTRLandScape *in) { localowner = in; } 
+	void SetOwner(CCMLandScape *in) { owner = in; }
+	void SetLocalOwner(CTRLandScape *in) { localowner = in; }
 	void Clear(void) { memset(this, 0, sizeof(*this));  }
 	void SetCenter(void) { VectorAverage(common->GetMins(), common->GetMaxs(), mCenter); }
 	void CalcNormal(void);
@@ -130,14 +130,14 @@ private:
 	float				mPatchSize;
 
 	shader_t			*mShader;  								// shader the terrain got its contents from
-						
+
 	CTerVert			*mRenderMap;							// modulation value and texture coords per vertex
 	float				mTextureScale;							// Scale of texture mapped to terrain
-						
+
 	float				mScalarSize;
-						
+
 	shader_t			*mWaterShader;							// Water shader
-	qhandle_t			mFlatShader;							// Flat ground shader	
+	qhandle_t			mFlatShader;							// Flat ground shader
 
 	CTRHeightDetails	mHeightDetails[HEIGHT_RESOLUTION];		// Array of info specific to height
 #if	_DEBUG

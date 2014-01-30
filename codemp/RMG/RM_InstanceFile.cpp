@@ -59,7 +59,7 @@ CRMInstanceFile::~CRMInstanceFile ( )
  *			  added and shouldnt be included in the given name
  *
  * return:
- *	true: instance file successfully loaded 
+ *	true: instance file successfully loaded
  *  false: instance file could not be loaded for some reason
  *
  ************************************************************************************************/
@@ -118,7 +118,7 @@ void CRMInstanceFile::Close ( void )
 		return;
 	}
 	mParser.Clean();
-		
+
 	mInstances = NULL;
 }
 
@@ -150,7 +150,7 @@ CRMInstance* CRMInstanceFile::CreateInstance ( const char* name )
 		{
 			continue;
 		}
-		
+
 		// Handle the various forms of instance types
 		if ( !Q_stricmp ( group->GetName ( ), "bsp" ) )
 		{

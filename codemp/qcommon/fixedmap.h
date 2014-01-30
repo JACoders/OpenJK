@@ -54,7 +54,7 @@ public:
 		if(!FindUnsorted(key, storage)) {
 		   storage = items + numItems;
 		   numItems++;
-		}	   
+		}
 
 		storage->data = newItem;
 		storage->key = key;
@@ -63,9 +63,9 @@ public:
 	}
 
 
-	void Sort(void) 
+	void Sort(void)
 	{
-		qsort(items, numItems, sizeof(Data), 
+		qsort(items, numItems, sizeof(Data),
 				VVFixedMap< T, U >::FixedMapSorter);
 	}
 

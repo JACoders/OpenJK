@@ -527,7 +527,7 @@ static void IN_ProcessEvents( void )
 				character = IN_TranslateSDLToJKKey( &e.key.keysym, &key, qtrue );
 				if( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
-				
+
 				if( character )
 					Sys_QueEvent( 0, SE_CHAR, *character, qfalse, 0, NULL );
 

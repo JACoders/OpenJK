@@ -54,20 +54,20 @@ static char *GetToken(char **text, bool allowLineBreaks, bool readUntilEOL = fal
 		if (c == '/' && pointer[1] == '/')
 		{
 			pointer += 2;
-			while (*pointer && *pointer != '\n') 
+			while (*pointer && *pointer != '\n')
 			{
 				pointer++;
 			}
 		}
 		// skip multi line comments
-		else if (c == '/' && pointer[1] == '*') 
+		else if (c == '/' && pointer[1] == '*')
 		{
 			pointer += 2;
-			while (*pointer && (*pointer != '*' || pointer[1] != '/')) 
+			while (*pointer && (*pointer != '*' || pointer[1] != '/'))
 			{
 				pointer++;
 			}
-			if (*pointer) 
+			if (*pointer)
 			{
 				pointer += 2;
 			}
@@ -240,17 +240,17 @@ bool CGPObject::WriteText(CTextPool **textPool, const char *text)
 }
 
 
-	
-	
-	
 
 
 
 
 
 
-	
-	
+
+
+
+
+
 
 CGPValue::CGPValue(const char *initName, const char *initValue) :
 	CGPObject(initName),
@@ -318,8 +318,8 @@ bool CGPValue::IsList(void)
 	return true;
 }
 
-const char *CGPValue::GetTopValue(void) 
-{ 
+const char *CGPValue::GetTopValue(void)
+{
 	if (mList)
 	{
 		return mList->GetName();
@@ -622,7 +622,7 @@ CGPValue *CGPGroup::AddPair(const char *name, const char *value, CTextPool **tex
 
 void CGPGroup::AddPair(CGPValue *NewPair)
 {
-	SortObject(NewPair, (CGPObject **)&mPairs, (CGPObject **)&mInOrderPairs, 
+	SortObject(NewPair, (CGPObject **)&mPairs, (CGPObject **)&mInOrderPairs,
 		(CGPObject **)&mCurrentPair);
 }
 
@@ -641,13 +641,13 @@ CGPGroup *CGPGroup::AddGroup(const char *name, CTextPool **textPool)
 
 	return newGroup;
 }
-	
+
 void CGPGroup::AddGroup(CGPGroup *NewGroup)
 {
-	SortObject(NewGroup, (CGPObject **)&mSubGroups, (CGPObject **)&mInOrderSubGroups, 
+	SortObject(NewGroup, (CGPObject **)&mSubGroups, (CGPObject **)&mInOrderSubGroups,
 		(CGPObject **)&mCurrentSubGroup);
 }
-	
+
 CGPGroup *CGPGroup::FindSubGroup(const char *name)
 {
 	CGPGroup	*group;
@@ -735,7 +735,7 @@ bool CGPGroup::Write(CTextPool **textPool, int depth)
 		}
 		WriteText(textPool, mName);
 		(*textPool)->AllocText("\r\n", false, textPool);
-		
+
 		for(i=0;i<depth;i++)
 		{
 			(*textPool)->AllocText("\t", false, textPool);
@@ -769,16 +769,16 @@ bool CGPGroup::Write(CTextPool **textPool, int depth)
 
 /************************************************************************************************
  * CGPGroup::FindPair
- *    This function will search for the pair with the specified key name.  Multiple keys may be  
- *    searched if you specify "||" inbetween each key name in the string.  The first key to be     
- *    found (from left to right) will be returned.                                               
- *                                                                                               
- * Input                                                                                         
- *    key: the name of the key(s) to be searched for.                                            
- *                                                                                               
- * Output / Return                                                                               
- *    the group belonging to the first key found or 0 if no group was found.                     
- *                                                                                               
+ *    This function will search for the pair with the specified key name.  Multiple keys may be
+ *    searched if you specify "||" inbetween each key name in the string.  The first key to be
+ *    found (from left to right) will be returned.
+ *
+ * Input
+ *    key: the name of the key(s) to be searched for.
+ *
+ * Output / Return
+ *    the group belonging to the first key found or 0 if no group was found.
+ *
  ************************************************************************************************/
 CGPValue *CGPGroup::FindPair(const char *key)
 {
@@ -816,7 +816,7 @@ CGPValue *CGPGroup::FindPair(const char *key)
 		pos = next;
 	}
 
-	return 0;	
+	return 0;
 }
 
 const char *CGPGroup::FindPairValue(const char *key, const char *defaultVal)
@@ -944,7 +944,7 @@ TGPGroup GP_GetBaseParseGroup(TGenericParser2 GP2)
 	{
 		return 0;
 	}
-	
+
 	return ((CGenericParser2 *)GP2)->GetBaseParseGroup();
 }
 
@@ -1166,7 +1166,7 @@ bool GPV_GetTopValue(TGPValue GPV, char *Value)
 	}
 
 	strcpy(Value, ((CGPValue *)GPV)->GetTopValue());
-	
+
 	return true;
 }
 

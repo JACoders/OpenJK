@@ -42,7 +42,7 @@ Remote_MaintainHeight
 -------------------------
 */
 void Remote_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -65,7 +65,7 @@ void Remote_MaintainHeight( void )
 			TIMER_Set( NPCS.NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  Q_irand( 0, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2]; 
+			dif = (NPCS.NPC->enemy->r.currentOrigin[2] +  Q_irand( 0, NPCS.NPC->enemy->r.maxs[2]+8 )) - NPCS.NPC->r.currentOrigin[2];
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 2 )
@@ -236,7 +236,7 @@ void Remote_Fire (void)
 
 	CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorCopy( NPCS.NPC->r.currentOrigin, muzzle1 );
-	
+
 	VectorSubtract (enemy_org1, muzzle1, delta1);
 
 	vectoangles ( delta1, angleToEnemy1 );
@@ -296,7 +296,7 @@ void Remote_Attack( void )
 	if ( TIMER_Done(NPCS.NPC,"spin") )
 	{
 		TIMER_Set( NPCS.NPC, "spin", Q_irand( 250, 1500 ) );
-		NPCS.NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
+		NPCS.NPCInfo->desiredYaw += Q_irand( -200, 200 );
 	}
 	// Always keep a good height off the ground
 	Remote_MaintainHeight();
@@ -309,7 +309,7 @@ void Remote_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	idealDist	= MIN_DISTANCE_SQR+(MIN_DISTANCE_SQR*flrand( 0, 1 ));
 	advance		= (qboolean)(distance > idealDist*1.25);

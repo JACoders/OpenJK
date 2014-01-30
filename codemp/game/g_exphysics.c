@@ -5,7 +5,7 @@
  *
  * desc:		Custom physics system (Expensive Physics)
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  *
  *****************************************************************************/
@@ -112,7 +112,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 
 		//Get the difference relative to the entity origin and projected origin, to add to each bolt position.
 		VectorSubtract(ent->r.currentOrigin, projectedOrigin, trajDif);
-        
+
 		while (i < numG2Bolts)
 		{
 			//Get the position of the actual bolt for this frame

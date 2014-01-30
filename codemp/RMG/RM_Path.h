@@ -20,7 +20,7 @@
 
 class CRMPathManager;
 
-// directions you can proceed from cells 
+// directions you can proceed from cells
 enum ERMDir
 {
 	DIR_FIRST= 0,
@@ -84,25 +84,25 @@ private:
 	bool			mPlaced;	// location has been placed at a node
 
 public:
-	CRMLoc (const char *name, const int min_depth, const int max_depth, const int min_paths =1, const int max_paths=1 ) 
+	CRMLoc (const char *name, const int min_depth, const int max_depth, const int min_paths =1, const int max_paths=1 )
 		: mMinDepth(min_depth), mMaxDepth(max_depth), mMinPaths(min_paths), mMaxPaths(max_paths), mPlaced(false)
 	{ mName = name; };
 
 	const char*	GetName	 ( ) { return mName.c_str(); }
 	void		SetName ( const char* name ) { mName = name; }
-	
+
 	int			MinDepth() {return mMinDepth;};
 	void		SetMinDepth(const int deep) {mMinDepth = deep;};
 
 	int			MaxDepth() {return mMaxDepth;};
 	void		SetMaxDepth(const int deep) {mMaxDepth = deep;};
-	
+
 	int			MinPaths() {return mMinPaths;};
 	void		SetMinPaths(const int paths) {mMinPaths = paths;};
 
 	int			MaxPaths() {return mMaxPaths;};
 	void		SetMaxPaths(const int paths) {mMaxPaths = paths;};
-	
+
 	bool		Placed() { return mPlaced; };
 	void		SetPlaced(bool p) { mPlaced = p;};
 };
@@ -201,18 +201,18 @@ public:
 	void		PathVisit		( const int x, const int y );
 	void		RiverVisit		( const int x, const int y );
 	void		SetPathStyle	( const int	points = 10,
-								  const float minwidth = 0.01f, 
-								  const float maxwidth = 0.05f,	
-								  const float depth = 0.3f, 
-								  const float deviation = 0.2f, 
+								  const float minwidth = 0.01f,
+								  const float maxwidth = 0.05f,
+								  const float depth = 0.3f,
+								  const float deviation = 0.2f,
 								  const float breadth = 5);
 
 	void		SetRiverStyle	( const int depth = 5,
 								  const int	points = 10,
 								  const	float minwidth = 0.01,
 								  const	float maxwidth = 0.03,
-								  const float beddepth = 0.0f, 
-								  const float deviation = 0.25f, 
+								  const float beddepth = 0.0f,
+								  const float deviation = 0.25f,
 								  const float breadth = 7,
 								  string bridge_name = "");
 

@@ -15,7 +15,7 @@
 #define EFLAG_FAILED	0x00000002
 
 #ifdef _MSC_VER
-#pragma warning( disable : 4786) 
+#pragma warning( disable : 4786)
 #endif
 
 #if defined(_WIN32)
@@ -92,7 +92,7 @@ public:
 
 	int	GetID( void )					const	{	return m_ID;	}
 	void GetPosition( vec3_t position )	const	{	if ( position )	VectorCopy( m_position, position );	}
- 	
+
 	int GetNumEdges( void )				const	{	return m_numEdges;	}
 	int	GetEdgeNumToNode( int ID );
 	int GetEdge( int edgeNum );
@@ -117,7 +117,7 @@ protected:
 	int				m_flags;
 	int				m_radius;
 	int				m_ID;
-	
+
 	edge_v	m_edges;
 
 	int		*m_ranks;
@@ -136,7 +136,7 @@ class CNavigator
 	typedef	list < CEdge >				edge_l;
 
 #if __NEWCOLLECT
-	
+
 	struct nodeList_t
 	{
 		int				nodeID;
@@ -181,7 +181,7 @@ public:
 	float GetNodeLeadDistance( int nodeID );
 
 	int GetNumNodes( void )		const	{	return m_nodes.size();		}
-	
+
 	bool Connected( int startID, int endID );
 
 	unsigned int GetPathCost( int startID, int endID );
@@ -219,7 +219,7 @@ protected:
 	int		TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts );
 	int		TestNodeLOS( sharedEntity_t *ent, vec3_t position );
 	int		TestBestFirst( sharedEntity_t *ent, int lastID, int flags );
-	
+
 #if __NEWCOLLECT
 	int		CollectNearestNodes( vec3_t origin, int radius, int maxCollect, nodeChain_l &nodeChain );
 #else
@@ -240,7 +240,7 @@ protected:
 	//rww - made failedEdges private as it doesn't seem to need to be public.
 	//And I'd rather shoot myself than have to devise a way of setting/accessing this
 	//array via trap calls.
-	failedEdge_t	failedEdges[MAX_FAILED_EDGES];	
+	failedEdge_t	failedEdges[MAX_FAILED_EDGES];
 
 	node_v			m_nodes;
 	EdgeMultimap	m_edgeLookupMap;
@@ -256,7 +256,7 @@ class CPriorityQueue
 public:
 	CPriorityQueue() {};
 	~CPriorityQueue();
-	
+
 // Functionality
 //--------------------------------------------------------------
 public:
@@ -265,7 +265,7 @@ public:
 	void	Push( CEdge* theEdge );
 	void	Update(CEdge* edge );
 	bool	Empty();
-	
+
 
 // DATA
 //--------------------------------------------------------------

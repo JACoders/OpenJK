@@ -5,7 +5,7 @@
  *
  * RM_Instance_Random.cpp
  *
- * Implements the CRMRandomInstance class.  This class is reponsible for parsing a 
+ * Implements the CRMRandomInstance class.  This class is reponsible for parsing a
  * random instance as well as spawning it into a landscape.
  *
  ************************************************************************************************/
@@ -26,7 +26,7 @@
  *	none
  *
  ************************************************************************************************/
-CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile ) 
+CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile )
 	: CRMInstance ( instGroup, instFile )
 {
 	CGPGroup* group;
@@ -34,8 +34,8 @@ CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& ins
 	int		  numGroups;
 
 	// Build a list of the groups one can be chosen
-	for ( numGroups = 0, group = instGroup->GetSubGroups ( ); 
-		  group; 
+	for ( numGroups = 0, group = instGroup->GetSubGroups ( );
+		  group;
 		  group = group->GetNext ( ) )
 	{
 		// If this isnt an instance group then skip it
@@ -46,7 +46,7 @@ CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& ins
 
 		int multiplier = atoi(group->FindPairValue ( "multiplier", "1" ));
 		for ( ; multiplier > 0 && numGroups < MAX_RANDOM_INSTANCES; multiplier -- )
-		{ 
+		{
 			groups[numGroups++] = group;
 		}
 	}
@@ -61,7 +61,7 @@ CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& ins
 		return;
 	}
 
-	// Now choose a group to parse	
+	// Now choose a group to parse
 	instGroup = groups[TheRandomMissionManager->GetLandScape()->irand(0,numGroups-1)];
 
 	// Create the child instance now.  If the instance create fails then the
@@ -97,7 +97,7 @@ CRMRandomInstance::~CRMRandomInstance(void)
 }
 
 void CRMRandomInstance::SetMirror(int mirror)
-{ 
+{
 	CRMInstance::SetMirror(mirror);
 	if (mInstance)
 	{

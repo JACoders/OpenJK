@@ -71,7 +71,7 @@ typedef struct siegeClass_s {
 	int			uiPortraitShader;
 	char		uiPortrait[256];
 	int			classShader;
-	short		playerClass;		// SPC_INFANTRY . .. 
+	short		playerClass;		// SPC_INFANTRY . ..
 } siegeClass_t;
 
 typedef struct siegeTeam_s {

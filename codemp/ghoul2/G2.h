@@ -25,7 +25,7 @@
 #define		ENTITY_WIDTH 12
 #define		MODEL_WIDTH	10
 #define		BOLT_WIDTH	10
- 
+
 #define		MODEL_AND	((1<<MODEL_WIDTH)-1)
 #define		BOLT_AND	((1<<BOLT_WIDTH)-1)
 #define		ENTITY_AND	((1<<ENTITY_WIDTH)-1)
