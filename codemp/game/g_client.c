@@ -2512,7 +2512,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	gclient_t	*client;
 	char		userinfo[MAX_INFO_STRING] = {0},
 				tmpIP[NET_ADDRSTRMAXLEN] = {0},
-				name[MAX_NETNAME] = {0},
 				guid[33] = {0};
 
 	ent = &g_entities[ clientNum ];
