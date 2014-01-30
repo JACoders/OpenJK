@@ -3523,7 +3523,7 @@ static shader_t *FinishShader( void ) {
 		} 
 		else 
 		{
-			ri->Printf( PRINT_ALL,  "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
+			ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 			memcpy(shader.lightmapIndex, lightmapsNone, sizeof(shader.lightmapIndex));
 			memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
 		}
