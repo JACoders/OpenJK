@@ -131,7 +131,7 @@ void Con_Clear_f (void) {
 	Con_Bottom();		// go to end
 }
 
-						
+
 /*
 ================
 Con_Dump_f
@@ -217,7 +217,7 @@ void Con_Dump_f (void)
 	FS_FCloseFile( f );
 }
 
-						
+
 /*
 ================
 Con_ClearNotify
@@ -225,13 +225,13 @@ Con_ClearNotify
 */
 void Con_ClearNotify( void ) {
 	int		i;
-	
+
 	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
 		con.times[i] = 0;
 	}
 }
 
-						
+
 
 /*
 ================
@@ -280,7 +280,7 @@ void Con_CheckResize (void)
 			numlines = con.totallines;
 
 		numchars = oldwidth;
-	
+
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
 
@@ -405,10 +405,10 @@ void CL_ConsolePrint( const char *txt) {
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
 	}
-	
+
 	if (!con.initialized) {
-		con.color[0] = 
-		con.color[1] = 
+		con.color[0] =
+		con.color[1] =
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
@@ -570,13 +570,13 @@ void Con_DrawNotify (void)
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -586,7 +586,7 @@ void Con_DrawNotify (void)
 			v +=  iPixelHeightToAdvance;
 		}
 		else
-		{		
+		{
 			for (x = 0 ; x < con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -676,7 +676,7 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
+		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH,
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
 	}
 
@@ -697,7 +697,7 @@ void Con_DrawSolidConsole( float frac ) {
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
-	
+
 	row = con.display;
 
 	if ( con.x == 0 ) {
@@ -712,7 +712,7 @@ void Con_DrawSolidConsole( float frac ) {
 	int iPixelHeightToAdvance = SMALLCHAR_HEIGHT;
 	if (re->Language_IsAsian())
 	{
-		if (!iFontIndexForAsian) 
+		if (!iFontIndexForAsian)
 		{
 			iFontIndexForAsian = re->RegisterFont("ocr_a");
 		}
@@ -725,7 +725,7 @@ void Con_DrawSolidConsole( float frac ) {
 			break;
 		if (con.current - row >= con.totallines) {
 			// past scrollback wrap point
-			continue;	
+			continue;
 		}
 
 		text = con.text + (row % con.totallines)*con.linewidth;
@@ -739,13 +739,13 @@ void Con_DrawSolidConsole( float frac ) {
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -753,7 +753,7 @@ void Con_DrawSolidConsole( float frac ) {
 			re->Font_DrawString(con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*(aesthetics)*/)), con.yadjust*(y), sTemp, g_color_table[currentColor], iFontIndexForAsian, -1, fFontScaleForAsian);
 		}
 		else
-		{		
+		{
 			for (x=0 ; x<con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -818,7 +818,7 @@ void Con_RunConsole (void) {
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
-	
+
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{

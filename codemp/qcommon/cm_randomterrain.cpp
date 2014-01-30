@@ -159,24 +159,24 @@ static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work
 
 #define BIG (1.0e12)
 
-static float Vector2Normalize( vec2_t v ) 
+static float Vector2Normalize( vec2_t v )
 {
 	float	length, ilength;
 
 	length = v[0]*v[0] + v[1]*v[1];
 	length = sqrt (length);
 
-	if ( length ) 
+	if ( length )
 	{
 		ilength = 1/length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 	}
-		
+
 	return length;
 }
 
-CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey, 
+CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey,
 					 float minWidth, float maxWidth, float depth, float deviation, float breadth,
 					 CPathInfo *Connected, unsigned CreationFlags) :
 	mNumPoints(numPoints),
@@ -193,7 +193,7 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 	float	currentPosition;
 	vec2_t	testPoint, percPoint, diffPoint, normalizedPath;
 	float	distance;
-	
+
 	CreateCircle();
 
 	numConnected = -1;
@@ -415,7 +415,7 @@ void CPathInfo::Stamp(int x, int y, int size, int depth, unsigned char *Data, in
 			{
 				continue;
 			}
-			
+
 			fy = y + dy;
 			if (fy < 2 || fy > DataHeight-2)
 			{
@@ -515,7 +515,7 @@ void CPathInfo::DrawPath(unsigned char *Data, int DataWidth, int DataHeight )
 
 	lastX = lastY = -999;
 
-	for (t=0.0; t<=1.0; t+=inc) 
+	for (t=0.0; t<=1.0; t+=inc)
 	{
 		GetInfo(t, val, vector);
 
@@ -600,8 +600,8 @@ void CRandomTerrain::Shutdown(void)
 	ClearPaths ( );
 }
 
-bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints, 
-					float bx, float by, float ex, float ey, 
+bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints,
+					float bx, float by, float ex, float ey,
 					float minWidth, float maxWidth, float depth, float deviation, float breadth )
 {
 	CPathInfo	*connected = 0;
@@ -616,7 +616,7 @@ bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFl
 		connected = mPaths[ConnectedID];
 	}
 
-	mPaths[PathID] = new CPathInfo(mLandScape, numPoints, bx, by, ex, ey, 
+	mPaths[PathID] = new CPathInfo(mLandScape, numPoints, bx, by, ex, ey,
 		minWidth, maxWidth, depth, deviation, breadth,
 		connected, CreationFlags );
 
@@ -801,7 +801,7 @@ void CRandomTerrain::Generate(int symmetric)
 		for (x = 0; x < mWidth; x++)
 		{
 			i = x + y*mWidth;
-			byte val = (byte)Com_Clamp(0, 255, (int)(mGrid[i] + (CM_NoiseGet4f( x, y, 0, t1 ) * 5))); 
+			byte val = (byte)Com_Clamp(0, 255, (int)(mGrid[i] + (CM_NoiseGet4f( x, y, 0, t1 ) * 5)));
 			mGrid[i] = val;
 		}
 
@@ -839,7 +839,7 @@ typedef struct SCharacterPiece
 	int		mCommonality;
 } TCharacterPiece;
 
-static TCharacterPiece	Consonants[] = 
+static TCharacterPiece	Consonants[] =
 {
 	{	"b", 6 },
 	{	"c", 8 },
@@ -863,7 +863,7 @@ static TCharacterPiece	Consonants[] =
 	{	0, 0 }
 };
 
-static TCharacterPiece	ComplexConsonants[] = 
+static TCharacterPiece	ComplexConsonants[] =
 {
 	{	"st", 10 },
 	{	"ck", 10 },
@@ -874,23 +874,23 @@ static TCharacterPiece	ComplexConsonants[] =
 	{	"rn", 6 },
 	{	"nc", 6 },
 	{	"mp", 4 },
-	{	"sc", 10 }, 
-	{	"sl", 10 }, 
-	{	"tch", 6 }, 
-	{	"th", 4 }, 
-	{	"rn", 5 }, 
-	{	"cl", 10 }, 
-	{	"sp", 10 }, 
-	{	"st", 10 }, 
-	{	"fl", 4 }, 
-	{	"sh", 7 }, 
-	{	"ng", 4 }, 
+	{	"sc", 10 },
+	{	"sl", 10 },
+	{	"tch", 6 },
+	{	"th", 4 },
+	{	"rn", 5 },
+	{	"cl", 10 },
+	{	"sp", 10 },
+	{	"st", 10 },
+	{	"fl", 4 },
+	{	"sh", 7 },
+	{	"ng", 4 },
 //	{	"" },
 
 	{	0, 0 }
 };
 
-static TCharacterPiece	Vowels[] = 
+static TCharacterPiece	Vowels[] =
 {
 	{	"a", 10 },
 	{	"e", 10 },
@@ -902,7 +902,7 @@ static TCharacterPiece	Vowels[] =
 	{	0, 0 }
 };
 
-static TCharacterPiece	ComplexVowels[] = 
+static TCharacterPiece	ComplexVowels[] =
 {
 	{	"ea", 10  },
 	{	"ue", 3 },
@@ -914,14 +914,14 @@ static TCharacterPiece	ComplexVowels[] =
 	{	"au", 3 },
 	{	"ee", 7 },
 	{	"ei", 7 },
-	{	"ou", 7 }, 
-	{	"ia", 4 }, 
+	{	"ou", 7 },
+	{	"ia", 4 },
 //	{	"" },
 
 	{	0, 0 }
 };
 
-static TCharacterPiece	Endings[] = 
+static TCharacterPiece	Endings[] =
 {
 	{	"ing", 10 },
 	{	"ed", 10 },
@@ -944,9 +944,9 @@ static TCharacterPiece	Endings[] =
 	{	"ious", 10 },
 	{	"ative", 10 },
 	{	"er", 10 },
-	{	"ize", 10 }, 
-	{	"able", 10 }, 
-	{	"itude", 10 }, 
+	{	"ize", 10 },
+	{	"able", 10 },
+	{	"itude", 10 },
 //	{	"" },
 
 	{	0, 0 }
@@ -1011,7 +1011,7 @@ unsigned RMG_CreateSeed(char *TextSeed)
 	Length = irand(4, 9);
 
 	if (irand(0, 100) < 20)
-	{ 
+	{
 		LookingFor = CP_VOWEL;
 	}
 	else

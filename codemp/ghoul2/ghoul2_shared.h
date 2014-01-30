@@ -36,7 +36,7 @@ struct model_s;
 //   G H O U L  I I  D E F I N E S
 //
 // we save the whole surfaceInfo_t struct
-struct surfaceInfo_t 
+struct surfaceInfo_t
 {
 	int			offFlags;		// what the flags are for this model
 	int			surface;		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
@@ -44,7 +44,7 @@ struct surfaceInfo_t
 	float		genBarycentricI;	// point 1 barycentric coors - point 2 is 1 - point0 - point1
 	int			genPolySurfaceIndex; // used to point back to the original surface and poly if this is a generated surface
 	int			genLod;			// used to determine original lod of original surface and poly hit location
-	
+
 surfaceInfo_t():
 	offFlags(0),
 	surface(0),
@@ -101,12 +101,12 @@ struct  boneInfo_t
 	int			restTime;
 	int			RagFlags;
 	int			DependentRagIndexMask;
-	mdxaBone_t	originalTrueBoneMatrix;	
+	mdxaBone_t	originalTrueBoneMatrix;
 	mdxaBone_t	parentTrueBoneMatrix;			// figure I will need this sooner or later
 	mdxaBone_t	parentOriginalTrueBoneMatrix;	// figure I will need this sooner or later
 	vec3_t		originalOrigin;
 	vec3_t		originalAngles;
-	vec3_t		lastShotDir;		
+	vec3_t		lastShotDir;
 	mdxaBone_t  *basepose;
 	mdxaBone_t  *baseposeInv;
 	mdxaBone_t  *baseposeParent;
@@ -116,7 +116,7 @@ struct  boneInfo_t
 
 	mdxaBone_t	extraMatrix;	// figure I will need this sooner or later
 	vec3_t		extraVec1;		// I am really tired of recomiling the whole game to add a param here
-	float		extraFloat1;		
+	float		extraFloat1;
 	int			extraInt1;
 
 	vec3_t		ikPosition;
@@ -161,16 +161,16 @@ boneInfo_t():
 	lastTime(0),
 	RagFlags(0)
 	{
-		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] = 
-		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] = 
+		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] =
+		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] =
 		matrix.matrix[2][0] = matrix.matrix[2][1] = matrix.matrix[2][2] = matrix.matrix[2][3] = 0.0f;
 	}
 
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
 struct boltInfo_t{
-	int			boneNumber;		// bone number bolt attaches to	
-	int			surfaceNumber;	// surface number bolt attaches to 
+	int			boneNumber;		// bone number bolt attaches to
+	int			surfaceNumber;	// surface number bolt attaches to
 	int			surfaceType;	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
 	int			boltUsed;		// nor does this
 	mdxaBone_t	position;		// this does not go across the network
@@ -213,7 +213,7 @@ struct SSkinGoreData
 	float			TSize;			// size of splotch in the T texture direction in world units
 	float			theta;			// angle to rotate the splotch
 
-//	qhandle_t		shader;			// handle to shader for gore, this better be rendered after the shader of the underlying surface					
+//	qhandle_t		shader;			// handle to shader for gore, this better be rendered after the shader of the underlying surface
 									// this shader should also have "clamp" mode, not tiled.
 	goreEnum_t		shaderEnum;		// enum that'll get switched over to the shader's actual handle
 };
@@ -310,7 +310,7 @@ public:
 	{
 		mFileName[0] = 0;
 	}
-}; 
+};
 
 class CGhoul2Info_v;
 

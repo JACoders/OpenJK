@@ -80,7 +80,7 @@ void CCMLandScape::LoadTerrainDef(const char *td)
 					shader = CM_GetShaderInfo(shaderName);
 					if(shader)
 					{
-						SetShaders(height, shader); 
+						SetShaders(height, shader);
 					}
 				}
 			}
@@ -156,7 +156,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 
 	mHeightMap = (byte *)Z_Malloc(GetRealArea(), TAG_CM_TERRAIN);
 	mFlattenMap = (byte *)Z_Malloc(GetRealArea(), TAG_CM_TERRAIN);
-	
+
 	// Zero means unused.
 	memset ( mFlattenMap, 0, GetRealArea() );
 
@@ -170,7 +170,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
 		mRandomTerrain = 0;
 #ifndef DEDICATED
-		re->LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
+		re->LoadDataImage(heightMap, &imageData, &iWidth, &iHeight);
 		if(imageData)
 		{
 			if(strstr(heightMap, "random_"))
@@ -245,7 +245,7 @@ void* CCMPatch::GetAdjacentBrushY ( int x, int y )
 	int			yo2 = (y-1) % owner->GetTerxels();
 	int			xo  = x % owner->GetTerxels();
 	CCMPatch*	patch;
-	
+
 	// Different patch
 	if ( yo2 > yo1 )
 	{
@@ -257,7 +257,7 @@ void* CCMPatch::GetAdjacentBrushY ( int x, int y )
 	}
 
 	cbrush_t *brush;
-	
+
 	brush =  patch->mPatchBrushData;
 	brush += ((yo2 * owner->GetTerxels ( ) + xo) * 2);
 	brush ++;
@@ -271,7 +271,7 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 	int			xo2 = (x-1) % owner->GetTerxels();
 	int			yo  = y % owner->GetTerxels();
 	CCMPatch*	patch;
-	
+
 	// Different patch
 	if ( xo2 > xo1 )
 	{
@@ -283,12 +283,12 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 	}
 
 	cbrush_t *brush;
-	
+
 	brush =  patch->mPatchBrushData;
 	brush += ((yo * owner->GetTerxels ( ) + xo2) * 2);
 
 	if ( ! ((x+y) & 1) )
-	{		
+	{
 		brush ++;
 	}
 
@@ -296,7 +296,7 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 }
 
 void CCMPatch::CreatePatchPlaneData(void)
-{				
+{
 	int				realWidth;
 	int				x, y, i, j;
 #if	0
@@ -379,14 +379,14 @@ void CCMPatch::CreatePatchPlaneData(void)
 			brush[0].sides = side;
 			brush[1].numsides = 5;
 			brush[1].sides = side + 5;
-								  			
+
 			for ( i = 0; i < 8 ; i ++ )
 			{
 				localCoords[i][0] = (int)localCoords[i][0];
 				localCoords[i][1] = (int)localCoords[i][1];
 				localCoords[i][2] = (int)localCoords[i][2];
 			}
-	
+
 			// Create the planes of the 2 triangles that make up the tops of the brushes
 			InitPlane(side + 0, plane + 0, localCoords[0], localCoords[1], localCoords[2]);
 			InitPlane(side + 5, plane + 5, localCoords[3], localCoords[2], localCoords[1]);
@@ -410,7 +410,7 @@ void CCMPatch::CreatePatchPlaneData(void)
 			side += 10;
 			plane += 10;
 
-			
+
 
 #else
 
@@ -444,10 +444,10 @@ void CCMPatch::CreatePatchPlaneData(void)
 			if ( V < 0 )
 			{
 				InitPlane ( brush[0].sides + brush[0].numsides, plane + brush[0].numsides, localCoords[3], localCoords[2], localCoords[1]);
-				brush[0].numsides++;			
+				brush[0].numsides++;
 
 				InitPlane ( brush[1].sides + brush[1].numsides, plane + 8 + brush[1].numsides, localCoords[0], localCoords[1], localCoords[2]);
-				brush[1].numsides++;			
+				brush[1].numsides++;
 			}
 
 			// Determine if we need to smooth the brush transition from the brush above us
@@ -467,7 +467,7 @@ void CCMPatch::CreatePatchPlaneData(void)
 					abovebrush->numsides++;
 				}
 			}
-			
+
 			// Determine if we need to smooth the brush transition from the brush to the left of us
 			if ( x > 0 && x < owner->GetPatchWidth ( ) - 1 )
 			{
@@ -521,7 +521,7 @@ void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, by
 	mHy = heightY;
 	mHeightMap = hMap + ((heightY * owner->GetRealWidth()) + heightX);
 
-	// Calculate the bounds for culling 
+	// Calculate the bounds for culling
 	// Use the dimensions 1 terxel outside the patch to allow for sloping of edge terxels
 	min = 256;
 	max = -1;
@@ -569,7 +569,7 @@ void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, by
 	mContentFlags = owner->GetContentFlags((min + max) >> 1);
 
 	// Set base of brush data from big array
-	mPatchBrushData = (cbrush_t *)patchBrushData; 
+	mPatchBrushData = (cbrush_t *)patchBrushData;
 	CreatePatchPlaneData();
 }
 
@@ -578,7 +578,7 @@ CCMPatch *CCMLandScape::GetPatch(int x, int y)
 	return(mPatches + ((y * mBlockWidth) + x));
 }
 
-extern cvar_t	*com_newtrace;		
+extern cvar_t	*com_newtrace;
 
 void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const vec3_t start, const vec3_t end, int checkcount)
 {
@@ -611,7 +611,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 			}
 			offset = start[1] - (start[0] * slope);
 
-			// find the starting 
+			// find the starting
 			startPatchLoc = floor((start[0] - mBounds[0][0]) / mPatchSize[0]);
 			endPatchLoc = floor((end[0] - mBounds[0][0]) / mPatchSize[0]);
 
@@ -632,7 +632,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 			{
 				checkDirection = -1;
 			}
-			
+
 			// first calculate the real world location
 			startPos = ((startPatchLoc * mPatchSize[0] + mBounds[0][0]) * slope) + offset;
 			// calculate it back into patch coords
@@ -645,7 +645,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 					endPos = (((startPatchLoc+patchDirection) * mPatchSize[0] + mBounds[0][0]) * slope) + offset;
 					// calculate it back into patch coords
 					endPos = floor((endPos - mBounds[0][1] + tw->size[1][1]) / mPatchSize[1]);
-					
+
 					if (checkDirection < 0)
 					{
 						startPos++;
@@ -697,7 +697,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 			slope = (end[0] - start[0]) / (end[1] - start[1]);
 			offset = start[0] - (start[1] * slope);
 
-			// find the starting 
+			// find the starting
 			startPatchLoc = floor((start[1] - mBounds[0][1]) / mPatchSize[1]);
 			endPatchLoc = floor((end[1] - mBounds[0][1]) / mPatchSize[1]);
 
@@ -718,7 +718,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 			{
 				checkDirection = -1;
 			}
-			
+
 			// first calculate the real world location
 			startPos = ((startPatchLoc * mPatchSize[1] + mBounds[0][1]) * slope) + offset;
 			// calculate it back into patch coords
@@ -742,7 +742,7 @@ void CCMLandScape::PatchCollide(struct traceWork_s *tw, trace_t &trace, const ve
 						startPos--;
 						endPos++;
 					}
-					
+
 					count = fabs(endPos - startPos) + 1;
 					while(count)
 					{
@@ -871,7 +871,7 @@ void CCMLandScape::GetTerxelLocalCoords ( int x, int y, vec3_t localCoords[8] )
 	{
 		VectorCopy(coords[offsets[i]], localCoords[i]);
 		VectorCopy(coords[offsets[i]], localCoords[i + 4]);
-		
+
 		// Set z of base of brush to bottom of landscape brush
 		localCoords[i + 4][2] = GetMins()[2];
 	}
@@ -909,7 +909,7 @@ void CCMLandScape::UpdatePatches(void)
 		}
 	}
 
-/*	
+/*
 	for ( y = mTerxels; y < mHeight - mTerxels; y ++ )
 	{
 		for ( x = mTerxels; x < mWidth - mTerxels; x ++ )
@@ -935,18 +935,18 @@ void CCMLandScape::UpdatePatches(void)
 			brush = patch->GetCollisionData ( );;
 			side  = (cbrushside_t *)(mPatchBrushData + patch->GetNumBrushes ( ) );
 			plane = (cplane_t *)(side + (mNumBrushes * BRUSH_SIDES_PER_TERXEL * 2));
-			
+
 
 			float V = DotProduct ( (plane + 8)->normal, localCoords[0] ) + plane->dist;
 
 			if ( V < 0 )
 			{
 				InitPlane ( brush[0].sides + brush[0].numsides, plane + brush[0].numsides, localCoords[3], localCoords[2], localCoords[1]);
-				brush[0].numsides++;			
+				brush[0].numsides++;
 
 				InitPlane ( brush[1].sides + brush[1].numsides, plane + 8 + brush[1].numsides, localCoords[0], localCoords[1], localCoords[2]);
-				brush[1].numsides++;			
-			}			
+				brush[1].numsides++;
+			}
 		}
 	}
 */
@@ -992,7 +992,7 @@ void CCMLandScape::TerrainPatchIterate(void (*IterateFunc)( CCMPatch *, void * )
 #define LERP(t, a, b) (((b)-(a))*(t) + (a))
 
 float CCMLandScape::GetWorldHeight(vec3_t origin, const vec3pair_t bounds, bool aboveGround) const
-{ 
+{
 	vec3_t		work;
 	int			minx, maxx, miny, maxy;
 	int			TL, TR, BL, BR;
@@ -1034,7 +1034,7 @@ float CCMLandScape::GetWorldHeight(vec3_t origin, const vec3pair_t bounds, bool 
 		min2 = minimum(BL, BR);
 		final = minimum(min1, min2);
 	}
-	origin[2] = (final * mTerxelSize[2]) + mBounds[0][2]; 
+	origin[2] = (final * mTerxelSize[2]) + mBounds[0][2];
 
 	// compute slope at this spot
 	if (maxx == minx)
@@ -1129,7 +1129,7 @@ void CCMLandScape::CarveLine ( vec3_t start, vec3_t end, int depth, int width )
 	x1 = (int) start[0];
 	y1 = (int) start[1];
 	x2 = (int) end[0];
-	y2 = (int) end[1];	
+	y2 = (int) end[1];
 
 	deltax = abs(x2 - x1);
 	deltay = abs(y2 - y1);
@@ -1143,20 +1143,20 @@ void CCMLandScape::CarveLine ( vec3_t start, vec3_t end, int depth, int width )
 		xinc2 = 1;
 	}
 	// The x-values are decreasing
-	else                          
+	else
 	{
 		xinc1 = -1;
 		xinc2 = -1;
 	}
 
 	// The y-values are increasing
-	if (y2 >= y1)                 
+	if (y2 >= y1)
 	{
 		yinc1 = 1;
 		yinc2 = 1;
 	}
 	// The y-values are decreasing
-	else                          
+	else
 	{
 		yinc1 = -1;
 		yinc2 = -1;
@@ -1183,7 +1183,7 @@ void CCMLandScape::CarveLine ( vec3_t start, vec3_t end, int depth, int width )
 
 	vec3_t pt;
 	vec3_t bounds[2] = {{-1,-1,-1},{1,1,1}};
-	
+
 	pt[0] = start[0];
 	pt[1] = start[1];
 	GetWorldHeight ( pt, bounds, false );
@@ -1207,21 +1207,21 @@ void CCMLandScape::CarveLine ( vec3_t start, vec3_t end, int depth, int width )
 	 	FlattenArea ( &area, heightStart + (heightStep * i) - (depth/2 - (irand(0, depth/2))), false, true, true );
 
 		// Increase the numerator by the top of the fraction
-		num += add;					
-  
-		if (num >= den)             
+		num += add;
+
+		if (num >= den)
 		{
 			// Calculate the new numerator value
 			num -= den;
-			
+
 			// Change the x and y as appropriate
 			x += xinc1;
 			y += yinc1;
 		}
-		
+
 		// Change the x and y as appropriate
-		x += xinc2;                 
-		y += yinc2;                 
+		x += xinc2;
+		y += yinc2;
 	}
 }
 
@@ -1252,7 +1252,7 @@ void CCMLandScape::CarveBezierCurve ( int numCtlPoints, vec3_t* ctlPoints, int s
 		(*(ctlPoints+i))[0] *= choose;
 		(*(ctlPoints+i))[1] *= choose;
 	}
-	
+
 	step = 1.0f / (float)steps;
 	for ( choose = 0, t = step; t < 1; t += step, choose++ )
 	{
@@ -1340,11 +1340,11 @@ void CCMLandScape::FlattenArea(CArea *area, int height, bool save, bool forceHei
 	}
 
 	if ( forceHeight )
-	{		
+	{
 		CM_CircularIterate(mHeightMap, GetRealWidth(), GetRealHeight(), icoords[0], icoords[1], 0, radius + 1, &height, CM_ForceHeight );
 		CM_CircularIterate(mFlattenMap, GetRealWidth(), GetRealHeight(), icoords[0], icoords[1], 0, radius + 1, &height2, CM_ForceHeight );
 	}
-	else if ( smooth ) 
+	else if ( smooth )
 	{
 		CM_CircularIterate(mHeightMap, GetRealWidth(), GetRealHeight(), icoords[0], icoords[1], 0, radius, &height, CM_Smooth);
 	}
@@ -1488,11 +1488,11 @@ bool CCMLandScape::AreaCollision(CArea *area, int *areaTypes, int areaTypeCount)
 				if(segment < M_PI)
 				{
 					segment += 2 * M_PI;
-				}						
+				}
 				if(segment > M_PI)
 				{
 					segment -= 2 * M_PI;
-				}						
+				}
 				if(fabsf(segment) < areas->GetAngleDiff() + area->GetAngleDiff())
 				{
 					collision = true;
@@ -1531,7 +1531,7 @@ void CCMLandScape::rand_seed(int seed)
 {
 	holdrand = seed;
 	Com_Printf("rand_seed = %d\n", holdrand);
-} 
+}
 
 float CCMLandScape::flrand(float min, float max)
 {
@@ -1564,9 +1564,9 @@ int CCMLandScape::irand(int min, int max)
 
 CCMLandScape::~CCMLandScape(void)
 {
-	if(mHeightMap) 
-	{ 
-		Z_Free(mHeightMap); 
+	if(mHeightMap)
+	{
+		Z_Free(mHeightMap);
 		mHeightMap = NULL;
 	}
 	if(mFlattenMap)
@@ -1579,9 +1579,9 @@ CCMLandScape::~CCMLandScape(void)
 		Z_Free(mPatchBrushData);
 		mPatchBrushData = NULL;
 	}
-	if(mPatches) 
-	{ 
-		Z_Free(mPatches); 
+	if(mPatches)
+	{
+		Z_Free(mPatches);
 		mPatches = NULL;
 	}
 	if (mRandomTerrain)
@@ -1677,7 +1677,7 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 	seed = strtoul(Info_ValueForKey(config, "seed"), &ptr, 10);
 
 	landscape->rand_seed(seed);
-	
+
 	RandomTerrain = new CRandomTerrain;
 	RandomTerrain->Init(landscape, heightmap, width, height);
 

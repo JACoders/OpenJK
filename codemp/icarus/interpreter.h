@@ -11,7 +11,7 @@ typedef float	vector_t[3];
 
 //If you modify this, you MUST modify in g_ICARUScb.c as well.
 //Token defines
-enum 
+enum
 {
 	TK_BLOCK_START = TK_USERDEF,
 	TK_BLOCK_END,
@@ -79,9 +79,9 @@ enum
 	TYPE_ORIGIN,
 
 	//Affect types
-	TYPE_INSERT,	
-	TYPE_FLUSH,	
-	
+	TYPE_INSERT,
+	TYPE_FLUSH,
+
 	//Camera types
 	TYPE_PAN,
 	TYPE_ZOOM,
@@ -95,7 +95,7 @@ enum
 	TYPE_TRACK,
 	TYPE_DISTANCE,
 	TYPE_FOLLOW,
-		
+
 	//Variable type
 	TYPE_VARIABLE,
 
@@ -123,7 +123,7 @@ typedef vector < variable_t * > variable_v;
 
 //CInterpreter
 
-class CInterpreter 
+class CInterpreter
 {
 public:
 
@@ -131,7 +131,7 @@ public:
 	~CInterpreter();
 
 	int Interpret( CTokenizer *, CBlockStream *, char *filename=NULL );	//Main interpretation function
-	
+
 	int Match( int );		//Looks ahead to the next token to try and match it to the passed token, consumes token on success
 	int LookAhead( int );	//Looks ahead without consuming on success
 
@@ -147,7 +147,7 @@ public:
 	int GetFlush( void );		//Handles the flush() function
 	int	GetRun( void );			//Handles the run() function
 	int	GetKill( void );		//Handles the kill() function
-	int	GetRemove( void );		//Handles the remove() function	
+	int	GetRemove( void );		//Handles the remove() function
 	int GetCamera( void );		//Handles the camera() function
 	int GetIf( void );			//Handles the if() conditional statement
 	int GetSound( void );		//Handles the sound() function
@@ -163,7 +163,7 @@ public:
 	int GetSignal( void );
 	int GetWaitSignal( void );
 	int GetPlay( void );
-	
+
 	int GetRandom( CBlock *block );
 	int GetGet( CBlock *block );		//Heh
 	int	GetTag( CBlock *block );		//Handles the tag() identifier
@@ -182,7 +182,7 @@ public:
 	int GetVariable( int type );
 
 	int GetID ( char * );	//Attempts to match and interpret an identifier
-	
+
 	keywordArray_t *GetSymbols( void )	{	return (keywordArray_t *) &m_symbolKeywords;	}	//Returns the interpreter's symbol table
 	keywordArray_t *GetIDs( void )		{	return (keywordArray_t *) &m_IDKeywords;		}	//Returns the interpreter's ID table
 	keywordArray_t *GetTypes( void )	{	return (keywordArray_t *) &m_typeKeywords;	}		//Returns the interpreter's type table
@@ -191,13 +191,13 @@ protected:
 
 	void InitVars( void );
 	void FreeVars( void );
-	
+
 	variable_t *AddVar( const char *name, int type );
 	variable_t *FindVar( const char *name );
 
 	const char *GetTokenName( int );	//Returns the name of a token
 	int Error( char *, ... );			//Prints an error message
-	
+
 	int MatchTag( void );				//Attempts to match to a tag identifier
 	int MatchGet( void );				//Attempts to match to a get identifier
 	int	MatchRandom( void );			//Attempts to match to a random identifier

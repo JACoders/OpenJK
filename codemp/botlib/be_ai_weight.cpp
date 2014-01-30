@@ -5,7 +5,7 @@
  * desc:		fuzzy logic
  *
  * $Archive: /MissionPack/code/botlib/be_ai_weight.c $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 3 $
  * $Modtime: 8/06/00 5:25p $
  * $Date: 8/06/00 11:07p $
@@ -60,7 +60,7 @@ int ReadValue(source_t *source, float *value)
 		SourceError(source, "invalid return value %s", token.string);
 		return qfalse;
 	}
-	
+
 	*value = token.floatvalue;
 	return qtrue;
 } //end of the function ReadValue

@@ -69,13 +69,13 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	pos[2] += self->r.maxs[2]*0.5f;
 	G_PlayEffect( EFFECT_EXPLOSION_TURRET, pos, forward );
 	G_PlayEffectID( G_EffectIndex( "turret/explode" ), pos, forward );
-	
+
 	if ( self->splashDamage > 0 && self->splashRadius > 0 )
 	{
-		G_RadiusDamage( self->r.currentOrigin, 
-						attacker, 
-						self->splashDamage, 
-						self->splashRadius, 
+		G_RadiusDamage( self->r.currentOrigin,
+						attacker,
+						self->splashDamage,
+						self->splashRadius,
 						attacker,
 						NULL,
 						MOD_UNKNOWN );
@@ -96,7 +96,7 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 
 		VectorCopy( self->r.currentAngles, self->s.apos.trBase );
 		VectorClear( self->s.apos.trDelta );
-		
+
 		if ( self->target )
 		{
 			G_UseTargets( self, attacker );
@@ -141,7 +141,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	G_PlayEffectID( ent->genericValue13, org, dir );
 
 	bolt = G_Spawn();
-	
+
 	//use a custom shot effect
 	bolt->s.otherEntityNum2 = ent->genericValue14;
 	//use a custom impact effect
@@ -162,7 +162,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	bolt->methodOfDeath = MOD_TARGET_LASER;
 	bolt->splashMethodOfDeath = MOD_TARGET_LASER;
 	bolt->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame	
+	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame
 
 	VectorSet( bolt->r.maxs, 1.5, 1.5, 1.5 );
 	VectorScale( bolt->r.maxs, -1, bolt->r.mins );
@@ -206,7 +206,7 @@ void turret_head_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -280,7 +280,7 @@ static void turret_aim( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the "eye" here
-		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -448,13 +448,13 @@ static qboolean turret_find_enemies( gentity_t *self )
 			if ( target->client )
 			{
 				if ( target->client->sess.sessionTeam == self->alliedTeam )
-				{ 
+				{
 					// A bot/client/NPC we don't want to shoot
 					continue;
 				}
 			}
 			else if ( target->teamnodmg == self->alliedTeam )
-			{ 
+			{
 				// An ent we don't want to shoot
 				continue;
 			}
@@ -639,18 +639,18 @@ Large 2-piece turbolaser turret
   dmg	- How much damage each shot does (default 100)
   health - How much damage it can take before exploding (default 3000)
   speed - how fast it turns (default 10)
-  
+
   splashDamage - How much damage the explosion does (300)
   splashRadius - The radius of the explosion (128)
 
   shotspeed - speed at which projectiles will move
-  
+
   targetname - Toggles it on/off
   target - What to use when destroyed
   target2 - What to use when it decides to start shooting at an enemy
 
   showhealth - set to 1 to show health bar on this entity when crosshair is over it
-  
+
   teamowner - crosshair shows green for this team, red for opposite team
 	0 - none
 	1 - red
@@ -679,12 +679,12 @@ void SP_misc_turret( gentity_t *base )
 	//base->playerModel = trap->G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
 	//base->s.radius = 80.0f;
 
-	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
+	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL );
 	//base->torsoBolt = trap->G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
 
 	G_SpawnString( "icon", "", &s );
 	if (s && s[0])
-	{ 
+	{
 		// We have an icon, so index it now.  We are reusing the genericenemyindex
 		// variable rather than adding a new one to the entity state.
 		base->s.genericenemyindex = G_IconIndex(s);

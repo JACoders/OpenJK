@@ -267,7 +267,7 @@ typedef enum
 	A_LOW_YACUTE,
 	A_LOW_THORN,
 	A_LOW_YDIERESIS,
-	
+
 	A_JOY0,
 	A_JOY1,
 	A_JOY2,

@@ -62,14 +62,14 @@ void G_VehicleSpawn( gentity_t *self )
 
 	//save this because self gets removed in next func
 	yaw = self->s.angles[YAW];
-	
+
 	vehEnt = NPC_Spawn_Do( self );
-	
+
 	if ( !vehEnt )
 	{
 		return;//return NULL;
 	}
-	
+
 	vehEnt->s.angles[YAW] = yaw;
 	if ( vehEnt->m_pVehicle->m_pVehicleInfo->type != VH_ANIMAL )
 	{
@@ -195,7 +195,7 @@ qboolean ValidateBoard( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	VectorNormalize( vVehToEnt );
 
 	// Get the right vector.
-	AngleVectors( vVehAngles, NULL, vVehDir, NULL ); 
+	AngleVectors( vVehAngles, NULL, vVehDir, NULL );
 	VectorNormalize( vVehDir );
 
 	// Find the angle between the vehicle right vector and the vehicle to entity vector.
@@ -216,7 +216,7 @@ qboolean ValidateBoard( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	else
 	{
 		// The forward vector of the vehicle.
-	//	AngleVectors( vVehAngles, vVehDir, NULL, NULL ); 
+	//	AngleVectors( vVehAngles, vVehDir, NULL, NULL );
 	//	VectorNormalize( vVehDir );
 
 		// Find the angle between the vehicle forward and the vehicle to entity vector.
@@ -332,7 +332,7 @@ qboolean Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 			parent->s.owner = parent->r.ownerNum; //for prediction
 		}
 
-#ifdef _GAME		
+#ifdef _GAME
 		{
 			gentity_t *gParent = (gentity_t *)parent;
 			if ( (gParent->spawnflags&2) )
@@ -408,7 +408,7 @@ qboolean Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 			return qfalse;
 		}
 	}
-	
+
 	// Make sure the entity knows it's in a vehicle.
 	ent->client->ps.m_iVehicleNum = parent->s.number;
 	ent->r.ownerNum = parent->s.number;
@@ -450,10 +450,10 @@ qboolean Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	return qtrue;
 }
 
-qboolean VEH_TryEject( Vehicle_t *pVeh, 
-				  gentity_t *parent, 
-				  gentity_t *ent, 
-				  int ejectDir, 
+qboolean VEH_TryEject( Vehicle_t *pVeh,
+				  gentity_t *parent,
+				  gentity_t *ent,
+				  int ejectDir,
 				  vec3_t vExitPos )
 {
 	float		fBias;
@@ -470,29 +470,29 @@ qboolean VEH_TryEject( Vehicle_t *pVeh,
 	{
 		// Left.
 		case VEH_EJECT_LEFT:
-			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL ); 
+			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL );
 			vVehLeaveDir[0] = -vVehLeaveDir[0];
 			vVehLeaveDir[1] = -vVehLeaveDir[1];
 			vVehLeaveDir[2] = -vVehLeaveDir[2];
 			break;
 		// Right.
 		case VEH_EJECT_RIGHT:
-			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL ); 
+			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL );
 			break;
 		// Front.
 		case VEH_EJECT_FRONT:
-			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL );
 			break;
 		// Rear.
 		case VEH_EJECT_REAR:
-			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL );
 			vVehLeaveDir[0] = -vVehLeaveDir[0];
 			vVehLeaveDir[1] = -vVehLeaveDir[1];
 			vVehLeaveDir[2] = -vVehLeaveDir[2];
 			break;
 		// Top.
 		case VEH_EJECT_TOP:
-			AngleVectors( vVehAngles, NULL, NULL, vVehLeaveDir ); 
+			AngleVectors( vVehAngles, NULL, NULL, vVehLeaveDir );
 			break;
 		// Bottom?.
 		case VEH_EJECT_BOTTOM:
@@ -502,7 +502,7 @@ qboolean VEH_TryEject( Vehicle_t *pVeh,
 	//NOTE: not sure why following line was needed - MCG
 	//pVeh->m_EjectDir = VEH_EJECT_LEFT;
 
-	// Since (as of this time) the collidable geometry of the entity is just an axis 
+	// Since (as of this time) the collidable geometry of the entity is just an axis
 	// aligned box, we need to get the diagonal length of it in case we come out on that side.
 	// Diagonal Length == squareroot( squared( Sidex / 2 ) + squared( Sidey / 2 ) );
 
@@ -824,7 +824,7 @@ getItOutOfMe:
 		//ent->client->ps.stats[STAT_WEAPONS] &= ~( 1 << WP_EMPLACED_GUN );
 		//ent->client->ps.ammo[weaponData[WP_EMPLACED_GUN].ammoIndex] = 0;//maybe store this ammo on the vehicle before clearing it?
 		//switch back to a normal weapon we're carrying
-		
+
 		//FIXME: store the weapon we were using when we got on and restore that when hop off
 /*		if ( (ent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SABER)) )
 		{
@@ -852,7 +852,7 @@ getItOutOfMe:
 		//NOTE: this is because you're only allowed to use your first saber's first blade on a vehicle
 	}
 
-/*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER 
+/*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER
 		&& cg_gunAutoFirst.value )
 	{
 		trap->cvar_set( "cg_thirdperson", "0" );
@@ -931,7 +931,7 @@ qboolean EjectAll( Vehicle_t *pVeh )
 		}
 		pVeh->m_iNumPassengers = 0;
 	}
-	
+
 	if ( pVeh->m_pDroidUnit )
 	{
 		G_EjectDroidUnit( pVeh, pVeh->m_pVehicleInfo->killRiderOnDeath );
@@ -993,7 +993,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 								NULL, pVeh->m_pParentEntity->playerState->origin, 999, DAMAGE_NO_PROTECTION, MOD_SUICIDE );
 						}
 					}
-				}				
+				}
 			}
 		}
 
@@ -1081,8 +1081,8 @@ qboolean Initialize( Vehicle_t *pVeh )
 		}
 	}
 	//begin stopped...?
-	parent->client->ps.speed = 0; 
-	
+	parent->client->ps.speed = 0;
+
 	VectorClear( pVeh->m_vOrientation );
 	pVeh->m_vOrientation[YAW] = parent->s.angles[YAW];
 
@@ -1105,7 +1105,7 @@ qboolean Initialize( Vehicle_t *pVeh )
 		}
 	}
 
-	pVeh->m_iNumPassengers = 0; 
+	pVeh->m_iNumPassengers = 0;
 	/*
 	if ( pVeh->m_iVehicleTypeID == VH_FIGHTER )
 	{
@@ -1148,7 +1148,7 @@ qboolean Initialize( Vehicle_t *pVeh )
 	{
 		int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 		pVeh->m_ulFlags |= VEH_GEARSOPEN;
-		BG_SetAnim(pVeh->m_pParentEntity->playerState, 
+		BG_SetAnim(pVeh->m_pParentEntity->playerState,
 			bgAllAnims[pVeh->m_pParentEntity->localAnimIndex].anims,
 			SETANIM_BOTH, BOTH_VS_IDLE, iFlags, iBlend);
 	}
@@ -1255,7 +1255,7 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		// Process the orient commands.
 		pVeh->m_pVehicleInfo->ProcessOrientCommands( pVeh );
 		// Need to copy orientation to our entity's viewangles so that it renders at the proper angle and currentAngles is correct.
-		SetClientViewAngle( parent, pVeh->m_vOrientation ); 
+		SetClientViewAngle( parent, pVeh->m_vOrientation );
 		if ( pVeh->m_pPilot )
 		{
 			SetClientViewAngle( (gentity_t *)pVeh->m_pPilot, pVeh->m_vOrientation );
@@ -1276,12 +1276,12 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		// Setup the move direction.
 		if ( pVeh->m_pVehicleInfo->type == VH_FIGHTER )
 		{
-			AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL ); 
+			AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL );
 		}
 		else
 		{
 			VectorSet(vVehAngles, 0, pVeh->m_vOrientation[YAW], 0);
-			AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL );
 		}
 		pVeh->m_pVehicleInfo->DeathUpdate( pVeh );
 		return qfalse;
@@ -1303,7 +1303,7 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		pVeh->m_pVehicleInfo->DeathUpdate( pVeh );
 		return qfalse;
 	}
-	
+
 #ifdef _GAME
 	if (parent->spawnflags & 1)
 	{
@@ -1388,7 +1388,7 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 	if ( pVeh->m_pPilot )
 	{
 		pilotEnt = (gentity_t *)pVeh->m_pPilot;
-		
+
 		if (!pilotEnt->inuse || !pilotEnt->client || pilotEnt->health <= 0 ||
 			pilotEnt->client->pers.connected != CON_CONNECTED)
 		{
@@ -1421,18 +1421,18 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 	// Update time modifier.
 	pVeh->m_fTimeModifier = pVeh->m_ucmd.serverTime - parent->client->ps.commandTime;
 	//sanity check
-	if ( pVeh->m_fTimeModifier < 1 ) 
+	if ( pVeh->m_fTimeModifier < 1 )
 	{
 		pVeh->m_fTimeModifier = 1;
-	} 
-	else if ( pVeh->m_fTimeModifier > 200 ) 
+	}
+	else if ( pVeh->m_fTimeModifier > 200 )
 	{
 		pVeh->m_fTimeModifier = 200;
 	}
 	//normalize to 1.0f at 20fps
 	pVeh->m_fTimeModifier = pVeh->m_fTimeModifier / fMod;
 	*/
-	
+
 	//check for weapon linking/unlinking command
 	for ( i = 0; i < MAX_VEHICLE_WEAPONS; i++ )
 	{//HMM... can't get a seperate command for each weapon, so do them all...?
@@ -1444,7 +1444,7 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 				pVeh->weaponStatus[i].linked = qtrue;
 			}
 		}
-		else if ( (pVeh->m_ucmd.buttons&BUTTON_USE_HOLDABLE) ) 
+		else if ( (pVeh->m_ucmd.buttons&BUTTON_USE_HOLDABLE) )
 		{//pilot pressed the "weapon link" toggle button
 			if ( !pVeh->linkWeaponToggleHeld )//so we don't hold it down and toggle it back and forth
 			{//okay to toggle
@@ -1501,7 +1501,7 @@ maintainSelfDuringBoarding:
 	// Process the orient commands.
 	pVeh->m_pVehicleInfo->ProcessOrientCommands( pVeh );
 	// Need to copy orientation to our entity's viewangles so that it renders at the proper angle and currentAngles is correct.
-	SetClientViewAngle( parent, pVeh->m_vOrientation ); 
+	SetClientViewAngle( parent, pVeh->m_vOrientation );
 	if ( pVeh->m_pPilot )
 	{
 		if ( !BG_UnrestrainedPitchRoll( pVeh->m_pPilot->playerState, pVeh ) )
@@ -1528,12 +1528,12 @@ maintainSelfDuringBoarding:
 	pVeh->m_pVehicleInfo->ProcessMoveCommands( pVeh );
 	nextSpeed = parentPS->speed;
 	halfMaxSpeed = pVeh->m_pVehicleInfo->speedMax*0.5f;
-	
+
 
 // Shifting Sounds
 //=====================================================================
-	if (pVeh->m_iTurboTime<curTime && 
-		pVeh->m_iSoundDebounceTimer<curTime && 
+	if (pVeh->m_iTurboTime<curTime &&
+		pVeh->m_iSoundDebounceTimer<curTime &&
 		((nextSpeed>prevSpeed && nextSpeed>halfMaxSpeed &&	prevSpeed<halfMaxSpeed) || (nextSpeed>halfMaxSpeed && !Q_irand(0,1000)))
  		)
 	{
@@ -1557,12 +1557,12 @@ maintainSelfDuringBoarding:
 	// Setup the move direction.
 	if ( pVeh->m_pVehicleInfo->type == VH_FIGHTER )
 	{
-		AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL ); 
+		AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL );
 	}
 	else
 	{
 		VectorSet(vVehAngles, 0, pVeh->m_vOrientation[YAW], 0);
-		AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL ); 
+		AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL );
 	}
 
 	if (pVeh->m_pVehicleInfo->surfDestruction)
@@ -1585,12 +1585,12 @@ maintainSelfDuringBoarding:
 				}
 			}
 			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
-			
+
 			// 3 seconds max on death.
-			dmg = (float)parent->client->ps.stats[STAT_MAX_HEALTH] * pVeh->m_fTimeModifier / 180.0f;			
+			dmg = (float)parent->client->ps.stats[STAT_MAX_HEALTH] * pVeh->m_fTimeModifier / 180.0f;
 			G_Damage(parent, killer, killer, NULL, parent->client->ps.origin, dmg, DAMAGE_NO_SELF_PROTECTION|DAMAGE_NO_HIT_LOC|DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE);
 		}
-		
+
 		//make sure playerstate value stays in sync
 		parent->client->ps.vehSurfaces = pVeh->m_iRemovedSurfaces;
 	}
@@ -1621,7 +1621,7 @@ static qboolean UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUm
 	parent = (gentity_t *)pVeh->m_pParentEntity;
 	rider = (gentity_t *)pRider;
 	//MG FIXME !! Single player needs update!
-	if ( rider && rider->client 
+	if ( rider && rider->client
 		&& parent && parent->client )
 	{//so they know who we're locking onto with our rockets, if anyone
 		rider->client->ps.rocketLockIndex = parent->client->ps.rocketLockIndex;
@@ -1680,7 +1680,7 @@ static qboolean UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUm
 					Anim = BOTH_VS_DISMOUNT_L;
 					pVeh->m_EjectDir = VEH_EJECT_LEFT;
 				}
-				
+
 				if ( pVeh->m_iBoarding <= 1 )
 				{
 					int iAnimLen;
@@ -1721,7 +1721,7 @@ static qboolean UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUm
 		}
 	}
 
-	if ( pVeh->m_pVehicleInfo->type != VH_FIGHTER 
+	if ( pVeh->m_pVehicleInfo->type != VH_FIGHTER
 		&& pVeh->m_pVehicleInfo->type != VH_WALKER  )
 	{
 		// Jump off.
@@ -1900,7 +1900,7 @@ static void Ghost( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		return;
 
 	ent = (gentity_t *)pEnt;
-	
+
 	// This was introduced to prevent one extra entity from being sent to the clients
 	ent->r.svFlags |= SVF_NOCLIENT;
 
@@ -2132,7 +2132,7 @@ void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 				&& veh->m_pVehicle->m_pDroidUnit )
 			{//we have one
 				gentity_t *droidEnt = (gentity_t *)veh->m_pVehicle->m_pDroidUnit;
-				if ( droidEnt 
+				if ( droidEnt
 					&& ((droidEnt->flags&FL_UNDYING) || droidEnt->health > 0) )
 				{//boom
 					//make it vulnerable
@@ -2158,7 +2158,7 @@ void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 				&& veh->m_pVehicle->m_pDroidUnit )
 			{//we have one
 				gentity_t *droidEnt = (gentity_t *)veh->m_pVehicle->m_pDroidUnit;
-				if ( droidEnt 
+				if ( droidEnt
 					&& (droidEnt->flags&FL_UNDYING) )
 				{//make it vulnerab;e
 					droidEnt->flags &= ~FL_UNDYING;
@@ -2219,7 +2219,7 @@ void G_VehicleSetDamageLocFlags( gentity_t *veh, int impactDir, int deathPoint )
 		}
 		if ( veh->m_pVehicle
 			&& veh->m_pVehicle->m_pVehicleInfo
-			&& veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel 
+			&& veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel
 			&& veh->m_pVehicle->m_pVehicleInfo->armor )
 		{
 			float perc = ((float)veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel/(float)veh->m_pVehicle->m_pVehicleInfo->armor);
@@ -2412,7 +2412,7 @@ anotherImpact:
 
 void G_VehUpdateShields( gentity_t *targ )
 {
-	if ( !targ || !targ->client 
+	if ( !targ || !targ->client
 		|| !targ->m_pVehicle || !targ->m_pVehicle->m_pVehicleInfo )
 	{
 		return;

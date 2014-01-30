@@ -31,7 +31,7 @@ bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *heigh
 	targa_header.id_length = *buf_p++;
 	targa_header.colormap_type = *buf_p++;
 	targa_header.image_type = *buf_p++;
-	
+
 	targa_header.colormap_index = LittleShort ( *(short *)buf_p );
 	buf_p += 2;
 	targa_header.colormap_length = LittleShort ( *(short *)buf_p );
@@ -115,7 +115,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
 	// these don't need to be declared or initialised until later, but the compiler whines that 'goto' skips them.
 	//
-	byte *pRGBA = NULL;	
+	byte *pRGBA = NULL;
 	byte *pOut	= NULL;
 	byte *pIn	= NULL;
 
@@ -137,18 +137,18 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	TGAHeader_t *pHeader = (TGAHeader_t *) pTempLoadedBuffer;
 
 	if (pHeader->byColourmapType!=0)
-	{	
-		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );		
+	{
+		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );
 	}
 
 	if (pHeader->byImageType != 2 && pHeader->byImageType != 3 && pHeader->byImageType != 10)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RLE-RGB) images supported\n");		
+		TGA_FORMAT_ERROR("LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RLE-RGB) images supported\n");
 	}
-		
+
 	if (pHeader->w1stColourMapEntry != 0)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );		
+		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );
 	}
 
 	if (pHeader->wColourMapLength !=0 && pHeader->wColourMapLength != 256)
@@ -172,7 +172,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 		(pHeader->byScanLineOrder&0x30)!=0x30
 		)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: ScanLineOrder must be either 0x00,0x10,0x20, or 0x30\n");		
+		TGA_FORMAT_ERROR("LoadTGA: ScanLineOrder must be either 0x00,0x10,0x20, or 0x30\n");
 	}
 
 
@@ -200,7 +200,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	//
 	int iYStart,iXStart,iYStep,iXStep;
 
-	switch(pHeader->byScanLineOrder & 0x30)		
+	switch(pHeader->byScanLineOrder & 0x30)
 	{
 		default:	// default case stops the compiler complaining about using uninitialised vars
 		case 0x00:					//	left to right, bottom to top
@@ -256,7 +256,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	pOut	= pRGBA;
 	pIn		= pTempLoadedBuffer + sizeof(*pHeader);
 
-	// I don't know if this ID-thing here is right, since comments that I've seen are at the end of the file, 
+	// I don't know if this ID-thing here is right, since comments that I've seen are at the end of the file,
 	//	with a zero in this field. However, may as well...
 	//
 	if (pHeader->byIDFieldLength != 0)
@@ -268,7 +268,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	{
 		for (int y=iYStart, iYCount=0; iYCount<pHeader->wImageHeight; y+=iYStep, iYCount++)
 		{
-			pOut = pRGBA + y * pHeader->wImageWidth *4;			
+			pOut = pRGBA + y * pHeader->wImageWidth *4;
 			for (int x=iXStart, iXCount=0; iXCount<pHeader->wImageWidth; x+=iXStep, iXCount++)
 			{
 				switch (pHeader->byImagePlanes)
@@ -303,16 +303,16 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 						*pOut++ = blue;
 						*pOut++ = alpha;
 						break;
-					
+
 					default:
 						assert(0);	// if we ever hit this, someone deleted a header check higher up
-						TGA_FORMAT_ERROR("LoadTGA: Image can only have 8, 24 or 32 planes for RGB/greyscale\n");						
+						TGA_FORMAT_ERROR("LoadTGA: Image can only have 8, 24 or 32 planes for RGB/greyscale\n");
 						break;
 				}
-			}		
+			}
 		}
 	}
-	else 
+	else
 	if (pHeader->byImageType == 10)   // RLE-RGB
 	{
 		// I've no idea if this stuff works, I normally reject RLE targas, but this is from ID's code
@@ -329,7 +329,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 				packetSize   = 1 + (packetHeader & 0x7f);
 				if (packetHeader & 0x80)         // run-length packet
 				{
-					switch (pHeader->byImagePlanes) 
+					switch (pHeader->byImagePlanes)
 					{
 						case 24:
 
@@ -340,7 +340,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							break;
 
 						case 32:
-							
+
 							blue	= *pIn++;
 							green	= *pIn++;
 							red		= *pIn++;
@@ -352,8 +352,8 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							TGA_FORMAT_ERROR("LoadTGA: RLE-RGB can only have 24 or 32 planes\n");
 							break;
 					}
-	
-					for (j=0; j<packetSize; j++) 
+
+					for (j=0; j<packetSize; j++)
 					{
 						*pOut++	= red;
 						*pOut++	= green;
@@ -371,12 +371,12 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 						}
 					}
 				}
-				else 
+				else
 				{	// non run-length packet
 
-					for (j=0; j<packetSize; j++) 
+					for (j=0; j<packetSize; j++)
 					{
-						switch (pHeader->byImagePlanes) 
+						switch (pHeader->byImagePlanes)
 						{
 							case 24:
 

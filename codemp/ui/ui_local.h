@@ -275,7 +275,7 @@ typedef struct uiInfo_s {
 	int						teamIndex;
 	int						playerRefresh;
 	int						playerIndex;
-	int						playerNumber; 
+	int						playerNumber;
 	qboolean				teamLeader;
 	char					playerNames[MAX_CLIENTS][MAX_NETNAME];
 	char					teamNames[MAX_CLIENTS][MAX_TEAMNAME];
@@ -356,7 +356,7 @@ typedef struct uiInfo_s {
 extern uiInfo_t uiInfo;
 
 qboolean	UI_ConsoleCommand( int realTime );
-void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader );
 void		UI_FillRect( float x, float y, float width, float height, const float *color );
 char		*UI_Cvar_VariableString( const char *var_name );
 
@@ -378,6 +378,6 @@ qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 qboolean UI_SaberTypeForSaber( const char *saberName, char *saberType );
 
 
-// new ui 
+// new ui
 
 extern uiImport_t *trap;

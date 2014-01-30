@@ -25,7 +25,7 @@ private:
 	void		Stamp(int x, int y, int size, int depth, unsigned char *Data, int DataWidth, int DataHeight);
 
 public:
-	CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey, 
+	CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey,
 		float minWidth, float maxWidth, float depth, float deviation, float breadth,
 		CPathInfo *Connected, unsigned CreationFlags);
 	~CPathInfo(void);
@@ -71,8 +71,8 @@ public:
 
 	void	Init(class CCMLandScape *landscape, byte *data, int width, int height);
 	void	Shutdown(void);
-	bool	CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints, 
-						float bx, float by, float ex, float ey, 
+	bool	CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints,
+						float bx, float by, float ex, float ey,
 						float minWidth, float maxWidth, float depth, float deviation, float breadth );
 	bool	GetPathInfo(int PathNum, float PercentInto, vec2_t Coord, vec2_t Vector);
 	void	ParseGenerate(const char *GenerateFile);

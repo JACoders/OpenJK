@@ -69,7 +69,7 @@
 	#endif
 
 	#define OS_STRING "macosx"
-	#define QINLINE /*inline*/ 
+	#define QINLINE /*inline*/
 	#define	PATH_SEP '/'
 
 	#if defined(__ppc__)
@@ -150,11 +150,11 @@
 
 	#include <sys/types.h>
 	#include <machine/endian.h>
-	
+
 	#ifndef __BSD__
 		#define __BSD__
 	#endif
-	
+
 	#if defined(__FreeBSD__)
 		#define OS_STRING "freebsd"
 	#elif defined(__OpenBSD__)
@@ -162,10 +162,10 @@
 	#elif defined(__NetBSD__)
 		#define OS_STRING "netbsd"
 	#endif
-	
+
 	#define QINLINE inline
 	#define PATH_SEP '/'
-	
+
 	#if defined(__i386__)
 		#define ARCH_STRING "i386"
 	#elif defined(__amd64__)
@@ -174,13 +174,13 @@
 	#elif defined(__axp__)
 		#define ARCH_STRING "alpha"
 	#endif
-	
+
 	#if BYTE_ORDER == BIG_ENDIAN
 		#define Q3_BIG_ENDIAN
 	#else
 		#define Q3_LITTLE_ENDIAN
 	#endif
-	
+
 	#define DLL_EXT ".so"
 #endif
 

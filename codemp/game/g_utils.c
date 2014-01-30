@@ -40,7 +40,7 @@ const char *BuildShaderStateConfig(void) {
 	static char	buff[MAX_STRING_CHARS*4];
 	char out[(MAX_QPATH * 2) + 5];
 	int i;
-  
+
 	memset(buff, 0, MAX_STRING_CHARS);
 	for (i = 0; i < remapCount; i++) {
 		Com_sprintf(out, (MAX_QPATH * 2) + 5, "%s=%s:%5.2f@", remappedShaders[i].oldShader, remappedShaders[i].newShader, remappedShaders[i].timeOffset);
@@ -129,7 +129,7 @@ int G_ModelIndex( const char *name ) {
 	return G_FindConfigstringIndex (name, CS_MODELS, MAX_MODELS, qtrue);
 }
 
-int	G_IconIndex( const char* name ) 
+int	G_IconIndex( const char* name )
 {
 	assert(name && name[0]);
 	return G_FindConfigstringIndex (name, CS_ICONS, MAX_ICONS, qtrue);
@@ -249,7 +249,7 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 G_RadiusList - given an origin and a radius, return all entities that are in use that are within the list
 ============
 */
-int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])					  
+int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])
 {
 	float		dist;
 	gentity_t	*ent;
@@ -260,12 +260,12 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 	int			i, e;
 	int			ent_count = 0;
 
-	if ( radius < 1 ) 
+	if ( radius < 1 )
 	{
 		radius = 1;
 	}
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = origin[i] - radius;
 		maxs[i] = origin[i] + radius;
@@ -273,7 +273,7 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 
 	numListedEntities = trap->EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = &g_entities[entityList[ e ]];
 
@@ -281,26 +281,26 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 			continue;
 
 		// find the distance from the edge of the bounding box
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
-			if ( origin[i] < ent->r.absmin[i] ) 
+			if ( origin[i] < ent->r.absmin[i] )
 			{
 				v[i] = ent->r.absmin[i] - origin[i];
-			} else if ( origin[i] > ent->r.absmax[i] ) 
+			} else if ( origin[i] > ent->r.absmax[i] )
 			{
 				v[i] = origin[i] - ent->r.absmax[i];
-			} else 
+			} else
 			{
 				v[i] = 0;
 			}
 		}
 
 		dist = VectorLength( v );
-		if ( dist >= radius ) 
+		if ( dist >= radius )
 		{
 			continue;
 		}
-		
+
 		// ok, we are within the radius, add us to the incoming list
 		ent_list[ent_count] = ent;
 		ent_count++;
@@ -350,17 +350,17 @@ void G_Throw( gentity_t *targ, vec3_t newDir, float push )
 
 	// set the timer so that the other client can't cancel
 	// out the movement immediately
-	if ( targ->client && !targ->client->ps.pm_time ) 
+	if ( targ->client && !targ->client->ps.pm_time )
 	{
 		int		t;
 
 		t = push * 2;
 
-		if ( t < 50 ) 
+		if ( t < 50 )
 		{
 			t = 50;
 		}
-		if ( t > 200 ) 
+		if ( t > 200 )
 		{
 			t = 200;
 		}
@@ -553,7 +553,7 @@ void GlobalUse(gentity_t *self, gentity_t *other, gentity_t *activator)
 
 void G_UseTargets2( gentity_t *ent, gentity_t *activator, const char *string ) {
 	gentity_t		*t;
-	
+
 	if ( !ent ) {
 		return;
 	}
@@ -826,12 +826,12 @@ gentity_t *G_Spawn( void ) {
 		G_SpewEntList();
 		trap->Error( ERR_DROP, "G_Spawn: no free entities" );
 	}
-	
+
 	// open up a new slot
 	level.num_entities++;
 
 	// let the server system know that there are more entities
-	trap->LocateGameData( (sharedEntity_t *)level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap->LocateGameData( (sharedEntity_t *)level.gentities, level.num_entities, sizeof( gentity_t ),
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	G_InitGentity( e );
@@ -867,7 +867,7 @@ void G_SendG2KillQueue(void)
 {
 	char g2KillString[1024];
 	int i = 0;
-	
+
 	if (!gG2KillNum)
 	{
 		return;
@@ -1650,7 +1650,7 @@ void TryUse( gentity_t *ent )
 
 	//Trace ahead to find a valid target
 	trap->Trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE, qfalse, 0, 0 );
-	
+
 	if ( trace.fraction == 1.0f || trace.entityNum == ENTITYNUM_NONE )
 	{
 		goto tryJetPack;
@@ -1761,10 +1761,10 @@ void TryUse( gentity_t *ent )
 #endif
 
 	//Check for a use command
-	if ( ValidUseTarget( target ) 
-		&& (level.gametype != GT_SIEGE 
-			|| !target->alliedTeam 
-			|| target->alliedTeam != ent->client->sess.sessionTeam 
+	if ( ValidUseTarget( target )
+		&& (level.gametype != GT_SIEGE
+			|| !target->alliedTeam
+			|| target->alliedTeam != ent->client->sess.sessionTeam
 			|| g_ff_objectives.integer) )
 	{
 		if (ent->client->ps.torsoAnim == BOTH_BUTTON_HOLD ||
@@ -1821,7 +1821,7 @@ tryJetPack:
 		VectorSet(fAng, 0.0f, ent->client->ps.viewangles[YAW], 0.0f);
 		AngleVectors(fAng, fwd, 0, 0);
 
-        VectorMA(ent->client->ps.origin, 64.0f, fwd, fwd);		
+        VectorMA(ent->client->ps.origin, 64.0f, fwd, fwd);
 		trap->Trace(&trToss, ent->client->ps.origin, playerMins, playerMaxs, fwd, ent->s.number, ent->clipmask, qfalse, 0, 0);
 		if (trToss.fraction == 1.0f && !trToss.allsolid && !trToss.startsolid)
 		{
@@ -1935,7 +1935,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 	{
 		return qtrue;
 	}
-	
+
 	if(trace.fraction < 1.0)
 	{
 		if(fix)
@@ -1954,7 +1954,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 			return qtrue;
 		}
 	}
-		
+
 	return qfalse;
 }
 
@@ -2049,7 +2049,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 	int i;
 
 	VectorCopy( point, start );
-	
+
 	for ( i = 0; i < 3; i++ )
 	{
 		VectorCopy( start, end );
@@ -2130,19 +2130,19 @@ float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2
 			s = 0;// and see note below
 		}
 
-		if ( s > 1 ) 
+		if ( s > 1 )
 		{
 			done = qfalse;
 			s = 1;// and see note below
 		}
 
-		if ( t < 0 ) 
+		if ( t < 0 )
 		{
 			done = qfalse;
 			t = 0;// and see note below
 		}
 
-		if ( t > 1 ) 
+		if ( t > 1 )
 		{
 			done = qfalse;
 			t = 1;// and see note below
@@ -2154,7 +2154,7 @@ float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2
 		VectorMA( start2, t, v2, close_pnt2 );
 
 		current_dist = Distance( close_pnt1, close_pnt2 );
-		//now, if none of those if's fired, you are done. 
+		//now, if none of those if's fired, you are done.
 		if ( done )
 		{
 			return current_dist;

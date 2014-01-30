@@ -136,7 +136,7 @@ void CStringEdPackage::Clear( SE_BOOL bChangingLanguages )
 	{
 		// if we're changing languages, then I'm going to leave these alone. This is to do with any (potentially) cached
 		//	flag bitmasks on the game side. It shouldn't matter since all files are written out at once using the build
-		//	command in StringEd. But if ever someone changed a file by hand, or added one, or whatever, and it had a 
+		//	command in StringEd. But if ever someone changed a file by hand, or added one, or whatever, and it had a
 		//	different set of flags declared, or the strings were in a different order, then the flags might also change
 		//	the order I see them in, and hence their indexes and masks. This should never happen unless people mess with
 		//	the .STR files by hand and delete some, but this way makes sure it'll all work just in case...
@@ -167,8 +167,8 @@ char *CStringEdPackage::Filename_PathOnly(const char *psFilename)
 {
 	static char sString[ iSE_MAX_FILENAME_LENGTH ];
 
-	strcpy(sString,psFilename);	
-		
+	strcpy(sString,psFilename);
+
 	char *p1= strrchr(sString,'\\');
 	char *p2= strrchr(sString,'/');
 	char *p = (p1>p2)?p1:p2;
@@ -191,17 +191,17 @@ char *CStringEdPackage::Filename_WithoutExt(const char *psFilename)
 
 	strcpy(sString,psFilename);
 
-	char *p = strrchr(sString,'.');		
+	char *p = strrchr(sString,'.');
 	char *p2= strrchr(sString,'\\');
 	char *p3= strrchr(sString,'/');
 
 	// special check, make sure the first suffix we found from the end wasn't just a directory suffix (eg on a path'd filename with no extension anyway)
 	//
-	if (p && 
+	if (p &&
 		(p2==0 || (p2 && p>p2)) &&
 		(p3==0 || (p3 && p>p3))
 		)
-		*p=0;	
+		*p=0;
 
 	return sString;
 }
@@ -217,7 +217,7 @@ char *CStringEdPackage::Filename_WithoutPath(const char *psFilename)
 	static char sString[ iSE_MAX_FILENAME_LENGTH ];
 
 	const char *psCopyPos = psFilename;
-	
+
 	while (*psFilename)
 	{
 		if (*psFilename == '/' || *psFilename == '\\')
@@ -317,7 +317,7 @@ void CStringEdPackage::REMKill( char *psBuffer )
 		if (!(iDoubleQuoteCount&1))
 		{
 			// not inside quotes, so kill line here...
-			//			
+			//
 			*p='\0';
 			//
 			// and remove any trailing whitespace...
@@ -348,7 +348,7 @@ void CStringEdPackage::REMKill( char *psBuffer )
 SE_BOOL CStringEdPackage::ReadLine( const char *&psParsePos, char *psDest )
 {
 	if (psParsePos[0])
-	{	
+	{
 		const char *psLineEnd = strchr(psParsePos, '\n');
 		if (psLineEnd)
 		{
@@ -487,11 +487,11 @@ void CStringEdPackage::AddFlagReference( const char *psLocalReference, const cha
 static char *CopeWithDumbStringData( const char *psSentence, const char *psThisLanguage )
 {
 	const int iBufferSize = strlen(psSentence)*3;	// *3 to allow for expansion of anything even stupid string consisting entirely of elipsis chars
-	char *psNewString = (char *) Z_Malloc(iBufferSize, TAG_TEMP_WORKSPACE, qfalse);	
+	char *psNewString = (char *) Z_Malloc(iBufferSize, TAG_TEMP_WORKSPACE, qfalse);
 	Q_strncpyz(psNewString, psSentence, iBufferSize);
 
-	// this is annoying, I have to just guess at which languages to do it for (ie NOT ASIAN/MBCS!!!) since the 
-	//	string system was deliberately (and correctly) designed to not know or care whether it was doing SBCS 
+	// this is annoying, I have to just guess at which languages to do it for (ie NOT ASIAN/MBCS!!!) since the
+	//	string system was deliberately (and correctly) designed to not know or care whether it was doing SBCS
 	//	or MBCS languages, because it was never envisioned that I'd have to clean up other people's mess.
 	//
 	// Ok, bollocks to it, this will have to do. Any other languages that come later and have bugs in their text can
@@ -533,7 +533,7 @@ static char *CopeWithDumbStringData( const char *psSentence, const char *psThisL
 
 	//	strXLS_Speech.Replace(va("%c",0x85),"...");			// "..."-char ->  3-char "..."
 		while ((p=strchr(psNewString,0x85))!=NULL)  // "rich" (and illegal) apostrophe
-		{			
+		{
 			memmove(p+2,p,strlen(p));
 			*p++ = '.';
 			*p++ = '.';
@@ -590,7 +590,7 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 			//
 			const char *psVersionNumber = InsideQuotes( psLine );
 			int		iVersionNumber = atoi( psVersionNumber );
-			
+
 			if (iVersionNumber != iSE_VERSION)
 			{
 				psErrorMessage = va("Unexpected version number %d, expecting %d!\n", iVersionNumber, iSE_VERSION);
@@ -677,7 +677,7 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 				const char *_psSentence = ConvertCRLiterals_Read( InsideQuotes( psLine ) );
 
 				// Dammit, I hate having to do crap like this just because other people mess up and put
-				//	stupid data in their text, so I have to cope with it. 
+				//	stupid data in their text, so I have to cope with it.
 				//
 				// note hackery with _psSentence and psSentence because of const-ness. bleurgh. Just don't ask.
 				//
@@ -728,19 +728,19 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 
 	return psErrorMessage;
 }
-	
+
 // returns reference of string being parsed, else "" for none.
 //
 const char *CStringEdPackage::GetCurrentReference_ParseOnly( void )
 {
 	return m_strCurrentEntryRef_ParseOnly.c_str();
 }
-	
+
 // add new string entry (during parse)
 //
 void CStringEdPackage::AddEntry( const char *psLocalReference )
 {
-	// the reason I don't just assign it anyway is because the optional .STE override files don't contain flags, 
+	// the reason I don't just assign it anyway is because the optional .STE override files don't contain flags,
 	//	and therefore would wipe out the parsed flags of the .STR file...
 	//
 	mapStringEntries_t::iterator itEntry = m_StringEntries.find( va("%s_%s",m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference) );
@@ -781,9 +781,9 @@ void CStringEdPackage::SetString( const char *psLocalReference, const char *psNe
 	if (itEntry != m_StringEntries.end())
 	{
 		SE_Entry_t &Entry = (*itEntry).second;
-	
+
 		if ( bEnglishDebug || m_bLoadingEnglish_ParseOnly)
-		{	
+		{
 			// then this is the leading english text of a foreign sentence pair (so it's the debug-key text),
 			//	or it's the only text when it's english being loaded...
 			//
@@ -797,7 +797,7 @@ void CStringEdPackage::SetString( const char *psLocalReference, const char *psNe
 			m_strCurrentEntryEnglish_ParseOnly = psNewString;	// for possible "#same" resolving in foreign later
 		}
 		else
-		{				
+		{
 			// then this is foreign text (so check for "#same" resolving)...
 			//
 			if (!Q_stricmp(psNewString, sSE_EXPORT_SAME))
@@ -831,7 +831,7 @@ void CStringEdPackage::SetString( const char *psLocalReference, const char *psNe
 static const char *SE_Load_Actual( const char *psFileName, SE_BOOL bLoadDebug, SE_BOOL bSpeculativeLoad )
 {
 	const char *psErrorMessage = NULL;
-	
+
 	unsigned char *psLoadedData = SE_LoadFileData( psFileName );
 	if ( psLoadedData )
 	{
@@ -854,7 +854,7 @@ static const char *SE_Load_Actual( const char *psFileName, SE_BOOL bLoadDebug, S
 		}
 
 		SE_FreeFileDataAfterLoad( psLoadedData);
-		
+
 		if (!psErrorMessage && !TheStringPackage.EndMarkerFoundDuringParse())
 		{
 			psErrorMessage = va("Truncated file, failed to find \"%s\" at file end!", sSE_KEYWORD_ENDMARKER);
@@ -881,7 +881,7 @@ static const char *SE_GetFoundFile( string &strResult )
 
 	if (!strlen(strResult.c_str()))
 		return NULL;
-	
+
 	strncpy(sTemp,strResult.c_str(),sizeof(sTemp)-1);
 	sTemp[sizeof(sTemp)-1]='\0';
 
@@ -947,7 +947,7 @@ const char *SE_Load( const char *psFileName, SE_BOOL bLoadDebug = SE_TRUE, SE_BO
 		if (p && strlen(p) == strlen(sSE_EXPORT_FILE_EXTENSION))
 		{
 			strcpy( p, sSE_EXPORT_FILE_EXTENSION );
-		
+
 			psErrorMessage = SE_Load_Actual( sFileName, bLoadDebug, SE_TRUE );
 		}
 	}
@@ -1064,11 +1064,11 @@ int SE_GetFlagMask( const char *psFlagName )
 
 // I could cache the result of this since it won't change during app lifetime unless someone does a build-publish
 //	while you're still ingame. Cacheing would make sense since it can take a while to scan, but I'll leave it and
-//	let whoever calls it cache the results instead. I'll make it known that it's a slow process to call this, but 
+//	let whoever calls it cache the results instead. I'll make it known that it's a slow process to call this, but
 //	whenever anyone calls someone else's code they should assign it to an int anyway, since you've no idea what's
 //	going on. Basically, don't  use this in a FOR loop as the end-condition. Duh.
 //
-// Groan, except for Bob. I mentioned that this was slow and only call it once, but he's calling it from 
+// Groan, except for Bob. I mentioned that this was slow and only call it once, but he's calling it from
 //	every level-load...  Ok, cacheing it is...
 //
 vector <string> gvLanguagesAvailable;
@@ -1077,13 +1077,13 @@ int SE_GetNumLanguages(void)
 	if ( gvLanguagesAvailable.empty() )
 	{
 		string strResults;
-		/*int iFilesFound = */SE_BuildFileList( 
+		/*int iFilesFound = */SE_BuildFileList(
 												#ifdef _STRINGED
 													va("C:\\Source\\Tools\\StringEd\\test_data\\%s",sSE_STRINGS_DIR)
 												#else
 													sSE_STRINGS_DIR
 												#endif
-												, strResults 
+												, strResults
 											);
 
 		set<string> strUniqueStrings;	// laziness <g>
@@ -1176,7 +1176,7 @@ void SE_Init(void)
 		int iLanguages = SE_GetNumLanguages();
 		for (int iLang = 0; iLang < iLanguages; iLang++)
 		{
-            const char *psLanguage = SE_GetLanguageName( iLang );	// eg "german"			
+            const char *psLanguage = SE_GetLanguageName( iLang );	// eg "german"
 			Com_Printf( "com_buildScript(2): Loading language \"%s\"...\n", psLanguage );
 			SE_LoadLanguage( psLanguage );
 		}
@@ -1209,13 +1209,13 @@ const char *SE_LoadLanguage( const char *psLanguage, SE_BOOL bLoadDebug /* = SE_
 		SE_NewLanguage();
 
 		string strResults;
-		/*int iFilesFound = */SE_BuildFileList( 
+		/*int iFilesFound = */SE_BuildFileList(
 												#ifdef _STRINGED
 													va("C:\\Source\\Tools\\StringEd\\test_data\\%s",sSE_STRINGS_DIR)
 												#else
 													sSE_STRINGS_DIR
 												#endif
-												, strResults 
+												, strResults
 											);
 
 		const char *p;

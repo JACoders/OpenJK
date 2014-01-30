@@ -336,7 +336,7 @@ static void SV_MapRestart_f( void ) {
 			// which is wrong obviously.
 			SV_ClientEnterWorld(client, NULL);
 		}
-	}	
+	}
 
 	// run another frame to allow things to look at all the players
 	GVM_RunFrame( sv.time );
@@ -549,7 +549,7 @@ static void SV_KickNum_f( void ) {
 SV_Status_f
 ================
 */
-static void SV_Status_f( void ) 
+static void SV_Status_f( void )
 {
 	int				i, humans, bots;
 	client_t		*cl;
@@ -560,7 +560,7 @@ static void SV_Status_f( void )
 	qboolean		avoidTruncation = qfalse;
 
 	// make sure server is running
-	if ( !com_sv_running->integer ) 
+	if ( !com_sv_running->integer )
 	{
 		Com_Printf( "Server is not running.\n" );
 		return;
@@ -596,7 +596,7 @@ static void SV_Status_f( void )
 #define STATUS_OS "Unknown"
 #endif
 
-	const char *ded_table[] = 
+	const char *ded_table[] =
 	{
 		"listen",
 		"lan dedicated",
@@ -638,8 +638,8 @@ static void SV_Status_f( void )
 
 		if (!avoidTruncation)
 		{
-			Com_Printf ("%3i %5i %s %-15.15s %7i %21s %5i %5i\n", 
-				i, 
+			Com_Printf ("%3i %5i %s %-15.15s %7i %21s %5i %5i\n",
+				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
@@ -651,8 +651,8 @@ static void SV_Status_f( void )
 		}
 		else
 		{
-			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n", 
-				i, 
+			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n",
+				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
@@ -913,11 +913,11 @@ void SV_StopRecord_f( void ) {
 	Com_Printf ("Stopped demo for client %d.\n", cl - svs.clients);
 }
 
-/* 
-================== 
+/*
+==================
 SV_DemoFilename
-================== 
-*/  
+==================
+*/
 void SV_DemoFilename( int number, char *fileName, int fileNameSize ) {
 	int		a,b,c,d;
 

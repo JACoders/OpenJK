@@ -290,7 +290,7 @@ void CL_Record_f( void ) {
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 
 		if ( FS_FileExists( name ) ) {
-			Com_Printf( "Record: Couldn't create a file\n"); 
+			Com_Printf( "Record: Couldn't create a file\n");
 			return;
  		}
 	}
@@ -343,12 +343,12 @@ void CL_Record_f( void ) {
 		if ( !ent->number ) {
 			continue;
 		}
-		MSG_WriteByte (&buf, svc_baseline);		
+		MSG_WriteByte (&buf, svc_baseline);
 		MSG_WriteDeltaEntity (&buf, &nullstate, ent, qtrue );
 	}
 
 	MSG_WriteByte( &buf, svc_EOF );
-	
+
 	// finished writing the gamestate stuff
 
 	// write the client num
@@ -371,7 +371,7 @@ void CL_Record_f( void ) {
 		MSG_WriteBits ( &buf, 0, 1 );
 		MSG_WriteData( &buf, clc.rmgFlattenMap, clc.rmgHeightMapSize );
 
-		// Seed 
+		// Seed
 		MSG_WriteLong ( &buf, clc.rmgSeed );
 
 		// Automap symbols
@@ -419,7 +419,7 @@ CL_DemoCompleted
 void CL_DemoCompleted( void ) {
 	if (cl_timedemo && cl_timedemo->integer) {
 		int	time;
-		
+
 		time = Sys_Milliseconds() - clc.timeDemoStart;
 		if ( time > 0 ) {
 			Com_Printf ("%i frames, %3.1f seconds: %3.1f fps\n", clc.timeDemoFrames,
@@ -542,7 +542,7 @@ void CL_PlayDemo_f( void ) {
 	} else {
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", arg, PROTOCOL_VERSION);
 	}
-	
+
 	FS_FOpenFileRead( name, &clc.demofile, qtrue );
 	if (!clc.demofile) {
 		if (!Q_stricmp(arg, "(null)"))
@@ -751,7 +751,7 @@ static void CL_UpdateGUID( const char *prefix, int prefix_len )
 	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
 	FS_FCloseFile( f );
 
-	if( len != QKEY_SIZE ) 
+	if( len != QKEY_SIZE )
 		Cvar_Set( "ja_guid", "" );
 	else
 		Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
@@ -883,7 +883,7 @@ void CL_RequestMotd( void ) {
 	cls.updateServer.port = BigShort( PORT_UPDATE );
 	Com_Printf( "%s resolved to %s\n", UPDATE_SERVER_NAME,
 		NET_AdrToString( cls.updateServer ) );
-	
+
 	info[0] = 0;
   // NOTE TTimo xoring against Com_Milliseconds, otherwise we may not have a true randomization
   // only srand I could catch before here is tr_noise.c l:26 srand(1001)
@@ -930,7 +930,7 @@ void CL_ForwardToServer_f( void ) {
 		Com_Printf ("Not connected to a server.\n");
 		return;
 	}
-	
+
 	// don't forward the first argument
 	if ( Cmd_Argc() > 1 ) {
 		CL_AddReliableCommand( Cmd_Args(), qfalse );
@@ -978,7 +978,7 @@ void CL_Connect_f( void ) {
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "usage: connect [server]\n");
-		return;	
+		return;
 	}
 
 	// save arguments for reconnect
@@ -1110,7 +1110,7 @@ void CL_Rcon_f( void ) {
 			rcon_address.port = BigShort (PORT_SERVER);
 		}
 	}
-	
+
 	NET_SendPacket (NS_CLIENT, strlen(message)+1, message, rcon_address);
 }
 
@@ -1417,7 +1417,7 @@ void CL_NextDownload(void) {
 		if (*s == '@')
 			s++;
 		remoteName = s;
-		
+
 		if ( (s = strchr(s, '@')) == NULL ) {
 			CL_DownloadsComplete();
 			return;
@@ -1432,7 +1432,7 @@ void CL_NextDownload(void) {
 
 		if (!cl_allowDownload->integer) {
 			Com_Error(ERR_DROP, "UDP Downloads are disabled on your client. (cl_allowDownload is %d)", cl_allowDownload->integer);
-			return;	
+			return;
 		}
 		else {
 			CL_BeginDownload( localName, remoteName );
@@ -1459,13 +1459,13 @@ and determine if we need to download them
 */
 void CL_InitDownloads(void) {
   char missingfiles[1024];
-	
+
 	if ( !cl_allowDownload->integer )
 	{
 		// autodownload is disabled on the client
 		// but it's possible that some referenced files on the server are missing
 		if (FS_ComparePaks( missingfiles, sizeof( missingfiles ), qfalse ) )
-		{      
+		{
 			// NOTE TTimo I would rather have that printed as a modal message box
 			//   but at this point while joining the game we don't know wether we will successfully join or not
 			Com_Printf( "\nWARNING: You are missing some files referenced by the server:\n%s"
@@ -1474,9 +1474,9 @@ void CL_InitDownloads(void) {
 		}
 	}
 	else if ( FS_ComparePaks( clc.downloadList, sizeof( clc.downloadList ) , qtrue ) ) {
-		
+
 		Com_Printf("Need paks: %s\n", clc.downloadList );
-		
+
 		if ( *clc.downloadList ) {
 			// if autodownloading is not enabled on the server
 			cls.state = CA_CONNECTED;
@@ -1487,7 +1487,7 @@ void CL_InitDownloads(void) {
 			CL_NextDownload();
 			return;
 		}
-		
+
 	}
 	CL_DownloadsComplete();
 }
@@ -1531,7 +1531,7 @@ void CL_CheckForResend( void ) {
 
 		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, data);
 		break;
-		
+
 	case CA_CHALLENGING:
 		// sending back the challenge
 		port = (int) Cvar_VariableValue ("net_qport");
@@ -1653,7 +1653,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 	int				numservers;
 	byte*			buffptr;
 	byte*			buffend;
-	
+
 	Com_Printf("CL_ServersResponsePacket\n");
 
 	if (cls.numglobalservers == -1) {
@@ -1672,7 +1672,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 	{
 		if(*buffptr == '\\')
 			break;
-		
+
 		buffptr++;
 	} while (buffptr < buffend);
 
@@ -1694,7 +1694,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 		else
 			// syntax error!
 			break;
-			
+
 		// parse out port
 		addresses[numservers].port = (*buffptr++) << 8;
 		addresses[numservers].port += *buffptr++;
@@ -1703,7 +1703,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 		// syntax check
 		if (*buffptr != '\\' && *buffptr != '/')
 			break;
-	
+
 		numservers++;
 		if (numservers >= MAX_SERVERSPERPACKET)
 			break;
@@ -1942,7 +1942,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	}
 
 	// echo request from server
-	if ( !Q_stricmp(c, "print") ) 
+	if ( !Q_stricmp(c, "print") )
 	{
 		// NOTE: we may have to add exceptions for auth and update servers
 		if (NET_CompareAdr(from, clc.serverAddress) || NET_CompareAdr(from, rcon_address))
@@ -2010,7 +2010,7 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 	// the header is different lengths for reliable and unreliable messages
 	headerBytes = msg->readcount;
 
-	// track the last message received so it can be returned in 
+	// track the last message received so it can be returned in
 	// client messages, allowing the server to detect a dropped
 	// gamestate
 	clc.serverMessageSequence = LittleLong( *(int *)msg->data );
@@ -2037,7 +2037,7 @@ void CL_CheckTimeout( void ) {
 	//
 	// check timeout
 	//
-	if ( ( !CL_CheckPaused() || !sv_paused->integer ) 
+	if ( ( !CL_CheckPaused() || !sv_paused->integer )
 		&& cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
 	    && cls.realtime - clc.lastPacketTime > cl_timeout->value*1000) {
 		if (++cl.timeoutcount > 5) {	// timeoutcount saves debugger
@@ -2214,7 +2214,7 @@ DLL glue
 void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	
+
 	va_start (argptr,fmt);
 	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
@@ -2505,7 +2505,7 @@ void CL_SetModel_f( void ) {
 			Com_Printf("You can only change your model every %i seconds.\n", (MODEL_CHANGE_DELAY/1000));
 			return;
 		}
-		
+
 		gCLModelDelay = curTime + MODEL_CHANGE_DELAY;
 		*/
 		//rwwFIXMEFIXME: This is currently broken and doesn't seem to work for connecting clients
@@ -2565,7 +2565,7 @@ void CL_Video_f( void )
 		CL_VideoFilename( filename, MAX_OSPATH );
 
 		if ( FS_FileExists( filename ) ) {
-			Com_Printf( "Video: Couldn't create a file\n"); 
+			Com_Printf( "Video: Couldn't create a file\n");
 			return;
  		}
 	}
@@ -2635,7 +2635,7 @@ CL_Init
 void CL_Init( void ) {
 //	Com_Printf( "----- Client Initialization -----\n" );
 
-	Con_Init ();	
+	Con_Init ();
 
 	CL_ClearState ();
 
@@ -2805,7 +2805,7 @@ CL_Shutdown
 */
 void CL_Shutdown( void ) {
 	static qboolean recursive = qfalse;
-	
+
 	//Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
@@ -3123,7 +3123,7 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "%s", s);
 
 	if (serverStatus->print) {
-		Com_Printf( "Server (%s)\n", 
+		Com_Printf( "Server (%s)\n",
 			NET_AdrToString( serverStatus->address ) );
 		Com_Printf("Server settings:\n");
 		// print cvars
@@ -3239,7 +3239,7 @@ void CL_GlobalServers_f( void ) {
 	netadr_t	to;
 	int			count, i, masterNum;
 	char		command[1024];
-	
+
 	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > 1)
 	{
 		Com_Printf("usage: globalservers <master# 0-1> <protocol> [keywords]\n");
@@ -3381,7 +3381,7 @@ CL_GetFreePing
 ping_t* CL_GetFreePing( void )
 {
 	ping_t*	pingptr;
-	ping_t*	best;	
+	ping_t*	best;
 	int		oldest;
 	int		i;
 	int		time;
@@ -3442,7 +3442,7 @@ void CL_Ping_f( void ) {
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "usage: ping [server]\n");
-		return;	
+		return;
 	}
 
 	Com_Memset( &to, 0, sizeof(netadr_t) );
@@ -3460,7 +3460,7 @@ void CL_Ping_f( void ) {
 	pingptr->time  = 0;
 
 	CL_SetServerInfoByAddress(pingptr->adr, NULL, 0);
-		
+
 	NET_OutOfBandPrint( NS_CLIENT, to, "getinfo xxx" );
 }
 
@@ -3549,7 +3549,7 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 				}
 			}
 		}
-	} 
+	}
 
 	if (slots) {
 		status = qtrue;
@@ -3582,12 +3582,12 @@ void CL_ServerStatus_f(void) {
 		if ( cls.state != CA_ACTIVE || clc.demoplaying ) {
 			Com_Printf ("Not connected to a server.\n");
 			Com_Printf( "Usage: serverstatus [server]\n");
-			return;	
+			return;
 		}
 
 		toptr = &clc.serverAddress;
 	}
-	
+
 	if(!toptr)
 	{
 		Com_Memset( &to, 0, sizeof(netadr_t) );

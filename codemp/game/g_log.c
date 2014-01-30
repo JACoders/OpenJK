@@ -1,6 +1,6 @@
 #include "g_local.h"
 
-#define LOGGING_WEAPONS	
+#define LOGGING_WEAPONS
 
 // Weapon statistic logging.
 // Nothing super-fancy here, I just want to keep track of, per player:
@@ -72,16 +72,16 @@ int weaponFromMOD[MOD_MAX] =
 	WP_NONE,				//MOD_TRIGGER_HURT,
 };
 
-char *weaponNameFromIndex[WP_NUM_WEAPONS] = 
+char *weaponNameFromIndex[WP_NUM_WEAPONS] =
 {
 	"No Weapon",
-	"Stun Baton",				
-	"Saber",	
-	"Bryar Pistol",				
-	"Blaster",		
-	"Disruptor",				
-	"Bowcaster",	
-	"Repeater",	
+	"Stun Baton",
+	"Saber",
+	"Bryar Pistol",
+	"Blaster",
+	"Disruptor",
+	"Bowcaster",
+	"Repeater",
 	"Demp2",
 	"Flechette",
 	"Rocket Launcher",
@@ -297,7 +297,7 @@ void G_LogWeaponOutput(void)
 	G_LogPrintf(  "\n****Data by Weapon:\n" );
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
-		G_LogPrintf("%15s:  Pickups: %4d,  Time:  %5d,  Deaths: %5d\n", 
+		G_LogPrintf("%15s:  Pickups: %4d,  Time:  %5d,  Deaths: %5d\n",
 				weaponNameFromIndex[j], totalpickups[j], (int)(totaltime[j]/1000), totaldeaths[j]);
 	}
 
@@ -312,14 +312,14 @@ void G_LogWeaponOutput(void)
 		{
 			pershot = 0;
 		}
-		G_LogPrintf("%15s:  Damage: %6d,  Kills: %5d,  Dmg per Shot: %f\n", 
+		G_LogPrintf("%15s:  Damage: %6d,  Kills: %5d,  Dmg per Shot: %f\n",
 				weaponNameFromIndex[j], totaldamage[j], totalkills[j], pershot);
 	}
 
 	G_LogPrintf(  "\n****Combat Data By Damage Type:\n" );
 	for (j=0; j<MOD_MAX; j++)
 	{
-		G_LogPrintf("%25s:  Damage: %6d,  Kills: %5d\n", 
+		G_LogPrintf("%25s:  Damage: %6d,  Kills: %5d\n",
 				modNames[j], totaldamageMOD[j], totalkillsMOD[j]);
 	}
 
@@ -340,7 +340,7 @@ void G_LogWeaponOutput(void)
 
 
 	// Combat data per character
-	
+
 	// Start with Pickups per character
 	Com_sprintf(string, sizeof(string), "Weapon Pickups per Player:\n\n");
 	trap->FS_Write( string, strlen( string ), weaponfile);
@@ -361,11 +361,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -395,7 +395,7 @@ void G_LogWeaponOutput(void)
 	Com_sprintf(string, sizeof(string), "\n\n\n");
 	trap->FS_Write(string, strlen(string), weaponfile);
 
-	
+
 	// Weapon fires per character
 	Com_sprintf(string, sizeof(string), "Weapon Shots per Player:\n\n");
 	trap->FS_Write( string, strlen( string ), weaponfile);
@@ -416,11 +416,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -440,7 +440,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalshots[j]);
@@ -471,11 +471,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -495,7 +495,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaltime[j]);
@@ -506,7 +506,7 @@ void G_LogWeaponOutput(void)
 	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Weapon deaths per character
 	Com_sprintf(string, sizeof(string), "Weapon Deaths per Player:\n\n");
 	trap->FS_Write( string, strlen( string ), weaponfile);
@@ -527,11 +527,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -551,7 +551,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldeaths[j]);
@@ -563,7 +563,7 @@ void G_LogWeaponOutput(void)
 
 
 
-	
+
 	// Weapon damage per character
 
 	Com_sprintf(string, sizeof(string), "Weapon Damage per Player:\n\n");
@@ -597,11 +597,11 @@ void G_LogWeaponOutput(void)
 				}
 			}
 
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -621,7 +621,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldamage[j]);
@@ -632,7 +632,7 @@ void G_LogWeaponOutput(void)
 	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Weapon kills per character
 
 	Com_sprintf(string, sizeof(string), "Weapon Kills per Player:\n\n");
@@ -666,11 +666,11 @@ void G_LogWeaponOutput(void)
 				}
 			}
 
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -690,7 +690,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalkills[j]);
@@ -701,7 +701,7 @@ void G_LogWeaponOutput(void)
 	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Damage type damage per character
 	Com_sprintf(string, sizeof(string), "Typed Damage per Player:\n\n");
 	trap->FS_Write( string, strlen( string ), weaponfile);
@@ -722,11 +722,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -746,7 +746,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<MOD_MAX;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldamageMOD[j]);
@@ -757,7 +757,7 @@ void G_LogWeaponOutput(void)
 	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Damage type kills per character
 	Com_sprintf(string, sizeof(string), "Damage-Typed Kills per Player:\n\n");
 	trap->FS_Write( string, strlen( string ), weaponfile);
@@ -778,11 +778,11 @@ void G_LogWeaponOutput(void)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
@@ -802,7 +802,7 @@ void G_LogWeaponOutput(void)
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
 	trap->FS_Write(string, strlen(string), weaponfile);
-	
+
 	for (j=0;j<MOD_MAX;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalkillsMOD[j]);
@@ -1446,7 +1446,7 @@ typedef enum
 	TEAM_WARRIOR,			// most frags
 	TEAM_CARRIER,			// infected the most people with plague
 	TEAM_INTERCEPTOR,		// returned your own flag the most
-	TEAM_BRAVERY,			// Red Shirt Award (tm). you died more than anybody. 
+	TEAM_BRAVERY,			// Red Shirt Award (tm). you died more than anybody.
 	TEAM_MAX
 } teamAward_e;
 

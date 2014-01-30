@@ -26,7 +26,7 @@
  *	none
  *
  ************************************************************************************************/
-CRMArea::CRMArea ( 
+CRMArea::CRMArea (
 	float	spacingRadius,
 	float	paddingSize,
 	float	confineRadius,
@@ -34,7 +34,7 @@ CRMArea::CRMArea (
 	vec3_t	lookAtOrigin,
 	bool	flatten,
 	int		symmetric
-	) 
+	)
 {
 	mMoveCount		= 0;
 	mAngle			= 0;
@@ -164,7 +164,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 
 	// Increment the addcount (this is for infinite protection)
 	movedArea->AddMoveCount ();
-	
+
 	// Infinite recursion prevention
 	if ( movedArea->GetMoveCount() > 250 )
 	{
@@ -182,7 +182,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 	if ( movedArea->GetSymmetric ( ) )
 	{
 		const vec3pair_t& bounds = TheRandomMissionManager->GetLandScape()->GetBounds();
-		
+
 		vec3_t point;
 		vec3_t dir;
 		vec3_t tang;
@@ -191,7 +191,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 
 		VectorSubtract( movedArea->GetOrigin(), bounds[0], point );
 		VectorSubtract( bounds[1], bounds[0], dir );
-		VectorNormalize(dir);	
+		VectorNormalize(dir);
 
 		dir[2] = 0;
 		point[2] = 0;
@@ -227,7 +227,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 
 			case SYMMETRY_BOTTOMRIGHT:
 				if ( origin[1] < origin[0] )
-				{ 
+				{
 					movedArea->Mirror ( );
 				}
 
@@ -256,9 +256,9 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 			{
 				cdist = movedArea->GetConfineRadius() - movedArea->GetSpacingRadius();
 				VectorNormalize ( cdiff );
-		
+
 				VectorMA ( movedArea->GetConfineOrigin(), cdist, cdiff, movedArea->GetOrigin());
-			}	
+			}
 		}
 		else
 		{
@@ -280,7 +280,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 
 	// Look at what we need to look at
 	movedArea->LookAt ( movedArea->GetLookAtOrigin() );
-	
+
 	// Dont collide against things that have no collision
 //	if ( !movedArea->IsCollisionEnabled ( ) )
 //	{
@@ -338,13 +338,13 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 		// Are they are enough apart?
 		if ( dist >= targetdist )
 		{
-			continue;	
+			continue;
 		}
 
 		// Dont move a step if locked
 		if ( area->GetLockOrigin ( ) )
 		{
-			MoveArea ( area, area->GetOrigin ( ) );			
+			MoveArea ( area, area->GetOrigin ( ) );
 			continue;
 		}
 
@@ -372,8 +372,8 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
  *	a pointer to the newly added area class
  *
  ************************************************************************************************/
-CRMArea* CRMAreaManager::CreateArea ( 
-	vec3_t	origin, 
+CRMArea* CRMAreaManager::CreateArea (
+	vec3_t	origin,
 	float	spacingRadius,
 	int		spacingLine,
 	float	paddingSize,
@@ -432,7 +432,7 @@ CRMArea* CRMAreaManager::CreateArea (
 			linearea->EnableCollision(collide);
 
 			VectorMA ( origin, spacingRadius + (spacingRadius * 2 * i), linedir, lineorigin );
-			mAreas.push_back ( linearea );				
+			mAreas.push_back ( linearea );
 			MoveArea ( linearea, lineorigin );
 
 			linearea = new CRMArea ( spacingRadius, paddingSize, 0, vec3_origin, vec3_origin, false, symmetric );
@@ -440,7 +440,7 @@ CRMArea* CRMAreaManager::CreateArea (
 			linearea->EnableCollision(collide);
 
 			VectorMA ( origin, -spacingRadius - (spacingRadius * 2 * i), linedir, lineorigin );
-			mAreas.push_back ( linearea );				
+			mAreas.push_back ( linearea );
 			MoveArea ( linearea, lineorigin );
 		}
 	}

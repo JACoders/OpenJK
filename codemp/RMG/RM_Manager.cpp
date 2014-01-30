@@ -130,7 +130,7 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 		mMission = NULL;
 	}
 
-	// Create a new mission file	
+	// Create a new mission file
 	mMission = new CRMMission ( mTerrain );
 
 	if ( IsServer )
@@ -140,8 +140,8 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 		{
 			return false;
 		}
-	
-		// set the names of the teams 
+
+		// set the names of the teams
 		CGenericParser2		parser;
 		CGPGroup*			root;
 
@@ -247,7 +247,7 @@ void CRMManager::UpdateStatisticCvars ( void )
 		accuracy  = (float)mPlayer->client->ps.persistant[PERS_SHOTS_HIT];
 		accuracy /= (float)mPlayer->client->ps.persistant[PERS_SHOTS];
 		accuracy *= 100.0f;
-		
+
 		// set the accuracy cvar
 		gi.Cvar_Set ( "ar_pl_accuracy", va("%d%%",(int)accuracy) );
 
@@ -263,7 +263,7 @@ void CRMManager::UpdateStatisticCvars ( void )
 		seconds = millisec / 1000;
 		hours = seconds / (60 * 60);
 		seconds -= (hours * 60 * 60);
-		mins = seconds / 60;		
+		mins = seconds / 60;
 		seconds -= mins * 60;
 		tens = seconds / 10;
 		seconds -= tens * 10;
@@ -284,12 +284,12 @@ void CRMManager::UpdateStatisticCvars ( void )
 		int rankMax = 3;  // max rank less 1
 		float timeRank = mUseTimeLimit ? (1.0f - (mins / (float)mMission->GetTimeLimit())) : 0;
 		float killRank = mPlayer->client->ps.persistant[PERS_SCORE] / (float)GetCharacterManager().GetAllSize();
-		killRank = (killRank > 0) ? killRank : 1.0f; 
-		float accuRank = (accuracy > 0) ? accuracy*0.01f : 1.0f;	
+		killRank = (killRank > 0) ? killRank : 1.0f;
+		float accuRank = (accuracy > 0) ? accuracy*0.01f : 1.0f;
 		float weapRank = 1.0f - CWeaponSystem::GetRank(wpnID);
 
 		compositeRank = ((timeRank + killRank + accuRank + weapRank) / 3.0f) * rankMax + 1;
-		
+
 		if (compositeRank > 4)
 			compositeRank = 4;
 
@@ -431,7 +431,7 @@ void CRMManager::WriteAutomapSymbols ( msg_t* msg )
 		MSG_WriteByte ( msg, (unsigned char) symbol->mSide );
 		MSG_WriteLong ( msg, (long) symbol->mOrigin[0] );
 		MSG_WriteLong ( msg, (long) symbol->mOrigin[1] );
-	}	
+	}
 }
 */
 

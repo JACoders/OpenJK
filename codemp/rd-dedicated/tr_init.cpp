@@ -270,7 +270,7 @@ static void R_ModeList_f( void )
 R_Register
 ===============
 */
-void R_Register( void ) 
+void R_Register( void )
 {
 	//
 	// latched and archived variables
@@ -434,7 +434,7 @@ R_Init
 ===============
 */
 extern void R_InitWorldEffects(void); //tr_WorldEffects.cpp
-void R_Init( void ) {	
+void R_Init( void ) {
 	int i;
 	byte *ptr;
 
@@ -500,7 +500,7 @@ void R_Init( void ) {
 RE_Shutdown
 ===============
 */
-void RE_Shutdown( qboolean destroyWindow ) {	
+void RE_Shutdown( qboolean destroyWindow ) {
 
 //	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
 

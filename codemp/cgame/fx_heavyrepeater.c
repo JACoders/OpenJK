@@ -94,7 +94,7 @@ static void CG_DistortionOrb( centity_t *cent )
 	VectorScale(ent.axis[2], -scale, ent.axis[2]);
 
 	ent.hModel = cgs.media.halfShieldModel;
-	ent.customShader = 0;//cgs.media.halfShieldShader;	
+	ent.customShader = 0;//cgs.media.halfShieldShader;
 
 #if 1
 	ent.renderfx = (RF_DISTORTION|RF_RGB_TINT);

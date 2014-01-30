@@ -52,7 +52,7 @@ protected:
 	int				mFlattenHeight;	// height to flatten land
 
 public:
-	
+
 	CRMInstance ( CGPGroup* instance, CRMInstanceFile& instFile);
 
 	virtual ~CRMInstance ( ) { }
@@ -99,7 +99,7 @@ public:
 	virtual float		GetFlattenRadius	( )		{ return mFlattenRadius; }
 	const char			*GetFilter			( )		{ return mFilter; }
 	const char			*GetTeamFilter		( )		{ return mTeamFilter; }
-	
+
 	CRMArea&			GetArea				( )		{ return *mArea; }
 	float*				GetOrigin			( ) 	{return mArea->GetOrigin(); }
 	float				GetAngle			( )		{return mArea->GetAngle();}

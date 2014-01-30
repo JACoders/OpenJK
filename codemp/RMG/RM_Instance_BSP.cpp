@@ -5,7 +5,7 @@
  *
  * RM_Instance_BSP.cpp
  *
- * Implements the CRMBSPInstance class.  This class is reponsible for parsing a 
+ * Implements the CRMBSPInstance class.  This class is reponsible for parsing a
  * bsp instance as well as spawning it into a landscape.
  *
  ************************************************************************************************/
@@ -114,7 +114,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	// Make sure the bsp is resting on the ground, not below or above it
 	// NOTE: This check is basically saying "is this instance not a bridge", because when instances are created they are all
 	// placed above the world's Z boundary, EXCEPT FOR BRIDGES. So this call to GetWorldHeight will move all other instances down to
-	// ground level except bridges 
+	// ground level except bridges
 	if ( GetOrigin()[2] > terrain->GetBounds()[1][2] )
 	{
 		if( GetFlattenRadius() )
@@ -134,7 +134,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 			start[2] = TheRandomMissionManager->GetLandScape()->GetBounds()[1][2] - 1;
 			// end the trace at the bottom of the world
 			end[2] = MIN_WORLD_COORD;
-	
+
 			Com_Memset ( &tr, 0, sizeof ( tr ) );
 			SV_Trace( &tr, start, vec3_origin, vec3_origin, end, -1, CONTENTS_TERRAIN|CONTENTS_SOLID, qfalse, 0, 10 );
 
@@ -148,7 +148,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 				// don't spawn
 				return false;
 			}
-			// assign the Z-value to wherever it hit the terrain	
+			// assign the Z-value to wherever it hit the terrain
 			GetOrigin()[2] = tr.endpos[2];
 			// lower it a little, otherwise the bottom of the instance might be exposed if on some weird sloped terrain
 			GetOrigin()[2] -= 16; // FIXME: would it be better to use a number related to the instance itself like 1/5 it's height or something...
@@ -159,7 +159,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	{
 		terrain->GetLandScape()->GetWorldHeight ( GetOrigin(), GetBounds ( ), true );
 	}
-	
+
 	// save away the origin
 	VectorCopy(GetOrigin(), origin);
 	// make sure not to spawn if in water
@@ -216,7 +216,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 		VectorSubtract( maxs, mins, diagonal);
 
 
-		VectorNormalize(diagonal);	
+		VectorNormalize(diagonal);
 		VectorMA( mins, DotProduct(lineToPoint, diagonal), diagonal, vProj);
 		VectorSubtract(point, vProj, vec );
 		distance = VectorLength(vec);
@@ -272,7 +272,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	// NOTE: all this origin flipping, setting the side etc... should be done when mMirror is set
 	// because right after this function is called, mMirror is set to 0 but all the instance data is STILL MIRRORED -- not good
 	VectorCopy(notmirrored, GetOrigin());
-	
+
 	return true;
 }
 

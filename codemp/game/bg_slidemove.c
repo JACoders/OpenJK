@@ -54,12 +54,12 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 #ifdef _GAME
 	gentity_t *hitEnt = trace!=NULL?&g_entities[trace->entityNum]:NULL;
 
-	if (!hitEnt || 
+	if (!hitEnt ||
 		(pSelfVeh && pSelfVeh->m_pPilot &&
 		hitEnt && hitEnt->s.eType == ET_MISSILE && hitEnt->inuse &&
 		hitEnt->r.ownerNum == pSelfVeh->m_pPilot->s.number)
 		)
-	{ 
+	{
 		return;
 	}
 
@@ -113,7 +113,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 			}
 		}
 	}
-	
+
 	if ( trace->entityNum < ENTITYNUM_WORLD
 		&& hitEnt->s.eType == ET_MOVER
 		&& hitEnt->s.apos.trType != TR_STATIONARY//rotating
@@ -130,7 +130,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		&& pm->ps->velocity[2] > -100.0f )
 #endif
 		/*
-	if ( (pSelfVeh->m_ulFlags&VEH_GEARSOPEN) 
+	if ( (pSelfVeh->m_ulFlags&VEH_GEARSOPEN)
 		&& trace->plane.normal[2] > 0.7f
 		&& fabs(pSelfVeh->m_vOrientation[PITCH]) < 0.2f
 		&& fabs(pSelfVeh->m_vOrientation[ROLL]) < 0.2f )*/
@@ -163,7 +163,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		(pSelfVeh->m_pVehicleInfo->type == VH_SPEEDER || pSelfVeh->m_pVehicleInfo->type == VH_FIGHTER) && //this is kind of weird on tauntauns and atst's..
 		(magnitude >= 100||forceSurfDestruction) )
 	{
-		if ( pEnt->m_pVehicle->m_iHitDebounce < pm->cmd.serverTime 
+		if ( pEnt->m_pVehicle->m_iHitDebounce < pm->cmd.serverTime
 			|| forceSurfDestruction )
 		{//a bit of a hack, may conflict with getting shot, but...
 			//FIXME: impact sound and effect should be gotten from g_vehicleInfo...?
@@ -210,7 +210,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 					bgEntity_t *hitEnt = PM_BGEntForNum(trace->entityNum);
 #endif
 					if ( hitEnt->s.NPC_class == CLASS_VEHICLE
-						&& hitEnt->m_pVehicle 
+						&& hitEnt->m_pVehicle
 						&& hitEnt->m_pVehicle->m_pVehicleInfo
 						&& hitEnt->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER )
 					{//two vehicles hit each other, turn away from the impact
@@ -302,7 +302,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 						pSelfVeh->m_vFullAngleVelocity[PITCH] = AngleNormalize180(pSelfVeh->m_vOrientation[PITCH]+pitchTurnStrength/turnDivider*pSelfVeh->m_fTimeModifier);
 					}
 					//now do yaw
-					if ( !bounceDir[0] 
+					if ( !bounceDir[0]
 						&& !bounceDir[1] )
 					{//shouldn't be any yaw
 					}
@@ -386,7 +386,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 							hitEnt->m_pVehicle->m_vFullAngleVelocity[PITCH] = AngleNormalize180(hitEnt->m_pVehicle->m_vOrientation[PITCH]+pitchTurnStrength/turnDivider*pSelfVeh->m_fTimeModifier);
 						}
 						//now do yaw
-						if ( !bounceDir[0] 
+						if ( !bounceDir[0]
 							&& !bounceDir[1] )
 						{//shouldn't be any yaw
 						}
@@ -404,13 +404,13 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 							//hitEnt->m_pVehicle->m_vOrientation[ROLL] = AngleNormalize180(hitEnt->m_pVehicle->m_vOrientation[ROLL]-yawTurnStrength/turnDivider*pSelfVeh->m_fTimeModifier);
 							hitEnt->m_pVehicle->m_vFullAngleVelocity[ROLL] = AngleNormalize180(hitEnt->m_pVehicle->m_vOrientation[ROLL]-yawTurnStrength/turnDivider*pSelfVeh->m_fTimeModifier);
 						}
-						//NOTE: will these angle changes stick or will they be stomped 
-						//		when the vehicle goes through its own update and re-grabs 
-						//		its angles from its pilot...?  Should we do a 
+						//NOTE: will these angle changes stick or will they be stomped
+						//		when the vehicle goes through its own update and re-grabs
+						//		its angles from its pilot...?  Should we do a
 						//		SetClientViewAngles on the pilot?
 						/*
 						SetClientViewAngle( hitEnt, hitEnt->m_pVehicle->m_vOrientation );
-						if ( hitEnt->m_pVehicle->m_pPilot 
+						if ( hitEnt->m_pVehicle->m_pPilot
 							&& ((gentity_t *)hitEnt->m_pVehicle->m_pPilot)->client )
 						{
 							SetClientViewAngle( (gentity_t *)hitEnt->m_pVehicle->m_pPilot, hitEnt->m_pVehicle->m_vOrientation );
@@ -435,7 +435,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 				G_AddEvent((gentity_t *)pEnt, EV_PLAY_EFFECT_ID, pSelfVeh->m_pVehicleInfo->iImpactFX);
 			}
 			pEnt->m_pVehicle->m_iHitDebounce = pm->cmd.serverTime + 200;
-			magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 50.0f; 
+			magnitude /= pSelfVeh->m_pVehicleInfo->toughness * 50.0f;
 
 			if (hitEnt && (hitEnt->s.eType != ET_TERRAIN || !(hitEnt->spawnflags & 1) || pSelfVeh->m_pVehicleInfo->type == VH_FIGHTER))
 			{ //don't damage the vehicle from terrain that doesn't want to damage vehicles
@@ -558,10 +558,10 @@ qboolean PM_GroundSlideOkay( float zNormal )
 		if ( pm->ps->velocity[2] > 0 )
 		{
 			if ( pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT
-				|| pm->ps->legsAnim == BOTH_WALL_RUN_LEFT 
+				|| pm->ps->legsAnim == BOTH_WALL_RUN_LEFT
 				|| pm->ps->legsAnim == BOTH_WALL_RUN_RIGHT_STOP
-				|| pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP 
-				|| pm->ps->legsAnim == BOTH_FORCEWALLRUNFLIP_START 
+				|| pm->ps->legsAnim == BOTH_WALL_RUN_LEFT_STOP
+				|| pm->ps->legsAnim == BOTH_FORCEWALLRUNFLIP_START
 				|| pm->ps->legsAnim == BOTH_FORCELONGLEAP_START
 				|| pm->ps->legsAnim == BOTH_FORCELONGLEAP_ATTACK
 				|| pm->ps->legsAnim == BOTH_FORCELONGLEAP_LAND
@@ -600,7 +600,7 @@ qboolean PM_ClientImpact( trace_t *trace )
 
 	traceEnt = &g_entities[otherEntityNum];
 
-	if( VectorLength( pm->ps->velocity ) >= 100 
+	if( VectorLength( pm->ps->velocity ) >= 100
 		&& pm_entSelf->s.NPC_class != CLASS_VEHICLE
 		&& pm->ps->lastOnGround+100 < level.time )
 		//&& pm->ps->groundEntityNum == ENTITYNUM_NONE )
@@ -608,7 +608,7 @@ qboolean PM_ClientImpact( trace_t *trace )
 		Client_CheckImpactBBrush( (gentity_t *)(pm_entSelf), &g_entities[otherEntityNum] );
 	}
 
-	if ( !traceEnt 
+	if ( !traceEnt
 		|| !(traceEnt->r.contents&pm->tracemask) )
 	{//it's dead or not in my way anymore, don't clip against it
 		return qtrue;
@@ -642,7 +642,7 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 	vec3_t		endVelocity;
 	vec3_t		endClipVelocity;
 	//qboolean	damageSelf = qtrue;
-	
+
 	numbumps = 4;
 
 	VectorCopy (pm->ps->velocity, primal_velocity);
@@ -655,7 +655,7 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 		if ( pml.groundPlane ) {
 			if ( PM_GroundSlideOkay( pml.groundTrace.plane.normal[2] ) )
 			{// slide along the ground plane
-				PM_ClipVelocity (pm->ps->velocity, pml.groundTrace.plane.normal, 
+				PM_ClipVelocity (pm->ps->velocity, pml.groundTrace.plane.normal,
 					pm->ps->velocity, OVERCLIP );
 			}
 		}
@@ -853,7 +853,7 @@ PM_StepSlideMove
 
 ==================
 */
-void PM_StepSlideMove( qboolean gravity ) { 
+void PM_StepSlideMove( qboolean gravity ) {
 	vec3_t		start_o, start_v;
 	vec3_t		down_o, down_v;
 	trace_t		trace;
@@ -874,7 +874,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	if ( PM_SlideMove( gravity ) == 0 ) {
-		return;		// we got exactly where we wanted to go first try	
+		return;		// we got exactly where we wanted to go first try
 	}
 
 	pEnt = pm_entSelf;
@@ -964,7 +964,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 			//Then it might still be okay, so we figure out the slope of the entire move
 			//from (A) to (B) and if that slope is walk-upabble, then it's okay
 			VectorSubtract( trace.endpos, down_o, stepVec );
-			VectorNormalize( stepVec ); 
+			VectorNormalize( stepVec );
 			if ( stepVec[2] > (1.0f-MIN_WALK_NORMAL) )
 			{
 				skipStep = qtrue;
@@ -972,13 +972,13 @@ void PM_StepSlideMove( qboolean gravity ) {
 		}
 	}
 
-	if ( !trace.allsolid 
+	if ( !trace.allsolid
 		&& !skipStep ) //normal players cannot step up slopes that are too steep to walk on!
-	{ 
+	{
 		if ( pm->ps->clientNum >= MAX_CLIENTS//NPC
-			&& isGiant 
+			&& isGiant
 			&& trace.entityNum < MAX_CLIENTS
-			&& pEnt 
+			&& pEnt
 			&& pEnt->s.NPC_class == CLASS_RANCOR )
 		{//Rancor don't step on clients
 			if ( pm->stepSlideFix )
@@ -994,10 +994,10 @@ void PM_StepSlideMove( qboolean gravity ) {
 		}
 		/*
 		else if ( pm->ps->clientNum >= MAX_CLIENTS//NPC
-			&& isGiant 
+			&& isGiant
 			&& trace.entityNum < MAX_CLIENTS
-			&& pEnt 
-			&& pEnt->s.NPC_class == CLASS_ATST 
+			&& pEnt
+			&& pEnt->s.NPC_class == CLASS_ATST
 			&& OnSameTeam( pEnt, traceEnt) )
 		{//NPC AT-ST's don't step up on allies
 			VectorCopy (start_o, pm->ps->origin);
@@ -1040,7 +1040,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 		if ( pm->debugLevel ) {
 			Com_Printf("%i:bend\n", c_pmove);
 		}
-	} else 
+	} else
 #endif
 	{
 		// use the step move

@@ -163,7 +163,7 @@ static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
 
 
 	if ( primitives == 2 ) {
-		qglDrawElements( GL_TRIANGLES, 
+		qglDrawElements( GL_TRIANGLES,
 						numIndexes,
 						GL_INDEX_TYPE,
 						indexes );
@@ -174,7 +174,7 @@ static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
 		R_DrawStripElements( numIndexes,  indexes, qglArrayElement );
 		return;
 	}
-	
+
 	if ( primitives == 3 ) {
 		R_DrawStripElements( numIndexes,  indexes, R_ArrayElementDiscrete );
 		return;
@@ -442,7 +442,7 @@ static void ProjectDlightTexture2( void ) {
 
 	int		needResetVerts=0;
 
-	if ( !backEnd.refdef.num_dlights ) 
+	if ( !backEnd.refdef.num_dlights )
 	{
 		return;
 	}
@@ -460,33 +460,33 @@ static void ProjectDlightTexture2( void ) {
 		radius = dl->radius;
 
 		int		clipall = 63;
-		for ( i = 0 ; i < tess.numVertexes ; i++) 
+		for ( i = 0 ; i < tess.numVertexes ; i++)
 		{
 			int		clip;
 			VectorSubtract( origin, tess.xyz[i], dist );
 
 			clip = 0;
-			if (  dist[0] < -radius ) 
+			if (  dist[0] < -radius )
 			{
 				clip |= 1;
 			}
-			else if ( dist[0] > radius ) 
+			else if ( dist[0] > radius )
 			{
 				clip |= 2;
 			}
-			if (  dist[1] < -radius ) 
+			if (  dist[1] < -radius )
 			{
 				clip |= 4;
 			}
-			else if ( dist[1] > radius ) 
+			else if ( dist[1] > radius )
 			{
 				clip |= 8;
 			}
-			if (  dist[2] < -radius ) 
+			if (  dist[2] < -radius )
 			{
 				clip |= 16;
 			}
-			else if ( dist[2] > radius ) 
+			else if ( dist[2] > radius )
 			{
 				clip |= 32;
 			}
@@ -494,7 +494,7 @@ static void ProjectDlightTexture2( void ) {
 			clipBits[i] = clip;
 			clipall &= clip;
 		}
-		if ( clipall ) 
+		if ( clipall )
 		{
 			continue;	// this surface doesn't have any of this light
 		}
@@ -504,14 +504,14 @@ static void ProjectDlightTexture2( void ) {
 
 		// build a list of triangles that need light
 		numIndexes = 0;
-		for ( i = 0 ; i < tess.numIndexes ; i += 3 ) 
+		for ( i = 0 ; i < tess.numIndexes ; i += 3 )
 		{
 			int		a, b, c;
 
 			a = tess.indexes[i];
 			b = tess.indexes[i+1];
 			c = tess.indexes[i+2];
-			if ( clipBits[a] & clipBits[b] & clipBits[c] ) 
+			if ( clipBits[a] & clipBits[b] & clipBits[c] )
 			{
 				continue;	// not lighted
 			}
@@ -617,7 +617,7 @@ static void ProjectDlightTexture2( void ) {
 
 		//don't have fog enabled when we redraw with alpha test, or it will double over
 		//and screw the tri up -rww
-		if (r_drawfog->value == 2 && 
+		if (r_drawfog->value == 2 &&
 			tr.world &&
 			(tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs))
 		{
@@ -654,7 +654,7 @@ static void ProjectDlightTexture2( void ) {
 		if (!needResetVerts)
 		{
 			needResetVerts=1;
-			if (qglUnlockArraysEXT) 
+			if (qglUnlockArraysEXT)
 			{
 				qglUnlockArraysEXT();
 				GLimp_LogComment( "glUnlockArraysEXT\n" );
@@ -780,7 +780,7 @@ static void ProjectDlightTexture( void ) {
 			backEnd.pc.c_dlightVertexes++;
 
 			VectorSubtract( origin, tess.xyz[i], dist );
-			
+
 			int l = 1;
 			int bestIndex = 0;
 			float greatest = tess.normal[i][0];
@@ -969,7 +969,7 @@ static void ProjectDlightTexture( void ) {
 
 		//don't have fog enabled when we redraw with alpha test, or it will double over
 		//and screw the tri up -rww
-		if (r_drawfog->value == 2 && 
+		if (r_drawfog->value == 2 &&
 			tr.world &&
 			(tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs))
 		{
@@ -1114,7 +1114,7 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 	qboolean killGen = qfalse;
 	alphaGen_t forceAlphaGen = pStage->alphaGen;//set this up so we can override below
 
-	if ( tess.shader != tr.projectionShadowShader && tess.shader != tr.shadowShader && 
+	if ( tess.shader != tr.projectionShadowShader && tess.shader != tr.shadowShader &&
 			( backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1|RF_DISINTEGRATE2)))
 	{
 		RB_CalcDisintegrateColors( (unsigned char *)tess.svars.colors );
@@ -1144,7 +1144,7 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 
 		numVertexes = tess.numVertexes;
 
-		for ( i = 0 ; i < numVertexes ; i++, normal += 4, color += 4) 
+		for ( i = 0 ; i < numVertexes ; i++, normal += 4, color += 4)
 		{
 			dot = DotProduct( normal, backEnd.refdef.viewaxis[0] );
 
@@ -1183,8 +1183,8 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			break;
 		case CGEN_LIGHTING_DIFFUSE_ENTITY:
 			RB_CalcDiffuseEntityColor( ( unsigned char * ) tess.svars.colors );
-			if ( forceAlphaGen == AGEN_IDENTITY && 
-				 backEnd.currentEntity->e.shaderRGBA[3] == 0xff 
+			if ( forceAlphaGen == AGEN_IDENTITY &&
+				 backEnd.currentEntity->e.shaderRGBA[3] == 0xff
 				)
 			{
 				forceAlphaGen = AGEN_SKIP;	//already got it in this set since it does all 4 components
@@ -1250,8 +1250,8 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			break;
 		case CGEN_ENTITY:
 			RB_CalcColorFromEntity( ( unsigned char * ) tess.svars.colors );
-			if ( forceAlphaGen == AGEN_IDENTITY && 
-				 backEnd.currentEntity->e.shaderRGBA[3] == 0xff 
+			if ( forceAlphaGen == AGEN_IDENTITY &&
+				 backEnd.currentEntity->e.shaderRGBA[3] == 0xff
 				)
 			{
 				forceAlphaGen = AGEN_SKIP;	//already got it in this set since it does all 4 components
@@ -1261,7 +1261,7 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			RB_CalcColorFromOneMinusEntity( ( unsigned char * ) tess.svars.colors );
 			break;
 		case CGEN_LIGHTMAPSTYLE:
-			for ( i = 0; i < tess.numVertexes; i++ ) 
+			for ( i = 0; i < tess.numVertexes; i++ )
 			{
 				*(unsigned *)&colors[i] = *(unsigned *)styleColors[pStage->lightmapStyle];
 			}
@@ -1349,9 +1349,9 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 		}
 		break;
 	case AGEN_BLEND:
-		if ( forceRGBGen != CGEN_VERTEX ) 
+		if ( forceRGBGen != CGEN_VERTEX )
 		{
-			for ( i = 0; i < tess.numVertexes; i++ ) 
+			for ( i = 0; i < tess.numVertexes; i++ )
 			{
 				colors[i][3] = tess.vertexAlphas[i][pStage->index]; //rwwRMG - added support
 			}
@@ -1467,7 +1467,7 @@ static void ComputeTexCoords( shaderStage_t *pStage ) {
 				break;
 
 			case TMOD_TURBULENT:
-				RB_CalcTurbulentTexCoords( &pStage->bundle[b].texMods[tm].wave, 
+				RB_CalcTurbulentTexCoords( &pStage->bundle[b].texMods[tm].wave,
 						                 ( float * ) tess.svars.texcoords[b] );
 				break;
 
@@ -1485,9 +1485,9 @@ static void ComputeTexCoords( shaderStage_t *pStage ) {
 				RB_CalcScaleTexCoords( pStage->bundle[b].texMods[tm].translate,
 									 ( float * ) tess.svars.texcoords[b] );
 				break;
-			
+
 			case TMOD_STRETCH:
-				RB_CalcStretchTexCoords( &pStage->bundle[b].texMods[tm].wave, 
+				RB_CalcStretchTexCoords( &pStage->bundle[b].texMods[tm].wave,
 						               ( float * ) tess.svars.texcoords[b] );
 				break;
 
@@ -1540,8 +1540,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 	bool	FogColorChange = false;
 	fog_t	*fog = NULL;
 
-	if (tess.fogNum && tess.shader->fogPass && (tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs) 
-		&& r_drawfog->value == 2) 
+	if (tess.fogNum && tess.shader->fogPass && (tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs)
+		&& r_drawfog->value == 2)
 	{	// only gl fog global fog and the "special fog"
 		fog = tr.world->fogs + tess.fogNum;
 
@@ -1568,7 +1568,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			}
 
 			qglFogi(GL_FOG_MODE, GL_LINEAR);
-			
+
 			qglFogf(GL_FOG_START, fStart);
 			qglFogf(GL_FOG_END, tr.distanceCull);
 		}
@@ -1681,7 +1681,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			//
 			// set state
 			//
-			if ( (tess.shader == tr.distortionShader) || 
+			if ( (tess.shader == tr.distortionShader) ||
 				 (backEnd.currentEntity && (backEnd.currentEntity->e.renderfx & RF_DISTORTION)) )
 			{ //special distortion effect -rww
 				//tr.screenImage should have been set for this specific entity before we got in here.
@@ -1692,7 +1692,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			{
 				GL_Bind( tr.whiteImage );
 			}
-			else 
+			else
 				R_BindAnimatedImage( &pStage->bundle[0] );
 
 			if (tess.shader == tr.distortionShader &&
@@ -1729,7 +1729,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			//
 			// draw
 			//
-			R_DrawElements( input->numIndexes, input->indexes );	
+			R_DrawElements( input->numIndexes, input->indexes );
 
 			if (lStencilled)
 			{ //re-enable the color buffer, disable stencil test
@@ -1761,7 +1761,7 @@ void RB_StageIteratorGeneric( void )
 	//
 	// log this call
 	//
-	if ( r_logFile->integer ) 
+	if ( r_logFile->integer )
 	{
 		// don't just call LogComment, or we will get
 		// a call to va() every frame!
@@ -1827,7 +1827,7 @@ void RB_StageIteratorGeneric( void )
 	//
 	RB_IterateStagesGeneric( input );
 
-	// 
+	//
 	// now do any dynamic lighting needed
 	//
 	if ( tess.dlightBits && tess.shader->sort <= SS_OPAQUE
@@ -1850,10 +1850,10 @@ void RB_StageIteratorGeneric( void )
 		RB_FogPass();
 	}
 
-	// 
+	//
 	// unlock arrays
 	//
-	if (qglUnlockArraysEXT) 
+	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		GLimp_LogComment( "glUnlockArraysEXT\n" );
@@ -1880,7 +1880,7 @@ void RB_StageIteratorGeneric( void )
 	}
 
 	//don't disable the hardware fog til after we do surface sprites
-	if (r_drawfog->value == 2 && 
+	if (r_drawfog->value == 2 &&
 		tess.fogNum && tess.shader->fogPass &&
 		(tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs))
 	{
@@ -1903,7 +1903,7 @@ void RB_EndSurface( void ) {
 
 	if (input->indexes[SHADER_MAX_INDEXES-1] != 0) {
 		Com_Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_INDEXES hit");
-	}	
+	}
 	if (input->xyz[SHADER_MAX_VERTEXES-1][0] != 0) {
 		Com_Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
 	}
@@ -1921,7 +1921,7 @@ void RB_EndSurface( void ) {
 	if ( skyboxportal )
 	{
 		// world
-		if(!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL)) 
+		if(!(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL))
 		{
 			if(tess.currentStageIteratorFunc == RB_StageIteratorSky)
 			{	// don't process these tris at all
@@ -1949,7 +1949,7 @@ void RB_EndSurface( void ) {
 	backEnd.pc.c_indexes += tess.numIndexes;
 	backEnd.pc.c_totalIndexes += tess.numIndexes * tess.numPasses;
 	if (tess.fogNum && tess.shader->fogPass && r_drawfog->value == 1)
-	{	
+	{
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
 	}
 

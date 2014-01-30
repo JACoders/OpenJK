@@ -28,18 +28,18 @@ void R2D2_PartsMove(void)
 	{
 		NPCS.NPC->pos1[1] = AngleNormalize360( NPCS.NPC->pos1[1]);
 
-		NPCS.NPC->pos1[0]+=Q_irand( -20, 20 );	// Roll	
-		NPCS.NPC->pos1[1]=Q_irand( -20, 20 );	
-		NPCS.NPC->pos1[2]=Q_irand( -20, 20 );	
+		NPCS.NPC->pos1[0]+=Q_irand( -20, 20 );	// Roll
+		NPCS.NPC->pos1[1]=Q_irand( -20, 20 );
+		NPCS.NPC->pos1[2]=Q_irand( -20, 20 );
 
 		/*
 		if (NPC->genericBone1)
 		{
-			trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+			trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL );
 		}
 		*/
 		NPC_SetBoneAngles(NPCS.NPC, "f_eye", NPCS.NPC->pos1);
-		
+
 
 		TIMER_Set( NPCS.NPC, "eyeDelay", Q_irand( 100, 1000 ) );
 	}
@@ -179,11 +179,11 @@ void Droid_Run( void )
 	if ( NPCS.NPCInfo->localState == LSTATE_BACKINGUP )
 	{
 		NPCS.ucmd.forwardmove = -127;
-		NPCS.NPCInfo->desiredYaw += 5; 
+		NPCS.NPCInfo->desiredYaw += 5;
 
 		NPCS.NPCInfo->localState = LSTATE_NONE;	// So he doesn't constantly backup.
 	}
-	else 
+	else
 	{
 		NPCS.ucmd.forwardmove = 64;
 		//If we have somewhere to go, then do that
@@ -210,9 +210,9 @@ void Droid_Spin( void )
 
 	R2D2_TurnAnims();
 
-						
+
 	// Head is gone, spin and spark
-	if ( NPCS.NPC->client->NPC_class == CLASS_R5D2 
+	if ( NPCS.NPC->client->NPC_class == CLASS_R5D2
 		|| NPCS.NPC->client->NPC_class == CLASS_R2D2 )
 	{
 		// No head?
@@ -233,7 +233,7 @@ void Droid_Spin( void )
 			NPCS.ucmd.forwardmove = Q_irand( -64, 64);
 
 			if (TIMER_Done(NPCS.NPC,"roam"))
-			{	
+			{
 				TIMER_Set( NPCS.NPC, "roam", Q_irand( 250, 1000 ) );
 				NPCS.NPCInfo->desiredYaw = Q_irand( 0, 360 ); // Go in random directions
 			}
@@ -250,7 +250,7 @@ void Droid_Spin( void )
 			}
 		}
 	}
-	else 
+	else
 	{
 		if (TIMER_Done(NPCS.NPC,"roam"))
 		{
@@ -292,7 +292,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			{
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
-					if ((self->NPC->localState != LSTATE_SPINNING) && 
+					if ((self->NPC->localState != LSTATE_SPINNING) &&
 						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
@@ -338,7 +338,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				// Spin around in pain
 				self->NPC->localState = LSTATE_SPINNING;
 				TIMER_Set( self, "roam", Q_irand(1000,2000));
-			} 
+			}
 		}
 	}
 	else if (self->client->NPC_class == CLASS_MOUSE)
@@ -370,7 +370,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			{
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
-					if ((self->NPC->localState != LSTATE_SPINNING) && 
+					if ((self->NPC->localState != LSTATE_SPINNING) &&
 						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
@@ -417,7 +417,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				self->NPC->localState = LSTATE_SPINNING;
 				TIMER_Set( self, "roam", Q_irand(1000,2000));
 			}
-		} 
+		}
 	}
 	else if ( self->client->NPC_class == CLASS_INTERROGATOR && ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT ) && other )
 	{
@@ -549,7 +549,7 @@ static void R5D2_OffsetLook( float offset, vec3_t out )
 	angles[YAW] += offset;
 	AngleVectors( angles, forward, NULL, NULL );
 	VectorMA( NPC->r.currentOrigin, 64, forward, out );
-	
+
 	CalcEntitySpot( NPC, SPOT_HEAD, temp );
 	out[2] = temp[2];
 }

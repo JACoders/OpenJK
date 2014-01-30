@@ -23,7 +23,7 @@ long	CDraw32::clip_max_x=0;		// clip bounds
 long	CDraw32::clip_max_y=0;		// clip bounds
 long*	CDraw32::row_off = NULL;	// Table for quick Y calculations
 
-CDraw32::CDraw32() 
+CDraw32::CDraw32()
 //USE:	constructor
 {
 }
@@ -33,7 +33,7 @@ CDraw32::~CDraw32()
 {
 }
 
-int	imgKernel[5][5] = 
+int	imgKernel[5][5] =
 {
 	{-1,-1,-1,-1, 0},
 	{-1,-1,-1, 0, 1},
@@ -44,7 +44,7 @@ int	imgKernel[5][5] =
 
 const int KWIDTH = 2;
 
-void CDraw32::Emboss(long dstX, long dstY, long width, long height, 
+void CDraw32::Emboss(long dstX, long dstY, long width, long height,
 					 CPixel32* clrImage, long clrX, long clrY, long clrStride)
 {
 	CPixel32 	*dst;
@@ -477,7 +477,7 @@ void CDraw32::DrawLineAANC(long x0, long y0, long x1, long y1, CPixel32 color)
 // Wu antialiased line drawer.
 //USE:	Function to draw an antialiased line from (x0,y0) to (x1,y1), using an
 //			antialiasing approach published by Xiaolin Wu in the July 1991 issue of
-//			Computer Graphics (SIGGRAPH proceedings). 
+//			Computer Graphics (SIGGRAPH proceedings).
 //
 //IN:		(x0,y0),(x1,y1) = line to draw
 //			color = 32-bit color
@@ -485,8 +485,8 @@ void CDraw32::DrawLineAANC(long x0, long y0, long x1, long y1, CPixel32 color)
 {
 	assert(buffer != NULL);
 
-	// Make sure the line runs top to bottom 
-	if (y0 > y1) 
+	// Make sure the line runs top to bottom
+	if (y0 > y1)
 	{
 		SWAP(y0,y1);
 		SWAP(x0,x1);
@@ -497,44 +497,44 @@ void CDraw32::DrawLineAANC(long x0, long y0, long x1, long y1, CPixel32 color)
 	long	XDir;
 
 	// Draw the initial pixel, which is always exactly intersected by
- 	// the line and so needs no Alpha 
+ 	// the line and so needs no Alpha
 	PutPixAlphaNC(x0, y0, color);
 
-	if (DeltaX >= 0) 
+	if (DeltaX >= 0)
 	{
  		XDir = 1;
-	} 
-	else 
+	}
+	else
 	{
  		XDir = -1;
- 		DeltaX = -DeltaX; // make DeltaX positive 
+ 		DeltaX = -DeltaX; // make DeltaX positive
 	}
 
 	// Special-case horizontal, vertical, and diagonal lines, which
  	//	require no Alpha because they go right through the center of
- 	//	every pixel 
-	if (DeltaY == 0) 
-	{	// Horizontal line 
- 		while (DeltaX-- != 0) 
+ 	//	every pixel
+	if (DeltaY == 0)
+	{	// Horizontal line
+ 		while (DeltaX-- != 0)
 		{
  			x0 += XDir;
 			PutPixAlphaNC(x0, y0, color);
 		}
  		return;
 	}
-	if (DeltaX == 0) 
-	{	// Vertical line 
- 		do 
+	if (DeltaX == 0)
+	{	// Vertical line
+ 		do
 		{
  			y0++;
 			PutPixAlphaNC(x0, y0, color);
-		} 
+		}
 		while (--DeltaY != 0);
  		return;
 	}
-	if (DeltaX == DeltaY) 
-	{	// Diagonal line 
- 		do 
+	if (DeltaX == DeltaY)
+	{	// Diagonal line
+ 		do
 		{
  			x0 += XDir;
  			y0++;
@@ -544,74 +544,74 @@ void CDraw32::DrawLineAANC(long x0, long y0, long x1, long y1, CPixel32 color)
  		return;
 	}
 
-	// Line is not horizontal, diagonal, or vertical 
-	unsigned short ErrorAcc = 0;  // initialize the line error accumulator to 0 
+	// Line is not horizontal, diagonal, or vertical
+	unsigned short ErrorAcc = 0;  // initialize the line error accumulator to 0
 
-	// # of bits by which to shift ErrorAcc to get intensity level 
+	// # of bits by which to shift ErrorAcc to get intensity level
 	const unsigned long	IntensityShift = 16 - 8;
-	
-	// Is this an X-major or Y-major line? 
-	if (DeltaY > DeltaX) 
+
+	// Is this an X-major or Y-major line?
+	if (DeltaY > DeltaX)
 	{
  		// Y-major line; calculate 16-bit fixed-point fractional part of a
  		// pixel that X advances each time Y advances 1 pixel, truncating the
- 		// result so that we won't overrun the endpoint along the X axis 
+ 		// result so that we won't overrun the endpoint along the X axis
 		unsigned short	ErrorAdj = (unsigned short)
 				(((unsigned long) DeltaX << 16) / (unsigned long) DeltaY);
 
- 		// Draw all pixels other than the first and last 
- 		while (--DeltaY) 
+ 		// Draw all pixels other than the first and last
+ 		while (--DeltaY)
 		{
- 			unsigned short	ErrorAccTemp = ErrorAcc;   // remember currrent accumulated error 
- 			ErrorAcc += ErrorAdj;      // calculate error for next pixel 
- 			if (ErrorAcc <= ErrorAccTemp) 
-			{	// The error accumulator turned over, so advance the X coord 
+ 			unsigned short	ErrorAccTemp = ErrorAcc;   // remember currrent accumulated error
+ 			ErrorAcc += ErrorAdj;      // calculate error for next pixel
+ 			if (ErrorAcc <= ErrorAccTemp)
+			{	// The error accumulator turned over, so advance the X coord
  				x0 += XDir;
 			}
- 			y0++; // Y-major, so always advance Y 
+ 			y0++; // Y-major, so always advance Y
  			// The IntensityBits most significant bits of ErrorAcc give us the
  			// intensity Alpha for this pixel, and the complement of the
- 			// Alpha for the paired pixel 
+ 			// Alpha for the paired pixel
  			unsigned long	Alpha = ErrorAcc >> IntensityShift;
 			unsigned long	InvAlpha = 256-Alpha;
 
-			PutPixAlphaNC(x0, y0, 
+			PutPixAlphaNC(x0, y0,
 				ALPHA_PIX(GetPix(x0, y0), color, Alpha, InvAlpha));
-			PutPixAlphaNC(x0+XDir, y0, 
+			PutPixAlphaNC(x0+XDir, y0,
 				ALPHA_PIX(GetPix(x0+XDir, y0), color, InvAlpha, Alpha));
  		}
  		// Draw the final pixel, which is always exactly intersected by the line
- 		// and so needs no Alpha 
+ 		// and so needs no Alpha
 		PutPixAlphaNC(x1, y1, color);
  		return;
 	}
 	// It's an X-major line; calculate 16-bit fixed-point fractional part of a
  	// pixel that Y advances each time X advances 1 pixel, truncating the
- 	// result to avoid overrunning the endpoint along the X axis 
+ 	// result to avoid overrunning the endpoint along the X axis
 	unsigned short	ErrorAdj = (unsigned short)
 		(((unsigned long) DeltaY << 16) / (unsigned long) DeltaX);
-	// Draw all pixels other than the first and last 
-	while (--DeltaX) 
+	// Draw all pixels other than the first and last
+	while (--DeltaX)
 	{
- 		unsigned short	ErrorAccTemp = ErrorAcc;   // remember currrent accumulated error 
- 		ErrorAcc += ErrorAdj;      // calculate error for next pixel 
- 		if (ErrorAcc <= ErrorAccTemp) 
-		{	// The error accumulator turned over, so advance the Y coord 
+ 		unsigned short	ErrorAccTemp = ErrorAcc;   // remember currrent accumulated error
+ 		ErrorAcc += ErrorAdj;      // calculate error for next pixel
+ 		if (ErrorAcc <= ErrorAccTemp)
+		{	// The error accumulator turned over, so advance the Y coord
  			y0++;
 		}
- 		x0 += XDir; // X-major, so always advance X 
+ 		x0 += XDir; // X-major, so always advance X
  		// The IntensityBits most significant bits of ErrorAcc give us the
  		// intensity Alpha for this pixel, and the complement of the
- 		// Alpha for the paired pixel 
+ 		// Alpha for the paired pixel
  		unsigned long	Alpha = ErrorAcc >> IntensityShift;
 		unsigned long	InvAlpha = 256-Alpha;
-		PutPixAlphaNC(x0, y0, 
+		PutPixAlphaNC(x0, y0,
 			ALPHA_PIX(GetPix(x0, y0), color, Alpha, InvAlpha));
-		PutPixAlphaNC(x0, y0+1, 
+		PutPixAlphaNC(x0, y0+1,
 			ALPHA_PIX(GetPix(x0, y0+1), color, InvAlpha, Alpha));
 	}
 	// Draw the final pixel, which is always exactly intersected by the line
- 	// and so needs no Alpha 
+ 	// and so needs no Alpha
 	PutPixAlphaNC(x1, y1, color);
 }
 
@@ -739,8 +739,8 @@ void CDraw32::DrawCircle(long xc, long yc, long r, CPixel32 edge, CPixel32 fill)
 //
 //IN:   xc,yc - center
 //      r     - radius
-//      edge  - edge color 
-//      fill  - fill color 
+//      edge  - edge color
+//      fill  - fill color
 //
 //OUT: NONE (a circle drawn in the off-screen buffer)
 {
@@ -896,8 +896,8 @@ void CDraw32::DrawCircleAve(long xc, long yc, long r, CPixel32 edge, CPixel32 fi
 //
 //IN:   xc,yc - center
 //      r     - radius
-//      edge  - edge color 
-//      fill  - fill color 
+//      edge  - edge color
+//      fill  - fill color
 //
 //OUT:	none (a circle on in the off-screen buffer)
 {
@@ -1371,7 +1371,7 @@ void CDraw32::DrawPolygon(long nvert, Point *point, CPixel32 edge, CPixel32 fill
 	return;
 }
 
-void CDraw32::Blit(long dstX, long dstY, long width, long height, 
+void CDraw32::Blit(long dstX, long dstY, long width, long height,
 				   CPixel32* srcImage, long srcX, long srcY, long srcStride)
 //USE:	simple blit
 //IN:	dstX, dstY				- upper left corner of where image will land in buffer
@@ -1412,8 +1412,8 @@ void CDraw32::Blit(long dstX, long dstY, long width, long height,
 	}
 }
 
-void CDraw32::BlitClip(long& dstX, long& dstY, 
-					   long& width, long& height, 
+void CDraw32::BlitClip(long& dstX, long& dstY,
+					   long& width, long& height,
 					   long& srcX, long& srcY)
 //USE:	simple blit clip
 //IN:	dstX, dstY				- upper left corner of where image will land in buffer
@@ -1450,7 +1450,7 @@ void CDraw32::BlitClip(long& dstX, long& dstY,
 	}
 }
 
-void CDraw32::BlitColor(long dstX, long dstY, long width, long height, 
+void CDraw32::BlitColor(long dstX, long dstY, long width, long height,
 					    CPixel32* srcImage, long srcX, long srcY, long srcStride, CPixel32 color)
 //USE:	blit using image alpha as mask
 //IN:	dstX, dstY				- upper left corner of where image will land in buffer

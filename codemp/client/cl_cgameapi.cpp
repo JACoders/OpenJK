@@ -860,7 +860,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return CL_PrecisionTimerEnd( (void *)args[1] );
 
 	case CG_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
 		return 0;
 
 	case CG_CVAR_UPDATE:
@@ -1043,7 +1043,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 
 	case CG_R_LOADWORLDMAP:
 		re->LoadWorld( (const char *)VMA(1) );
-		return 0; 
+		return 0;
 
 	case CG_R_REGISTERMODEL:
 		return re->RegisterModel( (const char *)VMA(1) );
@@ -1306,9 +1306,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 
 #ifndef DEBUG_DISABLEFXCALLS
 	case CG_FX_ADDLINE:
-		CGFX_AddLine( (float *)VMA(1), (float *)VMA(2), VMF(3), VMF(4), VMF(5), 
-			VMF(6), VMF(7), VMF(8), 
-			(float *)VMA(9), (float *)VMA(10), VMF(11), 
+		CGFX_AddLine( (float *)VMA(1), (float *)VMA(2), VMF(3), VMF(4), VMF(5),
+			VMF(6), VMF(7), VMF(8),
+			(float *)VMA(9), (float *)VMA(10), VMF(11),
 			args[12], args[13], args[14]);
 		return 0;
 	case CG_FX_REGISTER_EFFECT:

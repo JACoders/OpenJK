@@ -107,7 +107,7 @@ passed to the renderer.
 #define	MAX_MARK_FRAGMENTS	128
 #define	MAX_MARK_POINTS		384
 
-void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir, 
+void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 				   float orientation, float red, float green, float blue, float alpha,
 				   qboolean alphaFade, float radius, qboolean temporary ) {
 	matrix3_t		axis;
@@ -267,7 +267,7 @@ void CG_AddMarks( void ) {
 					mp->verts[j].modulate[3] = fade;
 				}
 			}
-			else 
+			else
 			{
 				float f = (float)t / MARK_FADE_TIME;
 				for ( j = 0 ; j < mp->poly.numVerts ; j++ ) {

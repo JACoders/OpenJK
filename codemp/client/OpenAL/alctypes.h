@@ -87,15 +87,15 @@ typedef int ALCenum;
 #define	ALC_REFRESH								 0x1008
 #define ALC_SYNC								 0x1009
 
-/** 
+/**
  * The device argument does not name a valid dvice.
  */
 #define ALC_INVALID_DEVICE                       0xA001
 
-/** 
+/**
  * The context argument does not name a valid context.
  */
-#define ALC_INVALID_CONTEXT                      0xA002  
+#define ALC_INVALID_CONTEXT                      0xA002
 
 /**
  * A function was called at inappropriate time,
@@ -105,7 +105,7 @@ typedef int ALCenum;
  */
 #define ALC_INVALID_ENUM						 0xA003
 
-/** 
+/**
  * Illegal value passed as an argument to an AL call.
  * Applies to parameter values, but not to enumerations.
  */

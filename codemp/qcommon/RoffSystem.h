@@ -19,7 +19,7 @@ using namespace std;
 #define ROFF_NEW_VERSION			2
 #define ROFF_STRING					"ROFF"
 #define ROFF_SAMPLE_RATE			10	// 10hz
-#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles, 
+#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles,
 									//	defining this attempts to detect and fix these problems
 
 
@@ -55,7 +55,7 @@ private:
 	} TROFFHeader;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFFEntry 
+	typedef struct tROFFEntry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -74,7 +74,7 @@ private:
 	} TROFF2Header;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFF2Entry 
+	typedef struct tROFF2Entry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -82,7 +82,7 @@ private:
 		int			mStartNote, mNumNotes;		// note track info
 	} TROFF2Entry;
 
-	// An individual ROFF object, 
+	// An individual ROFF object,
 	//	contains actual rotation/offset information
 	//--------------------------------------
 	class CROFF
@@ -102,9 +102,9 @@ private:
 		qboolean	mUsedByClient;
 		qboolean	mUsedByServer;
 
-		CROFF() 
-		{ 
-			mUsedByClient = mUsedByServer = qfalse; 
+		CROFF()
+		{
+			mUsedByClient = mUsedByServer = qfalse;
 		}
 		CROFF( const char *file, int id );
 		~CROFF();
@@ -112,7 +112,7 @@ private:
 	}; // class CROFF
 
 
-	// The roff system tracks entities that are 
+	// The roff system tracks entities that are
 	//	roffing, so this is the internal structure
 	//	that represents these objects.
 	//--------------------------------------
@@ -143,8 +143,8 @@ private:
 
 	void	ProcessNote(SROFFEntity *roff_ent, char *note);
 
-	void	SetLerp( trajectory_t *tr, 
-					trType_t, vec3_t origin, 
+	void	SetLerp( trajectory_t *tr,
+					trType_t, vec3_t origin,
 					vec3_t delta, int time, int rate );
 
 	qboolean	ClearLerp( SROFFEntity *roff_ent );				// Clears out the angular and position lerp fields

@@ -5,12 +5,12 @@
 //
 
 // if you change this enum, you MUST update the #defines below
-typedef enum 
+typedef enum
 {
 //( eBGRNDTRACK_DATABEGIN )			// begin-label for FOR loops
 	//
 	eBGRNDTRACK_EXPLORE = 0,		// for normal walking around
-	eBGRNDTRACK_ACTION,				// for excitement	
+	eBGRNDTRACK_ACTION,				// for excitement
 	eBGRNDTRACK_BOSS,				// (optional) for final encounter
 	eBGRNDTRACK_DEATH,				// (optional) death "flourish"
 	eBGRNDTRACK_ACTIONTRANS0,		// transition from action to explore

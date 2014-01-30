@@ -13,7 +13,7 @@ public:
 	CRandomModel(void) { }
 	~CRandomModel(void) { }
 
-	// Accessors 
+	// Accessors
 	const bool GetModel( void ) const { return(!!strlen(mModelName)); }
 	const char *GetModelName( void ) const { return(mModelName); }
 	void SetModel(const char *name) { Com_sprintf(mModelName, MAX_QPATH, "%s.md3", name); }

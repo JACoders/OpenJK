@@ -5,7 +5,7 @@
  * desc:		AAS
  *
  * $Archive: /MissionPack/code/botlib/be_aas_route.c $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 18 $
  * $Modtime: 12/01/00 1:11p $
  * $Date: 12/01/00 1:11p $

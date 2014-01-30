@@ -4,18 +4,18 @@
 
 #ifdef _MSC_VER
 	#pragma warning( disable : 4018 )	// signed/unsigned mismatch
-	#pragma warning( disable : 4032 )	// 
-	#pragma warning( disable : 4051 )	// 
+	#pragma warning( disable : 4032 )	//
+	#pragma warning( disable : 4051 )	//
 	#pragma warning( disable : 4057 )	// slightly different base types
 	#pragma warning( disable : 4100 )	// unreferenced formal parameter
-	#pragma warning( disable : 4115 )	// 
+	#pragma warning( disable : 4115 )	//
 	#pragma warning( disable : 4125 )	// decimal digit terminates octal escape sequence
 	#pragma warning( disable : 4127 )	// conditional expression is constant
-	#pragma warning( disable : 4136 )	// 
+	#pragma warning( disable : 4136 )	//
 	#pragma warning( disable : 4152 )	// nonstandard extension, function/data pointer conversion in expression
-	#pragma warning( disable : 4201 )	// 
+	#pragma warning( disable : 4201 )	//
 	#pragma warning( disable : 4213 )	// nonstandard extension used : cast on l-value
-	#pragma warning( disable : 4214 )	// 
+	#pragma warning( disable : 4214 )	//
 	#pragma warning( disable : 4220 )	// varargs matches remaining parameters
 	#pragma warning( disable : 4244 )	// conversion from double to float
 	#pragma warning( disable : 4245 )	// signed/unsigned mismatch

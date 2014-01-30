@@ -5,7 +5,7 @@
  *
  * desc:		Siege module, shared for game, cgame, and ui.
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.9 $
  *
  *****************************************************************************/
@@ -1004,7 +1004,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 			//Com_Error( ERR_DROP, "ERROR: could not find class_shader %s for class %s\n", parseBuf, bgSiegeClasses[bgNumSiegeClasses].name );
 			Com_Printf( "ERROR: could not find class_shader %s for class %s\n", parseBuf, bgSiegeClasses[bgNumSiegeClasses].name );
 		}
-		// A very hacky way to determine class . . . 
+		// A very hacky way to determine class . . .
 		else
 	#endif
 		{
@@ -1015,7 +1015,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 			titleLength = strlen(parseBuf);
 			for (i=0;i<SPC_MAX;i++)
 			{
-				// Back up 
+				// Back up
 				arrayTitleLength = strlen(classTitles[i]);
 				if (arrayTitleLength>titleLength)	// Too long
 				{

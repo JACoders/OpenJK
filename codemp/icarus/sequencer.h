@@ -8,7 +8,7 @@
 #include "sequence.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable : 4786)	//identifier was truncated 
+#pragma warning(disable : 4786)	//identifier was truncated
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
@@ -28,7 +28,7 @@ using namespace std;
 #define SQ_COMMON		0x00000000 	//Common one-pass sequence
 #define	SQ_LOOP			0x00000001 	//Looping sequence
 #define SQ_RETAIN		0x00000002 	//Inside a looping sequence list, retain the information
-#define SQ_AFFECT		0x00000004 	//Affect sequence 
+#define SQ_AFFECT		0x00000004 	//Affect sequence
 #define SQ_RUN			0x00000008	//A run block
 #define SQ_PENDING		0x00000010	//Pending use, don't free when flushing the sequences
 #define SQ_CONDITIONAL	0x00000020	//Conditional statement
@@ -165,7 +165,7 @@ protected:
 	CSequence *GetTaskSequence( CTaskGroup *group );
 
 	//Member variables
-	
+
 	ICARUS_Instance		*m_owner;
 	int					m_ownerID;
 

@@ -10,7 +10,7 @@
 	TAGDEF(BOTGAME),
 	TAGDEF(DOWNLOAD),					// used by the downloading system
 	TAGDEF(GENERAL),
-	TAGDEF(CLIPBOARD),					
+	TAGDEF(CLIPBOARD),
 	TAGDEF(SND_MP3STREAMHDR),			// specific MP3 struct for decoding (about 18..22K each?), not the actual MP3 binary
 	TAGDEF(SND_DYNAMICMUSIC),			// in-mem MP3 files
 	TAGDEF(BSP_DISKIMAGE),				// temp during loading, to save both server and renderer fread()ing the same file. Only used if not low physical memory (currently 96MB)

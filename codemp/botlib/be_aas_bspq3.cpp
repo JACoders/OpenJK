@@ -5,7 +5,7 @@
  * desc:		BSP, Environment Sampling
  *
  * $Archive: /MissionPack/code/botlib/be_aas_bspq3.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 5 $
  * $Modtime: 4/22/01 8:52a $
  * $Date: 4/22/01 8:52a $
@@ -305,7 +305,7 @@ int AAS_VectorForBSPEpairKey(int ent, char *key, vec3_t v)
 int AAS_FloatForBSPEpairKey(int ent, char *key, float *value)
 {
 	char buf[MAX_EPAIRKEY];
-	
+
 	*value = 0;
 	if (!AAS_ValueForBSPEpairKey(ent, key, buf, MAX_EPAIRKEY)) return qfalse;
 	*value = atof(buf);
@@ -320,7 +320,7 @@ int AAS_FloatForBSPEpairKey(int ent, char *key, float *value)
 int AAS_IntForBSPEpairKey(int ent, char *key, int *value)
 {
 	char buf[MAX_EPAIRKEY];
-	
+
 	*value = 0;
 	if (!AAS_ValueForBSPEpairKey(ent, key, buf, MAX_EPAIRKEY)) return qfalse;
 	*value = atoi(buf);

@@ -123,10 +123,10 @@ void CQuickSpriteSystem::Flush(void)
 		backEnd.pc.c_totalIndexes += mNextVert;
 	}
 
-	// 
+	//
 	// unlock arrays
 	//
-	if (qglUnlockArraysEXT) 
+	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		GLimp_LogComment( "glUnlockArraysEXT\n" );

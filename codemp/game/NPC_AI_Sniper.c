@@ -107,7 +107,7 @@ static void Sniper_HoldPosition( void )
 {
 	NPC_FreeCombatPoint( NPCS.NPCInfo->combatPoint, qtrue );
 	NPCS.NPCInfo->goalEntity = NULL;
-	
+
 	/*if ( TIMER_Done( NPC, "stand" ) )
 	{//FIXME: what if can't shoot from this pos?
 		TIMER_Set( NPC, "duck", Q_irand( 2000, 4000 ) );
@@ -129,13 +129,13 @@ static qboolean Sniper_Move( void )
 	NPCS.NPCInfo->combatMove = qtrue;//always move straight toward our goal
 
 	moved = NPC_MoveToGoal( qtrue );
-	
+
 	//Get the move info
 	NAV_GetLastMove( &info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-	if ( info.flags & NIF_COLLISION ) 
+	if ( info.flags & NIF_COLLISION )
 	{
 		if ( info.blocker == NPCS.NPC->enemy )
 		{
@@ -217,8 +217,8 @@ void NPC_BSSniper_Patrol( void )
 					NPCS.NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 					if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED )
 					{
-						if ( level.alertEvents[alertEvent].owner && 
-							level.alertEvents[alertEvent].owner->client && 
+						if ( level.alertEvents[alertEvent].owner &&
+							level.alertEvents[alertEvent].owner->client &&
 							level.alertEvents[alertEvent].owner->health >= 0 &&
 							level.alertEvents[alertEvent].owner->client->playerTeam == NPCS.NPC->client->enemyTeam )
 						{//an enemy
@@ -246,15 +246,15 @@ void NPC_BSSniper_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCS.NPCInfo->investigateGoal, NPCS.NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCS.NPCInfo->desiredYaw;
 				o_pitch = NPCS.NPCInfo->desiredPitch;
 				NPCS.NPCInfo->desiredYaw = angles[YAW];
 				NPCS.NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCS.NPCInfo->desiredYaw = o_yaw;
@@ -342,7 +342,7 @@ static void Sniper_CheckMoveState( void )
 	if ( ( NPCS.NPCInfo->goalEntity != NPCS.NPC->enemy ) && ( NPCS.NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) || 
+		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) ||
 			( NPCS.NPCInfo->squadState == SQUAD_SCOUT && enemyLOS2 && enemyDist2 <= 10000 ) )
 		{
 		//	int	newSquadState = SQUAD_STAND_AND_SHOOT;
@@ -496,7 +496,7 @@ qboolean Sniper_EvaluateShot( int hit )
 	}
 
 	hitEnt = &g_entities[hit];
-	if ( hit == NPCS.NPC->enemy->s.number 
+	if ( hit == NPCS.NPC->enemy->s.number
 		|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->enemyTeam )
 		|| ( hitEnt && hitEnt->takedamage && ((hitEnt->r.svFlags&SVF_GLASS_BRUSH)||hitEnt->health < 40||NPCS.NPC->s.weapon == WP_EMPLACED_GUN) )
 		|| ( hitEnt && (hitEnt->r.svFlags&SVF_GLASS_BRUSH)) )
@@ -632,7 +632,7 @@ NPC_BSSniper_Attack
 void Sniper_StartHide( void )
 {
 	int duckTime = Q_irand( 2000, 5000 );
-	
+
 	TIMER_Set( NPCS.NPC, "duck", duckTime );
 	TIMER_Set( NPCS.NPC, "watch", 500 );
 	TIMER_Set( NPCS.NPC, "attackDelay", duckTime + Q_irand( 500, 2000 ) );
@@ -793,9 +793,9 @@ void NPC_BSSniper_Attack( void )
 		TIMER_Set( NPCS.NPC, "duck", -1 );
 	}
 
-	if ( TIMER_Done( NPCS.NPC, "duck" ) 
-		&& TIMER_Done( NPCS.NPC, "watch" ) 
-		&& (TIMER_Get( NPCS.NPC, "attackDelay" )-level.time) > 1000 
+	if ( TIMER_Done( NPCS.NPC, "duck" )
+		&& TIMER_Done( NPCS.NPC, "watch" )
+		&& (TIMER_Get( NPCS.NPC, "attackDelay" )-level.time) > 1000
 		&& NPCS.NPC->attackDebounceTime < level.time )
 	{
 		if ( enemyLOS2 && (NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) )

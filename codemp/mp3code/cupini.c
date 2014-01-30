@@ -3,7 +3,7 @@
 #pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #endif
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -24,7 +24,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: cupini.c,v 1.3 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -218,7 +218,7 @@ static void table_init()
 
 	/*--  scale factor table, scale by 32768 for 16 pcm output  --*/
 	   for (i = 0; i < 64; i++)
-		  sf_table[i] = (float) (32768.0 * 2.0 * pow(2.0, -i / 3.0));   
+		  sf_table[i] = (float) (32768.0 * 2.0 * pow(2.0, -i / 3.0));
 
 	/*--  grouped 3 level lookup table 5 bit token --*/
 	   for (i = 0; i < 32; i++)
@@ -230,7 +230,7 @@ static void table_init()
 		 code /= 3;
 		  }
 	   }
-   
+
 	/*--  grouped 5 level lookup table 7 bit token --*/
 	   for (i = 0; i < 128; i++)
 	   {

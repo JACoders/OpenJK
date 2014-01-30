@@ -78,8 +78,8 @@ inline void VectorCeil(vec3_t in)
 	in[2] = ceilf(in[2]);
 }
 
-inline float	FloatRand(void) 
-{ 
+inline float	FloatRand(void)
+{
 	return ((float)rand() / (float)RAND_MAX);
 }
 
@@ -139,9 +139,9 @@ struct	SVecRange
 
 	inline void Pick(CVec3& V)
 	{
-		V[0] = WE_flrand(mMins[0], mMaxs[0]); 
-		V[1] = WE_flrand(mMins[1], mMaxs[1]); 
-		V[2] = WE_flrand(mMins[2], mMaxs[2]); 
+		V[0] = WE_flrand(mMins[0], mMaxs[0]);
+		V[1] = WE_flrand(mMins[1], mMaxs[1]);
+		V[2] = WE_flrand(mMins[2], mMaxs[2]);
 	}
 	inline void Wrap(CVec3& V, SVecRange &spawnRange)
 	{
@@ -500,8 +500,8 @@ public:
 			Wz.mExtents.mMins = mins;
 			Wz.mExtents.mMaxs = maxs;
 
-			SnapVectorToGrid(Wz.mExtents.mMins, POINTCACHE_CELL_SIZE); 
-			SnapVectorToGrid(Wz.mExtents.mMaxs, POINTCACHE_CELL_SIZE); 
+			SnapVectorToGrid(Wz.mExtents.mMins, POINTCACHE_CELL_SIZE);
+			SnapVectorToGrid(Wz.mExtents.mMaxs, POINTCACHE_CELL_SIZE);
 
 			Wz.mSize.mMins = Wz.mExtents.mMins;
 			Wz.mSize.mMaxs = Wz.mExtents.mMaxs;
@@ -511,7 +511,7 @@ public:
 			Wz.mWidth		=  (int)(Wz.mSize.mMaxs[0] - Wz.mSize.mMins[0]);
 			Wz.mHeight		=  (int)(Wz.mSize.mMaxs[1] - Wz.mSize.mMins[1]);
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
-			
+
 			int arraySize	= (Wz.mWidth * Wz.mHeight * Wz.mDepth);
 			Wz.mPointCache  = (uint32_t *)Z_Malloc(arraySize*sizeof(uint32_t), TAG_POINTCACHE, qtrue);
 		}
@@ -777,7 +777,7 @@ public:
 
 	SFloatRange	mMass;				// Determines how slowness to accelerate, higher number = slower
 	float		mFrictionInverse;	// How much air friction does this particle have 1.0=none, 0.0=nomove
-	
+
 	int			mParticleCount;
 
 	bool		mWaterParticles;
@@ -1097,9 +1097,9 @@ public:
 				if (UseSpawnPlane())
 				{
 					part->mPosition		= mCameraPosition;
-					part->mPosition		-= (mSpawnPlaneNorm* mSpawnPlaneDistance); 
-					part->mPosition		+= (mSpawnPlaneRight*WE_flrand(-mSpawnPlaneSize, mSpawnPlaneSize)); 
-					part->mPosition		+= (mSpawnPlaneUp*   WE_flrand(-mSpawnPlaneSize, mSpawnPlaneSize)); 
+					part->mPosition		-= (mSpawnPlaneNorm* mSpawnPlaneDistance);
+					part->mPosition		+= (mSpawnPlaneRight*WE_flrand(-mSpawnPlaneSize, mSpawnPlaneSize));
+					part->mPosition		+= (mSpawnPlaneUp*   WE_flrand(-mSpawnPlaneSize, mSpawnPlaneSize));
 				}
 
 				// Otherwise, Just Wrap Around To The Other End Of The Range
@@ -1128,7 +1128,7 @@ public:
 				{
 					part->mFlags.set_bit(CWeatherParticle::FLAG_FADEIN);
 					part->mFlags.clear_bit(CWeatherParticle::FLAG_FADEOUT);
-				}			
+				}
 
 				// Start A Fade In
 				//-----------------
@@ -1191,7 +1191,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// Render - 
+	// Render -
 	////////////////////////////////////////////////////////////////////////////////////
 	void		Render()
 	{
@@ -1295,7 +1295,7 @@ public:
 				qglVertex3f(part->mPosition[0] + mCameraLeft[0],
 							part->mPosition[1] + mCameraLeft[1],
 							part->mPosition[2] + mCameraLeft[2]);
-				
+
 				qglTexCoord2f(0.0, 0.0);
 				qglVertex3f(part->mPosition[0] + mCameraLeftPlusUp[0],
 							part->mPosition[1] + mCameraLeftPlusUp[1],
@@ -1327,7 +1327,7 @@ public:
 				// Left top.
 				qglTexCoord2f( 0.0, 1.0 );
 				qglVertex3f(part->mPosition[0] + mCameraLeftPlusUp[0],
-							part->mPosition[1] + mCameraLeftPlusUp[1], 
+							part->mPosition[1] + mCameraLeftPlusUp[1],
 							part->mPosition[2] + mCameraLeftPlusUp[2] );
 			}
 		}
@@ -1381,10 +1381,10 @@ void R_ShutdownWorldEffects(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 void RB_RenderWorldEffects(void)
 {
-	if (!tr.world || 
-		(tr.refdef.rdflags & RDF_NOWORLDMODEL) || 
-		(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) || 
-		!mParticleClouds.size()) 
+	if (!tr.world ||
+		(tr.refdef.rdflags & RDF_NOWORLDMODEL) ||
+		(backEnd.refdef.rdflags & RDF_SKYBOXPORTAL) ||
+		!mParticleClouds.size())
 	{	//  no world rendering or no world or no particle clouds
 		return;
 	}
@@ -1662,7 +1662,7 @@ void RE_WorldEffectCommand(const char *command)
 		nCloud.mFilterMode	= 1;
 		nCloud.mBlendMode	= 1;
 		nCloud.mFade		= 100.0f;
-		
+
 		nCloud.mColor[0]	= 0.34f;
 		nCloud.mColor[1]	= 0.70f;
 		nCloud.mColor[2]	= 0.34f;

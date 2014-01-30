@@ -362,7 +362,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 
 			// Calculate the scale using some magic to help ensure that the
 			// scales are never too different from eachother.  Otherwise you
-			// could get an entity that is really small on one axis but huge 
+			// could get an entity that is really small on one axis but huge
 			// on another.
 			temp[0] = common->flrand(rm->GetMinScale(), rm->GetMaxScale());
 			temp[1] = common->flrand(rm->GetMinScale(), rm->GetMaxScale());
@@ -407,7 +407,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			{
 				continue;
 			}
-			// FIXME: shouldn't be using a hard-coded 1280 number, only allow to spawn if inside player clip brush? 
+			// FIXME: shouldn't be using a hard-coded 1280 number, only allow to spawn if inside player clip brush?
 	//		if( !(CONTENTS_PLAYERCLIP & CGVM_PointContents()) )
 	//		{
 	//			continue;
@@ -429,7 +429,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			td->mMask = MASK_PLAYERSOLID;
 
 			CGVM_Trace();
-			
+
 			if(td->mResult.surfaceFlags & SURF_NOMISCENTS)
 			{
 				continue;
@@ -443,7 +443,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			// Account for relative origin
 			origin[2] -= bounds[0][2] * scale[2];
 			origin[2] -= common->flrand(2.0, (bounds[1][2] - bounds[0][2]) / 4);
-			
+
 			// Spawn the client model
 			strcpy(data->mModel, rm->GetModelName());
 			VectorCopy(origin, data->mOrigin);

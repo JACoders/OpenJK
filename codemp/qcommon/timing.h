@@ -51,7 +51,7 @@ public:
 			pop ebx
 			pop eax
 		}
-#endif 
+#endif
 		time = end - start;
 		if (time < 0)
 		{

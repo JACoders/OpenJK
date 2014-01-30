@@ -63,7 +63,7 @@ called to open a channel to a remote system
 */
 void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport ) {
 	Com_Memset (chan, 0, sizeof(*chan));
-	
+
 	chan->sock = sock;
 	chan->remoteAddress = adr;
 	chan->qport = qport;
@@ -149,7 +149,7 @@ void Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 		Com_Printf("[ISM] Stomping Unsent Fragments %s\n",netsrcString[ chan->sock ]);
 	}
 	// fragment large reliable messages
-	if ( length >= FRAGMENT_SIZE ) 
+	if ( length >= FRAGMENT_SIZE )
 	{
 		chan->unsentFragments = qtrue;
 		chan->unsentLength = length;
@@ -204,7 +204,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	int			fragmentStart, fragmentLength;
 	qboolean	fragmented;
 
-	// get sequence numbers		
+	// get sequence numbers
 	MSG_BeginReadingOOB( msg );
 	sequence = MSG_ReadLong( msg );
 
@@ -270,14 +270,14 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			, sequence );
 		}
 	}
-	
+
 
 	//
 	// if this is the final framgent of a reliable message,
-	// bump incoming_reliable_sequence 
+	// bump incoming_reliable_sequence
 	//
 	if ( fragmented ) {
-		// make sure we 
+		// make sure we
 		if ( sequence != chan->fragmentSequence ) {
 			chan->fragmentSequence = sequence;
 			chan->fragmentLength = 0;
@@ -317,7 +317,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			return qfalse;
 		}
 
-		Com_Memcpy( chan->fragmentBuffer + chan->fragmentLength, 
+		Com_Memcpy( chan->fragmentBuffer + chan->fragmentLength,
 			msg->data + msg->readcount, fragmentLength );
 
 		chan->fragmentLength += fragmentLength;
@@ -345,7 +345,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 		msg->readcount = 4;	// past the sequence number
 		msg->bit = 32;	// past the sequence number
 
-		// but I am a wuss -mw 
+		// but I am a wuss -mw
 		// chan->incomingSequence = sequence;   // lets not accept any more with this sequence number -gil
 		return qtrue;
 	}

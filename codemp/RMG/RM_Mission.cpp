@@ -44,7 +44,7 @@ CRMMission::CRMMission ( CRandomTerrain* landscape )
 	mPickupAmmo				= 1.0f;
 	mPickupWeapon			= 1.0f;
 	mPickupEquipment		= 1.0f;
-	
+
 	mDefaultPadding = 0;
 	mSymmetric = SYMMETRY_NONE;
 
@@ -153,7 +153,7 @@ void	CRMMission::MirrorPos(vec3_t pos)
  *	parses an origin block which includes linking to a node and absolute origins
  *
  * inputs:
- *  group: parser group containing the node or origin 
+ *  group: parser group containing the node or origin
  *
  * return:
  *	true: parsed successfully
@@ -170,7 +170,7 @@ bool CRMMission::ParseOrigin ( CGPGroup* originGroup, vec3_t origin, vec3_t look
 	{
 		*flattenHeight = 66;
 	}
-	
+
 	// If no group was given then use 0,0,0
 	if ( NULL == originGroup )
 	{
@@ -263,14 +263,14 @@ bool CRMMission::ParseNodes ( CGPGroup* group )
 	mPathManager->CreateArray(x_cells, y_cells);
 
 	// Loop through all the nodes and generate each as specified
-	for ( group = group->GetSubGroups(); 
-		  group; 
+	for ( group = group->GetSubGroups();
+		  group;
 		  group=group->GetNext() )
 	{
 		int min_depth = atof( group->FindPairValue ( "min_depth", "0" ) );
 		int max_depth = atof( group->FindPairValue ( "max_depth", "5" ) );
 		int min_paths = atoi( group->FindPairValue ( "min_paths", "1" ) );
-		int max_paths = atoi( group->FindPairValue ( "max_paths", "1" ) );		
+		int max_paths = atoi( group->FindPairValue ( "max_paths", "1" ) );
 
 		mPathManager->CreateLocation( group->GetName(), min_depth, max_depth, min_paths, max_paths );
 	}
@@ -366,7 +366,7 @@ bool CRMMission::ParseRivers ( CGPGroup* group )
 
 	mPathManager->SetRiverStyle( maxdepth, points, minwidth, maxwidth, beddepth, deviation, breadth, bridge_name);
 
-	if (!mValidRivers && 
+	if (!mValidRivers &&
 		beddepth < 1)						// use a depth of 1 if we don't want any rivers
 	{	// we must create rivers
 		mPathManager->GenerateRivers();
@@ -411,9 +411,9 @@ void CRMMission::PlaceBridges()
 			pos[2] = mLandScape->GetBounds ( )[0][2] + (mLandScape->GetBounds ( )[1][2]-mLandScape->GetBounds ( )[0][2]) * tmp_pt[2];
 			mLandScape->GetLandScape()->GetWorldHeight ( pos, bounds, true );
 
-			if (new_water && 
-				lastpos[2] < river_depth && 
-				pos[2] < river_depth && 
+			if (new_water &&
+				lastpos[2] < river_depth &&
+				pos[2] < river_depth &&
 				pos[2] > lastpos[2])
 			{	// add a bridge
 				if (max_bridges < 3)
@@ -428,7 +428,7 @@ void CRMMission::PlaceBridges()
 					instance = mInstanceFile.CreateInstance ( mPathManager->GetBridgeName() );
 
 					if ( NULL != instance )
-					{	// Set the area 
+					{	// Set the area
 						area = mAreaManager->CreateArea ( lastpos, instance->GetSpacingRadius(), instance->GetSpacingLine(), GetDefaultPadding(), 0, vec3_origin, pos, instance->GetFlattenRadius()?true:false, false, instance->GetLockOrigin() );
 						area->EnableLookAt(false);
 
@@ -559,7 +559,7 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 					// corners
 					x = -halfx;
 					y = -halfy;
-					if (towerCount > 3 || 
+					if (towerCount > 3 ||
   					    (towerCount > 0 && mLandScape->irand(1,2) == 1) )
 					{
 						towerCount--;
@@ -573,7 +573,7 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 
 					x = halfx;
 					y = -halfy;
-					if (towerCount > 3 || 
+					if (towerCount > 3 ||
   					    (towerCount > 0 && mLandScape->irand(1,2) == 1) )
 					{
 						towerCount--;
@@ -587,7 +587,7 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 
 					x = halfx;
 					y = halfy;
-					if (towerCount > 3 || 
+					if (towerCount > 3 ||
   					    (towerCount > 0 && mLandScape->irand(1,2) == 1) )
 					{
 						towerCount--;
@@ -601,7 +601,7 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 
 					x = -halfx;
 					y = halfy;
-					if (towerCount > 3 || 
+					if (towerCount > 3 ||
   					    (towerCount > 0 && mLandScape->irand(1,2) == 1) )
 					{
 						towerCount--;
@@ -712,7 +712,7 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 				}
 			}
 		}
-	}			
+	}
 	else
 		return false;
 
@@ -735,8 +735,8 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 {
 	CGPGroup* defenseGroup;
-	for ( defenseGroup = group->GetSubGroups(); 
-		  defenseGroup; 
+	for ( defenseGroup = group->GetSubGroups();
+		  defenseGroup;
 		  defenseGroup=defenseGroup->GetNext() )
 	if (Q_stricmp ( defenseGroup->GetName ( ), "defenses" )==0 ||
 		Q_stricmp ( defenseGroup->GetName(), "instanceonpath")==0)
@@ -794,7 +794,7 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 									// Failed to create, not good
 									if ( NULL == instance )
 									{
-										continue; 
+										continue;
 									}
 									// If a spacing radius was specified then override the one thats
 									// in the instance
@@ -836,7 +836,7 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 									{
 										origin[2] = mLandScape->GetBounds ( )[1][2] + 100;
 									}
-					
+
 									// Set the area of position
 									area = mAreaManager->CreateArea ( origin, instance->GetSpacingRadius(), instance->GetSpacingLine(), GetDefaultPadding(), 0, origin, lookat, instance->GetFlattenRadius()?true:false, true, instance->GetLockOrigin(), mSymmetric );
 									area->EnableLookAt(false);
@@ -858,7 +858,7 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 			}
 			else
 				return false;
-		}			
+		}
 		else
 			return false;
 
@@ -888,7 +888,7 @@ bool CRMMission::ParseInstance ( CGPGroup* group )
 	vec3_t			lookat;
 	int				flattenHeight;
 
-	// create fences / walls 
+	// create fences / walls
 
 	// Create the instance using the instance file helper class
 	instance = mInstanceFile.CreateInstance ( group->GetName ( ) );
@@ -967,10 +967,10 @@ bool CRMMission::ParseInstances ( CGPGroup* group )
 		return true;
 	}
 
-	// Loop through all the instances in the mission and add each 
+	// Loop through all the instances in the mission and add each
 	// to the master list of instances
-	for ( group = group->GetSubGroups(); 
-		  group; 
+	for ( group = group->GetSubGroups();
+		  group;
 		  group=group->GetNext() )
 	{
 		ParseInstance ( group );
@@ -1001,8 +1001,8 @@ bool CRMMission::ParseObjectives ( CGPGroup* group )
 
 	// Loop through all the objectives in the mission and add each
 	// to the master list of objectives
-	for ( group = group->GetSubGroups(); 
-		  group; 
+	for ( group = group->GetSubGroups();
+		  group;
 		  group=group->GetNext() )
 	{
 		CRMObjective* objective;
@@ -1014,13 +1014,13 @@ bool CRMMission::ParseObjectives ( CGPGroup* group )
 	}
 
 	mValidObjectives = true;
-	
+
 	return true;
 }
 
 /************************************************************************************************
  * CRMMission::ParseAmmo
- *	parses the given ammo list and sets the necessary ammo cvars to grant those 
+ *	parses the given ammo list and sets the necessary ammo cvars to grant those
  *  weapons to the players
  *
  * inputs:
@@ -1043,7 +1043,7 @@ bool CRMMission::ParseAmmo ( CGPGroup* ammos )
 
 	if (0 == gi.Cvar_VariableIntegerValue("ar_wpnselect"))
 	{
-		// Make sure the ammo cvars are all reset so ammo from the last map or 
+		// Make sure the ammo cvars are all reset so ammo from the last map or
 		// another difficulty level wont carry over
 		CWeaponSystem::ClearAmmoCvars (TheWpnSysHelper());
 
@@ -1051,12 +1051,12 @@ bool CRMMission::ParseAmmo ( CGPGroup* ammos )
 
 		// Loop through the weapons listed and grant them to the player
 		while ( ammo )
-		{	
+		{
 			// Grab the weapons ID
 			AmmoID id = CWeaponSystem::GetAmmoID ( ammo->GetName ( ) );
 
 			// Now set the weapon cvar with the given data
-			TheWpnSysHelper().CvarSet ( CWeaponSystem::GetAmmoCvar ( id ), ammo->GetTopValue ( ), CVAR_AMMO );	
+			TheWpnSysHelper().CvarSet ( CWeaponSystem::GetAmmoCvar ( id ), ammo->GetTopValue ( ), CVAR_AMMO );
 
 			// Move on to the next weapon
 			ammo = (CGPValue*)ammo->GetNext();
@@ -1070,7 +1070,7 @@ bool CRMMission::ParseAmmo ( CGPGroup* ammos )
 
 /************************************************************************************************
  * CRMMission::ParseWeapons
- *	parses the given weapon list and sets the necessary weapon cvars to grant those 
+ *	parses the given weapon list and sets the necessary weapon cvars to grant those
  *  weapons to the players
  *
  * inputs:
@@ -1094,7 +1094,7 @@ bool CRMMission::ParseWeapons ( CGPGroup* weapons )
 
 	if (0 == gi.Cvar_VariableIntegerValue("ar_wpnselect"))
 	{
-		// Make sure the weapon cvars are all reset so weapons from the last map or 
+		// Make sure the weapon cvars are all reset so weapons from the last map or
 		// another difficulty level wont carry over
 		CWeaponSystem::ClearWpnCvars (TheWpnSysHelper());
 
@@ -1103,12 +1103,12 @@ bool CRMMission::ParseWeapons ( CGPGroup* weapons )
 
 		// Loop through the weapons listed and grant them to the player
 		while ( weapon )
-		{	
+		{
 			// Grab the weapons ID
 			id = CWeaponSystem::GetWpnID ( weapon->GetName ( ) );
 
 			// Now set the weapon cvar with the given data
-			TheWpnSysHelper().CvarSet ( CWeaponSystem::GetWpnCvar ( id ), weapon->GetTopValue ( ) );	
+			TheWpnSysHelper().CvarSet ( CWeaponSystem::GetWpnCvar ( id ), weapon->GetTopValue ( ) );
 
 			// Move on to the next weapon
 			weapon = (CGPValue*)weapon->GetNext();
@@ -1190,8 +1190,8 @@ CGPGroup* CRMMission::ParseRandom ( CGPGroup* randomGroup )
 	int		  numGroups;
 
 	// Build a list of the groups one can be chosen
-	for ( numGroups = 0, group = randomGroup->GetSubGroups ( ); 
-		  group; 
+	for ( numGroups = 0, group = randomGroup->GetSubGroups ( );
+		  group;
 		  group = group->GetNext ( ) )
 	{
 		if ( Q_stricmp ( group->GetName ( ), "random_choice" ) )
@@ -1246,9 +1246,9 @@ bool CRMMission::ParseDifficulty ( CGPGroup* difficulty  )
 			mSymmetric = SYMMETRY_BOTTOMRIGHT;
 		}
 	}
-	
+
 	mDefaultPadding = atoi(difficulty->GetParent()->FindPairValue ( "padding", "0" ));
-		
+
 	// Parse the nodes
 	if ( !ParseNodes (  ParseRandom ( difficulty->FindSubGroup ( "nodes" ) ) ) )
 	{
@@ -1261,7 +1261,7 @@ bool CRMMission::ParseDifficulty ( CGPGroup* difficulty  )
 		return false;
 	}
 
-	// Parse the rivers 
+	// Parse the rivers
 	if ( !ParseRivers (  ParseRandom ( difficulty->FindSubGroup ( "rivers" ) ) ) )
 	{
 		return false;
@@ -1367,7 +1367,7 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 			return false;
 		}
 	}
-	
+
 	// Grab the root parser groop and make sure its mission, otherwise this
 	// isnt a valid mission file
 	root = parser.GetBaseParseGroup()->GetSubGroups();
@@ -1377,7 +1377,7 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 		parser.Clean();
 		return false;
 	}
-	
+
 	// Grab the mission description and set the cvar for it
 	mDescription = root->FindPairValue ( "description", "<MISSION DESCRIPTION MISSING>" );
 //	Cvar_Set("ar_obj_main0",mDescription.c_str(), CVAR_OBJECTIVE);
@@ -1389,7 +1389,7 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 
 	mExitScreen = root->FindPairValue ( "exitScreen", "<EXIT SCREEN MISSING>" );
 	mTimeExpiredScreen = root->FindPairValue ( "TimeExpiredScreen", "<TIME EXPIRED SCREEN MISSING>" );
-	
+
 	// Open the instance file for the specified instances
 	if ( !mInstanceFile.Open ( instances) )
 	{
@@ -1492,7 +1492,7 @@ bool CRMMission::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 
 	// create automap
 	if (!com_dedicated->integer)
-	{		
+	{
 #ifndef DEDICATED
 		CM_TM_Create(mLandScape->GetLandScape());
 
@@ -1644,7 +1644,7 @@ void CRMMission::CompleteObjective ( CRMObjective* objective )
 //		gi.Cvar_Set( va("ar_obj_subcom0_%i", objective->GetOrderIndex ( )), "&OBJECTIVES_COMPLETE&", CVAR_OBJECTIVE) ;
 
 /*		CEntity *tent = G_TempEntity( vec3_origin, EV_SUB_PRINT );
-		tent->s.time2 = gi.SP_GetStringID ( objective->GetMessage ( ) );	
+		tent->s.time2 = gi.SP_GetStringID ( objective->GetMessage ( ) );
 		tent->r.svFlags |= SVF_BROADCAST;
 		G_AddTempEntity(tent);
 
@@ -1674,7 +1674,7 @@ void CRMMission::CompleteObjective ( CRMObjective* objective )
 
 		// Found one
 		mCurrentObjective = objective;
-	}	
+	}
 
 	if ( NULL != mCurrentObjective )
 	{
@@ -1742,7 +1742,7 @@ void CRMMission::Preview ( const vec3_t from )
 /*void CRMMission::PurgeTrigger ( CEntity* trigger )
 {
 	CEntity* target;
-	
+
 	// Purge all targets
 	target = entitySystem->GetEntityFromTargetName ( NULL, trigger->GetTarget ( ) );
 	while ( target )
@@ -1776,11 +1776,11 @@ void CRMMission::Preview ( const vec3_t from )
 	search = (CTriggerAriocheObjective*) entitySystem->GetEntityFromClassname ( NULL, "trigger_arioche_objective" );
 
 	// Continue on as long as there are triggers
-	while ( search ) 
+	while ( search )
 	{
 		CTriggerAriocheObjective* purge = search;
 
-		// move on to the next trigger before deleting the entity 
+		// move on to the next trigger before deleting the entity
 		// just in case there are some state issues with the search
 		search = (CTriggerAriocheObjective*) entitySystem->GetEntityFromClassname ( search, "trigger_arioche_objective" );
 
@@ -1872,8 +1872,8 @@ void CRMMission::Preview ( const vec3_t from )
 
 #ifdef _GAME
 		// initial linking
-		gi.SV_LinkEntity( ent ); 
-#endif	
+		gi.SV_LinkEntity( ent );
+#endif
 	}
 
 	AttachNPCTriggers ( landscape );
@@ -1902,20 +1902,20 @@ void CRMMission::Preview ( const vec3_t from )
 
 	// Loop through all npcs and reset their accuracy
 	for( npcFinder = npcList.begin(); npcFinder != npcList.end(); npcFinder++)
-	{		
+	{
 		theNPC = (CNPC*) INPCEnt::GetEntity(*npcFinder);
 		if(!theNPC)
 		{
 			continue;
 		}
 
-		npcsegment = (theNPC->r.currentOrigin[0] - landscape->GetMins()[0]) / 5000.0f;		
+		npcsegment = (theNPC->r.currentOrigin[0] - landscape->GetMins()[0]) / 5000.0f;
 
 		// All npcs in segment 0 and 1 are immediately spawned, all others wait for the
 		// trigger
 		if ( npcsegment > 1 )
 		{
-			entitySystem->RemoveFromTargetNameMap(theNPC);	
+			entitySystem->RemoveFromTargetNameMap(theNPC);
 			theNPC->SetTargetName ( va("rmg_npc_%i", npcsegment ) );
 			entitySystem->AddToTargetNameMap(theNPC);
 
@@ -1923,7 +1923,7 @@ void CRMMission::Preview ( const vec3_t from )
 			theNPC->SetSpawnflags(1);
 			theNPC->r.contents	= 0;
 			theNPC->r.svFlags	|= SVF_NOCLIENT;
-			theNPC->s.eFlags	|= EF_NODRAW;				
+			theNPC->s.eFlags	|= EF_NODRAW;
 		}
 	}
 }
