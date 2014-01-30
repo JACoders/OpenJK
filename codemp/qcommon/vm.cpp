@@ -311,9 +311,6 @@ an OP_ENTER instruction, which will subtract space for
 locals from sp
 ==============
 */
-#define	MAX_STACK	256
-#define	STACK_MASK	(MAX_STACK-1)
-
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t *oldVM = NULL;
 	intptr_t r = 0;
