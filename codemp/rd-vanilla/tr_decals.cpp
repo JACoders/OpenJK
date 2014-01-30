@@ -203,7 +203,8 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * texCoordScale;
 			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * texCoordScale;
 
-			*(int *)v->modulate = *(int *)colors;
+			for ( int k=0; k<4; k++ )
+				v->modulate[k] = colors[k];
 		}
 
 		// if it is a temporary (shadow) mark, add it immediately and forget about it

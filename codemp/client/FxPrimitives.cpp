@@ -1818,7 +1818,8 @@ void CPoly::Draw(void)
 		VectorAdd( mOrigin1, mOrg[i], verts[i].xyz );
 
 		// Assign the same color to each vert
-		*(int *)verts[i].modulate = *(int *)mRefEnt.shaderRGBA;
+		for ( int k=0; k<4; k++ )
+			verts[i].modulate[k] = mRefEnt.shaderRGBA[k];
 
 		// Copy the ST coords
 		Vector2Copy( mST[i], verts[i].st );
@@ -2076,8 +2077,9 @@ inline void CBezier::DrawSegment( vec3_t start, vec3_t end, float texcoord1, flo
 
 	if ( texcoord1 == 0.0f )
 	{
-		*(int *)verts[0].modulate = 0;
-		*(int *)verts[1].modulate = 0;
+		for ( int k=0; k<4; k++ ) {
+			verts[0].modulate[k] = verts[1].modulate[k] = 0;
+		}
 	}
 
 	VectorMA( end, scaleTop, cross, verts[2].xyz );
