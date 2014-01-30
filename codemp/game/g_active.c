@@ -1189,7 +1189,7 @@ void G_MoverTouchPushTriggers( gentity_t *ent, vec3_t oldOrg )
 }
 
 static void SV_PMTrace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ) {
-	JP_Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
+	JP_Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); //JAPRO loda, change this to ghoul2 for g2 player collision hitbox, could be useful for hockey maybe?
 }
 
 int SpectatorFind(gentity_t *self)

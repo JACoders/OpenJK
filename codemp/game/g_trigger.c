@@ -1413,6 +1413,7 @@ void target_to_timer_stop(gentity_t *self, gentity_t *trigger, gentity_t *player
 }
 
 void trigger_to_timer_stop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	multi_trigger(trigger, player);//This means finish trigger can target a teleport to take player back to start or whatever
 	TimerStop(trigger, NULL, player);
 }
 
