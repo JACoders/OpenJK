@@ -138,7 +138,7 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 
 	if( !*in ) return 0;
 
-	while( (c = *in++) != '\0' )
+	while( (c = *(unsigned char* /*eurofix*/)in++) != '\0' )
 	{
 		if( c <= '/' || c >= '{' )	// skip lot of conditions if c is regular char
 		{
@@ -152,7 +152,7 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 				else {
 					*out = ( c == '\n' ? '\n' : ' ' );
 				}				
-				while( *in && *in <= ' ' ) {
+				while( *in && *(unsigned char* /*eurofix*/)in <= ' ' ) {
 					if( *in++ == '\n' ) {
 						shader_lines++;
 						*out = '\n';
