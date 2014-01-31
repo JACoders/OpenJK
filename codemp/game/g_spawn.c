@@ -297,6 +297,7 @@ void SP_target_timer_start (gentity_t *ent);//JAPRO Timers
 void SP_target_timer_stop (gentity_t *ent);//JAPRO Timers
 void SP_target_timer_checkpoint (gentity_t *ent);//JAPRO Timers
 void SP_target_onlybhop (gentity_t *ent);//JAPRO Onlybhop
+void SP_target_newpush (gentity_t *ent);//JAPRO Timers
 
 void SP_light (gentity_t *self);
 void SP_info_null (gentity_t *self);
@@ -665,6 +666,7 @@ spawn_t	spawns[] = {
 	{ "target_level_change",				SP_target_level_change },
 	{ "target_location",					SP_target_location },
 
+	{"target_newpush",						SP_target_newpush},//JAPRO new push entity
 	{"target_onlybhop",						SP_target_onlybhop},//JAPRO Onlybhop
 
 	{ "target_play_music",					SP_target_play_music },

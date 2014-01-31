@@ -3017,7 +3017,7 @@ int CheckArmor (gentity_t *ent, int damage, int dflags)
 
 
 void G_ApplyKnockback( gentity_t *targ, vec3_t newDir, float knockback )
-{
+{ //JAPRO: if we want to improve this for hockey gametype, check if targets velocity is "opposite" to new dir, and if so set absolute velocity instead of relative.
 	vec3_t	kvel;
 	float	mass;
 

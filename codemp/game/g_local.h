@@ -958,6 +958,7 @@ struct gclient_s {
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
 	int			csTimeLeft;						// JAPRO - Time left for client's CenterScreen
 	int			pmoveMsec;//Japro timers
+	int			lastBounceTime; //japro bounce trigger
 
 	//Testunlagged
 	struct {

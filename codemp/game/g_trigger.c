@@ -1330,11 +1330,11 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 }
 
 void TimerCheckpoint(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
-	if ( !player->client )
-		return;
-	if ( player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT )
+	if (!player->client)
 		return;
 	if (player->r.svFlags & SVF_BOT)
+		return;
+	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 
 	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
@@ -1346,22 +1346,47 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player) {//JAPRO Timers
 	}
 }
 
-void Use_target_onlybhop_on(gentity_t *self, gentity_t *other, gentity_t *activator) {//JAPRO OnlyBhop
-	if ( !activator->client)
+void Use_target_onlybhop_on(gentity_t *trigger, gentity_t *other, gentity_t *player) {//JAPRO OnlyBhop
+	if (!player->client)
 		return;
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
-
-	activator->client->ps.stats[STAT_ONLYBHOP] = 1;
+	player->client->ps.stats[STAT_ONLYBHOP] = 1;
 }
 
-void Use_target_onlybhop_off( gentity_t *self, gentity_t *other, gentity_t *activator ) {//JAPRO OnlyBhop
-	if ( !activator->client )
+void Use_target_onlybhop_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
+	if (!player->client)
 		return;
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT )
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+		return;
+	player->client->ps.stats[STAT_ONLYBHOP] = 0;
+}
+
+void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO new target_newpush entity
+	float scale;
+
+	if (!player->client)
+		return;
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+		return;
+	if (player->client->lastBounceTime > level.time - 500)
 		return;
 
-	activator->client->ps.stats[STAT_ONLYBHOP] = 0;
+	(trigger->speed) ? (scale = trigger->speed) : (scale = 2.0f); //Check for bounds? scale can be negative, that means "bounce".
+	player->client->lastBounceTime = level.time;
+
+	if (trigger->spawnflags & 1) {
+		if (abs(player->client->ps.velocity[0]) > 350)
+			player->client->ps.velocity[0] = player->client->ps.velocity[0] * scale;//XVel Relative Scale
+	}
+	if (trigger->spawnflags & 2) {
+		if (abs(player->client->ps.velocity[1]) > 350)
+			player->client->ps.velocity[1] = player->client->ps.velocity[1] * scale;//YVel Relative Scale
+	}
+	if (trigger->spawnflags & 4) {
+		if (abs(player->client->ps.velocity[2]) > 350)
+			player->client->ps.velocity[2] = player->client->ps.velocity[2] * scale;//ZVel Relative Scale
+	}
 }
 
 /*QUAKED target_push (.5 .5 .5) (-8 -8 -8) (8 8 8) bouncepad CONSTANT
@@ -1483,6 +1508,11 @@ void SP_target_onlybhop(gentity_t *self)//JAPRO Onlybhop
 		self->use = Use_target_onlybhop_off;
 	else
 		self->use = Use_target_onlybhop_on;
+}
+
+void SP_target_newpush(gentity_t *self)//JAPRO Onlybhop
+{
+	self->use = Use_target_newpush;
 }
 
 /*
