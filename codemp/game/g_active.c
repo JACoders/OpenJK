@@ -2676,7 +2676,7 @@ void ClientThink_real( gentity_t *ent ) {
 		msec = 200;
 	}
 
-	if ( pmove_msec.integer < 1 ) {
+	if ( pmove_msec.integer <= 1 ) {
 		trap->Cvar_Set("pmove_msec", "1");
 	}
 	else if (pmove_msec.integer > 66) {
@@ -4270,6 +4270,9 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		return;
 	}
+	
+	//Copy current velocity to lastvelocity
+	VectorCopy(ent->client->ps.velocity, ent->client->lastVelocity);
 
 	// perform once-a-second actions
 	ClientTimerActions( ent, msec );

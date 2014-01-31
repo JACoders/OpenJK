@@ -474,7 +474,7 @@ Svcmd_ForceTeam_f
 forceteam <player> <team>
 ===================
 */
-void	Svcmd_ForceTeam_f( void ) {
+void Svcmd_ForceTeam_f( void ) {
 	gclient_t	*cl;
 	char		str[MAX_TOKEN_CHARS];
 
@@ -495,6 +495,23 @@ void	Svcmd_ForceTeam_f( void ) {
 	SetTeam( &g_entities[cl - level.clients], str , qfalse);
 }
 
+void Svcmd_AmKick_f(void) {
+		int clientid = -1; 
+		char   arg[MAX_NETNAME]; 
+
+		if (trap->Argc() != 2) {
+			trap->Print( "Usage: /amKick <client>.\n");
+            return; 
+        } 
+		trap->Argv(1, arg, sizeof(arg)); 
+        clientid = SV_ClientNumberFromString(arg);
+
+        if (clientid == -1 || clientid == -2)  
+			return; 
+		trap->SendConsoleCommand( EXEC_APPEND, va("clientkick %i", clientid) );
+
+}
+
 void Svcmd_AmBan_f(void) {
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
@@ -512,7 +529,7 @@ void Svcmd_AmBan_f(void) {
 		trap->SendConsoleCommand( EXEC_APPEND, va("clientkick %i", clientid) );
 }
 
-void SVCmd_Amgrantadmin_f(void)
+void Svcmd_Amgrantadmin_f(void)
 {
 		char arg[MAX_NETNAME];
 		int clientid = -1; 
@@ -585,6 +602,11 @@ void G_CheckSpawns( void );
 svcmd_t svcmds[] = {
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
+
+	{ "amban",						Svcmd_AmBan_f,						qfalse },
+	{ "amgrantadmin",				Svcmd_Amgrantadmin_f,						qfalse },
+	{ "amkick",						Svcmd_AmKick_f,						qfalse },
+
 	{ "botlist",					Svcmd_BotList_f,					qfalse },
 	{ "checkfields",				G_CheckFields,						qfalse },
 	{ "checkspawns",				G_CheckSpawns,						qfalse },

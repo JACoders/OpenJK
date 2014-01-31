@@ -11755,9 +11755,14 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 	}
 
-	if (pm->ps->pm_type == PM_FREEZE) {
+#ifdef _GAME
+	if (pm->ps->pm_type == PM_FREEZE && (g_emotesDisable.integer & (1 << E_ALL))) {//Sad hack loda fixme
 		return;		// no movement at all
 	}
+#else
+	if (pm->ps->pm_type == PM_FREEZE)
+		return;		// no movement at all
+#endif
 
 	if ( pm->ps->pm_type == PM_INTERMISSION || pm->ps->pm_type == PM_SPINTERMISSION) {
 		return;		// no movement at all

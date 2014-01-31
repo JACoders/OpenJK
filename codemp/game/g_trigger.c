@@ -1375,6 +1375,7 @@ void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player
 	(trigger->speed) ? (scale = trigger->speed) : (scale = 2.0f); //Check for bounds? scale can be negative, that means "bounce".
 	player->client->lastBounceTime = level.time;
 
+/*
 	if (trigger->spawnflags & 1) {
 		if ((!g_fixSlidePhysics.integer && abs(player->client->ps.velocity[0]) > 350) || (g_fixSlidePhysics.integer && abs(player->client->ps.velocity[0]) > 90))
 			player->client->ps.velocity[0] = player->client->ps.velocity[0] * scale;//XVel Relative Scale
@@ -1385,6 +1386,19 @@ void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player
 	}
 	if (trigger->spawnflags & 4) {
 		player->client->ps.velocity[2] = player->client->ps.velocity[2] * scale;//ZVel Relative Scale
+	}
+	*/
+
+	if (trigger->spawnflags & 1) {
+		if ((!g_fixSlidePhysics.integer && abs(player->client->lastVelocity[0]) > 350) || (g_fixSlidePhysics.integer && abs(player->client->lastVelocity[0]) > 90))
+			player->client->ps.velocity[0] = player->client->lastVelocity[0] * scale;//XVel Relative Scale
+	}
+	if (trigger->spawnflags & 2) {
+		if ((!g_fixSlidePhysics.integer && abs(player->client->lastVelocity[1]) > 350) || (g_fixSlidePhysics.integer && abs(player->client->lastVelocity[1]) > 90))
+			player->client->ps.velocity[1] = player->client->lastVelocity[1] * scale;//YVel Relative Scale
+	}
+	if (trigger->spawnflags & 4) {
+		player->client->ps.velocity[2] = player->client->lastVelocity[2] * scale;//ZVel Relative Scale
 	}
 }
 

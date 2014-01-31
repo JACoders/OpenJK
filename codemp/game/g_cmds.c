@@ -703,8 +703,8 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		}
 	}
 	else { //not needed..
-		ent->client->noclip = !ent->client->noclip;
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+		ent->client->noclip = !ent->client->noclip;
 	}
 }
 
@@ -6277,7 +6277,7 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 
 	if (g_gametype.integer == GT_CTF) {
 	}
-	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer) {
+	else if ((g_gametype.integer == GT_FFA) && g_rabbit.integer) {
 	}
 	else return;
 	

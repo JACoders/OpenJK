@@ -600,7 +600,7 @@ void Team_ResetFlags( void ) {
 		Team_ResetFlag( TEAM_RED );
 		Team_ResetFlag( TEAM_BLUE );
 	}
-	else if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)
+	else if ((g_gametype.integer == GT_FFA) && g_rabbit.integer)
 		Team_ResetFlag( TEAM_FREE );
 }
 
@@ -959,7 +959,10 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	//PrintMsg (NULL, "%s" S_COLOR_WHITE " got the %s flag!\n",
 	//	other->client->pers.netname, TeamName(team));
-	PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_GOT_FLAG);
+	if (team == TEAM_FREE)
+		trap->SendServerCommand( -1, va("print \"^7%s^7 is now the rabbit!\n\"", other->client->pers.netname ));
+	else 
+		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_GOT_FLAG);
 
 	if (team == TEAM_RED)
 		cl->ps.powerups[PW_REDFLAG] = INT_MAX; // flags never expire
@@ -1007,7 +1010,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	}
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		if ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)
+		if ((g_gametype.integer == GT_FFA) && g_rabbit.integer)
 			return Team_TouchEnemyFlag( ent, other, team );
 		else 
 			return Team_TouchOurFlag( ent, other, team );

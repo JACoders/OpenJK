@@ -2722,7 +2722,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if (((g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY) || ((g_gametype.integer == GT_FFA || g_gametype.integer == GT_TEAM) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (((g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY) || ((g_gametype.integer == GT_FFA) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
