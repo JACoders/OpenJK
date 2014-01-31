@@ -87,6 +87,8 @@ NET
 ==============================================================
 */
 
+#define NET_ENABLEV4		0x01
+
 #define	PACKET_BACKUP	32	// number of old messages that must be kept on client and
 							// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
