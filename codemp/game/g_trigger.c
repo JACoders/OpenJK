@@ -1376,16 +1376,15 @@ void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player
 	player->client->lastBounceTime = level.time;
 
 	if (trigger->spawnflags & 1) {
-		if (abs(player->client->ps.velocity[0]) > 350)
+		if ((!g_fixSlidePhysics.integer && abs(player->client->ps.velocity[0]) > 350) || (g_fixSlidePhysics.integer && abs(player->client->ps.velocity[0]) > 90))
 			player->client->ps.velocity[0] = player->client->ps.velocity[0] * scale;//XVel Relative Scale
 	}
 	if (trigger->spawnflags & 2) {
-		if (abs(player->client->ps.velocity[1]) > 350)
+		if ((!g_fixSlidePhysics.integer && abs(player->client->ps.velocity[1]) > 350) || (g_fixSlidePhysics.integer && abs(player->client->ps.velocity[1]) > 90))
 			player->client->ps.velocity[1] = player->client->ps.velocity[1] * scale;//YVel Relative Scale
 	}
 	if (trigger->spawnflags & 4) {
-		if (abs(player->client->ps.velocity[2]) > 350)
-			player->client->ps.velocity[2] = player->client->ps.velocity[2] * scale;//ZVel Relative Scale
+		player->client->ps.velocity[2] = player->client->ps.velocity[2] * scale;//ZVel Relative Scale
 	}
 }
 

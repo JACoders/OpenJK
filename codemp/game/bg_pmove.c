@@ -3829,6 +3829,7 @@ static void PM_WalkMove( void ) {
 	float		accelerate;
 	float		vel;
 	qboolean	npcMovement = qfalse;
+	
 
 	if ( pm->waterlevel > 2 && DotProduct( pml.forward, pml.groundTrace.plane.normal ) > 0 ) {
 		// begin swimming
@@ -3975,10 +3976,17 @@ static void PM_WalkMove( void ) {
 	//Com_Printf("velocity = %1.1f %1.1f %1.1f\n", pm->ps->velocity[0], pm->ps->velocity[1], pm->ps->velocity[2]);
 	//Com_Printf("velocity1 = %1.1f\n", VectorLength(pm->ps->velocity));
 
-	if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK )
-	{
-		pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
+	if ((pml.groundTrace.surfaceFlags & SURF_SLICK) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK) {
+#ifdef _GAME
+		if ((g_fixSlidePhysics.integer == 1) && (pm->ps->clientNum >= MAX_CLIENTS)) { //Fix slide physics for NPCS (inbasejka, npcs will accel to ~340 on slick surfaces for no reason)
+		}
+		else if (g_fixSlidePhysics.integer == 2) { //Fix Slide Physics for everything
+		}
+		else
+#endif
+			pm->ps->velocity[2] -= pm->ps->gravity * pml.frametime;
 	}
+
 
 	vel = VectorLength(pm->ps->velocity);
 
