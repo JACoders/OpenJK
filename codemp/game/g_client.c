@@ -3478,7 +3478,8 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+		//maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+		maxHealth = 100;//i dont think we want handicap to work..?
 		if (g_showHealth.integer)
 			ent->maxHealth = 100;//JAPRO , kay...
 	}

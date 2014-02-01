@@ -4753,6 +4753,9 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qfalse;
 		}
 
+		if (self->s.bolt1 != otherOwner->s.bolt1)//JAPRO fix clients being able to block sabers in other dimensions (duel/racemode)?
+			return qfalse;
+
 		if ( otherOwner 
 			&& otherOwner->client 
 			&& otherOwner->client->ps.saberInFlight )

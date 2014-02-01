@@ -395,6 +395,7 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 G_MissileImpact
 ================
 */
+qboolean WP_CheckSaberDimension( gentity_t *self,  gentity_t *other);
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
 void WP_flechette_alt_blow( gentity_t *ent );
 void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
@@ -548,7 +549,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->methodOfDeath != MOD_CONC_ALT &&
 		other->client->ps.saberBlockTime < level.time &&
 		!isKnockedSaber &&
-		WP_SaberCanBlock(other, ent->r.currentOrigin, 0, 0, qtrue, 0))
+		WP_SaberCanBlock(other, ent->r.currentOrigin, 0, 0, qtrue, 0)) //loda fixme, add check for dimensions for blocking here?
 	{ //only block one projectile per 200ms (to prevent giant swarms of projectiles being blocked)
 		vec3_t fwd;
 		gentity_t *te;
@@ -617,6 +618,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->methodOfDeath != MOD_REPEATER_ALT &&
 			ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH &&
 			ent->methodOfDeath != MOD_CONC &&
+			(g_entities[ent->r.ownerNum].s.bolt1 == other->s.bolt1) &&//loda fixme, this stops missiles deflecting, but they still dont passthrough...
 			ent->methodOfDeath != MOD_CONC_ALT /*&&
 			otherOwner->client->ps.saberBlockTime < level.time*/)
 		{ //for now still deflect even if saberBlockTime >= level.time because it hit the actual saber
@@ -1056,6 +1058,29 @@ void G_RunMissile( gentity_t *ent ) {
 			}
 		}
 #endif
+
+
+
+/*
+		{ //loda fixme
+			gentity_t *other = &g_entities[tr.entityNum];
+
+			if (other && other->r.contents & CONTENTS_LIGHTSABER)
+			{
+				gentity_t *otherOwner = &g_entities[other->r.ownerNum];
+				gentity_t *owner = &g_entities[ent->r.ownerNum];
+
+				if (owner->s.bolt1 && !otherOwner->s.bolt1) {//We are dueling/racing and they are not
+					G_RunThink( ent );
+					return;
+				}
+				if (!owner->s.bolt1 && otherOwner->s.bolt1) {//They are dueling/racing and we are not
+					G_RunThink( ent );
+					return;
+				}
+			}
+		}
+*/
 
 		G_MissileImpact( ent, &tr );
 

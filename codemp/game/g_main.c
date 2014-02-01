@@ -1968,7 +1968,7 @@ qboolean ScoreIsTied( void ) {
 	return a == b;
 }
 
-void PrintStats(int gametype) //JAPRO STATS, MEMES
+void PrintStats(int gametype) //JAPRO STATS
 {
 	int			i;
 	char		msg[1024-128] = {0};

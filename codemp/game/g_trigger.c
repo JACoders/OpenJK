@@ -59,7 +59,10 @@ void multi_trigger_run( gentity_t *ent )
 	G_UseTargets (ent, ent->activator);
 	if ( ent->noise_index )
 	{
-		if (ent->classname && Q_stricmp( "df_trigger_finish", ent->classname))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
+		if (ent->classname && !Q_stricmp( "df_trigger_finish", ent->classname))//JAPRO FIXME, we dont want to do this if its a df_trigger_finish, since it spams ?
+		{
+		}
+		else
 			G_Sound( ent->activator, CHAN_AUTO, ent->noise_index );
 	}
 

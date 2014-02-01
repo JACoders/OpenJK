@@ -5014,9 +5014,9 @@ int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float const
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
 	int seed = ent->client->pers.cmd.serverTime % 256; //JAPRO seed
 
-	if (ent->client && ent->client->pers.amfreeze)//memes
+	if (ent->client && ent->client->pers.amfreeze)
 		return;
-	if (ent->client && ent->client->pers.raceMode)//memes
+	if (ent->client && ent->client->pers.raceMode)
 		return;
 
 	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
