@@ -29,6 +29,10 @@ This file is part of Jedi Academy.
 #include "../client/client.h"
 #include "win_local.h"
 
+#ifndef NO_XINPUT
+#include <Xinput.h>
+#endif
+
 typedef struct {
 	int			oldButtonState;
 
@@ -937,16 +941,35 @@ JOYSTICK
 =========================================================================
 */
 
- #ifndef NO_XINPUT
+#ifndef NO_XINPUT
 
-static XINPUT_STATE xiState;
+typedef struct {
+	WORD wButtons;
+	BYTE bLeftTrigger;
+	BYTE bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwPaddingReserved;
+} XINPUT_GAMEPAD_EX;
+
+typedef struct {
+	DWORD dwPacketNumber;
+	XINPUT_GAMEPAD_EX Gamepad;
+} XINPUT_STATE_EX;
+
+#define X360_GUIDE_BUTTON 0x400
+
+static XINPUT_STATE_EX xiState;
 static DWORD dwLastXIButtonState;
 
 static HMODULE xiLibrary = NULL;
 
-typedef DWORD (__stdcall *XIFuncPointer)(DWORD, void *);
-XIFuncPointer XI_GetStateEx = NULL;
-XIFuncPointer XI_SetState = NULL;
+typedef DWORD (__stdcall *XIGetFuncPointer)(DWORD, XINPUT_STATE_EX *);
+typedef DWORD (__stdcall *XISetFuncPointer)(DWORD, XINPUT_VIBRATION *);
+XIGetFuncPointer XI_GetStateEx = NULL;
+XISetFuncPointer XI_SetState = NULL;
 
 /*
 ===============
@@ -981,8 +1004,8 @@ qboolean IN_LoadXInput ( void )
 	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
 	// of the XInputGetState function, with one key difference: XInputGetState does
 	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
-	XI_GetStateEx = (XIFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
-	XI_SetState = (XIFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+	XI_GetStateEx = (XIGetFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XISetFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
 
 	if( !XI_GetStateEx || !XI_SetState )
 	{
@@ -1031,7 +1054,7 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( &xiState, sizeof(XINPUT_STATE) );
+	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
 
 	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
 															// I'll probably add a splitscreen mode just for lulz --eez
@@ -1450,7 +1473,6 @@ void IN_DoXInput( void )
 			!(dwLastXIButtonState & (1 << i)) )
 		{
 			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qtrue, 0, NULL);
-			
 		}
 		if( !(xiState.Gamepad.wButtons & (1 << i)) &&
 			dwLastXIButtonState & (1 << i))
@@ -1463,28 +1485,41 @@ void IN_DoXInput( void )
 			dwLastXIButtonState &= ~(1 << i);
 	}
 	// extra magic required for the triggers
-	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 16)) )
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 15)) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bLeftTrigger && dwLastXIButtonState & (1 << 15) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
+	}
+	if( xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState |= (1 << 15);
+	if( !xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState &= ~(1 << 15);
+
+	if( xiState.Gamepad.bRightTrigger && !(dwLastXIButtonState & (1 << 16)) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bLeftTrigger && dwLastXIButtonState & (1 << 16) )
+	else if( !xiState.Gamepad.bRightTrigger && dwLastXIButtonState & (1 << 16) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
 	}
-	if( xiState.Gamepad.bLeftTrigger )
+	if( xiState.Gamepad.bRightTrigger )
 		dwLastXIButtonState |= (1 << 16);
-	if( !xiState.Gamepad.bLeftTrigger )
+	else
 		dwLastXIButtonState &= ~(1 << 16);
 
-	if( xiState.Gamepad.bRightTrigger && !(dwLastXIButtonState & (1 << 17)) )
+	if( (xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) && !(dwLastXIButtonState & (1 << 17)) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bRightTrigger && dwLastXIButtonState & (1 << 17) )
+	else if( !(xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) && dwLastXIButtonState & (1 << 17) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qfalse, 0, NULL);
 	}
-	if( xiState.Gamepad.bRightTrigger )
+	if( (xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) )
 		dwLastXIButtonState |= (1 << 17);
 	else
 		dwLastXIButtonState &= ~(1 << 17);

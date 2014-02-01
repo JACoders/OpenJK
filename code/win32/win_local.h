@@ -33,10 +33,6 @@ This file is part of Jedi Academy.
 #include <dinput.h>
 #include <dsound.h>
 
-#ifndef NO_XINPUT
-#include <Xinput.h>
-#endif
-
 void	IN_MouseEvent (int mstate);
 void	IN_RawMouseEvent( int lastX, int lastY ); // Send raw input events to the input subsystem
 
