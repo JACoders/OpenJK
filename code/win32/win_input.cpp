@@ -1357,21 +1357,15 @@ void XI_ApplyInversion( float *fX, float *fY )
 		*fY *= -1.0f;
 }
 
-bool ButtonChanged( DWORD current, DWORD last, DWORD mask ) {
-	return ( current & mask ) != ( last & mask );
-}
-
 #define CheckButtonStatus( xin, fakekey ) \
-	if ( ButtonChanged( xiState.Gamepad.wButtons, dwLastXIButtonState, xin ) ) { \
-		if ( xiState.Gamepad.wButtons & xin ) { \
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
-			dwLastXIButtonState |= xin; \
-		} \
-		else { \
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
-			dwLastXIButtonState &= ~(xin); \
-		} \
-	} \
+	if ( (xiState.Gamepad.wButtons & xin) && !(dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
+	if ( !(xiState.Gamepad.wButtons & xin) && (dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
+	if ( (xiState.Gamepad.wButtons & xin) ) \
+		dwLastXIButtonState |= xin; \
+	else \
+		dwLastXIButtonState &= ~xin; \
 
 /*
 ===========
