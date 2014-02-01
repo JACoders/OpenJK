@@ -60,6 +60,16 @@ void Con_ToggleConsole_f (void) {
 }
 
 /*
+===================
+Con_ToggleMenu_f
+===================
+*/
+void Con_ToggleMenu_f( void ) {
+	CL_KeyEvent( A_ESCAPE, qtrue, Sys_Milliseconds() );
+	CL_KeyEvent( A_ESCAPE, qfalse, Sys_Milliseconds() );
+}
+
+/*
 ================
 Con_Clear_f
 ================
@@ -280,6 +290,7 @@ void Con_Init (void) {
 	}
 
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
+	Cmd_AddCommand ("togglemenu", Con_ToggleMenu_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
