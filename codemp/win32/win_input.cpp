@@ -6,6 +6,9 @@
 #include "client/client.h"
 #include "win_local.h"
 
+#ifndef NO_XINPUT
+#include <Xinput.h>
+#endif
 
 typedef struct WinMouseVars_s {
 	int			oldButtonState;
@@ -928,21 +931,44 @@ JOYSTICK
 
 #ifndef NO_XINPUT
 
-static XINPUT_STATE xiState;
-static int xiButtonDebounce[16];
+typedef struct {
+	WORD wButtons;
+	BYTE bLeftTrigger;
+	BYTE bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwPaddingReserved;
+} XINPUT_GAMEPAD_EX;
+
+typedef struct {
+	DWORD dwPacketNumber;
+	XINPUT_GAMEPAD_EX Gamepad;
+} XINPUT_STATE_EX;
+
+#define X360_GUIDE_BUTTON 0x0400
+#define X360_LEFT_TRIGGER_MASK 0x10000
+#define X360_RIGHT_TRIGGER_MASK 0x20000
+
+static XINPUT_STATE_EX xiState;
+static DWORD dwLastXIButtonState;
 
 static HMODULE xiLibrary = NULL;
 
-typedef DWORD (__stdcall *XIFuncPointer)(DWORD, void *);
-XIFuncPointer XI_GetStateEx = NULL;
-XIFuncPointer XI_SetState = NULL;
+typedef DWORD (__stdcall *XIGetFuncPointer)(DWORD, XINPUT_STATE_EX *);
+typedef DWORD (__stdcall *XISetFuncPointer)(DWORD, XINPUT_VIBRATION *);
+XIGetFuncPointer XI_GetStateEx = NULL;
+XISetFuncPointer XI_SetState = NULL;
 
 /*
 ===============
 IN_LoadXInput
 
 Uses direct DLL loading as opposed to static linkage
-This is because Windows 8 and Windows 7 use different XInput versions, hence different linkage.
+This is because, as Ensiform pointed out, Windows 8
+and Windows 7 use different XInput versions, hence
+different linkage.
 ===============
 */
 
@@ -968,8 +994,8 @@ qboolean IN_LoadXInput ( void )
 	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
 	// of the XInputGetState function, with one key difference: XInputGetState does
 	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
-	XI_GetStateEx = (XIFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
-	XI_SetState = (XIFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+	XI_GetStateEx = (XIGetFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XISetFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
 
 	if( !XI_GetStateEx || !XI_SetState )
 	{
@@ -1018,7 +1044,8 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( &xiState, sizeof(XINPUT_STATE) );
+	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
+	dwLastXIButtonState = 0UL;
 
 	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something,
 															// I'll probably add a splitscreen mode just for lulz --eez
@@ -1026,7 +1053,6 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( xiButtonDebounce, sizeof(xiButtonDebounce) );
 	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
 
 }
@@ -1321,6 +1347,16 @@ void XI_ApplyInversion( float *fX, float *fY )
 		*fY *= -1.0f;
 }
 
+#define CheckButtonStatus( xin, fakekey ) \
+	if ( (xiState.Gamepad.wButtons & xin) && !(dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
+	if ( !(xiState.Gamepad.wButtons & xin) && (dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
+	if ( (xiState.Gamepad.wButtons & xin) ) \
+		dwLastXIButtonState |= xin; \
+	else \
+		dwLastXIButtonState &= ~xin; \
+
 /*
 ===========
 IN_DoXInput
@@ -1359,9 +1395,9 @@ void IN_DoXInput( void )
 	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
 	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
 	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
-	int dX = 0, dY = 0;
+	float dX = 0, dY = 0;
 
-	/* hi microsoft, go fuck yourself for flipping the Y axis for no reason... */
+	/* hi microsoft, go fuck yourself for flipping left stick's Y axis for no reason... */
 	leftThumbY *= -1.0f;
 	rightThumbY *= -1.0f;
 
@@ -1375,17 +1411,15 @@ void IN_DoXInput( void )
 		// Left stick behavior
 		if( abs(leftThumbX) > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
 		{
-			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value;
 		}
 		if( abs(leftThumbY) > joy_threshold->value )
 		{
-			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
 		}
-		// Square it.
-		dX *= abs(dX);
-		dY *= abs(dY);
-
-		Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+		
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
 
 		// Right stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
@@ -1397,7 +1431,6 @@ void IN_DoXInput( void )
 		// Thumbsticks act as they should (right stick = camera, left stick = wasd equivalent)
 		XI_ApplyInversion(&rightThumbX, &rightThumbY);
 
-
 		// Left stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, leftThumbX * 127, 0, NULL);
@@ -1406,56 +1439,77 @@ void IN_DoXInput( void )
 		// Right stick behavior
 		if( abs(rightThumbX) > joy_threshold->value )
 		{
-			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+			float factor = abs(rightThumbX*128);
+			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbX: %f\tfactor: %f\tdX: %f\n", rightThumbX, factor, dX);
 		}
 		if( abs(rightThumbY) > joy_threshold->value )
 		{
-			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+			float factor = abs(rightThumbY*128);
+			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
 		}
-		// Square it.
-		dX *= abs(dX);
-		dY *= abs(dY);
+		
+		// ...but cap it at a reasonable amount.
+		if(dX < -2.5f) dX = -2.5f;
+		if(dX > 2.5f) dX = 2.5f;
+		if(dY < -2.5f) dY = -2.5f;
+		if(dY > 2.5f) dY = 2.5f;
 
-		if(dX || dY)
-			Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+		dX *= 1024;
+		dY *= 1024;
+
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, dX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
 	}
 
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
+	CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+	CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+	CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+	CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
+	CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+	CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
 
-	// BUTTONS
-
-	for(int i = 0; i < 14; i++)
-	{
-		if( xiState.Gamepad.wButtons & (1 << i) &&
-			xiButtonDebounce[i] < g_wv.sysMsgTime )
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qtrue, 0, NULL);
-			xiButtonDebounce[i] = g_wv.sysMsgTime + 50;
-		}
-		else if( !(xiState.Gamepad.wButtons & (1 << i)) )
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qfalse, 0, NULL);
-		}
-	}
 	// extra magic required for the triggers
-	if( xiState.Gamepad.bLeftTrigger && xiButtonDebounce[14] < g_wv.sysMsgTime )
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & X360_LEFT_TRIGGER_MASK) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
-		xiButtonDebounce[14] = g_wv.sysMsgTime + 50;
 	}
-	else if( !xiState.Gamepad.bLeftTrigger )
+	else if( !xiState.Gamepad.bLeftTrigger && ( dwLastXIButtonState & X360_LEFT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
 	}
+	if( xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState |= X360_LEFT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_LEFT_TRIGGER_MASK;
 
-	if( xiState.Gamepad.bRightTrigger && xiButtonDebounce[15] < g_wv.sysMsgTime )
+	if( xiState.Gamepad.bRightTrigger && !( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bRightTrigger )
+	else if( !xiState.Gamepad.bRightTrigger && ( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
-		xiButtonDebounce[15] = g_wv.sysMsgTime + 50;
 	}
+	if( xiState.Gamepad.bRightTrigger )
+		dwLastXIButtonState |= X360_RIGHT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_RIGHT_TRIGGER_MASK;
+
+	if(in_debugJoystick->integer)
+		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
 }
 #endif
 
