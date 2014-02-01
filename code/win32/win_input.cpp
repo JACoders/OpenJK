@@ -1488,6 +1488,8 @@ void IN_DoXInput( void )
 		dwLastXIButtonState |= (1 << 17);
 	else
 		dwLastXIButtonState &= ~(1 << 17);
+	if(in_debugJoystick->integer)
+		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
 }
 #endif
 
