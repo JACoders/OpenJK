@@ -960,6 +960,8 @@ typedef struct {
 } XINPUT_STATE_EX;
 
 #define X360_GUIDE_BUTTON 0x0400
+#define X360_LEFT_TRIGGER_MASK 0x10000
+#define X360_RIGHT_TRIGGER_MASK 0x20000
 
 static XINPUT_STATE_EX xiState;
 static DWORD dwLastXIButtonState;
@@ -1493,31 +1495,31 @@ void IN_DoXInput( void )
 	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
 
 	// extra magic required for the triggers
-	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 15)) )
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & X360_LEFT_TRIGGER_MASK) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bLeftTrigger && dwLastXIButtonState & (1 << 15) )
+	else if( !xiState.Gamepad.bLeftTrigger && ( dwLastXIButtonState & X360_LEFT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
 	}
 	if( xiState.Gamepad.bLeftTrigger )
-		dwLastXIButtonState |= (1 << 15);
-	if( !xiState.Gamepad.bLeftTrigger )
-		dwLastXIButtonState &= ~(1 << 15);
+		dwLastXIButtonState |= X360_LEFT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_LEFT_TRIGGER_MASK;
 
-	if( xiState.Gamepad.bRightTrigger && !(dwLastXIButtonState & (1 << 16)) )
+	if( xiState.Gamepad.bRightTrigger && !( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bRightTrigger && dwLastXIButtonState & (1 << 16) )
+	else if( !xiState.Gamepad.bRightTrigger && ( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
 	}
 	if( xiState.Gamepad.bRightTrigger )
-		dwLastXIButtonState |= (1 << 16);
+		dwLastXIButtonState |= X360_RIGHT_TRIGGER_MASK;
 	else
-		dwLastXIButtonState &= ~(1 << 16);
+		dwLastXIButtonState &= ~X360_RIGHT_TRIGGER_MASK;
 
 	if(in_debugJoystick->integer)
 		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
