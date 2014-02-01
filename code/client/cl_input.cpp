@@ -479,10 +479,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 
 	if( in_joystick->integer == 2 )
 	{
-		if ( !(in_speed.active ^ cl_run->integer) ) {
-			cmd->buttons |= BUTTON_WALKING;
-		}
-
 		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
 		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
 		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
