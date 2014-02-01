@@ -70,13 +70,6 @@ if(BuildSPEngine)
 
 	# Client files
 	set(SPEngineClientFiles
-		"${SPDir}/client/OpenAL/al.h"
-		"${SPDir}/client/OpenAL/alc.h"
-		"${SPDir}/client/OpenAL/alctypes.h"
-		"${SPDir}/client/OpenAL/altypes.h"
-		"${SPDir}/client/OpenAL/alu.h"
-		"${SPDir}/client/OpenAL/alut.h"
-
 		"${SPDir}/client/keys.h"
 		"${SPDir}/client/keycodes.h"
 
