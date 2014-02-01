@@ -6077,198 +6077,216 @@ void Cmd_Race_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Serverconfig - Start]
 void Cmd_ServerConfig_f(gentity_t *ent)
 {
+	char buf[MAX_STRING_CHARS-64] = {0};
+
 	//Global, important changes
-	trap->SendServerCommand(ent-g_entities, "print \" ^3Global Changes:\n\"");
-	trap->SendServerCommand(ent-g_entities, va("print \"     ^5Server tickrate^3: ^2%i\n\"", sv_fps.integer));
-	trap->SendServerCommand(ent-g_entities, va("print \"     ^5Force regen time (BaseJKA 'sv_fps 20' equivalent)^3: ^2%i\n\"", g_forceRegenTime.integer - (1000/20)));
-	trap->SendServerCommand(ent-g_entities, va("print \"     ^5Location based damage^3: ^2%s\n\"", (g_locationBasedDamage.integer) ? "Yes" : "No"));
+	Q_strncpyz(buf, " ^3Global Changes:\n", sizeof(buf));
+	Q_strcat(buf, sizeof(buf), va("     ^5Server tickrate^3: ^2%i\n", sv_fps.integer));
+	Q_strcat(buf, sizeof(buf), va("     ^5Force regen time (BaseJKA 'sv_fps 20' equivalent)^3: ^2%i\n", g_forceRegenTime.integer - (1000/20)));
+	Q_strcat(buf, sizeof(buf), va("     ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No"));
 	if (!(dmflags.integer & DF_NO_FALLING) && g_maxFallDmg.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Fall damage capped at^3: ^2%i\n\"", g_maxFallDmg.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Fall damage capped at^3: ^2%i\n", g_maxFallDmg.integer));
 	if (g_fixKillCredit.integer == 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Prevents suiciding/spectating to avoid a kill\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Prevents suiciding/spectating to avoid a kill\n");
 	else if (g_fixKillCredit.integer > 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Prevents suiciding/spectating/disconnecting to avoid a kill\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Prevents suiciding/spectating/disconnecting to avoid a kill\n");
 	if (g_corpseRemovalTime.integer != 30)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Corpses dissapear after ^2%i ^5seconds\n\"", g_corpseRemovalTime.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Corpses dissapear after ^2%i ^5seconds\n", g_corpseRemovalTime.integer));
 	if (g_newBotAI.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5New bot AI for force and saber-only combat\n\"", g_corpseRemovalTime.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5New bot AI for force and saber-only combat\n", g_corpseRemovalTime.integer));
 	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode is enabled\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Race mode is enabled\n");
 	else if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5/race mode option is enabled\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Race mode option is enabled\n");
+	if (g_showHealth.integer)
+		Q_strcat(buf, sizeof(buf), "     ^5Healthbars visible for all players\n");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+
 
 	//Saber changes
-	trap->SendServerCommand(ent-g_entities, "print \" ^3Saber Changes:\n\"");
-	trap->SendServerCommand(ent-g_entities, va("print \"     ^5Saber style damage^3: ^2%s\n\"", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
+	Q_strncpyz(buf, " ^3Saber Changes:\n", sizeof(buf));
+	Q_strcat(buf, sizeof(buf), va("     ^5Saber style damage^3: ^2%s\n", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
 	if (!d_saberGhoul2Collision.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Larger, square hitboxes for lightsabers\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Larger, square hitboxes for lightsabers\n");
 	if (d_saberBoxTraceSize.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Increased saber hitbox size by: ^2%i\n\"", d_saberBoxTraceSize.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Increased saber hitbox size by: ^2%i\n", d_saberBoxTraceSize.integer));
 	if (d_saberInterpolate.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Saber interpolate\n\"");	
+		Q_strcat(buf, sizeof(buf), "     ^5Saber interpolate\n");	
 	if (g_duelStartArmor.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Duelers start with ^2%i ^5armor\n\"", g_duelStartArmor.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Duelers start with ^2%i ^5armor\n", g_duelStartArmor.integer));
 	if (g_duelStartHealth.integer && g_duelStartHealth.integer != 100)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Duelers start with ^2%i ^5health\n\"", g_duelStartHealth.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Duelers start with ^2%i ^5health\n", g_duelStartHealth.integer));
 	if (g_allowSaberSwitch.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Allow saber switch\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Allow saber switch\n");
 	if (!d_saberSPStyleDamage.integer && !g_saberTouchDmg.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5No saber touch damage\n\"");
-	trap->SendServerCommand(ent-g_entities, va("print \"     ^5Saber kick tweak^3: ^2%s\n\"", (d_saberKickTweak.integer) ? "Yes" : "No"));
+		Q_strcat(buf, sizeof(buf), "     ^5No saber touch damage\n");
+	Q_strcat(buf, sizeof(buf), va("     ^5Saber kick tweak^3: ^2%s\n", (d_saberKickTweak.integer) ? "Yes" : "No"));
 	if (g_fixGroundStab.integer == 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Groundstabs damage players not on ground\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Groundstabs damage players not on ground\n");
 	else if (g_fixGroundStab.integer > 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Groundstabs damage players not on ground, but with reduced damage\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Groundstabs damage players not on ground, but with reduced damage\n");
 	if (g_backslashDamageScale.value != 1)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Backslash damage scale^3: ^2%.2f\n\"", g_backslashDamageScale.value));
+		Q_strcat(buf, sizeof(buf), va("     ^5Backslash damage scale^3: ^2%.2f\n", g_backslashDamageScale.value));
 	if (g_tweakYellowDFA.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5JK2 Style yellow DFA\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5JK2 Style yellow DFA\n");
 	if (g_spinBackslash.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Spinable backslash\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Spinable backslash\n");
 	if (g_spinRedDFA.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Spinable red DFA\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Spinable red DFA\n");
 	if (g_jk2Lunge.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5JK2 style lunge\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5JK2 style lunge\n");
 	if (g_maxSaberDefense.integer)
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Saber defense level capped at^3: ^2%i\n\"", g_maxSaberDefense.integer));
+		Q_strcat(buf, sizeof(buf), va("     ^5Saber defense level capped at^3: ^2%i\n", g_maxSaberDefense.integer));
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes
 	if (g_weaponDisable.integer < (1<<WP_CONCUSSION) || g_startingWeapons.integer > (1<<WP_BRYAR_PISTOL)) { // Weapons are enabled?
-		trap->SendServerCommand(ent-g_entities, "print \" ^3Weapon Changes:\n\"");
-		trap->SendServerCommand(ent-g_entities, va("print \"     ^5Fast weapon switch: ^2%i\n\"", g_fastWeaponSwitch.integer));
+		Q_strncpyz(buf, " ^3Weapon Changes:\n", sizeof(buf));
+		if (g_fastWeaponSwitch.integer)
+			Q_strcat(buf, sizeof(buf), "     ^5Fast weapon switch\n");
 		if (d_projectileGhoul2Collision.integer == 0)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Larger, square hitboxes for projectiles and hitscan\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Larger, square hitboxes for projectiles and hitscan\n");
 		else if (d_projectileGhoul2Collision.integer > 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Larger, square hitboxes for projectiles\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Larger, square hitboxes for projectiles\n");
 		if (g_selfDamageScale.integer != 0.5)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Self damage scale: ^2%.2f\n\"", g_selfDamageScale.value));
+			Q_strcat(buf, sizeof(buf), va("     ^5Self damage scale: ^2%.2f\n", g_selfDamageScale.value));
 		if (g_fullInheritance.integer && g_projectileInheritance.value)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Full projectile inheritance: ^2%.2f%\n\"", g_projectileInheritance.value * 100.0f));
+			Q_strcat(buf, sizeof(buf), va("     ^5Full projectile inheritance: ^2%.2f%\n", g_projectileInheritance.value * 100.0f));
 		else if (g_projectileInheritance.value)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Forwards projectile inheritance: ^2%.2f%\n\"", g_projectileInheritance.value * 100.0f));
+			Q_strcat(buf, sizeof(buf), va("     ^5Forwards projectile inheritance: ^2%.2f%\n", g_projectileInheritance.value * 100.0f));
 		if ((g_unlagged.integer & UNLAGGED_PROJ_NUDGE) && !(g_unlagged.integer & UNLAGGED_HITSCAN)) // proj nudge only
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lag compensation for projectiles\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lag compensation for projectiles\n");
 		else if ((g_unlagged.integer & UNLAGGED_HITSCAN) && !(g_unlagged.integer & UNLAGGED_PROJ_NUDGE)) // hitscan only
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lag compensation for hitscan\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lag compensation for hitscan\n");
 		else if ((g_unlagged.integer & UNLAGGED_HITSCAN) && (g_unlagged.integer & UNLAGGED_PROJ_NUDGE)) //Proj + hitscan
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lag compensation for projectiles and hitscan\n\"");
-		if (g_projectileVelocityScale.value)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Projectile velocity scale: ^2%.2f\n\"", g_projectileVelocityScale.value));
-		if (g_weaponDamageScale.value)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Weapon damage scale: ^2%.2f\n\"", g_weaponDamageScale.value));
+			Q_strcat(buf, sizeof(buf), "     ^5Lag compensation for projectiles and hitscan\n");
+		if (g_projectileVelocityScale.value != 1.0f)
+			Q_strcat(buf, sizeof(buf), va("     ^5Projectile velocity scale: ^2%.2f\n", g_projectileVelocityScale.value));
+		if (g_weaponDamageScale.value != 1.0f)
+			Q_strcat(buf, sizeof(buf), va("     ^5Weapon damage scale: ^2%.2f\n", g_weaponDamageScale.value));
 		if (g_tweakWeapons.integer & DEMP2_RANDOM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Nonrandom Demp2 alt damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Nonrandom Demp2 alt damage\n");
 		if (g_tweakWeapons.integer & DEMP2_DAM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Increased Demp2 primary damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Increased Demp2 primary damage\n");
 		if (g_tweakWeapons.integer & DISRUPTOR_DAM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Decreased sniper alt max damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Decreased sniper alt max damage\n");
 		if (g_tweakWeapons.integer & BOWCASTER_SPRD)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Modified bowcaster primary spread\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Modified bowcaster primary spread\n");
 		if (g_tweakWeapons.integer & REPEATER_ALT_DAM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Increased repeater alt damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Increased repeater alt damage\n");
 		if (g_tweakWeapons.integer & FLECHETTE_SPRD)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Nonrandom flechette prim spread\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Nonrandom flechette prim spread\n");
 		if (g_tweakWeapons.integer & FLECHETTE_ALT_DAM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Decreased flechette alt damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Decreased flechette alt damage\n");
 		if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Nonrandom flechette alt spread/velocity\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Nonrandom flechette alt spread/velocity\n");
 		if (g_tweakWeapons.integer & CONC_ALT_DAM)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Increased concussion rifle alt damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Increased concussion rifle alt damage\n");
 		if (g_tweakWeapons.integer & PROJECTILE_KNOCKBACK)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Removed knockback from most projectiles\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Removed knockback from most projectiles\n");
 		if (g_tweakWeapons.integer & STUN_LG)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lightning gun stun baton\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lightning gun stun baton\n");
 		if (g_tweakWeapons.integer & STUN_SHOCKLANCE)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Shocklance stun baton\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Shocklance stun baton\n");
 		if (g_tweakWeapons.integer & PROJECTILE_GRAVITY)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Gravity affected projectiles\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Gravity affected projectiles\n");
 		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Allowed center muzzlepoint setting\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Allowed center muzzlepoint setting\n");
 		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Pseudo random weapon spread\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Pseudo random weapon spread\n");
 		if (g_tweakWeapons.integer & ROCKET_MORTAR)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Rocket launcher is replaced with mortar\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Rocket launcher is replaced with mortar\n");
 		else if (g_tweakWeapons.integer & ROCKET_REDEEMER)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Rocket launcher is replaced with redeemer\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Rocket launcher is replaced with redeemer\n");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 
 	//CTF changes
 	if (g_gametype.integer == GT_CTF || (g_gametype.integer == GT_FFA && g_rabbit.integer)) {// CTF Settings
-		trap->SendServerCommand(ent-g_entities, "print \" ^3CTF Changes:\n\"");
+		Q_strncpyz(buf, " ^3CTF Changes:\n", sizeof(buf));
 		if (g_flagDrag.value)
-			trap->SendServerCommand(ent-g_entities, va("print \"     ^5Flag Drag: ^2%.3f\n\"", g_flagDrag.value));
+			Q_strcat(buf, sizeof(buf), va("     ^5Flag Drag: ^2%.3f\n", g_flagDrag.value));
 		if (g_fixFlagSuicide.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Flag suicide fix enabled\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Flag suicide fix enabled\n");
 		if (g_allowFlagThrow.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Flag throw enabled\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Flag throw enabled\n");
 		if (g_fixFlagHitbox.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Increased flag hitbox size\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Increased flag hitbox size\n");
 		if (g_fixCTFScores.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Tweaked CTF scores\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Tweaked CTF scores\n");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 
 	//Physics changes
-	trap->SendServerCommand(ent-g_entities, "print \" ^3Physics Changes:\n\"");
+	Q_strncpyz(buf, " ^3Physics Changes:\n", sizeof(buf));
 	if (g_onlyBhop.integer == 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5No force jumps forced by server\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5No force jumps forced by server\n");
 	else if (g_onlyBhop.integer > 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5No force jumps option enabled\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5No force jumps option enabled\n");
 	if (g_tweakJetpack.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Tweaked jetpack physics\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Tweaked jetpack physics\n");
 	if (g_movementStyle.integer == 3)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5CPM style air control\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5CPM style air control\n");
 	else if (g_movementStyle.integer == 2)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5QuakeWorld style air control\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5QuakeWorld style air control\n");
 	else if (g_movementStyle.integer == 0)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Siege style air control\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Siege style air control\n");
 	if (g_fixRoll.integer == 1)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Tweaked roll\n\""); // idk what the fuck this actually does to roll
+		Q_strcat(buf, sizeof(buf), "     ^5Tweaked roll\n"); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Chainable roll\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Chainable roll\n");
 	else if (g_fixRoll.integer > 2)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5JK2 style roll\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5JK2 style roll\n");
+	if (g_flipKick.integer == 1)
+		Q_strcat(buf, sizeof(buf), "     ^5JA+ style flipkick\n");
+	else if (g_flipKick.integer == 2)
+		Q_strcat(buf, sizeof(buf), "     ^5Floodprotected flipkick\n");
+	else if (g_flipKick.integer > 2)
+		Q_strcat(buf, sizeof(buf), "     ^5Flipkick enabled with JK2 style\n");
 	if (g_fixHighFPSAbuse.integer)
-		trap->SendServerCommand(ent-g_entities, "print \"     ^5Fixed physics changed due to high FPS\n\"");
+		Q_strcat(buf, sizeof(buf), "     ^5Fixed physics changed due to high FPS\n");
+	if (g_fixSlidePhysics.integer == 1)
+		Q_strcat(buf, sizeof(buf), "     ^5Fixed physics for NPCs on slick surfaces\n");
+	else if (g_fixSlidePhysics.integer > 1)
+		Q_strcat(buf, sizeof(buf), "     ^5Fixed physics for players on slick surfaces\n");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	
 	//Force changes
 	if (g_forcePowerDisable.integer < (1<<NUM_FORCE_POWERS)) {
-		trap->SendServerCommand(ent-g_entities, "print \" ^3Force Changes:\n\"");
+		Q_strncpyz(buf, " ^3Force Changes:\n", sizeof(buf));
 		if (g_forceCombo.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Force combo enabled\n\"");
-		if (g_flipKick.integer == 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5JA+ style flipkick\n\"");
-		else if (g_flipKick.integer == 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Floodprotected flipkick\n\"");
-		else if (g_flipKick.integer > 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Flipkick enabled with JK2 style\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Force combo enabled\n");
 		if (g_fastGrip.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Increased grip runspeed\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Increased grip runspeed\n");
 		if (g_fixGetups.integer == 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Grip during knockdown recovery\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Grip during knockdown recovery\n");
 		else if (g_fixGetups.integer > 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Grip/push/pull during knockdown recovery\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Grip/push/pull during knockdown recovery\n");
 		if (g_fixLightning.integer == 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lightning gives forcepoints to target\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lightning gives forcepoints to target\n");
 		else if (g_fixLightning.integer == 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lightning gives forcepoints to target, and has reduced damage\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lightning gives forcepoints to target, and has reduced damage\n");
 		else if (g_fixLightning.integer > 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lightning gives forcepoints to target, has reduced damage, and no melee bonus\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lightning gives forcepoints to target, has reduced damage, and no melee bonus\n");
 		if (g_fixSaberInGrip.integer == 1)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Grip does not turn off targets lightsaber\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Grip does not turn off targets lightsaber\n");
 		else if (g_fixSaberInGrip.integer == 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Grip does not turn off targets lightsaber, and target can turn on/off lightsaber in grip\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Grip does not turn off targets lightsaber, and target can turn on/off lightsaber in grip\n");
 		else if (g_fixSaberInGrip.integer > 2)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can switch weapons in grip\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can switch weapons in grip\n");
 		if (g_pushPullKnockdown.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Knocked down players are affected by push/pull\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Knocked down players are affected by push/pull\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Lag compensation for force push/pull\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Lag compensation for force push/pull\n");
 		if (g_fixGripAbsorb.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5Force absorb does not gain forcepoints from grip\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5Force absorb does not gain forcepoints from grip\n");
 		if (g_jk2Grip.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"     ^5JK2 1.02 style grip\n\"");
+			Q_strcat(buf, sizeof(buf), "     ^5JK2 1.02 style grip\n");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
+	buf[0] = '\0';
 }
+
 //[JAPRO - Serverside - All - Serverconfig - End]
 
 void Cmd_Throwflag_f( gentity_t *ent ) {

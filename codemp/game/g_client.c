@@ -3479,6 +3479,8 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{
 		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+		if (g_showHealth.integer)
+			ent->maxHealth = 100;//JAPRO , kay...
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
@@ -3623,6 +3625,7 @@ void ClientSpawn(gentity_t *ent) {
 			if (client->pers.raceMode) {
 				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
 				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 			}
 			else {
 				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))

@@ -2767,6 +2767,8 @@ int bg_parryDebounce[NUM_FORCE_POWER_LEVELS] =
 
 qboolean PM_SaberPowerCheck(void)
 {
+	if (pm->ps->stats[STAT_RACEMODE])//No saberthrow in racemode, idk why this is controlled by the checks in w_force.c
+		return qfalse;
 	if (pm->ps->saberInFlight)
 	{ //so we don't keep doing stupid force out thing while guiding saber.
 		if (pm->ps->fd.forcePower > forcePowerNeeded[pm->ps->fd.forcePowerLevel[FP_SABERTHROW]][FP_SABERTHROW])

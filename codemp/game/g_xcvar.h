@@ -195,7 +195,7 @@ XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_weaponDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileVelocityScale,	"1",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_selfDamageScale,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_selfDamageScale,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
@@ -212,6 +212,7 @@ XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_overBounce,				"0",			CVU_OverBounce,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -260,6 +261,6 @@ XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_raceLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 #undef XCVAR_DEF
