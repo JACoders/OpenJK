@@ -959,7 +959,7 @@ typedef struct {
 	XINPUT_GAMEPAD_EX Gamepad;
 } XINPUT_STATE_EX;
 
-#define X360_GUIDE_BUTTON 0x400
+#define X360_GUIDE_BUTTON 0x0400
 
 static XINPUT_STATE_EX xiState;
 static DWORD dwLastXIButtonState;
@@ -1055,6 +1055,7 @@ void IN_JoystickInitXInput ( void )
 	}
 
 	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
+	dwLastXIButtonState = 0UL;
 
 	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
 															// I'll probably add a splitscreen mode just for lulz --eez
@@ -1356,6 +1357,22 @@ void XI_ApplyInversion( float *fX, float *fY )
 		*fY *= -1.0f;
 }
 
+bool ButtonChanged( DWORD current, DWORD last, DWORD mask ) {
+	return ( current & mask ) != ( last & mask );
+}
+
+#define CheckButtonStatus( xin, fakekey ) \
+	if ( ButtonChanged( xiState.Gamepad.wButtons, dwLastXIButtonState, xin ) ) { \
+		if ( xiState.Gamepad.wButtons & xin ) { \
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
+			dwLastXIButtonState |= xin; \
+		} \
+		else { \
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
+			dwLastXIButtonState &= ~(xin); \
+		} \
+	} \
+
 /*
 ===========
 IN_DoXInput
@@ -1465,25 +1482,22 @@ void IN_DoXInput( void )
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
 	}
 
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
+	CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+	CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+	CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+	CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
+	CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+	CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
 
-	// BUTTONS
-	for(int i = 0; i < 14; i++)
-	{
-		if( xiState.Gamepad.wButtons & (1 << i) &&
-			!(dwLastXIButtonState & (1 << i)) )
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qtrue, 0, NULL);
-		}
-		if( !(xiState.Gamepad.wButtons & (1 << i)) &&
-			dwLastXIButtonState & (1 << i))
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qfalse, 0, NULL);
-		}
-		if( xiState.Gamepad.wButtons & (1 << i) )
-			dwLastXIButtonState |= (1 << i);
-		else
-			dwLastXIButtonState &= ~(1 << i);
-	}
 	// extra magic required for the triggers
 	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 15)) )
 	{
@@ -1511,18 +1525,6 @@ void IN_DoXInput( void )
 	else
 		dwLastXIButtonState &= ~(1 << 16);
 
-	if( (xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) && !(dwLastXIButtonState & (1 << 17)) )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qtrue, 0, NULL);
-	}
-	else if( !(xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) && dwLastXIButtonState & (1 << 17) )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qfalse, 0, NULL);
-	}
-	if( (xiState.Gamepad.wButtons & X360_GUIDE_BUTTON) )
-		dwLastXIButtonState |= (1 << 17);
-	else
-		dwLastXIButtonState &= ~(1 << 17);
 	if(in_debugJoystick->integer)
 		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
 }
