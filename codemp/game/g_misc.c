@@ -238,7 +238,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	}
 }
 
-extern void ResetPlayerTimers(gentity_t *ent);
+void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern?
 //JAPRO - Serverside - New teleport Function - Start
 void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
@@ -248,7 +248,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		wasNoClip = qtrue;
 
 	player->client->noclip = qtrue;
-	ResetPlayerTimers(player);
+	ResetPlayerTimers(player, qtrue);
 
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event

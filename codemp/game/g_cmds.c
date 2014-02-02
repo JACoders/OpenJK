@@ -604,7 +604,7 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
-void QINLINE ResetPlayerTimers(gentity_t *ent)
+void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
 	if (!ent->client)
@@ -620,7 +620,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent)
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
 
-	if (wasReset)
+	if (wasReset && print)
 		trap->SendServerCommand( ent-g_entities, "print \"Timers reset!\n\"");
 }
 
@@ -643,7 +643,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-					ResetPlayerTimers(ent);
+					ResetPlayerTimers(ent, qtrue);
 				}
 				else
 					trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
@@ -657,7 +657,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-					ResetPlayerTimers(ent);
+					ResetPlayerTimers(ent, qtrue);
 				}
 				else 
 					trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
@@ -669,7 +669,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			if (ent->client->noclip) {
 				ent->client->noclip = qfalse;
 				trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
-				ResetPlayerTimers(ent);
+				ResetPlayerTimers(ent, qtrue);
 			}
 			else 
 				trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (noclip).\n\"" );//replaces "Cheats are not enabled on this server." msg
@@ -691,14 +691,14 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
 			target->client->noclip = !target->client->noclip;
 			if (!target->client->noclip)
-				ResetPlayerTimers(target);
+				ResetPlayerTimers(target, qtrue);
 			return;
 		}
 		if (trap->Argc() == 1) {
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 			ent->client->noclip = !ent->client->noclip;
 			if (!ent->client->noclip)
-				ResetPlayerTimers(ent);
+				ResetPlayerTimers(ent, qtrue);
 			return;
 		}
 	}
@@ -5286,7 +5286,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 				Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));
 
 			if (g_raceMode.integer) {
-				Q_strncpyz(strRace, (cl->ps.stats[STAT_RACEMODE]) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+				Q_strncpyz(strRace, (cl->pers.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
 				if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 					Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
@@ -5675,7 +5675,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 
 	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
-		ResetPlayerTimers(ent);
+		ResetPlayerTimers(ent, qtrue);
 	}
 	else 
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");

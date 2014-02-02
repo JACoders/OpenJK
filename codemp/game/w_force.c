@@ -520,8 +520,8 @@ extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
 
 int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forcePower)
 {
-	if (other && other->client && other->client->pers.raceMode)
-		return 0;
+	//if (other && other->client && other->client->pers.raceMode)
+		//return 0;
 
 	if (other && other->client && BG_HasYsalamiri(level.gametype, &other->client->ps))
 	{
@@ -533,16 +533,30 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
-	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other
-	if (attacker && attacker->client && attacker->client->ps.duelInProgress)
-	{
+	if (other && other->client && other->client->noclip)//Japro fix noclip abuse
 		return 0;
-	}
+	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
+		return 0;
 
-	if (other && other->client && other->client->ps.duelInProgress)
-	{
-		return 0;
+//JAPRO - Serverside - Fullforce Duels - Start
+	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other
+	if (attacker && attacker->client && attacker->client->ps.duelInProgress ) {
+		//// is the other player in a duel too?
+		if (other && other->client && other->client->ps.duelInProgress ) {
+			//// yes both players are dueling -- with each other? 
+			if ( dueltypes[attacker->client->ps.clientNum] == 1 && other->s.number == attacker->client->ps.duelIndex ) {
+				//force duel
+				return 1;
+			}
+			else
+				//normal & melee duel
+				return 0;
+		} else {
+			//not in a duel
+			return 0;
+		}
 	}
+//JAPRO - Serverside - Fullforce Duels - End
 
 	if (forcePower == FP_GRIP)
 	{

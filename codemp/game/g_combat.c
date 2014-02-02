@@ -2075,6 +2075,7 @@ extern qboolean Jedi_WaitingAmbush( gentity_t *self );
 void CheckExitRules( void );
 extern void Rancor_DropVictim( gentity_t *self );
 
+void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
 extern qboolean g_dontFrickinCheck;
 extern qboolean g_endPDuel;
 extern qboolean g_noPDuelCheck;
@@ -2100,6 +2101,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 	if ( !attacker )
 		return;
+
+	ResetPlayerTimers(self, qfalse);
 
 	//check player stuff
 	g_dontFrickinCheck = qfalse;
