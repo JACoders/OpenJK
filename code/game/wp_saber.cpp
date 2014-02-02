@@ -14339,7 +14339,7 @@ void WP_InitForcePowers( gentity_t *ent )
 		ent->client->ps.forcePowerRegenRate = 100;
 	}
 	ent->client->ps.forcePower = ent->client->ps.forcePowerMax;
-	ent->client->ps.forcePowerRegenDebounceTime = 0;
+	ent->client->ps.forcePowerRegenDebounceTime = level.time;
 
 	ent->client->ps.forceGripEntityNum = ent->client->ps.forceDrainEntityNum = ent->client->ps.pullAttackEntNum = ENTITYNUM_NONE;
 	ent->client->ps.forceRageRecoveryTime = 0;
