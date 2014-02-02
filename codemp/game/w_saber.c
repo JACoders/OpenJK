@@ -4753,8 +4753,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qfalse;
 		}
 
-		if (self->client && self->s.bolt1 != otherOwner->s.bolt1)//JAPRO fix clients being able to block sabers in other dimensions (duel/racemode)?
+		if (self->client && otherOwner->client && (self->s.bolt1 != otherOwner->s.bolt1))//JAPRO fix clients being able to block sabers in other dimensions (duel/racemode)?
 			return qfalse;
+		if (self->client && self->client->ps.stats[STAT_RACEMODE])//Racemode ppl shouldnt even be able to block other racemode ppls sabers
+			return;
+		if (otherOwner->client && otherOwner->client->ps.stats[STAT_RACEMODE])
+			return;
 
 		if ( otherOwner 
 			&& otherOwner->client 

@@ -1271,6 +1271,7 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 
 	if (player->client->pers.stats.startTime) {
 		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
+		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average;
 		qboolean valid = qfalse;
@@ -1279,19 +1280,31 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		time /= 1000.0f;
 		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
-		if (ValidRaceSettings(player))
+		if (ValidRaceSettings(player)) {
 			valid = qtrue;
+			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
+		}
 
 		if (!target && trigger->noise_index) 
 			G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
-		if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+		if (player->client->ps.stats[STAT_RACEMODE]) {
+			if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+				Q_strncpyz(style, "siege", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+				Q_strncpyz(style, "vq3", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+				Q_strncpyz(style, "qw", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+				Q_strncpyz(style, "cpm", sizeof(style));
+		}
+		else if (g_movementStyle.integer == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
-		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+		else if (g_movementStyle.integer == 1)
 			Q_strncpyz(style, "vq3", sizeof(style));
-		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+		else if (g_movementStyle.integer == 2)
 			Q_strncpyz(style, "qw", sizeof(style));
-		else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+		else if (g_movementStyle.integer > 2)
 			Q_strncpyz(style, "cpm", sizeof(style));
 
 		trap->GetServerinfo(info, sizeof(info));
@@ -1299,19 +1312,19 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 
 		if (trigger->message || (target && target->message)) {
 			if (target && target->message) {
-				Com_sprintf(message, sizeof(message), " (%s)", target->message);
+				Com_sprintf(message, sizeof(message), "%s)", target->message);
 			}
 			else if (trigger->message) {
-				Com_sprintf(message, sizeof(message), " (%s)", trigger->message);
+				Com_sprintf(message, sizeof(message), "%s", trigger->message);
 			}
-			Q_strcat(courseName, sizeof(courseName), message);
-			trap->SendServerCommand( -1, va("print \"%s^5 finished^3%s^5 in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
-				player->client->pers.netname, message, time, player->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
+			Q_strcat(courseName, sizeof(courseName), va(" (%s)", message));
+			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-10.3f%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^7%s\n\"",
+				message, c, time, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%s^5 finished in ^3%.3f^5, max ^3%i^5, average ^3%i^5, using ^3%s^5 style (%s^5)\n\"",
-				player->client->pers.netname, time, player->client->pers.stats.topSpeed, average, style, (valid ? "^2Legit" : "^1Not Legit")));
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-7.3f%s max ^3%-7i%s average ^3%-7i%s using ^3%-7s%s by ^7%s\n\"",
+				time, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
 
 		}
 		if (valid) {
@@ -1319,7 +1332,7 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 			char *p = NULL;
 			Q_strncpyz(strIP, player->client->sess.IP, sizeof(strIP));
 			p = strchr(strIP, ':');
-			if (p) //loda - fix me
+			if (p)
 				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
 				player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
