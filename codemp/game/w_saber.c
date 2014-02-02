@@ -4753,7 +4753,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qfalse;
 		}
 
-		if (self->s.bolt1 != otherOwner->s.bolt1)//JAPRO fix clients being able to block sabers in other dimensions (duel/racemode)?
+		if (self->client && self->s.bolt1 != otherOwner->s.bolt1)//JAPRO fix clients being able to block sabers in other dimensions (duel/racemode)?
 			return qfalse;
 
 		if ( otherOwner 
@@ -5892,6 +5892,16 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 	{
 		return qfalse;
 	}
+
+	if (saberOwner && saberOwner->client && ent && ent->client && (saberOwner->s.bolt1 != ent->s.bolt1))
+		return qfalse;
+	/*
+	{
+		gentity_t *otherOwner = &g_entities[ent->r.ownerNum];
+		if (saberOwner && otherOwner && (saberOwner->s.bolt1 != otherOwner->s.bolt1)) //why does this not work, thrown saber still hits their saber and goes back to us
+			return qfalse;
+	}
+	*/
 
 	if (ent && ent->client && ent->inuse && ent->s.number != saberOwner->s.number &&
 		ent->health > 0 && ent->takedamage &&
