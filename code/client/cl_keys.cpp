@@ -1164,9 +1164,9 @@ void CL_ParseBinding( int key, qboolean down, unsigned time )
 
 	if( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == 0 )
 		return;
-	if( !kg.keys[key].binding || !kg.keys[key].binding[0] )
+	if( !kg.keys[keynames[key].upper].binding || !kg.keys[keynames[key].upper].binding[0] )
 		return;
-	Q_strncpyz( buf, kg.keys[key].binding, sizeof( buf ) );
+	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding, sizeof( buf ) );
 
 	// run all bind commands if console, ui, etc aren't reading keys
 	allCommands = ( Key_GetCatcher( ) == 0 );
@@ -1216,9 +1216,9 @@ Called by CL_KeyEvent to handle a keypress
 */
 void CL_KeyDownEvent( int key, unsigned time )
 {
-	kg.keys[key].down = qtrue;
-	kg.keys[key].repeats++;
-	if( kg.keys[key].repeats == 1 ) {
+	kg.keys[keynames[key].upper].down = qtrue;
+	kg.keys[keynames[key].upper].repeats++;
+	if( kg.keys[keynames[key].upper].repeats == 1 ) {
 		kg.keyDownCount++;
 		kg.anykeydown = true;
 	}
@@ -1290,8 +1290,8 @@ Called by CL_KeyEvent to handle a keyrelease
 */
 void CL_KeyUpEvent( int key, unsigned time )
 {
-	kg.keys[key].repeats = 0;
-	kg.keys[key].down = qfalse;
+	kg.keys[keynames[key].upper].repeats = 0;
+	kg.keys[keynames[key].upper].down = qfalse;
 	kg.keyDownCount--;
 
 	if (kg.keyDownCount <= 0) {
