@@ -1369,6 +1369,8 @@ void Use_target_onlybhop_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	player->client->ps.stats[STAT_ONLYBHOP] = 1;
+	if (trigger->spawnflags & 2)
+		player->client->ps.stats[STAT_ROCKETJUMP] = 1;
 }
 
 void Use_target_onlybhop_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
@@ -1377,6 +1379,7 @@ void Use_target_onlybhop_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	player->client->ps.stats[STAT_ONLYBHOP] = 0;
+	player->client->ps.stats[STAT_ROCKETJUMP] = 0;
 }
 
 void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO new target_newpush entity

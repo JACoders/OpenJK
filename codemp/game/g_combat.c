@@ -4324,6 +4324,9 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		return;
 	}
 
+	if (ent && ent->client && ent->client->ps.stats[STAT_ROCKETJUMP])//no loc based in rocketjump mode
+		return;
+
 	if ( (dflags&DAMAGE_NO_HIT_LOC) )
 	{ //then leave it alone
 		return;
@@ -5027,6 +5030,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// always give half damage if hurting self... but not in siege.  Heavy weapons need a counter.
 	// calculated after knockback, so rocket jumping works
 	if ( targ == attacker && !(dflags & DAMAGE_NO_SELF_PROTECTION)) {
+		if (targ && targ->client && targ->client->ps.stats[STAT_ROCKETJUMP])//fuck this?
+			damage = 0;
 		if ( level.gametype == GT_SIEGE )
 			damage *= 1.5;
 		else

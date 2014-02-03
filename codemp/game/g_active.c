@@ -2740,6 +2740,11 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
+	if (ent && ent->client && ent->client->ps.stats[STAT_ROCKETJUMP] && ent->health > 0) {
+		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+	}
+
+
 	if (ent->s.eType != ET_NPC)
 	{
 		// check for inactivity timer, but never drop the local client of a non-dedicated server

@@ -8466,7 +8466,9 @@ if (pm->ps->duelInProgress)
 	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
 #ifdef _GAME
-		if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+		if (pm->ps->stats[STAT_ROCKETJUMP])
+			amount = 0;
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
 			amount = 1;//JAPRO mortar meh
 		else
 #endif
@@ -8474,6 +8476,11 @@ if (pm->ps->duelInProgress)
 	}
 	else
 	{
+#ifdef _GAME
+		if (pm->ps->stats[STAT_ROCKETJUMP])
+			amount = 0;
+		else
+#endif
 		amount = weaponData[pm->ps->weapon].energyPerShot;
 	}
 

@@ -3482,6 +3482,8 @@ void ClientSpawn(gentity_t *ent) {
 		maxHealth = 100;//i dont think we want handicap to work..?
 		if (g_showHealth.integer)
 			ent->maxHealth = 100;//JAPRO , kay...
+		else 
+			ent->maxHealth = 0;
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
