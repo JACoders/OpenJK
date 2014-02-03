@@ -1259,6 +1259,9 @@ void TimerStart(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAP
 	player->client->pers.stats.startTime -= InterpolateTouchTime(player, trigger);
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
+
+	if (player->client->ps.stats[STAT_RACEMODE])
+		player->client->ps.duelTime = level.time;
 }
 
 void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPRO Timers
@@ -1343,6 +1346,8 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		player->client->pers.stats.startTime = 0;
 		player->client->pers.stats.topSpeed = 0;
 		player->client->pers.stats.displacement = 0;
+		if (player->client->ps.stats[STAT_RACEMODE])
+			player->client->ps.duelTime = 0;
 	}
 }
 

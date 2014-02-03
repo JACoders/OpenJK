@@ -620,6 +620,9 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
 
+	if (ent->client->ps.stats[STAT_RACEMODE])
+		ent->client->ps.duelTime = 0;
+
 	if (wasReset && print)
 		trap->SendServerCommand( ent-g_entities, "print \"Timers reset!\n\"");
 }
