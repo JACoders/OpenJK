@@ -2742,6 +2742,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (ent && ent->client && ent->client->ps.stats[STAT_ROCKETJUMP] && ent->health > 0) {
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_ROCKET_LAUNCHER);
+		ent->client->ps.ammo[AMMO_ROCKETS] = 3;
 	}
 
 
