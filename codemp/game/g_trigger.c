@@ -1323,7 +1323,7 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%cCompleted in ^3%-7.3f%s max ^3%-7i%s average ^3%-7i%s using ^3%-7s%s by ^7%s\n\"",
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-10.3f%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^7%s\n\"",
 				c, time, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
 
 		}
