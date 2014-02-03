@@ -863,13 +863,13 @@ void SV_WriteDemoMessage ( client_t *cl, msg_t *msg, int headerBytes ) {
 	// write the packet sequence
 	len = cl->netchan.outgoingSequence;
 	swlen = LittleLong( len );
-	FS_Write (&swlen, 4, cl->demo.demofile);
+	FS_Write( &swlen, 4, cl->demo.demofile );
 
 	// skip the packet sequencing information
 	len = msg->cursize - headerBytes;
-	swlen = LittleLong(len);
-	FS_Write (&swlen, 4, cl->demo.demofile);
-	FS_Write ( msg->data + headerBytes, len, cl->demo.demofile );
+	swlen = LittleLong( len );
+	FS_Write( &swlen, 4, cl->demo.demofile );
+	FS_Write( msg->data + headerBytes, len, cl->demo.demofile );
 }
 
 void SV_StopRecordDemo( client_t *cl ) {
@@ -960,7 +960,7 @@ void SV_DemoFilename( int number, char *fileName, int fileNameSize ) {
 }
 
 // defined in sv_client.cpp
-extern void SV_CreateClientGameStateMessage( client_t *client, msg_t* msg, qboolean updateServerCommands );
+extern void SV_CreateClientGameStateMessage( client_t *client, msg_t* msg );
 
 void SV_RecordDemo( client_t *cl, char *demoName ) {
 	char		name[MAX_OSPATH];
@@ -999,13 +999,15 @@ void SV_RecordDemo( client_t *cl, char *demoName ) {
 	MSG_Init( &msg, bufData, sizeof( bufData ) );
 
 	// NOTE, MRE: all server->client messages now acknowledge
-	SV_CreateClientGameStateMessage( cl, &msg, qfalse );
+	int tmp = cl->reliableSent;
+	SV_CreateClientGameStateMessage( cl, &msg );
+	cl->reliableSent = tmp;
 
 	// finished writing the client packet
 	MSG_WriteByte( &msg, svc_EOF );
 
 	// write it to the demo file
-	len = LittleLong( cl->reliableSent - 1 );
+	len = LittleLong( cl->netchan.outgoingSequence - 1 );
 	FS_Write( &len, 4, cl->demo.demofile );
 
 	len = LittleLong( msg.cursize );
