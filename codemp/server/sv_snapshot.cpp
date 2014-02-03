@@ -680,10 +680,10 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageAcked = -1;
 
 	// save the message to demo.  this must happen before sending over network as that encodes the backing databuf
-	if (client->demo.demorecording && !client->demo.demowaiting) {
+	if ( client->demo.demorecording && !client->demo.demowaiting ) {
 		msg_t msgcopy = *msg;
 		MSG_WriteByte( &msgcopy, svc_EOF );
-		SV_WriteDemoMessage(client, &msgcopy, 0);
+		SV_WriteDemoMessage( client, &msgcopy, 0 );
 	}
 
 	// bots need to have their snapshots built, but
@@ -790,9 +790,10 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
-	if ( client->netchan.remoteAddress.type == NA_BOT && sv_autoDemo->integer &&
-			sv_autoDemoBots->integer && !client->demo.demorecording ) {
-		SV_BeginAutoRecordDemos();
+	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
+		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+			SV_BeginAutoRecordDemos();
+		}
 	}
 
 	// bots need to have their snapshots built, but
