@@ -102,7 +102,7 @@ typedef enum {
 
 // struct to hold demo data for a single demo
 typedef struct {
-	char		demoName[MAX_QPATH];
+	char		demoName[MAX_OSPATH];
 	qboolean	demorecording;
 	qboolean	demowaiting;	// don't record until a non-delta message is sent
 	int			minDeltaFrame;	// the first non-delta frame stored in the demo.  cannot delta against frames older than this
