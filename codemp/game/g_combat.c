@@ -5033,7 +5033,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// calculated after knockback, so rocket jumping works
 	if ( targ == attacker && !(dflags & DAMAGE_NO_SELF_PROTECTION)) {
 		if (targ && targ->client && targ->client->ps.stats[STAT_ROCKETJUMP])//fuck this?
-			damage = 0;
+			damage = 1;
 		if ( level.gametype == GT_SIEGE )
 			damage *= 1.5;
 		else

@@ -5305,7 +5305,10 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 					Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
 			}
 
-			Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
+			if (g_entities[i].r.svFlags & SVF_BOT)
+				Q_strncpyz(strPlugin, "^7Bot^7", sizeof(strPlugin));
+			else
+				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
 			if (g_raceMode.integer)
 				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%-12s%-13s%s^7\n", strNum, strIP, strPlugin, strAdmin, strRace, strStyle, strName);
@@ -5711,7 +5714,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
-		if ((g_raceMode.integer < 2) || !ent->client->ps.stats[STAT_RACEMODE]) {//Skip admin stuff if its optional racemode setting and client is racing
+		if ((g_raceMode.integer < 2) || !ent->client->pers.raceMode) {//Skip admin stuff if its optional racemode setting and client is racing
 			if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 			{
 				if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK)))
@@ -5812,7 +5815,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) {
+			if ((g_raceMode.integer) && ent->client->pers.raceMode) {
 				Cmd_RaceTele_f(ent);
 				return;
 			}
@@ -5824,7 +5827,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) {
+			if ((g_raceMode.integer) && ent->client->pers.raceMode) {
 				Cmd_RaceTele_f(ent);
 				return;
 			}
@@ -5832,7 +5835,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			return;
 		}
 	}
-	else if ((g_raceMode.integer > 1) && ent->client->ps.stats[STAT_RACEMODE]) { //Only fallback to cmd_racetele_f if they dont have admin or dont have admin privledges
+	if (g_raceMode.integer && ent->client->pers.raceMode) { //Always fallback to cmd_racetele_f if they are in racemode
 		Cmd_RaceTele_f(ent);
 		return;
 	}
@@ -5852,7 +5855,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{ 
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
-			if (ent->client->ps.stats[STAT_RACEMODE]) {
+			if (ent->client->pers.raceMode) {
 				trace_t tr;
 				vec3_t down, mins, maxs;
 				VectorSet(mins, -15, -15, DEFAULT_MINS_2);

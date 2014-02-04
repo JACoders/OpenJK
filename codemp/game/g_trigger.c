@@ -1176,6 +1176,8 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
+	if (player->client->ps.stats[STAT_ROCKETJUMP] && g_knockback.integer > 1000)
+		return qfalse;
 	if (g_speed.integer != 250)
 		return qfalse;
 	if (g_gravity.integer != 800)
@@ -1273,7 +1275,7 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		return;
 
 	if (player->client->pers.stats.startTime) {
-		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
+		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0}, timeStr[32] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average/*, minutes, seconds, deciseconds*/;
@@ -1320,6 +1322,17 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		trap->GetServerinfo(info, sizeof(info));
 		Q_strncpyz(courseName, Info_ValueForKey( info, "mapname" ), sizeof(courseName));
 
+		if (time >= 60.0f) {
+			int minutes, seconds, milliseconds;
+
+			minutes = (int)time / 60;
+			seconds = (int)time % 60;
+			milliseconds = ((int)(time*1000)%1000); //milliseconds = fmodf(time, milliseconds);
+			Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);
+		}
+		else
+			Q_strncpyz(timeStr, va("%.3f", time), sizeof(timeStr));
+
 		if (trigger->message || (target && target->message)) {
 			if (target && target->message) {
 				Com_sprintf(message, sizeof(message), "%s)", target->message);
@@ -1328,13 +1341,13 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 				Com_sprintf(message, sizeof(message), "%s", trigger->message);
 			}
 			Q_strcat(courseName, sizeof(courseName), va(" (%s)", message));
-			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-10.3f%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^7%s\n\"",
-				message, c, time, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
+			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^7%s\n\"",
+				message, c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
 		}
 		else {
 			Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-10.3f%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^7%s\n\"",
-				c, time, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^7%s\n\"",
+				c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, player->client->pers.netname));
 
 		}
 		if (valid) {
