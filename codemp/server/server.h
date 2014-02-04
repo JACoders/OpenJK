@@ -104,7 +104,8 @@ typedef enum {
 typedef struct {
 	char		demoName[MAX_QPATH];
 	qboolean	demorecording;
-	qboolean	demowaiting;	// don't record until a non-delta message is received
+	qboolean	demowaiting;	// don't record until a non-delta message is sent
+	int			minDeltaFrame;	// the first non-delta frame stored in the demo.  cannot delta against frames older than this
 	fileHandle_t	demofile;
 	qboolean	isBot;
 	int			botReliableAcknowledge; // for bots, need to maintain a separate reliableAcknowledge to record server messages into the demo file
