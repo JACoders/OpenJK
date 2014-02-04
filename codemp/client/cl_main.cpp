@@ -2862,7 +2862,7 @@ void CL_Shutdown( void ) {
 }
 
 qboolean CL_ConnectedToServer( void ) {
-	return (qboolean)( cls.state >= CA_CONNECTED );
+	return (qboolean)( cls.state >= CA_CONNECTED && !clc.demoplaying );
 }
 
 static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
