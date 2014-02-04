@@ -11756,7 +11756,7 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 
 #ifdef _GAME
-	if (pm->ps->pm_type == PM_FREEZE && (g_emotesDisable.integer & (1 << E_ALL))) {//Sad hack loda fixme
+	if (pm->ps->pm_type == PM_FREEZE && (g_emotesDisable.integer = ((1 << E_ALL) - 1))) {//Sad hack loda fixme
 		return;		// no movement at all
 	}
 #else

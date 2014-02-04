@@ -537,6 +537,10 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
 		return 0;
+	if (attacker && attacker->client && attacker->client->pers.raceMode)//not needed?
+		return 0;
+	if (other && other->client && other->client->pers.raceMode)//fix having forcepowers used on you when in racemode
+		return 0;
 
 //JAPRO - Serverside - Fullforce Duels - Start
 	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other

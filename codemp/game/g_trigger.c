@@ -1276,12 +1276,19 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
-		int average;
+		int average/*, minutes, seconds, deciseconds*/;
 		qboolean valid = qfalse;
 
 		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
 		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
+
+		/*
+		minutes = (int)time / 60;
+		seconds = (int)time % 60;
+		deciseconds = (int)time*10 % 1;
+		Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%i", minutes, seconds, deciseconds);
+		*/
 
 		if (ValidRaceSettings(player)) {
 			valid = qtrue;
@@ -1384,7 +1391,12 @@ void Use_target_onlybhop_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	player->client->ps.stats[STAT_ONLYBHOP] = 0;
-	player->client->ps.stats[STAT_ROCKETJUMP] = 0;
+
+	if (player->client->ps.stats[STAT_ROCKETJUMP]) {
+		player->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
+		player->client->ps.ammo[AMMO_ROCKETS] = 0;
+		player->client->ps.stats[STAT_ROCKETJUMP] = 0;
+	}
 }
 
 void Use_target_newpush( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO new target_newpush entity

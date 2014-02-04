@@ -4540,10 +4540,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			return;
 	}
 
-	if (attacker && attacker->client && attacker->client->pers.raceMode)
+	if (attacker && attacker->client && attacker->client->pers.raceMode && !attacker->client->ps.stats[STAT_ROCKETJUMP])
 		return;
-	if (targ && targ->client && targ->client->pers.raceMode && mod != MOD_TRIGGER_HURT && mod != MOD_LAVA && mod != MOD_CRUSH)
+	if (attacker && attacker->client && attacker->client->pers.raceMode && attacker->client->ps.stats[STAT_ROCKETJUMP] && targ->client && (targ != attacker))
 		return;
+	//if (targ && targ->client && targ->client->pers.raceMode && mod != MOD_TRIGGER_HURT && mod != MOD_LAVA && mod != MOD_CRUSH)
+		//return;
 
 	if ( targ->client )
 	{//don't take damage when in a walker, or fighter

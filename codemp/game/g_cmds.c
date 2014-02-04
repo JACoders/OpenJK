@@ -622,6 +622,11 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 
 	if (ent->client->ps.stats[STAT_RACEMODE])
 		ent->client->ps.duelTime = 0;
+	if (ent->client->ps.stats[STAT_ROCKETJUMP]) {
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
+		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		ent->client->ps.stats[STAT_ROCKETJUMP] = 0;
+	}
 
 	if (wasReset && print)
 		trap->SendServerCommand( ent-g_entities, "print \"Timers reset!\n\"");
