@@ -2614,7 +2614,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					}
 				}
 			}
-			else if ((g_gametype.integer == GT_FFA) && g_rabbit.integer)//rabbit points
+			else if ((level.gametype == GT_FFA) && g_rabbit.integer)//rabbit points
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
@@ -2695,7 +2695,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	// Add team bonuses
-	if (g_gametype.integer != GT_FFA)//Rabbit, meh
+	if (level.gametype != GT_FFA)//Rabbit, meh
 		Team_FragBonuses(self, inflictor, attacker);
 
 	// if I committed suicide, the flag does not fall, it returns.
@@ -4541,7 +4541,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
 		return;
 
-	if (g_gametype.integer == GT_FFA && !g_friendlyFire.integer && g_rabbit.integer) {
+	if (level.gametype == GT_FFA && !g_friendlyFire.integer && g_rabbit.integer) {
 		if (attacker && attacker->client && !attacker->client->ps.powerups[PW_NEUTRALFLAG] && targ && targ->client && !targ->client->ps.powerups[PW_NEUTRALFLAG])
 			return;
 	}
@@ -5065,7 +5065,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 
 	}//JAPRO - Serverside - Damage numbers - End
-	if (g_gametype.integer == GT_TEAM || g_gametype.integer == GT_CTF) {//JAPRO STATS
+	if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
 		if (attacker->client && targ)
 			//attacker->client->pers.stats.damageGiven += ((take > targ->health) ? targ->health : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
 			attacker->client->pers.stats.damageGiven += ((take > (targ->health + client->ps.stats[STAT_ARMOR])) ? (targ->health + client->ps.stats[STAT_ARMOR]) : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.

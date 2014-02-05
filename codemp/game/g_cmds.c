@@ -989,7 +989,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			team = TEAM_SPECTATOR;
 			specState = SPECTATOR_FREE;
 		}
-	} else if ( g_gametype.integer >= GT_TEAM ) {
+	} else if ( level.gametype >= GT_TEAM ) {
 		// if running a team game, assign player to one of the teams
 		specState = SPECTATOR_NOT;
 		if ( !Q_stricmp(s, "red") || !Q_stricmp(s, "r"))
@@ -1879,7 +1879,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	if ( other->client->pers.connected != CON_CONNECTED ) {
 		return;
 	}
-	if ( mode == SAY_TEAM && ((g_gametype.integer >= GT_TEAM && !OnSameTeam(ent, other)) || (g_gametype.integer < GT_TEAM && (ent->client->sess.sessionTeam != other->client->sess.sessionTeam)))) {
+	if ( mode == SAY_TEAM && ((level.gametype >= GT_TEAM && !OnSameTeam(ent, other)) || (level.gametype < GT_TEAM && (ent->client->sess.sessionTeam != other->client->sess.sessionTeam)))) {
 		return;
 	}
 
@@ -3630,7 +3630,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	if (!g_privateDuel.integer)
 		return;
 
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL || g_gametype.integer >= GT_TEAM)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL || level.gametype >= GT_TEAM)
 	{ //rather pointless in this mode..
 		if (dueltype == 0 || dueltype == 1) 
 			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
@@ -3686,7 +3686,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			return;
 		}
 
-		if (g_gametype.integer >= GT_TEAM && OnSameTeam(ent, challenged))
+		if (level.gametype >= GT_TEAM && OnSameTeam(ent, challenged))
 		{
 			return;
 		}
@@ -4074,7 +4074,7 @@ void Cmd_Saber_f(gentity_t *ent)
 		return;
 	}
 
-	if (g_gametype.integer != GT_FFA) {
+	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand( ent-g_entities, "print \"You are only allowed to use this command during the FFA gametype (saber).\n\"" );
 		return;
 	}
@@ -4310,7 +4310,7 @@ void Cmd_Amlockteam_f(gentity_t *ent)
 			return;
 		}
 
-		if (g_gametype.integer >= GT_TEAM || g_gametype.integer == GT_FFA)
+		if (level.gametype >= GT_TEAM || level.gametype == GT_FFA)
 		{
 			if (trap->Argc() != 2)
 			{
@@ -4428,7 +4428,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
             return; 
         }
 
-		if (g_gametype.integer >= GT_TEAM || g_gametype.integer == GT_FFA)
+		if (level.gametype >= GT_TEAM || level.gametype == GT_FFA)
 		{	
 			qboolean everyone = qfalse;
 			gclient_t *client;
@@ -4459,7 +4459,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 
 			trap->Argv(2, teamname, sizeof(teamname));
 
-			if (!Q_stricmp(teamname, "red") || !Q_stricmp(teamname, "r") && g_gametype.integer >= GT_TEAM)
+			if (!Q_stricmp(teamname, "red") || !Q_stricmp(teamname, "r") && level.gametype >= GT_TEAM)
 			{
 				if (everyone)
 				{
@@ -4479,7 +4479,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 					}
 				}
 			}
-			else if (!Q_stricmp(teamname, "blue") || !Q_stricmp( teamname, "b") && g_gametype.integer >= GT_TEAM)
+			else if (!Q_stricmp(teamname, "blue") || !Q_stricmp( teamname, "b") && level.gametype >= GT_TEAM)
 			{
 				if (everyone)
 				{
@@ -5085,9 +5085,9 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
 		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
 	}
-	if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA) 
+	if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
 		Q_strcat(buf, sizeof(buf), "race ");
-	if (g_raceMode.integer && g_gametype.integer == GT_FFA) 
+	if (g_raceMode.integer && level.gametype == GT_FFA) 
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
 	if (g_allowSaberSwitch.integer) 
 		Q_strcat(buf, sizeof(buf), "saber ");
@@ -5669,7 +5669,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
-	if (g_gametype.integer != GT_FFA) {
+	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
 		return;
 	}
@@ -6085,7 +6085,7 @@ void Cmd_Race_f(gentity_t *ent)
 		return;
 	}
 
-	if (g_gametype.integer != GT_FFA) {
+	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed in this gametype!\n\"");
 		return;
 	}
@@ -6122,9 +6122,9 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), va("     ^5Corpses dissapear after ^2%i ^5seconds\n", g_corpseRemovalTime.integer));
 	if (g_newBotAI.integer)
 		Q_strcat(buf, sizeof(buf), va("     ^5New bot AI for force and saber-only combat\n", g_corpseRemovalTime.integer));
-	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
 		Q_strcat(buf, sizeof(buf), "     ^5Race mode is enabled\n");
-	else if (g_raceMode.integer > 1 && g_gametype.integer == GT_FFA)
+	else if (g_raceMode.integer > 1 && level.gametype == GT_FFA)
 		Q_strcat(buf, sizeof(buf), "     ^5Race mode option is enabled\n");
 	if (g_showHealth.integer)
 		Q_strcat(buf, sizeof(buf), "     ^5Healthbars visible for all players\n");
@@ -6230,7 +6230,7 @@ void Cmd_ServerConfig_f(gentity_t *ent)
 	}
 
 	//CTF changes
-	if (g_gametype.integer == GT_CTF || (g_gametype.integer == GT_FFA && g_rabbit.integer)) {// CTF Settings
+	if (level.gametype == GT_CTF || (level.gametype == GT_FFA && g_rabbit.integer)) {// CTF Settings
 		Q_strncpyz(buf, " ^3CTF Changes:\n", sizeof(buf));
 		if (g_flagDrag.value)
 			Q_strcat(buf, sizeof(buf), va("     ^5Flag Drag: ^2%.3f\n", g_flagDrag.value));
@@ -6321,9 +6321,9 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 	gentity_t	*thrown;
 	gitem_t		*item;
 
-	if (g_gametype.integer == GT_CTF) {
+	if (level.gametype == GT_CTF) {
 	}
-	else if ((g_gametype.integer == GT_FFA) && g_rabbit.integer) {
+	else if ((level.gametype == GT_FFA) && g_rabbit.integer) {
 	}
 	else return;
 	

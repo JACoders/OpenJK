@@ -2722,7 +2722,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if (((g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY) || ((g_gametype.integer == GT_FFA) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (((level.gametype == GT_CTF || level.gametype == GT_CTY) || ((level.gametype == GT_FFA) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
@@ -2946,14 +2946,14 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (g_gametype.integer != GT_CTF &&	g_gametype.integer != GT_CTY &&	ent->item->giType == IT_TEAM) {
+	if (level.gametype != GT_CTF &&	level.gametype != GT_CTY &&	ent->item->giType == IT_TEAM) {
 		if (ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_REDFLAG) {//always remove red/blu flags if not ctf/cty
 			G_FreeEntity( ent );
 			return;
 		}
 	}
 
-	if (g_gametype.integer != GT_FFA || !g_rabbit.integer) {
+	if (level.gametype != GT_FFA || !g_rabbit.integer) {
 		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
 			G_FreeEntity( ent );
 			return;

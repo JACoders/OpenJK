@@ -6320,7 +6320,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!useTheForce && g_gametype.integer >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_FORCE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE))) {
+	if (!useTheForce && level.gametype >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_FORCE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE))) {
 		if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_TEAM_FORCE;
 			useTheForce = qtrue;
@@ -6423,7 +6423,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!useTheForce && g_gametype.integer >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_HEAL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL))) {
+	if (!useTheForce && level.gametype >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_HEAL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL))) {
 		if (g_entities[bs->client].health > 90 && (bs->cur_ps.fd.forcePower > 70)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_TEAM_HEAL;
 			useTheForce = qtrue;

@@ -1170,7 +1170,7 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 	}
 }
 
-qboolean ValidRaceSettings(gentity_t *player)
+qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
 	if (!player->client)
 		return qfalse;
@@ -1178,6 +1178,14 @@ qboolean ValidRaceSettings(gentity_t *player)
 		return qfalse;
 	if (player->client->ps.stats[STAT_ROCKETJUMP] && g_knockback.integer > 1000)
 		return qfalse;
+	if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
+		if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1)
+			return qfalse;
+	}
+	else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
+		if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2)
+			return qfalse;
+	}
 	if (g_speed.integer != 250)
 		return qfalse;
 	if (g_gravity.integer != 800)
@@ -1278,21 +1286,21 @@ void TimerStop(gentity_t *trigger, gentity_t *target, gentity_t *player) {//JAPR
 		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0}, timeStr[32] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
-		int average/*, minutes, seconds, deciseconds*/;
+		int average, restrictions = 0;
 		qboolean valid = qfalse;
 
 		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
 		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
-		/*
-		minutes = (int)time / 60;
-		seconds = (int)time % 60;
-		deciseconds = (int)time*10 % 1;
-		Com_sprintf(timerStr, sizeof(timerStr), "%i:%02i.%i", minutes, seconds, deciseconds);
-		*/
+		if (trigger->spawnflags || (target && target->spawnflags)) {//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
+			if (target && target->spawnflags)
+				restrictions = target->spawnflags;
+			else if (trigger->spawnflags)
+				restrictions = trigger->spawnflags;
+		}
 
-		if (ValidRaceSettings(player)) {
+		if (ValidRaceSettings(restrictions, player)) {
 			valid = qtrue;
 			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
 		}

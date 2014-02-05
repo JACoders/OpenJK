@@ -595,12 +595,12 @@ gentity_t *Team_ResetFlag( int team ) {
 }
 
 void Team_ResetFlags( void ) {
-	if( g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY )
+	if(level.gametype == GT_CTF || level.gametype == GT_CTY)
 	{
 		Team_ResetFlag( TEAM_RED );
 		Team_ResetFlag( TEAM_BLUE );
 	}
-	else if ((g_gametype.integer == GT_FFA) && g_rabbit.integer)
+	else if ((level.gametype == GT_FFA) && g_rabbit.integer)
 		Team_ResetFlag( TEAM_FREE );
 }
 
@@ -1014,7 +1014,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	}
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		if ((g_gametype.integer == GT_FFA) && g_rabbit.integer)
+		if ((level.gametype == GT_FFA) && g_rabbit.integer)
 			return Team_TouchEnemyFlag( ent, other, team );
 		else 
 			return Team_TouchOurFlag( ent, other, team );

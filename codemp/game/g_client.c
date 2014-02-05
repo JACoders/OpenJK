@@ -2820,7 +2820,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
-	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
 		client->pers.raceMode = qtrue;
 	if (client->pers.raceMode) 
 		client->ps.stats[STAT_RACEMODE] = 1;
@@ -3616,17 +3616,17 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			if (client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE])
 			{
-				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (g_gametype.integer == GT_SIEGE))
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (level.gametype == GT_SIEGE))
 					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
 			}
 			else
 			{ //if you don't have saber attack rank then you don't get a saber
-				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (g_gametype.integer == GT_SIEGE))
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (level.gametype == GT_SIEGE))
 					client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
 			}
 		}
 
-		if (g_gametype.integer != GT_SIEGE) {
+		if (level.gametype != GT_SIEGE) {
 			if (client->pers.raceMode) {
 				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
 				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
@@ -4045,7 +4045,7 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	if (g_raceMode.integer == 1 && g_gametype.integer == GT_FFA)
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
 		client->pers.raceMode = qtrue;
 	else if (!g_raceMode.integer && client->pers.raceMode) 
 		client->pers.raceMode = qfalse;

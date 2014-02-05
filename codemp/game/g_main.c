@@ -3508,7 +3508,7 @@ void G_RunFrame( int levelTime ) {
 				WP_SaberPositionUpdate(ent, &ent->client->pers.cmd);
 				WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
 
-				if (g_gametype.integer == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
+				if (level.gametype == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
 					if (ent->client->pers.stats.startTimeFlag) {
 						float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);//Is this before snapvector??
 						ent->client->pers.stats.displacementFlag += xyspeed/sv_fps.value;

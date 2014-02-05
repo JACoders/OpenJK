@@ -1548,7 +1548,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 					else damage = delta*1; 
 				}
 				else {
-					if (g_gametype.integer == GT_SIEGE && delta > 60)
+					if (level.gametype == GT_SIEGE && delta > 60)
 						damage = delta*1; //good enough for now, I guess
 					else {
 						if (g_maxFallDmg.integer && delta * 0.16 >= g_maxFallDmg.integer)
@@ -2710,7 +2710,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-	if (ent && ent->client && g_gametype.integer == GT_FFA && !ent->client->ps.powerups[PW_NEUTRALFLAG] && ent->client->sess.sessionTeam == TEAM_FREE) {//JAPRO - Serverside - God chat :(
+	if (ent && ent->client && level.gametype == GT_FFA && !ent->client->ps.powerups[PW_NEUTRALFLAG] && ent->client->sess.sessionTeam == TEAM_FREE) {//JAPRO - Serverside - God chat :(
 		if ((ent->client->ps.eFlags & EF_TALK) && !ent->client->pers.chatting) {
 			ent->client->pers.chatting = qtrue;
 			ent->client->pers.lastChatTime = level.time;
