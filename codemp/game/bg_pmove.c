@@ -12271,7 +12271,7 @@ void PmoveSingle (pmove_t *pmove) {
 	// snap velocity to integer coordinates to save network bandwidth
 	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
 		trap->SnapVector( pm->ps->velocity );
-	else
+	else if (pm->ps->stats[STAT_RACEMODE])
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
