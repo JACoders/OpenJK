@@ -2235,22 +2235,7 @@ typedef enum tauntTypes_e
 
 void G_SetTauntAnim( gentity_t *ent, int taunt )
 {
-	if (ent->client->pers.cmd.upmove ||
-		ent->client->pers.cmd.forwardmove ||
-		ent->client->pers.cmd.rightmove)
-	{ //hack, don't do while moving
-		return;
-	}
-	if ( taunt != TAUNT_TAUNT )
-	{//normal taunt always allowed
-		if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
-		{//no taunts unless in Duel
-			return;
-		}
-	}
-
-	// fix: rocket lock bug
-	BG_ClearRocketLock(&ent->client->ps);
+	BG_ClearRocketLock(&ent->client->ps);// fix: rocket lock bug
 
 	if ( ent->client->ps.torsoTimer < 1 
 		&& ent->client->ps.forceHandExtend == HANDEXTEND_NONE 
@@ -2340,15 +2325,16 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_BOW;
 			}
-			if ( ent->client->ps.saberHolstered == 1 
-				&& ent->client->saber[1].model 
-				&& ent->client->saber[1].model[0] )
-			{//turn off second saber
-				G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
-			}
-			else if ( ent->client->ps.saberHolstered == 0 )
-			{//turn off first
-				G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOff );
+			if (ent->client->ps.weapon == WP_SABER) //JAPRO - Serverside - Bow saber sound fix
+			{
+				if ( ent->client->ps.saberHolstered == 1 && ent->client->saber[1].model && ent->client->saber[1].model[0] )
+				{//turn off second saber
+					G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
+				}
+				else if ( ent->client->ps.saberHolstered == 0 )
+				{//turn off first
+					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOff );
+				}
 			}
 			ent->client->ps.saberHolstered = 2;
 			break;
@@ -2367,15 +2353,16 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_MEDITATE;
 			}
-			if ( ent->client->ps.saberHolstered == 1 
-				&& ent->client->saber[1].model 
-				&& ent->client->saber[1].model[0] )
-			{//turn off second saber
-				G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
-			}
-			else if ( ent->client->ps.saberHolstered == 0 )
-			{//turn off first
-				G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOff );
+			if (ent->client->ps.weapon == WP_SABER) //JAPRO - Serverside - Saber bow sound fix
+			{
+				if ( ent->client->ps.saberHolstered == 1 && ent->client->saber[1].model && ent->client->saber[1].model[0] )
+				{//turn off second saber
+					G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
+				}
+				else if ( ent->client->ps.saberHolstered == 0 )
+				{//turn off first
+					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOff );
+				}
 			}
 			ent->client->ps.saberHolstered = 2;
 			break;
@@ -2429,61 +2416,64 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			}
 			break;
 		case TAUNT_GLOAT:
-			if ( ent->client->saber[0].gloatAnim != -1 )
+			if ( ent->client->ps.weapon == WP_SABER )//JAPRO - Serverside - Fix Gloat saber sound
 			{
-				anim = ent->client->saber[0].gloatAnim;
-			}
-			else if ( ent->client->saber[1].model 
-					&& ent->client->saber[1].model[0]
-					&& ent->client->saber[1].gloatAnim != -1 )
-			{
-				anim = ent->client->saber[1].gloatAnim;
-			}
-			else
-			{
-				switch ( ent->client->ps.fd.saberAnimLevel )
+				if ( ent->client->saber[0].gloatAnim != -1 )
 				{
-				case SS_FAST:
-				case SS_TAVION:
-					anim = BOTH_VICTORY_FAST;
-					break;
-				case SS_MEDIUM:
-					anim = BOTH_VICTORY_MEDIUM;
-					break;
-				case SS_STRONG:
-				case SS_DESANN:
-					if ( ent->client->ps.saberHolstered )
-					{//turn on first
-						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
-					}
-					ent->client->ps.saberHolstered = 0;
-					anim = BOTH_VICTORY_STRONG;
-					break;
-				case SS_DUAL:
-					if ( ent->client->ps.saberHolstered == 1 
-						&& ent->client->saber[1].model 
-						&& ent->client->saber[1].model[0] )
-					{//turn on second saber
-						G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
-					}
-					else if ( ent->client->ps.saberHolstered == 2 )
-					{//turn on first
-						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
-					}
-					ent->client->ps.saberHolstered = 0;
-					anim = BOTH_VICTORY_DUAL;
-					break;
-				case SS_STAFF:
-					if ( ent->client->ps.saberHolstered )
-					{//turn on first
-						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
-					}
-					ent->client->ps.saberHolstered = 0;
-					anim = BOTH_VICTORY_STAFF;
-					break;
+					anim = ent->client->saber[0].gloatAnim;
 				}
+				else if ( ent->client->saber[1].model 
+						&& ent->client->saber[1].model[0]
+						&& ent->client->saber[1].gloatAnim != -1 )
+				{
+					anim = ent->client->saber[1].gloatAnim;
+				}
+				else
+				{
+					switch ( ent->client->ps.fd.saberAnimLevel )
+					{
+					case SS_FAST:
+					case SS_TAVION:
+						anim = BOTH_VICTORY_FAST;
+						break;
+					case SS_MEDIUM:
+						anim = BOTH_VICTORY_MEDIUM;
+						break;
+					case SS_STRONG:
+					case SS_DESANN:
+						if ( ent->client->ps.saberHolstered )
+						{//turn on first
+							G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+						}
+						ent->client->ps.saberHolstered = 0;
+						anim = BOTH_VICTORY_STRONG;
+						break;
+					case SS_DUAL:
+						if ( ent->client->ps.saberHolstered == 1 
+							&& ent->client->saber[1].model 
+							&& ent->client->saber[1].model[0] )
+						{//turn on second saber
+							G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
+						}
+						else if ( ent->client->ps.saberHolstered == 2 )
+						{//turn on first
+							G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+						}
+						ent->client->ps.saberHolstered = 0;
+						anim = BOTH_VICTORY_DUAL;
+						break;
+					case SS_STAFF:
+						if ( ent->client->ps.saberHolstered )
+						{//turn on first
+							G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+						}
+						ent->client->ps.saberHolstered = 0;
+						anim = BOTH_VICTORY_STAFF;
+						break;
+					}
+				}
+				break;
 			}
-			break;
 		}
 		if ( anim != -1 )
 		{
@@ -3216,21 +3206,6 @@ void ClientThink_real( gentity_t *ent ) {
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 			G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);
 
-			//Winner gets full health.. providing he's still alive
-			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
-			{
-				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-				{
-					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-				}
-
-				if (g_spawnInvulnerability.integer)
-				{
-					ent->client->ps.eFlags |= EF_INVULNERABLE;
-					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
-				}
-			}
-
 			/*
 			trap->SendServerCommand( ent-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
 			trap->SendServerCommand( duelAgainst-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
@@ -3257,6 +3232,20 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
 			}
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - End]
+			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
+			{
+				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
+				{
+					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+				}
+				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO
+
+				if (g_spawnInvulnerability.integer)
+				{
+					ent->client->ps.eFlags |= EF_INVULNERABLE;
+					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
+				}
+			}
 		}
 		else
 		{

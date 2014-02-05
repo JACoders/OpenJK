@@ -209,6 +209,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define PSEUDORANDOM_FIRE	(1<<14)
 #define ROCKET_MORTAR		(1<<15)
 #define ROCKET_REDEEMER		(1<<16)
+#define INFINITE_AMMO		(1<<17)
 
 //JAPRO - Serverside - Unlagged bitvalues
 #define UNLAGGED_PROJ_NUDGE	(1<<0)
@@ -216,7 +217,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define UNLAGGED_PUSHPULL	(1<<2)
 
 //JAPRO - Serverside - Voting bits
-#define VOTE_GAMETYPE			(1<<0)
+#define VOTE_GAMETYPE		(1<<0)
 #define VOTE_MAP			(1<<1)
 #define VOTE_KICK			(1<<3)
 #define VOTE_NEXTMAP		(1<<4)

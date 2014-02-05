@@ -8463,10 +8463,12 @@ if (pm->ps->duelInProgress)
 		PM_StartTorsoAnim( WeaponAttackAnim[pm->ps->weapon] );
 	}
 
-	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
+	if (pm->cmd.buttons & BUTTON_ALT_ATTACK)
 	{
 #ifdef _GAME
-		if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+		if (g_tweakWeapons.integer & INFINITE_AMMO)
+			amount = 0;
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
 			amount = 1;//JAPRO mortar meh
 		else
 #endif
@@ -8474,6 +8476,11 @@ if (pm->ps->duelInProgress)
 	}
 	else
 	{
+#ifdef _GAME
+		if (g_tweakWeapons.integer & INFINITE_AMMO)
+			amount = 0;
+		else
+#endif
 		amount = weaponData[pm->ps->weapon].energyPerShot;
 	}
 
@@ -8541,7 +8548,9 @@ if (pm->ps->duelInProgress)
 			PM_AddEvent( EV_FIRE_WEAPON );
 		}
 #ifdef _GAME
-		if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
+		if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & INFINITE_AMMO)//Sad hack to make instagib more playable
+			addTime = 1500;
+		else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
 			addTime = 50;
 		else
 #endif
@@ -11399,15 +11408,39 @@ void PmoveSingle (pmove_t *pmove) {
 				}
 				pm->ps->forceHandExtend = HANDEXTEND_TAUNT;
 				pm->ps->forceHandExtendTime = pm->cmd.serverTime + 100;
-			}
-			if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
-			{
 				stiffenedUp = qtrue;
-				PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+//[JAPRO - Serverside +clientside - Physics - Unlock bow movement/turning- Start]
+#ifdef CGAME
+				if (cgs.isJAPlus || cgs.isJAPro)
+				{
+				}
+				else
+				{
+					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+				}
+#endif
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
 				pm->cmd.buttons = 0;
+			}
+			else if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
+			{
+#ifdef CGAME
+				if (cgs.isJAPlus || cgs.isJAPro)
+				{
+				}
+				else
+				{
+					stiffenedUp = qtrue;
+					PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+					pm->cmd.rightmove = 0;
+					pm->cmd.upmove = 0;
+					pm->cmd.forwardmove = 0;
+					pm->cmd.buttons = 0;
+				}
+#endif
+//[JAPRO - Serverside +clientside - Physics - Unlock bow movement/turning- End]
 			}
 		}
 	}
