@@ -128,6 +128,10 @@ static void CVU_ForceCombo(void) { //Only needed to predict speed+darkrage runsp
 static void CVU_TweakWeapons(void) {
 	(g_tweakWeapons.integer & PSEUDORANDOM_FIRE) ?
 		(jcinfo.integer |= JAPRO_CINFO_PSEUDORANDOM_FIRE) : (jcinfo.integer &= ~JAPRO_CINFO_PSEUDORANDOM_FIRE);
+	(g_tweakWeapons.integer & STUN_LG) ?
+		(jcinfo.integer |= JAPRO_CINFO_LG) : (jcinfo.integer &= ~JAPRO_CINFO_LG);
+	(g_tweakWeapons.integer & STUN_SHOCKLANCE) ?
+		(jcinfo.integer |= JAPRO_CINFO_SHOCKLANCE) : (jcinfo.integer &= ~JAPRO_CINFO_SHOCKLANCE);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
