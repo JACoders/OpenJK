@@ -483,6 +483,9 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	if (self->client->pers.raceMode)//racemode
 		return;
 
+	if ((g_rabbit.integer > 1) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
+		return;
+
 	if (weapon <= WP_BRYAR_PISTOL)
 	{ //can't have this
 		return;
@@ -601,6 +604,9 @@ void TossClientItems( gentity_t *self ) {
 		if ( !( self->client->ps.stats[STAT_WEAPONS] & ( 1 << weapon ) ) ) {
 			weapon = WP_NONE;
 		}
+	}
+	if (weapon == WP_DISRUPTOR && g_rabbit.integer > 1) {
+		weapon = WP_NONE;
 	}
 
 	self->s.bolt2 = weapon;

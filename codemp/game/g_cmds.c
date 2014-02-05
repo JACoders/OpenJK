@@ -5811,14 +5811,15 @@ void Cmd_Amtele_f(gentity_t *ent)
 	int clientid1 = -1, clientid2 = -1;
 	vec3_t	angles = {0, 0, 0}, origin;
 
+	if (ent->client->pers.raceMode) {//Always use racetele if they are in racemode
+		Cmd_RaceTele_f(ent);
+		return;
+	}
+
 	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if ((g_raceMode.integer) && ent->client->pers.raceMode) {
-				Cmd_RaceTele_f(ent);
-				return;
-			}
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
 		}
@@ -5827,22 +5828,14 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if ((g_raceMode.integer) && ent->client->pers.raceMode) {
-				Cmd_RaceTele_f(ent);
-				return;
-			}
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
 		}
 	}
-	if (g_raceMode.integer && ent->client->pers.raceMode) { //Always fallback to cmd_racetele_f if they are in racemode
-		Cmd_RaceTele_f(ent);
-		return;
-	}
-	else //Not logged in
+	else  //Not logged in
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
-		return;
+		return;	
 	}
 
 	if (trap->Argc() > 6)

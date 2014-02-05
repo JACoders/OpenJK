@@ -192,7 +192,7 @@ XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 //JAPRO GUNS
 XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fastWeaponSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_startingWeapons,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_startingWeapons,			"8",			NULL,				CVAR_ARCHIVE,									qtrue )//Start with saber only default, fall back to melee if no saberattack
 XCVAR_DEF( g_weaponDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileVelocityScale,	"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_selfDamageScale,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )

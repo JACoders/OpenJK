@@ -3616,11 +3616,13 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			if (client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE])
 			{
-				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (g_gametype.integer == GT_SIEGE))
+					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
 			}
 			else
 			{ //if you don't have saber attack rank then you don't get a saber
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+				if ((g_startingWeapons.integer & (1 << WP_SABER)) || (g_gametype.integer == GT_SIEGE))
+					client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
 			}
 		}
 

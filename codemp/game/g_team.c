@@ -959,8 +959,12 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	//PrintMsg (NULL, "%s" S_COLOR_WHITE " got the %s flag!\n",
 	//	other->client->pers.netname, TeamName(team));
-	if (team == TEAM_FREE)
+	if (team == TEAM_FREE) {
 		trap->SendServerCommand( -1, va("print \"^7%s^7 is now the rabbit!\n\"", other->client->pers.netname ));
+		if (g_rabbit.integer > 1)
+			other->client->ps.stats[STAT_WEAPONS] = (1 << WP_DISRUPTOR);
+			other->client->ps.ammo[AMMO_POWERCELL] = 300;
+	}
 	else 
 		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_GOT_FLAG);
 
@@ -981,7 +985,7 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	Team_SetFlagStatus( team, FLAG_TAKEN );
 
-	if (!g_allowFlagThrow.integer)
+	if (!g_allowFlagThrow.integer && (g_rabbit.integer < 2))
 		AddScore(other, ent->r.currentOrigin, CTF_FLAG_BONUS);
 
 	cl->pers.teamState.flagsince = level.time;
