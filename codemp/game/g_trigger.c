@@ -1208,11 +1208,12 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
+	if (sv_fps.integer != 40)//Dosnt really make a difference.. but eh....
+		return qfalse;
 
 	//type of roll?
 	//dmflags fall dmg?, max falldmg?
 	//g_forceClientUpdateRate?
-	//sv_fps?
 
 	return qtrue;
 }
