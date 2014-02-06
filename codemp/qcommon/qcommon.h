@@ -555,6 +555,9 @@ void	FS_FreeFileList( char **fileList );
 void FS_Remove( const char *osPath );
 void FS_HomeRemove( const char *homePath );
 
+void FS_Rmdir( const char *osPath, qboolean recursive );
+void FS_HomeRmdir( const char *homePath, qboolean recursive );
+
 qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();

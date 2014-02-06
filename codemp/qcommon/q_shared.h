@@ -174,12 +174,6 @@ typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
 
 #endif
 
-// for rmdir
-#if defined (_MSC_VER)
-	#include <direct.h>
-#else
-	#include <unistd.h>
-#endif
 // 32 bit field aliasing
 typedef union byteAlias_u {
 	float f;
