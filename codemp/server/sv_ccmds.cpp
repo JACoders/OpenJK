@@ -939,24 +939,14 @@ void SV_StopRecord_f( void ) {
 SV_DemoFilename
 ==================
 */
-void SV_DemoFilename( int number, char *fileName, int fileNameSize ) {
-	int		a,b,c,d;
+void SV_DemoFilename( char *buf, int bufSize ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
 
-	if ( number < 0 || number > 9999 ) {
-		Com_sprintf( fileName, fileNameSize, "demo9999" );
-		return;
-	}
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	a = number / 1000;
-	number -= a*1000;
-	b = number / 100;
-	number -= b*100;
-	c = number / 10;
-	number -= c*10;
-	d = number;
-
-	Com_sprintf( fileName, fileNameSize, "demo%i%i%i%i"
-		, a, b, c, d );
+	Com_sprintf( buf, bufSize, "demo%s", timeStr );
 }
 
 // defined in sv_client.cpp
@@ -1029,9 +1019,9 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	char *c;
 	time( &rawtime );
 	timeinfo = localtime( &rawtime );
-	strftime( date, sizeof( date ), "%Y-%m-%d %H%M%S", timeinfo );
+	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
-	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d %H%M%S", timeinfo );
+	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
@@ -1048,14 +1038,18 @@ void SV_AutoRecordDemo( client_t *cl ) {
 }
 
 static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
-	int timeLen = strlen( "0000-00-00 000000" );
+	int timeLen = strlen( "0000-00-00_00-00-00" );
 	if ( strlen( folder ) < timeLen ) {
 		return 0;
 	}
 	struct tm timeinfo;
 	timeinfo.tm_isdst = 0;
-	sscanf( folder + ( strlen(folder) - timeLen ), "%4d-%2d-%2d %2d%2d%2d",
+	int numMatched = sscanf( folder + ( strlen(folder) - timeLen ), "%4d-%2d-%2d_%2d-%2d-%2d",
 		&timeinfo.tm_year, &timeinfo.tm_mon, &timeinfo.tm_mday, &timeinfo.tm_hour, &timeinfo.tm_min, &timeinfo.tm_sec);
+	if ( numMatched < 6 ) {
+		// parsing failed
+		return 0;
+	}
 	timeinfo.tm_year -= 1900;
 	return mktime( &timeinfo );
 }
@@ -1064,37 +1058,6 @@ static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2
 	char *folder1 = (char *) arg1;
 	char *folder2 = (char *) arg2;
 	return SV_ExtractTimeFromDemoFolder( (char *) arg2 ) - SV_ExtractTimeFromDemoFolder( (char *) arg1 );
-}
-
-static void SV_RemoveRecursive( char *folder ) {
-	char fileList[MAX_QPATH * 500];
-	char fullFileName[MAX_QPATH * 2];
-	char *fileName;
-	int numFiles = FS_GetFileList( folder, "", fileList, sizeof( fileList ) );
-	int i;
-
-	fileName = fileList;
-	for ( i = 0; i < numFiles; i++ )
-	{
-		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) ) {
-			Com_sprintf( fullFileName, sizeof( fullFileName ), "%s/%s", folder, fileName );
-			FS_HomeRemove( fullFileName );
-		}
-		fileName += strlen( fileName ) + 1;
-	}
-
-	numFiles = FS_GetFileList( folder, "/", fileList, sizeof( fileList ) );
-	fileName = fileList;
-	for ( i = 0; i < numFiles; i++ )
-	{
-		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) ) {
-			Com_sprintf( fullFileName, sizeof( fullFileName ), "%s/%s", folder, fileName );
-			SV_RemoveRecursive( fullFileName );
-		}
-		fileName += strlen( fileName ) + 1;
-	}
-
-	FS_HomeRemove( folder );
 }
 
 // starts demo recording on all active clients
@@ -1126,7 +1089,7 @@ void SV_BeginAutoRecordDemos() {
 			}
 			qsort( autorecordDirList, autorecordDirListCount, sizeof( autorecordDirList[0] ), SV_DemoFolderTimeComparator );
 			for ( i = sv_autoDemoMaxMaps->integer; i < autorecordDirListCount; i++ ) {
-				SV_RemoveRecursive( va( "demos/autorecord/%s", autorecordDirList[i] ) );
+				FS_HomeRmdir( va( "demos/autorecord/%s", autorecordDirList[i] ), qtrue );
 			}
 		}
 	}
@@ -1199,18 +1162,15 @@ static void SV_Record_f( void ) {
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
 		Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 	} else {
-		int		number;
+		// timestamp the file
+		SV_DemoFilename( demoName, sizeof( demoName ) );
 
-		// scan for a free demo name
-		for ( number = 0 ; number <= 9999 ; number++ ) {
-			SV_DemoFilename( number, demoName, sizeof( demoName ) );
-			Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 
-			len = FS_ReadFile( name, NULL );
-			if ( len <= 0 ) {
-				break;	// file doesn't exist
-			}
-		}
+		if ( FS_FileExists( name ) ) {
+			Com_Printf( "Record: Couldn't create a file\n");
+			return;
+ 		}
 	}
 
 	SV_RecordDemo( cl, demoName );
