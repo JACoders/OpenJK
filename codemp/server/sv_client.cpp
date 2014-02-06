@@ -1274,7 +1274,13 @@ SV_UpdateUserinfo_f
 ==================
 */
 static void SV_UpdateUserinfo_f( client_t *cl ) {
-	Q_strncpyz( cl->userinfo, Cmd_Argv(1), sizeof(cl->userinfo) );
+	char *arg = Cmd_Argv(1);
+
+	// Stop random empty /userinfo calls without hurting anything
+	if( !arg || !*arg )
+		return;
+
+	Q_strncpyz( cl->userinfo, arg, sizeof(cl->userinfo) );
 
 #ifdef FINAL_BUILD
 	if (cl->lastUserInfoChange > svs.time)
