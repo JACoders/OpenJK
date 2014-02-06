@@ -290,13 +290,6 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-	// Game text spoken by a character
-	if ( !strcmp( cmd, "gt" ) ) 
-	{
-		CG_GameText(SCREEN_HEIGHT * 0.25  );
-		return;
-	}
-
 
 	// Text to appear in center of screen with an LCARS frame around it. 
 	if ( !strcmp( cmd, "lt" ) ) 
