@@ -548,12 +548,11 @@ int CBlockStream::Create( char *filename )
 	memset(newName, 0, sizeof(newName));
 
 	//Strip the extension and add the BLOCK_EXT extension
-	strcpy((char *) m_fileName, filename);
-	StripExtension( (char *) m_fileName, (char *) &newName );
-	strcat((char *) newName, IBI_EXT);
+	StripExtension( filename, newName );
+	Q_strcat(newName, sizeof(newName), IBI_EXT);
 
 	//Recover that as the active filename
-	strcpy(m_fileName, newName);
+	Q_strncpyz(m_fileName, newName, sizeof(m_fileName));
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{

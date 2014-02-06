@@ -484,11 +484,6 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	gi.GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
-	// check for malformed or illegal info strings
-	/*if ( !Info_Validate(userinfo) ) {
-		strcpy (userinfo, "\\name\\badinfo");
-	}*/
-
 	// set name
 	Q_strncpyz ( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey (userinfo, "name");
