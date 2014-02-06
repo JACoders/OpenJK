@@ -188,7 +188,7 @@ void CG_TestModelAnimate_f(void)
 	char	boneName[100];
 	CGhoul2Info_v	&ghoul2 = *((CGhoul2Info_v *)cg.testModelEntity.ghoul2);
 
-	strcpy(boneName, CG_Argv(1));
+	Q_strncpyz(boneName, CG_Argv(1), sizeof(boneName));
 	gi.G2API_SetBoneAnim(&ghoul2[cg.testModel], boneName, atoi(CG_Argv(2)), atoi(CG_Argv(3)), BONE_ANIM_OVERRIDE_LOOP, atof(CG_Argv(4)), cg.time, -1, -1);
 
 }

@@ -657,7 +657,7 @@ void ParseAnimationSndBlock(const char *asb_filename, animsounds_t *animSounds, 
 		{
 			break;
 		}		
-		strcpy(soundString, token);
+		Q_strncpyz(soundString, token, sizeof(soundString));
 
 		//get lowest value
 		token = COM_Parse( text_p );
