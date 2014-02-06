@@ -705,9 +705,8 @@ void NPC_PrecacheWeapons( team_t playerTeam, int spawnflags, char *NPCtype )
 			CG_RegisterItemVisuals( (item-bg_itemlist) );
 			//precache the in-hand/in-world ghoul2 weapon model
 
-			char weaponModel[64];
-			
-			strcpy (weaponModel, weaponData[curWeap].weaponMdl);	
+			char weaponModel[MAX_QPATH];
+			Q_strncpyz(weaponModel, weaponData[curWeap].weaponMdl, sizeof(weaponModel));
 			if (char *spot = strstr(weaponModel, ".md3") ) {
 				*spot = 0;
 				spot = strstr(weaponModel, "_w");//i'm using the in view weapon array instead of scanning the item list, so put the _w back on
@@ -745,7 +744,7 @@ void NPC_Precache ( gentity_t *spawner )
 	{//sorry, can't precache a random just yet
 		return;
 	}
-	strcpy(customSkin,"default");
+	Q_strncpyz(customSkin, "default", sizeof(customSkin));
 
 	p = NPCParms;
 	COM_BeginParseSession();
@@ -1101,7 +1100,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	surfOff[1024];
 	char	surfOn[1024];
 
-	strcpy(customSkin,"default");
+	Q_strncpyz(customSkin, "default", sizeof(customSkin));
 	if ( !NPCName || !NPCName[0]) 
 	{
 		NPCName = "Player";
