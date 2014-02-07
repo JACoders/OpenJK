@@ -442,6 +442,10 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		drop->state = CS_ZOMBIE;		// become free in a few seconds
 	}
 
+	if ( drop->demo.demorecording ) {
+		SV_StopRecordDemo( drop );
+	}
+
 	// if this was the last client on the server, send a heartbeat
 	// to the master so it is known the server is empty
 	// send a heartbeat now so the master will get up to date info
@@ -474,7 +478,7 @@ void SV_WriteRMGAutomapSymbols ( msg_t* msg )
 	}
 }
 
-void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg, qboolean updateServerCommands ) {
+void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg ) {
 	int			start;
 	entityState_t	*base, nullstate;
 
@@ -482,13 +486,11 @@ void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg, qboolean upd
 	// let the client know which reliable clientCommands we have received
 	MSG_WriteLong( msg, client->lastClientCommand );
 
-	if ( updateServerCommands ) {
-		// send any server commands waiting to be sent first.
-		// we have to do this cause we send the client->reliableSequence
-		// with a gamestate and it sets the clc.serverCommandSequence at
-		// the client side
-		SV_UpdateServerCommandsToClient( client, msg );
-	}
+	// send any server commands waiting to be sent first.
+	// we have to do this cause we send the client->reliableSequence
+	// with a gamestate and it sets the clc.serverCommandSequence at
+	// the client side
+	SV_UpdateServerCommandsToClient( client, msg );
 
 	// send the gamestate
 	MSG_WriteByte( msg, svc_gamestate );
@@ -610,7 +612,7 @@ void SV_SendClientGameState( client_t *client ) {
 	// gamestate message was not just sent, forcing a retransmit
 	client->gamestateMessageNum = client->netchan.outgoingSequence;
 
-	SV_CreateClientGameStateMessage( client, &msg, qtrue );
+	SV_CreateClientGameStateMessage( client, &msg );
 
 	// deliver this to the client
 	SV_SendMessageToClient( &msg, client );
@@ -676,6 +678,8 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 
 	// call the game begin function
 	GVM_ClientBegin( client - svs.clients, qfalse );
+
+	SV_BeginAutoRecordDemos();
 }
 
 /*
