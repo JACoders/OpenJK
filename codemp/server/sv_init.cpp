@@ -971,7 +971,7 @@ void SV_Init (void) {
 
 //	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
 
-	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE );
+	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
 	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE );
 	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE );
 
