@@ -809,6 +809,9 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		CL_WritePacket();
 	}
 
+	// Remove pure paks
+	FS_PureServerSetLoadedPaks("", "");
+
 	CL_ClearState ();
 
 	// wipe the client connection
