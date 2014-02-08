@@ -2426,6 +2426,7 @@ mapname_t defaultMaps[] = {
 	{"academy2"},
 	{"academy3"},
 	{"academy4"},
+	{"academy5"},
 	{"academy6"},
 	{"hoth2"},
 	{"hoth3"},
@@ -5295,10 +5296,13 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 
 			if (g_raceMode.integer) {
 				Q_strncpyz(strRace, (cl->pers.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
-				if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+
+				if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+					Q_strncpyz(strStyle, "^7^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
 					Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
-					Q_strncpyz(strStyle, "^7vq3^7", sizeof(strStyle));
+					Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
 					Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
 				else
@@ -5660,7 +5664,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, vq3, qw, or cpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, or cpm>.\n\"" );
 		return;
 	}
 
@@ -5697,7 +5701,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
 		ent->client->pers.movementStyle = 0;
 	}
-	else if (!Q_stricmp("vq3", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle)) {
+	else if (!Q_stricmp("jka", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle)) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
 		ent->client->pers.movementStyle = 1;
 	}
@@ -5760,17 +5764,9 @@ void Cmd_RaceTele_f(gentity_t *ent)
 	}		
 	if (trap->Argc() == 1) {//Amtele to telemark
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
-			vec3_t	angles = {0, 0, 0}, down, mins, maxs;
-			trace_t tr;
-			VectorSet(mins, -15, -15, DEFAULT_MINS_2);
-			VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
-
-			VectorCopy(ent->client->pers.telemarkOrigin, down);//Drop them to floor so they cant abuse?
-			down[2] -= 4096;
-			JP_Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
-
+			vec3_t	angles = {0, 0, 0};
 			angles[YAW] = ent->client->pers.telemarkAngle;
-			AmTeleportPlayer( ent, tr.endpos, angles );
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue );
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -5780,8 +5776,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 	{ 
 		char client[MAX_NETNAME];
 		int clientid = -1;
-		vec3_t	angles = {0, 0, 0}, down, mins, maxs;
-		trace_t tr;
+		vec3_t	angles = {0, 0, 0}, origin;
 
 		trap->Argv(1, client, sizeof(client));
 		clientid = JP_ClientNumberFromString(ent, client);
@@ -5789,15 +5784,11 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		if (clientid == -1 || clientid == -2)  
 			return; 
 
-		VectorSet(mins, -15, -15, DEFAULT_MINS_2);
-		VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
+		origin[0] = g_entities[clientid].client->ps.origin[0];
+		origin[1] = g_entities[clientid].client->ps.origin[1];
+		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
 
-		VectorCopy(g_entities[clientid].client->ps.origin, down);//Drop them to floor so they cant abuse?
-		down[2] -= 4096;
-		JP_Trace(&tr, g_entities[clientid].client->ps.origin, mins, maxs, down, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
-
-		angles[YAW] = ent->client->pers.telemarkAngle;
-		AmTeleportPlayer( ent, tr.endpos, angles );
+		AmTeleportPlayer( ent, origin, angles, qtrue );
 	}
 }
 
@@ -5810,17 +5801,16 @@ void Cmd_Amtele_f(gentity_t *ent)
 	char x[32], y[32], z[32], yaw[32];
 	int clientid1 = -1, clientid2 = -1;
 	vec3_t	angles = {0, 0, 0}, origin;
-
-	if (ent->client->pers.raceMode) {//Always use racetele if they are in racemode
-		Cmd_RaceTele_f(ent);
-		return;
-	}
+	qboolean droptofloor = qfalse;
 
 	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
+			if (ent->client->pers.raceMode)
+				Cmd_RaceTele_f(ent);
+			else
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
 		}
 	}
@@ -5828,15 +5818,24 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
+			if (ent->client->pers.raceMode)
+				Cmd_RaceTele_f(ent);
+			else
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
 		}
 	}
 	else  //Not logged in
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
+		if (ent->client->pers.raceMode)
+			Cmd_RaceTele_f(ent);
+		else
+			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
 		return;	
 	}
+
+	if (ent->client->pers.raceMode)
+		droptofloor = qtrue;
 
 	if (trap->Argc() > 6)
 	{
@@ -5848,23 +5847,8 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{ 
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
-			if (ent->client->pers.raceMode) {
-				trace_t tr;
-				vec3_t down, mins, maxs;
-				VectorSet(mins, -15, -15, DEFAULT_MINS_2);
-				VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
-
-				VectorCopy(ent->client->pers.telemarkOrigin, down);//Drop them to floor so they cant abuse?
-				down[2] -= 4096;
-				JP_Trace(&tr, ent->client->pers.telemarkOrigin, mins, maxs, down, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
-
-				angles[YAW] = ent->client->pers.telemarkAngle;
-				AmTeleportPlayer( ent, tr.endpos, angles );
-			}
-			else {
-				angles[YAW] = ent->client->pers.telemarkAngle;
-				AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles );
-			}
+			angles[YAW] = ent->client->pers.telemarkAngle;
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor );
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -5882,7 +5866,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[0] = g_entities[clientid1].client->ps.origin[0];
 		origin[1] = g_entities[clientid1].client->ps.origin[1];
 		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
-		AmTeleportPlayer( ent, origin, angles );
+		AmTeleportPlayer( ent, origin, angles, droptofloor );
 		return;
 	}
 
@@ -5911,7 +5895,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid2].client->ps.origin[1];
 		origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
 
-		AmTeleportPlayer( teleporter, origin, angles );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor );
 		return;
 	}
 
@@ -5931,7 +5915,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			angles[YAW] = atoi(yaw);
 		}*/
 			
-		AmTeleportPlayer( ent, origin, angles );
+		AmTeleportPlayer( ent, origin, angles, droptofloor );
 		return;
 	}
 
@@ -5953,7 +5937,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			trap->Argv(4, yaw, sizeof(yaw));
 			angles[YAW] = atoi(yaw);
 			
-			AmTeleportPlayer( ent, origin, angles );
+			AmTeleportPlayer( ent, origin, angles, droptofloor );
 		}
 
 		else//Amtele other player to origin
@@ -5977,7 +5961,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			origin[1] = atoi(y);
 			origin[2] = atoi(z);
 
-			AmTeleportPlayer( teleporter, origin, angles );
+			AmTeleportPlayer( teleporter, origin, angles, droptofloor );
 		}
 		return;
 
@@ -6013,7 +5997,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		trap->Argv(5, yaw, sizeof(yaw));
 		angles[YAW] = atoi(yaw);
 			
-		AmTeleportPlayer( teleporter, origin, angles );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor );
 		return;
 	}
 

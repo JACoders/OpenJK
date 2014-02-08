@@ -486,6 +486,10 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	if ((g_rabbit.integer > 1) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
 		return;
 
+	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
+		return;
+
+
 	if (weapon <= WP_BRYAR_PISTOL)
 	{ //can't have this
 		return;
@@ -608,6 +612,9 @@ void TossClientItems( gentity_t *self ) {
 	if (weapon == WP_DISRUPTOR && g_rabbit.integer > 1) {
 		weapon = WP_NONE;
 	}
+
+	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
+		weapon = WP_NONE;
 
 	self->s.bolt2 = weapon;
 

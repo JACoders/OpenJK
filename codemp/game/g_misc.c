@@ -240,7 +240,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern?
 //JAPRO - Serverside - New teleport Function - Start
-void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
+void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor ) {
 	gentity_t	*tent;
 	qboolean wasNoClip = qfalse;
 
@@ -249,6 +249,19 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 	player->client->noclip = qtrue;
 	ResetPlayerTimers(player, qtrue);
+
+	if (droptofloor) {
+		trace_t tr;
+		vec3_t down, mins, maxs;
+		VectorSet(mins, -15, -15, DEFAULT_MINS_2);
+		VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
+
+		VectorCopy(origin, down);//Drop them to floor so they cant abuse?
+		down[2] -= 4096;
+		JP_Trace(&tr, origin, mins, maxs, down, player->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
+
+		origin[2] = tr.endpos[2];
+	}
 
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event

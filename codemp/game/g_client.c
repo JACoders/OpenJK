@@ -3709,13 +3709,18 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			client->ps.weapon = WP_SABER;
 		}
-		else if (client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL))
-		{
-			client->ps.weapon = WP_BRYAR_PISTOL;
-		}
 		else
 		{
-			client->ps.weapon = WP_MELEE;
+			int weap;
+
+			for (weap = 16; weap >= 1; weap--) {//From 16 downto 1
+				if (client->ps.stats[STAT_WEAPONS] & (1 << weap)) {//We have it
+					client->ps.weapon = weap;//Set their weapon to the highest one they have, if saber not enabled.
+					break;
+				}
+			}
+			if (!client->ps.weapon)//Fall back to melee if they dont have anything I guess, so we dont fallback to pistol later
+				client->ps.weapon = WP_MELEE;
 		}
 	}
 
