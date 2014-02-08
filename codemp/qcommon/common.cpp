@@ -1180,6 +1180,19 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitJournaling();
 
+		// Add some commands here already so users can use them from config files
+		if ( com_developer && com_developer->integer ) {
+			Cmd_AddCommand ("error", Com_Error_f);
+			Cmd_AddCommand ("crash", Com_Crash_f );
+			Cmd_AddCommand ("freeze", Com_Freeze_f);
+		}
+		Cmd_AddCommand ("quit", Com_Quit_f );
+#ifndef FINAL_BUILD
+		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
+#endif
+		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
+		Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
+
 		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
@@ -1268,15 +1281,6 @@ void Com_Init( char *commandLine ) {
 				Cvar_Set( "viewlog", "1" );
 			}
 		}
-
-		if ( com_developer && com_developer->integer ) {
-			Cmd_AddCommand ("error", Com_Error_f);
-			Cmd_AddCommand ("crash", Com_Crash_f );
-			Cmd_AddCommand ("freeze", Com_Freeze_f);
-		}
-		Cmd_AddCommand ("quit", Com_Quit_f);
-		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
-		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
