@@ -1147,6 +1147,7 @@ void Com_Init( char *commandLine ) {
 		// do this before anything else decides to push events
 		Com_InitPushEvent();
 
+		Com_InitZoneMemory();
 		Cvar_Init ();
 
 		navigator.Init();
@@ -1158,12 +1159,11 @@ void Com_Init( char *commandLine ) {
 	//	Swap_Init ();
 		Cbuf_Init ();
 
-		Com_InitZoneMemory();
-
-		Cmd_Init ();
-
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
+
+		Com_InitZoneMemoryVars();
+		Cmd_Init ();
 
 		// Seed the random number generator
 		Rand_Init(Sys_Milliseconds(true));
