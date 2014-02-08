@@ -6,7 +6,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 2
+#define	REF_API_VERSION 3
 
 //
 // these are the functions exported by the refresh module
@@ -16,7 +16,7 @@ typedef struct refexport_s {
 	// called before the library is unloaded
 	// if the system is just reconfiguring, pass destroyWindow = qfalse,
 	// which will keep the screen from flashing to the desktop.
-	void				(*Shutdown)								( qboolean destroyWindow );
+	void				(*Shutdown)								( qboolean destroyWindow, qboolean restarting );
 
 	// All data that will be used in a level should be
 	// registered before rendering any frames to prevent disk hits,
@@ -326,6 +326,10 @@ typedef struct refimport_s {
 	// even the server will have this, which is a singleton
 	// so before assigning to this in R_Init, check if it's NULL!
 	CMiniHeap *		(*GetG2VertSpaceServer)				( void );
+
+	// Persistent data store
+	bool			(*PD_Store)							( const char *name, const void *data, size_t size );
+	const void *	(*PD_Load)							( const char *name, size_t *size );
 } refimport_t;
 
 // this is the only function actually exported at the linker level
