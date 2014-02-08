@@ -1700,3 +1700,125 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 }
+
+/*
+============
+CL_ShutdownInput
+============
+*/
+void CL_ShutdownInput(void)
+{
+	Cmd_RemoveCommand ("centerview");
+
+	Cmd_RemoveCommand ("+moveup");
+	Cmd_RemoveCommand ("-moveup");
+	Cmd_RemoveCommand ("+movedown");
+	Cmd_RemoveCommand ("-movedown");
+	Cmd_RemoveCommand ("+left");
+	Cmd_RemoveCommand ("-left");
+	Cmd_RemoveCommand ("+right");
+	Cmd_RemoveCommand ("-right");
+	Cmd_RemoveCommand ("+forward");
+	Cmd_RemoveCommand ("-forward");
+	Cmd_RemoveCommand ("+back");
+	Cmd_RemoveCommand ("-back");
+	Cmd_RemoveCommand ("+lookup");
+	Cmd_RemoveCommand ("-lookup");
+	Cmd_RemoveCommand ("+lookdown");
+	Cmd_RemoveCommand ("-lookdown");
+	Cmd_RemoveCommand ("+strafe");
+	Cmd_RemoveCommand ("-strafe");
+	Cmd_RemoveCommand ("+moveleft");
+	Cmd_RemoveCommand ("-moveleft");
+	Cmd_RemoveCommand ("+moveright");
+	Cmd_RemoveCommand ("-moveright");
+	Cmd_RemoveCommand ("+speed");
+	Cmd_RemoveCommand ("-speed");
+	Cmd_RemoveCommand ("+attack");
+	Cmd_RemoveCommand ("-attack");
+	Cmd_RemoveCommand ("+use");
+	Cmd_RemoveCommand ("-use");
+	Cmd_RemoveCommand ("+force_grip");//force grip
+	Cmd_RemoveCommand ("-force_grip");
+	Cmd_RemoveCommand ("+altattack");//altattack
+	Cmd_RemoveCommand ("-altattack");
+	Cmd_RemoveCommand ("+useforce");//active force power
+	Cmd_RemoveCommand ("-useforce");
+	Cmd_RemoveCommand ("+force_lightning");//active force power
+	Cmd_RemoveCommand ("-force_lightning");
+	Cmd_RemoveCommand ("+force_drain");//active force power
+	Cmd_RemoveCommand ("-force_drain");
+	//buttons
+	Cmd_RemoveCommand ("+button0");//attack
+	Cmd_RemoveCommand ("-button0");
+	Cmd_RemoveCommand ("+button1");//force jump
+	Cmd_RemoveCommand ("-button1");
+	Cmd_RemoveCommand ("+button2");//use holdable (not used - change to use jedi power?)
+	Cmd_RemoveCommand ("-button2");
+	Cmd_RemoveCommand ("+button3");//gesture
+	Cmd_RemoveCommand ("-button3");
+	Cmd_RemoveCommand ("+button4");//walking
+	Cmd_RemoveCommand ("-button4");
+	Cmd_RemoveCommand ("+button5");//use object
+	Cmd_RemoveCommand ("-button5");
+	Cmd_RemoveCommand ("+button6");//force grip
+	Cmd_RemoveCommand ("-button6");
+	Cmd_RemoveCommand ("+button7");//altattack
+	Cmd_RemoveCommand ("-button7");
+	Cmd_RemoveCommand ("+button8");
+	Cmd_RemoveCommand ("-button8");
+	Cmd_RemoveCommand ("+button9");//active force power
+	Cmd_RemoveCommand ("-button9");
+	Cmd_RemoveCommand ("+button10");//force lightning
+	Cmd_RemoveCommand ("-button10");
+	Cmd_RemoveCommand ("+button11");//force drain
+	Cmd_RemoveCommand ("-button11");
+	Cmd_RemoveCommand ("+button12");
+	Cmd_RemoveCommand ("-button12");
+	Cmd_RemoveCommand ("+button13");
+	Cmd_RemoveCommand ("-button13");
+	Cmd_RemoveCommand ("+button14");
+	Cmd_RemoveCommand ("-button14");
+	Cmd_RemoveCommand ("+button15");
+	Cmd_RemoveCommand ("-button15");
+	Cmd_RemoveCommand ("+mlook");
+	Cmd_RemoveCommand ("-mlook");
+
+	Cmd_RemoveCommand ("sv_saberswitch");
+	Cmd_RemoveCommand ("engage_duel");
+	Cmd_RemoveCommand ("force_heal");
+	Cmd_RemoveCommand ("force_speed");
+	Cmd_RemoveCommand ("force_pull");
+	Cmd_RemoveCommand ("force_distract");
+	Cmd_RemoveCommand ("force_rage");
+	Cmd_RemoveCommand ("force_protect");
+	Cmd_RemoveCommand ("force_absorb");
+	Cmd_RemoveCommand ("force_healother");
+	Cmd_RemoveCommand ("force_forcepowerother");
+	Cmd_RemoveCommand ("force_seeing");
+	Cmd_RemoveCommand ("use_seeker");
+	Cmd_RemoveCommand ("use_field");
+	Cmd_RemoveCommand ("use_bacta");
+	Cmd_RemoveCommand ("use_electrobinoculars");
+	Cmd_RemoveCommand ("zoom");
+	Cmd_RemoveCommand ("use_sentry");
+	Cmd_RemoveCommand ("use_jetpack");
+	Cmd_RemoveCommand ("use_bactabig");
+	Cmd_RemoveCommand ("use_healthdisp");
+	Cmd_RemoveCommand ("use_ammodisp");
+	Cmd_RemoveCommand ("use_eweb");
+	Cmd_RemoveCommand ("use_cloak");
+	Cmd_RemoveCommand ("taunt");
+	Cmd_RemoveCommand ("bow");
+	Cmd_RemoveCommand ("meditate");
+	Cmd_RemoveCommand ("flourish");
+	Cmd_RemoveCommand ("gloat");
+	Cmd_RemoveCommand ("saberAttackCycle");
+	Cmd_RemoveCommand ("force_throw");
+	Cmd_RemoveCommand ("useGivenForce");
+
+
+	Cmd_RemoveCommand("automap_button");
+	Cmd_RemoveCommand("automap_toggle");
+	Cmd_RemoveCommand("voicechat");
+}
