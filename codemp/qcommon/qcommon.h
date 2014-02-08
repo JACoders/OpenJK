@@ -1128,3 +1128,7 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
+
+// Persistent data store API
+bool PD_Store ( const char *name, const void *data, size_t size );
+const void *PD_Load ( const char *name, size_t *size );

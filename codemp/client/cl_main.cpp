@@ -128,6 +128,7 @@ void CL_CheckForResend( void );
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
 void CL_ServerStatusResponse( netadr_t from, msg_t *msg );
+static void CL_ShutdownRef( qboolean restarting );
 
 /*
 =======================================================================
@@ -638,9 +639,9 @@ void CL_ShutdownAll( qboolean shutdownRef ) {
 
 	// shutdown the renderer
 	if(shutdownRef)
-		CL_ShutdownRef();
+		CL_ShutdownRef( qfalse );
 	if ( re && re->Shutdown ) {
-		re->Shutdown( qfalse );		// don't destroy window or context
+		re->Shutdown( qfalse, qfalse );		// don't destroy window or context
 	}
 
 	cls.uiStarted = qfalse;
@@ -1169,7 +1170,7 @@ void CL_Vid_Restart_f( void ) {
 	// shutdown the CGame
 	CL_ShutdownCGame();
 	// shutdown the renderer and clear the renderer interface
-	CL_ShutdownRef();
+	CL_ShutdownRef( qtrue );
 	// client is no longer pure untill new checksums are sent
 	CL_ResetPureClientAtServer();
 	// clear pak references
@@ -2235,12 +2236,12 @@ void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
+static void CL_ShutdownRef( qboolean restarting ) {
 	if ( re )
 	{
 		if ( re->Shutdown )
 		{
-			re->Shutdown( qtrue );
+			re->Shutdown( qtrue, restarting );
 		}
 	}
 
@@ -2466,6 +2467,9 @@ void CL_InitRef( void ) {
 	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	G2VertSpaceServer = &CMiniHeap_singleton;
+
+	ri.PD_Store = PD_Store;
+	ri.PD_Load = PD_Load;
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
