@@ -574,8 +574,10 @@ void Com_InitZoneMemory( void )
 {
 	memset(&TheZone, 0, sizeof(TheZone));
 	TheZone.Header.iMagic = ZONE_MAGIC;
+}
 
-//#ifdef _DEBUG
+void Com_InitZoneMemoryVars( void ) {
+	//#ifdef _DEBUG
 //	com_validateZone = Cvar_Get("com_validateZone", "1", 0);
 //#else
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
@@ -588,7 +590,6 @@ void Com_InitZoneMemory( void )
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
 #endif
 }
-
 
 
 

@@ -842,6 +842,7 @@ void  Z_TagFree	( memtag_t eTag );
 void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
 void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 void Com_InitHunkMemory(void);
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
