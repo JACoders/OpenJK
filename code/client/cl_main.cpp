@@ -98,7 +98,7 @@ IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
-void CL_ShutdownRef( void );
+static void CL_ShutdownRef( qboolean restarting );
 void CL_InitRef( void );
 void CL_CheckForResend( void );
 
@@ -182,7 +182,7 @@ void CL_FlushMemory( void ) {
 	CL_ShutdownUI();
 
 	if ( re.Shutdown ) {
-		re.Shutdown( qfalse );		// don't destroy window or context
+		re.Shutdown( qfalse, qfalse );		// don't destroy window or context
 	}
 
 	//rwwFIXMEFIXME: The game server appears to continue running, so clearing common bsp data causes crashing and other bad things
@@ -407,7 +407,7 @@ Restart the video subsystem
 void CL_Vid_Restart_f( void ) {
 	S_StopAllSounds();		// don't let them loop during the restart
 	S_BeginRegistration();	// all sound handles are now invalid
-	CL_ShutdownRef();
+	CL_ShutdownRef(qtrue);
 	CL_ShutdownUI();
 	CL_ShutdownCGame();
 
@@ -920,9 +920,9 @@ void CL_Frame ( int msec,float fractionMsec ) {
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
+static void CL_ShutdownRef( qboolean restarting ) {
 	if ( re.Shutdown ) {
-		re.Shutdown( qtrue );
+		re.Shutdown( qtrue, restarting );
 	}
 
 	memset( &re, 0, sizeof( re ) );
@@ -1200,7 +1200,9 @@ void CL_InitRef( void ) {
     RIT(IN_Restart);
 #endif
 
-	// Not-so-nice usage / doesn't go along with my epic macro
+	rit.PD_Load = PD_Load;
+	rit.PD_Store = PD_Store;
+
 	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
 	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
@@ -1383,7 +1385,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect();
 
 	S_Shutdown();
-	CL_ShutdownRef();
+	CL_ShutdownRef(qfalse);
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
