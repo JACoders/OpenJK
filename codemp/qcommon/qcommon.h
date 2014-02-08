@@ -295,6 +295,7 @@ typedef enum {
 	TRAP_ASIN
 } sharedTraps_t;
 
+void			VM_Init( void );
 vm_t			*VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) );
 vm_t			*VM_Create( vmSlots_t vmSlot );
 void			 VM_Free( vm_t *vm );
@@ -752,10 +753,6 @@ extern	cvar_t	*com_G2Report;
 #endif
 
 extern	cvar_t	*com_RMG;
-
-#ifdef _DEBUG
-extern	cvar_t	*vm_legacy;
-#endif
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
