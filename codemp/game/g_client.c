@@ -3709,7 +3709,7 @@ void ClientSpawn(gentity_t *ent) {
 		{
 			client->ps.weapon = WP_SABER;
 		}
-		else
+		else if (client->sess.sessionTeam != TEAM_SPECTATOR)//huh, stop this weird scope in spec, Loda fixme, this should be a fix to the scope itself
 		{
 			int weap;
 
@@ -3719,9 +3719,9 @@ void ClientSpawn(gentity_t *ent) {
 					break;
 				}
 			}
-			if (!client->ps.weapon)//Fall back to melee if they dont have anything I guess, so we dont fallback to pistol later
-				client->ps.weapon = WP_MELEE;
 		}
+		if (!client->ps.weapon)//Fall back to melee if they dont have anything I guess, so we dont fallback to pistol later
+				client->ps.weapon = WP_MELEE;
 	}
 
 	/*

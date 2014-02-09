@@ -5073,10 +5073,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	}//JAPRO - Serverside - Damage numbers - End
 	if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
-		if (attacker->client && targ)
+		if (attacker->client && targ && targ->client)
 			//attacker->client->pers.stats.damageGiven += ((take > targ->health) ? targ->health : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
 			attacker->client->pers.stats.damageGiven += ((take > (targ->health + client->ps.stats[STAT_ARMOR])) ? (targ->health + client->ps.stats[STAT_ARMOR]) : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
-		if (targ->client)
+		if (targ && targ->client)
 			//targ->client->pers.stats.damageTaken += ((take > targ->health) ? targ->health : take);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
 			targ->client->pers.stats.damageTaken += ((take > (targ->health + client->ps.stats[STAT_ARMOR])) ? (targ->health + client->ps.stats[STAT_ARMOR]) : take);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
 	}
