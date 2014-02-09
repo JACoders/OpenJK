@@ -100,12 +100,6 @@ char cl_reconnectArgs[MAX_OSPATH] = {0};
 refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
-const CGhoul2Info NullG2;
-//FIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
-IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
-	return re->TheGhoul2InfoArray();
-}
-
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
 typedef struct serverStatus_s
@@ -121,7 +115,7 @@ typedef struct serverStatus_s
 serverStatus_t cl_serverStatusList[MAX_SERVERSTATUSREQUESTS];
 int serverStatusCount;
 
-CMiniHeap *G2VertSpaceClient = 0;
+IHeapAllocator *G2VertSpaceClient = 0;
 
 extern void SV_BotFrame( int time );
 void CL_CheckForResend( void );
@@ -2344,10 +2338,10 @@ extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
 extern void SV_SetConfigstring( int index, const char *val );
 
 #define G2_VERT_SPACE_SERVER_SIZE 256
-CMiniHeap *G2VertSpaceServer = NULL;
-CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
+IHeapAllocator *G2VertSpaceServer = NULL;
+CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
-static CMiniHeap *GetG2VertSpaceServer( void ) {
+static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
@@ -2470,7 +2464,7 @@ void CL_InitRef( void ) {
 
 	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
-	G2VertSpaceServer = &CMiniHeap_singleton;
+	G2VertSpaceServer = &IHeapAllocator_singleton;
 
 	ri.PD_Store = PD_Store;
 	ri.PD_Load = PD_Load;
@@ -2795,7 +2789,7 @@ void CL_Init( void ) {
 
 	Cvar_Set( "cl_running", "1" );
 
-	G2VertSpaceClient = new CMiniHeap(G2_VERT_SPACE_CLIENT_SIZE * 1024);
+	G2VertSpaceClient = new CMiniHeap (G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
 	CL_GenerateQKey();
 	Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );

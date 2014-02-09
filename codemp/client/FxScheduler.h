@@ -381,7 +381,7 @@ private:
 		short	mEntNum;		// used to determine which entity this ghoul model is attached to.
 		bool	mPortalEffect;	// rww - render this before skyportals, and not in the normal world view.
 		bool	mIsRelative;	// bolt this puppy on keep it updated
-		int		iGhoul2;
+		CGhoul2Info_v *ghoul2;
 		vec3_t	mOrigin;
 		matrix3_t	mAxis;
 
@@ -398,7 +398,7 @@ private:
 	{
 		int		mId;			// effect id
 		int		mBoltInfo;		// used to determine which bolt on the ghoul2 model we should be attaching this effect to
-		CGhoul2Info_v mGhoul2;
+		CGhoul2Info_v *mGhoul2;
 		int		mNextTime;		//time to render again
 		int		mLoopStopTime;	//time to die
 		bool	mPortalEffect;	// rww - render this before skyportals, and not in the normal world view.
@@ -407,7 +407,7 @@ private:
 
 	SLoopedEffect	mLoopedEffectArray[MAX_LOOPED_FX];
 
-	int		ScheduleLoopedEffect( int id, int boltInfo, int iGhoul2, bool isPortal, int iLoopTime, bool isRelative );
+	int		ScheduleLoopedEffect( int id, int boltInfo, CGhoul2Info_v *ghoul2, bool isPortal, int iLoopTime, bool isRelative );
 	void	AddLoopedEffects( );
 
 
@@ -454,7 +454,7 @@ private:
 	void	AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate *prim );
 	int		ParseEffect( const char *file, CGPGroup *base );
 
-	void	CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, matrix3_t axis, int lateTime, int fxParm = -1,  int iGhoul2 = 0, int entNum = -1, int modelNum = -1, int boltNum = -1);
+	void	CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, matrix3_t axis, int lateTime, int fxParm = -1,  CGhoul2Info_v *ghoul2 = NULL, int entNum = -1, int modelNum = -1, int boltNum = -1);
 	void	CreateEffect( CPrimitiveTemplate *fx, SScheduledEffect *schedFx );
 
 public:
@@ -467,12 +467,12 @@ public:
 	//rww - maybe this should be done differently.. it's more than a bit confusing.
 	//Remind me when I don't have 50 files checked out.
 	void	PlayEffect( int id, vec3_t org, vec3_t fwd, int vol = -1, int rad = -1, bool isPortal = false );				// builds arbitrary perp. right vector, does a cross product to define up
-	void	PlayEffect( int id, vec3_t origin, matrix3_t axis, const int boltInfo=-1, int iGhoul2 = 0,
+	void	PlayEffect( int id, vec3_t origin, matrix3_t axis, const int boltInfo=-1, CGhoul2Info_v *ghoul2 = NULL,
 				int fxParm = -1, int vol = -1, int rad = -1, bool isPortal = false, int iLoopTime = false, bool isRelative = false  );
 	void	PlayEffect( const char *file, vec3_t org, int vol = -1, int rad = -1 );					// uses a default up axis
 	void	PlayEffect( const char *file, vec3_t org, vec3_t fwd, int vol = -1, int rad = -1 );		// builds arbitrary perp. right vector, does a cross product to define up
 	void	PlayEffect( const char *file, vec3_t origin,
-				matrix3_t axis, const int boltInfo = -1, int iGhoul2 = 0, int fxParm = -1, int vol = -1, int rad = -1, int iLoopTime = false, bool isRelative = false );
+				matrix3_t axis, const int boltInfo = -1, CGhoul2Info_v *ghoul2 = NULL, int fxParm = -1, int vol = -1, int rad = -1, int iLoopTime = false, bool isRelative = false );
 
 	void	StopEffect( const char *file, const int boltInfo, bool isPortal = false );	//find a scheduled Looping effect with these parms and kill it
 	void	AddScheduledEffects( bool portal );								// call once per CGame frame
