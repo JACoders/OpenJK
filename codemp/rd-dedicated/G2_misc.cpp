@@ -13,6 +13,8 @@
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
 
+#include "tr_local.h"
+
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)
 

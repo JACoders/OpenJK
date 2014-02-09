@@ -10,6 +10,8 @@
 #include "ghoul2/g2_local.h"
 #include "ghoul2/G2_gore.h"
 
+#include "tr_local.h"
+
 #include <set>
 
 #ifdef _MSC_VER
