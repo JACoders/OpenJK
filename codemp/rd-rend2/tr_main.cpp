@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <string.h> // memcpy
 
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 trGlobals_t		tr;
 

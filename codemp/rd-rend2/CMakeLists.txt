@@ -14,7 +14,6 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_API.cpp"
 	"${MPDir}/rd-rend2/G2_bolts.cpp"
 	"${MPDir}/rd-rend2/G2_bones.cpp"
-	"${MPDir}/rd-rend2/G2_local.h"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
@@ -64,6 +63,7 @@ set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
 
 set(MPRend2Ghoul2Files
 	"${MPDir}/ghoul2/g2_local.h"
+	"${MPDir}/ghoul2/ghoul2_shared.h"
 	"${MPDir}/ghoul2/G2_gore.cpp"
 	"${MPDir}/ghoul2/G2_gore.h")
 source_group("ghoul2" FILES ${MPRend2Ghoul2Files})

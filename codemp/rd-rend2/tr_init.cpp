@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp from whining at us. --eez
 
@@ -1556,6 +1556,8 @@ void R_Init( void ) {
 	if ( err != GL_NO_ERROR )
 		ri->Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
 
+	RestoreGhoul2InfoArray();
+
 	// print info
 	GfxInfo_f();
 	ri->Printf( PRINT_ALL, "----- finished R_Init -----\n" );
@@ -1566,7 +1568,7 @@ void R_Init( void ) {
 RE_Shutdown
 ===============
 */
-void RE_Shutdown( qboolean destroyWindow ) {	
+void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {	
 
 	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
@@ -1593,6 +1595,11 @@ void RE_Shutdown( qboolean destroyWindow ) {
 		R_DeleteTextures();
 		R_ShutdownVBOs();
 		GLSL_ShutdownGPUShaders();
+
+		if ( restarting )
+		{
+			SaveGhoul2InfoArray();
+		}
 	}
 
 	R_ShutdownFonts();
@@ -1637,9 +1644,6 @@ static void GetRealRes( int *w, int *h ) {
 	*w = glConfig.vidWidth;
 	*h = glConfig.vidHeight;
 }
-
-extern IGhoul2InfoArray &TheGhoul2InfoArray();
-const CGhoul2Info NullG2;
 
 // STUBS, REPLACEME
 qboolean stub_InitializeWireframeAutomap() { return qtrue; }
@@ -1804,6 +1808,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.G2API_GetBoneIndex					= G2API_GetBoneIndex;
 	re.G2API_GetGhoul2ModelFlags			= G2API_GetGhoul2ModelFlags;
 	re.G2API_GetGLAName						= G2API_GetGLAName;
+	re.G2API_GetModelName					= G2API_GetModelName;
 	re.G2API_GetParentSurface				= G2API_GetParentSurface;
 	re.G2API_GetRagBonePos					= G2API_GetRagBonePos;
 	re.G2API_GetSurfaceIndex				= G2API_GetSurfaceIndex;
@@ -1817,6 +1822,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.G2API_HaveWeGhoul2Models				= G2API_HaveWeGhoul2Models;
 	re.G2API_IKMove							= G2API_IKMove;
 	re.G2API_InitGhoul2Model				= G2API_InitGhoul2Model;
+	re.G2API_IsGhoul2InfovValid				= G2API_IsGhoul2InfovValid;
 	re.G2API_IsPaused						= G2API_IsPaused;
 	re.G2API_ListBones						= G2API_ListBones;
 	re.G2API_ListSurfaces					= G2API_ListSurfaces;
@@ -1877,9 +1883,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.LoadImageJA							= R_LoadImage;
 	//re.CreateAutomapImage					= R_CreateAutomapImage;
 	re.SavePNG								= RE_SavePNG;
-
-	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
-	// G2VertSpaceServer
 
 	return &re;
 }

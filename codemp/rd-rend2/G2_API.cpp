@@ -1,5 +1,5 @@
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 #include "qcommon/MiniHeap.h"
 
 //rww - RAGDOLL_BEGIN
@@ -218,11 +218,12 @@ void G2API_CleanEntAttachments(void)
 void CopyBoneCache(CBoneCache *to, CBoneCache *from);
 #endif
 
-qboolean G2API_OverrideServerWithClientData(CGhoul2Info *serverInstance)
+qboolean G2API_OverrideServerWithClientData(CGhoul2Info_v& ghoul2, int modelIndex)
 {
 #ifndef _G2_LISTEN_SERVER_OPT
 	return qfalse;
 #else
+	CGhoul2Info *serverInstance = &ghoul2[modelIndex];
 	CGhoul2Info *clientInstance;
 
 	if (ri->Cvar_VariableIntegerValue( "dedicated" ))
@@ -284,6 +285,98 @@ qboolean G2API_OverrideServerWithClientData(CGhoul2Info *serverInstance)
 
 #define G2_INDEX_MASK (MAX_G2_MODELS-1)
 
+static size_t GetSizeOfGhoul2Info ( const CGhoul2Info& g2Info )
+{
+	size_t size = 0;
+	
+	// This is pretty ugly, but we don't want to save everything in the CGhoul2Info object.
+	size += offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+
+	// Surface vector + size
+	size += sizeof (int);
+	size += g2Info.mSlist.size() * sizeof (surfaceInfo_t);
+
+	// Bone vector + size
+	size += sizeof (int);
+	size += g2Info.mBlist.size() * sizeof (boneInfo_t);
+
+	// Bolt vector + size
+	size += sizeof (int);
+	size += g2Info.mBltlist.size() * sizeof (boltInfo_t);
+
+	return size;
+}
+
+static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
+{
+	char *base = buffer;
+	size_t blockSize;
+	
+	// Oh the ugliness...
+	blockSize = offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+	memcpy (buffer, &g2Info.mModelindex, blockSize);
+	buffer += blockSize;
+
+	// Surfaces vector + size
+	*(int *)buffer = g2Info.mSlist.size();
+	buffer += sizeof (int);
+
+	blockSize = g2Info.mSlist.size() * sizeof (surfaceInfo_t);
+	memcpy (buffer, g2Info.mSlist.data(), g2Info.mSlist.size() * sizeof (surfaceInfo_t));
+	buffer += blockSize;
+
+	// Bones vector + size
+	*(int *)buffer = g2Info.mBlist.size();
+	buffer += sizeof (int);
+	
+	blockSize = g2Info.mBlist.size() * sizeof (boneInfo_t);
+	memcpy (buffer, g2Info.mBlist.data(), g2Info.mBlist.size() * sizeof (boneInfo_t));
+	buffer += blockSize;
+
+	// Bolts vector + size
+	*(int *)buffer = g2Info.mBltlist.size();
+	buffer += sizeof (int);
+	
+	blockSize = g2Info.mBltlist.size() * sizeof (boltInfo_t);
+	memcpy (buffer, g2Info.mBltlist.data(), g2Info.mBltlist.size() * sizeof (boltInfo_t));
+	buffer += blockSize;
+
+	return static_cast<size_t>(buffer - base);
+}
+
+static size_t DeserializeGhoul2Info ( const char *buffer, CGhoul2Info& g2Info )
+{
+	const char *base = buffer;
+	size_t size;
+
+	size = offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+	memcpy (&g2Info.mModelindex, buffer, size);
+	buffer += size;
+
+	// Surfaces vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mSlist.assign ((surfaceInfo_t *)buffer, (surfaceInfo_t *)buffer + size);
+	buffer += sizeof (surfaceInfo_t) * size;
+
+	// Bones vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mBlist.assign ((boneInfo_t *)buffer, (boneInfo_t *)buffer + size);
+	buffer += sizeof (boneInfo_t) * size;
+
+	// Bolt vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mBltlist.assign ((boltInfo_t *)buffer, (boltInfo_t *)buffer + size);
+	buffer += sizeof (boltInfo_t) * size;
+
+	return static_cast<size_t>(buffer - base);
+}
+
 class Ghoul2InfoArray : public IGhoul2InfoArray
 {
 	vector<CGhoul2Info>	mInfos[MAX_G2_MODELS];
@@ -323,6 +416,94 @@ public:
 			mFreeIndecies.push_back(i);
 		}
 	}
+
+	size_t GetSerializedSize() const
+	{
+		size_t size = 0;	
+
+		size += sizeof (int); // size of mFreeIndecies linked list
+		size += mFreeIndecies.size() * sizeof (int);
+
+		size += sizeof (mIds);
+
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			size += sizeof (int); // size of the mInfos[i] vector
+
+			for ( size_t j = 0; j < mInfos[i].size(); j++ )
+			{
+				size += GetSizeOfGhoul2Info (mInfos[i][j]);
+			}
+		}
+
+		return size;
+	}
+
+	size_t Serialize ( char *buffer ) const
+	{
+		char *base = buffer;
+
+		// Free indices
+		*(int *)buffer = mFreeIndecies.size();
+		buffer += sizeof (int);
+
+		std::copy (mFreeIndecies.begin(), mFreeIndecies.end(), (int *)buffer);
+		buffer += sizeof (int) * mFreeIndecies.size();
+
+		// IDs
+		memcpy (buffer, mIds, sizeof (mIds));
+		buffer += sizeof (mIds);
+
+		// Ghoul2 infos
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			*(int *)buffer = mInfos[i].size();
+			buffer += sizeof (int);
+
+			for ( size_t j = 0; j < mInfos[i].size(); j++ )
+			{
+				buffer += SerializeGhoul2Info (buffer, mInfos[i][j]);
+			}
+		}
+
+		return static_cast<size_t>(buffer - base);
+	}
+
+	size_t Deserialize ( const char *buffer, size_t size )
+	{
+		const char *base = buffer;
+		size_t count;
+
+		// Free indices
+		count = *(int *)buffer;
+		buffer += sizeof (int);
+
+		mFreeIndecies.assign ((int *)buffer, (int *)buffer + count);
+		buffer += sizeof (int) * count;
+
+		// IDs
+		memcpy (mIds, buffer, sizeof (mIds));
+		buffer += sizeof (mIds);
+
+		// Ghoul2 infos
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			mInfos[i].clear();
+
+			count = *(int *)buffer;
+			buffer += sizeof (int);
+
+			mInfos[i].resize (count);
+			
+			for ( size_t j = 0; j < count; j++ )
+			{
+				buffer += DeserializeGhoul2Info (buffer, mInfos[i][j]);
+			}
+		}
+
+		return static_cast<size_t>(buffer - base);
+	}
+
 #if G2API_DEBUG
 	~Ghoul2InfoArray()
 	{
@@ -399,15 +580,11 @@ public:
 	}
 	vector<CGhoul2Info> &Get(int handle)
 	{
-		static vector<CGhoul2Info> null;
 		assert(handle>0); //null handle
 		assert((handle&G2_INDEX_MASK)>=0&&(handle&G2_INDEX_MASK)<MAX_G2_MODELS); //junk handle
 		assert(mIds[handle&G2_INDEX_MASK]==handle); // not a valid handle, could be old or garbage
-		if (handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle)
-		{
-			null.clear();
-			return null;
-		}
+		assert(!(handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle));
+		
 		return mInfos[handle&G2_INDEX_MASK];
 	}
 	const vector<CGhoul2Info> &Get(int handle) const
@@ -456,6 +633,42 @@ IGhoul2InfoArray &TheGhoul2InfoArray()
 	return *singleton;
 }
 
+#define PERSISTENT_G2DATA "g2infoarray"
+
+void RestoreGhoul2InfoArray()
+{
+	if (singleton == NULL)
+	{
+		// Create the ghoul2 info array
+		TheGhoul2InfoArray();
+
+		size_t size;
+		const void *data = ri->PD_Load (PERSISTENT_G2DATA, &size);
+		if ( data == NULL )
+		{
+			return;
+		}
+
+		size_t read = singleton->Deserialize ((const char *)data, size);
+		Z_Free ((void *)data);
+
+		assert (read == size);
+	}
+}
+
+void SaveGhoul2InfoArray()
+{
+	size_t size = singleton->GetSerializedSize();
+	void *data = Z_Malloc (size, TAG_GHOUL2);
+	size_t written = singleton->Serialize ((char *)data);
+
+	assert (written == size);
+
+	if ( !ri->PD_Store (PERSISTENT_G2DATA, data, size) )
+	{
+		Com_Printf (S_COLOR_RED "ERROR: Failed to store persistent renderer data.\n");
+	}
+}
 
 void Ghoul2InfoArray_Free(void)
 {
@@ -517,8 +730,6 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v **ghoul2Ptr)
 #ifdef _G2_GORE
 		G2API_ClearSkinGore ( ghoul2 );
 #endif
-
-		ghoul2.~CGhoul2Info_v();
 
 #ifdef _FULL_G2_LEAK_CHECKING
 		if (g_G2AllocServer)
@@ -646,8 +857,10 @@ qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 }
 
 void G2_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t renderSkin);
-qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin)
+qboolean G2API_SetSkin(CGhoul2Info_v& ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin)
 {
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (ghlInfo)
 	{
 		ghlInfo->mCustomSkin = customSkin;
@@ -739,8 +952,10 @@ int G2API_GetParentSurface(CGhoul2Info *ghlInfo, const int index)
 	return -1;
 }
 
-int G2API_GetSurfaceRenderStatus(CGhoul2Info *ghlInfo, const char *surfaceName)
+int G2API_GetSurfaceRenderStatus(CGhoul2Info_v& ghoul2, int modelIndex, const char *surfaceName)
 {
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(ghlInfo))
 	{
 		return G2_IsSurfaceRendered(ghlInfo, surfaceName, ghlInfo->mSlist);
@@ -928,8 +1143,10 @@ qboolean G2API_RemoveGhoul2Models(CGhoul2Info_v **ghlRemove)
 }
 
 //check if a bone exists on skeleton without actually adding to the bone list -rww
-qboolean G2API_DoesBoneExist(CGhoul2Info *ghlInfo, const char *boneName)
+qboolean G2API_DoesBoneExist(CGhoul2Info_v& ghoul2, int modelIndex, const char *boneName)
 {
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(ghlInfo))
 	{ //model is valid
 		mdxaHeader_t *mdxa = ghlInfo->currentModel->data.gla;
@@ -1105,13 +1322,16 @@ qboolean G2API_SetBoneAnim(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 	return qfalse;
 }
 
-qboolean G2API_GetBoneAnim(CGhoul2Info *ghlInfo, const char *boneName, const int currentTime, float *currentFrame,
+qboolean G2API_GetBoneAnim(CGhoul2Info_v& ghoul2, int modelIndex, const char *boneName, const int currentTime, float *currentFrame,
 						   int *startFrame, int *endFrame, int *flags, float *animSpeed, int *modelList)
 {
 	assert(startFrame!=endFrame); //this is bad
 	assert(startFrame!=flags); //this is bad
 	assert(endFrame!=flags); //this is bad
 	assert(currentFrame!=animSpeed); //this is bad
+
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(ghlInfo))
 	{
 		int aCurrentTime=G2API_GetTime(currentTime);
@@ -1381,8 +1601,10 @@ void G2API_ResetRagDoll(CGhoul2Info_v &ghoul2)
 }
 //rww - RAGDOLL_END
 
-qboolean G2API_RemoveBone(CGhoul2Info *ghlInfo, const char *boneName)
+qboolean G2API_RemoveBone(CGhoul2Info_v& ghoul2, int modelIndex, const char *boneName)
 {
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(ghlInfo))
 	{
 		// ensure we flush the cache
@@ -1670,8 +1892,10 @@ qboolean G2API_DetachG2Model(CGhoul2Info *ghlInfo)
 	return qfalse;
 }
 
-qboolean G2API_AttachEnt(int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum)
+qboolean G2API_AttachEnt(int *boltInfo, CGhoul2Info_v& ghoul2, int modelIndex, int toBoltIndex, int entNum, int toModelNum)
 {  	
+	CGhoul2Info *ghlInfoTo = &ghoul2[modelIndex];
+
 	if (boltInfo && G2_SetupModelPointers(ghlInfoTo))
 	{
 		// make sure we have a model to attach, a model to attach to, and a bolt on that model
@@ -2003,7 +2227,7 @@ static inline bool G2_NeedRetransform(CGhoul2Info *g2, int frameNum)
 }
 
 void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &ghoul2, const vec3_t angles, const vec3_t position,
-										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, CMiniHeap *G2VertSpace, int traceFlags, int useLod, float fRadius)
+										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, IHeapAllocator *G2VertSpace, int traceFlags, int useLod, float fRadius)
 { //this will store off the transformed verts for the next trace - this is slower, but for models that do not animate
 	//frequently it is much much faster. -rww
 #if 0 // UNUSED
@@ -2094,7 +2318,7 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 
 
 void G2API_CollisionDetect(CollisionRecord_t *collRecMap, CGhoul2Info_v &ghoul2, const vec3_t angles, const vec3_t position,
-										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, CMiniHeap *G2VertSpace, int traceFlags, int useLod, float fRadius)
+										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, IHeapAllocator *G2VertSpace, int traceFlags, int useLod, float fRadius)
 {
 	/*
 	if (1)
@@ -2329,9 +2553,11 @@ void G2API_DuplicateGhoul2Instance(CGhoul2Info_v &g2From, CGhoul2Info_v **g2To)
 	return;
 }
 
-char *G2API_GetSurfaceName(CGhoul2Info *ghlInfo, int surfNumber)
+char *G2API_GetSurfaceName(CGhoul2Info_v& ghoul2, int modelIndex, int surfNumber)
 {
 	static char noSurface[1] = "";
+	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(ghlInfo))
 	{
 		model_t	*mod = (model_t *)ghlInfo->currentModel;
@@ -2471,8 +2697,10 @@ void G2API_LoadSaveCodeDestructGhoul2Info(CGhoul2Info_v &ghoul2)
 }
 
 //see if surfs have any shader info...
-qboolean G2API_SkinlessModel(CGhoul2Info *g2)
+qboolean G2API_SkinlessModel(CGhoul2Info_v& ghoul2, int modelIndex)
 {
+	CGhoul2Info *g2 = &ghoul2[modelIndex];
+
 	if (G2_SetupModelPointers(g2))
 	{
 		model_t	*mod = (model_t *)g2->currentModel;
@@ -2508,8 +2736,10 @@ qboolean G2API_SkinlessModel(CGhoul2Info *g2)
 void ResetGoreTag(); // put here to reduce coupling
 
 //way of seeing how many marks are on a model currently -rww
-int G2API_GetNumGoreMarks(CGhoul2Info *g2)
+int G2API_GetNumGoreMarks(CGhoul2Info_v& ghoul2, int modelIndex)
 {
+	CGhoul2Info *g2 = &ghoul2[modelIndex];
+
 	if (g2->mGoreSetTag)
 	{
 		CGoreSet *goreSet = FindGoreSet(g2->mGoreSetTag);
@@ -2761,4 +2991,14 @@ qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2) // returns true if any mod
 		ret=ret||r;
 	}
 	return (qboolean)ret;
+}
+
+qboolean G2API_IsGhoul2InfovValid (CGhoul2Info_v& ghoul2)
+{
+	return (qboolean)ghoul2.IsValid();
+}
+
+const char *G2API_GetModelName ( CGhoul2Info_v& ghoul2, int modelIndex )
+{
+	return ghoul2[modelIndex].mFileName;
 }
