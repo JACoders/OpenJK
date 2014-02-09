@@ -5068,7 +5068,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (!ent || !ent->client)
 		return;
 
-	Q_strncpyz(buf, "^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", sizeof(buf));
+	Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig\n" );
 
 	Q_strcat(buf, sizeof(buf), "   ^3Chat commands: ");
@@ -5077,8 +5077,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "clanWhoIs ");
 	Q_strcat(buf, sizeof(buf), "clanSay ");
 	Q_strcat(buf, sizeof(buf), "amSay ");
-	Q_strcat(buf, sizeof(buf), "say_team_mod\n");
-	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+	Q_strcat(buf, sizeof(buf), "say_team_mod");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Game commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "amMOTD ");
@@ -5099,8 +5099,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (g_dodge.integer == 1) 
 		Q_strcat(buf, sizeof(buf), "+button13 (dodge) ");
 	else if (g_dodge.integer > 1) 
-		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)\n");
-	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Emote commands: ", sizeof(buf));
 	if (!(g_emotesDisable.integer & (1 << E_BEG)))
@@ -5152,8 +5152,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (!(g_emotesDisable.integer & (1 << E_VICTORY)))
 		Q_strcat(buf, sizeof(buf), "amVictory "); 
 	if (!(g_emotesDisable.integer & (1 << E_JAWARUN)))
-		Q_strcat(buf, sizeof(buf), "amRun\n"); 
-	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+		Q_strcat(buf, sizeof(buf), "amRun"); 
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Admin commands: ", sizeof(buf));
 	if (!(ent->r.svFlags & SVF_FULLADMIN) && !(ent->r.svFlags & SVF_JUNIORADMIN))
@@ -5222,8 +5222,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
-			Q_strcat(buf, sizeof(buf), "amRename\n"); 
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+			Q_strcat(buf, sizeof(buf), "amRename"); 
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 		buf[0] = '\0';
 	}
 	
