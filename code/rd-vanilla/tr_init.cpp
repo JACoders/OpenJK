@@ -1477,7 +1477,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 	// Need this temporarily.
 #ifdef _WIN32
-	tr.wv = ri->GetWinVars();
+	tr.wv = ri.GetWinVars();
 #endif
 
 	ri.Cmd_RemoveCommand ("imagelist");
