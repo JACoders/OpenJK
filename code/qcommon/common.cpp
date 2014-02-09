@@ -285,8 +285,8 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	if ( code == ERR_DISCONNECT || code == ERR_DROP ) {
 		throw code;
 	} else {
-		CL_Shutdown ();
 		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
+		CL_Shutdown ();
 	}
 
 	Com_Shutdown ();
