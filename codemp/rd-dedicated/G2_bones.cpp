@@ -6,6 +6,8 @@
 #include "ghoul2/G2_gore.h"
 #include "ghoul2/g2_local.h"
 
+#include "tr_local.h"
+
 //rww - RAGDOLL_BEGIN
 #ifndef __linux__
 #include <float.h>
