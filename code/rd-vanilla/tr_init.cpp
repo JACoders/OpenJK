@@ -1474,7 +1474,11 @@ RE_Shutdown
 */
 extern void R_ShutdownWorldEffects(void);
 void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {	
-	//ri.Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
+
+	// Need this temporarily.
+#ifdef _WIN32
+	tr.wv = ri->GetWinVars();
+#endif
 
 	ri.Cmd_RemoveCommand ("imagelist");
 	ri.Cmd_RemoveCommand ("shaderlist");
