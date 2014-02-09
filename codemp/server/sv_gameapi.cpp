@@ -427,7 +427,7 @@ static void SV_GameDropClient( int clientNum, const char *reason ) {
 	if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 		return;
 	}
-	SV_DropClient( svs.clients + clientNum, reason );	
+	SV_DropClient( svs.clients + clientNum, reason );
 }
 
 static void SV_GameSendServerCommand( int clientNum, const char *text ) {
@@ -437,7 +437,7 @@ static void SV_GameSendServerCommand( int clientNum, const char *text ) {
 		if ( clientNum < 0 || clientNum >= sv_maxclients->integer ) {
 			return;
 		}
-		SV_SendServerCommand( svs.clients + clientNum, "%s", text );	
+		SV_SendServerCommand( svs.clients + clientNum, "%s", text );
 	}
 }
 
@@ -461,7 +461,7 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	clipHandle_t	h;
 	vec3_t			mins, maxs;
 
-	if (!name) 
+	if (!name)
 	{
 		Com_Error( ERR_DROP, "SV_SetBrushModel: NULL" );
 	}
@@ -605,11 +605,11 @@ static const char *SV_SetActiveSubBSP( int index ) {
 
 static qboolean SV_GetEntityToken( char *buffer, int bufferSize ) {
 	char *s;
-	
+
 	if ( sv.mLocalSubBSPIndex == -1 ) {
 		s = COM_Parse( (const char **)&sv.entityParsePoint );
 		Q_strncpyz( buffer, s, bufferSize );
-		if ( !sv.entityParsePoint && !s[0] ) 
+		if ( !sv.entityParsePoint && !s[0] )
 			return qfalse;
 		else
 			return qtrue;
@@ -617,7 +617,7 @@ static qboolean SV_GetEntityToken( char *buffer, int bufferSize ) {
 	else {
 		s = COM_Parse( (const char **)&sv.mLocalSubBSPEntityParsePoint);
 		Q_strncpyz( buffer, s, bufferSize );
-		if ( !sv.mLocalSubBSPEntityParsePoint && !s[0] ) 
+		if ( !sv.mLocalSubBSPEntityParsePoint && !s[0] )
 			return qfalse;
 		else
 			return qtrue;
@@ -1504,7 +1504,7 @@ static int SV_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int
 
 static qboolean SV_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_SetSkin( &g2[modelIndex], customSkin, renderSkin );
+	return re->G2API_SetSkin( g2, modelIndex, customSkin, renderSkin );
 }
 
 static void SV_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
@@ -1532,7 +1532,7 @@ static qboolean SV_G2API_SetBoneAnim( void *ghoul2, const int modelIndex, const 
 
 static qboolean SV_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_GetBoneAnim( &g2[modelIndex], boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
+	return re->G2API_GetBoneAnim( g2, modelIndex, boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
 }
 
 static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
@@ -1599,12 +1599,12 @@ static qboolean SV_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
 
 static qboolean SV_G2API_DoesBoneExist( void *ghoul2, int modelIndex, const char *boneName ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_DoesBoneExist( &g2[modelIndex], boneName );
+	return re->G2API_DoesBoneExist( g2, modelIndex, boneName );
 }
 
 static int SV_G2API_GetSurfaceRenderStatus( void *ghoul2, const int modelIndex, const char *surfaceName ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_GetSurfaceRenderStatus( &g2[modelIndex], surfaceName );
+	return re->G2API_GetSurfaceRenderStatus( g2, modelIndex, surfaceName );
 }
 
 static void SV_G2API_AbsurdSmoothing( void *ghoul2, qboolean status ) {
@@ -1693,7 +1693,7 @@ static qboolean SV_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *p
 
 static qboolean SV_G2API_RemoveBone( void *ghoul2, const char *boneName, int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_RemoveBone( &g2[modelIndex], boneName );
+	return re->G2API_RemoveBone( g2, modelIndex, boneName );
 }
 
 static void SV_G2API_AttachInstanceToEntNum( void *ghoul2, int entityNum, qboolean server ) {
@@ -1710,12 +1710,12 @@ static void SV_G2API_CleanEntAttachments( void ) {
 
 static qboolean SV_G2API_OverrideServer( void *serverInstance ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)serverInstance);
-	return re->G2API_OverrideServerWithClientData( &g2[0] );
+	return re->G2API_OverrideServerWithClientData( g2, 0 );
 }
 
 static void SV_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	char *tmp = re->G2API_GetSurfaceName( &g2[modelIndex], surfNumber );
+	char *tmp = re->G2API_GetSurfaceName( g2, modelIndex, surfNumber );
 	strcpy( fillBuf, tmp );
 }
 
@@ -1804,7 +1804,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return SV_PrecisionTimerEnd( (void *)args[1] );
 
 	case G_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
 		return 0;
 
 	case G_CVAR_UPDATE:
@@ -1983,14 +1983,14 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 	case G_ROFF_CLEAN:
 		return SV_ROFF_Clean();
-	
+
 	case G_ROFF_UPDATE_ENTITIES:
 		SV_ROFF_UpdateEntities();
 		return 0;
 
 	case G_ROFF_CACHE:
 		return SV_ROFF_Cache( (char *)VMA(1) );
-		
+
 	case G_ROFF_PLAY:
 		return SV_ROFF_Play( args[1], args[2], (qboolean)args[3] );
 
@@ -2599,8 +2599,8 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[2];
-			
-			return re->G2API_SetSkin(&g2[modelIndex], args[3], args[4]);
+
+			return re->G2API_SetSkin(g2, modelIndex, args[3], args[4]);
 		}
 
 	case G_G2_SIZE:
@@ -2618,7 +2618,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return re->G2API_SetBoneAngles(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
 							 (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8],
 							 (qhandle_t *)VMA(9), args[10], args[11] );
-	
+
 	case G_G2_PLAYANIM:
 		return re->G2API_SetBoneAnim(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], args[5],
 								args[6], VMF(7), args[8], VMF(9), args[10]);
@@ -2628,7 +2628,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[10];
 
-			return re->G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
+			return re->G2API_GetBoneAnim(g2, modelIndex, (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
 								(int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9));
 		}
 
@@ -2706,14 +2706,14 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_G2_DOESBONEEXIST:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re->G2API_DoesBoneExist(&g2[args[2]], (const char *)VMA(3));
+			return re->G2API_DoesBoneExist(g2, args[2], (const char *)VMA(3));
 		}
 
 	case G_G2_GETSURFACERENDERSTATUS:
 	{
 		CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-		return re->G2API_GetSurfaceRenderStatus(&g2[args[2]], (const char *)VMA(3));
+		return re->G2API_GetSurfaceRenderStatus(g2, args[2], (const char *)VMA(3));
 	}
 
 	case G_G2_ABSURDSMOOTHING:
@@ -2805,7 +2805,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			return re->G2API_RemoveBone(&g2[args[3]], (const char *)VMA(2));
+			return re->G2API_RemoveBone(g2, args[3], (const char *)VMA(2));
 		}
 
 	case G_G2_ATTACHINSTANCETOENTNUM:
@@ -2822,7 +2822,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	case G_G2_OVERRIDESERVER:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re->G2API_OverrideServerWithClientData(&g2[0]);
+			return re->G2API_OverrideServerWithClientData(g2, 0);
 		}
 
 	case G_G2_GETSURFACENAME:
@@ -2833,7 +2833,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			local = re->G2API_GetSurfaceName(&g2[modelindex], args[2]);
+			local = re->G2API_GetSurfaceName(g2, modelindex, args[2]);
 			if (local)
 			{
 				strcpy(point, local);
@@ -3238,6 +3238,6 @@ void SV_RestartGame( void ) {
 		Com_Error( ERR_DROP, "VM_Restart on game failed" );
 		return;
 	}
-	
+
 	SV_InitGame( qtrue );
 }

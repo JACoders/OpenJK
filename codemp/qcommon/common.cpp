@@ -50,10 +50,6 @@ cvar_t  *com_homepath;
 
 cvar_t	*com_RMG;
 
-#ifdef _DEBUG
-cvar_t	*vm_legacy;
-#endif
-
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -124,7 +120,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
     // TTimo nooo .. that would defeat the purpose
-		//rd_flush(rd_buffer);			
+		//rd_flush(rd_buffer);
 		//*rd_buffer = 0;
 		return;
 	}
@@ -191,7 +187,7 @@ A Com_Printf that only shows up if the "developer" cvar is set
 void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-		
+
 	if ( !com_developer || !com_developer->integer ) {
 		return;			// don't confuse non-developers with techie stuff...
 	}
@@ -199,16 +195,16 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
-	
+
 	Com_Printf ("%s", msg);
 }
 
 // Outputs to the VC / Windows Debug window (only in debug compile)
-void QDECL Com_OPrintf( const char *fmt, ...) 
+void QDECL Com_OPrintf( const char *fmt, ...)
 {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-		
+
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
@@ -896,9 +892,9 @@ int Com_EventLoop( void ) {
 			CL_JoystickEvent( ev.evValue, ev.evValue2, ev.evTime );
 			break;
 		case SE_CONSOLE:
-			if ( ((char *)ev.evPtr)[0] == '\\' || ((char *)ev.evPtr)[0] == '/' ) 
+			if ( ((char *)ev.evPtr)[0] == '\\' || ((char *)ev.evPtr)[0] == '/' )
 			{
-				Cbuf_AddText( (char *)ev.evPtr+1 );	
+				Cbuf_AddText( (char *)ev.evPtr+1 );
 			}
 			else
 			{
@@ -965,7 +961,7 @@ int Com_Milliseconds (void) {
 			Com_PushEvent( &ev );
 		}
 	} while ( ev.evType != SE_NONE );
-	
+
 	return ev.evTime;
 }
 
@@ -1140,6 +1136,7 @@ Com_Init
 */
 void Com_Init( char *commandLine ) {
 	char	*s;
+	int		qport;
 
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, __DATE__ );
 
@@ -1151,6 +1148,7 @@ void Com_Init( char *commandLine ) {
 		// do this before anything else decides to push events
 		Com_InitPushEvent();
 
+		Com_InitZoneMemory();
 		Cvar_Init ();
 
 		navigator.Init();
@@ -1162,12 +1160,11 @@ void Com_Init( char *commandLine ) {
 	//	Swap_Init ();
 		Cbuf_Init ();
 
-		Com_InitZoneMemory();
-
-		Cmd_Init ();
-
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
+
+		Com_InitZoneMemoryVars();
+		Cmd_Init ();
 
 		// Seed the random number generator
 		Rand_Init(Sys_Milliseconds(true));
@@ -1184,6 +1181,19 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitJournaling();
 
+		// Add some commands here already so users can use them from config files
+		if ( com_developer && com_developer->integer ) {
+			Cmd_AddCommand ("error", Com_Error_f);
+			Cmd_AddCommand ("crash", Com_Crash_f );
+			Cmd_AddCommand ("freeze", Com_Freeze_f);
+		}
+		Cmd_AddCommand ("quit", Com_Quit_f );
+#ifndef FINAL_BUILD
+		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
+#endif
+		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
+		Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
+
 		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
@@ -1191,7 +1201,7 @@ void Com_Init( char *commandLine ) {
 
 	  // get dedicated here for proper hunk megs initialization
 	#ifdef DEDICATED
-		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_ROM);
+		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_INIT);
 		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
 	#else
 		//OJKFIXME: Temporarily disabled dedicated server when not using the dedicated server binary.
@@ -1267,24 +1277,11 @@ void Com_Init( char *commandLine ) {
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
-#ifdef _DEBUG
-		vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
-#endif
-
 		if ( com_dedicated->integer ) {
 			if ( !com_viewlog->integer ) {
 				Cvar_Set( "viewlog", "1" );
 			}
 		}
-
-		if ( com_developer && com_developer->integer ) {
-			Cmd_AddCommand ("error", Com_Error_f);
-			Cmd_AddCommand ("crash", Com_Crash_f );
-			Cmd_AddCommand ("freeze", Com_Freeze_f);
-		}
-		Cmd_AddCommand ("quit", Com_Quit_f);
-		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
-		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1292,7 +1289,12 @@ void Com_Init( char *commandLine ) {
 		SE_Init();
 
 		Sys_Init();
-		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
+
+		// Pick a random port value
+		Com_RandomBytes( (byte*)&qport, sizeof(int) );
+		Netchan_Init( qport & 0xffff );	// pick a port value that should be nice and random
+
+		VM_Init();
 		SV_Init();
 
 		com_dedicated->modified = qfalse;
@@ -1308,10 +1310,10 @@ void Com_Init( char *commandLine ) {
 
 
 		// add + commands from command line
-		if ( !Com_AddStartupCommands() ) 
+		if ( !Com_AddStartupCommands() )
 		{
 			// if the user didn't give any commands, run default action
-			if ( !com_dedicated->integer ) 
+			if ( !com_dedicated->integer )
 			{
 				if ( com_bootlogo->integer )
 				{
@@ -1333,7 +1335,7 @@ void Com_Init( char *commandLine ) {
 #endif
 
 		com_fullyInitialized = qtrue;
-		Com_Printf ("--- Common Initialization Complete ---\n");	
+		Com_Printf ("--- Common Initialization Complete ---\n");
 	}
 	catch ( int code )
 	{
@@ -1429,7 +1431,7 @@ int Com_ModifyMsec( int msec ) {
 	} else if (com_cameraMode->integer) {
 		msec *= com_timescale->value;
 	}
-	
+
 	// don't let it scale below 1 msec
 	if ( msec < 1 && com_timescale->value) {
 		msec = 1;
@@ -1443,7 +1445,7 @@ int Com_ModifyMsec( int msec ) {
 			Com_Printf( "Hitch warning: %i msec frame time\n", msec );
 		}
 		clampTime = 5000;
-	} else 
+	} else
 	if ( !com_sv_running->integer ) {
 		// clients of remote servers do not want to clamp time, because
 		// it would skew their view of the server's time temporarily
@@ -1484,7 +1486,7 @@ void Com_Frame( void ) {
 #endif
 		int		msec, minMsec;
 		static int	lastTime = 0;
- 
+
 		int		timeBeforeFirstEvents;
 		int           timeBeforeServer;
 		int           timeBeforeEvents;
@@ -1501,7 +1503,7 @@ void Com_Frame( void ) {
 		timeAfter = 0;
 
 		// write config file if anything changed
-		Com_WriteConfiguration(); 
+		Com_WriteConfiguration();
 
 		// if "viewlog" has been modified, show or hide the log console
 		if ( com_viewlog->modified ) {
@@ -1608,15 +1610,15 @@ void Com_Frame( void ) {
 			sv -= time_game;
 			cl -= time_frontend + time_backend;
 
-			Com_Printf ("frame:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i rf:%3i bk:%3i\n", 
+			Com_Printf ("frame:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i rf:%3i bk:%3i\n",
 						 com_frameNumber, all, sv, ev, cl, time_game, time_frontend, time_backend );
-		}	
+		}
 
 		//
 		// trace optimization tracking
 		//
 		if ( com_showtrace->integer ) {
-	
+
 			extern	int c_traces, c_brush_traces, c_patch_traces;
 			extern	int	c_pointcontents;
 
@@ -1654,7 +1656,7 @@ Com_Shutdown
 =================
 */
 void MSG_shutdownHuffman();
-void Com_Shutdown (void) 
+void Com_Shutdown (void)
 {
 	CM_ClearMap();
 
@@ -1916,7 +1918,7 @@ void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars )
 		if( ( p = Field_FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
 		else
-			Cmd_CompleteArgument( baseCmd, cmd, completionArgument ); 
+			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
 	}
 	else {
 		if ( completionString[0] == '\\' || completionString[0] == '/' )
@@ -1975,7 +1977,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 	char			*buf = 0, *bufParse = 0;
 
 	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
+	if (!f || !length)
 	{
 		return false;
 	}
@@ -2006,7 +2008,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 	CGenericParser2 *parse;
 
 	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
+	if (!f || !length)
 	{
 		return 0;
 	}

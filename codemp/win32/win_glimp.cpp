@@ -42,8 +42,8 @@ typedef enum {
 #define	WINDOW_CLASS_NAME CLIENT_WINDOW_TITLE
 
 static void		GLW_InitExtensions( void );
-static rserr_t	GLW_SetMode( int mode, 
-							 int colorbits, 
+static rserr_t	GLW_SetMode( int mode,
+							 int colorbits,
 							 qboolean cdsFullscreen );
 
 static qboolean s_classRegistered = qfalse;
@@ -79,7 +79,7 @@ extern qboolean R_GetModeInfo( int *width, int *height, int mode );
 /*
 ** GLW_StartDriverAndSetMode
 */
-static qboolean GLW_StartDriverAndSetMode( int mode, 
+static qboolean GLW_StartDriverAndSetMode( int mode,
 										   int colorbits,
 										   qboolean cdsFullscreen )
 {
@@ -140,7 +140,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 		//
 		// make sure this has hardware acceleration
 		//
-		if ( ( pfds[i].dwFlags & PFD_GENERIC_FORMAT ) != 0 ) 
+		if ( ( pfds[i].dwFlags & PFD_GENERIC_FORMAT ) != 0 )
 		{
 			if ( !r_allowSoftwareGL->integer )
 			{
@@ -163,7 +163,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 		}
 
 		// verify proper flags
-		if ( ( ( pfds[i].dwFlags & pPFD->dwFlags ) & pPFD->dwFlags ) != pPFD->dwFlags ) 
+		if ( ( ( pfds[i].dwFlags & pPFD->dwFlags ) & pPFD->dwFlags ) != pPFD->dwFlags )
 		{
 			if ( r_verbose->integer )
 			{
@@ -184,7 +184,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 
 		//
 		// selection criteria (in order of priority):
-		// 
+		//
 		//  PFD_STEREO
 		//  colorBits
 		//  depthBits
@@ -198,7 +198,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 				bestMatch = i;
 				continue;
 			}
-			
+
 			if ( !( pfds[i].dwFlags & PFD_STEREO ) && ( pfds[bestMatch].dwFlags & PFD_STEREO ) && ( pPFD->dwFlags & PFD_STEREO ) )
 			{
 				bestMatch = i;
@@ -249,7 +249,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 					continue;
 				}
 				// otherwise if this PFD has more bits than our best, use it
-				else if ( ( pfds[i].cStencilBits > pfds[bestMatch].cStencilBits ) && 
+				else if ( ( pfds[i].cStencilBits > pfds[bestMatch].cStencilBits ) &&
 					 ( pPFD->cStencilBits > 0 ) )
 				{
 					bestMatch = i;
@@ -262,7 +262,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 			bestMatch = i;
 		}
 	}
-	
+
 	if ( !bestMatch )
 		return 0;
 
@@ -299,7 +299,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 */
 static void GLW_CreatePFD( PIXELFORMATDESCRIPTOR *pPFD, int colorbits, int depthbits, int stencilbits, qboolean stereo )
 {
-    PIXELFORMATDESCRIPTOR src = 
+    PIXELFORMATDESCRIPTOR src =
 	{
 		sizeof(PIXELFORMATDESCRIPTOR),	// size of this pfd
 		1,								// version number
@@ -313,7 +313,7 @@ static void GLW_CreatePFD( PIXELFORMATDESCRIPTOR *pPFD, int colorbits, int depth
 		0,								// shift bit ignored
 		0,								// no accumulation buffer
 		0, 0, 0, 0, 					// accum bits ignored
-		24,								// 24-bit z-buffer	
+		24,								// 24-bit z-buffer
 		8,								// 8-bit stencil buffer
 		0,								// no auxiliary buffer
 		PFD_MAIN_PLANE,					// main layer
@@ -517,7 +517,7 @@ static qboolean GLW_InitDriver( int colorbits )
 		/*
 		** report if stereo is desired but unavailable
 		*/
-		if ( !( pfd.dwFlags & PFD_STEREO ) && ( r_stereo->integer != 0 ) ) 
+		if ( !( pfd.dwFlags & PFD_STEREO ) && ( r_stereo->integer != 0 ) )
 		{
 			Com_Printf ("...failed to select stereo pixel format\n" );
 			glConfig.stereoEnabled = qfalse;
@@ -525,7 +525,7 @@ static qboolean GLW_InitDriver( int colorbits )
 	}
 
 	/*
-	** store PFD specifics 
+	** store PFD specifics
 	*/
 	glConfig.colorBits = ( int ) pfd.cColorBits;
 	glConfig.depthBits = ( int ) pfd.cDepthBits;
@@ -631,7 +631,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 				y = ( glw_state.desktopHeight - h ) / 2;
 			}
 
-			// adjust window coordinates if necessary 
+			// adjust window coordinates if necessary
 			// so that the window is completely on screen
 			if ( x < 0 )
 				x = 0;
@@ -649,7 +649,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		}
 
 		tr.wv->hWnd = CreateWindowEx (
-			 exstyle, 
+			 exstyle,
 			 WINDOW_CLASS_NAME,
 			 WINDOW_CLASS_NAME,
 			 stylebits,
@@ -663,7 +663,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		{
 			Com_Error (ERR_FATAL, "GLW_CreateWindow() - Couldn't create window");
 		}
-	
+
 		ShowWindow( tr.wv->hWnd, SW_SHOW );
 		UpdateWindow( tr.wv->hWnd );
 		Com_Printf ("...created window@%d,%d (%dx%d)\n", x, y, w, h );
@@ -719,15 +719,15 @@ static void PrintCDSError( int value )
 /*
 ** GLW_SetMode
 */
-static rserr_t GLW_SetMode( int mode, 
-							int colorbits, 
+static rserr_t GLW_SetMode( int mode,
+							int colorbits,
 							qboolean cdsFullscreen )
 {
 	HDC hDC;
 	const char *win_fs[] = { "W", "FS" };
 	int		cdsRet;
 	DEVMODE dm;
-		
+
 	//
 	// print out informational messages
 	//
@@ -794,7 +794,7 @@ static rserr_t GLW_SetMode( int mode,
 												:
 												ri->SE_GetString("CON_TEXT_TRY_ANYWAY");
 
-			if ( MessageBox( NULL, 							
+			if ( MessageBox( NULL,
 						psErrorBody,
 						sErrorHead,
 						MB_OKCANCEL | MB_ICONEXCLAMATION ) != IDOK )
@@ -808,9 +808,9 @@ static rserr_t GLW_SetMode( int mode,
 	if ( cdsFullscreen )
 	{
 		memset( &dm, 0, sizeof( dm ) );
-		
+
 		dm.dmSize = sizeof( dm );
-		
+
 		dm.dmPelsWidth  = glConfig.vidWidth;
 		dm.dmPelsHeight = glConfig.vidHeight;
 		dm.dmFields     = DM_PELSWIDTH | DM_PELSHEIGHT;
@@ -820,7 +820,7 @@ static rserr_t GLW_SetMode( int mode,
 			dm.dmDisplayFrequency = r_displayRefresh->integer;
 			dm.dmFields |= DM_DISPLAYFREQUENCY;
 		}
-		
+
 		// try to change color depth if possible
 		if ( colorbits != 0 )
 		{
@@ -860,7 +860,7 @@ static rserr_t GLW_SetMode( int mode,
 		else
 		{
 			Com_Printf ("...calling CDS: " );
-			
+
 			// try setting the exact mode requested, because some drivers don't report
 			// the low res modes in EnumDisplaySettings, but still work
 			if ( ( cdsRet = ChangeDisplaySettings( &dm, CDS_FULLSCREEN ) ) == DISP_CHANGE_SUCCESSFUL )
@@ -873,7 +873,7 @@ static rserr_t GLW_SetMode( int mode,
 					ChangeDisplaySettings( 0, 0 );
 					return RSERR_INVALID_MODE;
 				}
-				
+
 				glw_state.cdsFullscreen = qtrue;
 			}
 			else
@@ -885,11 +885,11 @@ static rserr_t GLW_SetMode( int mode,
 				int			modeNum;
 
 				Com_Printf ("failed, " );
-				
+
 				PrintCDSError( cdsRet );
-			
+
 				Com_Printf ("...trying next higher resolution:" );
-				
+
 				// we could do a better matching job here...
 				for ( modeNum = 0 ; ; modeNum++ ) {
 					if ( !EnumDisplaySettings( NULL, modeNum, &devmode ) ) {
@@ -912,18 +912,18 @@ static rserr_t GLW_SetMode( int mode,
 						ChangeDisplaySettings( 0, 0 );
 						return RSERR_INVALID_MODE;
 					}
-					
+
 					glw_state.cdsFullscreen = qtrue;
 				}
 				else
 				{
 					Com_Printf (" failed, " );
-					
+
 					PrintCDSError( cdsRet );
-					
+
 					Com_Printf ("...restoring display settings\n" );
 					ChangeDisplaySettings( 0, 0 );
-					
+
 /*				jfm:  i took out the following code to allow fallback to mode 3, with this code it goes half windowed and just doesn't work.
 					glw_state.cdsFullscreen = qfalse;
 					glConfig.isFullscreen = qfalse;
@@ -1075,7 +1075,7 @@ static void GLW_InitTextureCompression( void )
 					}
 					else
 					{
-						// Drat, preference can't be honored 
+						// Drat, preference can't be honored
 						Com_Printf ("...preferred tc method, GL_S3_s3tc not available\n" );
 						Com_Printf (".....falling back to GL_EXT_texture_compression_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC_DXT;
@@ -1091,7 +1091,7 @@ static void GLW_InitTextureCompression( void )
 					}
 					else
 					{
-						// Drat, preference can't be honored 
+						// Drat, preference can't be honored
 						Com_Printf ("...preferred tc method, GL_EXT_texture_compression_s3tc not available\n" );
 						Com_Printf (".....falling back to GL_S3_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC;
@@ -1268,7 +1268,7 @@ static void GLW_InitExtensions( void )
 			qglTexImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *) ) qwglGetProcAddress( "glTexImage3DEXT" );
 			qglTexSubImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *) ) qwglGetProcAddress( "glTexSubImage3DEXT" );
 
-			if (!qglPointParameterfEXT || !qglPointParameterfvEXT) 
+			if (!qglPointParameterfEXT || !qglPointParameterfvEXT)
 			{
 				Com_Error (ERR_FATAL, "bad getprocaddress");
 			}
@@ -1403,17 +1403,17 @@ static void GLW_InitExtensions( void )
 	// Figure out which texture rectangle extension to use.
 	bool bTexRectSupported = false;
 	if ( Q_stricmpn( glConfig.vendor_string, "ATI Technologies",16 )==0
-		&& Q_stricmpn( glConfig.version_string, "1.3.3",5 )==0 
+		&& Q_stricmpn( glConfig.version_string, "1.3.3",5 )==0
 		&& glConfig.version_string[5] < '9' ) //1.3.34 and 1.3.37 and 1.3.38 are broken for sure, 1.3.39 is not
 	{
 		g_bTextureRectangleHack = true;
 	}
-	
+
 	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}
-	
+
 	// OK, so not so good to put this here, but no one else uses it!!! -AReis
 	typedef const char * (WINAPI * PFNWGLGETEXTENSIONSSTRINGARBPROC) (HDC hdc);
 	PFNWGLGETEXTENSIONSSTRINGARBPROC			qwglGetExtensionsStringARB;
@@ -1437,7 +1437,7 @@ static void GLW_InitExtensions( void )
 			qwglGetPixelFormatAttribivARB			=	(PFNWGLGETPIXELFORMATATTRIBIVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribivARB");
 			qwglGetPixelFormatAttribfvARB			=	(PFNWGLGETPIXELFORMATATTRIBFVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
 			qwglChoosePixelFormatARB				=	(PFNWGLCHOOSEPIXELFORMATARBPROC) qwglGetProcAddress("wglChoosePixelFormatARB");
-	
+
 			// Validate the functions we need.
 			if ( !qwglGetPixelFormatAttribivARB || !qwglGetPixelFormatAttribfvARB || !qwglChoosePixelFormatARB )
 			{
@@ -1464,7 +1464,7 @@ static void GLW_InitExtensions( void )
 			qwglReleasePbufferDCARB		=	(PFNWGLRELEASEPBUFFERDCARBPROC) qwglGetProcAddress("wglReleasePbufferDCARB");
 			qwglDestroyPbufferARB		=	(PFNWGLDESTROYPBUFFERARBPROC) qwglGetProcAddress("wglDestroyPbufferARB");
 			qwglQueryPbufferARB			=	(PFNWGLQUERYPBUFFERARBPROC) qwglGetProcAddress("wglQueryPbufferARB");
-	
+
 			// Validate the functions we need.
 			if ( !qwglCreatePbufferARB || !qwglGetPbufferDCARB || !qwglReleasePbufferDCARB || !qwglDestroyPbufferARB || !qwglQueryPbufferARB )
 			{
@@ -1484,7 +1484,7 @@ static void GLW_InitExtensions( void )
 			qwglBindTexImageARB			=	(PFNWGLBINDTEXIMAGEARBPROC) qwglGetProcAddress("wglBindTexImageARB");
 			qwglReleaseTexImageARB		=	(PFNWGLRELEASETEXIMAGEARBPROC) qwglGetProcAddress("wglReleaseTexImageARB");
 			qwglSetPbufferAttribARB		=	(PFNWGLSETPBUFFERATTRIBARBPROC) qwglGetProcAddress("wglSetPbufferAttribARB");
-	
+
 			// Validate the functions we need.
 			if ( !qwglCreatePbufferARB || !qwglGetPbufferDCARB || !qwglReleasePbufferDCARB || !qwglDestroyPbufferARB || !qwglQueryPbufferARB )
 			{
@@ -1568,7 +1568,7 @@ static qboolean GLW_CheckOSVersion( void )
 /*
 ** GLW_LoadOpenGL
 **
-** GLimp_win.c internal function that attempts to load and use 
+** GLimp_win.c internal function that attempts to load and use
 ** a specific OpenGL DLL.
 */
 static qboolean GLW_LoadOpenGL( )
@@ -1577,8 +1577,8 @@ static qboolean GLW_LoadOpenGL( )
 
 	//
 	// load the driver and bind our function pointers to it
-	// 
-	if ( QGL_Init( "opengl32" ) ) 
+	//
+	if ( QGL_Init( "opengl32" ) )
 	{
 		cdsFullscreen = (qboolean)r_fullscreen->integer;
 
@@ -1698,7 +1698,7 @@ void GLimp_Init( void )
 	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
 	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
 	glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
-	
+
 	if (!glConfig.vendor_string || !glConfig.renderer_string || !glConfig.version_string || !glConfig.extensions_string)
 	{
 		Com_Error( ERR_FATAL, "GLimp_Init() - Invalid GL Driver\n" );
@@ -1707,7 +1707,7 @@ void GLimp_Init( void )
 	// OpenGL driver constants
 	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
 	// stubbed or broken drivers may have reported 0...
-	if ( glConfig.maxTextureSize <= 0 ) 
+	if ( glConfig.maxTextureSize <= 0 )
 	{
 		glConfig.maxTextureSize = 0;
 	}
@@ -1717,7 +1717,7 @@ void GLimp_Init( void )
 	//
 	Q_strncpyz( buf, glConfig.renderer_string, sizeof(buf) );
 	strlwr( buf );
-	
+
 	//
 	// NOTE: if changing cvars, do it within this block.  This allows them
 	// to be overridden when testing driver fixes, etc. but only sets
@@ -1741,22 +1741,22 @@ void GLimp_Init( void )
 		{
 			ri->Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
 		}
-		
-		if ( strstr( buf, "kyro" ) )	
+
+		if ( strstr( buf, "kyro" ) )
 		{
 			ri->Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
 			ri->Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
 		}
-		if ( strstr( buf, "geforce2" ) )	
+		if ( strstr( buf, "geforce2" ) )
 		{
 			ri->Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
 		}
 
-		if ( strstr( buf, "radeon 9000" ) )	
+		if ( strstr( buf, "radeon 9000" ) )
 		{
 			ri->Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
 		}
-		
+
 		GLW_InitExtensions();	//get the values for test below
 		//this must be a really sucky card!
 		if ( (glConfig.textureCompression == TC_NONE) || (glConfig.maxActiveTextures < 2)  || (glConfig.maxTextureSize <= 512) )
@@ -1768,7 +1768,7 @@ void GLimp_Init( void )
 			ri->Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
 		}
 	}
-	
+
 	ri->Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
 	GLW_InitExtensions();
 
@@ -1882,7 +1882,7 @@ void GLimp_Minimize(void)
 /*
 ** GLimp_LogComment
 */
-void GLimp_LogComment( char *comment ) 
+void GLimp_LogComment( char *comment )
 {
 	if ( glw_state.log_fp ) {
 		fprintf( glw_state.log_fp, "%s", comment );

@@ -36,7 +36,7 @@ private:
 public:
 	CTerrainMap(CCMLandScape *landscape);
 	~CTerrainMap();
-	
+
 	void	ConvertPos(int& x, int& y);
 	void	AddBuilding(int x, int y, int side);
 	void	AddStart(int x, int y, int side);

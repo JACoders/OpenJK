@@ -726,7 +726,7 @@ bool CGPGroup::Parse(char **dataPtr, CTextPool **textPool)
 			break;
 		}
 
-		strcpy(lastToken, token);
+		Q_strncpyz(lastToken, token, sizeof(lastToken));
 
 		// read ahead to see what we are doing
 		token = GetToken(dataPtr, true, true);

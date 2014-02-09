@@ -67,7 +67,7 @@ Adds command text at the end of the buffer, does NOT add a final \n
 */
 void Cbuf_AddText( const char *text ) {
 	int		l;
-	
+
 	l = strlen (text);
 
 	if (cmd_text.cursize + l >= cmd_text.maxsize)
@@ -205,10 +205,10 @@ void Cbuf_Execute (void)
 		if( i >= (MAX_CMD_LINE - 1)) {
 			i = MAX_CMD_LINE - 1;
 		}
-				
+
 		Com_Memcpy (line, text, i);
 		line[i] = 0;
-		
+
 // delete the text from the command buffer and move remaining commands down
 // this is necessary because commands (exec) can insert data at the
 // beginning of the text buffer
@@ -265,7 +265,7 @@ void Cmd_Exec_f( void ) {
 	}
 	if (!quiet)
 		Com_Printf ("execing %s\n", filename);
-	
+
 	Cbuf_InsertText (f.c);
 
 	FS_FreeFile (f.v);
@@ -447,10 +447,10 @@ void Cmd_Args_Sanitize( void ) {
 	for ( int i=1; i<cmd_argc; i++ )
 	{
 		char *c = cmd_argv[i];
-		
+
 		if ( strlen( c ) >= MAX_CVAR_VALUE_STRING )
 			c[MAX_CVAR_VALUE_STRING-1] = '\0';
-		
+
 		while ( (c=strpbrk( c, "\n\r;" )) ) {
 			*c = ' ';
 			++c;
@@ -485,7 +485,7 @@ static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 	if ( !text_in ) {
 		return;
 	}
-	
+
 	Q_strncpyz( cmd_cmd, text_in, sizeof(cmd_cmd) );
 
 	text = text_in;
@@ -569,7 +569,7 @@ static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 			return;		// all tokens parsed
 		}
 	}
-	
+
 }
 
 /*
@@ -611,7 +611,7 @@ Cmd_AddCommand
 */
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	cmd_function_t	*cmd;
-	
+
 	// fail if the command already exists
 	if( Cmd_FindCommand( cmd_name ) )
 	{
@@ -672,12 +672,34 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 
 /*
 ============
+Cmd_VM_RemoveCommand
+
+Only remove commands with no associated function
+============
+*/
+void Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot ) {
+	cmd_function_t *cmd = Cmd_FindCommand( cmd_name );
+
+	if( !cmd )
+		return;
+
+	if( cmd->function )
+	{
+		Com_Printf( "%s tried to remove system command \"%s\"", vmStrs[vmslot], cmd_name );
+		return;
+	}
+
+	Cmd_RemoveCommand( cmd_name );
+}
+
+/*
+============
 Cmd_CommandCompletion
 ============
 */
 void	Cmd_CommandCompletion( callbackFunc_t callback ) {
 	cmd_function_t	*cmd;
-	
+
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next) {
 		callback( cmd->name );
 	}
@@ -702,16 +724,16 @@ Cmd_ExecuteString
 A complete command line has been parsed, so try to execute it
 ============
 */
-void	Cmd_ExecuteString( const char *text ) {	
+void	Cmd_ExecuteString( const char *text ) {
 	cmd_function_t	*cmd, **prev;
 
 	// execute the command line
-	Cmd_TokenizeString( text );		
+	Cmd_TokenizeString( text );
 	if ( !Cmd_Argc() ) {
 		return;		// no tokens
 	}
 
-	// check registered command functions	
+	// check registered command functions
 	for ( prev = &cmd_functions ; *prev ; prev = &cmd->next ) {
 		cmd = *prev;
 		if ( !Q_stricmp( Cmd_Argv(0), cmd->name ) ) {
@@ -731,7 +753,7 @@ void	Cmd_ExecuteString( const char *text ) {
 			return;
 		}
 	}
-	
+
 	// check cvars
 	if ( Cvar_Command() ) {
 		return;

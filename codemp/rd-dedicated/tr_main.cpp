@@ -3,7 +3,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "tr_local.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 // Yeah, this might be kind of bad, but no linux version is planned so far :-) - AReis
 // Gee- thanks guys - jdrews, the linux porter...
 #ifdef _WIN32
@@ -43,7 +43,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 	}
 
 	// check against frustum planes
-	for (i = 0 ; i < 4 ; i++) 
+	for (i = 0 ; i < 4 ; i++)
 	{
 		frust = &tr.viewParms.frustum[i];
 
@@ -52,7 +52,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 		{
 			return CULL_OUT;
 		}
-		else if ( dist <= radius ) 
+		else if ( dist <= radius )
 		{
 			mightBeClipped = qtrue;
 		}

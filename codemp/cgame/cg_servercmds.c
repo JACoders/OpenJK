@@ -240,7 +240,7 @@ static void CG_ParseWarmup( void ) {
 
 // this is a reverse map of flag statuses as seen in g_team.c
 //static char ctfFlagStatusRemap[] = { '0', '1', '*', '*', '2' };
-static char ctfFlagStatusRemap[] = { 	
+static char ctfFlagStatusRemap[] = {
 	FLAG_ATBASE,
 	FLAG_TAKEN,			// CTF
 	// server doesn't use FLAG_TAKEN_RED or FLAG_TAKEN_BLUE
@@ -255,7 +255,7 @@ CG_SetConfigValues
 Called on load to set the initial values from configure strings
 ================
 */
-void CG_SetConfigValues( void ) 
+void CG_SetConfigValues( void )
 {
 	const char *s;
 	const char *str;
@@ -272,10 +272,10 @@ void CG_SetConfigValues( void )
 		blueflagId = s[1] - '0';
 
 		// fix: proper flag statuses mapping for dropped flag
-		if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+		if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) )
 			cgs.redflag = ctfFlagStatusRemap[redflagId];
 
-		if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+		if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) )
 			cgs.blueflag = ctfFlagStatusRemap[blueflagId];
 	}
 	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
@@ -438,12 +438,12 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int setType, const char *p
 		return;
 	}
 
-	for ( i = 0 ; i<iTableEntries; i++ ) 
+	for ( i = 0 ; i<iTableEntries; i++ )
 	{
 		sfxHandle_t hSFX;
 		const char *s = GetCustomSoundForType(setType, i);
 
-		if ( !s ) 
+		if ( !s )
 		{
 			break;
 		}
@@ -479,7 +479,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int setType, const char *p
 				}
 			}
 		}
-		
+
 		SetCustomSoundForType(ci, setType, i, hSFX);
 	}
 }
@@ -902,10 +902,10 @@ static void CG_ConfigStringModified( void ) {
 			// format is rb where its red/blue, 0 is at base, 1 is taken, 2 is dropped
 			int redflagId = str[0] - '0', blueflagId = str[1] - '0';
 
-			if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+			if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) )
 				cgs.redflag = ctfFlagStatusRemap[redflagId];
 
-			if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) )  
+			if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) )
 				cgs.blueflag = ctfFlagStatusRemap[blueflagId];
 		}
 	}
@@ -916,7 +916,7 @@ static void CG_ConfigStringModified( void ) {
 	{
 		CG_SetLightstyle(num - CS_LIGHT_STYLES);
 	}
-		
+
 }
 
 //frees all ghoul2 stuff and npc stuff from a centity -rww
@@ -1352,7 +1352,7 @@ static void CG_KillGhoul2_f( void ) {
 
 	if ( argNum < 1 )
 		return;
-	
+
 	for ( i=1; i<argNum; i++ ) {
 		indexNum = atoi( CG_Argv( i ) );
 
@@ -1462,7 +1462,7 @@ static void CG_RestoreClientGhoul_f( void ) {
 		clent->isRagging = qfalse;
 		trap->G2API_SetRagDoll( clent->ghoul2, NULL ); //calling with null parms resets to no ragdoll.
 	}
-		
+
 	//clear all the decals as well
 	trap->G2API_ClearSkinGore( clent->ghoul2 );
 
@@ -1498,7 +1498,7 @@ static void CG_Print_f( void ) {
 void CG_ChatBox_AddString(char *chatStr);
 static void CG_Chat_f( void ) {
 	char cmd[MAX_STRING_CHARS] = {0}, text[MAX_SAY_TEXT] = {0};
-	
+
 	trap->Cmd_Argv( 0, cmd, sizeof( cmd ) );
 
 	if ( !strcmp( cmd, "chat" ) ) {

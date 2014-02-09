@@ -70,7 +70,7 @@ void NPC_Grenadier_PlayConfusionSound( gentity_t *self )
 	TIMER_Set( self, "flee", 0 );
 	self->NPC->squadState = SQUAD_IDLE;
 	self->NPC->tempBehavior = BS_DEFAULT;
-	
+
 	//self->NPC->behaviorState = BS_PATROL;
 	G_ClearEnemy( self );//FIXME: or just self->enemy = NULL;?
 
@@ -84,7 +84,7 @@ NPC_ST_Pain
 -------------------------
 */
 
-void NPC_Grenadier_Pain(gentity_t *self, gentity_t *attacker, int damage) 
+void NPC_Grenadier_Pain(gentity_t *self, gentity_t *attacker, int damage)
 {
 	self->NPC->localState = LSTATE_UNDERFIRE;
 
@@ -109,7 +109,7 @@ static void Grenadier_HoldPosition( void )
 {
 	NPC_FreeCombatPoint( NPCS.NPCInfo->combatPoint, qtrue );
 	NPCS.NPCInfo->goalEntity = NULL;
-	
+
 	/*if ( TIMER_Done( NPC, "stand" ) )
 	{//FIXME: what if can't shoot from this pos?
 		TIMER_Set( NPC, "duck", Q_irand( 2000, 4000 ) );
@@ -130,13 +130,13 @@ static qboolean Grenadier_Move( void )
 
 	NPCS.NPCInfo->combatMove = qtrue;//always move straight toward our goal
 	moved = NPC_MoveToGoal( qtrue );
-	
+
 	//Get the move info
 	NAV_GetLastMove( &info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-	if ( info.flags & NIF_COLLISION ) 
+	if ( info.flags & NIF_COLLISION )
 	{
 		if ( info.blocker == NPCS.NPC->enemy )
 		{
@@ -217,8 +217,8 @@ void NPC_BSGrenadier_Patrol( void )
 					NPCS.NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 					if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED )
 					{
-						if ( level.alertEvents[alertEvent].owner && 
-							level.alertEvents[alertEvent].owner->client && 
+						if ( level.alertEvents[alertEvent].owner &&
+							level.alertEvents[alertEvent].owner->client &&
 							level.alertEvents[alertEvent].owner->health >= 0 &&
 							level.alertEvents[alertEvent].owner->client->playerTeam == NPCS.NPC->client->enemyTeam )
 						{//an enemy
@@ -245,15 +245,15 @@ void NPC_BSGrenadier_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCS.NPCInfo->investigateGoal, NPCS.NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCS.NPCInfo->desiredYaw;
 				o_pitch = NPCS.NPCInfo->desiredPitch;
 				NPCS.NPCInfo->desiredYaw = angles[YAW];
 				NPCS.NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCS.NPCInfo->desiredYaw = o_yaw;
@@ -340,7 +340,7 @@ static void Grenadier_CheckMoveState( void )
 	if ( ( NPCS.NPCInfo->goalEntity != NPCS.NPC->enemy ) && ( NPCS.NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) || 
+		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) ||
 			( NPCS.NPCInfo->squadState == SQUAD_SCOUT && enemyLOS3 && enemyDist3 <= 10000 ) )
 		{
 		//	int	newSquadState = SQUAD_STAND_AND_SHOOT;
@@ -495,8 +495,8 @@ void NPC_BSGrenadier_Attack( void )
 	if ( enemyDist3 < 16384 //128
 		&& (!NPCS.NPC->enemy->client
 			|| NPCS.NPC->enemy->client->ps.weapon != WP_SABER
-			|| BG_SabersOff( &NPCS.NPC->enemy->client->ps ) 
-			) 
+			|| BG_SabersOff( &NPCS.NPC->enemy->client->ps )
+			)
 		)
 	{//enemy is close and not using saber
 		if ( NPCS.NPC->client->ps.weapon == WP_THERMAL )
@@ -538,12 +538,12 @@ void NPC_BSGrenadier_Attack( void )
 			}
 		}
 		else if ( InFOV3( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 45, 90 ) )
-		{//in front of me 
+		{//in front of me
 			//can we shoot our target?
 			//FIXME: how accurate/necessary is this check?
 			int hit = NPC_ShotEntity( NPCS.NPC->enemy, NULL );
 			gentity_t *hitEnt = &g_entities[hit];
-			if ( hit == NPCS.NPC->enemy->s.number 
+			if ( hit == NPCS.NPC->enemy->s.number
 				|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->enemyTeam ) )
 			{
 				float enemyHorzDist;
@@ -647,13 +647,13 @@ void NPC_BSGrenadier_Attack( void )
 	if ( shoot3 )
 	{//try to shoot if it's time
 		if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )
-		{	
+		{
 			if( !(NPCS.NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
 				WeaponThink( qtrue );
 				TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPCInfo->shotTime-level.time );
 			}
-			
+
 		}
 	}
 }

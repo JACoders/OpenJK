@@ -20,7 +20,7 @@ protected:
 	string		mTrigger;		// trigger associated with objective
 
 public:
-	
+
 	CRMObjective(CGPGroup *group);
 	~CRMObjective(void) {}
 

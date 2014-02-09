@@ -27,7 +27,7 @@ void trap_Error( const char *fmt ) {
 	exit(1);
 }
 int trap_Milliseconds( void ) {
-	return Q_syscall( G_MILLISECONDS ); 
+	return Q_syscall( G_MILLISECONDS );
 }
 void trap_PrecisionTimer_Start(void **theNewTimer) {
 	Q_syscall(G_PRECISIONTIMER_START, theNewTimer);
@@ -35,7 +35,7 @@ void trap_PrecisionTimer_Start(void **theNewTimer) {
 int trap_PrecisionTimer_End(void *theTimer) {
 	return Q_syscall(G_PRECISIONTIMER_END, theTimer);
 }
-void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, int flags ) {
+void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, uint32_t flags ) {
 	Q_syscall( G_CVAR_REGISTER, cvar, var_name, value, flags );
 }
 void trap_Cvar_Update( vmCvar_t *cvar ) {

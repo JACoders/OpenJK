@@ -86,7 +86,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 	if ( parentPS->speed || parentPS->groundEntityNum == ENTITYNUM_NONE  ||
 		 pVeh->m_ucmd.forwardmove || pVeh->m_ucmd.upmove > 0 )
-	{ 
+	{
 		if ( pVeh->m_ucmd.forwardmove > 0 && speedInc )
 		{
 			parentPS->speed += speedInc;
@@ -133,7 +133,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 		pVeh->m_ucmd.rightmove = 0;
 
-		/*if ( !pVeh->m_pVehicleInfo->strafePerc 
+		/*if ( !pVeh->m_pVehicleInfo->strafePerc
 			|| (!g_speederControlScheme->value && !parent->s.number) )
 		{//if in a strafe-capable vehicle, clear strafing unless using alternate control scheme
 			pVeh->m_ucmd.rightmove = 0;
@@ -262,7 +262,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	else
 	{
 		float turnSpeed = pVeh->m_pVehicleInfo->turningSpeed;
-		if ( !pVeh->m_pVehicleInfo->turnWhenStopped 
+		if ( !pVeh->m_pVehicleInfo->turnWhenStopped
 			&& !parentPS->speed )//FIXME: or !pVeh->m_ucmd.forwardmove?
 		{//can't turn when not moving
 			//FIXME: or ramp up to max turnSpeed?
@@ -302,19 +302,19 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 // This function makes sure that the vehicle is properly animated.
 static void AnimateVehicle( Vehicle_t *pVeh )
 {
-	animNumber_t Anim = BOTH_STAND1; 
+	animNumber_t Anim = BOTH_STAND1;
 	int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 	gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
 	float fSpeedPercToMax;
 
 	// We're dead (boarding is reused here so I don't have to make another variable :-).
-	if ( parent->health <= 0 ) 
+	if ( parent->health <= 0 )
 	{
 		/*
 		if ( pVeh->m_iBoarding != -999 )	// Animate the death just once!
 		{
 			pVeh->m_iBoarding = -999;
-			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD; 
+			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
 
 			// FIXME! Why do you keep repeating over and over!!?!?!? Bastard!
 			//Vehicle_SetAnim( parent, SETANIM_LEGS, BOTH_VT_DEATH1, iFlags, iBlend );
@@ -339,7 +339,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// Percentage of maximum speed relative to current speed.
 	//float fSpeed = VectorLength( client->ps.velocity );
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax; 
+	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
 
 	// If we're moving...
 	if ( fSpeedPercToMax > 0.0f ) //fSpeedPercToMax >= 0.85f )
@@ -356,7 +356,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 		// If we're walking (or our speed is less than .275%)...
 		if ( ( pVeh->m_ucmd.buttons & BUTTON_WALKING ) || fSpeedPercToMax < 0.275f )
-		{ 
+		{
 			// Make them lean if we're turning.
 			/*if ( fYawDelta < -0.0001f )
 			{
@@ -400,10 +400,10 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 		}
 		else
 		{
-			//int iChance = Q_irand( 0, 20000 ); 
+			//int iChance = Q_irand( 0, 20000 );
 
 			// Every once in a while buck or do a different idle...
-			iFlags = SETANIM_FLAG_NORMAL | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD; 
+			iFlags = SETANIM_FLAG_NORMAL | SETANIM_FLAG_RESTART | SETANIM_FLAG_HOLD;
 			iBlend = 600;
 			if (parent->client->ps.m_iVehicleNum)
 			{//occupado

@@ -669,7 +669,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 	{//don't know this power
 		return qfalse;
 	}
-	
+
 	if ( (self->client->ps.fd.forcePowersActive & ( 1 << forcePower )) )
 	{//already using this power
 		if (forcePower != FP_LEVITATION)
@@ -739,7 +739,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 			}
 		}
 
-		if ( self->client->saber[0].model 
+		if ( self->client->saber[0].model
 			&& self->client->saber[0].model[0] )
 		{//both sabers on
 			if ( g_saberRestrictForce.integer )
@@ -1050,7 +1050,7 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 		self->client->ps.otherSoundLen = hearDist;
 		self->client->ps.otherSoundTime = level.time + 100;
 	}
-	
+
 	self->client->ps.fd.forcePowerDebounce[forcePower] = 0;
 
 	if ((int)forcePower == FP_SPEED && overrideAmt)
@@ -1083,7 +1083,7 @@ void ForceHeal( gentity_t *self )
 	if (self->client->ps.fd.forcePowerLevel[FP_HEAL] == FORCE_LEVEL_3)
 	{
 		self->health += 25; //This was 50, but that angered the Balance God.
-		
+
 		if (self->health > self->client->ps.stats[STAT_MAX_HEALTH])
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
@@ -1093,7 +1093,7 @@ void ForceHeal( gentity_t *self )
 	else if (self->client->ps.fd.forcePowerLevel[FP_HEAL] == FORCE_LEVEL_2)
 	{
 		self->health += 10;
-		
+
 		if (self->health > self->client->ps.stats[STAT_MAX_HEALTH])
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
@@ -1103,7 +1103,7 @@ void ForceHeal( gentity_t *self )
 	else
 	{
 		self->health += 5;
-		
+
 		if (self->health > self->client->ps.stats[STAT_MAX_HEALTH])
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
@@ -1345,7 +1345,7 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 		WP_AddToClientBitflags(te, pl[i]);
 		//Now cramming it all into one event.. doing this many g_sound events at once was a Bad Thing.
-		
+
 		i++;
 	}
 }
@@ -1442,7 +1442,7 @@ void ForceSpeed( gentity_t *self, int forceDuration )
 		return;
 	}
 
-	if ( self->client->holdingObjectiveItem >= MAX_CLIENTS  
+	if ( self->client->holdingObjectiveItem >= MAX_CLIENTS
 		&& self->client->holdingObjectiveItem < ENTITYNUM_WORLD )
 	{//holding Siege item
 		if ( g_entities[self->client->holdingObjectiveItem].genericValue15 )
@@ -1638,7 +1638,7 @@ void ForceLightning( gentity_t *self )
 	self->client->ps.forceHandExtendTime = level.time + 20000;
 
 	G_Sound( self, CHAN_BODY, G_SoundIndex("sound/weapons/force/lightning") );
-	
+
 	WP_ForcePowerStart( self, FP_LIGHTNING, 500 );
 }
 
@@ -1671,9 +1671,9 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			if (ForcePowerUsableOn(self, traceEnt, FP_LIGHTNING))
 			{
 				int	dmg = Q_irand(1,2); //Q_irand( 1, 3 );
-				
+
 				int modPowerLevel = -1;
-				
+
 				if (traceEnt->client)
 				{
 					modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_LIGHTNING, self->client->ps.fd.forcePowerLevel[FP_LIGHTNING], 1);
@@ -1754,7 +1754,7 @@ void ForceShootLightning( gentity_t *self )
 		int		e, numListedEntities, i;
 
 		VectorCopy( self->client->ps.origin, center );
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
 			mins[i] = center[i] - radius;
 			maxs[i] = center[i] + radius;
@@ -1769,7 +1769,7 @@ void ForceShootLightning( gentity_t *self )
 			i++;
 		}
 
-		for ( e = 0 ; e < numListedEntities ; e++ ) 
+		for ( e = 0 ; e < numListedEntities ; e++ )
 		{
 			traceEnt = entityList[e];
 
@@ -1789,15 +1789,15 @@ void ForceShootLightning( gentity_t *self )
 				continue;
 			//this is all to see if we need to start a saber attack, if it's in flight, this doesn't matter
 			// find the distance from the edge of the bounding box
-			for ( i = 0 ; i < 3 ; i++ ) 
+			for ( i = 0 ; i < 3 ; i++ )
 			{
-				if ( center[i] < traceEnt->r.absmin[i] ) 
+				if ( center[i] < traceEnt->r.absmin[i] )
 				{
 					v[i] = traceEnt->r.absmin[i] - center[i];
-				} else if ( center[i] > traceEnt->r.absmax[i] ) 
+				} else if ( center[i] > traceEnt->r.absmax[i] )
 				{
 					v[i] = center[i] - traceEnt->r.absmax[i];
-				} else 
+				} else
 				{
 					v[i] = 0;
 				}
@@ -1815,11 +1815,11 @@ void ForceShootLightning( gentity_t *self )
 
 			//must be close enough
 			dist = VectorLength( v );
-			if ( dist >= radius ) 
+			if ( dist >= radius )
 			{
 				continue;
 			}
-		
+
 			//in PVS?
 			if ( !traceEnt->r.bmodel && !trap->InPVS( ent_org, self->client->ps.origin ) )
 			{//must be in PVS
@@ -1840,13 +1840,13 @@ void ForceShootLightning( gentity_t *self )
 	else
 	{//trace-line
 		VectorMA( self->client->ps.origin, 2048, forward, end );
-		
+
 		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid )
 		{
 			return;
 		}
-		
+
 		traceEnt = &g_entities[tr.entityNum];
 		ForceLightningDamage( self, traceEnt, forward, tr.endpos );
 	}
@@ -1884,7 +1884,7 @@ void ForceDrain( gentity_t *self )
 	self->client->ps.forceHandExtendTime = level.time + 20000;
 
 	G_Sound( self, CHAN_BODY, G_SoundIndex("sound/weapons/force/drain.wav") );
-	
+
 	WP_ForcePowerStart( self, FP_DRAIN, 500 );
 }
 
@@ -1923,7 +1923,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				{
 					dmg = 4;
 				}
-			
+
 				if (traceEnt->client)
 				{
 					modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 1);
@@ -2037,7 +2037,7 @@ int ForceShootDrain( gentity_t *self )
 		int		e, numListedEntities, i;
 
 		VectorCopy( self->client->ps.origin, center );
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
 			mins[i] = center[i] - radius;
 			maxs[i] = center[i] + radius;
@@ -2052,7 +2052,7 @@ int ForceShootDrain( gentity_t *self )
 			i++;
 		}
 
-		for ( e = 0 ; e < numListedEntities ; e++ ) 
+		for ( e = 0 ; e < numListedEntities ; e++ )
 		{
 			traceEnt = entityList[e];
 
@@ -2074,15 +2074,15 @@ int ForceShootDrain( gentity_t *self )
 				continue;
 			//this is all to see if we need to start a saber attack, if it's in flight, this doesn't matter
 			// find the distance from the edge of the bounding box
-			for ( i = 0 ; i < 3 ; i++ ) 
+			for ( i = 0 ; i < 3 ; i++ )
 			{
-				if ( center[i] < traceEnt->r.absmin[i] ) 
+				if ( center[i] < traceEnt->r.absmin[i] )
 				{
 					v[i] = traceEnt->r.absmin[i] - center[i];
-				} else if ( center[i] > traceEnt->r.absmax[i] ) 
+				} else if ( center[i] > traceEnt->r.absmax[i] )
 				{
 					v[i] = center[i] - traceEnt->r.absmax[i];
-				} else 
+				} else
 				{
 					v[i] = 0;
 				}
@@ -2100,11 +2100,11 @@ int ForceShootDrain( gentity_t *self )
 
 			//must be close enough
 			dist = VectorLength( v );
-			if ( dist >= radius ) 
+			if ( dist >= radius )
 			{
 				continue;
 			}
-		
+
 			//in PVS?
 			if ( !traceEnt->r.bmodel && !trap->InPVS( ent_org, self->client->ps.origin ) )
 			{//must be in PVS
@@ -2126,13 +2126,13 @@ int ForceShootDrain( gentity_t *self )
 	else
 	{//trace-line
 		VectorMA( self->client->ps.origin, 2048, forward, end );
-		
+
 		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid || !g_entities[tr.entityNum].client || !g_entities[tr.entityNum].inuse )
 		{
 			return 0;
 		}
-		
+
 		traceEnt = &g_entities[tr.entityNum];
 		ForceDrainDamage( self, traceEnt, forward, tr.endpos );
 		gotOneOrMore = 1;
@@ -2203,7 +2203,7 @@ void ForceJumpCharge( gentity_t *self, usercmd_t *ucmd )
 		G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_1-50], CHAN_VOICE);
 		self->client->ps.fd.forceJumpCharge = self->client->ps.fd.forcePower*forceJumpChargeInterval/(FORCE_JUMP_CHARGE_TIME/FRAMETIME);
 	}
-	
+
 	//trap->Print("%f\n", self->client->ps.fd.forceJumpCharge);
 }
 
@@ -2378,18 +2378,18 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 
 	trap->Trace( tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0 );
 
-	
-	if ( tr->entityNum == ENTITYNUM_NONE 
+
+	if ( tr->entityNum == ENTITYNUM_NONE
 		|| tr->fraction == 1.0f
-		|| tr->allsolid 
+		|| tr->allsolid
 		|| tr->startsolid )
 	{
 		return qfalse;
 	}
-	
+
 	traceEnt = &g_entities[tr->entityNum];
-	
-	if( traceEnt->NPC 
+
+	if( traceEnt->NPC
 		&& traceEnt->NPC->scriptFlags & SCF_NO_FORCE )
 	{
 		return qfalse;
@@ -2441,7 +2441,7 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 			if ( (traceEnt->NPC->scriptFlags&SCF_NO_MIND_TRICK) )
 			{
 			}
-			else if ( traceEnt->s.weapon != WP_SABER 
+			else if ( traceEnt->s.weapon != WP_SABER
 				&& traceEnt->client->NPC_class != CLASS_REBORN )
 			{//haha!  Jedi aren't easily confused!
 				if ( self->client->ps.fd.forcePowerLevel[FP_TELEPATHY] > FORCE_LEVEL_2 )
@@ -2531,7 +2531,7 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 		//NPC_SetAnim( self, SETANIM_TORSO, BOTH_MINDTRICK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD );
 		//FIXME: build-up or delay this until in proper part of anim
 	}
-	else 
+	else
 	{
 		if ( self->client->ps.fd.forcePowerLevel[FP_TELEPATHY] > FORCE_LEVEL_1 && tr->fraction * 2048 > 64 )
 		{//don't create a diversion less than 64 from you of if at power level 1
@@ -2626,7 +2626,7 @@ void ForceTelepathy(gentity_t *self)
 	AngleVectors( fwdangles, forward, right, NULL );
 	VectorCopy( self->client->ps.origin, center );
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = center[i] - radius;
 		maxs[i] = center[i] + radius;
@@ -2868,12 +2868,12 @@ void G_LetGoOfWall( gentity_t *ent )
 		return;
 	}
 	ent->client->ps.pm_flags &= ~PMF_STUCK_TO_WALL;
-	if ( BG_InReboundJump( ent->client->ps.legsAnim ) 
+	if ( BG_InReboundJump( ent->client->ps.legsAnim )
 		|| BG_InReboundHold( ent->client->ps.legsAnim ) )
 	{
 		ent->client->ps.legsTimer = 0;
 	}
-	if ( BG_InReboundJump( ent->client->ps.torsoAnim ) 
+	if ( BG_InReboundJump( ent->client->ps.torsoAnim )
 		|| BG_InReboundHold( ent->client->ps.torsoAnim ) )
 	{
 		ent->client->ps.torsoTimer = 0;
@@ -3014,7 +3014,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 	AngleVectors( fwdangles, forward, right, NULL );
 	VectorCopy( self->client->ps.origin, center );
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = center[i] - radius;
 		maxs[i] = center[i] + radius;
@@ -3157,7 +3157,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		}
 	}
 
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		if (entityList[e] != ENTITYNUM_NONE &&
 			entityList[e] >= 0 &&
@@ -3201,7 +3201,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					if ( !ent->client )
 					{
 						if ( Q_stricmp( "lightsaber", ent->classname ) != 0 )
-						{//not a lightsaber 
+						{//not a lightsaber
 							if ( Q_stricmp( "func_door", ent->classname ) != 0 || !(ent->spawnflags & 2/*MOVER_FORCE_ACTIVATE*/) )
 							{//not a force-usable door
 								if ( Q_stricmp( "func_static", ent->classname ) != 0 || (!(ent->spawnflags&1/*F_PUSH*/)&&!(ent->spawnflags&2/*F_PULL*/)) )
@@ -3218,7 +3218,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							}
 						}
 					}
-					else if ( ent->client->NPC_class == CLASS_GALAKMECH 
+					else if ( ent->client->NPC_class == CLASS_GALAKMECH
 						|| ent->client->NPC_class == CLASS_ATST
 						|| ent->client->NPC_class == CLASS_RANCOR )
 					{//can't push ATST or Galak or Rancor
@@ -3241,15 +3241,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 		//this is all to see if we need to start a saber attack, if it's in flight, this doesn't matter
 		// find the distance from the edge of the bounding box
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
-			if ( center[i] < ent->r.absmin[i] ) 
+			if ( center[i] < ent->r.absmin[i] )
 			{
 				v[i] = ent->r.absmin[i] - center[i];
-			} else if ( center[i] > ent->r.absmax[i] ) 
+			} else if ( center[i] > ent->r.absmax[i] )
 			{
 				v[i] = center[i] - ent->r.absmax[i];
-			} else 
+			} else
 			{
 				v[i] = 0;
 			}
@@ -3268,11 +3268,11 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		//Now check and see if we can actually deflect it
 		//method1
 		//if within a certain range, deflect it
-		if ( dist >= radius ) 
+		if ( dist >= radius )
 		{
 			continue;
 		}
-	
+
 		//in PVS?
 		if ( !ent->r.bmodel && !trap->InPVS( ent_org, self->client->ps.origin ) )
 		{//must be in PVS
@@ -3307,7 +3307,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		{
 			int modPowerLevel = powerLevel;
 
-	
+
 			if (push_list[x]->client)
 			{
 				modPowerLevel = WP_AbsorbConversion(push_list[x], push_list[x]->client->ps.fd.forcePowerLevel[FP_ABSORB], self, powerUse, powerLevel, forcePowerNeeded[self->client->ps.fd.forcePowerLevel[powerUse]][powerUse]);
@@ -3544,7 +3544,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				if ( pull )
 				{//deflect rather than reflect?
 				}
-				else 
+				else
 				{
 					G_ReflectMissile( self, push_list[x], forward );
 				}
@@ -3712,7 +3712,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		if (g_entities[self->client->ps.fd.forceGripEntityNum].client &&
 			g_entities[self->client->ps.fd.forceGripEntityNum].inuse)
 		{
-			
+
 			g_entities[self->client->ps.fd.forceGripEntityNum].client->ps.forceGripChangeMovetype = PM_NORMAL;
 		}
 
@@ -3808,7 +3808,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	}
 
 	VectorSubtract(gripEnt->client->ps.origin, self->client->ps.origin, a);
-	
+
 	trap->Trace(&tr, self->client->ps.origin, NULL, NULL, gripEnt->client->ps.origin, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	gripLevel = WP_AbsorbConversion(gripEnt, gripEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_GRIP, self->client->ps.fd.forcePowerLevel[FP_GRIP], forcePowerNeeded[self->client->ps.fd.forcePowerLevel[FP_GRIP]][FP_GRIP]);
@@ -3856,7 +3856,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 	if (gripLevel == FORCE_LEVEL_1)
 	{
 		gripEnt->client->ps.fd.forceGripBeingGripped = level.time + 1000;
-		
+
 		if ((level.time - gripEnt->client->ps.fd.forceGripStarted) > 5000)
 		{
 			WP_ForcePowerStop(self, forcePower);
@@ -4031,7 +4031,7 @@ qboolean G_IsMindTricked(forcedata_t *fd, int client)
 	{
 		return qtrue;
 	}
-	
+
 	return qfalse;
 }
 
@@ -4160,7 +4160,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		break;
 	case FP_SPEED:
 		//This is handled in PM_WalkMove and PM_StepSlideMove
-		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS  
+		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS
 			&& self->client->holdingObjectiveItem < ENTITYNUM_WORLD )
 		{
 			if ( g_entities[self->client->holdingObjectiveItem].genericValue15 )
@@ -4299,7 +4299,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		}
 		break;
 	case FP_TELEPATHY:
-		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS  
+		if ( self->client->holdingObjectiveItem >= MAX_CLIENTS
 			&& self->client->holdingObjectiveItem < ENTITYNUM_WORLD
 			&& g_entities[self->client->holdingObjectiveItem].genericValue15 )
 		{ //if force hindered can't mindtrick whilst carrying a siege item
@@ -4370,7 +4370,7 @@ int WP_DoSpecificPower( gentity_t *self, usercmd_t *ucmd, forcePowers_t forcepow
 		break;
 	case FP_LEVITATION:
 		//if leave the ground by some other means, cancel the force jump so we don't suddenly jump when we land.
-		
+
 		if ( self->client->ps.groundEntityNum == ENTITYNUM_NONE )
 		{
 			self->client->ps.fd.forceJumpCharge = 0;
@@ -4585,7 +4585,7 @@ void SeekerDroneUpdate(gentity_t *self)
 		return;
 	}
 
-	if (self->client->ps.droneExistTime >= level.time && 
+	if (self->client->ps.droneExistTime >= level.time &&
 		self->client->ps.droneExistTime < (level.time+5000))
 	{
 		self->client->ps.genericEnemyIndex = 1024+self->client->ps.droneExistTime;
@@ -5212,7 +5212,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.forceMindtrickTargetIndex3 = 0;
 		self->client->ps.fd.forceMindtrickTargetIndex4 = 0;
 	}
-	
+
 	if (self->health < 1)
 	{
 		self->client->ps.fd.forceGripBeingGripped = 0;

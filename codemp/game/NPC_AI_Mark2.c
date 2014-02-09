@@ -51,7 +51,7 @@ void NPC_Mark2_Part_Explode( gentity_t *self, int bolt )
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		trap->G2API_GetBoltMatrix( self->ghoul2, 0, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, 0,
 					bolt,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, level.time,
 					NULL, self->modelScale );
@@ -78,7 +78,7 @@ void NPC_Mark2_Pain(gentity_t *self, gentity_t *attacker, int damage)
 {
 	int newBolt,i;
 	int hitLoc = gPainHitLoc;
-	
+
 	NPC_Pain( self, attacker, damage );
 
 	for (i=0;i<3;i++)
@@ -86,7 +86,7 @@ void NPC_Mark2_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		if ((hitLoc==HL_GENERIC1+i) && (self->locationDamage[HL_GENERIC1+i] > AMMO_POD_HEALTH))	// Blow it up?
 		{
 			if (self->locationDamage[hitLoc] >= AMMO_POD_HEALTH)
-			{			
+			{
 				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, va("torso_canister%d",(i+1)) );
 				if ( newBolt != -1 )
 				{
@@ -140,7 +140,7 @@ void Mark2_FireBlaster(qboolean advance)
 	mdxaBone_t	boltMatrix;
 	int bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash");
 
-	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0,
 				bolt,
 				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
 				NULL, NPCS.NPC->modelScale );
@@ -214,7 +214,7 @@ void Mark2_AttackDecision( void )
 
 	NPC_FaceEnemy( qtrue );
 
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -223,7 +223,7 @@ void Mark2_AttackDecision( void )
 	{
 		NPCS.NPC->flags &= ~FL_SHIELDED;
 		NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_RUN1START, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
-		if ((NPCS.NPC->client->ps.legsTimer<=0) && 
+		if ((NPCS.NPC->client->ps.legsTimer<=0) &&
 			NPCS.NPC->client->ps.torsoAnim == BOTH_RUN1START )
 		{
 			NPCS.NPCInfo->localState = LSTATE_NONE;	// He's up again.

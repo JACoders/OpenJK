@@ -61,7 +61,7 @@ GetInfo
 */
 
 void CBlockMember::GetInfo( int *id, int *size, void **data )
-{	
+{
 	*id = m_id;
 	*size = m_size;
 	*data = m_data;
@@ -122,7 +122,7 @@ int CBlockMember::ReadMember( char **stream, int *streamPos )
 		memcpy( m_data, (*stream + *streamPos), m_size );
 	}
 	*streamPos += m_size;
-	
+
 	return true;
 }
 
@@ -248,7 +248,7 @@ int CBlock::Write( int member_id, const char *member_data )
 	CBlockMember *bMember = new CBlockMember;
 
 	bMember->SetID( member_id );
-	
+
 	bMember->SetData( member_data );
 	bMember->SetSize( strlen(member_data) + 1 );
 
@@ -259,7 +259,7 @@ int CBlock::Write( int member_id, const char *member_data )
 
 int CBlock::Write( int member_id, vector_t member_data )
 {
-	CBlockMember *bMember; 
+	CBlockMember *bMember;
 
 	bMember = new CBlockMember;
 
@@ -302,7 +302,7 @@ int CBlock::Write( int member_id, int member_data )
 int CBlock::Write( CBlockMember *bMember )
 {
 // findme: this is wrong:	bMember->SetSize( sizeof(bMember->GetData()) );
-	
+
 	AddMember( bMember );
 
 	return true;
@@ -488,7 +488,7 @@ StripExtension
 void CBlockStream::StripExtension( const char *in, char *out )
 {
 	int		i = strlen(in);
-	
+
 	while ( (in[i] != '.') && (i >= 0) )
 	 i--;
 
@@ -528,7 +528,7 @@ int CBlockStream::Create( char *filename )
 {
 	char	newName[MAX_FILENAME_LENGTH], *id_header = IBI_HEADER_ID;
 	float	version = IBI_VERSION;
-	
+
 	//Clear the temp string
 	memset(newName, 0, sizeof(newName));
 
@@ -583,12 +583,12 @@ int CBlockStream::WriteBlock( CBlock *block )
 	int				numMembers = block->GetNumMembers();
 	unsigned char	flags = block->GetFlags();
 
-	fwrite ( &id, sizeof(id), 1, m_fileHandle ); 
+	fwrite ( &id, sizeof(id), 1, m_fileHandle );
 	fwrite ( &numMembers, sizeof(numMembers), 1, m_fileHandle );
 	fwrite ( &flags, sizeof( flags ), 1, m_fileHandle );
 
 	for ( int i = 0; i < numMembers; i++ )
-	{	
+	{
 		bMember = block->GetMember( i );
 		bMember->WriteMember( m_fileHandle );
 	}
@@ -640,7 +640,7 @@ int CBlockStream::ReadBlock( CBlock *get )
 	// Stream blocks are generally temporary as they
 	// are just used in an initial parsing phase...
 	while ( numMembers-- > 0)
-	{	
+	{
 		bMember = new CBlockMember;
 		bMember->ReadMember( &m_stream, &m_streamPos );
 		get->AddMember( bMember );
@@ -659,7 +659,7 @@ int CBlockStream::Open( char *buffer, long size )
 {
 	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
-	
+
 	Init();
 
 	m_fileSize = size;

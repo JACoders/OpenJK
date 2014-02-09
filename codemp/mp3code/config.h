@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
 	Portions Copyright (C) 1998-1999 EMusic.com
@@ -17,7 +17,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: config.win32,v 1.16 1999/12/09 08:44:07 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -115,7 +115,7 @@ typedef short			int32;
 #define DIR_MARKER_STR "/"
 #endif /* WIN32 */
 
-// What character(s) marks the end of a line in a text file? 
+// What character(s) marks the end of a line in a text file?
 // For DOS and Windows, it is "\r\n"; in UNIX it is "\r".
 #if defined(WIN32) || defined(OS2) || defined(__DOS__)
 #define LINE_END_MARKER_STR "\r\n"

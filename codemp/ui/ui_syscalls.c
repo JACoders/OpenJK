@@ -27,9 +27,9 @@ void trap_Error( const char *string ) {
 	exit(1);
 }
 int trap_Milliseconds( void ) {
-	return Q_syscall( UI_MILLISECONDS ); 
+	return Q_syscall( UI_MILLISECONDS );
 }
-void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, int flags ) {
+void trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, uint32_t flags ) {
 	Q_syscall( UI_CVAR_REGISTER, cvar, var_name, value, flags );
 }
 void trap_Cvar_Update( vmCvar_t *cvar ) {
@@ -50,9 +50,9 @@ void trap_Cvar_SetValue( const char *var_name, float value ) {
 	Q_syscall( UI_CVAR_SETVALUE, var_name, PASSFLOAT( value ) );
 }
 void trap_Cvar_Reset( const char *name ) {
-	Q_syscall( UI_CVAR_RESET, name ); 
+	Q_syscall( UI_CVAR_RESET, name );
 }
-void trap_Cvar_Create( const char *var_name, const char *var_value, int flags ) {
+void trap_Cvar_Create( const char *var_name, const char *var_value, uint32_t flags ) {
 	Q_syscall( UI_CVAR_CREATE, var_name, var_value, flags );
 }
 void trap_Cvar_InfoStringBuffer( int bit, char *buffer, int bufsize ) {
@@ -114,7 +114,7 @@ unsigned int trap_AnyLanguage_ReadCharFromString( const char *psText, int *piAdv
 }
 qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 	char buf[1024];
-	
+
 	if (name[0] == '*') {
 		trap_Cvar_VariableStringBuffer(name+1, buf, sizeof(buf));
 		if (buf[0])

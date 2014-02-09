@@ -60,13 +60,18 @@ typedef int SOCKET;
 static qboolean usingSocks = qfalse;
 static qboolean networkingEnabled = qfalse;
 
-static cvar_t	*net_noudp;
+static cvar_t	*net_enabled;
 static cvar_t	*net_forcenonlocal;
+
 static cvar_t	*net_socksEnabled;
 static cvar_t	*net_socksServer;
 static cvar_t	*net_socksPort;
 static cvar_t	*net_socksUsername;
 static cvar_t	*net_socksPassword;
+
+static cvar_t	*net_ip;
+static cvar_t	*net_port;
+
 static struct sockaddr	socksRelayAddr;
 
 static SOCKET	ip_socket = INVALID_SOCKET;
@@ -185,7 +190,7 @@ static qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 			return qfalse;
 		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
 	}
-	
+
 	return qtrue;
 }
 
@@ -196,11 +201,11 @@ Sys_StringToAdr
 */
 qboolean Sys_StringToAdr( const char *s, netadr_t *a ) {
 	struct sockaddr sadr;
-	
+
 	if ( !Sys_StringToSockaddr( s, &sadr ) ) {
 		return qfalse;
 	}
-	
+
 	SockadrToNetadr( &sadr, a );
 	return qtrue;
 }
@@ -239,7 +244,7 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		if( err == EAGAIN || err == ECONNRESET )
 			return qfalse;
 
-		Com_Printf( "NET_GetPacket: %s from %s\n", NET_ErrorString(), NET_AdrToString(*net_from) );
+		Com_Printf( "NET_GetPacket: %s\n", NET_ErrorString() );
 		return qfalse;
 	}
 
@@ -262,7 +267,7 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		net_message->readcount = 0;
 	}
 
-	if( ret == net_message->maxsize ) {
+	if( ret >= net_message->maxsize ) {
 		Com_Printf( "Oversize packet from %s\n", NET_AdrToString (*net_from) );
 		return qfalse;
 	}
@@ -389,12 +394,13 @@ void Sys_ShowIP(void) {
 NET_IPSocket
 ====================
 */
-SOCKET NET_IPSocket( char *net_interface, int port ) {
+SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 	SOCKET				newsocket;
 	struct sockaddr_in	address;
 	u_long				_true = 1;
 	int					i = 1;
-	int					err;
+
+	*err = 0;
 
 	if( net_interface ) {
 		Com_Printf( "Opening IP socket: %s:%i\n", net_interface, port );
@@ -404,16 +410,15 @@ SOCKET NET_IPSocket( char *net_interface, int port ) {
 	}
 
 	if( ( newsocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ) ) == INVALID_SOCKET ) {
-		err = socketError;
-		if( err != EAFNOSUPPORT ) {
-			Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
-		}
-		return INVALID_SOCKET;
+		*err = socketError;
+		Com_Printf( "WARNING: NET_IPSocket: socket: %s\n", NET_ErrorString() );
+		return newsocket;
 	}
 
 	// make it non-blocking
 	if( ioctlsocket( newsocket, FIONBIO, &_true ) == SOCKET_ERROR ) {
 		Com_Printf( "WARNING: NET_IPSocket: ioctl FIONBIO: %s\n", NET_ErrorString() );
+		*err = socketError;
 		closesocket( newsocket );
 		return INVALID_SOCKET;
 	}
@@ -444,6 +449,7 @@ SOCKET NET_IPSocket( char *net_interface, int port ) {
 
 	if( bind( newsocket, (const struct sockaddr *)&address, sizeof(address) ) == SOCKET_ERROR ) {
 		Com_Printf( "WARNING: NET_IPSocket: bind: %s\n", NET_ErrorString() );
+		*err = socketError;
 		closesocket( newsocket );
 		return INVALID_SOCKET;
 	}
@@ -798,28 +804,33 @@ NET_OpenIP
 */
 void NET_OpenIP( void )
 {
-	cvar_t	*ip;
-	int		port;
-	int		i;
+	int port = net_port->integer;
+	int err;
 
-	ip = Cvar_Get( "net_ip", "localhost", CVAR_LATCH );
-	port = Cvar_Get( "net_port", va( "%i", PORT_SERVER ), CVAR_LATCH )->integer;
+	NET_GetLocalAddress();
 
 	// automatically scan for a valid port, so multiple
 	// dedicated servers can be started without requiring
 	// a different net_port for each one
-	for( i = 0 ; i < 10 ; i++ ) {
-		ip_socket = NET_IPSocket( ip->string, port + i );
-		if ( ip_socket != INVALID_SOCKET ) {
-			Cvar_SetValue( "net_port", port + i );
-			if ( net_socksEnabled->integer ) {
-				NET_OpenSocks( port + i );
+
+	if ( net_enabled->integer & NET_ENABLEV4 ) {
+		for ( int i=0 ; i < 10 ; i++ ) {
+			ip_socket = NET_IPSocket( net_ip->string, port + i, &err );
+			if ( ip_socket != INVALID_SOCKET ) {
+				Cvar_SetValue( "net_port", port + i );
+
+				if ( net_socksEnabled->integer )
+					NET_OpenSocks( port + i );
+				break;
 			}
-			NET_GetLocalAddress();
-			return;
+			else {
+				if ( err == EAFNOSUPPORT )
+					break;
+			}
 		}
+		if ( ip_socket == INVALID_SOCKET )
+			Com_Printf( "WARNING: Couldn't bind to a v4 ip address.\n");
 	}
-	Com_Printf( "WARNING: Couldn't allocate IP port\n");
 }
 
 //===================================================================
@@ -830,44 +841,45 @@ NET_GetCvars
 ====================
 */
 static qboolean NET_GetCvars( void ) {
-	qboolean	modified = qfalse;
+	int	modified = 0;
 
-	if( net_noudp && net_noudp->modified ) {
-		modified = qtrue;
-	}
-	net_noudp = Cvar_Get( "net_noudp", "0", CVAR_LATCH | CVAR_ARCHIVE );
+	net_enabled = Cvar_Get( "net_enabled", "1", CVAR_LATCH | CVAR_ARCHIVE );
+	modified = net_enabled->modified;
+	net_enabled->modified = qfalse;
 
-	if( net_forcenonlocal && net_forcenonlocal->modified ) {
-		modified = qtrue;
-	}
 	net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_forcenonlocal->modified;
+	net_forcenonlocal->modified = qfalse;
 
-	if( net_socksEnabled && net_socksEnabled->modified ) {
-		modified = qtrue;
-	}
+	net_ip = Cvar_Get( "net_ip", "localhost", CVAR_LATCH );
+	modified += net_ip->modified;
+	net_ip->modified = qfalse;
+
+	net_port = Cvar_Get( "net_port", XSTRING( PORT_SERVER ), CVAR_LATCH );
+	modified += net_port->modified;
+	net_port->modified = qfalse;
+
 	net_socksEnabled = Cvar_Get( "net_socksEnabled", "0", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_socksEnabled->modified;
+	net_socksEnabled->modified = qfalse;
 
-	if( net_socksServer && net_socksServer->modified ) {
-		modified = qtrue;
-	}
 	net_socksServer = Cvar_Get( "net_socksServer", "", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_socksServer->modified;
+	net_socksServer->modified = qfalse;
 
-	if( net_socksPort && net_socksPort->modified ) {
-		modified = qtrue;
-	}
 	net_socksPort = Cvar_Get( "net_socksPort", "1080", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_socksPort->modified;
+	net_socksPort->modified = qfalse;
 
-	if( net_socksUsername && net_socksUsername->modified ) {
-		modified = qtrue;
-	}
 	net_socksUsername = Cvar_Get( "net_socksUsername", "", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_socksUsername->modified;
+	net_socksUsername->modified = qfalse;
 
-	if( net_socksPassword && net_socksPassword->modified ) {
-		modified = qtrue;
-	}
 	net_socksPassword = Cvar_Get( "net_socksPassword", "", CVAR_LATCH | CVAR_ARCHIVE );
+	modified += net_socksPassword->modified;
+	net_socksPassword->modified = qfalse;
 
-	return modified;
+	return modified ? qtrue : qfalse;
 }
 
 /*
@@ -883,17 +895,15 @@ void NET_Config( qboolean enableNetworking ) {
 	// get any latched changes to cvars
 	modified = NET_GetCvars();
 
-	if( net_noudp->integer ) {
+	if ( !net_enabled->integer )
 		enableNetworking = qfalse;
-	}
 
 	// if enable state is the same and no cvars were modified, we have nothing to do
-	if( enableNetworking == networkingEnabled && !modified ) {
+	if ( enableNetworking == networkingEnabled && !modified )
 		return;
-	}
 
-	if( enableNetworking == networkingEnabled ) {
-		if( enableNetworking ) {
+	if ( enableNetworking == networkingEnabled ) {
+		if ( enableNetworking ) {
 			stop = qtrue;
 			start = qtrue;
 		}
@@ -903,7 +913,7 @@ void NET_Config( qboolean enableNetworking ) {
 		}
 	}
 	else {
-		if( enableNetworking ) {
+		if ( enableNetworking ) {
 			stop = qfalse;
 			start = qtrue;
 		}
@@ -914,22 +924,21 @@ void NET_Config( qboolean enableNetworking ) {
 		networkingEnabled = enableNetworking;
 	}
 
-	if( stop ) {
-		if ( ip_socket && ip_socket != INVALID_SOCKET ) {
+	if ( stop ) {
+		if ( ip_socket != INVALID_SOCKET ) {
 			closesocket( ip_socket );
 			ip_socket = INVALID_SOCKET;
 		}
 
-		if ( socks_socket && socks_socket != INVALID_SOCKET ) {
+		if ( socks_socket != INVALID_SOCKET ) {
 			closesocket( socks_socket );
 			socks_socket = INVALID_SOCKET;
 		}
 	}
 
-	if( start ) {
-		if ( !net_noudp->integer ) {
+	if ( start ) {
+		if ( net_enabled->integer )
 			NET_OpenIP();
-		}
 	}
 }
 
@@ -950,10 +959,9 @@ void NET_Init( void ) {
 	Com_Printf( "Winsock Initialized\n" );
 #endif
 
-	// this is really just to get the cvars registered
-	NET_GetCvars();
-
 	NET_Config( qtrue );
+
+	Cmd_AddCommand ("net_restart", NET_Restart_f );
 }
 
 /*
@@ -1007,6 +1015,6 @@ void NET_Sleep( int msec ) {
 NET_Restart_f
 ====================
 */
-void NET_Restart( void ) {
+void NET_Restart_f( void ) {
 	NET_Config( qtrue );
 }

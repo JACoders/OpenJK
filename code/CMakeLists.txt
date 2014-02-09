@@ -70,13 +70,6 @@ if(BuildSPEngine)
 
 	# Client files
 	set(SPEngineClientFiles
-		"${SPDir}/client/OpenAL/al.h"
-		"${SPDir}/client/OpenAL/alc.h"
-		"${SPDir}/client/OpenAL/alctypes.h"
-		"${SPDir}/client/OpenAL/altypes.h"
-		"${SPDir}/client/OpenAL/alu.h"
-		"${SPDir}/client/OpenAL/alut.h"
-
 		"${SPDir}/client/keys.h"
 		"${SPDir}/client/keycodes.h"
 
@@ -155,6 +148,7 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/stringed_interface.h"
 
 		"${SPDir}/qcommon/strip.cpp"
+		"${SPDir}/qcommon/persistence.cpp"
 		"${SPDir}/qcommon/unzip.cpp"
 		"${SPDir}/qcommon/unzip.h"
 		"${OpenJKLibDir}/zlib/ioapi.c"

@@ -22,46 +22,46 @@ field_t		chatField;
 qboolean	chat_team;
 int			chat_playerNum;
 
-keyGlobals_t	kg;										
+keyGlobals_t	kg;
 
 // do NOT blithely change any of the key names (3rd field) here, since they have to match the key binds
 //	in the CFG files, they're also prepended with "KEYNAME_" when looking up StringEd references
 //
-keyname_t keynames[MAX_KEYS] =							
+keyname_t keynames[MAX_KEYS] =
 {
-	{ 0x00, 0x00, NULL, A_NULL, false									},					  
-	{ 0x01, 0x01, "SHIFT", A_SHIFT, false 								},					       
-	{ 0x02, 0x02, "CTRL", A_CTRL, false   								},					       
-	{ 0x03, 0x03, "ALT", A_ALT, false									},					       
-	{ 0x04, 0x04, "CAPSLOCK", A_CAPSLOCK, false							},					       
-	{ 0x05, 0x05, "KP_NUMLOCK", A_NUMLOCK, false						},					       
-	{ 0x06, 0x06, "SCROLLLOCK", A_SCROLLLOCK, false						},					       
-	{ 0x07, 0x07, "PAUSE", A_PAUSE, false								},					       
-	{ 0x08, 0x08, "BACKSPACE", A_BACKSPACE, false						},					       
-	{ 0x09, 0x09, "TAB", A_TAB, false									},					       
-	{ 0x0a, 0x0a, "ENTER", A_ENTER, false								},					       
-	{ 0x0b, 0x0b, "KP_PLUS", A_KP_PLUS, false							},					       
-	{ 0x0c, 0x0c, "KP_MINUS", A_KP_MINUS, false							},					       
-	{ 0x0d, 0x0d, "KP_ENTER", A_KP_ENTER, false							},					       
-	{ 0x0e, 0x0e, "KP_DEL", A_KP_PERIOD, false							},					       
+	{ 0x00, 0x00, NULL, A_NULL, false									},
+	{ 0x01, 0x01, "SHIFT", A_SHIFT, false 								},
+	{ 0x02, 0x02, "CTRL", A_CTRL, false   								},
+	{ 0x03, 0x03, "ALT", A_ALT, false									},
+	{ 0x04, 0x04, "CAPSLOCK", A_CAPSLOCK, false							},
+	{ 0x05, 0x05, "KP_NUMLOCK", A_NUMLOCK, false						},
+	{ 0x06, 0x06, "SCROLLLOCK", A_SCROLLLOCK, false						},
+	{ 0x07, 0x07, "PAUSE", A_PAUSE, false								},
+	{ 0x08, 0x08, "BACKSPACE", A_BACKSPACE, false						},
+	{ 0x09, 0x09, "TAB", A_TAB, false									},
+	{ 0x0a, 0x0a, "ENTER", A_ENTER, false								},
+	{ 0x0b, 0x0b, "KP_PLUS", A_KP_PLUS, false							},
+	{ 0x0c, 0x0c, "KP_MINUS", A_KP_MINUS, false							},
+	{ 0x0d, 0x0d, "KP_ENTER", A_KP_ENTER, false							},
+	{ 0x0e, 0x0e, "KP_DEL", A_KP_PERIOD, false							},
 	{ 0x0f, 0x0f, NULL, A_PRINTSCREEN, false							},
-	{ 0x10, 0x10, "KP_INS", A_KP_0, false								},					       
-	{ 0x11, 0x11, "KP_END", A_KP_1, false								},					       
-	{ 0x12, 0x12, "KP_DOWNARROW", A_KP_2, false							},					       
-	{ 0x13, 0x13, "KP_PGDN", A_KP_3, false								},					       
-	{ 0x14, 0x14, "KP_LEFTARROW", A_KP_4, false							},					       
-	{ 0x15, 0x15, "KP_5", A_KP_5, false									},					       
-	{ 0x16, 0x16, "KP_RIGHTARROW", A_KP_6, false						},					       
-	{ 0x17, 0x17, "KP_HOME", A_KP_7, false								},					       
-	{ 0x18, 0x18, "KP_UPARROW", A_KP_8, false							},					       
-	{ 0x19, 0x19, "KP_PGUP", A_KP_9, false								},					       
-	{ 0x1a, 0x1a, "CONSOLE", A_CONSOLE, false 							},					       
-	{ 0x1b, 0x1b, "ESCAPE", A_ESCAPE, false								},					       
-	{ 0x1c, 0x1c, "F1", A_F1, true										},					       
-	{ 0x1d, 0x1d, "F2", A_F2, true										},					       
-	{ 0x1e, 0x1e, "F3", A_F3, true										},					       
-	{ 0x1f, 0x1f, "F4", A_F4, true										},					       
-			    													        
+	{ 0x10, 0x10, "KP_INS", A_KP_0, false								},
+	{ 0x11, 0x11, "KP_END", A_KP_1, false								},
+	{ 0x12, 0x12, "KP_DOWNARROW", A_KP_2, false							},
+	{ 0x13, 0x13, "KP_PGDN", A_KP_3, false								},
+	{ 0x14, 0x14, "KP_LEFTARROW", A_KP_4, false							},
+	{ 0x15, 0x15, "KP_5", A_KP_5, false									},
+	{ 0x16, 0x16, "KP_RIGHTARROW", A_KP_6, false						},
+	{ 0x17, 0x17, "KP_HOME", A_KP_7, false								},
+	{ 0x18, 0x18, "KP_UPARROW", A_KP_8, false							},
+	{ 0x19, 0x19, "KP_PGUP", A_KP_9, false								},
+	{ 0x1a, 0x1a, "CONSOLE", A_CONSOLE, false 							},
+	{ 0x1b, 0x1b, "ESCAPE", A_ESCAPE, false								},
+	{ 0x1c, 0x1c, "F1", A_F1, true										},
+	{ 0x1d, 0x1d, "F2", A_F2, true										},
+	{ 0x1e, 0x1e, "F3", A_F3, true										},
+	{ 0x1f, 0x1f, "F4", A_F4, true										},
+
 	{ 0x20, 0x20, "SPACE", A_SPACE, false								},
 	{ (word)'!', (word)'!', NULL, A_PLING, false		  				},
 	{ (word)'"', (word)'"', NULL, A_DOUBLE_QUOTE, false  				},
@@ -94,73 +94,73 @@ keyname_t keynames[MAX_KEYS] =
 	{ (word)'=', (word)'=', NULL, A_EQUALS, false						},
 	{ (word)'>', (word)'>', NULL, A_GREATERTHAN, false					},
 	{ (word)'?', (word)'?', NULL, A_QUESTION, false						},
-			    													
-	{ (word)'@', (word)'@', NULL, A_AT, false							},	   	            
-	{ (word)'A', (word)'a', NULL, A_CAP_A, false						},		            
-	{ (word)'B', (word)'b', NULL, A_CAP_B, false						},		            
-	{ (word)'C', (word)'c', NULL, A_CAP_C, false						},		            
-	{ (word)'D', (word)'d', NULL, A_CAP_D, false						},		            
-	{ (word)'E', (word)'e', NULL, A_CAP_E, false						},		            
-	{ (word)'F', (word)'f', NULL, A_CAP_F, false						},		            
-	{ (word)'G', (word)'g', NULL, A_CAP_G, false						},		            
-	{ (word)'H', (word)'h', NULL, A_CAP_H, false						},		            
-	{ (word)'I', (word)'i', NULL, A_CAP_I, false						},		            
-	{ (word)'J', (word)'j', NULL, A_CAP_J, false						},		            
-	{ (word)'K', (word)'k', NULL, A_CAP_K, false						},		            
-	{ (word)'L', (word)'l', NULL, A_CAP_L, false						},		            
-	{ (word)'M', (word)'m', NULL, A_CAP_M, false						},		            
-	{ (word)'N', (word)'n', NULL, A_CAP_N, false						},		            
-	{ (word)'O', (word)'o', NULL, A_CAP_O, false						},		            
-	{ (word)'P', (word)'p', NULL, A_CAP_P, false						},		            
-	{ (word)'Q', (word)'q', NULL, A_CAP_Q, false						},		            
-	{ (word)'R', (word)'r', NULL, A_CAP_R, false						},		            
-	{ (word)'S', (word)'s', NULL, A_CAP_S, false						},		            
-	{ (word)'T', (word)'t', NULL, A_CAP_T, false						},		            
-	{ (word)'U', (word)'u', NULL, A_CAP_U, false						},		            
-	{ (word)'V', (word)'v', NULL, A_CAP_V, false						},		            
-	{ (word)'W', (word)'w', NULL, A_CAP_W, false						},		            
-	{ (word)'X', (word)'x', NULL, A_CAP_X, false						},		            
-	{ (word)'Y', (word)'y', NULL, A_CAP_Y, false						},		            
-	{ (word)'Z', (word)'z', NULL, A_CAP_Z, false						},		            
-	{ (word)'[', (word)'[', NULL, A_OPEN_SQUARE, false					},					    
-	{ 0x5c, 0x5c, NULL, A_BACKSLASH, false								},					    
-	{ (word)']', (word)']', NULL, A_CLOSE_SQUARE, false 				},					    
-	{ (word)'^', (word)'^', NULL, A_CARET, false		 				},					    
-	{ (word)'_', (word)'_', NULL, A_UNDERSCORE, false					},					    
-			    													   
+
+	{ (word)'@', (word)'@', NULL, A_AT, false							},
+	{ (word)'A', (word)'a', NULL, A_CAP_A, false						},
+	{ (word)'B', (word)'b', NULL, A_CAP_B, false						},
+	{ (word)'C', (word)'c', NULL, A_CAP_C, false						},
+	{ (word)'D', (word)'d', NULL, A_CAP_D, false						},
+	{ (word)'E', (word)'e', NULL, A_CAP_E, false						},
+	{ (word)'F', (word)'f', NULL, A_CAP_F, false						},
+	{ (word)'G', (word)'g', NULL, A_CAP_G, false						},
+	{ (word)'H', (word)'h', NULL, A_CAP_H, false						},
+	{ (word)'I', (word)'i', NULL, A_CAP_I, false						},
+	{ (word)'J', (word)'j', NULL, A_CAP_J, false						},
+	{ (word)'K', (word)'k', NULL, A_CAP_K, false						},
+	{ (word)'L', (word)'l', NULL, A_CAP_L, false						},
+	{ (word)'M', (word)'m', NULL, A_CAP_M, false						},
+	{ (word)'N', (word)'n', NULL, A_CAP_N, false						},
+	{ (word)'O', (word)'o', NULL, A_CAP_O, false						},
+	{ (word)'P', (word)'p', NULL, A_CAP_P, false						},
+	{ (word)'Q', (word)'q', NULL, A_CAP_Q, false						},
+	{ (word)'R', (word)'r', NULL, A_CAP_R, false						},
+	{ (word)'S', (word)'s', NULL, A_CAP_S, false						},
+	{ (word)'T', (word)'t', NULL, A_CAP_T, false						},
+	{ (word)'U', (word)'u', NULL, A_CAP_U, false						},
+	{ (word)'V', (word)'v', NULL, A_CAP_V, false						},
+	{ (word)'W', (word)'w', NULL, A_CAP_W, false						},
+	{ (word)'X', (word)'x', NULL, A_CAP_X, false						},
+	{ (word)'Y', (word)'y', NULL, A_CAP_Y, false						},
+	{ (word)'Z', (word)'z', NULL, A_CAP_Z, false						},
+	{ (word)'[', (word)'[', NULL, A_OPEN_SQUARE, false					},
+	{ 0x5c, 0x5c, NULL, A_BACKSLASH, false								},
+	{ (word)']', (word)']', NULL, A_CLOSE_SQUARE, false 				},
+	{ (word)'^', (word)'^', NULL, A_CARET, false		 				},
+	{ (word)'_', (word)'_', NULL, A_UNDERSCORE, false					},
+
 	{ 0x60, 0x60, NULL, A_LEFT_SINGLE_QUOTE, false						},
-	{ (word)'A', (word)'a', NULL, A_LOW_A, false						},           
-	{ (word)'B', (word)'b', NULL, A_LOW_B, false						},           
-	{ (word)'C', (word)'c', NULL, A_LOW_C, false						},           
-	{ (word)'D', (word)'d', NULL, A_LOW_D, false						},           
-	{ (word)'E', (word)'e', NULL, A_LOW_E, false						},           
-	{ (word)'F', (word)'f', NULL, A_LOW_F, false						},           
-	{ (word)'G', (word)'g', NULL, A_LOW_G, false						},           
-	{ (word)'H', (word)'h', NULL, A_LOW_H, false						},           
-	{ (word)'I', (word)'i', NULL, A_LOW_I, false						},           
-	{ (word)'J', (word)'j', NULL, A_LOW_J, false						},           
-	{ (word)'K', (word)'k', NULL, A_LOW_K, false						},           
-	{ (word)'L', (word)'l', NULL, A_LOW_L, false						},           
-	{ (word)'M', (word)'m', NULL, A_LOW_M, false						},           
-	{ (word)'N', (word)'n', NULL, A_LOW_N, false						},           
-	{ (word)'O', (word)'o', NULL, A_LOW_O, false						},           
-	{ (word)'P', (word)'p', NULL, A_LOW_P, false						},           
-	{ (word)'Q', (word)'q', NULL, A_LOW_Q, false						},           
-	{ (word)'R', (word)'r', NULL, A_LOW_R, false						},           
-	{ (word)'S', (word)'s', NULL, A_LOW_S, false						},           
-	{ (word)'T', (word)'t', NULL, A_LOW_T, false						},           
-	{ (word)'U', (word)'u', NULL, A_LOW_U, false						},           
-	{ (word)'V', (word)'v', NULL, A_LOW_V, false						},           
-	{ (word)'W', (word)'w', NULL, A_LOW_W, false						},           
-	{ (word)'X', (word)'x', NULL, A_LOW_X, false						},           
-	{ (word)'Y', (word)'y', NULL, A_LOW_Y, false						},           
-	{ (word)'Z', (word)'z', NULL, A_LOW_Z, false						},           
+	{ (word)'A', (word)'a', NULL, A_LOW_A, false						},
+	{ (word)'B', (word)'b', NULL, A_LOW_B, false						},
+	{ (word)'C', (word)'c', NULL, A_LOW_C, false						},
+	{ (word)'D', (word)'d', NULL, A_LOW_D, false						},
+	{ (word)'E', (word)'e', NULL, A_LOW_E, false						},
+	{ (word)'F', (word)'f', NULL, A_LOW_F, false						},
+	{ (word)'G', (word)'g', NULL, A_LOW_G, false						},
+	{ (word)'H', (word)'h', NULL, A_LOW_H, false						},
+	{ (word)'I', (word)'i', NULL, A_LOW_I, false						},
+	{ (word)'J', (word)'j', NULL, A_LOW_J, false						},
+	{ (word)'K', (word)'k', NULL, A_LOW_K, false						},
+	{ (word)'L', (word)'l', NULL, A_LOW_L, false						},
+	{ (word)'M', (word)'m', NULL, A_LOW_M, false						},
+	{ (word)'N', (word)'n', NULL, A_LOW_N, false						},
+	{ (word)'O', (word)'o', NULL, A_LOW_O, false						},
+	{ (word)'P', (word)'p', NULL, A_LOW_P, false						},
+	{ (word)'Q', (word)'q', NULL, A_LOW_Q, false						},
+	{ (word)'R', (word)'r', NULL, A_LOW_R, false						},
+	{ (word)'S', (word)'s', NULL, A_LOW_S, false						},
+	{ (word)'T', (word)'t', NULL, A_LOW_T, false						},
+	{ (word)'U', (word)'u', NULL, A_LOW_U, false						},
+	{ (word)'V', (word)'v', NULL, A_LOW_V, false						},
+	{ (word)'W', (word)'w', NULL, A_LOW_W, false						},
+	{ (word)'X', (word)'x', NULL, A_LOW_X, false						},
+	{ (word)'Y', (word)'y', NULL, A_LOW_Y, false						},
+	{ (word)'Z', (word)'z', NULL, A_LOW_Z, false						},
 	{ (word)'{', (word)'{', NULL, A_OPEN_BRACE, false					},
 	{ (word)'|', (word)'|', NULL, A_BAR, false							},
 	{ (word)'}', (word)'}', NULL, A_CLOSE_BRACE, false					},
 	{ (word)'~', (word)'~', NULL, A_TILDE, false						},
 	{ 0x7f, 0x7f, "DEL", A_DELETE, false								},
-			    													               
+
 	{ 0x80, 0x80, "EURO", A_EURO, false  								},
 	{ 0x81, 0x81, "SHIFT", A_SHIFT2, false								},
 	{ 0x82, 0x82, "CTRL", A_CTRL2, false								},
@@ -193,7 +193,7 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0x9d, 0x9d, "END", A_END, false									},
 	{ 0x9e, 0x9e, "PGDN", A_PAGE_DOWN, false							},
 	{ 0x9f, 0xff, NULL, A_CAP_YDIERESIS, false							},	// ******
-			    													
+
 	{ 0xa0, 0,	  "SHIFT_SPACE", A_SPACE, false							},
 	{ 0xa1, 0xa1, NULL, A_EXCLAMDOWN, false								},	// upside down '!' - undisplayable
 	{ L'\u00A2', L'\u00A2', NULL, A_CENT, false	  			}, // cent sign
@@ -226,7 +226,7 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0xbd, 0,	  NULL, A_UNDEFINED_21, false							},
 	{ 0xbe, 0,	  NULL, A_UNDEFINED_22, false							},
 	{ L'\u00BF', L'\u00BF', NULL, A_QUESTION_DOWN, false	}, // upside-down question mark
-			    		                       
+
 	{ L'\u00C0', L'\u00E0', NULL, A_CAP_AGRAVE, false		},
 	{ L'\u00C1', L'\u00E1', NULL, A_CAP_AACUTE, false		},
 	{ L'\u00C2', L'\u00E2', NULL, A_CAP_ACIRCUMFLEX, false	},
@@ -251,48 +251,48 @@ keyname_t keynames[MAX_KEYS] =
 	{ L'\u00D5', L'\u00F5', NULL, A_CAP_OTILDE, false		},
 	{ L'\u00D6', L'\u00F6', NULL, A_CAP_ODIERESIS, false	},
 	{ L'\u00D7', L'\u00D7', "KP_STAR", A_MULTIPLY, false 	},
-	{ L'\u00D8', L'\u00F8', NULL, A_CAP_OSLASH, false		},  
-	{ L'\u00D9', L'\u00F9', NULL, A_CAP_UGRAVE, false		},  
-	{ L'\u00DA', L'\u00FA', NULL, A_CAP_UACUTE, false		},  
-	{ L'\u00DB', L'\u00FB', NULL, A_CAP_UCIRCUMFLEX, false	},  
-	{ L'\u00DC', L'\u00FC', NULL, A_CAP_UDIERESIS, false	},  
-	{ L'\u00DD', L'\u00FD', NULL, A_CAP_YACUTE, false		},  
-	{ L'\u00DE', L'\u00FE', NULL, A_CAP_THORN, false		},  
+	{ L'\u00D8', L'\u00F8', NULL, A_CAP_OSLASH, false		},
+	{ L'\u00D9', L'\u00F9', NULL, A_CAP_UGRAVE, false		},
+	{ L'\u00DA', L'\u00FA', NULL, A_CAP_UACUTE, false		},
+	{ L'\u00DB', L'\u00FB', NULL, A_CAP_UCIRCUMFLEX, false	},
+	{ L'\u00DC', L'\u00FC', NULL, A_CAP_UDIERESIS, false	},
+	{ L'\u00DD', L'\u00FD', NULL, A_CAP_YACUTE, false		},
+	{ L'\u00DE', L'\u00FE', NULL, A_CAP_THORN, false		},
 	{ L'\u00DF', L'\u00DF', NULL, A_GERMANDBLS, false 		},
-			    		                       
-	{ L'\u00C0', L'\u00E0', NULL, A_LOW_AGRAVE, false		},		 
-	{ L'\u00C1', L'\u00E1', NULL, A_LOW_AACUTE, false		},		 
-	{ L'\u00C2', L'\u00E2', NULL, A_LOW_ACIRCUMFLEX, false	},		 
-	{ L'\u00C3', L'\u00E3', NULL, A_LOW_ATILDE, false		},		 
-	{ L'\u00C4', L'\u00E4', NULL, A_LOW_ADIERESIS, false	},		 
-	{ L'\u00C5', L'\u00E5', NULL, A_LOW_ARING, false		},		 
-	{ L'\u00C6', L'\u00E6', NULL, A_LOW_AE, false			},		 
-	{ L'\u00C7', L'\u00E7', NULL, A_LOW_CCEDILLA, false		},		 
-	{ L'\u00C8', L'\u00E8', NULL, A_LOW_EGRAVE, false		},		 
-	{ L'\u00C9', L'\u00E9', NULL, A_LOW_EACUTE, false		},		 
-	{ L'\u00CA', L'\u00EA', NULL, A_LOW_ECIRCUMFLEX, false	},		 
-	{ L'\u00CB', L'\u00EB', NULL, A_LOW_EDIERESIS, false	},		 
-	{ L'\u00CC', L'\u00EC', NULL, A_LOW_IGRAVE, false		},		 
-	{ L'\u00CD', L'\u00ED', NULL, A_LOW_IACUTE, false		},		 
-	{ L'\u00CE', L'\u00EE', NULL, A_LOW_ICIRCUMFLEX, false	},		 
-	{ L'\u00CF', L'\u00EF', NULL, A_LOW_IDIERESIS, false	},		 
-	{ L'\u00D0', L'\u00F0', NULL, A_LOW_ETH, false			},		 
-	{ L'\u00D1', L'\u00F1', NULL, A_LOW_NTILDE, false		},		 
-	{ L'\u00D2', L'\u00F2', NULL, A_LOW_OGRAVE, false		},		 
-	{ L'\u00D3', L'\u00F3', NULL, A_LOW_OACUTE, false		},		 
-	{ L'\u00D4', L'\u00F4', NULL, A_LOW_OCIRCUMFLEX, false	},		 
-	{ L'\u00D5', L'\u00F5', NULL, A_LOW_OTILDE, false		},		 
-	{ L'\u00D6', L'\u00F6', NULL, A_LOW_ODIERESIS, false	},		 
-	{ L'\u00F7', L'\u00F7', "KP_SLASH", A_DIVIDE, false 	},		 
-	{ L'\u00D8', L'\u00F8', NULL, A_LOW_OSLASH, false		},		 
-	{ L'\u00D9', L'\u00F9', NULL, A_LOW_UGRAVE, false		},		 
-	{ L'\u00DA', L'\u00FA', NULL, A_LOW_UACUTE, false		},		 
-	{ L'\u00DB', L'\u00FB', NULL, A_LOW_UCIRCUMFLEX, false	},		 
-	{ L'\u00DC', L'\u00FC', NULL, A_LOW_UDIERESIS, false	},		 
-	{ L'\u00DD', L'\u00FD', NULL, A_LOW_YACUTE, false		},		 
-	{ L'\u00DE', L'\u00FE', NULL, A_LOW_THORN, false		},		 
+
+	{ L'\u00C0', L'\u00E0', NULL, A_LOW_AGRAVE, false		},
+	{ L'\u00C1', L'\u00E1', NULL, A_LOW_AACUTE, false		},
+	{ L'\u00C2', L'\u00E2', NULL, A_LOW_ACIRCUMFLEX, false	},
+	{ L'\u00C3', L'\u00E3', NULL, A_LOW_ATILDE, false		},
+	{ L'\u00C4', L'\u00E4', NULL, A_LOW_ADIERESIS, false	},
+	{ L'\u00C5', L'\u00E5', NULL, A_LOW_ARING, false		},
+	{ L'\u00C6', L'\u00E6', NULL, A_LOW_AE, false			},
+	{ L'\u00C7', L'\u00E7', NULL, A_LOW_CCEDILLA, false		},
+	{ L'\u00C8', L'\u00E8', NULL, A_LOW_EGRAVE, false		},
+	{ L'\u00C9', L'\u00E9', NULL, A_LOW_EACUTE, false		},
+	{ L'\u00CA', L'\u00EA', NULL, A_LOW_ECIRCUMFLEX, false	},
+	{ L'\u00CB', L'\u00EB', NULL, A_LOW_EDIERESIS, false	},
+	{ L'\u00CC', L'\u00EC', NULL, A_LOW_IGRAVE, false		},
+	{ L'\u00CD', L'\u00ED', NULL, A_LOW_IACUTE, false		},
+	{ L'\u00CE', L'\u00EE', NULL, A_LOW_ICIRCUMFLEX, false	},
+	{ L'\u00CF', L'\u00EF', NULL, A_LOW_IDIERESIS, false	},
+	{ L'\u00D0', L'\u00F0', NULL, A_LOW_ETH, false			},
+	{ L'\u00D1', L'\u00F1', NULL, A_LOW_NTILDE, false		},
+	{ L'\u00D2', L'\u00F2', NULL, A_LOW_OGRAVE, false		},
+	{ L'\u00D3', L'\u00F3', NULL, A_LOW_OACUTE, false		},
+	{ L'\u00D4', L'\u00F4', NULL, A_LOW_OCIRCUMFLEX, false	},
+	{ L'\u00D5', L'\u00F5', NULL, A_LOW_OTILDE, false		},
+	{ L'\u00D6', L'\u00F6', NULL, A_LOW_ODIERESIS, false	},
+	{ L'\u00F7', L'\u00F7', "KP_SLASH", A_DIVIDE, false 	},
+	{ L'\u00D8', L'\u00F8', NULL, A_LOW_OSLASH, false		},
+	{ L'\u00D9', L'\u00F9', NULL, A_LOW_UGRAVE, false		},
+	{ L'\u00DA', L'\u00FA', NULL, A_LOW_UACUTE, false		},
+	{ L'\u00DB', L'\u00FB', NULL, A_LOW_UCIRCUMFLEX, false	},
+	{ L'\u00DC', L'\u00FC', NULL, A_LOW_UDIERESIS, false	},
+	{ L'\u00DD', L'\u00FD', NULL, A_LOW_YACUTE, false		},
+	{ L'\u00DE', L'\u00FE', NULL, A_LOW_THORN, false		},
 	{ 0x9f, 0xff, NULL, A_LOW_YDIERESIS, false							},	// *******
-																		
+
 	{ 0x100, 0x100, "JOY0", A_JOY0, false								},
 	{ 0x101, 0x101, "JOY1", A_JOY1, false								},
 	{ 0x102, 0x102, "JOY2", A_JOY2, false								},
@@ -325,7 +325,7 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0x11d, 0x11d, "JOY29", A_JOY29, false								},
 	{ 0x11e, 0x11e, "JOY30", A_JOY30, false								},
 	{ 0x11f, 0x11f, "JOY31", A_JOY31, false								},
-		    	    												
+
 	{ 0x120, 0x120, "AUX0", A_AUX0, false								},
 	{ 0x121, 0x121, "AUX1", A_AUX1, false								},
 	{ 0x122, 0x122, "AUX2", A_AUX2, false								},
@@ -451,12 +451,12 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	}
 }
 
-void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
+void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
-void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
+void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
@@ -510,7 +510,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 	switch ( key ) {
 		case A_DELETE:
 			if ( edit->cursor < len ) {
-				memmove( edit->buffer + edit->cursor, 
+				memmove( edit->buffer + edit->cursor,
 					edit->buffer + edit->cursor + 1, len - edit->cursor );
 			}
 			break;
@@ -573,7 +573,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 
 	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 		if ( edit->cursor > 0 ) {
-			memmove( edit->buffer + edit->cursor - 1, 
+			memmove( edit->buffer + edit->cursor - 1,
 				edit->buffer + edit->cursor, len + 1 - edit->cursor );
 			edit->cursor--;
 			if ( edit->cursor < edit->scroll )
@@ -603,7 +603,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( kg.key_overstrikeMode ) {	
+	if ( kg.key_overstrikeMode ) {
 		// - 2 to leave room for the leading slash and trailing \0
 		if ( edit->cursor == MAX_EDIT_LINE - 2 )
 			return;
@@ -614,12 +614,11 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		if ( len == MAX_EDIT_LINE - 2 ) {
 			return; // all full
 		}
-		memmove( edit->buffer + edit->cursor + 1, 
+		memmove( edit->buffer + edit->cursor + 1,
 			edit->buffer + edit->cursor, len + 1 - edit->cursor );
 		edit->buffer[edit->cursor] = ch;
 		edit->cursor++;
 	}
-
 
 	if ( edit->cursor >= edit->widthInChars ) {
 		edit->scroll++;
@@ -666,7 +665,7 @@ void Console_Key( int key ) {
 			TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
 
 			Q_strncpyz( icc->conCommand, g_consoleField.buffer, sizeof( icc->conCommand ) );
-			
+
 			if ( CGVM_IncomingConsoleCommand() ) {
 				// valid command
 				Cbuf_AddText( g_consoleField.buffer );
@@ -717,7 +716,7 @@ void Console_Key( int key ) {
 		|| (kg.keys[A_SHIFT].down && key == A_MWHEELUP)
 		|| (kg.keys[A_CTRL].down && keynames[key].lower == 'p') )
 	{// scroll up: arrow-up, numpad-up, shift + mwheelup, ctrl + p
-		if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 ) 
+		if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 )
 			historyLine--;
 		g_consoleField = historyEditLines[historyLine % COMMAND_HISTORY];
 
@@ -870,9 +869,9 @@ int Key_StringToKeynum( char *str ) {
 
 static char tinyString[16];
 static const char *Key_KeynumValid( int keynum ) {
-	if ( keynum == -1 ) 
+	if ( keynum == -1 )
 		return "<KEY NOT FOUND>";
-	if ( keynum < 0 || keynum >= MAX_KEYS ) 
+	if ( keynum < 0 || keynum >= MAX_KEYS )
 		return "<OUT OF RANGE>";
 	return NULL;
 }
@@ -913,7 +912,7 @@ const char *Key_KeynumToAscii( int keynum ) {
 	const char *name = Key_KeynumValid(keynum);
 
 	// check for printable ascii
-	if ( !name && keynum > 0 && keynum < 256 ) 
+	if ( !name && keynum > 0 && keynum < 256 )
 		name = Key_KeyToAscii( keynum );
 
 	// Check for name (for JOYx and AUXx buttons)
@@ -947,7 +946,7 @@ const char *Key_KeynumToString( int keynum ) {
 		name = Key_KeyToName( keynum );
 
 	// check for printable ascii
-	if ( !name && keynum > 0 && keynum < 256) 
+	if ( !name && keynum > 0 && keynum < 256)
 		name = Key_KeyToAscii( keynum );
 
 	// Fallback to hex number
@@ -971,7 +970,7 @@ void Key_SetBinding( int keynum, const char *binding ) {
 		Z_Free( kg.keys[keynames[keynum].upper].binding );
 		kg.keys[keynames[keynum].upper].binding = NULL;
 	}
-			
+
 	// allocate memory for new binding
 	if ( binding )
 		kg.keys[keynames[keynum].upper].binding = CopyString( binding );
@@ -993,7 +992,7 @@ char *Key_GetBinding( int keynum ) {
 	return kg.keys[keynum].binding;
 }
 
-/* 
+/*
 ===================
 Key_GetKey
 ===================
@@ -1019,7 +1018,7 @@ void Key_Unbind_f( void ) {
 		Com_Printf( "unbind <key> : remove commands from a key\n" );
 		return;
 	}
-	
+
 	int b = Key_StringToKeynum( Cmd_Argv( 1 ) );
 	if ( b == -1 ) {
 		Com_Printf( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ) );
@@ -1080,7 +1079,7 @@ Writes lines containing "bind key value"
 */
 void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf( f, "unbindall\n" );
-	for ( int i=0; i<MAX_KEYS; i++ ) {
+	for ( size_t i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] ) {
 			const char *name = Key_KeynumToString( i );
 
@@ -1100,7 +1099,7 @@ Key_Bindlist_f
 ============
 */
 void Key_Bindlist_f( void ) {
-	for ( int i=0; i<MAX_KEYS; i++ ) {
+	for ( size_t i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
 			Com_Printf( S_COLOR_GREY"Key "S_COLOR_WHITE"%s (%s) = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
 	}
@@ -1112,7 +1111,7 @@ Key_KeynameCompletion
 ============
 */
 void Key_KeynameCompletion( void(*callback)( const char *s ) ) {
-	for ( unsigned int i=0; i<numKeynames; i++ ) {
+	for ( size_t i=0; i<numKeynames; i++ ) {
 		if ( keynames[i].name )
 			callback( keynames[i].name );
 	}
@@ -1173,86 +1172,133 @@ void CL_InitKeyCommands( void ) {
 
 /*
 ===================
-CL_AddKeyUpCommands
+CL_BindUICommand
+
+Returns qtrue if bind command should be executed while user interface is shown
 ===================
 */
-void CL_AddKeyUpCommands( int key, char *kb ) {
-	char cmd[MAX_STRING_CHARS], button[MAX_STRING_CHARS], *buttonPtr;
-	qboolean keyevent;
+static qboolean CL_BindUICommand( const char *cmd ) {
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
+		return qfalse;
 
-	if ( !kb )
+	if ( !Q_stricmp( cmd, "toggleconsole" ) )
+		return qtrue;
+	if ( !Q_stricmp( cmd, "togglemenu" ) )
+		return qtrue;
+
+	return qfalse;
+}
+
+/*
+===================
+CL_ParseBinding
+
+Execute the commands in the bind string
+===================
+*/
+void CL_ParseBinding( int key, qboolean down, unsigned time )
+{
+	char buf[ MAX_STRING_CHARS ], *p = buf, *end;
+	qboolean allCommands, allowUpCmds;
+
+	if( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == 0 )
 		return;
+	if( !kg.keys[keynames[key].upper].binding || !kg.keys[keynames[key].upper].binding[0] )
+		return;
+	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding, sizeof( buf ) );
 
-	keyevent = qfalse;
-	buttonPtr = button;
+	// run all bind commands if console, ui, etc aren't reading keys
+	allCommands = (qboolean)( Key_GetCatcher( ) == 0 );
 
-	for ( int i=0; /**/; i++ ) {
-		if ( kb[i] == ';' || !kb[i] ) {
-			*buttonPtr = '\0';
-			if ( button[0] == '+') {
-				// button commands add keynum and time as parms so that multiple
-				// sources can be discriminated and subframe corrected
-				Com_sprintf( cmd, sizeof( cmd ), "-%s %i %i\n", button+1, key, time );
+	// allow button up commands if in game even if key catcher is set
+	allowUpCmds = (qboolean)( cls.state != CA_DISCONNECTED );
+
+	while( 1 )
+	{
+		while( isspace( *p ) )
+			p++;
+		end = strchr( p, ';' );
+		if( end )
+			*end = '\0';
+		if( *p == '+' )
+		{
+			// button commands add keynum and time as parameters
+			// so that multiple sources can be discriminated and
+			// subframe corrected
+			if ( allCommands || ( allowUpCmds && !down ) ) {
+				char cmd[1024];
+				Com_sprintf( cmd, sizeof( cmd ), "%c%s %d %d\n",
+					( down ) ? '+' : '-', p + 1, key, time );
 				Cbuf_AddText( cmd );
-				keyevent = qtrue;
 			}
-			else {
-				if ( keyevent ) {
-					// down-only command
-					Cbuf_AddText( button );
+		}
+		else if( down )
+		{
+			// normal commands only execute on key press
+			if ( allCommands || CL_BindUICommand( p ) ) {
+				// down-only command
+				if ( cls.cgameStarted && cl.mSharedMemory ) {
+					// don't do this unless cgame is inited and shared memory is valid
+					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
+
+					Q_strncpyz( icc->conCommand, p, sizeof(icc->conCommand) );
+
+					if ( CGVM_IncomingConsoleCommand() ) {
+						//rww - let mod authors filter client console messages so they can cut them off if they want.
+						Cbuf_AddText( p );
+						Cbuf_AddText( "\n" );
+					}
+					else if ( icc->conCommand[0] ) {
+						//the vm call says to execute this command in place
+						Cbuf_AddText( icc->conCommand );
+						Cbuf_AddText( "\n" );
+					}
+				}
+				else {
+					//otherwise just add it
+					Cbuf_AddText( p );
 					Cbuf_AddText( "\n" );
 				}
 			}
-			buttonPtr = button;
-			while ( (kb[i] <= ' ' || kb[i] == ';') && kb[i] != 0 )
-				i++;
 		}
-
-		*buttonPtr++ = kb[i];
-		if ( !kb[i] )
+		if( !end )
 			break;
+		p = end + 1;
 	}
 }
 
 /*
 ===================
-CL_KeyEvent
+CL_KeyDownEvent
 
-Called by the system for both key up and key down events
+Called by CL_KeyEvent to handle a keypress
 ===================
 */
-void CL_KeyEvent( int key, qboolean down, unsigned time ) {
-	char cmd[MAX_STRING_CHARS], *kb;
+void CL_KeyDownEvent( int key, unsigned time )
+{
+	kg.keys[keynames[key].upper].down = qtrue;
+	kg.keys[keynames[key].upper].repeats++;
+	if( kg.keys[keynames[key].upper].repeats == 1 ) {
+		kg.keyDownCount++;
+		kg.anykeydown = qtrue;
+	}
 
-	// update auto-repeat status and BUTTON_ANY status
-	kg.keys[keynames[key].upper].down = down;
-	if ( down ) {
-		kg.keys[keynames[key].upper].repeats++;
-		if ( kg.keys[ keynames[key].upper ].repeats == 1 ) {
-			kg.anykeydown = qtrue;
-			kg.keyDownCount++;
-		}
-	}
-	else {
-		kg.keys[keynames[key].upper].repeats = 0;
-		kg.keyDownCount--;
-		if ( kg.keyDownCount <= 0 ) {
-			kg.anykeydown = qfalse;
-			kg.keyDownCount = 0;
-		}
-	}
+	/*if( kg.keys[A_ALT].down && key == A_ENTER )
+	{
+		Cvar_SetValue( "r_fullscreen",
+			!Cvar_VariableIntegerValue( "r_fullscreen" ) );
+		return;
+	}*/
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
-		if ( !down )
-			return;
 		Con_ToggleConsole_f();
 		Key_ClearStates ();
 		return;
 	}
 
-	// kg.keys can still be used for bound actions
-	if ( down && cls.state == CA_CINEMATIC && !Key_GetCatcher() ) {
+	// keys can still be used for bound actions
+	if ( cls.state == CA_CINEMATIC && !Key_GetCatcher() ) {
 		if ( !com_cameraMode->integer ) {
 			Cvar_Set( "nextdemo", "" );
 			key = A_ESCAPE;
@@ -1260,7 +1306,7 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 	}
 
 	// escape is always handled special
-	if ( key == A_ESCAPE && down ) {
+	if ( key == A_ESCAPE ) {
 		if ( !kg.keys[A_SHIFT].down && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 			Con_ToggleConsole_f();
 			Key_ClearStates();
@@ -1274,7 +1320,7 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 		}
 
 		// escape always gets out of CGAME stuff
-		if (Key_GetCatcher() & KEYCATCH_CGAME) {
+		if ( Key_GetCatcher() & KEYCATCH_CGAME ) {
 			Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 			CGVM_EventHandling( CGAME_EVENT_NONE );
 			return;
@@ -1291,113 +1337,83 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 			return;
 		}
 
-		UIVM_KeyEvent( key, down );
+		UIVM_KeyEvent( key, qtrue );
 		return;
 	}
 
-	//
-	// key up events only perform actions if the game key binding is
-	// a button command (leading + sign).  These will be processed even in
-	// console mode and menu mode, to keep the character from continuing 
-	// an action started before a mode switch.
-	//
-	if ( !down ) {
-		kb = kg.keys[keynames[key].upper].binding;
-
-		CL_AddKeyUpCommands( key, kb );
-
-		if ( (Key_GetCatcher() & KEYCATCH_UI) && cls.uiStarted )
-			UIVM_KeyEvent( key, down );
-		else if ( (Key_GetCatcher() & KEYCATCH_CGAME) && cls.cgameStarted )
-			CGVM_KeyEvent( key, down );
-
-		return;
-	}
-
+	// send the bound action
+	CL_ParseBinding( key, qtrue, time );
 
 	// distribute the key down event to the appropriate handler
 	// console
 	if ( Key_GetCatcher() & KEYCATCH_CONSOLE )
 		Console_Key( key );
-
 	// ui
 	else if ( Key_GetCatcher() & KEYCATCH_UI ) {
 		if ( cls.uiStarted )
-			UIVM_KeyEvent( key, down );
+			UIVM_KeyEvent( key, qtrue );
 	}
-
 	// cgame
 	else if ( Key_GetCatcher() & KEYCATCH_CGAME ) {
 		if ( cls.cgameStarted )
-			CGVM_KeyEvent( key, down );
+			CGVM_KeyEvent( key, qtrue );
 	}
-
 	// chatbox
 	else if ( Key_GetCatcher() & KEYCATCH_MESSAGE )
 		Message_Key( key );
-
 	// console
 	else if ( cls.state == CA_DISCONNECTED )
 		Console_Key( key );
+}
 
-	// binds
-	else {
-		// send the bound action
-		kb = kg.keys[keynames[key].upper].binding;
-		if ( kb ) {
-			if ( kb[0] == '+' ) {
-				char button[1024], *buttonPtr;
-				buttonPtr = button;
-				for ( int i=0; ; i++ ) {
-					if ( kb[i] == ';' || !kb[i] ) {
-						*buttonPtr = '\0';
-						if ( button[0] == '+') {
-							// button commands add keynum and time as parms so that multiple
-							// sources can be discriminated and subframe corrected
-							Com_sprintf( cmd, sizeof( cmd ), "%s %i %i\n", button, key, time );
-							Cbuf_AddText( cmd );
-						}
-						else {
-							// down-only command
-							Cbuf_AddText( button );
-							Cbuf_AddText( "\n" );
-						}
-						buttonPtr = button;
-						while ( (kb[i] <= ' ' || kb[i] == ';') && kb[i] != '\0' )
-							i++;
-					}
-					*buttonPtr++ = kb[i];
-					if ( !kb[i] )
-						break;
-				}
-			}
-			else {
-				// down-only command
-				if ( cls.cgameStarted && cl.mSharedMemory ) {
-					// don't do this unless cgame is inited and shared memory is valid
-					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
+/*
+===================
+CL_KeyUpEvent
 
-					strcpy( icc->conCommand, kb );
-					
-					if ( CGVM_IncomingConsoleCommand() ) {
-						//rww - let mod authors filter client console messages so they can cut them off if they want.
-						Cbuf_AddText( kb );
-						Cbuf_AddText( "\n" );
-					}
-					else if ( icc->conCommand[0] ) {
-						//the vm call says to execute this command in place
-						Cbuf_AddText( icc->conCommand );
-						Cbuf_AddText( "\n" );
-					}
-				}
-				else {
-					//otherwise just add it
-					Cbuf_AddText( kb );
-					Cbuf_AddText( "\n" );
-				}
-			}
-		}
+Called by CL_KeyEvent to handle a keyrelease
+===================
+*/
+void CL_KeyUpEvent( int key, unsigned time )
+{
+	kg.keys[keynames[key].upper].repeats = 0;
+	kg.keys[keynames[key].upper].down = qfalse;
+	kg.keyDownCount--;
+
+	if (kg.keyDownCount <= 0) {
+		kg.anykeydown = qfalse;
+		kg.keyDownCount = 0;
 	}
+
+	// don't process key-up events for the console key
+	if ( key == A_CONSOLE || ( key == A_ESCAPE && kg.keys[A_SHIFT].down ) )
+		return;
+
+	//
+	// key up events only perform actions if the game key binding is
+	// a button command (leading + sign).  These will be processed even in
+	// console mode and menu mode, to keep the character from continuing
+	// an action started before a mode switch.
+	//
+	CL_ParseBinding( key, qfalse, time );
+
+	if ( Key_GetCatcher( ) & KEYCATCH_UI && cls.uiStarted )
+		UIVM_KeyEvent( key, qfalse );
+	else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cls.cgameStarted )
+		CGVM_KeyEvent( key, qfalse );
+}
+
+/*
+===================
+CL_KeyEvent
+
+Called by the system for both key up and key down events
+===================
+*/
+void CL_KeyEvent (int key, qboolean down, unsigned time) {
+	if( down )
+		CL_KeyDownEvent( key, time );
+	else
+		CL_KeyUpEvent( key, time );
 }
 
 /*

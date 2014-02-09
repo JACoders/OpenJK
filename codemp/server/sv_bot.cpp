@@ -198,6 +198,7 @@ int SV_BotAllocateClient(void) {
 	cl->netchan.remoteAddress.type = NA_BOT;
 	cl->rate = 16384;
 
+	// cannot start recording auto demos here since bot's name is not set yet
 	return i;
 }
 
@@ -217,6 +218,10 @@ void SV_BotFreeClient( int clientNum ) {
 	cl->name[0] = 0;
 	if ( cl->gentity ) {
 		cl->gentity->r.svFlags &= ~SVF_BOT;
+	}
+
+	if ( cl->demo.demorecording ) {
+		SV_StopRecordDemo( cl );
 	}
 }
 
@@ -248,7 +253,7 @@ void BotDrawDebugPolygons(void (*drawPoly)(int color, int numPoints, float *poin
 		if (bot_reachability->integer) parm0 |= 2;
 		if (bot_groundonly->integer) parm0 |= 4;
 		botlib_export->BotLibVarSet("bot_highlightarea", bot_highlightarea->string);
-		botlib_export->Test(parm0, NULL, svs.clients[0].gentity->r.currentOrigin, 
+		botlib_export->Test(parm0, NULL, svs.clients[0].gentity->r.currentOrigin,
 			svs.clients[0].gentity->r.currentAngles);
 	} //end if
 	//draw all debug polys

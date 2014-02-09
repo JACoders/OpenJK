@@ -109,7 +109,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	// this is the snapshot we are creating
 	frame = &client->frames[ client->netchan.outgoingSequence & PACKET_MASK ];
-	
+
 	// bots never acknowledge, but it doesn't matter since the only use case is for serverside demos
 	// in which case we can delta against the very last message every time
 	deltaMessage = client->deltaMessage;
@@ -122,7 +122,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 		// client is asking for a retransmit
 		oldframe = NULL;
 		lastframe = 0;
-	} else if ( client->netchan.outgoingSequence - deltaMessage 
+	} else if ( client->netchan.outgoingSequence - deltaMessage
 		>= (PACKET_BACKUP - 3) ) {
 		// client hasn't gotten a good message through in a long time
 		Com_DPrintf ("%s: Delta request from out of date packet.\n", client->name);
@@ -130,6 +130,12 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 		lastframe = 0;
 	} else if ( client->demo.demorecording && client->demo.demowaiting ) {
 		// demo is waiting for a non-delta-compressed frame for this client, so don't delta compress
+		oldframe = NULL;
+		lastframe = 0;
+	} else if ( client->demo.minDeltaFrame > deltaMessage ) {
+		// we saved a non-delta frame to the demo and sent it to the client, but the client didn't ack it
+		// we can't delta against an old frame that's not in the demo without breaking the demo.  so send
+		// non-delta frames until the client acks.
 		oldframe = NULL;
 		lastframe = 0;
 	} else {
@@ -146,6 +152,10 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	}
 
 	if ( oldframe == NULL ) {
+		if ( client->demo.demowaiting ) {
+			// this is a non-delta frame, so we can delta against it in the demo
+			client->demo.minDeltaFrame = client->netchan.outgoingSequence;
+		}
 		client->demo.demowaiting = qfalse;
 	}
 
@@ -278,7 +288,7 @@ Build a client snapshot structure
 
 typedef struct snapshotEntityNumbers_s {
 	int		numSnapshotEntities;
-	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];	
+	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];
 } snapshotEntityNumbers_t;
 
 /*
@@ -331,7 +341,7 @@ SV_AddEntitiesVisibleFromPoint
 ===============
 */
 float g_svCullDist = -1.0f;
-static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
+static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame,
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e, i;
 	sharedEntity_t *ent;
@@ -583,7 +593,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	svEnt = &sv.svEntities[ clientNum ];
 	svEnt->snapshotCounter = sv.snapshotCounter;
 
-	
+
 	// find the client's viewpoint
 	VectorCopy( ps->origin, org );
 	org[2] += ps->viewheight;
@@ -596,7 +606,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	// in the list which will need to be resorted for the delta compression
 	// to work correctly.  This also catches the error condition
 	// of an entity being included twice.
-	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities, 
+	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities,
 		sizeof( entityNumbers.snapshotEntities[0] ), SV_QsortEntityNumbers );
 
 	// now that all viewpoint's areabits have been OR'd together, invert
@@ -664,7 +674,7 @@ Called by SV_SendClientSnapshot and SV_SendClientGameState
 void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	int			rateMsec;
 
-	// MW - my attempt to fix illegible server message errors caused by 
+	// MW - my attempt to fix illegible server message errors caused by
 	// packet fragmentation of initial snapshot.
 	while(client->state&&client->netchan.unsentFragments)
 	{
@@ -680,10 +690,10 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageAcked = -1;
 
 	// save the message to demo.  this must happen before sending over network as that encodes the backing databuf
-	if (client->demo.demorecording && !client->demo.demowaiting) {
+	if ( client->demo.demorecording && !client->demo.demowaiting ) {
 		msg_t msgcopy = *msg;
 		MSG_WriteByte( &msgcopy, svc_EOF );
-		SV_WriteDemoMessage(client, &msgcopy, 0);
+		SV_WriteDemoMessage( client, &msgcopy, 0 );
 	}
 
 	// bots need to have their snapshots built, but
@@ -765,7 +775,7 @@ void SV_SendClientSnapshot( client_t *client ) {
 		}
 		MSG_WriteByte(&msg, 0);
 
-		// MW - my attempt to fix illegible server message errors caused by 
+		// MW - my attempt to fix illegible server message errors caused by
 		// packet fragmentation of initial snapshot.
 		//rww - reusing this code here
 		while(client->state&&client->netchan.unsentFragments)
@@ -790,9 +800,15 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
+	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
+		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+			SV_BeginAutoRecordDemos();
+		}
+	}
+
 	// bots need to have their snapshots built, but
 	// they query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT && !client->demo.demorecording ) {
+	if ( client->netchan.remoteAddress.type == NA_BOT && !client->demo.demorecording ) {
 		return;
 	}
 
@@ -845,7 +861,7 @@ void SV_SendClientMessages( void ) {
 		// send additional message fragments if the last message
 		// was too large to send at once
 		if ( c->netchan.unsentFragments ) {
-			c->nextSnapshotTime = svs.time + 
+			c->nextSnapshotTime = svs.time +
 				SV_RateMsec( c, c->netchan.unsentLength - c->netchan.unsentFragmentStart );
 			SV_Netchan_TransmitNextFragment( &c->netchan );
 			continue;

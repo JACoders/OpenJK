@@ -123,6 +123,9 @@ int			G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInf
 
 
 // API calls - G2_API.cpp
+void		RestoreGhoul2InfoArray();
+void		SaveGhoul2InfoArray();
+
 qhandle_t	G2API_PrecacheGhoul2Model(const char *fileName);
 
 int			G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex, qhandle_t customSkin = NULL_HANDLE,

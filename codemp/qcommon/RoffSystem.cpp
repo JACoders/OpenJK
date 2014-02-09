@@ -28,7 +28,7 @@ CROFFSystem::CROFF::CROFF( const char *file, int id )
 	mID				= id;
 	mMoveRotateList = NULL;
 	mNoteTrackIndexes = 0;
-	mUsedByClient = mUsedByServer = qfalse; 
+	mUsedByClient = mUsedByServer = qfalse;
 }
 
 
@@ -43,10 +43,10 @@ CROFFSystem::CROFF::CROFF( const char *file, int id )
 //	none
 //---------------------------------------------------------------------------
 CROFFSystem::CROFF::~CROFF()
-{ 
+{
 	if ( mMoveRotateList )
 	{
-		delete [] mMoveRotateList; 
+		delete [] mMoveRotateList;
 	}
 
 	if (mNoteTrackIndexes)
@@ -81,7 +81,7 @@ qboolean CROFFSystem::Restart()
 	}
 
 	// clear CROFFSystem unique ID counter
-	mID = 0; 
+	mID = 0;
 
 	return qtrue;
 }
@@ -121,7 +121,7 @@ qboolean CROFFSystem::IsROFF( unsigned char *data )
 	{	// bad count
 		return qfalse;
 	}
-		
+
 	return qtrue;
 }
 
@@ -273,13 +273,13 @@ void CROFFSystem::FixBadAngles(CROFF *obj)
 		{
 			if ( obj->mMoveRotateList[index].mRotateOffset[t] > 180.0f )
 			{ // found a bad angle
-			//	Com_Printf( S_COLOR_YELLOW"Fixing bad roff angle\n <%6.2f> changed to <%6.2f>.\n", 
+			//	Com_Printf( S_COLOR_YELLOW"Fixing bad roff angle\n <%6.2f> changed to <%6.2f>.\n",
 			//				roff_data[i].mRotateOffset[t], roff_data[i].mRotateOffset[t] - 360.0f );
 				obj->mMoveRotateList[index].mRotateOffset[t] -= 360.0f;
 			}
 			else if ( obj->mMoveRotateList[index].mRotateOffset[t] < -180.0f )
 			{ // found a bad angle
-			//	Com_Printf( S_COLOR_YELLOW"Fixing bad roff angle\n <%6.2f> changed to <%6.2f>.\n", 
+			//	Com_Printf( S_COLOR_YELLOW"Fixing bad roff angle\n <%6.2f> changed to <%6.2f>.\n",
 			//				roff_data[i].mRotateOffset[t], roff_data[i].mRotateOffset[t] + 360.0f );
 				obj->mMoveRotateList[index].mRotateOffset[t] += 360.0f;
 			}
@@ -304,7 +304,7 @@ int CROFFSystem::Cache( const char *file, qboolean isClient )
 	// See if this item is already cached
 	int				len;
 	int				id = GetID( file );
-	unsigned char	*data;	
+	unsigned char	*data;
 	CROFF			*cROFF;
 
 	if ( id )
@@ -342,7 +342,7 @@ int CROFFSystem::Cache( const char *file, qboolean isClient )
 		id = NewID();
 
 		cROFF = new CROFF( file, id );
-	
+
 		mROFFList[id] = cROFF;
 
 		if ( !InitROFF( data, cROFF ) )
@@ -568,7 +568,7 @@ qboolean CROFFSystem::List( int id )
 
 		for ( int i = 0; i < obj->mROFFEntries; i++ )
 		{
-			Com_Printf( S_COLOR_GREEN"%6.2f %6.2f %6.2f   %6.2f %6.2f %6.2f\n", 
+			Com_Printf( S_COLOR_GREEN"%6.2f %6.2f %6.2f   %6.2f %6.2f %6.2f\n",
 						dat[i].mOriginOffset[0], dat[i].mOriginOffset[1], dat[i].mOriginOffset[2],
 						dat[i].mRotateOffset[0], dat[i].mRotateOffset[1], dat[i].mRotateOffset[2] );
 		}
@@ -602,7 +602,7 @@ qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean 
 	{
 		ent->SetPhysics(PHYSICS_TYPE_BRUSHMODEL);
 	}*/
-	//bjg TODO: reset this latter? 
+	//bjg TODO: reset this latter?
 
 	if ( ent == 0 )
 	{ // shame on you..
@@ -773,7 +773,7 @@ void CROFFSystem::UpdateEntities(qboolean isClient)
 		else
 		{ // roff not found == bad, dump an error message and purge this ent
 			Com_Printf( S_COLOR_RED"ROFF System Error:\n" );
-//			Com_Printf( S_COLOR_RED" -ROFF not found for entity <%s>\n", 
+//			Com_Printf( S_COLOR_RED" -ROFF not found for entity <%s>\n",
 //					entitySystem->GetEntityFromID(((SROFFEntity *)(*itr))->mEntID)->GetName() );
 
 			((SROFFEntity *)(*itr))->mKill = qtrue;
@@ -795,14 +795,14 @@ void CROFFSystem::UpdateEntities(qboolean isClient)
 		}
 
 		if ( ((SROFFEntity *)(*itr))->mKill == qtrue )
-		{ 
+		{
 			//make sure ICARUS knows ROFF is stopped
 //			CICARUSGameInterface::TaskIDComplete(
 //				entitySystem->GetEntityFromID(((SROFFEntity *)(*itr))->mEntID), TID_MOVE);
 			// trash this guy from the list
 			delete (*itr);
 			mROFFEntList.erase( itr );
-			itr = mROFFEntList.begin();			
+			itr = mROFFEntList.begin();
 		}
 		else
 		{
@@ -890,7 +890,7 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	SetLerp( originTrajectory, TR_LINEAR, origin, result, svs.time, roff->mLerp );
 
 	// Set up our angle interpolation
-	SetLerp( angleTrajectory, TR_LINEAR, angle, 
+	SetLerp( angleTrajectory, TR_LINEAR, angle,
 				roff->mMoveRotateList[roff_ent->mROFFFrame].mRotateOffset, svs.time, roff->mLerp );
 
 	if (roff->mMoveRotateList[roff_ent->mROFFFrame].mStartNote >= 0)

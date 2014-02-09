@@ -56,7 +56,7 @@ Debugging command to print the current position
 */
 static void CG_Viewpos_f (void) {
 	trap->Print ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
-		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2],
 		(int)cg.refdef.viewangles[YAW]);
 }
 
@@ -107,13 +107,13 @@ void CG_ClientList_f( void )
 	int i;
 	int count = 0;
 
-	for( i = 0; i < MAX_CLIENTS; i++ ) 
+	for( i = 0; i < MAX_CLIENTS; i++ )
 	{
 		ci = &cgs.clientinfo[ i ];
-		if( !ci->infoValid ) 
+		if( !ci->infoValid )
 			continue;
 
-		switch( ci->team ) 
+		switch( ci->team )
 		{
 		case TEAM_FREE:
 			Com_Printf( "%2d " S_COLOR_YELLOW "F   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );

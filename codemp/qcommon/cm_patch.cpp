@@ -145,7 +145,7 @@ static qboolean	CM_NeedsSubdivision( vec3_t a, vec3_t b, vec3_t c ) {
 	// see if the curve is far enough away from the linear mid
 	VectorSubtract( cmid, lmid, delta );
 	dist = VectorLengthSquared( delta );
-	
+
 	return (qboolean)(dist >= SUBDIVIDE_DISTANCE * SUBDIVIDE_DISTANCE);
 }
 
@@ -561,7 +561,8 @@ static inline int	CM_GridPlane( int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2],
 	}
 
 	// should never happen
-	Com_Printf( "WARNING: CM_GridPlane unresolvable\n" );
+	if ( cm_extraVerbose->integer )
+		Com_Printf( "WARNING: CM_GridPlane unresolvable\n" );
 	return -1;
 }
 
@@ -743,7 +744,7 @@ static inline qboolean CM_ValidateFacet( facet_t *facet ) {
 	// see if the facet is unreasonably large
 	WindingBounds( w, bounds[0], bounds[1] );
 	FreeWinding( w );
-	
+
 	for ( j = 0 ; j < 3 ; j++ ) {
 		if ( bounds[1][j] - bounds[0][j] > MAX_MAP_BOUNDS ) {
 			return qfalse;		// we must be missing a plane
@@ -971,13 +972,13 @@ static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) 
 	// create the borders for each facet
 	for ( i = 0 ; i < grid->width - 1 ; i++ ) {
 		for ( j = 0 ; j < grid->height - 1 ; j++ ) {
-			 
+
 			borders[EN_TOP] = -1;
 			if ( j > 0 ) {
 				borders[EN_TOP] = gridPlanes[i][j-1][1];
 			} else if ( grid->wrapHeight ) {
 				borders[EN_TOP] = gridPlanes[i][grid->height-2][1];
-			} 
+			}
 			noAdjust[EN_TOP] = ( borders[EN_TOP] == gridPlanes[i][j][0] );
 			if ( borders[EN_TOP] == -1 || noAdjust[EN_TOP] ) {
 				borders[EN_TOP] = CM_EdgePlaneNum( grid, gridPlanes, i, j, 0 );

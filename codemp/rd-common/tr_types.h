@@ -98,7 +98,7 @@ typedef enum {
 	RT_MAX_REF_ENTITY_TYPE
 } refEntityType_t;
 
-typedef struct miniRefEntity_s 
+typedef struct miniRefEntity_s
 {
 	refEntityType_t		reType;
 	int					renderfx;
@@ -187,10 +187,10 @@ typedef struct refEntity_s {
 	qhandle_t	customSkin;			// NULL for default skin
 
 	// texturing
-	union	
+	union
 	{
 //		int			skinNum;		// inline skin index
-//		ivec3_t		terxelCoords;	// coords of patch for RT_TERXELS	
+//		ivec3_t		terxelCoords;	// coords of patch for RT_TERXELS
 		struct
 		{
 			int		miniStart;
@@ -200,13 +200,13 @@ typedef struct refEntity_s {
 
 	// extra sprite information
 	union {
-		struct 
+		struct
 		{
 			float rotation;
 			float radius;
 			byte  vertRGBA[4][4];
 		} sprite;
-		struct 
+		struct
 		{
 			float width;
 			float width2;
@@ -227,7 +227,7 @@ typedef struct refEntity_s {
 			float bias;
 			qboolean wrap;
 		} cylinder;
-		struct 
+		struct
 		{
 			float width;
 			float deviation;

@@ -244,7 +244,7 @@ const char *G_RefreshNextMap(int gametype, qboolean forced)
 		}
 
 		type = Info_ValueForKey(level.arenas.infos[n], "type");
-		
+
 		typeBits = G_GetMapTypeBits(type);
 		if (typeBits & (1 << gametype))
 		{
@@ -299,7 +299,7 @@ void G_LoadArenas( void ) {
 		G_LoadArenasFromFile(filename);
 	}
 //	trap->Print( "%i arenas parsed\n", level.arenas.num );
-	
+
 	for( n = 0; n < level.arenas.num; n++ ) {
 		Info_SetValueForKey( level.arenas.infos[n], "num", va( "%i", n ) );
 	}
@@ -333,7 +333,7 @@ void G_LoadArenas( void ) {
 		fileptr += len + 1;
 	}
 //	trap->Print( "%i arenas parsed\n", level.arenas.num );
-	
+
 	for( n = 0; n < level.arenas.num; n++ ) {
 		Info_SetValueForKey( level.arenas.infos[n], "num", va( "%i", n ) );
 	}

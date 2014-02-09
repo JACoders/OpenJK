@@ -525,7 +525,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		}
 
 		cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
-
 	}
 }
 

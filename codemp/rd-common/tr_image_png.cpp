@@ -222,7 +222,7 @@ struct PNGFileReader
 			ri->Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
 
 			ri->Z_Free (tempData);
-			
+
 			return 0;
 		}
 

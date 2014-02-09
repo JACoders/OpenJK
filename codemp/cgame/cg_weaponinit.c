@@ -465,7 +465,7 @@ void CG_RegisterWeapon( int weaponNum) {
 
 		cgs.effects.rocketShotEffect			= trap->FX_RegisterEffect( "rocket/shot" );
 		cgs.effects.rocketExplosionEffect		= trap->FX_RegisterEffect( "rocket/explosion" );
-	
+
 		trap->R_RegisterShaderNoMip( "gfx/2d/wedge" );
 		trap->R_RegisterShaderNoMip( "gfx/2d/lock" );
 

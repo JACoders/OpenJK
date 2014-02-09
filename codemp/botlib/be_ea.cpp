@@ -5,7 +5,7 @@
  * desc:		elementary actions
  *
  * $Archive: /MissionPack/code/botlib/be_ea.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 5 $
  * $Modtime: 11/22/00 8:50a $
  * $Date: 11/22/00 8:55a $

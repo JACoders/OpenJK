@@ -1,7 +1,7 @@
 #include "tr_local.h"
 
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 #include "qcommon/matcomp.h"
 
 #ifdef _MSC_VER
@@ -137,7 +137,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 		poly->hShader = hShader;
 		poly->numVerts = numVerts;
 		poly->verts = &backEndData->polyVerts[r_numpolyverts];
-		
+
 		memcpy( poly->verts, &verts[numVerts*j], numVerts * sizeof( *verts ) );
 
 		// done.
@@ -159,7 +159,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 				AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
 			}
 			for ( fogIndex = 1 ; fogIndex < tr.world->numfogs ; fogIndex++ ) {
-				fog = &tr.world->fogs[fogIndex]; 
+				fog = &tr.world->fogs[fogIndex];
 				if ( bounds[1][0] >= fog->bounds[0][0]
 					&& bounds[1][1] >= fog->bounds[0][1]
 					&& bounds[1][2] >= fog->bounds[0][2]
@@ -267,13 +267,13 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
  *    none                                                                                      *
  *                                                                                              *
  ************************************************************************************************/
-void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent ) 
+void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 {
 #if 0
 	refEntity_t		*parent;
 #endif
 
-	if ( !tr.registered ) 
+	if ( !tr.registered )
 	{
 		return;
 	}
@@ -291,7 +291,7 @@ void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 	RE_AddRefEntityToScene(&tempEnt);
 #else
 
-	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) 
+	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE )
 	{
 		Com_Error( ERR_DROP, "RE_AddMiniRefEntityToScene: bad reType %i", ent->reType );
 	}
@@ -479,7 +479,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	// Add the decals here because decals add polys and we need to ensure
 	// that the polys are added before the the renderer is prepared
-	if ( !(tr.refdef.rdflags & RDF_NOWORLDMODEL) ) 
+	if ( !(tr.refdef.rdflags & RDF_NOWORLDMODEL) )
 	{
 		R_AddDecals ( );
 	}

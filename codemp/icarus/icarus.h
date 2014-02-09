@@ -12,7 +12,7 @@ extern void  ICARUS_Free(void *pMem);
 #include "game/g_public.h"
 
 #ifdef _MSC_VER
-#pragma warning( disable : 4786 )  // identifier was truncated 
+#pragma warning( disable : 4786 )  // identifier was truncated
 #pragma warning( disable : 4514 )  // unreferenced inline was removed
 #pragma warning( disable : 4710 )  // not inlined
 

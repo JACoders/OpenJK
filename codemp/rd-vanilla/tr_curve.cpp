@@ -21,7 +21,7 @@ srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
 LerpDrawVert
 ============
 */
-static void LerpDrawVert( drawVert_t *a, drawVert_t *b, drawVert_t *out ) 
+static void LerpDrawVert( drawVert_t *a, drawVert_t *b, drawVert_t *out )
 {
 	int	k;
 
@@ -245,7 +245,7 @@ static void InvertErrorTable( float errorTable[2][MAX_GRID_SIZE], int width, int
 PutPointsOnCurve
 ==================
 */
-static void PutPointsOnCurve( drawVert_t	ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE], 
+static void PutPointsOnCurve( drawVert_t	ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE],
 							 int width, int height ) {
 	int			i, j;
 	drawVert_t	prev, next;

@@ -75,7 +75,7 @@ NPC_Sentry_Pain
 -------------------------
 */
 void NPC_Sentry_Pain(gentity_t *self, gentity_t *attacker, int damage)
-{		
+{
 	int mod = gPainMOD;
 
 	NPC_Pain( self, attacker, damage );
@@ -86,7 +86,7 @@ void NPC_Sentry_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		TIMER_Set( self, "attackDelay", Q_irand( 9000, 12000) );
 		self->flags |= FL_SHIELDED;
 		NPC_SetAnim( self, SETANIM_BOTH, BOTH_FLY_SHIELDED, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_pain") );		
+		G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_pain") );
 
 		self->NPC->localState = LSTATE_ACTIVE;
 	}
@@ -134,7 +134,7 @@ void Sentry_Fire (void)
 	{
 		NPCS.NPCInfo->localState = LSTATE_POWERING_UP;
 
-		G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_shield_open") );		
+		G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_shield_open") );
 		NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_POWERUP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		TIMER_Set( NPCS.NPC, "powerup", 250 );
 		return;
@@ -161,7 +161,7 @@ void Sentry_Fire (void)
 		bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash03");
 	}
 
-	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0,
 				bolt,
 				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
 				NULL, NPCS.NPC->modelScale );
@@ -205,7 +205,7 @@ Sentry_MaintainHeight
 -------------------------
 */
 void Sentry_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	NPCS.NPC->s.loopSound = G_SoundIndex( "sound/chars/sentry/misc/sentry_hover_1_lp" );
@@ -217,7 +217,7 @@ void Sentry_MaintainHeight( void )
 	if ( NPCS.NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2]; 
+		dif = (NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
@@ -451,7 +451,7 @@ Sentry_AttackDecision
 */
 void Sentry_AttackDecision( void )
 {
-	float		distance;	
+	float		distance;
 	qboolean	visible, advance;
 
 	// Always keep a good height off the ground
@@ -486,7 +486,7 @@ void Sentry_AttackDecision( void )
 	}
 
 	// Rate our distance to the target and visibilty
-	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 

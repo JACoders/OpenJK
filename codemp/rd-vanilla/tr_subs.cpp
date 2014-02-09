@@ -82,7 +82,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 	char			*buf = 0, *bufParse = 0;
 
 	length = ri->FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
+	if (!f || !length)
 	{
 		return false;
 	}
@@ -113,7 +113,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 	CGenericParser2 *parse;
 
 	length = ri->FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
+	if (!f || !length)
 	{
 		return 0;
 	}

@@ -62,7 +62,7 @@ typedef struct outPacket_s {
 
 // the parseEntities array must be large enough to hold PACKET_BACKUP frames of
 // entities, so that when a delta compressed message arives from the server
-// it can be un-deltad from the original 
+// it can be un-deltad from the original
 #define	MAX_PARSE_ENTITIES	( PACKET_BACKUP * MAX_SNAPSHOT_ENTITIES )
 
 extern int g_console_field_width;
@@ -135,7 +135,7 @@ extern	clientActive_t		cl;
 
 #define MAX_HEIGHTMAP_SIZE	16000
 
-typedef struct 
+typedef struct
 {
 	int			mType;
 	int			mSide;
@@ -428,7 +428,6 @@ void CL_GetPingInfo( int n, char *buf, int buflen );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
 
-void CL_ShutdownRef( void );
 void CL_InitRef( void );
 
 int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
@@ -451,6 +450,7 @@ extern 	kbutton_t 	in_strafe;
 extern 	kbutton_t 	in_speed;
 
 void CL_InitInput (void);
+void CL_ShutdownInput(void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
 void CL_ReadPackets (void);
@@ -488,6 +488,7 @@ qboolean CL_UpdateVisiblePings_f( int source );
 
 void Con_CheckResize (void);
 void Con_Init (void);
+void Con_Shutdown(void);
 void Con_Clear_f (void);
 void Con_ToggleConsole_f (void);
 void Con_DrawNotify (void);
@@ -511,7 +512,7 @@ void	SCR_DebugGraph (float value, int color);
 
 int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coordinates
 
-void	SCR_FillRect( float x, float y, float width, float height, 
+void	SCR_FillRect( float x, float y, float width, float height,
 					 const float *color );
 void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );

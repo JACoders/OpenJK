@@ -146,7 +146,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			// always spawn as spectator in team games
 			if (!isBot)
 			{
-				sess->sessionTeam = TEAM_SPECTATOR;	
+				sess->sessionTeam = TEAM_SPECTATOR;
 			}
 			else
 			{ //Bots choose their team on creation
@@ -178,7 +178,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			case GT_HOLOCRON:
 			case GT_JEDIMASTER:
 			case GT_SINGLE_PLAYER:
-				if ( g_maxGameClients.integer > 0 && 
+				if ( g_maxGameClients.integer > 0 &&
 					level.numNonSpectatorClients >= g_maxGameClients.integer ) {
 					sess->sessionTeam = TEAM_SPECTATOR;
 				} else {
@@ -237,7 +237,7 @@ void G_InitWorldSession( void ) {
 
 	trap->Cvar_VariableStringBuffer( "session", s, sizeof(s) );
 	gt = atoi( s );
-	
+
 	// if the gametype changed since the last session, don't use any
 	// client sessions
 	if ( level.gametype != gt ) {

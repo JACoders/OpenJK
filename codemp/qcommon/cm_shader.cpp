@@ -44,11 +44,11 @@ void CM_CreateShaderTextHash(void)
 	p = shaderText;
 	COM_BeginParseSession ("CM_CreateShaderTextHash");
 	// look for label
-	while (p) 
+	while (p)
 	{
 		p = SkipWhitespace(p, &hasNewLines);
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			break;
 		}
@@ -99,7 +99,7 @@ void CM_LoadShaderFiles( void )
 #else
 	numShaders = numShaders1;
 #endif
-	if ( numShaders > MAX_SHADER_FILES ) 
+	if ( numShaders > MAX_SHADER_FILES )
 	{
 		numShaders = MAX_SHADER_FILES;
 	}
@@ -112,7 +112,7 @@ void CM_LoadShaderFiles( void )
 		Com_sprintf( filename, sizeof( filename ), "shaders/%s", shaderFiles1[i] );
 		Com_DPrintf( "...loading '%s'\n", filename );
 		sum += FS_ReadFile( filename, (void **)&buffers[i] );
-		if ( !buffers[i] ) 
+		if ( !buffers[i] )
 		{
 			Com_Error( ERR_FATAL, "Couldn't load %s", filename );
 		}
@@ -125,7 +125,7 @@ void CM_LoadShaderFiles( void )
 		Com_sprintf( filename, sizeof( filename ), "shaders/test/%s", shaderFiles2[i - numShaders1] );
 		Com_DPrintf( "...loading '%s'\n", filename );
 		sum += FS_ReadFile( filename, (void **)&buffers[i] );
-		if ( !buffers[i] ) 
+		if ( !buffers[i] )
 		{
 			Com_Error( ERR_DROP, "Couldn't load %s", filename );
 		}
@@ -136,7 +136,7 @@ void CM_LoadShaderFiles( void )
 	shaderText = (char *)Z_Malloc( sum + numShaders * 2, TAG_SHADERTEXT, qtrue);
 
 	// free in reverse order, so the temp files are all dumped
-	for ( i = numShaders - 1; i >= 0 ; i-- ) 
+	for ( i = numShaders - 1; i >= 0 ; i-- )
 	{
 		strcat( shaderText, "\n" );
 		strcat( shaderText, buffers[i] );
@@ -218,7 +218,7 @@ surfaceparm <name>
 ===============
 */
 
-typedef struct 
+typedef struct
 {
 	const char	*name;
 	uint32_t clearSolid, surfaceFlags, contents;
@@ -227,26 +227,26 @@ typedef struct
 infoParm_t	svInfoParms[] = {
 	// Game surface flags
 	{ "sky",				CONTENTS_ALL,		SURF_SKY,			CONTENTS_NONE },		// emit light from an environment map
-	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		// 
+	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		//
 
-	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		// 
+	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		//
 	{ "noimpact",			CONTENTS_ALL,		SURF_NOIMPACT,		CONTENTS_NONE },		// don't make impact explosions or marks
 	{ "nomarks",			CONTENTS_ALL,		SURF_NOMARKS,		CONTENTS_NONE },		// don't make impact marks, but still explode
 	{ "nodraw",				CONTENTS_ALL,		SURF_NODRAW,		CONTENTS_NONE },		// don't generate a drawsurface (or a lightmap)
-	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		// 
+	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		//
 	{ "nodlight",			CONTENTS_ALL,		SURF_NODLIGHT,		CONTENTS_NONE },		// don't ever add dynamic lights
 
 	// Game content flags
 	{ "nonsolid", 			~CONTENTS_SOLID,	SURF_NONE, 			CONTENTS_NONE },		// special hack to clear solid flag
 	{ "nonopaque", 			~CONTENTS_OPAQUE,	SURF_NONE, 			CONTENTS_NONE },		// special hack to clear opaque flag
 	{ "lava",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_LAVA },		// very damaging
-	{ "water",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_WATER },		// 
+	{ "water",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_WATER },		//
 	{ "fog",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_FOG},			// carves surfaces entering
-	{ "playerclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_PLAYERCLIP },	// 
-	{ "monsterclip",		~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_MONSTERCLIP },	// 
+	{ "playerclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_PLAYERCLIP },	//
+	{ "monsterclip",		~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_MONSTERCLIP },	//
 	{ "botclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_BOTCLIP },		// for bots
-	{ "shotclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_SHOTCLIP },	// 
-	{ "trigger",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_TRIGGER },		// 
+	{ "shotclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_SHOTCLIP },	//
+	{ "trigger",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_TRIGGER },		//
 	{ "nodrop",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_NODROP },		// don't drop items or leave bodies (death fog, lava, etc)
 	{ "terrain",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_TERRAIN },		// use special terrain collsion
 	{ "ladder",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_LADDER },		// climb up in it like water
@@ -259,30 +259,30 @@ infoParm_t	svInfoParms[] = {
 
 	/* Game surface flags */
 	{ "sky",				CONTENTS_ALL,		SURF_SKY,			CONTENTS_NONE },		// emit light from an environment map
-	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		// 
+	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		//
 
-	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		// 
+	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		//
 	{ "noimpact",			CONTENTS_ALL,		SURF_NOIMPACT,		CONTENTS_NONE },		// don't make impact explosions or marks
 	{ "nomarks",			CONTENTS_ALL,		SURF_NOMARKS,		CONTENTS_NONE },		// don't make impact marks, but still explode
 	{ "nodraw",				CONTENTS_ALL,		SURF_NODRAW,		CONTENTS_NONE },		// don't generate a drawsurface (or a lightmap)
-	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		// 
+	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		//
 	{ "nodlight",			CONTENTS_ALL,		SURF_NODLIGHT,		CONTENTS_NONE },		// don't ever add dynamic lights
-	{ "metalsteps",			CONTENTS_ALL,		SURF_METALSTEPS,	CONTENTS_NONE },		// 
+	{ "metalsteps",			CONTENTS_ALL,		SURF_METALSTEPS,	CONTENTS_NONE },		//
 	{ "nomiscents",			CONTENTS_ALL,		SURF_NOMISCENTS,	CONTENTS_NONE },		// No misc ents on this surface
-	{ "forcefield",			CONTENTS_ALL,		SURF_FORCEFIELD,	CONTENTS_NONE },		// 
+	{ "forcefield",			CONTENTS_ALL,		SURF_FORCEFIELD,	CONTENTS_NONE },		//
 	{ "forcesight",			CONTENTS_ALL,		SURF_FORCESIGHT,	CONTENTS_NONE },		// only visible with force sight
 };
 
-void SV_ParseSurfaceParm( CCMShader * shader, const char **text ) 
+void SV_ParseSurfaceParm( CCMShader * shader, const char **text )
 {
 	char	*token;
 	int		numsvInfoParms = sizeof(svInfoParms) / sizeof(svInfoParms[0]);
 	int		i;
 
 	token = COM_ParseExt( text, qfalse );
-	for ( i = 0 ; i < numsvInfoParms ; i++ ) 
+	for ( i = 0 ; i < numsvInfoParms ; i++ )
 	{
-		if ( !Q_stricmp( token, svInfoParms[i].name ) ) 
+		if ( !Q_stricmp( token, svInfoParms[i].name ) )
 		{
 			shader->surfaceFlags |= svInfoParms[i].surfaceFlags;
 			shader->contentFlags |= svInfoParms[i].contents;
@@ -302,20 +302,20 @@ const char *svMaterialNames[MATERIAL_LAST] =
 	MATERIALS
 };
 
-void SV_ParseMaterial( CCMShader *shader, const char **text ) 
+void SV_ParseMaterial( CCMShader *shader, const char **text )
 {
 	char	*token;
 	int		i;
 
 	token = COM_ParseExt( text, qfalse );
-	if ( !token[0] ) 
+	if ( !token[0] )
 	{
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing material in shader '%s'\n", shader->shader );
 		return;
 	}
 	for(i = 0; i < MATERIAL_LAST; i++)
 	{
-		if ( !Q_stricmp( token, svMaterialNames[i] ) ) 
+		if ( !Q_stricmp( token, svMaterialNames[i] ) )
 		{
 			shader->surfaceFlags |= i;
 			break;
@@ -328,23 +328,23 @@ void SV_ParseMaterial( CCMShader *shader, const char **text )
 ParseVector
 ===============
 */
-static qboolean CM_ParseVector( CCMShader *shader, const char **text, int count, float *v ) 
+static qboolean CM_ParseVector( CCMShader *shader, const char **text, int count, float *v )
 {
 	char	*token;
 	int		i;
 
 	// FIXME: spaces are currently required after parens, should change parseext...
 	token = COM_ParseExt( text, qfalse );
-	if ( strcmp( token, "(" ) ) 
+	if ( strcmp( token, "(" ) )
 	{
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing parenthesis in shader '%s'\n", shader->shader );
 		return qfalse;
 	}
 
-	for ( i = 0 ; i < count ; i++ ) 
+	for ( i = 0 ; i < count ; i++ )
 	{
 		token = COM_ParseExt( text, qfalse );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_YELLOW "WARNING: missing vector element in shader '%s'\n", shader->shader );
 			return qfalse;
@@ -353,7 +353,7 @@ static qboolean CM_ParseVector( CCMShader *shader, const char **text, int count,
 	}
 
 	token = COM_ParseExt( text, qfalse );
-	if ( strcmp( token, ")" ) ) 
+	if ( strcmp( token, ")" ) )
 	{
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing parenthesis in shader '%s'\n", shader->shader );
 		return qfalse;
@@ -369,7 +369,7 @@ The current text pointer is at the explicit text definition of the
 shader.  Parse it into the global shader variable.
 
 This extracts all the info from the shader required for physics and collision
-It is designed to *NOT* load any image files and not require any of the renderer to 
+It is designed to *NOT* load any image files and not require any of the renderer to
 be initialised.
 =================
 */
@@ -413,7 +413,7 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 		}
 		// sun parms
 		// q3map_sun deprecated as of 11 Jan 01
-		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) ) 
+		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) )
 		{
 //			float	a, b;
 
@@ -423,7 +423,7 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 //			shader->sunLight[1] = atof( token );
 			token = COM_ParseExt( text, qfalse );
 //			shader->sunLight[2] = atof( token );
-			
+
 //			VectorNormalize( shader->sunLight );
 
 			token = COM_ParseExt( text, qfalse );
@@ -440,21 +440,21 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 //			shader->sunDirection[1] = sin( a ) * cos( b );
 //			shader->sunDirection[2] = sin( b );
 		}
-		else if ( !Q_stricmp( token, "surfaceParm" ) ) 
+		else if ( !Q_stricmp( token, "surfaceParm" ) )
 		{
 			SV_ParseSurfaceParm( shader, text );
 			continue;
 		}
-		else if ( !Q_stricmp( token, "fogParms" ) ) 
+		else if ( !Q_stricmp( token, "fogParms" ) )
 		{
 			vec3_t				fogColor;
-			if ( !CM_ParseVector( shader, text, 3, fogColor ) ) 
+			if ( !CM_ParseVector( shader, text, 3, fogColor ) )
 			{
 				return;
 			}
 
 			token = COM_ParseExt( text, qfalse );
-			if ( !token[0] ) 
+			if ( !token[0] )
 			{
 				Com_Printf( S_COLOR_YELLOW "WARNING: missing parm for 'fogParms' keyword in shader '%s'\n", shader->shader );
 				continue;

@@ -374,7 +374,7 @@ void IN_VoiceChatButton(void)
 void IN_KeyDown( kbutton_t *b ) {
 	int		k;
 	char	*c;
-	
+
 	c = Cmd_Argv(1);
 	if ( c[0] ) {
 		k = atoi(c);
@@ -385,7 +385,7 @@ void IN_KeyDown( kbutton_t *b ) {
 	if ( k == b->down[0] || k == b->down[1] ) {
 		return;		// repeating key
 	}
-	
+
 	if ( !b->down[0] ) {
 		b->down[0] = k;
 	} else if ( !b->down[1] ) {
@@ -394,7 +394,7 @@ void IN_KeyDown( kbutton_t *b ) {
 		Com_Printf ("Three keys down for a button!\n");
 		return;
 	}
-	
+
 	if ( b->active ) {
 		return;		// still down
 	}
@@ -595,7 +595,7 @@ void IN_UpDown(void)
 		IN_KeyDown(&in_up);
 	}
 }
-void IN_UpUp(void) 
+void IN_UpUp(void)
 {
 	if (g_clAutoMapMode)
 	{
@@ -800,7 +800,7 @@ Moves the local angle positions
 */
 void CL_AdjustAngles( void ) {
 	float	speed;
-	
+
 	if ( in_speed.active ) {
 		speed = 0.001 * cls.frametime * cl_anglespeedkey->value;
 	} else {
@@ -944,6 +944,8 @@ CL_JoystickMove
 */
 extern cvar_t *in_joystick;
 void CL_JoystickMove( usercmd_t *cmd ) {
+	float	anglespeed;
+
 	if ( !in_joystick->integer )
 	{
 		return;
@@ -954,12 +956,13 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	{
 		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
 		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		cl.viewangles[YAW] -= (cl_yawspeed->value / 100.0f) * (cl.joystickAxis[AXIS_YAW]/1024.0f);
+		cl.viewangles[PITCH] += (cl_pitchspeed->value / 100.0f) * (cl.joystickAxis[AXIS_PITCH]/1024.0f);
 	}
 	else
 	{
 #endif
-	float	anglespeed;
-
 	if ( !(in_speed.active ^ cl_run->integer) ) {
 		cmd->buttons |= BUTTON_WALKING;
 	}
@@ -1048,7 +1051,7 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	{//FIXME: different people have different speed mouses,
 		if ( cl_mSensitivityOverride )
 		{
-			//this will fuck things up for them, need to clamp 
+			//this will fuck things up for them, need to clamp
 			//max input?
 			accelSensitivity = cl_mSensitivityOverride;
 		}
@@ -1136,7 +1139,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 	// figure button bits
 	// send a button bit even if the key was pressed and released in
 	// less than a frame
-	//	
+	//
 	for (i = 0 ; i < MAX_KBUTTONS ; i++) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
@@ -1194,7 +1197,7 @@ void CL_FinishMove( usercmd_t *cmd ) {
 	// send the current server time so the amount of movement
 	// can be determined without allowing cheating
 	cmd->serverTime = cl.serverTime;
-	
+
 	if (cl.cgameViewAngleForceTime > cl.serverTime)
 	{
 		cl.cgameViewAngleForce[YAW] -= SHORT2ANGLE(cl.snap.ps.delta_angles[YAW]);
@@ -1236,7 +1239,7 @@ void CL_FinishMove( usercmd_t *cmd ) {
 		{
 			cl_sendAngles[YAW] -= pitchSubtract;
 		}
-		
+
 		cl_sendAngles[PITCH] = AngleNormalize180( cl_sendAngles[PITCH] );
 		cl_sendAngles[YAW] = AngleNormalize360( cl_sendAngles[YAW] );
 		cl_sendAngles[ROLL] = AngleNormalize180( cl_sendAngles[ROLL] );
@@ -1270,7 +1273,7 @@ usercmd_t CL_CreateCmd( void ) {
 
 	// keyboard angle adjustment
 	CL_AdjustAngles ();
-	
+
 	Com_Memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
@@ -1289,7 +1292,7 @@ usercmd_t CL_CreateCmd( void ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;
 	} else if ( oldAngles[PITCH] - cl.viewangles[PITCH] > 90 ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] - 90;
-	} 
+	}
 
 	// store out the final values
 	CL_FinishMove( &cmd );
@@ -1366,8 +1369,8 @@ qboolean CL_ReadyToSendPacket( void ) {
 
 	// if we don't have a valid gamestate yet, only send
 	// one packet a second
-	if ( cls.state != CA_ACTIVE && 
-		cls.state != CA_PRIMED && 
+	if ( cls.state != CA_ACTIVE &&
+		cls.state != CA_PRIMED &&
 		!*clc.downloadTempName &&
 		cls.realtime - clc.lastPacketSentTime < 1000 ) {
 		return qfalse;
@@ -1527,7 +1530,7 @@ void CL_WritePacket( void ) {
 		Com_Printf( "%i ", buf.cursize );
 	}
 
-	CL_Netchan_Transmit (&clc.netchan, &buf);	
+	CL_Netchan_Transmit (&clc.netchan, &buf);
 
 	// clients never really should have messages large enough
 	// to fragment, but in case they do, fire them all off
@@ -1696,4 +1699,126 @@ void CL_InitInput( void ) {
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
+}
+
+/*
+============
+CL_ShutdownInput
+============
+*/
+void CL_ShutdownInput(void)
+{
+	Cmd_RemoveCommand ("centerview");
+
+	Cmd_RemoveCommand ("+moveup");
+	Cmd_RemoveCommand ("-moveup");
+	Cmd_RemoveCommand ("+movedown");
+	Cmd_RemoveCommand ("-movedown");
+	Cmd_RemoveCommand ("+left");
+	Cmd_RemoveCommand ("-left");
+	Cmd_RemoveCommand ("+right");
+	Cmd_RemoveCommand ("-right");
+	Cmd_RemoveCommand ("+forward");
+	Cmd_RemoveCommand ("-forward");
+	Cmd_RemoveCommand ("+back");
+	Cmd_RemoveCommand ("-back");
+	Cmd_RemoveCommand ("+lookup");
+	Cmd_RemoveCommand ("-lookup");
+	Cmd_RemoveCommand ("+lookdown");
+	Cmd_RemoveCommand ("-lookdown");
+	Cmd_RemoveCommand ("+strafe");
+	Cmd_RemoveCommand ("-strafe");
+	Cmd_RemoveCommand ("+moveleft");
+	Cmd_RemoveCommand ("-moveleft");
+	Cmd_RemoveCommand ("+moveright");
+	Cmd_RemoveCommand ("-moveright");
+	Cmd_RemoveCommand ("+speed");
+	Cmd_RemoveCommand ("-speed");
+	Cmd_RemoveCommand ("+attack");
+	Cmd_RemoveCommand ("-attack");
+	Cmd_RemoveCommand ("+use");
+	Cmd_RemoveCommand ("-use");
+	Cmd_RemoveCommand ("+force_grip");//force grip
+	Cmd_RemoveCommand ("-force_grip");
+	Cmd_RemoveCommand ("+altattack");//altattack
+	Cmd_RemoveCommand ("-altattack");
+	Cmd_RemoveCommand ("+useforce");//active force power
+	Cmd_RemoveCommand ("-useforce");
+	Cmd_RemoveCommand ("+force_lightning");//active force power
+	Cmd_RemoveCommand ("-force_lightning");
+	Cmd_RemoveCommand ("+force_drain");//active force power
+	Cmd_RemoveCommand ("-force_drain");
+	//buttons
+	Cmd_RemoveCommand ("+button0");//attack
+	Cmd_RemoveCommand ("-button0");
+	Cmd_RemoveCommand ("+button1");//force jump
+	Cmd_RemoveCommand ("-button1");
+	Cmd_RemoveCommand ("+button2");//use holdable (not used - change to use jedi power?)
+	Cmd_RemoveCommand ("-button2");
+	Cmd_RemoveCommand ("+button3");//gesture
+	Cmd_RemoveCommand ("-button3");
+	Cmd_RemoveCommand ("+button4");//walking
+	Cmd_RemoveCommand ("-button4");
+	Cmd_RemoveCommand ("+button5");//use object
+	Cmd_RemoveCommand ("-button5");
+	Cmd_RemoveCommand ("+button6");//force grip
+	Cmd_RemoveCommand ("-button6");
+	Cmd_RemoveCommand ("+button7");//altattack
+	Cmd_RemoveCommand ("-button7");
+	Cmd_RemoveCommand ("+button8");
+	Cmd_RemoveCommand ("-button8");
+	Cmd_RemoveCommand ("+button9");//active force power
+	Cmd_RemoveCommand ("-button9");
+	Cmd_RemoveCommand ("+button10");//force lightning
+	Cmd_RemoveCommand ("-button10");
+	Cmd_RemoveCommand ("+button11");//force drain
+	Cmd_RemoveCommand ("-button11");
+	Cmd_RemoveCommand ("+button12");
+	Cmd_RemoveCommand ("-button12");
+	Cmd_RemoveCommand ("+button13");
+	Cmd_RemoveCommand ("-button13");
+	Cmd_RemoveCommand ("+button14");
+	Cmd_RemoveCommand ("-button14");
+	Cmd_RemoveCommand ("+button15");
+	Cmd_RemoveCommand ("-button15");
+	Cmd_RemoveCommand ("+mlook");
+	Cmd_RemoveCommand ("-mlook");
+
+	Cmd_RemoveCommand ("sv_saberswitch");
+	Cmd_RemoveCommand ("engage_duel");
+	Cmd_RemoveCommand ("force_heal");
+	Cmd_RemoveCommand ("force_speed");
+	Cmd_RemoveCommand ("force_pull");
+	Cmd_RemoveCommand ("force_distract");
+	Cmd_RemoveCommand ("force_rage");
+	Cmd_RemoveCommand ("force_protect");
+	Cmd_RemoveCommand ("force_absorb");
+	Cmd_RemoveCommand ("force_healother");
+	Cmd_RemoveCommand ("force_forcepowerother");
+	Cmd_RemoveCommand ("force_seeing");
+	Cmd_RemoveCommand ("use_seeker");
+	Cmd_RemoveCommand ("use_field");
+	Cmd_RemoveCommand ("use_bacta");
+	Cmd_RemoveCommand ("use_electrobinoculars");
+	Cmd_RemoveCommand ("zoom");
+	Cmd_RemoveCommand ("use_sentry");
+	Cmd_RemoveCommand ("use_jetpack");
+	Cmd_RemoveCommand ("use_bactabig");
+	Cmd_RemoveCommand ("use_healthdisp");
+	Cmd_RemoveCommand ("use_ammodisp");
+	Cmd_RemoveCommand ("use_eweb");
+	Cmd_RemoveCommand ("use_cloak");
+	Cmd_RemoveCommand ("taunt");
+	Cmd_RemoveCommand ("bow");
+	Cmd_RemoveCommand ("meditate");
+	Cmd_RemoveCommand ("flourish");
+	Cmd_RemoveCommand ("gloat");
+	Cmd_RemoveCommand ("saberAttackCycle");
+	Cmd_RemoveCommand ("force_throw");
+	Cmd_RemoveCommand ("useGivenForce");
+
+
+	Cmd_RemoveCommand("automap_button");
+	Cmd_RemoveCommand("automap_toggle");
+	Cmd_RemoveCommand("voicechat");
 }

@@ -63,6 +63,7 @@ source_group("renderer\\glsl" FILES ${MPRend2GLSLFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2GLSLFiles})
 
 set(MPRend2Ghoul2Files
+	"${MPDir}/ghoul2/g2_local.h"
 	"${MPDir}/ghoul2/G2_gore.cpp"
 	"${MPDir}/ghoul2/G2_gore.h")
 source_group("ghoul2" FILES ${MPRend2Ghoul2Files})

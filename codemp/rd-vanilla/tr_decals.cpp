@@ -3,7 +3,7 @@
 #define	MAX_VERTS_ON_DECAL_POLY	10
 #define	MAX_DECAL_POLYS			500
 
-typedef struct decalPoly_s 
+typedef struct decalPoly_s
 {
 	int					time;
 	int					fadetime;
@@ -49,7 +49,7 @@ void R_InitDecals( void ) {
 void RE_FreeDecal( int type, int index ) {
 	if ( !re_decalPolys[type][index].time )
 		return;
-	
+
 	if ( type == DECALPOLY_TYPE_NORMAL ) {
 		decalPoly_t* fade;
 
@@ -75,7 +75,7 @@ Will allways succeed, even if it requires freeing an old active mark
 */
 decalPoly_t* RE_AllocDecal( int type ) {
 	decalPoly_t	*le;
-	
+
 	// See if the cvar changed
 	if ( re_decalPolyTotal[type] > r_markcount->integer )
 		RE_ClearDecals();
@@ -85,9 +85,9 @@ decalPoly_t* RE_AllocDecal( int type ) {
 	// If it has no time its the first occasion its been used
 	if ( le->time ) {
 		if ( le->time != tr.refdef.time ) {
-			int i = re_decalPolyHead[type];		
+			int i = re_decalPolyHead[type];
 
-			// since we are killing one that existed before, make sure we 
+			// since we are killing one that existed before, make sure we
 			// kill all the other marks that belong to the group
 			do {
 				i++;
@@ -99,7 +99,7 @@ decalPoly_t* RE_AllocDecal( int type ) {
 					break;
 
 				RE_FreeDecal ( type, i );
-			} while ( i != re_decalPolyHead[type] );			
+			} while ( i != re_decalPolyHead[type] );
 
 			RE_FreeDecal( type, re_decalPolyHead[type] );
 		}
@@ -151,7 +151,7 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 	if ( r_markcount->integer <= 0 && !temporary )
 		return;
 
-	if ( radius <= 0 ) 
+	if ( radius <= 0 )
 		Com_Error( ERR_FATAL, "RE_AddDecalToScene:  called with <= 0 radius" );
 
 	// create the texture axis
@@ -163,7 +163,7 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 	texCoordScale = 0.5 * 1.0 / radius;
 
 	// create the full polygon
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		originalPoints[0][i] = origin[i] - radius * axis[1][i] - radius * axis[2][i];
 		originalPoints[1][i] = origin[i] + radius * axis[1][i] - radius * axis[2][i];
@@ -182,7 +182,7 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 	colors[2] = blue * 255;
 	colors[3] = alpha * 255;
 
-	for ( i = 0, mf = markFragments ; i < numFragments ; i++, mf++ ) 
+	for ( i = 0, mf = markFragments ; i < numFragments ; i++, mf++ )
 	{
 		polyVert_t	*v;
 		polyVert_t	verts[MAX_VERTS_ON_DECAL_POLY];
@@ -193,7 +193,7 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 		if ( mf->numPoints > MAX_VERTS_ON_DECAL_POLY )
 			mf->numPoints = MAX_VERTS_ON_DECAL_POLY;
 
-		for ( j = 0, v = verts ; j < mf->numPoints ; j++, v++ ) 
+		for ( j = 0, v = verts ; j < mf->numPoints ; j++, v++ )
 		{
 			vec3_t		delta;
 
@@ -203,11 +203,12 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * texCoordScale;
 			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * texCoordScale;
 
-			*(int *)v->modulate = *(int *)colors;
+			for ( int k=0; k<4; k++ )
+				v->modulate[k] = colors[k];
 		}
 
 		// if it is a temporary (shadow) mark, add it immediately and forget about it
-		if ( temporary ) 
+		if ( temporary )
 		{
 			RE_AddPolyToScene( decalShader, mf->numPoints, verts, 1 );
 			continue;
@@ -231,7 +232,7 @@ void RE_AddDecalToScene( qhandle_t decalShader, const vec3_t origin, const vec3_
 R_AddDecals
 ===============
 */
-void R_AddDecals( void ) 
+void R_AddDecals( void )
 {
 	int			decalPoly;
 	int			type;
@@ -256,21 +257,21 @@ void R_AddDecals( void )
 			decalPoly_t* p = &re_decalPolys[type][decalPoly];
 
 			if ( p->time )
-			{				
+			{
 				if ( p->fadetime )
 				{
 					int t;
 
 					// fade all marks out with time
 					t = tr.refdef.time - p->time;
-					if ( t < DECAL_FADE_TIME ) 
+					if ( t < DECAL_FADE_TIME )
 					{
 						float fade;
 						int	  j;
 
 						fade = 255.0f * (1.0f - ((float)t / DECAL_FADE_TIME));
-						
-						for ( j = 0 ; j < p->poly.numVerts ; j++ ) 
+
+						for ( j = 0 ; j < p->poly.numVerts ; j++ )
 						{
 							p->verts[j].modulate[3] = fade;
 						}

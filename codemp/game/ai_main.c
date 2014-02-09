@@ -7,7 +7,7 @@
  * desc:		Quake3 bot AI
  *
  * $Archive: /MissionPack/code/game/ai_main.c $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.5 $
  * $Modtime: 6/06/01 1:11p $
  * $Date: 2003/03/15 23:43:59 $
@@ -280,7 +280,7 @@ int BotMindTricked(int botClient, int enemyClient)
 	{
 		return 0;
 	}
-	
+
 	fd = &g_entities[enemyClient].client->ps.fd;
 
 	if (!fd)
@@ -468,7 +468,7 @@ void BotChangeViewAngles(bot_state_t *bs, float thinktime) {
 	int i;
 
 	if (bs->ideal_viewangles[PITCH] > 180) bs->ideal_viewangles[PITCH] -= 360;
-	
+
 	if (bs->currentEnemy && bs->frame_Enemy_Vis)
 	{
 		if (bs->settings.skill <= 1)
@@ -894,7 +894,7 @@ int BotAIShutdownClient(int client, qboolean restart) {
 	}
 
 	trap->BotFreeMoveState(bs->ms);
-	//free the goal state`			
+	//free the goal state`
 	trap->BotFreeGoalState(bs->gs);
 	//free the weapon weights
 	trap->BotFreeWeaponState(bs->ws);
@@ -1220,7 +1220,7 @@ float TotalTrailDistance(int start, int end, bot_state_t *bs)
 				return -1;
 			}
 		}
-	
+
 #if 0 //disabled force jump checks for now
 		if (gWPArray[beginat]->forceJumpTo)
 		{
@@ -1237,7 +1237,7 @@ float TotalTrailDistance(int start, int end, bot_state_t *bs)
 				}
 			}
 		}
-		
+
 		if (bs->wpCurrent && gWPArray[windex]->forceJumpTo &&
 			gWPArray[windex]->origin[2] > (bs->wpCurrent->origin[2]+64) &&
 			bs->cur_ps.fd.forcePowerLevel[FP_LEVITATION] < gWPArray[windex]->forceJumpTo)
@@ -2204,7 +2204,7 @@ int ScanForEnemies(bot_state_t *bs)
 		}
 		i++;
 	}
-	
+
 	return bestindex;
 }
 
@@ -3178,7 +3178,7 @@ void Siege_DefendFromAttackers(bot_state_t *bs)
 		return;
 	}
 
-	wpClose = GetNearestVisibleWP(g_entities[bestindex].client->ps.origin, -1);	
+	wpClose = GetNearestVisibleWP(g_entities[bestindex].client->ps.origin, -1);
 
 	if (wpClose != -1 && gWPArray[wpClose] && gWPArray[wpClose]->inuse)
 	{
@@ -3334,7 +3334,7 @@ int SiegeTakesPriority(bot_state_t *bs)
 				dif[0] = (bs->shootGoal->r.absmax[0]+bs->shootGoal->r.absmin[0])/2;
 				dif[1] = (bs->shootGoal->r.absmax[1]+bs->shootGoal->r.absmin[1])/2;
 				dif[2] = (bs->shootGoal->r.absmax[2]+bs->shootGoal->r.absmin[2])/2;
-				
+
 				if (!BotPVSCheck(bs->origin, dif))
 				{
 					bs->shootGoal = NULL;
@@ -3359,7 +3359,7 @@ int SiegeTakesPriority(bot_state_t *bs)
 			dif[0] = (bs->shootGoal->r.absmax[0]+bs->shootGoal->r.absmin[0])/2;
 			dif[1] = (bs->shootGoal->r.absmax[1]+bs->shootGoal->r.absmin[1])/2;
 			dif[2] = (bs->shootGoal->r.absmax[2]+bs->shootGoal->r.absmin[2])/2;
-				
+
 			if (!BotPVSCheck(bs->origin, dif))
 			{
 				bs->shootGoal = NULL;
@@ -3383,7 +3383,7 @@ int SiegeTakesPriority(bot_state_t *bs)
 			dif[0] = (bs->shootGoal->r.absmax[0]+bs->shootGoal->r.absmin[0])/2;
 			dif[1] = (bs->shootGoal->r.absmax[1]+bs->shootGoal->r.absmin[1])/2;
 			dif[2] = (bs->shootGoal->r.absmax[2]+bs->shootGoal->r.absmin[2])/2;
-				
+
 			if (!BotPVSCheck(bs->origin, dif))
 			{
 				bs->shootGoal = NULL;
@@ -3455,11 +3455,11 @@ int JMTakesPriority(bot_state_t *bs)
 	{
 		if (theImportantEntity->client)
 		{
-			wpClose = GetNearestVisibleWP(theImportantEntity->client->ps.origin, theImportantEntity->s.number);	
+			wpClose = GetNearestVisibleWP(theImportantEntity->client->ps.origin, theImportantEntity->s.number);
 		}
 		else
 		{
-			wpClose = GetNearestVisibleWP(theImportantEntity->r.currentOrigin, theImportantEntity->s.number);	
+			wpClose = GetNearestVisibleWP(theImportantEntity->r.currentOrigin, theImportantEntity->s.number);
 		}
 
 		if (wpClose != -1 && gWPArray[wpClose] && gWPArray[wpClose]->inuse)
@@ -3570,7 +3570,7 @@ int GetBestIdleGoal(bot_state_t *bs)
 			{
 				bs->randomNav = 0;
 			}
-			
+
 			bs->randomNavTime = level.time + Q_irand(5000, 15000);
 		}
 	}
@@ -4099,7 +4099,7 @@ void CommanderBotSiegeAI(bot_state_t *bs)
 
 		i++;
 	}
-	
+
 	if (!squadmates)
 	{
 		return;
@@ -4194,7 +4194,7 @@ void CommanderBotTeamplayAI(bot_state_t *bs)
 
 		i++;
 	}
-	
+
 	if (!squadmates)
 	{
 		return;
@@ -4234,7 +4234,7 @@ void CommanderBotTeamplayAI(bot_state_t *bs)
 		}
 
 		i++;
-	}	
+	}
 }
 
 //pick which commander ai to use based on gametype
@@ -4516,7 +4516,7 @@ void SaberCombatHandling(bot_state_t *bs)
 					groundcheck[2] -= 64;
 
 					trap->Trace(&tr, bs->goalPosition, NULL, NULL, groundcheck, bs->client, MASK_SOLID, qfalse, 0, 0);
-					
+
 					if (tr.fraction == 1.0f)
 					{ //don't back off of a ledge
 						VectorCopy(usethisvec, bs->goalPosition);
@@ -4682,7 +4682,7 @@ void BotAimOffsetGoalAngles(bot_state_t *bs)
 		{
 			bs->goalAngles[PITCH] += bs->aimOffsetAmtPitch;
 		}
-		
+
 		while (i <= 2)
 		{
 			if (bs->goalAngles[i] > 360)
@@ -4809,7 +4809,7 @@ int ShouldSecondaryFire(bot_state_t *bs)
 		if (rTime > 0)
 		{
 			dif = ( level.time - rTime ) / ( 1200.0f / 16.0f );
-			
+
 			if (dif >= 10)
 			{
 				return 2;
@@ -5091,7 +5091,7 @@ qboolean BotWeaponSelectable(bot_state_t *bs, int weapon)
 	{
 		return qtrue;
 	}
-	
+
 	return qfalse;
 }
 
@@ -5322,7 +5322,7 @@ void BotLovedOneDied(bot_state_t *bs, bot_state_t *loved, int lovelevel)
 	{ //oops!
 		return;
 	}
-	
+
 	if (!bot_attachments.integer)
 	{
 		return;
@@ -6096,7 +6096,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 
 			bs->deathActivitiesDone = 1;
 		}
-		
+
 		bs->wpCurrent = NULL;
 		bs->currentEnemy = NULL;
 		bs->wpDestination = NULL;
@@ -6683,7 +6683,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 		{
 			GetIdealDestination(bs);
 		}
-		
+
 		if (bs->wpCurrent && bs->wpDestination)
 		{
 			if (TotalTrailDistance(bs->wpCurrent->index, bs->wpDestination->index, bs) == -1)
@@ -6961,16 +6961,16 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 			if ( g_entities[bs->client].client->ps.fd.saberAnimLevel != SS_STAFF
 				&& g_entities[bs->client].client->ps.fd.saberAnimLevel != SS_DUAL )
 			{
-				if (bs->currentEnemy->health > 75 
+				if (bs->currentEnemy->health > 75
 					&& g_entities[bs->client].client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > 2)
 				{
-					if (g_entities[bs->client].client->ps.fd.saberAnimLevel != SS_STRONG 
+					if (g_entities[bs->client].client->ps.fd.saberAnimLevel != SS_STRONG
 						&& bs->saberPower)
 					{ //if we are up against someone with a lot of health and we have a strong attack available, then h4q them
 						Cmd_SaberAttackCycle_f(&g_entities[bs->client]);
 					}
 				}
-				else if (bs->currentEnemy->health > 40 
+				else if (bs->currentEnemy->health > 40
 					&& g_entities[bs->client].client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > 1)
 				{
 					if (g_entities[bs->client].client->ps.fd.saberAnimLevel != SS_MEDIUM)
@@ -7319,7 +7319,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 				EntityVisibleBox(bs->origin, NULL, NULL, bs->dangerousObject->r.currentOrigin, bs->client, bs->dangerousObject->s.number))
 			{
 				bs->doAttack = 1;
-			}			
+			}
 		}
 	}
 

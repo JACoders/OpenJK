@@ -740,7 +740,6 @@ void CG_GameText(int y );
 //
 void CG_DrawScrollText( void );
 void CG_DrawCaptionText( void );
-void CG_DrawGameText( void );
 void CG_DrawCenterString( void ); 
 
 

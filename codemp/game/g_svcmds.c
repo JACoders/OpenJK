@@ -9,7 +9,7 @@
 ==============================================================================
 
 PACKET FILTERING
- 
+
 
 You can add or remove addresses from the filter list with:
 
@@ -148,7 +148,7 @@ qboolean G_FilterPacket( char *from ) {
 			break;
 		i++, p++;
 	}
-	
+
 	in = m.ui;
 
 	for ( i=0; i<numIPFilters; i++ ) {
@@ -178,7 +178,7 @@ static void AddIP( char *str ) {
 		}
 		numIPFilters++;
 	}
-	
+
 	if ( !StringToFilter( str, &ipFilters[i] ) )
 		ipFilters[i].compare = 0xFFFFFFFFu;
 

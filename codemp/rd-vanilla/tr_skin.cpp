@@ -46,9 +46,9 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 		strcpy (skinlower, name);
 
 		//now get the the individual files
-		
+
 		//advance to second
-		char *p2 = strchr(p, '|'); 
+		char *p2 = strchr(p, '|');
 		if (!p2)
 		{
 			return false;
@@ -72,14 +72,14 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 
 		strcat (skinlower,p);
 		strcat (skinlower, ".skin");
-		
+
 		return true;
 	}
 	return false;
 }
 
 // given a name, go get the skin we want and return
-qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin) 
+qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 {
 	skin_t			*skin;
 	skinSurface_t	*surf;
@@ -119,7 +119,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		if ( !strncmp( token, "tag_", 4 ) ) {	//these aren't in there, but just in case you load an id style one...
 			continue;
 		}
-		
+
 		// parse the shader name
 		token = CommaParse( &text_p );
 
@@ -272,13 +272,13 @@ static char *CommaParse( char **data_p ) {
 				data++;
 		}
 		// skip /* */ comments
-		else if ( c=='/' && data[1] == '*' ) 
+		else if ( c=='/' && data[1] == '*' )
 		{
-			while ( *data && ( *data != '*' || data[1] != '/' ) ) 
+			while ( *data && ( *data != '*' || data[1] != '/' ) )
 			{
 				data++;
 			}
-			if ( *data ) 
+			if ( *data )
 			{
 				data += 2;
 			}
@@ -306,7 +306,7 @@ static char *CommaParse( char **data_p ) {
 				*data_p = ( char * ) data;
 				return com_token;
 			}
-			if (len < MAX_TOKEN_CHARS)
+			if (len < MAX_TOKEN_CHARS - 1)
 			{
 				com_token[len] = c;
 				len++;
@@ -317,7 +317,7 @@ static char *CommaParse( char **data_p ) {
 	// parse a regular word
 	do
 	{
-		if (len < MAX_TOKEN_CHARS)
+		if (len < MAX_TOKEN_CHARS - 1)
 		{
 			com_token[len] = c;
 			len++;
@@ -326,11 +326,6 @@ static char *CommaParse( char **data_p ) {
 		c = *data;
 	} while (c>32 && c != ',' );
 
-	if (len == MAX_TOKEN_CHARS)
-	{
-//		ri->Printf( PRINT_ALL, "Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
-	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
@@ -407,7 +402,7 @@ void	R_SkinList_f( void ) {
 
 		ri->Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
-			ri->Printf( PRINT_ALL, "       %s = %s\n", 
+			ri->Printf( PRINT_ALL, "       %s = %s\n",
 				skin->surfaces[j]->name, ((shader_t* )skin->surfaces[j]->shader)->name );
 		}
 	}

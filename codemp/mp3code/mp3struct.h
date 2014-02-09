@@ -23,13 +23,13 @@ typedef struct
 	{
 		struct
 		{
-			SBT_FUNCTION sbt;	
+			SBT_FUNCTION sbt;
 
 			float	cs_factor[3][64];	// 768 bytes
 
 			int		nbat[4];
 			int		bat[4][16];
-			int		max_sb;		
+			int		max_sb;
 			int		stereo_sb;
 			int		bit_skip;
 
@@ -38,7 +38,7 @@ typedef struct
 
 		};//L1_2;
 
-		struct 
+		struct
 		{
 			SBT_FUNCTION sbt_L3;
 			XFORM_FUNCTION Xform;
@@ -79,8 +79,8 @@ typedef struct
 	// from csbt.c...
 	//
 	// if this isn't kept per stream then the decode breaks up
-	signed int	vb_ptr;			// 
-	signed int	vb2_ptr;		// 
+	signed int	vb_ptr;			//
+	signed int	vb2_ptr;		//
 	float		vbuf[512];		//
 	float		vbuf2[512];		// this can be lost if we stick to mono samples
 
@@ -95,7 +95,7 @@ typedef struct
 	int			outbytes;
 	int			framebytes;
 	int			pad;
-	int			nsb_limit;	
+	int			nsb_limit;
 
 	// stuff added now that the game uses streaming MP3s...
 	//
@@ -123,7 +123,7 @@ typedef struct
 	// Note that these fields are only valid/initialised if MP3Stream_InitPlayingTimeFields() was called.
 	//	If not, this->iTimeQuery_UnpackedLength will be zero.
 	//
-	int			iTimeQuery_UnpackedLength;	
+	int			iTimeQuery_UnpackedLength;
 	int			iTimeQuery_SampleRate;
 	int			iTimeQuery_Channels;
 	int			iTimeQuery_Width;

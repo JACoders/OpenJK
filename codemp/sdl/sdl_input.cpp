@@ -485,10 +485,6 @@ void IN_Init( void *windowData )
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );
 	in_nograb = Cvar_Get( "in_nograb", "0", CVAR_ARCHIVE );
 
-#ifdef MACOS_X_ACCELERATION_HACK
-	in_disablemacosxmouseaccel = Cvar_Get( "in_disablemacosxmouseaccel", "1", CVAR_ARCHIVE );
-#endif
-
 	SDL_StartTextInput( );
 
 	mouseAvailable = (qboolean)( in_mouse->value != 0 );
@@ -527,7 +523,7 @@ static void IN_ProcessEvents( void )
 				character = IN_TranslateSDLToJKKey( &e.key.keysym, &key, qtrue );
 				if( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
-				
+
 				if( character )
 					Sys_QueEvent( 0, SE_CHAR, *character, qfalse, 0, NULL );
 

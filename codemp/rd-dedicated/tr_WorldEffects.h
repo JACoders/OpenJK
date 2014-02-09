@@ -34,7 +34,7 @@ public:
 public:
 			CWorldEffect(CWorldEffect *owner = 0);
 	virtual ~CWorldEffect(void);
-	
+
 	void			SetNext(CWorldEffect *next) { mNext = next; }
 	CWorldEffect	*GetNext(void) { return mNext; }
 	void			SetSlave(CWorldEffect *slave) { mSlave = slave; }

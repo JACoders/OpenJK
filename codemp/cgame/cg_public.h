@@ -5,7 +5,7 @@
 
 #define	CGAME_API_VERSION		1
 
-#define	CMD_BACKUP			64	
+#define	CMD_BACKUP			64
 #define	CMD_MASK			(CMD_BACKUP - 1)
 // allow a lot of command backups for very fast systems
 // multiple commands may be combined into a single packet, so this
@@ -425,7 +425,7 @@ typedef enum cgameExportLegacy_e {
 	CG_DRAW_ACTIVE_FRAME,
 	CG_CROSSHAIR_PLAYER,
 	CG_LAST_ATTACKER,
-	CG_KEY_EVENT, 
+	CG_KEY_EVENT,
 	CG_MOUSE_EVENT,
 	CG_EVENT_HANDLING,
 	CG_POINT_CONTENTS,
@@ -470,11 +470,11 @@ typedef struct cgameImport_s {
 	int				(*PrecisionTimerEnd)					( void *timer );
 
 	// cvar
-	void			(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+	void			(*Cvar_Register)						( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags );
 	void			(*Cvar_Set)								( const char *var_name, const char *value );
 	void			(*Cvar_Update)							( vmCvar_t *vmCvar );
 	void			(*Cvar_VariableStringBuffer)			( const char *var_name, char *buffer, int bufsize );
-	
+
 	// command
 	void			(*AddCommand)							( const char *cmd_name );
 	int				(*Cmd_Argc)								( void );

@@ -144,19 +144,19 @@ qboolean BG_ParseLiteralSilent( const char **data, const char *string ) {
 }
 
 saber_colors_t TranslateSaberColor( const char *name ) {
-	if ( !Q_stricmp( name, "red" ) ) 
+	if ( !Q_stricmp( name, "red" ) )
 		return SABER_RED;
-	if ( !Q_stricmp( name, "orange" ) ) 
+	if ( !Q_stricmp( name, "orange" ) )
 		return SABER_ORANGE;
-	if ( !Q_stricmp( name, "yellow" ) ) 
+	if ( !Q_stricmp( name, "yellow" ) )
 		return SABER_YELLOW;
-	if ( !Q_stricmp( name, "green" ) ) 
+	if ( !Q_stricmp( name, "green" ) )
 		return SABER_GREEN;
-	if ( !Q_stricmp( name, "blue" ) ) 
+	if ( !Q_stricmp( name, "blue" ) )
 		return SABER_BLUE;
-	if ( !Q_stricmp( name, "purple" ) ) 
+	if ( !Q_stricmp( name, "purple" ) )
 		return SABER_PURPLE;
-	if ( !Q_stricmp( name, "random" ) ) 
+	if ( !Q_stricmp( name, "random" ) )
 		return (saber_colors_t)Q_irand( SABER_ORANGE, SABER_PURPLE );
 
 	return SABER_BLUE;
@@ -422,10 +422,10 @@ void WP_SaberSetDefaults( saberInfo_t *saber ) {
 	saber->moveSpeedScale		= 1.0f;			// 1.0 - you move faster/slower when using this saber
 	saber->animSpeedScale		= 1.0f;			// 1.0 - plays normal attack animations faster/slower
 
-	saber->kataMove				= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	saber->lungeAtkMove			= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	saber->jumpAtkUpMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+attack 
-	saber->jumpAtkFwdMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	saber->kataMove				= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	saber->lungeAtkMove			= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	saber->jumpAtkUpMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+attack
+	saber->jumpAtkFwdMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	saber->jumpAtkBackMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+back+attack
 	saber->jumpAtkRightMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+rightattack
 	saber->jumpAtkLeftMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -440,7 +440,7 @@ void WP_SaberSetDefaults( saberInfo_t *saber ) {
 
 	//***NOTE: you can only have a maximum of 2 "styles" of blades, so this next value, "bladeStyle2Start" is the number of the first blade to use these value on... all blades before this use the normal values above, all blades at and after this number use the secondary values below***
 	saber->bladeStyle2Start		= 0;			// 0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
-	
+
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
 
 	//===PRIMARY BLADES=====================
@@ -500,14 +500,14 @@ void WP_SaberSetDefaults( saberInfo_t *saber ) {
 
 static void Saber_ParseName( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	Q_strncpyz( saber->fullName, value, sizeof( saber->fullName ) );
 }
 static void Saber_ParseSaberType( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberType;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberType = GetIDForString( saberTable, value );
 	if ( saberType >= SABER_SINGLE && saberType <= NUM_SABERS )
@@ -515,31 +515,31 @@ static void Saber_ParseSaberType( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseSaberModel( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	Q_strncpyz( saber->model, value, sizeof( saber->model ) );
 }
 static void Saber_ParseCustomSkin( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->skin = trap->R_RegisterSkin( value );
 }
 static void Saber_ParseSoundOn( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->soundOn = BG_SoundIndex( value );
 }
 static void Saber_ParseSoundLoop( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->soundLoop = BG_SoundIndex( value );
 }
 static void Saber_ParseSoundOff( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->soundOff = BG_SoundIndex( value );
 }
@@ -789,7 +789,7 @@ static void Saber_ParseSaberStyle( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int style, styleNum;
 
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 
 	//OLD WAY: only allowed ONE style
@@ -805,13 +805,13 @@ static void Saber_ParseSaberStyle( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseSaberStyleLearned( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->stylesLearned |= (1<<TranslateSaberStyle( value ));
 }
 static void Saber_ParseSaberStyleForbidden( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->stylesForbidden |= (1<<TranslateSaberStyle( value ));
 }
@@ -872,7 +872,7 @@ static void Saber_ParseForceRestrict( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int fp;
 
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 
 	fp = GetIDForString( FPTable, value );
@@ -929,7 +929,7 @@ static void Saber_ParseDisarmBonus2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseSingleBladeStyle( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->singleBladeStyle = TranslateSaberStyle( value );
 }
@@ -944,13 +944,13 @@ static void Saber_ParseSingleBladeThrowable( saberInfo_t *saber, const char **p 
 }
 static void Saber_ParseBrokenSaber1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	//saber->brokenSaber1 = G_NewString( value );
 }
 static void Saber_ParseBrokenSaber2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	//saber->brokenSaber2 = G_NewString( value );
 }
@@ -965,13 +965,13 @@ static void Saber_ParseReturnDamage( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseSpinSound( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->spinSound = BG_SoundIndex( value );
 }
 static void Saber_ParseSwingSound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->swingSound[0] = BG_SoundIndex( value );
 }
@@ -983,7 +983,7 @@ static void Saber_ParseSwingSound2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseSwingSound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->swingSound[2] = BG_SoundIndex( value );
 }
@@ -1024,16 +1024,16 @@ static void Saber_ParseBoltToWrist( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseKataMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-		saber->kataMove = saberMove; //LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
+		saber->kataMove = saberMove; //LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
 }
 static void Saber_ParseLungeAtkMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1042,7 +1042,7 @@ static void Saber_ParseLungeAtkMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseJumpAtkUpMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1051,7 +1051,7 @@ static void Saber_ParseJumpAtkUpMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseJumpAtkFwdMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1060,7 +1060,7 @@ static void Saber_ParseJumpAtkFwdMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseJumpAtkBackMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1069,7 +1069,7 @@ static void Saber_ParseJumpAtkBackMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseJumpAtkRightMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1078,7 +1078,7 @@ static void Saber_ParseJumpAtkRightMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseJumpAtkLeftMove( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int saberMove = LS_INVALID;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saberMove = GetIDForString( saberMoveTable, value );
 	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
@@ -1087,7 +1087,7 @@ static void Saber_ParseJumpAtkLeftMove( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseReadyAnim( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int anim = -1;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	anim = GetIDForString( animTable, value );
 	if ( anim >= 0 && anim < MAX_ANIMATIONS )
@@ -1096,7 +1096,7 @@ static void Saber_ParseReadyAnim( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseDrawAnim( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int anim = -1;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	anim = GetIDForString( animTable, value );
 	if ( anim >= 0 && anim < MAX_ANIMATIONS )
@@ -1105,7 +1105,7 @@ static void Saber_ParseDrawAnim( saberInfo_t *saber, const char **p ) {
 static void Saber_ParsePutawayAnim( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int anim = -1;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	anim = GetIDForString( animTable, value );
 	if ( anim >= 0 && anim < MAX_ANIMATIONS )
@@ -1114,7 +1114,7 @@ static void Saber_ParsePutawayAnim( saberInfo_t *saber, const char **p ) {
 static void Saber_ParseTauntAnim( saberInfo_t *saber, const char **p ) {
 	const char *value;
 	int anim = -1;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	anim = GetIDForString( animTable, value );
 	if ( anim >= 0 && anim < MAX_ANIMATIONS )
@@ -1425,61 +1425,61 @@ static void Saber_ParseSplashKnockback( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHitSound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hitSound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseHitSound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hitSound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseHitSound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hitSound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlockSound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->blockSound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlockSound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->blockSound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlockSound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->blockSound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounceSound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounceSound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounceSound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounceSound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounceSound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounceSound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlockEffect( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->blockEffect = trap->FX_RegisterEffect( value );
@@ -1489,7 +1489,7 @@ static void Saber_ParseBlockEffect( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHitPersonEffect( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->hitPersonEffect = trap->FX_RegisterEffect( value );
@@ -1499,7 +1499,7 @@ static void Saber_ParseHitPersonEffect( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHitOtherEffect( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->hitOtherEffect = trap->FX_RegisterEffect( value );
@@ -1672,61 +1672,61 @@ static void Saber_ParseSplashKnockback2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHit2Sound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hit2Sound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseHit2Sound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hit2Sound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseHit2Sound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->hit2Sound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlock2Sound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->block2Sound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlock2Sound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->block2Sound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlock2Sound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->block2Sound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounce2Sound1( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounce2Sound[0] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounce2Sound2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounce2Sound[1] = BG_SoundIndex( value );
 }
 static void Saber_ParseBounce2Sound3( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 	saber->bounce2Sound[2] = BG_SoundIndex( value );
 }
 static void Saber_ParseBlockEffect2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->blockEffect2 = trap->FX_RegisterEffect( value );
@@ -1736,7 +1736,7 @@ static void Saber_ParseBlockEffect2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHitPersonEffect2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->hitPersonEffect2 = trap->FX_RegisterEffect( value );
@@ -1746,7 +1746,7 @@ static void Saber_ParseHitPersonEffect2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseHitOtherEffect2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->hitOtherEffect2 = trap->FX_RegisterEffect( value );
@@ -1756,7 +1756,7 @@ static void Saber_ParseHitOtherEffect2( saberInfo_t *saber, const char **p ) {
 }
 static void Saber_ParseBladeEffect2( saberInfo_t *saber, const char **p ) {
 	const char *value;
-	if ( COM_ParseString( p, &value ) ) 
+	if ( COM_ParseString( p, &value ) )
 		return;
 #ifdef _CGAME
 	saber->bladeEffect2 = trap->FX_RegisterEffect( value );
@@ -1993,14 +1993,14 @@ qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
 	char		useSaber[SABER_NAME_LENGTH];
 	qboolean	triedDefault = qfalse;
 	keywordHash_t *key;
-	
+
 	// make sure the hash table has been setup
 	if ( !hashSetup )
 		WP_SaberSetupKeywordHash();
 
-	if ( !saber ) 
+	if ( !saber )
 		return qfalse;
-	
+
 	//Set defaults so that, if it fails, there's at least something there
 	WP_SaberSetDefaults( saber );
 
@@ -2043,9 +2043,9 @@ qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
 	// got the name we're using for sure
 	Q_strncpyz( saber->name, useSaber, sizeof( saber->name ) );
 
-	if ( BG_ParseLiteral( &p, "{" ) ) 
+	if ( BG_ParseLiteral( &p, "{" ) )
 		return qfalse;
-		
+
 	// parse the saber info block
 	while ( 1 ) {
 		token = COM_ParseExt( &p, qtrue );
@@ -2054,7 +2054,7 @@ qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 			break;
 
 		key = KeywordHash_Find( saberParseKeywordHash, token );
@@ -2072,13 +2072,13 @@ qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
 	return qtrue;
 }
 
-qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *saberData ) 
+qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *saberData )
 {
 	const char	*token;
 	const char	*value;
 	const char	*p;
 
-	if ( !saberName || !saberName[0] ) 
+	if ( !saberName || !saberName[0] )
 	{
 		return qfalse;
 	}
@@ -2096,41 +2096,41 @@ qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *s
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, saberName ) ) 
+		if ( !Q_stricmp( token, saberName ) )
 		{
 			break;
 		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
+	if ( !p )
 	{
 		return qfalse;
 	}
 
-	if ( BG_ParseLiteral( &p, "{" ) ) 
+	if ( BG_ParseLiteral( &p, "{" ) )
 	{
 		return qfalse;
 	}
-		
+
 	// parse the saber info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
 
-		if ( !Q_stricmp( token, parmname ) ) 
+		if ( !Q_stricmp( token, parmname ) )
 		{
-			if ( COM_ParseString( &p, &value ) ) 
+			if ( COM_ParseString( &p, &value ) )
 			{
 				continue;
 			}
@@ -2236,7 +2236,7 @@ void WP_SaberSetColor( saberInfo_t *sabers, int saberNum, int bladeNum, char *co
 
 static char bgSaberParseTBuffer[MAX_SABER_DATA_SIZE];
 
-void WP_SaberLoadParms( void ) 
+void WP_SaberLoadParms( void )
 {
 	int				len, totallen, saberExtFNLen, fileCnt, i;
 	char			*holdChar, *marker;
@@ -2327,7 +2327,7 @@ void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *
 		//see if there's a "{" on the next line
 		SkipRestOfLine( &p );
 
-		if ( BG_ParseLiteralSilent( &p, "{" ) ) 
+		if ( BG_ParseLiteralSilent( &p, "{" ) )
 		{//nope, not a name, keep looking
 			continue;
 		}
@@ -2427,7 +2427,7 @@ void BG_SI_BladeActivate( saberInfo_t *saber, int iBlade, qboolean bActive )
 	saber->blade[iBlade].active = bActive;
 }
 
-qboolean BG_SI_Active(saberInfo_t *saber) 
+qboolean BG_SI_Active(saberInfo_t *saber)
 {
 	int i;
 
@@ -2537,7 +2537,7 @@ void BG_SI_SetLengthGradual(saberInfo_t *saber, int time)
 	}
 }
 
-float BG_SI_Length(saberInfo_t *saber) 
+float BG_SI_Length(saberInfo_t *saber)
 {//return largest length
 	int len1 = 0;
 	int i;
@@ -2546,14 +2546,14 @@ float BG_SI_Length(saberInfo_t *saber)
 	{
 		if ( saber->blade[i].length > len1 )
 		{
-			len1 = saber->blade[i].length; 
+			len1 = saber->blade[i].length;
 		}
 	}
 	return len1;
 }
 
-float BG_SI_LengthMax(saberInfo_t *saber) 
-{ 
+float BG_SI_LengthMax(saberInfo_t *saber)
+{
 	int len1 = 0;
 	int i;
 
@@ -2561,7 +2561,7 @@ float BG_SI_LengthMax(saberInfo_t *saber)
 	{
 		if ( saber->blade[i].lengthMax > len1 )
 		{
-			len1 = saber->blade[i].lengthMax; 
+			len1 = saber->blade[i].lengthMax;
 		}
 	}
 	return len1;

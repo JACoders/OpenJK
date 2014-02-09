@@ -53,7 +53,7 @@ enum setKeyword_e
 	SET_KEYWORD_AMSDIR,
 	SET_KEYWORD_OUTDIR,
 	SET_KEYWORD_BASEDIR,
-	
+
 	NUM_AS_KEYWORDS,
 };
 
@@ -87,7 +87,7 @@ public:
 	CSetGroup();
 	~CSetGroup();
 
-	void Init( void ) 
+	void Init( void )
 	{
 		Free();
 	}
@@ -95,7 +95,7 @@ public:
 	void Free( void );
 
 	ambientSet_t *AddSet( const char *name );
-	
+
 	ambientSet_t *GetSet ( const char *name );
 	ambientSet_t *GetSet ( int ID );
 

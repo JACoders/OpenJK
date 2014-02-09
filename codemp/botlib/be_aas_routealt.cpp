@@ -5,7 +5,7 @@
  * desc:		AAS
  *
  * $Archive: /MissionPack/code/botlib/be_aas_routealt.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 5 $
  * $Modtime: 11/22/00 8:47a $
  * $Date: 11/22/00 8:55a $

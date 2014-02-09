@@ -28,7 +28,7 @@ void CG_CheckAmmo( void ) {
 		if ( ! ( weapons & ( 1 << i ) ) ) {
 			continue;
 		}
-		switch ( i ) 
+		switch ( i )
 		{
 		case WP_BRYAR_PISTOL:
 		case WP_CONCUSSION:
@@ -140,7 +140,7 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 		}
 
 		cg.v_dmg_roll = kick * left;
-		
+
 		cg.v_dmg_pitch = -kick * front;
 
 		if ( front <= 0.1 ) {
@@ -506,7 +506,7 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 		cg.mapRestart = qfalse;
 	}
 
-	if ( cg.snap->ps.pm_type != PM_INTERMISSION 
+	if ( cg.snap->ps.pm_type != PM_INTERMISSION
 		&& ps->persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
 		CG_CheckLocalSounds( ps, ops );
 	}

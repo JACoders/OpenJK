@@ -29,6 +29,10 @@ This file is part of Jedi Academy.
 #include "../client/client.h"
 #include "win_local.h"
 
+#ifndef NO_XINPUT
+#include <Xinput.h>
+#endif
+
 typedef struct {
 	int			oldButtonState;
 
@@ -937,16 +941,37 @@ JOYSTICK
 =========================================================================
 */
 
- #ifndef NO_XINPUT
+#ifndef NO_XINPUT
 
-static XINPUT_STATE xiState;
+typedef struct {
+	WORD wButtons;
+	BYTE bLeftTrigger;
+	BYTE bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwPaddingReserved;
+} XINPUT_GAMEPAD_EX;
+
+typedef struct {
+	DWORD dwPacketNumber;
+	XINPUT_GAMEPAD_EX Gamepad;
+} XINPUT_STATE_EX;
+
+#define X360_GUIDE_BUTTON 0x0400
+#define X360_LEFT_TRIGGER_MASK 0x10000
+#define X360_RIGHT_TRIGGER_MASK 0x20000
+
+static XINPUT_STATE_EX xiState;
 static DWORD dwLastXIButtonState;
 
 static HMODULE xiLibrary = NULL;
 
-typedef DWORD (__stdcall *XIFuncPointer)(DWORD, void *);
-XIFuncPointer XI_GetStateEx = NULL;
-XIFuncPointer XI_SetState = NULL;
+typedef DWORD (__stdcall *XIGetFuncPointer)(DWORD, XINPUT_STATE_EX *);
+typedef DWORD (__stdcall *XISetFuncPointer)(DWORD, XINPUT_VIBRATION *);
+XIGetFuncPointer XI_GetStateEx = NULL;
+XISetFuncPointer XI_SetState = NULL;
 
 /*
 ===============
@@ -981,8 +1006,8 @@ qboolean IN_LoadXInput ( void )
 	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
 	// of the XInputGetState function, with one key difference: XInputGetState does
 	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
-	XI_GetStateEx = (XIFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
-	XI_SetState = (XIFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+	XI_GetStateEx = (XIGetFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XISetFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
 
 	if( !XI_GetStateEx || !XI_SetState )
 	{
@@ -1031,7 +1056,8 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
-	ZeroMemory( &xiState, sizeof(XINPUT_STATE) );
+	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
+	dwLastXIButtonState = 0UL;
 
 	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
 															// I'll probably add a splitscreen mode just for lulz --eez
@@ -1333,6 +1359,16 @@ void XI_ApplyInversion( float *fX, float *fY )
 		*fY *= -1.0f;
 }
 
+#define CheckButtonStatus( xin, fakekey ) \
+	if ( (xiState.Gamepad.wButtons & xin) && !(dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
+	if ( !(xiState.Gamepad.wButtons & xin) && (dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
+	if ( (xiState.Gamepad.wButtons & xin) ) \
+		dwLastXIButtonState |= xin; \
+	else \
+		dwLastXIButtonState &= ~xin; \
+
 /*
 ===========
 IN_DoXInput
@@ -1442,52 +1478,51 @@ void IN_DoXInput( void )
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
 	}
 
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
+	CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+	CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+	CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+	CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
+	CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+	CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
 
-	// BUTTONS
-	for(int i = 0; i < 14; i++)
-	{
-		if( xiState.Gamepad.wButtons & (1 << i) &&
-			!(dwLastXIButtonState & (1 << i)) )
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qtrue, 0, NULL);
-			
-		}
-		if( !(xiState.Gamepad.wButtons & (1 << i)) &&
-			dwLastXIButtonState & (1 << i))
-		{
-			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY0+i, qfalse, 0, NULL);
-		}
-		if( xiState.Gamepad.wButtons & (1 << i) )
-			dwLastXIButtonState |= (1 << i);
-		else
-			dwLastXIButtonState &= ~(1 << i);
-	}
 	// extra magic required for the triggers
-	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & (1 << 16)) )
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & X360_LEFT_TRIGGER_MASK) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bLeftTrigger && ( dwLastXIButtonState & X360_LEFT_TRIGGER_MASK ) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
+	}
+	if( xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState |= X360_LEFT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_LEFT_TRIGGER_MASK;
+
+	if( xiState.Gamepad.bRightTrigger && !( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
 	}
-	else if( !xiState.Gamepad.bLeftTrigger && dwLastXIButtonState & (1 << 16) )
+	else if( !xiState.Gamepad.bRightTrigger && ( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
 	{
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
 	}
-	if( xiState.Gamepad.bLeftTrigger )
-		dwLastXIButtonState |= (1 << 16);
-	if( !xiState.Gamepad.bLeftTrigger )
-		dwLastXIButtonState &= ~(1 << 16);
-
-	if( xiState.Gamepad.bRightTrigger && !(dwLastXIButtonState & (1 << 17)) )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qtrue, 0, NULL);
-	}
-	else if( !xiState.Gamepad.bRightTrigger && dwLastXIButtonState & (1 << 17) )
-	{
-		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY17, qfalse, 0, NULL);
-	}
 	if( xiState.Gamepad.bRightTrigger )
-		dwLastXIButtonState |= (1 << 17);
+		dwLastXIButtonState |= X360_RIGHT_TRIGGER_MASK;
 	else
-		dwLastXIButtonState &= ~(1 << 17);
+		dwLastXIButtonState &= ~X360_RIGHT_TRIGGER_MASK;
+
+	if(in_debugJoystick->integer)
+		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
 }
 #endif
 

@@ -8,7 +8,7 @@
  * desc:		bot AI library
  *
  * $Archive: /source/code/game/botai.h $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  * $Modtime: 03/01/00 3:32p $
  * $Date: 2003/03/15 23:44:00 $

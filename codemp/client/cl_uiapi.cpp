@@ -12,7 +12,7 @@
 #include "FXExport.h"
 #include "FxUtil.h"
 
-extern CMiniHeap *G2VertSpaceClient;
+extern IHeapAllocator *G2VertSpaceClient;
 extern botlib_export_t *botlib_export;
 
 // ui interface
@@ -129,7 +129,7 @@ static int CL_Milliseconds( void ) {
 	return Sys_Milliseconds();
 }
 
-static void CL_Cvar_Get( const char *var_name, const char *value, int flags ) {
+static void CL_Cvar_Get( const char *var_name, const char *value, uint32_t flags ) {
 	Cvar_Register( NULL, var_name, value, flags );
 }
 
@@ -177,7 +177,7 @@ static int GetConfigString(int index, char *buf, int size)
 	}
 
 	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
- 
+
 	return qtrue;
 }
 
@@ -193,7 +193,7 @@ static void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 	}
 }
 
-static void Key_KeynumToStringBuf( int keynum, char *buf, int buflen ) 
+static void Key_KeynumToStringBuf( int keynum, char *buf, int buflen )
 {
 	const char *psKeyName = Key_KeynumToString( keynum/*, qtrue */);
 
@@ -261,7 +261,7 @@ static int CL_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int
 
 static qboolean CL_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_SetSkin( &g2[modelIndex], customSkin, renderSkin );
+	return re->G2API_SetSkin( g2, modelIndex, customSkin, renderSkin );
 }
 
 static void CL_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
@@ -289,7 +289,7 @@ static qboolean CL_G2API_SetBoneAnim( void *ghoul2, const int modelIndex, const 
 
 static qboolean CL_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re->G2API_GetBoneAnim( &g2[modelIndex], boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
+	return re->G2API_GetBoneAnim( g2, modelIndex, boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
 }
 
 static qboolean CL_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *modelList, const int modelIndex ) {
@@ -297,7 +297,7 @@ static qboolean CL_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const
 	int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
 	float fDontCare1 = 0;
 
-	return re->G2API_GetBoneAnim(&g2[modelIndex], boneName, currentTime, currentFrame, &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, modelList);
+	return re->G2API_GetBoneAnim(g2, modelIndex, boneName, currentTime, currentFrame, &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, modelList);
 }
 
 static void CL_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
@@ -416,7 +416,7 @@ static qboolean CL_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *p
 
 static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	char *tmp = re->G2API_GetSurfaceName( &g2[modelIndex], surfNumber );
+	char *tmp = re->G2API_GetSurfaceName( g2, modelIndex, surfNumber );
 	strcpy( fillBuf, tmp );
 }
 
@@ -513,7 +513,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return Sys_Milliseconds();
 
 	case UI_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1), (const char *)VMA(2), (const char *)VMA(3), args[4] );
 		return 0;
 
 	case UI_CVAR_UPDATE:
@@ -675,7 +675,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 
 	case UI_GETCLIENTSTATE:
 		CL_GetClientState( (uiClientState_t *)VMA(1) );
-		return 0;		
+		return 0;
 
 	case UI_GETGLCONFIG:
 		CL_GetGlconfig( (glconfig_t *)VMA(1) );
@@ -898,7 +898,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[10];
 
-			return re->G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9));
+			return re->G2API_GetBoneAnim(g2, modelIndex, (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5), (int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9));
 		}
 
 	case UI_G2_GETBONEFRAME:
@@ -908,7 +908,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 			int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
 			float fDontCare1 = 0;
 
-			return re->G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, (int *)VMA(5));
+			return re->G2API_GetBoneAnim(g2, modelIndex, (const char*)VMA(2), args[3], (float *)VMA(4), &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, (int *)VMA(5));
 		}
 
 	case UI_G2_GETGLANAME:
@@ -994,7 +994,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			local = re->G2API_GetSurfaceName(&g2[modelindex], args[2]);
+			local = re->G2API_GetSurfaceName(g2, modelindex, args[2]);
 			if (local)
 			{
 				strcpy(point, local);
@@ -1007,7 +1007,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[2];
 
-			return re->G2API_SetSkin(&g2[modelIndex], args[3], args[4]);
+			return re->G2API_SetSkin(g2, modelIndex, args[3], args[4]);
 		}
 
 	case UI_G2_ATTACHG2MODEL:
@@ -1188,7 +1188,7 @@ void CL_BindUI( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		uie = ret;
-		
+
 		return;
 	}
 

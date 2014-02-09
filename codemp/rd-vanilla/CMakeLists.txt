@@ -14,7 +14,6 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/G2_API.cpp"
 	"${MPDir}/rd-vanilla/G2_bolts.cpp"
 	"${MPDir}/rd-vanilla/G2_bones.cpp"
-	"${MPDir}/rd-vanilla/G2_local.h"
 	"${MPDir}/rd-vanilla/G2_misc.cpp"
 	"${MPDir}/rd-vanilla/G2_surfaces.cpp"
 	"${MPDir}/rd-vanilla/tr_arioche.cpp"
@@ -53,6 +52,8 @@ set(MPVanillaRendererFiles
 source_group("renderer" FILES ${MPVanillaRendererFiles})
 
 set(MPVanillaRendererGhoul2Files
+	"${MPDir}/ghoul2/g2_local.h"
+	"${MPDir}/ghoul2/ghoul2_shared.h"
 	"${MPDir}/ghoul2/G2_gore.cpp"
 	"${MPDir}/ghoul2/G2_gore.h")
 source_group("ghoul2" FILES ${MPVanillaRendererGhoul2Files})

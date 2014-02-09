@@ -138,6 +138,7 @@ extern	int			c_traces, c_brush_traces, c_patch_traces;
 extern	cvar_t		*cm_noAreas;
 extern	cvar_t		*cm_noCurves;
 extern	cvar_t		*cm_playerCurveClip;
+extern	cvar_t		*cm_extraVerbose;
 
 // cm_test.c
 
@@ -166,8 +167,8 @@ typedef struct traceWork_s { //rwwRMG - modified
 	vec3pair_t		bounds;			// enclosing box of start and end surrounding by size
 	vec3pair_t		localBounds;	// enclosing box of start and end surrounding by size for a segment
 
-	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)	
-	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)	
+	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)
+	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)
 	float			enterFrac;		// fraction where the ray enters the brush
 	float			leaveFrac;		// fraction where the ray leaves the brush
 	cbrushside_t	*leadside;

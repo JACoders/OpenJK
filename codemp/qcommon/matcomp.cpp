@@ -154,9 +154,9 @@ void MC_Compress(const float mat[3][4],unsigned char * _comp)
 	*(unsigned int *)(comp+MC_POS_V33)|=((unsigned int)(val))<<MC_SHIFT_V33;
 
 	// I added this because the line above actually ORs data into an int at the 22 byte (from 0), and therefore technically
-	//	is writing beyond the 24th byte of the output array. This *should** be harmless if the OR'd-in value doesn't change 
+	//	is writing beyond the 24th byte of the output array. This *should** be harmless if the OR'd-in value doesn't change
 	//	those bytes, but BoundsChecker says that it's accessing undefined memory (which it does, sometimes). This is probably
-	//	bad, so... 
+	//	bad, so...
 	memcpy(_comp,comp,MC_COMP_BYTES);
 }
 
@@ -231,7 +231,7 @@ void MC_UnCompressQuat(float mat[3][4],const unsigned char * comp)
     float fTyy;
     float fTyz;
     float fTzz;
-	
+
 	const unsigned short *pwIn = (unsigned short *) comp;
 
 	w = *pwIn++;

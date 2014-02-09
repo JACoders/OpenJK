@@ -70,9 +70,9 @@ bool CRMInstance::PreSpawn ( CRandomTerrain* terrain, qboolean IsServer )
 	// so later in the spawn functions the instance will be re-mirrored, because it thinks the mInstances have not been changed
 //	VectorCopy(origin, GetOrigin());
 
-	// Flatten the area below the instance 
+	// Flatten the area below the instance
 	if ( GetFlattenRadius() )
-	{	
+	{
 		area.Init( origin, GetFlattenRadius(), 0.0f, AT_NONE, 0, 0 );
 		terrain->GetLandScape()->FlattenArea( &area, mFlattenHeight | (mSurfaceSprites?0:0x80), false, true, true );
 	}
@@ -151,7 +151,7 @@ void CRMInstance::DrawAutomapSymbol()
  * CRMInstance::Preview
  *	Renderings debug information about the instance
  *
- * inputs:																   
+ * inputs:
  *  none
  *
  * return:

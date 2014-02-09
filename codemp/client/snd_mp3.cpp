@@ -36,12 +36,12 @@ int MP3_GetUnpackedSize( const char *psLocalFilename, void *pvData, int iDataLen
 						, sboolean bStereoDesired /* = qfalse */
 						)
 {
-	int	iUnpackedSize = 0;	
+	int	iUnpackedSize = 0;
 
 	// always do this now that we have fast-unpack code for measuring output size... (much safer than relying on tags that may have been edited, or if MP3 has been re-saved with same tag)
 	//
 	if (1)//qbIgnoreID3Tag || !MP3_ReadSpecialTagInfo((byte *)pvData, iDataLen, NULL, &iUnpackedSize))
-	{	
+	{
 		char *psError = C_MP3_GetUnpackedSize( pvData, iDataLen, &iUnpackedSize, bStereoDesired);
 
 		if (psError)
@@ -49,7 +49,7 @@ int MP3_GetUnpackedSize( const char *psLocalFilename, void *pvData, int iDataLen
 			Com_Printf(va(S_COLOR_RED"%s\n(File: %s)\n",psError, psLocalFilename));
 			return 0;
 		}
-	}	
+	}
 
 	return iUnpackedSize;
 }
@@ -90,7 +90,7 @@ sboolean MP3Stream_InitPlayingTimeFields( LP_MP3STREAM lpMP3Stream, const char *
 	}
 	else
 	{
-		int iUnpackLength = MP3_GetUnpackedSize( psLocalFilename, pvData, iDataLen, qfalse,	// sboolean qbIgnoreID3Tag 
+		int iUnpackLength = MP3_GetUnpackedSize( psLocalFilename, pvData, iDataLen, qfalse,	// sboolean qbIgnoreID3Tag
 													bStereoDesired);
 		if (iUnpackLength)
 		{
@@ -127,7 +127,7 @@ float MP3Stream_GetRemainingTimeInSeconds( LP_MP3STREAM lpMP3Stream )
 
 // expects data already loaded, filename arg is for error printing only
 //
-sboolean MP3_FakeUpWAVInfo( const char *psLocalFilename, void *pvData, int iDataLen, int iUnpackedDataLength, 
+sboolean MP3_FakeUpWAVInfo( const char *psLocalFilename, void *pvData, int iDataLen, int iUnpackedDataLength,
 						   int &format, int &rate, int &width, int &channels, int &samples, int &dataofs,
 						   sboolean bStereoDesired /* = qfalse */
 						   )
@@ -147,7 +147,7 @@ sboolean MP3_FakeUpWAVInfo( const char *psLocalFilename, void *pvData, int iData
 
 	// and some stuff needs calculating...
 	//
-	samples	= iUnpackedDataLength / width;		
+	samples	= iUnpackedDataLength / width;
 
 	return !psError;
 }
@@ -161,19 +161,19 @@ const char sKEY_UNCOMP[]="#UNCOMP";	//    "        "
 //
 sboolean MP3_ReadSpecialTagInfo(byte *pbLoadedFile, int iLoadedFileLen,
 								id3v1_1** ppTAG /* = NULL */,
-								int *piUncompressedSize /* = NULL */, 
+								int *piUncompressedSize /* = NULL */,
 								float *pfMaxVol /* = NULL */
 								)
 {
 	sboolean qbError = qfalse;
 
-	id3v1_1* pTAG = (id3v1_1*) ((pbLoadedFile+iLoadedFileLen)-sizeof(id3v1_1));	// sizeof = 128	
+	id3v1_1* pTAG = (id3v1_1*) ((pbLoadedFile+iLoadedFileLen)-sizeof(id3v1_1));	// sizeof = 128
 
 	if (!Q_strncmp(pTAG->id, "TAG", 3))
 	{
 		// TAG found...
 		//
-		
+
 		// read MAXVOL key...
 		//
 		if (Q_strncmp(pTAG->comment, sKEY_MAXVOL,	strlen(sKEY_MAXVOL)))
@@ -234,14 +234,14 @@ void MP3_InitCvars(void)
 //
 // (note: the reason I pass in the unpacked size rather than working it out here is simply because I already have it)
 //
-sboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, const char *psSrcDataFilename, 
+sboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, const char *psSrcDataFilename,
 									int iMP3UnPackedSize, sboolean bStereoDesired /* = qfalse */
 								)
 {
 	// first, make a decision based on size here as to whether or not it's worth it because of MP3 buffer space
 	//	making small files much bigger (and therefore best left as WAV)...
 	//
-	
+
 	if (cv_MP3overhead &&
 			(
 			//iSrcDatalen + sizeof(MP3STREAM) + FUZZY_AMOUNT < iMP3UnPackedSize
@@ -254,10 +254,10 @@ sboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, c
 		float fMaxVol = 128;	// seems to be a reasonable typical default for maxvol (for lip synch). Naturally there's no #define I can use instead...
 
 		MP3_ReadSpecialTagInfo(pbSrcData, iSrcDatalen, NULL, NULL, &fMaxVol );	// try and read a read maxvol from MP3 header
-	
+
 		// fill in some sfx_t fields...
 		//
-//		Q_strncpyz( sfx->name, psSrcDataFilename, sizeof(sfx->name) );					
+//		Q_strncpyz( sfx->name, psSrcDataFilename, sizeof(sfx->name) );
 		sfx->eSoundCompressionMethod = ct_MP3;
 		sfx->fVolRange = fMaxVol;
 		//sfx->width  = 2;
@@ -267,7 +267,7 @@ sboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, c
 		//
 		sfx->pSoundData = (short *) SND_malloc( iSrcDatalen, sfx );
 		memcpy( sfx->pSoundData, pbSrcData, iSrcDatalen );
-		
+
 		// now init the low-level MP3 stuff...
 		//
 		MP3STREAM SFX_MP3Stream = {};	// important to init to all zeroes!
@@ -291,7 +291,7 @@ sboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, c
 			//	to copy the Z_Malloc data into, then Z_Free, but for something that shouldn't happen it seemed bad to
 			//	penalise the rest of the game with extra alloc demands.
 			//
-			return qfalse;	
+			return qfalse;
 		}
 
 		// success ( ...on a plate).
@@ -327,20 +327,20 @@ int MP3Stream_Decode( LP_MP3STREAM lpMP3Stream, sboolean bDoingMusic )
 		//	the current read offset lies within then grab the next one as well (since they're 2048 bytes) and make one
 		//	buffer with just the two concat'd together. Shouldn't be much of a processor hit.
 		//
-		sndBuffer *pChunk = (sndBuffer *) lpMP3Stream->pbSourceData;	
+		sndBuffer *pChunk = (sndBuffer *) lpMP3Stream->pbSourceData;
 		//
 		// may as well make this static to avoid cut down on stack-validation run-time...
 		//
 		static byte	byRawBuffer[SND_CHUNK_SIZE_BYTE*2];	// *2 for byte->short	// easily enough to decode one frame of MP3 data, most are 416 or 417 bytes
-			
+
 		// fast-forward to the correct chunk...
-		//		
+		//
 		int iBytesToSkipPast = lpMP3Stream->iSourceReadIndex;
 
-		while (iBytesToSkipPast >= SND_CHUNK_SIZE_BYTE) 
+		while (iBytesToSkipPast >= SND_CHUNK_SIZE_BYTE)
 		{
-			pChunk = pChunk->next;			
-			if (!pChunk) 
+			pChunk = pChunk->next;
+			if (!pChunk)
 			{
 				// err.... reading off the end of the data stream guys...
 				//
@@ -400,7 +400,7 @@ int MP3Stream_Decode( LP_MP3STREAM lpMP3Stream, sboolean bDoingMusic )
 
 
 sboolean MP3Stream_SeekTo( channel_t *ch, float fTimeToSeekTo )
-{		
+{
 	const float fEpsilon = 0.05f;	// accurate to 1/50 of a second, but plus or minus this gives 1/10 of second
 
 	MP3Stream_Rewind( ch );
@@ -427,17 +427,17 @@ sboolean MP3Stream_SeekTo( channel_t *ch, float fTimeToSeekTo )
 		//
 		int iBytesDecodedThisPacket = C_MP3Stream_Decode( &ch->MP3StreamHeader, (fAbsTimeDiff > 3.0f) );	// bFastForwarding
 		if (iBytesDecodedThisPacket == 0)
-			break;	// EOS		
+			break;	// EOS
 	}
 
 	return qfalse;
 }
-							   
+
 
 // returns qtrue for all ok
 //
 sboolean MP3Stream_Rewind( channel_t *ch )
-{		
+{
 	ch->iMP3SlidingDecodeWritePos = 0;
 	ch->iMP3SlidingDecodeWindowPos= 0;
 
@@ -540,7 +540,7 @@ sboolean MP3Stream_GetSamples( channel_t *ch, int startingSampleNum, int count, 
 //	}
 
 	assert(startingSampleNum >= ch->iMP3SlidingDecodeWindowPos);
-	memcpy( buf, ch->MP3SlidingDecodeBuffer + (startingSampleNum-ch->iMP3SlidingDecodeWindowPos), count);	
+	memcpy( buf, ch->MP3SlidingDecodeBuffer + (startingSampleNum-ch->iMP3SlidingDecodeWindowPos), count);
 
 //	Com_OPrintf("OK\n\n");
 

@@ -5,7 +5,7 @@
  *
  * RM_Objective.cpp
  *
- * Implements the CRMObjective class.  This class is reponsible for parsing an objective 
+ * Implements the CRMObjective class.  This class is reponsible for parsing an objective
  * from the mission file as well as linking the objective into the world.
  *
  ************************************************************************************************/
@@ -24,17 +24,17 @@
  *
  ************************************************************************************************/
 CRMObjective::CRMObjective ( CGPGroup* group )
-{	
+{
 	SetPriority(atoi(group->FindPairValue("priority", "0")));
 	SetMessage( group->FindPairValue("message",va("Objective %i Completed", GetPriority()) ) );
 	SetDescription(group->FindPairValue("description",va("Objective %i", GetPriority()) ) );
 	SetInfo(group->FindPairValue("info",va("Info %i", GetPriority()) ) );
 	SetTrigger(group->FindPairValue("trigger",""));
 	SetName(group->GetName());
-	
-/*	const char * soundPath = group->FindPairValue("completed_sound", "" ); 
+
+/*	const char * soundPath = group->FindPairValue("completed_sound", "" );
 	if (soundPath)
-		mCompleteSoundID = G_SoundIndex(soundPath); 
+		mCompleteSoundID = G_SoundIndex(soundPath);
 */
 
 	mCompleted  = false;
@@ -63,7 +63,7 @@ CRMObjective::CRMObjective ( CGPGroup* group )
  *
  ************************************************************************************************/
 /*CTriggerAriocheObjective* CRMObjective::FindRandomTrigger ( )
-{	
+{
 	CEntity*	search;
 	CEntity*	triggers[20];
 	int			numTriggers;
@@ -91,7 +91,7 @@ CRMObjective::CRMObjective ( CGPGroup* group )
 		{
 			continue;
 		}
-	
+
 		// Add the trigger to the list
 		triggers[numTriggers++] = trigger;
 	}
@@ -129,7 +129,7 @@ bool CRMObjective::Link ( )
 	{
 		trigger->SetObjective ( this );
 	}
-*/	
+*/
 	return true;
 }
 

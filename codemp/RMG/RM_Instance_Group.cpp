@@ -5,7 +5,7 @@
  *
  * RM_Instance_Group.cpp
  *
- * Implements the CRMGroupInstance class.  This class is reponsible for parsing a 
+ * Implements the CRMGroupInstance class.  This class is reponsible for parsing a
  * group instance as well as spawning it into a landscape.
  *
  ************************************************************************************************/
@@ -19,13 +19,13 @@
  *	constructur
  *
  * inputs:
- *  settlementID:  ID of the settlement being created 
+ *  settlementID:  ID of the settlement being created
  *
  * return:
  *	none
  *
  ************************************************************************************************/
-CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile ) 
+CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile )
 	:  CRMInstance ( instGroup, instFile )
 {
 	// Grab the padding and confine radius
@@ -172,14 +172,14 @@ void CRMGroupInstance::SetTeamFilter( const char *teamFilter )
  *	Sets the flag to mirror an instance on map
  *
  * inputs:
- *  mirror 
+ *  mirror
  *
  * return:
  *	none
  *
  ************************************************************************************************/
 void CRMGroupInstance::SetMirror(int mirror)
-{ 
+{
 	rmInstanceIter_t it;
 
 	CRMInstance::SetMirror(mirror);
@@ -215,7 +215,7 @@ void CRMGroupInstance::RemoveInstances ( )
 
 /************************************************************************************************
  * CRMGroupInstance::PreSpawn
- *	Prepares the group for spawning by 
+ *	Prepares the group for spawning by
  *
  * inputs:
  *  landscape: landscape to calculate the position within
@@ -236,7 +236,7 @@ bool CRMGroupInstance::PreSpawn ( CRandomTerrain* terrain, qboolean IsServer )
 		instance->SetFlattenHeight ( mFlattenHeight );
 
 		// Add the instance to the landscape now
-		instance->PreSpawn ( terrain, IsServer );		
+		instance->PreSpawn ( terrain, IsServer );
 	}
 
 	return CRMInstance::PreSpawn ( terrain, IsServer );
@@ -290,7 +290,7 @@ void CRMGroupInstance::Preview ( const vec3_t from )
 	rmInstanceIter_t it;
 
 	CRMInstance::Preview ( from );
-	
+
 	// Render all the instances
 	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{

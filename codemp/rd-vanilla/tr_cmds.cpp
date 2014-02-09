@@ -17,32 +17,32 @@ void R_PerformanceCounters( void ) {
 	if (r_speeds->integer == 1) {
 		const float texSize = R_SumOfUsedImages( qfalse )/(8*1048576.0f)*(r_texturebits->integer?r_texturebits->integer:glConfig.colorBits);
 		ri->Printf( PRINT_ALL,  "%i/%i shdrs/srfs %i leafs %i vrts %i/%i tris %.2fMB tex %.2f dc\n",
-			backEnd.pc.c_shaders, backEnd.pc.c_surfaces, tr.pc.c_leafs, backEnd.pc.c_vertexes, 
-			backEnd.pc.c_indexes/3, backEnd.pc.c_totalIndexes/3, 
-			texSize, backEnd.pc.c_overDraw / (float)(glConfig.vidWidth * glConfig.vidHeight) ); 
+			backEnd.pc.c_shaders, backEnd.pc.c_surfaces, tr.pc.c_leafs, backEnd.pc.c_vertexes,
+			backEnd.pc.c_indexes/3, backEnd.pc.c_totalIndexes/3,
+			texSize, backEnd.pc.c_overDraw / (float)(glConfig.vidWidth * glConfig.vidHeight) );
 	} else if (r_speeds->integer == 2) {
 		ri->Printf( PRINT_ALL,  "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
-			tr.pc.c_sphere_cull_patch_in, tr.pc.c_sphere_cull_patch_clip, tr.pc.c_sphere_cull_patch_out, 
+			tr.pc.c_sphere_cull_patch_in, tr.pc.c_sphere_cull_patch_clip, tr.pc.c_sphere_cull_patch_out,
 			tr.pc.c_box_cull_patch_in, tr.pc.c_box_cull_patch_clip, tr.pc.c_box_cull_patch_out );
 		ri->Printf( PRINT_ALL,  "(md3) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
-			tr.pc.c_sphere_cull_md3_in, tr.pc.c_sphere_cull_md3_clip, tr.pc.c_sphere_cull_md3_out, 
+			tr.pc.c_sphere_cull_md3_in, tr.pc.c_sphere_cull_md3_clip, tr.pc.c_sphere_cull_md3_out,
 			tr.pc.c_box_cull_md3_in, tr.pc.c_box_cull_md3_clip, tr.pc.c_box_cull_md3_out );
 	} else if (r_speeds->integer == 3) {
 		ri->Printf( PRINT_ALL,  "viewcluster: %i\n", tr.viewCluster );
 	} else if (r_speeds->integer == 4) {
 		if ( backEnd.pc.c_dlightVertexes ) {
-			ri->Printf( PRINT_ALL,  "dlight srf:%i  culled:%i  verts:%i  tris:%i\n", 
+			ri->Printf( PRINT_ALL,  "dlight srf:%i  culled:%i  verts:%i  tris:%i\n",
 				tr.pc.c_dlightSurfaces, tr.pc.c_dlightSurfacesCulled,
 				backEnd.pc.c_dlightVertexes, backEnd.pc.c_dlightIndexes / 3 );
 		}
-	} 
+	}
 	else if (r_speeds->integer == 5 )
 	{
 		ri->Printf( PRINT_ALL, "zFar: %.0f\n", tr.viewParms.zFar );
 	}
 	else if (r_speeds->integer == 6 )
 	{
-		ri->Printf( PRINT_ALL, "flare adds:%i tests:%i renders:%i\n", 
+		ri->Printf( PRINT_ALL, "flare adds:%i tests:%i renders:%i\n",
 			backEnd.pc.c_flareAdds, backEnd.pc.c_flareTests, backEnd.pc.c_flareRenders );
 	}
 	else if (r_speeds->integer == 7) {
@@ -51,7 +51,7 @@ void R_PerformanceCounters( void ) {
 		const float depthBuff= glConfig.vidWidth * glConfig.vidHeight * glConfig.depthBits / (8.0f * 1024*1024);
 		const float stencilBuff= glConfig.vidWidth * glConfig.vidHeight * glConfig.stencilBits / (8.0f * 1024*1024);
 		ri->Printf( PRINT_ALL,  "Tex MB %.2f + buffers %.2f MB = Total %.2fMB\n",
-			texSize, backBuff*2+depthBuff+stencilBuff, texSize+backBuff*2+depthBuff+stencilBuff); 
+			texSize, backBuff*2+depthBuff+stencilBuff, texSize+backBuff*2+depthBuff+stencilBuff);
 	}
 
 	memset( &tr.pc, 0, sizeof( tr.pc ) );
@@ -191,7 +191,7 @@ void	RE_SetColor( const float *rgba ) {
 RE_StretchPic
 =============
 */
-void RE_StretchPic ( float x, float y, float w, float h, 
+void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	stretchPicCommand_t	*cmd;
 
@@ -216,7 +216,7 @@ void RE_StretchPic ( float x, float y, float w, float h,
 RE_RotatePic
 =============
 */
-void RE_RotatePic ( float x, float y, float w, float h, 
+void RE_RotatePic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
@@ -242,7 +242,7 @@ void RE_RotatePic ( float x, float y, float w, float h,
 RE_RotatePic2
 =============
 */
-void RE_RotatePic2 ( float x, float y, float w, float h, 
+void RE_RotatePic2 ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
 	rotatePicCommand_t	*cmd;
 
@@ -396,7 +396,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		}
 //		if ( !Q_stricmp( r_drawBuffer->string, "GL_FRONT" ) ) {
 //			cmd->buffer = (int)GL_FRONT;
-//		} else 
+//		} else
 		{
 			cmd->buffer = (int)GL_BACK;
 		}

@@ -361,6 +361,98 @@ int	G2API_GetTime(int argTime) // this may or may not return arg depending on gh
 
 void RemoveBoneCache(CBoneCache *boneCache);
 
+static size_t GetSizeOfGhoul2Info ( const CGhoul2Info& g2Info )
+{
+	size_t size = 0;
+	
+	// This is pretty ugly, but we don't want to save everything in the CGhoul2Info object.
+	size += offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+
+	// Surface vector + size
+	size += sizeof (int);
+	size += g2Info.mSlist.size() * sizeof (surfaceInfo_t);
+
+	// Bone vector + size
+	size += sizeof (int);
+	size += g2Info.mBlist.size() * sizeof (boneInfo_t);
+
+	// Bolt vector + size
+	size += sizeof (int);
+	size += g2Info.mBltlist.size() * sizeof (boltInfo_t);
+
+	return size;
+}
+
+static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
+{
+	char *base = buffer;
+	size_t blockSize;
+	
+	// Oh the ugliness...
+	blockSize = offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+	memcpy (buffer, &g2Info.mModelindex, blockSize);
+	buffer += blockSize;
+
+	// Surfaces vector + size
+	*(int *)buffer = g2Info.mSlist.size();
+	buffer += sizeof (int);
+
+	blockSize = g2Info.mSlist.size() * sizeof (surfaceInfo_t);
+	memcpy (buffer, g2Info.mSlist.data(), g2Info.mSlist.size() * sizeof (surfaceInfo_t));
+	buffer += blockSize;
+
+	// Bones vector + size
+	*(int *)buffer = g2Info.mBlist.size();
+	buffer += sizeof (int);
+	
+	blockSize = g2Info.mBlist.size() * sizeof (boneInfo_t);
+	memcpy (buffer, g2Info.mBlist.data(), g2Info.mBlist.size() * sizeof (boneInfo_t));
+	buffer += blockSize;
+
+	// Bolts vector + size
+	*(int *)buffer = g2Info.mBltlist.size();
+	buffer += sizeof (int);
+	
+	blockSize = g2Info.mBltlist.size() * sizeof (boltInfo_t);
+	memcpy (buffer, g2Info.mBltlist.data(), g2Info.mBltlist.size() * sizeof (boltInfo_t));
+	buffer += blockSize;
+
+	return static_cast<size_t>(buffer - base);
+}
+
+static size_t DeserializeGhoul2Info ( const char *buffer, CGhoul2Info& g2Info )
+{
+	const char *base = buffer;
+	size_t size;
+
+	size = offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
+	memcpy (&g2Info.mModelindex, buffer, size);
+	buffer += size;
+
+	// Surfaces vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mSlist.assign ((surfaceInfo_t *)buffer, (surfaceInfo_t *)buffer + size);
+	buffer += sizeof (surfaceInfo_t) * size;
+
+	// Bones vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mBlist.assign ((boneInfo_t *)buffer, (boneInfo_t *)buffer + size);
+	buffer += sizeof (boneInfo_t) * size;
+
+	// Bolt vector
+	size = *(int *)buffer;
+	buffer += sizeof (int);
+
+	g2Info.mBltlist.assign ((boltInfo_t *)buffer, (boltInfo_t *)buffer + size);
+	buffer += sizeof (boltInfo_t) * size;
+
+	return static_cast<size_t>(buffer - base);
+}
+
 class Ghoul2InfoArray : public IGhoul2InfoArray
 {
 	vector<CGhoul2Info>	mInfos[MAX_G2_MODELS];
@@ -399,6 +491,94 @@ public:
 			mFreeIndecies.push_back(i);
 		}
 	}
+
+	size_t GetSerializedSize() const
+	{
+		size_t size = 0;	
+
+		size += sizeof (int); // size of mFreeIndecies linked list
+		size += mFreeIndecies.size() * sizeof (int);
+
+		size += sizeof (mIds);
+
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			size += sizeof (int); // size of the mInfos[i] vector
+
+			for ( size_t j = 0; j < mInfos[i].size(); j++ )
+			{
+				size += GetSizeOfGhoul2Info (mInfos[i][j]);
+			}
+		}
+
+		return size;
+	}
+
+	size_t Serialize ( char *buffer ) const
+	{
+		char *base = buffer;
+
+		// Free indices
+		*(int *)buffer = mFreeIndecies.size();
+		buffer += sizeof (int);
+
+		std::copy (mFreeIndecies.begin(), mFreeIndecies.end(), (int *)buffer);
+		buffer += sizeof (int) * mFreeIndecies.size();
+
+		// IDs
+		memcpy (buffer, mIds, sizeof (mIds));
+		buffer += sizeof (mIds);
+
+		// Ghoul2 infos
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			*(int *)buffer = mInfos[i].size();
+			buffer += sizeof (int);
+
+			for ( size_t j = 0; j < mInfos[i].size(); j++ )
+			{
+				buffer += SerializeGhoul2Info (buffer, mInfos[i][j]);
+			}
+		}
+
+		return static_cast<size_t>(buffer - base);
+	}
+
+	size_t Deserialize ( const char *buffer, size_t size )
+	{
+		const char *base = buffer;
+		size_t count;
+
+		// Free indices
+		count = *(int *)buffer;
+		buffer += sizeof (int);
+
+		mFreeIndecies.assign ((int *)buffer, (int *)buffer + count);
+		buffer += sizeof (int) * count;
+
+		// IDs
+		memcpy (mIds, buffer, sizeof (mIds));
+		buffer += sizeof (mIds);
+
+		// Ghoul2 infos
+		for ( size_t i = 0; i < MAX_G2_MODELS; i++ )
+		{
+			mInfos[i].clear();
+
+			count = *(int *)buffer;
+			buffer += sizeof (int);
+
+			mInfos[i].resize (count);
+			
+			for ( size_t j = 0; j < count; j++ )
+			{
+				buffer += DeserializeGhoul2Info (buffer, mInfos[i][j]);
+			}
+		}
+
+		return static_cast<size_t>(buffer - base);
+	}
+
 	~Ghoul2InfoArray()
 	{
 		if (mFreeIndecies.size()<MAX_G2_MODELS)
@@ -483,15 +663,11 @@ public:
 	}
 	vector<CGhoul2Info> &Get(int handle)
 	{
-		static vector<CGhoul2Info> null;
 		assert(handle>0); //null handle
 		assert((handle&G2_INDEX_MASK)>=0&&(handle&G2_INDEX_MASK)<MAX_G2_MODELS); //junk handle
 		assert(mIds[handle&G2_INDEX_MASK]==handle); // not a valid handle, could be old or garbage
-		if (handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle)
-		{
-			null.clear();
-			return null;
-		}
+		assert (!(handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle));
+		
 		return mInfos[handle&G2_INDEX_MASK];
 	}
 	const vector<CGhoul2Info> &Get(int handle) const
@@ -504,11 +680,8 @@ public:
 #if G2API_DEBUG
 	vector<CGhoul2Info> &GetDebug(int handle)
 	{
-		static vector<CGhoul2Info> null;
-		if (handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle)
-		{
-			return *(vector<CGhoul2Info> *)0; // null reference, intentional
-		}
+		assert (!(handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle));
+		
 		return mInfos[handle&G2_INDEX_MASK];
 	}
 	void TestAllAnims()
@@ -557,8 +730,42 @@ void TestAllGhoul2Anims()
 
 #endif
 
+#define PERSISTENT_G2DATA "g2infoarray"
 
+void RestoreGhoul2InfoArray()
+{
+	if (singleton == NULL)
+	{
+		// Create the ghoul2 info array
+		TheGhoul2InfoArray();
 
+		size_t size;
+		const void *data = ri.PD_Load (PERSISTENT_G2DATA, &size);
+		if ( data == NULL )
+		{
+			return;
+		}
+
+		size_t read = singleton->Deserialize ((const char *)data, size);
+		Z_Free ((void *)data);
+
+		assert (read == size);
+	}
+}
+
+void SaveGhoul2InfoArray()
+{
+	size_t size = singleton->GetSerializedSize();
+	void *data = Z_Malloc (size, TAG_GHOUL2, qfalse);
+	size_t written = singleton->Serialize ((char *)data);
+
+	assert (written == size);
+
+	if ( !ri.PD_Store (PERSISTENT_G2DATA, data, size) )
+	{
+		Com_Printf (S_COLOR_RED "ERROR: Failed to store persistent renderer data.\n");
+	}
+}
 
 // this is the ONLY function to read entity states directly
 void G2API_CleanGhoul2Models(CGhoul2Info_v &ghoul2)
