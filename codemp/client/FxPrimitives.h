@@ -220,7 +220,7 @@ protected:
 	vec3_t		mRGBEnd;
 	float		mRGBParm;
 
-	CGhoul2Info_v mGhoul2;
+	CGhoul2Info_v *mGhoul2;
 	short		mEntNum;
 	char		mModelNum;
 	char		mBoltNum;
@@ -236,14 +236,12 @@ public:
 		mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
 
-	virtual ~CLight(void)
+	inline void SetBoltinfo( CGhoul2Info_v *ghoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
 	{
-		mGhoul2.kill();	//remove my model ref without actually deleting
-	}
-
-	inline void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
-	{
-		mGhoul2 = iGhoul2; mEntNum = entNum; mModelNum = modelNum; mBoltNum = boltNum;
+		mGhoul2 = ghoul2;
+		mEntNum = entNum;
+		mModelNum = modelNum;
+		mBoltNum = boltNum;
 	}
 
 	virtual bool Update();
@@ -283,7 +281,7 @@ protected:
 	float		mRotationDelta;
 	float		mElasticity;
 
-	CGhoul2Info_v mGhoul2;
+	CGhoul2Info_v *mGhoul2;
 	short		mEntNum;
 	char		mModelNum;
 	char		mBoltNum;
@@ -297,29 +295,18 @@ protected:
 
 public:
 
-	inline void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
+	inline void SetBoltinfo( CGhoul2Info_v *ghoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
 	{
-		mGhoul2 = iGhoul2; mEntNum = entNum; mModelNum = modelNum; mBoltNum = boltNum;
+		mGhoul2 = ghoul2;
+		mEntNum = entNum;
+		mModelNum = modelNum;
+		mBoltNum = boltNum;
 	}
 
-#ifdef _WIN32
-	inline CParticle::CParticle(void)
-#else
 	inline CParticle(void)
-#endif
 	{
 		mRefEnt.reType = RT_SPRITE; mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
-
-#ifdef _WIN32
-	virtual CParticle::~CParticle(void)
-#else
-    virtual ~CParticle(void)
-#endif
-	{
-		mGhoul2.kill();	//remove my model ref without actually deleting
-	}
-
 
 	virtual void Init();
 	virtual void Die();

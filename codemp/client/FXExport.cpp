@@ -56,9 +56,9 @@ void FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean
 }
 
 void FX_PlayBoltedEffectID( int id, vec3_t org,
-						   const int boltInfo, int iGhoul2, int iLooptime, qboolean isRelative )
+						   const int boltInfo, CGhoul2Info_v *ghoul2, int iLooptime, qboolean isRelative )
 {
-	theFxScheduler.PlayEffect(id, org, 0, boltInfo, iGhoul2, -1, -1, -1, qfalse, iLooptime, !!isRelative  );
+	theFxScheduler.PlayEffect(id, org, 0, boltInfo, ghoul2, -1, -1, -1, qfalse, iLooptime, !!isRelative  );
 }
 
 void FX_PlayEntityEffectID( int id, vec3_t org,

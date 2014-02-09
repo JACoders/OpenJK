@@ -729,7 +729,7 @@ Ghoul2 Insert Start
 #ifndef FINAL_BUILD
 			if (sv_showghoultraces->integer)
 			{
-				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end),(*((CGhoul2Info_v *)touch->ghoul2))[0].mFileName);
+				Com_Printf( "Ghoul2 trace   lod=%1d   length=%6.0f   to %s\n",clip->useLod,VectorDistance(clip->start, clip->end), re->G2API_GetModelName (*(CGhoul2Info_v *)touch->ghoul2, 0));
 			}
 #endif
 

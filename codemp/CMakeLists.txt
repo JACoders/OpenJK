@@ -233,6 +233,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/ghoul2/G2.h"
 		"${MPDir}/ghoul2/G2_gore.h"
 		"${MPDir}/ghoul2/ghoul2_shared.h"
+		"${MPDir}/ghoul2/g2_local.h"
 		)
 	source_group("ghoul2" FILES ${MPEngineAndDedG2Files})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedG2Files})
