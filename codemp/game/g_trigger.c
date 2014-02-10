@@ -1304,7 +1304,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
 		}
 
-		if (valid && trigger->awesomenoise_index && (trigger->awesometime <= time)) //Play the awesome noise if they were fast enough
+		if (valid && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
 			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
