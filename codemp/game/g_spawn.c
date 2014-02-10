@@ -1649,10 +1649,11 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	int		fLen = 0, i, MAX_FILESIZE = 4096, args = 1;
 	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
 	char*	pch;
+	//char	tmp[MAX_QPATH+4];
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(filename, Info_ValueForKey(info, "mapname"), sizeof(filename));
-	Q_strcat(filename, sizeof(filename), ".cfg");
+	Q_strcat(filename, sizeof(filename), "_warps.cfg");
 
 	for(i = 0; i < strlen(filename); i++) {//Replace / in mapname with _ since we cant have a file named mp/duel1.cfg etc.
 		if (filename[i] == '/')
@@ -1678,6 +1679,11 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 
 	pch = strtok (buf," ");
 	while (pch != NULL) {
+
+		//Q_strncpyz(tmp, &pch, sizeof(tmp));
+		//Com_sprintf(tmp, sizeof(tmp), "%s", pch);
+		//Com_Printf ("pch: %s\n", pch);
+		
 		if ((args % 5) == 1)
 			level.warpName[args / 5] = pch;
 		else if ((args % 5) == 2)
@@ -1688,7 +1694,7 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 			level.warpZ[args / 5] = atoi(pch);
 		else if ((args % 5) == 5)
 			level.warpYaw[args / 5] = atoi(pch);
-		pch = strtok (NULL, " \n\r");
+		pch = strtok(NULL, " \n\r");// \t really just does fucking nothing here
 		args++;
 	}
 }

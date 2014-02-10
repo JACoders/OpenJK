@@ -1304,7 +1304,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
 		}
 
-		if (trigger->noise_index) 
+		if (valid && trigger->awesomenoise_index && (trigger->awesometime <= time)) //Play the awesome noise if they were fast enough
+			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);
+		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
 
 		if (player->client->ps.stats[STAT_RACEMODE]) {
@@ -1496,13 +1498,12 @@ void SP_trigger_timer_start( gentity_t *self )
 	char	*s;
 	InitTrigger(self);
 
-	if ( G_SpawnString( "noise", "", &s ) ) {
+	if (G_SpawnString( "noise", "", &s)) {
 		if (s && s[0])
 			self->noise_index = G_SoundIndex(s);
 		else
 			self->noise_index = 0;
 	}
-
 	self->touch = TimerStart;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
@@ -1512,13 +1513,12 @@ void SP_trigger_timer_checkpoint( gentity_t *self )
 	char	*s;
 	InitTrigger(self);
 
-	if ( G_SpawnString( "noise", "", &s ) ) {
+	if (G_SpawnString( "noise", "", &s)) {
 		if (s && s[0])
 			self->noise_index = G_SoundIndex(s);
 		else
 			self->noise_index = 0;
 	}
-
 	self->touch = TimerCheckpoint;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
@@ -1528,13 +1528,18 @@ void SP_trigger_timer_stop( gentity_t *self )
 	char	*s;
 	InitTrigger(self);
 
-	if ( G_SpawnString( "noise", "", &s ) ) {
+	if (G_SpawnString( "noise", "", &s)) {
 		if (s && s[0])
 			self->noise_index = G_SoundIndex(s);
 		else
 			self->noise_index = 0;
 	}
-
+	if (G_SpawnString( "awesomenoise", "", &s)) {
+		if (s && s[0])
+			self->awesomenoise_index = G_SoundIndex(s);
+		else
+			self->awesomenoise_index = 0;
+	}
 	self->touch = TimerStop;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }

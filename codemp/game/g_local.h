@@ -485,6 +485,8 @@ struct gentity_s {
 	int			waterlevel;
 
 	int			noise_index;
+	int			awesomenoise_index;//japro
+	int			awesometime;
 
 	// timing variables
 	float		wait;

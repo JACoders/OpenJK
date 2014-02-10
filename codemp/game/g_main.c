@@ -317,7 +317,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_SpawnEntitiesFromString(qfalse);
 
 	//setup the teleto functionality - japro
-	G_SpawnWarpLocationsFromCfg();
+	//G_SpawnWarpLocationsFromCfg(); //does not fucking work
 
 	// general initialization
 	G_FindTeams();

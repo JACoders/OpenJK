@@ -5807,7 +5807,7 @@ void Cmd_WarpList_f(gentity_t *ent)
 	}
 
 	for (i = 0; i < 32; i++) {
-		if (!Q_stricmp("", level.warpName[i]))//dis right?
+		if (!Q_stricmp("", level.warpName[i])) //dis right? 
 			break;
 		Q_strcat(buf, sizeof(buf), va(" ^3%s", level.warpName[i]));
 	}
@@ -5819,7 +5819,7 @@ void Cmd_WarpList_f(gentity_t *ent)
 
 void Cmd_Warp_f(gentity_t *ent)
 {
-	char enteredWarpName[MAX_NETNAME];
+	char enteredWarpName[MAX_NETNAME];//, lowerWarpName[MAX_QPATH+4];
 	int i, warpNum = -1;
 	vec3_t	angles = {0, 0, 0}, origin = {0, 0, 0};
 
@@ -5834,9 +5834,13 @@ void Cmd_Warp_f(gentity_t *ent)
 	trap->Argv(1, enteredWarpName, sizeof(enteredWarpName));
 
 	for (i = 0;i < 32; i++) {
-		if (!Q_stricmp("", level.warpName[i])) {//dis right?
+		if (!Q_stricmp("", level.warpName[i])) //dis right? 
 			break;
+		while (enteredWarpName[i]) {
+			enteredWarpName[i] = tolower(enteredWarpName[i]);
+			i++;
 		}
+		//loda fixme, make warpname lowercase for this check?
 		if (!Q_stricmp(enteredWarpName, level.warpName[i])) {
 			warpNum = i;
 			break;
@@ -6532,8 +6536,8 @@ command_t commands[] = {
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
-	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
-	{ "warplist",			Cmd_WarpList_f,					CMD_NOINTERMISSION },
+	//{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
+	//{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
