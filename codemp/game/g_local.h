@@ -1165,6 +1165,12 @@ typedef struct level_locals_s {
 	qboolean	isLockedfree;	
 	fileHandle_t	duelLog;
 	fileHandle_t	raceLog;
+
+	char		*warpName[32];//japro warps
+	int			warpX[32];
+	int			warpY[32];
+	int			warpZ[32];
+	int			warpYaw[32];
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;
@@ -1201,6 +1207,7 @@ qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnBoolean( const char *key, const char *defaultString, qboolean *out );
 void		G_SpawnEntitiesFromString( qboolean inSubBSP );
+void		G_SpawnWarpLocationsFromCfg(void);//japro
 char *G_NewString( const char *string );
 
 //

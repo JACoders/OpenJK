@@ -604,7 +604,7 @@ svcmd_t svcmds[] = {
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
 
 	{ "amban",						Svcmd_AmBan_f,						qfalse },
-	{ "amgrantadmin",				Svcmd_Amgrantadmin_f,						qfalse },
+	{ "amgrantadmin",				Svcmd_Amgrantadmin_f,				qfalse },
 	{ "amkick",						Svcmd_AmKick_f,						qfalse },
 
 	{ "botlist",					Svcmd_BotList_f,					qfalse },

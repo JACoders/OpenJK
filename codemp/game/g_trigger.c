@@ -1286,7 +1286,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 	multi_trigger(trigger, player);
 
 	if (player->client->pers.stats.startTime) {
-		char style[32] = {0}, courseName[256] = {0}, info[1024] = {0}, message[128] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
+		char style[32] = {0}, courseName[128] = {0}, info[1024] = {0}, message[MAX_QPATH] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average, restrictions = 0, nameColor = 7;

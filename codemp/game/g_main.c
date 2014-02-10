@@ -316,6 +316,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
 
+	//setup the teleto functionality - japro
+	G_SpawnWarpLocationsFromCfg();
+
 	// general initialization
 	G_FindTeams();
 

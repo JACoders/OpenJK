@@ -1643,3 +1643,53 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 	G_PrecacheSoundsets();
 }
 
+void G_SpawnWarpLocationsFromCfg(void) //loda fixme
+{
+	fileHandle_t f;	
+	int		fLen = 0, i, MAX_FILESIZE = 4096, args = 1;
+	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
+	char*	pch;
+
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(filename, Info_ValueForKey(info, "mapname"), sizeof(filename));
+	Q_strcat(filename, sizeof(filename), ".cfg");
+
+	for(i = 0; i < strlen(filename); i++) {//Replace / in mapname with _ since we cant have a file named mp/duel1.cfg etc.
+		if (filename[i] == '/')
+			filename[i] = '_'; 
+	} 
+
+	fLen = trap->FS_Open(filename, &f, FS_READ);
+
+	if (!f) {
+		Com_Printf ("couldn't load tele locations from %s\n", filename);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(f);
+		Com_Printf ("couldn't load tele locations from %s, file is too large\n", filename);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+	Com_Printf ("loaded tele locations from %s\n", filename);
+
+	pch = strtok (buf," ");
+	while (pch != NULL) {
+		if ((args % 5) == 1)
+			level.warpName[args / 5] = pch;
+		else if ((args % 5) == 2)
+			level.warpX[args / 5] = atoi(pch);
+		else if ((args % 5) == 3)
+			level.warpY[args / 5] = atoi(pch);
+		else if ((args % 5) == 4)
+			level.warpZ[args / 5] = atoi(pch);
+		else if ((args % 5) == 5)
+			level.warpYaw[args / 5] = atoi(pch);
+		pch = strtok (NULL, " \n\r");
+		args++;
+	}
+}
+

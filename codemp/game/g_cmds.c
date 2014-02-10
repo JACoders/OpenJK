@@ -5792,6 +5792,65 @@ void Cmd_RaceTele_f(gentity_t *ent)
 	}
 }
 
+void Cmd_WarpList_f(gentity_t *ent)
+{
+	char buf[MAX_STRING_CHARS-64] = {0};
+	int i;
+
+	if (!ent->client) {
+		trap->SendServerCommand( ent-g_entities, "print \"You can only use this command in racemode!\n\"" );
+		return;
+	}
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /warplist\n\"" );
+		return;
+	}
+
+	for (i = 0; i < 32; i++) {
+		if (!Q_stricmp("", level.warpName[i]))//dis right?
+			break;
+		Q_strcat(buf, sizeof(buf), va(" ^3%s", level.warpName[i]));
+	}
+	if (buf[0] == '\0')
+		trap->SendServerCommand(ent-g_entities, "print \"There are no warps on this map\n\"");
+	else
+		trap->SendServerCommand(ent-g_entities, va("print \"Warp list: \n%s\n\"", buf));
+}
+
+void Cmd_Warp_f(gentity_t *ent)
+{
+	char enteredWarpName[MAX_NETNAME];
+	int i, warpNum = -1;
+	vec3_t	angles = {0, 0, 0}, origin = {0, 0, 0};
+
+	if (!ent->client || !ent->client->pers.raceMode) {
+		trap->SendServerCommand( ent-g_entities, "print \"You can only use this command in racemode!\n\"" );
+		return;
+	}
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /warp <warpname>\n\"" );
+		return;
+	}
+	trap->Argv(1, enteredWarpName, sizeof(enteredWarpName));
+
+	for (i = 0;i < 32; i++) {
+		if (!Q_stricmp("", level.warpName[i])) {//dis right?
+			break;
+		}
+		if (!Q_stricmp(enteredWarpName, level.warpName[i])) {
+			warpNum = i;
+			break;
+		}
+	}		
+	if (warpNum != -1) { //Loda fixme, check if these are not null?
+		origin[0] = (int)level.warpX[warpNum]; //how the FUCK does this make any sense, its already an int, but it crashes unless i cast to int???
+		origin[1] = (int)level.warpY[warpNum];
+		origin[2] = (int)level.warpZ[warpNum];
+		angles[YAW] = (int)level.warpYaw[warpNum];
+		AmTeleportPlayer( ent, origin, angles, qtrue );
+	}	
+}
+
 
 //[JAPRO - Serverside - All - Amtele Function - Start]
 void Cmd_Amtele_f(gentity_t *ent)
@@ -6419,7 +6478,7 @@ command_t commands[] = {
 	{ "amsurrender",		Cmd_EmoteSurrender_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt",			Cmd_EmoteTaunt_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt2",			Cmd_EmoteTaunt2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
-	{ "amtele",				Cmd_Amtele_f,				CMD_NOINTERMISSION },
+	{ "amtele",				Cmd_Amtele_f,				CMD_NOINTERMISSION|CMD_ALIVE },
 	{ "amtelemark",			Cmd_Amtelemark_f,			CMD_NOINTERMISSION },
 	{ "amvictory",			Cmd_EmoteVictory_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
@@ -6473,6 +6532,8 @@ command_t commands[] = {
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
+	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
+	{ "warplist",			Cmd_WarpList_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
