@@ -1646,7 +1646,7 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 {
 	fileHandle_t f;	
-	int		fLen = 0, i, MAX_FILESIZE = 4096, args = 1;
+	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_WARPS = 32, args = 1;
 	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
 	char*	pch;
 	//char	tmp[MAX_QPATH+4];
@@ -1685,7 +1685,7 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 		//Com_Printf ("pch: %s\n", pch);
 		
 		if ((args % 5) == 1)
-			level.warpName[args / 5] = pch;
+			Q_strncpyz(level.warpName[args / 5], pch, sizeof(level.warpName[0]));
 		else if ((args % 5) == 2)
 			level.warpX[args / 5] = atoi(pch);
 		else if ((args % 5) == 3)

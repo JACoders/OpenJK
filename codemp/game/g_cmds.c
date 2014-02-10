@@ -5088,8 +5088,11 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	}
 	if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
 		Q_strcat(buf, sizeof(buf), "race ");
-	if (g_raceMode.integer && level.gametype == GT_FFA) 
+	if (g_raceMode.integer && level.gametype == GT_FFA) {
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
+		Q_strcat(buf, sizeof(buf), "warpList ");
+		Q_strcat(buf, sizeof(buf), "warp ");
+	}
 	if (g_allowSaberSwitch.integer) 
 		Q_strcat(buf, sizeof(buf), "saber ");
 	if (g_allowFlagThrow.integer) 
@@ -5795,7 +5798,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 void Cmd_WarpList_f(gentity_t *ent)
 {
 	char buf[MAX_STRING_CHARS-64] = {0};
-	int i;
+	int i, MAX_NUM_WARPS = 32;
 
 	if (!ent->client) {
 		trap->SendServerCommand( ent-g_entities, "print \"You can only use this command in racemode!\n\"" );
@@ -5806,7 +5809,7 @@ void Cmd_WarpList_f(gentity_t *ent)
 		return;
 	}
 
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < MAX_NUM_WARPS; i++) {
 		if (!Q_stricmp("", level.warpName[i])) //dis right? 
 			break;
 		Q_strcat(buf, sizeof(buf), va(" ^3%s", level.warpName[i]));
@@ -5819,8 +5822,8 @@ void Cmd_WarpList_f(gentity_t *ent)
 
 void Cmd_Warp_f(gentity_t *ent)
 {
-	char enteredWarpName[MAX_NETNAME];//, lowerWarpName[MAX_QPATH+4];
-	int i, warpNum = -1;
+	int i, warpNum = -1, MAX_NUM_WARPS = 32;
+	char enteredWarpName[MAX_NETNAME];
 	vec3_t	angles = {0, 0, 0}, origin = {0, 0, 0};
 
 	if (!ent->client || !ent->client->pers.raceMode) {
@@ -5833,14 +5836,9 @@ void Cmd_Warp_f(gentity_t *ent)
 	}
 	trap->Argv(1, enteredWarpName, sizeof(enteredWarpName));
 
-	for (i = 0;i < 32; i++) {
+	for (i = 0;i < MAX_NUM_WARPS; i++) {
 		if (!Q_stricmp("", level.warpName[i])) //dis right? 
 			break;
-		while (enteredWarpName[i]) {
-			enteredWarpName[i] = tolower(enteredWarpName[i]);
-			i++;
-		}
-		//loda fixme, make warpname lowercase for this check?
 		if (!Q_stricmp(enteredWarpName, level.warpName[i])) {
 			warpNum = i;
 			break;
@@ -6536,8 +6534,8 @@ command_t commands[] = {
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
-	//{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
-	//{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
+	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
+	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );

@@ -243,6 +243,11 @@ void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern?
 void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor ) {
 	gentity_t	*tent;
 	qboolean wasNoClip = qfalse;
+	vec3_t neworigin;
+
+	neworigin[0] = origin[0];
+	neworigin[1] = origin[1];
+	neworigin[2] = origin[2];
 
 	if (player->client->noclip)
 		wasNoClip = qtrue;
@@ -259,7 +264,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		VectorCopy(origin, down);//Drop them to floor so they cant abuse?
 		down[2] -= 4096;
 		JP_Trace(&tr, origin, mins, maxs, down, player->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
-		origin[2] = (int)tr.endpos[2];//Why does it crash without casting to int? wtf
+		neworigin[2] = (int)tr.endpos[2];//Why does it crash without casting to int? wtf
 	}
 
 	// use temp events at source and destination to prevent the effect
@@ -268,14 +273,14 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		tent = G_TempEntity( player->client->ps.origin, EV_PLAYER_TELEPORT_OUT );
 		tent->s.clientNum = player->s.clientNum;
 
-		tent = G_TempEntity( origin, EV_PLAYER_TELEPORT_IN );
+		tent = G_TempEntity( neworigin, EV_PLAYER_TELEPORT_IN );
 		tent->s.clientNum = player->s.clientNum;
 	}
 
 	// unlink to make sure it can't possibly interfere with G_KillBox
 	trap->UnlinkEntity ((sharedEntity_t *)player);
 
-	VectorCopy ( origin, player->client->ps.origin );
+	VectorCopy ( neworigin, player->client->ps.origin );
 	player->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
 
 	VectorClear(player->client->ps.velocity);

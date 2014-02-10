@@ -1167,7 +1167,7 @@ typedef struct level_locals_s {
 	fileHandle_t	duelLog;
 	fileHandle_t	raceLog;
 
-	char		*warpName[32];//japro warps
+	char		warpName[24][32];//japro warps
 	int			warpX[32];
 	int			warpY[32];
 	int			warpZ[32];
