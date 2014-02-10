@@ -3,6 +3,7 @@
 #include "ghoul2/G2_gore.h"
 
 #include "qcommon/MiniHeap.h"
+#include "tr_local.h"
 
 #include <set>
 
