@@ -775,18 +775,6 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
-
-/*
-=================
-Sys_Net_Restart_f
-
-Restart the network subsystem
-=================
-*/
-void Sys_Net_Restart_f( void ) {
-	NET_Restart();
-}
-
 /*
 ================
 Sys_Init
@@ -804,7 +792,6 @@ void Sys_Init( void ) {
 	timeBeginPeriod( 1 );
 
 	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-	Cmd_AddCommand ("net_restart", Sys_Net_Restart_f);
 
 	g_wv.osversion.dwOSVersionInfoSize = sizeof( g_wv.osversion );
 
@@ -966,7 +953,7 @@ int main( int argc, char **argv )
 	// no abort/retry/fail errors
 	SetErrorMode( SEM_FAILCRITICALERRORS );
 
-	// get the initial time base
+	// Set the initial time base
 	Sys_Milliseconds();
 
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );

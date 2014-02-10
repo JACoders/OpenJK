@@ -6,7 +6,7 @@
 #include "tr_local.h"
 #include "../rd-common/tr_common.h"
 #include "qcommon/MiniHeap.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 
 cvar_t	*r_verbose;
@@ -500,7 +500,7 @@ void R_Init( void ) {
 RE_Shutdown
 ===============
 */
-void RE_Shutdown( qboolean destroyWindow ) {
+void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 //	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
 
@@ -520,7 +520,6 @@ extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *heig
 extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 extern qhandle_t RE_RegisterServerSkin( const char *name );
-extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
@@ -588,6 +587,7 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.G2API_GetBoneIndex					= G2API_GetBoneIndex;
 	re.G2API_GetGhoul2ModelFlags			= G2API_GetGhoul2ModelFlags;
 	re.G2API_GetGLAName						= G2API_GetGLAName;
+	re.G2API_GetModelName					= G2API_GetModelName;
 	re.G2API_GetParentSurface				= G2API_GetParentSurface;
 	re.G2API_GetRagBonePos					= G2API_GetRagBonePos;
 	re.G2API_GetSurfaceIndex				= G2API_GetSurfaceIndex;
@@ -601,6 +601,7 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.G2API_HaveWeGhoul2Models				= G2API_HaveWeGhoul2Models;
 	re.G2API_IKMove							= G2API_IKMove;
 	re.G2API_InitGhoul2Model				= G2API_InitGhoul2Model;
+	re.G2API_IsGhoul2InfovValid				= G2API_IsGhoul2InfovValid;
 	re.G2API_IsPaused						= G2API_IsPaused;
 	re.G2API_ListBones						= G2API_ListBones;
 	re.G2API_ListSurfaces					= G2API_ListSurfaces;
@@ -658,8 +659,6 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 //	re.LoadImageJA							= RE_LoadImage;
 //	re.CreateAutomapImage					= R_CreateAutomapImage;
 	re.SavePNG								= RE_SavePNG;
-
-	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
 
 	return &re;
 }

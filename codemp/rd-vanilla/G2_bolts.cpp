@@ -1,5 +1,5 @@
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 //=====================================================================================================================
 // Bolt List handling routines - so entities can attach themselves to any part of the model in question

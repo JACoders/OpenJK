@@ -148,6 +148,7 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/stringed_interface.h"
 
 		"${SPDir}/qcommon/strip.cpp"
+		"${SPDir}/qcommon/persistence.cpp"
 		"${SPDir}/qcommon/unzip.cpp"
 		"${SPDir}/qcommon/unzip.h"
 		"${OpenJKLibDir}/zlib/ioapi.c"

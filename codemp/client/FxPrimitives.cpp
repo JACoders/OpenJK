@@ -134,7 +134,7 @@ bool CParticle::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
@@ -143,7 +143,7 @@ bool CParticle::Update(void)
 		matrix3_t	ax;
 
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
 		{	//could not get bolt
 			return false;
 		}
@@ -678,7 +678,7 @@ bool COrientedParticle::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
@@ -686,7 +686,7 @@ bool COrientedParticle::Update(void)
 		matrix3_t	ax;
 
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
 		{	//could not get bolt
 			return false;
 		}
@@ -784,14 +784,14 @@ bool CLine::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
 
 		matrix3_t	ax;
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
 			return false;
 		}
@@ -876,14 +876,14 @@ bool CElectricity::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
 
 		matrix3_t	ax;
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
 			return false;
 		}
@@ -944,7 +944,7 @@ bool CTail::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
@@ -952,7 +952,7 @@ bool CTail::Update(void)
 		matrix3_t	ax;
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
-			if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
+			if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
 			{	//could not get bolt
 				return false;
 			}
@@ -1241,14 +1241,14 @@ bool CCylinder::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
 
 		matrix3_t	ax;
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
 			return false;
 		}
@@ -1384,7 +1384,7 @@ bool CEmitter::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
@@ -1481,14 +1481,14 @@ bool CLight::Update(void)
 
 	if ( mFlags & FX_RELATIVE )
 	{
-		if ( !mGhoul2.IsValid())
+		if ( !re->G2API_IsGhoul2InfovValid (*mGhoul2))
 		{	// the thing we are bolted to is no longer valid, so we may as well just die.
 			return false;
 		}
 
 		matrix3_t	ax;
 		// Get our current position and direction
-		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
+		if (!theFxHelper.GetOriginAxisFromBolt(mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
 			return false;
 		}

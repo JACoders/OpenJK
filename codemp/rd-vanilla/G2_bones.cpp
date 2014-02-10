@@ -1,7 +1,7 @@
 #include "qcommon/matcomp.h"
 
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 //rww - RAGDOLL_BEGIN
 #ifndef __linux__
@@ -10,6 +10,7 @@
 #include <math.h>
 #endif
 #include "ghoul2/G2_gore.h"
+#include "tr_local.h"
 
 //#define RAG_TRACE_DEBUG_LINES
 

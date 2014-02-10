@@ -22,7 +22,7 @@ Ghoul2 Insert Start
 #include "qcommon/stringed_ingame.h"
 #include "ghoul2/G2_gore.h"
 
-extern CMiniHeap *G2VertSpaceClient;
+extern IHeapAllocator *G2VertSpaceClient;
 
 #include "snd_ambient.h"
 #include "qcommon/timing.h"
