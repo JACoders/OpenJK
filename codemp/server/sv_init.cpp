@@ -435,6 +435,8 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 	char		systemInfo[16384];
 	const char	*p;
 
+	SV_StopAutoRecordDemos();
+
 	SV_SendMapChange();
 
 	re->RegisterMedia_LevelLoadBegin(server, eForceReload);
@@ -581,6 +583,8 @@ Ghoul2 Insert End
 	sv.serverId = com_frameTime;
 	sv.restartedServerId = sv.serverId; // I suppose the init here is just to be safe
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
+
+	time( &sv.realMapTimeStarted );
 
 	// clear physics interaction links
 	SV_ClearWorld ();
@@ -730,6 +734,8 @@ Ghoul2 Insert End
 			SV_SendClientGameState( client );
 		}
 	}
+
+	SV_BeginAutoRecordDemos();
 }
 
 
@@ -745,9 +751,8 @@ void SV_BotInitBotLib(void);
 #ifdef DEDICATED
 
 #define G2_VERT_SPACE_SERVER_SIZE 256
-CMiniHeap *G2VertSpaceServer = NULL;
-CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
-const CGhoul2Info NullG2;
+IHeapAllocator *G2VertSpaceServer = NULL;
+CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
 
 /*
@@ -794,7 +799,7 @@ static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightN
 extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
 extern void SV_SetConfigstring( int index, const char *val );
 
-static CMiniHeap *GetG2VertSpaceServer( void ) {
+static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
@@ -884,7 +889,7 @@ static void SV_InitRef( void ) {
 
 	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
-	G2VertSpaceServer = &CMiniHeap_singleton;
+	G2VertSpaceServer = &IHeapAllocator_singleton;
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
@@ -964,6 +969,10 @@ void SV_Init (void) {
 	sv_filterCommands = Cvar_Get( "sv_filterCommands", "0", CVAR_ARCHIVE );
 
 //	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
+
+	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
+	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE );
+	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE );
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();

@@ -848,9 +848,6 @@ void	G_TouchTriggersLerped( gentity_t *ent ) {
 #endif// _DEBUG
 	VectorSubtract( ent->currentOrigin, ent->lastOrigin, diff );
 	dist = VectorNormalize( diff );
-#ifdef _DEBUG
-	assert( (dist<1024) && "insane distance in G_TouchTriggersLerped!" );
-#endif// _DEBUG
 
 	memset (touched, qfalse, sizeof(touched) );
 

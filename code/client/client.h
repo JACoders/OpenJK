@@ -175,33 +175,6 @@ no client connection is active at all
 ==================================================================
 */
 
-typedef enum {
-	EXIT_CONSOLE,
-	EXIT_ARENAS,
-	EXIT_SERVERS,
-	EXIT_LAUNCH			// quit all the way out of the game on disconnect
-} exitTo_t;
-
-#define	MAX_LOCAL_SERVERS	16
-#define	MAX_GLOBAL_SERVERS	256
-#define MAX_PINGREQUESTS	16
-
-typedef struct {
-	netadr_t	adr;
-	int			start;
-	int			time;
-} ping_t;
-
-typedef struct {
-	netadr_t	netadr;
-	char		info[MAX_INFO_STRING];
-} serverInfoResponse_t;
-
-typedef struct {
-	netadr_t	netadr;
-	char		info[MAX_INFO_STRING];
-} getserversResponse_t;
-
 typedef struct {
 	connstate_t	state;				// connection status
 
@@ -300,8 +273,6 @@ extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cl_activeAction;
 
-extern	cvar_t	*cl_thumbStickMode;
-
 #ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
 #endif
@@ -317,15 +288,10 @@ void CL_Init (void);
 void CL_AddReliableCommand( const char *cmd );
 
 void CL_Disconnect_f (void);
-void CL_GetChallengePacket (void);
 void CL_Vid_Restart_f( void );
 void CL_Snd_Restart_f (void);
 
 void CL_NextDemo( void );
-
-void CL_GetPing( int n, char *adrstr, int *pingtime );
-void CL_ClearPing( int n );
-int CL_GetPingQueueCount( void );
 
 qboolean CL_CheckPaused(void);
 

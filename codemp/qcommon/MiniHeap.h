@@ -2,7 +2,16 @@
 
 #include "../qcommon/q_shared.h"
 
-class CMiniHeap
+class IHeapAllocator
+{
+public:
+	virtual ~IHeapAllocator() {}
+
+	virtual void ResetHeap() = 0;
+	virtual char *MiniHeapAlloc ( int size ) = 0;
+};
+
+class CMiniHeap : public IHeapAllocator
 {
 private:
 	char	*mHeap;
@@ -17,7 +26,7 @@ public:
 	}
 
 	// initialise the heap
-	CMiniHeap(int size)
+	CMiniHeap (int size)
 	{
 		mHeap = (char *)malloc(size);
 		mSize = size;
@@ -51,5 +60,5 @@ public:
 };
 
 // this is in the parent executable, so access ri->GetG2VertSpaceServer() from the rd backends!
-extern CMiniHeap *G2VertSpaceServer;
-extern CMiniHeap *G2VertSpaceClient;
+extern IHeapAllocator *G2VertSpaceServer;
+extern IHeapAllocator *G2VertSpaceClient;

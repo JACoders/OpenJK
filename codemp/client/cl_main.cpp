@@ -100,12 +100,6 @@ char cl_reconnectArgs[MAX_OSPATH] = {0};
 refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
-const CGhoul2Info NullG2;
-//FIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
-IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
-	return re->TheGhoul2InfoArray();
-}
-
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
 typedef struct serverStatus_s
@@ -121,13 +115,14 @@ typedef struct serverStatus_s
 serverStatus_t cl_serverStatusList[MAX_SERVERSTATUSREQUESTS];
 int serverStatusCount;
 
-CMiniHeap *G2VertSpaceClient = 0;
+IHeapAllocator *G2VertSpaceClient = 0;
 
 extern void SV_BotFrame( int time );
 void CL_CheckForResend( void );
 void CL_ShowIP_f(void);
 void CL_ServerStatus_f(void);
 void CL_ServerStatusResponse( netadr_t from, msg_t *msg );
+static void CL_ShutdownRef( qboolean restarting );
 
 /*
 =======================================================================
@@ -638,9 +633,9 @@ void CL_ShutdownAll( qboolean shutdownRef ) {
 
 	// shutdown the renderer
 	if(shutdownRef)
-		CL_ShutdownRef();
+		CL_ShutdownRef( qfalse );
 	if ( re && re->Shutdown ) {
-		re->Shutdown( qfalse );		// don't destroy window or context
+		re->Shutdown( qfalse, qfalse );		// don't destroy window or context
 	}
 
 	cls.uiStarted = qfalse;
@@ -807,6 +802,10 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		CL_WritePacket();
 		CL_WritePacket();
 	}
+
+	// Remove pure paks
+	FS_PureServerSetLoadedPaks("", "");
+	FS_PureServerSetReferencedPaks("", "");
 
 	CL_ClearState ();
 
@@ -1169,7 +1168,7 @@ void CL_Vid_Restart_f( void ) {
 	// shutdown the CGame
 	CL_ShutdownCGame();
 	// shutdown the renderer and clear the renderer interface
-	CL_ShutdownRef();
+	CL_ShutdownRef( qtrue );
 	// client is no longer pure untill new checksums are sent
 	CL_ResetPureClientAtServer();
 	// clear pak references
@@ -2079,7 +2078,7 @@ CL_CheckUserinfo
 */
 void CL_CheckUserinfo( void ) {
 	// don't add reliable commands when not yet connected
-	if ( cls.state < CA_CHALLENGING ) {
+	if ( cls.state < CA_CONNECTED ) {
 		return;
 	}
 	// don't overflow the reliable command buffer when paused
@@ -2235,12 +2234,12 @@ void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
+static void CL_ShutdownRef( qboolean restarting ) {
 	if ( re )
 	{
 		if ( re->Shutdown )
 		{
-			re->Shutdown( qtrue );
+			re->Shutdown( qtrue, restarting );
 		}
 	}
 
@@ -2339,10 +2338,10 @@ extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
 extern void SV_SetConfigstring( int index, const char *val );
 
 #define G2_VERT_SPACE_SERVER_SIZE 256
-CMiniHeap *G2VertSpaceServer = NULL;
-CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
+IHeapAllocator *G2VertSpaceServer = NULL;
+CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
-static CMiniHeap *GetG2VertSpaceServer( void ) {
+static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
@@ -2465,7 +2464,10 @@ void CL_InitRef( void ) {
 
 	//FIXME: Might have to do something about this...
 	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
-	G2VertSpaceServer = &CMiniHeap_singleton;
+	G2VertSpaceServer = &IHeapAllocator_singleton;
+
+	ri.PD_Store = PD_Store;
+	ri.PD_Load = PD_Load;
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
@@ -2787,7 +2789,7 @@ void CL_Init( void ) {
 
 	Cvar_Set( "cl_running", "1" );
 
-	G2VertSpaceClient = new CMiniHeap(G2_VERT_SPACE_CLIENT_SIZE * 1024);
+	G2VertSpaceClient = new CMiniHeap (G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
 	CL_GenerateQKey();
 	Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
@@ -2839,16 +2841,22 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("cinematic");
 	Cmd_RemoveCommand ("stoprecord");
 	Cmd_RemoveCommand ("connect");
+	Cmd_RemoveCommand ("reconnect");
 	Cmd_RemoveCommand ("localservers");
 	Cmd_RemoveCommand ("globalservers");
 	Cmd_RemoveCommand ("rcon");
 	Cmd_RemoveCommand ("ping");
 	Cmd_RemoveCommand ("serverstatus");
 	Cmd_RemoveCommand ("showip");
+	Cmd_RemoveCommand ("fs_openedList");
+	Cmd_RemoveCommand ("fs_referencedList");
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
 	Cmd_RemoveCommand ("video");
 	Cmd_RemoveCommand ("stopvideo");
+
+	CL_ShutdownInput();
+	Con_Shutdown();
 
 	Cvar_Set( "cl_running", "0" );
 

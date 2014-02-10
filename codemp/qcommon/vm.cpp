@@ -25,9 +25,25 @@ const char *vmStrs[MAX_VM] = {
 //	cgvm = VM_Restart( cgvm );		// vmTable[VM_CGAME] is recreated, we update the cgvm pointer
 //	VM_Free( cgvm );				// vmTable[VM_CGAME] is deallocated and set to NULL
 //	cgvm = NULL;					// ...so we update the cgvm pointer
-void	*vmHandlesToDelete[MAX_VM];
 
 static vm_t *vmTable[MAX_VM];
+
+#ifdef _DEBUG
+cvar_t	*vm_legacy;
+#endif
+
+/*
+==============
+VM_Init
+==============
+*/
+void VM_Init( void ) {
+#ifdef _DEBUG
+	vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
+#endif
+
+	memset( vmTable, 0, sizeof( vmTable ) );
+}
 
 /*
 ============

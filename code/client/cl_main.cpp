@@ -77,8 +77,6 @@ cvar_t	*cl_activeAction;
 
 cvar_t	*cl_inGameVideo;
 
-cvar_t	*cl_thumbStickMode;
-
 #ifndef _WIN32
 cvar_t	*cl_consoleKeys;
 #endif
@@ -96,9 +94,7 @@ IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
 	return re.TheGhoul2InfoArray();
 }
 
-ping_t	cl_pinglist[MAX_PINGREQUESTS];
-
-void CL_ShutdownRef( void );
+static void CL_ShutdownRef( qboolean restarting );
 void CL_InitRef( void );
 void CL_CheckForResend( void );
 
@@ -182,7 +178,7 @@ void CL_FlushMemory( void ) {
 	CL_ShutdownUI();
 
 	if ( re.Shutdown ) {
-		re.Shutdown( qfalse );		// don't destroy window or context
+		re.Shutdown( qfalse, qfalse );		// don't destroy window or context
 	}
 
 	//rwwFIXMEFIXME: The game server appears to continue running, so clearing common bsp data causes crashing and other bad things
@@ -407,7 +403,7 @@ Restart the video subsystem
 void CL_Vid_Restart_f( void ) {
 	S_StopAllSounds();		// don't let them loop during the restart
 	S_BeginRegistration();	// all sound handles are now invalid
-	CL_ShutdownRef();
+	CL_ShutdownRef(qtrue);
 	CL_ShutdownUI();
 	CL_ShutdownCGame();
 
@@ -920,9 +916,9 @@ void CL_Frame ( int msec,float fractionMsec ) {
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
+static void CL_ShutdownRef( qboolean restarting ) {
 	if ( re.Shutdown ) {
-		re.Shutdown( qtrue );
+		re.Shutdown( qtrue, restarting );
 	}
 
 	memset( &re, 0, sizeof( re ) );
@@ -1200,7 +1196,9 @@ void CL_InitRef( void ) {
     RIT(IN_Restart);
 #endif
 
-	// Not-so-nice usage / doesn't go along with my epic macro
+	rit.PD_Load = PD_Load;
+	rit.PD_Store = PD_Store;
+
 	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
 	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
@@ -1304,8 +1302,6 @@ void CL_Init( void ) {
 	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 
-	cl_thumbStickMode = Cvar_Get ("ui_thumbStickMode", "0", CVAR_ARCHIVE);
-
 	// init autoswitch so the ui will have it correctly even
 	// if the cgame hasn't been started
 	Cvar_Get ("cg_autoswitch", "1", CVAR_ARCHIVE);
@@ -1383,7 +1379,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect();
 
 	S_Shutdown();
-	CL_ShutdownRef();
+	CL_ShutdownRef(qfalse);
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
@@ -1404,129 +1400,3 @@ void CL_Shutdown( void ) {
 	Com_Printf( "-----------------------\n" );
 }
 
-
-/*
-==================
-CL_GetPing
-==================
-*/
-void CL_GetPing( int n, char *adrstr, int *pingtime )
-{
-	const char*	str;
-	int		time;
-
-	if (!cl_pinglist[n].adr.port)
-	{
-		// empty slot
-		adrstr[0] = '\0';
-		*pingtime = 0;
-		return;
-	}
-
-	str = NET_AdrToString( cl_pinglist[n].adr );
-	strcpy( adrstr, str );
-
-	time = cl_pinglist[n].time;
-	if (!time)
-	{
-		// check for timeout
-		time = cls.realtime - cl_pinglist[n].start;
-		if (time < 500)
-		{
-			// not timed out yet
-			time = 0;
-		}
-	}
-
-	*pingtime = time;
-}
-
-/*
-==================
-CL_ClearPing
-==================
-*/
-void CL_ClearPing( int n )
-{
-	if (n < 0 || n >= MAX_PINGREQUESTS)
-		return;
-
-	cl_pinglist[n].adr.port = 0;
-}
-
-/*
-==================
-CL_GetPingQueueCount
-==================
-*/
-int CL_GetPingQueueCount( void )
-{
-	int		i;
-	int		count;
-	ping_t*	pingptr;
-
-	count   = 0;
-	pingptr = cl_pinglist;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-		if (pingptr->adr.port)
-			count++;
-
-	return (count);
-}
-
-/*
-==================
-CL_GetFreePing
-==================
-*/
-ping_t* CL_GetFreePing( void )
-{
-	ping_t*	pingptr;
-	ping_t*	best;	
-	int		oldest;
-	int		i;
-	int		time;
-
-	pingptr = cl_pinglist;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-	{
-		// find free ping slot
-		if (pingptr->adr.port)
-		{
-			if (!pingptr->time)
-			{
-				if (cls.realtime - pingptr->start < 500)
-				{
-					// still waiting for response
-					continue;
-				}
-			}
-			else if (pingptr->time < 500)
-			{
-				// results have not been queried
-				continue;
-			}
-		}
-
-		// clear it
-		pingptr->adr.port = 0;
-		return (pingptr);
-	}
-
-	// use oldest entry
-	pingptr = cl_pinglist;
-	best    = cl_pinglist;
-	oldest  = INT_MIN;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-	{
-		// scan for oldest
-		time = cls.realtime - pingptr->start;
-		if (time > oldest)
-		{
-			oldest = time;
-			best   = pingptr;
-		}
-	}
-
-	return (best);
-}

@@ -2,10 +2,12 @@
 #include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
 #include "server/server.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
+
+#include "tr_local.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)
@@ -370,7 +372,7 @@ int G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod)
 	return returnLod;
 }
 
-void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, size_t *TransformedVertsArray,CBoneCache *boneCache)
+void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, IHeapAllocator *G2VertSpace, size_t *TransformedVertsArray,CBoneCache *boneCache)
 {
 	int				 j, k;
 	mdxmVertex_t 	*v;
@@ -482,7 +484,7 @@ void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHe
 }
 
 void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
-					CBoneCache *boneCache, const model_t *currentModel, int lod, vec3_t scale, CMiniHeap *G2VertSpace, size_t *TransformedVertArray, bool secondTimeAround)
+					CBoneCache *boneCache, const model_t *currentModel, int lod, vec3_t scale, IHeapAllocator *G2VertSpace, size_t *TransformedVertArray, bool secondTimeAround)
 {
 	int	i;
 	assert(currentModel);
@@ -524,9 +526,9 @@ void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 
 // main calling point for the model transform for collision detection. At this point all of the skeleton has been transformed.
 #ifdef _G2_GORE
-void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod, bool ApplyGore)
+void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, IHeapAllocator *G2VertSpace, int useLod, bool ApplyGore)
 #else
-void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod)
+void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, IHeapAllocator *G2VertSpace, int useLod)
 #endif
 {
 	int				i, lod;
@@ -1906,10 +1908,4 @@ void G2_LerpAngles(CGhoul2Info_v &ghoul2,CGhoul2Info_v &nextGhoul2, float interp
 			}
 		}
 	}
-}
-
-//Chucking this in here from ghoul2_shared
-IGhoul2InfoArray &TheGhoul2InfoArray();
-IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
-	return TheGhoul2InfoArray();
 }

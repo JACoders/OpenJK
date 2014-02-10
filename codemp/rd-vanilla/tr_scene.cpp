@@ -1,7 +1,7 @@
 #include "tr_local.h"
 
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 #include "qcommon/matcomp.h"
 
 #ifdef _MSC_VER

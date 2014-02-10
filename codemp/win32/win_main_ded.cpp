@@ -918,19 +918,6 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
-
-/*
-=================
-Sys_Net_Restart_f
-
-Restart the network subsystem
-=================
-*/
-void Sys_Net_Restart_f( void ) {
-	NET_Restart();
-}
-
-
 /*
 ================
 Sys_Init
@@ -948,7 +935,6 @@ void Sys_Init( void ) {
 	timeBeginPeriod( 1 );
 
 	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-	Cmd_AddCommand ("net_restart", Sys_Net_Restart_f);
 
 	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 

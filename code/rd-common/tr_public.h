@@ -32,9 +32,8 @@ This file is part of Jedi Academy.
 #include "../win32/win_local.h"
 #endif
 
-#define	REF_API_VERSION		10
+#define	REF_API_VERSION		11
 
-// Had to add this one too '>_< --eez
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
@@ -66,7 +65,7 @@ typedef struct {
 
 
 	qboolean			(*LowPhysicalMemory)				( void );
-	const char*			(*SE_GetString)						( const char *reference );						// this has to be ultrahacked for JK2 support
+	const char*			(*SE_GetString)						( const char *reference );
 
 
 	void				(*FS_FreeFile)						( void *buffer );
@@ -113,6 +112,10 @@ typedef struct {
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
+	// Persistent data store
+	bool			(*PD_Store)							( const char *name, const void *data, size_t size );
+	const void *	(*PD_Load)							( const char *name, size_t *size );
+
 	// ============= NOT IN MP BEYOND THIS POINT
 	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 															const int passEntityNum, const int contentmask, 
@@ -144,7 +147,7 @@ typedef struct {
 	// called before the library is unloaded
 	// if the system is just reconfiguring, pass destroyWindow = qfalse,
 	// which will keep the screen from flashing to the desktop.
-	void	(*Shutdown)( qboolean destroyWindow );
+	void	(*Shutdown)( qboolean destroyWindow, qboolean restarting );
 
 	// All data that will be used in a level should be
 	// registered before rendering any frames to prevent disk hits,

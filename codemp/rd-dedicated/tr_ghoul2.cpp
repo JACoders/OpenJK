@@ -8,7 +8,7 @@
 #include "qcommon/matcomp.h"
 #include "qcommon/qcommon.h"
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
 #endif
@@ -2838,7 +2838,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 }
 
 #ifdef _G2_LISTEN_SERVER_OPT
-qboolean G2API_OverrideServerWithClientData(CGhoul2Info *serverInstance);
+qboolean G2API_OverrideServerWithClientData(CGhoul2Info_v& ghoul2, int modelIndex);
 #endif
 
 bool G2_NeedsRecalc(CGhoul2Info *ghlInfo,int frameNum)

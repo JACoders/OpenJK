@@ -50,10 +50,6 @@ cvar_t  *com_homepath;
 
 cvar_t	*com_RMG;
 
-#ifdef _DEBUG
-cvar_t	*vm_legacy;
-#endif
-
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -1140,6 +1136,7 @@ Com_Init
 */
 void Com_Init( char *commandLine ) {
 	char	*s;
+	int		qport;
 
 	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, __DATE__ );
 
@@ -1151,6 +1148,7 @@ void Com_Init( char *commandLine ) {
 		// do this before anything else decides to push events
 		Com_InitPushEvent();
 
+		Com_InitZoneMemory();
 		Cvar_Init ();
 
 		navigator.Init();
@@ -1162,12 +1160,11 @@ void Com_Init( char *commandLine ) {
 	//	Swap_Init ();
 		Cbuf_Init ();
 
-		Com_InitZoneMemory();
-
-		Cmd_Init ();
-
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
+
+		Com_InitZoneMemoryVars();
+		Cmd_Init ();
 
 		// Seed the random number generator
 		Rand_Init(Sys_Milliseconds(true));
@@ -1183,6 +1180,19 @@ void Com_Init( char *commandLine ) {
 		FS_InitFilesystem ();
 
 		Com_InitJournaling();
+
+		// Add some commands here already so users can use them from config files
+		if ( com_developer && com_developer->integer ) {
+			Cmd_AddCommand ("error", Com_Error_f);
+			Cmd_AddCommand ("crash", Com_Crash_f );
+			Cmd_AddCommand ("freeze", Com_Freeze_f);
+		}
+		Cmd_AddCommand ("quit", Com_Quit_f );
+#ifndef FINAL_BUILD
+		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
+#endif
+		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
+		Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
 
 		Com_ExecuteCfg();
 
@@ -1267,24 +1277,11 @@ void Com_Init( char *commandLine ) {
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
-#ifdef _DEBUG
-		vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
-#endif
-
 		if ( com_dedicated->integer ) {
 			if ( !com_viewlog->integer ) {
 				Cvar_Set( "viewlog", "1" );
 			}
 		}
-
-		if ( com_developer && com_developer->integer ) {
-			Cmd_AddCommand ("error", Com_Error_f);
-			Cmd_AddCommand ("crash", Com_Crash_f );
-			Cmd_AddCommand ("freeze", Com_Freeze_f);
-		}
-		Cmd_AddCommand ("quit", Com_Quit_f);
-		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
-		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1292,7 +1289,12 @@ void Com_Init( char *commandLine ) {
 		SE_Init();
 
 		Sys_Init();
-		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
+
+		// Pick a random port value
+		Com_RandomBytes( (byte*)&qport, sizeof(int) );
+		Netchan_Init( qport & 0xffff );	// pick a port value that should be nice and random
+
+		VM_Init();
 		SV_Init();
 
 		com_dedicated->modified = qfalse;

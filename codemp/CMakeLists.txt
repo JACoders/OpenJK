@@ -206,6 +206,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/matcomp.cpp"
 		"${MPDir}/qcommon/net_chan.cpp"
 		"${MPDir}/qcommon/net_ip.cpp"
+		"${MPDir}/qcommon/persistence.cpp"
 		"${MPDir}/qcommon/q_math.cpp"
 		"${MPDir}/qcommon/q_shared.cpp"
 		"${MPDir}/qcommon/qcommon.h"
@@ -232,6 +233,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/ghoul2/G2.h"
 		"${MPDir}/ghoul2/G2_gore.h"
 		"${MPDir}/ghoul2/ghoul2_shared.h"
+		"${MPDir}/ghoul2/g2_local.h"
 		)
 	source_group("ghoul2" FILES ${MPEngineAndDedG2Files})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedG2Files})

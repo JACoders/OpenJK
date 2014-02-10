@@ -5,7 +5,8 @@
 #include "qcommon/exe_headers.h"
 #include "rd-common/tr_types.h"
 #include "ghoul2/G2.h"
-#include "G2_local.h"
+#include "ghoul2/g2_local.h"
+#include "tr_local.h"
 #ifdef _MSC_VER
 #pragma warning(disable : 4512)		//assignment op could not be genereated
 #endif

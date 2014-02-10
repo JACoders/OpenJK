@@ -1462,6 +1462,8 @@ void R_Init( void ) {
 	if ( err != GL_NO_ERROR )
 		ri.Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
 
+	RestoreGhoul2InfoArray();
+
 	//ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
 
@@ -1471,8 +1473,12 @@ RE_Shutdown
 ===============
 */
 extern void R_ShutdownWorldEffects(void);
-void RE_Shutdown( qboolean destroyWindow ) {	
-	//ri.Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
+void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {	
+
+	// Need this temporarily.
+#ifdef _WIN32
+	tr.wv = ri.GetWinVars();
+#endif
 
 	ri.Cmd_RemoveCommand ("imagelist");
 	ri.Cmd_RemoveCommand ("shaderlist");
@@ -1535,6 +1541,11 @@ void RE_Shutdown( qboolean destroyWindow ) {
 		if (destroyWindow)
 		{
 			R_DeleteTextures();	// only do this for vid_restart now, not during things like map load
+
+			if ( restarting )
+			{
+				SaveGhoul2InfoArray();
+			}
 		}
 	}
 

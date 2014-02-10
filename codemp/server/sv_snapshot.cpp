@@ -132,6 +132,12 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 		// demo is waiting for a non-delta-compressed frame for this client, so don't delta compress
 		oldframe = NULL;
 		lastframe = 0;
+	} else if ( client->demo.minDeltaFrame > deltaMessage ) {
+		// we saved a non-delta frame to the demo and sent it to the client, but the client didn't ack it
+		// we can't delta against an old frame that's not in the demo without breaking the demo.  so send
+		// non-delta frames until the client acks.
+		oldframe = NULL;
+		lastframe = 0;
 	} else {
 		// we have a valid snapshot to delta from
 		oldframe = &client->frames[ deltaMessage & PACKET_MASK ];
@@ -146,6 +152,10 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	}
 
 	if ( oldframe == NULL ) {
+		if ( client->demo.demowaiting ) {
+			// this is a non-delta frame, so we can delta against it in the demo
+			client->demo.minDeltaFrame = client->netchan.outgoingSequence;
+		}
 		client->demo.demowaiting = qfalse;
 	}
 
@@ -680,10 +690,10 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageAcked = -1;
 
 	// save the message to demo.  this must happen before sending over network as that encodes the backing databuf
-	if (client->demo.demorecording && !client->demo.demowaiting) {
+	if ( client->demo.demorecording && !client->demo.demowaiting ) {
 		msg_t msgcopy = *msg;
 		MSG_WriteByte( &msgcopy, svc_EOF );
-		SV_WriteDemoMessage(client, &msgcopy, 0);
+		SV_WriteDemoMessage( client, &msgcopy, 0 );
 	}
 
 	// bots need to have their snapshots built, but
@@ -790,9 +800,15 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
+	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
+		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+			SV_BeginAutoRecordDemos();
+		}
+	}
+
 	// bots need to have their snapshots built, but
 	// they query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT && !client->demo.demorecording ) {
+	if ( client->netchan.remoteAddress.type == NA_BOT && !client->demo.demorecording ) {
 		return;
 	}
 

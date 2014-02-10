@@ -41,6 +41,10 @@ cvar_t	*sv_floodProtect;
 cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
 cvar_t	*sv_needpass;
 cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
+cvar_t	*sv_autoDemo;
+cvar_t	*sv_autoDemoBots;
+cvar_t	*sv_autoDemoMaxMaps;
+
 /*
 =============================================================================
 
@@ -587,6 +591,7 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "wdisable", va("%i", wDisable ) );
 	Info_SetValueForKey( infostring, "fdisable", va("%i", Cvar_VariableIntegerValue( "g_forcePowerDisable" ) ) );
 	Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
+	Info_SetValueForKey( infostring, "autodemo", va("%i", sv_autoDemo->integer ) );
 
 	if( sv_minPing->integer ) {
 		Info_SetValueForKey( infostring, "minPing", va("%i", sv_minPing->integer) );

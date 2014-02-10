@@ -124,7 +124,7 @@ typedef struct netadr_s {
 
 void		NET_Init( void );
 void		NET_Shutdown( void );
-void		NET_Restart( void );
+void		NET_Restart_f( void );
 void		NET_Config( qboolean enableNetworking );
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
@@ -295,6 +295,7 @@ typedef enum {
 	TRAP_ASIN
 } sharedTraps_t;
 
+void			VM_Init( void );
 vm_t			*VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) );
 vm_t			*VM_Create( vmSlots_t vmSlot );
 void			 VM_Free( vm_t *vm );
@@ -555,6 +556,9 @@ void	FS_FreeFileList( char **fileList );
 void FS_Remove( const char *osPath );
 void FS_HomeRemove( const char *homePath );
 
+void FS_Rmdir( const char *osPath, qboolean recursive );
+void FS_HomeRmdir( const char *homePath, qboolean recursive );
+
 qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();
@@ -750,10 +754,6 @@ extern	cvar_t	*com_G2Report;
 
 extern	cvar_t	*com_RMG;
 
-#ifdef _DEBUG
-extern	cvar_t	*vm_legacy;
-#endif
-
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
 extern	cvar_t	*sv_paused;
@@ -842,6 +842,7 @@ void  Z_TagFree	( memtag_t eTag );
 void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
 void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 void Com_InitHunkMemory(void);
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
@@ -1125,3 +1126,7 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
+
+// Persistent data store API
+bool PD_Store ( const char *name, const void *data, size_t size );
+const void *PD_Load ( const char *name, size_t *size );
