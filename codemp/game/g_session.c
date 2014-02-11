@@ -44,12 +44,10 @@ void G_WriteClientSessionData( gclient_t *client )
 		if (IP[i] == ' ')
 			IP[i] = 1;
 	}
-	if ( !IP[0] )
-		Q_strncpyz( IP, "none", sizeof( IP ) );
 
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
-	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorTime ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorNum ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorState ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorClient ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.wins ) );
@@ -65,7 +63,7 @@ void G_WriteClientSessionData( gclient_t *client )
 
 	var = va( "session%i", client - level.clients );
 
-	trap_Cvar_Set( var, s );
+	trap->Cvar_Set( var, s );
 }
 
 /*
@@ -82,11 +80,11 @@ void G_ReadSessionData( gclient_t *client )
 	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader;
 
 	var = va( "session%i", client - level.clients );
-	trap_Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s",
 		&tempSessionTeam, //&client->sess.sessionTeam,
-		&client->sess.spectatorTime,
+		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
 		&client->sess.spectatorClient,
 		&client->sess.wins,
@@ -140,7 +138,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	client->sess.siegeDesiredTeam = TEAM_FREE;
 
 	// initial team determination
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		if ( g_teamAutoJoin.integer && !(g_entities[client-level.clients].r.svFlags & SVF_BOT) ) {
 			sess->sessionTeam = PickTeam( -1 );
 			BroadcastTeamChange( client, -1 );
@@ -148,7 +146,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			// always spawn as spectator in team games
 			if (!isBot)
 			{
-				sess->sessionTeam = TEAM_SPECTATOR;	
+				sess->sessionTeam = TEAM_SPECTATOR;
 			}
 			else
 			{ //Bots choose their team on creation
@@ -174,13 +172,13 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			// a willing spectator, not a waiting-in-line
 			sess->sessionTeam = TEAM_SPECTATOR;
 		} else {
-			switch ( g_gametype.integer ) {
+			switch ( level.gametype ) {
 			default:
 			case GT_FFA:
 			case GT_HOLOCRON:
 			case GT_JEDIMASTER:
 			case GT_SINGLE_PLAYER:
-				if ( g_maxGameClients.integer > 0 && 
+				if ( g_maxGameClients.integer > 0 &&
 					level.numNonSpectatorClients >= g_maxGameClients.integer ) {
 					sess->sessionTeam = TEAM_SPECTATOR;
 				} else {
@@ -219,7 +217,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	}
 
 	sess->spectatorState = SPECTATOR_FREE;
-	sess->spectatorTime = level.time;
+	AddTournamentQueue(client);
 
 	sess->siegeClass[0] = 0;
 
@@ -237,14 +235,14 @@ void G_InitWorldSession( void ) {
 	char	s[MAX_STRING_CHARS];
 	int			gt;
 
-	trap_Cvar_VariableStringBuffer( "session", s, sizeof(s) );
+	trap->Cvar_VariableStringBuffer( "session", s, sizeof(s) );
 	gt = atoi( s );
-	
+
 	// if the gametype changed since the last session, don't use any
 	// client sessions
-	if ( g_gametype.integer != gt ) {
+	if ( level.gametype != gt ) {
 		level.newSession = qtrue;
-		G_Printf( "Gametype changed, clearing session data.\n" );
+		trap->Print( "Gametype changed, clearing session data.\n" );
 	}
 }
 
@@ -257,7 +255,7 @@ G_WriteSessionData
 void G_WriteSessionData( void ) {
 	int		i;
 
-	trap_Cvar_Set( "session", va("%i", g_gametype.integer) );
+	trap->Cvar_Set( "session", va("%i", level.gametype) );
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if ( level.clients[i].pers.connected == CON_CONNECTED ) {

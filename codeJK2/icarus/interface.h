@@ -21,7 +21,7 @@ This file is part of Jedi Knight 2.
 #ifndef __INTERFACE__
 #define __INTERFACE__
 
-typedef unsigned long       DWORD;
+#include "g_shared.h"
 
 typedef	float	vec_t;
 typedef	vec_t	vec3_t[3];
@@ -36,8 +36,8 @@ typedef struct interface_export_s
 	void			(*I_CenterPrint)( const char *format, ... );
 	void			(*I_DPrintf)( int, const char *, ... );
 	gentity_t *		(*I_GetEntityByName)( const char *name );		//Polls the engine for the sequencer of the entity matching the name passed
-	DWORD			(*I_GetTime)( void );							//Gets the current time
-	DWORD			(*I_GetTimeScale)(void );
+	unsigned int	(*I_GetTime)( void );							//Gets the current time
+	unsigned int	(*I_GetTimeScale)(void );
 	int 			(*I_PlaySound)( int taskID, int entID, const char *name, const char *channel );	
 	void			(*I_Lerp2Pos)( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	void			(*I_Lerp2Origin)( int taskID, int entID, vec3_t origin, float duration );
@@ -77,8 +77,8 @@ typedef struct interface_export_s
 
 	//Save / Load functions
 
-	int				(*I_WriteSaveData)( unsigned long chid, void *data, int length );
-	int				(*I_ReadSaveData)( unsigned long chid, void *address, int length, void **addressptr/* = NULL */);
+	int				(*I_WriteSaveData)( unsigned int chid, void *data, int length );
+	int				(*I_ReadSaveData)( unsigned int chid, void *address, int length, void **addressptr/* = NULL */);
 	int				(*I_LinkEntity)( int entID, CSequencer *sequencer, CTaskManager *taskManager );
 
 } interface_export_t;

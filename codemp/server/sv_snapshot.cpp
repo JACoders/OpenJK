@@ -105,25 +105,43 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	int					lastframe;
 	int					i;
 	int					snapFlags;
+	int					deltaMessage;
 
 	// this is the snapshot we are creating
 	frame = &client->frames[ client->netchan.outgoingSequence & PACKET_MASK ];
 
+	// bots never acknowledge, but it doesn't matter since the only use case is for serverside demos
+	// in which case we can delta against the very last message every time
+	deltaMessage = client->deltaMessage;
+	if ( client->demo.isBot ) {
+		client->deltaMessage = client->netchan.outgoingSequence;
+	}
+
 	// try to use a previous frame as the source for delta compressing the snapshot
-	if ( client->deltaMessage <= 0 || client->state != CS_ACTIVE ) {
+	if ( deltaMessage <= 0 || client->state != CS_ACTIVE ) {
 		// client is asking for a retransmit
 		oldframe = NULL;
 		lastframe = 0;
-	} else if ( client->netchan.outgoingSequence - client->deltaMessage 
+	} else if ( client->netchan.outgoingSequence - deltaMessage
 		>= (PACKET_BACKUP - 3) ) {
 		// client hasn't gotten a good message through in a long time
 		Com_DPrintf ("%s: Delta request from out of date packet.\n", client->name);
 		oldframe = NULL;
 		lastframe = 0;
+	} else if ( client->demo.demorecording && client->demo.demowaiting ) {
+		// demo is waiting for a non-delta-compressed frame for this client, so don't delta compress
+		oldframe = NULL;
+		lastframe = 0;
+	} else if ( client->demo.minDeltaFrame > deltaMessage ) {
+		// we saved a non-delta frame to the demo and sent it to the client, but the client didn't ack it
+		// we can't delta against an old frame that's not in the demo without breaking the demo.  so send
+		// non-delta frames until the client acks.
+		oldframe = NULL;
+		lastframe = 0;
 	} else {
 		// we have a valid snapshot to delta from
-		oldframe = &client->frames[ client->deltaMessage & PACKET_MASK ];
-		lastframe = client->netchan.outgoingSequence - client->deltaMessage;
+		oldframe = &client->frames[ deltaMessage & PACKET_MASK ];
+		lastframe = client->netchan.outgoingSequence - deltaMessage;
 
 		// the snapshot's entities may still have rolled off the buffer, though
 		if ( oldframe->first_entity <= svs.nextSnapshotEntities - svs.numSnapshotEntities ) {
@@ -131,6 +149,14 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 			oldframe = NULL;
 			lastframe = 0;
 		}
+	}
+
+	if ( oldframe == NULL ) {
+		if ( client->demo.demowaiting ) {
+			// this is a non-delta frame, so we can delta against it in the demo
+			client->demo.minDeltaFrame = client->netchan.outgoingSequence;
+		}
+		client->demo.demowaiting = qfalse;
 	}
 
 	MSG_WriteByte (msg, svc_snapshot);
@@ -141,7 +167,8 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 
 	// send over the current server time so the client can drift
 	// its view of time to try to match
-	if( client->oldServerTime ) {
+	if( client->oldServerTime &&
+		!( client->demo.demorecording && client->demo.isBot ) ) {
 		// The server has not yet got an acknowledgement of the
 		// new gamestate from this client, so continue to send it
 		// a time as if the server has not restarted. Note from
@@ -234,9 +261,16 @@ SV_UpdateServerCommandsToClient
 */
 void SV_UpdateServerCommandsToClient( client_t *client, msg_t *msg ) {
 	int		i;
+	int		reliableAcknowledge;
+
+	if ( client->demo.isBot && client->demo.demorecording ) {
+		reliableAcknowledge = client->demo.botReliableAcknowledge;
+	} else {
+		reliableAcknowledge = client->reliableAcknowledge;
+	}
 
 	// write any unacknowledged serverCommands
-	for ( i = client->reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
+	for ( i = reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
 		MSG_WriteByte( msg, svc_serverCommand );
 		MSG_WriteLong( msg, i );
 		MSG_WriteString( msg, client->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
@@ -252,10 +286,9 @@ Build a client snapshot structure
 =============================================================================
 */
 
-#define	MAX_SNAPSHOT_ENTITIES	1024
-typedef struct {
+typedef struct snapshotEntityNumbers_s {
 	int		numSnapshotEntities;
-	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];	
+	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];
 } snapshotEntityNumbers_t;
 
 /*
@@ -308,7 +341,7 @@ SV_AddEntitiesVisibleFromPoint
 ===============
 */
 float g_svCullDist = -1.0f;
-static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
+static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame,
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e, i;
 	sharedEntity_t *ent;
@@ -316,7 +349,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	int		l;
 	int		clientarea, clientcluster;
 	int		leafnum;
-	int		c_fullsend;
 	byte	*clientpvs;
 	byte	*bitvector;
 	vec3_t	difference;
@@ -337,8 +369,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	frame->areabytes = CM_WriteAreaBits( frame->areabits, clientarea );
 
 	clientpvs = CM_ClusterPVS (clientcluster);
-
-	c_fullsend = 0;
 
 	for ( e = 0 ; e < sv.num_entities ; e++ ) {
 		ent = SV_GentityNum(e);
@@ -498,7 +528,7 @@ copies off the playerstate and areabits.
 This properly handles multiple recursive portals, but the render
 currently doesn't.
 
-For viewing through other player's eyes, clent can be something other than client->gentity
+For viewing through other player's eyes, client can be something other than client->gentity
 =============
 */
 static void SV_BuildClientSnapshot( client_t *client ) {
@@ -543,7 +573,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 		if (veh && veh->playerState)
 		{ //Now VMA it and we've got ourselves a playerState
-			playerState_t *vps = ((playerState_t *)VM_ArgPtr((int)veh->playerState));
+			playerState_t *vps = ((playerState_t *)VM_ArgPtr((intptr_t)veh->playerState));
 
             frame->vps = *vps;
 #ifdef _ONEBIT_COMBO
@@ -563,7 +593,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	svEnt = &sv.svEntities[ clientNum ];
 	svEnt->snapshotCounter = sv.snapshotCounter;
 
-	
+
 	// find the client's viewpoint
 	VectorCopy( ps->origin, org );
 	org[2] += ps->viewheight;
@@ -576,7 +606,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 	// in the list which will need to be resorted for the delta compression
 	// to work correctly.  This also catches the error condition
 	// of an entity being included twice.
-	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities, 
+	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities,
 		sizeof( entityNumbers.snapshotEntities[0] ), SV_QsortEntityNumbers );
 
 	// now that all viewpoint's areabits have been OR'd together, invert
@@ -633,6 +663,7 @@ static int SV_RateMsec( client_t *client, int messageSize ) {
 	return rateMsec;
 }
 
+extern void SV_WriteDemoMessage ( client_t *cl, msg_t *msg, int headerBytes );
 /*
 =======================
 SV_SendMessageToClient
@@ -643,7 +674,7 @@ Called by SV_SendClientSnapshot and SV_SendClientGameState
 void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	int			rateMsec;
 
-	// MW - my attempt to fix illegible server message errors caused by 
+	// MW - my attempt to fix illegible server message errors caused by
 	// packet fragmentation of initial snapshot.
 	while(client->state&&client->netchan.unsentFragments)
 	{
@@ -658,16 +689,31 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSent = svs.time;
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageAcked = -1;
 
+	// save the message to demo.  this must happen before sending over network as that encodes the backing databuf
+	if ( client->demo.demorecording && !client->demo.demowaiting ) {
+		msg_t msgcopy = *msg;
+		MSG_WriteByte( &msgcopy, svc_EOF );
+		SV_WriteDemoMessage( client, &msgcopy, 0 );
+	}
+
+	// bots need to have their snapshots built, but
+	// they query them directly without needing to be sent
+	if ( client->demo.isBot ) {
+		client->netchan.outgoingSequence++;
+		client->demo.botReliableAcknowledge = client->reliableSent;
+		return;
+	}
+
 	// send the datagram
 	SV_Netchan_Transmit( client, msg );	//msg->cursize, msg->data );
 
 	// set nextSnapshotTime based on rate and requested number of updates
 
-	// local clients get snapshots every frame
+	// local clients get snapshots every server frame
 	// TTimo - https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=491
 	// added sv_lanForceRate check
 	if ( client->netchan.remoteAddress.type == NA_LOOPBACK || (sv_lanForceRate->integer && Sys_IsLANAddress (client->netchan.remoteAddress)) ) {
-		client->nextSnapshotTime = svs.time - 1;
+		client->nextSnapshotTime = svs.time + ((int) (1000.0 / sv_fps->integer * com_timescale->value));
 		return;
 	}
 
@@ -682,15 +728,15 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 		client->rateDelayed = qtrue;
 	}
 
-	client->nextSnapshotTime = svs.time + rateMsec * com_timescale->value;
+	client->nextSnapshotTime = svs.time + ((int) (rateMsec * com_timescale->value));
 
 	// don't pile up empty snapshots while connecting
 	if ( client->state != CS_ACTIVE ) {
 		// a gigantic connection message may have already put the nextSnapshotTime
 		// more than a second away, so don't shorten it
 		// do shorten if client is downloading
-		if ( !*client->downloadName && client->nextSnapshotTime < svs.time + 1000 * com_timescale->value ) {
-			client->nextSnapshotTime = svs.time + 1000 * com_timescale->value;
+		if ( !*client->downloadName && client->nextSnapshotTime < svs.time + ((int) (1000.0 * com_timescale->value)) ) {
+			client->nextSnapshotTime = svs.time + ((int) (1000 * com_timescale->value));
 		}
 	}
 }
@@ -720,14 +766,16 @@ void SV_SendClientSnapshot( client_t *client ) {
 
 		MSG_WriteByte (&msg, svc_setgame);
 
-		while (fs_gamedirvar->string[i])
+		const char *gamedir = FS_GetCurrentGameDir(true);
+
+		while (gamedir[i])
 		{
-			MSG_WriteByte(&msg, fs_gamedirvar->string[i]);
+			MSG_WriteByte(&msg, gamedir[i]);
 			i++;
 		}
 		MSG_WriteByte(&msg, 0);
 
-		// MW - my attempt to fix illegible server message errors caused by 
+		// MW - my attempt to fix illegible server message errors caused by
 		// packet fragmentation of initial snapshot.
 		//rww - reusing this code here
 		while(client->state&&client->netchan.unsentFragments)
@@ -752,9 +800,15 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
-	// bots need to have their snapshots build, but
-	// the query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT ) {
+	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
+		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+			SV_BeginAutoRecordDemos();
+		}
+	}
+
+	// bots need to have their snapshots built, but
+	// they query them directly without needing to be sent
+	if ( client->netchan.remoteAddress.type == NA_BOT && !client->demo.demorecording ) {
 		return;
 	}
 
@@ -807,7 +861,7 @@ void SV_SendClientMessages( void ) {
 		// send additional message fragments if the last message
 		// was too large to send at once
 		if ( c->netchan.unsentFragments ) {
-			c->nextSnapshotTime = svs.time + 
+			c->nextSnapshotTime = svs.time +
 				SV_RateMsec( c, c->netchan.unsentLength - c->netchan.unsentFragmentStart );
 			SV_Netchan_TransmitNextFragment( &c->netchan );
 			continue;

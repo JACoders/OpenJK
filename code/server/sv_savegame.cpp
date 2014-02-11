@@ -22,11 +22,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-// a little naughty, since these are in the renderer, but I need access to them for savegames, so...
-//
-extern void Decompress_JPG( const char *filename, byte *pJPGData, unsigned char **pic, int *width, int *height );
-extern byte *Compress_JPG(int *pOutputSize, int quality, int image_width, int image_height, byte *image_buffer, qboolean bInvertDuringCompression);
-
 #define JPEG_IMAGE_QUALITY 95
 
 
@@ -35,13 +30,15 @@ extern byte *Compress_JPG(int *pOutputSize, int quality, int image_width, int im
 										//	(EF1 behaviour). I should maybe time/date check them though?
 
 #include "server.h"
-#include "..\game\statindex.h"
-#include "..\game\weapons.h"
-#include "..\game\g_items.h"
+#include "../game/statindex.h"
+#include "../game/weapons.h"
+#include "../game/g_items.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier was truncated (STL crap)
 #pragma warning(disable : 4710)  // function was not inlined (STL crap)
 #pragma warning(disable : 4512)  // yet more STL drivel...
+#endif
 
 #include <map>
 
@@ -58,11 +55,6 @@ qboolean qbSGReadIsTestOnly = qfalse;	// this MUST be left in this state
 char sLastSaveFileLoaded[MAX_QPATH]={0};
 
 #define iSG_MAPCMD_SIZE MAX_QPATH
-
-#ifndef LPCSTR
-typedef const char * LPCSTR;
-#endif
-
 
 static char *SG_GetSaveGameMapName(const char *psPathlessBaseName);
 static void CompressMem_FreeScratchBuffer(void);
@@ -96,15 +88,15 @@ public:
 	}
 };
 
-typedef map<unsigned long, CChid> CChidInfo_t;
+typedef map<unsigned int, CChid> CChidInfo_t;
 CChidInfo_t	save_info;
 #endif
 
-LPCSTR SG_GetChidText(unsigned long chid)
+const char *SG_GetChidText(unsigned int chid)
 {
 	static char	chidtext[5];
 
-	*(unsigned long *)chidtext = BigLong(chid);
+	*(unsigned int *)chidtext = BigLong(chid);
 	chidtext[4] = 0;
 
 	return chidtext;
@@ -125,12 +117,13 @@ static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboole
 
 // (copes with up to 8 ptr returns at once)
 //
-static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
+static const char *SG_AddSavePath( const char *psPathlessBaseName )
 {
 	static char sSaveName[8][MAX_OSPATH]; 
 	static int  i=0;
 
-	i=++i&7;
+	int next = i = (i + 1) & 7;
+	i = next;
 
 	if(psPathlessBaseName)
 	{
@@ -148,17 +141,17 @@ static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
 	return sSaveName[i];
 }
 
-void SG_WipeSavegame( LPCSTR psPathlessBaseName )
+void SG_WipeSavegame( const char *psPathlessBaseName )
 {
-	LPCSTR psLocalFilename  = SG_AddSavePath( psPathlessBaseName );
+	const char *psLocalFilename  = SG_AddSavePath( psPathlessBaseName );
 	
 	FS_DeleteUserGenFile( psLocalFilename );
 }
 
-static qboolean SG_Move( LPCSTR psPathlessBaseName_Src, LPCSTR psPathlessBaseName_Dst )
+static qboolean SG_Move( const char *psPathlessBaseName_Src, const char *psPathlessBaseName_Dst )
 {
-	LPCSTR psLocalFilename_Src = SG_AddSavePath( psPathlessBaseName_Src );
-	LPCSTR psLocalFilename_Dst = SG_AddSavePath( psPathlessBaseName_Dst );
+	const char *psLocalFilename_Src = SG_AddSavePath( psPathlessBaseName_Src );
+	const char *psLocalFilename_Dst = SG_AddSavePath( psPathlessBaseName_Dst );
 
 	qboolean qbCopyWentOk = FS_MoveUserGenFile( psLocalFilename_Src, psLocalFilename_Dst );
 
@@ -174,12 +167,12 @@ static qboolean SG_Move( LPCSTR psPathlessBaseName_Src, LPCSTR psPathlessBaseNam
 
 qboolean gbSGWriteFailed = qfalse;
 
-static qboolean SG_Create( LPCSTR psPathlessBaseName )
+static qboolean SG_Create( const char *psPathlessBaseName )
 {
 	gbSGWriteFailed = qfalse;
 
 	SG_WipeSavegame( psPathlessBaseName );
-	LPCSTR psLocalFilename = SG_AddSavePath( psPathlessBaseName );		
+	const char *psLocalFilename = SG_AddSavePath( psPathlessBaseName );		
 	fhSaveGame = FS_FOpenFileWrite( psLocalFilename );
 
 	if(!fhSaveGame)
@@ -189,7 +182,7 @@ static qboolean SG_Create( LPCSTR psPathlessBaseName )
 	}
 
 	giSaveGameVersion = iSAVEGAME_VERSION;
-	SG_Append('_VER', &giSaveGameVersion, sizeof(giSaveGameVersion));
+	SG_Append(INT_ID('_','V','E','R'), &giSaveGameVersion, sizeof(giSaveGameVersion));
 
 	return qtrue;
 }
@@ -202,7 +195,7 @@ void SG_Shutdown()
 	if (fhSaveGame )
 	{
 		FS_FCloseFile( fhSaveGame );
-		fhSaveGame = NULL;
+		fhSaveGame = NULL_FILE;
 	}
 
 	eSavedGameJustLoaded = eNO;	// important to do this if we ERR_DROP during loading, else next map you load after
@@ -218,7 +211,7 @@ qboolean SG_Close()
 {
 	assert( fhSaveGame );	
 	FS_FCloseFile( fhSaveGame );
-	fhSaveGame = NULL;
+	fhSaveGame = NULL_FILE;
 
 #ifdef SG_PROFILE
 	if (!sv_testsave->integer)
@@ -245,7 +238,7 @@ qboolean SG_Close()
 }
 
 
-qboolean SG_Open( LPCSTR psPathlessBaseName )
+qboolean SG_Open( const char *psPathlessBaseName )
 {	
 //	if ( fhSaveGame )		// hmmm...
 //	{						//
@@ -258,7 +251,7 @@ qboolean SG_Open( LPCSTR psPathlessBaseName )
 	}
 //JLFSAVEGAME
 
-	LPCSTR psLocalFilename = SG_AddSavePath( psPathlessBaseName );	
+	const char *psLocalFilename = SG_AddSavePath( psPathlessBaseName );	
 	FS_FOpenFileRead( psLocalFilename, &fhSaveGame, qtrue );	//qtrue = dup handle, so I can close it ok later
 	if (!fhSaveGame)
 	{
@@ -268,7 +261,7 @@ qboolean SG_Open( LPCSTR psPathlessBaseName )
 		return qfalse;
 	}
 	giSaveGameVersion=-1;//jic
-	SG_Read('_VER', &giSaveGameVersion, sizeof(giSaveGameVersion));
+	SG_Read(INT_ID('_','V','E','R'), &giSaveGameVersion, sizeof(giSaveGameVersion));
 	if (giSaveGameVersion != iSAVEGAME_VERSION)
 	{
 		SG_Close();
@@ -294,7 +287,7 @@ void SV_WipeGame_f(void)
 		Com_Printf (S_COLOR_RED "USAGE: wipe <name>\n");
 		return;
 	}
-	if (!stricmp (Cmd_Argv(1), "auto") )
+	if (!Q_stricmp (Cmd_Argv(1), "auto") )
 	{
 		Com_Printf (S_COLOR_RED "Can't wipe 'auto'\n");
 		return;
@@ -358,7 +351,7 @@ void SV_LoadGame_f(void)
 		return;
 	}
 
-	if (!stricmp (psFilename, "current"))
+	if (!Q_stricmp (psFilename, "current"))
 	{
 		Com_Printf (S_COLOR_RED "Can't load from \"current\"\n");
 		return;
@@ -367,7 +360,7 @@ void SV_LoadGame_f(void)
 	// special case, if doing a respawn then check that the available auto-save (if any) is from the same map
 	//	as we're currently on (if in a map at all), if so, load that "auto", else re-load the last-loaded file...
 	//
-	if (!stricmp(psFilename, "*respawn"))
+	if (!Q_stricmp(psFilename, "*respawn"))
 	{
 		psFilename = "auto";	// default to standard respawn behaviour
 
@@ -375,8 +368,8 @@ void SV_LoadGame_f(void)
 		//
 		if ( sLastSaveFileLoaded[0] )
 		{
-			LPCSTR psServerInfo = sv.configstrings[CS_SERVERINFO];
-			LPCSTR psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
+			const char *psServerInfo = sv.configstrings[CS_SERVERINFO];
+			const char *psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
 
 			char *psMapNameOfAutoSave = SG_GetSaveGameMapName("auto");
 
@@ -467,9 +460,9 @@ void SV_SaveGame_f(void)
 		return;
 	}
 
-	char *psFilename = Cmd_Argv(1);
+	const char *psFilename = Cmd_Argv(1);
 
-	if (!stricmp (psFilename, "current"))
+	if (!Q_stricmp (psFilename, "current"))
 	{
 		Com_Printf (S_COLOR_RED "Can't save to 'current'\n");
 		return;
@@ -484,7 +477,7 @@ void SV_SaveGame_f(void)
 	if (!SG_GameAllowedToSaveHere(qfalse))	//full check
 		return;	// this prevents people saving via quick-save now during cinematics.
 
-	if ( !stricmp (psFilename, "auto") )
+	if ( !Q_stricmp (psFilename, "auto") )
 	{
 		
 		SG_StoreSaveGameComment("");	// clear previous comment/description, which will force time/date comment.
@@ -507,7 +500,7 @@ void SV_SaveGame_f(void)
 //---------------
 static void WriteGame(qboolean autosave)
 {
-	SG_Append('GAME', &autosave, sizeof(autosave));	
+	SG_Append(INT_ID('G','A','M','E'), &autosave, sizeof(autosave));	
 
 	if (autosave)
 	{
@@ -522,32 +515,32 @@ static void WriteGame(qboolean autosave)
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
-		SG_Append('CVSV', &s, sizeof(s));	
+		SG_Append(INT_ID('C','V','S','V'), &s, sizeof(s));	
 
 		// write ammo...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
-		SG_Append('AMMO', &s, sizeof(s));
+		SG_Append(INT_ID('A','M','M','O'), &s, sizeof(s));
 
 		// write inventory...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerinv", s, sizeof(s) );
-		SG_Append('IVTY', &s, sizeof(s));
+		SG_Append(INT_ID('I','V','T','Y'), &s, sizeof(s));
 		
 		// the new JK2 stuff - force powers, etc...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-		SG_Append('FPLV', &s, sizeof(s));
+		SG_Append(INT_ID('F','P','L','V'), &s, sizeof(s));
 	}
 }
 
 static qboolean ReadGame (void)
 {
 	qboolean qbAutoSave;
-	SG_Read('GAME', (void *)&qbAutoSave, sizeof(qbAutoSave));
+	SG_Read(INT_ID('G','A','M','E'), (void *)&qbAutoSave, sizeof(qbAutoSave));
 
 	if (qbAutoSave)
 	{
@@ -556,25 +549,25 @@ static qboolean ReadGame (void)
 		// read health/armour etc...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read('CVSV', (void *)&s, sizeof(s));
+		SG_Read(INT_ID('C','V','S','V'), (void *)&s, sizeof(s));
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
 		// read ammo...
 		//
 		memset(s,0,sizeof(s));			
-		SG_Read('AMMO', (void *)&s, sizeof(s));
+		SG_Read(INT_ID('A','M','M','O'), (void *)&s, sizeof(s));
 		Cvar_Set( "playerammo", s);
 
 		// read inventory...
 		//
 		memset(s,0,sizeof(s));			
-		SG_Read('IVTY', (void *)&s, sizeof(s));
+		SG_Read(INT_ID('I','V','T','Y'), (void *)&s, sizeof(s));
 		Cvar_Set( "playerinv", s);
 
 		// read force powers...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read('FPLV', (void *)&s, sizeof(s));
+		SG_Read(INT_ID('F','P','L','V'), (void *)&s, sizeof(s));
 		Cvar_Set( "playerfplvl", s );
 	}
 
@@ -607,7 +600,7 @@ void SG_WriteCvars(void)
 
 	// store count...
 	//
-	SG_Append('CVCN', &iCount, sizeof(iCount));
+	SG_Append(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
 
 	// write 'em...
 	//
@@ -617,8 +610,8 @@ void SG_WriteCvars(void)
 		{
 			continue;
 		}
-		SG_Append('CVAR', var->name,   strlen(var->name) + 1);
-		SG_Append('VALU', var->string, strlen(var->string) + 1);
+		SG_Append(INT_ID('C','V','A','R'), var->name,   strlen(var->name) + 1);
+		SG_Append(INT_ID('V','A','L','U'), var->string, strlen(var->string) + 1);
 	}
 }
 
@@ -628,12 +621,12 @@ void SG_ReadCvars(void)
 	char	*psName;
 	char	*psValue;
 
-	SG_Read('CVCN', &iCount, sizeof(iCount));
+	SG_Read(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
 
 	for (int i = 0; i < iCount; i++)
 	{
-		SG_Read('CVAR', NULL, 0, (void **)&psName);
-		SG_Read('VALU', NULL, 0, (void **)&psValue);
+		SG_Read(INT_ID('C','V','A','R'), NULL, 0, (void **)&psName);
+		SG_Read(INT_ID('V','A','L','U'), NULL, 0, (void **)&psValue);
 
 		Cvar_Set (psName, psValue);
 
@@ -660,7 +653,7 @@ void SG_WriteServerConfigStrings( void )
 		}
 	}
 
-	SG_Append('CSCN', &iCount, sizeof(iCount));
+	SG_Append(INT_ID('C','S','C','N'), &iCount, sizeof(iCount));
 
 	// now write 'em...
 	//
@@ -670,8 +663,8 @@ void SG_WriteServerConfigStrings( void )
 		{
 			if (sv.configstrings[i]	&& strlen(sv.configstrings[i]))
 			{
-				SG_Append('CSIN', &i, sizeof(i));
-				SG_Append('CSDA', sv.configstrings[i], strlen(sv.configstrings[i])+1);
+				SG_Append(INT_ID('C','S','I','N'), &i, sizeof(i));
+				SG_Append(INT_ID('C','S','D','A'), sv.configstrings[i], strlen(sv.configstrings[i])+1);
 			}
 		}
 	}	
@@ -697,7 +690,7 @@ void SG_ReadServerConfigStrings( void )
 	//
 	int iCount;		
 
-	SG_Read('CSCN', &iCount, sizeof(iCount));
+	SG_Read(INT_ID('C','S','C','N'), &iCount, sizeof(iCount));
 
 	Com_DPrintf( "Reading %d configstrings...\n",iCount);
 
@@ -706,8 +699,8 @@ void SG_ReadServerConfigStrings( void )
 		int iIndex;
 		char *psName;
 
-		SG_Read('CSIN', &iIndex, sizeof(iIndex));
-		SG_Read('CSDA', NULL, 0, (void **)&psName);
+		SG_Read(INT_ID('C','S','I','N'), &iIndex, sizeof(iIndex));
+		SG_Read(INT_ID('C','S','D','A'), NULL, 0, (void **)&psName);
 
 		Com_DPrintf( "Cfg str %d = %s\n",iIndex, psName);
 
@@ -717,9 +710,12 @@ void SG_ReadServerConfigStrings( void )
 	}
 }
 
+static unsigned int SG_UnixTimestamp ( const time_t& t )
+{
+	return static_cast<unsigned int>(t);
+}
 
-
-static void SG_WriteComment(qboolean qbAutosave, LPCSTR psMapName)
+static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 {
 	char	sComment[iSG_COMMENT_SIZE];
 
@@ -732,16 +728,19 @@ static void SG_WriteComment(qboolean qbAutosave, LPCSTR psMapName)
 		strcpy(sComment,saveGameComment);
 	}
 
-	SG_Append('COMM', sComment, sizeof(sComment));
+	SG_Append(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
 
 	// Add Date/Time/Map stamp
-	time_t now;
-	time(&now);
-	SG_Append('CMTM', &now, sizeof(time_t));
+	unsigned int timestamp = SG_UnixTimestamp (time (NULL));
+	SG_Append(INT_ID('C','M','T','M'), &timestamp, sizeof (timestamp));
 
 	Com_DPrintf("Saving: current (%s)\n", sComment);
 }
 
+static time_t SG_GetTime ( unsigned int timestamp )
+{
+	return static_cast<time_t>(timestamp);
+}
 
 // Test to see if the given file name is in the save game directory 
 // then grab the comment if it's there
@@ -759,11 +758,13 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 		return 0;
 	}							
 
-	if (SG_Read( 'COMM', sComment, iSG_COMMENT_SIZE ))
+	if (SG_Read( INT_ID('C','O','M','M'), sComment, iSG_COMMENT_SIZE ))
 	{	
-		if (SG_Read( 'CMTM', &tFileTime, sizeof( time_t )))	//read
-		{	
-			if (SG_Read('MPCM', sMapName, iSG_MAPCMD_SIZE ))	// read
+		unsigned int fileTime = 0;
+		if (SG_Read( INT_ID('C','M','T','M'), &fileTime, sizeof(fileTime)))	//read
+		{
+			tFileTime = SG_GetTime (fileTime);
+			if (SG_Read(INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE ))	// read
 			{
 				ret = tFileTime;
 			}
@@ -802,15 +803,12 @@ static char *SG_GetSaveGameMapName(const char *psPathlessBaseName)
 static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest = NULL);
 static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 {
-#ifdef _XBOX
-	return qfalse;
-#else
 	qboolean bReturn = qfalse;
 
 	// get JPG screenshot data length...
 	//
 	int iScreenShotLength = 0;
-	SG_Read('SHLN', &iScreenShotLength, sizeof(iScreenShotLength));
+	SG_Read(INT_ID('S','H','L','N'), &iScreenShotLength, sizeof(iScreenShotLength));
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
 	//
@@ -818,7 +816,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	//
 	// now read the JPG data...
 	//
-	SG_Read('SHOT', pJPGData, iScreenShotLength, 0);	
+	SG_Read(INT_ID('S','H','O','T'), pJPGData, iScreenShotLength, 0);	
 	//
 	// decompress JPG data...
 	//
@@ -888,8 +886,8 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 		return qfalse;
 	}
 	
-	SG_Read('COMM', NULL, 0, NULL);	// skip
-	SG_Read('CMTM', NULL, sizeof( time_t ));
+	SG_Read(INT_ID('C','O','M','M'), NULL, 0, NULL);	// skip
+	SG_Read(INT_ID('C','M','T','M'), NULL, sizeof( time_t ));
 
 	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
 
@@ -899,9 +897,8 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 }
 
 
-static void SG_WriteScreenshot(qboolean qbAutosave, LPCSTR psMapName)
+static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 {
-#ifndef _XBOX
 	byte *pbRawScreenShot = NULL;
 
 	if( qbAutosave )
@@ -923,11 +920,10 @@ static void SG_WriteScreenshot(qboolean qbAutosave, LPCSTR psMapName)
 
 	int iJPGDataSize = 0;
 	byte *pJPGData = Compress_JPG(&iJPGDataSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, qfalse);
-	SG_Append('SHLN', &iJPGDataSize, sizeof(iJPGDataSize));
-	SG_Append('SHOT', pJPGData, iJPGDataSize);
+	SG_Append(INT_ID('S','H','L','N'), &iJPGDataSize, sizeof(iJPGDataSize));
+	SG_Append(INT_ID('S','H','O','T'), pJPGData, iJPGDataSize);
 	Z_Free(pJPGData);
 	SCR_TempRawImage_CleanUp();
-#endif
 }
 */
 
@@ -976,8 +972,8 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 
 	// Write out server data...
 	//
-	LPCSTR psServerInfo = sv.configstrings[CS_SERVERINFO];
-	LPCSTR psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
+	const char *psServerInfo = sv.configstrings[CS_SERVERINFO];
+	const char *psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
 //JLF
 	if ( !strcmp("quick",psPathlessBaseName))
 	{
@@ -998,7 +994,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 
 	SG_WriteComment(qbAutosave, sMapCmd);
 //	SG_WriteScreenshot(qbAutosave, sMapCmd);
-	SG_Append('MPCM', sMapCmd, sizeof(sMapCmd));
+	SG_Append(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
 	SG_WriteCvars();
 
 	WriteGame (qbAutosave);
@@ -1007,8 +1003,8 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	//
 	if (!qbAutosave)
 	{
-		SG_Append('TIME', (void *)&sv.time, sizeof(sv.time));
-		SG_Append('TIMR', (void *)&sv.timeResidual, sizeof(sv.timeResidual));
+		SG_Append(INT_ID('T','I','M','E'), (void *)&sv.time, sizeof(sv.time));
+		SG_Append(INT_ID('T','I','M','R'), (void *)&sv.timeResidual, sizeof(sv.timeResidual));
 		CM_WritePortalState();
 		SG_WriteServerConfigStrings();		
 	}
@@ -1054,12 +1050,12 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 
 	// Read in all the server data...
 	//
-	SG_Read('COMM', sComment, sizeof(sComment));
+	SG_Read(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
 	Com_DPrintf("Reading: %s\n", sComment);
-	SG_Read( 'CMTM', NULL, sizeof( time_t ));
+	SG_Read( INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
 
 //	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
-	SG_Read('MPCM', sMapCmd, sizeof(sMapCmd));
+	SG_Read(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
 	SG_ReadCvars();
 
 	// read game state
@@ -1072,8 +1068,8 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	//
 	if (!qbAutosave)
 	{
-		SG_Read('TIME', (void *)&sv.time, sizeof(sv.time));
-		SG_Read('TIMR', (void *)&sv.timeResidual, sizeof(sv.timeResidual));
+		SG_Read(INT_ID('T','I','M','E'), (void *)&sv.time, sizeof(sv.time));
+		SG_Read(INT_ID('T','I','M','R'), (void *)&sv.timeResidual, sizeof(sv.timeResidual));
 		CM_ReadPortalState();
 		SG_ReadServerConfigStrings();		
 	}
@@ -1107,7 +1103,7 @@ int Compress_RLE(const byte *pIn, int iLength, byte *pOut)
 
 		if (iIndex-iCount == 1) 
 		{
-			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || iIndex>1 && pIn[iIndex]!=pIn[iIndex-2])){
+			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || (iIndex>1 && pIn[iIndex]!=pIn[iIndex-2]))){
 				iIndex++;
 			}
 			while (iIndex<iLength && pIn[iIndex]==pIn[iIndex-1]){
@@ -1256,16 +1252,16 @@ int SG_Write(const void * chid, const int bytesize, fileHandle_t fhSaveGame)
 
 
 
-qboolean SG_Append(unsigned long chid, const void *pvData, int iLength)
+qboolean SG_Append(unsigned int chid, const void *pvData, int iLength)
 {	
 	unsigned int	uiCksum;
 	unsigned int	uiSaved;
 	
 #ifdef _DEBUG
 	int				i;
-	unsigned long	*pTest;
+	unsigned int	*pTest;
 
-	pTest = (unsigned long *) pvData;
+	pTest = (unsigned int *) pvData;
 	for (i=0; i<iLength/4; i++, pTest++)
 	{
 		assert(*pTest != 0xfeeefeee);
@@ -1364,11 +1360,11 @@ int SG_Seek( fileHandle_t fhSaveGame, long offset, int origin )
 //
 // function doesn't return if error (uses ERR_DROP), unless "qbSGReadIsTestOnly == qtrue", then NZ return = success
 //
-static int SG_Read_Actual(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr, qboolean bChunkIsOptional)
+static int SG_Read_Actual(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr, qboolean bChunkIsOptional)
 {
 	unsigned int	uiLoadedCksum, uiCksum;
 	unsigned int	uiLoadedLength;
-	unsigned long	ulLoadedChid;
+	unsigned int	ulLoadedChid;
 	unsigned int	uiLoaded;
 	char			sChidText1[MAX_QPATH];
 	char			sChidText2[MAX_QPATH];
@@ -1520,12 +1516,12 @@ static int SG_Read_Actual(unsigned long chid, void *pvAddress, int iLength, void
 	return iLength;
 }
 
-int SG_Read(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
+int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
 {
 	return SG_Read_Actual(chid, pvAddress, iLength, ppvAddressPtr, qfalse );	// qboolean bChunkIsOptional
 }
 
-int SG_ReadOptional(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
+int SG_ReadOptional(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
 {
 	return SG_Read_Actual(chid, pvAddress, iLength, ppvAddressPtr, qtrue);		// qboolean bChunkIsOptional
 }

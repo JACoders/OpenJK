@@ -1,6 +1,6 @@
+#pragma once
+
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
-#ifndef _QCOMMON_H_
-#define _QCOMMON_H_
 
 #include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
@@ -10,7 +10,7 @@
 //
 // msg.c
 //
-typedef struct {
+typedef struct msg_s {
 	qboolean	allowoverflow;	// if false, do a Com_Error
 	qboolean	overflowed;		// set to true if the buffer size failed (with allowoverflow set)
 	qboolean	oob;			// set to true if the buffer size failed (with allowoverflow set)
@@ -26,7 +26,6 @@ void MSG_InitOOB( msg_t *buf, byte *data, int length );
 void MSG_Clear (msg_t *buf);
 void MSG_WriteData (msg_t *buf, const void *data, int length);
 void MSG_Bitstream( msg_t *buf );
-
 
 struct usercmd_s;
 struct entityState_s;
@@ -60,15 +59,12 @@ float	MSG_ReadAngle16 (msg_t *sb);
 void	MSG_ReadData (msg_t *sb, void *buffer, int size);
 
 
-void MSG_WriteDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
-void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s *to );
-
 void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
 void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to );
 
 void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
 						   , qboolean force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 						 int number );
 
 #ifdef _ONEBIT_COMBO
@@ -91,11 +87,15 @@ NET
 ==============================================================
 */
 
+#define NET_ENABLEV4		0x01
+
 #define	PACKET_BACKUP	32	// number of old messages that must be kept on client and
 							// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
 #define	MAX_PACKET_USERCMDS		32		// max number of usercmd_t in a packet
+
+#define	MAX_SNAPSHOT_ENTITIES	256
 
 #define	PORT_ANY			-1
 
@@ -106,9 +106,7 @@ typedef enum {
 	NA_BOT,
 	NA_LOOPBACK,
 	NA_BROADCAST,
-	NA_IP,
-	NA_IPX,
-	NA_BROADCAST_IPX
+	NA_IP
 } netadrtype_t;
 
 typedef enum {
@@ -116,18 +114,17 @@ typedef enum {
 	NS_SERVER
 } netsrc_t;
 
-typedef struct {
+typedef struct netadr_s {
 	netadrtype_t	type;
 
 	byte	ip[4];
-	byte	ipx[10];
 
 	unsigned short	port;
 } netadr_t;
 
 void		NET_Init( void );
 void		NET_Shutdown( void );
-void		NET_Restart( void );
+void		NET_Restart_f( void );
 void		NET_Config( qboolean enableNetworking );
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
@@ -150,13 +147,13 @@ void		NET_Sleep(int msec);
 
 #define MAX_DOWNLOAD_WINDOW			8		// max of eight download frames
 #define MAX_DOWNLOAD_BLKSIZE		2048	// 2048 byte block chunks
- 
+
 
 /*
 Netchan handles packet fragmentation and out of order / duplicate suppression
 */
 
-typedef struct {
+typedef struct netchan_s {
 	netsrc_t	sock;
 
 	int			dropped;			// between last packet and previous
@@ -170,7 +167,7 @@ typedef struct {
 
 	// incoming fragment assembly buffer
 	int			fragmentSequence;
-	int			fragmentLength;	
+	int			fragmentLength;
 	byte		fragmentBuffer[MAX_MSGLEN];
 
 	// outgoing fragment buffer
@@ -208,7 +205,6 @@ PROTOCOL
 
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
-//#define	PORT_AUTHORIZE		29062
 #define	PORT_SERVER			29070	//...+9 more for multiple servers
 #define	NUM_SERVER_PORTS	4		// broadcast scan this many ports after PORT_SERVER so a single machine can run multiple servers
 
@@ -236,7 +232,7 @@ enum svc_ops_e {
 //
 enum clc_ops_e {
 	clc_bad,
-	clc_nop, 		
+	clc_nop,
 	clc_move,				// [[usercmd_t]
 	clc_moveNoDelta,		// [[usercmd_t]
 	clc_clientCommand,		// [string] message
@@ -251,13 +247,32 @@ VIRTUAL MACHINE
 ==============================================================
 */
 
-typedef struct vm_s vm_t;
+typedef enum vmSlots_e {
+	VM_GAME=0,
+	VM_CGAME,
+	VM_UI,
+	MAX_VM
+} vmSlots_t;
 
-typedef enum {
-	VMI_NATIVE,
-	VMI_BYTECODE,
-	VMI_COMPILED
-} vmInterpret_t;
+typedef struct vm_s {
+	vmSlots_t	slot; // VM_GAME, VM_CGAME, VM_UI
+    char		name[MAX_QPATH];
+	void		*dllHandle;
+	qboolean	isLegacy; // uses the legacy syscall/vm_call api, is set by VM_CreateLegacy
+
+	// fill the import/export tables
+	void *		(*GetModuleAPI)( int apiVersion, ... );
+
+	// legacy stuff
+	struct {
+		intptr_t	(QDECL *main)( int callNum, ... );		// module vmMain
+		intptr_t	(QDECL *syscall)( intptr_t *parms );	// engine syscall handler
+	} legacy;
+} vm_t;
+
+extern vm_t *currentVM;
+
+extern const char *vmStrs[MAX_VM];
 
 typedef enum {
 	TRAP_MEMSET = 100,
@@ -280,24 +295,21 @@ typedef enum {
 	TRAP_ASIN
 } sharedTraps_t;
 
-void	VM_Init( void );
-vm_t	*VM_Create( const char *module, int (*systemCalls)(int *), 
-				   vmInterpret_t interpret );
-// module should be bare: "cgame", not "cgame.dll" or "vm/cgame.qvm"
+void			VM_Init( void );
+vm_t			*VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) );
+vm_t			*VM_Create( vmSlots_t vmSlot );
+void			 VM_Free( vm_t *vm );
+void			 VM_Clear(void);
+vm_t			*VM_Restart( vm_t *vm );
+intptr_t QDECL	 VM_Call( vm_t *vm, int callNum, ... );
+void			 VM_Shifted_Alloc( void **ptr, int size );
+void			 VM_Shifted_Free( void **ptr );
+void			*VM_ArgPtr( intptr_t intValue );
+void			*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
+float			_vmf( intptr_t x );
 
-void	VM_Free( vm_t *vm );
-void	VM_Clear(void);
-vm_t	*VM_Restart( vm_t *vm );
-
-int		QDECL VM_Call( vm_t *vm, int callNum, ... );
-
-void	VM_Debug( int level );
-
-void	VM_Shifted_Alloc(void **ptr, int size);
-void	VM_Shifted_Free(void **ptr);
-
-void	*VM_ArgPtr( int intValue );
-void	*VM_ExplicitArgPtr( vm_t *vm, int intValue );
+#define	VMA(x) VM_ArgPtr( args[x] )
+#define	VMF(x) _vmf( args[x] )
 
 /*
 ==============================================================
@@ -343,6 +355,8 @@ then searches for a command or variable that matches the first token.
 
 typedef void (*xcommand_t) (void);
 
+typedef void ( *callbackFunc_t )( const char *s );
+
 void	Cmd_Init (void);
 
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
@@ -353,9 +367,14 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 // as a clc_clientCommand instead of executed locally
 
 void	Cmd_RemoveCommand( const char *cmd_name );
+void	Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot );
+typedef void (*completionFunc_t)( char *args, int argNum );
 
-void	Cmd_CommandCompletion( void(*callback)(const char *s) );
+void	Cmd_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
+void Cmd_SetCommandCompletionFunc( const char *command, completionFunc_t complete );
+void Cmd_CompleteArgument( const char *command, char *args, int argNum );
+void Cmd_CompleteCfgName( char *args, int argNum );
 
 int		Cmd_Argc (void);
 char	*Cmd_Argv (int arg);
@@ -363,6 +382,7 @@ void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Args (void);
 char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
+void	Cmd_ArgsFromBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Cmd (void);
 void	Cmd_Args_Sanitize( void );
 // The functions that execute commands get their parameters with these
@@ -406,41 +426,38 @@ modules of the program.
 
 */
 
-cvar_t *Cvar_Get( const char *var_name, const char *value, int flags );
+cvar_t *Cvar_Get( const char *var_name, const char *value, uint32_t flags );
 // creates the variable if it doesn't exist, or returns the existing one
 // if it exists, the value will not be changed, but flags will be ORed in
 // that allows variables to be unarchived without needing bitflags
 // if value is "", the value will not override a previously set value.
 
-void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
+void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, uint32_t flags );
 // basically a slightly modified Cvar_Get for the interpreted modules
 
 void	Cvar_Update( vmCvar_t *vmCvar );
 // updates an interpreted modules' version of a cvar
 
-void 	Cvar_Set( const char *var_name, const char *value );
+cvar_t	*Cvar_Set2(const char *var_name, const char *value, uint32_t defaultFlags, qboolean force);
+//
+
+cvar_t	*Cvar_Set( const char *var_name, const char *value );
 // will create the variable with no flags if it doesn't exist
 
-cvar_t	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
-// same as Cvar_Set, but allows more control over setting of cvar
+cvar_t	*Cvar_SetSafe( const char *var_name, const char *value );
+// same as Cvar_Set, but doesn't force setting the value (respects CVAR_ROM, etc)
 
-void	Cvar_SetSafe( const char *var_name, const char *value );
+cvar_t	*Cvar_User_Set( const char *var_name, const char *value );
+// same as Cvar_SetSafe, but defaults to CVAR_USER_CREATED
+
+void	Cvar_Server_Set( const char *var_name, const char *value );
+void	Cvar_VM_Set( const char *var_name, const char *value, vmSlots_t vmslot );
 // sometimes we set variables from an untrusted source: fail if flags & CVAR_PROTECTED
 
-cvar_t	*Cvar_Set2Safe( const char *var_name, const char *value, qboolean force );
-// same as Cvar_Set, but allows more control over setting of cvar
-// sometimes we set variables from an untrusted source: fail if flags & CVAR_PROTECTED
-
-void Cvar_SetLatched( const char *var_name, const char *value);
-// don't set the cvar immediately
-
-void	Cvar_SetValue( const char *var_name, float value );
-void	Cvar_SetValueSafe( const char *var_name, float value );
-// expands value to a string and calls Cvar_Set/Cvar_SetSafe
-
-void Cvar_SetValue2( const char *var_name, float value, qboolean force );
-void Cvar_SetValue2Safe( const char *var_name, float value, qboolean force );
-// expands value to a string and calls Cvar_Set2/Cvar_Set2Safe
+cvar_t	*Cvar_SetValue( const char *var_name, float value );
+void	Cvar_User_SetValue( const char *var_name, float value );
+void	Cvar_VM_SetValue( const char *var_name, float value, vmSlots_t vmslot );
+// expands value to a string and calls Cvar_Set/Cvar_User_Set/Cvar_VM_Set
 
 float	Cvar_VariableValue( const char *var_name );
 int		Cvar_VariableIntegerValue( const char *var_name );
@@ -450,10 +467,10 @@ char	*Cvar_VariableString( const char *var_name );
 void	Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
 // returns an empty string if not defined
 
-int	Cvar_Flags(const char *var_name);
+uint32_t	Cvar_Flags(const char *var_name);
 // returns CVAR_NONEXISTENT if cvar doesn't exist or the flags of that particular CVAR.
 
-void	Cvar_CommandCompletion( void(*callback)(const char *s) );
+void	Cvar_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
 
 void 	Cvar_Reset( const char *var_name );
@@ -478,11 +495,14 @@ char	*Cvar_InfoString_Big( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
+void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
 
-extern	int			cvar_modifiedFlags;
+void Cvar_CompleteCvarName( char *args, int argNum );
+
+extern uint32_t cvar_modifiedFlags;
 // whenever a cvar is modifed, its flags will be OR'd into this, so
 // a single check can determine if any CVAR_USERINFO, CVAR_SERVERINFO,
 // etc, variables have been modified since the last check.  The bit
@@ -504,7 +524,7 @@ issues.
 #define FS_GENERAL_REF	0x01
 #define FS_UI_REF		0x02
 #define FS_CGAME_REF	0x04
-#define FS_QAGAME_REF	0x08
+#define FS_GAME_REF		0x08
 // number of id paks that will never be autodownloaded from base
 #define NUM_ID_PAKS		9
 
@@ -533,21 +553,30 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 void	FS_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
+void FS_Remove( const char *osPath );
+void FS_HomeRemove( const char *homePath );
+
+void FS_Rmdir( const char *osPath, qboolean recursive );
+void FS_HomeRmdir( const char *homePath, qboolean recursive );
+
 qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();
 
+char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+qboolean FS_CompareZipChecksum(const char *zipfile);
+
 int		FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 int		FS_GetModList(  char *listbuf, int bufsize );
 
-fileHandle_t	FS_FOpenFileWrite( const char *qpath );
+fileHandle_t	FS_FOpenFileWrite( const char *qpath, qboolean safe=qtrue );
 // will properly create any needed paths and deal with seperater character issues
 
 int		FS_filelength( fileHandle_t f );
 fileHandle_t FS_SV_FOpenFileWrite( const char *filename );
 int		FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
-void	FS_SV_Rename( const char *from, const char *to );
-int		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+void	FS_SV_Rename( const char *from, const char *to, qboolean safe );
+long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
 // if uniqueFILE is true, then a new FILE will be fopened even if the file
 // is found in an already open pak file.  If uniqueFILE is false, you must call
 // FS_FCloseFile instead of fclose, otherwise the pak FILE would be improperly closed
@@ -557,16 +586,17 @@ int		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFIL
 int		FS_FileIsInPAK(const char *filename, int *pChecksum );
 // returns 1 if a file is in the PAK file, otherwise -1
 
+qboolean FS_FindPureDLL(const char *name);
+
 int		FS_Write( const void *buffer, int len, fileHandle_t f );
 
-int		FS_Read2( void *buffer, int len, fileHandle_t f );
 int		FS_Read( void *buffer, int len, fileHandle_t f );
 // properly handles partial reads and reads from other dlls
 
 void	FS_FCloseFile( fileHandle_t f );
 // note: you can't just fclose from another DLL, due to MS libc issues
 
-int		FS_ReadFile( const char *qpath, void **buffer );
+long		FS_ReadFile( const char *qpath, void **buffer );
 // returns the length of the file
 // a null buffer will just return the file length without loading
 // as a quick check for existance. -1 length == not present
@@ -591,6 +621,14 @@ int		FS_FTell( fileHandle_t f );
 
 void	FS_Flush( fileHandle_t f );
 
+void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+
+const char *FS_GetCurrentGameDir(bool emptybase=false);
+
+#ifdef MACOS_X
+bool FS_LoadMachOBundle( const char *name );
+#endif
+
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
 
@@ -598,12 +636,9 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
 // opens a file for reading, writing, or appending depending on the value of mode
 
 int		FS_Seek( fileHandle_t f, long offset, int origin );
-// seek on a file (doesn't work for zip files!!!!!!!!)
+// seek on a file
 
 qboolean FS_FilenameCompare( const char *s1, const char *s2 );
-
-const char *FS_GamePureChecksum( void );
-// Returns the checksum of the pk3 from which the server loaded the qagame.qvm
 
 const char *FS_LoadedPakNames( void );
 const char *FS_LoadedPakChecksums( void );
@@ -614,9 +649,9 @@ const char *FS_LoadedPakPureChecksums( void );
 const char *FS_ReferencedPakNames( void );
 const char *FS_ReferencedPakChecksums( void );
 const char *FS_ReferencedPakPureChecksums( void );
-// Returns a space separated string containing the checksums of all loaded 
-// AND referenced pk3 files. Servers with sv_pure set will get this string 
-// back from clients for pure validation 
+// Returns a space separated string containing the checksums of all loaded
+// AND referenced pk3 files. Servers with sv_pure set will get this string
+// back from clients for pure validation
 
 void FS_ClearPakReferences( int flags );
 // clears referenced booleans on loaded pk3s
@@ -632,6 +667,32 @@ qboolean FS_CheckDirTraversal(const char *checkdir);
 qboolean FS_idPak( char *pak, char *base );
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
+
+
+/*
+==============================================================
+
+Edit fields and command line history/completion
+
+==============================================================
+*/
+
+#define CONSOLE_PROMPT_CHAR ']'
+#define	MAX_EDIT_LINE		256
+#define COMMAND_HISTORY		32
+
+typedef struct field_s {
+	int		cursor;
+	int		scroll;
+	int		widthInChars;
+	char	buffer[MAX_EDIT_LINE];
+} field_t;
+
+void Field_Clear( field_t *edit );
+void Field_AutoComplete( field_t *edit );
+void Field_CompleteKeyname( void );
+void Field_CompleteFilename( const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk );
+void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars );
 
 /*
 ==============================================================
@@ -652,13 +713,13 @@ void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
 void		QDECL Com_OPrintf( const char *fmt, ...); // Outputs to the VC / Windows Debug window (only in debug compile)
-void 		QDECL Com_Error( int code, const char *fmt, ... );
+void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
 void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
-unsigned	Com_BlockChecksumKey (void *buffer, int length, int key);
-int			Com_HashKey(char *string, int maxlen);
+char		*Com_MD5File(const char *filename, int length, const char *prefix, int prefix_len);
+int      Com_HashKey(char *string, int maxlen);
 int			Com_Filter(char *filter, char *name, int casesensitive);
 int			Com_FilterPath(char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_t *qtime);
@@ -671,7 +732,6 @@ void		Com_StartupVariable( const char *match );
 
 
 extern	cvar_t	*com_developer;
-extern	cvar_t	*com_vmdebug;
 extern	cvar_t	*com_dedicated;
 extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
@@ -679,10 +739,12 @@ extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
 extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
-extern	cvar_t	*com_blood;
 extern	cvar_t	*com_buildScript;		// for building release pak files
 extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
+extern	cvar_t	*com_unfocused;
+extern	cvar_t	*com_minimized;
+extern	cvar_t	*com_homepath;
 
 extern	cvar_t	*com_optvehtrace;
 
@@ -780,6 +842,7 @@ void  Z_TagFree	( memtag_t eTag );
 void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
 void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 void Com_InitHunkMemory(void);
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
@@ -851,7 +914,7 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_ShutdownAll( void );
+void CL_ShutdownAll( qboolean shutdownRef );
 // shutdown all the client stuff
 
 void CL_FlushMemory( void );
@@ -860,6 +923,12 @@ void CL_FlushMemory( void );
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
 
+qboolean CL_ConnectedToServer( void );
+// returns qtrue if connected to a server
+
+void Key_KeynameCompletion ( void(*callback)( const char *s ) );
+// for keyname autocompletion
+
 void Key_WriteBindings( fileHandle_t f );
 // for writing the config files
 
@@ -867,6 +936,9 @@ void S_ClearSoundBuffer( void );
 // call before filesystem access
 
 void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
+
+// AVI files have the start of pixel lines 4 byte-aligned
+#define AVI_LINE_PADDING 4
 
 
 //
@@ -913,7 +985,7 @@ typedef enum {
 	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
 } sysEventType_t;
 
-typedef struct {
+typedef struct sysEvent_s {
 	int				evTime;
 	sysEventType_t	evType;
 	int				evValue, evValue2;
@@ -925,27 +997,23 @@ sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
 
+#ifdef _WIN32
+	#include <windows.h>
+	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
+	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
+	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
+	#define Sys_LibraryError() "unknown"
+#endif // linux and mac use SDL in SDL_loadlibrary.h
+
 // general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
-				  int (QDECL *systemcalls)(int, ...) );
+void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void	* QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
+void	* QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) );
 void	Sys_UnloadDll( void *dllHandle );
-
-void	Sys_UnloadGame( void );
-void	*Sys_GetGameAPI( void *parms );
-
-void	Sys_UnloadCGame( void );
-void	*Sys_GetCGameAPI( void );
-
-void	Sys_UnloadUI( void );
-void	*Sys_GetUIAPI( void );
-
-//bot libraries
-void	Sys_UnloadBotLib( void );
-void	*Sys_GetBotLibAPI( void *parms );
 
 char	*Sys_GetCurrentUser( void );
 
-void	QDECL Sys_Error( const char *error, ...);
+void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
 void	Sys_Quit (void);
 char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
 
@@ -954,21 +1022,15 @@ void	Sys_Print( const char *msg );
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
+int		Sys_Milliseconds2(void);
+void 	Sys_SetEnv(const char *name, const char *value);
 
-#ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
 
-#else
-void	Sys_SnapVector( float *v );
-#endif
+qboolean Sys_RandomBytes( byte *string, int len );
 
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
-
-void	Sys_BeginStreamedFile( fileHandle_t f, int readahead );
-void	Sys_EndStreamedFile( fileHandle_t f );
-int		Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f );
-void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
 
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
@@ -983,13 +1045,18 @@ void		Sys_ShowIP(void);
 
 qboolean	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
-void	Sys_SetDefaultCDPath(const char *path);
-char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-void     Sys_SetDefaultHomePath(const char *path);
+
+#ifdef MACOS_X
+char    *Sys_DefaultAppPath(void);
+#endif
+
 char	*Sys_DefaultHomePath(void);
-char	*Sys_DefaultBasePath(void);
+const char *Sys_Dirname( char *path );
+const char *Sys_Basename( char *path );
+
+bool Sys_PathCmp( const char *path1, const char *path2 );
 
 char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **fileList );
@@ -1009,7 +1076,7 @@ unsigned int Sys_ProcessorCount();
 #define INTERNAL_NODE (HMAX+1)
 
 typedef struct nodetype {
-	struct	nodetype *left, *right, *parent; /* tree structure */ 
+	struct	nodetype *left, *right, *parent; /* tree structure */
 	struct	nodetype *next, *prev; /* doubly-linked list */
 	struct	nodetype **head; /* highest ranked node in block */
 	int		weight;
@@ -1018,7 +1085,7 @@ typedef struct nodetype {
 
 #define HMAX 256 /* Maximum symbol */
 
-typedef struct {
+typedef struct huff_s {
 	int			blocNode;
 	int			blocPtrs;
 
@@ -1032,7 +1099,7 @@ typedef struct {
 	node_t*		nodePtrs[768];
 } huff_t;
 
-typedef struct {
+typedef struct huffman_s {
 	huff_t		compressor;
 	huff_t		decompressor;
 } huffman_t;
@@ -1059,4 +1126,7 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
-#endif // _QCOMMON_H_
+
+// Persistent data store API
+bool PD_Store ( const char *name, const void *data, size_t size );
+const void *PD_Load ( const char *name, size_t *size );

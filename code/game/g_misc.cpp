@@ -18,18 +18,16 @@ This file is part of Jedi Academy.
 
 // g_misc.c
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "g_nav.h"
 #include "g_items.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern gentity_t *G_FindDoorTrigger( gentity_t *door );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
-extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, char *material, int solid_mask,int animFlag, 
+extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag, 
 									qboolean take_damage, qboolean damage_model);
 
 #define MAX_AMMO_GIVE 4
@@ -655,18 +653,15 @@ numPatches - integer number of patches to split the terrain brush into (default 
 terxels - integer number of terxels on a patch side (default 4) (2 <= count <= 8)
 seed - integer seed for random terrain generation (default 0)
 textureScale - float scale of texture (default 0.005)
-heightmap - name of heightmap data image to use, located in heightmaps/*.png. (must be PNG format)
-terrainDef - defines how the game textures the terrain (file is base/ext_data/rmg/*.terrain - default is grassyhills)
+heightmap - name of heightmap data image to use, located in heightmaps/xxx.png. (must be PNG format)
+terrainDef - defines how the game textures the terrain (file is base/ext_data/rmg/xxx.terrain - default is grassyhills)
 instanceDef - defines which bsp instances appear
-miscentDef - defines which client models spawn on the terrain (file is base/ext_data/rmg/*.miscents)
+miscentDef - defines which client models spawn on the terrain (file is base/ext_data/rmg/xxx.miscents)
 densityMap - how dense the client models are packed
 
 */
 void SP_terrain(gentity_t *ent) 
 {
-#ifdef _XBOX
-	assert(0);
-#else
 	char				temp[MAX_INFO_STRING];
 	char				final[MAX_QPATH];
 //	char				seed[MAX_QPATH];
@@ -787,7 +782,6 @@ void SP_terrain(gentity_t *ent)
 		gi.RMG_Init(terrainID);
 	}
 */
-#endif	// _XBOX
 }
 
 //rww - Called by skyportal entities. This will check through entities and flag them
@@ -1059,47 +1053,7 @@ void SP_misc_camera( gentity_t *self )
 
 void Use_Shooter( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
-/*	vec3_t		dir;
-	float		deg;
-	vec3_t		up, right;
-*/
 	G_ActivateBehavior(ent,BSET_USE);
-/*
-	// see if we have a target
-	if ( ent->enemy ) {
-		VectorSubtract( ent->enemy->currentOrigin, ent->s.origin, dir );
-		VectorNormalize( dir );
-	} else {
-		VectorCopy( ent->movedir, dir );
-	}
-
-	// randomize a bit
-	PerpendicularVector( up, dir );
-	CrossProduct( up, dir, right );
-
-	deg = crandom() * ent->random;
-	VectorMA( dir, deg, up, dir );
-
-	deg = crandom() * ent->random;
-	VectorMA( dir, deg, right, dir );
-
-	VectorNormalize( dir );
-
-	switch ( ent->s.weapon ) 
-	{
-	case WP_GRENADE_LAUNCHER:
-		fire_grenade( ent, ent->s.origin, dir );
-		break;
-	case WP_ROCKET_LAUNCHER:
-		fire_rocket( ent, ent->s.origin, dir );
-		break;
-	case WP_PLASMAGUN:
-		fire_plasma( ent, ent->s.origin, dir );
-		break;
-	}
-
-	G_AddEvent( ent, EV_FIRE_WEAPON, 0 );
-*/
 }
 
 void InitShooter( gentity_t *ent, int weapon ) {
@@ -2276,7 +2230,7 @@ USETARGET - when used it fires off target
 //------------------------------------------------------------
 void SP_misc_model_shield_power_converter( gentity_t *ent )
 {
-	SetMiscModelDefaults( ent, useF_shield_power_converter_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_shield_power_converter_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2332,7 +2286,7 @@ void SP_misc_model_bomb_planted( gentity_t *ent )
 	VectorSet( ent->mins, -16, -16, 0 );
 	VectorSet( ent->maxs, 16, 16, 70 );
 
-	SetMiscModelDefaults( ent, useF_bomb_planted_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_bomb_planted_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2426,7 +2380,7 @@ void SP_misc_model_beacon( gentity_t *ent )
 	VectorSet( ent->mins, -16, -16, 0 );
 	VectorSet( ent->maxs, 16, 16, 24 );
 
-	SetMiscModelDefaults( ent, useF_beacon_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_beacon_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2477,7 +2431,7 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	VectorSet( ent->mins, -16, -16, 0 );
 	VectorSet( ent->maxs, 16, 16, 32 );
 
-	SetMiscModelDefaults( ent, useF_shield_power_converter_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_shield_power_converter_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2654,7 +2608,7 @@ USETARGET - when used it fires off target
 //------------------------------------------------------------
 void SP_misc_model_ammo_power_converter( gentity_t *ent )
 {
-	SetMiscModelDefaults( ent, useF_ammo_power_converter_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_ammo_power_converter_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2686,7 +2640,7 @@ void SP_misc_ammo_floor_unit( gentity_t *ent )
 	VectorSet( ent->mins, -16, -16, 0 );
 	VectorSet( ent->maxs, 16, 16, 32 );
 
-	SetMiscModelDefaults( ent, useF_ammo_power_converter_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_ammo_power_converter_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 
@@ -2776,7 +2730,7 @@ void SP_misc_model_welder( gentity_t *ent )
 	VectorSet( ent->mins, 336, -16, 0 );
 	VectorSet( ent->maxs, 368, 16, 32 );
 
-	SetMiscModelDefaults( ent, useF_welder_use, "4", CONTENTS_SOLID, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_welder_use, "4", CONTENTS_SOLID, 0, qfalse, qfalse );
 
 	ent->takedamage = qfalse;
 	ent->contents = 0;
@@ -2785,7 +2739,7 @@ void SP_misc_model_welder( gentity_t *ent )
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/cairn/welder.glm" );
 //	ent->s.modelindex2 = G_ModelIndex( "models/map_objects/cairn/welder.md3" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->s.radius = 400.0f;// the origin of the welder is offset by approximately 352, so we need the big radius
 
 	ent->e_ThinkFunc = thinkF_welder_think;
@@ -2836,11 +2790,11 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 	VectorSet( ent->mins, -60.0f, -8.0f, 0.0f );
 	VectorSet( ent->maxs, 60.0f, 8.0f, 16.0f );
 		
-	SetMiscModelDefaults( ent, useF_jabba_cam_use, "4", 0, NULL, qfalse, NULL );
+	SetMiscModelDefaults( ent, useF_jabba_cam_use, "4", 0, 0, qfalse, qfalse );
 	G_SetAngles( ent, ent->s.angles );
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/jabacam/jabacam.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->s.radius = 150.0f;  //......
 	VectorSet( ent->s.modelScale, 1.0f, 1.0f, 1.0f );
 
@@ -3238,7 +3192,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 
 	ent->s.modelindex = G_ModelIndex( "models/players/atst/model.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
 	ent->craniumBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cranium", qtrue );	//FIXME: need to somehow set the anim/frame to the equivalent of BOTH_STAND1...  use to be that BOTH_STAND1 was the first frame of the glm, but not anymore
 	ent->s.radius = 320;
@@ -3257,7 +3211,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	G_SoundIndex( "sound/chars/atst/atst_hatch_close" );
 
 	NPC_ATST_Precache();
-	ent->NPC_type = "atst";
+	ent->NPC_type = (char *)"atst";
 	NPC_PrecacheAnimationCFG( ent->NPC_type );
 	//open the hatch
 	misc_atst_setanim( ent, ent->rootBone, BOTH_STAND2 );

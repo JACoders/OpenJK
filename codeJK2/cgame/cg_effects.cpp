@@ -18,10 +18,7 @@ This file is part of Jedi Knight 2.
 
 // cg_effects.c -- these functions generate localentities
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
@@ -516,6 +513,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 				{
 					chunkModel = cgs.media.chunkModels[CHUNK_METAL2][Q_irand(0, 3)];
 				}
+				break;
+			default:
 				break;
 			}
 		}

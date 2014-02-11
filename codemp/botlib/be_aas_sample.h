@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_sample.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_sample.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -49,4 +50,3 @@ int AAS_PointAreaNum(vec3_t point);
 int AAS_PointReachabilityAreaIndex( vec3_t point );
 //returns the plane the given face is in
 void AAS_FacePlane(int facenum, vec3_t normal, float *dist);
-

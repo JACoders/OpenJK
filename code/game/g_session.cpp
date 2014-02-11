@@ -16,10 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "objectives.h"
 
@@ -119,7 +115,8 @@ void G_ReadSessionData( gclient_t *client ) {
 	var = va( "session%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i", &client->sess.sessionTeam );
+	sscanf( s, "%i", &i );
+	client->sess.sessionTeam = (team_t)i;
 
 	var = va( "sessionobj%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );

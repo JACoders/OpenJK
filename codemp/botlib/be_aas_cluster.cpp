@@ -5,7 +5,7 @@
  * desc:		area clustering
  *
  * $Archive: /MissionPack/code/botlib/be_aas_cluster.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 10 $
  * $Modtime: 4/21/01 9:15a $
  * $Date: 4/21/01 9:15a $
@@ -478,7 +478,7 @@ int AAS_NonConvexFaces(aas_face_t *face1, aas_face_t *face2, int side1, int side
 	int i, j, edgenum;
 	aas_plane_t *plane1, *plane2;
 	aas_edge_t *edge;
-	
+
 
 	plane1 = &aasworld.planes[face1->planenum ^ side1];
 	plane2 = &aasworld.planes[face2->planenum ^ side2];

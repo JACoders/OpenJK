@@ -24,7 +24,7 @@ This file is part of Jedi Academy.
 #include "g_local.h"
 #include "say.h"
 
-#include "AI.h"
+#include "ai.h"
 
 #define	AI_TIMERS 0//turn on to see print-outs of AI/nav timing
 //
@@ -195,9 +195,6 @@ extern qboolean InFOV( vec3_t origin, gentity_t *from, int hFOV, int vFOV );
 extern qboolean InFOV( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, int vFOV );
 extern visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags );
 extern qboolean InVisrange ( gentity_t *ent );
-
-//NPC_sounds
-//extern void NPC_AngerSound(void);
 
 //NPC_spawn
 extern void NPC_Spawn( gentity_t *self );

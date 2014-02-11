@@ -5,7 +5,7 @@
  *
  * RM_Instance_Void.cpp
  *
- * Implements the CRMVoidInstance class.  This class just adds a void into the 
+ * Implements the CRMVoidInstance class.  This class just adds a void into the
  * area manager to help space things out.
  *
  ************************************************************************************************/
@@ -16,7 +16,7 @@
 
 /************************************************************************************************
  * CRMVoidInstance::CRMVoidInstance
- *	constructs a void instance 
+ *	constructs a void instance
  *
  * inputs:
  *  instGroup:  parser group containing infromation about this instance
@@ -26,7 +26,7 @@
  *	none
  *
  ************************************************************************************************/
-CRMVoidInstance::CRMVoidInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile ) 
+CRMVoidInstance::CRMVoidInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile )
 	: CRMInstance ( instGroup, instFile )
 {
 	mSpacingRadius = atof( instGroup->FindPairValue ( "spacing", "0" ) );
@@ -35,7 +35,7 @@ CRMVoidInstance::CRMVoidInstance ( CGPGroup *instGroup, CRMInstanceFile& instFil
 
 /************************************************************************************************
  * CRMVoidInstance::SetArea
- *	Overidden to make sure the void area doesnt continually.  
+ *	Overidden to make sure the void area doesnt continually.
  *
  * inputs:
  *  area: area to set

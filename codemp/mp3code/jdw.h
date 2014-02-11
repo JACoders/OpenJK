@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
 	Copyright (C) 1998 EMusic.com
@@ -17,7 +17,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: jdw.h,v 1.2 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 

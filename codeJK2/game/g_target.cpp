@@ -949,7 +949,7 @@ void SP_target_level_change( gentity_t *self )
 {
 	if ( !self->message )
 	{
-		G_Error( "target_level_change with no mapname!\n");
+		G_Error( "target_level_change with no mapname!");
 		return;
 	}
 	G_SetOrigin( self, self->s.origin );
@@ -1051,11 +1051,11 @@ extern	cvar_t	*com_buildScript;
 void target_autosave_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(self,BSET_USE);
-	//gi.SendServerCommand( NULL, "cp @INGAME_CHECKPOINT" );
+	//gi.SendServerCommand( 0, "cp @INGAME_CHECKPOINT" );
 	CG_CenterPrint( "@INGAME_CHECKPOINT", SCREEN_HEIGHT * 0.25 );	//jump the network
 
 //	if (self->spawnflags & 1)
-		gi.SendConsoleCommand( "wait 2;save auto*\n" );
+		gi.SendConsoleCommand( "wait 2;save auto\n" );
 }
 
 /*QUAKED target_autosave (1 0 0) (-4 -4 -4) (4 4 4)
@@ -1081,7 +1081,7 @@ void target_secret_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 	{
 		G_Sound( self, self->noise_index );
 	}
-	gi.SendServerCommand( NULL, "cp @INGAME_SECRET_AREA" );
+	gi.SendServerCommand( 0, "cp @INGAME_SECRET_AREA" );
 	assert(client->sess.missionStats.totalSecrets);
 }
 

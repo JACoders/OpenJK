@@ -17,7 +17,7 @@ void FX_FlechetteProjectileThink( centity_t *cent, const struct weaponInfo_s *we
 		forward[2] = 1.0f;
 	}
 
-	trap_FX_PlayEffectID( cgs.effects.flechetteShotEffect, cent->lerpOrigin, forward, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.flechetteShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }
 
 /*
@@ -27,7 +27,7 @@ FX_FlechetteWeaponHitWall
 */
 void FX_FlechetteWeaponHitWall( vec3_t origin, vec3_t normal )
 {
-	trap_FX_PlayEffectID( cgs.effects.flechetteWallImpactEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.flechetteWallImpactEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -39,11 +39,11 @@ void FX_FlechetteWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoi
 {
 //	if ( humanoid )
 //	{
-		trap_FX_PlayEffectID( cgs.effects.flechetteFleshImpactEffect, origin, normal, -1, -1 );
+		trap->FX_PlayEffectID( cgs.effects.flechetteFleshImpactEffect, origin, normal, -1, -1, qfalse );
 //	}
 //	else
 //	{
-//		trap_FX_PlayEffect( "blaster/droid_impact", origin, normal );
+//		trap->FX_PlayEffect( "blaster/droid_impact", origin, normal );
 //	}
 }
 
@@ -63,5 +63,5 @@ void FX_FlechetteAltProjectileThink( centity_t *cent, const struct weaponInfo_s 
 		forward[2] = 1.0f;
 	}
 
-	trap_FX_PlayEffectID( cgs.effects.flechetteAltShotEffect, cent->lerpOrigin, forward, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.flechetteAltShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }

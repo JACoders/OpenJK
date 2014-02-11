@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,22 +20,22 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: msis.c,v 1.4 1999/10/19 07:13:09 elrod Exp $
 ____________________________________________________________________________*/
 
 /****  msis.c  ***************************************************
-  Layer III  
+  Layer III
  antialias, ms and is stereo precessing
 
-**** is_process assumes never switch 
+**** is_process assumes never switch
       from short to long in is region *****
-     
+
 is_process does ms or stereo in "forbidded sf regions"
-    //ms_mode = 0 
+    //ms_mode = 0
     lr[0][i][0] = 1.0f;
     lr[0][i][1] = 0.0f;
-    // ms_mode = 1, in is bands is routine does ms processing 
+    // ms_mode = 1, in is bands is routine does ms processing
     lr[1][i][0] = 1.0f;
     lr[1][i][1] = 1.0f;
 
@@ -85,18 +85,18 @@ t = pi/12.0;
 for(i=0;i<7;i++) {
     s = sin(i*t);
     c = cos(i*t);
-    // ms_mode = 0 
+    // ms_mode = 0
     lr[0][i][0] = (float)(s/(s+c));
     lr[0][i][1] = (float)(c/(s+c));
-    // ms_mode = 1 
+    // ms_mode = 1
     lr[1][i][0] = (float)(sqrt(2.0)*(s/(s+c)));
     lr[1][i][1] = (float)(sqrt(2.0)*(c/(s+c)));
 }
-//sf = 7 
-//ms_mode = 0 
+//sf = 7
+//ms_mode = 0
 lr[0][i][0] = 1.0f;
 lr[0][i][1] = 0.0f;
-// ms_mode = 1, in is bands is routine does ms processing 
+// ms_mode = 1, in is bands is routine does ms processing
 lr[1][i][0] = 1.0f;
 lr[1][i][1] = 1.0f;
 ------------*/

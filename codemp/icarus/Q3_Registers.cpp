@@ -65,7 +65,7 @@ void Q3_DeclareVariable( int type, const char *name )
 		varFloats[ name ] = 0.0f;
 		break;
 
-	case TK_STRING:		
+	case TK_STRING:
 		varStrings[ name ] = "NULL";
 		break;
 
@@ -216,7 +216,7 @@ int Q3_SetFloatVariable( const char *name, float value )
 		return VTYPE_FLOAT;
 
 	(*vfi).second = value;
-	
+
 	return true;
 }
 
@@ -276,7 +276,7 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vfi).first).c_str() );
-		
+
 		//Save out the real data
 		gi.AppendToSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
 		gi.AppendToSaveGame( 'FIDS', (void *) ((*vfi).first).c_str(), idSize );
@@ -305,7 +305,7 @@ void Q3_VariableSaveStrings( varString_m &smap )
 	{
 		//Save out the map id
 		int	idSize = strlen( ((*vsi).first).c_str() );
-		
+
 		//Save out the real data
 		gi.AppendToSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
 		gi.AppendToSaveGame( 'SIDS', (void *) ((*vsi).first).c_str(), idSize );
@@ -352,7 +352,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
-		
+
 		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
 		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize );
 		tempBuffer[ idSize ] = 0;
@@ -386,7 +386,7 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
-		
+
 		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
 		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize );
 		tempBuffer[ idSize ] = 0;

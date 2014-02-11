@@ -15,15 +15,13 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "objectives.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "g_functions.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern	bool		in_camera;
 extern stringID_table_t SaberStyleTable[];
@@ -67,7 +65,7 @@ char	*ConcatArgs( int start ) {
 	int		i, c, tlen;
 	static char	line[MAX_STRING_CHARS];
 	int		len;
-	char	*arg;
+	const char	*arg;
 
 	len = 0;
 	c = gi.argc();
@@ -99,7 +97,7 @@ Remove case and control characters
 */
 void SanitizeString( char *in, char *out ) {
 	while ( *in ) {
-		if ( *in == 27 ) {
+		if ( *in == 94 ) {
 			in += 2;		// skip color code
 			continue;
 		}
@@ -159,131 +157,83 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 	return -1;
 }
 
-/*
-==================
-Cmd_Give_f
-
-Give items to a client
-==================
-*/
-void Cmd_Give_f (gentity_t *ent)
+void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 {
-	char		*name;
 	gitem_t		*it;
 	int			i;
-	qboolean	give_all;
+	qboolean	give_all = qfalse;
 
-	if ( !CheatsOk( ent ) ) {
-		return;
-	}
-
-	name = ConcatArgs( 1 );
-
-	if (Q_stricmp(name, "all") == 0)
+	if ( !Q_stricmp( name, "all" ) )
 		give_all = qtrue;
-	else
-		give_all = qfalse;
 
-	if (give_all || Q_stricmp(name, "force") == 0)
+	if ( give_all || !Q_stricmp( name, "health") )
 	{
-		if ( ent->client )
-		{
-			ent->client->ps.forcePower = FORCE_POWER_MAX;
-		}
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(gi.argv(1), "health") == 0)
-	{
-		if (gi.argc() == 3) {
-			ent->health = atoi(gi.argv(2));
-			if (ent->health > ent->client->ps.stats[STAT_MAX_HEALTH]) {
-				ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-			}
-		}
-		else {
-			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
-		if (!give_all)
-			return;
-	}
-
-
-/*	if (give_all || Q_stricmp(name, "inventory") == 0)
-	{
-		// Huh?  Was doing a INV_MAX+1 which was wrong because then you'd actually have every inventory item including INV_MAX
-		ent->client->ps.stats[STAT_ITEMS] = (1 << (INV_MAX)) - ( 1 << INV_ELECTROBINOCULARS );
-
-		ent->client->ps.inventory[INV_ELECTROBINOCULARS] = 1;
-		//ent->client->ps.inventory[INV_BACTA_CANISTER] = 5;
-		//ent->client->ps.inventory[INV_SEEKER] = 5;
-		ent->client->ps.inventory[INV_LIGHTAMP_GOGGLES] = 1;
-		//ent->client->ps.inventory[INV_SENTRY] = 5;
-		//ent->client->ps.inventory[INV_GOODIE_KEY] = 5;
-		//ent->client->ps.inventory[INV_SECURITY_KEY] = 5;
-
-		if (!give_all)
-		{
-			return;
-		}
-	}
-*/
-	if (give_all || Q_stricmp(name, "weapons") == 0)
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << (WP_MELEE)) - ( 1 << WP_NONE );
-		if (!give_all)
-			return;
-	}
-
-	if ( !give_all && Q_stricmp(gi.argv(1), "weaponnum") == 0 )
-	{
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi(gi.argv(2)));
-		return;
-	}
-
-	if ( Q_stricmp(name, "eweaps") == 0)	//for developing, gives you all the weapons, including enemy
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (unsigned)(1 << WP_NUM_WEAPONS) - ( 1 << WP_NONE ); // NOTE: this wasn't giving the last weapon in the list
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(name, "ammo") == 0)
-	{
-		for ( i = 0 ; i < AMMO_MAX ; i++ ) {
-			ent->client->ps.ammo[i] = ammoData[i].max;
-		}
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(gi.argv(1), "batteries") == 0)
-	{
-		if (gi.argc() == 3)
-			ent->client->ps.batteryCharge = atoi(gi.argv(2));
+		if ( argc == 3 )
+			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
-			ent->client->ps.batteryCharge = MAX_BATTERIES;
-
-		if (!give_all)
+			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+		if ( !give_all )
 			return;
 	}
 
-	if (give_all || Q_stricmp(gi.argv(1), "armor") == 0)
+	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		if (gi.argc() == 3)
-			ent->client->ps.stats[STAT_ARMOR] = atoi(gi.argv(2));
+		if ( argc == 3 )
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 
-		if ( ent->client->ps.stats[STAT_ARMOR] > 0 )
-		{
-			ent->client->ps.powerups[PW_BATTLESUIT] = Q3_INFINITE;
-		}
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "force" ) )
+	{
+		if ( argc == 3 )
+			ent->client->ps.forcePower = Com_Clampi( 0, FORCE_POWER_MAX, atoi( args ) );
 		else
-		{
-			ent->client->ps.powerups[PW_BATTLESUIT] = 0;
-		}
+			ent->client->ps.forcePower = FORCE_POWER_MAX;
+
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "weapons" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << (WP_MELEE)) - ( 1 << WP_NONE );
+		if ( !give_all )
+			return;
+	}
+	
+	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
+		return;
+	}
+
+	if ( !give_all && !Q_stricmp( name, "eweaps" ) )	//for developing, gives you all the weapons, including enemy
+	{
+		ent->client->ps.stats[STAT_WEAPONS] = (unsigned)(1 << WP_NUM_WEAPONS) - ( 1 << WP_NONE ); // NOTE: this wasn't giving the last weapon in the list
+		return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "ammo" ) )
+	{
+		int num = 999;
+		if ( argc == 3 )
+			num = Com_Clampi( -1, 999, atoi( args ) );
+		for ( i=AMMO_FORCE; i<MAX_AMMO; i++ )
+			ent->client->ps.ammo[i] = num != -1 ? num : ammoData[i].max;
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "batteries" ) )
+	{
+		if ( argc == 3 )
+			ent->client->ps.batteryCharge = Com_Clampi( 0, MAX_BATTERIES, atoi( args ) );
+		else
+			ent->client->ps.batteryCharge = MAX_BATTERIES;
 
 		if (!give_all)
 			return;
@@ -293,9 +243,8 @@ void Cmd_Give_f (gentity_t *ent)
 	if ( !give_all ) {
 		gentity_t	*it_ent;
 		trace_t		trace;
-		it = FindItem (name);
+		it = FindItem (args);
 		if (!it) {
-			name = gi.argv(1);
 			it = FindItem (name);
 			if (!it) {
 				gi.SendServerCommand( ent-g_entities, "print \"unknown item\n\"");
@@ -314,6 +263,15 @@ void Cmd_Give_f (gentity_t *ent)
 			G_FreeEntity( it_ent );
 		}
 	}
+}
+
+void Cmd_Give_f( gentity_t *ent )
+{
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
+	G_Give( ent, gi.argv(1), ConcatArgs( 2 ), gi.argc() );
 }
 
 //------------------
@@ -459,7 +417,7 @@ argv(0) god
 */
 void Cmd_God_f (gentity_t *ent)
 {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -485,7 +443,7 @@ argv(0) undying
 */
 void Cmd_Undying_f (gentity_t *ent)
 {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) 
 	{
@@ -500,7 +458,7 @@ void Cmd_Undying_f (gentity_t *ent)
 	else
 	{
 		int		max;
-		char	*cmd;
+		const char	*cmd;
 
 		cmd = gi.argv(1);
 		if ( cmd && atoi( cmd ) )
@@ -535,7 +493,7 @@ argv(0) notarget
 ==================
 */
 void Cmd_Notarget_f( gentity_t *ent ) {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -559,7 +517,7 @@ argv(0) noclip
 ==================
 */
 void Cmd_Noclip_f( gentity_t *ent ) {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -990,9 +948,10 @@ void Cmd_UseInventory_f(gentity_t *ent)
 		case INV_ELECTROBINOCULARS :
 			Cmd_UseElectrobinoculars_f(ent);
 			return;
-		//case INV_BACTA_CANISTER :
-		//	Cmd_UseBacta_f(ent);
-		//	return;
+			// WTF WHY WAS THIS COMMENTED OUT --eez
+		case INV_BACTA_CANISTER :
+			Cmd_UseBacta_f(ent);
+			return;
 		case INV_SEEKER :
 			Cmd_UseSeeker_f(ent);
 			return;
@@ -1044,7 +1003,7 @@ void G_Victory( gentity_t *ent )
 	}
 }
 
-typedef enum
+enum
 {
 	TAUNT_TAUNT = 0,
 	TAUNT_BOW,
@@ -1151,7 +1110,11 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			}
 			break;
 		case TAUNT_BOW:
-			if ( ent->client->ps.saber[0].bowAnim != -1 )
+			if ( ent->client->ps.weapon != WP_SABER )
+			{
+				anim = BOTH_BOW;
+			}
+			else if ( ent->client->ps.saber[0].bowAnim != -1 )
 			{
 				anim = ent->client->ps.saber[0].bowAnim;
 			}
@@ -1164,18 +1127,25 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_BOW;
 			}
-			if ( ent->client->ps.saber[1].Active() )
-			{//turn off second saber
-				G_Sound( ent, ent->client->ps.saber[1].soundOff );
+			if ( ent->client->ps.weapon == WP_SABER )
+			{
+				if ( ent->client->ps.saber[1].Active() )
+				{//turn off second saber
+					G_Sound( ent, ent->client->ps.saber[1].soundOff );
+				}
+				else if ( ent->client->ps.saber[0].Active() )
+				{//turn off first
+					G_Sound( ent, ent->client->ps.saber[0].soundOff );
+				}
+				ent->client->ps.SaberDeactivate();
 			}
-			else if ( ent->client->ps.saber[0].Active() )
-			{//turn off first
-				G_Sound( ent, ent->client->ps.saber[0].soundOff );
-			}
-			ent->client->ps.SaberDeactivate();
 			break;
 		case TAUNT_MEDITATE:
-			if ( ent->client->ps.saber[0].meditateAnim != -1 )
+			if ( ent->client->ps.weapon != WP_SABER )
+			{
+				anim = BOTH_MEDITATE;
+			}
+			else if ( ent->client->ps.saber[0].meditateAnim != -1 )
 			{
 				anim = ent->client->ps.saber[0].meditateAnim;
 			}
@@ -1188,15 +1158,18 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_MEDITATE;
 			}
-			if ( ent->client->ps.saber[1].Active() )
-			{//turn off second saber
-				G_Sound( ent, ent->client->ps.saber[1].soundOff );
+			if ( ent->client->ps.weapon == WP_SABER )
+			{
+				if ( ent->client->ps.saber[1].Active() )
+				{//turn off second saber
+					G_Sound( ent, ent->client->ps.saber[1].soundOff );
+				}
+				else if ( ent->client->ps.saber[0].Active() )
+				{//turn off first
+					G_Sound( ent, ent->client->ps.saber[0].soundOff );
+				}
+				ent->client->ps.SaberDeactivate();
 			}
-			else if ( ent->client->ps.saber[0].Active() )
-			{//turn off first
-				G_Sound( ent, ent->client->ps.saber[0].soundOff );
-			}
-			ent->client->ps.SaberDeactivate();
 			break;
 		case TAUNT_FLOURISH:
 			if ( ent->client->ps.weapon == WP_SABER )
@@ -1237,39 +1210,42 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			}
 			break;
 		case TAUNT_GLOAT:
-			if ( ent->client->ps.saber[0].gloatAnim != -1 )
+			if ( ent->client->ps.weapon == WP_SABER )
 			{
-				anim = ent->client->ps.saber[0].gloatAnim;
-			}
-			else if ( ent->client->ps.dualSabers
-				&& ent->client->ps.saber[1].gloatAnim != -1 )
-			{
-				anim = ent->client->ps.saber[1].gloatAnim;
-			}
-			else
-			{
-				switch ( ent->client->ps.saberAnimLevel )
+				if ( ent->client->ps.saber[0].gloatAnim != -1 )
 				{
-				case SS_FAST:
-				case SS_TAVION:
-					anim = BOTH_VICTORY_FAST;
-					break;
-				case SS_MEDIUM:
-					anim = BOTH_VICTORY_MEDIUM;
-					break;
-				case SS_STRONG:
-				case SS_DESANN:
-					ent->client->ps.SaberActivate();
-					anim = BOTH_VICTORY_STRONG;
-					break;
-				case SS_DUAL:
-					ent->client->ps.SaberActivate();
-					anim = BOTH_VICTORY_DUAL;
-					break;
-				case SS_STAFF:
-					ent->client->ps.SaberActivate();
-					anim = BOTH_VICTORY_STAFF;
-					break;
+					anim = ent->client->ps.saber[0].gloatAnim;
+				}
+				else if ( ent->client->ps.dualSabers
+					&& ent->client->ps.saber[1].gloatAnim != -1 )
+				{
+					anim = ent->client->ps.saber[1].gloatAnim;
+				}
+				else
+				{
+					switch ( ent->client->ps.saberAnimLevel )
+					{
+					case SS_FAST:
+					case SS_TAVION:
+						anim = BOTH_VICTORY_FAST;
+						break;
+					case SS_MEDIUM:
+						anim = BOTH_VICTORY_MEDIUM;
+						break;
+					case SS_STRONG:
+					case SS_DESANN:
+						ent->client->ps.SaberActivate();
+						anim = BOTH_VICTORY_STRONG;
+						break;
+					case SS_DUAL:
+						ent->client->ps.SaberActivate();
+						anim = BOTH_VICTORY_DUAL;
+						break;
+					case SS_STAFF:
+						ent->client->ps.SaberActivate();
+						anim = BOTH_VICTORY_STAFF;
+						break;
+					}
 				}
 			}
 			break;
@@ -1385,7 +1361,7 @@ ClientCommand
 */
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
-	char	*cmd;
+	const char	*cmd;
 
 	ent = g_entities + clientNum;
 	if ( !ent->client ) {
@@ -1602,7 +1578,7 @@ void ClientCommand( int clientNum ) {
 	}
 	else if (Q_stricmp (cmd, "playmusic") == 0)
 	{
-		char *cmd2 = gi.argv(1);
+		const char *cmd2 = gi.argv(1);
 		if ( cmd2 )
 		{
 			gi.SetConfigstring( CS_MUSIC, cmd2 );
@@ -1614,7 +1590,7 @@ void ClientCommand( int clientNum ) {
 	}
 	else if ( Q_stricmp( cmd, "dropsaber" ) == 0 )
 	{
-		char *cmd2 = gi.argv(1);
+		const char *cmd2 = gi.argv(1);
 		int	saberNum = 2;//by default, drop both
 		if ( cmd2 && cmd2[0] )
 		{
@@ -1629,5 +1605,9 @@ void ClientCommand( int clientNum ) {
 		{//drop either left or right
 			Cmd_SaberDrop_f( ent, saberNum );
 		}
+	}
+	else
+	{
+		gi.SendServerCommand( clientNum, va("print \"Unknown command %s\n\"", cmd ) );
 	}
 }

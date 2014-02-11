@@ -41,47 +41,6 @@ degenerate a few triangles.  Completely degenerate rows and columns are handled
 properly.
 */
 
-/*
-#define	MAX_FACETS			1024
-#define	MAX_PATCH_PLANES	2048
-
-typedef struct {
-	float	plane[4];
-	int		signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
-} patchPlane_t;
-
-typedef struct {
-	int			surfacePlane;
-	int			numBorders;		// 3 or four + 6 axial bevels + 4 or 3 * 4 edge bevels
-	int			borderPlanes[4+6+16];
-	int			borderInward[4+6+16];
-	qboolean	borderNoAdjust[4+6+16];
-} facet_t;
-
-typedef struct patchCollide_s {
-	vec3_t	bounds[2];
-	int		numPlanes;			// surface planes plus edge planes
-	patchPlane_t	*planes;
-	int		numFacets;
-	facet_t	*facets;
-} patchCollide_t;
-
-
-#define	MAX_GRID_SIZE	129
-
-typedef struct {
-	int			width;
-	int			height;
-	qboolean	wrapWidth;
-	qboolean	wrapHeight;
-	vec3_t	points[MAX_GRID_SIZE][MAX_GRID_SIZE];	// [width][height]
-} cGrid_t;
-
-#define	SUBDIVIDE_DISTANCE	16	//4	// never more than this units away from curve
-#define	PLANE_TRI_EPSILON	0.1
-#define	WRAP_POINT_EPSILON	0.1
-*/
-
 int	c_totalPatchBlocks;
 int	c_totalPatchSurfaces;
 int	c_totalPatchEdges;
@@ -186,7 +145,7 @@ static qboolean	CM_NeedsSubdivision( vec3_t a, vec3_t b, vec3_t c ) {
 	// see if the curve is far enough away from the linear mid
 	VectorSubtract( cmid, lmid, delta );
 	dist = VectorLengthSquared( delta );
-	
+
 	return (qboolean)(dist >= SUBDIVIDE_DISTANCE * SUBDIVIDE_DISTANCE);
 }
 
@@ -602,7 +561,8 @@ static inline int	CM_GridPlane( int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2],
 	}
 
 	// should never happen
-	Com_Printf( "WARNING: CM_GridPlane unresolvable\n" );
+	if ( cm_extraVerbose->integer )
+		Com_Printf( "WARNING: CM_GridPlane unresolvable\n" );
 	return -1;
 }
 
@@ -784,7 +744,7 @@ static inline qboolean CM_ValidateFacet( facet_t *facet ) {
 	// see if the facet is unreasonably large
 	WindingBounds( w, bounds[0], bounds[1] );
 	FreeWinding( w );
-	
+
 	for ( j = 0 ; j < 3 ; j++ ) {
 		if ( bounds[1][j] - bounds[0][j] > MAX_MAP_BOUNDS ) {
 			return qfalse;		// we must be missing a plane
@@ -983,7 +943,7 @@ CM_PatchCollideFromGrid
 static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) {
 	int				i, j;
 	float			*p1, *p2, *p3;
-	MAC_STATIC int				gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2];
+	int				gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2];
 	facet_t			*facet;
 	int				borders[4];
 	int				noAdjust[4];
@@ -1012,13 +972,13 @@ static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) 
 	// create the borders for each facet
 	for ( i = 0 ; i < grid->width - 1 ; i++ ) {
 		for ( j = 0 ; j < grid->height - 1 ; j++ ) {
-			 
+
 			borders[EN_TOP] = -1;
 			if ( j > 0 ) {
 				borders[EN_TOP] = gridPlanes[i][j-1][1];
 			} else if ( grid->wrapHeight ) {
 				borders[EN_TOP] = gridPlanes[i][grid->height-2][1];
-			} 
+			}
 			noAdjust[EN_TOP] = ( borders[EN_TOP] == gridPlanes[i][j][0] );
 			if ( borders[EN_TOP] == -1 || noAdjust[EN_TOP] ) {
 				borders[EN_TOP] = CM_EdgePlaneNum( grid, gridPlanes, i, j, 0 );
@@ -1162,7 +1122,7 @@ Points is packed as concatenated rows.
 */
 struct patchCollide_s	*CM_GeneratePatchCollide( int width, int height, vec3_t *points ) {
 	patchCollide_t	*pf;
-	MAC_STATIC cGrid_t			grid;
+	cGrid_t			grid;
 	int				i, j;
 
 	if ( width <= 2 || height <= 2 || !points ) {
@@ -1201,7 +1161,7 @@ struct patchCollide_s	*CM_GeneratePatchCollide( int width, int height, vec3_t *p
 	CM_RemoveDegenerateColumns( &grid );
 
 	// we now have a grid of points exactly on the curve
-	// the aproximate surface defined by these points will be
+	// the approximate surface defined by these points will be
 	// collided against
 	pf = (struct patchCollide_s *)Hunk_Alloc( sizeof( *pf ), h_high );
 	ClearBounds( pf->bounds[0], pf->bounds[1] );
@@ -1428,7 +1388,7 @@ void CM_TraceThroughPatchCollide( traceWork_t *tw, trace_t &trace, const struct 
 		VectorCopy(planes->plane, plane);
 		plane[3] = planes->plane[3];
 		if ( tw->sphere.use ) {
-			// adjust the plane distance apropriately for radius
+			// adjust the plane distance appropriately for radius
 			plane[3] += tw->sphere.radius;
 
 			// find the closest point on the capsule to the plane
@@ -1468,7 +1428,7 @@ void CM_TraceThroughPatchCollide( traceWork_t *tw, trace_t &trace, const struct 
 				plane[3] = planes->plane[3];
 			}
 			if ( tw->sphere.use ) {
-				// adjust the plane distance apropriately for radius
+				// adjust the plane distance appropriately for radius
 				plane[3] += tw->sphere.radius;
 
 				// find the closest point on the capsule to the plane
@@ -1560,7 +1520,7 @@ qboolean CM_PositionTestInPatchCollide( traceWork_t *tw, const struct patchColli
 		VectorCopy(planes->plane, plane);
 		plane[3] = planes->plane[3];
 		if ( tw->sphere.use ) {
-			// adjust the plane distance apropriately for radius
+			// adjust the plane distance appropriately for radius
 			plane[3] += tw->sphere.radius;
 
 			// find the closest point on the capsule to the plane
@@ -1593,7 +1553,7 @@ qboolean CM_PositionTestInPatchCollide( traceWork_t *tw, const struct patchColli
 				plane[3] = planes->plane[3];
 			}
 			if ( tw->sphere.use ) {
-				// adjust the plane distance apropriately for radius
+				// adjust the plane distance appropriately for radius
 				plane[3] += tw->sphere.radius;
 
 				// find the closest point on the capsule to the plane
@@ -1769,7 +1729,7 @@ void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *poin
 
 	// draw the debug block
 	{
-		vec3_t			v[3];
+		matrix3_t v;
 
 		VectorCopy( debugBlockPoints[0], v[0] );
 		VectorCopy( debugBlockPoints[1], v[1] );

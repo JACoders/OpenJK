@@ -19,12 +19,10 @@ This file is part of Jedi Knight 2.
 // cg_draw.c -- draw all of the graphical elements during
 // active (after loading) gameplay
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "../game/g_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\objectives.h"
+#include "../game/objectives.h"
 
 void CG_DrawIconBackground(void);
 void CG_DrawMissionInformation( void );
@@ -740,12 +738,17 @@ static void CG_DrawBatteryCharge( void )
 CG_DrawHUD
 ================
 */
+extern void *cgi_UI_GetMenuByName( const char *menu );
+extern void cgi_UI_Menu_Paint( void *menu, qboolean force );
 static void CG_DrawHUD( centity_t *cent )
 {
 	int x,y,value;
 	
 	if (cgi_UI_GetMenuInfo("lefthud",&x,&y))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "lefthud" ), qtrue );
+
 		// Draw armor & health values
 		if ( cg_draw2D.integer == 2 ) 
 		{
@@ -761,6 +764,9 @@ static void CG_DrawHUD( centity_t *cent )
 
 	if (cgi_UI_GetMenuInfo("righthud",&x,&y))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "righthud" ), qtrue );
+
 		// Draw armor & health values
 		if ( cg_draw2D.integer == 2 ) 
 		{
@@ -1805,7 +1811,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 			}
 			else
 			{
-				extern void CalcMuzzlePoint( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint, float lead_in );
+				extern void CalcMuzzlePoint( gentity_t *const ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint, float lead_in );
 				AngleVectors( cg_entities[0].lerpAngles, d_f, d_rt, d_up );
 				CalcMuzzlePoint( &g_entities[0], d_f, d_rt, d_up, start , 0 );
 			}
@@ -2297,7 +2303,6 @@ static void CG_Draw2D( void )
 
 	CG_DrawScrollText();
 	CG_DrawCaptionText(); 
-	CG_DrawGameText();
 
 	if ( in_camera )
 	{//still draw the saber clash flare, but nothing else

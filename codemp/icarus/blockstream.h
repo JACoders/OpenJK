@@ -1,29 +1,35 @@
+#pragma once
+
 // BlockStream.h
 
-#ifndef __INTERPRETED_BLOCK_STREAM__
-#define	__INTERPRETED_BLOCK_STREAM__
-
-#pragma warning(disable : 4786)  //identifier was truncated 
+#ifdef _MSC_VER
+#pragma warning(disable : 4786)  //identifier was truncated
 #pragma warning(disable : 4514)  //unreffed inline func removed
+#endif
 
 #include "qcommon/qcommon.h"
 #include <stdio.h>
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
 #include <vector>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"
+#define IBI_HEADER_ID_LENGTH 4 // Length of IBI_HEADER_ID + 1 for the null terminating byte.
 
 const	float	IBI_VERSION			= 1.57f;
 const	int		MAX_FILENAME_LENGTH = 1024;
 
 typedef	float	vector_t[3];
 
-enum 
+enum
 {
 	POP_FRONT,
 	POP_BACK,
@@ -39,13 +45,13 @@ class CBlockMember
 {
 public:
 
-	CBlockMember();	
+	CBlockMember();
 	~CBlockMember();
 
 	void Free( void );
 
 	int WriteMember ( FILE * );				//Writes the member's data, in block format, to FILE *
-	int	ReadMember( char **, long * );		//Reads the member's data, in block format, from FILE *
+	int	ReadMember( char **, int * );		//Reads the member's data, in block format, from FILE *
 
 	void SetID( int id )		{	m_id = id;		}	//Set the ID member variable
 	void SetSize( int size )	{	m_size = size;	}	//Set the size member variable
@@ -103,7 +109,7 @@ protected:
 	int		m_size;		//Size of the data member variable
 	void	*m_data;	//Data for this member
 };
-	
+
 //CBlock
 
 class CBlock
@@ -142,7 +148,7 @@ public:
 
 	void SetFlags( unsigned char flags )	{	m_flags = flags;	}
 	void SetFlag( unsigned char flag )		{	m_flags |= flag;	}
-	
+
 	int HasFlag( unsigned char flag )	const	{	return ( m_flags & flag );	}
 	unsigned char GetFlags( void )		const	{	return m_flags;				}
 
@@ -173,26 +179,24 @@ public:
 
 	int WriteBlock( CBlock * );	//Write the block out
 	int ReadBlock( CBlock * );	//Read the block in
-	
+
 	int Open( char *, long );	//Open a stream for reading / writing
 
 protected:
 
 	unsigned	GetUnsignedInteger( void );
 	int			GetInteger( void );
-	
+
 	char	GetChar( void );
 	long	GetLong( void );
 	float	GetFloat( void );
 
 	void	StripExtension( const char *, char * );	//Utility function to strip away file extensions
 
-	long	m_fileSize;							//Size of the file	
+	long	m_fileSize;							//Size of the file
 	FILE	*m_fileHandle;						//Global file handle of current I/O source
 	char	m_fileName[MAX_FILENAME_LENGTH];	//Name of the current file
 
 	char	*m_stream;							//Stream of data to be parsed
-	long	m_streamPos;
+	int		m_streamPos;
 };
-
-#endif	//__INTERPRETED_BLOCK_STREAM__

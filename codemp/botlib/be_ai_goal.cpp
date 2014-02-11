@@ -5,7 +5,7 @@
  * desc:		goal AI
  *
  * $Archive: /MissionPack/code/botlib/be_ai_goal.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 14 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -72,7 +72,7 @@ typedef struct campspot_s
 } campspot_t;
 
 //FIXME: these are game specific
-typedef enum {
+enum {
 	GT_FFA,				// free for all
 	GT_HOLOCRON,		// holocron match
 	GT_JEDIMASTER,		// jedi master
@@ -118,7 +118,7 @@ typedef struct iteminfo_s
 	int number;							//number of the item info
 } iteminfo_t;
 
-#define ITEMINFO_OFS(x)	(size_t)&(((iteminfo_t *)0)->x)
+#define ITEMINFO_OFS(x)	offsetof(iteminfo_t, x)
 
 fielddef_t iteminfo_fields[] =
 {

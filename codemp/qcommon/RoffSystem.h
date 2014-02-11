@@ -1,22 +1,16 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
 
-#if !defined(CROFFSYSTEM_H_INC)
-#define CROFFSYSTEM_H_INC
+#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
+#include "server/server.h"
 
-#ifndef __Q_SHARED_H
-	#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
-#endif
-
-#if !defined(SERVER_H_INC)
-	#include "server/server.h"
-#endif
-
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 // ROFF Defines
@@ -25,7 +19,7 @@ using namespace std;
 #define ROFF_NEW_VERSION			2
 #define ROFF_STRING					"ROFF"
 #define ROFF_SAMPLE_RATE			10	// 10hz
-#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles, 
+#define ROFF_AUTO_FIX_BAD_ANGLES	// exporter can mess up angles,
 									//	defining this attempts to detect and fix these problems
 
 
@@ -61,7 +55,7 @@ private:
 	} TROFFHeader;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFFEntry 
+	typedef struct tROFFEntry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -80,7 +74,7 @@ private:
 	} TROFF2Header;
 
 	// ROFF Entry, nothing else needs to see this
-	typedef struct tROFF2Entry 
+	typedef struct tROFF2Entry
 	//-------------------------------
 	{
 		float		mOriginOffset[3];
@@ -88,7 +82,7 @@ private:
 		int			mStartNote, mNumNotes;		// note track info
 	} TROFF2Entry;
 
-	// An individual ROFF object, 
+	// An individual ROFF object,
 	//	contains actual rotation/offset information
 	//--------------------------------------
 	class CROFF
@@ -108,9 +102,9 @@ private:
 		qboolean	mUsedByClient;
 		qboolean	mUsedByServer;
 
-		CROFF() 
-		{ 
-			mUsedByClient = mUsedByServer = qfalse; 
+		CROFF()
+		{
+			mUsedByClient = mUsedByServer = qfalse;
 		}
 		CROFF( const char *file, int id );
 		~CROFF();
@@ -118,7 +112,7 @@ private:
 	}; // class CROFF
 
 
-	// The roff system tracks entities that are 
+	// The roff system tracks entities that are
 	//	roffing, so this is the internal structure
 	//	that represents these objects.
 	//--------------------------------------
@@ -149,8 +143,8 @@ private:
 
 	void	ProcessNote(SROFFEntity *roff_ent, char *note);
 
-	void	SetLerp( trajectory_t *tr, 
-					trType_t, vec3_t origin, 
+	void	SetLerp( trajectory_t *tr,
+					trType_t, vec3_t origin,
 					vec3_t delta, int time, int rate );
 
 	qboolean	ClearLerp( SROFFEntity *roff_ent );				// Clears out the angular and position lerp fields
@@ -181,5 +175,3 @@ public:
 
 
 extern CROFFSystem theROFFSystem;
-
-#endif // CROFFSYSTEM_H_INC

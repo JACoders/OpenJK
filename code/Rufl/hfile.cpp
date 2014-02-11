@@ -31,12 +31,16 @@ This file is part of Jedi Academy.
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
+#include "../qcommon/q_shared.h"
+#ifndef _WIN32
+#define Pool FilePool
+#endif
 #include "hfile.h"
 #if !defined(RATL_HANDLE_POOL_VS_INC)
-	#include "..\Ratl\handle_pool_vs.h"
+	#include "../Ratl/handle_pool_vs.h"
 #endif
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 #if !defined(RUFL_HSTRING_INC)
 	#include "hstring.h"
@@ -66,11 +70,7 @@ extern bool	HFILEclose(int& handle);
 ////////////////////////////////////////////////////////////////////////////////////////
 struct SOpenFile
 {
-#ifdef _XBOX
-	dllNamespace::hstring mPath;
-#else
 	hstring			mPath;
-#endif
 	bool			mForRead;
 	int				mHandle;
 	float			mVersion;

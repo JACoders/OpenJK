@@ -17,12 +17,9 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 // Filename:-	g_savegame.cpp
-//
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
 
-
-#include "IcarusInterface.h"
+#include "../icarus/IcarusInterface.h"
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "fields.h"
@@ -183,11 +180,11 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		sString[0]=0;
 
-		assert(iStrlen+1<=sizeof(sString));
+		assert(iStrlen+1<=(int)sizeof(sString));
 		
-		gi.ReadFromSaveGame('STRG', sString, iStrlen, NULL);
+		gi.ReadFromSaveGame(INT_ID('S','T','R','G'), sString, iStrlen, NULL);
 
-#ifndef _XBOX	// TAG_G_ALLOC is always blown away, we can never recycle
+		// TAG_G_ALLOC is always blown away, we can never recycle
 		if (psOriginal && gi.bIsFromZone(psOriginal, TAG_G_ALLOC)) {
 			if (!strcmp(psOriginal,sString))
 			{//it's a legal ptr and they're the same so let's just reuse it instead of free/alloc
@@ -195,7 +192,6 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 			}
 			gi.Free(psOriginal);
 		}
-#endif
 
 		return G_NewString(sString);
 	}
@@ -212,7 +208,7 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 /////////// gentity_t * ////////
 //
 //
-static int GetGEntityNum(gentity_t* ent)
+static intptr_t GetGEntityNum(gentity_t* ent)
 {
 	assert( ent != (gentity_t *) 0xcdcdcdcd);
 
@@ -225,7 +221,7 @@ static int GetGEntityNum(gentity_t* ent)
 	//	way that the level_locals_t alertEvents struct contains a count of which ones are valid, so I'm guessing
 	//	that some of them aren't (valid)...
 	//
-	int iReturnIndex = ent - g_entities;
+	ptrdiff_t iReturnIndex = ent - g_entities;
 
 	if (iReturnIndex < 0 || iReturnIndex >= MAX_GENTITIES)
 	{	
@@ -234,7 +230,7 @@ static int GetGEntityNum(gentity_t* ent)
 	return iReturnIndex;
 }
 
-static gentity_t *GetGEntityPtr(int iEntNum)
+static gentity_t *GetGEntityPtr(intptr_t iEntNum)
 {
 	if (iEntNum == -1)
 	{
@@ -250,7 +246,7 @@ static gentity_t *GetGEntityPtr(int iEntNum)
 
 
 
-static int GetGroupNumber(AIGroupInfo_t *pGroup)
+static intptr_t GetGroupNumber(AIGroupInfo_t *pGroup)
 {
 	assert( pGroup != (AIGroupInfo_t *) 0xcdcdcdcd);
 
@@ -260,21 +256,21 @@ static int GetGroupNumber(AIGroupInfo_t *pGroup)
 	}
 
 	int iReturnIndex = pGroup - level.groups;
-	if (iReturnIndex < 0 || iReturnIndex >= (sizeof(level.groups) / sizeof(level.groups[0])) )
+	if (iReturnIndex < 0 || iReturnIndex >= (int)(sizeof(level.groups) / sizeof(level.groups[0])) )
 	{	
 		iReturnIndex = -1;	// will get a NULL ptr on reload
 	}
 	return iReturnIndex;
 }
 
-static AIGroupInfo_t *GetGroupPtr(int iGroupNum)
+static AIGroupInfo_t *GetGroupPtr(intptr_t iGroupNum)
 {
 	if (iGroupNum == -1)
 	{
 		return NULL;
 	}
 	assert(iGroupNum >= 0);
-	assert(iGroupNum < (sizeof(level.groups) / sizeof(level.groups[0])));
+	assert(iGroupNum < (int)(sizeof(level.groups) / sizeof(level.groups[0])));
 	return (level.groups + iGroupNum);
 }
 
@@ -283,9 +279,9 @@ static AIGroupInfo_t *GetGroupPtr(int iGroupNum)
 /////////// gclient_t * ////////
 //
 //
-static int GetGClientNum(gclient_t *c, gentity_t *ent)
+static intptr_t GetGClientNum(gclient_t *c, gentity_t *ent)
 {
-	// unfortunately, I now need to see if this is a 'real' client (and therefore resolve to an enum), or
+	// unfortunately, I now need to see if this is a INT_ID('r','e','a','l') client (and therefore resolve to an enum), or
 	//	whether it's one of the NPC or SP_misc_weapon_shooter
 	//
 	assert(c != (gclient_t *)0xcdcdcdcd);
@@ -305,7 +301,7 @@ static int GetGClientNum(gclient_t *c, gentity_t *ent)
 	}
 }
 
-static gclient_t *GetGClientPtr(int c)
+static gclient_t *GetGClientPtr(intptr_t c)
 {
 	if (c == -1)
 	{
@@ -398,7 +394,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_GENTITY:
-		*(int *)pv = GetGEntityNum(*(gentity_t **)pv);
+		*(intptr_t *)pv = GetGEntityNum(*(gentity_t **)pv);
 		break;
 
 	case F_GROUP:
@@ -406,7 +402,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_GCLIENT:
-		*(int *)pv = GetGClientNum(*(gclient_t **)pv, (gentity_t *) pbBase);
+		*(intptr_t *)pv = GetGClientNum(*(gclient_t **)pv, (gentity_t *) pbBase);
 		break;
 
 	case F_ITEM:
@@ -499,7 +495,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 	}
 }
 
-static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned long ulChid, int iLen)
+static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, int iLen)
 {
 	strList = new list<sstring_t>;
 
@@ -521,9 +517,9 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 	// save out any associated strings..
 	//
 	list<sstring_t>::iterator it = strList->begin();
-	for (unsigned int i=0; i<strList->size(); i++, ++it)
+	for (size_t i=0; i<strList->size(); i++, ++it)
 	{
-		gi.AppendToSaveGame('STRG', (void *)(*it).c_str(), (*it).length() + 1);
+		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);
 	}
 	
 	delete strList;
@@ -543,7 +539,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	case F_GENTITY:
-		*(gentity_t **)pv = GetGEntityPtr(*(int *)pv);
+		*(gentity_t **)pv = GetGEntityPtr(*(intptr_t *)pv);
 		break;
 
 	case F_GROUP:
@@ -551,7 +547,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	case F_GCLIENT:
-		*(gclient_t **)pv = GetGClientPtr(*(int *)pv);
+		*(gclient_t **)pv = GetGClientPtr(*(intptr_t *)pv);
 		break;
 
 	case F_ITEM:
@@ -591,7 +587,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 			for (int i=0; i<MAX_ALERT_EVENTS; i++)
 			{
-				p[i].owner = GetGEntityPtr((int)(p[i].owner));
+				p[i].owner = GetGEntityPtr((intptr_t)(p[i].owner));
 			}
 		}
 		break;
@@ -602,8 +598,8 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 			for (int i=0; i<MAX_FRAME_GROUPS; i++)
 			{
-				p[i].enemy		= GetGEntityPtr((int)(p[i].enemy));
-				p[i].commander	= GetGEntityPtr((int)(p[i].commander));
+				p[i].enemy		= GetGEntityPtr((intptr_t)(p[i].enemy));
+				p[i].commander	= GetGEntityPtr((intptr_t)(p[i].commander));
 			}
 		}
 		break;
@@ -617,9 +613,9 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 				for ( int j=0; j<MAX_ANIM_EVENTS; j++ )
 				{
 					pO = pbOriginalRefData ? level.knownAnimFileSets[i].torsoAnimEvents[j].stringData : NULL;
-					p[i].torsoAnimEvents[j].stringData = GetStringPtr((int)p[i].torsoAnimEvents[j].stringData, pO);
+					p[i].torsoAnimEvents[j].stringData = GetStringPtr((intptr_t)p[i].torsoAnimEvents[j].stringData, pO);
 					pO = pbOriginalRefData ? level.knownAnimFileSets[i].legsAnimEvents[j].stringData : NULL;
-					p[i].legsAnimEvents[j].stringData = GetStringPtr((int)p[i].legsAnimEvents[j].stringData, pO);
+					p[i].legsAnimEvents[j].stringData = GetStringPtr((intptr_t)p[i].legsAnimEvents[j].stringData, pO);
 				}
 			}
 		}
@@ -640,11 +636,11 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 
 // copy of function in sv_savegame
-static LPCSTR SG_GetChidText(unsigned long chid)
+static const char *SG_GetChidText(unsigned int chid)
 {
 	static char	chidtext[5];
 
-	*(unsigned long *)chidtext = BigLong(chid);
+	*(unsigned int *)chidtext = BigLong(chid);
 	chidtext[4] = 0;
 
 	return chidtext;
@@ -723,7 +719,7 @@ static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t 
 	}
 } 
 
-static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned long ulChid, int iSize, qboolean bOkToSizeMisMatch)
+static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {	
 	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
 
@@ -736,11 +732,11 @@ static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOr
 		{
 			// example chunk handler...
 			//				
-			case 'GCLI':
+			case INT_ID('G','C','L','I'):
 				if ( iSize == (int)(iReadSize+((sizeof(saberInfo_t)-sizeof(saberInfoRetail_t))*2)) )
 				{
 					gclient_t newClient;
-					const int	preSaberDataSize = ((int)&newClient.ps.saber[0]-(int)&newClient);
+					const int	preSaberDataSize = ((intptr_t)&newClient.ps.saber[0]-(intptr_t)&newClient);
 					memcpy( &newClient, pbData, preSaberDataSize );
 					SG_ConvertRetailSaberinfoToNewSaberinfo( ((void *)(&((gclient_t *)(pbData))->ps.saber[0])), &newClient.ps.saber[0] ); 
 					memcpy( &newClient.ps.dualSabers, pbData+preSaberDataSize+(sizeof(saberInfoRetail_t)*2), sizeof(newClient)-(preSaberDataSize+(sizeof(saberInfo_t)*2)) );
@@ -781,7 +777,7 @@ static void WriteLevelLocals ()
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, (byte *)temp, 'LVLC', LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
+	EnumerateFields(savefields_LevelLocals, (byte *)temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
 	gi.Free(temp);
 }
 
@@ -800,7 +796,7 @@ static void ReadLevelLocals ()
 
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// struct copy
-	EvaluateFields(savefields_LevelLocals, (byte *)temp, (byte *)&level, 'LVLC', LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
+	EvaluateFields(savefields_LevelLocals, (byte *)temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
 	level = *temp;					// struct copy
 
 	level.clients = pClients;				// restore clients
@@ -822,7 +818,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-	gi.AppendToSaveGame('NMED', &iCount, sizeof(iCount));
+	gi.AppendToSaveGame(INT_ID('N','M','E','D'), &iCount, sizeof(iCount));
 
 	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
@@ -830,7 +826,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-			gi.AppendToSaveGame('EDNM', (void *)&i, sizeof(i));
+			gi.AppendToSaveGame(INT_ID('E','D','N','M'), (void *)&i, sizeof(i));
 
 			qboolean qbLinked = ent->linked;
 			gi.unlinkentity( ent );
@@ -842,7 +838,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, 'GENT', sizeof(tempEnt));			
+			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));			
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -850,24 +846,24 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
-				EnumerateFields(savefields_gNPC, (byte *)&npc, 'GNPC', sizeof(npc));
+				EnumerateFields(savefields_gNPC, (byte *)&npc, INT_ID('G','N','P','C'), sizeof(npc));
 			}
 
 			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
 			{
 				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
-				EnumerateFields(savefields_gClient, (byte *)&client, 'GCLI', sizeof(client));
+				EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
 			}
 
 			if (tempEnt.parms)
 			{
-				gi.AppendToSaveGame('PARM', ent->parms, sizeof(*ent->parms));
+				gi.AppendToSaveGame(INT_ID('P','A','R','M'), ent->parms, sizeof(*ent->parms));
 			}
 			
 			if (tempEnt.m_pVehicle)
 			{
 				Vehicle_t vehicle = *ent->m_pVehicle;	// NOT *tempEnt.m_pVehicle!!
-				EnumerateFields(savefields_gVHIC, (byte *)&vehicle, 'VHIC', sizeof(vehicle));
+				EnumerateFields(savefields_gVHIC, (byte *)&vehicle, INT_ID('V','H','I','C'), sizeof(vehicle));
 			}
 			
 			// the scary ghoul2 saver stuff...  (fingers crossed)
@@ -890,7 +886,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		//	This saves time debugging, and makes things easier to track.
 		//
 		static int iBlah = 1234;
-		gi.AppendToSaveGame('ICOK', &iBlah, sizeof(iBlah));
+		gi.AppendToSaveGame(INT_ID('I','C','O','K'), &iBlah, sizeof(iBlah));
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
@@ -903,13 +899,13 @@ static void ReadGEntities(qboolean qbAutosave)
 	int		iCount;
 	int		i;
 	
-	gi.ReadFromSaveGame('NMED', (void *)&iCount, sizeof(iCount), NULL);
+	gi.ReadFromSaveGame(INT_ID('N','M','E','D'), (void *)&iCount, sizeof(iCount), NULL);
 
 	int iPreviousEntRead = -1;
 	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
-		gi.ReadFromSaveGame('EDNM', (void *)&iEntIndex, sizeof(iEntIndex), NULL);
+		gi.ReadFromSaveGame(INT_ID('E','D','N','M'), (void *)&iEntIndex, sizeof(iEntIndex), NULL);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -944,7 +940,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		gi.G2API_LoadSaveCodeDestructGhoul2Info(pEnt->ghoul2);
 		pEnt->ghoul2.kill();
-		EvaluateFields(savefields_gEntity, (byte *)pEnt, (byte *)pEntOriginal, 'GENT', sizeof(*pEnt),qfalse);
+		EvaluateFields(savefields_gEntity, (byte *)pEnt, (byte *)pEntOriginal, INT_ID('G','E','N','T'), sizeof(*pEnt),qfalse);
 		pEnt->ghoul2.kill();
 
 		// now for any fiddly bits...
@@ -953,7 +949,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gNPC_t tempNPC;
 
-			EvaluateFields(savefields_gNPC, (byte *)&tempNPC,(byte *)pEntOriginal->NPC, 'GNPC', sizeof (*pEnt->NPC),qfalse);
+			EvaluateFields(savefields_gNPC, (byte *)&tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
 			
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -989,7 +985,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gclient_t tempGClient;			
 
-			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, 'GCLI', sizeof(*pEnt->client),qtrue);//qfalse);
+			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qtrue);//qfalse);
 
 			// can we pinch the original's client handle or do we have to alloc a new one?...
 			//
@@ -1022,7 +1018,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 			
-			gi.ReadFromSaveGame('PARM', &tempParms, sizeof(tempParms), NULL);
+			gi.ReadFromSaveGame(INT_ID('P','A','R','M'), &tempParms, sizeof(tempParms), NULL);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1048,7 +1044,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			Vehicle_t tempVehicle;
 			
-			EvaluateFields(savefields_gVHIC, (byte *)&tempVehicle,(byte *)pEntOriginal->m_pVehicle, 'VHIC', sizeof (*pEnt->m_pVehicle),qfalse);
+			EvaluateFields(savefields_gVHIC, (byte *)&tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'), sizeof (*pEnt->m_pVehicle),qfalse);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1074,7 +1070,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		{
 			char *pGhoul2Data = NULL;
-			gi.ReadFromSaveGame('GHL2', 0, 0, (void**)&pGhoul2Data);
+			gi.ReadFromSaveGame(INT_ID('G','H','L','2'), 0, 0, (void**)&pGhoul2Data);
 			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
 			gi.Free(pGhoul2Data);
 		}
@@ -1139,7 +1135,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		// check that Icarus has loaded everything it saved out by having a marker chunk after it...
 		//
 		static int iBlah = 1234;
-		gi.ReadFromSaveGame('ICOK', &iBlah, sizeof(iBlah), NULL);
+		gi.ReadFromSaveGame(INT_ID('I','C','O','K'), &iBlah, sizeof(iBlah), NULL);
 	}
 	if (!qbAutosave)
 	{
@@ -1156,7 +1152,7 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, (byte *)&client, 'GCLI', sizeof(client));	
+		EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));	
 		WriteLevelLocals();	// level_locals_t level	
 	}
 
@@ -1176,7 +1172,7 @@ void WriteLevel(qboolean qbAutosave)
 	// put out an end-marker so that the load code can check everything was read in...
 	//
 	static int iDONE = 1234;
-	gi.AppendToSaveGame('DONE', &iDONE, sizeof(iDONE));
+	gi.AppendToSaveGame(INT_ID('D','O','N','E'), &iDONE, sizeof(iDONE));
 }
 
 void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
@@ -1202,13 +1198,13 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		
 		//Read & throw away gclient info
 		gclient_t junkClient;
-		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qtrue);//qfalse);
+		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 
 		ReadLevelLocals();	// level_locals_t level	
 
 		//Read & throw away objective info
 		objectives_t	junkObj[MAX_MISSION_OBJ];
-		gi.ReadFromSaveGame('OBJT', (void *) &junkObj, 0, NULL);
+		gi.ReadFromSaveGame(INT_ID('O','B','J','T'), (void *) &junkObj, 0, NULL);
 	}
 	else
 	{
@@ -1217,7 +1213,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 		
 			gclient_t GClient;
-			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qtrue);//qfalse);
+			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level	
 		}
@@ -1241,7 +1237,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	// check that the whole file content was loaded by specifically requesting an end-marker...
 	//
 	static int iDONE = 1234;
-	gi.ReadFromSaveGame('DONE', &iDONE, sizeof(iDONE), NULL);
+	gi.ReadFromSaveGame(INT_ID('D','O','N','E'), &iDONE, sizeof(iDONE), NULL);
 }
 
 extern int killPlayerTimer;
@@ -1308,7 +1304,7 @@ struct Vehicle_t
 	int m_EjectDir;
 
 	// Flags that describe the vehicles behavior.
-	unsigned long m_ulFlags;
+	unsigned int m_ulFlags;
 
 	// NOTE: Vehicle Type ID, Orientation, and Armor MUST be transmitted over the net.
 

@@ -1,9 +1,12 @@
-#if !defined(CM_LANDSCAPE_H_INC)
-#define CM_LANDSCAPE_H_INC
+#pragma once
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 using namespace std;
 
@@ -52,13 +55,13 @@ public:
 	CArea(void) {}
 	~CArea(void) {}
 
-	void Init(vec3_t pos, float radius, float angle = 0.0f, int type = AT_NONE, float angleDiff = 0.0f, int villageID = 0) 
-	{ 
-		VectorCopy(pos, mPosition); 
-		mRadius = radius; 
-		mAngle = angle; 
-		mAngleDiff = angleDiff; 
-		mType = type; 
+	void Init(vec3_t pos, float radius, float angle = 0.0f, int type = AT_NONE, float angleDiff = 0.0f, int villageID = 0)
+	{
+		VectorCopy(pos, mPosition);
+		mRadius = radius;
+		mAngle = angle;
+		mAngleDiff = angleDiff;
+		mType = type;
 		mVillageID = villageID;
 	}
 	float GetRadius(void) const { return(mRadius); }
@@ -68,9 +71,6 @@ public:
 	int GetType(void) const { return(mType); }
 	int GetVillageID(void) const { return(mVillageID); }
 };
-
-typedef list<CArea*>					areaList_t;
-typedef list<CArea*>::iterator			areaIter_t;
 
 class CCMHeightDetails
 {
@@ -125,7 +125,7 @@ public:
 	void Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, byte *hMap, byte *patchBrushData);
 	void InitPlane(struct cbrushside_s *side, cplane_t *plane, vec3_t p0, vec3_t p1, vec3_t p2);
 	void CreatePatchPlaneData(void);
-	
+
 	void*	GetAdjacentBrushX ( int x, int y );
 	void*	GetAdjacentBrushY ( int x, int y );
 };
@@ -151,14 +151,14 @@ private:
 	byte					*mPatchBrushData;							// Base memory from which the patch brush data is taken
 	bool					mHasPhysics;								// Set to true unless disabled
 	CRandomTerrain			*mRandomTerrain;
-							
+
 	int						mBaseWaterHeight;							// Base water height in terxels
 	float					mWaterHeight;								// Real world height of the water
 	int						mWaterContents;								// Contents of the water shader
 	int						mWaterSurfaceFlags;							// Surface flags of the water shader
 
 	unsigned long			holdrand;
-	
+
 	list<CArea *>			mAreas;										// List of flattened areas on this landscape
 	list<CArea *>::iterator	mAreasIt;
 
@@ -255,7 +255,10 @@ CArea *CM_GetFirstObjectiveArea(CCMLandScape *landscape);
 CArea *CM_GetPlayerArea(class CCMLandScape *common);
 CArea *CM_GetNextArea(CCMLandScape *landscape);
 CArea *CM_GetNextObjectiveArea(CCMLandScape *landscape);
-void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, void (*callback)(byte *, float, int *));
+
+typedef void ( *cm_iterateFunc )( byte *, float, int * );
+
+void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, cm_iterateFunc callback);
 
 CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape, byte *heightmap, int width, int height);
 
@@ -265,7 +268,5 @@ void CL_LoadInstanceDef(const char *configstring, class CCMLandScape *landscape)
 void CL_LoadMissionDef(const char *configstring, class CCMLandScape *landscape);
 
 extern cvar_t	*com_terrainPhysics;
-
-#endif
 
 // end

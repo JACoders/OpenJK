@@ -23,8 +23,6 @@ This file is part of Jedi Academy.
 // April 3, 2003 - This file has been commandeered for use by AI vehicle pilots.
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#include "g_headers.h"
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -33,9 +31,10 @@ This file is part of Jedi Academy.
 #include "b_local.h"
 #include "anims.h"
 #include "g_navigator.h"
-#include "g_Vehicles.h"
+#include "g_vehicles.h"
+#include "g_functions.h"
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 
 
@@ -266,7 +265,7 @@ bool	Pilot_MasterUpdate()
 		//---------------------------------
 		if (NPCInfo->greetEnt)
 		{
-			ucmd.upmove = 128.0f;
+			ucmd.upmove = 127;
 
 			if (NPCInfo->greetEnt && NPCInfo->greetEnt->m_pVehicle && level.time<NPCInfo->confusionTime)
 			{

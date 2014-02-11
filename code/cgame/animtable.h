@@ -21,9 +21,6 @@ This file is part of Jedi Academy.
 // moved it from the original header file for PCH reasons...
 //
 
-#if defined(_XBOX) && !defined(_JK2EXE) && !defined(_UI)	// Linker only wants one copy
-extern stringID_table_t animTable[MAX_ANIMATIONS+1];
-#else
 stringID_table_t animTable [MAX_ANIMATIONS+1] =
 {
 	//=================================================
@@ -1602,6 +1599,7 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 
 	ENUM2STRING(BOTH_STAND_TO_KNEEL),
 	ENUM2STRING(BOTH_KNEEL_TO_STAND),
+	ENUM2STRING(BOTH_KNEELATTACK),
 
 	ENUM2STRING(BOTH_TUSKENATTACK1),
 	ENUM2STRING(BOTH_TUSKENATTACK2),
@@ -1805,6 +1803,5 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_CIN_50),		//# Level specific cinematic
 										
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
-#endif	// _XBOX / _UI

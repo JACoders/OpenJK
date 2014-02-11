@@ -15,16 +15,12 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "g_items.h"
 #include "wp_saber.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern qboolean	missionInfo_Updated;
 
@@ -32,7 +28,7 @@ extern void CrystalAmmoSettings(gentity_t *ent);
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern qboolean PM_InKnockDown( playerState_t *ps );
 extern qboolean PM_InGetUp( playerState_t *ps );
-extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
+extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern void WP_SaberFallSound( gentity_t *owner, gentity_t *saber );
 extern saber_colors_t TranslateSaberColor( const char *name );
@@ -95,13 +91,13 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other )
 	if ( ent->item->giTag == INV_SECURITY_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
+		gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
 		INV_SecurityKeyGive( other, ent->message );
 	}
 	else if ( ent->item->giTag == INV_GOODIE_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SUPPLY_KEY" );
+		gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SUPPLY_KEY" );
 		INV_GoodieKeyGive( other );
 	}
 	else
@@ -278,7 +274,7 @@ gentity_t *G_DropSaberItem( const char *saberType, saber_colors_t saberColor, ve
 			newItem->spawnflags |= 64;/*ITMSF_NOGLOW*/
 			newItem->NPC_type = G_NewString( saberType );//saberType
 			//FIXME: transfer per-blade color somehow?
-			newItem->NPC_targetname = saberColorStringForColor[saberColor];
+			newItem->NPC_targetname = (char *)saberColorStringForColor[saberColor];
 			newItem->count = 1;
 			newItem->flags = FL_DROPPED_ITEM;
 			G_SpawnItem( newItem, FindItemForWeapon( WP_SABER ) );
@@ -705,6 +701,8 @@ qboolean G_CanPickUpWeapons( gentity_t *other )
 	case CLASS_UGNAUGHT: //FIXME: in some cases it's okay?
 	case CLASS_SENTRY:
 		return qfalse;
+		break;
+	default:
 		break;
 	}
 	return qtrue;
@@ -1145,12 +1143,12 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 		//NOTE:  should I keep this string around for any reason?  Will I ever need it later?
 		//ent->??? = G_NewString( itemSaber.model );
-		gi.G2API_InitGhoul2Model( ent->ghoul2, itemSaber.model, G_ModelIndex( itemSaber.model ), NULL, NULL, 0, 0);
+		gi.G2API_InitGhoul2Model( ent->ghoul2, itemSaber.model, G_ModelIndex( itemSaber.model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 		WP_SaberFreeStrings(itemSaber);
 	}
 	else
 	{
-		gi.G2API_InitGhoul2Model( ent->ghoul2, ent->item->world_model, G_ModelIndex( ent->item->world_model ), NULL, NULL, 0, 0);
+		gi.G2API_InitGhoul2Model( ent->ghoul2, ent->item->world_model, G_ModelIndex( ent->item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 	}
 
 	// Set crystal ammo amount based on skill level
@@ -1325,7 +1323,7 @@ void item_spawn_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	self->nextthink = level.time + 50;
 	self->e_ThinkFunc = thinkF_FinishSpawningItem;
 	// I could be fancy and add a count or something like that to be able to spawn the item numerous times...
-	self->e_UseFunc = NULL;
+	self->e_UseFunc = useF_NULL;
 }
 
 /*

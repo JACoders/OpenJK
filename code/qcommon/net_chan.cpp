@@ -16,7 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 
 /*
@@ -63,7 +63,7 @@ cvar_t		*showpackets;
 cvar_t		*showdrop;
 cvar_t		*qport;
 
-static char *netsrcString[2] = {
+static const char *netsrcString[2] = {
 	"client",
 	"server"
 };
@@ -91,7 +91,7 @@ void Netchan_Init( int port ) {
 	port &= 0xffff;
 	showpackets = Cvar_Get ("showpackets", "0", CVAR_TEMP );
 	showdrop = Cvar_Get ("showdrop", "0", CVAR_TEMP );
-	qport = Cvar_Get ("qport", va("%i", port), CVAR_INIT );
+	qport = Cvar_Get ("net_qport", va("%i", port), CVAR_INIT );
 }
 
 void Netchan_Shutdown()
@@ -224,7 +224,7 @@ copied out.
 */
 qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	int			sequence, sequence_ack;
-	int			qport;
+	//int			qport;
 	int			fragmentStart, fragmentLength;
 	qboolean	fragmented;
 
@@ -243,7 +243,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 	// read the qport if we are a server
 	if ( chan->sock == NS_SERVER ) {
-		qport = MSG_ReadShort( msg );
+		/*qport = */MSG_ReadShort( msg );
 	}
 
 	// read the fragment information
@@ -324,7 +324,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 		// copy the fragment to the fragment buffer
 		if ( fragmentLength < 0 || msg->readcount + fragmentLength > msg->cursize ||
-			chan->fragmentLength + fragmentLength > sizeof( chan->fragmentBuffer ) ) {
+			chan->fragmentLength + fragmentLength > (int)sizeof( chan->fragmentBuffer ) ) {
 			if ( showdrop->integer || showpackets->integer ) {
 				Com_Printf ("%s:illegal fragment length\n"
 				, NET_AdrToString (chan->remoteAddress ) );
@@ -554,7 +554,7 @@ void QDECL NET_OutOfBandPrint( netsrc_t sock, netadr_t adr, const char *format, 
 	string[3] = (char) 0xff;
 
 	va_start( argptr, format );
-	vsprintf( string+4, format, argptr );
+	Q_vsnprintf( string+4, sizeof(string)-4, format, argptr );
 	va_end( argptr );
 
 	// send the datagram

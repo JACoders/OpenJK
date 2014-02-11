@@ -27,6 +27,7 @@ This file is part of Jedi Knight 2.
 #include "bg_local.h"			   
 #include "g_functions.h"
 #include "wp_saber.h"
+#include "../../code/qcommon/tri_coll_test.h"
 
 #define MAX_SABER_VICTIMS 16
 static int		victimEntityNum[MAX_SABER_VICTIMS];
@@ -272,17 +273,16 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel )
 		ent->weaponModel = -1;
 		return;
 	}
-	char weaponModel[64];
 
-	strcpy (weaponModel, psWeaponModel);	
-	if (char *spot = strstr(weaponModel, ".md3") ) {
-		*spot = 0;
-		spot = strstr(weaponModel, "_w");//i'm using the in view weapon array instead of scanning the item list, so put the _w back on
-		if (!spot&&!strstr(weaponModel, "noweap")) 
+	char weaponModel[MAX_QPATH];
+	Q_strncpyz(weaponModel, psWeaponModel, sizeof(weaponModel));
+	if (char *spot = (char*)Q_stristr(weaponModel, ".md3") ) {
+		spot = (char*)Q_stristr(weaponModel, "_w");//i'm using the in view weapon array instead of scanning the item list, so put the _w back on
+		if (!spot&&!Q_stristr(weaponModel, "noweap")) 
 		{
-			strcat (weaponModel, "_w");
+			Q_strcat (weaponModel, sizeof(weaponModel), "_w");
 		}
-		strcat (weaponModel, ".glm");	//and change to ghoul2
+		Q_strcat (weaponModel, sizeof(weaponModel), ".glm");	//and change to ghoul2
 	}
 
 	if ( ent->playerModel == -1 )
@@ -1145,7 +1145,6 @@ qboolean WP_SabersIntersect( gentity_t *ent1, gentity_t *ent2, qboolean checkDir
 	return qfalse;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 float WP_SabersDistance( gentity_t *ent1, gentity_t *ent2 )
 {
 	vec3_t	saberBaseNext1, saberTipNext1, saberPoint1;
@@ -6997,6 +6996,8 @@ void ForceGrip( gentity_t *self )
 				ForceThrow( traceEnt, qfalse );
 				return;
 			}
+			break;
+		default:
 			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )

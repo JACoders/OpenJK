@@ -5,7 +5,7 @@
  * desc:		log file
  *
  * $Archive: /MissionPack/CODE/botlib/l_log.c $
- * $Author: Raduffy $ 
+ * $Author: Raduffy $
  * $Revision: 1 $
  * $Modtime: 12/20/99 8:43p $
  * $Date: 3/08/00 11:28a $

@@ -22,8 +22,8 @@ This file is part of Jedi Academy.
 #include <string.h>
 #include <limits.h>
 
-#include "../game/q_shared.h"
-#include "../renderer/tr_types.h"
+#include "../qcommon/q_shared.h"
+#include "../rd-common/tr_types.h"
 #include "../qcommon/qcommon.h"
 #include "ui_public.h"
 #include "ui_shared.h"
@@ -70,7 +70,7 @@ extern void UI_DataPadMenu(void);
 // ui_connect.c
 //
 extern void UI_DrawConnect( const char *servername, const char * updateInfoString );
-extern void UI_UpdateConnectionString( char *string );
+extern void UI_UpdateConnectionString( const char *string );
 extern void UI_UpdateConnectionMessageString( char *string );
 
 
@@ -179,7 +179,7 @@ typedef struct {
 	qhandle_t litThrowableIcon;
 	qhandle_t unlitThrowableIcon;
 	short		movesTitleIndex;
-	char		*movesBaseAnim;
+	const char	*movesBaseAnim;
 	int			moveAnimTime;
 	int			languageCount;
 	int			languageCountIndex;
@@ -224,9 +224,6 @@ void			trap_R_RenderScene( const refdef_t *fd );
 void			trap_S_StopSounds( void );
 sfxHandle_t		trap_S_RegisterSound( const char *sample, qboolean compressed );
 void			trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum );
-#ifndef _XBOX
-int				PASSFLOAT( float x );
-#endif
 
 
 

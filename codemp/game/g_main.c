@@ -4,7 +4,8 @@
 #include "g_local.h"
 #include "g_ICARUScb.h"
 #include "g_nav.h"
-#include "game/bg_saga.h"
+#include "bg_saga.h"
+#include "b_local.h"
 
 level_locals_t	level;
 
@@ -43,219 +44,6 @@ void CP_FindCombatPointWaypoints( void );
 
 /*
 ================
-vmMain
-
-This is the only way control passes into the module.
-This must be the very first function compiled into the .q3vm file
-================
-*/
-/*Q_EXPORT_C*/ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
-	switch ( command ) {
-	case GAME_INIT:
-		G_InitGame( arg0, arg1, arg2 );
-		return 0;
-	case GAME_SHUTDOWN:
-		G_ShutdownGame( arg0 );
-		return 0;
-	case GAME_CLIENT_CONNECT:
-		return (int)ClientConnect( arg0, arg1, arg2 );
-	case GAME_CLIENT_THINK:
-		ClientThink( arg0, NULL );
-		return 0;
-	case GAME_CLIENT_USERINFO_CHANGED:
-		ClientUserinfoChanged( arg0 );
-		return 0;
-	case GAME_CLIENT_DISCONNECT:
-		ClientDisconnect( arg0 );
-		return 0;
-	case GAME_CLIENT_BEGIN:
-		ClientBegin( arg0, qtrue );
-		return 0;
-	case GAME_CLIENT_COMMAND:
-		ClientCommand( arg0 );
-		return 0;
-	case GAME_RUN_FRAME:
-		G_RunFrame( arg0 );
-		return 0;
-	case GAME_CONSOLE_COMMAND:
-		return ConsoleCommand();
-	case BOTAI_START_FRAME:
-		return BotAIStartFrame( arg0 );
-	case GAME_ROFF_NOTETRACK_CALLBACK:
-		G_ROFF_NotetrackCallback( &g_entities[arg0], (const char *)arg1 );
-		return 0;
-	case GAME_SPAWN_RMG_ENTITY:
-		if (G_ParseSpawnVars(qfalse))
-		{
-			G_SpawnGEntityFromSpawnVars(qfalse);
-		}
-		return 0;
-
-	//rww - begin icarus callbacks
-	case GAME_ICARUS_PLAYSOUND:
-		{
-			T_G_ICARUS_PLAYSOUND *sharedMem = (T_G_ICARUS_PLAYSOUND *)gSharedBuffer;
-			return Q3_PlaySound(sharedMem->taskID, sharedMem->entID, sharedMem->name, sharedMem->channel);
-		}
-	case GAME_ICARUS_SET:
-		{
-			T_G_ICARUS_SET *sharedMem = (T_G_ICARUS_SET *)gSharedBuffer;
-			return Q3_Set(sharedMem->taskID, sharedMem->entID, sharedMem->type_name, sharedMem->data);
-		}
-	case GAME_ICARUS_LERP2POS:
-		{
-			T_G_ICARUS_LERP2POS *sharedMem = (T_G_ICARUS_LERP2POS *)gSharedBuffer;
-			if (sharedMem->nullAngles)
-			{
-				Q3_Lerp2Pos(sharedMem->taskID, sharedMem->entID, sharedMem->origin, NULL, sharedMem->duration);
-			}
-			else
-			{
-				Q3_Lerp2Pos(sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->angles, sharedMem->duration);
-			}
-		}
-		return 0;
-	case GAME_ICARUS_LERP2ORIGIN:
-		{
-			T_G_ICARUS_LERP2ORIGIN *sharedMem = (T_G_ICARUS_LERP2ORIGIN *)gSharedBuffer;
-			Q3_Lerp2Origin(sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->duration);
-		}
-		return 0;
-	case GAME_ICARUS_LERP2ANGLES:
-		{
-			T_G_ICARUS_LERP2ANGLES *sharedMem = (T_G_ICARUS_LERP2ANGLES *)gSharedBuffer;
-			Q3_Lerp2Angles(sharedMem->taskID, sharedMem->entID, sharedMem->angles, sharedMem->duration);
-		}
-		return 0;
-	case GAME_ICARUS_GETTAG:
-		{
-			T_G_ICARUS_GETTAG *sharedMem = (T_G_ICARUS_GETTAG *)gSharedBuffer;
-			return Q3_GetTag(sharedMem->entID, sharedMem->name, sharedMem->lookup, sharedMem->info);
-		}
-	case GAME_ICARUS_LERP2START:
-		{
-			T_G_ICARUS_LERP2START *sharedMem = (T_G_ICARUS_LERP2START *)gSharedBuffer;
-			Q3_Lerp2Start(sharedMem->entID, sharedMem->taskID, sharedMem->duration);
-		}
-		return 0;
-	case GAME_ICARUS_LERP2END:
-		{
-			T_G_ICARUS_LERP2END *sharedMem = (T_G_ICARUS_LERP2END *)gSharedBuffer;
-			Q3_Lerp2End(sharedMem->entID, sharedMem->taskID, sharedMem->duration);
-		}
-		return 0;
-	case GAME_ICARUS_USE:
-		{
-			T_G_ICARUS_USE *sharedMem = (T_G_ICARUS_USE *)gSharedBuffer;
-			Q3_Use(sharedMem->entID, sharedMem->target);
-		}
-		return 0;
-	case GAME_ICARUS_KILL:
-		{
-			T_G_ICARUS_KILL *sharedMem = (T_G_ICARUS_KILL *)gSharedBuffer;
-			Q3_Kill(sharedMem->entID, sharedMem->name);
-		}
-		return 0;
-	case GAME_ICARUS_REMOVE:
-		{
-			T_G_ICARUS_REMOVE *sharedMem = (T_G_ICARUS_REMOVE *)gSharedBuffer;
-			Q3_Remove(sharedMem->entID, sharedMem->name);
-		}
-		return 0;
-	case GAME_ICARUS_PLAY:
-		{
-			T_G_ICARUS_PLAY *sharedMem = (T_G_ICARUS_PLAY *)gSharedBuffer;
-			Q3_Play(sharedMem->taskID, sharedMem->entID, sharedMem->type, sharedMem->name);
-		}
-		return 0;
-	case GAME_ICARUS_GETFLOAT:
-		{
-			T_G_ICARUS_GETFLOAT *sharedMem = (T_G_ICARUS_GETFLOAT *)gSharedBuffer;
-			return Q3_GetFloat(sharedMem->entID, sharedMem->type, sharedMem->name, &sharedMem->value);
-		}
-	case GAME_ICARUS_GETVECTOR:
-		{
-			T_G_ICARUS_GETVECTOR *sharedMem = (T_G_ICARUS_GETVECTOR *)gSharedBuffer;
-			return Q3_GetVector(sharedMem->entID, sharedMem->type, sharedMem->name, sharedMem->value);
-		}
-	case GAME_ICARUS_GETSTRING:
-		{
-			T_G_ICARUS_GETSTRING *sharedMem = (T_G_ICARUS_GETSTRING *)gSharedBuffer;
-			int r;
-			char *crap = NULL; //I am sorry for this -rww
-			char **morecrap = &crap; //and this
-			r = Q3_GetString(sharedMem->entID, sharedMem->type, sharedMem->name, morecrap);
-
-			if (crap)
-			{ //success!
-				strcpy(sharedMem->value, crap);
-			}
-
-			return r;
-		}
-	case GAME_ICARUS_SOUNDINDEX:
-		{
-			T_G_ICARUS_SOUNDINDEX *sharedMem = (T_G_ICARUS_SOUNDINDEX *)gSharedBuffer;
-			G_SoundIndex(sharedMem->filename);
-		}
-		return 0;
-	case GAME_ICARUS_GETSETIDFORSTRING:
-		{
-			T_G_ICARUS_GETSETIDFORSTRING *sharedMem = (T_G_ICARUS_GETSETIDFORSTRING *)gSharedBuffer;
-			return GetIDForString(setTable, sharedMem->string);
-		}
-	//rww - end icarus callbacks
-
-	case GAME_NAV_CLEARPATHTOPOINT:
-		return NAV_ClearPathToPoint(&g_entities[arg0], (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5);
-	case GAME_NAV_CLEARLOS:
-		return NPC_ClearLOS2(&g_entities[arg0], (const float *)arg1);
-	case GAME_NAV_CLEARPATHBETWEENPOINTS:
-		return NAVNEW_ClearPathBetweenPoints((float *)arg0, (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5);
-	case GAME_NAV_CHECKNODEFAILEDFORENT:
-		return NAV_CheckNodeFailedForEnt(&g_entities[arg0], arg1);
-	case GAME_NAV_ENTISUNLOCKEDDOOR:
-		return G_EntIsUnlockedDoor(arg0);
-	case GAME_NAV_ENTISDOOR:
-		return G_EntIsDoor(arg0);
-	case GAME_NAV_ENTISBREAKABLE:
-		return G_EntIsBreakable(arg0);
-	case GAME_NAV_ENTISREMOVABLEUSABLE:
-		return G_EntIsRemovableUsable(arg0);
-	case GAME_NAV_FINDCOMBATPOINTWAYPOINTS:
-		CP_FindCombatPointWaypoints();
-		return 0;
-	case GAME_GETITEMINDEXBYTAG:
-		return BG_GetItemIndexByTag(arg0, arg1);
-	}
-
-	return -1;
-}
-
-void QDECL G_Printf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, fmt);
-	Q_vsnprintf (text, sizeof( text ), fmt, argptr);
-	va_end (argptr);
-
-	trap_Print( text );
-}
-
-void QDECL G_Error( const char *fmt, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, fmt);
-	Q_vsnprintf (text, sizeof( text ), fmt, argptr);
-	va_end (argptr);
-
-	trap_Error( text );
-}
-
-/*
-================
 G_FindTeams
 
 Chain together all entities with a matching team field.
@@ -272,7 +60,7 @@ void G_FindTeams( void ) {
 
 	c = 0;
 	c2 = 0;
-	for ( i=1, e=g_entities+i ; i < level.num_entities ; i++,e++ ){
+	for ( i=MAX_CLIENTS, e=g_entities+i ; i < level.num_entities ; i++,e++ ) {
 		if (!e->inuse)
 			continue;
 		if (!e->team)
@@ -309,89 +97,38 @@ void G_FindTeams( void ) {
 		}
 	}
 
-//	G_Printf ("%i teams with %i entities\n", c, c2);
+//	trap->Print ("%i teams with %i entities\n", c, c2);
 }
 
-static void G_ValidateGametype( void ) {
-	// check some things
-	if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE ) {
-		G_Printf( "g_gametype %i is out of range, defaulting to 0\n", g_gametype.integer );
-		trap_Cvar_Set( "g_gametype", "0" );
-	}
-	else if ( g_gametype.integer == GT_HOLOCRON ||
-			g_gametype.integer == GT_JEDIMASTER ||
-			g_gametype.integer == GT_CTY )
-	{
-		G_Printf( "This gametype is not supported.\n" );
-		trap_Cvar_Set( "g_gametype", "0" );
-	}
-}
-
-
-typedef struct {
-	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
-	void		(*update)( void );
-	int			cvarFlags;
-	qboolean	trackChange; // track this variable, and announce if changed
-} cvarTable_t;
-
-#define XCVAR_DECL
-	#include "g_xcvar.h"
-#undef XCVAR_DECL
-
-static cvarTable_t gameCvarTable[] = {
-	#define XCVAR_LIST
-		#include "g_xcvar.h"
-	#undef XCVAR_LIST
-};
-static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
-
-/*
-=================
-G_RegisterCvars
-=================
-*/
-void G_RegisterCvars( void ) {
-	int i = 0;
-	cvarTable_t *cv = NULL;
-
-	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
-		trap_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-		if ( cv->update )
-			cv->update();
-	}
-}
-
-/*
-=================
-G_UpdateCvars
-=================
-*/
-void G_UpdateCvars( void ) {
-	int i = 0;
-	cvarTable_t *cv = NULL;
-
-	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
-		if ( cv->vmCvar ) {
-			int modCount = cv->vmCvar->modificationCount;
-			trap_Cvar_Update( cv->vmCvar );
-			if ( cv->vmCvar->modificationCount > modCount ) {
-				if ( cv->update )
-					cv->update();
-
-				if ( cv->trackChange )
-					trap_SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", cv->cvarName, cv->vmCvar->string ) );
-			}
-		}
-	}
-}
-
-char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
+sharedBuffer_t gSharedBuffer;
 
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
+
+void G_CacheGametype( void )
+{
+	// check some things
+	if ( g_gametype.string[0] && isalpha( g_gametype.string[0] ) )
+	{
+		int gt = BG_GetGametypeForString( g_gametype.string );
+		if ( gt == -1 )
+		{
+			trap->Print( "Gametype '%s' unrecognised, defaulting to FFA/Deathmatch\n", g_gametype.string );
+			level.gametype = GT_FFA;
+		}
+		else
+			level.gametype = gt;
+	}
+	else if ( g_gametype.integer < 0 || level.gametype >= GT_MAX_GAME_TYPE )
+	{
+		trap->Print( "g_gametype %i is out of range, defaulting to 0\n", level.gametype );
+		level.gametype = GT_FFA;
+	}
+	else
+		level.gametype = atoi( g_gametype.string );
+
+	trap->Cvar_Set( "g_gametype", va( "%i", level.gametype ) );
+}
 
 /*
 ============
@@ -401,6 +138,8 @@ G_InitGame
 */
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
+gentity_t *SelectRandomDeathmatchSpawnPoint( void );
+void SP_info_jedimaster_start( gentity_t *ent );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -408,24 +147,24 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	char serverinfo[MAX_INFO_STRING] = {0};
 
 	//Init RMG to 0, it will be autoset to 1 if there is terrain on the level.
-	trap_Cvar_Set("RMG", "0");
+	trap->Cvar_Set("RMG", "0");
 	RMG.integer = 0;
 
 	//Clean up any client-server ghoul2 instance attachments that may still exist exe-side
-	trap_G2API_CleanEntAttachments();
+	trap->G2API_CleanEntAttachments();
 
 	BG_InitAnimsets(); //clear it out
 
 	B_InitAlloc(); //make sure everything is clean
 
-	trap_SV_RegisterSharedMemory(gSharedBuffer);
+	trap->SV_RegisterSharedMemory( gSharedBuffer.raw );
 
 	//Load external vehicle data
 	BG_VehicleLoadParms();
 
-	G_Printf ("------- Game Initialization -------\n");
-	G_Printf ("gamename: %s\n", GAMEVERSION);
-	G_Printf ("gamedate: %s\n", __DATE__);
+	trap->Print ("------- Game Initialization -------\n");
+	trap->Print ("gamename: %s\n", GAMEVERSION);
+	trap->Print ("gamedate: %s\n", __DATE__);
 
 	srand( randomSeed );
 
@@ -440,46 +179,50 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.time = levelTime;
 	level.startTime = levelTime;
 
+	level.follow1 = level.follow2 = -1;
+
 	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
 
 	level.snd_hack = G_SoundIndex("sound/player/hacking.wav");
 	level.snd_medHealed = G_SoundIndex("sound/player/supp_healed.wav");
 	level.snd_medSupplied = G_SoundIndex("sound/player/supp_supplied.wav");
 
-	//trap_SP_RegisterServer("mp_svgame");
+	//trap->SP_RegisterServer("mp_svgame");
 
 	if ( g_log.string[0] )
 	{
-		trap_FS_FOpenFile( g_log.string, &level.logFile, g_logSync.integer ? FS_APPEND_SYNC : FS_APPEND );
+		trap->FS_Open( g_log.string, &level.logFile, g_logSync.integer ? FS_APPEND_SYNC : FS_APPEND );
 		if ( level.logFile )
-			G_Printf( "Logging to %s\n", g_log.string );
+			trap->Print( "Logging to %s\n", g_log.string );
 		else
-			G_Printf( "WARNING: Couldn't open logfile: %s\n", g_log.string );
+			trap->Print( "WARNING: Couldn't open logfile: %s\n", g_log.string );
 	}
 	else
-		G_Printf( "Not logging game events to disk.\n" );
+		trap->Print( "Not logging game events to disk.\n" );
 
-	trap_GetServerinfo( serverinfo, sizeof( serverinfo ) );
+	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
 	G_LogPrintf( "------------------------------------------------------------\n" );
 	G_LogPrintf( "InitGame: %s\n", serverinfo );
 
 	if ( g_securityLog.integer )
 	{
 		if ( g_securityLog.integer == 1 )
-			trap_FS_FOpenFile( SECURITY_LOG, &level.security.log, FS_APPEND );
+			trap->FS_Open( SECURITY_LOG, &level.security.log, FS_APPEND );
 		else if ( g_securityLog.integer == 2 )
-			trap_FS_FOpenFile( SECURITY_LOG, &level.security.log, FS_APPEND_SYNC );
+			trap->FS_Open( SECURITY_LOG, &level.security.log, FS_APPEND_SYNC );
 
 		if ( level.security.log )
-			G_Printf( "Logging to "SECURITY_LOG"\n" );
+			trap->Print( "Logging to "SECURITY_LOG"\n" );
 		else
-			G_Printf( "WARNING: Couldn't open logfile: "SECURITY_LOG"\n" );
+			trap->Print( "WARNING: Couldn't open logfile: "SECURITY_LOG"\n" );
 	}
 	else
-		G_Printf( "Not logging security events to disk.\n" );
+		trap->Print( "Not logging security events to disk.\n" );
 
-	
+
 	G_LogWeaponInit();
+
+	G_CacheGametype();
 
 	G_InitWorldSession();
 
@@ -502,22 +245,26 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// range are NEVER anything but clients
 	level.num_entities = MAX_CLIENTS;
 
+	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
+		g_entities[i].classname = "clientslot";
+	}
+
 	// let the server system know where the entites are
-	trap_LocateGameData( level.gentities, level.num_entities, sizeof( gentity_t ), 
+	trap->LocateGameData( (sharedEntity_t *)level.gentities, level.num_entities, sizeof( gentity_t ),
 		&level.clients[0].ps, sizeof( level.clients[0] ) );
 
 	//Load sabers.cfg data
 	WP_SaberLoadParms();
 
 	NPC_InitGame();
-	
+
 	TIMER_Clear();
 	//
 	//ICARUS INIT START
 
 //	Com_Printf("------ ICARUS Initialization ------\n");
 
-	trap_ICARUS_Init();
+	trap->ICARUS_Init();
 
 //	Com_Printf ("-----------------------------------\n");
 
@@ -532,10 +279,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	//make sure saber data is loaded before this! (so we can precache the appropriate hilts)
 	InitSiegeMode();
 
-	trap_Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
-	trap_Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
+	trap->Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
+	trap->Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
 
-	navCalculatePaths	= ( trap_Nav_Load( mapname.string, ckSum.integer ) == qfalse );
+	navCalculatePaths	= ( trap->Nav_Load( mapname.string, ckSum.integer ) == qfalse );
 
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
@@ -544,48 +291,45 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_FindTeams();
 
 	// make sure we have flags for CTF, etc
-	if( g_gametype.integer >= GT_TEAM ) {
+	if( level.gametype >= GT_TEAM ) {
 		G_CheckTeamItems();
 	}
-	else if ( g_gametype.integer == GT_JEDIMASTER )
+	else if ( level.gametype == GT_JEDIMASTER )
 	{
-		trap_SetConfigstring ( CS_CLIENT_JEDIMASTER, "-1" );
+		trap->SetConfigstring ( CS_CLIENT_JEDIMASTER, "-1" );
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
-		trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("-1|-1|-1") );
+		trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("-1|-1|-1") );
 	}
 	else
 	{
-		trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("-1|-1") );
+		trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("-1|-1") );
 	}
 // nmckenzie: DUEL_HEALTH: Default.
-	trap_SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("-1|-1|!") );
-	trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("-1") );
+	trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("-1|-1|!") );
+	trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("-1") );
 
 	SaveRegisteredItems();
 
-	//G_Printf ("-----------------------------------\n");
+	//trap->Print ("-----------------------------------\n");
 
-	if( g_gametype.integer == GT_SINGLE_PLAYER || trap_Cvar_VariableIntegerValue( "com_buildScript" ) ) {
+	if( level.gametype == GT_SINGLE_PLAYER || trap->Cvar_VariableIntegerValue( "com_buildScript" ) ) {
 		G_ModelIndex( SP_PODIUM_MODEL );
 		G_SoundIndex( "sound/player/gurp1.wav" );
 		G_SoundIndex( "sound/player/gurp2.wav" );
 	}
 
-	if ( trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
+	if ( trap->Cvar_VariableIntegerValue( "bot_enable" ) ) {
 		BotAISetup( restart );
 		BotAILoadMap( restart );
 		G_InitBots( );
 	} else {
-		//JAC: We still want to load arenas even if bot_enable is off so that
-		//		g_autoMapCycle can work let alone any other code that relies on
-		//		using arena information that normally wouldn't be loaded
 		G_LoadArenas();
 	}
 
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 	{
 		G_LogPrintf("Duel Tournament Begun: kill limit %d, win limit: %d\n", fraglimit.integer, duel_fraglimit.integer );
 	}
@@ -596,11 +340,11 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else
 	{//loaded
-		//FIXME: if this is from a loadgame, it needs to be sure to write this 
+		//FIXME: if this is from a loadgame, it needs to be sure to write this
 		//out whenever you do a savegame since the edges and routes are dynamic...
 		//OR: always do a navigator.CheckBlockedEdges() on map startup after nav-load/calc-paths
 		//navigator.pathsCalculated = qtrue;//just to be safe?  Does this get saved out?  No... assumed
-		trap_Nav_SetPathsCalculated(qtrue);
+		trap->Nav_SetPathsCalculated(qtrue);
 		//need to do this, because combatpoint waypoints aren't saved out...?
 		CP_FindCombatPointWaypoints();
 		navCalcPathTime = 0;
@@ -608,15 +352,14 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		/*
 		if ( g_eSavedGameJustLoaded == eNO )
 		{//clear all the failed edges unless we just loaded the game (which would include failed edges)
-			trap_Nav_ClearAllFailedEdges();
+			trap->Nav_ClearAllFailedEdges();
 		}
 		*/
 		//No loading games in MP.
 	}
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //just get these configstrings registered now...
-		int i = 0;
 		while (i < MAX_CUSTOM_SIEGE_SOUNDS)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -625,6 +368,29 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			}
 			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 			i++;
+		}
+	}
+
+	if ( level.gametype == GT_JEDIMASTER ) {
+		gentity_t *ent = NULL;
+		int i=0;
+		for ( i=0, ent=g_entities; i<level.num_entities; i++, ent++ ) {
+			if ( ent->isSaberEntity )
+				break;
+		}
+
+		if ( i == level.num_entities ) {
+			// no JM saber found. drop one at one of the player spawnpoints
+			gentity_t *spawnpoint = SelectRandomDeathmatchSpawnPoint();
+
+			if( !spawnpoint ) {
+				trap->Error( ERR_DROP, "Couldn't find an FFA spawnpoint to drop the jedimaster saber at!\n" );
+				return;
+			}
+
+			ent = G_Spawn();
+			G_SetOrigin( ent, spawnpoint->s.origin );
+			SP_info_jedimaster_start( ent );
 		}
 	}
 }
@@ -640,7 +406,7 @@ void G_ShutdownGame( int restart ) {
 	int i = 0;
 	gentity_t *ent;
 
-//	G_Printf ("==== ShutdownGame ====\n");
+//	trap->Print ("==== ShutdownGame ====\n");
 
 	G_CleanAllFakeClients(); //get rid of dynamically allocated fake client structs.
 
@@ -651,9 +417,9 @@ void G_ShutdownGame( int restart ) {
 	{ //clean up all the ghoul2 instances
 		ent = &g_entities[i];
 
-		if (ent->ghoul2 && trap_G2_HaveWeGhoul2Models(ent->ghoul2))
+		if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))
 		{
-			trap_G2API_CleanGhoul2Models(&ent->ghoul2);
+			trap->G2API_CleanGhoul2Models(&ent->ghoul2);
 			ent->ghoul2 = NULL;
 		}
 		if (ent->client)
@@ -662,28 +428,28 @@ void G_ShutdownGame( int restart ) {
 
 			while (j < MAX_SABERS)
 			{
-				if (ent->client->weaponGhoul2[j] && trap_G2_HaveWeGhoul2Models(ent->client->weaponGhoul2[j]))
+				if (ent->client->weaponGhoul2[j] && trap->G2API_HaveWeGhoul2Models(ent->client->weaponGhoul2[j]))
 				{
-					trap_G2API_CleanGhoul2Models(&ent->client->weaponGhoul2[j]);
+					trap->G2API_CleanGhoul2Models(&ent->client->weaponGhoul2[j]);
 				}
 				j++;
 			}
 		}
 		i++;
 	}
-	if (g2SaberInstance && trap_G2_HaveWeGhoul2Models(g2SaberInstance))
+	if (g2SaberInstance && trap->G2API_HaveWeGhoul2Models(g2SaberInstance))
 	{
-		trap_G2API_CleanGhoul2Models(&g2SaberInstance);
+		trap->G2API_CleanGhoul2Models(&g2SaberInstance);
 		g2SaberInstance = NULL;
 	}
-	if (precachedKyle && trap_G2_HaveWeGhoul2Models(precachedKyle))
+	if (precachedKyle && trap->G2API_HaveWeGhoul2Models(precachedKyle))
 	{
-		trap_G2API_CleanGhoul2Models(&precachedKyle);
+		trap->G2API_CleanGhoul2Models(&precachedKyle);
 		precachedKyle = NULL;
 	}
 
 //	Com_Printf ("... ICARUS_Shutdown\n");
-	trap_ICARUS_Shutdown ();	//Shut ICARUS down
+	trap->ICARUS_Shutdown ();	//Shut ICARUS down
 
 //	Com_Printf ("... Reference Tags Cleared\n");
 	TAG_Init();	//Clear the reference tags
@@ -692,53 +458,27 @@ void G_ShutdownGame( int restart ) {
 
 	if ( level.logFile ) {
 		G_LogPrintf( "ShutdownGame:\n------------------------------------------------------------\n" );
-		trap_FS_FCloseFile( level.logFile );
+		trap->FS_Close( level.logFile );
 		level.logFile = 0;
 	}
 
 	if ( level.security.log )
 	{
 		G_SecurityLogPrintf( "ShutdownGame\n\n" );
-		trap_FS_FCloseFile( level.security.log );
+		trap->FS_Close( level.security.log );
 		level.security.log = 0;
 	}
 
 	// write all the client session data so we can get it back
 	G_WriteSessionData();
 
-	trap_ROFF_Clean();
+	trap->ROFF_Clean();
 
-	if ( trap_Cvar_VariableIntegerValue( "bot_enable" ) ) {
+	if ( trap->Cvar_VariableIntegerValue( "bot_enable" ) ) {
 		BotAIShutdown( restart );
 	}
 
 	B_CleanupAlloc(); //clean up all allocations made with B_Alloc
-}
-
-
-
-//===================================================================
-
-void QDECL Com_Error ( int level, const char *error, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof( text ), error, argptr);
-	va_end (argptr);
-
-	trap_Error(text);
-}
-
-void QDECL Com_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof( text ), msg, argptr);
-	va_end (argptr);
-
-	trap_Print(text);
 }
 
 /*
@@ -786,14 +526,13 @@ void AddTournamentPlayer( void ) {
 			continue;
 		}
 		// never select the dedicated follow or scoreboard clients
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD || 
+		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ||
 			client->sess.spectatorClient < 0  ) {
 			continue;
 		}
 
-		if ( !nextInLine || client->sess.spectatorTime < nextInLine->sess.spectatorTime ) {
+		if ( !nextInLine || client->sess.spectatorNum > nextInLine->sess.spectatorNum )
 			nextInLine = client;
-		}
 	}
 
 	if ( !nextInLine ) {
@@ -804,6 +543,33 @@ void AddTournamentPlayer( void ) {
 
 	// set them to free-for-all team
 	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+}
+
+/*
+=======================
+AddTournamentQueue
+
+Add client to end of tournament queue
+=======================
+*/
+
+void AddTournamentQueue( gclient_t *client )
+{
+	int index;
+	gclient_t *curclient;
+
+	for( index = 0; index < level.maxclients; index++ )
+	{
+		curclient = &level.clients[index];
+
+		if ( curclient->pers.connected != CON_DISCONNECTED )
+		{
+			if ( curclient == client )
+				curclient->sess.spectatorNum = 0;
+			else if ( curclient->sess.sessionTeam == TEAM_SPECTATOR )
+				curclient->sess.spectatorNum++;
+		}
+	}
 }
 
 /*
@@ -913,14 +679,13 @@ void AddPowerDuelPlayers( void )
 		}
 
 		// never select the dedicated follow or scoreboard clients
-		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD || 
+		if ( client->sess.spectatorState == SPECTATOR_SCOREBOARD ||
 			client->sess.spectatorClient < 0  ) {
 			continue;
 		}
 
-		if ( !nextInLine || client->sess.spectatorTime < nextInLine->sess.spectatorTime ) {
+		if ( !nextInLine || client->sess.spectatorNum > nextInLine->sess.spectatorNum )
 			nextInLine = client;
-		}
 	}
 
 	if ( !nextInLine ) {
@@ -955,7 +720,7 @@ void RemovePowerDuelLosers(void)
 			if ((cl->ps.stats[STAT_HEALTH] <= 0 || cl->iAmALoser) &&
 				(cl->sess.sessionTeam != TEAM_SPECTATOR || cl->iAmALoser))
 			{ //he was dead or he was spectating as a loser
-                remClients[remNum] = cl->ps.clientNum;
+                remClients[remNum] = i;
 				remNum++;
 			}
 		}
@@ -1085,7 +850,7 @@ void AdjustTournamentScores( void ) {
 
 			level.clients[ clientNum ].sess.wins++;
 			ClientUserinfoChanged( clientNum );
-			trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
+			trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
 
 			clientNum = level.sortedClients[clFailure];
 
@@ -1101,7 +866,7 @@ void AdjustTournamentScores( void ) {
 
 			level.clients[ clientNum ].sess.wins++;
 			ClientUserinfoChanged( clientNum );
-			trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
+			trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
 
 			clientNum = level.sortedClients[clFailure];
 
@@ -1116,7 +881,7 @@ void AdjustTournamentScores( void ) {
 			level.clients[ clientNum ].sess.wins++;
 			ClientUserinfoChanged( clientNum );
 
-			trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
+			trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", clientNum ) );
 		}
 
 		clientNum = level.sortedClients[1];
@@ -1139,7 +904,7 @@ int QDECL SortRanks( const void *a, const void *b ) {
 	ca = &level.clients[*(int *)a];
 	cb = &level.clients[*(int *)b];
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		//sort single duelists first
 		if (ca->sess.duelTeam == DUELTEAM_LONE && ca->sess.sessionTeam != TEAM_SPECTATOR)
@@ -1173,10 +938,10 @@ int QDECL SortRanks( const void *a, const void *b ) {
 
 	// then spectators
 	if ( ca->sess.sessionTeam == TEAM_SPECTATOR && cb->sess.sessionTeam == TEAM_SPECTATOR ) {
-		if ( ca->sess.spectatorTime < cb->sess.spectatorTime ) {
+		if ( ca->sess.spectatorNum > cb->sess.spectatorNum ) {
 			return -1;
 		}
-		if ( ca->sess.spectatorTime > cb->sess.spectatorTime ) {
+		if ( ca->sess.spectatorNum < cb->sess.spectatorNum ) {
 			return 1;
 		}
 		return 0;
@@ -1230,8 +995,7 @@ qboolean g_noPDuelCheck = qfalse;
 void G_ResetDuelists(void)
 {
 	int i;
-	gentity_t *ent;
-	gentity_t *tent;
+	gentity_t *ent = NULL;
 
 	i = 0;
 	while (i < 3)
@@ -1241,12 +1005,8 @@ void G_ResetDuelists(void)
 		g_noPDuelCheck = qtrue;
 		player_die(ent, ent, ent, 999, MOD_SUICIDE);
 		g_noPDuelCheck = qfalse;
-		trap_UnlinkEntity (ent);
+		trap->UnlinkEntity ((sharedEntity_t *)ent);
 		ClientSpawn(ent);
-
-		// add a teleportation effect
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
 		i++;
 	}
 }
@@ -1265,11 +1025,11 @@ void CalculateRanks( void ) {
 	int		rank;
 	int		score;
 	int		newScore;
-	int		preNumSpec = 0;
+//	int		preNumSpec = 0;
 	//int		nonSpecIndex = -1;
 	gclient_t	*cl;
 
-	preNumSpec = level.numNonSpectatorClients;
+//	preNumSpec = level.numNonSpectatorClients;
 
 	level.follow1 = -1;
 	level.follow2 = -1;
@@ -1277,7 +1037,8 @@ void CalculateRanks( void ) {
 	level.numNonSpectatorClients = 0;
 	level.numPlayingClients = 0;
 	level.numVotingClients = 0;		// don't count bots
-	for ( i = 0; i < 2; i++ ) {
+
+	for ( i = 0; i < ARRAY_LEN(level.numteamVotingClients); i++ ) {
 		level.numteamVotingClients[i] = 0;
 	}
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
@@ -1285,14 +1046,14 @@ void CalculateRanks( void ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
 
-			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{
 				if (level.clients[i].sess.sessionTeam != TEAM_SPECTATOR)
 				{
 					level.numNonSpectatorClients++;
 					//nonSpecIndex = i;
 				}
-			
+
 				// decide if this should be auto-followed
 				if ( level.clients[i].pers.connected == CON_CONNECTED )
 				{
@@ -1318,36 +1079,28 @@ void CalculateRanks( void ) {
 		}
 	}
 
-	//Raz: Fix warmup
-#if 0
-	//if (!g_warmup.integer)
-	if (1)
-#else
-	if ( !g_warmup.integer || g_gametype.integer == GT_SIEGE )
-#endif
-	{
+	if ( !g_warmup.integer || level.gametype == GT_SIEGE )
 		level.warmupTime = 0;
-	}
 
 	/*
-	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && g_gametype.integer == GT_DUEL && !level.warmupTime)
+	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && level.gametype == GT_DUEL && !level.warmupTime)
 	{
 		gentity_t *currentWinner = G_GetDuelWinner(&level.clients[nonSpecIndex]);
 
 		if (currentWinner && currentWinner->client)
 		{
-			trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
+			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
 			currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), level.clients[nonSpecIndex].pers.netname));
 		}
 	}
 	*/
 	//NOTE: for now not doing this either. May use later if appropriate.
 
-	qsort( level.sortedClients, level.numConnectedClients, 
+	qsort( level.sortedClients, level.numConnectedClients,
 		sizeof(level.sortedClients[0]), SortRanks );
 
 	// set the rank value for all clients that are connected and not spectators
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		// in team games, rank is just the order of the teams, 0=red, 1=blue, 2=tied
 		for ( i = 0;  i < level.numConnectedClients; i++ ) {
 			cl = &level.clients[ level.sortedClients[i] ];
@@ -1359,7 +1112,7 @@ void CalculateRanks( void ) {
 				cl->ps.persistant[PERS_RANK] = 1;
 			}
 		}
-	} else {	
+	} else {
 		rank = -1;
 		score = 0;
 		for ( i = 0;  i < level.numPlayingClients; i++ ) {
@@ -1369,43 +1122,43 @@ void CalculateRanks( void ) {
 				rank = i;
 				// assume we aren't tied until the next client is checked
 				level.clients[ level.sortedClients[i] ].ps.persistant[PERS_RANK] = rank;
-			} else {
+			} else if(i != 0 ){
 				// we are tied with the previous client
 				level.clients[ level.sortedClients[i-1] ].ps.persistant[PERS_RANK] = rank | RANK_TIED_FLAG;
 				level.clients[ level.sortedClients[i] ].ps.persistant[PERS_RANK] = rank | RANK_TIED_FLAG;
 			}
 			score = newScore;
-			if ( g_gametype.integer == GT_SINGLE_PLAYER && level.numPlayingClients == 1 ) {
+			if ( level.gametype == GT_SINGLE_PLAYER && level.numPlayingClients == 1 ) {
 				level.clients[ level.sortedClients[i] ].ps.persistant[PERS_RANK] = rank | RANK_TIED_FLAG;
 			}
 		}
 	}
 
 	// set the CS_SCORES1/2 configstrings, which will be visible to everyone
-	if ( g_gametype.integer >= GT_TEAM ) {
-		trap_SetConfigstring( CS_SCORES1, va("%i", level.teamScores[TEAM_RED] ) );
-		trap_SetConfigstring( CS_SCORES2, va("%i", level.teamScores[TEAM_BLUE] ) );
+	if ( level.gametype >= GT_TEAM ) {
+		trap->SetConfigstring( CS_SCORES1, va("%i", level.teamScores[TEAM_RED] ) );
+		trap->SetConfigstring( CS_SCORES2, va("%i", level.teamScores[TEAM_BLUE] ) );
 	} else {
 		if ( level.numConnectedClients == 0 ) {
-			trap_SetConfigstring( CS_SCORES1, va("%i", SCORE_NOT_PRESENT) );
-			trap_SetConfigstring( CS_SCORES2, va("%i", SCORE_NOT_PRESENT) );
+			trap->SetConfigstring( CS_SCORES1, va("%i", SCORE_NOT_PRESENT) );
+			trap->SetConfigstring( CS_SCORES2, va("%i", SCORE_NOT_PRESENT) );
 		} else if ( level.numConnectedClients == 1 ) {
-			trap_SetConfigstring( CS_SCORES1, va("%i", level.clients[ level.sortedClients[0] ].ps.persistant[PERS_SCORE] ) );
-			trap_SetConfigstring( CS_SCORES2, va("%i", SCORE_NOT_PRESENT) );
+			trap->SetConfigstring( CS_SCORES1, va("%i", level.clients[ level.sortedClients[0] ].ps.persistant[PERS_SCORE] ) );
+			trap->SetConfigstring( CS_SCORES2, va("%i", SCORE_NOT_PRESENT) );
 		} else {
-			trap_SetConfigstring( CS_SCORES1, va("%i", level.clients[ level.sortedClients[0] ].ps.persistant[PERS_SCORE] ) );
-			trap_SetConfigstring( CS_SCORES2, va("%i", level.clients[ level.sortedClients[1] ].ps.persistant[PERS_SCORE] ) );
+			trap->SetConfigstring( CS_SCORES1, va("%i", level.clients[ level.sortedClients[0] ].ps.persistant[PERS_SCORE] ) );
+			trap->SetConfigstring( CS_SCORES2, va("%i", level.clients[ level.sortedClients[1] ].ps.persistant[PERS_SCORE] ) );
 		}
 
-		if (g_gametype.integer != GT_DUEL || g_gametype.integer != GT_POWERDUEL)
+		if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 		{ //when not in duel, use this configstring to pass the index of the player currently in first place
 			if ( level.numConnectedClients >= 1 )
 			{
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", level.sortedClients[0] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", level.sortedClients[0] ) );
 			}
 			else
 			{
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 			}
 		}
 	}
@@ -1414,7 +1167,7 @@ void CalculateRanks( void ) {
 	CheckExitRules();
 
 	// if we are at the intermission or in multi-frag Duel game mode, send the new info to everyone
-	if ( level.intermissiontime || g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
+	if ( level.intermissiontime || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		gQueueScoreMessage = qtrue;
 		gQueueScoreMessageTime = level.time + 500;
 		//SendScoreboardMessageToAllClients();
@@ -1464,7 +1217,7 @@ void MoveClientToIntermission( gentity_t *ent ) {
 		StopFollowing( ent );
 	}
 
-
+	FindIntermissionPoint();
 	// move to the spot
 	VectorCopy( level.intermission_origin, ent->s.origin );
 	VectorCopy( level.intermission_origin, ent->client->ps.origin );
@@ -1475,7 +1228,7 @@ void MoveClientToIntermission( gentity_t *ent ) {
 	memset( ent->client->ps.powerups, 0, sizeof(ent->client->ps.powerups) );
 
 	G_LeaveVehicle( ent, qfalse );
-	
+
 	ent->client->ps.rocketLockIndex = ENTITYNUM_NONE;
 	ent->client->ps.rocketLockTime = 0;
 
@@ -1500,14 +1253,14 @@ This is also used for spectator spawns
 */
 extern qboolean	gSiegeRoundBegun;
 extern qboolean	gSiegeRoundEnded;
-extern qboolean	gSiegeRoundWinningTeam;
+extern int	gSiegeRoundWinningTeam;
 void FindIntermissionPoint( void ) {
 	gentity_t	*ent = NULL;
 	gentity_t	*target;
 	vec3_t		dir;
 
 	// find the intermission spot
-	if ( g_gametype.integer == GT_SIEGE
+	if ( level.gametype == GT_SIEGE
 		&& level.intermissiontime
 		&& level.intermissiontime <= level.time
 		&& gSiegeRoundEnded )
@@ -1515,7 +1268,7 @@ void FindIntermissionPoint( void ) {
 	   	if (gSiegeRoundWinningTeam == SIEGETEAM_TEAM1)
 		{
 			ent = G_Find (NULL, FOFS(classname), "info_player_intermission_red");
-			if ( ent && ent->target2 ) 
+			if ( ent && ent->target2 )
 			{
 				G_UseTargets2( ent, ent, ent->target2 );
 			}
@@ -1523,7 +1276,7 @@ void FindIntermissionPoint( void ) {
 	   	else if (gSiegeRoundWinningTeam == SIEGETEAM_TEAM2)
 		{
 			ent = G_Find (NULL, FOFS(classname), "info_player_intermission_blue");
-			if ( ent && ent->target2 ) 
+			if ( ent && ent->target2 )
 			{
 				G_UseTargets2( ent, ent, ent->target2 );
 			}
@@ -1534,7 +1287,7 @@ void FindIntermissionPoint( void ) {
 		ent = G_Find (NULL, FOFS(classname), "info_player_intermission");
 	}
 	if ( !ent ) {	// the map creator forgot to put in an intermission point...
-		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR );
+		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR, qfalse );
 	} else {
 		VectorCopy (ent->s.origin, level.intermission_origin);
 		VectorCopy (ent->s.angles, level.intermission_angle);
@@ -1547,7 +1300,6 @@ void FindIntermissionPoint( void ) {
 			}
 		}
 	}
-
 }
 
 qboolean DuelLimitHit(void);
@@ -1565,11 +1317,11 @@ void BeginIntermission( void ) {
 		return;		// already active
 	}
 
-	// if in tournement mode, change the wins / losses
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
-		trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+	// if in tournament mode, change the wins / losses
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
+		trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 
-		if (g_gametype.integer != GT_POWERDUEL)
+		if (level.gametype != GT_POWERDUEL)
 		{
 			AdjustTournamentScores();
 		}
@@ -1584,7 +1336,6 @@ void BeginIntermission( void ) {
 	}
 
 	level.intermissiontime = level.time;
-	FindIntermissionPoint();
 
 	// move all clients to the intermission point
 	for (i=0 ; i< level.maxclients ; i++) {
@@ -1593,11 +1344,11 @@ void BeginIntermission( void ) {
 			continue;
 		// respawn if dead
 		if (client->health <= 0) {
-			if (g_gametype.integer != GT_POWERDUEL ||
+			if (level.gametype != GT_POWERDUEL ||
 				!client->client ||
 				client->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ //don't respawn spectators in powerduel or it will mess the line order all up
-				respawn(client);
+				ClientRespawn(client);
 			}
 		}
 		MoveClientToIntermission( client );
@@ -1605,7 +1356,6 @@ void BeginIntermission( void ) {
 
 	// send the current scoring to all clients
 	SendScoreboardMessageToAllClients();
-
 }
 
 qboolean DuelLimitHit(void)
@@ -1649,7 +1399,7 @@ void DuelResetWinsLosses(void)
 ExitLevel
 
 When the intermission has been exited, the server is either killed
-or moved to a new level based on the "nextmap" cvar 
+or moved to a new level based on the "nextmap" cvar
 
 =============
 */
@@ -1659,38 +1409,38 @@ void ExitLevel (void) {
 	int		i;
 	gclient_t *cl;
 
-	// if we are running a tournement map, kick the loser to spectator status,
+	// if we are running a tournament map, kick the loser to spectator status,
 	// which will automatically grab the next spectator and restart
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		if (!DuelLimitHit())
 		{
 			if ( !level.restarted ) {
-				trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+				trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 				level.restarted = qtrue;
 				level.changemap = NULL;
 				level.intermissiontime = 0;
 			}
-			return;	
+			return;
 		}
 
 		DuelResetWinsLosses();
 	}
 
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeTeamSwitch.integer &&
 		g_siegePersistant.beatingTime)
 	{ //restart same map...
-		trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+		trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 	}
 	else
 	{
-		trap_SendConsoleCommand( EXEC_APPEND, "vstr nextmap\n" );
+		trap->SendConsoleCommand( EXEC_APPEND, "vstr nextmap\n" );
 	}
 	level.changemap = NULL;
 	level.intermissiontime = 0;
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeTeamSwitch.integer)
 	{ //switch out now
 		SiegeDoTeamAssign();
@@ -1737,7 +1487,7 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	seconds = msec / 1000;
 	mins = seconds / 60;
 	seconds %= 60;
-	msec %= 1000;
+//	msec %= 1000;
 
 	Com_sprintf( string, sizeof( string ), "%i:%02i ", mins, seconds );
 
@@ -1748,12 +1498,12 @@ void QDECL G_LogPrintf( const char *fmt, ... ) {
 	va_end( argptr );
 
 	if ( dedicated.integer )
-		G_Printf( "%s", string + l );
+		trap->Print( "%s", string + l );
 
 	if ( !level.logFile )
 		return;
 
-	trap_FS_Write( string, strlen( string ), level.logFile );
+	trap->FS_Write( string, strlen( string ), level.logFile );
 }
 /*
 =================
@@ -1766,11 +1516,10 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
 	time_t		rawtime;
-	struct tm	*timeinfo;
 	int			timeLen=0;
 
 	time( &rawtime );
-	timeinfo = localtime( &rawtime );
+	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
 	timeLen = strlen( string );
 
@@ -1779,12 +1528,12 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	va_end( argptr );
 
 	if ( dedicated.integer )
-		G_Printf( "%s", string + timeLen );
+		trap->Print( "%s", string + timeLen );
 
 	if ( !level.security.log )
 		return;
 
-	trap_FS_Write( string, strlen( string ), level.security.log );
+	trap->FS_Write( string, strlen( string ), level.security.log );
 }
 
 /*
@@ -1804,7 +1553,7 @@ void LogExit( const char *string ) {
 
 	// this will keep the clients from playing any voice sounds
 	// that will get cut off when the queued intermission starts
-	trap_SetConfigstring( CS_INTERMISSION, "1" );
+	trap->SetConfigstring( CS_INTERMISSION, "1" );
 
 	// don't send more than 32 scores (FIXME?)
 	numSorted = level.numConnectedClients;
@@ -1812,7 +1561,7 @@ void LogExit( const char *string ) {
 		numSorted = 32;
 	}
 
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		G_LogPrintf( "red:%i  blue:%i\n",
 			level.teamScores[TEAM_RED], level.teamScores[TEAM_BLUE] );
 	}
@@ -1831,8 +1580,12 @@ void LogExit( const char *string ) {
 
 		ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 
-		G_LogPrintf( "score: %i  ping: %i  client: %i %s\n", cl->ps.persistant[PERS_SCORE], ping, level.sortedClients[i],	cl->pers.netname );
-//		if (g_singlePlayer.integer && (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)) {
+		if (level.gametype >= GT_TEAM) {
+			G_LogPrintf( "(%s) score: %i  ping: %i  client: [%s] %i \"%s^7\"\n", TeamName(cl->ps.persistant[PERS_TEAM]), cl->ps.persistant[PERS_SCORE], ping, cl->pers.guid, level.sortedClients[i], cl->pers.netname );
+		} else {
+			G_LogPrintf( "score: %i  ping: %i  client: [%s] %i \"%s^7\"\n", cl->ps.persistant[PERS_SCORE], ping, cl->pers.guid, level.sortedClients[i], cl->pers.netname );
+		}
+//		if (g_singlePlayer.integer && (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)) {
 //			if (g_entities[cl - level.clients].r.svFlags & SVF_BOT && cl->ps.persistant[PERS_RANK] == 0) {
 //				won = qfalse;
 //			}
@@ -1842,10 +1595,10 @@ void LogExit( const char *string ) {
 	//yeah.. how about not.
 	/*
 	if (g_singlePlayer.integer) {
-		if (g_gametype.integer >= GT_CTF) {
+		if (level.gametype >= GT_CTF) {
 			won = level.teamScores[TEAM_RED] > level.teamScores[TEAM_BLUE];
 		}
-		trap_SendConsoleCommand( EXEC_APPEND, (won) ? "spWin\n" : "spLose\n" );
+		trap->SendConsoleCommand( EXEC_APPEND, (won) ? "spWin\n" : "spLose\n" );
 	}
 	*/
 }
@@ -1891,31 +1644,31 @@ void CheckIntermissionExit( void ) {
 		}
 	}
 
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && !gDidDuelStuff &&
+	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && !gDidDuelStuff &&
 		(level.time > level.intermissiontime + 2000) )
 	{
 		gDidDuelStuff = qtrue;
 
-		if ( g_austrian.integer && g_gametype.integer != GT_POWERDUEL )
+		if ( g_austrian.integer && level.gametype != GT_POWERDUEL )
 		{
 			G_LogPrintf("Duel Results:\n");
 			//G_LogPrintf("Duel Time: %d\n", level.time );
-			G_LogPrintf("winner: %s, score: %d, wins/losses: %d/%d\n", 
+			G_LogPrintf("winner: %s, score: %d, wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[0]].pers.netname,
 				level.clients[level.sortedClients[0]].ps.persistant[PERS_SCORE],
 				level.clients[level.sortedClients[0]].sess.wins,
 				level.clients[level.sortedClients[0]].sess.losses );
-			G_LogPrintf("loser: %s, score: %d, wins/losses: %d/%d\n", 
+			G_LogPrintf("loser: %s, score: %d, wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[1]].pers.netname,
 				level.clients[level.sortedClients[1]].ps.persistant[PERS_SCORE],
 				level.clients[level.sortedClients[1]].sess.wins,
 				level.clients[level.sortedClients[1]].sess.losses );
 		}
-		// if we are running a tournement map, kick the loser to spectator status,
+		// if we are running a tournament map, kick the loser to spectator status,
 		// which will automatically grab the next spectator and restart
 		if (!DuelLimitHit())
 		{
-			if (g_gametype.integer == GT_POWERDUEL)
+			if (level.gametype == GT_POWERDUEL)
 			{
 				RemovePowerDuelLosers();
 				AddPowerDuelPlayers();
@@ -1938,9 +1691,9 @@ void CheckIntermissionExit( void ) {
 
 			if ( g_austrian.integer )
 			{
-				if (g_gametype.integer == GT_POWERDUEL)
+				if (level.gametype == GT_POWERDUEL)
 				{
-					G_LogPrintf("Power Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n", 
+					G_LogPrintf("Power Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n",
 						level.clients[level.sortedClients[0]].pers.netname,
 						level.clients[level.sortedClients[0]].sess.wins,
 						level.clients[level.sortedClients[0]].sess.losses,
@@ -1954,7 +1707,7 @@ void CheckIntermissionExit( void ) {
 				}
 				else
 				{
-					G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d, kill limit: %d\n", 
+					G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d, kill limit: %d\n",
 						level.clients[level.sortedClients[0]].pers.netname,
 						level.clients[level.sortedClients[0]].sess.wins,
 						level.clients[level.sortedClients[0]].sess.losses,
@@ -1964,44 +1717,44 @@ void CheckIntermissionExit( void ) {
 						fraglimit.integer );
 				}
 			}
-			
-			if (g_gametype.integer == GT_POWERDUEL)
+
+			if (level.gametype == GT_POWERDUEL)
 			{
 				if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 				{
-					trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
-					trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
-				}			
+					trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
+					trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+				}
 			}
 			else
 			{
 				if (level.numPlayingClients >= 2)
 				{
-					trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
-					trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+					trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
+					trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 				}
 			}
 
-			return;	
+			return;
 		}
 
-		if ( g_austrian.integer && g_gametype.integer != GT_POWERDUEL )
+		if ( g_austrian.integer && level.gametype != GT_POWERDUEL )
 		{
-			G_LogPrintf("Duel Tournament Winner: %s wins/losses: %d/%d\n", 
+			G_LogPrintf("Duel Tournament Winner: %s wins/losses: %d/%d\n",
 				level.clients[level.sortedClients[0]].pers.netname,
 				level.clients[level.sortedClients[0]].sess.wins,
 				level.clients[level.sortedClients[0]].sess.losses );
 		}
 
-		if (g_gametype.integer == GT_POWERDUEL)
+		if (level.gametype == GT_POWERDUEL)
 		{
 			RemovePowerDuelLosers();
 			AddPowerDuelPlayers();
 
 			if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 			{
-				trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+				trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 			}
 		}
 		else
@@ -2025,13 +1778,13 @@ void CheckIntermissionExit( void ) {
 
 			if (level.numPlayingClients >= 2)
 			{
-				trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
+				trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 			}
 		}
 	}
 
-	if ((g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && !gDuelExit)
+	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && !gDuelExit)
 	{ //in duel, we have different behaviour for between-round intermissions
 		if ( level.time > level.intermissiontime + 4000 )
 		{ //automatically go to next after 4 seconds
@@ -2112,8 +1865,8 @@ qboolean ScoreIsTied( void ) {
 	if ( level.numPlayingClients < 2 ) {
 		return qfalse;
 	}
-	
-	if ( g_gametype.integer >= GT_TEAM ) {
+
+	if ( level.gametype >= GT_TEAM ) {
 		return level.teamScores[TEAM_RED] == level.teamScores[TEAM_BLUE];
 	}
 
@@ -2152,10 +1905,9 @@ void CheckExitRules( void ) {
 
 	if (gEscaping)
 	{
-		int i = 0;
 		int numLiveClients = 0;
 
-		while (i < MAX_CLIENTS)
+		for ( i=0; i < MAX_CLIENTS; i++ )
 		{
 			if (g_entities[i].inuse && g_entities[i].client && g_entities[i].health > 0)
 			{
@@ -2165,8 +1917,6 @@ void CheckExitRules( void ) {
 					numLiveClients++;
 				}
 			}
-
-			i++;
 		}
 		if (gEscapeTime < level.time)
 		{
@@ -2193,7 +1943,7 @@ void CheckExitRules( void ) {
 	}
 
 	/*
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients < 3)
 		{
@@ -2211,13 +1961,13 @@ void CheckExitRules( void ) {
 	*/
 
 	// check for sudden death
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		if ( ScoreIsTied() ) {
 			// always wait for sudden death
-			if ((g_gametype.integer != GT_DUEL) || !timelimit.value)
+			if ((level.gametype != GT_DUEL) || !timelimit.value)
 			{
-				if (g_gametype.integer != GT_POWERDUEL)
+				if (level.gametype != GT_POWERDUEL)
 				{
 					return;
 				}
@@ -2225,12 +1975,12 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		if ( timelimit.value > 0.0f && !level.warmupTime ) {
 			if ( level.time - level.startTime >= timelimit.value*60000 ) {
-//				trap_SendServerCommand( -1, "print \"Timelimit hit.\n\"");
-				trap_SendServerCommand( -1, va("print \"%s.\n\"",G_GetStringEdString("MP_SVGAME", "TIMELIMIT_HIT")));
+//				trap->SendServerCommand( -1, "print \"Timelimit hit.\n\"");
+				trap->SendServerCommand( -1, va("print \"%s.\n\"",G_GetStringEdString("MP_SVGAME", "TIMELIMIT_HIT")));
 				if (d_powerDuelPrint.integer)
 				{
 					Com_Printf("POWERDUEL WIN CONDITION: Timelimit hit (1)\n");
@@ -2241,7 +1991,7 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL && level.numPlayingClients >= 3)
+	if (level.gametype == GT_POWERDUEL && level.numPlayingClients >= 3)
 	{
 		if (g_endPDuel)
 		{
@@ -2301,7 +2051,7 @@ void CheckExitRules( void ) {
 				}
 
 				//Will want to parse indecies for two out at some point probably
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", duelists[1] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", duelists[1] ) );
 
 				if (d_powerDuelPrint.integer)
 				{
@@ -2341,7 +2091,7 @@ void CheckExitRules( void ) {
 					ClientUserinfoChanged(duelists[0]);
 				}
 
-				trap_SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", duelists[0] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("%i", duelists[0] ) );
 
 				if (d_powerDuelPrint.integer)
 				{
@@ -2359,8 +2109,7 @@ void CheckExitRules( void ) {
 		return;
 	}
 
-	if (g_gametype.integer == GT_DUEL ||
-		g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		if (fraglimit.integer > 1)
 		{
@@ -2376,9 +2125,9 @@ void CheckExitRules( void ) {
 	{
 		sKillLimit = "Kill limit hit.";
 	}
-	if ( g_gametype.integer < GT_SIEGE && fraglimit.integer ) {
+	if ( level.gametype < GT_SIEGE && fraglimit.integer ) {
 		if ( level.teamScores[TEAM_RED] >= fraglimit.integer ) {
-			trap_SendServerCommand( -1, va("print \"Red %s\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+			trap->SendServerCommand( -1, va("print \"Red %s\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
 			if (d_powerDuelPrint.integer)
 			{
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
@@ -2388,7 +2137,7 @@ void CheckExitRules( void ) {
 		}
 
 		if ( level.teamScores[TEAM_BLUE] >= fraglimit.integer ) {
-			trap_SendServerCommand( -1, va("print \"Blue %s\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+			trap->SendServerCommand( -1, va("print \"Blue %s\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
 			if (d_powerDuelPrint.integer)
 			{
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
@@ -2406,7 +2155,7 @@ void CheckExitRules( void ) {
 				continue;
 			}
 
-			if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && duel_fraglimit.integer && cl->sess.wins >= duel_fraglimit.integer )
+			if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && duel_fraglimit.integer && cl->sess.wins >= duel_fraglimit.integer )
 			{
 				if (d_powerDuelPrint.integer)
 				{
@@ -2414,7 +2163,7 @@ void CheckExitRules( void ) {
 				}
 				LogExit( "Duel limit hit." );
 				gDuelExit = qtrue;
-				trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " hit the win limit.\n\"",
+				trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " hit the win limit.\n\"",
 					cl->pers.netname ) );
 				return;
 			}
@@ -2428,10 +2177,10 @@ void CheckExitRules( void ) {
 				gDuelExit = qfalse;
 				if (printLimit)
 				{
-					trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s.\n\"",
+					trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s.\n\"",
 													cl->pers.netname,
 													G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")
-													) 
+													)
 											);
 				}
 				return;
@@ -2439,19 +2188,19 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if ( g_gametype.integer >= GT_CTF && capturelimit.integer ) {
+	if ( level.gametype >= GT_CTF && capturelimit.integer ) {
 
-		if ( level.teamScores[TEAM_RED] >= capturelimit.integer ) 
+		if ( level.teamScores[TEAM_RED] >= capturelimit.integer )
 		{
-			trap_SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
-			trap_SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
+			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
+			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
 			return;
 		}
 
 		if ( level.teamScores[TEAM_BLUE] >= capturelimit.integer ) {
-			trap_SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")));
-			trap_SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
+			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")));
+			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
 			return;
 		}
@@ -2489,33 +2238,33 @@ void G_RemoveDuelist(int team)
 =============
 CheckTournament
 
-Once a frame, check for changes in tournement player state
+Once a frame, check for changes in tournament player state
 =============
 */
 int g_duelPrintTimer = 0;
 void CheckTournament( void ) {
 	// check because we run 3 game frames before calling Connect and/or ClientBegin
 	// for clients on a map_restart
-//	if ( level.numPlayingClients == 0 && (g_gametype.integer != GT_POWERDUEL) ) {
+//	if ( level.numPlayingClients == 0 && (level.gametype != GT_POWERDUEL) ) {
 //		return;
 //	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 		{
-			trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
+			trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
 		}
 	}
 	else
 	{
 		if (level.numPlayingClients >= 2)
 		{
-			trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
+			trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
 		}
 	}
 
-	if ( g_gametype.integer == GT_DUEL )
+	if ( level.gametype == GT_DUEL )
 	{
 		// pull in a spectator if needed
 		if ( level.numPlayingClients < 2 && !level.intermissiontime && !level.intermissionQueued ) {
@@ -2523,7 +2272,7 @@ void CheckTournament( void ) {
 
 			if (level.numPlayingClients >= 2)
 			{
-				trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i", level.sortedClients[0], level.sortedClients[1] ) );
 			}
 		}
 
@@ -2535,7 +2284,7 @@ void CheckTournament( void ) {
 				playerState_t *ps1, *ps2;
 				ps1 = &level.clients[level.sortedClients[0]].ps;
 				ps2 = &level.clients[level.sortedClients[1]].ps;
-				trap_SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("%i|%i|!", 
+				trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("%i|%i|!",
 					ps1->stats[STAT_HEALTH], ps2->stats[STAT_HEALTH]));
 			}
 		}
@@ -2551,7 +2300,7 @@ void CheckTournament( void ) {
 		if ( level.numPlayingClients != 2 ) {
 			if ( level.warmupTime != -1 ) {
 				level.warmupTime = -1;
-				trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
+				trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 				G_LogPrintf( "Warmup:\n" );
 			}
 			return;
@@ -2577,7 +2326,7 @@ void CheckTournament( void ) {
 				{ //rww - this is an unpleasent hack to keep the level from resetting completely on the client (this happens when two map_restarts are issued rapidly)
 					level.warmupTime = level.time + 3000;
 				}
-				trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
+				trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 			}
 			return;
 		}
@@ -2585,14 +2334,14 @@ void CheckTournament( void ) {
 		// if the warmup time has counted down, restart
 		if ( level.time > level.warmupTime ) {
 			level.warmupTime += 10000;
-			trap_Cvar_Set( "g_restarted", "1" );
-			trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+			trap->Cvar_Set( "g_restarted", "1" );
+			trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 			level.restarted = qtrue;
 			return;
 		}
 #endif
 	}
-	else if (g_gametype.integer == GT_POWERDUEL)
+	else if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients < 2)
 		{ //hmm, ok, pull more in.
@@ -2643,7 +2392,7 @@ void CheckTournament( void ) {
 				te->s.otherEntityNum2 = level.sortedClients[1];
 				te->s.groundEntityNum = level.sortedClients[2];
 
-				trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
+				trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
 				G_ResetDuelists();
 
 				g_dontFrickinCheck = qtrue;
@@ -2658,11 +2407,11 @@ void CheckTournament( void ) {
 					G_PowerDuelCount(&lone, &dbl, qtrue);
 					if (lone < 1)
 					{
-						trap_SendServerCommand( -1, va("cp \"%s\n\"", G_GetStringEdString("MP_SVGAME", "DUELMORESINGLE")) );
+						trap->SendServerCommand( -1, va("cp \"%s\n\"", G_GetStringEdString("MP_SVGAME", "DUELMORESINGLE")) );
 					}
 					else
 					{
-						trap_SendServerCommand( -1, va("cp \"%s\n\"", G_GetStringEdString("MP_SVGAME", "DUELMOREPAIRED")) );
+						trap->SendServerCommand( -1, va("cp \"%s\n\"", G_GetStringEdString("MP_SVGAME", "DUELMOREPAIRED")) );
 					}
 					g_duelPrintTimer = level.time + 10000;
 				}
@@ -2679,11 +2428,11 @@ void CheckTournament( void ) {
 					te->s.otherEntityNum2 = level.sortedClients[1];
 					te->s.groundEntityNum = level.sortedClients[2];
 
-					trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
+					trap->SetConfigstring ( CS_CLIENT_DUELISTS, va("%i|%i|%i", level.sortedClients[0], level.sortedClients[1], level.sortedClients[2] ) );
 
 					if ( g_austrian.integer )
 					{
-						G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n", 
+						G_LogPrintf("Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n",
 							level.clients[level.sortedClients[0]].pers.netname,
 							level.clients[level.sortedClients[0]].sess.wins,
 							level.clients[level.sortedClients[0]].sess.losses,
@@ -2695,7 +2444,7 @@ void CheckTournament( void ) {
 							level.clients[level.sortedClients[2]].sess.losses,
 							fraglimit.integer );
 					}
-					//trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+					//trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 					//FIXME: This seems to cause problems. But we'd like to reset things whenever a new opponent is set.
 				}
 			}
@@ -2712,7 +2461,7 @@ void CheckTournament( void ) {
 		int		counts[TEAM_NUM_TEAMS];
 		qboolean	notEnough = qfalse;
 
-		if ( g_gametype.integer > GT_TEAM ) {
+		if ( level.gametype > GT_TEAM ) {
 			counts[TEAM_BLUE] = TeamCount( -1, TEAM_BLUE );
 			counts[TEAM_RED] = TeamCount( -1, TEAM_RED );
 
@@ -2726,7 +2475,7 @@ void CheckTournament( void ) {
 		if ( notEnough ) {
 			if ( level.warmupTime != -1 ) {
 				level.warmupTime = -1;
-				trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
+				trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 				G_LogPrintf( "Warmup:\n" );
 			}
 			return; // still waiting for team members
@@ -2747,16 +2496,20 @@ void CheckTournament( void ) {
 		// if all players have arrived, start the countdown
 		if ( level.warmupTime < 0 ) {
 			// fudge by -1 to account for extra delays
-			level.warmupTime = level.time + ( g_warmup.integer - 1 ) * 1000;
-			trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
+			if ( g_warmup.integer > 1 ) {
+				level.warmupTime = level.time + ( g_warmup.integer - 1 ) * 1000;
+			} else {
+				level.warmupTime = 0;
+			}
+			trap->SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 			return;
 		}
 
 		// if the warmup time has counted down, restart
 		if ( level.time > level.warmupTime ) {
 			level.warmupTime += 10000;
-			trap_Cvar_Set( "g_restarted", "1" );
-			trap_SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+			trap->Cvar_Set( "g_restarted", "1" );
+			trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 			level.restarted = qtrue;
 			return;
 		}
@@ -2766,7 +2519,6 @@ void CheckTournament( void ) {
 void G_KickAllBots(void)
 {
 	int i;
-	char netname[36];
 	gclient_t	*cl;
 
 	for ( i=0 ; i< sv_maxclients.integer ; i++ )
@@ -2776,13 +2528,11 @@ void G_KickAllBots(void)
 		{
 			continue;
 		}
-		if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) )
+		if ( !(g_entities[i].r.svFlags & SVF_BOT) )
 		{
 			continue;
 		}
-		strcpy(netname, cl->pers.netname);
-		Q_CleanStr(netname);
-		trap_SendConsoleCommand( EXEC_INSERT, va("kick \"%s\"\n", netname) );
+		trap->SendConsoleCommand( EXEC_INSERT, va("clientkick %d\n", i) );
 	}
 }
 
@@ -2794,11 +2544,11 @@ CheckVote
 void CheckVote( void ) {
 	if ( level.voteExecuteTime && level.voteExecuteTime < level.time ) {
 		level.voteExecuteTime = 0;
-		trap_SendConsoleCommand( EXEC_APPEND, va("%s\n", level.voteString ) );
+		trap->SendConsoleCommand( EXEC_APPEND, va( "%s\n", level.voteString ) );
 
 		if (level.votingGametype)
 		{
-			if (trap_Cvar_VariableIntegerValue("g_gametype") != level.votingGametypeTo)
+			if (level.gametype != level.votingGametypeTo)
 			{ //If we're voting to a different game type, be sure to refresh all the map stuff
 				const char *nextMap = G_RefreshNextMap(level.votingGametypeTo, qtrue);
 
@@ -2806,12 +2556,12 @@ void CheckVote( void ) {
 				{ //ok, kick all the bots, cause the aren't supported!
                     G_KickAllBots();
 					//just in case, set this to 0 too... I guess...maybe?
-					//trap_Cvar_Set("bot_minplayers", "0");
+					//trap->Cvar_Set("bot_minplayers", "0");
 				}
 
 				if (nextMap && nextMap[0])
 				{
-					trap_SendConsoleCommand( EXEC_APPEND, va("map %s\n", nextMap ) );
+					trap->SendConsoleCommand( EXEC_APPEND, va("map %s\n", nextMap ) );
 				}
 			}
 			else
@@ -2821,19 +2571,19 @@ void CheckVote( void ) {
 
 			if (g_fraglimitVoteCorrection.integer)
 			{ //This means to auto-correct fraglimit when voting to and from duel.
-				const int currentGT = trap_Cvar_VariableIntegerValue("g_gametype");
-				const int currentFL = trap_Cvar_VariableIntegerValue("fraglimit");
-				const int currentTL = trap_Cvar_VariableIntegerValue("timelimit");
+				const int currentGT = level.gametype;
+				const int currentFL = fraglimit.integer;
+				const int currentTL = timelimit.integer;
 
 				if ((level.votingGametypeTo == GT_DUEL || level.votingGametypeTo == GT_POWERDUEL) && currentGT != GT_DUEL && currentGT != GT_POWERDUEL)
 				{
 					if (currentFL > 3 || !currentFL)
 					{ //if voting to duel, and fraglimit is more than 3 (or unlimited), then set it down to 3
-						trap_SendConsoleCommand(EXEC_APPEND, "fraglimit 3\n");
+						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 3\n");
 					}
 					if (currentTL)
 					{ //if voting to duel, and timelimit is set, make it unlimited
-						trap_SendConsoleCommand(EXEC_APPEND, "timelimit 0\n");
+						trap->SendConsoleCommand(EXEC_APPEND, "timelimit 0\n");
 					}
 				}
 				else if ((level.votingGametypeTo != GT_DUEL && level.votingGametypeTo != GT_POWERDUEL) &&
@@ -2841,7 +2591,7 @@ void CheckVote( void ) {
 				{
 					if (currentFL && currentFL < 20)
 					{ //if voting from duel, an fraglimit is less than 20, then set it up to 20
-						trap_SendConsoleCommand(EXEC_APPEND, "fraglimit 20\n");
+						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 20\n");
 					}
 				}
 			}
@@ -2853,32 +2603,25 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time - level.voteTime >= VOTE_TIME ) {
-		trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-	} else {
+	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) {
+		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+	}
+	else {
 		if ( level.voteYes > level.numVotingClients/2 ) {
 			// execute the command, then remove the vote
-			trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
-			level.voteExecuteTime = level.time + 3000;
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
+			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
+
 		// same behavior as a timeout
-		//Raz: Fix uneven vote bug
-		/*	"that reminds me another bug that enty discovered recently,
-			if you have odd amount of players, lets say 3 for example,
-			and vote is called, then only 1 vote of No will fail the vote,
-			i.e. if player A calls vote, player B votes No, then vote fails,
-			even if player C would vote Yes and it should have been 2:1 and passed */
-	//	else if ( level.voteNo >= level.numVotingClients/2 )
-		else if ( level.voteNo >= (level.numVotingClients+1)/2 ) {
-			trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-		} else {
-			// still waiting for a majority
+		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+
+		else // still waiting for a majority
 			return;
-		}
 	}
 	level.voteTime = 0;
-	trap_SetConfigstring( CS_VOTE_TIME, "" );
-
+	trap->SetConfigstring( CS_VOTE_TIME, "" );
 }
 
 /*
@@ -2892,7 +2635,7 @@ void PrintTeam(int team, char *message) {
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if (level.clients[i].sess.sessionTeam != team)
 			continue;
-		trap_SendServerCommand( i, message );
+		trap->SendServerCommand( i, message );
 	}
 }
 
@@ -2948,11 +2691,13 @@ void CheckTeamLeader( int team ) {
 				break;
 			}
 		}
-		for ( i = 0 ; i < level.maxclients ; i++ ) {
-			if (level.clients[i].sess.sessionTeam != team)
-				continue;
-			level.clients[i].sess.teamLeader = qtrue;
-			break;
+		if ( i >= level.maxclients ) {
+			for ( i = 0 ; i < level.maxclients ; i++ ) {
+				if ( level.clients[i].sess.sessionTeam != team )
+					continue;
+				level.clients[i].sess.teamLeader = qtrue;
+				break;
+			}
 		}
 	}
 }
@@ -2972,34 +2717,40 @@ void CheckTeamVote( int team ) {
 	else
 		return;
 
+	if ( level.teamVoteExecuteTime[cs_offset] && level.teamVoteExecuteTime[cs_offset] < level.time ) {
+		level.teamVoteExecuteTime[cs_offset] = 0;
+		if ( !Q_strncmp( "leader", level.teamVoteString[cs_offset], 6) ) {
+			//set the team leader
+			SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
+		}
+		else {
+			trap->SendConsoleCommand( EXEC_APPEND, va("%s\n", level.teamVoteString[cs_offset] ) );
+		}
+	}
+
 	if ( !level.teamVoteTime[cs_offset] ) {
 		return;
 	}
-	if ( level.time - level.teamVoteTime[cs_offset] >= VOTE_TIME ) {
-		trap_SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED")) );
-	} else {
+
+	if ( level.time-level.teamVoteTime[cs_offset] >= VOTE_TIME || level.teamVoteYes[cs_offset] + level.teamVoteNo[cs_offset] == 0 ) {
+		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED"), level.teamVoteStringClean[cs_offset]) );
+	}
+	else {
 		if ( level.teamVoteYes[cs_offset] > level.numteamVotingClients[cs_offset]/2 ) {
 			// execute the command, then remove the vote
-			trap_SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEPASSED")) );
-			//
-			if ( !Q_strncmp( "leader", level.teamVoteString[cs_offset], 6) ) {
-				//set the team leader
-				//SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
-			}
-			else {
-				trap_SendConsoleCommand( EXEC_APPEND, va("%s\n", level.teamVoteString[cs_offset] ) );
-			}
-		} else if ( level.teamVoteNo[cs_offset] >= level.numteamVotingClients[cs_offset]/2 ) {
-			// same behavior as a timeout
-			trap_SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED")) );
-		} else {
-			// still waiting for a majority
-			return;
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEPASSED"), level.teamVoteStringClean[cs_offset]) );
+			level.voteExecuteTime = level.time + 3000;
 		}
+
+		// same behavior as a timeout
+		else if ( level.teamVoteNo[cs_offset] >= (level.numteamVotingClients[cs_offset]+1)/2 )
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED"), level.teamVoteStringClean[cs_offset]) );
+
+		else // still waiting for a majority
+			return;
 	}
 	level.teamVoteTime[cs_offset] = 0;
-	trap_SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, "" );
-
+	trap->SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, "" );
 }
 
 
@@ -3010,12 +2761,12 @@ CheckCvars
 */
 void CheckCvars( void ) {
 	static int lastMod = -1;
-	
+
 	if ( g_password.modificationCount != lastMod ) {
 		char password[MAX_INFO_STRING];
 		char *c = password;
 		lastMod = g_password.modificationCount;
-		
+
 		strcpy( password, g_password.string );
 		while( *c )
 		{
@@ -3025,12 +2776,12 @@ void CheckCvars( void ) {
 			}
 			c++;
 		}
-		trap_Cvar_Set("g_password", password );
+		trap->Cvar_Set("g_password", password );
 
 		if ( *g_password.string && Q_stricmp( g_password.string, "none" ) ) {
-			trap_Cvar_Set( "g_needpass", "1" );
+			trap->Cvar_Set( "g_needpass", "1" );
 		} else {
-			trap_Cvar_Set( "g_needpass", "0" );
+			trap->Cvar_Set( "g_needpass", "0" );
 		}
 	}
 }
@@ -3052,10 +2803,10 @@ void G_RunThink (gentity_t *ent) {
 	if (thinktime > level.time) {
 		goto runicarus;
 	}
-	
+
 	ent->nextthink = 0;
 	if (!ent->think) {
-		//G_Error ( "NULL ent->think");
+		//trap->Error( ERR_DROP, "NULL ent->think");
 		goto runicarus;
 	}
 	ent->think (ent);
@@ -3063,7 +2814,13 @@ void G_RunThink (gentity_t *ent) {
 runicarus:
 	if ( ent->inuse )
 	{
-		trap_ICARUS_MaintainTaskManager(ent->s.number);
+		SaveNPCGlobals();
+		if(NPCS.NPCInfo == NULL && ent->NPC != NULL)
+		{
+			SetNPCGlobals( ent );
+		}
+		trap->ICARUS_MaintainTaskManager(ent->s.number);
+		RestoreNPCGlobals();
 	}
 }
 
@@ -3076,31 +2833,31 @@ int gSlowMoDuelTime = 0;
 //#define _G_FRAME_PERFANAL
 
 void NAV_CheckCalcPaths( void )
-{	
+{
 	if ( navCalcPathTime && navCalcPathTime < level.time )
 	{//first time we've ever loaded this map...
 		vmCvar_t	mapname;
 		vmCvar_t	ckSum;
 
-		trap_Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
-		trap_Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
+		trap->Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
+		trap->Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
 
 		//clear all the failed edges
-		trap_Nav_ClearAllFailedEdges();
+		trap->Nav_ClearAllFailedEdges();
 
 		//Calculate all paths
 		NAV_CalculatePaths( mapname.string, ckSum.integer );
-		
-		trap_Nav_CalculatePaths(qfalse);
+
+		trap->Nav_CalculatePaths(qfalse);
 
 #ifndef FINAL_BUILD
 		if ( fatalErrors )
 		{
 			Com_Printf( S_COLOR_RED"Not saving .nav file due to fatal nav errors\n" );
 		}
-		else 
+		else
 #endif
-		if ( trap_Nav_Save( mapname.string, ckSum.integer ) == qfalse )
+		if ( trap->Nav_Save( mapname.string, ckSum.integer ) == qfalse )
 		{
 			Com_Printf("Unable to save navigations data for map \"%s\" (checksum:%d)\n", mapname.string, ckSum.integer );
 		}
@@ -3135,7 +2892,6 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-	int			msec;
 #ifdef _G_FRAME_PERFANAL
 	int			iTimer_ItemRun = 0;
 	int			iTimer_ROFF = 0;
@@ -3149,13 +2905,12 @@ void G_RunFrame( int levelTime ) {
 	void		*timer_Queues;
 #endif
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeRespawn.integer &&
 		g_siegeRespawnCheck < level.time)
 	{ //check for a respawn wave
-		int i = 0;
 		gentity_t *clEnt;
-		while (i < MAX_CLIENTS)
+		for ( i=0; i < MAX_CLIENTS; i++ )
 		{
 			clEnt = &g_entities[i];
 
@@ -3163,10 +2918,9 @@ void G_RunFrame( int levelTime ) {
 				clEnt->client->tempSpectate > level.time &&
 				clEnt->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
-				respawn(clEnt);
+				ClientRespawn(clEnt);
 				clEnt->client->tempSpectate = 0;
 			}
-			i++;
 		}
 
 		g_siegeRespawnCheck = level.time + g_siegeRespawn.integer * 1000;
@@ -3179,11 +2933,11 @@ void G_RunFrame( int levelTime ) {
 			char buf[128];
 			float tFVal = 0;
 
-			trap_Cvar_VariableStringBuffer("timescale", buf, sizeof(buf));
+			trap->Cvar_VariableStringBuffer("timescale", buf, sizeof(buf));
 
 			tFVal = atof(buf);
 
-			trap_Cvar_Set("timescale", "1");
+			trap->Cvar_Set("timescale", "1");
 			if (tFVal == 1.0f)
 			{
 				gDoSlowMoDuel = qfalse;
@@ -3196,7 +2950,7 @@ void G_RunFrame( int levelTime ) {
 
 			if (timeDif < 150)
 			{
-				trap_Cvar_Set("timescale", "0.1f");
+				trap->Cvar_Set("timescale", "0.1f");
 			}
 			else if (timeDif < 1150)
 			{
@@ -3209,18 +2963,18 @@ void G_RunFrame( int levelTime ) {
 				{
 					useDif = 1.0f;
 				}
-				trap_Cvar_Set("timescale", va("%f", useDif));
+				trap->Cvar_Set("timescale", va("%f", useDif));
 			}
 			else
 			{
 				char buf[128];
 				float tFVal = 0;
 
-				trap_Cvar_VariableStringBuffer("timescale", buf, sizeof(buf));
+				trap->Cvar_VariableStringBuffer("timescale", buf, sizeof(buf));
 
 				tFVal = atof(buf);
 
-				trap_Cvar_Set("timescale", "1");
+				trap->Cvar_Set("timescale", "1");
 				if (timeDif > 1500 && tFVal == 1.0f)
 				{
 					gDoSlowMoDuel = qfalse;
@@ -3237,7 +2991,6 @@ void G_RunFrame( int levelTime ) {
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
-	msec = level.time - level.previousTime;
 
 	if (g_allowNPC.integer)
 	{
@@ -3250,19 +3003,19 @@ void G_RunFrame( int levelTime ) {
 	{
 		if ( d_altRoutes.integer )
 		{
-			trap_Nav_CheckAllFailedEdges();
+			trap->Nav_CheckAllFailedEdges();
 		}
-		trap_Nav_ClearCheckedNodes();
+		trap->Nav_ClearCheckedNodes();
 
 		//remember last waypoint, clear current one
-		for ( i = 0; i < level.num_entities ; i++) 
+		for ( i = 0; i < level.num_entities ; i++)
 		{
 			ent = &g_entities[i];
 
 			if ( !ent->inuse )
 				continue;
 
-			if ( ent->waypoint != WAYPOINT_NONE 
+			if ( ent->waypoint != WAYPOINT_NONE
 				&& ent->noWaypointTime < level.time )
 			{
 				ent->lastWaypoint = ent->waypoint;
@@ -3270,7 +3023,7 @@ void G_RunFrame( int levelTime ) {
 			}
 			if ( d_altRoutes.integer )
 			{
-				trap_Nav_CheckFailedNodes( ent );
+				trap->Nav_CheckFailedNodes( (sharedEntity_t *)ent );
 			}
 		}
 
@@ -3286,7 +3039,7 @@ void G_RunFrame( int levelTime ) {
 
 
 #ifdef _G_FRAME_PERFANAL
-	trap_PrecisionTimer_Start(&timer_ItemRun);
+	trap->PrecisionTimer_Start(&timer_ItemRun);
 #endif
 	//
 	// go through all allocated objects
@@ -3325,7 +3078,7 @@ void G_RunFrame( int levelTime ) {
 			} else if ( ent->unlinkAfterEvent ) {
 				// items that will respawn will hide themselves after their pickup event
 				ent->unlinkAfterEvent = qfalse;
-				trap_UnlinkEntity( ent );
+				trap->UnlinkEntity( (sharedEntity_t *)ent );
 			}
 		}
 
@@ -3369,14 +3122,14 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		//fix for self-deactivating areaportals in Siege
-		if ( ent->s.eType == ET_MOVER && g_gametype.integer == GT_SIEGE && level.intermissiontime)
+		if ( ent->s.eType == ET_MOVER && level.gametype == GT_SIEGE && level.intermissiontime)
 		{
 			if ( !Q_stricmp("func_door", ent->classname) && ent->moverState != MOVER_POS1 )
 			{
 				SetMoverState( ent, MOVER_POS1, level.time );
-				if ( ent->teammaster == ent || !ent->teammaster ) 
+				if ( ent->teammaster == ent || !ent->teammaster )
 				{
-					trap_AdjustAreaPortalState( ent, qfalse );
+					trap->AdjustAreaPortalState( (sharedEntity_t *)ent, qfalse );
 				}
 
 				//stop the looping sound
@@ -3386,10 +3139,10 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}
 
-		if ( i < MAX_CLIENTS ) 
+		if ( i < MAX_CLIENTS )
 		{
 			G_CheckClientTimeouts ( ent );
-			
+
 			if (ent->client->inSpaceIndex && ent->client->inSpaceIndex != ENTITYNUM_NONE)
 			{ //we're in space, check for suffocating and for exiting
                 gentity_t *spacetrigger = &g_entities[ent->client->inSpaceIndex];
@@ -3397,7 +3150,7 @@ void G_RunFrame( int levelTime ) {
 				if (!spacetrigger->inuse ||
 					!G_PointInBounds(ent->client->ps.origin, spacetrigger->r.absmin, spacetrigger->r.absmax))
 				{ //no longer in space then I suppose
-                    ent->client->inSpaceIndex = 0;					
+                    ent->client->inSpaceIndex = 0;
 				}
 				else
 				{ //check for suffocation
@@ -3477,7 +3230,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						ent->client->ps.jetpackFuel--;
 					}
-					
+
 					if (ent->client->ps.jetpackFuel <= 0)
 					{ //turn it off
 						ent->client->ps.jetpackFuel = 0;
@@ -3502,7 +3255,7 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->cloakDebReduce < level.time)
 				{
 					ent->client->ps.cloakFuel--;
-					
+
 					if (ent->client->ps.cloakFuel <= 0)
 					{ //turn it off
 						ent->client->ps.cloakFuel = 0;
@@ -3520,7 +3273,7 @@ void G_RunFrame( int levelTime ) {
 				}
 			}
 
-			if (g_gametype.integer == GT_SIEGE &&
+			if (level.gametype == GT_SIEGE &&
 				ent->client->siegeClass != -1 &&
 				(bgSiegeClasses[ent->client->siegeClass].classflags & (1<<CFL_STATVIEWER)))
 			{ //see if it's time to send this guy an update of extended info
@@ -3545,7 +3298,7 @@ void G_RunFrame( int levelTime ) {
 				NAV_FindPlayerWaypoint(i);
 			}
 
-			trap_ICARUS_MaintainTaskManager(ent->s.number);
+			trap->ICARUS_MaintainTaskManager(ent->s.number);
 
 			G_RunClient( ent );
 			continue;
@@ -3573,23 +3326,23 @@ void G_RunFrame( int levelTime ) {
 		}
 	}
 #ifdef _G_FRAME_PERFANAL
-	iTimer_ItemRun = trap_PrecisionTimer_End(timer_ItemRun);
+	iTimer_ItemRun = trap->PrecisionTimer_End(timer_ItemRun);
 #endif
 
 	SiegeCheckTimers();
 
 #ifdef _G_FRAME_PERFANAL
-	trap_PrecisionTimer_Start(&timer_ROFF);
+	trap->PrecisionTimer_Start(&timer_ROFF);
 #endif
-	trap_ROFF_UpdateEntities();
+	trap->ROFF_UpdateEntities();
 #ifdef _G_FRAME_PERFANAL
-	iTimer_ROFF = trap_PrecisionTimer_End(timer_ROFF);
+	iTimer_ROFF = trap->PrecisionTimer_End(timer_ROFF);
 #endif
 
 
 
 #ifdef _G_FRAME_PERFANAL
-	trap_PrecisionTimer_Start(&timer_ClientEndframe);
+	trap->PrecisionTimer_Start(&timer_ClientEndframe);
 #endif
 	// perform final fixups on the players
 	ent = &g_entities[0];
@@ -3599,15 +3352,15 @@ void G_RunFrame( int levelTime ) {
 		}
 	}
 #ifdef _G_FRAME_PERFANAL
-	iTimer_ClientEndframe = trap_PrecisionTimer_End(timer_ClientEndframe);
+	iTimer_ClientEndframe = trap->PrecisionTimer_End(timer_ClientEndframe);
 #endif
 
 
 
 #ifdef _G_FRAME_PERFANAL
-	trap_PrecisionTimer_Start(&timer_GameChecks);
+	trap->PrecisionTimer_Start(&timer_GameChecks);
 #endif
-	// see if it is time to do a tournement restart
+	// see if it is time to do a tournament restart
 	CheckTournament();
 
 	// see if it is time to end the level
@@ -3627,13 +3380,13 @@ void G_RunFrame( int levelTime ) {
 	CheckCvars();
 
 #ifdef _G_FRAME_PERFANAL
-	iTimer_GameChecks = trap_PrecisionTimer_End(timer_GameChecks);
+	iTimer_GameChecks = trap->PrecisionTimer_End(timer_GameChecks);
 #endif
 
 
 
 #ifdef _G_FRAME_PERFANAL
-	trap_PrecisionTimer_Start(&timer_Queues);
+	trap->PrecisionTimer_Start(&timer_Queues);
 #endif
 	//At the end of the frame, send out the ghoul2 kill queue, if there is one
 	G_SendG2KillQueue();
@@ -3649,7 +3402,7 @@ void G_RunFrame( int levelTime ) {
 		}
 	}
 #ifdef _G_FRAME_PERFANAL
-	iTimer_Queues = trap_PrecisionTimer_End(timer_Queues);
+	iTimer_Queues = trap->PrecisionTimer_End(timer_Queues);
 #endif
 
 
@@ -3670,7 +3423,7 @@ const char *G_GetStringEdString(char *refSection, char *refName)
 {
 	/*
 	static char text[1024]={0};
-	trap_SP_GetStringTextString(va("%s_%s", refSection, refName), text, sizeof(text));
+	trap->SP_GetStringTextString(va("%s_%s", refSection, refName), text, sizeof(text));
 	return text;
 	*/
 
@@ -3682,4 +3435,323 @@ const char *G_GetStringEdString(char *refSection, char *refName)
 	static char text[1024]={0};
 	Com_sprintf(text, sizeof(text), "@@@%s", refName);
 	return text;
+}
+
+static void G_SpawnRMGEntity( void ) {
+	if ( G_ParseSpawnVars( qfalse ) )
+		G_SpawnGEntityFromSpawnVars( qfalse );
+}
+
+static void _G_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
+	G_ROFF_NotetrackCallback( &g_entities[entID], notetrack );
+}
+
+static int G_ICARUS_PlaySound( void ) {
+	T_G_ICARUS_PLAYSOUND *sharedMem = &gSharedBuffer.playSound;
+	return Q3_PlaySound( sharedMem->taskID, sharedMem->entID, sharedMem->name, sharedMem->channel );
+}
+static qboolean G_ICARUS_Set( void ) {
+	T_G_ICARUS_SET *sharedMem = &gSharedBuffer.set;
+	return Q3_Set( sharedMem->taskID, sharedMem->entID, sharedMem->type_name, sharedMem->data );
+}
+static void G_ICARUS_Lerp2Pos( void ) {
+	T_G_ICARUS_LERP2POS *sharedMem = &gSharedBuffer.lerp2Pos;
+	Q3_Lerp2Pos( sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->nullAngles ? NULL : sharedMem->angles, sharedMem->duration );
+}
+static void G_ICARUS_Lerp2Origin( void ) {
+	T_G_ICARUS_LERP2ORIGIN *sharedMem = &gSharedBuffer.lerp2Origin;
+	Q3_Lerp2Origin( sharedMem->taskID, sharedMem->entID, sharedMem->origin, sharedMem->duration );
+}
+static void G_ICARUS_Lerp2Angles( void ) {
+	T_G_ICARUS_LERP2ANGLES *sharedMem = &gSharedBuffer.lerp2Angles;
+	Q3_Lerp2Angles( sharedMem->taskID, sharedMem->entID, sharedMem->angles, sharedMem->duration );
+}
+static int G_ICARUS_GetTag( void ) {
+	T_G_ICARUS_GETTAG *sharedMem = &gSharedBuffer.getTag;
+	return Q3_GetTag( sharedMem->entID, sharedMem->name, sharedMem->lookup, sharedMem->info );
+}
+static void G_ICARUS_Lerp2Start( void ) {
+	T_G_ICARUS_LERP2START *sharedMem = &gSharedBuffer.lerp2Start;
+	Q3_Lerp2Start( sharedMem->entID, sharedMem->taskID, sharedMem->duration );
+}
+static void G_ICARUS_Lerp2End( void ) {
+	T_G_ICARUS_LERP2END *sharedMem = &gSharedBuffer.lerp2End;
+	Q3_Lerp2End( sharedMem->entID, sharedMem->taskID, sharedMem->duration );
+}
+static void G_ICARUS_Use( void ) {
+	T_G_ICARUS_USE *sharedMem = &gSharedBuffer.use;
+	Q3_Use( sharedMem->entID, sharedMem->target );
+}
+static void G_ICARUS_Kill( void ) {
+	T_G_ICARUS_KILL *sharedMem = &gSharedBuffer.kill;
+	Q3_Kill( sharedMem->entID, sharedMem->name );
+}
+static void G_ICARUS_Remove( void ) {
+	T_G_ICARUS_REMOVE *sharedMem = &gSharedBuffer.remove;
+	Q3_Remove( sharedMem->entID, sharedMem->name );
+}
+static void G_ICARUS_Play( void ) {
+	T_G_ICARUS_PLAY *sharedMem = &gSharedBuffer.play;
+	Q3_Play( sharedMem->taskID, sharedMem->entID, sharedMem->type, sharedMem->name );
+}
+static int G_ICARUS_GetFloat( void ) {
+	T_G_ICARUS_GETFLOAT *sharedMem = &gSharedBuffer.getFloat;
+	return Q3_GetFloat( sharedMem->entID, sharedMem->type, sharedMem->name, &sharedMem->value );
+}
+static int G_ICARUS_GetVector( void ) {
+	T_G_ICARUS_GETVECTOR *sharedMem = &gSharedBuffer.getVector;
+	return Q3_GetVector( sharedMem->entID, sharedMem->type, sharedMem->name, sharedMem->value );
+}
+static int G_ICARUS_GetString( void ) {
+	T_G_ICARUS_GETSTRING *sharedMem = &gSharedBuffer.getString;
+	char *crap = NULL; //I am sorry for this -rww
+	char **morecrap = &crap; //and this
+	int r = Q3_GetString( sharedMem->entID, sharedMem->type, sharedMem->name, morecrap );
+
+	if ( crap )
+		strcpy( sharedMem->value, crap );
+
+	return r;
+}
+static void G_ICARUS_SoundIndex( void ) {
+	T_G_ICARUS_SOUNDINDEX *sharedMem = &gSharedBuffer.soundIndex;
+	G_SoundIndex( sharedMem->filename );
+}
+static int G_ICARUS_GetSetIDForString( void ) {
+	T_G_ICARUS_GETSETIDFORSTRING *sharedMem = &gSharedBuffer.getSetIDForString;
+	return GetIDForString( setTable, sharedMem->string );
+}
+static qboolean G_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEnt ) {
+	return NAV_ClearPathToPoint( &g_entities[entID], pmins, pmaxs, point, clipmask, okToHitEnt );
+}
+static qboolean G_NPC_ClearLOS2( int entID, const vec3_t end ) {
+	return NPC_ClearLOS2( &g_entities[entID], end );
+}
+static qboolean	G_NAV_CheckNodeFailedForEnt( int entID, int nodeNum ) {
+	return NAV_CheckNodeFailedForEnt( &g_entities[entID], nodeNum );
+}
+
+/*
+============
+GetModuleAPI
+============
+*/
+
+gameImport_t *trap = NULL;
+
+Q_EXPORT gameExport_t* QDECL GetModuleAPI( int apiVersion, gameImport_t *import )
+{
+	static gameExport_t ge = {0};
+
+	assert( import );
+	trap = import;
+	Com_Printf	= trap->Print;
+	Com_Error	= trap->Error;
+
+	memset( &ge, 0, sizeof( ge ) );
+
+	if ( apiVersion != GAME_API_VERSION ) {
+		trap->Print( "Mismatched GAME_API_VERSION: expected %i, got %i\n", GAME_API_VERSION, apiVersion );
+		return NULL;
+	}
+
+	ge.InitGame							= G_InitGame;
+	ge.ShutdownGame						= G_ShutdownGame;
+	ge.ClientConnect					= ClientConnect;
+	ge.ClientBegin						= ClientBegin;
+	ge.ClientUserinfoChanged			= ClientUserinfoChanged;
+	ge.ClientDisconnect					= ClientDisconnect;
+	ge.ClientCommand					= ClientCommand;
+	ge.ClientThink						= ClientThink;
+	ge.RunFrame							= G_RunFrame;
+	ge.ConsoleCommand					= ConsoleCommand;
+	ge.BotAIStartFrame					= BotAIStartFrame;
+	ge.ROFF_NotetrackCallback			= _G_ROFF_NotetrackCallback;
+	ge.SpawnRMGEntity					= G_SpawnRMGEntity;
+	ge.ICARUS_PlaySound					= G_ICARUS_PlaySound;
+	ge.ICARUS_Set						= G_ICARUS_Set;
+	ge.ICARUS_Lerp2Pos					= G_ICARUS_Lerp2Pos;
+	ge.ICARUS_Lerp2Origin				= G_ICARUS_Lerp2Origin;
+	ge.ICARUS_Lerp2Angles				= G_ICARUS_Lerp2Angles;
+	ge.ICARUS_GetTag					= G_ICARUS_GetTag;
+	ge.ICARUS_Lerp2Start				= G_ICARUS_Lerp2Start;
+	ge.ICARUS_Lerp2End					= G_ICARUS_Lerp2End;
+	ge.ICARUS_Use						= G_ICARUS_Use;
+	ge.ICARUS_Kill						= G_ICARUS_Kill;
+	ge.ICARUS_Remove					= G_ICARUS_Remove;
+	ge.ICARUS_Play						= G_ICARUS_Play;
+	ge.ICARUS_GetFloat					= G_ICARUS_GetFloat;
+	ge.ICARUS_GetVector					= G_ICARUS_GetVector;
+	ge.ICARUS_GetString					= G_ICARUS_GetString;
+	ge.ICARUS_SoundIndex				= G_ICARUS_SoundIndex;
+	ge.ICARUS_GetSetIDForString			= G_ICARUS_GetSetIDForString;
+	ge.NAV_ClearPathToPoint				= G_NAV_ClearPathToPoint;
+	ge.NPC_ClearLOS2					= G_NPC_ClearLOS2;
+	ge.NAVNEW_ClearPathBetweenPoints	= NAVNEW_ClearPathBetweenPoints;
+	ge.NAV_CheckNodeFailedForEnt		= G_NAV_CheckNodeFailedForEnt;
+	ge.NAV_EntIsUnlockedDoor			= G_EntIsUnlockedDoor;
+	ge.NAV_EntIsDoor					= G_EntIsDoor;
+	ge.NAV_EntIsBreakable				= G_EntIsBreakable;
+	ge.NAV_EntIsRemovableUsable			= G_EntIsRemovableUsable;
+	ge.NAV_FindCombatPointWaypoints		= CP_FindCombatPointWaypoints;
+	ge.BG_GetItemIndexByTag				= BG_GetItemIndexByTag;
+
+	return &ge;
+}
+
+/*
+================
+vmMain
+
+This is the only way control passes into the module.
+This must be the very first function compiled into the .q3vm file
+================
+*/
+Q_EXPORT intptr_t vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4,
+	intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11 )
+{
+	switch ( command ) {
+	case GAME_INIT:
+		G_InitGame( arg0, arg1, arg2 );
+		return 0;
+
+	case GAME_SHUTDOWN:
+		G_ShutdownGame( arg0 );
+		return 0;
+
+	case GAME_CLIENT_CONNECT:
+		return (intptr_t)ClientConnect( arg0, arg1, arg2 );
+
+	case GAME_CLIENT_THINK:
+		ClientThink( arg0, NULL );
+		return 0;
+
+	case GAME_CLIENT_USERINFO_CHANGED:
+		ClientUserinfoChanged( arg0 );
+		return 0;
+
+	case GAME_CLIENT_DISCONNECT:
+		ClientDisconnect( arg0 );
+		return 0;
+
+	case GAME_CLIENT_BEGIN:
+		ClientBegin( arg0, qtrue );
+		return 0;
+
+	case GAME_CLIENT_COMMAND:
+		ClientCommand( arg0 );
+		return 0;
+
+	case GAME_RUN_FRAME:
+		G_RunFrame( arg0 );
+		return 0;
+
+	case GAME_CONSOLE_COMMAND:
+		return ConsoleCommand();
+
+	case BOTAI_START_FRAME:
+		return BotAIStartFrame( arg0 );
+
+	case GAME_ROFF_NOTETRACK_CALLBACK:
+		_G_ROFF_NotetrackCallback( arg0, (const char *)arg1 );
+		return 0;
+
+	case GAME_SPAWN_RMG_ENTITY:
+		G_SpawnRMGEntity();
+		return 0;
+
+	case GAME_ICARUS_PLAYSOUND:
+		return G_ICARUS_PlaySound();
+
+	case GAME_ICARUS_SET:
+		return G_ICARUS_Set();
+
+	case GAME_ICARUS_LERP2POS:
+		G_ICARUS_Lerp2Pos();
+		return 0;
+
+	case GAME_ICARUS_LERP2ORIGIN:
+		G_ICARUS_Lerp2Origin();
+		return 0;
+
+	case GAME_ICARUS_LERP2ANGLES:
+		G_ICARUS_Lerp2Angles();
+		return 0;
+
+	case GAME_ICARUS_GETTAG:
+		return G_ICARUS_GetTag();
+
+	case GAME_ICARUS_LERP2START:
+		G_ICARUS_Lerp2Start();
+		return 0;
+
+	case GAME_ICARUS_LERP2END:
+		G_ICARUS_Lerp2End();
+		return 0;
+
+	case GAME_ICARUS_USE:
+		G_ICARUS_Use();
+		return 0;
+
+	case GAME_ICARUS_KILL:
+		G_ICARUS_Kill();
+		return 0;
+
+	case GAME_ICARUS_REMOVE:
+		G_ICARUS_Remove();
+		return 0;
+
+	case GAME_ICARUS_PLAY:
+		G_ICARUS_Play();
+		return 0;
+
+	case GAME_ICARUS_GETFLOAT:
+		return G_ICARUS_GetFloat();
+
+	case GAME_ICARUS_GETVECTOR:
+		return G_ICARUS_GetVector();
+
+	case GAME_ICARUS_GETSTRING:
+		return G_ICARUS_GetString();
+
+	case GAME_ICARUS_SOUNDINDEX:
+		G_ICARUS_SoundIndex();
+		return 0;
+
+	case GAME_ICARUS_GETSETIDFORSTRING:
+		return G_ICARUS_GetSetIDForString();
+
+	case GAME_NAV_CLEARPATHTOPOINT:
+		return G_NAV_ClearPathToPoint( arg0, (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5 );
+
+	case GAME_NAV_CLEARLOS:
+		return G_NPC_ClearLOS2( arg0, (const float *)arg1 );
+
+	case GAME_NAV_CLEARPATHBETWEENPOINTS:
+		return NAVNEW_ClearPathBetweenPoints((float *)arg0, (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5);
+
+	case GAME_NAV_CHECKNODEFAILEDFORENT:
+		return NAV_CheckNodeFailedForEnt(&g_entities[arg0], arg1);
+
+	case GAME_NAV_ENTISUNLOCKEDDOOR:
+		return G_EntIsUnlockedDoor(arg0);
+
+	case GAME_NAV_ENTISDOOR:
+		return G_EntIsDoor(arg0);
+
+	case GAME_NAV_ENTISBREAKABLE:
+		return G_EntIsBreakable(arg0);
+
+	case GAME_NAV_ENTISREMOVABLEUSABLE:
+		return G_EntIsRemovableUsable(arg0);
+
+	case GAME_NAV_FINDCOMBATPOINTWAYPOINTS:
+		CP_FindCombatPointWaypoints();
+		return 0;
+
+	case GAME_GETITEMINDEXBYTAG:
+		return BG_GetItemIndexByTag(arg0, arg1);
+	}
+
+	return -1;
 }

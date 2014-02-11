@@ -24,7 +24,7 @@ This file is part of Jedi Knight 2.
 #include "g_local.h"
 #include "say.h"
 
-#include "AI.h"
+#include "ai.h"
 
 #define	AI_TIMERS 0//turn on to see print-outs of AI/nav timing
 //
@@ -332,7 +332,7 @@ extern qboolean NPC_FacePosition( vec3_t position, qboolean doPitch = qtrue );
 extern qboolean NPC_FaceEntity( gentity_t *ent, qboolean doPitch = qtrue );
 extern qboolean NPC_FaceEnemy( qboolean doPitch = qtrue );
 
-extern BYTE G_AddBoltOn( gentity_t *NPC, const char *boltOnName );
+extern unsigned char G_AddBoltOn( gentity_t *NPC, const char *boltOnName );
 
 //Skill level cvar
 extern cvar_t	*g_spskill;

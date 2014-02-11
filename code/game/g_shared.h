@@ -22,18 +22,15 @@ This file is part of Jedi Academy.
 #include "bg_public.h"
 #include "g_public.h"
 #include "b_public.h"
-#include "../Icarus/Stdafx.h"	//need stl
-#include "../renderer/tr_types.h"
+#include "../icarus/StdAfx.h"	//need stl
+#include "../rd-common/tr_types.h"
 #include "../cgame/cg_public.h"
-#include "G_Vehicles.h"
+#include "g_vehicles.h"
 #include "hitlocs.h"
 #include "bset.h"
+#include "../cgame/cg_main.h"
 
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))
-
-#ifdef _XBOX
-#define MAX_NPC_WATER_UPDATE_PER_FRAME	2	// maxmum number of NPCs that will get updated water infromation per frame
-#endif
+#define	FOFS(x) offsetof(gentity_t, x)
 
 typedef enum //# taskID_e
 {
@@ -624,7 +621,7 @@ Ghoul2 Insert End
 
 	union
 	{
-		char	*roff;			// the roff file to use, if there is one
+		char      *roff;                  // the roff file to use, if there is one
 		char	*fxFile;		// name of the external effect file
 	};
 
@@ -844,9 +841,7 @@ Ghoul2 Insert End
 #endif //#ifdef GAME_INCLUDE
 
 extern	gentity_t		g_entities[MAX_GENTITIES];
-#ifndef _USRDLL
 extern	game_import_t	gi;
-#endif
 
 // each WP_* weapon enum has an associated weaponInfo_t
 // that contains media references necessary to present the

@@ -30,15 +30,17 @@ This file is part of Jedi Academy.
 //
 // stuff common to all qcommon files...
 #include "../server/server.h"
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 //
 //////////////////////////////////////////////////
 
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4511 )			// copy constructor could not be generated
 #pragma warning ( disable : 4512 )			// assignment operator could not be generated
 #pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
+#endif
 #include "stringed_interface.h"
 #include "stringed_ingame.h"
 
@@ -160,7 +162,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 		if (dirFiles[i][0] && dirFiles[i][0] != '.')	// skip blanks, plus ".", ".." etc
 		{
 			char	sDirName[MAX_QPATH];
-			sprintf(sDirName, "%s/%s", psDir, dirFiles[i]);
+			Com_sprintf(sDirName, sizeof(sDirName), "%s/%s", psDir, dirFiles[i]);
 			//
 			// for some reason the quake filesystem in this game now returns an extra slash on the end,
 			//	didn't used to. Sigh...
@@ -177,7 +179,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 	for(i=0; i<numSysFiles; i++)
 	{
 		char	sFilename[MAX_QPATH];
-		sprintf(sFilename,"%s/%s", psDir, sysFiles[i]);		
+		Com_sprintf(sFilename, sizeof(sFilename), "%s/%s", psDir, sysFiles[i]);
 			
 //		Com_Printf("%sFound file: %s",!i?"\n":"",sFilename);
 

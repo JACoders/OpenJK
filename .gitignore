@@ -45,6 +45,7 @@ local.properties
 [Dd]ebug/
 [Rr]elease/
 [Ff]inal/
+[Ff]inal[Bb]uild/
 *_i.c
 *_p.c
 *.ilk
@@ -63,6 +64,8 @@ local.properties
 *.vspscc
 .builds
 *.dotCover
+
+winquake.res
 
 ## TODO: If you have NuGet Package Restore enabled, uncomment this
 #packages/
@@ -162,3 +165,10 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+
+
+#############
+## Unix
+#############
+*.o
+*.so

@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // this include must remain at the top of every bg_xxxx CPP file
 #include "common_headers.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "g_vehicles.h"
@@ -92,10 +92,10 @@ qboolean	PM_SlideMove( float gravMod ) {
 	numbumps = 4;
 
 	VectorCopy (pm->ps->velocity, primal_velocity);
+	VectorCopy (pm->ps->velocity, endVelocity);
 
 	if ( gravMod ) 
 	{
-		VectorCopy( pm->ps->velocity, endVelocity );
 		if ( !(pm->ps->eFlags&EF_FORCE_GRIPPED) && !(pm->ps->eFlags&EF_FORCE_DRAINED) )
 		{
 			endVelocity[2] -= pm->ps->gravity * pml.frametime * gravMod;

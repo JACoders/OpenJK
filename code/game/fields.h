@@ -30,13 +30,13 @@ This file is part of Jedi Academy.
 #define MAX_GHOULINST_SIZE	16384
 
 #ifndef FOFS
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))	// usually already defined in qshared.h
+#define	FOFS(x) offsetof(gentity_t, x)	// usually already defined in qshared.h
 #endif
-#define	STOFS(x) ((int)&(((spawn_temp_t *)0)->x))
-#define	LLOFS(x) ((int)&(((level_locals_t *)0)->x))
-#define	CLOFS(x) ((int)&(((gclient_t *)0)->x))
-#define NPCOFS(x) ((int)&(((gNPC_t *)0)->x)) 
-#define VHOFS(x) ((int)&(((Vehicle_t *)0)->x)) 
+#define	STOFS(x) offsetof(spawn_temp_t, x)
+#define	LLOFS(x) offsetof(level_locals_t, x)
+#define	CLOFS(x) offsetof(gclient_t, x)
+#define NPCOFS(x) offsetof(gNPC_t, x) 
+#define VHOFS(x) offsetof(Vehicle_t, x)
 
 //
 #define strFOFS(x)	 #x,FOFS(x)
@@ -72,7 +72,7 @@ typedef enum
 
 typedef struct
 {
-	char	*psName;
+	const char	*psName;
 	int		iOffset;
 	fieldtypeSAVE_t	eFieldType;
 } save_field_t;

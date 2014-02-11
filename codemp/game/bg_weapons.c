@@ -7,12 +7,12 @@
 #include "bg_local.h"
 
 // Muzzle point table...
-vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] = 
+vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] =
 {//	Fwd,	right,	up.
 	{0,		0,		0	},	// WP_NONE,
 	{0	,	8,		0	},	// WP_STUN_BATON,
 	{0	,	8,		0	},	// WP_MELEE,
-	{8	,	16,		0	},	// WP_SABER,				 
+	{8	,	16,		0	},	// WP_SABER,
 	{12,	6,		-6	},	// WP_BRYAR_PISTOL,
 	{12,	6,		-6	},	// WP_BLASTER,
 	{12,	6,		-6	},	// WP_DISRUPTOR,
@@ -28,7 +28,7 @@ vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS] =
 	{12,	6,		-6	},	// WP_BRYAR_OLD,
 };
 
-weaponData_t weaponData[WP_NUM_WEAPONS] = 
+weaponData_t weaponData[WP_NUM_WEAPONS] =
 {
 	{	// WP_NONE
 //		"No Weapon",			//	char	classname[32];		// Spawning name
@@ -355,7 +355,7 @@ weaponData_t weaponData[WP_NUM_WEAPONS] =
 	}
 };
 
-ammoData_t ammoData[AMMO_MAX] = 
+ammoData_t ammoData[AMMO_MAX] =
 {
 	{	// AMMO_NONE
 //		"",				//	char	icon[32];	// Name of ammo icon file

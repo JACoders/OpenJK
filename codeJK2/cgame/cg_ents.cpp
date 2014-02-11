@@ -17,16 +17,13 @@ This file is part of Jedi Knight 2.
 // Copyright 2001-2013 Raven Software
 
 // cg_ents.c -- present snapshot entities, happens every single frame
-
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "../game/g_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\g_functions.h"
-#include "..\ghoul2\g2.h"
+#include "../game/g_functions.h"
+#include "../../code/ghoul2/G2.h"
 #include "FxScheduler.h"
-#include "..\game\wp_saber.h"
+#include "../game/wp_saber.h"
 
 extern void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles);
 extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles );

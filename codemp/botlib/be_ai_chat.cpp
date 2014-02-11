@@ -5,7 +5,7 @@
  * desc:		bot chat AI
  *
  * $Archive: /MissionPack/code/botlib/be_ai_chat.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 12 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -172,7 +172,7 @@ typedef struct bot_chatstate_s
 	bot_chat_t *chat;
 } bot_chatstate_t;
 
-typedef struct {
+typedef struct bot_ichatdata_s {
 	bot_chat_t	*chat;
 	char		filename[MAX_QPATH];
 	char		chatname[MAX_QPATH];
@@ -361,7 +361,7 @@ int BotNextConsoleMessage(int chatstate, bot_consolemessage_t *cm)
 		cm->type = firstmsg->type;
 		Q_strncpyz(cm->message, firstmsg->message,
 			   sizeof(cm->message));
-		
+
 		/* We omit setting the two pointers in cm because pointer
 		 * size in the VM differs between the size in the engine on
 		 * 64 bit machines, which would lead to a buffer overflow if
@@ -369,7 +369,7 @@ int BotNextConsoleMessage(int chatstate, bot_consolemessage_t *cm)
 		 * of no interest to functions calling
 		 * BotNextConsoleMessage anyways.
 		 */
-		
+
 		return cm->handle;
 	} //end if
 	return 0;
@@ -1156,7 +1156,7 @@ bot_matchpiece_t *BotLoadMatchPieces(source_t *source, char *endtoken)
 	{
 		if (token.type == TT_NUMBER && (token.subtype & TT_INTEGER))
 		{
-			if (token.intvalue < 0 || token.intvalue >= MAX_MATCHVARIABLES)
+			if (token.intvalue >= MAX_MATCHVARIABLES)
 			{
 				SourceError(source, "can't have more than %d match variables", MAX_MATCHVARIABLES);
 				FreeSource(source);
@@ -2223,10 +2223,10 @@ int BotLoadChatFile(int chatstate, char *chatfile, char *chatname)
 				}
 				continue;
 			}
-			if( strcmp( chatfile, ichatdata[n]->filename ) != 0 ) { 
+			if( strcmp( chatfile, ichatdata[n]->filename ) != 0 ) {
 				continue;
 			}
-			if( strcmp( chatname, ichatdata[n]->chatname ) != 0 ) { 
+			if( strcmp( chatname, ichatdata[n]->chatname ) != 0 ) {
 				continue;
 			}
 			cs->chat = ichatdata[n]->chat;
@@ -2311,7 +2311,7 @@ int BotExpandChatMessage(char *outmessage, char *message, unsigned long mcontext
 							//replace the reply synonyms in the variables
 							BotReplaceReplySynonyms(temp, vcontext);
 						} //end if
-						else 
+						else
 						{
 							//replace synonyms in the variable context
 							BotReplaceSynonyms(temp, vcontext);

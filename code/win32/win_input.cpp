@@ -29,6 +29,10 @@ This file is part of Jedi Academy.
 #include "../client/client.h"
 #include "win_local.h"
 
+#ifndef NO_XINPUT
+#include <Xinput.h>
+#endif
+
 typedef struct {
 	int			oldButtonState;
 
@@ -45,6 +49,9 @@ static int	window_center_x, window_center_y;
 //
 static void IN_StartupMIDI( void );
 static void IN_ShutdownMIDI( void );
+#ifndef NO_XINPUT
+void IN_UnloadXInput( void );
+#endif
 
 #define MAX_MIDIIN_DEVICES	8
 
@@ -86,9 +93,16 @@ cvar_t	*in_joystick;
 cvar_t	*in_joyBallScale;
 cvar_t	*in_debugJoystick;
 cvar_t	*joy_threshold;
-cvar_t	*js_ffmult;
 cvar_t	*joy_xbutton;
 cvar_t	*joy_ybutton;
+
+#ifndef NO_XINPUT
+cvar_t	*xin_invertThumbsticks;
+cvar_t	*xin_rumbleScale;
+
+cvar_t	*xin_invertLookX;
+cvar_t	*xin_invertLookY;
+#endif
 
 qboolean	in_appactive;
 
@@ -97,6 +111,125 @@ void IN_StartupJoystick (void);
 void IN_JoyMove(void);
 
 static void MidiInfo_f( void );
+
+/*
+============================================================
+
+RAW INPUT MOUSE CONTROL
+
+============================================================
+*/
+
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC	((USHORT) 0x01)
+#endif
+
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE	((USHORT) 0x02)
+#endif
+
+static qboolean rawMouseInitialized = qfalse;
+static LONG rawDeltaX = 0;
+static LONG rawDeltaY = 0;
+
+/*
+================
+IN_InitRawMouse
+================
+*/
+qboolean IN_InitRawMouse( void )
+{
+	RAWINPUTDEVICE Rid[1];
+
+	Com_Printf( "Initializing raw input...\n");
+
+	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+	Rid[0].dwFlags = 0;
+	Rid[0].hwndTarget = 0;
+
+	if ( RegisterRawInputDevices( Rid, 1, sizeof(Rid[0]) ) == FALSE )
+	{
+		Com_Printf ("Couldn't register raw input devices\n");
+		return qfalse;
+	}
+
+	Com_Printf( "Raw input initialized.\n");
+	rawMouseInitialized = qtrue;
+	return qtrue;
+}
+
+/*
+================
+IN_ShutdownRawMouse
+================
+*/
+void IN_ShutdownRawMouse( void )
+{
+	if ( rawMouseInitialized )
+	{
+		RAWINPUTDEVICE Rid[1];
+
+		Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+		Rid[0].dwFlags = RIDEV_REMOVE;
+		Rid[0].hwndTarget = 0;
+
+		if ( RegisterRawInputDevices( Rid, 1, sizeof(Rid[0]) ) == FALSE )
+		{
+			Com_Printf ("Couldn't un-register raw input devices\n");
+		}
+
+		rawMouseInitialized = qfalse;
+	}
+}
+
+/*
+================
+IN_ActivateRawMouse
+================
+*/
+void IN_ActivateRawMouse( void )
+{
+	rawDeltaX = rawDeltaY = 0;
+}
+
+/*
+================
+IN_DeactivateRawMouse
+================
+*/
+void IN_DeactivateRawMouse( void )
+{
+	rawDeltaX = rawDeltaY = 0;
+}
+
+/*
+================
+IN_RawMouse
+================
+*/
+void IN_RawMouse( int *mx, int *my )
+{
+	// force the mouse to the center, just to be consistent with default mouse behaviour
+	SetCursorPos (window_center_x, window_center_y);
+
+	*mx = rawDeltaX;
+	*my = rawDeltaY;
+	rawDeltaX = rawDeltaY = 0;
+}
+
+/*
+================
+IN_RawMouseEvent
+================
+*/
+void IN_RawMouseEvent( int lastX, int lastY )
+{
+	rawDeltaX += lastX;
+	rawDeltaY += lastY;
+}
+
 
 /*
 ============================================================
@@ -129,17 +262,19 @@ IN_ActivateWin32Mouse
 ================
 */
 void IN_ActivateWin32Mouse( void ) {
-	int			width, height;
+	int			x, y, width, height;
 	RECT		window_rect;
 
-	width = GetSystemMetrics (SM_CXSCREEN);
-	height = GetSystemMetrics (SM_CYSCREEN);
+	x = GetSystemMetrics (SM_XVIRTUALSCREEN);
+	y = GetSystemMetrics (SM_YVIRTUALSCREEN);
+	width = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	height = GetSystemMetrics (SM_CYVIRTUALSCREEN);
 
 	GetWindowRect ( g_wv.hWnd, &window_rect);
-	if (window_rect.left < 0)
-		window_rect.left = 0;
-	if (window_rect.top < 0)
-		window_rect.top = 0;
+	if (window_rect.left < x)
+		window_rect.left = x;
+	if (window_rect.top < y)
+		window_rect.top = y;
 	if (window_rect.right >= width)
 		window_rect.right = width-1;
 	if (window_rect.bottom >= height-1)
@@ -505,7 +640,9 @@ void IN_ActivateMouse( void )
 
 	s_wmv.mouseActive = qtrue;
 
-	if ( in_mouse->integer != -1 ) {
+	if ( in_mouse->integer == 2 ) {
+		IN_ActivateRawMouse();
+	} else if ( in_mouse->integer != -1 ) {
 		IN_ActivateDIMouse();
 	}
 	IN_ActivateWin32Mouse();
@@ -528,6 +665,7 @@ void IN_DeactivateMouse( void ) {
 	}
 	s_wmv.mouseActive = qfalse;
 
+	IN_DeactivateRawMouse();
 	IN_DeactivateDIMouse();
 	IN_DeactivateWin32Mouse();
 }
@@ -560,6 +698,11 @@ void IN_StartupMouse( void )
 
 	if ( in_mouse->integer == -1 ) {
 		Com_Printf ("Skipping check for DirectInput\n");
+	} else if ( in_mouse->integer == 2 ) {
+		if ( IN_InitRawMouse() ) {
+			return;
+		}
+		Com_Printf ("Falling back to Win32 mouse support...\n");
 	} else {
 		if ( IN_InitDIMouse() ) {
 			return;
@@ -619,7 +762,9 @@ IN_MouseMove
 void IN_MouseMove ( void ) {
 	int		mx, my;
 
-	if ( g_pMouse ) {
+	if ( rawMouseInitialized ) {
+		IN_RawMouse( &mx, &my );
+	} else if ( g_pMouse ) {
 		IN_DIMouse( &mx, &my );
 	} else {
 		IN_Win32Mouse( &mx, &my );
@@ -662,8 +807,15 @@ IN_Shutdown
 */
 void IN_Shutdown( void ) {
 	IN_DeactivateMouse();
+	IN_ShutdownRawMouse();
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
+#ifndef NO_XINPUT
+	if( in_joystick && in_joystick->integer == 2 )
+	{
+		IN_UnloadXInput();
+	}
+#endif
 	Cmd_RemoveCommand("midiinfo" );
 }
 
@@ -692,10 +844,17 @@ void IN_Init( void ) {
 
 	joy_threshold			= Cvar_Get ("joy_threshold",			"0.15",		CVAR_ARCHIVE);
 
-	js_ffmult				= Cvar_Get ("js_ffmult",				"3.0",		CVAR_ARCHIVE);	// force feedback
-
 	joy_xbutton			= Cvar_Get ("joy_xbutton",			"1",		CVAR_ARCHIVE);	// treat axis as a button
 	joy_ybutton			= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);	// treat axis as a button
+
+#ifndef NO_XINPUT
+	xin_invertThumbsticks	= Cvar_Get ("xin_invertThumbsticks",	"0",		CVAR_ARCHIVE);
+	xin_invertLookX			= Cvar_Get ("xin_invertLookX",			"0",		CVAR_ARCHIVE);
+	xin_invertLookY			= Cvar_Get ("xin_invertLookY",			"0",		CVAR_ARCHIVE);
+
+	xin_rumbleScale			= Cvar_Get ("xin_rumbleScale",			"1.0",		CVAR_ARCHIVE);
+
+#endif
 
 	IN_Startup();
 }
@@ -735,13 +894,19 @@ void IN_Frame (void) {
 		return;
 	}
 
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
+	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
+	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 		// temporarily deactivate if not in the game and
 		// running on the desktop
-		if (Cvar_VariableIntegerValue ("r_fullscreen") == 0 )	{
-			IN_DeactivateMouse ();
-			return;
-		}
+		IN_DeactivateMouse ();
+		return;
+	}
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && loading ) {
+		IN_DeactivateMouse ();
+		return;
 	}
 
 	if ( !in_appactive ) {
@@ -776,22 +941,149 @@ JOYSTICK
 =========================================================================
 */
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/  
-void IN_StartupJoystick (void) { 
+#ifndef NO_XINPUT
+
+typedef struct {
+	WORD wButtons;
+	BYTE bLeftTrigger;
+	BYTE bRightTrigger;
+	SHORT sThumbLX;
+	SHORT sThumbLY;
+	SHORT sThumbRX;
+	SHORT sThumbRY;
+	DWORD dwPaddingReserved;
+} XINPUT_GAMEPAD_EX;
+
+typedef struct {
+	DWORD dwPacketNumber;
+	XINPUT_GAMEPAD_EX Gamepad;
+} XINPUT_STATE_EX;
+
+#define X360_GUIDE_BUTTON 0x0400
+#define X360_LEFT_TRIGGER_MASK 0x10000
+#define X360_RIGHT_TRIGGER_MASK 0x20000
+
+static XINPUT_STATE_EX xiState;
+static DWORD dwLastXIButtonState;
+
+static HMODULE xiLibrary = NULL;
+
+typedef DWORD (__stdcall *XIGetFuncPointer)(DWORD, XINPUT_STATE_EX *);
+typedef DWORD (__stdcall *XISetFuncPointer)(DWORD, XINPUT_VIBRATION *);
+XIGetFuncPointer XI_GetStateEx = NULL;
+XISetFuncPointer XI_SetState = NULL;
+
+/*
+===============
+IN_LoadXInput
+
+Uses direct DLL loading as opposed to static linkage
+This is because, as Ensiform pointed out, Windows 8
+and Windows 7 use different XInput versions, hence
+different linkage.
+===============
+*/
+
+qboolean IN_LoadXInput ( void )
+{
+	int lastNum;
+	if( xiLibrary )
+		return qfalse;	// already loaded
+
+	for(lastNum = 4; lastNum >= 3; lastNum--)		// increment as more XInput versions become supported
+	{
+		xiLibrary = LoadLibrary( va("XInput1_%i.dll", lastNum) );
+		if( xiLibrary)
+			break;
+	}
+	if( !xiLibrary )
+	{
+		Com_Printf( S_COLOR_RED"XInput not detected on your system. Please download the XBOX 360 drivers from the Microsoft home page.\n" );
+		return qfalse;
+	}
+	
+	// MEGA HACK:
+	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
+	// of the XInputGetState function, with one key difference: XInputGetState does
+	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
+	XI_GetStateEx = (XIGetFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XISetFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+
+	if( !XI_GetStateEx || !XI_SetState )
+	{
+		Com_Printf("^1IN_LoadXInput failed on pointer establish\n");
+		IN_UnloadXInput();
+		return qfalse;
+	}
+	return qtrue;
+}
+
+/*
+===============
+IN_UnloadXInput
+
+XInput gets unloaded if we change input modes or we shut
+down the game
+===============
+*/
+
+void IN_UnloadXInput ( void )
+{
+	if( !xiLibrary )
+	{
+		// not loaded, so don't bother trying to unload
+		return;
+	}
+	FreeLibrary( xiLibrary );
+	xiLibrary = NULL;
+}
+
+/*
+===============
+IN_JoystickInitXInput
+
+XBOX 360 controller only
+===============
+*/
+
+void IN_JoystickInitXInput ( void )
+{
+	Com_Printf("Joystick cvar enabled -- XInput mode\n");
+
+	if(!IN_LoadXInput())
+	{
+		Com_Printf("Could not load XInput -- see above error. Controller not enabled.\n");
+		return;
+	}
+
+	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
+	dwLastXIButtonState = 0UL;
+
+	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
+															// I'll probably add a splitscreen mode just for lulz --eez
+		Com_Printf("XBOX 360 controller not detected -- no drivers or bad connection\n");
+		return;
+	}
+
+	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
+
+}
+
+#endif
+
+/*
+===============
+IN_JoystickInitDInput
+
+DirectInput only
+===============
+*/
+void IN_JoystickInitDInput ( void )
+{
 	int			numdevs;
 	MMRESULT	mmr;
 
-	// assume no joystick
-	joy.avail = qfalse; 
-
-	if (! in_joystick->integer ) {
-		Com_Printf ("Joystick is not active.\n");
-		return;
-	}
+	Com_Printf("Joystick cvar enabled -- DirectInput mode\n");
 
 	// verify joystick driver is present
 	if ((numdevs = joyGetNumDevs ()) == 0)
@@ -850,6 +1142,34 @@ void IN_StartupJoystick (void) {
 	joy.avail = qtrue; 
 }
 
+/* 
+=============== 
+IN_StartupJoystick 
+=============== 
+*/  
+void IN_StartupJoystick (void) { 
+	// assume no joystick
+	joy.avail = qfalse; 
+
+	if ( in_joystick->integer == 1 )
+	{
+		// DirectInput mode --eez
+		IN_JoystickInitDInput();
+	}
+#ifndef NO_XINPUT
+	else if ( in_joystick->integer == 2 )
+	{
+		// xbox 360 awesomeness
+		IN_JoystickInitXInput();
+	}
+#endif
+	else {
+		Com_Printf ("Joystick is not active.\n");
+		return;
+	}
+	
+}
+
 /*
 ===========
 JoyToF
@@ -894,19 +1214,18 @@ int	joyDirectionKeys[16] = {
 
 /*
 ===========
-IN_JoyMove
+IN_DoDirectInput
+
+Equivalent of IN_JoyMove for DirectInput
 ===========
 */
-void IN_JoyMove( void ) {
+
+void IN_DoDirectInput( void )
+{
 	float	fAxisValue;
 	int		i;
 	DWORD	buttonstate, povstate;
 	int		x, y;
-
-	// verify joystick is available and that the user wants to use it
-	if ( !joy.avail ) {
-		return; 
-	}
 
 	// collect the joystick data, if possible
 	memset (&joy.ji, 0, sizeof(joy.ji));
@@ -1010,6 +1329,220 @@ void IN_JoyMove( void ) {
 			Sys_QueEvent( g_wv.sysMsgTime, SE_MOUSE, x, y, 0, NULL );
 		}
 	}
+}
+
+#ifndef NO_XINPUT
+/*
+===========
+XI_ThumbFloat
+
+Gets the percentage going one way or the other (as normalized float)
+===========
+*/
+float QINLINE XI_ThumbFloat( signed short thumbValue )
+{
+	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
+}
+
+/*
+===========
+XI_ApplyInversion
+
+Inverts look up/down and look left/right appropriately
+===========
+*/
+void XI_ApplyInversion( float *fX, float *fY )
+{
+	if( xin_invertLookX->integer )
+		*fX *= -1.0f;
+	if( xin_invertLookY->integer )
+		*fY *= -1.0f;
+}
+
+#define CheckButtonStatus( xin, fakekey ) \
+	if ( (xiState.Gamepad.wButtons & xin) && !(dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qtrue, 0, NULL); \
+	if ( !(xiState.Gamepad.wButtons & xin) && (dwLastXIButtonState & xin) ) \
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, fakekey, qfalse, 0, NULL); \
+	if ( (xiState.Gamepad.wButtons & xin) ) \
+		dwLastXIButtonState |= xin; \
+	else \
+		dwLastXIButtonState &= ~xin; \
+
+/*
+===========
+IN_DoXInput
+
+Equivalent of IN_JoyMove for XInput (xbox 360)
+===========
+*/
+
+void IN_DoXInput( void )
+{
+	if(!joy.avail)
+	{
+		// Joystick not found, continue to search for it :>
+		if( XI_GetStateEx(0, &xiState) == ERROR_SUCCESS )
+		{
+			joy.avail = qtrue;
+			Com_Printf("Controller connected.\n");
+		}
+		else
+		{
+			return;
+		}
+	}
+	else
+	{
+		if( XI_GetStateEx(0, &xiState) != ERROR_SUCCESS )
+		{
+			joy.avail = qfalse;
+			Com_Printf("Controller disconnected.\n");
+			return;
+		}
+	}
+
+	// Now that we've dealt with the basic checks for connectivity, let's actually do the _important_ crap.
+	float leftThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbLX);
+	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
+	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
+	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
+	float dX = 0, dY = 0;
+
+	/* hi microsoft, go fuck yourself for flipping left stick's Y axis for no reason... */
+	leftThumbY *= -1.0f;
+	rightThumbY *= -1.0f;
+
+	// JOYSTICKS
+	// This is complete and utter trash in DirectInput, because it doesn't send like half as much crap as it should.
+	if( xin_invertThumbsticks->integer )
+	{
+		// Left stick functions like right stick
+		XI_ApplyInversion(&leftThumbX, &leftThumbY);
+
+		// Left stick behavior
+		if( abs(leftThumbX) > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
+		{
+			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value;
+		}
+		if( abs(leftThumbY) > joy_threshold->value )
+		{
+			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
+		}
+		
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
+
+		// Right stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, rightThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, rightThumbY * -127, 0, NULL);
+	}
+	else
+	{
+		// Thumbsticks act as they should (right stick = camera, left stick = wasd equivalent)
+		XI_ApplyInversion(&rightThumbX, &rightThumbY);
+		
+
+		// Left stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, leftThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, leftThumbY * -127, 0, NULL);
+
+		// Right stick behavior
+		if( abs(rightThumbX) > joy_threshold->value )
+		{
+			float factor = abs(rightThumbX*128);
+			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbX: %f\tfactor: %f\tdX: %f\n", rightThumbX, factor, dX);
+		}
+		if( abs(rightThumbY) > joy_threshold->value )
+		{
+			float factor = abs(rightThumbY*128);
+			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * factor;
+			if(in_debugJoystick->integer)
+				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
+		}
+		
+		// ...but cap it at a reasonable amount.
+		if(dX < -2.5f) dX = -2.5f;
+		if(dX > 2.5f) dX = 2.5f;
+		if(dY < -2.5f) dY = -2.5f;
+		if(dY > 2.5f) dY = 2.5f;
+
+		dX *= 1024;
+		dY *= 1024;
+
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, dX, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
+	}
+
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
+	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
+	CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+	CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+	CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+	CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
+	CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+	CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
+
+	// extra magic required for the triggers
+	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & X360_LEFT_TRIGGER_MASK) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bLeftTrigger && ( dwLastXIButtonState & X360_LEFT_TRIGGER_MASK ) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
+	}
+	if( xiState.Gamepad.bLeftTrigger )
+		dwLastXIButtonState |= X360_LEFT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_LEFT_TRIGGER_MASK;
+
+	if( xiState.Gamepad.bRightTrigger && !( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bRightTrigger && ( dwLastXIButtonState & X360_RIGHT_TRIGGER_MASK ) )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
+	}
+	if( xiState.Gamepad.bRightTrigger )
+		dwLastXIButtonState |= X360_RIGHT_TRIGGER_MASK;
+	else
+		dwLastXIButtonState &= ~X360_RIGHT_TRIGGER_MASK;
+
+	if(in_debugJoystick->integer)
+		Com_Printf("buttons: \t%i\n", dwLastXIButtonState);
+}
+#endif
+
+/*
+===========
+IN_JoyMove
+===========
+*/
+void IN_JoyMove( void ) 
+{
+	if( in_joystick->integer == 1 && joy.avail)
+	{
+		IN_DoDirectInput();
+	}
+#ifndef NO_XINPUT
+	else if( in_joystick->integer == 2 )
+	{
+		IN_DoXInput();
+	}
+#endif
 }
 
 /*

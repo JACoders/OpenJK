@@ -20,6 +20,8 @@ This file is part of Jedi Academy.
 #ifndef __VMACHINE_H__
 #define __VMACHINE_H__
 
+#include "../qcommon/q_shared.h"
+
 /*
 ==================================================================
 
@@ -64,19 +66,16 @@ VIRTUAL MACHINE
 ==============================================================
 */
 struct vm_s {
-	int			(*entryPoint)( int callNum, ... );
+	intptr_t	(*entryPoint)( int callNum, ... );
 };
 
 typedef struct vm_s vm_t;
 
 extern	vm_t	cgvm;	// interface to cgame dll or vm
-extern	vm_t	uivm;	// interface to ui dll or vm
 
-extern int	VM_Call( int callnum, ... );
-extern int VM_DllSyscall( int arg, ... );
+extern intptr_t	VM_Call( int callnum, ... );
+extern intptr_t VM_DllSyscall( intptr_t arg, ... );
 extern void CL_ShutdownCGame(void);
-
-#include "../game/q_shared.h"
 
 /*
 ================
@@ -85,7 +84,7 @@ VM_Create
 it will attempt to load as a system dll
 ================
 */
-extern void *Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) );
+extern void *Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) );
 
 inline void *VM_Create( const char *module) 
 {

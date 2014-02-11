@@ -5,7 +5,7 @@
  * desc:		AAS environment sampling
  *
  * $Archive: /MissionPack/code/botlib/be_aas_sample.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 13 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -196,7 +196,7 @@ void AAS_FreeAASLinkedEntities(void)
 int AAS_PointAreaNum(vec3_t point)
 {
 	int nodenum;
-	vec_t	dist;
+	float	dist;
 	aas_node_t *node;
 	aas_plane_t *plane;
 
@@ -346,7 +346,7 @@ int AAS_PointPresenceType(vec3_t point)
 // Returns:					-
 // Changes Globals:		-
 //===========================================================================
-vec_t AAS_BoxOriginDistanceFromPlane(vec3_t normal, vec3_t mins, vec3_t maxs, int side)
+float AAS_BoxOriginDistanceFromPlane(vec3_t normal, vec3_t mins, vec3_t maxs, int side)
 {
 	vec3_t v1, v2;
 	int i;
@@ -445,7 +445,7 @@ aas_trace_t AAS_TraceClientBBox(vec3_t start, vec3_t end, int presencetype,
 	Com_Memset(&trace, 0, sizeof(aas_trace_t));
 
 	if (!aasworld.loaded) return trace;
-	
+
 	tstack_p = tracestack;
 	//we start with the whole line on the stack
 	VectorCopy(start, tstack_p->start);
@@ -454,7 +454,7 @@ aas_trace_t AAS_TraceClientBBox(vec3_t start, vec3_t end, int presencetype,
 	//start with node 1 because node zero is a dummy for a solid leaf
 	tstack_p->nodenum = 1;		//starting at the root of the tree
 	tstack_p++;
-	
+
 	while (1)
 	{
 		//pop up the stack
@@ -651,7 +651,7 @@ aas_trace_t AAS_TraceClientBBox(vec3_t start, vec3_t end, int presencetype,
 		{
 			tmpplanenum = tstack_p->planenum;
 			// bk010221 - new location of divide by zero (see above)
-			if ( front == back ) front -= 0.001f; // bk0101022 - hack/FPE 
+			if ( front == back ) front -= 0.001f; // bk0101022 - hack/FPE
                 	//calculate the hitpoint with the node (split point of the line)
 			//put the crosspoint TRACEPLANE_EPSILON pixels on the near side
 			if (front < 0) frac = (front + TRACEPLANE_EPSILON)/(front-back);
@@ -946,7 +946,7 @@ qboolean AAS_InsideFace(aas_face_t *face, vec3_t pnormal, vec3_t point, float ep
 		//check on wich side of the above plane the point is
 		//this is done by checking the sign of the dot product of the
 		//vector orthogonal vector from above and the vector from the
-		//origin (first vertex of edge) to the point 
+		//origin (first vertex of edge) to the point
 		//if the dotproduct is smaller than zero the point is outside the face
 		if (DotProduct(pointvec, sepnormal) < -epsilon) return qfalse;
 	} //end for
@@ -961,7 +961,7 @@ qboolean AAS_InsideFace(aas_face_t *face, vec3_t pnormal, vec3_t point, float ep
 qboolean AAS_PointInsideFace(int facenum, vec3_t point, float epsilon)
 {
 	int i, firstvertex, edgenum;
-	vec_t *v1, *v2;
+	float *v1, *v2;
 	vec3_t edgevec, pointvec, sepnormal;
 	aas_edge_t *edge;
 	aas_plane_t *plane;
@@ -1198,8 +1198,7 @@ void AAS_UnlinkFromAreas(aas_link_t *areas)
 // Changes Globals:		-
 //===========================================================================
 
-typedef struct
-{
+typedef struct aas_linkstack_s {
 	int nodenum;		//node found after splitting
 } aas_linkstack_t;
 
@@ -1225,7 +1224,7 @@ aas_link_t *AAS_AASLinkEntity(vec3_t absmins, vec3_t absmaxs, int entnum)
 	//start with node 1 because node zero is a dummy used for solid leafs
 	lstack_p->nodenum = 1;		//starting at the root of the tree
 	lstack_p++;
-	
+
 	while (1)
 	{
 		//pop up the stack

@@ -5,7 +5,7 @@
  * desc:		genetic selection
  *
  * $Archive: /MissionPack/code/botlib/be_ai_gen.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 3 $
  * $Modtime: 11/22/00 8:50a $
  * $Date: 11/22/00 8:55a $

@@ -80,16 +80,18 @@ This file is part of Jedi Academy.
 	#include <assert.h>
 #endif
 #if !defined(FINAL_BUILD)
-	#if !defined(RAGL_PROFILE_INC) && !defined(_XBOX)
+	#if !defined(RAGL_PROFILE_INC)
 		#define  RAGL_PROFILE_INC
-		#include "Windows.h"
+        #ifdef _WIN32
+            #include "Windows.h"
+        #endif
 	#endif
 #endif
 #if !defined(RAVL_VEC_INC)
-	#include "..\Ravl\CVec.h"
+	#include "../Ravl/CVec.h"
 #endif
 #if !defined(RATL_COMMON_INC)
-	#include "..\Ratl\ratl_common.h"
+	#include "../Ratl/ratl_common.h"
 #endif
 namespace ragl
 {

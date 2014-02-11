@@ -25,11 +25,6 @@ This file is part of Jedi Academy.
 
 #include "../RMG/RM_Headers.h"
 
-#ifdef VV_LIGHTING
-#include "../renderer/tr_lightmanager.h"
-#endif
-	   		
-
 #include "client.h"
 #include "vmachine.h"
 
@@ -258,9 +253,10 @@ CL_ConfigstringModified
 =====================
 */
 void CL_ConfigstringModified( void ) {
-	char		*old, *s;
+	const char *s;
+	char		*old;
 	int			i, index;
-	char		*dup;
+	const char		*dup;
 	gameState_t	oldGs;
 	int			len;
 
@@ -322,7 +318,7 @@ Set up argc/argv for the given command
 */
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	char	*s;
-	char	*cmd;
+	const char	*cmd;
 
 	// if we have irretrievably lost a reliable command, drop the connection
 	if ( serverCommandNumber <= clc.serverCommandSequence - MAX_RELIABLE_COMMANDS ) {
@@ -386,19 +382,11 @@ CL_CM_LoadMap
 Just adds default parameters that cgame doesn't need to know about
 ====================
 */
-#ifdef _XBOX
-void CL_CM_LoadMap( const char *mapname ) {
-	int		checksum;
-
-	CM_LoadMap( mapname, qtrue, &checksum );
-}
-#else
 void CL_CM_LoadMap( const char *mapname, qboolean subBSP ) {
 	int		checksum;
 
 	CM_LoadMap( mapname, qtrue, &checksum, subBSP );
 }
-#endif // _XBOX
 
 /*
 ====================
@@ -413,9 +401,7 @@ void CL_ShutdownCGame( void ) {
 		return;
 	}
 	VM_Call( CG_SHUTDOWN );
-#ifndef _XBOX	// Not using it
 	RM_ShutdownTerrain();
-#endif
 
 //	VM_Free( cgvm );
 //	cgvm = NULL;
@@ -423,15 +409,7 @@ void CL_ShutdownCGame( void ) {
 
 //RMG
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-void RE_InitRendererTerrain( const char *info );
 //RMG
-
-extern float tr_distortionAlpha; //tr_shadows.cpp
-extern float tr_distortionStretch; //tr_shadows.cpp
-extern qboolean tr_distortionPrePost; //tr_shadows.cpp
-extern qboolean tr_distortionNegate; //tr_shadows.cpp
-
-float g_oldRangedFog = 0.0f;
 
 #ifndef __NO_JK2
 /*
@@ -786,6 +764,12 @@ Ghoul2 Insert End
 		case CG_ANYLANGUAGE_READFROMSTRING2_JK2:
 			return CG_ANYLANGUAGE_READFROMSTRING2;
 			break;
+		case CG_OPENJK_MENU_PAINT_JK2:
+			return CG_OPENJK_MENU_PAINT;
+			break;
+		case CG_OPENJK_GETMENU_BYNAME_JK2:
+			return CG_OPENJK_GETMENU_BYNAME;
+			break;
 	}
 	return (cgameImport_t)-1;
 }
@@ -800,14 +784,13 @@ The cgame module is making a system call
 */
 void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
-//#define	VMA(x) VM_ArgPtr(args[x])
-#define	VMA(x) ((void*)args[x])
-#define	VMF(x)	((float *)args)[x]
-int CL_CgameSystemCalls( int *args ) {
+extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
+extern menuDef_t *Menus_FindByName(const char *p);
+intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
-		args[0] = (int)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
+		args[0] = (intptr_t)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
 	}
 #endif
 	switch( args[0] ) {
@@ -820,7 +803,7 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_MILLISECONDS:
 		return Sys_Milliseconds();
 	case CG_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *) VMA(1), (const char *) VMA(2), (const char *) VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *) VMA(1), (const char *) VMA(2), (const char *) VMA(3), args[4] );
 		return 0;
 	case CG_CVAR_UPDATE:
 		Cvar_Update( (vmCvar_t *) VMA(1) );
@@ -861,13 +844,6 @@ int CL_CgameSystemCalls( int *args ) {
 		Com_EventLoop();	// FIXME: if a server restarts here, BAD THINGS HAPPEN!
 		SCR_UpdateScreen();
 		return 0;
-
-#ifdef _XBOX
-	case CG_RMG_INIT:
-	case CG_CM_REGISTER_TERRAIN:
-	case CG_RE_INIT_RENDERER_TERRAIN:
-		Com_Error( ERR_FATAL, "ERROR: Terrain unsupported on Xbox.\n" );
-#else
 	case CG_RMG_INIT:
 		/*
 		if (!com_sv_running->integer)
@@ -892,16 +868,11 @@ int CL_CgameSystemCalls( int *args ) {
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		RE_InitRendererTerrain((const char *)VMA(1));
+		re.InitRendererTerrain((const char *)VMA(1));
 		return 0;
-#endif	// _XBOX
 
 	case CG_CM_LOADMAP:
-#ifdef _XBOX
-		CL_CM_LoadMap( (const char *) VMA(1) );
-#else
 		CL_CM_LoadMap( (const char *) VMA(1), args[2] );
-#endif
 		return 0;
 	case CG_CM_NUMINLINEMODELS:
 		return CM_NumInlineModels();
@@ -1017,10 +988,10 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_ANYLANGUAGE_READFROMSTRING2:
 		return re.AnyLanguage_ReadCharFromString2( (char **) VMA(1), (qboolean *) VMA(3) );
 	case CG_R_SETREFRACTIONPROP:
-		tr_distortionAlpha = VMF(1);
-		tr_distortionStretch = VMF(2);
-		tr_distortionPrePost = (qboolean)args[3];
-		tr_distortionNegate = (qboolean)args[4];
+		*(re.tr_distortionAlpha()) = VMF(1);
+		*(re.tr_distortionStretch()) = VMF(2);
+		*(re.tr_distortionPrePost()) = (qboolean)args[3];
+		*(re.tr_distortionNegate()) = (qboolean)args[4];
 		return 0;
 	case CG_R_CLEARSCENE:
 		re.ClearScene();
@@ -1030,7 +1001,7 @@ int CL_CgameSystemCalls( int *args ) {
 		return 0;
 
 	case CG_R_INPVS:
-		return R_inPVS((float *) VMA(1), (float *) VMA(2));
+		return re.R_inPVS((float *) VMA(1), (float *) VMA(2));
 
 	case CG_R_GETLIGHTING:
 		return re.GetLighting( (const float * ) VMA(1), (float *) VMA(2), (float *) VMA(3), (float *) VMA(4) );
@@ -1038,11 +1009,7 @@ int CL_CgameSystemCalls( int *args ) {
 		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3) );
 		return 0;
 	case CG_R_ADDLIGHTTOSCENE:
-#ifdef VV_LIGHTING
-		VVLightMan.RE_AddLightToScene ( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#else
 		re.AddLightToScene( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#endif
 		return 0;
 	case CG_R_RENDERSCENE:
 		re.RenderScene( (const refdef_t *) VMA(1) );
@@ -1070,7 +1037,8 @@ int CL_CgameSystemCalls( int *args ) {
 		re.DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 	case CG_R_SETRANGEFOG:
-		if (tr.rangedFog <= 0.0f)
+		// FIXME: Figure out if this is how it's done in MP :S --eez
+		/*if (tr.rangedFog <= 0.0f)
 		{
 			g_oldRangedFog = tr.rangedFog;
 		}
@@ -1078,7 +1046,8 @@ int CL_CgameSystemCalls( int *args ) {
 		if (tr.rangedFog == 0.0f && g_oldRangedFog)
 		{ //restore to previous state if applicable
 			tr.rangedFog = g_oldRangedFog;
-		}
+		}*/
+		re.SetRangedFog( VMF( 1 ) );
 		return 0;
 	case CG_R_LA_GOGGLES:
 		re.LAGoggles();
@@ -1121,18 +1090,18 @@ Ghoul2 Insert Start
 */
 		
 	case CG_G2_LISTSURFACES:
-		G2API_ListSurfaces( (CGhoul2Info *) VMA(1) );
+		re.G2API_ListSurfaces( (CGhoul2Info *) VMA(1) );
 		return 0;
 
 	case CG_G2_LISTBONES:
-		G2API_ListBones( (CGhoul2Info *) VMA(1), args[2]);
+		re.G2API_ListBones( (CGhoul2Info *) VMA(1), args[2]);
 		return 0;
 
 	case CG_G2_HAVEWEGHOULMODELS:
-		return G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)VMA(1)) );
+		return re.G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)VMA(1)) );
 
 	case CG_G2_SETMODELS:
-		G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)VMA(1)),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		re.G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)VMA(1)),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 /*
@@ -1172,7 +1141,7 @@ Ghoul2 Insert End
 	  return 0;
 
 	case CG_Z_MALLOC:
-		return (int)Z_Malloc(args[1], (memtag_t) args[2], qfalse);
+		return (intptr_t)Z_Malloc(args[1], (memtag_t) args[2], qfalse);
 
 	case CG_Z_FREE:
 		Z_Free((void *) VMA(1));
@@ -1234,6 +1203,13 @@ Ghoul2 Insert End
 		Menu_PaintAll();
 		return 0;
 
+	case CG_OPENJK_MENU_PAINT:
+		Menu_Paint( (menuDef_t *)VMA(1), (intptr_t)VMA(2) );
+		return 0;
+
+	case CG_OPENJK_GETMENU_BYNAME:
+		return (intptr_t)Menus_FindByName( (const char *)VMA(1) );
+
 	case CG_UI_STRING_INIT:
 		String_Init();
 		return 0;
@@ -1242,7 +1218,7 @@ Ghoul2 Insert End
 		menuDef_t *menu;
 		int		*xPos,*yPos,*w,*h,result;
 #ifndef __NO_JK2
-		if(!Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && !com_jk2->integer)
 		{
 #endif
 
@@ -1367,7 +1343,7 @@ Ghoul2 Insert End
 	case CG_SP_GETSTRINGTEXTSTRING:
 #ifndef __NO_JK2
 	case CG_SP_GETSTRINGTEXT:
-		if(Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && com_jk2->integer)
 		{
 			const char* text;
 
@@ -1424,7 +1400,7 @@ Ghoul2 Insert End
 		return JK2SP_Register( (const char *) VMA(1), args[2]?(SP_REGISTER_MENU|SP_REGISTER_REQUIRED):SP_REGISTER_CLIENT );
 #endif
 	default:
-		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad cgame system trap: %ld", (long int) args[0] );
 	}
 	return 0;
 }
@@ -1441,9 +1417,9 @@ extern qboolean Sys_LowPhysicalMemory();
 void CL_InitCGame( void ) {
 	const char			*info;
 	const char			*mapname;
-	int		t1, t2;
+	//int		t1, t2;
 
-	t1 = Sys_Milliseconds();
+	//t1 = Sys_Milliseconds();
 
 	// put away the console
 	Con_Close();
@@ -1458,11 +1434,15 @@ void CL_InitCGame( void ) {
 	// init for this gamestate
 	VM_Call( CG_INIT, clc.serverCommandSequence );
 
+	// reset any CVAR_CHEAT cvars registered by cgame
+	if ( !cl_connectedToCheatServer )
+		Cvar_SetCheatState();
+
 	// we will send a usercmd this frame, which
 	// will cause the server to send us the first snapshot
 	cls.state = CA_PRIMED;
 
-	t2 = Sys_Milliseconds();
+	//t2 = Sys_Milliseconds();
 
 	//Com_Printf( "CL_InitCGame: %5.2f seconds\n", (t2-t1)/1000.0 );
 	// have the renderer touch all its images, so they are present
@@ -1517,7 +1497,7 @@ void CL_CGameRendering( stereoFrame_t stereo ) {
 	{
 		timei-=0;
 	}
-	G2API_SetTime(cl.serverTime,G2T_CG_TIME);
+	re.G2API_SetTime(cl.serverTime,G2T_CG_TIME);
 	VM_Call( CG_DRAW_ACTIVE_FRAME,timei, stereo, qfalse );
 //	VM_Debug( 0 );
 }
@@ -1571,18 +1551,10 @@ void CL_AdjustTimeDelta( void ) {
 		Com_Printf( "%i ", cl.serverTimeDelta );
 	}
 */
-	int		resetTime;
 	int		newDelta;
 	int		deltaDelta;
 
 	cl.newSnapshots = qfalse;
-	
-	// if the current time is WAY off, just correct to the current value
-	if ( com_sv_running->integer ) {
-		resetTime = 100;
-	} else {
-		resetTime = RESET_TIME;
-	}
 
 	newDelta = cl.frame.serverTime - cls.realtime;
 	deltaDelta = abs( newDelta - cl.serverTimeDelta );
@@ -1630,7 +1602,7 @@ CL_FirstSnapshot
 */
 void CL_FirstSnapshot( void ) {
 
-	RE_RegisterMedia_LevelLoadEnd();
+	re.RegisterMedia_LevelLoadEnd();
 
 	cls.state = CA_ACTIVE;
 
@@ -1648,11 +1620,6 @@ void CL_FirstSnapshot( void ) {
 	}
 	
 	Sys_BeginProfiling();
-
-#ifdef _XBOX
-	// turn vsync back on - tearing is ugly
-	qglEnable(GL_VSYNC);
-#endif
 }
 
 /*
@@ -1683,7 +1650,7 @@ void CL_SetCGameTime( void ) {
 	}
 
 	// allow pause in single player
-	if ( sv_paused->integer && cl_paused->integer && com_sv_running->integer ) {
+	if ( sv_paused->integer && CL_CheckPaused() && com_sv_running->integer ) {
 		// paused
 		return;
 	}

@@ -28,28 +28,26 @@ This file is part of Jedi Academy.
 //
 //
 //
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-////////////////////////////////////////////////////////////////////////////////////////
-#include "g_headers.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "b_local.h"
+#include "g_navigator.h"
 #if !defined(RAVL_VEC_INC)
-	#include "..\Ravl\CVec.h"
+	#include "../Ravl/CVec.h"
 #endif
 #if !defined(RATL_ARRAY_VS_INC)
-	#include "..\Ratl\array_vs.h"
+	#include "../Ratl/array_vs.h"
 #endif
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 #if !defined(RATL_HANDLE_POOL_VS_INC)
-	#include "..\Ratl\handle_pool_vs.h"
+	#include "../Ratl/handle_pool_vs.h"
 #endif
 #if !defined(RUFL_HSTRING_INC)
-	#include "..\Rufl\hstring.h"
+	#include "../Rufl/hstring.h"
 #endif
 
 
@@ -194,7 +192,6 @@ class	CTroop
 
 	float			mFormSpacingFwd;
 	float			mFormSpacingRight;
-	float			mSurroundFanAngle;
 
 public:
 	bool	Empty()					{return mActors.empty();}
@@ -1453,10 +1450,6 @@ void		Trooper_Think(gentity_t* actor)
 			//--------
 			if (traceTgt==target->s.number)
 			{
-				if (actor->s.weapon==WP_BLASTER)
-				{
-					ucmd.buttons	|= BUTTON_ALT_ATTACK;
-				}
 				WeaponThink(qtrue);
 			}
 			else if (!inSmackAway)

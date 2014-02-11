@@ -18,12 +18,6 @@ This file is part of Jedi Academy.
 
 //NPC_sounds.cpp
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
 #include "b_local.h"
 #include "Q3_Interface.h"
 

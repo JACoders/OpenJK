@@ -1,7 +1,9 @@
-#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #ifdef COMPILE_ME
+#ifdef _MSC_VER
+#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
+#endif
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -22,7 +24,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: cwinb.c,v 1.4 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 

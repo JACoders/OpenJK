@@ -1,11 +1,6 @@
+#pragma once
 
-#if !defined(FX_SYSTEM_H_INC)
-	#include "FxSystem.h"
-#endif
-
-#ifndef FX_PRIMITIVES_H_INC
-#define FX_PRIMITIVES_H_INC
-
+#include "FxSystem.h"
 
 #define MAX_EFFECTS			1800
 
@@ -68,7 +63,7 @@
 #define	FX_DEPTH_HACK		0x00100000
 #define	FX_RELATIVE			0x00200000
 #define FX_SET_SHADER_TIME	0x00400000
-#define FX_EXPENSIVE_PHYSICS 0x00800000		
+#define FX_EXPENSIVE_PHYSICS 0x00800000
 
 //rww - g2-related flags (these can slow things down significantly, use sparingly)
 //These should be used only with particles/decals as they steal flags used by cylinders.
@@ -141,7 +136,7 @@ public:
 	virtual bool Update()	{ return true;		}
 	virtual	void Draw(void) {}
 
-	inline	miniRefEntity_t	&GetRefEnt(void) { return mRefEnt; } 
+	inline	miniRefEntity_t	&GetRefEnt(void) { return mRefEnt; }
 
 	inline void		SetNext(CEffect *Next) { mNext = Next; }
 	inline CEffect	*GetNext(void) { return mNext; }
@@ -219,13 +214,13 @@ protected:
 	float		mSizeStart;
 	float		mSizeEnd;
 	float		mSizeParm;
-	
+
 	vec3_t		mOrgOffset;
 	vec3_t		mRGBStart;
 	vec3_t		mRGBEnd;
 	float		mRGBParm;
 
-	CGhoul2Info_v mGhoul2;
+	CGhoul2Info_v *mGhoul2;
 	short		mEntNum;
 	char		mModelNum;
 	char		mBoltNum;
@@ -241,14 +236,12 @@ public:
 		mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
 
-	virtual ~CLight(void)
+	inline void SetBoltinfo( CGhoul2Info_v *ghoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
 	{
-		mGhoul2.kill();	//remove my model ref without actually deleting
-	}
-
-	inline void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )	
-	{ 
-		mGhoul2 = iGhoul2; mEntNum = entNum; mModelNum = modelNum; mBoltNum = boltNum; 
+		mGhoul2 = ghoul2;
+		mEntNum = entNum;
+		mModelNum = modelNum;
+		mBoltNum = boltNum;
 	}
 
 	virtual bool Update();
@@ -280,7 +273,7 @@ protected:
 	vec3_t		mRGBStart;
 	vec3_t		mRGBEnd;
 	float		mRGBParm;
-	
+
 	float		mAlphaStart;
 	float		mAlphaEnd;
 	float		mAlphaParm;
@@ -288,7 +281,7 @@ protected:
 	float		mRotationDelta;
 	float		mElasticity;
 
-	CGhoul2Info_v mGhoul2;
+	CGhoul2Info_v *mGhoul2;
 	short		mEntNum;
 	char		mModelNum;
 	char		mBoltNum;
@@ -302,25 +295,18 @@ protected:
 
 public:
 
-	inline void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )	
-	{ 
-		mGhoul2 = iGhoul2; mEntNum = entNum; mModelNum = modelNum; mBoltNum = boltNum; 
+	inline void SetBoltinfo( CGhoul2Info_v *ghoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
+	{
+		mGhoul2 = ghoul2;
+		mEntNum = entNum;
+		mModelNum = modelNum;
+		mBoltNum = boltNum;
 	}
 
-#ifdef _WIN32
-	inline CParticle::CParticle(void)
-#else
 	inline CParticle(void)
-#endif
 	{
 		mRefEnt.reType = RT_SPRITE; mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
-
-	virtual CParticle::~CParticle(void)
-	{
-		mGhoul2.kill();	//remove my model ref without actually deleting
-	}
-
 
 	virtual void Init();
 	virtual void Die();
@@ -419,7 +405,7 @@ public:
 	virtual bool Update();
 	virtual bool Cull(void);
 	virtual void Draw(void);
-	
+
 	void DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2, float segPercent, float lastSegPercent );
 
 	inline void SetControlPoints( vec3_t ctrl1, vec3_t ctrl2 )	{ VectorCopy( ctrl1, mControl1 ); VectorCopy( ctrl2, mControl2 ); }
@@ -539,10 +525,10 @@ protected:
 
 	vec3_t		mOldOrigin;		// we use these to do some nice
 	vec3_t		mLastOrigin;	//	tricks...
-	vec3_t		mOldVelocity;	//	
+	vec3_t		mOldVelocity;	//
 	int			mOldTime;
 
-	vec3_t		mAngles;		// for a rotating thing, using a delta  
+	vec3_t		mAngles;		// for a rotating thing, using a delta
 	vec3_t		mAngleDelta;	//	as opposed to an end angle is probably much easier
 
 	int			mEmitterFxID;	// if we have emitter fx, this is our id
@@ -610,6 +596,3 @@ public:
 	inline void SetMotionTimeStamp( int t )				{ mTimeStamp = theFxHelper.GetTime() + t; }
 	inline int	GetMotionTimeStamp()					{ return mTimeStamp; }
 };
-
-
-#endif //FX_PRIMITIVES_H_INC

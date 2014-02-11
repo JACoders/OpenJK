@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_ai_weight.h
@@ -5,7 +6,7 @@
  * desc:		fuzzy weights
  *
  * $Archive: /source/code/botlib/be_ai_weight.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $

@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 #endif
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 #if !defined(G2_H_INC)
@@ -33,7 +33,11 @@ This file is part of Jedi Academy.
 #endif
 
 #if !defined(__Q_SHARED_H)
-	#include "../game/q_shared.h"
+	#include "../qcommon/q_shared.h"
+#endif
+
+#ifndef _WIN32
+    #include <cmath>
 #endif
 
 
@@ -50,7 +54,7 @@ void CFxScheduler::FX_CopeWithAnyLoadedSaveGames(void)
 		memcpy( mLoopedEffectArray, gLoopedEffectArray, sizeof(mLoopedEffectArray) );
 		assert( g_vstrEffectsNeededPerSlot.size() == MAX_LOOPED_FX );
 
-		for (int iFX = 0; iFX < g_vstrEffectsNeededPerSlot.size(); iFX++)
+		for (size_t iFX = 0; iFX < g_vstrEffectsNeededPerSlot.size(); iFX++)
 		{
 			const char *psFX_Filename = g_vstrEffectsNeededPerSlot[iFX].c_str();
 			if ( psFX_Filename[0] )
@@ -103,14 +107,14 @@ void CFxScheduler::LoadSave_Read()
 {		
 	Clean();	// need to get rid of old pre-cache handles, or it thinks it has some older effects when it doesn't	
 	g_vstrEffectsNeededPerSlot.clear();	// jic
-	gi.ReadFromSaveGame('FXLE', (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
+	gi.ReadFromSaveGame(INT_ID('F','X','L','E'), (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
 	//
 	// now read in and re-register the effects we need for those structs...
 	//
 	for (int iFX = 0; iFX < MAX_LOOPED_FX; iFX++)
 	{
 		char sFX_Filename[MAX_QPATH];
-		gi.ReadFromSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename), NULL);
+		gi.ReadFromSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename), NULL);
 		g_vstrEffectsNeededPerSlot.push_back( sFX_Filename );
 	}
 }
@@ -119,7 +123,7 @@ void CFxScheduler::LoadSave_Write()
 {
 	// bsave the data we need...
 	//
-	gi.AppendToSaveGame('FXLE', mLoopedEffectArray, sizeof(mLoopedEffectArray));
+	gi.AppendToSaveGame(INT_ID('F','X','L','E'), mLoopedEffectArray, sizeof(mLoopedEffectArray));
 	//
 	// then cope with the fact that the mID field in each struct of the array we've just saved will not 
 	//	necessarily point at the same thing when reloading, so save out the actual fx filename strings they
@@ -151,7 +155,7 @@ void CFxScheduler::LoadSave_Write()
 
 		// write out this string...
 		//
-		gi.AppendToSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename));
+		gi.AppendToSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename));
 	}
 }
 
@@ -161,7 +165,7 @@ void CMediaHandles::operator=(const CMediaHandles &that )
 {
 	mMediaList.clear();
 
-	for ( int i = 0; i < that.mMediaList.size(); i++ )
+	for ( size_t i = 0; i < that.mMediaList.size(); i++ )
 	{
 		mMediaList.push_back( that.mMediaList[i] );
 	}
@@ -227,7 +231,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	const int id = mEffectIDs[sfile];
 #ifndef FINAL_BUILD
 	if ( id == 0 )
@@ -415,11 +419,11 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 			p++;
 		}
 
-		COM_StripExtension( last, sfile );
+		COM_StripExtension( last, sfile, sizeof(sfile) );
 	}
 	else
 	{
-		COM_StripExtension( file, sfile );
+		COM_StripExtension( file, sfile, sizeof(sfile) );
 	}
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
@@ -447,7 +451,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	else
 	{
 		// Add on our extension and prepend the file with the default path
-		sprintf( temp, "%s/%s.efx", FX_FILE_PATH, sfile );
+		Com_sprintf( temp, sizeof(temp), "%s/%s.efx", FX_FILE_PATH, sfile );
 		pfile = temp;
 	}
 
@@ -501,6 +505,24 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 // Return:
 //	int handle of the effect
 //------------------------------------------------------
+
+struct primitiveType_s { const char *name; EPrimType type; } primitiveTypes[] = {
+	{ "particle", Particle },
+	{ "line", Line },
+	{ "tail", Tail },
+	{ "sound", Sound },
+	{ "cylinder", Cylinder },
+	{ "electricity", Electricity },
+	{ "emitter", Emitter },
+	{ "decal", Decal },
+	{ "orientedparticle", OrientedParticle },
+	{ "fxrunner", FxRunner },
+	{ "light", Light },
+	{ "cameraShake", CameraShake },
+	{ "flash", ScreenFlash },
+};
+static const size_t numPrimitiveTypes = ARRAY_LEN( primitiveTypes );
+
 int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 {
 	CGPGroup			*primitiveGroup;
@@ -522,7 +544,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	if ((pair = base->GetPairs())!=0)
 	{
 		grpName = pair->GetName();
-		if ( !stricmp( grpName, "repeatDelay" ))
+		if ( !Q_stricmp( grpName, "repeatDelay" ))
 		{
 			effect->mRepeatDelay = atoi(pair->GetTopValue());
 		}
@@ -538,64 +560,14 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	{
 		grpName = primitiveGroup->GetName();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( grpName, "particle" ))
-		{
-			type = Particle;
+		type = None;
+		for ( size_t i=0; i<numPrimitiveTypes; i++ ) {
+			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
+				type = primitiveTypes[i].type;
+				break;
+			}
 		}
-		else if ( !stricmp( grpName, "line" ))
-		{
-			type = Line;
-		}
-		else if ( !stricmp( grpName, "tail" ))
-		{
-			type = Tail;
-		}
-		else if ( !stricmp( grpName, "sound" ))
-		{
-			type = Sound;
-		}
-		else if ( !stricmp( grpName, "cylinder" ))
-		{
-			type = Cylinder;
-		}
-		else if ( !stricmp( grpName, "electricity" ))
-		{
-			type = Electricity;
-		}
-		else if ( !stricmp( grpName, "emitter" ))
-		{
-			type = Emitter;
-		}
-		else if ( !stricmp( grpName, "decal" ))
-		{
-			type = Decal;
-		}
-		else if ( !stricmp( grpName, "orientedparticle" ))
-		{
-			type = OrientedParticle;
-		}
-		else if ( !stricmp( grpName, "fxrunner" ))
-		{
-			type = FxRunner;
-		}
-		else if ( !stricmp( grpName, "light" ))
-		{
-			type = Light;
-		}
-		else if ( !stricmp( grpName, "cameraShake" ))
-		{
-			type = CameraShake;
-		}
-		else if ( !stricmp( grpName, "flash" ))
-		{
-			type = ScreenFlash;
-		}
-		else 
-		{
-			type = None;
-		}
-		
+
 		if ( type != None )
 		{
 			prim = new CPrimitiveTemplate;
@@ -770,7 +742,7 @@ CPrimitiveTemplate *CFxScheduler::GetPrimitiveCopy( SEffectTemplate *effectCopy,
 
 	for ( int i = 0; i < effectCopy->mPrimitiveCount; i++ )
 	{
-		if ( !stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
+		if ( !Q_stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
 		{
 			// we found a match, so return it
 			return effectCopy->mPrimitives[i];
@@ -854,7 +826,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	// This is a horribly dumb thing to have to do, but QuakeIII might not have calc'd the lerpOrigin
 	//	for the entity we may be trying to bolt onto.  We like having the correct origin, so we are
@@ -893,7 +865,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 	int		id;
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	id = mEffectIDs[sfile];
 
 #ifndef FINAL_BUILD
@@ -1347,7 +1319,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, bool isPortal )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, isPortal );
 
@@ -1376,7 +1348,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward, 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, forward, isPortal );
 

@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_MISSION_H_INC)
-#define RM_MISSION_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Mission.h")
@@ -63,7 +61,7 @@ private:
 
 	CRandomTerrain*			mLandScape;
 
-public:	
+public:
 
 	CRMMission ( CRandomTerrain* );
 	~CRMMission ( );
@@ -71,11 +69,11 @@ public:
 	bool			Load					( const char* name, const char* instances, const char* difficulty );
 	bool			Spawn					( CRandomTerrain* terrain, qboolean IsServer );
 
-	void			Preview					( const vec3_t from );									
-										
+	void			Preview					( const vec3_t from );
+
 	CRMObjective*	FindObjective			( const char* name );
 	CRMObjective*	GetCurrentObjective		( ) { return mCurrentObjective; }
-	
+
 	void			CompleteMission			(void);
 	void			FailedMission			(bool TimeExpired);
 	void			CompleteObjective		( CRMObjective* ojective );
@@ -97,7 +95,7 @@ public:
 	bool			DenyPickupEquipment	() {return mLandScape->flrand(0.0f,1.0f) > mPickupEquipment;}
 
 private:
-					
+
 //	void			PurgeUnlinkedTriggers	( );
 //	void			PurgeTrigger			( CEntity* trigger );
 
@@ -105,7 +103,7 @@ private:
 	CGPGroup*		ParseRandom				( CGPGroup* random );
 	bool			ParseOrigin				( CGPGroup* originGroup, vec3_t origin, vec3_t lookat, int* flattenHeight );
 	bool			ParseNodes				( CGPGroup* group );
-	bool			ParsePaths				( CGPGroup *paths);					
+	bool			ParsePaths				( CGPGroup *paths);
 	bool			ParseRivers				( CGPGroup *rivers);
 	void			PlaceBridges			();
 	void			PlaceWallInstance(CRMInstance*	instance, float xpos, float ypos, float zpos, int x, int y, float angle);
@@ -124,6 +122,3 @@ private:
 //	void			SpawnNPCTriggers		( CCMLandScape* landscape );
 //	void			AttachNPCTriggers		( CCMLandScape* landscape );
 };
-
-
-#endif

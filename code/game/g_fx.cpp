@@ -16,12 +16,9 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
+#include "b_local.h"
 
 extern int	G_FindConfigstringIndex( const char *name, int start, int max, qboolean create );
 
@@ -727,7 +724,7 @@ void SP_CreatePuffSystem( gentity_t *ent )
 			continue;
 
 		// Send the command.
-		_snprintf( temp, 128, "puff%i %s %s", iPuffSystem, key, value );
+		Com_sprintf( temp, 128, "puff%i %s %s", iPuffSystem, key, value );
 		G_FindConfigstringIndex( temp, CS_WORLD_FX, MAX_WORLD_FX, qtrue );
  	}
 }

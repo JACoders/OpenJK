@@ -16,20 +16,16 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every CPP file
-#include "common_headers.h"
-
-
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
+	#include "../../code/ghoul2/G2.h"
 #endif
 
 #if !defined(__Q_SHARED_H)
@@ -37,6 +33,10 @@ This file is part of Jedi Knight 2.
 #endif
 
 #include "cg_media.h"
+
+#ifndef _WIN32
+    #include <cmath>
+#endif
 
 
 CFxScheduler	theFxScheduler;
@@ -63,7 +63,7 @@ void SEffectTemplate::operator=(const SEffectTemplate &that)
 {
 	mCopy = true;
 
-	strcpy( mEffectName, that.mEffectName );
+	Q_strncpyz( mEffectName, that.mEffectName, sizeof(mEffectName) );
 
 	mPrimitiveCount = that.mPrimitiveCount;
 
@@ -191,11 +191,11 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 			p++;
 		}
 
-		COM_StripExtension( last, sfile );
+		COM_StripExtension( last, sfile, sizeof(sfile) );
 	}
 	else
 	{
-		COM_StripExtension( file, sfile );
+		COM_StripExtension( file, sfile, sizeof(sfile) );
 	}
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
@@ -277,6 +277,24 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 // Return:
 //	int handle of the effect
 //------------------------------------------------------
+
+struct primitiveType_s { const char *name; EPrimType type; } primitiveTypes[] = {
+	{ "particle", Particle },
+	{ "line", Line },
+	{ "tail", Tail },
+	{ "sound", Sound },
+	{ "cylinder", Cylinder },
+	{ "electricity", Electricity },
+	{ "emitter", Emitter },
+	{ "decal", Decal },
+	{ "orientedparticle", OrientedParticle },
+	{ "fxrunner", FxRunner },
+	{ "light", Light },
+	{ "cameraShake", CameraShake },
+	{ "flash", ScreenFlash },
+};
+static const size_t numPrimitiveTypes = ARRAY_LEN( primitiveTypes );
+
 int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 {
 	CGPGroup			*primitiveGroup;
@@ -300,64 +318,14 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	{
 		grpName = primitiveGroup->GetName();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( grpName, "particle" ))
-		{
-			type = Particle;
+		type = None;
+		for ( size_t i=0; i<numPrimitiveTypes; i++ ) {
+			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
+				type = primitiveTypes[i].type;
+				break;
+			}
 		}
-		else if ( !stricmp( grpName, "line" ))
-		{
-			type = Line;
-		}
-		else if ( !stricmp( grpName, "tail" ))
-		{
-			type = Tail;
-		}
-		else if ( !stricmp( grpName, "sound" ))
-		{
-			type = Sound;
-		}
-		else if ( !stricmp( grpName, "cylinder" ))
-		{
-			type = Cylinder;
-		}
-		else if ( !stricmp( grpName, "electricity" ))
-		{
-			type = Electricity;
-		}
-		else if ( !stricmp( grpName, "emitter" ))
-		{
-			type = Emitter;
-		}
-		else if ( !stricmp( grpName, "decal" ))
-		{
-			type = Decal;
-		}
-		else if ( !stricmp( grpName, "orientedparticle" ))
-		{
-			type = OrientedParticle;
-		}
-		else if ( !stricmp( grpName, "fxrunner" ))
-		{
-			type = FxRunner;
-		}
-		else if ( !stricmp( grpName, "light" ))
-		{
-			type = Light;
-		}
-		else if ( !stricmp( grpName, "cameraShake" ))
-		{
-			type = CameraShake;
-		}
-		else if ( !stricmp( grpName, "flash" ))
-		{
-			type = ScreenFlash;
-		}
-		else 
-		{
-			type = None;
-		}
-		
+
 		if ( type != None )
 		{
 			prim = new CPrimitiveTemplate;
@@ -432,7 +400,7 @@ SEffectTemplate *CFxScheduler::GetNewEffectTemplate( int *id, const char *file )
 			if ( file )
 			{
 				mEffectIDs[file] = i;
-				strcpy( effect->mEffectName, file );
+				Q_strncpyz( effect->mEffectName, file, sizeof(effect->mEffectName) );
 			}
 
 			effect->mInUse = true;
@@ -615,7 +583,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	// This is a horribly dumb thing to have to do, but QuakeIII might not have calc'd the lerpOrigin
 	//	for the entity we may be trying to bolt onto.  We like having the correct origin, so we are
@@ -654,7 +622,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID )
 	int		id;
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	id = mEffectIDs[sfile];
 
 #ifndef FINAL_BUILD
@@ -1081,7 +1049,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin );
 
@@ -1110,7 +1078,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, forward );
 

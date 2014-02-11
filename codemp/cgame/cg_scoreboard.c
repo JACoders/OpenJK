@@ -48,7 +48,7 @@
 //
 //	0   32   80  112  144   240  320  400   <-- pixel position
 //  bot head bot head score ping time name
-//  
+//
 //  wins/losses are drawn on bot icon now
 
 static qboolean localClient; // true if local client has been displayed
@@ -59,7 +59,7 @@ static qboolean localClient; // true if local client has been displayed
 CG_DrawScoreboard
 =================
 */
-static void CG_DrawClientScore( int y, score_t *score, float *color, float fade, qboolean largeFormat ) 
+static void CG_DrawClientScore( int y, score_t *score, float *color, float fade, qboolean largeFormat )
 {
 	//vec3_t	headAngles;
 	clientInfo_t	*ci;
@@ -71,7 +71,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		Com_Printf( "Bad score->client: %i\n", score->client );
 		return;
 	}
-	
+
 	ci = &cgs.clientinfo[score->client];
 
 	// draw the handicap or bot skill marker (unless player has flag)
@@ -91,7 +91,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 
 	else if ( cgs.gametype == GT_POWERDUEL && (ci->duelTeam == DUELTEAM_LONE || ci->duelTeam == DUELTEAM_DOUBLE) )
 	{
-		CG_DrawPic( iconx, y, iconSize, iconSize, trap_R_RegisterShaderNoMip(
+		CG_DrawPic( iconx, y, iconSize, iconSize, trap->R_RegisterShaderNoMip(
 			(ci->duelTeam == DUELTEAM_LONE) ? "gfx/mp/pduel_icon_lone" : "gfx/mp/pduel_icon_double" ) );
 	}
 
@@ -109,14 +109,14 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	}
 
 	// highlight your position
-	if ( score->client == cg.snap->ps.clientNum ) 
+	if ( score->client == cg.snap->ps.clientNum )
 	{
 		float	hcolor[4];
 		int		rank;
 
 		localClient = qtrue;
 
-		if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR 
+		if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR
 			|| cgs.gametype >= GT_TEAM ) {
 			rank = -1;
 		} else {
@@ -160,18 +160,18 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 			}
 		}
 
-		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
-		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );		
+		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
+		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 	}
 	else
 	{
 		CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
+		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 	}
 
 	// add the "ready" marker for intermission exiting
-	if ( cg.snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << score->client ) ) 
+	if ( cg.snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << score->client ) )
 	{
 		CG_Text_Paint (SB_NAME_X - 64, y + 2, 0.7f * scale, colorWhite, CG_GetStringEdString("MP_INGAME", "READY"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
@@ -182,7 +182,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 CG_TeamScoreboard
 =================
 */
-static int CG_TeamScoreboard( int y, team_t team, float fade, int maxClients, int lineHeight, qboolean countOnly ) 
+static int CG_TeamScoreboard( int y, team_t team, float fade, int maxClients, int lineHeight, qboolean countOnly )
 {
 	int		i;
 	score_t	*score;
@@ -296,7 +296,7 @@ Draw the normal in-game scoreboard
 */
 int cg_siegeWinTeam = 0;
 qboolean CG_DrawOldScoreboard( void ) {
-	int		x, y, w, i, n1, n2;
+	int		x, y, i, n1, n2;
 	float	fade;
 	float	*fadeColor;
 	char	*s;
@@ -321,7 +321,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 		fadeColor = colorWhite;
 	} else {
 		fadeColor = CG_FadeColor( cg.scoreFadeTime, FADE_TIME );
-		
+
 		if ( !fadeColor ) {
 			// next time scoreboard comes up, don't print killer
 			cg.deferredPlayerLoading = 0;
@@ -383,15 +383,15 @@ qboolean CG_DrawOldScoreboard( void ) {
 	{ //do nothing?
 	}
 	else if ( cgs.gametype < GT_TEAM) {
-		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
+		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR )
 		{
 			char sPlace[256];
 			char sOf[256];
 			char sWith[256];
 
-			trap_SP_GetStringTextString("MP_INGAME_PLACE",	sPlace,	sizeof(sPlace));
-			trap_SP_GetStringTextString("MP_INGAME_OF",		sOf,	sizeof(sOf));
-			trap_SP_GetStringTextString("MP_INGAME_WITH",	sWith,	sizeof(sWith));
+			trap->SE_GetStringTextString("MP_INGAME_PLACE",	sPlace,	sizeof(sPlace));
+			trap->SE_GetStringTextString("MP_INGAME_OF",		sOf,	sizeof(sOf));
+			trap->SE_GetStringTextString("MP_INGAME_WITH",	sWith,	sizeof(sWith));
 
 			s = va("%s %s (%s %i) %s %i",
 				CG_PlaceString( cg.snap->ps.persistant[PERS_RANK] + 1 ),
@@ -400,11 +400,11 @@ qboolean CG_DrawOldScoreboard( void ) {
 				cg.numScores,
 				sWith,
 				cg.snap->ps.persistant[PERS_SCORE] );
-			w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		//	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 			x = ( SCREEN_WIDTH ) / 2;
 			y = 60;
 			//CG_DrawBigString( x, y, s, fade );
-			UI_DrawProportionalString(x, y, s, UI_CENTER|UI_DROPSHADOW, colorTable[CT_WHITE]);
+			CG_DrawProportionalString(x, y, s, UI_CENTER|UI_DROPSHADOW, colorTable[CT_WHITE]);
 		}
 	}
 	else if (cgs.gametype != GT_SIEGE)
@@ -419,7 +419,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 		x = ( SCREEN_WIDTH ) / 2;
 		y = 60;
-		
+
 		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 	else if (cgs.gametype == GT_SIEGE && (cg_siegeWinTeam == 1 || cg_siegeWinTeam == 2))
@@ -435,20 +435,20 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 		x = ( SCREEN_WIDTH ) / 2;
 		y = 60;
-		
+
 		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 
 	// scoreboard
 	y = SB_HEADER;
 
-	CG_DrawPic ( SB_SCORELINE_X - 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap_R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
+	CG_DrawPic ( SB_SCORELINE_X - 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap->R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
 
 	CG_Text_Paint ( SB_NAME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "NAME"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	if (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL)
 	{
 		char sWL[100];
-		trap_SP_GetStringTextString("MP_INGAME_W_L", sWL,	sizeof(sWL));
+		trap->SE_GetStringTextString("MP_INGAME_W_L", sWL,	sizeof(sWL));
 
 		CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, sWL, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
@@ -558,7 +558,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 			maxClients -= (team1MaxCl+team2MaxCl);
 		}
-		//Raz: Fix spectators not being shown on team scoreboard by preserving maxClients
 		maxClients = realMaxClients;
 		n1 = CG_TeamScoreboard( y, TEAM_SPECTATOR, fade, maxClients, lineHeight, qfalse );
 		y += (n1 * lineHeight) + BIGCHAR_HEIGHT;

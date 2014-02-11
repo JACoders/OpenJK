@@ -16,8 +16,9 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
+#include "../qcommon/q_shared.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean FlyingCreature( gentity_t *ent );
@@ -36,7 +37,6 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 
 	if ( radius )
 	{
-		radius;
 		//NOTE:  This needs to do a DistanceSquared on navgoals that had
 		//			a radius manually set! We can't do the smaller navgoals against
 		//			walls to get around this because player-sized traces to them

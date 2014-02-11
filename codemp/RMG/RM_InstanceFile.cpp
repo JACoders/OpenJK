@@ -13,7 +13,6 @@
 
 #include "RM_Headers.h"
 
-//#include "rm_instance_npc.h"
 #include "RM_Instance_BSP.h"
 #include "RM_Instance_Random.h"
 #include "RM_Instance_Group.h"
@@ -60,7 +59,7 @@ CRMInstanceFile::~CRMInstanceFile ( )
  *			  added and shouldnt be included in the given name
  *
  * return:
- *	true: instance file successfully loaded 
+ *	true: instance file successfully loaded
  *  false: instance file could not be loaded for some reason
  *
  ************************************************************************************************/
@@ -119,7 +118,7 @@ void CRMInstanceFile::Close ( void )
 		return;
 	}
 	mParser.Clean();
-		
+
 	mInstances = NULL;
 }
 
@@ -137,8 +136,6 @@ void CRMInstanceFile::Close ( void )
  ************************************************************************************************/
 CRMInstance* CRMInstanceFile::CreateInstance ( const char* name )
 {
-	static int instanceID = 0;
-
 	CGPGroup*		group;
 	CRMInstance*	instance;
 
@@ -149,30 +146,30 @@ CRMInstance* CRMInstanceFile::CreateInstance ( const char* name )
 	for ( group = mInstances; group; group = group->GetNext ( ) )
 	{
 		// Skip it if the name doesnt match
-		if ( stricmp ( name, group->FindPairValue ( "name", "" ) ) )
+		if ( Q_stricmp ( name, group->FindPairValue ( "name", "" ) ) )
 		{
 			continue;
 		}
-		
+
 		// Handle the various forms of instance types
-		if ( !stricmp ( group->GetName ( ), "bsp" ) )
+		if ( !Q_stricmp ( group->GetName ( ), "bsp" ) )
 		{
 			instance = new CRMBSPInstance ( group, *this );
 		}
-		else if ( !stricmp ( group->GetName ( ), "npc" ) )
+		else if ( !Q_stricmp ( group->GetName ( ), "npc" ) )
 		{
 //			instance = new CRMNPCInstance ( group, *this );
 			continue;
 		}
-		else if ( !stricmp ( group->GetName ( ), "group" ) )
+		else if ( !Q_stricmp ( group->GetName ( ), "group" ) )
 		{
 			instance = new CRMGroupInstance ( group, *this );
 		}
-		else if ( !stricmp ( group->GetName ( ), "random" ) )
+		else if ( !Q_stricmp ( group->GetName ( ), "random" ) )
 		{
 			instance = new CRMRandomInstance ( group, *this );
 		}
-		else if ( !stricmp ( group->GetName ( ), "void" ) )
+		else if ( !Q_stricmp ( group->GetName ( ), "void" ) )
 		{
 			instance = new CRMVoidInstance ( group, *this );
 		}

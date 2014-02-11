@@ -5,7 +5,7 @@
  * desc:		weapon AI
  *
  * $Archive: /MissionPack/code/botlib/be_ai_weap.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 6 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -31,8 +31,8 @@
 //#define DEBUG_AI_WEAP
 
 //structure field offsets
-#define WEAPON_OFS(x) (size_t)&(((weaponinfo_t *)0)->x)
-#define PROJECTILE_OFS(x) (size_t)&(((projectileinfo_t *)0)->x)
+#define WEAPON_OFS(x) offsetof(weaponinfo_t, x)
+#define PROJECTILE_OFS(x) offsetof(projectileinfo_t, x)
 
 //weapon definition // bk001212 - static
 static fielddef_t weaponinfo_fields[] =

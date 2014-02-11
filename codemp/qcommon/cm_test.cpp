@@ -18,7 +18,7 @@ int CM_PointLeafnum_r( const vec3_t p, int num, clipMap_t *local ) {
 	{
 		node = local->nodes + num;
 		plane = node->plane;
-		
+
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
 		else
@@ -128,7 +128,7 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 			ll->storeLeafs( ll, nodenum );
 			return;
 		}
-	
+
 		node = &cmg.nodes[nodenum];
 		plane = node->plane;
 
@@ -172,31 +172,6 @@ int	CM_BoxLeafnums( const vec3_t mins, const vec3_t maxs, int *boxList, int list
 	return ll.count;
 }
 
-/*
-==================
-CM_BoxBrushes
-==================
-*/
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxList, int listsize ) {
-	//rwwRMG - changed to boxList to not conflict with list type
-	leafList_t	ll;
-
-	cmg.checkcount++;
-
-	VectorCopy( mins, ll.bounds[0] );
-	VectorCopy( maxs, ll.bounds[1] );
-	ll.count = 0;
-	ll.maxcount = listsize;
-	ll.list = (int *)boxList;
-	ll.storeLeafs = CM_StoreBrushes;
-	ll.lastLeaf = 0;
-	ll.overflowed = qfalse;
-	
-	CM_BoxLeafnums_r( &ll, 0 );
-
-	return ll.count;
-}
-
 
 //====================================================================
 
@@ -222,7 +197,7 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		return 0;
 	}
 
-	if ( model ) 
+	if ( model )
 	{
 		clipm = CM_ClipHandleToModel( model, &local );
 		if (clipm->firstNode != -1)
@@ -234,8 +209,8 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		{
 			leaf = &clipm->leaf;
 		}
-	} 
-	else 
+	}
+	else
 	{
 		local = &cmg;
 		leafnum = CM_PointLeafnum_r (p, 0, &cmg);
@@ -257,7 +232,7 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 			}
 		}
 
-		if ( i == b->numsides ) 
+		if ( i == b->numsides )
 		{
 			contents |= b->contents;
 			if(cmg.landScape && (contents & CONTENTS_TERRAIN))
@@ -290,7 +265,7 @@ int	CM_TransformedPointContents( const vec3_t p, clipHandle_t model, const vec3_
 	VectorSubtract (p, origin, p_l);
 
 	// rotate start and end into the models frame of reference
-	if ( model != BOX_MODEL_HANDLE && 
+	if ( model != BOX_MODEL_HANDLE &&
 	(angles[0] || angles[1] || angles[2]) )
 	{
 		AngleVectors (angles, forward, right, up);

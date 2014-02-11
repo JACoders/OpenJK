@@ -116,15 +116,17 @@ template<class T, int IS_MULTI>
 class tree_base
 {
 public:
+#ifdef _WIN32
 	typedef typename T TStorageTraits;
+#else
+    typedef T TStorageTraits;
+#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY,
-	};
+ 	static const int CAPACITY = T::CAPACITY;
+
 private:
 	pool_base<TStorageTraits>		mPool;				// The Allocation Data Pool
 	int								mRoot;
@@ -849,15 +851,16 @@ class set_base : public tree_base<T,IS_MULTI>
 {
 
 public:
+#ifdef _WIN32
 	typedef typename T TStorageTraits;
+#else
+    typedef T TStorageTraits;
+#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY
-	};
+	static const int CAPACITY = T::CAPACITY;
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Adds Element Value At Location Key  - O(log n)
@@ -868,7 +871,7 @@ public:
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		alloc_key(key);
-		insert_alloced_key();
+		tree_base<T, IS_MULTI>::insert_alloced_key();
 
 	}
 
@@ -877,7 +880,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TTValue & alloc()
 	{		
-		return alloc_key();
+		return tree_base<T, IS_MULTI>::alloc_key();
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -885,7 +888,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TRatlNew *alloc_raw()
 	{
-		return alloc_key_raw();
+		return tree_base<T, IS_MULTI>::alloc_key_raw();
 	}
 	template<class CAST_TO>
 	CAST_TO *verify_alloc(CAST_TO *p) const
@@ -895,7 +898,7 @@ public:
 
 	void insert_alloced()
 	{
-		insert_alloced_key();
+		tree_base<T, IS_MULTI>::insert_alloced_key();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -907,7 +910,7 @@ public:
 		int i=find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
-			erase_index(i);
+			tree_base<T, IS_MULTI>::erase_index(i);
 		}
 	}
 
@@ -1086,7 +1089,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, front());	
+		return iterator(this, tree_base<T, IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1094,7 +1097,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	rbegin()
 	{
-		return iterator(this, back());
+		return iterator(this, tree_base<T, IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1118,7 +1121,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, front());	
+		return const_iterator(this, tree_base<T, IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1126,7 +1129,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	rbegin() const
 	{
-		return const_iterator(this, back());
+		return const_iterator(this, tree_base<T, IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1174,10 +1177,7 @@ class set_vs : public set_base<storage::value_semantics_node<T,ARG_CAPACITY,tree
 public:
 	typedef typename storage::value_semantics_node<T,ARG_CAPACITY,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	set_vs() {}
 };
 
@@ -1187,10 +1187,7 @@ class set_os : public set_base<storage::object_semantics_node<T,ARG_CAPACITY,tre
 public:
 	typedef typename storage::object_semantics_node<T,ARG_CAPACITY,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	set_os() {}
 };
 
@@ -1200,11 +1197,8 @@ class set_is : public set_base<storage::virtual_semantics_node<T,ARG_CAPACITY,AR
 public:
 	typedef typename storage::virtual_semantics_node<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY = ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
 	set_is() {}
 };
 
@@ -1213,17 +1207,22 @@ template<class K,class V,int IS_MULTI>
 class map_base : public tree_base<K,IS_MULTI>
 {
 public:
+#ifdef _WIN32
 	typedef typename K TKeyStorageTraits;
+#else
+    typedef K TKeyStorageTraits;
+#endif
 	typedef typename K::TValue TKTValue;
+#ifdef _WIN32
 	typedef typename V TValueStorageTraits;
+#else
+    typedef V TValueStorageTraits;
+#endif
 	typedef typename V::TValue TVTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= K::CAPACITY
-	};
+	static const int CAPACITY = K::CAPACITY;
 private:
 	array_base<TValueStorageTraits>	mValues;
 public:
@@ -1242,12 +1241,12 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void insert(const TKTValue &key,const TVTValue &value)
 	{
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 		assert(check_validity());
-		mValues.construct(index_of_alloced_key(),value);
+		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key(),value);
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1256,12 +1255,12 @@ public:
 	TVTValue &insert(const TKTValue &key)
 	{
 		
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 
-		int idx=index_of_alloced_key();
+		int idx=tree_base<K,IS_MULTI>::index_of_alloced_key();
 		assert(check_validity());
 		mValues.construct(idx);
 		return mValues[idx];
@@ -1272,12 +1271,12 @@ public:
 	TRatlNew *insert_raw(const TKTValue &key)
 	{
 		
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 		assert(check_validity());
-		return mValues.alloc_raw(index_of_alloced_key());
+		return mValues.alloc_raw(tree_base<K,IS_MULTI>::index_of_alloced_key());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1285,8 +1284,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TVTValue &alloc_value()
 	{		
-		mValues.construct(index_of_alloced_key());
-		return mValues[index_of_alloced_key()];
+		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key());
+		return mValues[tree_base<K,IS_MULTI>::index_of_alloced_key()];
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1294,7 +1293,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TRatlNew *alloc_value_raw()
 	{
-		return mValues.alloc_raw(index_of_alloced_key());
+		return mValues.alloc_raw(tree_base<K,IS_MULTI>::index_of_alloced_key());
 	}
 
 	template<class CAST_TO>
@@ -1309,10 +1308,10 @@ public:
 	void		erase(const TKTValue &key)
 	{
 		//fixme this is a double search currently
-		int i=find_index(key);
+		int i=tree_base<K,IS_MULTI>::find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
-			erase_index(i);
+			tree_base<K,IS_MULTI>::erase_index(i);
 			mValues.destruct(i);
 		}
 	}
@@ -1335,13 +1334,13 @@ public:
 
 	public:
 		iterator(map_base<K,V, IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+			mLoc(loc),	
+			mOwner(owner)
 		{
 		}
 		iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+			mLoc(o.mLoc),
+			mOwner(o.mOwner)
 		{
 		}
 
@@ -1508,7 +1507,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TKTValue &key)
 	{
-		return iterator(this,find_index(key));		
+		return iterator(this,tree_base<K, IS_MULTI>::find_index(key));		
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1516,7 +1515,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, front());	
+		return iterator(this, tree_base<K,IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1524,7 +1523,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	rbegin()
 	{
-		return iterator(this, back());
+		return iterator(this, tree_base<K,IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1548,7 +1547,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, front());	
+		return const_iterator(this, tree_base<K,IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1556,7 +1555,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	rbegin() const
 	{
-		return const_iterator(this, back());
+		return const_iterator(this, tree_base<K,IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1602,10 +1601,7 @@ class map_vs : public map_base<
 public:
 	typedef typename storage::value_semantics<V,ARG_CAPACITY> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	map_vs() {}
 };
 
@@ -1618,10 +1614,7 @@ class map_os : public map_base<
 public:
 	typedef typename storage::object_semantics<V,ARG_CAPACITY> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	map_os() {}
 };
 
@@ -1634,11 +1627,8 @@ class map_is : public map_base<
 public:
 	typedef typename storage::virtual_semantics<V,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY = ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE = ARG_MAX_CLASS_SIZE;
 	map_is() {}
 };
 

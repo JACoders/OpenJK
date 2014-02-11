@@ -1,23 +1,19 @@
-#ifndef _WIN32
-#include <inttypes.h>
-typedef int64_t __int64;
-#endif
+#pragma once
 
 class timing_c
 {
 private:
-	__int64	start;
-	__int64	end;
+	int64_t	start;
+	int64_t	end;
 
-	int		reset;
 public:
 	timing_c(void)
 	{
 	}
 	void Start()
 	{
-		const __int64 *s = &start;
-#ifdef _WIN32
+#if defined(_MSC_VER) && !defined(idx64)
+		const int64_t *s = &start;
 		__asm
 		{
 			push eax
@@ -37,9 +33,9 @@ public:
 	}
 	int End()
 	{
-		const __int64 *e = &end;
-		__int64	time;
-#ifdef _WIN32
+		int64_t	time;
+#if defined(_MSC_VER) && !defined(idx64)
+		const int64_t *e = &end;
 		__asm
 		{
 			push eax
@@ -55,7 +51,7 @@ public:
 			pop ebx
 			pop eax
 		}
-#endif 
+#endif
 		time = end - start;
 		if (time < 0)
 		{

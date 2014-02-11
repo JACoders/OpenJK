@@ -22,9 +22,7 @@ void Debug_Printf (vmCvar_t *cv, int debugLevel, char *fmt, ...)
 		color = S_COLOR_GREEN;
 	else if (debugLevel == DEBUG_LEVEL_WARNING)
 		color = S_COLOR_YELLOW;
-	else if (debugLevel == DEBUG_LEVEL_ERROR)
-		color = S_COLOR_RED;
-	else
+	else // if (debugLevel == DEBUG_LEVEL_ERROR)
 		color = S_COLOR_RED;
 
 	va_start (argptr,fmt);
@@ -49,7 +47,7 @@ void Debug_NPCPrintf (gentity_t *printNPC, vmCvar_t *cv, int debugLevel, char *f
 		return;
 	}
 
-//	if ( debugNPCName.string[0] && Q_stricmp( debugNPCName.string, printNPC->targetname) != 0 ) 
+//	if ( debugNPCName.string[0] && Q_stricmp( debugNPCName.string, printNPC->targetname) != 0 )
 //	{
 //		return;
 //	}
@@ -60,9 +58,7 @@ void Debug_NPCPrintf (gentity_t *printNPC, vmCvar_t *cv, int debugLevel, char *f
 		color = COLOR_GREEN;
 	else if (debugLevel == DEBUG_LEVEL_WARNING)
 		color = COLOR_YELLOW;
-	else if (debugLevel == DEBUG_LEVEL_ERROR)
-		color = COLOR_RED;
-	else
+	else // if (debugLevel == DEBUG_LEVEL_ERROR)
 		color = COLOR_RED;
 
 	va_start (argptr,fmt);

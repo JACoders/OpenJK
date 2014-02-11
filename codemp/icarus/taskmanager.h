@@ -1,7 +1,6 @@
-// Task Manager header file
+#pragma once
 
-#ifndef __TASK_MANAGER__
-#define __TASK_MANAGER__
+// Task Manager header file
 
 #include <map>
 #ifndef _WIN32
@@ -23,14 +22,14 @@ enum
 	TASK_RETURN_FAILED,
 };
 
-enum 
+enum
 {
 	TASK_OK,
 	TASK_FAILED,
 	TASK_START,
 	TASK_END,
 };
-	
+
 // CTask
 
 class CTask
@@ -44,19 +43,19 @@ public:
 
 	void	Free( void );
 
-	DWORD	GetTimeStamp( void )	const	{	return m_timeStamp;				}
+	unsigned int	GetTimeStamp( void )	const	{	return m_timeStamp;				}
 	CBlock	*GetBlock( void )		const	{	return m_block;					}
 	int		GetGUID( void)			const	{	return m_id;					}
 	int		GetID( void )			const	{	return m_block->GetBlockID();	}
 
-	void	SetTimeStamp( DWORD	timeStamp )		{	m_timeStamp = timeStamp;	}
+	void	SetTimeStamp( unsigned int	timeStamp )		{	m_timeStamp = timeStamp;	}
 	void	SetBlock( CBlock *block )			{	m_block = block;			}
 	void	SetGUID( int id )					{	m_id = id;					}
 
 protected:
 
 	int		m_id;
-	DWORD	m_timeStamp;
+	unsigned int	m_timeStamp;
 	CBlock	*m_block;
 };
 
@@ -74,11 +73,11 @@ public:
 	void Init( void );
 
 	int Add( CTask *task );
-	
+
 	void SetGUID( int GUID );
 	void SetParent( CTaskGroup *group )	{	m_parent = group;	}
 
-	bool Complete(void)		const { return ( m_numCompleted == m_completedTasks.size() ); }
+	bool Complete(void)		const { return ( m_numCompleted == (int)m_completedTasks.size() ); }
 
 	bool MarkTaskComplete( int id );
 
@@ -182,7 +181,7 @@ protected:
 
 	int						m_GUID;
 	int						m_count;
-	
+
 	taskGroupName_m			m_taskGroupNameMap;
 	taskGroupID_m			m_taskGroupIDMap;
 
@@ -190,5 +189,3 @@ protected:
 
 	//CTask	*m_waitTask;		//Global pointer to the current task that is waiting for callback completion
 };
-
-#endif	//__TASK_MANAGER__

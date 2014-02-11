@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
  ************************************************************************************************/
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
 #define max(a,b)    (((a) > (b)) ? (a) : (b))
 
@@ -71,9 +71,9 @@ CRMNode::CRMNode ( )
  ************************************************************************************************/
 CRMPathManager::CRMPathManager ( CRandomTerrain* terrain )
 : mXNodes(0), mYNodes(0), mPathCount(0), mRiverCount(0), mMaxDepth(0), mDepth(0),
+  mCrossed(false),
   mPathPoints(10), mPathMinWidth(0.02f), mPathMaxWidth(0.04f), mPathDepth(0.3f), mPathDeviation(0.03f), mPathBreadth(5),
-  mRiverDepth(5), mRiverPoints(10), mRiverMinWidth(0.01f), mRiverMaxWidth(0.02f), mRiverBedDepth(1), mRiverDeviation(0.01f), mRiverBreadth(7),
-  mTerrain(terrain), mCrossed(false)
+  mRiverDepth(5), mRiverPoints(10), mRiverMinWidth(0.01f), mRiverMaxWidth(0.02f), mRiverBedDepth(1), mRiverDeviation(0.01f), mRiverBreadth(7), mTerrain(terrain)
 {
 }
 
@@ -113,7 +113,7 @@ void CRMPathManager::CreateLocation ( const char* name, const int min_depth, int
 	}
 
 	for (i = mLocations.size()-1; i>=0; --i)
-		if ( !stricmp ( name, mLocations[i]->GetName ( ) ) )
+		if ( !Q_stricmp ( name, mLocations[i]->GetName ( ) ) )
 		{
 			mLocations[i]->SetMinDepth(min_depth);
 			mLocations[i]->SetMaxDepth(max_depth);
@@ -135,7 +135,7 @@ void CRMPathManager::ClearCells(int x_nodes, int y_nodes)
 	CRMCell empty;
 	for (x=0; x < x_nodes * y_nodes; x++)
 	{
-		if (x >= mCells.size())
+		if (x >= (int)mCells.size())
 			mCells.push_back(empty);
 		else
 			mCells[x] = empty;
@@ -267,7 +267,7 @@ void CRMPathManager::PlaceLocation(const int c_x, const int c_y)
 			}
 		}
 
-		if (deepest_loc >= 0 && deepest_loc < mLocations.size())
+		if (deepest_loc >= 0 && deepest_loc < (int)mLocations.size())
 		{	// found a location to place at this node / cell
 			const char * name = mLocations[deepest_loc]->GetName();
 			Node(c_x,c_y)->SetName(name);
@@ -375,7 +375,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 	{	
 		mCrossed = true; 
 	
-		int directionSet[3][3] = {DIR_NW,DIR_W,DIR_SW,DIR_N,-1,DIR_S,DIR_NE,DIR_E,DIR_SE};
+		int directionSet[3][3] = { { DIR_NW,DIR_W,DIR_SW }, { DIR_N,-1,DIR_S }, { DIR_NE,DIR_E,DIR_SE } };
 		int	ncx	= (mXNodes-1)-c_x;
 		int	ncy	= (mYNodes-1)-c_y;
 
@@ -467,7 +467,7 @@ CRMNode* CRMPathManager::FindNodeByName ( const char* name )
 
 	for ( j = mNodes.size() - 1; j >=0; j-- )
 	{
-		if ( !stricmp ( name, mNodes[j]->GetName ( ) ) )
+		if ( !Q_stricmp ( name, mNodes[j]->GetName ( ) ) )
 			return mNodes[j];
 	}
 	return NULL;

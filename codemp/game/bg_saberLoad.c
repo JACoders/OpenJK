@@ -1,139 +1,125 @@
 //bg_saberLoad.c
+// game and cgame, NOT ui
+
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "w_saber.h"
 
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];
-
-//Could use strap stuff but I don't particularly care at the moment anyway.
-extern int	trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
-extern void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
-extern void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
-extern void	trap_FS_FCloseFile( fileHandle_t f );
-extern int	trap_FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
-extern qhandle_t trap_R_RegisterSkin( const char *name );
-
-
-#ifdef QAGAME
-extern int G_SoundIndex( const char *name );
-#elif defined CGAME
-sfxHandle_t trap_S_RegisterSound( const char *sample);
-qhandle_t	trap_R_RegisterShader( const char *name );			// returns all white if not found
-int	trap_FX_RegisterEffect(const char *file);
+#ifdef _GAME
+	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
+extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 
-int BG_SoundIndex(char *sound)
-{
-#ifdef QAGAME
-	return G_SoundIndex(sound);
-#elif defined CGAME
-	return trap_S_RegisterSound(sound);
+int BG_SoundIndex( const char *sound ) {
+#ifdef _GAME
+	return G_SoundIndex( sound );
+#elif defined(_CGAME) || defined(_UI)
+	return trap->S_RegisterSound( sound );
 #endif
 }
 
 extern stringID_table_t FPTable[];
 
-#define MAX_SABER_DATA_SIZE 0x80000
-static char SaberParms[MAX_SABER_DATA_SIZE];
+#define MAX_SABER_DATA_SIZE (1024*1024) // 1mb, was 512kb
+static char saberParms[MAX_SABER_DATA_SIZE];
 
-stringID_table_t SaberTable[] =
-{
-	ENUM2STRING(SABER_NONE),
-	ENUM2STRING(SABER_SINGLE),
-	ENUM2STRING(SABER_STAFF),
-	ENUM2STRING(SABER_BROAD),
-	ENUM2STRING(SABER_PRONG),
-	ENUM2STRING(SABER_DAGGER),
-	ENUM2STRING(SABER_ARC),
-	ENUM2STRING(SABER_SAI),
-	ENUM2STRING(SABER_CLAW),
-	ENUM2STRING(SABER_LANCE),
-	ENUM2STRING(SABER_STAR),
-	ENUM2STRING(SABER_TRIDENT),
-	{"",	-1}
+stringID_table_t saberTable[] = {
+	ENUM2STRING( SABER_NONE ),
+	ENUM2STRING( SABER_SINGLE ),
+	ENUM2STRING( SABER_STAFF ),
+	ENUM2STRING( SABER_BROAD ),
+	ENUM2STRING( SABER_PRONG ),
+	ENUM2STRING( SABER_DAGGER ),
+	ENUM2STRING( SABER_ARC ),
+	ENUM2STRING( SABER_SAI ),
+	ENUM2STRING( SABER_CLAW ),
+	ENUM2STRING( SABER_LANCE ),
+	ENUM2STRING( SABER_STAR ),
+	ENUM2STRING( SABER_TRIDENT ),
+	{ "", -1 }
 };
 
-stringID_table_t SaberMoveTable[] =
-{
-	ENUM2STRING(LS_NONE),
+stringID_table_t saberMoveTable[] = {
+	ENUM2STRING( LS_NONE ),
 	// Attacks
-	ENUM2STRING(LS_A_TL2BR),
-	ENUM2STRING(LS_A_L2R),
-	ENUM2STRING(LS_A_BL2TR),
-	ENUM2STRING(LS_A_BR2TL),
-	ENUM2STRING(LS_A_R2L),
-	ENUM2STRING(LS_A_TR2BL),
-	ENUM2STRING(LS_A_T2B),
-	ENUM2STRING(LS_A_BACKSTAB),
-	ENUM2STRING(LS_A_BACK),
-	ENUM2STRING(LS_A_BACK_CR),
-	ENUM2STRING(LS_ROLL_STAB),
-	ENUM2STRING(LS_A_LUNGE),
-	ENUM2STRING(LS_A_JUMP_T__B_),
-	ENUM2STRING(LS_A_FLIP_STAB),
-	ENUM2STRING(LS_A_FLIP_SLASH),
-	ENUM2STRING(LS_JUMPATTACK_DUAL),
-	ENUM2STRING(LS_JUMPATTACK_ARIAL_LEFT),
-	ENUM2STRING(LS_JUMPATTACK_ARIAL_RIGHT),
-	ENUM2STRING(LS_JUMPATTACK_CART_LEFT),
-	ENUM2STRING(LS_JUMPATTACK_CART_RIGHT),
-	ENUM2STRING(LS_JUMPATTACK_STAFF_LEFT),
-	ENUM2STRING(LS_JUMPATTACK_STAFF_RIGHT),
-	ENUM2STRING(LS_BUTTERFLY_LEFT),
-	ENUM2STRING(LS_BUTTERFLY_RIGHT),
-	ENUM2STRING(LS_A_BACKFLIP_ATK),
-	ENUM2STRING(LS_SPINATTACK_DUAL),
-	ENUM2STRING(LS_SPINATTACK),
-	ENUM2STRING(LS_LEAP_ATTACK),
-	ENUM2STRING(LS_SWOOP_ATTACK_RIGHT),
-	ENUM2STRING(LS_SWOOP_ATTACK_LEFT),
-	ENUM2STRING(LS_TAUNTAUN_ATTACK_RIGHT),
-	ENUM2STRING(LS_TAUNTAUN_ATTACK_LEFT),
-	ENUM2STRING(LS_KICK_F),
-	ENUM2STRING(LS_KICK_B),
-	ENUM2STRING(LS_KICK_R),
-	ENUM2STRING(LS_KICK_L),
-	ENUM2STRING(LS_KICK_S),
-	ENUM2STRING(LS_KICK_BF),
-	ENUM2STRING(LS_KICK_RL),
-	ENUM2STRING(LS_KICK_F_AIR),
-	ENUM2STRING(LS_KICK_B_AIR),
-	ENUM2STRING(LS_KICK_R_AIR),
-	ENUM2STRING(LS_KICK_L_AIR),
-	ENUM2STRING(LS_STABDOWN),
-	ENUM2STRING(LS_STABDOWN_STAFF),
-	ENUM2STRING(LS_STABDOWN_DUAL),
-	ENUM2STRING(LS_DUAL_SPIN_PROTECT),
-	ENUM2STRING(LS_STAFF_SOULCAL),
-	ENUM2STRING(LS_A1_SPECIAL),
-	ENUM2STRING(LS_A2_SPECIAL),
-	ENUM2STRING(LS_A3_SPECIAL),
-	ENUM2STRING(LS_UPSIDE_DOWN_ATTACK),
-	ENUM2STRING(LS_PULL_ATTACK_STAB),
-	ENUM2STRING(LS_PULL_ATTACK_SWING),
-	ENUM2STRING(LS_SPINATTACK_ALORA),
-	ENUM2STRING(LS_DUAL_FB),
-	ENUM2STRING(LS_DUAL_LR),
-	ENUM2STRING(LS_HILT_BASH),
-	{"",	-1}
+	ENUM2STRING( LS_A_TL2BR ),
+	ENUM2STRING( LS_A_L2R ),
+	ENUM2STRING( LS_A_BL2TR ),
+	ENUM2STRING( LS_A_BR2TL ),
+	ENUM2STRING( LS_A_R2L ),
+	ENUM2STRING( LS_A_TR2BL ),
+	ENUM2STRING( LS_A_T2B ),
+	ENUM2STRING( LS_A_BACKSTAB ),
+	ENUM2STRING( LS_A_BACK ),
+	ENUM2STRING( LS_A_BACK_CR ),
+	ENUM2STRING( LS_ROLL_STAB ),
+	ENUM2STRING( LS_A_LUNGE ),
+	ENUM2STRING( LS_A_JUMP_T__B_ ),
+	ENUM2STRING( LS_A_FLIP_STAB ),
+	ENUM2STRING( LS_A_FLIP_SLASH ),
+	ENUM2STRING( LS_JUMPATTACK_DUAL ),
+	ENUM2STRING( LS_JUMPATTACK_ARIAL_LEFT ),
+	ENUM2STRING( LS_JUMPATTACK_ARIAL_RIGHT ),
+	ENUM2STRING( LS_JUMPATTACK_CART_LEFT ),
+	ENUM2STRING( LS_JUMPATTACK_CART_RIGHT ),
+	ENUM2STRING( LS_JUMPATTACK_STAFF_LEFT ),
+	ENUM2STRING( LS_JUMPATTACK_STAFF_RIGHT ),
+	ENUM2STRING( LS_BUTTERFLY_LEFT ),
+	ENUM2STRING( LS_BUTTERFLY_RIGHT ),
+	ENUM2STRING( LS_A_BACKFLIP_ATK ),
+	ENUM2STRING( LS_SPINATTACK_DUAL ),
+	ENUM2STRING( LS_SPINATTACK ),
+	ENUM2STRING( LS_LEAP_ATTACK ),
+	ENUM2STRING( LS_SWOOP_ATTACK_RIGHT ),
+	ENUM2STRING( LS_SWOOP_ATTACK_LEFT ),
+	ENUM2STRING( LS_TAUNTAUN_ATTACK_RIGHT ),
+	ENUM2STRING( LS_TAUNTAUN_ATTACK_LEFT ),
+	ENUM2STRING( LS_KICK_F ),
+	ENUM2STRING( LS_KICK_B ),
+	ENUM2STRING( LS_KICK_R ),
+	ENUM2STRING( LS_KICK_L ),
+	ENUM2STRING( LS_KICK_S ),
+	ENUM2STRING( LS_KICK_BF ),
+	ENUM2STRING( LS_KICK_RL ),
+	ENUM2STRING( LS_KICK_F_AIR ),
+	ENUM2STRING( LS_KICK_B_AIR ),
+	ENUM2STRING( LS_KICK_R_AIR ),
+	ENUM2STRING( LS_KICK_L_AIR ),
+	ENUM2STRING( LS_STABDOWN ),
+	ENUM2STRING( LS_STABDOWN_STAFF ),
+	ENUM2STRING( LS_STABDOWN_DUAL ),
+	ENUM2STRING( LS_DUAL_SPIN_PROTECT ),
+	ENUM2STRING( LS_STAFF_SOULCAL ),
+	ENUM2STRING( LS_A1_SPECIAL ),
+	ENUM2STRING( LS_A2_SPECIAL ),
+	ENUM2STRING( LS_A3_SPECIAL ),
+	ENUM2STRING( LS_UPSIDE_DOWN_ATTACK ),
+	ENUM2STRING( LS_PULL_ATTACK_STAB ),
+	ENUM2STRING( LS_PULL_ATTACK_SWING ),
+	ENUM2STRING( LS_SPINATTACK_ALORA ),
+	ENUM2STRING( LS_DUAL_FB ),
+	ENUM2STRING( LS_DUAL_LR ),
+	ENUM2STRING( LS_HILT_BASH ),
+	{ "", -1 }
 };
 
 //Also used in npc code
-qboolean BG_ParseLiteral( const char **data, const char *string ) 
-{
-	const char	*token;
+qboolean BG_ParseLiteral( const char **data, const char *string ) {
+	const char *token;
 
 	token = COM_ParseExt( data, qtrue );
-	if ( token[0] == 0 ) 
-	{
+	if ( !token[0] ) {
 		Com_Printf( "unexpected EOF\n" );
 		return qtrue;
 	}
 
-	if ( Q_stricmp( token, string ) ) 
-	{
+	if ( Q_stricmp( token, string ) ) {
 		Com_Printf( "required string '%s' missing\n", string );
 		return qtrue;
 	}
@@ -141,202 +127,176 @@ qboolean BG_ParseLiteral( const char **data, const char *string )
 	return qfalse;
 }
 
-saber_colors_t TranslateSaberColor( const char *name ) 
-{
-	if ( !Q_stricmp( name, "red" ) ) 
-	{
+qboolean BG_ParseLiteralSilent( const char **data, const char *string ) {
+	const char *token;
+
+	token = COM_ParseExt( data, qtrue );
+	if ( !token[0] ) {
+		return qtrue;
+	}
+
+	if ( Q_stricmp( token, string ) ) {
+
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+saber_colors_t TranslateSaberColor( const char *name ) {
+	if ( !Q_stricmp( name, "red" ) )
 		return SABER_RED;
-	}
-	if ( !Q_stricmp( name, "orange" ) ) 
-	{
+	if ( !Q_stricmp( name, "orange" ) )
 		return SABER_ORANGE;
-	}
-	if ( !Q_stricmp( name, "yellow" ) ) 
-	{
+	if ( !Q_stricmp( name, "yellow" ) )
 		return SABER_YELLOW;
-	}
-	if ( !Q_stricmp( name, "green" ) ) 
-	{
+	if ( !Q_stricmp( name, "green" ) )
 		return SABER_GREEN;
-	}
-	if ( !Q_stricmp( name, "blue" ) ) 
-	{
+	if ( !Q_stricmp( name, "blue" ) )
 		return SABER_BLUE;
-	}
-	if ( !Q_stricmp( name, "purple" ) ) 
-	{
+	if ( !Q_stricmp( name, "purple" ) )
 		return SABER_PURPLE;
-	}
-	if ( !Q_stricmp( name, "random" ) ) 
-	{
-		return ((saber_colors_t)(Q_irand( SABER_ORANGE, SABER_PURPLE )));
-	}
+	if ( !Q_stricmp( name, "random" ) )
+		return (saber_colors_t)Q_irand( SABER_ORANGE, SABER_PURPLE );
+
 	return SABER_BLUE;
 }
 
-saber_styles_t TranslateSaberStyle( const char *name ) 
-{
-	if ( !Q_stricmp( name, "fast" ) ) 
-	{
-		return SS_FAST;
-	}
-	if ( !Q_stricmp( name, "medium" ) ) 
-	{
-		return SS_MEDIUM;
-	}
-	if ( !Q_stricmp( name, "strong" ) ) 
-	{
-		return SS_STRONG;
-	}
-	if ( !Q_stricmp( name, "desann" ) ) 
-	{
-		return SS_DESANN;
-	}
-	if ( !Q_stricmp( name, "tavion" ) ) 
-	{
-		return SS_TAVION;
-	}
-	if ( !Q_stricmp( name, "dual" ) ) 
-	{
-		return SS_DUAL;
-	}
-	if ( !Q_stricmp( name, "staff" ) ) 
-	{
-		return SS_STAFF;
-	}
+const char *SaberColorToString( saber_colors_t color ) {
+	if ( color == SABER_RED )		return "red";
+	if ( color == SABER_ORANGE )	return "orange";
+	if ( color == SABER_YELLOW )	return "yellow";
+	if ( color == SABER_GREEN )		return "green";
+	if ( color == SABER_BLUE )		return "blue";
+	if ( color == SABER_PURPLE )	return "purple";
+
+	return NULL;
+}
+
+saber_styles_t TranslateSaberStyle( const char *name ) {
+	if ( !Q_stricmp( name, "fast" ) )		return SS_FAST;
+	if ( !Q_stricmp( name, "medium" ) ) 	return SS_MEDIUM;
+	if ( !Q_stricmp( name, "strong" ) ) 	return SS_STRONG;
+	if ( !Q_stricmp( name, "desann" ) ) 	return SS_DESANN;
+	if ( !Q_stricmp( name, "tavion" ) ) 	return SS_TAVION;
+	if ( !Q_stricmp( name, "dual" ) )		return SS_DUAL;
+	if ( !Q_stricmp( name, "staff" ) )		return SS_STAFF;
+
 	return SS_NONE;
 }
 
-qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum )
-{
-	if ( saber )
-	{
-		if ( saber->bladeStyle2Start > 0 )
-		{
-			if ( bladeNum >= saber->bladeStyle2Start )
-			{
-				return qtrue;
-			}
-		}
-	}
+saberType_t TranslateSaberType( const char *name ) {
+	if ( !Q_stricmp( name, "SABER_SINGLE" ) )		return SABER_SINGLE;
+	if ( !Q_stricmp( name, "SABER_STAFF" ) ) 		return SABER_STAFF;
+	if ( !Q_stricmp( name, "SABER_DAGGER" ) ) 		return SABER_DAGGER;
+	if ( !Q_stricmp( name, "SABER_BROAD" ) ) 		return SABER_BROAD;
+	if ( !Q_stricmp( name, "SABER_PRONG" ) ) 		return SABER_PRONG;
+	if ( !Q_stricmp( name, "SABER_ARC" ) )			return SABER_ARC;
+	if ( !Q_stricmp( name, "SABER_SAI" ) )			return SABER_SAI;
+	if ( !Q_stricmp( name, "SABER_CLAW" ) )			return SABER_CLAW;
+	if ( !Q_stricmp( name, "SABER_LANCE" ) )		return SABER_LANCE;
+	if ( !Q_stricmp( name, "SABER_STAR" ) )			return SABER_STAR;
+	if ( !Q_stricmp( name, "SABER_TRIDENT" ) )		return SABER_TRIDENT;
+	if ( !Q_stricmp( name, "SABER_SITH_SWORD" ) )	return SABER_SITH_SWORD;
+
+	return SABER_SINGLE;
+}
+
+qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum ) {
+	if ( saber
+		&& saber->bladeStyle2Start > 0
+		&& bladeNum >= saber->bladeStyle2Start )
+		return qtrue;
+
 	return qfalse;
 }
 
-qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum )
-{
-	if ( !WP_SaberBladeUseSecondBladeStyle( saber, bladeNum )
-		&& (saber->saberFlags2&SFL2_TRANSITION_DAMAGE) )
-	{//use first blade style for this blade
+qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum ) {
+	//use first blade style for this blade
+	if ( !WP_SaberBladeUseSecondBladeStyle( saber, bladeNum ) && (saber->saberFlags2 & SFL2_TRANSITION_DAMAGE) )
 		return qtrue;
-	}
-	else if ( WP_SaberBladeUseSecondBladeStyle( saber, bladeNum )
-		&& (saber->saberFlags2&SFL2_TRANSITION_DAMAGE2) )
-	{//use second blade style for this blade
+
+	//use second blade style for this blade
+	else if ( WP_SaberBladeUseSecondBladeStyle( saber, bladeNum ) && (saber->saberFlags2 & SFL2_TRANSITION_DAMAGE2) )
 		return qtrue;
-	}
+
 	return qfalse;
 }
 
-qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int *saberAnimLevel )
-{
+qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int *saberAnimLevel ) {
 	qboolean styleInvalid = qfalse;
-	qboolean saber1Active;
-	qboolean saber2Active;
+	qboolean saber1Active, saber2Active;
 	qboolean dualSabers = qfalse;
-	int	validStyles = 0, styleNum;
+	int	validStyles=0, styleNum;
 
 	if ( saber2 && saber2->model && saber2->model[0] )
-	{
 		dualSabers = qtrue;
-	}
 
-	if ( dualSabers )
-	{//dual
+	//dual
+	if ( dualSabers ) {
 		if ( saberHolstered > 1 )
-		{
 			saber1Active = saber2Active = qfalse;
-		}
-		else if ( saberHolstered > 0 )
-		{
+		else if ( saberHolstered > 0 ) {
 			saber1Active = qtrue;
 			saber2Active = qfalse;
 		}
 		else
-		{
 			saber1Active = saber2Active = qtrue;
-		}
 	}
-	else
-	{
+	// single/staff
+	else {
 		saber2Active = qfalse;
-		if ( !saber1
-			|| !saber1->model
-			|| !saber1->model[0] )
-		{
+		if ( !saber1 || !saber1->model[0] )
 			saber1Active = qfalse;
-		}
-		else if ( saber1->numBlades > 1 )
-		{//staff
+		//staff
+		else if ( saber1->numBlades > 1 ) {
 			if ( saberHolstered > 1 )
-			{
 				saber1Active = qfalse;
-			}
 			else
-			{
 				saber1Active = qtrue;
-			}
 		}
-		else
-		{//single
+		//single
+		else {
 			if ( saberHolstered )
-			{
 				saber1Active = qfalse;
-			}
 			else
-			{
 				saber1Active = qtrue;
-			}
 		}
 	}
 
 	//initially, all styles are valid
-	for ( styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
-	{
-		validStyles |= (1<<styleNum);
-	}
+	validStyles = (1<<SS_NUM_SABER_STYLES)-2; // mask off 1<<SS_NONE
 
-	if ( saber1Active
-		&& saber1
-		&& saber1->model
-		&& saber1->model[0]
-		&& saber1->stylesForbidden )
-	{
-		if ( (saber1->stylesForbidden&(1<<*saberAnimLevel)) )
-		{//not a valid style for first saber!
+	// check for invalid styles
+	if ( saber1Active && saber1 && saber1->model[0] && saber1->stylesForbidden ) {
+		if ( (saber1->stylesForbidden & (1<<*saberAnimLevel)) ) {
+			//not a valid style for first saber!
 			styleInvalid = qtrue;
 			validStyles &= ~saber1->stylesForbidden;
 		}
 	}
-	if ( dualSabers )
-	{//check second saber, too
-		if ( saber2Active
-			&& saber2->stylesForbidden )
-		{
-			if ( (saber2->stylesForbidden&(1<<*saberAnimLevel)) )
-			{//not a valid style for second saber!
+	if ( dualSabers ) {
+		if ( saber2Active && saber2->stylesForbidden ) {
+			if ( (saber2->stylesForbidden & (1<<*saberAnimLevel)) ) {
+				//not a valid style for second saber!
 				styleInvalid = qtrue;
 				//only the ones both sabers allow is valid
 				validStyles &= ~saber2->stylesForbidden;
 			}
 		}
 	}
-	if ( styleInvalid && validStyles )
-	{//using an invalid style and have at least one valid style to use, so switch to it
-		int styleNum;
-		for ( styleNum = SS_FAST; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
-		{
-			if ( (validStyles&(1<<styleNum)) )
-			{
+
+	if ( !validStyles ) {
+		if ( dualSabers )
+			Com_Printf( "WARNING: No valid saber styles for %s/%s", saber1->name, saber2->name );
+		else
+			Com_Printf( "WARNING: No valid saber styles for %s", saber1->name );
+	}
+
+	//using an invalid style and have at least one valid style to use, so switch to it
+	else if ( styleInvalid ) {
+		for ( styleNum=SS_FAST; styleNum<SS_NUM_SABER_STYLES; styleNum++ ) {
+			if ( (validStyles & (1<<styleNum)) ) {
 				*saberAnimLevel = styleNum;
 				return qtrue;
 			}
@@ -345,148 +305,83 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 	return qfalse;
 }
 
-qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel )
-{
-	qboolean saber1Active;
-	qboolean saber2Active;
+qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel ) {
+	qboolean saber1Active, saber2Active;
 	qboolean dualSabers = qfalse;
 
-	if ( saber2 && saber2->model && saber2->model[0] )
-	{
+	if ( saber2 && saber2->model[0] )
 		dualSabers = qtrue;
-	}
 
-	if ( dualSabers )
-	{//dual
+	if ( dualSabers ) {
 		if ( saberHolstered > 1 )
-		{
 			saber1Active = saber2Active = qfalse;
-		}
-		else if ( saberHolstered > 0 )
-		{
+		else if ( saberHolstered > 0 ) {
 			saber1Active = qtrue;
 			saber2Active = qfalse;
 		}
 		else
-		{
 			saber1Active = saber2Active = qtrue;
-		}
 	}
-	else
-	{
+	else {
 		saber2Active = qfalse;
-		if ( !saber1
-			|| !saber1->model
-			|| !saber1->model[0] )
-		{
+		if ( !saber1 || !saber1->model[0] )
 			saber1Active = qfalse;
-		}
+
+		//staff
 		else if ( saber1->numBlades > 1 )
-		{//staff
-			if ( saberHolstered > 1 )
-			{
-				saber1Active = qfalse;
-			}
-			else
-			{
-				saber1Active = qtrue;
-			}
-		}
+			saber1Active = (saberHolstered>1) ? qfalse : qtrue;
+
+		//single
 		else
-		{//single
-			if ( saberHolstered )
-			{
-				saber1Active = qfalse;
-			}
-			else
-			{
-				saber1Active = qtrue;
+			saber1Active = saberHolstered ? qfalse : qtrue;
+	}
+
+	if ( saber1Active && saber1 && saber1->model[0] && saber1->stylesForbidden ) {
+		if ( (saber1->stylesForbidden & (1<<saberAnimLevel)) )
+			return qfalse;
+	}
+	if ( dualSabers && saber2Active && saber2 && saber2->model[0] )
+	{
+		if ( saber2->stylesForbidden ) {
+			if ( (saber2->stylesForbidden & (1<<saberAnimLevel)) )
+				return qfalse;
+		}
+		//now: if using dual sabers, only dual and tavion (if given with this saber) are allowed
+		if ( saberAnimLevel != SS_DUAL ) {
+			if ( saberAnimLevel != SS_TAVION )
+				return qfalse;
+			else {
+				//see if "tavion" style is okay
+				if ( !(saber1Active && (saber1->stylesLearned & (1<<SS_TAVION)))
+					|| !(saber2->stylesLearned & (1<<SS_TAVION)) )
+					return qfalse;
 			}
 		}
 	}
 
-	if ( saber1Active
-		&& saber1
-		&& saber1->model
-		&& saber1->model[0]
-		&& saber1->stylesForbidden )
-	{
-		if ( (saber1->stylesForbidden&(1<<saberAnimLevel)) )
-		{//not a valid style for first saber!
-			return qfalse;
-		}
-	}
-	if ( dualSabers
-		&& saber2Active
-		&& saber2
-		&& saber2->model
-		&& saber2->model[0] )
-	{
-		if ( saber2->stylesForbidden )
-		{//check second saber, too
-			if ( (saber2->stylesForbidden&(1<<saberAnimLevel)) )
-			{//not a valid style for second saber!
-				return qfalse;
-			}
-		}
-		//now: if using dual sabers, only dual and tavion (if given with this saber) are allowed
-		if ( saberAnimLevel != SS_DUAL )
-		{//dual is okay
-			if ( saberAnimLevel != SS_TAVION )
-			{//tavion might be okay, all others are not
-				return qfalse;
-			}
-			else
-			{//see if "tavion" style is okay
-				if ( saber1Active
-					&& saber1
-					&& saber1->model
-					&& saber1->model[0]
-					&& (saber1->stylesLearned&(1<<SS_TAVION)) )
-				{//okay to use tavion style, first saber gave it to us
-				}
-				else if ( (saber2->stylesLearned&(1<<SS_TAVION)) )
-				{//okay to use tavion style, second saber gave it to us
-				}
-				else
-				{//tavion style is not allowed because neither of the sabers we're using gave it to us (I know, doesn't quite make sense, but...)
-					return qfalse;
-				}
-			}
-		}
-	}
 	return qtrue;
 }
 
-qboolean WP_SaberCanTurnOffSomeBlades( saberInfo_t *saber )
-{
-	if ( saber->bladeStyle2Start > 0
-		&& saber->numBlades > saber->bladeStyle2Start )
-	{
-		if ( (saber->saberFlags2&SFL2_NO_MANUAL_DEACTIVATE)
-			&& (saber->saberFlags2&SFL2_NO_MANUAL_DEACTIVATE2) )
-		{//all blades are always on
+qboolean WP_SaberCanTurnOffSomeBlades( saberInfo_t *saber ) {
+	if ( saber->bladeStyle2Start > 0 && saber->numBlades > saber->bladeStyle2Start ) {
+		// check if all blades are always on
+		if ( (saber->saberFlags2 & SFL2_NO_MANUAL_DEACTIVATE) && (saber->saberFlags2 & SFL2_NO_MANUAL_DEACTIVATE2) )
 			return qfalse;
-		}
 	}
-	else
-	{
-		if ( (saber->saberFlags2&SFL2_NO_MANUAL_DEACTIVATE) )
-		{//all blades are always on
+	else {
+		// check if all blades are always on
+		if ( (saber->saberFlags2 & SFL2_NO_MANUAL_DEACTIVATE) )
 			return qfalse;
-		}
 	}
 	//you can turn some off
 	return qtrue;
 }
 
-void WP_SaberSetDefaults( saberInfo_t *saber )
-{
+void WP_SaberSetDefaults( saberInfo_t *saber ) {
 	int i;
 
 	//Set defaults so that, if it fails, there's at least something there
-	for ( i = 0; i < MAX_BLADES; i++ )
-	{
+	for ( i=0; i<MAX_BLADES; i++ ) {
 		saber->blade[i].color = SABER_RED;
 		saber->blade[i].radius = SABER_RADIUS_STANDARD;
 		saber->blade[i].lengthMax = 32;
@@ -495,2067 +390,1680 @@ void WP_SaberSetDefaults( saberInfo_t *saber )
 	Q_strncpyz( saber->name, DEFAULT_SABER, sizeof( saber->name ) );
 	Q_strncpyz( saber->fullName, "lightsaber", sizeof( saber->fullName ) );
 	Q_strncpyz( saber->model, DEFAULT_SABER_MODEL, sizeof( saber->model ) );
-	saber->skin = 0;
-	saber->soundOn = BG_SoundIndex( "sound/weapons/saber/enemy_saber_on.wav" );
-	saber->soundLoop = BG_SoundIndex( "sound/weapons/saber/saberhum3.wav" );
-	saber->soundOff = BG_SoundIndex( "sound/weapons/saber/enemy_saber_off.wav" );
-	saber->numBlades = 1;
-	saber->type = SABER_SINGLE;
-	saber->stylesLearned = 0;
-	saber->stylesForbidden = 0;//allow all styles
-	saber->maxChain = 0;//0 = use default behavior
-	saber->forceRestrictions = 0;
-	saber->lockBonus = 0;
-	saber->parryBonus = 0;
-	saber->breakParryBonus = 0;
-	saber->breakParryBonus2 = 0;
-	saber->disarmBonus = 0;
-	saber->disarmBonus2 = 0;
-	saber->singleBladeStyle = SS_NONE;//makes it so that you use a different style if you only have the first blade active
-//	saber->brokenSaber1 = NULL;//if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your right hand
-//	saber->brokenSaber2 = NULL;//if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your left hand
+	saber->skin					= 0;
+	saber->soundOn				= BG_SoundIndex( "sound/weapons/saber/enemy_saber_on.wav" );
+	saber->soundLoop			= BG_SoundIndex( "sound/weapons/saber/saberhum3.wav" );
+	saber->soundOff				= BG_SoundIndex( "sound/weapons/saber/enemy_saber_off.wav" );
+	saber->numBlades			= 1;
+	saber->type					= SABER_SINGLE;
+	saber->stylesLearned		= 0;
+	saber->stylesForbidden		= 0;			// allow all styles
+	saber->maxChain				= 0;			// 0 = use default behavior
+	saber->forceRestrictions	= 0;
+	saber->lockBonus			= 0;
+	saber->parryBonus			= 0;
+	saber->breakParryBonus		= 0;
+	saber->breakParryBonus2		= 0;
+	saber->disarmBonus			= 0;
+	saber->disarmBonus2			= 0;
+	saber->singleBladeStyle		= SS_NONE;		// makes it so that you use a different style if you only have the first blade active
+
 //===NEW========================================================================================
 	//done in cgame (client-side code)
-	saber->saberFlags = 0;					//see all the SFL_ flags
-	saber->saberFlags2 = 0;					//see all the SFL2_ flags
+	saber->saberFlags			= 0;			// see all the SFL_ flags
+	saber->saberFlags2			= 0;			// see all the SFL2_ flags
 
-	saber->spinSound = 0;					//none - if set, plays this sound as it spins when thrown
-	saber->swingSound[0] = 0;				//none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
-	saber->swingSound[1] = 0;				//none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
-	saber->swingSound[2] = 0;				//none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
+	saber->spinSound			= 0;			// none - if set, plays this sound as it spins when thrown
+	saber->swingSound[0]		= 0;			// none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
+	saber->swingSound[1]		= 0;			// none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
+	saber->swingSound[2]		= 0;			// none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
 
 	//done in game (server-side code)
-	saber->moveSpeedScale = 1.0f;				//1.0 - you move faster/slower when using this saber
-	saber->animSpeedScale = 1.0f;				//1.0 - plays normal attack animations faster/slower
+	saber->moveSpeedScale		= 1.0f;			// 1.0 - you move faster/slower when using this saber
+	saber->animSpeedScale		= 1.0f;			// 1.0 - plays normal attack animations faster/slower
 
-	saber->kataMove = LS_INVALID;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	saber->lungeAtkMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	saber->jumpAtkUpMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+attack 
-	saber->jumpAtkFwdMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
-	saber->jumpAtkBackMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
-	saber->jumpAtkRightMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
-	saber->jumpAtkLeftMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
-	saber->readyAnim = -1;						//-1 - anim to use when standing idle
-	saber->drawAnim = -1;						//-1 - anim to use when drawing weapon
-	saber->putawayAnim = -1;					//-1 - anim to use when putting weapon away
-	saber->tauntAnim = -1;						//-1 - anim to use when hit "taunt"
-	saber->bowAnim = -1;						//-1 - anim to use when hit "bow"
-	saber->meditateAnim = -1;					//-1 - anim to use when hit "meditate"
-	saber->flourishAnim = -1;					//-1 - anim to use when hit "flourish"
-	saber->gloatAnim = -1;						//-1 - anim to use when hit "gloat"
+	saber->kataMove				= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	saber->lungeAtkMove			= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	saber->jumpAtkUpMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+attack
+	saber->jumpAtkFwdMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+fwd+attack
+	saber->jumpAtkBackMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+back+attack
+	saber->jumpAtkRightMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+rightattack
+	saber->jumpAtkLeftMove		= LS_INVALID;	// LS_INVALID - if set, player will execute this move when they jump+left+attack
+	saber->readyAnim			= -1;			// -1 - anim to use when standing idle
+	saber->drawAnim				= -1;			// -1 - anim to use when drawing weapon
+	saber->putawayAnim			= -1;			// -1 - anim to use when putting weapon away
+	saber->tauntAnim			= -1;			// -1 - anim to use when hit "taunt"
+	saber->bowAnim				= -1;			// -1 - anim to use when hit "bow"
+	saber->meditateAnim			= -1;			// -1 - anim to use when hit "meditate"
+	saber->flourishAnim			= -1;			// -1 - anim to use when hit "flourish"
+	saber->gloatAnim			= -1;			// -1 - anim to use when hit "gloat"
 
 	//***NOTE: you can only have a maximum of 2 "styles" of blades, so this next value, "bladeStyle2Start" is the number of the first blade to use these value on... all blades before this use the normal values above, all blades at and after this number use the secondary values below***
-	saber->bladeStyle2Start = 0;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
-	
+	saber->bladeStyle2Start		= 0;			// 0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
+
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
 
 	//===PRIMARY BLADES=====================
 	//done in cgame (client-side code)
-	saber->trailStyle = 0;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
-	saber->g2MarksShader = 0;				//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-	saber->g2WeaponMarkShader = 0;			//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-	//saber->bladeShader = 0;				//none - if set, overrides the shader used for the saber blade?
-	//saber->trailShader = 0;				//none - if set, overrides the shader used for the saber trail?
-	saber->hitSound[0] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->hitSound[1] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->hitSound[2] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->blockSound[0] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->blockSound[1] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->blockSound[2] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->bounceSound[0] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->bounceSound[1] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->bounceSound[2] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->blockEffect = 0;					//none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
-	saber->hitPersonEffect = 0;				//none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
-	saber->hitOtherEffect = 0;				//none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
-	saber->bladeEffect = 0;					//none - if set, plays this effect at the blade tag
+	saber->trailStyle			= 0;			// 0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+	saber->g2MarksShader		= 0;			// none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	saber->g2WeaponMarkShader	= 0;			// none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	saber->hitSound[0]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->hitSound[1]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->hitSound[2]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->blockSound[0]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->blockSound[1]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->blockSound[2]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->bounceSound[0]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->bounceSound[1]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->bounceSound[2]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->blockEffect			= 0;			// none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
+	saber->hitPersonEffect		= 0;			// none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
+	saber->hitOtherEffect		= 0;			// none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
+	saber->bladeEffect			= 0;			// none - if set, plays this effect at the blade tag
 
 	//done in game (server-side code)
-	saber->knockbackScale = 0;				//0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
-	saber->damageScale = 1.0f;				//1 - scale up or down the damage done by the saber
-	saber->splashRadius = 0.0f;				//0 - radius of splashDamage
-	saber->splashDamage = 0;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
-	saber->splashKnockback = 0.0f;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
+	saber->knockbackScale		= 0;			// 0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
+	saber->damageScale			= 1.0f;			// 1 - scale up or down the damage done by the saber
+	saber->splashRadius			= 0.0f;			// 0 - radius of splashDamage
+	saber->splashDamage			= 0;			// 0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+	saber->splashKnockback		= 0.0f;			// 0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
 
 	//===SECONDARY BLADES===================
 	//done in cgame (client-side code)
-	saber->trailStyle2 = 0;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
-	saber->g2MarksShader2 = 0;				//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-	saber->g2WeaponMarkShader2 = 0;			//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-	//saber->bladeShader = 0;				//none - if set, overrides the shader used for the saber blade?
-	//saber->trailShader = 0;				//none - if set, overrides the shader used for the saber trail?
-	saber->hit2Sound[0] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->hit2Sound[1] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->hit2Sound[2] = 0;					//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
-	saber->block2Sound[0] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->block2Sound[1] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->block2Sound[2] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
-	saber->bounce2Sound[0] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->bounce2Sound[1] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->bounce2Sound[2] = 0;				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
-	saber->blockEffect2 = 0;					//none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
-	saber->hitPersonEffect2 = 0;				//none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
-	saber->hitOtherEffect2 = 0;				//none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
-	saber->bladeEffect2 = 0;				//none - if set, plays this effect at the blade tag
+	saber->trailStyle2			= 0;			// 0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+	saber->g2MarksShader2		= 0;			// none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	saber->g2WeaponMarkShader2	= 0;			// none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	saber->hit2Sound[0]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->hit2Sound[1]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->hit2Sound[2]			= 0;			// none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	saber->block2Sound[0]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->block2Sound[1]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->block2Sound[2]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	saber->bounce2Sound[0]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->bounce2Sound[1]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->bounce2Sound[2]		= 0;			// none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	saber->blockEffect2			= 0;			// none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
+	saber->hitPersonEffect2		= 0;			// none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
+	saber->hitOtherEffect2		= 0;			// none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
+	saber->bladeEffect2			= 0;			// none - if set, plays this effect at the blade tag
 
 	//done in game (server-side code)
-	saber->knockbackScale2 = 0;				//0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
-	saber->damageScale2 = 1.0f;				//1 - scale up or down the damage done by the saber
-	saber->splashRadius2 = 0.0f;				//0 - radius of splashDamage
-	saber->splashDamage2 = 0;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
-	saber->splashKnockback2 = 0.0f;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
+	saber->knockbackScale2		= 0;			// 0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
+	saber->damageScale2			= 1.0f;			// 1 - scale up or down the damage done by the saber
+	saber->splashRadius2		= 0.0f;			// 0 - radius of splashDamage
+	saber->splashDamage2		= 0;			// 0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+	saber->splashKnockback2		= 0.0f;			// 0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
 //=========================================================================================================================================
 }
 
-qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber ) 
-{
-	const char	*token;
-	const char	*value;
-	const char	*p;
-	char	useSaber[1024];
-	float	f;
-	int		n;
-	qboolean	triedDefault = qfalse;
-	int saberMove = LS_INVALID;
-	int	anim = -1;
-	
-	if ( !saber ) 
-	{
-		return qfalse;
+
+static void Saber_ParseName( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	Q_strncpyz( saber->fullName, value, sizeof( saber->fullName ) );
+}
+static void Saber_ParseSaberType( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberType;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberType = GetIDForString( saberTable, value );
+	if ( saberType >= SABER_SINGLE && saberType <= NUM_SABERS )
+		saber->type = (saberType_t)saberType;
+}
+static void Saber_ParseSaberModel( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	Q_strncpyz( saber->model, value, sizeof( saber->model ) );
+}
+static void Saber_ParseCustomSkin( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->skin = trap->R_RegisterSkin( value );
+}
+static void Saber_ParseSoundOn( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->soundOn = BG_SoundIndex( value );
+}
+static void Saber_ParseSoundLoop( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->soundLoop = BG_SoundIndex( value );
+}
+static void Saber_ParseSoundOff( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->soundOff = BG_SoundIndex( value );
+}
+static void Saber_ParseNumBlades( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
 	}
-	
+	if ( n < 1 || n > MAX_BLADES ) {
+		Com_Error( ERR_DROP, "WP_SaberParseParms: saber %s has illegal number of blades (%d) max: %d", saber->name, n, MAX_BLADES );
+		return;
+	}
+	saber->numBlades = n;
+}
+static void Saber_ParseSaberColor( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int i=0;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	for ( i=0; i<MAX_BLADES; i++ )
+		saber->blade[i].color = color;
+}
+static void Saber_ParseSaberColor2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[1].color = color;
+}
+static void Saber_ParseSaberColor3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[2].color = color;
+}
+static void Saber_ParseSaberColor4( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[3].color = color;
+}
+static void Saber_ParseSaberColor5( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[4].color = color;
+}
+static void Saber_ParseSaberColor6( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[5].color = color;
+}
+static void Saber_ParseSaberColor7( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	saber_colors_t color;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	color = TranslateSaberColor( value );
+	saber->blade[6].color = color;
+}
+static void Saber_ParseSaberLength( saberInfo_t *saber, const char **p ) {
+	int i=0;
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	for ( i=0; i<MAX_BLADES; i++ )
+		saber->blade[i].lengthMax = f;
+}
+static void Saber_ParseSaberLength2( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[1].lengthMax = f;
+}
+static void Saber_ParseSaberLength3( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[2].lengthMax = f;
+}
+static void Saber_ParseSaberLength4( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[3].lengthMax = f;
+}
+static void Saber_ParseSaberLength5( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[4].lengthMax = f;
+}
+static void Saber_ParseSaberLength6( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[5].lengthMax = f;
+}
+static void Saber_ParseSaberLength7( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 4.0f )
+		f = 4.0f;
+
+	saber->blade[6].lengthMax = f;
+}
+static void Saber_ParseSaberRadius( saberInfo_t *saber, const char **p ) {
+	int i=0;
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	for ( i=0; i<MAX_BLADES; i++ )
+		saber->blade[i].radius = f;
+}
+static void Saber_ParseSaberRadius2( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[1].radius = f;
+}
+static void Saber_ParseSaberRadius3( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[2].radius = f;
+}
+static void Saber_ParseSaberRadius4( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[3].radius = f;
+}
+static void Saber_ParseSaberRadius5( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[4].radius = f;
+}
+static void Saber_ParseSaberRadius6( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[5].radius = f;
+}
+static void Saber_ParseSaberRadius7( saberInfo_t *saber, const char **p ) {
+	float f;
+
+	if ( COM_ParseFloat( p, &f ) )
+		return;
+
+	if ( f < 0.25f )
+		f = 0.25f;
+
+	saber->blade[6].radius = f;
+}
+static void Saber_ParseSaberStyle( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int style, styleNum;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	//OLD WAY: only allowed ONE style
+	style = TranslateSaberStyle( value );
+	//learn only this style
+	saber->stylesLearned = (1<<style);
+	//forbid all other styles
+	saber->stylesForbidden = 0;
+	for ( styleNum=SS_NONE+1; styleNum<SS_NUM_SABER_STYLES; styleNum++ ) {
+		if ( styleNum != style )
+			saber->stylesForbidden |= (1<<styleNum);
+	}
+}
+static void Saber_ParseSaberStyleLearned( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->stylesLearned |= (1<<TranslateSaberStyle( value ));
+}
+static void Saber_ParseSaberStyleForbidden( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->stylesForbidden |= (1<<TranslateSaberStyle( value ));
+}
+static void Saber_ParseMaxChain( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->maxChain = n;
+}
+static void Saber_ParseLockable( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n == 0 )
+		saber->saberFlags |= SFL_NOT_LOCKABLE;
+}
+static void Saber_ParseThrowable( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n == 0 )
+		saber->saberFlags |= SFL_NOT_THROWABLE;
+}
+static void Saber_ParseDisarmable( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n == 0 )
+		saber->saberFlags |= SFL_NOT_DISARMABLE;
+}
+static void Saber_ParseBlocking( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n == 0 )
+		saber->saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
+}
+static void Saber_ParseTwoHanded( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_TWO_HANDED;
+}
+static void Saber_ParseForceRestrict( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int fp;
+
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	fp = GetIDForString( FPTable, value );
+	if ( fp >= FP_FIRST && fp < NUM_FORCE_POWERS )
+		saber->forceRestrictions |= (1<<fp);
+}
+static void Saber_ParseLockBonus( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->lockBonus = n;
+}
+static void Saber_ParseParryBonus( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->parryBonus = n;
+}
+static void Saber_ParseBreakParryBonus( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->breakParryBonus = n;
+}
+static void Saber_ParseBreakParryBonus2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->breakParryBonus2 = n;
+}
+static void Saber_ParseDisarmBonus( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->disarmBonus = n;
+}
+static void Saber_ParseDisarmBonus2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->disarmBonus2 = n;
+}
+static void Saber_ParseSingleBladeStyle( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->singleBladeStyle = TranslateSaberStyle( value );
+}
+static void Saber_ParseSingleBladeThrowable( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
+}
+static void Saber_ParseBrokenSaber1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	//saber->brokenSaber1 = G_NewString( value );
+}
+static void Saber_ParseBrokenSaber2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	//saber->brokenSaber2 = G_NewString( value );
+}
+static void Saber_ParseReturnDamage( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_RETURN_DAMAGE;
+}
+static void Saber_ParseSpinSound( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->spinSound = BG_SoundIndex( value );
+}
+static void Saber_ParseSwingSound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->swingSound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseSwingSound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->swingSound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseSwingSound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->swingSound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseMoveSpeedScale( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->moveSpeedScale = f;
+}
+static void Saber_ParseAnimSpeedScale( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->animSpeedScale = f;
+}
+static void Saber_ParseBounceOnWalls( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_BOUNCE_ON_WALLS;
+}
+static void Saber_ParseBoltToWrist( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_BOLT_TO_WRIST;
+}
+static void Saber_ParseKataMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->kataMove = saberMove; //LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+}
+static void Saber_ParseLungeAtkMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->lungeAtkMove = saberMove;
+}
+static void Saber_ParseJumpAtkUpMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->jumpAtkUpMove = saberMove;
+}
+static void Saber_ParseJumpAtkFwdMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->jumpAtkFwdMove = saberMove;
+}
+static void Saber_ParseJumpAtkBackMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->jumpAtkBackMove = saberMove;
+}
+static void Saber_ParseJumpAtkRightMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->jumpAtkRightMove = saberMove;
+}
+static void Saber_ParseJumpAtkLeftMove( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int saberMove = LS_INVALID;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saberMove = GetIDForString( saberMoveTable, value );
+	if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
+		saber->jumpAtkLeftMove = saberMove;
+}
+static void Saber_ParseReadyAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->readyAnim = anim;
+}
+static void Saber_ParseDrawAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->drawAnim = anim;
+}
+static void Saber_ParsePutawayAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->putawayAnim = anim;
+}
+static void Saber_ParseTauntAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->tauntAnim = anim;
+}
+static void Saber_ParseBowAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->bowAnim = anim;
+}
+static void Saber_ParseMeditateAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->meditateAnim = anim;
+}
+static void Saber_ParseFlourishAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->flourishAnim = anim;
+}
+static void Saber_ParseGloatAnim( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	int anim = -1;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	anim = GetIDForString( animTable, value );
+	if ( anim >= 0 && anim < MAX_ANIMATIONS )
+		saber->gloatAnim = anim;
+}
+static void Saber_ParseNoRollStab( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_ROLL_STAB;
+}
+static void Saber_ParseNoPullAttack( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_PULL_ATTACK;
+}
+static void Saber_ParseNoBackAttack( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_BACK_ATTACK;
+}
+static void Saber_ParseNoStabDown( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_STABDOWN;
+}
+static void Saber_ParseNoWallRuns( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_WALL_RUNS;
+}
+static void Saber_ParseNoWallFlips( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_WALL_FLIPS;
+}
+static void Saber_ParseNoWallGrab( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_WALL_GRAB;
+}
+static void Saber_ParseNoRolls( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_ROLLS;
+}
+static void Saber_ParseNoFlips( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_FLIPS;
+}
+static void Saber_ParseNoCartwheels( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_CARTWHEELS;
+}
+static void Saber_ParseNoKicks( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_KICKS;
+}
+static void Saber_ParseNoMirrorAttacks( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags |= SFL_NO_MIRROR_ATTACKS;
+}
+static void Saber_ParseOnInWater( saberInfo_t *saber, const char **p ) {
+	SkipRestOfLine( p );
+}
+static void Saber_ParseNotInMP( saberInfo_t *saber, const char **p ) {
+	SkipRestOfLine( p );
+}
+static void Saber_ParseBladeStyle2Start( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->bladeStyle2Start = n;
+}
+static void Saber_ParseNoWallMarks( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_WALL_MARKS;
+}
+static void Saber_ParseNoDLight( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_DLIGHT;
+}
+static void Saber_ParseNoBlade( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_BLADE;
+}
+static void Saber_ParseTrailStyle( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->trailStyle = n;
+}
+static void Saber_ParseG2MarksShader( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+#ifdef _CGAME
+	saber->g2MarksShader = trap->R_RegisterShader( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseG2WeaponMarkShader( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+#ifdef _CGAME
+	saber->g2WeaponMarkShader = trap->R_RegisterShader( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseKnockbackScale( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->knockbackScale = f;
+}
+static void Saber_ParseDamageScale( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->damageScale = f;
+}
+static void Saber_ParseNoDismemberment( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT;
+}
+static void Saber_ParseNoIdleEffect( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT;
+}
+static void Saber_ParseAlwaysBlock( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_ALWAYS_BLOCK;
+}
+static void Saber_ParseNoManualDeactivate( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE;
+}
+static void Saber_ParseTransitionDamage( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE;
+}
+static void Saber_ParseSplashRadius( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashRadius = f;
+}
+static void Saber_ParseSplashDamage( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashDamage = n;
+}
+static void Saber_ParseSplashKnockback( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashKnockback = f;
+}
+static void Saber_ParseHitSound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hitSound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseHitSound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hitSound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseHitSound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hitSound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlockSound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->blockSound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlockSound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->blockSound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlockSound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->blockSound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounceSound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounceSound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounceSound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounceSound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounceSound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounceSound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlockEffect( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->blockEffect = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseHitPersonEffect( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->hitPersonEffect = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseHitOtherEffect( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->hitOtherEffect = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseBladeEffect( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->bladeEffect = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseNoClashFlare( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_CLASH_FLARE;
+}
+static void Saber_ParseNoWallMarks2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_WALL_MARKS2;
+}
+static void Saber_ParseNoDLight2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_DLIGHT2;
+}
+static void Saber_ParseNoBlade2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_BLADE2;
+}
+static void Saber_ParseTrailStyle2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->trailStyle2 = n;
+}
+static void Saber_ParseG2MarksShader2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+#ifdef _CGAME
+	saber->g2MarksShader2 = trap->R_RegisterShader( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseG2WeaponMarkShader2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+#ifdef _CGAME
+	saber->g2WeaponMarkShader2 = trap->R_RegisterShader( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseKnockbackScale2( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->knockbackScale2 = f;
+}
+static void Saber_ParseDamageScale2( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->damageScale2 = f;
+}
+static void Saber_ParseNoDismemberment2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT2;
+}
+static void Saber_ParseNoIdleEffect2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT2;
+}
+static void Saber_ParseAlwaysBlock2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_ALWAYS_BLOCK2;
+}
+static void Saber_ParseNoManualDeactivate2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE2;
+}
+static void Saber_ParseTransitionDamage2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE2;
+}
+static void Saber_ParseSplashRadius2( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashRadius2 = f;
+}
+static void Saber_ParseSplashDamage2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashDamage2 = n;
+}
+static void Saber_ParseSplashKnockback2( saberInfo_t *saber, const char **p ) {
+	float f;
+	if ( COM_ParseFloat( p, &f ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	saber->splashKnockback2 = f;
+}
+static void Saber_ParseHit2Sound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hit2Sound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseHit2Sound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hit2Sound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseHit2Sound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->hit2Sound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlock2Sound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->block2Sound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlock2Sound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->block2Sound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlock2Sound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->block2Sound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounce2Sound1( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounce2Sound[0] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounce2Sound2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounce2Sound[1] = BG_SoundIndex( value );
+}
+static void Saber_ParseBounce2Sound3( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+	saber->bounce2Sound[2] = BG_SoundIndex( value );
+}
+static void Saber_ParseBlockEffect2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->blockEffect2 = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseHitPersonEffect2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->hitPersonEffect2 = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseHitOtherEffect2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->hitOtherEffect2 = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseBladeEffect2( saberInfo_t *saber, const char **p ) {
+	const char *value;
+	if ( COM_ParseString( p, &value ) )
+		return;
+#ifdef _CGAME
+	saber->bladeEffect2 = trap->FX_RegisterEffect( value );
+#else
+	SkipRestOfLine( p );
+#endif
+}
+static void Saber_ParseNoClashFlare2( saberInfo_t *saber, const char **p ) {
+	int n;
+	if ( COM_ParseInt( p, &n ) ) {
+		SkipRestOfLine( p );
+		return;
+	}
+	if ( n )
+		saber->saberFlags2 |= SFL2_NO_CLASH_FLARE2;
+}
+
+
+/*
+===============
+Keyword Hash
+===============
+*/
+
+#define KEYWORDHASH_SIZE (512)
+
+typedef struct keywordHash_s {
+	char	*keyword;
+	void	(*func)(saberInfo_t *saber, const char **p);
+
+	struct keywordHash_s *next;
+} keywordHash_t;
+
+static int KeywordHash_Key( const char *keyword ) {
+	int register hash, i;
+
+	hash = 0;
+	for ( i=0; keyword[i]; i++ ) {
+		if ( keyword[i] >= 'A' && keyword[i] <= 'Z' )
+			hash += (keyword[i] + ('a'-'A')) * (119 + i);
+		else
+			hash += keyword[i] * (119 + i);
+	}
+
+	hash = (hash ^ (hash >> 10) ^ (hash >> 20)) & (KEYWORDHASH_SIZE-1);
+	return hash;
+}
+
+static void KeywordHash_Add( keywordHash_t *table[], keywordHash_t *key ) {
+	int hash = KeywordHash_Key( key->keyword );
+
+	key->next = table[hash];
+	table[hash] = key;
+}
+
+static keywordHash_t *KeywordHash_Find( keywordHash_t *table[], const char *keyword ) {
+	keywordHash_t *key;
+	int hash = KeywordHash_Key(keyword);
+
+	for ( key=table[hash]; key; key=key->next ) {
+		if ( !Q_stricmp( key->keyword, keyword ) )
+			return key;
+	}
+
+	return NULL;
+}
+
+static keywordHash_t saberParseKeywords[] = {
+	{ "name",					Saber_ParseName,				NULL	},
+	{ "saberType",				Saber_ParseSaberType,			NULL	},
+	{ "saberModel",				Saber_ParseSaberModel,			NULL	},
+	{ "customSkin",				Saber_ParseCustomSkin,			NULL	},
+	{ "soundOn",				Saber_ParseSoundOn,				NULL	},
+	{ "soundLoop",				Saber_ParseSoundLoop,			NULL	},
+	{ "soundOff",				Saber_ParseSoundOff,			NULL	},
+	{ "numBlades",				Saber_ParseNumBlades,			NULL	},
+	{ "saberColor",				Saber_ParseSaberColor,			NULL	},
+	{ "saberColor2",			Saber_ParseSaberColor2,			NULL	},
+	{ "saberColor3",			Saber_ParseSaberColor3,			NULL	},
+	{ "saberColor4",			Saber_ParseSaberColor4,			NULL	},
+	{ "saberColor5",			Saber_ParseSaberColor5,			NULL	},
+	{ "saberColor6",			Saber_ParseSaberColor6,			NULL	},
+	{ "saberColor7",			Saber_ParseSaberColor7,			NULL	},
+	{ "saberLength",			Saber_ParseSaberLength,			NULL	},
+	{ "saberLength2",			Saber_ParseSaberLength2,		NULL	},
+	{ "saberLength3",			Saber_ParseSaberLength3,		NULL	},
+	{ "saberLength4",			Saber_ParseSaberLength4,		NULL	},
+	{ "saberLength5",			Saber_ParseSaberLength5,		NULL	},
+	{ "saberLength6",			Saber_ParseSaberLength6,		NULL	},
+	{ "saberLength7",			Saber_ParseSaberLength7,		NULL	},
+	{ "saberRadius",			Saber_ParseSaberRadius,			NULL	},
+	{ "saberRadius2",			Saber_ParseSaberRadius2,		NULL	},
+	{ "saberRadius3",			Saber_ParseSaberRadius3,		NULL	},
+	{ "saberRadius4",			Saber_ParseSaberRadius4,		NULL	},
+	{ "saberRadius5",			Saber_ParseSaberRadius5,		NULL	},
+	{ "saberRadius6",			Saber_ParseSaberRadius6,		NULL	},
+	{ "saberRadius7",			Saber_ParseSaberRadius7,		NULL	},
+	{ "saberStyle",				Saber_ParseSaberStyle,			NULL	},
+	{ "saberStyleLearned",		Saber_ParseSaberStyleLearned,	NULL	},
+	{ "saberStyleForbidden",	Saber_ParseSaberStyleForbidden,	NULL	},
+	{ "maxChain",				Saber_ParseMaxChain,			NULL	},
+	{ "lockable",				Saber_ParseLockable,			NULL	},
+	{ "throwable",				Saber_ParseThrowable,			NULL	},
+	{ "disarmable",				Saber_ParseDisarmable,			NULL	},
+	{ "blocking",				Saber_ParseBlocking,			NULL	},
+	{ "twoHanded",				Saber_ParseTwoHanded,			NULL	},
+	{ "forceRestrict",			Saber_ParseForceRestrict,		NULL	},
+	{ "lockBonus",				Saber_ParseLockBonus,			NULL	},
+	{ "parryBonus",				Saber_ParseParryBonus,			NULL	},
+	{ "breakParryBonus",		Saber_ParseBreakParryBonus,		NULL	},
+	{ "breakParryBonus2",		Saber_ParseBreakParryBonus2,	NULL	},
+	{ "disarmBonus",			Saber_ParseDisarmBonus,			NULL	},
+	{ "disarmBonus2",			Saber_ParseDisarmBonus2,		NULL	},
+	{ "singleBladeStyle",		Saber_ParseSingleBladeStyle,	NULL	},
+	{ "singleBladeThrowable",	Saber_ParseSingleBladeThrowable,NULL	},
+	{ "brokenSaber1",			Saber_ParseBrokenSaber1,		NULL	},
+	{ "brokenSaber2",			Saber_ParseBrokenSaber2,		NULL	},
+	{ "returnDamage",			Saber_ParseReturnDamage,		NULL	},
+	{ "spinSound",				Saber_ParseSpinSound,			NULL	},
+	{ "swingSound1",			Saber_ParseSwingSound1,			NULL	},
+	{ "swingSound2",			Saber_ParseSwingSound2,			NULL	},
+	{ "swingSound3",			Saber_ParseSwingSound3,			NULL	},
+	{ "moveSpeedScale",			Saber_ParseMoveSpeedScale,		NULL	},
+	{ "animSpeedScale",			Saber_ParseAnimSpeedScale,		NULL	},
+	{ "bounceOnWalls",			Saber_ParseBounceOnWalls,		NULL	},
+	{ "boltToWrist",			Saber_ParseBoltToWrist,			NULL	},
+	{ "kataMove",				Saber_ParseKataMove,			NULL	},
+	{ "lungeAtkMove",			Saber_ParseLungeAtkMove,		NULL	},
+	{ "jumpAtkUpMove",			Saber_ParseJumpAtkUpMove,		NULL	},
+	{ "jumpAtkFwdMove",			Saber_ParseJumpAtkFwdMove,		NULL	},
+	{ "jumpAtkBackMove",		Saber_ParseJumpAtkBackMove,		NULL	},
+	{ "jumpAtkRightMove",		Saber_ParseJumpAtkRightMove,	NULL	},
+	{ "jumpAtkLeftMove",		Saber_ParseJumpAtkLeftMove,		NULL	},
+	{ "readyAnim",				Saber_ParseReadyAnim,			NULL	},
+	{ "drawAnim",				Saber_ParseDrawAnim,			NULL	},
+	{ "putawayAnim",			Saber_ParsePutawayAnim,			NULL	},
+	{ "tauntAnim",				Saber_ParseTauntAnim,			NULL	},
+	{ "bowAnim",				Saber_ParseBowAnim,				NULL	},
+	{ "meditateAnim",			Saber_ParseMeditateAnim,		NULL	},
+	{ "flourishAnim",			Saber_ParseFlourishAnim,		NULL	},
+	{ "gloatAnim",				Saber_ParseGloatAnim,			NULL	},
+	{ "noRollStab",				Saber_ParseNoRollStab,			NULL	},
+	{ "noPullAttack",			Saber_ParseNoPullAttack,		NULL	},
+	{ "noBackAttack",			Saber_ParseNoBackAttack,		NULL	},
+	{ "noStabDown",				Saber_ParseNoStabDown,			NULL	},
+	{ "noWallRuns",				Saber_ParseNoWallRuns,			NULL	},
+	{ "noWallFlips",			Saber_ParseNoWallFlips,			NULL	},
+	{ "noWallGrab",				Saber_ParseNoWallGrab,			NULL	},
+	{ "noRolls",				Saber_ParseNoRolls,				NULL	},
+	{ "noFlips",				Saber_ParseNoFlips,				NULL	},
+	{ "noCartwheels",			Saber_ParseNoCartwheels,		NULL	},
+	{ "noKicks",				Saber_ParseNoKicks,				NULL	},
+	{ "noMirrorAttacks",		Saber_ParseNoMirrorAttacks,		NULL	},
+	{ "onInWater",				Saber_ParseOnInWater,			NULL	},
+	{ "notInMP",				Saber_ParseNotInMP,				NULL	},
+	{ "bladeStyle2Start",		Saber_ParseBladeStyle2Start,	NULL	},
+	{ "noWallMarks",			Saber_ParseNoWallMarks,			NULL	},
+	{ "noWallMarks2",			Saber_ParseNoWallMarks2,		NULL	},
+	{ "noDlight",				Saber_ParseNoDLight,			NULL	},
+	{ "noDlight2",				Saber_ParseNoDLight2,			NULL	},
+	{ "noBlade",				Saber_ParseNoBlade,				NULL	},
+	{ "noBlade2",				Saber_ParseNoBlade2,			NULL	},
+	{ "trailStyle",				Saber_ParseTrailStyle,			NULL	},
+	{ "trailStyle2",			Saber_ParseTrailStyle2,			NULL	},
+	{ "g2MarksShader",			Saber_ParseG2MarksShader,		NULL	},
+	{ "g2MarksShader2",			Saber_ParseG2MarksShader2,		NULL	},
+	{ "g2WeaponMarkShader",		Saber_ParseG2WeaponMarkShader,	NULL	},
+	{ "g2WeaponMarkShader2",	Saber_ParseG2WeaponMarkShader2,	NULL	},
+	{ "knockbackScale",			Saber_ParseKnockbackScale,		NULL	},
+	{ "knockbackScale2",		Saber_ParseKnockbackScale2,		NULL	},
+	{ "damageScale",			Saber_ParseDamageScale,			NULL	},
+	{ "damageScale2",			Saber_ParseDamageScale2,		NULL	},
+	{ "noDismemberment",		Saber_ParseNoDismemberment,		NULL	},
+	{ "noDismemberment2",		Saber_ParseNoDismemberment2,	NULL	},
+	{ "noIdleEffect",			Saber_ParseNoIdleEffect,		NULL	},
+	{ "noIdleEffect2",			Saber_ParseNoIdleEffect2,		NULL	},
+	{ "alwaysBlock",			Saber_ParseAlwaysBlock,			NULL	},
+	{ "alwaysBlock2",			Saber_ParseAlwaysBlock2,		NULL	},
+	{ "noManualDeactivate",		Saber_ParseNoManualDeactivate,	NULL	},
+	{ "noManualDeactivate2",	Saber_ParseNoManualDeactivate2,	NULL	},
+	{ "transitionDamage",		Saber_ParseTransitionDamage,	NULL	},
+	{ "transitionDamage2",		Saber_ParseTransitionDamage2,	NULL	},
+	{ "splashRadius",			Saber_ParseSplashRadius,		NULL	},
+	{ "splashRadius2",			Saber_ParseSplashRadius2,		NULL	},
+	{ "splashDamage",			Saber_ParseSplashDamage,		NULL	},
+	{ "splashDamage2",			Saber_ParseSplashDamage2,		NULL	},
+	{ "splashKnockback",		Saber_ParseSplashKnockback,		NULL	},
+	{ "splashKnockback2",		Saber_ParseSplashKnockback2,	NULL	},
+	{ "hitSound1",				Saber_ParseHitSound1,			NULL	},
+	{ "hit2Sound1",				Saber_ParseHit2Sound1,			NULL	},
+	{ "hitSound2",				Saber_ParseHitSound2,			NULL	},
+	{ "hit2Sound2",				Saber_ParseHit2Sound2,			NULL	},
+	{ "hitSound3",				Saber_ParseHitSound3,			NULL	},
+	{ "hit2Sound3",				Saber_ParseHit2Sound3,			NULL	},
+	{ "blockSound1",			Saber_ParseBlockSound1,			NULL	},
+	{ "block2Sound1",			Saber_ParseBlock2Sound1,		NULL	},
+	{ "blockSound2",			Saber_ParseBlockSound2,			NULL	},
+	{ "block2Sound2",			Saber_ParseBlock2Sound2,		NULL	},
+	{ "blockSound3",			Saber_ParseBlockSound3,			NULL	},
+	{ "block2Sound3",			Saber_ParseBlock2Sound3,		NULL	},
+	{ "bounceSound1",			Saber_ParseBounceSound1,		NULL	},
+	{ "bounce2Sound1",			Saber_ParseBounce2Sound1,		NULL	},
+	{ "bounceSound2",			Saber_ParseBounceSound2,		NULL	},
+	{ "bounce2Sound2",			Saber_ParseBounce2Sound2,		NULL	},
+	{ "bounceSound3",			Saber_ParseBounceSound3,		NULL	},
+	{ "bounce2Sound3",			Saber_ParseBounce2Sound3,		NULL	},
+	{ "blockEffect",			Saber_ParseBlockEffect,			NULL	},
+	{ "blockEffect2",			Saber_ParseBlockEffect2,		NULL	},
+	{ "hitPersonEffect",		Saber_ParseHitPersonEffect,		NULL	},
+	{ "hitPersonEffect2",		Saber_ParseHitPersonEffect2,	NULL	},
+	{ "hitOtherEffect",			Saber_ParseHitOtherEffect,		NULL	},
+	{ "hitOtherEffect2",		Saber_ParseHitOtherEffect2,		NULL	},
+	{ "bladeEffect",			Saber_ParseBladeEffect,			NULL	},
+	{ "bladeEffect2",			Saber_ParseBladeEffect2,		NULL	},
+	{ "noClashFlare",			Saber_ParseNoClashFlare,		NULL	},
+	{ "noClashFlare2",			Saber_ParseNoClashFlare2,		NULL	},
+	{ NULL,						NULL,							NULL	}
+};
+static keywordHash_t *saberParseKeywordHash[KEYWORDHASH_SIZE];
+static qboolean hashSetup = qfalse;
+
+static void WP_SaberSetupKeywordHash( void ) {
+	int i;
+
+	memset( saberParseKeywordHash, 0, sizeof( saberParseKeywordHash ) );
+	for ( i=0; saberParseKeywords[i].keyword; i++ )
+		KeywordHash_Add( saberParseKeywordHash, &saberParseKeywords[i] );
+
+	hashSetup = qtrue;
+}
+
+qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
+	const char	*token, *p;
+	char		useSaber[SABER_NAME_LENGTH];
+	qboolean	triedDefault = qfalse;
+	keywordHash_t *key;
+
+	// make sure the hash table has been setup
+	if ( !hashSetup )
+		WP_SaberSetupKeywordHash();
+
+	if ( !saber )
+		return qfalse;
+
 	//Set defaults so that, if it fails, there's at least something there
 	WP_SaberSetDefaults( saber );
 
-	if ( !SaberName || !SaberName[0] ) 
-	{
-		strcpy(useSaber, DEFAULT_SABER); //default
+	if ( !VALIDSTRING( saberName ) ) {
+		Q_strncpyz( useSaber, DEFAULT_SABER, sizeof( useSaber ) );
 		triedDefault = qtrue;
 	}
 	else
-	{
-		strcpy(useSaber, SaberName);
-	}
+		Q_strncpyz( useSaber, saberName, sizeof( useSaber ) );
 
 	//try to parse it out
-	p = SaberParms;
-	COM_BeginParseSession("saberinfo");
+	p = saberParms;
+	COM_BeginParseSession( "saberinfo" );
 
 	// look for the right saber
-	while ( p )
-	{
+	while ( p ) {
 		token = COM_ParseExt( &p, qtrue );
-		if ( token[0] == 0 )
-		{
-			if (!triedDefault)
-			{ //fall back to default and restart, should always be there
-				p = SaberParms;
-				COM_BeginParseSession("saberinfo");
-				strcpy(useSaber, DEFAULT_SABER);
+		if ( !token[0] ) {
+			if ( !triedDefault ) {
+				// fall back to default and restart, should always be there
+				p = saberParms;
+				COM_BeginParseSession( "saberinfo" );
+				Q_strncpyz( useSaber, DEFAULT_SABER, sizeof( useSaber ) );
 				triedDefault = qtrue;
 			}
 			else
-			{
 				return qfalse;
-			}
 		}
 
-		if ( !Q_stricmp( token, useSaber ) ) 
-		{
+		if ( !Q_stricmp( token, useSaber ) )
 			break;
-		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
-	{ //even the default saber isn't found?
-		return qfalse;
-	}
 
-	//got the name we're using for sure
-	strcpy(saber->name, useSaber);
-
-	if ( BG_ParseLiteral( &p, "{" ) ) 
-	{
+	// even the default saber isn't found?
+	if ( !p )
 		return qfalse;
-	}
-		
+
+	// got the name we're using for sure
+	Q_strncpyz( saber->name, useSaber, sizeof( saber->name ) );
+
+	if ( BG_ParseLiteral( &p, "{" ) )
+		return qfalse;
+
 	// parse the saber info block
-	while ( 1 ) 
-	{
+	while ( 1 ) {
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
-		{
-			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", useSaber );
+		if ( !token[0] ) {
+			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s' (WP_SaberParseParms)\n", useSaber );
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
-		{
+		if ( !Q_stricmp( token, "}" ) )
 			break;
-		}
-
-		//saber fullName
-		if ( !Q_stricmp( token, "name" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			strcpy(saber->fullName, value);
-			continue;
-		}
-
-		//saber type
-		if ( !Q_stricmp( token, "saberType" ) ) 
-		{
-			int saberType;
-
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberType = GetIDForString( SaberTable, value );
-			if ( saberType >= SABER_SINGLE && saberType <= NUM_SABERS )
-			{
-				saber->type = (saberType_t)saberType;
-			}
-			continue;
-		}
-
-		//saber hilt
-		if ( !Q_stricmp( token, "saberModel" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			strcpy(saber->model, value);
-			continue;
-		}
-
-		if ( !Q_stricmp( token, "customSkin" ) )
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->skin = trap_R_RegisterSkin(value);
-			continue;
-		}
-
-		//on sound
-		if ( !Q_stricmp( token, "soundOn" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->soundOn = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//loop sound
-		if ( !Q_stricmp( token, "soundLoop" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->soundLoop = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//off sound
-		if ( !Q_stricmp( token, "soundOff" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->soundOff = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		if ( !Q_stricmp( token, "numBlades" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n < 1 || n > MAX_BLADES )
-			{
-				Com_Error(ERR_DROP, "WP_SaberParseParms: saber %s has illegal number of blades (%d) max: %d", useSaber, n, MAX_BLADES );
-				continue;
-			}
-			saber->numBlades = n;
-			continue;
-		}
-
-		// saberColor
-		if ( !Q_stricmpn( token, "saberColor", 10 ) ) 
-		{
-			if (strlen(token)==10)
-			{
-				n = -1;
-			}
-			else if (strlen(token)==11)
-			{
-				n = atoi(&token[10])-1;
-				if (n > 7 || n < 1 )
-				{
-					Com_Printf( S_COLOR_YELLOW"WARNING: bad saberColor '%s' in %s\n", token, useSaber );
-					continue;
-				}
-			}
-			else
-			{
-				Com_Printf( S_COLOR_YELLOW"WARNING: bad saberColor '%s' in %s\n", token, useSaber );
-				continue;
-			}
-
-			if ( COM_ParseString( &p, &value ) )	//read the color
-			{
-				continue;
-			}
-
-			if (n==-1)
-			{//NOTE: this fills in the rest of the blades with the same color by default
-				saber_colors_t color = TranslateSaberColor( value );
-				for ( n = 0; n < MAX_BLADES; n++ )
-				{
-					saber->blade[n].color = color;
-				}
-			} else 
-			{
-				saber->blade[n].color = TranslateSaberColor( value );
-			}
-			continue;
-		}
-
-		//saber length
-		if ( !Q_stricmpn( token, "saberLength", 11 ) ) 
-		{
-			if (strlen(token)==11)
-			{
-				n = -1;
-			}
-			else if (strlen(token)==12)
-			{
-				n = atoi(&token[11])-1;
-				if (n > 7 || n < 1 )
-				{
-					Com_Printf( S_COLOR_YELLOW"WARNING: bad saberLength '%s' in %s\n", token, useSaber );
-					continue;
-				}
-			}
-			else
-			{
-				Com_Printf( S_COLOR_YELLOW"WARNING: bad saberLength '%s' in %s\n", token, useSaber );
-				continue;
-			}
-
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			//cap
-			if ( f < 4.0f )
-			{
-				f = 4.0f;
-			}
-
-			if (n==-1)
-			{//NOTE: this fills in the rest of the blades with the same length by default
-				for ( n = 0; n < MAX_BLADES; n++ )
-				{
-					saber->blade[n].lengthMax = f;
-				}
-			}
-			else
-			{
-				saber->blade[n].lengthMax = f;
-			}
-			continue;
-		}
-
-		//blade radius
-		if ( !Q_stricmpn( token, "saberRadius", 11 ) ) 
-		{
-			if (strlen(token)==11)
-			{
-				n = -1;
-			}
-			else if (strlen(token)==12)
-			{
-				n = atoi(&token[11])-1;
-				if (n > 7 || n < 1 )
-				{
-					Com_Printf( S_COLOR_YELLOW"WARNING: bad saberRadius '%s' in %s\n", token, useSaber );
-					continue;
-				}
-			}
-			else
-			{
-				Com_Printf( S_COLOR_YELLOW"WARNING: bad saberRadius '%s' in %s\n", token, useSaber );
-				continue;
-			}
-
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			//cap
-			if ( f < 0.25f )
-			{
-				f = 0.25f;
-			}
-			if (n==-1)
-			{//NOTE: this fills in the rest of the blades with the same length by default
-				for ( n = 0; n < MAX_BLADES; n++ )
-				{
-					saber->blade[n].radius = f;
-				}
-			}
-			else
-			{
-				saber->blade[n].radius = f;
-			}
-			continue;
-		}
-
-		//locked saber style
-		if ( !Q_stricmp( token, "saberStyle" ) ) 
-		{
-			int style, styleNum;
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			//OLD WAY: only allowed ONE style
-			style = TranslateSaberStyle( value );
-			//learn only this style
-			saber->stylesLearned = (1<<style);
-			//forbid all other styles
-			saber->stylesForbidden = 0;
-			for ( styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
-			{
-				if ( styleNum != style )
-				{
-					saber->stylesForbidden |= (1<<styleNum);
-				}
-			}
-			continue;
-		}
-
-		//learned saber style
-		if ( !Q_stricmp( token, "saberStyleLearned" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->stylesLearned |= (1<<TranslateSaberStyle( value ));
-			continue;
-		}
-
-		//forbidden saber style
-		if ( !Q_stricmp( token, "saberStyleForbidden" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->stylesForbidden |= (1<<TranslateSaberStyle( value ));
-			continue;
-		}
-
-		//maxChain
-		if ( !Q_stricmp( token, "maxChain" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->maxChain = n;
-			continue;
-		}
-
-		//lockable
-		if ( !Q_stricmp( token, "lockable" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n == 0 )
-			{
-				saber->saberFlags |= SFL_NOT_LOCKABLE;
-			}
-			continue;
-		}
-
-		//throwable
-		if ( !Q_stricmp( token, "throwable" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n == 0 )
-			{
-				saber->saberFlags |= SFL_NOT_THROWABLE;
-			}
-			continue;
-		}
-
-		//disarmable
-		if ( !Q_stricmp( token, "disarmable" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n == 0 )
-			{
-				saber->saberFlags |= SFL_NOT_DISARMABLE;
-			}
-			continue;
-		}
-
-		//active blocking
-		if ( !Q_stricmp( token, "blocking" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n == 0 )
-			{
-				saber->saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
-			}
-			continue;
-		}
-
-		//twoHanded
-		if ( !Q_stricmp( token, "twoHanded" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_TWO_HANDED;
-			}
-			continue;
-		}
-
-		//force power restrictions
-		if ( !Q_stricmp( token, "forceRestrict" ) ) 
-		{
-			int fp;
-
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			fp = GetIDForString( FPTable, value );
-			if ( fp >= FP_FIRST && fp < NUM_FORCE_POWERS )
-			{
-				saber->forceRestrictions |= (1<<fp);
-			}
-			continue;
-		}
-
-		//lockBonus
-		if ( !Q_stricmp( token, "lockBonus" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->lockBonus = n;
-			continue;
-		}
-
-		//parryBonus
-		if ( !Q_stricmp( token, "parryBonus" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->parryBonus = n;
-			continue;
-		}
-
-		//breakParryBonus
-		if ( !Q_stricmp( token, "breakParryBonus" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->breakParryBonus = n;
-			continue;
-		}
-
-		//breakParryBonus2
-		if ( !Q_stricmp( token, "breakParryBonus2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->breakParryBonus2 = n;
-			continue;
-		}
-
-		//disarmBonus
-		if ( !Q_stricmp( token, "disarmBonus" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->disarmBonus = n;
-			continue;
-		}
-
-		//disarmBonus2
-		if ( !Q_stricmp( token, "disarmBonus2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->disarmBonus2 = n;
-			continue;
-		}
-
-		//single blade saber style
-		if ( !Q_stricmp( token, "singleBladeStyle" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->singleBladeStyle = TranslateSaberStyle( value );
-			continue;
-		}
-
-		//single blade throwable
-		if ( !Q_stricmp( token, "singleBladeThrowable" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
-			}
-			continue;
-		}
-
-		//broken replacement saber1 (right hand)
-		if ( !Q_stricmp( token, "brokenSaber1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			//saber->brokenSaber1 = G_NewString( value );
-			continue;
-		}
-		
-		//broken replacement saber2 (left hand)
-		if ( !Q_stricmp( token, "brokenSaber2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			//saber->brokenSaber2 = G_NewString( value );
-			continue;
-		}
-
-		//spins and does damage on return from saberthrow
-		if ( !Q_stricmp( token, "returnDamage" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_RETURN_DAMAGE;
-			}
-			continue;
-		}
-
-		//spin sound (when thrown)
-		if ( !Q_stricmp( token, "spinSound" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->spinSound = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//swing sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "swingSound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->swingSound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//swing sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "swingSound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->swingSound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//swing sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "swingSound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->swingSound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//you move faster/slower when using this saber
-		if ( !Q_stricmp( token, "moveSpeedScale" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->moveSpeedScale = f;
-			continue;
-		}
-
-		//plays normal attack animations faster/slower
-		if ( !Q_stricmp( token, "animSpeedScale" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->animSpeedScale = f;
-			continue;
-		}
-
-		//if non-zero, the saber will bounce back when it hits solid architecture (good for real-sword type mods)
-		if ( !Q_stricmp( token, "bounceOnWalls" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_BOUNCE_ON_WALLS;
-			}
-			continue;
-		}
-
-		//if set, saber model is bolted to wrist, not in hand... useful for things like claws & shields, etc.
-		if ( !Q_stricmp( token, "boltToWrist" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_BOLT_TO_WRIST;
-			}
-			continue;
-		}
-
-		//kata move
-		if ( !Q_stricmp( token, "kataMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->kataMove = saberMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-			}
-			continue;
-		}
-		//lungeAtkMove move
-		if ( !Q_stricmp( token, "lungeAtkMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->lungeAtkMove = saberMove;
-			}
-			continue;
-		}
-		//jumpAtkUpMove move
-		if ( !Q_stricmp( token, "jumpAtkUpMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->jumpAtkUpMove = saberMove;
-			}
-			continue;
-		}
-		//jumpAtkFwdMove move
-		if ( !Q_stricmp( token, "jumpAtkFwdMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->jumpAtkFwdMove = saberMove;
-			}
-			continue;
-		}
-		//jumpAtkBackMove move
-		if ( !Q_stricmp( token, "jumpAtkBackMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->jumpAtkBackMove = saberMove;
-			}
-			continue;
-		}
-		//jumpAtkRightMove move
-		if ( !Q_stricmp( token, "jumpAtkRightMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->jumpAtkRightMove = saberMove;
-			}
-			continue;
-		}
-		//jumpAtkLeftMove move
-		if ( !Q_stricmp( token, "jumpAtkLeftMove" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saberMove = GetIDForString( SaberMoveTable, value );
-			if ( saberMove >= LS_INVALID && saberMove < LS_MOVE_MAX )
-			{
-				saber->jumpAtkLeftMove = saberMove;
-			}
-			continue;
-		}
-		//readyAnim
-		if ( !Q_stricmp( token, "readyAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->readyAnim = anim;
-			}
-			continue;
-		}
-		//drawAnim
-		if ( !Q_stricmp( token, "drawAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->drawAnim = anim;
-			}
-			continue;
-		}
-		//putawayAnim
-		if ( !Q_stricmp( token, "putawayAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->putawayAnim = anim;
-			}
-			continue;
-		}
-		//tauntAnim
-		if ( !Q_stricmp( token, "tauntAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->tauntAnim = anim;
-			}
-			continue;
-		}
-		//bowAnim
-		if ( !Q_stricmp( token, "bowAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->bowAnim = anim;
-			}
-			continue;
-		}
-		//meditateAnim
-		if ( !Q_stricmp( token, "meditateAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->meditateAnim = anim;
-			}
-			continue;
-		}
-		//flourishAnim
-		if ( !Q_stricmp( token, "flourishAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->flourishAnim = anim;
-			}
-			continue;
-		}
-		//gloatAnim
-		if ( !Q_stricmp( token, "gloatAnim" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			anim = GetIDForString( animTable, value );
-			if ( anim >= 0 && anim < MAX_ANIMATIONS )
-			{
-				saber->gloatAnim = anim;
-			}
-			continue;
-		}
-
-		//if set, cannot do roll-stab move at end of roll
-		if ( !Q_stricmp( token, "noRollStab" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_ROLL_STAB;
-			}
-			continue;
-		}
-
-		//if set, cannot do pull+attack move (move not available in MP anyway)
-		if ( !Q_stricmp( token, "noPullAttack" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_PULL_ATTACK;
-			}
-			continue;
-		}
-
-		//if set, cannot do back-stab moves
-		if ( !Q_stricmp( token, "noBackAttack" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_BACK_ATTACK;
-			}
-			continue;
-		}
-
-		//if set, cannot do stabdown move (when enemy is on ground)
-		if ( !Q_stricmp( token, "noStabDown" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_STABDOWN;
-			}
-			continue;
-		}
-
-		//if set, cannot side-run or forward-run on walls
-		if ( !Q_stricmp( token, "noWallRuns" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_WALL_RUNS;
-			}
-			continue;
-		}
-
-		//if set, cannot do backflip off wall or side-flips off walls
-		if ( !Q_stricmp( token, "noWallFlips" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_WALL_FLIPS;
-			}
-			continue;
-		}
-
-		//if set, cannot grab wall & jump off
-		if ( !Q_stricmp( token, "noWallGrab" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_WALL_GRAB;
-			}
-			continue;
-		}
-
-		//if set, cannot roll
-		if ( !Q_stricmp( token, "noRolls" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_ROLLS;
-			}
-			continue;
-		}
-
-		//if set, cannot do flips
-		if ( !Q_stricmp( token, "noFlips" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_FLIPS;
-			}
-			continue;
-		}
-
-		//if set, cannot do cartwheels
-		if ( !Q_stricmp( token, "noCartwheels" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_CARTWHEELS;
-			}
-			continue;
-		}
-
-		//if set, cannot do kicks (can't do kicks anyway if using a throwable saber/sword)
-		if ( !Q_stricmp( token, "noKicks" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_KICKS;
-			}
-			continue;
-		}
-
-		//if set, cannot do the simultaneous attack left/right moves (only available in Dual Lightsaber Combat Style)
-		if ( !Q_stricmp( token, "noMirrorAttacks" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags |= SFL_NO_MIRROR_ATTACKS;
-			}
-			continue;
-		}
-
-		//stays on in water
-		if ( !Q_stricmp( token, "onInWater" ) ) 
-		{//ignore in MP
-			SkipRestOfLine( &p );
-			continue;
-		}
-
-		if ( !Q_stricmp( token, "notInMP" ) ) 
-		{//ignore this
-			SkipRestOfLine( &p );
-			continue;
-		}
-
-//===ABOVE THIS, ALL VALUES ARE GLOBAL TO THE SABER========================================================
-		//bladeStyle2Start - where to start using the second set of blade data
-		if ( !Q_stricmp( token, "bladeStyle2Start" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->bladeStyle2Start = n;
-			continue;
-		}
-//===BLADE-SPECIFIC FIELDS=================================================================================
-
-		//===PRIMARY BLADE====================================
-		//stops the saber from drawing marks on the world (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noWallMarks" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_WALL_MARKS;
-			}
-			continue;
-		}
-
-		//stops the saber from drawing a dynamic light (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noDlight" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_DLIGHT;
-			}
-			continue;
-		}
-
-		//stops the saber from drawing a blade (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noBlade" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_BLADE;
-			}
-			continue;
-		}
-
-		//default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
-		if ( !Q_stricmp( token, "trailStyle" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->trailStyle = n;
-			continue;
-		}
-
-		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-		if ( !Q_stricmp( token, "g2MarksShader" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->g2MarksShader = trap_R_RegisterShader( value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-		if ( !Q_stricmp( token, "g2WeaponMarkShader" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->g2WeaponMarkShader = trap_R_RegisterShader( value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if non-zero, uses damage done to calculate an appropriate amount of knockback
-		if ( !Q_stricmp( token, "knockbackScale" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->knockbackScale = f;
-			continue;
-		}
-
-		//scale up or down the damage done by the saber
-		if ( !Q_stricmp( token, "damageScale" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->damageScale = f;
-			continue;
-		}
-
-		//if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
-		if ( !Q_stricmp( token, "noDismemberment" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT;
-			}
-			continue;
-		}
-
-		//if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noIdleEffect" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT;
-			}
-			continue;
-		}
-
-		//if set, the blades will always be blocking (good for things like shields that should always block)
-		if ( !Q_stricmp( token, "alwaysBlock" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_ALWAYS_BLOCK;
-			}
-			continue;
-		}
-
-		//if set, the blades cannot manually be toggled on and off
-		if ( !Q_stricmp( token, "noManualDeactivate" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE;
-			}
-			continue;
-		}
-
-		//if set, the blade does damage in start, transition and return anims (like strong style does)
-		if ( !Q_stricmp( token, "transitionDamage" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE;
-			}
-			continue;
-		}
-
-		//splashRadius - radius of splashDamage
-		if ( !Q_stricmp( token, "splashRadius" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashRadius = f;
-			continue;
-		}
-		
-		//splashDamage - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
-		if ( !Q_stricmp( token, "splashDamage" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashDamage = n;
-			continue;
-		}
-
-		//splashKnockback - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-		if ( !Q_stricmp( token, "splashKnockback" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashKnockback = f;
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hitSound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hitSound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hitSound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hitSound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hitSound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hitSound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "blockSound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->blockSound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "blockSound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->blockSound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "blockSound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->blockSound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounceSound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounceSound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounceSound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounceSound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounceSound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounceSound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block effect - when saber/sword hits another saber/sword
-		if ( !Q_stricmp( token, "blockEffect" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->blockEffect = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//hit person effect - when saber/sword hits a person
-		if ( !Q_stricmp( token, "hitPersonEffect" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->hitPersonEffect = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//hit other effect - when saber/sword hits sopmething else damagable
-		if ( !Q_stricmp( token, "hitOtherEffect" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->hitOtherEffect = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//blade effect
-		if ( !Q_stricmp( token, "bladeEffect" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->bladeEffect = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if non-zero, the saber will not do the big, white clash flare with other sabers
-		if ( !Q_stricmp( token, "noClashFlare" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_CLASH_FLARE;
-			}
-			continue;
-		}
-
-		//===SECONDARY BLADE====================================
-		//stops the saber from drawing marks on the world (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noWallMarks2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_WALL_MARKS2;
-			}
-			continue;
-		}
-
-		//stops the saber from drawing a dynamic light (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noDlight2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_DLIGHT2;
-			}
-			continue;
-		}
-
-		//stops the saber from drawing a blade (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noBlade2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_BLADE2;
-			}
-			continue;
-		}
-
-		//default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
-		if ( !Q_stricmp( token, "trailStyle2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->trailStyle2 = n;
-			continue;
-		}
-
-		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-		if ( !Q_stricmp( token, "g2MarksShader2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->g2MarksShader2 = trap_R_RegisterShader( value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-		if ( !Q_stricmp( token, "g2WeaponMarkShader2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->g2WeaponMarkShader2 = trap_R_RegisterShader( value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if non-zero, uses damage done to calculate an appropriate amount of knockback
-		if ( !Q_stricmp( token, "knockbackScale2" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->knockbackScale2 = f;
-			continue;
-		}
-
-		//scale up or down the damage done by the saber
-		if ( !Q_stricmp( token, "damageScale2" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->damageScale2 = f;
-			continue;
-		}
-
-		//if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
-		if ( !Q_stricmp( token, "noDismemberment2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_DISMEMBERMENT2;
-			}
-			continue;
-		}
-
-		//if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
-		if ( !Q_stricmp( token, "noIdleEffect2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_IDLE_EFFECT2;
-			}
-			continue;
-		}
-
-		//if set, the blades will always be blocking (good for things like shields that should always block)
-		if ( !Q_stricmp( token, "alwaysBlock2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_ALWAYS_BLOCK2;
-			}
-			continue;
-		}
-
-		//if set, the blades cannot manually be toggled on and off
-		if ( !Q_stricmp( token, "noManualDeactivate2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_MANUAL_DEACTIVATE2;
-			}
-			continue;
-		}
-
-		//if set, the blade does damage in start, transition and return anims (like strong style does)
-		if ( !Q_stricmp( token, "transitionDamage2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_TRANSITION_DAMAGE2;
-			}
-			continue;
-		}
 
-		//splashRadius - radius of splashDamage
-		if ( !Q_stricmp( token, "splashRadius2" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashRadius2 = f;
+		key = KeywordHash_Find( saberParseKeywordHash, token );
+		if ( key ) {
+			key->func( saber, &p );
 			continue;
 		}
-		
-		//splashDamage - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
-		if ( !Q_stricmp( token, "splashDamage2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashDamage2 = n;
-			continue;
-		}
-
-		//splashKnockback - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-		if ( !Q_stricmp( token, "splashKnockback2" ) ) 
-		{
-			if ( COM_ParseFloat( &p, &f ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			saber->splashKnockback2 = f;
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hit2Sound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hit2Sound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hit2Sound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hit2Sound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//hit sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "hit2Sound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->hit2Sound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "block2Sound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->block2Sound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "block2Sound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->block2Sound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "block2Sound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->block2Sound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounce2Sound1" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounce2Sound[0] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounce2Sound2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounce2Sound[1] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//bounce sound - NOTE: must provide all 3!!!
-		if ( !Q_stricmp( token, "bounce2Sound3" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-			saber->bounce2Sound[2] = BG_SoundIndex( (char *)value );
-			continue;
-		}
-
-		//block effect - when saber/sword hits another saber/sword
-		if ( !Q_stricmp( token, "blockEffect2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->blockEffect2 = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//hit person effect - when saber/sword hits a person
-		if ( !Q_stricmp( token, "hitPersonEffect2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->hitPersonEffect2 = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//hit other effect - when saber/sword hits sopmething else damagable
-		if ( !Q_stricmp( token, "hitOtherEffect2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->hitOtherEffect2 = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//blade effect
-		if ( !Q_stricmp( token, "bladeEffect2" ) ) 
-		{
-			if ( COM_ParseString( &p, &value ) ) 
-			{
-				continue;
-			}
-#ifdef QAGAME//cgame-only cares about this
-			SkipRestOfLine(&p);
-#elif defined CGAME
-			saber->bladeEffect2 = trap_FX_RegisterEffect( (char *)value );
-#else
-			SkipRestOfLine(&p);
-#endif
-			continue;
-		}
-
-		//if non-zero, the saber will not do the big, white clash flare with other sabers
-		if ( !Q_stricmp( token, "noClashFlare2" ) ) 
-		{
-			if ( COM_ParseInt( &p, &n ) ) 
-			{
-				SkipRestOfLine( &p );
-				continue;
-			}
-			if ( n )
-			{
-				saber->saberFlags2 |= SFL2_NO_CLASH_FLARE2;
-			}
-			continue;
-		}
-//===END BLADE-SPECIFIC FIELDS=============================================================================
-
-		//FIXME: saber sounds (on, off, loop)
 
-#ifdef _DEBUG
-		Com_Printf( "WARNING: unknown keyword '%s' while parsing '%s'\n", token, useSaber );
-#endif
+		Com_Printf( "WARNING: unknown keyword '%s' while parsing saber '%s'\n", token, useSaber );
 		SkipRestOfLine( &p );
 	}
 
@@ -2564,19 +2072,19 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 	return qtrue;
 }
 
-qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *saberData ) 
+qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *saberData )
 {
 	const char	*token;
 	const char	*value;
 	const char	*p;
 
-	if ( !saberName || !saberName[0] ) 
+	if ( !saberName || !saberName[0] )
 	{
 		return qfalse;
 	}
 
 	//try to parse it out
-	p = SaberParms;
+	p = saberParms;
 	COM_BeginParseSession("saberinfo");
 
 	// look for the right saber
@@ -2588,41 +2096,41 @@ qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *s
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, saberName ) ) 
+		if ( !Q_stricmp( token, saberName ) )
 		{
 			break;
 		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
+	if ( !p )
 	{
 		return qfalse;
 	}
 
-	if ( BG_ParseLiteral( &p, "{" ) ) 
+	if ( BG_ParseLiteral( &p, "{" ) )
 	{
 		return qfalse;
 	}
-		
+
 	// parse the saber info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
 
-		if ( !Q_stricmp( token, parmname ) ) 
+		if ( !Q_stricmp( token, parmname ) )
 		{
-			if ( COM_ParseString( &p, &value ) ) 
+			if ( COM_ParseString( &p, &value ) )
 			{
 				continue;
 			}
@@ -2671,7 +2179,7 @@ void WP_RemoveSaber( saberInfo_t *sabers, int saberNum )
 	BG_SI_SetLength(&sabers[saberNum], 0.0f);
 //	if ( ent->weaponModel[saberNum] > 0 )
 //	{
-//		gi.G2API_RemoveGhoul2Model( ent->ghoul2, ent->weaponModel[saberNum] );
+//		trap->G2API_RemoveGhoul2Model( ent->ghoul2, ent->weaponModel[saberNum] );
 //		ent->weaponModel[saberNum] = -1;
 //	}
 //	if ( saberNum == 1 )
@@ -2728,59 +2236,139 @@ void WP_SaberSetColor( saberInfo_t *sabers, int saberNum, int bladeNum, char *co
 
 static char bgSaberParseTBuffer[MAX_SABER_DATA_SIZE];
 
-void WP_SaberLoadParms( void ) 
+void WP_SaberLoadParms( void )
 {
-	int			len, totallen, saberExtFNLen, mainBlockLen, fileCnt, i;
-	//const char	*filename = "ext_data/sabers.cfg";
-	char		*holdChar, *marker;
-	char		saberExtensionListBuf[2048];			//	The list of file names read in
+	int				len, totallen, saberExtFNLen, fileCnt, i;
+	char			*holdChar, *marker;
+	char			saberExtensionListBuf[2048];			//	The list of file names read in
 	fileHandle_t	f;
 
 	len = 0;
 
 	//remember where to store the next one
-	totallen = mainBlockLen = len;
-	marker = SaberParms+totallen;
+	totallen = len;
+	marker = saberParms+totallen;
 	*marker = 0;
 
 	//now load in the extra .sab extensions
-	fileCnt = trap_FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
+	fileCnt = trap->FS_GetFileList( "ext_data/sabers", ".sab", saberExtensionListBuf, sizeof( saberExtensionListBuf ) );
 
 	holdChar = saberExtensionListBuf;
-	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 ) 
-	{
+	for ( i=0; i<fileCnt; i++, holdChar += saberExtFNLen+1 ) {
 		saberExtFNLen = strlen( holdChar );
 
-		len = trap_FS_FOpenFile(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
+		len = trap->FS_Open( va( "ext_data/sabers/%s", holdChar ), &f, FS_READ );
 
-		if ( len == -1 ) 
+		if ( len == -1 ) {
+			Com_Printf( "WP_SaberLoadParms: error reading file: %s\n", holdChar );
+			continue;
+		}
+
+		if ( (totallen + len+1) >= MAX_SABER_DATA_SIZE ) {
+#ifdef _UI
+			Com_Error( ERR_FATAL, "WP_SaberLoadParms: Saber extensions (*.sab) are too large!\nRan out of space before reading %s", holdChar );
+#else
+			Com_Error( ERR_DROP, "WP_SaberLoadParms: Saber extensions (*.sab) are too large!\nRan out of space before reading %s", holdChar );
+#endif
+		}
+
+		trap->FS_Read(bgSaberParseTBuffer, len, f);
+		bgSaberParseTBuffer[len] = 0;
+
+		len = COM_Compress( bgSaberParseTBuffer );
+
+		Q_strcat( marker, MAX_SABER_DATA_SIZE-totallen, bgSaberParseTBuffer );
+		trap->FS_Close(f);
+
+		//get around the stupid problem of not having an endline at the bottom
+		//of a sab file -rww
+		Q_strcat(marker, MAX_SABER_DATA_SIZE-totallen, "\n");
+		len++;
+
+		totallen += len;
+		marker = saberParms+totallen;
+	}
+}
+
+#ifdef _UI
+qboolean WP_IsSaberTwoHanded( const char *saberName )
+{
+	int twoHanded;
+	char	twoHandedString[8]={0};
+	WP_SaberParseParm( saberName, "twoHanded", twoHandedString );
+	if ( !twoHandedString[0] )
+	{//not defined defaults to "no"
+		return qfalse;
+	}
+	twoHanded = atoi( twoHandedString );
+	return ((qboolean)(twoHanded!=0));
+}
+
+void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] )
+{
+	int	numSingleHilts = 0, numStaffHilts = 0;
+	const char	*saberName;
+	const char	*token;
+	const char	*p;
+
+	//go through all the loaded sabers and put the valid ones in the proper list
+	p = saberParms;
+	COM_BeginParseSession("saberlist");
+
+	// look for a saber
+	while ( p )
+	{
+		token = COM_ParseExt( &p, qtrue );
+		if ( token[0] == 0 )
+		{//invalid name
+			continue;
+		}
+		saberName = String_Alloc( token );
+		//see if there's a "{" on the next line
+		SkipRestOfLine( &p );
+
+		if ( BG_ParseLiteralSilent( &p, "{" ) )
+		{//nope, not a name, keep looking
+			continue;
+		}
+
+		//this is a saber name
+		if ( !WP_SaberValidForPlayerInMP( saberName ) )
 		{
-			Com_Printf( "error reading file\n" );
+			SkipBracedSection( &p );
+			continue;
+		}
+
+		if ( WP_IsSaberTwoHanded( saberName ) )
+		{
+			if ( numStaffHilts < MAX_SABER_HILTS-1 )//-1 because we have to NULL terminate the list
+			{
+				staffHilts[numStaffHilts++] = saberName;
+			}
+			else
+			{
+				Com_Printf( "WARNING: too many two-handed sabers, ignoring saber '%s'\n", saberName );
+			}
 		}
 		else
 		{
-			if ( (totallen + len + 1/*for the endline*/) >= MAX_SABER_DATA_SIZE ) {
-				Com_Error(ERR_DROP, "Saber extensions (*.sab) are too large" );
+			if ( numSingleHilts < MAX_SABER_HILTS-1 )//-1 because we have to NULL terminate the list
+			{
+				singleHilts[numSingleHilts++] = saberName;
 			}
-
-			trap_FS_Read(bgSaberParseTBuffer, len, f);
-			bgSaberParseTBuffer[len] = 0;
-
-			len = COM_Compress( bgSaberParseTBuffer );
-
-			Q_strcat( marker, MAX_SABER_DATA_SIZE-totallen, bgSaberParseTBuffer );
-			trap_FS_FCloseFile(f);
-
-			//get around the stupid problem of not having an endline at the bottom
-			//of a sab file -rww
-			Q_strcat(marker, MAX_SABER_DATA_SIZE-totallen, "\n");
-			len++;
-
-			totallen += len;
-			marker = SaberParms+totallen;
+			else
+			{
+				Com_Printf( "WARNING: too many one-handed sabers, ignoring saber '%s'\n", saberName );
+			}
 		}
+		//skip the whole braced section and move on to the next entry
+		SkipBracedSection( &p );
 	}
+	//null terminate the list so the UI code knows where to stop listing them
+	singleHilts[numSingleHilts] = NULL;
+	staffHilts[numStaffHilts] = NULL;
 }
+#endif
 
 /*
 rww -
@@ -2839,7 +2427,7 @@ void BG_SI_BladeActivate( saberInfo_t *saber, int iBlade, qboolean bActive )
 	saber->blade[iBlade].active = bActive;
 }
 
-qboolean BG_SI_Active(saberInfo_t *saber) 
+qboolean BG_SI_Active(saberInfo_t *saber)
 {
 	int i;
 
@@ -2949,7 +2537,7 @@ void BG_SI_SetLengthGradual(saberInfo_t *saber, int time)
 	}
 }
 
-float BG_SI_Length(saberInfo_t *saber) 
+float BG_SI_Length(saberInfo_t *saber)
 {//return largest length
 	int len1 = 0;
 	int i;
@@ -2958,14 +2546,14 @@ float BG_SI_Length(saberInfo_t *saber)
 	{
 		if ( saber->blade[i].length > len1 )
 		{
-			len1 = saber->blade[i].length; 
+			len1 = saber->blade[i].length;
 		}
 	}
 	return len1;
 }
 
-float BG_SI_LengthMax(saberInfo_t *saber) 
-{ 
+float BG_SI_LengthMax(saberInfo_t *saber)
+{
 	int len1 = 0;
 	int i;
 
@@ -2973,7 +2561,7 @@ float BG_SI_LengthMax(saberInfo_t *saber)
 	{
 		if ( saber->blade[i].lengthMax > len1 )
 		{
-			len1 = saber->blade[i].lengthMax; 
+			len1 = saber->blade[i].lengthMax;
 		}
 	}
 	return len1;

@@ -1,10 +1,6 @@
 #pragma once
-#if !defined(RM_MANAGER_H_INC)
-#define RM_MANAGER_H_INC
 
-#if !defined(CM_LANDSCAPE_H_INC)
 #include "qcommon/cm_landscape.h"
-#endif
 
 class CRMManager
 {
@@ -13,7 +9,7 @@ private:
 	CRMMission*				mMission;
 	CCMLandScape*			mLandScape;
 	CRandomTerrain*			mTerrain;
-	int						mPreviewTimer;
+	//int						mPreviewTimer;
 	int						mCurPriority;
 	bool					mUseTimeLimit;
 
@@ -58,6 +54,3 @@ public:
 };
 
 extern CRMManager*	TheRandomMissionManager;
-
-
-#endif // RANDOMMISSION_H_INC

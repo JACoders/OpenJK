@@ -5,7 +5,7 @@
  * desc:		AAS
  *
  * $Archive: /MissionPack/code/botlib/be_aas_route.c $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 18 $
  * $Modtime: 12/01/00 1:11p $
  * $Date: 12/01/00 1:11p $
@@ -89,7 +89,7 @@ void AAS_RoutingInfo(void)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-static ID_INLINE int AAS_ClusterAreaNum(int cluster, int areanum)
+static QINLINE int AAS_ClusterAreaNum(int cluster, int areanum)
 {
 	int side, areacluster;
 
@@ -149,7 +149,7 @@ void AAS_InitTravelFlagFromType(void)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-static ID_INLINE int AAS_TravelFlagForType_inline(int traveltype)
+static QINLINE int AAS_TravelFlagForType_inline(int traveltype)
 {
 	int tfl;
 
@@ -322,7 +322,7 @@ int AAS_EnableRoutingArea(int areanum, int enable)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-static ID_INLINE float AAS_RoutingTime(void)
+static QINLINE float AAS_RoutingTime(void)
 {
 	return AAS_Time();
 } //end of the function AAS_RoutingTime
@@ -362,7 +362,7 @@ int AAS_GetAreaContentsTravelFlags(int areanum)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-static ID_INLINE int AAS_AreaContentsTravelFlags_inline(int areanum)
+static QINLINE int AAS_AreaContentsTravelFlags_inline(int areanum)
 {
 	return aasworld.areacontentstravelflags[areanum];
 } //end of the function AAS_AreaContentsTravelFlags
@@ -916,9 +916,6 @@ typedef struct routecacheheader_s
 #define RCID						(('C'<<24)+('R'<<16)+('E'<<8)+'M')
 #define RCVERSION					2
 
-//void AAS_DecompressVis(byte *in, int numareas, byte *decompressed);
-//int AAS_CompressVis(byte *vis, int numareas, byte *dest);
-
 void AAS_WriteRouteCache(void)
 {
 	int i, j, numportalcache, numareacache, totalsize;
@@ -1052,7 +1049,7 @@ int AAS_ReadRouteCache(void)
 	botimport.FS_Read(&routecacheheader, sizeof(routecacheheader_t), fp );
 	if (routecacheheader.ident != RCID)
 	{
-		AAS_Error("%s is not a route cache dump\n");
+		AAS_Error("%s is not a route cache dump\n", filename);
 		return qfalse;
 	} //end if
 	if (routecacheheader.version != RCVERSION)

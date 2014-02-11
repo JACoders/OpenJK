@@ -16,15 +16,12 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "..\game\wp_saber.h"
-
-#include "..\game\anims.h"
+#include "../game/wp_saber.h"
+#include "../game/g_local.h"
+#include "../game/anims.h"
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
@@ -56,6 +53,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 		return;
 	}
 
+	if ( weaponNum >= WP_NUM_WEAPONS ) {
+		return;
+	}
+
 	if ( weaponInfo->registered ) {
 		return;
 	}
@@ -82,16 +83,16 @@ void CG_RegisterWeapon( int weaponNum ) {
 	{//in case the weaponmodel isn't _w, precache the _w.glm
 		char weaponModel[64];
 		
-		strcpy (weaponModel, weaponData[weaponNum].weaponMdl);	
+		Q_strncpyz (weaponModel, weaponData[weaponNum].weaponMdl, sizeof(weaponModel));	
 		if (char *spot = strstr(weaponModel, ".md3") ) 
 		{
 			*spot = 0;
 			spot = strstr(weaponModel, "_w");//i'm using the in view weapon array instead of scanning the item list, so put the _w back on
 			if (!spot) 
 			{
-				strcat (weaponModel, "_w");
+				Q_strcat (weaponModel, sizeof(weaponModel), "_w");
 			}
-			strcat (weaponModel, ".glm");	//and change to ghoul2
+			Q_strcat (weaponModel, sizeof(weaponModel), ".glm");	//and change to ghoul2
 		}
 		gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 	}
@@ -126,16 +127,17 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	for (i=0; i< weaponData[weaponNum].numBarrels; i++) {
-		Q_strncpyz( path, weaponData[weaponNum].weaponMdl, MAX_QPATH );
-		COM_StripExtension( path, path );
+		Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+		COM_StripExtension( path, path, sizeof(path) );
 		if (i)
 		{
-			char	crap[50];
-			sprintf(crap, "_barrel%d.md3", i+1);
-			strcat( path, crap);
+			//char	crap[50];
+			//Com_sprintf(crap, sizeof(crap), "_barrel%d.md3", i+1 );
+			//strcat ( path, crap );
+			Q_strcat( path, sizeof(path), va("_barrel%d.md3", i+1) );
 		}
 		else
-			strcat( path, "_barrel.md3" );
+			Q_strcat( path, sizeof(path), "_barrel.md3" );
 		weaponInfo->barrelModel[i] = cgi_R_RegisterModel( path );
 	}
 
@@ -147,9 +149,9 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	// set up the hand that holds the in view weapon - assuming we have one
-	strcpy( path, weaponData[weaponNum].weaponMdl );
-	COM_StripExtension( path, path );
-	strcat( path, "_hand.md3" );
+	Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+	COM_StripExtension( path, path, sizeof(path) );
+	Q_strcat( path, sizeof(path), "_hand.md3" );
 	weaponInfo->handsModel = cgi_R_RegisterModel( path );
 
 	if ( !weaponInfo->handsModel ) {
@@ -895,7 +897,13 @@ void CG_AddViewWeapon( playerState_t *ps )
 	weaponData_t  *wData;
 	centity_t	*cent;
 	float		fovOffset, leanOffset;
+	float		cgFov = (cg_fovViewmodel.integer) ? cg_fovViewmodel.integer : cg_fov.integer;
 	int i;
+
+	if (cgFov < 1)
+		cgFov = 1;
+	else if (cgFov > 130)
+		cgFov = 130;
 
 	// no gun if in third person view
 	if ( cg.renderingThirdPerson )
@@ -965,16 +973,18 @@ void CG_AddViewWeapon( playerState_t *ps )
 
 	// drop gun lower at higher fov
 	float actualFOV;
+		gentity_t	*player = &g_entities[0];
 	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )//cg.renderingThirdPerson && 
 	{
 		actualFOV = CG_ForceSpeedFOV();
+		actualFOV = (cg_fovViewmodel.integer) ? actualFOV + (cg_fovViewmodel.integer - cg_fov.integer) : actualFOV;
 	}
 	else
 	{
 		actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
 	}
 
-	if ( actualFOV > 80 ) 
+	if ( cg_fovViewmodelAdjust.integer && actualFOV > 80 ) 
 	{
 		fovOffset = -0.1 * ( actualFOV - 80 );
 	} 
@@ -1008,6 +1018,11 @@ void CG_AddViewWeapon( playerState_t *ps )
 			weapon->firingSound );
 	}
 
+	if ( ps->weapon == WP_NONE )
+	{
+		return;
+	}
+
 	// set up gun position
 	CG_CalculateWeaponPosition( hand.origin, angles );
 
@@ -1016,6 +1031,13 @@ void CG_AddViewWeapon( playerState_t *ps )
 	VectorMA( hand.origin, (cg_gun_z.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
+
+	if ( cg_fovViewmodel.integer )
+	{
+		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
+		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+	}
 
 	// map torso animations to weapon animations
 	if ( cg_gun_frame.integer ) 

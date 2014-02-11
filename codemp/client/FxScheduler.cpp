@@ -2,19 +2,9 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-	#include "ghoul2/G2_local.h"
-#endif
-
-#if !defined(__Q_SHARED_H)
-	#include "qcommon/q_shared.h"
-#endif
+#include "cl_cgameapi.h"
+#include "FxScheduler.h"
+#include "qcommon/q_shared.h"
 
 #ifndef _WIN32
 #include <algorithm>
@@ -25,28 +15,29 @@
 CFxScheduler	theFxScheduler;
 
 //-----------------------------------------------------------
-void CMediaHandles::operator=(const CMediaHandles &that )
+CMediaHandles &CMediaHandles::operator=(const CMediaHandles &that )
 {
 	mMediaList.clear();
 
-	for ( int i = 0; i < that.mMediaList.size(); i++ )
+	for ( size_t i = 0; i < that.mMediaList.size(); i++ )
 	{
 		mMediaList.push_back( that.mMediaList[i] );
 	}
+	return *this;
 }
 
 //------------------------------------------------------
 CFxScheduler::CFxScheduler()
-{ 
+{
 	mNextFree2DEffect = 0;
 	memset( &mEffectTemplates, 0, sizeof( mEffectTemplates ));
 	memset( &mLoopedEffectArray, 0, sizeof( mLoopedEffectArray ));
 }
 
-int CFxScheduler::ScheduleLoopedEffect( int id, int boltInfo, int iGhoul2, bool isPortal, int iLoopTime, bool isRelative  )
+int CFxScheduler::ScheduleLoopedEffect( int id, int boltInfo, CGhoul2Info_v *ghoul2, bool isPortal, int iLoopTime, bool isRelative  )
 {
 	int i;
-	
+
 	assert(id);
 	assert(boltInfo!=-1);
 
@@ -54,7 +45,7 @@ int CFxScheduler::ScheduleLoopedEffect( int id, int boltInfo, int iGhoul2, bool 
 	{
 		if (mLoopedEffectArray[i].mId == id &&
 			mLoopedEffectArray[i].mBoltInfo == boltInfo &&
-			mLoopedEffectArray[i].mPortalEffect == isPortal 
+			mLoopedEffectArray[i].mPortalEffect == isPortal
 			)
 		{
 #ifdef _DEBUG
@@ -83,7 +74,7 @@ int CFxScheduler::ScheduleLoopedEffect( int id, int boltInfo, int iGhoul2, bool 
 	}
 	mLoopedEffectArray[i].mId = id;
 	mLoopedEffectArray[i].mBoltInfo = boltInfo;
-	mLoopedEffectArray[i].mGhoul2  = iGhoul2;
+	mLoopedEffectArray[i].mGhoul2  = ghoul2;
 	mLoopedEffectArray[i].mPortalEffect = isPortal;
 	mLoopedEffectArray[i].mIsRelative = isRelative;
 	mLoopedEffectArray[i].mNextTime = theFxHelper.mTime + mEffectTemplates[id].mRepeatDelay ;
@@ -111,7 +102,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 	{
 		if (mLoopedEffectArray[i].mId == id &&
 			mLoopedEffectArray[i].mBoltInfo == boltInfo &&
-			mLoopedEffectArray[i].mPortalEffect == isPortal 
+			mLoopedEffectArray[i].mPortalEffect == isPortal
 			)
 		{
 			memset( &mLoopedEffectArray[i], 0, sizeof(mLoopedEffectArray[i]) );
@@ -126,7 +117,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 void CFxScheduler::AddLoopedEffects()
 {
 	int i;
-	
+
 	for (i=0;i<MAX_LOOPED_FX;i++)
 	{
 		if (mLoopedEffectArray[i].mId && mLoopedEffectArray[i].mNextTime < theFxHelper.mTime )
@@ -136,9 +127,9 @@ void CFxScheduler::AddLoopedEffects()
 			TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 			data->mEntityNum = entNum;
-			VM_Call( cgvm, CG_GET_LERP_ORIGIN );
+			CGVM_GetLerpOrigin();
 
-			PlayEffect( mLoopedEffectArray[i].mId, data->mPoint, 0, mLoopedEffectArray[i].mBoltInfo, mLoopedEffectArray[i].mGhoul2.mItem, -1, mLoopedEffectArray[i].mPortalEffect, false, mLoopedEffectArray[i].mIsRelative );	//very important to send FALSE to not recursively add me!
+			PlayEffect( mLoopedEffectArray[i].mId, data->mPoint, 0, mLoopedEffectArray[i].mBoltInfo, mLoopedEffectArray[i].mGhoul2, -1, mLoopedEffectArray[i].mPortalEffect, false, mLoopedEffectArray[i].mIsRelative );	//very important to send FALSE to not recursively add me!
 			mLoopedEffectArray[i].mNextTime = theFxHelper.mTime + mEffectTemplates[mLoopedEffectArray[i].mId].mRepeatDelay;
 			if (mLoopedEffectArray[i].mLoopStopTime && mLoopedEffectArray[i].mLoopStopTime < theFxHelper.mTime)	//time's up
 			{//kill this entry
@@ -150,7 +141,7 @@ void CFxScheduler::AddLoopedEffects()
 }
 
 //-----------------------------------------------------------
-void SEffectTemplate::operator=(const SEffectTemplate &that)
+SEffectTemplate &SEffectTemplate::operator=(const SEffectTemplate &that)
 {
 	mCopy = true;
 
@@ -165,6 +156,7 @@ void SEffectTemplate::operator=(const SEffectTemplate &that)
 		// Mark use as a copy so that we know that we should be chucked when used up
 		mPrimitives[i]->mCopy = true;
 	}
+	return *this;
 }
 
 //------------------------------------------------------
@@ -189,7 +181,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 	while ( itr != mFxSchedule.end() )
 	{
 		next = itr;
-		next++;
+		++next;
 
 		delete *itr;
 		mFxSchedule.erase(itr);
@@ -214,7 +206,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 				{
 					delete mEffectTemplates[i].mPrimitives[j];
 				}
-			} 
+			}
 
 			mEffectTemplates[i].mInUse = false;
 		}
@@ -248,7 +240,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 
 //------------------------------------------------------
 // RegisterEffect
-//	Attempt to open the specified effect file, if 
+//	Attempt to open the specified effect file, if
 //	file read succeeds, parse the file.
 //
 // Input:
@@ -279,7 +271,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
 	TEffectID::iterator itr;
-	
+
 	itr = mEffectIDs.find( sfile );
 
 	if ( itr != mEffectIDs.end() )
@@ -343,7 +335,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	}
 
 	// If we'll overflow our buffer, bail out--not a particularly elegant solution
-	if (len >= sizeof(data) - 1 )
+	if ((unsigned)len >= sizeof(data) - 1 )
 	{
 		theFxHelper.CloseFile( fh );
 		return 0;
@@ -366,7 +358,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 
 //------------------------------------------------------
 // ParseEffect
-//	Starts at ground zero, using each group header to 
+//	Starts at ground zero, using each group header to
 //	determine which kind of effect we are working with.
 //	Then we call the appropriate function to parse the
 //	specified effect group.
@@ -377,6 +369,24 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 // Return:
 //	int handle of the effect
 //------------------------------------------------------
+
+struct primitiveType_s { const char *name; EPrimType type; } primitiveTypes[] = {
+	{ "particle", Particle },
+	{ "line", Line },
+	{ "tail", Tail },
+	{ "sound", Sound },
+	{ "cylinder", Cylinder },
+	{ "electricity", Electricity },
+	{ "emitter", Emitter },
+	{ "decal", Decal },
+	{ "orientedparticle", OrientedParticle },
+	{ "fxrunner", FxRunner },
+	{ "light", Light },
+	{ "cameraShake", CameraShake },
+	{ "flash", ScreenFlash },
+};
+static const size_t numPrimitiveTypes = ARRAY_LEN( primitiveTypes );
+
 int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 {
 	CGPGroup			*primitiveGroup;
@@ -397,7 +407,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	if ((pair = base->GetPairs())!=0)
 	{
 		grpName = pair->GetName();
-		if ( !stricmp( grpName, "repeatDelay" ))
+		if ( !Q_stricmp( grpName, "repeatDelay" ))
 		{
 			effect->mRepeatDelay = atoi(pair->GetTopValue());
 		}
@@ -413,64 +423,14 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	{
 		grpName = primitiveGroup->GetName();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( grpName, "particle" ))
-		{
-			type = Particle;
+		type = None;
+		for ( size_t i=0; i<numPrimitiveTypes; i++ ) {
+			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
+				type = primitiveTypes[i].type;
+				break;
+			}
 		}
-		else if ( !stricmp( grpName, "line" ))
-		{
-			type = Line;
-		}
-		else if ( !stricmp( grpName, "tail" ))
-		{
-			type = Tail;
-		}
-		else if ( !stricmp( grpName, "sound" ))
-		{
-			type = Sound;
-		}
-		else if ( !stricmp( grpName, "cylinder" ))
-		{
-			type = Cylinder;
-		}
-		else if ( !stricmp( grpName, "electricity" ))
-		{
-			type = Electricity;
-		}
-		else if ( !stricmp( grpName, "emitter" ))
-		{
-			type = Emitter;
-		}
-		else if ( !stricmp( grpName, "decal" ))
-		{
-			type = Decal;
-		}
-		else if ( !stricmp( grpName, "orientedparticle" ))
-		{
-			type = OrientedParticle;
-		}
-		else if ( !stricmp( grpName, "fxrunner" ))
-		{
-			type = FxRunner;
-		}
-		else if ( !stricmp( grpName, "light" ))
-		{
-			type = Light;
-		}
-		else if ( !stricmp( grpName, "cameraShake" ))
-		{
-			type = CameraShake;
-		}
-		else if ( !stricmp( grpName, "flash" ))
-		{
-			type = ScreenFlash;
-		}
-		else 
-		{
-			type = None;
-		}
-		
+
 		if ( type != None )
 		{
 			prim = new CPrimitiveTemplate;
@@ -492,7 +452,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 //------------------------------------------------------
 // AddPrimitiveToEffect
 //	Takes a primitive and attaches it to the effect.
-//	
+//
 // Input:
 //	Effect template that we tack the primitive on to
 //	Primitive to add to the effect template
@@ -519,9 +479,9 @@ void CFxScheduler::AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate
 // GetNewEffectTemplate
 //	Finds an unused effect template and returns it to the
 //	caller.
-//	
+//
 // Input:
-//	pointer to an id that will be filled in, 
+//	pointer to an id that will be filled in,
 //	file name-- should be NULL when requesting a copy
 //
 // Return:
@@ -563,7 +523,7 @@ SEffectTemplate *CFxScheduler::GetNewEffectTemplate( int *id, const char *file )
 // GetEffectCopy
 //	Returns a copy of the desired effect so that it can
 //	easily be modified run-time.
-//	
+//
 // Input:
 //	file-- the name of the effect file that you want a copy of
 //	newHandle-- will actually be the returned handle to the new effect
@@ -581,7 +541,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( const char *file, int *newHandle )
 // GetEffectCopy
 //	Returns a copy of the desired effect so that it can
 //	easily be modified run-time.
-//	
+//
 // Input:
 //	fxHandle-- the handle to the effect that you want a copy of
 //	newHandle-- will actually be the returned handle to the new effect
@@ -610,7 +570,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( int fxHandle, int *newHandle )
 		return 0;
 	}
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	// never get a copy when time is frozen
 	if ( fx_freeze->integer )
 	{
@@ -639,7 +599,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( int fxHandle, int *newHandle )
 //------------------------------------------------------
 // GetPrimitiveCopy
 //	Helper function that returns a copy of the desired primitive
-//	
+//
 // Input:
 //	fxHandle - the pointer to the effect copy you want to override
 //	componentName - name of the component to find
@@ -656,7 +616,7 @@ CPrimitiveTemplate *CFxScheduler::GetPrimitiveCopy( SEffectTemplate *effectCopy,
 
 	for ( int i = 0; i < effectCopy->mPrimitiveCount; i++ )
 	{
-		if ( !stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
+		if ( !Q_stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
 		{
 			// we found a match, so return it
 			return effectCopy->mPrimitives[i];
@@ -684,7 +644,7 @@ void	CFxScheduler::MaterialImpact(trace_t *tr, CEffect *effect)
 
 		int	material = tr->surfaceFlags & MATERIAL_MASK;
 		const char *ammoName = CWeaponSystem::GetAmmoName(impactParm);
-		
+
 		if(ammoName && materials[material].HasShellSound(ammoName))
 		{
 			theFxHelper.PlaySound( tr->endpos, ENTITYNUM_NONE, CHAN_AUTO, materials[material].GetShellSoundHandle(ammoName) );
@@ -705,7 +665,7 @@ static void ReportPlayEffectError(int id)
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Applies a default up
 //	axis.
-//	
+//
 // Input:
 //	Effect file id and the origin
 //
@@ -714,7 +674,7 @@ static void ReportPlayEffectError(int id)
 //------------------------------------------------------
 /*void CFxScheduler::PlayEffect( int id, vec3_t origin, int vol, int rad )
 {
-	vec3_t	axis[3];
+	matrix3_t	axis;
 
 	VectorSet( axis[0], 0, 0, 1 );
 	VectorSet( axis[1], 1, 0, 0 );
@@ -728,7 +688,7 @@ static void ReportPlayEffectError(int id)
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Takes a fwd vector
 //	and builds a right and up vector
-//	
+//
 // Input:
 //	Effect file id, the origin, and a fwd vector
 //
@@ -737,7 +697,7 @@ static void ReportPlayEffectError(int id)
 //------------------------------------------------------
 void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward, int vol, int rad, bool isPortal )
 {
-	vec3_t	axis[3];
+	matrix3_t	axis;
 
 	// Take the forward vector and create two arbitrary but perpendicular vectors
 	VectorCopy( forward, axis[0] );
@@ -751,16 +711,16 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward, int vol, i
 // PlayEffect
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Uses the specified axis
-//	
+//
 // Input:
 //	Effect file name, the origin, and axis.
-//	Optional boltInfo (defaults to -1) 
+//	Optional boltInfo (defaults to -1)
 //  and iGhoul2 used by boltInfo
 //
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], const int boltInfo, int iGhoul2,
+void CFxScheduler::PlayEffect( const char *file, vec3_t origin, matrix3_t axis, const int boltInfo, CGhoul2Info_v *ghoul2,
 							  int fxParm /*-1*/, int vol, int rad, int iLoopTime, bool isRelative )
 {
 	char	sfile[MAX_QPATH];
@@ -776,7 +736,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	}
 #endif
 
-	PlayEffect( mEffectIDs[sfile], origin, axis, boltInfo, iGhoul2, fxParm, vol, rad, qfalse, iLoopTime, isRelative );
+	PlayEffect( mEffectIDs[sfile], origin, axis, boltInfo, ghoul2, fxParm, vol, rad, qfalse, iLoopTime, isRelative );
 }
 
 int	totalPrimitives = 0;
@@ -804,7 +764,7 @@ void GetRGB_Colors( CPrimitiveTemplate *fx, vec3_t outStartRGB, vec3_t outEndRGB
 // PlayEffect
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Uses the specified axis
-//	
+//
 // Input:
 //	Effect id, the origin, and axis.
 //	Optional boltInfo (defaults to -1)
@@ -813,7 +773,7 @@ void GetRGB_Colors( CPrimitiveTemplate *fx, vec3_t outStartRGB, vec3_t outEndRGB
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int boltInfo, int iGhoul2, int fxParm /*-1*/, int vol, int rad, bool isPortal/*false*/, int iLoopTime/*0*/,  bool isRelative )
+void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int boltInfo, CGhoul2Info_v *ghoul2, int fxParm /*-1*/, int vol, int rad, bool isPortal/*false*/, int iLoopTime/*0*/,  bool isRelative )
 {
 	SEffectTemplate			*fx;
 	CPrimitiveTemplate		*prim;
@@ -829,7 +789,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 		return;
 	}
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	// Don't bother scheduling the effect if the system is currently frozen
 	if ( fx_freeze->integer )
 	{
@@ -852,7 +812,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 		if (iLoopTime)//0 = not looping, 1 for infinite, else duration
 		{//store off the id to reschedule every frame
-			ScheduleLoopedEffect(id, boltInfo, iGhoul2, !!isPortal, iLoopTime, isRelative);
+			ScheduleLoopedEffect(id, boltInfo, ghoul2, !!isPortal, iLoopTime, isRelative);
 		}
 	}
 
@@ -886,7 +846,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 		// Scale the particles based on the countscale factor.  Never, ever scale the particles upwards, however.
 		fxscale = fx_countScale->value;
-		if (fxscale > 1.0) 
+		if (fxscale > 1.0)
 		{
 			fxscale = 1.0;
 		}
@@ -940,7 +900,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 					TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 					data->mEntityNum = entityNum;
-					VM_Call( cgvm, CG_GET_LERP_ORIGIN );
+					CGVM_GetLerpOrigin();
 					CreateEffect( prim, data->mPoint, axis, -delay, fxParm );
 				}
 				else
@@ -961,7 +921,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 				if ( boltInfo == -1 )
 				{
-					sfx->iGhoul2 = 0;
+					sfx->ghoul2 = NULL;
 					if ( entityNum == -1 )
 					{
 						// we aren't bolting, so make sure the spawn system knows this by putting -1's in these fields
@@ -996,7 +956,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 					sfx->mBoltNum = boltNum;
 					sfx->mEntNum = entityNum;
 					sfx->mModelNum = modelNum;
-					sfx->iGhoul2 = iGhoul2;
+					sfx->ghoul2 = ghoul2;
 
 					// Also, the ghoul bolt may not be around yet, so delay the creation one frame
 					sfx->mStartTime++;
@@ -1020,7 +980,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Applies a default up
 //	axis.
-//	
+//
 // Input:
 //	Effect file name and the origin
 //
@@ -1043,7 +1003,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, int vol, int rad
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Takes a forward vector
 //	and uses this to complete the axis field.
-//	
+//
 // Input:
 //	Effect file name, the origin, and a forward vector
 //
@@ -1065,7 +1025,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward, 
 //	Handles determining if a scheduled effect should
 //	be created or not.  If it should it handles converting
 //	the template effect into a real one.
-//	
+//
 // Input:
 //	none
 //
@@ -1077,9 +1037,8 @@ bool gEffectsInPortal = qfalse; //this is just because I don't want to have to a
 void CFxScheduler::AddScheduledEffects( bool portal )
 {
 	TScheduledEffect::iterator	itr, next;
-	SScheduledEffect			*schedEffect = 0;
 	vec3_t						origin;
-	vec3_t						axis[3];
+	matrix3_t					axis;
 	int							oldEntNum = -1, oldBoltIndex = -1, oldModelNum = -1;
 	qboolean					doesBoltExist  = qfalse;
 
@@ -1097,8 +1056,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 	while ( itr != mFxSchedule.end() )
 	{
 		next = itr;
-		next++;
-		schedEffect = (*itr);
+		++next;
 
 		if (portal == (*itr)->mPortalEffect)
 		{ //only render portal fx on the skyportal pass and vice versa
@@ -1112,31 +1070,30 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 						TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 						data->mEntityNum = (*itr)->mEntNum;
-						VM_Call( cgvm, CG_GET_LERP_ORIGIN );
-						CreateEffect( (*itr)->mpTemplate, 
-									data->mPoint, (*itr)->mAxis, 
+						CGVM_GetLerpOrigin();
+						CreateEffect( (*itr)->mpTemplate,
+									data->mPoint, (*itr)->mAxis,
 									theFxHelper.mTime - (*itr)->mStartTime );
 					}
 					else
 					{
-						CreateEffect( (*itr)->mpTemplate, 
-									(*itr)->mOrigin, (*itr)->mAxis, 
+						CreateEffect( (*itr)->mpTemplate,
+									(*itr)->mOrigin, (*itr)->mAxis,
 									theFxHelper.mTime - (*itr)->mStartTime );
 					}
 				}
 				else
 				{	//bolted on effect
 					// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
-					if (((*itr)->mModelNum != oldModelNum) || 
-						((*itr)->mEntNum != oldEntNum) || 
+					if (((*itr)->mModelNum != oldModelNum) ||
+						((*itr)->mEntNum != oldEntNum) ||
 						((*itr)->mBoltNum != oldBoltIndex))
 					{
 						oldModelNum = (*itr)->mModelNum;
 						oldEntNum = (*itr)->mEntNum;
 						oldBoltIndex = (*itr)->mBoltNum;
-						CGhoul2Info_v Ghoul2((*itr)->iGhoul2);
-						doesBoltExist = theFxHelper.GetOriginAxisFromBolt(&Ghoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum, origin, axis);
-						Ghoul2.kill();	//remove the model ref without actually deleting it
+
+						doesBoltExist = theFxHelper.GetOriginAxisFromBolt((*itr)->ghoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum, origin, axis);
 					}
 
 					// only do this if we found the bolt
@@ -1144,14 +1101,14 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 					{
 						if ((*itr)->mIsRelative )
 						{
-							CreateEffect( (*itr)->mpTemplate, 
-										origin, axis, 0, -1, 
-										(*itr)->iGhoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum );
+							CreateEffect( (*itr)->mpTemplate,
+										origin, axis, 0, -1,
+										(*itr)->ghoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum );
 						}
 						else
 						{
-							CreateEffect( (*itr)->mpTemplate, 
-										origin, axis, 
+							CreateEffect( (*itr)->mpTemplate,
+										origin, axis,
 										theFxHelper.mTime - (*itr)->mStartTime );
 						}
 					}
@@ -1208,7 +1165,7 @@ void CFxScheduler::Draw2DEffects(float screenXScale, float screenYScale)
 		h *= screenYScale;
 
 		//allow 2d effect coloring?
-		re.DrawStretchPic(x - (w*0.5f), y - (h*0.5f), w, h, 0, 0, 1, 1, /*m2DEffects[i].mColor,*/ m2DEffects[i].mShaderHandle);
+		re->DrawStretchPic(x - (w*0.5f), y - (h*0.5f), w, h, 0, 0, 1, 1, /*m2DEffects[i].mColor,*/ m2DEffects[i].mShaderHandle);
 	}
 	// now that all 2D effects have been drawn we can consider the entire array to be free
 	mNextFree2DEffect = 0;
@@ -1218,16 +1175,16 @@ void CFxScheduler::Draw2DEffects(float screenXScale, float screenYScale)
 // CreateEffect
 //	Creates the specified fx taking into account the
 //	multitude of different ways it could be spawned.
-//	
+//
 // Input:
-//	template used to build the effect, desired effect origin, 
+//	template used to build the effect, desired effect origin,
 //	desired orientation and how late the effect is so that
 //	it can be moved to the correct spot
 //
 // Return:
 //	none
 //------------------------------------------------------
-void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, vec3_t axis[3], int lateTime, int fxParm /*-1*/, int iGhoul2, int entNum, int modelNum, int boltNum  )
+void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, matrix3_t axis, int lateTime, int fxParm /*-1*/, CGhoul2Info_v *ghoul2, int entNum, int modelNum, int boltNum  )
 {
 	vec3_t	org, org2, temp,
 				vel, accel,
@@ -1241,7 +1198,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 	AxisCopy( axis, ax );
 
 	int flags = fx->mFlags;
-	if (iGhoul2>0 && modelNum>=0 && boltNum>=0)
+	if (ghoul2 != NULL && modelNum>=0 && boltNum>=0)
 	{//since you passed in these values, mark as relative to use them if it is supported
 		switch( fx->mType )
 		{
@@ -1262,7 +1219,9 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		case Sound:
 		case CameraShake:
 			//does not work bolted
-				break;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -1296,7 +1255,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 	{
 		float x, y;
 		float width, height;
-		
+
 		x = DEG2RAD( flrand(0.0f, 360.0f) );
 		y = DEG2RAD( flrand(0.0f, 180.0f) );
 
@@ -1308,7 +1267,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		VectorAdd( org, temp, org );
 
 		if ( fx->mSpawnFlags & FX_AXIS_FROM_SPHERE )
-		{ 
+		{
 			// well, we will now override the axis at the users request
 			VectorNormalize2( temp, ax[0] );
 			MakeNormalVectors( ax[0], ax[1], ax[2] );
@@ -1326,7 +1285,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		VectorAdd( org, temp, org );
 
 		if ( fx->mSpawnFlags & FX_AXIS_FROM_SPHERE )
-		{ 
+		{
 			vec3_t up={0,0,1};
 
 			// well, we will now override the axis at the users request
@@ -1350,7 +1309,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 			VectorSet( ax[0], fx->mOrigin2X.GetVal(), fx->mOrigin2Y.GetVal(), fx->mOrigin2Z.GetVal() );
 		}
 	}
-	
+
 	// There are only a few types that really use velocity and acceleration, so do extra work for those types
 	//--------------------------------------------------------------------------------------------------------
 	if ( fx->mType == Particle || fx->mType == OrientedParticle || fx->mType == Tail || fx->mType == Emitter )
@@ -1358,7 +1317,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		// Velocity calculations
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_VEL_IS_ABSOLUTE || flags & FX_RELATIVE )
-		{  
+		{
 			VectorSet( vel, fx->mVelX.GetVal(), fx->mVelY.GetVal(), fx->mVelZ.GetVal() );
 		}
 		else
@@ -1382,7 +1341,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		// Acceleration calculations
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_ACCEL_IS_ABSOLUTE || flags & FX_RELATIVE )
-		{ 
+		{
 			VectorSet( accel, fx->mAccelX.GetVal(), fx->mAccelY.GetVal(), fx->mAccelZ.GetVal() );
 		}
 		else
@@ -1395,8 +1354,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		// Gravity is completely decoupled from acceleration since it is __always__ absolute
 		// NOTE: I only effect Z ( up/down in the Quake world )
 		accel[2] += fx->mGravity.GetVal();
-	
-		// There may be a lag between when the effect should be created and when it actually gets created.  
+
+		// There may be a lag between when the effect should be created and when it actually gets created.
 		//	Since we know what the discrepancy is, we can attempt to compensate...
 		if ( lateTime > 0 )
 		{
@@ -1407,7 +1366,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 			VectorMA( vel, ftime, accel, vel );
 
 			// Predict the new position
-			for ( int i = 0 ; i < 3 ; i++ ) 
+			for ( int i = 0 ; i < 3 ; i++ )
 			{
 				org[i] = org[i] + ftime * vel[i] + time2 * vel[i];
 			}
@@ -1428,7 +1387,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 				// we also do this pre-trace as opposed to post trace since we may have to render an impact effect
 				//	and we will want the normal at the exact endpos...
 				if ( fx->mSpawnFlags & FX_CHEAP_ORG2_CALC || flags & FX_RELATIVE )
-				{ 
+				{
 					VectorSet( org2, fx->mOrigin2X.GetVal(), fx->mOrigin2Y.GetVal(), fx->mOrigin2Z.GetVal() );
 					VectorAdd( org2, temp, temp );
 				}
@@ -1483,27 +1442,27 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 	case Particle:
 	//---------
 
-		FX_AddParticle( org, vel, accel, 
+		FX_AddParticle( org, vel, accel,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mRotation.GetVal(), fx->mRotationDelta.GetVal(),
-						fx->mMin, fx->mMax, fx->mElasticity.GetVal(), 
+						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 						fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags, fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum );
+						ghoul2, entNum, modelNum, boltNum );
 		break;
 
 	//---------
 	case Line:
 	//---------
 
-		FX_AddLine( org, org2, 
+		FX_AddLine( org, org2,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags, fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum);
+						ghoul2, entNum, modelNum, boltNum);
 		break;
 
 	//---------
@@ -1515,23 +1474,23 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 						fx->mLengthStart.GetVal(), fx->mLengthEnd.GetVal(), fx->mLengthParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
-						fx->mMin, fx->mMax, fx->mElasticity.GetVal(), 
+						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 						fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags, fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum);
+						ghoul2, entNum, modelNum, boltNum);
 		break;
 
 	//----------------
 	case Electricity:
 	//----------------
 
-		FX_AddElectricity( org, org2, 
+		FX_AddElectricity( org, org2,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mElasticity.GetVal(), fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags,
 						fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum);
+						ghoul2, entNum, modelNum, boltNum);
 		break;
 
 	//---------
@@ -1545,7 +1504,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags, fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum,
+						ghoul2, entNum, modelNum, boltNum,
 						(qboolean)( fx->mSpawnFlags & FX_ORG2_FROM_TRACE ));
 		break;
 
@@ -1554,17 +1513,17 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 	//---------
 
 		// for chunk angles, you don't really need much control over the end result...you just want variation..
-		VectorSet( ang, 
-					fx->mAngle1.GetVal(), 
-					fx->mAngle2.GetVal(), 
+		VectorSet( ang,
+					fx->mAngle1.GetVal(),
+					fx->mAngle2.GetVal(),
 					fx->mAngle3.GetVal() );
 
 		vectoangles( ax[0], temp );
 		VectorAdd( ang, temp, ang );
 
-		VectorSet( angDelta, 
-					fx->mAngle1Delta.GetVal(), 
-					fx->mAngle2Delta.GetVal(), 
+		VectorSet( angDelta,
+					fx->mAngle1Delta.GetVal(),
+					fx->mAngle2Delta.GetVal(),
 					fx->mAngle3Delta.GetVal() );
 
 		emitterModel = fx->mMediaHandles.GetHandle();
@@ -1599,13 +1558,13 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 
 			if (findmarkret)
 			{	// Legal to put down a mark.
-				
+
 				if ( findmarkret == FINDMARK_CHEAP ||		// If we can't put down a decal OR if and distance > 200
 						DistanceSquared( dest, cg.refdef.vieworg ) > 40000)
 				{	// Use cheap oriented particle decals.
 					vec3_t zerovec={0,0,0};
 
-					FX_AddOrientedParticle( effectCloud, org, ax[0], 
+					FX_AddOrientedParticle( effectCloud, org, ax[0],
 							zerovec,	// velocity
 							zerovec,	// acceleration
 							fx->mSizeStart.GetVal(), fx->mSizeStart.GetVal(), 0,	// size params
@@ -1618,8 +1577,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 							0,			// deathID
 							0,			// impactID
 							20000,		// lifetime
-							fx->mMediaHandles.GetHandle(), 
-							(fx->mFlags&~FX_ALPHA_PARM_MASK)|FX_ALPHA_NONLINEAR, 
+							fx->mMediaHandles.GetHandle(),
+							(fx->mFlags&~FX_ALPHA_PARM_MASK)|FX_ALPHA_NONLINEAR,
 							MATIMPACTFX_NONE, -1);
 				}
 				else
@@ -1629,7 +1588,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 					color.rgba.b = sRGB[2] * 0xff;
 					color.rgba.a = fx->mAlphaStart.GetVal() * 0xff;
 
-					CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0], 
+					CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0],
 								fx->mRotation.GetVal(), color.c, 12000, 8000,
 								true, fx->mSizeStart.GetVal(), false );
 				}
@@ -1642,7 +1601,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 			color.rgba.b = sRGB[2] * 0xff;
 			color.rgba.a = fx->mAlphaStart.GetVal() * 0xff;
 
-			CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0], 
+			CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0],
 						fx->mRotation.GetVal(), color.c, 12000, 8000,
 						true, fx->mSizeStart.GetVal(), false );
 		} */
@@ -1668,7 +1627,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 					fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 					fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 					fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags, fx->mMatImpactFX, fxParm,
-					iGhoul2, entNum, modelNum, boltNum);
+					ghoul2, entNum, modelNum, boltNum);
 		break;
 
 	//---------
@@ -1687,7 +1646,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 	//---------
 	case FxRunner:
 	//---------
-		
+
 		PlayEffect( fx->mPlayFxHandles.GetHandle(), org, ax );
 		break;
 
@@ -1698,7 +1657,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		FX_AddLight( org, fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mLife.GetVal(), flags, fx->mMatImpactFX, fxParm,
-						iGhoul2, entNum, modelNum, boltNum);
+						ghoul2, entNum, modelNum, boltNum);
 		break;
 
 	//---------
@@ -1740,7 +1699,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 //------------------------------------------------------
 // CreateEffect
 //	Creates the fx_runner
-//	
+//
 // Input:
 //	template used to build the effect, and the scheduled effect we are based off of
 //
@@ -1752,10 +1711,10 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, SScheduledEffect *sched
 	int boltInfo;
 
 	// annoying bit....we have to pack the values back into an int before calling playEffect since there isn't the ideal overload we can already use.
-	boltInfo    =  (( scheduledFx->mModelNum & MODEL_AND  ) << MODEL_SHIFT  ); 
+	boltInfo    =  (( scheduledFx->mModelNum & MODEL_AND  ) << MODEL_SHIFT  );
 	boltInfo    |= (( scheduledFx->mBoltNum  & BOLT_AND   ) << BOLT_SHIFT   );
 	boltInfo    |= (( scheduledFx->mEntNum   & ENTITY_AND ) << ENTITY_SHIFT );
-		
+
 	PlayEffect( fx->mPlayFxHandles.GetHandle(), scheduledFx->mOrigin, scheduledFx->mAxis, boltInfo );
 }
 

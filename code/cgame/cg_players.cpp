@@ -20,14 +20,13 @@ This file is part of Jedi Academy.
 #include "cg_headers.h"
 
 #define	CG_PLAYERS_CPP
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "..\game\ghoul2_shared.h"
-#include "..\game\anims.h"
-#include "..\game\wp_saber.h"
-#include "..\game\g_vehicles.h"
-#include "..\Rufl\hstring.h"
+#include "../game/ghoul2_shared.h"
+#include "../game/anims.h"
+#include "../game/wp_saber.h"
+#include "../game/g_vehicles.h"
+#include "../Rufl/hstring.h"
 
 #define	LOOK_SWING_SCALE	0.5f
 #define	CG_SWINGSPEED		0.3f
@@ -294,7 +293,7 @@ static const char *GetCustomSound_VariantCapped(const char *ppsTable[], int iEnt
 						//
 						for (int iScanNum=0; iScanNum<iEntryNum; iScanNum++)
 						{
-							if (!stricmp(ppsTable[iScanNum], sName))
+							if (!Q_stricmp(ppsTable[iScanNum], sName))
 							{
 								// yeah, this entry is also present in the table, so ok to return it
 								//
@@ -324,11 +323,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 	{
 		char	s[MAX_QPATH]={0};
 		const char *pS = GetCustomSound_VariantCapped(ppsTable,i, qfalse);
-		if ( !s ) 
-		{
-			break;	// fairly pointless code in original, since there are no NULL's in the table, but wtf...
-		}
-		COM_StripExtension( pS, s );
+		COM_StripExtension( pS, s, sizeof(s) );
 
 		sfxHandle_t hSFX = 0;
 		if ( g_sex->string[0] == 'f' )
@@ -344,7 +339,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 			// hmmm... variant in table was missing, so forcibly-retry with %1 version (which we may have just tried, but wtf?)...
 			//
 			pS = GetCustomSound_VariantCapped(ppsTable,i, qtrue);
-			COM_StripExtension( pS, s );
+			COM_StripExtension( pS, s, sizeof(s) );
 			if ( g_sex->string[0] == 'f' )
 			{
 				hSFX = cgi_S_RegisterSound( va("sound/chars/%s/misc/%s_f.wav", psDir, s + 1) );
@@ -1223,7 +1218,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		{
 			//more precise, slower
 			oldAnim = PM_LegsAnimForFrame( &g_entities[entNum], oldFrame );
-			anim = PM_TorsoAnimForFrame( &g_entities[entNum], frame );
+			anim = PM_LegsAnimForFrame( &g_entities[entNum], frame );
 		}
 
 		if ( anim != oldAnim )
@@ -1245,11 +1240,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		}
 	}
 
-#ifdef _XBOX
-	using dllNamespace::hstring;
-#endif
 	hstring myModel = g_entities[entNum].NPC_type;		//apparently NPC_type is always the same as the model name???
-
 
 	// Check for anim event
 	for ( i=0; i < MAX_ANIM_EVENTS; ++i )
@@ -2042,7 +2033,7 @@ static void CG_ATSTLegsYaw( centity_t *cent, vec3_t trailingLegsAngles )
 }
 
 extern qboolean G_ClassHasBadBones( int NPC_class );
-extern void G_BoneOrientationsForClass( int NPC_class, char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
+extern void G_BoneOrientationsForClass( int NPC_class, const char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
 extern qboolean PM_FlippingAnim( int anim );
 extern qboolean PM_SpinningSaberAnim( int anim );
 static CGhoul2Info_v	dummyGhoul2;
@@ -2095,7 +2086,7 @@ static void CG_G2ClientSpineAngles( centity_t *cent, vec3_t viewAngles, const ve
 			if ( !dummyGhoul2.size() )
 			{//set it up
 				int dummyHModel = cgi_R_RegisterModel( "models/players/_humanoid/_humanoid.glm" );
-				gi.G2API_InitGhoul2Model( dummyGhoul2, "models/players/_humanoid/_humanoid.glm", dummyHModel, NULL, NULL, 0, 0 );
+				gi.G2API_InitGhoul2Model( dummyGhoul2, "models/players/_humanoid/_humanoid.glm", dummyHModel, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 				dummyRootBone = gi.G2API_GetBoneIndex( &dummyGhoul2[0], "model_root", qtrue );
 				dummyHipsBolt = gi.G2API_AddBolt( &dummyGhoul2[0], "pelvis" );
 			}
@@ -3479,7 +3470,7 @@ static qboolean _PlayerShadow( const vec3_t origin, const float orientation, flo
 	cgi_CM_BoxTrace( &trace, origin, end, mins, maxs, 0, MASK_PLAYERSOLID );
 
 	// no shadow if too high
-	if ( trace.fraction == 1.0 ) {
+	if ( trace.fraction == 1.0 || (trace.startsolid && trace.allsolid) ) {
 		return qfalse;
 	}
 
@@ -4416,6 +4407,8 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 			case CLASS_ATST:
 				fxOrg[2] += 120;
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -4558,7 +4551,7 @@ void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent )
 		{
 			team = cent->gent->client->playerTeam;
 		}
-		else if ( cent->gent->owner )
+		else if ( cent->gent && cent->gent->owner )
 		{
 			if ( cent->gent->owner->client )
 			{
@@ -4594,6 +4587,8 @@ void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent )
 					ent->shaderRGBA[2] = 0;
 				}
 			}
+			break;
+		default:
 			break;
 		}
 
@@ -4814,7 +4809,8 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 	// FORCE speed does blur trails
 	//------------------------------------------------------
-	if ( (gent->client->ps.forcePowersActive & (1 << FP_SPEED) //in force speed 
+	if ( cg_speedTrail.integer
+		&& (gent->client->ps.forcePowersActive & (1 << FP_SPEED) //in force speed 
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_START//or force long jump - FIXME: only 1st half of that anim?
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_ATTACK )//or force long jump attack
 		&& (gent->s.number || cg.renderingThirdPerson) ) // looks dumb doing this with first peron mode on
@@ -5998,7 +5994,7 @@ void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int 
 static void CG_AddSaberBladeGo( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles, int saberNum, int bladeNum )
 {
 	vec3_t	org_, end,//org_future, 
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
 	trace_t	trace;
 	float	length;
 	int		bolt;
@@ -6348,6 +6344,8 @@ Ghoul2 Insert End
 		case SABER_SITH_SWORD:
 			//no blade
 			break;
+		default:
+			break;
 		}
 	}
 //====FIXMEFIXMEFIXMEFIXMEFIXME========================================================
@@ -6535,12 +6533,6 @@ Ghoul2 Insert End
 						{
 							// if we impact next frame, we'll mark a slash mark
 							client->ps.saber[saberNum].blade[bladeNum].trail.haveOldPos[i] = qtrue;
-							if ( (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS))
-								|| (WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS2)) )
-							{
-								CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
-									0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
-							}
 						}
 					}
 				}
@@ -6572,8 +6564,8 @@ Ghoul2 Insert End
 							// Hmmm, no impact this frame, but we have an old point
 							// Let's put the mark there, we should use an endcap mark to close the line, but we 
 							//	can probably just get away with a round mark
-							CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
-									0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
+							//CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
+							//		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
 						}
 					}
 				}
@@ -6859,6 +6851,12 @@ void CG_Player( centity_t *cent ) {
 
 	if(!cent->gent->client)
 	{
+		return;
+	}
+
+	if( cent->gent->s.number == 0 && cg.weaponSelect == WP_NONE && cg.zoomMode == 1 )
+	{
+		// HACK
 		return;
 	}
 

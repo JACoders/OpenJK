@@ -1,22 +1,25 @@
+#pragma once
+
 // ICARUS Public Header File
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )	//NOTENOTE: STL Debug name length warning
-
-#ifndef	__ICARUS__
-#define __ICARUS__
+#endif
 
 extern void *ICARUS_Malloc(int iSize);
 extern void  ICARUS_Free(void *pMem);
 
 #include "game/g_public.h"
 
-#pragma warning( disable : 4786 )  // identifier was truncated 
+#ifdef _MSC_VER
+#pragma warning( disable : 4786 )  // identifier was truncated
 #pragma warning( disable : 4514 )  // unreferenced inline was removed
 #pragma warning( disable : 4710 )  // not inlined
 
 #pragma warning( push, 3 )	//save current state and change to 3
+#endif
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
+#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
 #include "tokenizer.h"
@@ -26,7 +29,6 @@ extern void  ICARUS_Free(void *pMem);
 #include "taskmanager.h"
 #include "instance.h"
 
+#ifdef _MSC_VER
 #pragma warning( pop )	//restore
-
-
-#endif	//__ICARUS__
+#endif

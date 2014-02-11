@@ -4,6 +4,7 @@
 
 #include "server.h"
 #include "botlib/botlib.h"
+#include "server/sv_gameapi.h"
 
 typedef struct bot_debugpoly_s
 {
@@ -58,7 +59,7 @@ int SV_OrgVisibleBox(vec3_t org1, vec3_t mins, vec3_t maxs, vec3_t org2, int ign
 	return 0;
 }
 
-void *BotVMShift( int ptr );
+void *BotVMShift( intptr_t ptr );
 
 void SV_BotWaypointReception(int wpnum, wpobject_t **wps)
 {
@@ -68,7 +69,7 @@ void SV_BotWaypointReception(int wpnum, wpobject_t **wps)
 
 	while (i < gWPNum)
 	{
-		gWPArray[i] = (wpobject_t *)BotVMShift((int)wps[i]);
+		gWPArray[i] = wps[i];
 		i++;
 	}
 }
@@ -197,6 +198,7 @@ int SV_BotAllocateClient(void) {
 	cl->netchan.remoteAddress.type = NA_BOT;
 	cl->rate = 16384;
 
+	// cannot start recording auto demos here since bot's name is not set yet
 	return i;
 }
 
@@ -216,6 +218,10 @@ void SV_BotFreeClient( int clientNum ) {
 	cl->name[0] = 0;
 	if ( cl->gentity ) {
 		cl->gentity->r.svFlags &= ~SVF_BOT;
+	}
+
+	if ( cl->demo.demorecording ) {
+		SV_StopRecordDemo( cl );
 	}
 }
 
@@ -247,7 +253,7 @@ void BotDrawDebugPolygons(void (*drawPoly)(int color, int numPoints, float *poin
 		if (bot_reachability->integer) parm0 |= 2;
 		if (bot_groundonly->integer) parm0 |= 4;
 		botlib_export->BotLibVarSet("bot_highlightarea", bot_highlightarea->string);
-		botlib_export->Test(parm0, NULL, svs.clients[0].gentity->r.currentOrigin, 
+		botlib_export->Test(parm0, NULL, svs.clients[0].gentity->r.currentOrigin,
 			svs.clients[0].gentity->r.currentAngles);
 	} //end if
 	//draw all debug polys
@@ -583,10 +589,12 @@ SV_BotFrame
 ==================
 */
 void SV_BotFrame( int time ) {
-	if (!bot_enable) return;
+	if (!bot_enable)
+		return;
 	//NOTE: maybe the game is already shutdown
-	if (!gvm) return;
-	VM_Call( gvm, BOTAI_START_FRAME, time );
+	if (!svs.gameStarted)
+		return;
+	GVM_BotAIStartFrame( time );
 }
 
 /*
@@ -704,7 +712,7 @@ void SV_BotInitBotLib(void) {
 
 	// file system access
 	botlib_import.FS_FOpenFile = FS_FOpenFileByMode;
-	botlib_import.FS_Read = FS_Read2;
+	botlib_import.FS_Read = FS_Read;
 	botlib_import.FS_Write = FS_Write;
 	botlib_import.FS_FCloseFile = FS_FCloseFile;
 	botlib_import.FS_Seek = FS_Seek;

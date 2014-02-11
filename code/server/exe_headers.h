@@ -20,12 +20,13 @@ This file is part of Jedi Academy.
 //	but without exposing too many extra protos, so for now (while I experiment)...
 //
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 #include "../client/client.h"
 #include "../server/server.h"
-#include "../renderer/tr_local.h"
 
+#ifdef _MSC_VER
 #pragma hdrstop
+#endif
 

@@ -28,7 +28,7 @@ void CG_CheckAmmo( void ) {
 		if ( ! ( weapons & ( 1 << i ) ) ) {
 			continue;
 		}
-		switch ( i ) 
+		switch ( i )
 		{
 		case WP_BRYAR_PISTOL:
 		case WP_CONCUSSION:
@@ -71,7 +71,7 @@ void CG_CheckAmmo( void ) {
 
 	// play a sound on transitions
 	if ( cg.lowAmmoWarning != previous ) {
-		trap_S_StartLocalSound( cgs.media.noAmmoSound, CHAN_LOCAL_SOUND );
+		trap->S_StartLocalSound( cgs.media.noAmmoSound, CHAN_LOCAL_SOUND );
 	}
 #endif
 	//disabled silly ammo warning stuff for now
@@ -140,7 +140,7 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 		}
 
 		cg.v_dmg_roll = kick * left;
-		
+
 		cg.v_dmg_pitch = -kick * front;
 
 		if ( front <= 0.1 ) {
@@ -266,7 +266,7 @@ void CG_CheckChangedPredictableEvents( playerState_t *ps ) {
 				cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
 
 				if ( cg_showMiss.integer ) {
-					CG_Printf("WARNING: changed predicted event\n");
+					trap->Print("WARNING: changed predicted event\n");
 				}
 			}
 		}
@@ -314,25 +314,25 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 
 		if (armor > health/2)
 		{	// We also hit shields along the way, so consider them "pierced".
-//			trap_S_StartLocalSound( cgs.media.shieldPierceSound, CHAN_LOCAL_SOUND );
+//			trap->S_StartLocalSound( cgs.media.shieldPierceSound, CHAN_LOCAL_SOUND );
 		}
 		else
 		{	// Shields didn't really stand in our way.
-//			trap_S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
+//			trap->S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
 		}
 
 		//FIXME: Hit sounds?
 		/*
 		if (armor > 50 ) {
-			trap_S_StartLocalSound( cgs.media.hitSoundHighArmor, CHAN_LOCAL_SOUND );
+			trap->S_StartLocalSound( cgs.media.hitSoundHighArmor, CHAN_LOCAL_SOUND );
 		} else if (armor || health > 100) {
-			trap_S_StartLocalSound( cgs.media.hitSoundLowArmor, CHAN_LOCAL_SOUND );
+			trap->S_StartLocalSound( cgs.media.hitSoundLowArmor, CHAN_LOCAL_SOUND );
 		} else {
-			trap_S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
+			trap->S_StartLocalSound( cgs.media.hitSound, CHAN_LOCAL_SOUND );
 		}
 		*/
 	} else if ( ps->persistant[PERS_HITS] < ops->persistant[PERS_HITS] ) {
-		//trap_S_StartLocalSound( cgs.media.hitTeamSound, CHAN_LOCAL_SOUND );
+		//trap->S_StartLocalSound( cgs.media.hitTeamSound, CHAN_LOCAL_SOUND );
 	}
 
 	// health changes of more than -3 should make pain sounds
@@ -348,7 +348,6 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// if we are going into the intermission, don't start any voices
-	//Raz: also check PM_INTERMISSION
 	if ( cg.intermissionStarted || (cg.snap && cg.snap->ps.pm_type == PM_INTERMISSION) ) {
 		return;
 	}
@@ -378,7 +377,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		sfx = cgs.media.humiliationSound;
 		pushReward(sfx, cgs.media.medalGauntlet, ps->persistant[PERS_GAUNTLET_FRAG_COUNT]);
 		reward = qtrue;
-		//Com_Printf("guantlet frag\n");
+		//Com_Printf("gauntlet frag\n");
 	}
 	if (ps->persistant[PERS_DEFEND_COUNT] != ops->persistant[PERS_DEFEND_COUNT]) {
 		pushReward(cgs.media.defendSound, cgs.media.medalDefend, ps->persistant[PERS_DEFEND_COUNT]);
@@ -394,11 +393,11 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	if (ps->persistant[PERS_PLAYEREVENTS] != ops->persistant[PERS_PLAYEREVENTS]) {
 		if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD) !=
 				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_DENIEDREWARD)) {
-			trap_S_StartLocalSound( cgs.media.deniedSound, CHAN_ANNOUNCER );
+			trap->S_StartLocalSound( cgs.media.deniedSound, CHAN_ANNOUNCER );
 		}
 		else if ((ps->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD) !=
 				(ops->persistant[PERS_PLAYEREVENTS] & PLAYEREVENT_GAUNTLETREWARD)) {
-			trap_S_StartLocalSound( cgs.media.humiliationSound, CHAN_ANNOUNCER );
+			trap->S_StartLocalSound( cgs.media.humiliationSound, CHAN_ANNOUNCER );
 		}
 		reward = qtrue;
 	}
@@ -440,16 +439,16 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		msec = cg.time - cgs.levelStartTime;
 		if ( !( cg.timelimitWarnings & 4 ) && msec > ( cgs.timelimit * 60 + 2 ) * 1000 ) {
 			cg.timelimitWarnings |= 1 | 2 | 4;
-			//trap_S_StartLocalSound( cgs.media.suddenDeathSound, CHAN_ANNOUNCER );
+			//trap->S_StartLocalSound( cgs.media.suddenDeathSound, CHAN_ANNOUNCER );
 		}
 		else if ( !( cg.timelimitWarnings & 2 ) && msec > (cgs.timelimit - 1) * 60 * 1000 ) {
 			cg.timelimitWarnings |= 1 | 2;
-			trap_S_StartLocalSound( cgs.media.oneMinuteSound, CHAN_ANNOUNCER );
+			trap->S_StartLocalSound( cgs.media.oneMinuteSound, CHAN_ANNOUNCER );
 			cgAnnouncerTime = cg.time + 3000;
 		}
 		else if ( cgs.timelimit > 5 && !( cg.timelimitWarnings & 1 ) && msec > (cgs.timelimit - 5) * 60 * 1000 ) {
 			cg.timelimitWarnings |= 1;
-			trap_S_StartLocalSound( cgs.media.fiveMinuteSound, CHAN_ANNOUNCER );
+			trap->S_StartLocalSound( cgs.media.fiveMinuteSound, CHAN_ANNOUNCER );
 			cgAnnouncerTime = cg.time + 3000;
 		}
 	}
@@ -507,7 +506,7 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 		cg.mapRestart = qfalse;
 	}
 
-	if ( cg.snap->ps.pm_type != PM_INTERMISSION 
+	if ( cg.snap->ps.pm_type != PM_INTERMISSION
 		&& ps->persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
 		CG_CheckLocalSounds( ps, ops );
 	}

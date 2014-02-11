@@ -1,6 +1,6 @@
 #include "g_local.h"
 
-#define LOGGING_WEAPONS	
+#define LOGGING_WEAPONS
 
 // Weapon statistic logging.
 // Nothing super-fancy here, I just want to keep track of, per player:
@@ -72,16 +72,16 @@ int weaponFromMOD[MOD_MAX] =
 	WP_NONE,				//MOD_TRIGGER_HURT,
 };
 
-char *weaponNameFromIndex[WP_NUM_WEAPONS] = 
+char *weaponNameFromIndex[WP_NUM_WEAPONS] =
 {
 	"No Weapon",
-	"Stun Baton",				
-	"Saber",	
-	"Bryar Pistol",				
-	"Blaster",		
-	"Disruptor",				
-	"Bowcaster",	
-	"Repeater",	
+	"Stun Baton",
+	"Saber",
+	"Bryar Pistol",
+	"Blaster",
+	"Disruptor",
+	"Bowcaster",
+	"Repeater",
 	"Demp2",
 	"Flechette",
 	"Rocket Launcher",
@@ -119,6 +119,9 @@ void G_LogWeaponInit(void) {
 void QDECL G_LogWeaponPickup(int client, int weaponid)
 {
 #ifdef LOGGING_WEAPONS
+	if (client>=MAX_CLIENTS)
+		return;
+
 	G_WeaponLogPickups[client][weaponid]++;
 	G_WeaponLogClientTouch[client] = qtrue;
 #endif //_LOGGING_WEAPONS
@@ -128,6 +131,9 @@ void QDECL G_LogWeaponFire(int client, int weaponid)
 {
 #ifdef LOGGING_WEAPONS
 	int dur;
+
+	if (client>=MAX_CLIENTS)
+		return;
 
 	G_WeaponLogFired[client][weaponid]++;
 	dur = level.time - G_WeaponLogLastTime[client];
@@ -291,7 +297,7 @@ void G_LogWeaponOutput(void)
 	G_LogPrintf(  "\n****Data by Weapon:\n" );
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
-		G_LogPrintf("%15s:  Pickups: %4d,  Time:  %5d,  Deaths: %5d\n", 
+		G_LogPrintf("%15s:  Pickups: %4d,  Time:  %5d,  Deaths: %5d\n",
 				weaponNameFromIndex[j], totalpickups[j], (int)(totaltime[j]/1000), totaldeaths[j]);
 	}
 
@@ -306,276 +312,273 @@ void G_LogWeaponOutput(void)
 		{
 			pershot = 0;
 		}
-		G_LogPrintf("%15s:  Damage: %6d,  Kills: %5d,  Dmg per Shot: %f\n", 
+		G_LogPrintf("%15s:  Damage: %6d,  Kills: %5d,  Dmg per Shot: %f\n",
 				weaponNameFromIndex[j], totaldamage[j], totalkills[j], pershot);
 	}
 
 	G_LogPrintf(  "\n****Combat Data By Damage Type:\n" );
 	for (j=0; j<MOD_MAX; j++)
 	{
-		G_LogPrintf("%25s:  Damage: %6d,  Kills: %5d\n", 
+		G_LogPrintf("%25s:  Damage: %6d,  Kills: %5d\n",
 				modNames[j], totaldamageMOD[j], totalkillsMOD[j]);
 	}
 
 	G_LogPrintf("\n");
 
-
-
 	// Write the whole weapon statistic log out to a file.
-	trap_FS_FOpenFile( g_statLogFile.string, &weaponfile, FS_APPEND );
+	trap->FS_Open( g_statLogFile.string, &weaponfile, FS_APPEND );
 	if (!weaponfile) {	//failed to open file, let's not crash, shall we?
 		return;
 	}
 
 	// Write out the level name
-	trap_GetServerinfo(info, sizeof(info));
-	strncpy(mapname, Info_ValueForKey( info, "mapname" ), sizeof(mapname)-1);
-	mapname[sizeof(mapname)-1] = '\0';
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(mapname, Info_ValueForKey( info, "mapname" ), sizeof(mapname));
 
 	Com_sprintf(string, sizeof(string), "\n\n\nLevel:\t%s\n\n\n", mapname);
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 
 	// Combat data per character
-	
+
 	// Start with Pickups per character
 	Com_sprintf(string, sizeof(string), "Weapon Pickups per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogPickups[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalpickups[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
-	
+
 	// Weapon fires per character
 	Com_sprintf(string, sizeof(string), "Weapon Shots per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogFired[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalshots[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
 	// Weapon time per character
 	Com_sprintf(string, sizeof(string), "Weapon Use Time per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogTime[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaltime[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Weapon deaths per character
 	Com_sprintf(string, sizeof(string), "Weapon Deaths per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogDeaths[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldeaths[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
 
-	
+
 	// Weapon damage per character
 
 	Com_sprintf(string, sizeof(string), "Weapon Damage per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
@@ -594,57 +597,57 @@ void G_LogWeaponOutput(void)
 				}
 			}
 
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", percharacter[j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldamage[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Weapon kills per character
 
 	Com_sprintf(string, sizeof(string), "Weapon Kills per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<WP_NUM_WEAPONS; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", weaponNameFromIndex[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
@@ -663,154 +666,154 @@ void G_LogWeaponOutput(void)
 				}
 			}
 
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<WP_NUM_WEAPONS;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", percharacter[j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<WP_NUM_WEAPONS;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalkills[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Damage type damage per character
 	Com_sprintf(string, sizeof(string), "Typed Damage per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<MOD_MAX; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", modNames[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<MOD_MAX;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogDamage[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<MOD_MAX;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totaldamageMOD[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	
+
 	// Damage type kills per character
 	Com_sprintf(string, sizeof(string), "Damage-Typed Kills per Player:\n\n");
-	trap_FS_Write( string, strlen( string ), weaponfile);
+	trap->FS_Write( string, strlen( string ), weaponfile);
 
 	Com_sprintf(string, sizeof(string), "Player");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	for (j=0; j<MOD_MAX; j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%s", modNames[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 	Com_sprintf(string, sizeof(string), "\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 	// Cycle through each player, give their name and the number of times they picked up each weapon.
 	for (i=0; i<MAX_CLIENTS; i++)
 	{
 		if (G_WeaponLogClientTouch[i])
 		{	// Ignore any entity/clients we don't care about!
-			if ( g_entities[i].client ) 
+			if ( g_entities[i].client )
 			{
 				nameptr = g_entities[i].client->pers.netname;
-			} 
-			else 
+			}
+			else
 			{
 				nameptr = unknownname;
 			}
-			trap_FS_Write(nameptr, strlen(nameptr), weaponfile);
+			trap->FS_Write(nameptr, strlen(nameptr), weaponfile);
 
 			for (j=0;j<MOD_MAX;j++)
 			{
 				Com_sprintf(string, sizeof(string), "\t%d", G_WeaponLogKills[i][j]);
-				trap_FS_Write(string, strlen(string), weaponfile);
+				trap->FS_Write(string, strlen(string), weaponfile);
 			}
 
 			Com_sprintf(string, sizeof(string), "\n");
-			trap_FS_Write(string, strlen(string), weaponfile);
+			trap->FS_Write(string, strlen(string), weaponfile);
 		}
 	}
 
 	// Sum up the totals.
 	Com_sprintf(string, sizeof(string), "\n***TOTAL:");
-	trap_FS_Write(string, strlen(string), weaponfile);
-	
+	trap->FS_Write(string, strlen(string), weaponfile);
+
 	for (j=0;j<MOD_MAX;j++)
 	{
 		Com_sprintf(string, sizeof(string), "\t%d", totalkillsMOD[j]);
-		trap_FS_Write(string, strlen(string), weaponfile);
+		trap->FS_Write(string, strlen(string), weaponfile);
 	}
 
 	Com_sprintf(string, sizeof(string), "\n\n\n");
-	trap_FS_Write(string, strlen(string), weaponfile);
+	trap->FS_Write(string, strlen(string), weaponfile);
 
 
-	trap_FS_FCloseFile(weaponfile);
+	trap->FS_Close(weaponfile);
 
 
 #endif //LOGGING_WEAPONS
@@ -905,7 +908,7 @@ qboolean CalculateUntouchable(gentity_t *ent)
 	int			playTime;
 	playTime = (level.time - ent->client->pers.enterTime)/60000;
 
-	if ( g_gametype.integer == GT_JEDIMASTER && ent->client->ps.isJediMaster )
+	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
 	{//Jedi Master (was Borg queen) can only be killed once anyway
 		return qfalse;
 	}
@@ -995,7 +998,7 @@ qboolean CalculateTactician(gentity_t *ent, int *kills)
 	{//duh, only 1 weapon
 		return qfalse;
 	}
-	if ( g_gametype.integer == GT_JEDIMASTER && ent->client->ps.isJediMaster )
+	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
 	{//Jedi Master (was Borg queen) has only 1 weapon
 		return qfalse;
 	}
@@ -1183,6 +1186,8 @@ qboolean CalculateTeamMVP(gentity_t *ent)
 	return qfalse;
 }
 
+#if 0
+// Unused
 qboolean CalculateTeamMVPByRank(gentity_t *ent)
 {
 	int			i = 0, nBestPlayer = -1, nScore = 0, nHighestScore = 0,
@@ -1234,6 +1239,7 @@ qboolean CalculateTeamMVPByRank(gentity_t *ent)
 	}
 	return qfalse;
 }
+#endif
 
 qboolean CalculateTeamDefender(gentity_t *ent)
 {
@@ -1440,7 +1446,7 @@ typedef enum
 	TEAM_WARRIOR,			// most frags
 	TEAM_CARRIER,			// infected the most people with plague
 	TEAM_INTERCEPTOR,		// returned your own flag the most
-	TEAM_BRAVERY,			// Red Shirt Award (tm). you died more than anybody. 
+	TEAM_BRAVERY,			// Red Shirt Award (tm). you died more than anybody.
 	TEAM_MAX
 } teamAward_e;
 
@@ -1452,8 +1458,8 @@ int CalculateTeamAward(gentity_t *ent)
 	{
 		teamAwards |= (1<<TEAM_MVP);
 	}
-	if (GT_CTF == g_gametype.integer ||
-		GT_CTY == g_gametype.integer)
+	if (GT_CTF == level.gametype ||
+		GT_CTY == level.gametype)
 	{
 		if (CalculateTeamDefender(ent))
 		{
@@ -1509,6 +1515,8 @@ qboolean CalculateSection31Award(gentity_t *ent)
 	return qfalse;
 }
 
+#if 0
+
 #define AWARDS_MSG_LENGTH		256
 
 void CalculateAwards(gentity_t *ent, char *msg)
@@ -1561,7 +1569,7 @@ void CalculateAwards(gentity_t *ent, char *msg)
 		strcpy(buf2, buf1);
 		Com_sprintf(buf1, AWARDS_MSG_LENGTH, "%s %d", buf2, streak);
 	}
-	if (g_gametype.integer >= GT_TEAM)
+	if (level.gametype >= GT_TEAM)
 	{
 		teamAwards = CalculateTeamAward(ent);
 		if (teamAwards)
@@ -1577,7 +1585,7 @@ void CalculateAwards(gentity_t *ent, char *msg)
 		strcpy(buf2, buf1);
 		Com_sprintf(buf1, AWARDS_MSG_LENGTH, "%s %d", buf2, 0);
 	}
-	strcpy(buf2, msg);
+	Q_strncpyz( buf2, msg, sizeof( buf2 ) );
 	Com_sprintf( msg, AWARDS_MSG_LENGTH, "%s %d%s", buf2, awardFlags, buf1);
 #endif // LOGGING_WEAPONS
 }
@@ -1696,6 +1704,7 @@ int GetFavoriteWeaponForClient(int nClient)
 	}
 	return fav;
 }
+#endif
 
 // kef -- if a client leaves the game, clear out all counters he may have set
 void QDECL G_ClearClientLog(int client)

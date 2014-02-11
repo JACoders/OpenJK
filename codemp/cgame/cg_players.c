@@ -44,7 +44,7 @@ char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS] = {
 //NPC sounds:
 //Used as a supplement to the basic set for enemies and hazard team
 // (keep numbers in ascending order in order for variant-capping to work)
-const char	*cg_customCombatSoundNames[MAX_CUSTOM_COMBAT_SOUNDS] = 
+const char	*cg_customCombatSoundNames[MAX_CUSTOM_COMBAT_SOUNDS] =
 {
 	"*anger1",	//Say when acquire an enemy when didn't have one before
 	"*anger2",
@@ -68,7 +68,7 @@ const char	*cg_customCombatSoundNames[MAX_CUSTOM_COMBAT_SOUNDS] =
 
 //Used as a supplement to the basic set for stormtroopers
 // (keep numbers in ascending order in order for variant-capping to work)
-const char	*cg_customExtraSoundNames[MAX_CUSTOM_EXTRA_SOUNDS] = 
+const char	*cg_customExtraSoundNames[MAX_CUSTOM_EXTRA_SOUNDS] =
 {
 	"*chase1",
 	"*chase2",
@@ -111,7 +111,7 @@ const char	*cg_customExtraSoundNames[MAX_CUSTOM_EXTRA_SOUNDS] =
 
 //Used as a supplement to the basic set for jedi
 // (keep numbers in ascending order in order for variant-capping to work)
-const char	*cg_customJediSoundNames[MAX_CUSTOM_JEDI_SOUNDS] = 
+const char	*cg_customJediSoundNames[MAX_CUSTOM_JEDI_SOUNDS] =
 {
 	"*combat1",
 	"*combat2",
@@ -139,7 +139,7 @@ const char	*cg_customJediSoundNames[MAX_CUSTOM_JEDI_SOUNDS] =
 };
 
 //Used for DUEL taunts
-const char	*cg_customDuelSoundNames[MAX_CUSTOM_DUEL_SOUNDS] = 
+const char	*cg_customDuelSoundNames[MAX_CUSTOM_DUEL_SOUNDS] =
 {
 	"*anger1",	//Say when acquire an enemy when didn't have one before
 	"*anger2",
@@ -179,7 +179,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 	char		lSoundName[MAX_QPATH];
 
 	if ( soundName[0] != '*' ) {
-		return trap_S_RegisterSound( soundName );
+		return trap->S_RegisterSound( soundName );
 	}
 
 	COM_StripExtension( soundName, lSoundName, sizeof( lSoundName ) );
@@ -244,7 +244,6 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 
     if (cgs.gametype >= GT_TEAM || com_buildScript.integer)
 	{ //siege only
-		//Raz: Fixed potential buffer overrun of bg_customSiegeSoundNames
 		for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -297,7 +296,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		}
 	}
 
-	//CG_Error( "Unknown custom sound: %s", lSoundName );
+	//trap->Error( ERR_DROP, "Unknown custom sound: %s", lSoundName );
 #ifndef FINAL_BUILD
 	Com_Printf( "Unknown custom sound: %s\n", lSoundName );
 #endif
@@ -312,7 +311,7 @@ CLIENT INFO
 =============================================================================
 */
 #define MAX_SURF_LIST_SIZE	1024
-qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *surfOff, char *surfOn ) 
+qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *surfOff, char *surfOn )
 {
 	const char	*text_p;
 	int			len;
@@ -338,40 +337,42 @@ qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *s
 	Com_sprintf( sfilename, sizeof( sfilename ), "models/players/%s/model_%s.surf", modelName, skinName );
 
 	// load the file
-	len = trap_FS_FOpenFile( sfilename, &f, FS_READ );
-	if ( len <= 0 ) 
+	len = trap->FS_Open( sfilename, &f, FS_READ );
+	if ( len <= 0 )
 	{//no file
 		return qfalse;
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= sizeof( text ) - 1 )
 	{
 		Com_Printf( "File %s too long\n", sfilename );
 		return qfalse;
 	}
 
-	trap_FS_Read( text, len, f );
+	trap->FS_Read( text, len, f );
 	text[len] = 0;
-	trap_FS_FCloseFile( f );
+	trap->FS_Close( f );
 
 	// parse the text
 	text_p = text;
 
-	memset( (char *)surfOff, 0, sizeof(surfOff) );
-	memset( (char *)surfOn, 0, sizeof(surfOn) );
+	surfOff[0] = '\0';
+	surfOn[0] = '\0';
+
+	COM_BeginParseSession ("CG_ParseSurfsFile");
 
 	// read information for surfOff and surfOn
-	while ( 1 ) 
+	while ( 1 )
 	{
 		token = COM_ParseExt( &text_p, qtrue );
-		if ( !token || !token[0] ) 
+		if ( !token || !token[0] )
 		{
 			break;
 		}
 
 		// surfOff
-		if ( !Q_stricmp( token, "surfOff" ) ) 
+		if ( !Q_stricmp( token, "surfOff" ) )
 		{
-			if ( COM_ParseString( &text_p, &value ) ) 
+			if ( COM_ParseString( &text_p, &value ) )
 			{
 				continue;
 			}
@@ -386,11 +387,11 @@ qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *s
 			}
 			continue;
 		}
-		
+
 		// surfOn
-		if ( !Q_stricmp( token, "surfOn" ) ) 
+		if ( !Q_stricmp( token, "surfOn" ) )
 		{
-			if ( COM_ParseString( &text_p, &value ) ) 
+			if ( COM_ParseString( &text_p, &value ) )
 			{
 				continue;
 			}
@@ -437,21 +438,21 @@ retryModel:
 			Com_Printf("WARNING: Attempted to load an unsupported multiplayer model %s! (bad or missing bone, or missing animation sequence)\n", modelName);
 		}
 
-		modelName = "kyle";
+		modelName = DEFAULT_MODEL;
 		skinName = "default";
 
 		badModel = qfalse;
 	}
 
 	// First things first.  If this is a ghoul2 model, then let's make sure we demolish this first.
-	if (ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+	if (ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 	{
-		trap_G2API_CleanGhoul2Models(&(ci->ghoul2Model));
+		trap->G2API_CleanGhoul2Models(&(ci->ghoul2Model));
 	}
 
 	if (!BG_IsValidCharacterModel(modelName, skinName))
 	{
-		modelName = "kyle";
+		modelName = DEFAULT_MODEL;
 		skinName = "default";
 	}
 
@@ -478,7 +479,7 @@ retryModel:
 		useSkinName = va("models/players/%s/model_%s.skin", modelName, skinName);
 	}
 
-	checkSkin = trap_R_RegisterSkin(useSkinName);
+	checkSkin = trap->R_RegisterSkin(useSkinName);
 
 	if (checkSkin)
 	{
@@ -486,10 +487,10 @@ retryModel:
 	}
 	else
 	{ //fallback to the default skin
-		ci->torsoSkin = trap_R_RegisterSkin(va("models/players/%s/model_default.skin", modelName, skinName));
+		ci->torsoSkin = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", modelName, skinName));
 	}
 	Com_sprintf( afilename, sizeof( afilename ), "models/players/%s/model.glm", modelName );
-	handle = trap_G2API_InitGhoul2Model(&ci->ghoul2Model, afilename, 0, ci->torsoSkin, 0, 0, 0);
+	handle = trap->G2API_InitGhoul2Model(&ci->ghoul2Model, afilename, 0, ci->torsoSkin, 0, 0, 0);
 
 	if (handle<0)
 	{
@@ -498,11 +499,11 @@ retryModel:
 
 	// The model is now loaded.
 
-	trap_G2API_SetSkin(ci->ghoul2Model, 0, ci->torsoSkin, ci->torsoSkin);
+	trap->G2API_SetSkin(ci->ghoul2Model, 0, ci->torsoSkin, ci->torsoSkin);
 
 	GLAName[0] = 0;
 
-	trap_G2API_GetGLAName( ci->ghoul2Model, 0, GLAName);
+	trap->G2API_GetGLAName( ci->ghoul2Model, 0, GLAName);
 	if (GLAName[0] != 0)
 	{
 		if (!strstr(GLAName, "players/_humanoid/") /*&&
@@ -526,7 +527,7 @@ retryModel:
 		{
 			strcpy(slash, "/animation.cfg");
 		}	// Now afilename holds just the path to the animation.cfg
-		else 
+		else
 		{	// Didn't find any slashes, this is a raw filename right in base (whish isn't a good thing)
 			return qfalse;
 		}
@@ -569,74 +570,76 @@ retryModel:
 		const char	*p;
 
 		//Now turn on/off any surfaces
-		if ( surfOff && surfOff[0] )
+		if ( surfOff[0] )
 		{
 			p = surfOff;
-			while ( 1 ) 
+			COM_BeginParseSession ("CG_RegisterClientModelname: surfOff");
+			while ( 1 )
 			{
 				token = COM_ParseExt( &p, qtrue );
-				if ( !token[0] ) 
+				if ( !token[0] )
 				{//reached end of list
 					break;
 				}
 				//turn off this surf
-				trap_G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
+				trap->G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 			}
 		}
-		if ( surfOn && surfOn[0] )
+		if ( surfOn[0] )
 		{
 			p = surfOn;
+			COM_BeginParseSession ("CG_RegisterClientModelname: surfOn");
 			while ( 1 )
 			{
 				token = COM_ParseExt( &p, qtrue );
-				if ( !token[0] ) 
+				if ( !token[0] )
 				{//reached end of list
 					break;
 				}
 				//turn on this surf
-				trap_G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0 );
+				trap->G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0 );
 			}
 		}
 	}
 
 
-	ci->bolt_rhand = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand");
-	
-	if (!trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, cg.time, -1, -1))
-	{
-		badModel = qtrue;
-	}
-	
-	if (!trap_G2API_SetBoneAngles(ci->ghoul2Model, 0, "upper_lumbar", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, cg.time))
+	ci->bolt_rhand = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand");
+
+	if (!trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, cg.time, -1, -1))
 	{
 		badModel = qtrue;
 	}
 
-	if (!trap_G2API_SetBoneAngles(ci->ghoul2Model, 0, "cranium", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, cg.time))
+	if (!trap->G2API_SetBoneAngles(ci->ghoul2Model, 0, "upper_lumbar", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, cg.time))
 	{
 		badModel = qtrue;
 	}
 
-	ci->bolt_lhand = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand");
+	if (!trap->G2API_SetBoneAngles(ci->ghoul2Model, 0, "cranium", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, cg.time))
+	{
+		badModel = qtrue;
+	}
+
+	ci->bolt_lhand = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand");
 
 	//rhand must always be first bolt. lhand always second. Whichever you want the
 	//jetpack bolted to must always be third.
-	trap_G2API_AddBolt(ci->ghoul2Model, 0, "*chestg");
+	trap->G2API_AddBolt(ci->ghoul2Model, 0, "*chestg");
 
 	//claw bolts
-	trap_G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand_cap_r_arm");
-	trap_G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand_cap_l_arm");
+	trap->G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand_cap_r_arm");
+	trap->G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand_cap_l_arm");
 
-	ci->bolt_head = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*head_top");
+	ci->bolt_head = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*head_top");
 	if (ci->bolt_head == -1)
 	{
-		ci->bolt_head = trap_G2API_AddBolt(ci->ghoul2Model, 0, "ceyebrow");
+		ci->bolt_head = trap->G2API_AddBolt(ci->ghoul2Model, 0, "ceyebrow");
 	}
 
-	ci->bolt_motion = trap_G2API_AddBolt(ci->ghoul2Model, 0, "Motion");
+	ci->bolt_motion = trap->G2API_AddBolt(ci->ghoul2Model, 0, "Motion");
 
 	//We need a lower lumbar bolt for footsteps
-	ci->bolt_llumbar = trap_G2API_AddBolt(ci->ghoul2Model, 0, "lower_lumbar");
+	ci->bolt_llumbar = trap->G2API_AddBolt(ci->ghoul2Model, 0, "lower_lumbar");
 
 	if (ci->bolt_rhand == -1 || ci->bolt_lhand == -1 || ci->bolt_head == -1 || ci->bolt_motion == -1 || ci->bolt_llumbar == -1)
 	{
@@ -650,9 +653,9 @@ retryModel:
 
 	if (!Q_stricmp(modelName, "boba_fett"))
 	{ //special case, turn off the jetpack surfs
-		trap_G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_rjet", TURN_OFF);
-		trap_G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_cjet", TURN_OFF);
-		trap_G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_ljet", TURN_OFF);
+		trap->G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_rjet", TURN_OFF);
+		trap->G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_cjet", TURN_OFF);
+		trap->G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_ljet", TURN_OFF);
 	}
 
 //	ent->s.radius = 90;
@@ -660,11 +663,11 @@ retryModel:
 	if (clientNum != -1)
 	{
 		/*
-		if (cg_entities[clientNum].ghoul2 && trap_G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
+		if (cg_entities[clientNum].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
 		{
-			trap_G2API_CleanGhoul2Models(&(cg_entities[clientNum].ghoul2));
+			trap->G2API_CleanGhoul2Models(&(cg_entities[clientNum].ghoul2));
 		}
-		trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);	
+		trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);
 		*/
 
 		cg_entities[clientNum].ghoul2weapon = NULL;
@@ -673,7 +676,7 @@ retryModel:
 	Q_strncpyz (ci->teamName, teamName, sizeof(ci->teamName));
 
 	// Model icon for drawing the portrait on screen
-	ci->modelIcon = trap_R_RegisterShaderNoMip ( va ( "models/players/%s/icon_%s", modelName, skinName ) );
+	ci->modelIcon = trap->R_RegisterShaderNoMip ( va ( "models/players/%s/icon_%s", modelName, skinName ) );
 	if (!ci->modelIcon)
 	{
         int i = 0;
@@ -690,7 +693,7 @@ retryModel:
 		iconName[j] = 0;
 		if (skinName[i] == '|')
 		{ //looks like it actually may be a custom model skin, let's try getting the icon...
-			ci->modelIcon = trap_R_RegisterShaderNoMip ( va ( "models/players/%s/%s", modelName, iconName ) );
+			ci->modelIcon = trap->R_RegisterShaderNoMip ( va ( "models/players/%s/%s", modelName, iconName ) );
 		}
 	}
 	return qtrue;
@@ -756,7 +759,7 @@ int CG_G2SkelForModel(void *g2)
 	char *slash;
 
 	GLAName[0] = 0;
-	trap_G2API_GetGLAName(g2, 0, GLAName);
+	trap->G2API_GetGLAName(g2, 0, GLAName);
 
 	slash = Q_strrchr( GLAName, '/' );
 	if ( slash )
@@ -783,7 +786,7 @@ int CG_G2EvIndexForModel(void *g2, int animIndex)
 	}
 
 	GLAName[0] = 0;
-	trap_G2API_GetGLAName(g2, 0, GLAName);
+	trap->G2API_GetGLAName(g2, 0, GLAName);
 
 	slash = Q_strrchr( GLAName, '/' );
 	if ( slash )
@@ -814,18 +817,18 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 	if ( !ci->skinName || !Q_stricmp( "default", ci->skinName ) )
 	{//try default sounds.cfg first
-		fLen = trap_FS_FOpenFile(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
-		if ( !f ) 
+		fLen = trap->FS_Open(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
+		if ( !f )
 		{//no?  Look for _default sounds.cfg
-			fLen = trap_FS_FOpenFile(va("models/players/%s/sounds_default.cfg", dir), &f, FS_READ);
+			fLen = trap->FS_Open(va("models/players/%s/sounds_default.cfg", dir), &f, FS_READ);
 		}
 	}
 	else
 	{//use the .skin associated with this skin
-		fLen = trap_FS_FOpenFile(va("models/players/%s/sounds_%s.cfg", dir, ci->skinName), &f, FS_READ);
-		if ( !f ) 
+		fLen = trap->FS_Open(va("models/players/%s/sounds_%s.cfg", dir, ci->skinName), &f, FS_READ);
+		if ( !f )
 		{//fall back to default sounds
-			fLen = trap_FS_FOpenFile(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
+			fLen = trap->FS_Open(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
 		}
 	}
 
@@ -833,7 +836,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 	if (f)
 	{
-		trap_FS_Read(soundpath, fLen, f);
+		trap->FS_Read(soundpath, fLen, f);
 		soundpath[fLen] = 0;
 
 		i = fLen;
@@ -857,7 +860,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		}
 		soundpath[i] = 0;
 
-		trap_FS_FCloseFile(f);
+		trap->FS_Close(f);
 	}
 
 	if (isFemale)
@@ -869,7 +872,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		ci->gender = GENDER_MALE;
 	}
 
-	trap_S_ShutUp(qtrue);
+	trap->S_Shutup(qtrue);
 
 	for ( i = 0 ; i < MAX_CUSTOM_SOUNDS ; i++ )
 	{
@@ -886,13 +889,13 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		// if the model didn't load use the sounds of the default model
 		if (soundpath[0])
 		{
-			ci->sounds[i] = trap_S_RegisterSound( va("sound/chars/%s/misc/%s", soundpath, soundName) );
+			ci->sounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", soundpath, soundName) );
 		}
 		else
 		{
 			if (modelloaded)
 			{
-				ci->sounds[i] = trap_S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
+				ci->sounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
 			}
 		}
 
@@ -900,11 +903,11 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		{ //failed the load, try one out of the generic path
 			if (isFemale)
 			{
-				ci->sounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
+				ci->sounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
 			}
 			else
 			{
-				ci->sounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
+				ci->sounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
 			}
 		}
 	}
@@ -927,13 +930,13 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			// if the model didn't load use the sounds of the default model
 			if (soundpath[0])
 			{
-				ci->siegeSounds[i] = trap_S_RegisterSound( va("sound/%s/%s", soundpath, soundName) );
+				ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", soundpath, soundName) );
 			}
 			else
 			{
 				if (modelloaded)
 				{
-					ci->siegeSounds[i] = trap_S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
+					ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
 				}
 			}
 
@@ -941,11 +944,11 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			{ //failed the load, try one out of the generic path
 				if (isFemale)
 				{
-					ci->siegeSounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
+					ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
 				}
 				else
 				{
-					ci->siegeSounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
+					ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
 				}
 			}
 		}
@@ -971,13 +974,13 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			// if the model didn't load use the sounds of the default model
 			if (soundpath[0])
 			{
-				ci->duelSounds[i] = trap_S_RegisterSound( va("sound/chars/%s/misc/%s", soundpath, soundName) );
+				ci->duelSounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", soundpath, soundName) );
 			}
 			else
 			{
 				if (modelloaded)
 				{
-					ci->duelSounds[i] = trap_S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
+					ci->duelSounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", dir, soundName) );
 				}
 			}
 
@@ -985,17 +988,17 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			{ //failed the load, try one out of the generic path
 				if (isFemale)
 				{
-					ci->duelSounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
+					ci->duelSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName) );
 				}
 				else
 				{
-					ci->duelSounds[i] = trap_S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
+					ci->duelSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName) );
 				}
 			}
 		}
 	}
 
-	trap_S_ShutUp(qfalse);
+	trap->S_Shutup(qfalse);
 }
 
 /*
@@ -1011,11 +1014,10 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	int			clientNum;
 	int			i;
 	char		teamname[MAX_QPATH];
-	//Raz: Show jan for unknown female skins
-	char		*fallbackModel = "kyle";
-	
+	char		*fallbackModel = DEFAULT_MODEL;
+
 	if ( ci->gender == GENDER_FEMALE )
-		fallbackModel = "jan";
+		fallbackModel = DEFAULT_MODEL_FEMALE;
 
 	clientNum = ci - cgs.clientinfo;
 
@@ -1039,9 +1041,9 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 			}
 		}
 
-		if (ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+		if (ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 		{
-			trap_G2API_CleanGhoul2Models(&ci->ghoul2Model);
+			trap->G2API_CleanGhoul2Models(&ci->ghoul2Model);
 		}
 
 		return;
@@ -1065,13 +1067,13 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	{ //yeah.. kind of a hack I guess. Don't care until they are actually ingame with a valid class.
 		if ( !CG_RegisterClientModelname( ci, fallbackModel, "default", teamname, -1 ) )
 		{
-			CG_Error( "DEFAULT_MODEL (%s) failed to register", fallbackModel );
+			trap->Error( ERR_DROP, "DEFAULT_MODEL (%s) failed to register", fallbackModel );
 		}
 	}
 	else
 	{
 		if ( !CG_RegisterClientModelname( ci, ci->modelName, ci->skinName, teamname, clientNum ) ) {
-			//CG_Error( "CG_RegisterClientModelname( %s, %s, %s, %s %s ) failed", ci->modelName, ci->skinName, ci->headModelName, ci->headSkinName, teamname );
+			//trap->Error( ERR_DROP, "CG_RegisterClientModelname( %s, %s, %s, %s %s ) failed", ci->modelName, ci->skinName, ci->headModelName, ci->headSkinName, teamname );
 			//rww - DO NOT error out here! Someone could just type in a nonsense model name and crash everyone's client.
 			//Give it a chance to load default model for this client instead.
 
@@ -1084,11 +1086,11 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 					Q_strncpyz(teamname, DEFAULT_REDTEAM_NAME, sizeof(teamname) );
 				}
 				if ( !CG_RegisterClientModelname( ci, fallbackModel, ci->skinName, teamname, -1 ) ) {
-					CG_Error( "DEFAULT_MODEL / skin (%s/%s) failed to register", fallbackModel, ci->skinName );
+					trap->Error( ERR_DROP, "DEFAULT_MODEL / skin (%s/%s) failed to register", fallbackModel, ci->skinName );
 				}
 			} else {
 				if ( !CG_RegisterClientModelname( ci, fallbackModel, "default", teamname, -1 ) ) {
-					CG_Error( "DEFAULT_MODEL (%s) failed to register", fallbackModel );
+					trap->Error( ERR_DROP, "DEFAULT_MODEL (%s) failed to register", fallbackModel );
 				}
 			}
 			modelloaded = qfalse;
@@ -1097,23 +1099,23 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 
 	if (clientNum != -1)
 	{
-		trap_G2API_ClearAttachedInstance(clientNum);
+		trap->G2API_ClearAttachedInstance(clientNum);
 	}
 
-	if (clientNum != -1 && ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+	if (clientNum != -1 && ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 	{
-		if (cg_entities[clientNum].ghoul2 && trap_G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
+		if (cg_entities[clientNum].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
 		{
-			trap_G2API_CleanGhoul2Models(&cg_entities[clientNum].ghoul2);
+			trap->G2API_CleanGhoul2Models(&cg_entities[clientNum].ghoul2);
 		}
-		trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);
+		trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);
 
 		//Attach the instance to this entity num so we can make use of client-server
 		//shared operations if possible.
-		trap_G2API_AttachInstanceToEntNum(cg_entities[clientNum].ghoul2, clientNum, qfalse);
+		trap->G2API_AttachInstanceToEntNum(cg_entities[clientNum].ghoul2, clientNum, qfalse);
 
 
-		if (trap_G2API_AddBolt(cg_entities[clientNum].ghoul2, 0, "face") == -1)
+		if (trap->G2API_AddBolt(cg_entities[clientNum].ghoul2, 0, "face") == -1)
 		{ //check now to see if we have this bone for setting anims and such
 			cg_entities[clientNum].noFace = qtrue;
 		}
@@ -1126,7 +1128,7 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	if ( ci->torsoModel ) {
 		orientation_t tag;
 		// if the torso model has the "tag_flag"
-		if ( trap_R_LerpTag( &tag, ci->torsoModel, 0, 0, 1, "tag_flag" ) ) {
+		if ( trap->R_LerpTag( &tag, ci->torsoModel, 0, 0, 1, "tag_flag" ) ) {
 			ci->newAnims = qtrue;
 		}
 	}
@@ -1158,7 +1160,7 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 //Take care of initializing all the ghoul2 saber stuff based on clientinfo data. -rww
 static void CG_InitG2SaberData(int saberNum, clientInfo_t *ci)
 {
-	trap_G2API_InitGhoul2Model(&ci->ghoul2Weapons[saberNum], ci->saber[saberNum].model, 0, ci->saber[saberNum].skin, 0, 0, 0);
+	trap->G2API_InitGhoul2Model(&ci->ghoul2Weapons[saberNum], ci->saber[saberNum].model, 0, ci->saber[saberNum].skin, 0, 0, 0);
 
 	if (ci->ghoul2Weapons[saberNum])
 	{
@@ -1168,28 +1170,28 @@ static void CG_InitG2SaberData(int saberNum, clientInfo_t *ci)
 
 		if (ci->saber[saberNum].skin)
 		{
-			trap_G2API_SetSkin(ci->ghoul2Weapons[saberNum], 0, ci->saber[saberNum].skin, ci->saber[saberNum].skin);
+			trap->G2API_SetSkin(ci->ghoul2Weapons[saberNum], 0, ci->saber[saberNum].skin, ci->saber[saberNum].skin);
 		}
 
 		if (ci->saber[saberNum].saberFlags & SFL_BOLT_TO_WRIST)
 		{
-			trap_G2API_SetBoltInfo(ci->ghoul2Weapons[saberNum], 0, 3+saberNum);
+			trap->G2API_SetBoltInfo(ci->ghoul2Weapons[saberNum], 0, 3+saberNum);
 		}
 		else
 		{
-			trap_G2API_SetBoltInfo(ci->ghoul2Weapons[saberNum], 0, saberNum);
+			trap->G2API_SetBoltInfo(ci->ghoul2Weapons[saberNum], 0, saberNum);
 		}
 
 		while (k < ci->saber[saberNum].numBlades)
 		{
 			tagName = va("*blade%i", k+1);
-			tagBolt = trap_G2API_AddBolt(ci->ghoul2Weapons[saberNum], 0, tagName);
+			tagBolt = trap->G2API_AddBolt(ci->ghoul2Weapons[saberNum], 0, tagName);
 
 			if (tagBolt == -1)
 			{
 				if (k == 0)
 				{ //guess this is an 0ldsk3wl saber
-					tagBolt = trap_G2API_AddBolt(ci->ghoul2Weapons[saberNum], 0, "*flash");
+					tagBolt = trap->G2API_AddBolt(ci->ghoul2Weapons[saberNum], 0, "*flash");
 
 					if (tagBolt == -1)
 					{
@@ -1236,13 +1238,13 @@ static void CG_CopyClientInfoModel( clientInfo_t *from, clientInfo_t *to )
 	//rww - Trying to use the same ghoul2 pointer for two seperate clients == DISASTER
 	assert(to->ghoul2Model != from->ghoul2Model);
 
-	if (to->ghoul2Model && trap_G2_HaveWeGhoul2Models(to->ghoul2Model))
+	if (to->ghoul2Model && trap->G2_HaveWeGhoul2Models(to->ghoul2Model))
 	{
-		trap_G2API_CleanGhoul2Models(&to->ghoul2Model);
+		trap->G2API_CleanGhoul2Models(&to->ghoul2Model);
 	}
-	if (from->ghoul2Model && trap_G2_HaveWeGhoul2Models(from->ghoul2Model))
+	if (from->ghoul2Model && trap->G2_HaveWeGhoul2Models(from->ghoul2Model))
 	{
-		trap_G2API_DuplicateGhoul2Instance(from->ghoul2Model, &to->ghoul2Model);
+		trap->G2API_DuplicateGhoul2Instance(from->ghoul2Model, &to->ghoul2Model);
 	}
 
 	//Don't do this, I guess. Just leave the saber info in the original, so it will be
@@ -1253,9 +1255,9 @@ static void CG_CopyClientInfoModel( clientInfo_t *from, clientInfo_t *to )
 
 	while (i < MAX_SABERS)
 	{
-		if (to->ghoul2Weapons[i] && trap_G2_HaveWeGhoul2Models(to->ghoul2Weapons[i]))
+		if (to->ghoul2Weapons[i] && trap->G2_HaveWeGhoul2Models(to->ghoul2Weapons[i]))
 		{
-			trap_G2API_CleanGhoul2Models(&to->ghoul2Weapons[i]);
+			trap->G2API_CleanGhoul2Models(&to->ghoul2Weapons[i]);
 		}
 
 		WP_SetSaber(to->saber, 0, to->saberName);
@@ -1310,10 +1312,10 @@ static qboolean CG_ScanForExistingClientInfo( clientInfo_t *ci, int clientNum ) 
 			&& !Q_stricmp( ci->saberName, match->saberName)
 			&& !Q_stricmp( ci->saber2Name, match->saber2Name)
 //			&& !Q_stricmp( ci->headModelName, match->headModelName )
-//			&& !Q_stricmp( ci->headSkinName, match->headSkinName ) 
-//			&& !Q_stricmp( ci->blueTeam, match->blueTeam ) 
+//			&& !Q_stricmp( ci->headSkinName, match->headSkinName )
+//			&& !Q_stricmp( ci->blueTeam, match->blueTeam )
 //			&& !Q_stricmp( ci->redTeam, match->redTeam )
-			&& (cgs.gametype < GT_TEAM || ci->team == match->team) 
+			&& (cgs.gametype < GT_TEAM || ci->team == match->team)
 			&& ci->siegeIndex == match->siegeIndex
 			&& match->ghoul2Model
 			&& match->bolt_head) //if the bolts haven't been initialized, this "match" is useless to us
@@ -1328,11 +1330,11 @@ static qboolean CG_ScanForExistingClientInfo( clientInfo_t *ci, int clientNum ) 
 			//this new clientinfo over it? Could be a nasty leak possibility. (though this should remedy it in theory)
 			if (clientNum == i)
 			{
-				if (match->ghoul2Model && trap_G2_HaveWeGhoul2Models(match->ghoul2Model))
+				if (match->ghoul2Model && trap->G2_HaveWeGhoul2Models(match->ghoul2Model))
 				{ //The match has a valid instance (if it didn't, we'd probably already be fudged (^_^) at this state)
-					if (ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+					if (ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 					{ //First kill the copy we have if we have one. (but it should be null)
-						trap_G2API_CleanGhoul2Models(&ci->ghoul2Model);
+						trap->G2API_CleanGhoul2Models(&ci->ghoul2Model);
 					}
 
 					VectorCopy( match->headOffset, ci->headOffset );
@@ -1372,7 +1374,7 @@ static qboolean CG_ScanForExistingClientInfo( clientInfo_t *ci, int clientNum ) 
 						{
 							if (ci->ghoul2Weapons[k])
 							{
-								trap_G2API_CleanGhoul2Models(&ci->ghoul2Weapons[k]);
+								trap->G2API_CleanGhoul2Models(&ci->ghoul2Weapons[k]);
 							}
                             ci->ghoul2Weapons[k] = match->ghoul2Weapons[k];
 						}
@@ -1493,7 +1495,7 @@ static void CG_SetDeferredClientInfo( clientInfo_t *ci ) {
 	}
 
 	// we should never get here...
-	//CG_Printf( "CG_SetDeferredClientInfo: no valid clients!\n" );
+	//trap->Print( "CG_SetDeferredClientInfo: no valid clients!\n" );
 	//Actually it is possible now because of the unique sabers.
 
 	CG_LoadClientInfo( ci );
@@ -1530,16 +1532,16 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	configstring = CG_ConfigString( clientNum + CS_PLAYERS );
 	if ( !configstring[0] ) {
-		if (ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+		if (ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 		{ //clean this stuff up first
-			trap_G2API_CleanGhoul2Models(&ci->ghoul2Model);
+			trap->G2API_CleanGhoul2Models(&ci->ghoul2Model);
 		}
 		k = 0;
 		while (k < MAX_SABERS)
 		{
-			if (ci->ghoul2Weapons[k] && trap_G2_HaveWeGhoul2Models(ci->ghoul2Weapons[k]))
+			if (ci->ghoul2Weapons[k] && trap->G2_HaveWeGhoul2Models(ci->ghoul2Weapons[k]))
 			{
-				trap_G2API_CleanGhoul2Models(&ci->ghoul2Weapons[k]);
+				trap->G2API_CleanGhoul2Models(&ci->ghoul2Weapons[k]);
 			}
 			k++;
 		}
@@ -1555,6 +1557,8 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	// isolate the player's name
 	v = Info_ValueForKey(configstring, "n");
 	Q_strncpyz( newInfo.name, v, sizeof( newInfo.name ) );
+	Q_strncpyz( newInfo.cleanname, v, sizeof( newInfo.cleanname ) );
+	Q_StripColor( newInfo.cleanname );
 
 	// colors
 	v = Info_ValueForKey( configstring, "c1" );
@@ -1569,7 +1573,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	// bot skill
 	v = Info_ValueForKey( configstring, "skill" );
-	//Raz: Players now have -1 skill so you can determine the bots from the scoreboard code
+	// players have -1 skill so you can determine the bots from the scoreboard code
 	if ( v && v[0] )
 		newInfo.botSkill = atoi( v );
 	else
@@ -1594,17 +1598,17 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 //copy team info out to menu
 	if ( clientNum == cg.clientNum)	//this is me
 	{
-		trap_Cvar_Set("ui_team", v);
+		trap->Cvar_Set("ui_team", v);
 	}
 
-	//Raz: Gender hints
+	// Gender hints
 	if ( (v = Info_ValueForKey( configstring, "ds" )) )
 	{
 		if ( *v == 'm' )
 			newInfo.gender = GENDER_MALE;
 		else
 			newInfo.gender = GENDER_FEMALE;
-	}	
+	}
 
 	// team task
 	v = Info_ValueForKey( configstring, "tt" );
@@ -1628,7 +1632,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 		char modelStr[MAX_QPATH];
 		char *skin;
 
-		trap_Cvar_VariableStringBuffer( "model", modelStr, sizeof( modelStr ) );
+		trap->Cvar_VariableStringBuffer( "model", modelStr, sizeof( modelStr ) );
 		if ( ( skin = strchr( modelStr, '/' ) ) == NULL) {
 			skin = "default";
 		} else {
@@ -1755,7 +1759,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 				{
 					if (oldG2Weapons[j])
 					{ //free the old instance(s)
-						trap_G2API_CleanGhoul2Models(&oldG2Weapons[j]);
+						trap->G2API_CleanGhoul2Models(&oldG2Weapons[j]);
 						oldG2Weapons[j] = 0;
 					}
 
@@ -1765,7 +1769,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 				{
 					if (oldG2Weapons[j])
 					{ //free the old instance(s)
-						trap_G2API_CleanGhoul2Models(&oldG2Weapons[j]);
+						trap->G2API_CleanGhoul2Models(&oldG2Weapons[j]);
 						oldG2Weapons[j] = 0;
 					}
 				}
@@ -1833,10 +1837,10 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	newInfo.infoValid = qtrue;
 	if (ci->ghoul2Model &&
 		ci->ghoul2Model != newInfo.ghoul2Model &&
-		trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+		trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 	{ //We must kill this instance before we remove our only pointer to it from the cgame.
 	  //Otherwise we will end up with extra instances all over the place, I think.
-		trap_G2API_CleanGhoul2Models(&ci->ghoul2Model);
+		trap->G2API_CleanGhoul2Models(&ci->ghoul2Model);
 	}
 	*ci = newInfo;
 
@@ -1849,7 +1853,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	if (clientNum != -1)
 	{ //don't want it using an invalid pointer to share
-		trap_G2API_ClearAttachedInstance(clientNum);
+		trap->G2API_ClearAttachedInstance(clientNum);
 	}
 
 	// Check if the ghoul2 model changed in any way.  This is safer than assuming we have a legal cent shile loading info.
@@ -1857,7 +1861,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	{	// Copy the new ghoul2 model to the centity.
 		animation_t *anim;
 		centity_t *cent = &cg_entities[clientNum];
-		
+
 		anim = &bgHumanoidAnimations[ (cg_entities[clientNum].currentState.legsAnim) ];
 
 		if (anim)
@@ -1878,7 +1882,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 			}
 
 			//rww - Set the animation again because it just got reset due to the model change
-			trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
+			trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
 
 			cg_entities[clientNum].currentState.legsAnim = 0;
 		}
@@ -1903,25 +1907,25 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 			}
 
 			//rww - Set the animation again because it just got reset due to the model change
-			trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "lower_lumbar", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
+			trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "lower_lumbar", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
 
 			cg_entities[clientNum].currentState.torsoAnim = 0;
 		}
 
-		if (cg_entities[clientNum].ghoul2 && trap_G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
+		if (cg_entities[clientNum].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
 		{
-			trap_G2API_CleanGhoul2Models(&cg_entities[clientNum].ghoul2);
+			trap->G2API_CleanGhoul2Models(&cg_entities[clientNum].ghoul2);
 		}
-		trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);
+		trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);
 
 		if (clientNum != -1)
 		{
 			//Attach the instance to this entity num so we can make use of client-server
 			//shared operations if possible.
-			trap_G2API_AttachInstanceToEntNum(cg_entities[clientNum].ghoul2, clientNum, qfalse);
+			trap->G2API_AttachInstanceToEntNum(cg_entities[clientNum].ghoul2, clientNum, qfalse);
 		}
 
-		if (trap_G2API_AddBolt(cg_entities[clientNum].ghoul2, 0, "face") == -1)
+		if (trap->G2API_AddBolt(cg_entities[clientNum].ghoul2, 0, "face") == -1)
 		{ //check now to see if we have this bone for setting anims and such
 			cg_entities[clientNum].noFace = qtrue;
 		}
@@ -2005,10 +2009,10 @@ PLAYER ANIMATION
 */
 
 #define	FOOTSTEP_DISTANCE	32
-static void _PlayerFootStep( const vec3_t origin, 
-								const float orientation, 
-								const float radius, 
-								centity_t *const cent, footstepType_t footStepType ) 
+static void _PlayerFootStep( const vec3_t origin,
+								const float orientation,
+								const float radius,
+								centity_t *const cent, footstepType_t footStepType )
 {
 	vec3_t		end, mins = {-7, -7, 0}, maxs = {7, 7, 2};
 	trace_t		trace;
@@ -2022,10 +2026,10 @@ static void _PlayerFootStep( const vec3_t origin,
 	VectorCopy( origin, end );
 	end[2] -= FOOTSTEP_DISTANCE;
 
-	trap_CM_BoxTrace( &trace, origin, end, mins, maxs, 0, MASK_PLAYERSOLID );
+	trap->CM_Trace( &trace, origin, end, mins, maxs, 0, MASK_PLAYERSOLID, 0);
 
 	// no shadow if too high
-	if ( trace.fraction >= 1.0f ) 
+	if ( trace.fraction >= 1.0f )
 	{
 		return;
 	}
@@ -2042,7 +2046,7 @@ static void _PlayerFootStep( const vec3_t origin,
 			}
 			effectID = cgs.effects.footstepMud;
 			break;
-		case MATERIAL_DIRT:			
+		case MATERIAL_DIRT:
 			bMark = qtrue;
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_DIRTRUN;
@@ -2051,7 +2055,7 @@ static void _PlayerFootStep( const vec3_t origin,
 			}
 			effectID = cgs.effects.footstepSand;
 			break;
-		case MATERIAL_SAND:			
+		case MATERIAL_SAND:
 			bMark = qtrue;
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_SANDRUN;
@@ -2060,7 +2064,7 @@ static void _PlayerFootStep( const vec3_t origin,
 			}
 			effectID = cgs.effects.footstepSand;
 			break;
-		case MATERIAL_SNOW:			
+		case MATERIAL_SNOW:
 			bMark = qtrue;
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_SNOWRUN;
@@ -2069,22 +2073,22 @@ static void _PlayerFootStep( const vec3_t origin,
 			}
 			effectID = cgs.effects.footstepSnow;
 			break;
-		case MATERIAL_SHORTGRASS:		
-		case MATERIAL_LONGGRASS:		
+		case MATERIAL_SHORTGRASS:
+		case MATERIAL_LONGGRASS:
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_GRASSRUN;
 			} else {
 				soundType = FOOTSTEP_GRASSWALK;
 			}
 			break;
-		case MATERIAL_SOLIDMETAL:		
+		case MATERIAL_SOLIDMETAL:
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_METALRUN;
 			} else {
 				soundType = FOOTSTEP_METALWALK;
 			}
 			break;
-		case MATERIAL_HOLLOWMETAL:	
+		case MATERIAL_HOLLOWMETAL:
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_PIPERUN;
 			} else {
@@ -2127,16 +2131,16 @@ static void _PlayerFootStep( const vec3_t origin,
 		case MATERIAL_BPGLASS:
 		case MATERIAL_DRYLEAVES:
 		case MATERIAL_GREENLEAVES:
-		case MATERIAL_TILES:		
+		case MATERIAL_TILES:
 		case MATERIAL_PLASTER:
 		case MATERIAL_SHATTERGLASS:
 		case MATERIAL_ARMOR:
 		case MATERIAL_COMPUTER:
 
-		case MATERIAL_CONCRETE:		
-		case MATERIAL_ROCK:			
-		case MATERIAL_ICE:			
-		case MATERIAL_MARBLE:			
+		case MATERIAL_CONCRETE:
+		case MATERIAL_ROCK:
+		case MATERIAL_ICE:
+		case MATERIAL_MARBLE:
 			if ( footStepType == FOOTSTEP_HEAVY_R || footStepType == FOOTSTEP_HEAVY_L) {
 				soundType = FOOTSTEP_STONERUN;
 			} else {
@@ -2144,9 +2148,9 @@ static void _PlayerFootStep( const vec3_t origin,
 			}
 			break;
 	}
-	if (soundType < FOOTSTEP_TOTAL) 
+	if (soundType < FOOTSTEP_TOTAL)
 	{
-	 	trap_S_StartSound( NULL, cent->currentState.clientNum, CHAN_BODY, cgs.media.footsteps[soundType][rand()&3] );
+	 	trap->S_StartSound( NULL, cent->currentState.clientNum, CHAN_BODY, cgs.media.footsteps[soundType][rand()&3] );
 	}
 
 	if ( cg_footsteps.integer < 4 )
@@ -2159,7 +2163,7 @@ static void _PlayerFootStep( const vec3_t origin,
 
 	if ( effectID != -1 )
 	{
-		trap_FX_PlayEffectID( effectID, trace.endpos, trace.plane.normal, -1, -1 );
+		trap->FX_PlayEffectID( effectID, trace.endpos, trace.plane.normal, -1, -1, qfalse );
 	}
 
 	if ( cg_footsteps.integer < 4 )
@@ -2194,14 +2198,14 @@ static void _PlayerFootStep( const vec3_t origin,
 	// without taking a spot in the cg_marks array
 	if (trace.plane.normal[0] || trace.plane.normal[1] || trace.plane.normal[2])
 	{
-		CG_ImpactMark( footMarkShader, trace.endpos, trace.plane.normal, 
+		CG_ImpactMark( footMarkShader, trace.endpos, trace.plane.normal,
 			orientation, 1,1,1, 1.0f, qfalse, radius, qfalse );
 	}
 }
 
 static void CG_PlayerFootsteps( centity_t *cent, footstepType_t footStepType )
 {
-	if ( !cg_footsteps.integer ) 
+	if ( !cg_footsteps.integer )
 	{
 		return;
 	}
@@ -2234,18 +2238,18 @@ static void CG_PlayerFootsteps( centity_t *cent, footstepType_t footStepType )
 		{
 		case FOOTSTEP_R:
 		case FOOTSTEP_HEAVY_R:
-			footBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_leg_foot");//cent->gent->footRBolt;
+			footBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_leg_foot");//cent->gent->footRBolt;
 			break;
 		case FOOTSTEP_L:
 		case FOOTSTEP_HEAVY_L:
 		default:
-			footBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_leg_foot");//cent->gent->footLBolt;
+			footBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_leg_foot");//cent->gent->footLBolt;
 			break;
 		}
 
 
 		//FIXME: get yaw orientation of the foot and use on decal
-		trap_G2API_GetBoltMatrix( cent->ghoul2, 0, footBolt, &boltMatrix, tempAngles, cent->lerpOrigin, 
+		trap->G2API_GetBoltMatrix( cent->ghoul2, 0, footBolt, &boltMatrix, tempAngles, cent->lerpOrigin,
 				cg.time, cgs.gameModels, cent->modelScale);
 		BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, sideOrigin );
 		sideOrigin[2] += 15;	//fudge up a bit for coplanar
@@ -2274,7 +2278,7 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 			const int holdSnd = animEvent->eventData[ AED_SOUNDINDEX_START+Q_irand( 0, animEvent->eventData[AED_SOUND_NUMRANDOMSNDS] ) ];
 			if ( holdSnd > 0 )
 			{
-				trap_S_StartSound( NULL, cent->currentState.number, channel, holdSnd );
+				trap->S_StartSound( NULL, cent->currentState.number, channel, holdSnd );
 			}
 		}
 		break;
@@ -2308,9 +2312,9 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 				randomSwing = Q_irand( 7, 9 );
 				break;
 			}
-			swingSound = trap_S_RegisterSound(va("sound/weapons/saber/saberhup%i.wav", randomSwing));
+			swingSound = trap->S_RegisterSound(va("sound/weapons/saber/saberhup%i.wav", randomSwing));
 		}
-		trap_S_StartSound(cent->currentState.pos.trBase, cent->currentState.number, CHAN_AUTO, swingSound );
+		trap->S_StartSound(cent->currentState.pos.trBase, cent->currentState.number, CHAN_AUTO, swingSound );
 		break;
 	case AEV_SABER_SPIN:
 		if (cent->currentState.eType == ET_NPC)
@@ -2322,8 +2326,8 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 		{
 			client = &cgs.clientinfo[cent->currentState.clientNum];
 		}
-		if ( client 
-			&& client->infoValid 
+		if ( client
+			&& client->infoValid
 			&& client->saber[AED_SABER_SPIN_SABERNUM].spinSound )
 		{//use override
 			spinSound = client->saber[AED_SABER_SPIN_SABERNUM].spinSound;
@@ -2333,28 +2337,28 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 			switch ( animEvent->eventData[AED_SABER_SPIN_TYPE] )
 			{
 			case 0://saberspinoff
-				spinSound = trap_S_RegisterSound( "sound/weapons/saber/saberspinoff.wav" );
+				spinSound = trap->S_RegisterSound( "sound/weapons/saber/saberspinoff.wav" );
 				break;
 			case 1://saberspin
-				spinSound = trap_S_RegisterSound( "sound/weapons/saber/saberspin.wav" );
+				spinSound = trap->S_RegisterSound( "sound/weapons/saber/saberspin.wav" );
 				break;
 			case 2://saberspin1
-				spinSound = trap_S_RegisterSound( "sound/weapons/saber/saberspin1.wav" );
+				spinSound = trap->S_RegisterSound( "sound/weapons/saber/saberspin1.wav" );
 				break;
 			case 3://saberspin2
-				spinSound = trap_S_RegisterSound( "sound/weapons/saber/saberspin2.wav" );
+				spinSound = trap->S_RegisterSound( "sound/weapons/saber/saberspin2.wav" );
 				break;
 			case 4://saberspin3
-				spinSound = trap_S_RegisterSound( "sound/weapons/saber/saberspin3.wav" );
+				spinSound = trap->S_RegisterSound( "sound/weapons/saber/saberspin3.wav" );
 				break;
 			default://random saberspin1-3
-				spinSound = trap_S_RegisterSound( va( "sound/weapons/saber/saberspin%d.wav", Q_irand(1,3)) );
+				spinSound = trap->S_RegisterSound( va( "sound/weapons/saber/saberspin%d.wav", Q_irand(1,3)) );
 				break;
 			}
 		}
 		if ( spinSound )
 		{
-			trap_S_StartSound( NULL, cent->currentState.clientNum, CHAN_AUTO, spinSound );
+			trap->S_StartSound( NULL, cent->currentState.clientNum, CHAN_AUTO, spinSound );
 		}
 		break;
 	case AEV_FOOTSTEP:
@@ -2380,22 +2384,22 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 		if (animEvent->stringData && animEvent->stringData[0] && cent && cent->ghoul2)
 		{
 			animEvent->eventData[AED_MODELINDEX] = 0;
-			if ( ( Q_stricmpn( "*blade", animEvent->stringData, 6 ) == 0 
+			if ( ( Q_stricmpn( "*blade", animEvent->stringData, 6 ) == 0
 					|| Q_stricmp( "*flash", animEvent->stringData ) == 0 ) )
 			{//must be a weapon, try weapon 0?
-				animEvent->eventData[AED_BOLTINDEX] = trap_G2API_AddBolt( cent->ghoul2, 1, animEvent->stringData );
+				animEvent->eventData[AED_BOLTINDEX] = trap->G2API_AddBolt( cent->ghoul2, 1, animEvent->stringData );
 				if ( animEvent->eventData[AED_BOLTINDEX] != -1 )
 				{//found it!
 					animEvent->eventData[AED_MODELINDEX] = 1;
 				}
 				else
 				{//hmm, just try on the player model, then?
-					animEvent->eventData[AED_BOLTINDEX] = trap_G2API_AddBolt( cent->ghoul2, 0, animEvent->stringData );
+					animEvent->eventData[AED_BOLTINDEX] = trap->G2API_AddBolt( cent->ghoul2, 0, animEvent->stringData );
 				}
 			}
 			else
 			{
-				animEvent->eventData[AED_BOLTINDEX] = trap_G2API_AddBolt( cent->ghoul2, 0, animEvent->stringData );
+				animEvent->eventData[AED_BOLTINDEX] = trap->G2API_AddBolt( cent->ghoul2, 0, animEvent->stringData );
 			}
 			animEvent->stringData[0] = 0;
 		}
@@ -2407,19 +2411,19 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 
 			VectorSet(lAngles, 0, cent->lerpAngles[YAW], 0);
 
-			trap_G2API_GetBoltMatrix(cent->ghoul2, animEvent->eventData[AED_MODELINDEX], animEvent->eventData[AED_BOLTINDEX], &matrix, lAngles,
+			trap->G2API_GetBoltMatrix(cent->ghoul2, animEvent->eventData[AED_MODELINDEX], animEvent->eventData[AED_BOLTINDEX], &matrix, lAngles,
 				cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			BG_GiveMeVectorFromMatrix(&matrix, ORIGIN, bPoint);
 			VectorSet(bAngle, 0, 1, 0);
 
-			trap_FX_PlayEffectID(animEvent->eventData[AED_EFFECTINDEX], bPoint, bAngle, -1, -1);
+			trap->FX_PlayEffectID(animEvent->eventData[AED_EFFECTINDEX], bPoint, bAngle, -1, -1, qfalse);
 		}
 		else
 		{
 			vec3_t bAngle;
 
 			VectorSet(bAngle, 0, 1, 0);
-			trap_FX_PlayEffectID(animEvent->eventData[AED_EFFECTINDEX], cent->lerpOrigin, bAngle, -1, -1);
+			trap->FX_PlayEffectID(animEvent->eventData[AED_EFFECTINDEX], cent->lerpOrigin, bAngle, -1, -1, qfalse);
 		}
 #endif
 		break;
@@ -2451,7 +2455,7 @@ void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 				VectorScale( fwd, animEvent->eventData[AED_MOVE_FWD], cent->gent->client->ps.velocity );
 				VectorMA( cent->gent->client->ps.velocity, animEvent->eventData[AED_MOVE_RT], rt, cent->gent->client->ps.velocity );
 				VectorMA( cent->gent->client->ps.velocity, animEvent->eventData[AED_MOVE_UP], up, cent->gent->client->ps.velocity );
-				
+
 				if ( animEvent->eventData[AED_MOVE_UP] > 0 )
 				{//a jump
 					cent->gent->client->ps.pm_flags |= PMF_JUMPING;
@@ -2483,7 +2487,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 	int		firstFrame = 0, lastFrame = 0;
 	qboolean	doEvent = qfalse, inSameAnim = qfalse, loopAnim = qfalse, match = qfalse, animBackward = qfalse;
 	animevent_t *animEvents = NULL;
-	
+
 	if ( torso )
 	{
 		animEvents = bgAllEvents[eventFileIndex].torsoAnimEvents;
@@ -2576,7 +2580,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 						{//hmm, didn't pass through it linearally, see if we looped
 							if ( animEvents[i].keyFrame >= firstFrame && animEvents[i].keyFrame < lastFrame )
 							{//keyframe is in this anim
-								if ( oldFrame > animEvents[i].keyFrame 
+								if ( oldFrame > animEvents[i].keyFrame
 									&& frame > oldFrame )
 								{//old to new passed through keyframe
 									match = qtrue;
@@ -2594,7 +2598,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 						{//hmm, didn't pass through it linearally, see if we looped
 							if ( animEvents[i].keyFrame >= firstFrame && animEvents[i].keyFrame < lastFrame )
 							{//keyframe is in this anim
-								if ( oldFrame < animEvents[i].keyFrame 
+								if ( oldFrame < animEvents[i].keyFrame
 									&& frame < oldFrame )
 								{//old to new passed through keyframe
 									match = qtrue;
@@ -2612,7 +2616,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 			case AEV_SOUND:
 			case AEV_SOUNDCHAN:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_SOUND_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_SOUND_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2623,7 +2627,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 				break;
 			case AEV_SABER_SWING:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_SABER_SWING_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_SABER_SWING_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2634,7 +2638,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 				break;
 			case AEV_SABER_SPIN:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_SABER_SPIN_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_SABER_SPIN_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2645,7 +2649,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 				break;
 			case AEV_FOOTSTEP:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_FOOTSTEP_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_FOOTSTEP_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2656,7 +2660,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 				break;
 			case AEV_EFFECT:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_EFFECT_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_EFFECT_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2667,7 +2671,7 @@ void CG_PlayerAnimEvents( int animFileIndex, int eventFileIndex, qboolean torso,
 				break;
 			case AEV_FIRE:
 				// Determine probability of playing sound
-				if (!animEvents[i].eventData[AED_FIRE_PROBABILITY])	// 100% 
+				if (!animEvents[i].eventData[AED_FIRE_PROBABILITY])	// 100%
 				{
 					doEvent = qtrue;
 				}
@@ -2702,7 +2706,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 
 	sFileIndex = cent->eventAnimIndex;
 
-	if (trap_G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &currentFrame, cgs.gameModels, 0))
+	if (trap->G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &currentFrame, cgs.gameModels, 0))
 	{
 		// the above may have failed, not sure what to do about it, current frame will be zero in that case
 		curFrame = floor( currentFrame );
@@ -2721,7 +2725,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 		return;
 	}
 
-	if (trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0))
+	if (trap->G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0))
 	{
 		curFrame = floor( currentFrame );
 	}
@@ -2731,7 +2735,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	}
 	cent->pe.torso.oldFrame = cent->pe.torso.oldFrame;
 	cent->pe.torso.frame = curFrame;
-	cent->pe.torso.backlerp = 1.0f - (currentFrame - (float)curFrame);	
+	cent->pe.torso.backlerp = 1.0f - (currentFrame - (float)curFrame);
 }
 
 
@@ -2800,7 +2804,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 	lf->animationNumber = newAnimation;
 
 	if ( newAnimation < 0 || newAnimation >= MAX_TOTALANIMATIONS ) {
-		CG_Error( "Bad animation number: %i", newAnimation );
+		trap->Error( ERR_DROP, "Bad animation number: %i", newAnimation );
 	}
 
 	anim = &bgAllAnims[cent->localAnimIndex].anims[ newAnimation ];
@@ -2818,11 +2822,11 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 	if ( cg_debugAnim.integer && (cg_debugAnim.integer < 0 || cg_debugAnim.integer == cent->currentState.clientNum) ) {
 		if (lf == &cent->pe.legs)
 		{
-			CG_Printf( "%d: %d TORSO Anim: %i, '%s'\n", cg.time, cent->currentState.clientNum, newAnimation, GetStringForID(animTable, newAnimation));
+			trap->Print( "%d: %d TORSO Anim: %i, '%s'\n", cg.time, cent->currentState.clientNum, newAnimation, GetStringForID(animTable, newAnimation));
 		}
 		else
 		{
-			CG_Printf( "%d: %d LEGS Anim: %i, '%s'\n", cg.time, cent->currentState.clientNum, newAnimation, GetStringForID(animTable, newAnimation));
+			trap->Print( "%d: %d LEGS Anim: %i, '%s'\n", cg.time, cent->currentState.clientNum, newAnimation, GetStringForID(animTable, newAnimation));
 		}
 	}
 
@@ -2907,7 +2911,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 		//vehicles may have torso etc but we only want to animate the root bone
 		if ( cent->currentState.NPC_class == CLASS_VEHICLE )
 		{
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", firstFrame, lastFrame, flags, animSpeed,cg.time, beginFrame, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", firstFrame, lastFrame, flags, animSpeed,cg.time, beginFrame, blendTime);
 			return;
 		}
 
@@ -2916,12 +2920,12 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 			float GBAcFrame = 0;
 			if (resumeFrame)
 			{ //we already checked, and this is the same anim, same flip state, but different speed, so we want to resume with the new speed off of the same frame.
-				trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &GBAcFrame, NULL, 0);
+				trap->G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &GBAcFrame, NULL, 0);
 				beginFrame = GBAcFrame;
 			}
 
 			//even if resuming, also be sure to check if we are running the same frame on the legs. If so, we want to use their frame no matter what.
-			trap_G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &GBAcFrame, NULL, 0);
+			trap->G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &GBAcFrame, NULL, 0);
 
 			if ((cent->currentState.torsoAnim) == (cent->currentState.legsAnim) && GBAcFrame >= anim->firstFrame && GBAcFrame <= (anim->firstFrame + anim->numFrames))
 			{ //if the legs are already running this anim, pick up on the exact same frame to avoid the "wobbly spine" problem.
@@ -2933,11 +2937,11 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 				beginFrame = -1;
 			}
 
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", firstFrame, lastFrame, flags, animSpeed,cg.time, beginFrame, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", firstFrame, lastFrame, flags, animSpeed,cg.time, beginFrame, blendTime);
 
 			// Update the torso frame with the new animation
 			cent->pe.torso.frame = firstFrame;
-			
+
 			if (ci)
 			{
 				ci->torsoAnim = newAnimation;
@@ -2948,7 +2952,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 			if (resumeFrame)
 			{ //we already checked, and this is the same anim, same flip state, but different speed, so we want to resume with the new speed off of the same frame.
 				float GBAcFrame = 0;
-				trap_G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &GBAcFrame, NULL, 0);
+				trap->G2API_GetBoneFrame(cent->ghoul2, "model_root", cg.time, &GBAcFrame, NULL, 0);
 				beginFrame = GBAcFrame;
 			}
 
@@ -2963,7 +2967,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 				float GBAcFrame = 0;
 				int oldBeginFrame = beginFrame;
 
-				trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &GBAcFrame, NULL, 0);
+				trap->G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &GBAcFrame, NULL, 0);
 				beginFrame = GBAcFrame;
 				if ((beginFrame < firstFrame) || (beginFrame > lastFrame))
 				{ //out of range, don't use it then.
@@ -2971,7 +2975,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 				}
 			}
 
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
 
 			if (ci)
 			{
@@ -2981,7 +2985,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 
 		if (cent->localAnimIndex <= 1 && (cent->currentState.torsoAnim) == newAnimation && !cent->noLumbar)
 		{ //make sure we're humanoid before we access the motion bone
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
 		}
 
 #if 0 //disabled for now
@@ -3008,7 +3012,7 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 				armFlags |= BONE_ANIM_BLEND;
 			}
 
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, blendTime);
 		}
 		else if (cent->localAnimIndex <= 1 && cent->currentState.brokenLimbs &&
 			(cent->currentState.brokenLimbs & (1 << BROKENLIMB_RARM)))
@@ -3053,11 +3057,11 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 					*/
 					//No blend on the broken arm
 
-					trap_G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, 0);
+					trap->G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, 0);
 				}
 				else
 				{ //we want to keep the broken bone updated for some cases
-					trap_G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+					trap->G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
 				}
 
 				if (newAnimation != BOTH_MELEE1 &&
@@ -3076,23 +3080,23 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 						armFlags |= BONE_ANIM_BLEND;
 					}
 
-					trap_G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, 150);
+					trap->G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, cg.time, -1, 150);
 				}
 				else
 				{ //we want to keep the support bone updated for some cases
-					trap_G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+					trap->G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
 				}
 			}
 			else if (cent->currentState.torsoAnim == newAnimation)
 			{ //otherwise, keep it set to the same as the torso
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, supportBone, firstFrame, lastFrame, flags, animSpeed, cg.time, beginFrame, blendTime);
 			}
 		}
 		else if (ci &&
 			(ci->brokenLimbs ||
-			trap_G2API_GetBoneFrame(cent->ghoul2, "lhumerus", cg.time, &unused, cgs.gameModels, 0) ||
-			trap_G2API_GetBoneFrame(cent->ghoul2, "rhumerus", cg.time, &unused, cgs.gameModels, 0)))
+			trap->G2API_GetBoneFrame(cent->ghoul2, "lhumerus", cg.time, &unused, cgs.gameModels, 0) ||
+			trap->G2API_GetBoneFrame(cent->ghoul2, "rhumerus", cg.time, &unused, cgs.gameModels, 0)))
 			//rwwFIXMEFIXME: brokenLimbs gets stomped sometimes, but it shouldn't.
 		{ //remove the bone now so it can be set again
 			char *brokenBone = NULL;
@@ -3111,8 +3115,8 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 				broken |= (1<<BROKENLIMB_RARM);
 
 				//want to remove the support bone too then
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lhumerus", 0, 1, 0, 0, cg.time, -1, 0);
-				if (!trap_G2API_RemoveBone(cent->ghoul2, "lhumerus", 0))
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lhumerus", 0, 1, 0, 0, cg.time, -1, 0);
+				if (!trap->G2API_RemoveBone(cent->ghoul2, "lhumerus", 0))
 				{
 					assert(0);
 					Com_Printf("WARNING: Failed to remove lhumerus\n");
@@ -3121,19 +3125,19 @@ static void CG_SetLerpFrameAnimation( centity_t *cent, clientInfo_t *ci, lerpFra
 
 			if (!brokenBone)
 			{
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lhumerus", 0, 1, 0, 0, cg.time, -1, 0);
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "rhumerus", 0, 1, 0, 0, cg.time, -1, 0);
-				trap_G2API_RemoveBone(cent->ghoul2, "lhumerus", 0);
-				trap_G2API_RemoveBone(cent->ghoul2, "rhumerus", 0);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lhumerus", 0, 1, 0, 0, cg.time, -1, 0);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "rhumerus", 0, 1, 0, 0, cg.time, -1, 0);
+				trap->G2API_RemoveBone(cent->ghoul2, "lhumerus", 0);
+				trap->G2API_RemoveBone(cent->ghoul2, "rhumerus", 0);
 				ci->brokenLimbs = 0;
 			}
 			else
 			{
 				//Set the flags and stuff to 0, so that the remove will succeed
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, 0, 1, 0, 0, cg.time, -1, 0);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, brokenBone, 0, 1, 0, 0, cg.time, -1, 0);
 
 				//Now remove it
-				if (!trap_G2API_RemoveBone(cent->ghoul2, brokenBone, 0))
+				if (!trap->G2API_RemoveBone(cent->ghoul2, brokenBone, 0))
 				{
 					assert(0);
 					Com_Printf("WARNING: Failed to remove %s\n", brokenBone);
@@ -3199,7 +3203,7 @@ Sets cg.snap, cg.oldFrame, and cg.backlerp
 cg.time should be between oldFrameTime and frameTime after exit
 ===============
 */
-static void CG_RunLerpFrame( centity_t *cent, clientInfo_t *ci, lerpFrame_t *lf, qboolean flipState, int newAnimation, float speedScale, qboolean torsoOnly) 
+static void CG_RunLerpFrame( centity_t *cent, clientInfo_t *ci, lerpFrame_t *lf, qboolean flipState, int newAnimation, float speedScale, qboolean torsoOnly)
 {
 	// debugging tool to get no animations
 	if ( cg_animSpeed.integer == 0 ) {
@@ -3214,9 +3218,9 @@ static void CG_RunLerpFrame( centity_t *cent, clientInfo_t *ci, lerpFrame_t *lf,
 		{
 			int flags = BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND;
 			float animSpeed = 1.0f;
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", cent->currentState.forceFrame, cent->currentState.forceFrame+1, flags, animSpeed, cg.time, -1, 150);
 		}
 
 		lf->lastForcedFrame = cent->currentState.forceFrame;
@@ -3227,7 +3231,7 @@ static void CG_RunLerpFrame( centity_t *cent, clientInfo_t *ci, lerpFrame_t *lf,
 	{
 		lf->lastForcedFrame = -1;
 
-		if ( (newAnimation != lf->animationNumber || cent->currentState.brokenLimbs != ci->brokenLimbs || lf->lastFlip != flipState || !lf->animation) || (CG_FirstAnimFrame(lf, torsoOnly, speedScale)) ) 
+		if ( (newAnimation != lf->animationNumber || cent->currentState.brokenLimbs != ci->brokenLimbs || lf->lastFlip != flipState || !lf->animation) || (CG_FirstAnimFrame(lf, torsoOnly, speedScale)) )
 		{
 			CG_SetLerpFrameAnimation( cent, ci, lf, newAnimation, speedScale, torsoOnly, flipState);
 		}
@@ -3337,7 +3341,7 @@ static void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float 
 
 	// If this is not a vehicle, you may lerm the frame (since vehicles never have a torso anim). -AReis
 	if ( cent->currentState.NPC_class != CLASS_VEHICLE )
-	{	
+	{
 		CG_RunLerpFrame( cent, ci, &cent->pe.torso, cent->currentState.torsoFlip, cent->currentState.torsoAnim, speedScale, qtrue );
 
 		*torsoOld = cent->pe.torso.oldFrame;
@@ -3406,7 +3410,7 @@ void CG_G2SetBoneAngles(void *ghoul2, int modelIndex, const char *boneName, cons
 #endif
 	//We don't want to go with the delayed approach, we want out bolt points and everything to be updated in realtime.
 	//We'll just take the reconstructs and live with them.
-	trap_G2API_SetBoneAngles(ghoul2, modelIndex, boneName, angles, flags, up, right, forward, modelList,
+	trap->G2API_SetBoneAngles(ghoul2, modelIndex, boneName, angles, flags, up, right, forward, modelList,
 		blendTime, currentTime);
 }
 
@@ -3419,9 +3423,9 @@ trace access. Maybe correct this sometime, so bmodel col. at least works with ra
 But I don't want to slow it down..
 ================
 */
-void	CG_Rag_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void	CG_Rag_Trace( trace_t *result, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 					 int skipNumber, int mask ) {
-	trap_CM_BoxTrace ( result, start, end, mins, maxs, 0, mask);
+	trap->CM_Trace ( result, start, end, mins, maxs, 0, mask, 0);
 	result->entityNum = result->fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
 }
 
@@ -3438,7 +3442,7 @@ void CG_TempTestFunction(centity_t *cent, vec3_t forcedAngles)
 
 	VectorSet(tAngles, 0, cent->lerpAngles[YAW], 0);
 
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 1, 0, &boltMatrix, tAngles, cent->lerpOrigin,
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 1, 0, &boltMatrix, tAngles, cent->lerpOrigin,
 		cg.time, cgs.gameModels, cent->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, bOrg);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, NEGATIVE_Y, bDir);
@@ -3479,10 +3483,10 @@ static int CG_RagAnimForPositioning(centity_t *cent)
 	mdxaBone_t matrix;
 
 	assert(cent->ghoul2);
-	bolt = trap_G2API_AddBolt(cent->ghoul2, 0, "pelvis");
+	bolt = trap->G2API_AddBolt(cent->ghoul2, 0, "pelvis");
 	assert(bolt > -1);
 
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, bolt, &matrix, cent->turAngles, cent->lerpOrigin,
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, bolt, &matrix, cent->turAngles, cent->lerpOrigin,
 		cg.time, cgs.gameModels, cent->modelScale);
 	BG_GiveMeVectorFromMatrix(&matrix, NEGATIVE_Z, dir);
 
@@ -3570,29 +3574,29 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 
 			if (deathDone)
 			{ //only trace from the hands if the death anim is already done.
-				boltChecks[0] = trap_G2API_AddBolt(cent->ghoul2, 0, "rhand");
-				boltChecks[1] = trap_G2API_AddBolt(cent->ghoul2, 0, "lhand");
+				boltChecks[0] = trap->G2API_AddBolt(cent->ghoul2, 0, "rhand");
+				boltChecks[1] = trap->G2API_AddBolt(cent->ghoul2, 0, "lhand");
 			}
 			else
 			{ //otherwise start the trace loop at the cranium.
 				i = 2;
 			}
-			boltChecks[2] = trap_G2API_AddBolt(cent->ghoul2, 0, "cranium");
-			//boltChecks[3] = trap_G2API_AddBolt(cent->ghoul2, 0, "rtarsal");
-			//boltChecks[4] = trap_G2API_AddBolt(cent->ghoul2, 0, "ltarsal");
-			boltChecks[3] = trap_G2API_AddBolt(cent->ghoul2, 0, "rtalus");
-			boltChecks[4] = trap_G2API_AddBolt(cent->ghoul2, 0, "ltalus");
+			boltChecks[2] = trap->G2API_AddBolt(cent->ghoul2, 0, "cranium");
+			//boltChecks[3] = trap->G2API_AddBolt(cent->ghoul2, 0, "rtarsal");
+			//boltChecks[4] = trap->G2API_AddBolt(cent->ghoul2, 0, "ltarsal");
+			boltChecks[3] = trap->G2API_AddBolt(cent->ghoul2, 0, "rtalus");
+			boltChecks[4] = trap->G2API_AddBolt(cent->ghoul2, 0, "ltalus");
 
 			//This may seem bad, but since we have a bone cache now it should manage to not be too disgustingly slow.
 			//Do the head first, because the hands reference it anyway.
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[2], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[2], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltPoints[2]);
 
 			while (i < 5)
 			{
 				if (i < 2)
 				{ //when doing hands, trace to the head instead of origin
-					trap_G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[i], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+					trap->G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[i], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 					BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltPoints[i]);
 					VectorCopy(boltPoints[i], trStart);
 					VectorCopy(boltPoints[2], trEnd);
@@ -3601,7 +3605,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 				{
 					if (i > 2)
 					{ //2 is the head, which already has the bolt point.
-						trap_G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[i], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+						trap->G2API_GetBoltMatrix(cent->ghoul2, 0, boltChecks[i], &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 						BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltPoints[i]);
 					}
 					VectorCopy(boltPoints[i], trStart);
@@ -3655,7 +3659,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 
 		if (cent->ikStatus)
 		{ //ik must be reset before ragdoll is started, or you'll get some interesting results.
-			trap_G2API_SetBoneIKState(cent->ghoul2, cg.time, NULL, IKS_NONE, NULL);
+			trap->G2API_SetBoneIKState(cent->ghoul2, cg.time, NULL, IKS_NONE, NULL);
 			cent->ikStatus = qfalse;
 		}
 
@@ -3681,9 +3685,9 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 			*/
 
 			animSpeed = 50.0f / bgAllAnims[cent->localAnimIndex].anims[ragAnim].frameLerp;
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", tParms.startFrame, tParms.endFrame, flags, animSpeed,cg.time, -1, blendTime);
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", tParms.startFrame, tParms.endFrame, flags, animSpeed, cg.time, -1, blendTime);
-			trap_G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", tParms.startFrame, tParms.endFrame, flags, animSpeed, cg.time, -1, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", tParms.startFrame, tParms.endFrame, flags, animSpeed,cg.time, -1, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", tParms.startFrame, tParms.endFrame, flags, animSpeed, cg.time, -1, blendTime);
+			trap->G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", tParms.startFrame, tParms.endFrame, flags, animSpeed, cg.time, -1, blendTime);
 		}
 #elif 1 //with my new method of doing things I want it to continue the anim
 		{
@@ -3692,7 +3696,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 			int flags;
 			float animSpeed;
 
-			if (trap_G2API_GetBoneAnim(cent->ghoul2, "model_root", cg.time, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, cgs.gameModels, 0))
+			if (trap->G2API_GetBoneAnim(cent->ghoul2, "model_root", cg.time, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, cgs.gameModels, 0))
 			{ //lock the anim on the current frame.
 				int blendTime = 500;
 				animation_t *curAnim = &bgAllAnims[cent->localAnimIndex].anims[cent->currentState.legsAnim];
@@ -3702,9 +3706,9 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 					currentFrame = (curAnim->firstFrame + curAnim->numFrames-2);
 				}
 
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", currentFrame, currentFrame+1, flags, animSpeed,cg.time, currentFrame, blendTime);
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", currentFrame, currentFrame+1, flags, animSpeed, cg.time, currentFrame, blendTime);
-				trap_G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", currentFrame, currentFrame+1, flags, animSpeed, cg.time, currentFrame, blendTime);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "lower_lumbar", currentFrame, currentFrame+1, flags, animSpeed,cg.time, currentFrame, blendTime);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "model_root", currentFrame, currentFrame+1, flags, animSpeed, cg.time, currentFrame, blendTime);
+				trap->G2API_SetBoneAnim(cent->ghoul2, 0, "Motion", currentFrame, currentFrame+1, flags, animSpeed, cg.time, currentFrame, blendTime);
 			}
 		}
 #endif
@@ -3722,7 +3726,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 		tParms.RagPhase = RP_DEATH_COLLISION;
 		tParms.fShotStrength = 4;
 
-		trap_G2API_SetRagDoll(cent->ghoul2, &tParms);
+		trap->G2API_SetRagDoll(cent->ghoul2, &tParms);
 
 		VectorCopy(forcedAngles, tuParms.angles);
 		VectorCopy(usedOrg, tuParms.position);
@@ -3739,12 +3743,12 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 			VectorScale(cent->currentState.pos.trDelta, 2.0f, tuParms.velocity);
 		}
 
-		trap_G2API_AnimateG2Models(cent->ghoul2, cg.time, &tuParms);
+		trap->G2API_AnimateG2Models(cent->ghoul2, cg.time, &tuParms);
 
 		//So if we try to get a bolt point it's still correct
-		cent->turAngles[YAW] = 
-		cent->lerpAngles[YAW] = 
-		cent->pe.torso.yawAngle = 
+		cent->turAngles[YAW] =
+		cent->lerpAngles[YAW] =
+		cent->pe.torso.yawAngle =
 		cent->pe.legs.yawAngle = forcedAngles[YAW];
 
 		if (cent->currentState.ragAttach &&
@@ -3774,18 +3778,18 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 				int thorBolt;
 
 				//Get the person who is holding our hand's hand location
-				trap_G2API_GetBoltMatrix(grabEnt->ghoul2, 0, 0, &matrix, grabEnt->turAngles, grabEnt->lerpOrigin,
+				trap->G2API_GetBoltMatrix(grabEnt->ghoul2, 0, 0, &matrix, grabEnt->turAngles, grabEnt->lerpOrigin,
 					cg.time, cgs.gameModels, grabEnt->modelScale);
 				BG_GiveMeVectorFromMatrix(&matrix, ORIGIN, bOrg);
 
 				//Get our hand's location
-				trap_G2API_GetBoltMatrix(cent->ghoul2, 0, 0, &matrix, cent->turAngles, cent->lerpOrigin,
+				trap->G2API_GetBoltMatrix(cent->ghoul2, 0, 0, &matrix, cent->turAngles, cent->lerpOrigin,
 					cg.time, cgs.gameModels, cent->modelScale);
 				BG_GiveMeVectorFromMatrix(&matrix, ORIGIN, thisHand);
 
 				//Get the position of the thoracic bone for hinting its velocity later on
-				thorBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "thoracic");
-				trap_G2API_GetBoltMatrix(cent->ghoul2, 0, thorBolt, &matrix, cent->turAngles, cent->lerpOrigin,
+				thorBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "thoracic");
+				trap->G2API_GetBoltMatrix(cent->ghoul2, 0, thorBolt, &matrix, cent->turAngles, cent->lerpOrigin,
 					cg.time, cgs.gameModels, cent->modelScale);
 				BG_GiveMeVectorFromMatrix(&matrix, ORIGIN, thorPoint);
 
@@ -3793,29 +3797,29 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 
 				if (VectorLength(hands) < 3.0f)
 				{
-					trap_G2API_RagForceSolve(cent->ghoul2, qfalse);
+					trap->G2API_RagForceSolve(cent->ghoul2, qfalse);
 				}
 				else
 				{
-					trap_G2API_RagForceSolve(cent->ghoul2, qtrue);
+					trap->G2API_RagForceSolve(cent->ghoul2, qtrue);
 				}
 
 				//got the hand pos of him, now we want to make our hand go to it
-				trap_G2API_RagEffectorGoal(cent->ghoul2, "rhand", bOrg);
-				trap_G2API_RagEffectorGoal(cent->ghoul2, "rradius", bOrg);
-				trap_G2API_RagEffectorGoal(cent->ghoul2, "rradiusX", bOrg);
-				trap_G2API_RagEffectorGoal(cent->ghoul2, "rhumerusX", bOrg);
-				trap_G2API_RagEffectorGoal(cent->ghoul2, "rhumerus", bOrg);
+				trap->G2API_RagEffectorGoal(cent->ghoul2, "rhand", bOrg);
+				trap->G2API_RagEffectorGoal(cent->ghoul2, "rradius", bOrg);
+				trap->G2API_RagEffectorGoal(cent->ghoul2, "rradiusX", bOrg);
+				trap->G2API_RagEffectorGoal(cent->ghoul2, "rhumerusX", bOrg);
+				trap->G2API_RagEffectorGoal(cent->ghoul2, "rhumerus", bOrg);
 
 				//Make these two solve quickly so we can update decently
-				trap_G2API_RagPCJGradientSpeed(cent->ghoul2, "rhumerus", 1.5f);
-				trap_G2API_RagPCJGradientSpeed(cent->ghoul2, "rradius", 1.5f);
+				trap->G2API_RagPCJGradientSpeed(cent->ghoul2, "rhumerus", 1.5f);
+				trap->G2API_RagPCJGradientSpeed(cent->ghoul2, "rradius", 1.5f);
 
 				//Break the constraints on them I suppose
 				VectorSet(pcjMin, -999, -999, -999);
 				VectorSet(pcjMax, 999, 999, 999);
-				trap_G2API_RagPCJConstraint(cent->ghoul2, "rhumerus", pcjMin, pcjMax);
-				trap_G2API_RagPCJConstraint(cent->ghoul2, "rradius", pcjMin, pcjMax);
+				trap->G2API_RagPCJConstraint(cent->ghoul2, "rhumerus", pcjMin, pcjMax);
+				trap->G2API_RagPCJConstraint(cent->ghoul2, "rradius", pcjMin, pcjMax);
 
 				cent->overridingBones = cg.time + 2000;
 
@@ -3823,8 +3827,8 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 				VectorSubtract(bOrg, thorPoint, hands);
 				VectorNormalize(hands);
 				VectorScale(hands, 2048.0f, hands);
-				trap_G2API_RagEffectorKick(cent->ghoul2, "thoracic", hands);
-				trap_G2API_RagEffectorKick(cent->ghoul2, "ceyebrow", hands);
+				trap->G2API_RagEffectorKick(cent->ghoul2, "thoracic", hands);
+				trap->G2API_RagEffectorKick(cent->ghoul2, "ceyebrow", hands);
 
 				VectorSubtract(cent->ragLastOrigin, cent->lerpOrigin, pDif);
 				VectorCopy(cent->lerpOrigin, cent->ragLastOrigin);
@@ -3856,16 +3860,16 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 							VectorAdd(dVel, rVel, dVel);
 							VectorScale(dVel, 10.0f, dVel);
 
-							trap_G2API_RagEffectorKick(cent->ghoul2, cg_effectorStringTable[i], dVel);
+							trap->G2API_RagEffectorKick(cent->ghoul2, cg_effectorStringTable[i], dVel);
 
 #if 0
 							{
 								mdxaBone_t bm;
 								vec3_t borg;
 								vec3_t vorg;
-								int b = trap_G2API_AddBolt(cent->ghoul2, 0, cg_effectorStringTable[i]);
+								int b = trap->G2API_AddBolt(cent->ghoul2, 0, cg_effectorStringTable[i]);
 
-								trap_G2API_GetBoltMatrix(cent->ghoul2, 0, b, &bm, cent->turAngles, cent->lerpOrigin, cg.time,
+								trap->G2API_GetBoltMatrix(cent->ghoul2, 0, b, &bm, cent->turAngles, cent->lerpOrigin, cg.time,
 									cgs.gameModels, cent->modelScale);
 								BG_GiveMeVectorFromMatrix(&bm, ORIGIN, borg);
 
@@ -3888,34 +3892,34 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 			vec3_t dVel;
 
 			//got the hand pos of him, now we want to make our hand go to it
-			trap_G2API_RagEffectorGoal(cent->ghoul2, "rhand", NULL);
-			trap_G2API_RagEffectorGoal(cent->ghoul2, "rradius", NULL);
-			trap_G2API_RagEffectorGoal(cent->ghoul2, "rradiusX", NULL);
-			trap_G2API_RagEffectorGoal(cent->ghoul2, "rhumerusX", NULL);
-			trap_G2API_RagEffectorGoal(cent->ghoul2, "rhumerus", NULL);
+			trap->G2API_RagEffectorGoal(cent->ghoul2, "rhand", NULL);
+			trap->G2API_RagEffectorGoal(cent->ghoul2, "rradius", NULL);
+			trap->G2API_RagEffectorGoal(cent->ghoul2, "rradiusX", NULL);
+			trap->G2API_RagEffectorGoal(cent->ghoul2, "rhumerusX", NULL);
+			trap->G2API_RagEffectorGoal(cent->ghoul2, "rhumerus", NULL);
 
 			VectorSet(dVel, 0.0f, 0.0f, -64.0f);
-			trap_G2API_RagEffectorKick(cent->ghoul2, "rhand", dVel);
+			trap->G2API_RagEffectorKick(cent->ghoul2, "rhand", dVel);
 
-			trap_G2API_RagPCJGradientSpeed(cent->ghoul2, "rhumerus", 0.0f);
-			trap_G2API_RagPCJGradientSpeed(cent->ghoul2, "rradius", 0.0f);
+			trap->G2API_RagPCJGradientSpeed(cent->ghoul2, "rhumerus", 0.0f);
+			trap->G2API_RagPCJGradientSpeed(cent->ghoul2, "rradius", 0.0f);
 
 			VectorSet(pcjMin,-100.0f,-40.0f,-15.0f);
 			VectorSet(pcjMax,-15.0f,80.0f,15.0f);
-			trap_G2API_RagPCJConstraint(cent->ghoul2, "rhumerus", pcjMin, pcjMax);
+			trap->G2API_RagPCJConstraint(cent->ghoul2, "rhumerus", pcjMin, pcjMax);
 
 			VectorSet(pcjMin,-25.0f,-20.0f,-20.0f);
 			VectorSet(pcjMax,90.0f,20.0f,-20.0f);
-			trap_G2API_RagPCJConstraint(cent->ghoul2, "rradius", pcjMin, pcjMax);
+			trap->G2API_RagPCJConstraint(cent->ghoul2, "rradius", pcjMin, pcjMax);
 
 			if (cent->overridingBones < cg.time)
 			{
-				trap_G2API_RagForceSolve(cent->ghoul2, qfalse);
+				trap->G2API_RagForceSolve(cent->ghoul2, qfalse);
 				cent->overridingBones = 0;
 			}
 			else
 			{
-				trap_G2API_RagForceSolve(cent->ghoul2, qtrue);
+				trap->G2API_RagForceSolve(cent->ghoul2, qtrue);
 			}
 		}
 
@@ -3950,7 +3954,7 @@ void CG_G2ServerBoneAngles(centity_t *cent)
 				right = (cent->currentState.boneOrient>>3)&7; //3 bits from bit 3
 				up = (cent->currentState.boneOrient>>6)&7; //3 bits from bit 6
 
-				trap_G2API_SetBoneAngles(cent->ghoul2, 0, boneName, boneAngles, flags, up, right, forward, cgs.gameModels, 100, cg.time);
+				trap->G2API_SetBoneAngles(cent->ghoul2, 0, boneName, boneAngles, flags, up, right, forward, cgs.gameModels, 100, cg.time);
 			}
 		}
 
@@ -3986,8 +3990,8 @@ static void CG_G2SetHeadBlink( centity_t *cent, qboolean bStart )
 	vec3_t	desiredAngles;
 	int blendTime = 80;
 	qboolean bWink = qfalse;
-	const int hReye = trap_G2API_AddBolt( cent->ghoul2, 0, "reye" );
-	const int hLeye = trap_G2API_AddBolt( cent->ghoul2, 0, "leye" );
+	const int hReye = trap->G2API_AddBolt( cent->ghoul2, 0, "reye" );
+	const int hLeye = trap->G2API_AddBolt( cent->ghoul2, 0, "leye" );
 
 	if (hLeye == -1)
 	{
@@ -4005,18 +4009,18 @@ static void CG_G2SetHeadBlink( centity_t *cent, qboolean bStart )
 			blendTime /=3;
 		}
 	}
-	trap_G2API_SetBoneAngles( cent->ghoul2, 0, "leye", desiredAngles,
-		BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, blendTime, cg.time ); 
+	trap->G2API_SetBoneAngles( cent->ghoul2, 0, "leye", desiredAngles,
+		BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, blendTime, cg.time );
 
 	if (hReye == -1)
 	{
 		return;
 	}
-	
+
 	if (!bWink)
 	{
-		trap_G2API_SetBoneAngles( cent->ghoul2, 0, "reye", desiredAngles,
-			BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, blendTime, cg.time ); 
+		trap->G2API_SetBoneAngles( cent->ghoul2, 0, "reye", desiredAngles,
+			BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, blendTime, cg.time );
 	}
 }
 
@@ -4048,7 +4052,7 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 	// animSpeed is 1.0 if the frameLerp (ms/frame) is 50 (20 fps).
 	if ( animSpeed < 0 )
 	{//play anim backwards
-		
+
 		lastFrame = animations[anim].firstFrame -1;
 		firstFrame = (animations[anim].numFrames -1) + animations[anim].firstFrame ;
 	}
@@ -4061,12 +4065,12 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 	// first decide if we are doing an animation on the head already
 //	int startFrame, endFrame;
 //	const qboolean animatingHead =  gi.G2API_GetAnimRangeIndex(&gent->ghoul2[gent->playerModel], cent->gent->faceBone, &startFrame, &endFrame);
-	
+
 //	if (!animatingHead || ( animations[anim].firstFrame != startFrame ) )// only set the anim if we aren't going to do the same animation again
 	{
 	//	gi.G2API_SetBoneAnimIndex(&gent->ghoul2[gent->playerModel], cent->gent->faceBone,
 	//		firstFrame, lastFrame, animFlags, animSpeed, cg.time, -1, blendTime);
-		trap_G2API_SetBoneAnim(cent->ghoul2, 0, "face", firstFrame, lastFrame, animFlags, animSpeed,
+		trap->G2API_SetBoneAnim(cent->ghoul2, 0, "face", firstFrame, lastFrame, animFlags, animSpeed,
 			cg.time, -1, blendTime);
 	}
 }
@@ -4081,7 +4085,7 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 	{ //only do this for humanoids
 		return qfalse;
 	}
-	
+
 	if (cent->noFace)
 	{	// i don't have a face
 		return qfalse;
@@ -4106,7 +4110,7 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 		anim = FACE_DEAD;
 		ci->facial_blink = -1;
 	}
-	else 
+	else
 	{
 		if (!ci->facial_blink)
 		{	// set the timers
@@ -4114,7 +4118,7 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 			ci->facial_frown = cg.time + flrand(6000.0, 10000.0);
 			ci->facial_aux = cg.time + flrand(6000.0, 10000.0);
 		}
-		
+
 		//are we blinking?
 		if (ci->facial_blink < 0)
 		{	// yes, check if we are we done blinking ?
@@ -4124,8 +4128,8 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 				CG_G2SetHeadBlink( cent, qfalse );	//stop the blink
 			}
 		}
-		else // no we aren't blinking 
-		{	
+		else // no we aren't blinking
+		{
 			if (ci->facial_blink < cg.time)// but should we start ?
 			{
 				CG_G2SetHeadBlink( cent, qtrue );
@@ -4137,10 +4141,10 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 				{
 					ci->facial_blink = -(cg.time + 300.0f);// set blink timer
 				}
-			} 
+			}
 		}
-		
-		voiceVolume = trap_S_GetVoiceVolume(cent->currentState.number);
+
+		voiceVolume = trap->S_GetVoiceVolume(cent->currentState.number);
 
 		if (voiceVolume > 0)	// if we aren't talking, then it will be 0, -1 for talking but paused
 		{
@@ -4159,30 +4163,30 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 					anim = FACE_ALERT;
 				}
 			}
-			else // no we aren't auxing 
+			else // no we aren't auxing
 			{	// but should we start ?
 				if (ci->facial_aux < cg.time)
 				{//yes
 					anim = FACE_ALERT;
 					// set aux timer
 					ci->facial_aux = -(cg.time + 2000.0);
-				} 
-			}	
-			
+				}
+			}
+
 			if (anim != -1)	//we we are auxing, see if we should override with a frown
-			{	
+			{
 				if (ci->facial_frown < 0)// are we frowning ?
-				{	// yes, 
+				{	// yes,
 					if (-(ci->facial_frown) < cg.time)//are we done frowning ?
 					{	// yes, reset frown timer
 						ci->facial_frown = cg.time + flrand(7000.0, 10000.0);
 					}
-					else 
+					else
 					{	// not yet, so choose frown
 						anim = FACE_FROWN;
 					}
 				}
-				else// no we aren't frowning 
+				else// no we aren't frowning
 				{	// but should we start ?
 					if (ci->facial_frown < cg.time)
 					{
@@ -4204,7 +4208,7 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 }
 
 
-static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t legsAngles)
+static void CG_G2PlayerAngles( centity_t *cent, matrix3_t legs, vec3_t legsAngles)
 {
 	clientInfo_t *ci;
 
@@ -4226,7 +4230,7 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t legsAngle
 	else if (cent->isRagging)
 	{
 		cent->isRagging = qfalse;
-		trap_G2API_SetRagDoll(cent->ghoul2, NULL); //calling with null parms resets to no ragdoll.
+		trap->G2API_SetRagDoll(cent->ghoul2, NULL); //calling with null parms resets to no ragdoll.
 	}
 
 	if (cent->currentState.eType == ET_NPC)
@@ -4279,7 +4283,7 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t legsAngle
 				mdxaBone_t boltMatrix;
 				vec3_t boltOrg;
 
-				trap_G2API_GetBoltMatrix(other->ghoul2, 0, ci->bolt_lhand, &boltMatrix, other->turAngles, other->lerpOrigin, cg.time, cgs.gameModels, other->modelScale);
+				trap->G2API_GetBoltMatrix(other->ghoul2, 0, ci->bolt_lhand, &boltMatrix, other->turAngles, other->lerpOrigin, cg.time, cgs.gameModels, other->modelScale);
 				BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
 
 				BG_IK_MoveArm(cent->ghoul2, ci->bolt_lhand, cg.time, &cent->currentState,
@@ -4355,7 +4359,7 @@ CG_TrailItem
 static void CG_TrailItem( centity_t *cent, qhandle_t hModel ) {
 	refEntity_t		ent;
 	vec3_t			angles;
-	vec3_t			axis[3];
+	matrix3_t		axis;
 
 	VectorCopy( cent->lerpAngles, angles );
 	angles[PITCH] = 0;
@@ -4369,7 +4373,7 @@ static void CG_TrailItem( centity_t *cent, qhandle_t hModel ) {
 	AnglesToAxis( angles, ent.axis );
 
 	ent.hModel = hModel;
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
 
@@ -4382,7 +4386,7 @@ CG_PlayerFlag
 static void CG_PlayerFlag( centity_t *cent, qhandle_t hModel ) {
 	refEntity_t		ent;
 	vec3_t			angles;
-	vec3_t			axis[3];
+	matrix3_t		axis;
 	vec3_t			boltOrg, tAng, getAng, right;
 	mdxaBone_t		boltMatrix;
 	clientInfo_t	*ci;
@@ -4410,7 +4414,7 @@ static void CG_PlayerFlag( centity_t *cent, qhandle_t hModel ) {
 
 	VectorSet( tAng, cent->turAngles[PITCH], cent->turAngles[YAW], cent->turAngles[ROLL] );
 
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_llumbar, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_llumbar, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
 
 	BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_X, tAng);
@@ -4452,7 +4456,7 @@ static void CG_PlayerFlag( centity_t *cent, qhandle_t hModel ) {
 	*/
 	//FIXME: Not doing this at the moment because sorting totally messes up
 
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 
 
@@ -4463,7 +4467,6 @@ CG_PlayerPowerups
 */
 static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 	int		powerups;
-	clientInfo_t	*ci;
 
 	powerups = cent->currentState.powerups;
 	if ( !powerups ) {
@@ -4473,33 +4476,27 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 	#ifdef BASE_COMPAT
 		// quad gives a dlight
 		if ( powerups & ( 1 << PW_QUAD ) )
-			trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
+			trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
 	#endif // BASE_COMPAT
 
 	if (cent->currentState.eType == ET_NPC)
-	{
-		ci = cent->npcClient;
-		assert(ci);
-	}
-	else
-	{
-		ci = &cgs.clientinfo[ cent->currentState.clientNum ];
-	}
+		assert(cent->npcClient);
+
 	// redflag
 	if ( powerups & ( 1 << PW_REDFLAG ) ) {
 		CG_PlayerFlag( cent, cgs.media.redFlagModel );
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 0.2f, 0.2f );
+		trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 0.2f, 0.2f );
 	}
 
 	// blueflag
 	if ( powerups & ( 1 << PW_BLUEFLAG ) ) {
 		CG_PlayerFlag( cent, cgs.media.blueFlagModel );
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1.0 );
+		trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1.0 );
 	}
 
 	// neutralflag
 	if ( powerups & ( 1 << PW_NEUTRALFLAG ) ) {
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 1.0, 1.0 );
+		trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 1.0, 1.0, 1.0 );
 	}
 
 	// haste leaves smoke trails
@@ -4539,7 +4536,7 @@ static void CG_PlayerFloatSprite( centity_t *cent, qhandle_t shader ) {
 	ent.shaderRGBA[1] = 255;
 	ent.shaderRGBA[2] = 255;
 	ent.shaderRGBA[3] = 255;
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 
 
@@ -4573,7 +4570,7 @@ static void CG_PlayerFloatSpriteRGBA( centity_t *cent, qhandle_t shader, vec4_t 
 	ent.shaderRGBA[1] = rgba[1];
 	ent.shaderRGBA[2] = rgba[2];
 	ent.shaderRGBA[3] = rgba[3];
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
 
@@ -4638,7 +4635,7 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	}
 
 	// no shadows when cloaked
-	if ( cent->currentState.powerups & ( 1 << PW_CLOAKED )) 
+	if ( cent->currentState.powerups & ( 1 << PW_CLOAKED ))
 	{
 		return qfalse;
 	}
@@ -4671,7 +4668,7 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	{ //stencil
 		end[2] -= 4096.0f;
 
-		trap_CM_BoxTrace( &trace, cent->lerpOrigin, end, mins, maxs, 0, MASK_PLAYERSOLID );
+		trap->CM_Trace( &trace, cent->lerpOrigin, end, mins, maxs, 0, MASK_PLAYERSOLID, 0 );
 
 		if ( trace.fraction == 1.0 || trace.startsolid || trace.allsolid )
 		{
@@ -4682,7 +4679,7 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	{
 		end[2] -= SHADOW_DISTANCE;
 
-		trap_CM_BoxTrace( &trace, cent->lerpOrigin, end, mins, maxs, 0, MASK_PLAYERSOLID );
+		trap->CM_Trace( &trace, cent->lerpOrigin, end, mins, maxs, 0, MASK_PLAYERSOLID, 0 );
 
 		// no shadow if too high
 		if ( trace.fraction == 1.0 || trace.startsolid || trace.allsolid ) {
@@ -4707,7 +4704,7 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	alpha = 1.0 - trace.fraction;
 
 	// bk0101022 - hack / FPE - bogus planes?
-	//assert( DotProduct( trace.plane.normal, trace.plane.normal ) != 0.0f ) 
+	//assert( DotProduct( trace.plane.normal, trace.plane.normal ) != 0.0f )
 
 	// add the mark as a temporary, so it goes directly to the renderer
 	// without taking a spot in the cg_marks array
@@ -4716,7 +4713,7 @@ static qboolean CG_PlayerShadow( centity_t *cent, float *shadowPlane ) {
 	{
 		radius = 8.0f;
 	}
-	CG_ImpactMark( cgs.media.shadowMarkShader, trace.endpos, trace.plane.normal, 
+	CG_ImpactMark( cgs.media.shadowMarkShader, trace.endpos, trace.plane.normal,
 		cent->pe.legs.yawAngle, alpha,alpha,alpha,1, qfalse, radius, qtrue );
 
 	return qtrue;
@@ -4745,7 +4742,7 @@ static void CG_PlayerSplash( centity_t *cent ) {
 
 	// if the feet aren't in liquid, don't make a mark
 	// this won't handle moving water brushes, but they wouldn't draw right anyway...
-	contents = trap_CM_PointContents( end, 0 );
+	contents = trap->CM_PointContents( end, 0 );
 	if ( !( contents & ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ) ) {
 		return;
 	}
@@ -4754,13 +4751,13 @@ static void CG_PlayerSplash( centity_t *cent ) {
 	start[2] += 32;
 
 	// if the head isn't out of liquid, don't make a mark
-	contents = trap_CM_PointContents( start, 0 );
+	contents = trap->CM_PointContents( start, 0 );
 	if ( contents & ( CONTENTS_SOLID | CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) ) {
 		return;
 	}
 
 	// trace down to find the surface
-	trap_CM_BoxTrace( &trace, start, end, NULL, NULL, 0, ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ) );
+	trap->CM_Trace( &trace, start, end, NULL, NULL, 0, ( CONTENTS_WATER | CONTENTS_SLIME | CONTENTS_LAVA ), 0 );
 
 	if ( trace.fraction == 1.0 ) {
 		return;
@@ -4807,7 +4804,7 @@ static void CG_PlayerSplash( centity_t *cent ) {
 	verts[3].modulate[2] = 255;
 	verts[3].modulate[3] = 255;
 
-	trap_R_AddPolyToScene( cgs.media.wakeMarkShader, 4, verts );
+	trap->R_AddPolysToScene( cgs.media.wakeMarkShader, 4, verts, 1 );
 }
 
 #define REFRACT_EFFECT_DURATION		500
@@ -4827,11 +4824,11 @@ static void CG_ForcePushBlur( vec3_t org, centity_t *cent )
 		ex->pos.trTime = cg.time;
 		ex->pos.trType = TR_LINEAR;
 		VectorScale( cg.refdef.viewaxis[1], 55, ex->pos.trDelta );
-			
+
 		ex->color[0] = 24;
 		ex->color[1] = 32;
 		ex->color[2] = 40;
-		ex->refEntity.customShader = trap_R_RegisterShader( "gfx/effects/forcePush" );
+		ex->refEntity.customShader = trap->R_RegisterShader( "gfx/effects/forcePush" );
 
 		ex = CG_AllocLocalEntity();
 		ex->leType = LE_PUFF;
@@ -4844,11 +4841,11 @@ static void CG_ForcePushBlur( vec3_t org, centity_t *cent )
 		ex->pos.trTime = cg.time;
 		ex->pos.trType = TR_LINEAR;
 		VectorScale( cg.refdef.viewaxis[1], -55, ex->pos.trDelta );
-			
+
 		ex->color[0] = 24;
 		ex->color[1] = 32;
 		ex->color[2] = 40;
-		ex->refEntity.customShader = trap_R_RegisterShader( "gfx/effects/forcePush" );
+		ex->refEntity.customShader = trap->R_RegisterShader( "gfx/effects/forcePush" );
 	}
 	else
 	{ //superkewl "refraction" (well sort of) effect -rww
@@ -4954,7 +4951,7 @@ static void CG_ForcePushBlur( vec3_t org, centity_t *cent )
 		ent.shaderRGBA[2] = 255.0f;
 		ent.shaderRGBA[3] = alpha;
 
-		trap_R_AddRefEntityToScene( &ent );
+		trap->R_AddRefEntityToScene( &ent );
 	}
 }
 
@@ -4997,7 +4994,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent )
 
 	for (i = 0; cg_pushBoneNames[i]; i++)
 	{ //go through all the bones we want to put a blur effect on
-		bolt = trap_G2API_AddBolt(cent->ghoul2, 0, cg_pushBoneNames[i]);
+		bolt = trap->G2API_AddBolt(cent->ghoul2, 0, cg_pushBoneNames[i]);
 
 		if (bolt == -1)
 		{
@@ -5005,7 +5002,7 @@ static void CG_ForcePushBodyBlur( centity_t *cent )
 			continue;
 		}
 
-		trap_G2API_GetBoltMatrix(cent->ghoul2, 0, bolt, &boltMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+		trap->G2API_GetBoltMatrix(cent->ghoul2, 0, bolt, &boltMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 		BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, fxOrg);
 
 		//standard effect, don't be refractive (for now)
@@ -5028,7 +5025,7 @@ static void CG_ForceGripEffect( vec3_t org )
 	ex->pos.trTime = cg.time;
 	ex->pos.trType = TR_LINEAR;
 	VectorScale( cg.refdef.viewaxis[1], 55, ex->pos.trDelta );
-		
+
 	ex->color[0] = 200+((wv*255));
 	if (ex->color[0] > 255)
 	{
@@ -5036,7 +5033,7 @@ static void CG_ForceGripEffect( vec3_t org )
 	}
 	ex->color[1] = 0;
 	ex->color[2] = 0;
-	ex->refEntity.customShader = trap_R_RegisterShader( "gfx/effects/forcePush" );
+	ex->refEntity.customShader = trap->R_RegisterShader( "gfx/effects/forcePush" );
 
 	ex = CG_AllocLocalEntity();
 	ex->leType = LE_PUFF;
@@ -5060,7 +5057,7 @@ static void CG_ForceGripEffect( vec3_t org )
 	ex->color[0] = 255;
 	ex->color[1] = 255;
 	ex->color[2] = 255;
-	ex->refEntity.customShader = cgs.media.redSaberGlowShader;//trap_R_RegisterShader( "gfx/effects/forcePush" );
+	ex->refEntity.customShader = cgs.media.redSaberGlowShader;//trap->R_RegisterShader( "gfx/effects/forcePush" );
 }
 
 
@@ -5083,7 +5080,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int te
 		return; //this entity is mind-tricking the current client, so don't render it
 	}
 
-	trap_R_AddRefEntityToScene( ent );
+	trap->R_AddRefEntityToScene( ent );
 }
 
 #define MAX_SHIELD_TIME	2000.0
@@ -5095,7 +5092,7 @@ void CG_PlayerShieldHit(int entitynum, vec3_t dir, int amount)
 	centity_t *cent;
 	int	time;
 
-	if (entitynum<0 || entitynum >= MAX_ENTITIES)
+	if (entitynum < 0 || entitynum >= MAX_GENTITIES)
 	{
 		return;
 	}
@@ -5125,7 +5122,7 @@ void CG_DrawPlayerShield(centity_t *cent, vec3_t origin)
 	refEntity_t ent;
 	int			alpha;
 	float		scale;
-	
+
 	// Don't draw the shield when the player is dead.
 	if (cent->currentState.eFlags & EF_DEAD)
 	{
@@ -5154,7 +5151,7 @@ void CG_DrawPlayerShield(centity_t *cent, vec3_t origin)
 	ent.shaderRGBA[1] = alpha;
 	ent.shaderRGBA[2] = alpha;
 	ent.shaderRGBA[3] = 255;
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 
 
@@ -5188,7 +5185,7 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 	vec3_t			lightDir;
 	vec3_t			directedLight;
 
-	trap_R_LightForPoint( verts[0].xyz, ambientLight, directedLight, lightDir );
+	trap->R_LightForPoint( verts[0].xyz, ambientLight, directedLight, lightDir );
 
 	for (i = 0; i < numVerts; i++) {
 		incoming = DotProduct (normal, lightDir);
@@ -5198,7 +5195,7 @@ int CG_LightVerts( vec3_t normal, int numVerts, polyVert_t *verts )
 			verts[i].modulate[2] = ambientLight[2];
 			verts[i].modulate[3] = 255;
 			continue;
-		} 
+		}
 		j = ( ambientLight[0] + incoming * directedLight[0] );
 		if ( j > 255 ) {
 			j = 255;
@@ -5244,6 +5241,8 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb )
 		case SABER_PURPLE:
 			VectorSet( rgb, 0.9f, 0.2f, 1.0f );
 			break;
+		default:
+			break;
 	}
 }
 
@@ -5255,10 +5254,10 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 
 	//RGB combine all the colors of the sabers you're using into one averaged color!
 	if ( !saber )
-	{ 
+	{
 		return;
 	}
-	
+
 	if ( (saber->saberFlags2&SFL2_NO_DLIGHT) )
 	{//no dlight!
 		return;
@@ -5287,7 +5286,7 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 	}
 
 	if ( totallength )
-	{//actually have something to do	
+	{//actually have something to do
 		if ( numpositions == 1 )
 		{//only 1 blade, midpoint is already set (halfway between the start and end of that blade), rgb is already set, so it diameter
 		}
@@ -5329,7 +5328,7 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 			}
 		}
 
-		trap_R_AddLightToScene( mid, diameter + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
+		trap->R_AddLightToScene( mid, diameter + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
 	}
 }
 
@@ -5387,7 +5386,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	{	// always add a light because sabers cast a nice glow before they slice you in half!!  or something...
 		vec3_t rgb={1,1,1};
 		CG_RGBForSaberColor( color, rgb );
-		trap_R_AddLightToScene( mid, (length*1.4f) + (random()*3.0f), rgb[0], rgb[1], rgb[2] );
+		trap->R_AddLightToScene( mid, (length*1.4f) + (random()*3.0f), rgb[0], rgb[1], rgb[2] );
 	}
 
 	memset( &saber, 0, sizeof( refEntity_t ));
@@ -5396,7 +5395,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	//	refEnts to do each glow blob individually
 	saber.saberLength = length;
 
-	// Jeff, I did this because I foolishly wished to have a bright halo as the saber is unleashed.  
+	// Jeff, I did this because I foolishly wished to have a bright halo as the saber is unleashed.
 	// It's not quite what I'd hoped tho.  If you have any ideas, go for it!  --Pat
 	if (length < lengthMax)
 	{
@@ -5425,7 +5424,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
 	saber.renderfx = rfx;
 
-	trap_R_AddRefEntityToScene( &saber );
+	trap->R_AddRefEntityToScene( &saber );
 
 	// Do the hot core
 	VectorMA( origin, length, dir, saber.origin );
@@ -5442,7 +5441,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
 
-	trap_R_AddRefEntityToScene( &saber );
+	trap->R_AddRefEntityToScene( &saber );
 }
 
 //--------------------------------------------------------------
@@ -5450,17 +5449,17 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 //
 // Can pass in NULL for the axis
 //--------------------------------------------------------------
-void CG_GetTagWorldPosition( refEntity_t *model, char *tag, vec3_t pos, vec3_t axis[3] )
+void CG_GetTagWorldPosition( refEntity_t *model, char *tag, vec3_t pos, matrix3_t axis )
 {
 	orientation_t	orientation;
 	int i = 0;
 
 	// Get the requested tag
-	trap_R_LerpTag( &orientation, model->hModel, model->oldframe, model->frame,
+	trap->R_LerpTag( &orientation, model->hModel, model->oldframe, model->frame,
 		1.0f - model->backlerp, tag );
 
 	VectorCopy( model->origin, pos );
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		VectorMA( pos, orientation.origin[i], model->axis[i], pos );
 	}
@@ -5480,7 +5479,8 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 //	byte			colors[4];
 	int				i, j;
 	int				numFragments;
-	vec3_t			axis[3], originalPoints[4], mid;
+	matrix3_t		axis;
+	vec3_t			originalPoints[4], mid;
 	vec3_t			markPoints[MAX_MARK_POINTS], projection;
 	polyVert_t		*v, verts[MAX_VERTS_ON_POLY];
 	markPoly_t		*mark;
@@ -5488,7 +5488,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 
 	float	radius = 0.65f;
 
-	if ( !cg_marks.integer ) 
+	if ( !cg_marks.integer )
 	{
 		return;
 	}
@@ -5501,7 +5501,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 	CrossProduct( axis[1], axis[0], axis[2] );
 
 	// create the full polygon that we'll project
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{	// stretch a bit more in the direction that we are traveling in...  debateable as to whether this makes things better or worse
 		originalPoints[0][i] = start[i] - radius * axis[1][i] - radius * axis[2][i];
 		originalPoints[1][i] = end[i] + radius * axis[1][i] - radius * axis[2][i];
@@ -5512,29 +5512,29 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 	VectorScale( normal, -1, projection );
 
 	// get the fragments
-	numFragments = trap_CM_MarkFragments( 4, (const float (*)[3])originalPoints,
+	numFragments = trap->R_MarkFragments( 4, (const float (*)[3])originalPoints,
 					projection, MAX_MARK_POINTS, markPoints[0], MAX_MARK_FRAGMENTS, markFragments );
 
-	for ( i = 0, mf = markFragments ; i < numFragments ; i++, mf++ ) 
+	for ( i = 0, mf = markFragments ; i < numFragments ; i++, mf++ )
 	{
 		// we have an upper limit on the complexity of polygons that we store persistantly
-		if ( mf->numPoints > MAX_VERTS_ON_POLY ) 
+		if ( mf->numPoints > MAX_VERTS_ON_POLY )
 		{
 			mf->numPoints = MAX_VERTS_ON_POLY;
 		}
 
-		for ( j = 0, v = verts ; j < mf->numPoints ; j++, v++ ) 
+		for ( j = 0, v = verts ; j < mf->numPoints ; j++, v++ )
 		{
 			vec3_t delta;
 
-			// Set up our texture coords, this may need some work 
+			// Set up our texture coords, this may need some work
 			VectorCopy( markPoints[mf->firstPoint + j], v->xyz );
 			VectorAdd( end, start, mid );
 			VectorScale( mid, 0.5f, mid );
 			VectorSubtract( v->xyz, mid, delta );
 
-			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + random() * 0.03f); 
-			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + random() * 0.05f);	
+			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + random() * 0.03f);
+			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + random() * 0.05f);
 		}
 
 		if (cg_saberDynamicMarks.integer)
@@ -5603,7 +5603,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 			apArgs.shader = cgs.media.rivetMarkShader;
 			apArgs.flags = 0x08000000|0x00000004;
 
-			trap_FX_AddPoly(&apArgs);
+			trap->FX_AddPoly(&apArgs);
 
 			apArgs.shader = cgs.media.mSaberDamageGlow;
 			apArgs.rgb1[0] = 215 + random() * 40.0f;
@@ -5617,7 +5617,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 
 			apArgs.killTime = 100;
 
-			trap_FX_AddPoly(&apArgs);
+			trap->FX_AddPoly(&apArgs);
 		}
 		else
 		{
@@ -5678,11 +5678,11 @@ qboolean CG_G2TraceCollide(trace_t *tr, vec3_t const mins, vec3_t const maxs, co
 			g2Hit->currentState.NPC_class == CLASS_VEHICLE &&
 			g2Hit->m_pVehicle)
 		{
-			trap_G2API_CollisionDetectCache ( G2Trace, g2Hit->ghoul2, angles, g2Hit->lerpOrigin, cg.time, g2Hit->currentState.number, lastValidStart, lastValidEnd, g2Hit->modelScale, 0, cg_g2TraceLod.integer, fRadius );
+			trap->G2API_CollisionDetectCache ( G2Trace, g2Hit->ghoul2, angles, g2Hit->lerpOrigin, cg.time, g2Hit->currentState.number, (float *)lastValidStart, (float *)lastValidEnd, g2Hit->modelScale, 0, cg_g2TraceLod.integer, fRadius );
 		}
 		else
 		{
-			trap_G2API_CollisionDetect ( G2Trace, g2Hit->ghoul2, angles, g2Hit->lerpOrigin, cg.time, g2Hit->currentState.number, lastValidStart, lastValidEnd, g2Hit->modelScale, 0, cg_g2TraceLod.integer, fRadius );
+			trap->G2API_CollisionDetect ( G2Trace, g2Hit->ghoul2, angles, g2Hit->lerpOrigin, cg.time, g2Hit->currentState.number, (float *)lastValidStart, (float *)lastValidEnd, g2Hit->modelScale, 0, cg_g2TraceLod.integer, fRadius );
 		}
 
 		if (G2Trace[0].mEntityNum != g2Hit->currentState.number)
@@ -5733,8 +5733,8 @@ void CG_G2SaberEffects(vec3_t start, vec3_t end, centity_t *owner)
 
 			if (trace.entityNum != ENTITYNUM_NONE)
 			{ //it succeeded with the ghoul2 trace
-				trap_FX_PlayEffectID( cgs.effects.mSaberBloodSparks, trace.endpos, trace.plane.normal, -1, -1 );
-				trap_S_StartSound(trace.endpos, trace.entityNum, CHAN_AUTO, trap_S_RegisterSound(va("sound/weapons/saber/saberhit%i.wav", Q_irand(1, 3))));
+				trap->FX_PlayEffectID( cgs.effects.mSaberBloodSparks, trace.endpos, trace.plane.normal, -1, -1, qfalse );
+				trap->S_StartSound(trace.endpos, trace.entityNum, CHAN_AUTO, trap->S_RegisterSound(va("sound/weapons/saber/saberhit%i.wav", Q_irand(1, 3))));
 			}
 		}
 
@@ -5760,7 +5760,7 @@ void CG_AddGhoul2Mark(int shader, float size, vec3_t start, vec3_t end, int entn
 
 	memset ( &goreSkin, 0, sizeof(goreSkin) );
 
-	if (trap_G2API_GetNumGoreMarks(ghoul2, 0) >= cg_ghoul2Marks.integer)
+	if (trap->G2API_GetNumGoreMarks(ghoul2, 0) >= cg_ghoul2Marks.integer)
 	{ //you've got too many marks already
 		return;
 	}
@@ -5780,7 +5780,7 @@ void CG_AddGhoul2Mark(int shader, float size, vec3_t start, vec3_t end, int entn
 	//rwwFIXMEFIXME: fade has sorting issues with other non-fading decals, disabled until fixed
 
 	goreSkin.baseModelOnly = qfalse;
-	
+
 	goreSkin.currentTime = cg.time;
 	goreSkin.entNum      = entnum;
 	goreSkin.SSize		 = size;
@@ -5808,7 +5808,7 @@ void CG_AddGhoul2Mark(int shader, float size, vec3_t start, vec3_t end, int entn
 	VectorCopy ( entposition, goreSkin.position );
 	goreSkin.angles[YAW] = entangle;
 
-	trap_G2API_AddSkinGore(ghoul2, &goreSkin);
+	trap->G2API_AddSkinGore(ghoul2, &goreSkin);
 }
 
 void CG_SaberCompWork(vec3_t start, vec3_t end, centity_t *owner, int saberNum, int bladeNum)
@@ -5882,7 +5882,7 @@ void CG_SaberCompWork(vec3_t start, vec3_t end, centity_t *owner, int saberNum, 
 								{
 									client = &cgs.clientinfo[owner->currentState.clientNum];
 								}
-								if ( client 
+								if ( client
 									&& client->infoValid )
 								{
 									if ( WP_SaberBladeUseSecondBladeStyle( &client->saber[saberNum], bladeNum ) )
@@ -5974,12 +5974,12 @@ void CG_SaberCompWork(vec3_t start, vec3_t end, centity_t *owner, int saberNum, 
 
 				if (owner->serverSaberFleshImpact)
 				{ //do standard player/live ent hit sparks
-					trap_FX_PlayEffectID( hitPersonFxID, trace.endpos, trace.plane.normal, -1, -1 );
-					//trap_S_StartSound(trace.endpos, trace.entityNum, CHAN_AUTO, trap_S_RegisterSound(va("sound/weapons/saber/saberhit%i.wav", Q_irand(1, 3))));
+					trap->FX_PlayEffectID( hitPersonFxID, trace.endpos, trace.plane.normal, -1, -1, qfalse );
+					//trap->S_StartSound(trace.endpos, trace.entityNum, CHAN_AUTO, trap->S_RegisterSound(va("sound/weapons/saber/saberhit%i.wav", Q_irand(1, 3))));
 				}
 				else
 				{ //do the cut effect
-					trap_FX_PlayEffectID( hitOtherFxID, trace.endpos, trace.plane.normal, -1, -1 );
+					trap->FX_PlayEffectID( hitOtherFxID, trace.endpos, trace.plane.normal, -1, -1, qfalse );
 				}
 				doEffect = qfalse;
 			}
@@ -6007,7 +6007,7 @@ qboolean BG_SuperBreakWinAnim( int anim );
 void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, int saberNum, int bladeNum, vec3_t origin, vec3_t angles, qboolean fromSaber, qboolean dontDraw)
 {
 	vec3_t	org_, end, v,
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};	// shut the compiler up
 	trace_t	trace;
 	int i = 0;
 	int trailDur;
@@ -6058,17 +6058,17 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 	if (  !WP_SaberBladeUseSecondBladeStyle( &client->saber[saberNum], bladeNum )
 			&& client->saber[saberNum].bladeEffect )
 	{
-		trap_FX_PlayBoltedEffectID(client->saber[saberNum].bladeEffect, scent->lerpOrigin, 
+		trap->FX_PlayBoltedEffectID(client->saber[saberNum].bladeEffect, scent->lerpOrigin,
 			scent->ghoul2, bladeNum, scent->currentState.number, useModelIndex, -1, qfalse);
 	}
 	else if ( WP_SaberBladeUseSecondBladeStyle( &client->saber[saberNum], bladeNum )
 			&& client->saber[saberNum].bladeEffect2 )
 	{
-		trap_FX_PlayBoltedEffectID(client->saber[saberNum].bladeEffect2, scent->lerpOrigin, 
+		trap->FX_PlayBoltedEffectID(client->saber[saberNum].bladeEffect2, scent->lerpOrigin,
 			scent->ghoul2, bladeNum, scent->currentState.number, useModelIndex, -1, qfalse);
 	}
 	//get the boltMatrix
-	trap_G2API_GetBoltMatrix(scent->ghoul2, useModelIndex, bladeNum, &boltMatrix, futureAngles, origin, cg.time, cgs.gameModels, scent->modelScale);
+	trap->G2API_GetBoltMatrix(scent->ghoul2, useModelIndex, bladeNum, &boltMatrix, futureAngles, origin, cg.time, cgs.gameModels, scent->modelScale);
 
 	// work the matrix axis stuff into the original axis and origins used.
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, org_);
@@ -6082,12 +6082,26 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 	}
 
 	VectorMA( org_, saberLen, axis_[0], end );
-	
+
 	VectorAdd( end, axis_[0], end );
 
 	if (cent->currentState.eType == ET_NPC)
 	{
-		scolor = client->saber[saberNum].blade[bladeNum].color;
+		if (cent->currentState.boltToPlayer)
+		{
+			if (saberNum == 0)
+			{
+				scolor = (cent->currentState.boltToPlayer & 0x07) - 1;
+			}
+			else
+			{
+				scolor = ((cent->currentState.boltToPlayer & 0x38) >> 3) - 1;
+			}
+		}
+		else
+		{
+			scolor = client->saber[saberNum].blade[bladeNum].color;
+		}
 	}
 	else
 	{
@@ -6163,7 +6177,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 			{//tracing from base to end
 				CG_Trace( &trace, org_, NULL, NULL, end, ENTITYNUM_NONE, MASK_SOLID );
 			}
-			
+
 			if ( trace.fraction < 1.0f )
 			{
 				vec3_t trDir;
@@ -6180,7 +6194,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 				{
 					if (!(trace.surfaceFlags & SURF_NOIMPACT) ) // never spark on sky
 					{
-						trap_FX_PlayEffectID( cgs.effects.mSparks, trace.endpos, trDir, -1, -1 );
+						trap->FX_PlayEffectID( cgs.effects.mSparks, trace.endpos, trDir, -1, -1, qfalse );
 					}
 				}
 
@@ -6203,12 +6217,12 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 						{//only put marks on architecture
 							// Let's do some cool burn/glowing mark bits!!!
 							CG_CreateSaberMarks( client->saber[saberNum].blade[bladeNum].trail.oldPos[i], trace.endpos, trace.plane.normal );
-						
+
 							//make a sound
 							if ( cg.time - client->saber[saberNum].blade[bladeNum].hitWallDebounceTime >= 100 )
 							{//ugh, need to have a real sound debouncer... or do this game-side
 								client->saber[saberNum].blade[bladeNum].hitWallDebounceTime = cg.time;
-								trap_S_StartSound ( trace.endpos, -1, CHAN_WEAPON, trap_S_RegisterSound( va("sound/weapons/saber/saberhitwall%i", Q_irand(1, 3)) ) );
+								trap->S_StartSound ( trace.endpos, -1, CHAN_WEAPON, trap->S_RegisterSound( va("sound/weapons/saber/saberhitwall%i", Q_irand(1, 3)) ) );
 							}
 						}
 					}
@@ -6230,7 +6244,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 				if ( client->saber[saberNum].blade[bladeNum].trail.haveOldPos[i] )
 				{
 					// Hmmm, no impact this frame, but we have an old point
-					// Let's put the mark there, we should use an endcap mark to close the line, but we 
+					// Let's put the mark there, we should use an endcap mark to close the line, but we
 					//	can probably just get away with a round mark
 	//					CG_ImpactMark( cgs.media.rivetMarkShader, client->saber[saberNum].blade[bladeNum].trail.oldPos[i], client->saber[saberNum].blade[bladeNum].trail.oldNormal[i],
 	//							0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
@@ -6291,39 +6305,39 @@ CheckTrail:
 					VectorCopy( saberTrail->base, verts[3].xyz );
 
 					//tc doesn't even matter since we're just gonna stencil an outline, but whatever.
-					verts[0].st[0] = 0;	
-					verts[0].st[1] = 0;	
-					verts[0].modulate[0] = 255;	
-					verts[0].modulate[1] = 255;	
-					verts[0].modulate[2] = 255;	
+					verts[0].st[0] = 0;
+					verts[0].st[1] = 0;
+					verts[0].modulate[0] = 255;
+					verts[0].modulate[1] = 255;
+					verts[0].modulate[2] = 255;
 					verts[0].modulate[3] = 255;
 
-					verts[1].st[0] = 0;	
-					verts[1].st[1] = 1;	
-					verts[1].modulate[0] = 255;	
-					verts[1].modulate[1] = 255;	
-					verts[1].modulate[2] = 255;	
+					verts[1].st[0] = 0;
+					verts[1].st[1] = 1;
+					verts[1].modulate[0] = 255;
+					verts[1].modulate[1] = 255;
+					verts[1].modulate[2] = 255;
 					verts[1].modulate[3] = 255;
 
-					verts[2].st[0] = 1;	
-					verts[2].st[1] = 1;	
-					verts[2].modulate[0] = 255;	
-					verts[2].modulate[1] = 255;	
-					verts[2].modulate[2] = 255;	
+					verts[2].st[0] = 1;
+					verts[2].st[1] = 1;
+					verts[2].modulate[0] = 255;
+					verts[2].modulate[1] = 255;
+					verts[2].modulate[2] = 255;
 					verts[2].modulate[3] = 255;
 
-					verts[3].st[0] = 1;	
-					verts[3].st[1] = 0;	
-					verts[3].modulate[0] = 255;	
-					verts[3].modulate[1] = 255;	
-					verts[3].modulate[2] = 255;	
+					verts[3].st[0] = 1;
+					verts[3].st[1] = 0;
+					verts[3].modulate[0] = 255;
+					verts[3].modulate[1] = 255;
+					verts[3].modulate[2] = 255;
 					verts[3].modulate[3] = 255;
 
 					//don't capture postrender objects (now we'll postrender the saber so it doesn't get in the capture)
-					trap_R_SetRefractProp(1.0f, 0.0f, qtrue, qtrue);
+					trap->R_SetRefractProp(1.0f, 0.0f, qtrue, qtrue);
 
 					//shader 2 is always the crazy refractive shader.
-					trap_R_AddPolyToScene( 2, 4, verts );
+					trap->R_AddPolyToScene( 2, 4, verts );
 				}
 				else
 	#endif
@@ -6387,9 +6401,9 @@ CheckTrail:
 								fx.mShader = cgs.media.swordTrailShader;
 								VectorSet( rgb1, 32.0f, 32.0f, 32.0f ); // make the sith sword trail pretty faint
 								trailDur *= 2.0f; // stay around twice as long?
-							} 
-							else 
-							{ 
+							}
+							else
+							{
 								fx.mShader = cgs.media.saberBlurShader;
 							}
 							fx.mKillTime = trailDur;
@@ -6408,7 +6422,7 @@ CheckTrail:
 						// new tip
 						VectorCopy( rgb1, fx.mVerts[1].rgb );
 						fx.mVerts[1].alpha = 255.0f;
-						
+
 						fx.mVerts[1].ST[0] = 0.0f;
 						fx.mVerts[1].ST[1] = 0.0f;
 						fx.mVerts[1].destST[0] = 1.0f;
@@ -6434,7 +6448,7 @@ CheckTrail:
 
 						if (cg_saberTrail.integer == 2 && cg_shadows.integer != 2 && cgs.glconfig.stencilBits >= 4)
 						{
-							trap_R_SetRefractProp(1.0f, 0.0f, qtrue, qtrue); //don't need to do this every frame.. but..
+							trap->R_SetRefractionProperties(1.0f, 0.0f, qtrue, qtrue); //don't need to do this every frame.. but..
 
 							if (BG_SaberInAttack(cent->currentState.saberMove)
 								||BG_SuperBreakWinAnim(cent->currentState.torsoAnim))
@@ -6457,7 +6471,7 @@ CheckTrail:
 						}
 						*/
 
-						trap_FX_AddPrimitive(&fx);
+						trap->FX_AddPrimitive(&fx);
 					}
 				}
 			}
@@ -6527,7 +6541,7 @@ int CG_IsMindTricked(int trickIndex1, int trickIndex2, int trickIndex3, int tric
 	{
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -6539,7 +6553,7 @@ void CG_DrawPlayerSphere(centity_t *cent, vec3_t origin, float scale, int shader
 	vec3_t ang;
 	float vLen;
 	vec3_t viewDir;
-	
+
 	// Don't draw the shield when the player is dead.
 	if (cent->currentState.eFlags & EF_DEAD)
 	{
@@ -6574,9 +6588,9 @@ void CG_DrawPlayerSphere(centity_t *cent, vec3_t origin, float scale, int shader
 	ent.nonNormalizedAxes = qtrue;
 
 	ent.hModel = cgs.media.halfShieldModel;
-	ent.customShader = shader;	
+	ent.customShader = shader;
 
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 
 	if (!cg.renderingThirdPerson && cent->currentState.number == cg.predictedPlayerState.clientNum)
 	{ //don't do the rest then
@@ -6635,8 +6649,8 @@ void CG_DrawPlayerSphere(centity_t *cent, vec3_t origin, float scale, int shader
 
 	VectorMA(ent.origin, 40.0f, viewDir, ent.origin);
 
-	ent.customShader = trap_R_RegisterShader("effects/refract_2");
-	trap_R_AddRefEntityToScene( &ent );
+	ent.customShader = trap->R_RegisterShader("effects/refract_2");
+	trap->R_AddRefEntityToScene( &ent );
 }
 
 void CG_AddLightningBeam(vec3_t start, vec3_t end)
@@ -6691,7 +6705,7 @@ void CG_AddLightningBeam(vec3_t start, vec3_t end)
 	b.alpha1 = 0.0f;
 	b.alpha2 = 0.2f;
 	b.alphaParm = 0.5f;
-	
+
 	/*
 	VectorCopy(WHITE, b.sRGB);
 	VectorCopy(WHITE, b.eRGB);
@@ -6704,10 +6718,10 @@ void CG_AddLightningBeam(vec3_t start, vec3_t end)
 
 	b.rgbParm = 0.0f;
 	b.killTime = 50;
-	b.shader = trap_R_RegisterShader( "gfx/misc/electric2" );
+	b.shader = trap->R_RegisterShader( "gfx/misc/electric2" );
 	b.flags = 0x00000001; //FX_ALPHA_LINEAR
 
-	trap_FX_AddBezier(&b);
+	trap->FX_AddBezier(&b);
 }
 
 void CG_AddRandomLightning(vec3_t start, vec3_t end)
@@ -6779,7 +6793,7 @@ qboolean CG_ThereIsAMaster(void)
 void CG_DrawNoForceSphere(centity_t *cent, vec3_t origin, float scale, int shader)
 {
 	refEntity_t ent;
-	
+
 	// Don't draw the shield when the player is dead.
 	if (cent->currentState.eFlags & EF_DEAD)
 	{
@@ -6819,9 +6833,9 @@ void CG_DrawNoForceSphere(centity_t *cent, vec3_t origin, float scale, int shade
 	ent.shaderRGBA[0] = ent.shaderRGBA[1] = ent.shaderRGBA[3];
 
 	ent.hModel = cgs.media.halfShieldModel;
-	ent.customShader = shader;	
+	ent.customShader = shader;
 
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
 
@@ -6851,7 +6865,7 @@ int CG_HandleAppendedSkin(char *modelName)
 		}
 		skinName[i] = 0;
 
-		if (skinName[0]) 
+		if (skinName[0])
 		{ //got it, register the skin under the model path.
 			char baseFolder[MAX_QPATH];
 
@@ -6873,7 +6887,7 @@ int CG_HandleAppendedSkin(char *modelName)
 					useSkinName = va("%s/model_%s.skin", baseFolder, skinName);
 				}
 
-				skinID = trap_R_RegisterSkin(useSkinName);
+				skinID = trap->R_RegisterSkin(useSkinName);
 			}
 		}
 	}
@@ -6882,8 +6896,8 @@ int CG_HandleAppendedSkin(char *modelName)
 }
 
 //Create a temporary ghoul2 instance and get the gla name so we can try loading animation data and sounds.
-void BG_GetVehicleModelName(char *modelname);
-void BG_GetVehicleSkinName(char *skinname);
+void BG_GetVehicleModelName(char *modelname, int len);
+void BG_GetVehicleSkinName(char *skinname, int len);
 
 void CG_CacheG2AnimInfo(char *modelName)
 {
@@ -6898,20 +6912,20 @@ void CG_CacheG2AnimInfo(char *modelName)
 
 	if (modelName[0] == '$')
 	{ //it's a vehicle name actually, let's precache the whole vehicle
-		BG_GetVehicleModelName(useModel);
-		BG_GetVehicleSkinName(useSkin);
+		BG_GetVehicleModelName(useModel, sizeof( useModel ) );
+		BG_GetVehicleSkinName(useSkin, sizeof( useSkin ) );
 		if ( useSkin[0] )
 		{ //use a custom skin
-			trap_R_RegisterSkin(va("models/players/%s/model_%s.skin", useModel, useSkin));
+			trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", useModel, useSkin));
 		}
 		else
 		{
-			trap_R_RegisterSkin(va("models/players/%s/model_default.skin", useModel));
+			trap->R_RegisterSkin(va("models/players/%s/model_default.skin", useModel));
 		}
 		Q_strncpyz(useModel, va("models/players/%s/model.glm", useModel), sizeof( useModel ) );
 	}
 
-	trap_G2API_InitGhoul2Model(&g2, useModel, 0, 0, 0, 0, 0);
+	trap->G2API_InitGhoul2Model(&g2, useModel, 0, 0, 0, 0, 0);
 
 	if (g2)
 	{
@@ -6921,10 +6935,10 @@ void CG_CacheG2AnimInfo(char *modelName)
 		animIndex = -1;
 
 		GLAName[0] = 0;
-		trap_G2API_GetGLAName(g2, 0, GLAName);
+		trap->G2API_GetGLAName(g2, 0, GLAName);
 
 		Q_strncpyz(originalModelName, useModel, sizeof( originalModelName ) );
-			
+
 		slash = Q_strrchr( GLAName, '/' );
 		if ( slash )
 		{
@@ -6946,7 +6960,7 @@ void CG_CacheG2AnimInfo(char *modelName)
 		}
 
 		//Now free the temp instance
-		trap_G2API_CleanGhoul2Models(&g2);
+		trap->G2API_CleanGhoul2Models(&g2);
 	}
 }
 
@@ -6955,44 +6969,44 @@ static void CG_RegisterVehicleAssets( Vehicle_t *pVeh )
 	/*
 	if ( pVeh->m_pVehicleInfo->exhaustFX )
 	{
-		pVeh->m_pVehicleInfo->iExhaustFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->exhaustFX );
+		pVeh->m_pVehicleInfo->iExhaustFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->exhaustFX );
 	}
 	if ( pVeh->m_pVehicleInfo->trailFX )
 	{
-		pVeh->m_pVehicleInfo->iTrailFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->trailFX );
+		pVeh->m_pVehicleInfo->iTrailFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->trailFX );
 	}
 	if ( pVeh->m_pVehicleInfo->impactFX )
 	{
-		pVeh->m_pVehicleInfo->iImpactFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->impactFX );
+		pVeh->m_pVehicleInfo->iImpactFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->impactFX );
 	}
 	if ( pVeh->m_pVehicleInfo->explodeFX )
 	{
-		pVeh->m_pVehicleInfo->iExplodeFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->explodeFX );
+		pVeh->m_pVehicleInfo->iExplodeFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->explodeFX );
 	}
 	if ( pVeh->m_pVehicleInfo->wakeFX )
 	{
-		pVeh->m_pVehicleInfo->iWakeFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->wakeFX );
+		pVeh->m_pVehicleInfo->iWakeFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->wakeFX );
 	}
 
 	if ( pVeh->m_pVehicleInfo->dmgFX )
 	{
-		pVeh->m_pVehicleInfo->iDmgFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->dmgFX );
+		pVeh->m_pVehicleInfo->iDmgFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->dmgFX );
 	}
 	if ( pVeh->m_pVehicleInfo->wpn1FX )
 	{
-		pVeh->m_pVehicleInfo->iWpn1FX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn1FX );
+		pVeh->m_pVehicleInfo->iWpn1FX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn1FX );
 	}
 	if ( pVeh->m_pVehicleInfo->wpn2FX )
 	{
-		pVeh->m_pVehicleInfo->iWpn2FX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn2FX );
+		pVeh->m_pVehicleInfo->iWpn2FX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn2FX );
 	}
 	if ( pVeh->m_pVehicleInfo->wpn1FireFX )
 	{
-		pVeh->m_pVehicleInfo->iWpn1FireFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn1FireFX );
+		pVeh->m_pVehicleInfo->iWpn1FireFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn1FireFX );
 	}
 	if ( pVeh->m_pVehicleInfo->wpn2FireFX )
 	{
-		pVeh->m_pVehicleInfo->iWpn2FireFX = trap_FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn2FireFX );
+		pVeh->m_pVehicleInfo->iWpn2FireFX = trap->FX_RegisterEffect( pVeh->m_pVehicleInfo->wpn2FireFX );
 	}
 	*/
 }
@@ -7027,7 +7041,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			//create a vehicle object clientside for this type
 			char *vehType = &modelName[1];
 			int iVehIndex = BG_VehicleGetIndex( vehType );
-			
+
 			switch( g_vehicleInfo[iVehIndex].type )
 			{
 				case VH_ANIMAL:
@@ -7051,7 +7065,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 					assert(!"vehicle with an unknown type - couldn't create vehicle_t");
 					break;
 			}
-			
+
 			//set up my happy prediction hack
 			cent->m_pVehicle->m_vOrientation = &cgSendPS[cent->currentState.number]->vehOrientation[0];
 
@@ -7060,20 +7074,20 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			//attach the handles for fx cgame-side
 			CG_RegisterVehicleAssets(cent->m_pVehicle);
 
-			BG_GetVehicleModelName(modelName);
+			BG_GetVehicleModelName(modelName, sizeof( modelName ) );
 			if (cent->m_pVehicle->m_pVehicleInfo->skin &&
 				cent->m_pVehicle->m_pVehicleInfo->skin[0])
 			{ //use a custom skin
-				skinID = trap_R_RegisterSkin(va("models/players/%s/model_%s.skin", modelName, cent->m_pVehicle->m_pVehicleInfo->skin));
+				skinID = trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", modelName, cent->m_pVehicle->m_pVehicleInfo->skin));
 			}
 			else
 			{
-				skinID = trap_R_RegisterSkin(va("models/players/%s/model_default.skin", modelName));
+				skinID = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", modelName));
 			}
 			strcpy(modelName, va("models/players/%s/model.glm", modelName));
 
 			//this sound is *only* used for vehicles now
-			cgs.media.noAmmoSound = trap_S_RegisterSound( "sound/weapons/noammo.wav" );
+			cgs.media.noAmmoSound = trap->S_RegisterSound( "sound/weapons/noammo.wav" );
 		}
 		else
 		{
@@ -7082,10 +7096,10 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 
 		if (cent->ghoul2)
 		{ //clean it first!
-            trap_G2API_CleanGhoul2Models(&cent->ghoul2);
+            trap->G2API_CleanGhoul2Models(&cent->ghoul2);
 		}
 
-		trap_G2API_InitGhoul2Model(&cent->ghoul2, modelName, 0, skinID, 0, 0, 0);
+		trap->G2API_InitGhoul2Model(&cent->ghoul2, modelName, 0, skinID, 0, 0, 0);
 
 		if (cent->ghoul2)
 		{
@@ -7101,27 +7115,27 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 				int i;
 
 				// Setup the default first bolt
-				i = trap_G2API_AddBolt( cent->ghoul2, 0, "model_root" );
+				i = trap->G2API_AddBolt( cent->ghoul2, 0, "model_root" );
 
 				// Setup the droid unit.
-				cent->m_pVehicle->m_iDroidUnitTag = trap_G2API_AddBolt( cent->ghoul2, 0, "*droidunit" );
+				cent->m_pVehicle->m_iDroidUnitTag = trap->G2API_AddBolt( cent->ghoul2, 0, "*droidunit" );
 
 				// Setup the Exhausts.
 				for ( i = 0; i < MAX_VEHICLE_EXHAUSTS; i++ )
 				{
 					Com_sprintf( strTemp, 128, "*exhaust%i", i + 1 );
-					cent->m_pVehicle->m_iExhaustTag[i] = trap_G2API_AddBolt( cent->ghoul2, 0, strTemp );
+					cent->m_pVehicle->m_iExhaustTag[i] = trap->G2API_AddBolt( cent->ghoul2, 0, strTemp );
 				}
 
 				// Setup the Muzzles.
 				for ( i = 0; i < MAX_VEHICLE_MUZZLES; i++ )
 				{
 					Com_sprintf( strTemp, 128, "*muzzle%i", i + 1 );
-					cent->m_pVehicle->m_iMuzzleTag[i] = trap_G2API_AddBolt( cent->ghoul2, 0, strTemp );
+					cent->m_pVehicle->m_iMuzzleTag[i] = trap->G2API_AddBolt( cent->ghoul2, 0, strTemp );
 					if ( cent->m_pVehicle->m_iMuzzleTag[i] == -1 )
 					{//ergh, try *flash?
 						Com_sprintf( strTemp, 128, "*flash%i", i + 1 );
-						cent->m_pVehicle->m_iMuzzleTag[i] = trap_G2API_AddBolt( cent->ghoul2, 0, strTemp );
+						cent->m_pVehicle->m_iMuzzleTag[i] = trap->G2API_AddBolt( cent->ghoul2, 0, strTemp );
 					}
 				}
 
@@ -7130,7 +7144,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 				{
 					if ( cent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag )
 					{
-						cent->m_pVehicle->m_iGunnerViewTag[i] = trap_G2API_AddBolt( cent->ghoul2, 0, cent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag );
+						cent->m_pVehicle->m_iGunnerViewTag[i] = trap->G2API_AddBolt( cent->ghoul2, 0, cent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag );
 					}
 					else
 					{
@@ -7173,7 +7187,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 					{
 						if (cent->npcClient->ghoul2Weapons[j])
 						{ //free the old instance(s)
-							trap_G2API_CleanGhoul2Models(&cent->npcClient->ghoul2Weapons[j]);
+							trap->G2API_CleanGhoul2Models(&cent->npcClient->ghoul2Weapons[j]);
 							cent->npcClient->ghoul2Weapons[j] = 0;
 						}
 
@@ -7183,19 +7197,19 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 				}
 			}
 
-			trap_G2API_SetSkin(cent->ghoul2, 0, skinID, skinID);
+			trap->G2API_SetSkin(cent->ghoul2, 0, skinID, skinID);
 
 			cent->localAnimIndex = -1;
 
 			GLAName[0] = 0;
-			trap_G2API_GetGLAName(cent->ghoul2, 0, GLAName);
+			trap->G2API_GetGLAName(cent->ghoul2, 0, GLAName);
 
 			strcpy(originalModelName, modelName);
 
 			if (GLAName[0] &&
 				!strstr(GLAName, "players/_humanoid/") /*&&
 				!strstr(GLAName, "players/rockettrooper/")*/)
-			{ //it doesn't use humanoid anims.				
+			{ //it doesn't use humanoid anims.
 				slash = Q_strrchr( GLAName, '/' );
 				if ( slash )
 				{
@@ -7206,16 +7220,16 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			}
 			else
 			{ //humanoid index.
-				trap_G2API_AddBolt(cent->ghoul2, 0, "*r_hand");
-				trap_G2API_AddBolt(cent->ghoul2, 0, "*l_hand");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "*r_hand");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "*l_hand");
 
 				//rhand must always be first bolt. lhand always second. Whichever you want the
 				//jetpack bolted to must always be third.
-				trap_G2API_AddBolt(cent->ghoul2, 0, "*chestg");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "*chestg");
 
 				//claw bolts
-				trap_G2API_AddBolt(cent->ghoul2, 0, "*r_hand_cap_r_arm");
-				trap_G2API_AddBolt(cent->ghoul2, 0, "*l_hand_cap_l_arm");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "*r_hand_cap_r_arm");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "*l_hand_cap_l_arm");
 
 				if (strstr(GLAName, "players/rockettrooper/"))
 				{
@@ -7226,22 +7240,22 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 					cent->localAnimIndex = 0;
 				}
 
-				if (trap_G2API_AddBolt(cent->ghoul2, 0, "*head_top") == -1)
+				if (trap->G2API_AddBolt(cent->ghoul2, 0, "*head_top") == -1)
 				{
-					trap_G2API_AddBolt(cent->ghoul2, 0, "ceyebrow");
+					trap->G2API_AddBolt(cent->ghoul2, 0, "ceyebrow");
 				}
-				trap_G2API_AddBolt(cent->ghoul2, 0, "Motion");
+				trap->G2API_AddBolt(cent->ghoul2, 0, "Motion");
 			}
 
 			// If this is a not vehicle...
 			if ( cent->currentState.NPC_class != CLASS_VEHICLE )
 			{
-				if (trap_G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar") == -1)
+				if (trap->G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar") == -1)
 				{ //check now to see if we have this bone for setting anims and such
 					cent->noLumbar = qtrue;
 				}
 
-				if (trap_G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
+				if (trap->G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
 				{ //check now to see if we have this bone for setting anims and such
 					cent->noFace = qtrue;
 				}
@@ -7266,9 +7280,9 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 		}
 	}
 
-	trap_S_ShutUp(qtrue);
+	trap->S_Shutup(qtrue);
 	CG_HandleNPCSounds(cent); //handle sound loading here as well.
-	trap_S_ShutUp(qfalse);
+	trap->S_Shutup(qfalse);
 }
 
 //for now this is just gonna create a big explosion on the area of the surface,
@@ -7289,7 +7303,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	//let's add the surface as a bolt so we can get the base point of it
 	if (bgToggleableSurfaceDebris[surfNum] == 3)
 	{ //right wing flame
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_wingdamage");
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_wingdamage");
 		if ( throwPart
 			&& cent->m_pVehicle
 			&& cent->m_pVehicle->m_pVehicleInfo )
@@ -7299,7 +7313,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 	else if (bgToggleableSurfaceDebris[surfNum] == 4)
 	{ //left wing flame
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_wingdamage");
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_wingdamage");
 		if ( throwPart
 			&& cent->m_pVehicle
 			&& cent->m_pVehicle->m_pVehicleInfo )
@@ -7309,7 +7323,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 	else if (bgToggleableSurfaceDebris[surfNum] == 5)
 	{ //right wing flame 2
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_wingdamage");
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_wingdamage");
 		if ( throwPart
 			&& cent->m_pVehicle
 			&& cent->m_pVehicle->m_pVehicleInfo )
@@ -7319,7 +7333,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 	else if (bgToggleableSurfaceDebris[surfNum] == 6)
 	{ //left wing flame 2
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_wingdamage");
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_wingdamage");
 		if ( throwPart
 			&& cent->m_pVehicle
 			&& cent->m_pVehicle->m_pVehicleInfo )
@@ -7329,7 +7343,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 	else if (bgToggleableSurfaceDebris[surfNum] == 7)
 	{ //nose flame
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, "*nosedamage");
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, "*nosedamage");
 		if ( cent->m_pVehicle
 			&& cent->m_pVehicle->m_pVehicleInfo )
 		{
@@ -7338,7 +7352,7 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 	else
 	{
-		b = trap_G2API_AddBolt(cent->ghoul2, 0, surfName);
+		b = trap->G2API_AddBolt(cent->ghoul2, 0, surfName);
 	}
 
 	if (b == -1)
@@ -7347,17 +7361,17 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 	}
 
 	//now let's get the position and direction of this surface and make a big explosion
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
 		cgs.gameModels, cent->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, v);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_Z, d);
 
-	trap_FX_PlayEffectID(fxID, v, d, -1, -1);
+	trap->FX_PlayEffectID(fxID, v, d, -1, -1, qfalse);
 	if ( throwPart && lostPartFX )
 	{//throw off a ship part, too
 		vec3_t	fxFwd;
 		AngleVectors( cent->lerpAngles, fxFwd, NULL, NULL );
-		trap_FX_PlayEffectID(lostPartFX, v, fxFwd, -1, -1);
+		trap->FX_PlayEffectID(lostPartFX, v, fxFwd, -1, -1, qfalse);
 	}
 }
 
@@ -7396,19 +7410,19 @@ static void CG_CreateSurfaceSmoke(centity_t *cent, int shipSurf, int fxID)
 	{//unknown surf!
 		return;
 	}
-	b = trap_G2API_AddBolt(cent->ghoul2, 0, surfName);
+	b = trap->G2API_AddBolt(cent->ghoul2, 0, surfName);
 	if (b == -1)
 	{ //couldn't find this surface apparently
 		return;
 	}
 
 	//now let's get the position and direction of this surface and make a big explosion
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
 		cgs.gameModels, cent->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, v);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_Z, d);
 
-	trap_FX_PlayEffectID(fxID, v, d, -1, -1);
+	trap->FX_PlayEffectID(fxID, v, d, -1, -1, qfalse);
 }
 
 #define SMOOTH_G2ANIM_LERPANGLES
@@ -7416,7 +7430,7 @@ static void CG_CreateSurfaceSmoke(centity_t *cent, int shipSurf, int fxID)
 qboolean CG_VehicleShouldDrawShields( centity_t *vehCent )
 {
 	if ( vehCent->damageTime > cg.time //ship shields currently taking damage
-		&& vehCent->currentState.NPC_class == CLASS_VEHICLE 
+		&& vehCent->currentState.NPC_class == CLASS_VEHICLE
 		&& vehCent->m_pVehicle
 		&& vehCent->m_pVehicle->m_pVehicleInfo )
 	{
@@ -7434,19 +7448,19 @@ extern void BG_VehicleAdjustBBoxForOrientation( Vehicle_t *veh, vec3_t origin, v
 qboolean CG_VehicleAttachDroidUnit( centity_t *droidCent, refEntity_t *legs )
 {
 	if ( droidCent
-		&& droidCent->currentState.owner 
+		&& droidCent->currentState.owner
 		&& droidCent->currentState.clientNum >= MAX_CLIENTS )
 	{//the only NPCs that can ride a vehicle are droids...???
 		centity_t *vehCent = &cg_entities[droidCent->currentState.owner];
-		if ( vehCent 
-			&& vehCent->m_pVehicle 
+		if ( vehCent
+			&& vehCent->m_pVehicle
 			&& vehCent->ghoul2
 			&& vehCent->m_pVehicle->m_iDroidUnitTag != -1 )
 		{
 			mdxaBone_t boltMatrix;
 			vec3_t	fwd, rt, tempAng;
 
-			trap_G2API_GetBoltMatrix(vehCent->ghoul2, 0, vehCent->m_pVehicle->m_iDroidUnitTag, &boltMatrix, vehCent->lerpAngles, vehCent->lerpOrigin, cg.time,
+			trap->G2API_GetBoltMatrix(vehCent->ghoul2, 0, vehCent->m_pVehicle->m_iDroidUnitTag, &boltMatrix, vehCent->lerpAngles, vehCent->lerpOrigin, cg.time,
 				cgs.gameModels, vehCent->modelScale);
 			BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, droidCent->lerpOrigin);
 			BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_X, fwd);//WTF???
@@ -7454,7 +7468,7 @@ qboolean CG_VehicleAttachDroidUnit( centity_t *droidCent, refEntity_t *legs )
 			vectoangles( fwd, droidCent->lerpAngles );
 			vectoangles( rt, tempAng );
 			droidCent->lerpAngles[ROLL] = tempAng[PITCH];
-			
+
 			return qtrue;
 		}
 	}
@@ -7492,13 +7506,13 @@ void CG_G2Animated( centity_t *cent )
 					CG_CreateSurfaceDebris(cent, i, cgs.effects.mShipDestDestroyed, qtrue);
 				}
 
-				trap_G2API_SetSurfaceOnOff(cent->ghoul2, bgToggleableSurfaces[i], TURN_OFF);
+				trap->G2API_SetSurfaceOnOff(cent->ghoul2, bgToggleableSurfaces[i], TURN_OFF);
 			}
 
 			if (!(cent->npcLocalSurfOn & (1 << i)) &&
 				(cent->currentState.surfacesOn & (1 << i)))
 			{ //same as above, but on instead of off.
-				trap_G2API_SetSurfaceOnOff(cent->ghoul2, bgToggleableSurfaces[i], TURN_ON);
+				trap->G2API_SetSurfaceOnOff(cent->ghoul2, bgToggleableSurfaces[i], TURN_ON);
 			}
 
 			i++;
@@ -7511,14 +7525,14 @@ void CG_G2Animated( centity_t *cent )
 
 	/*
 	if (cent->currentState.weapon &&
-		!trap_G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 1) &&
+		!trap->G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 1) &&
 		!(cent->currentState.eFlags & EF_DEAD))
 	{ //if the server says we have a weapon and we haven't copied one onto ourselves yet, then do so.
-		trap_G2API_CopySpecificGhoul2Model(g2WeaponInstances[cent->currentState.weapon], 0, cent->ghoul2, 1);
+		trap->G2API_CopySpecificGhoul2Model(g2WeaponInstances[cent->currentState.weapon], 0, cent->ghoul2, 1);
 
 		if (cent->currentState.weapon == WP_SABER)
 		{
-			trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap_S_RegisterSound( "sound/weapons/saber/saberon.wav" ));
+			trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound( "sound/weapons/saber/saberon.wav" ));
 		}
 	}
 	*/
@@ -7555,9 +7569,9 @@ void CG_G2Animated( centity_t *cent )
 	if ( cg_showVehBounds.integer )
 	{//show vehicle bboxes
 		if ( cent->currentState.clientNum >= MAX_CLIENTS
-			&& cent->currentState.NPC_class == CLASS_VEHICLE 
+			&& cent->currentState.NPC_class == CLASS_VEHICLE
 			&& cent->m_pVehicle
-			&& cent->m_pVehicle->m_pVehicleInfo 
+			&& cent->m_pVehicle->m_pVehicleInfo
 			&& cent->currentState.clientNum != cg.predictedVehicleState.clientNum )
 		{//not the predicted vehicle
 			vec3_t NPCDEBUG_RED = {1.0, 0.0, 0.0};
@@ -7591,39 +7605,39 @@ void CG_ForceFPLSPlayerModel(centity_t *cent, clientInfo_t *ci)
 	{
 		int				skinHandle;
 
-		skinHandle = trap_R_RegisterSkin("models/players/kyle/model_fpls2.skin");
+		skinHandle = trap->R_RegisterSkin("models/players/kyle/model_fpls2.skin");
 
-		trap_G2API_CleanGhoul2Models(&(ci->ghoul2Model));
+		trap->G2API_CleanGhoul2Models(&(ci->ghoul2Model));
 
 		ci->torsoSkin = skinHandle;
-		trap_G2API_InitGhoul2Model(&ci->ghoul2Model, "models/players/kyle/model.glm", 0, ci->torsoSkin, 0, 0, 0);
+		trap->G2API_InitGhoul2Model(&ci->ghoul2Model, "models/players/kyle/model.glm", 0, ci->torsoSkin, 0, 0, 0);
 
-		ci->bolt_rhand = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand");
-		
-		trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, cg.time, -1, -1);
-		trap_G2API_SetBoneAngles(ci->ghoul2Model, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, cg.time);
-		trap_G2API_SetBoneAngles(ci->ghoul2Model, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, cg.time);
+		ci->bolt_rhand = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand");
 
-		ci->bolt_lhand = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand");
+		trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, cg.time, -1, -1);
+		trap->G2API_SetBoneAngles(ci->ghoul2Model, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, cg.time);
+		trap->G2API_SetBoneAngles(ci->ghoul2Model, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, cg.time);
+
+		ci->bolt_lhand = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand");
 
 		//rhand must always be first bolt. lhand always second. Whichever you want the
 		//jetpack bolted to must always be third.
-		trap_G2API_AddBolt(ci->ghoul2Model, 0, "*chestg");
+		trap->G2API_AddBolt(ci->ghoul2Model, 0, "*chestg");
 
 		//claw bolts
-		trap_G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand_cap_r_arm");
-		trap_G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand_cap_l_arm");
+		trap->G2API_AddBolt(ci->ghoul2Model, 0, "*r_hand_cap_r_arm");
+		trap->G2API_AddBolt(ci->ghoul2Model, 0, "*l_hand_cap_l_arm");
 
-		ci->bolt_head = trap_G2API_AddBolt(ci->ghoul2Model, 0, "*head_top");
+		ci->bolt_head = trap->G2API_AddBolt(ci->ghoul2Model, 0, "*head_top");
 		if (ci->bolt_head == -1)
 		{
-			ci->bolt_head = trap_G2API_AddBolt(ci->ghoul2Model, 0, "ceyebrow");
+			ci->bolt_head = trap->G2API_AddBolt(ci->ghoul2Model, 0, "ceyebrow");
 		}
 
-		ci->bolt_motion = trap_G2API_AddBolt(ci->ghoul2Model, 0, "Motion");
+		ci->bolt_motion = trap->G2API_AddBolt(ci->ghoul2Model, 0, "Motion");
 
 		//We need a lower lumbar bolt for footsteps
-		ci->bolt_llumbar = trap_G2API_AddBolt(ci->ghoul2Model, 0, "lower_lumbar");
+		ci->bolt_llumbar = trap->G2API_AddBolt(ci->ghoul2Model, 0, "lower_lumbar");
 
 		CG_CopyG2WeaponInstance(cent, cent->currentState.weapon, ci->ghoul2Model);
 	}
@@ -7651,7 +7665,7 @@ void CG_ForceFPLSPlayerModel(centity_t *cent, clientInfo_t *ci)
 			setFrame = cent->pe.legs.frame;
 		}
 
-		trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
+		trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "model_root", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
 
 		cent->currentState.legsAnim = 0;
 	}
@@ -7675,17 +7689,17 @@ void CG_ForceFPLSPlayerModel(centity_t *cent, clientInfo_t *ci)
 			setFrame = cent->pe.torso.frame;
 		}
 
-		trap_G2API_SetBoneAnim(ci->ghoul2Model, 0, "lower_lumbar", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
+		trap->G2API_SetBoneAnim(ci->ghoul2Model, 0, "lower_lumbar", firstFrame, anim->firstFrame + anim->numFrames, flags, animSpeed, cg.time, setFrame, 150);
 
 		cent->currentState.torsoAnim = 0;
 	}
 
-	trap_G2API_CleanGhoul2Models(&(cent->ghoul2));
-	trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
+	trap->G2API_CleanGhoul2Models(&(cent->ghoul2));
+	trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
 
 	//Attach the instance to this entity num so we can make use of client-server
 	//shared operations if possible.
-	trap_G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
+	trap->G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
 }
 #endif
 
@@ -7695,14 +7709,14 @@ void CG_ForceFPLSPlayerModel(centity_t *cent, clientInfo_t *ci)
 //exe.
 void CG_CreateNPCClient(clientInfo_t **ci)
 {
-	//trap_TrueMalloc((void **)ci, sizeof(clientInfo_t));
+	//trap->TrueMalloc((void **)ci, sizeof(clientInfo_t));
 	*ci = (clientInfo_t *) BG_Alloc(sizeof(clientInfo_t));
 }
 
 void CG_DestroyNPCClient(clientInfo_t **ci)
 {
 	memset(*ci, 0, sizeof(clientInfo_t));
-	//trap_TrueFree((void **)ci);
+	//trap->TrueFree((void **)ci);
 }
 
 static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t tempAngles, qhandle_t shader, qboolean alwaysDo )
@@ -7716,13 +7730,10 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	int bolt=-1;
 	int iter=0;
 	int torsoBolt = -1;
-	int crotchBolt = -1;
 	int elbowLBolt = -1;
 	int elbowRBolt = -1;
 	int handLBolt = -1;
 	int handRBolt = -1;
-	int kneeLBolt = -1;
-	int kneeRBolt = -1;
 	int footLBolt = -1;
 	int footRBolt = -1;
 
@@ -7730,29 +7741,23 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 
 	if (cent->localAnimIndex <= 1)
 	{ //humanoid
-		torsoBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
-		crotchBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "pelvis");
-		elbowLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_arm_elbow");
-		elbowRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_arm_elbow");
-		handLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_hand");
-		handRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_hand");
-		kneeLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*hips_l_knee");
-		kneeRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*hips_r_knee");
-		footLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*l_leg_foot");
-		footRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*r_leg_foot");
+		torsoBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
+		elbowLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_arm_elbow");
+		elbowRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_arm_elbow");
+		handLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_hand");
+		handRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_hand");
+		footLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_leg_foot");
+		footRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_leg_foot");
 	}
 	else if (cent->currentState.NPC_class == CLASS_PROTOCOL)
 	{ //any others that can use these bolts too?
-		torsoBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
-		crotchBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "pelvis");
-		elbowLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*bicep_lg");
-		elbowRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*bicep_rg");
-		handLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*hand_l");
-		handRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*weapon");
-		kneeLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*thigh_lg");
-		kneeRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*thigh_rg");
-		footLBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*foot_lg");
-		footRBolt = trap_G2API_AddBolt(cent->ghoul2, 0, "*foot_rg");
+		torsoBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
+		elbowLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*bicep_lg");
+		elbowRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*bicep_rg");
+		handLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*hand_l");
+		handRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*weapon");
+		footLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*foot_lg");
+		footRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*foot_rg");
 	}
 
 	// Pick a random start point
@@ -7804,8 +7809,8 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	}
 	if (bolt>=0)
 	{
-		found = trap_G2API_GetBoltMatrix( cent->ghoul2, 0, bolt, 
-				&boltMatrix, tempAngles, origin, cg.time, 
+		found = trap->G2API_GetBoltMatrix( cent->ghoul2, 0, bolt,
+				&boltMatrix, tempAngles, origin, cg.time,
 				cgs.gameModels, cent->modelScale);
 	}
 
@@ -7872,12 +7877,12 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		p.shader = shader;
 		p.flags = (0x00000001 | 0x00000100 | 0x02000000 | 0x04000000 | 0x01000000);
 
-		trap_FX_AddElectricity(&p);
+		trap->FX_AddElectricity(&p);
 
 		//In other words:
 		/*
 		FX_AddElectricity( fxOrg, tr.endpos,
-			1.5f, 4.0f, 0.0f, 
+			1.5f, 4.0f, 0.0f,
 			1.0f, 0.5f, 0.0f,
 			rgb, rgb, 0.0f,
 			5.5f, random() * 50 + 100, shader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR | FX_BRANCH | FX_GROW | FX_TAPER );
@@ -7897,25 +7902,25 @@ void CG_InitJetpackGhoul2(void)
 		return;
 	}
 
-	trap_G2API_InitGhoul2Model(&cg_g2JetpackInstance, JETPACK_MODEL, 0, 0, 0, 0, 0);
+	trap->G2API_InitGhoul2Model(&cg_g2JetpackInstance, JETPACK_MODEL, 0, 0, 0, 0, 0);
 
 	assert(cg_g2JetpackInstance);
 
 	//Indicate which bolt on the player we will be attached to
 	//In this case bolt 0 is rhand, 1 is lhand, and 2 is the bolt
 	//for the jetpack (*chestg)
-	trap_G2API_SetBoltInfo(cg_g2JetpackInstance, 0, 2);
+	trap->G2API_SetBoltInfo(cg_g2JetpackInstance, 0, 2);
 
 	//Add the bolts jet effects will be played from
-	trap_G2API_AddBolt(cg_g2JetpackInstance, 0, "torso_ljet");
-	trap_G2API_AddBolt(cg_g2JetpackInstance, 0, "torso_rjet");
+	trap->G2API_AddBolt(cg_g2JetpackInstance, 0, "torso_ljet");
+	trap->G2API_AddBolt(cg_g2JetpackInstance, 0, "torso_rjet");
 }
 
 void CG_CleanJetpackGhoul2(void)
 {
 	if (cg_g2JetpackInstance)
 	{
-		trap_G2API_CleanGhoul2Models(&cg_g2JetpackInstance);
+		trap->G2API_CleanGhoul2Models(&cg_g2JetpackInstance);
 		cg_g2JetpackInstance = NULL;
 	}
 }
@@ -7972,14 +7977,14 @@ static void CG_VehicleHeatEffect( vec3_t org, centity_t *cent )
 	ent.shaderRGBA[2] = 255.0f;
 	ent.shaderRGBA[3] = alpha;
 
-	trap_R_AddRefEntityToScene( &ent );
+	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
 
 static int lastFlyBySound[MAX_GENTITIES] = {0};
 #define	FLYBYSOUNDTIME 2000
 int	cg_lastHyperSpaceEffectTime = 0;
-static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
+static QINLINE void CG_VehicleEffects(centity_t *cent)
 {
 	Vehicle_t *pVehNPC;
 
@@ -8001,7 +8006,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 			if ( !cg_lastHyperSpaceEffectTime
 				|| (cg.time - cg_lastHyperSpaceEffectTime) > HYPERSPACE_TIME+500 )
 			{//can't be from the last time we were in hyperspace, so play the effect!
-				trap_FX_PlayBoltedEffectID( cgs.effects.mHyperspaceStars, cent->lerpOrigin, cent->ghoul2, 0, 
+				trap->FX_PlayBoltedEffectID( cgs.effects.mHyperspaceStars, cent->lerpOrigin, cent->ghoul2, 0,
 											cent->currentState.number, 0, 0, qtrue );
 				cg_lastHyperSpaceEffectTime = cg.time;
 			}
@@ -8040,7 +8045,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 						{
 							flyBySound = pVehNPC->m_pVehicleInfo->soundFlyBy2;
 						}
-						trap_S_StartSound(NULL, cent->currentState.clientNum, CHAN_LESS_ATTEN, flyBySound );
+						trap->S_StartSound(NULL, cent->currentState.clientNum, CHAN_LESS_ATTEN, flyBySound );
 						lastFlyBySound[cent->currentState.clientNum] = cg.time;
 					}
 				}
@@ -8052,7 +8057,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 		&& cent->nextState.speed > 0//now moving forward
 		&& cent->m_pVehicle->m_pVehicleInfo->soundEngineStart )
 	{//engines rev up for the first time
-		trap_S_StartSound(NULL, cent->currentState.clientNum, CHAN_LESS_ATTEN, cent->m_pVehicle->m_pVehicleInfo->soundEngineStart );
+		trap->S_StartSound(NULL, cent->currentState.clientNum, CHAN_LESS_ATTEN, cent->m_pVehicle->m_pVehicleInfo->soundEngineStart );
 	}
 	// Animals don't exude any effects...
 	if ( pVehNPC->m_pVehicleInfo->type != VH_ANIMAL )
@@ -8066,7 +8071,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 			{
 				if (bgToggleableSurfaceDebris[i] > 1)
 				{ //this is decidedly a destroyable surface, let's check its status
-					int surfTest = trap_G2API_GetSurfaceRenderStatus(cent->ghoul2, 0, bgToggleableSurfaces[i]);
+					int surfTest = trap->G2API_GetSurfaceRenderStatus(cent->ghoul2, 0, bgToggleableSurfaces[i]);
 
 					if ( surfTest != -1
 						&& (surfTest&TURN_OFF) )
@@ -8104,11 +8109,11 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 				//if ( pVehNPC->m_iArmor <= 75 )
 				if (0)
 				{//hurt
-					trap_FX_PlayEffectID( cgs.effects.mBlackSmoke, org, fwd, -1, -1 );
+					trap->FX_PlayEffectID( cgs.effects.mBlackSmoke, org, fwd, -1, -1, qfalse );
 				}
 				else if ( pVehNPC->m_pVehicleInfo->iTrailFX )
 				{//okay, do normal trail
-					trap_FX_PlayEffectID( pVehNPC->m_pVehicleInfo->iTrailFX, org, fwd, -1, -1 );
+					trap->FX_PlayEffectID( pVehNPC->m_pVehicleInfo->iTrailFX, org, fwd, -1, -1, qfalse );
 				}
 				//=====================================================================
 				//EXHAUST FX
@@ -8162,7 +8167,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 
 						if (pVehNPC->m_pVehicleInfo->type == VH_FIGHTER)
 						{
-							trap_FX_PlayBoltedEffectID(fx, cent->lerpOrigin, cent->ghoul2, pVehNPC->m_iExhaustTag[i], 
+							trap->FX_PlayBoltedEffectID(fx, cent->lerpOrigin, cent->ghoul2, pVehNPC->m_iExhaustTag[i],
 														cent->currentState.number, 0, 0, qtrue);
 						}
 						else
@@ -8170,13 +8175,13 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 							mdxaBone_t boltMatrix;
 							vec3_t boltOrg, boltDir;
 
-							trap_G2API_GetBoltMatrix(cent->ghoul2, 0, pVehNPC->m_iExhaustTag[i], &boltMatrix, flat,
+							trap->G2API_GetBoltMatrix(cent->ghoul2, 0, pVehNPC->m_iExhaustTag[i], &boltMatrix, flat,
 								cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 
 							BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
 							VectorCopy(fwd, boltDir); //fixme?
 
-							trap_FX_PlayEffectID( fx, boltOrg, boltDir, -1, -1 );
+							trap->FX_PlayEffectID( fx, boltOrg, boltDir, -1, -1, qfalse );
 						}
 					}
 				}
@@ -8200,27 +8205,27 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 
 					for ( i = 1; i < 5; i++ )
 					{
-						int trailBolt = trap_G2API_AddBolt(cent->ghoul2, 0, va("*trail%d",i) );
+						int trailBolt = trap->G2API_AddBolt(cent->ghoul2, 0, va("*trail%d",i) );
 						// We hit an invalid tag, we quit (they should be created in order so tough luck if not).
 						if ( trailBolt == -1 )
 						{
 							break;
 						}
 
-						trap_G2API_GetBoltMatrix(cent->ghoul2, 0, trailBolt, &boltMatrix, getBoltAngles,
+						trap->G2API_GetBoltMatrix(cent->ghoul2, 0, trailBolt, &boltMatrix, getBoltAngles,
 							cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 
 						BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
 						VectorCopy(fwd, boltDir); //fixme?
 
-						trap_FX_PlayEffectID( pVehNPC->m_pVehicleInfo->iTrailFX, boltOrg, boltDir, -1, -1 );
+						trap->FX_PlayEffectID( pVehNPC->m_pVehicleInfo->iTrailFX, boltOrg, boltDir, -1, -1, qfalse );
 					}
 				}
 			}
 			//FIXME armor needs to be sent over network
 			{
 				if ( (cent->currentState.eFlags&EF_DEAD) )
-				{//just plain dead, use flames 
+				{//just plain dead, use flames
 					vec3_t	up ={0,0,1};
 					vec3_t boltOrg;
 
@@ -8239,12 +8244,12 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 					//		getBoltAngles[PITCH] = getBoltAngles[ROLL] = 0.0f;
 					//	}
 
-					//	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, pVehNPC->m_iDriverTag, &boltMatrix, getBoltAngles,
+					//	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, pVehNPC->m_iDriverTag, &boltMatrix, getBoltAngles,
 					//		cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 
 					//	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, boltOrg);
 					//}
-					trap_FX_PlayEffectID( cgs.effects.mShipDestBurning, boltOrg, up, -1, -1 );
+					trap->FX_PlayEffectID( cgs.effects.mShipDestBurning, boltOrg, up, -1, -1, qfalse );
 				}
 			}
 			if ( cent->currentState.brokenLimbs )
@@ -8280,8 +8285,8 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 			{//FIXME: use as a proportion of max armor?
 				VectorMA( cent->lerpOrigin, 64, fwd, org );
 				VectorScale( fwd, -1, fwd );
-				
-				trap_FX_PlayEffectID( cgs.effects.mBlackSmoke, org, fwd, -1, -1 );
+
+				trap->FX_PlayEffectID( cgs.effects.mBlackSmoke, org, fwd, -1, -1, qfalse );
 			}
 			if ( pVehNPC->m_iArmor <= 0 )
 			{//FIXME: should use something attached.. but want it to build up over time, so...
@@ -8289,7 +8294,7 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 				{//flaming!
 					VectorMA( cent->lerpOrigin, flrand(-64, 64), fwd, org );
 					VectorScale( fwd, -1, fwd );
-					trap_FX_PlayEffectID( trap_FX_RegisterEffect("ships/fire"), org, fwd, -1, -1 );
+					trap->FX_PlayEffectID( trap->FX_RegisterEffect("ships/fire"), org, fwd, -1, -1, qfalse );
 					nextFXDelay = 50;
 				}
 			}
@@ -8333,11 +8338,11 @@ extern vec3_t	cg_crosshairPos;
 extern vec3_t	cameraCurLoc;
 void CG_CheckThirdPersonAlpha( centity_t *cent, refEntity_t *legs )
 {
-	float alpha = 1.0f;		
+	float alpha = 1.0f;
 	int	setFlags = 0;
 
 	if ( cent->m_pVehicle )
-	{//a vehicle 
+	{//a vehicle
 		if ( cg.predictedPlayerState.m_iVehicleNum != cent->currentState.clientNum//not mine
 			&& cent->m_pVehicle->m_pVehicleInfo
 			&& cent->m_pVehicle->m_pVehicleInfo->cameraOverride
@@ -8369,7 +8374,7 @@ void CG_CheckThirdPersonAlpha( centity_t *cent, refEntity_t *legs )
 				VectorNormalize( dir2Crosshair );
 				VectorMA( cameraCurLoc, cent->m_pVehicle->m_pVehicleInfo->cameraRange*2.0f, dir2Crosshair, end );
 				CG_G2Trace( &trace, cameraCurLoc, vec3_origin, vec3_origin, end, ENTITYNUM_NONE, CONTENTS_BODY );
-				if ( trace.entityNum == cent->currentState.clientNum 
+				if ( trace.entityNum == cent->currentState.clientNum
 					|| trace.entityNum == cg.predictedPlayerState.clientNum)
 				{//hit me or the vehicle I'm in
 					cg_vehThirdPersonAlpha -= 0.1f*cg.frametime/50.0f;
@@ -8405,7 +8410,7 @@ void CG_CheckThirdPersonAlpha( centity_t *cent, refEntity_t *legs )
 		setFlags = RF_FORCE_ENT_ALPHA;
 		alpha = cg_thirdPersonAlpha.value;
 	}
-	
+
 	if ( alpha < 1.0f )
 	{
 		legs->renderfx |= setFlags;
@@ -8421,7 +8426,6 @@ void CG_Player( centity_t *cent ) {
 	int				renderfx;
 	qboolean		shadow = qfalse;
 	float			shadowPlane = 0;
-	qboolean		dead = qfalse;
 	vec3_t			rootAngles;
 	float			angle;
 	vec3_t			angles, dir, elevated, enang, seekorg;
@@ -8491,14 +8495,14 @@ void CG_Player( centity_t *cent ) {
 		{
 			smoothFactor = 0.5f;
 		}
-		
+
 		if (DistanceSquared(cent->beamEnd,cent->lerpOrigin) > smoothFactor*fTolerance) //10000
 		{
 			VectorCopy(cent->lerpOrigin, cent->beamEnd);
 		}
 
 		VectorSubtract(cent->lerpOrigin, cent->beamEnd, posDif);
-		
+
 		for (k=0;k<3;k++)
 		{
 			cent->beamEnd[k]=(cent->beamEnd[k]+posDif[k]*smoothFactor);
@@ -8541,7 +8545,7 @@ void CG_Player( centity_t *cent ) {
 				//make sure it has its pilot and parent set
 				veh->m_pVehicle->m_pPilot = (bgEntity_t *)&cg_entities[veh->currentState.owner];
 				veh->m_pVehicle->m_pParentEntity = (bgEntity_t *)veh;
-	            
+
 				VectorCopy(veh->playerState->origin, oldPSOrg);
 
 				//update the veh's playerstate org for getting the bolt
@@ -8567,7 +8571,7 @@ void CG_Player( centity_t *cent ) {
 	{
 		clientNum = cent->currentState.clientNum;
 		if ( clientNum < 0 || clientNum >= MAX_CLIENTS ) {
-			CG_Error( "Bad clientNum on player entity");
+			trap->Error( ERR_DROP, "Bad clientNum on player entity");
 		}
 		ci = &cgs.clientinfo[ clientNum ];
 	}
@@ -8594,24 +8598,24 @@ void CG_Player( centity_t *cent ) {
 			cent->npcClient->ghoul2Model = cent->ghoul2;
 			if (cent->localAnimIndex <= 1)
 			{
-				cent->npcClient->bolt_rhand = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*r_hand");
-				cent->npcClient->bolt_lhand = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*l_hand");
+				cent->npcClient->bolt_rhand = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*r_hand");
+				cent->npcClient->bolt_lhand = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*l_hand");
 
 				//rhand must always be first bolt. lhand always second. Whichever you want the
 				//jetpack bolted to must always be third.
-				trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*chestg");
+				trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*chestg");
 
 				//claw bolts
-				trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*r_hand_cap_r_arm");
-				trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*l_hand_cap_l_arm");
+				trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*r_hand_cap_r_arm");
+				trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*l_hand_cap_l_arm");
 
-				cent->npcClient->bolt_head = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*head_top");
+				cent->npcClient->bolt_head = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "*head_top");
 				if (cent->npcClient->bolt_head == -1)
 				{
-					cent->npcClient->bolt_head = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "ceyebrow");
+					cent->npcClient->bolt_head = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "ceyebrow");
 				}
-				cent->npcClient->bolt_motion = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "Motion");
-				cent->npcClient->bolt_llumbar = trap_G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "lower_lumbar");
+				cent->npcClient->bolt_motion = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "Motion");
+				cent->npcClient->bolt_llumbar = trap->G2API_AddBolt(cent->npcClient->ghoul2Model, 0, "lower_lumbar");
 			}
 			else
 			{
@@ -8663,21 +8667,21 @@ void CG_Player( centity_t *cent ) {
 #ifdef _DEBUG
 		Com_Printf("WARNING: Client %i has a null ghoul2 instance\n", cent->currentState.number);
 #endif
-		trap_G2API_ClearAttachedInstance(cent->currentState.number);
+		trap->G2API_ClearAttachedInstance(cent->currentState.number);
 
 		if (ci->ghoul2Model &&
-			trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+			trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 		{
 #ifdef _DEBUG
 			Com_Printf("Clientinfo instance was valid, duplicating for cent\n");
 #endif
-			trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
+			trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
 
 			//Attach the instance to this entity num so we can make use of client-server
 			//shared operations if possible.
-			trap_G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
+			trap->G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
 
-			if (trap_G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
+			if (trap->G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
 			{ //check now to see if we have this bone for setting anims and such
 				cent->noFace = qtrue;
 			}
@@ -8692,12 +8696,12 @@ void CG_Player( centity_t *cent ) {
 	{ //do crazy smoothing
 		if (ci->superSmoothTime > cg.time)
 		{ //do it
-			trap_G2API_AbsurdSmoothing(cent->ghoul2, qtrue);
+			trap->G2API_AbsurdSmoothing(cent->ghoul2, qtrue);
 		}
 		else
 		{ //turn it off
 			ci->superSmoothTime = 0;
-			trap_G2API_AbsurdSmoothing(cent->ghoul2, qfalse);
+			trap->G2API_AbsurdSmoothing(cent->ghoul2, qfalse);
 		}
 	}
 
@@ -8719,9 +8723,9 @@ void CG_Player( centity_t *cent ) {
 		cg_g2JetpackInstance)
 	{ //should have a jetpack attached
 		//1 is rhand weap, 2 is lhand weap (akimbo sabs), 3 is jetpack
-		if (!trap_G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 3))
+		if (!trap->G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 3))
 		{
-			trap_G2API_CopySpecificGhoul2Model(cg_g2JetpackInstance, 0, cent->ghoul2, 3); 
+			trap->G2API_CopySpecificGhoul2Model(cg_g2JetpackInstance, 0, cent->ghoul2, 3);
 		}
 
 		if (cent->currentState.eFlags & EF_JETPACK_ACTIVE)
@@ -8733,7 +8737,7 @@ void CG_Player( centity_t *cent ) {
 			while (n < 2)
 			{
 				//Get the position/dir of the flame bolt on the jetpack model bolted to the player
-				trap_G2API_GetBoltMatrix(cent->ghoul2, 3, n, &mat, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+				trap->G2API_GetBoltMatrix(cent->ghoul2, 3, n, &mat, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 				BG_GiveMeVectorFromMatrix(&mat, ORIGIN, flamePos);
 
 				if (n == 0)
@@ -8755,33 +8759,33 @@ void CG_Player( centity_t *cent ) {
 				{ //create effects
 					//FIXME: Just one big effect
 					//Play the effect
-					trap_FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1);
-					trap_FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1);
+					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
 
 					//Keep the jet fire sound looping
-					trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, 
-						trap_S_RegisterSound( "sound/effects/fire_lp" ) );
+					trap->S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin,
+						trap->S_RegisterSound( "sound/effects/fire_lp" ) );
 				}
 				else
 				{ //just idling
 					//FIXME: Different smaller effect for idle
 					//Play the effect
-					trap_FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1);
+					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
 				}
 
 				n++;
 			}
 
-			trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, 
-				trap_S_RegisterSound( "sound/boba/JETHOVER" ) );
+			trap->S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin,
+				trap->S_RegisterSound( "sound/boba/JETHOVER" ) );
 		}
 	}
-	else if (trap_G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 3))
+	else if (trap->G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 3))
 	{ //fixme: would be good if this could be done not every frame
-		trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 3);
+		trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 3);
 	}
 
-	g2HasWeapon = trap_G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 1);
+	g2HasWeapon = trap->G2API_HasGhoul2ModelOnIndex(&(cent->ghoul2), 1);
 
 	if (!g2HasWeapon)
 	{ //force a redup of the weapon instance onto the client instance
@@ -8797,12 +8801,12 @@ void CG_Player( centity_t *cent ) {
 	if (cent->isRagging && !(cent->currentState.eFlags & EF_DEAD) && !(cent->currentState.eFlags & EF_RAG))
 	{ //make sure we don't ragdoll ever while alive unless directly told to with eFlags
 		cent->isRagging = qfalse;
-		trap_G2API_SetRagDoll(cent->ghoul2, NULL); //calling with null parms resets to no ragdoll.
+		trap->G2API_SetRagDoll(cent->ghoul2, NULL); //calling with null parms resets to no ragdoll.
 	}
 
 	if (cent->ghoul2 && cent->torsoBolt && ((cent->torsoBolt & RARMBIT) || (cent->torsoBolt & RHANDBIT) || (cent->torsoBolt & WAISTBIT)) && g2HasWeapon)
 	{ //kill the weapon if the limb holding it is no longer on the model
-		trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
+		trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
 		g2HasWeapon = qfalse;
 	}
 
@@ -8885,9 +8889,9 @@ void CG_Player( centity_t *cent ) {
 			if (com_cameraMode.integer) {
 				iwantout = 1;
 
-				
+
 				// goto minimal_add;
-				
+
 				// NOTENOTE Temporary
 				return;
 			}
@@ -8906,7 +8910,7 @@ void CG_Player( centity_t *cent ) {
 		cent->ghoul2weapon = CG_G2WeaponInstance(cent, WP_SABER);
 	}
 
-	if (cent->ghoul2 && 
+	if (cent->ghoul2 &&
 		(cent->currentState.eType != ET_NPC || (cent->currentState.NPC_class != CLASS_VEHICLE&&cent->currentState.NPC_class != CLASS_REMOTE&&cent->currentState.NPC_class != CLASS_SEEKER)) && //don't add weapon models to NPCs that have no bolt for them!
 		cent->ghoul2weapon != CG_G2WeaponInstance(cent, cent->currentState.weapon) &&
 		!(cent->currentState.eFlags & EF_DEAD) && !cent->torsoBolt &&
@@ -8923,38 +8927,38 @@ void CG_Player( centity_t *cent ) {
 
 			if (cent->currentState.eType != ET_NPC)
 			{
-				if (cent->weapon == WP_SABER 
-					&& cent->weapon != cent->currentState.weapon 
+				if (cent->weapon == WP_SABER
+					&& cent->weapon != cent->currentState.weapon
 					&& !cent->currentState.saberHolstered)
 				{ //switching away from the saber
-					//trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap_S_RegisterSound( "sound/weapons/saber/saberoffquick.wav" ));
-					if (ci->saber[0].soundOff 
+					//trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound( "sound/weapons/saber/saberoffquick.wav" ));
+					if (ci->saber[0].soundOff
 						&& !cent->currentState.saberHolstered)
 					{
-						trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[0].soundOff);
+						trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[0].soundOff);
 					}
 
 					if (ci->saber[1].soundOff &&
 						ci->saber[1].model[0] &&
 						!cent->currentState.saberHolstered)
 					{
-						trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[1].soundOff);
+						trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[1].soundOff);
 					}
 
 				}
 				else if (cent->currentState.weapon == WP_SABER
-					&& cent->weapon != cent->currentState.weapon 
+					&& cent->weapon != cent->currentState.weapon
 					&& !cent->saberWasInFlight)
 				{ //switching to the saber
-					//trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap_S_RegisterSound( "sound/weapons/saber/saberon.wav" ));
+					//trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound( "sound/weapons/saber/saberon.wav" ));
 					if (ci->saber[0].soundOn)
 					{
-						trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[0].soundOn);
+						trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[0].soundOn);
 					}
 
 					if (ci->saber[1].soundOn)
 					{
-						trap_S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[1].soundOn);
+						trap->S_StartSound(cent->lerpOrigin, cent->currentState.number, CHAN_AUTO, ci->saber[1].soundOn);
 					}
 
 					BG_SI_SetDesiredLength(&ci->saber[0], 0, -1);
@@ -8971,7 +8975,7 @@ void CG_Player( centity_t *cent ) {
 		cent->ghoul2weapon = NULL; //be sure to update after respawning/getting limb regrown
 	}
 
-	
+
 	if (cent->saberWasInFlight && g2HasWeapon)
 	{
 		 cent->saberWasInFlight = qfalse;
@@ -9160,8 +9164,8 @@ void CG_Player( centity_t *cent ) {
 
 		AnglesToAxis( angles, seeker.axis );
 
-		seeker.hModel = trap_R_RegisterModel("models/items/remote.md3");
-		trap_R_AddRefEntityToScene( &seeker );
+		seeker.hModel = trap->R_RegisterModel("models/items/remote.md3");
+		trap->R_AddRefEntityToScene( &seeker );
 	}
 
 	// add a water splash if partially in and out of water
@@ -9189,7 +9193,7 @@ void CG_Player( centity_t *cent ) {
 	CG_G2PlayerAngles( cent, legs.axis, rootAngles );
 	CG_G2PlayerHeadAnims( cent );
 
-	if ( (cent->currentState.eFlags2&EF2_HELD_BY_MONSTER) 
+	if ( (cent->currentState.eFlags2&EF2_HELD_BY_MONSTER)
 		&& cent->currentState.hasLookTarget )//NOTE: lookTarget is an entity number, so this presumes that client 0 is NOT a Rancor...
 	{
 		centity_t	*rancor = &cg_entities[cent->currentState.lookTarget];
@@ -9225,7 +9229,7 @@ void CG_Player( centity_t *cent ) {
 	//frame. Yes, this is stupid and needs to be fixed properly.
 	//The current solution is to force it not to reconstruct the skeleton for the first GBM call in G2PlayerAngles.
 	//It works and we end up only reconstructing it once, but it doesn't seem like the best solution.
-	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+	trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 	gotLHandMatrix = qtrue;
 #if 0
 	if (cg.renderingThirdPerson)
@@ -9241,7 +9245,7 @@ void CG_Player( centity_t *cent ) {
 	{ //don't allow this when spectating
 		if (cgFPLSState != 0)
 		{
-			trap_Cvar_Set("cg_fpls", "0");
+			trap->Cvar_Set("cg_fpls", "0");
 			cg_fpls.integer = 0;
 
 			CG_ForceFPLSPlayerModel(cent, ci);
@@ -9251,7 +9255,7 @@ void CG_Player( centity_t *cent ) {
 
 		if (cg_fpls.integer)
 		{
-			trap_Cvar_Set("cg_fpls", "0");
+			trap->Cvar_Set("cg_fpls", "0");
 		}
 	}
 	else
@@ -9268,7 +9272,7 @@ void CG_Player( centity_t *cent ) {
 
 			/*
 			mdxaBone_t 		headMatrix;
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_head, &headMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_head, &headMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			BG_GiveMeVectorFromMatrix(&headMatrix, ORIGIN, cg.refdef.vieworg);
 			*/
 		}
@@ -9286,7 +9290,6 @@ void CG_Player( centity_t *cent ) {
 
 	if (cent->currentState.eFlags & EF_DEAD)
 	{
-		dead = qtrue;
 		//rww - since our angles are fixed when we're dead this shouldn't be an issue anyway
 		//we need to render the dying/dead player because we are now spawning the body on respawn instead of death
 		//return;
@@ -9336,7 +9339,7 @@ void CG_Player( centity_t *cent ) {
 
 			//reframe_minus1.customShader = 2;
 
-			trap_R_AddRefEntityToScene(&reframe_minus1);
+			trap->R_AddRefEntityToScene(&reframe_minus1);
 		}
 
 		if (cent->frame_minus2_refreshed)
@@ -9361,7 +9364,7 @@ void CG_Player( centity_t *cent ) {
 
 			//reframe_minus2.customShader = 2;
 
-			trap_R_AddRefEntityToScene(&reframe_minus2);
+			trap->R_AddRefEntityToScene(&reframe_minus2);
 		}
 	}
 
@@ -9383,7 +9386,7 @@ void CG_Player( centity_t *cent ) {
 	if (cent->currentState.activeForcePass > FORCE_LEVEL_3
 		&& cent->currentState.NPC_class != CLASS_VEHICLE)
 	{
-		vec3_t axis[3];
+		matrix3_t axis;
 		vec3_t tAng, fAng, fxDir;
 		vec3_t efOrg;
 
@@ -9395,21 +9398,21 @@ void CG_Player( centity_t *cent ) {
 
 		AngleVectors( fAng, fxDir, NULL, NULL );
 
-		if ( cent->currentState.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_HOLD 
+		if ( cent->currentState.torsoAnim == BOTH_FORCE_2HANDEDLIGHTNING_HOLD
 			&& Q_irand( 0, 1 ) )
 		{//alternate back and forth between left and right
 			mdxaBone_t 	rHandMatrix;
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &rHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &rHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			efOrg[0] = rHandMatrix.matrix[0][3];
 			efOrg[1] = rHandMatrix.matrix[1][3];
 			efOrg[2] = rHandMatrix.matrix[2][3];
 		}
 		else
 		{
-			//trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			//trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			if (!gotLHandMatrix)
 			{
-				trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+				trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 				gotLHandMatrix = qtrue;
 			}
 			efOrg[0] = lHandMatrix.matrix[0][3];
@@ -9418,32 +9421,32 @@ void CG_Player( centity_t *cent ) {
 		}
 
 		AnglesToAxis( fAng, axis );
-	
+
 		if ( realForceLev > FORCE_LEVEL_2 )
 		{//arc
-			//trap_FX_PlayEffectID( cgs.effects.forceLightningWide, efOrg, fxDir );
-			//trap_FX_PlayEntityEffectID(cgs.effects.forceDrainWide, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
-			trap_FX_PlayEntityEffectID(cgs.effects.forceDrainWide, efOrg, axis, -1, -1, -1, -1);
+			//trap->FX_PlayEffectID( cgs.effects.forceLightningWide, efOrg, fxDir );
+			//trap->FX_PlayEntityEffectID(cgs.effects.forceDrainWide, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
+			trap->FX_PlayEntityEffectID(cgs.effects.forceDrainWide, efOrg, axis, -1, -1, -1, -1);
 		}
 		else
 		{//line
-			//trap_FX_PlayEffectID( cgs.effects.forceLightning, efOrg, fxDir );
-			//trap_FX_PlayEntityEffectID(cgs.effects.forceDrain, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
-			trap_FX_PlayEntityEffectID(cgs.effects.forceDrain, efOrg, axis, -1, -1, -1, -1);
+			//trap->FX_PlayEffectID( cgs.effects.forceLightning, efOrg, fxDir );
+			//trap->FX_PlayEntityEffectID(cgs.effects.forceDrain, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
+			trap->FX_PlayEntityEffectID(cgs.effects.forceDrain, efOrg, axis, -1, -1, -1, -1);
 		}
 
 		/*
 		if (cent->bolt4 < cg.time)
 		{
 			cent->bolt4 = cg.time + 100;
-			trap_S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap_S_RegisterSound("sound/weapons/force/drain.wav") );
+			trap->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/force/drain.wav") );
 		}
 		*/
 	}
-	else if ( cent->currentState.activeForcePass 
+	else if ( cent->currentState.activeForcePass
 		&& cent->currentState.NPC_class != CLASS_VEHICLE)
 	{//doing the electrocuting
-		vec3_t axis[3];
+		matrix3_t axis;
 		vec3_t tAng, fAng, fxDir;
 		vec3_t efOrg;
 
@@ -9453,10 +9456,10 @@ void CG_Player( centity_t *cent ) {
 
 		AngleVectors( fAng, fxDir, NULL, NULL );
 
-		//trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+		//trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 		if (!gotLHandMatrix)
 		{
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			gotLHandMatrix = qtrue;
 		}
 
@@ -9465,25 +9468,25 @@ void CG_Player( centity_t *cent ) {
 		efOrg[2] = lHandMatrix.matrix[2][3];
 
 		AnglesToAxis( fAng, axis );
-	
+
 		if ( cent->currentState.activeForcePass > FORCE_LEVEL_2 )
 		{//arc
-			//trap_FX_PlayEffectID( cgs.effects.forceLightningWide, efOrg, fxDir );
-			//trap_FX_PlayEntityEffectID(cgs.effects.forceLightningWide, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
-			trap_FX_PlayEntityEffectID(cgs.effects.forceLightningWide, efOrg, axis, -1, -1, -1, -1);
+			//trap->FX_PlayEffectID( cgs.effects.forceLightningWide, efOrg, fxDir );
+			//trap->FX_PlayEntityEffectID(cgs.effects.forceLightningWide, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
+			trap->FX_PlayEntityEffectID(cgs.effects.forceLightningWide, efOrg, axis, -1, -1, -1, -1);
 		}
 		else
 		{//line
-			//trap_FX_PlayEffectID( cgs.effects.forceLightning, efOrg, fxDir );
-			//trap_FX_PlayEntityEffectID(cgs.effects.forceLightning, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
-			trap_FX_PlayEntityEffectID(cgs.effects.forceLightning, efOrg, axis, -1, -1, -1, -1);
+			//trap->FX_PlayEffectID( cgs.effects.forceLightning, efOrg, fxDir );
+			//trap->FX_PlayEntityEffectID(cgs.effects.forceLightning, efOrg, axis, cent->boltInfo, cent->currentState.number, -1, -1);
+			trap->FX_PlayEntityEffectID(cgs.effects.forceLightning, efOrg, axis, -1, -1, -1, -1);
 		}
 
 		/*
 		if (cent->bolt4 < cg.time)
 		{
 			cent->bolt4 = cg.time + 100;
-			trap_S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap_S_RegisterSound("sound/weapons/force/lightning.wav") );
+			trap->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/force/lightning.wav") );
 		}
 		*/
 	}
@@ -9502,10 +9505,10 @@ void CG_Player( centity_t *cent ) {
 		//VectorSet( tAng, 0, cent->pe.torso.yawAngle, 0 );
 		VectorSet( tAng, cent->turAngles[PITCH], cent->turAngles[YAW], cent->turAngles[ROLL] );
 
-		//trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+		//trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 		if (!gotLHandMatrix)
 		{
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_lhand, &lHandMatrix, cent->turAngles, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 			gotLHandMatrix = qtrue;
 		}
 
@@ -9539,9 +9542,9 @@ void CG_Player( centity_t *cent ) {
 				limbName = "l_arm";
 				limbCapName = "l_arm_cap_torso";
 
-				if (cent->grip_arm && trap_G2_HaveWeGhoul2Models(cent->grip_arm))
+				if (cent->grip_arm && trap->G2_HaveWeGhoul2Models(cent->grip_arm))
 				{
-					trap_G2API_CleanGhoul2Models(&(cent->grip_arm));
+					trap->G2API_CleanGhoul2Models(&(cent->grip_arm));
 				}
 
 				memset( &regrip_arm, 0, sizeof(regrip_arm) );
@@ -9561,26 +9564,26 @@ void CG_Player( centity_t *cent ) {
 				armAng[ROLL] = 0;
 				armAng[PITCH] = 0;
 				AnglesToAxis(armAng, regrip_arm.axis);
-				
-				trap_G2API_DuplicateGhoul2Instance(cent->ghoul2, &cent->grip_arm);
+
+				trap->G2API_DuplicateGhoul2Instance(cent->ghoul2, &cent->grip_arm);
 
 				//remove all other models
-				if (trap_G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 1))
+				if (trap->G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 1))
 				{ //weapon right
-					trap_G2API_RemoveGhoul2Model(&(cent->grip_arm), 1);
+					trap->G2API_RemoveGhoul2Model(&(cent->grip_arm), 1);
 				}
-				if (trap_G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 2))
+				if (trap->G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 2))
 				{ //weapon left
-					trap_G2API_RemoveGhoul2Model(&(cent->grip_arm), 2);
+					trap->G2API_RemoveGhoul2Model(&(cent->grip_arm), 2);
 				}
-				if (trap_G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 3))
+				if (trap->G2API_HasGhoul2ModelOnIndex(&(cent->grip_arm), 3))
 				{ //jetpack
-					trap_G2API_RemoveGhoul2Model(&(cent->grip_arm), 3);
+					trap->G2API_RemoveGhoul2Model(&(cent->grip_arm), 3);
 				}
 
-				trap_G2API_SetRootSurface(cent->grip_arm, 0, limbName);
-				trap_G2API_SetNewOrigin(cent->grip_arm, trap_G2API_AddBolt(cent->grip_arm, 0, rotateBone));
-				trap_G2API_SetSurfaceOnOff(cent->grip_arm, limbCapName, 0);
+				trap->G2API_SetRootSurface(cent->grip_arm, 0, limbName);
+				trap->G2API_SetNewOrigin(cent->grip_arm, trap->G2API_AddBolt(cent->grip_arm, 0, rotateBone));
+				trap->G2API_SetSurfaceOnOff(cent->grip_arm, limbCapName, 0);
 
 				regrip_arm.modelScale[0] = 1;//+(wv*6);
 				regrip_arm.modelScale[1] = 1;//+(wv*6);
@@ -9589,8 +9592,8 @@ void CG_Player( centity_t *cent ) {
 
 				regrip_arm.radius = 64;
 
-				regrip_arm.customShader = trap_R_RegisterShader( "gfx/misc/red_portashield" );
-				
+				regrip_arm.customShader = trap->R_RegisterShader( "gfx/misc/red_portashield" );
+
 				regrip_arm.renderfx |= RF_RGB_TINT;
 				regrip_arm.shaderRGBA[0] = 255 - (wv*900);
 				if (regrip_arm.shaderRGBA[0] < 30)
@@ -9602,9 +9605,9 @@ void CG_Player( centity_t *cent ) {
 					regrip_arm.shaderRGBA[0] = 255;
 				}
 				regrip_arm.shaderRGBA[1] = regrip_arm.shaderRGBA[2] = regrip_arm.shaderRGBA[0];
-				
+
 				regrip_arm.ghoul2 = cent->grip_arm;
-				trap_R_AddRefEntityToScene( &regrip_arm );
+				trap->R_AddRefEntityToScene( &regrip_arm );
 			}
 			*/
 		}
@@ -9621,8 +9624,8 @@ void CG_Player( centity_t *cent ) {
 
 	if (cent->currentState.weapon == WP_STUN_BATON && cent->currentState.number == cg.snap->ps.clientNum)
 	{
-		trap_S_AddLoopingSound( cent->currentState.number, cg.refdef.vieworg, vec3_origin, 
-			trap_S_RegisterSound( "sound/weapons/baton/idle.wav" ) );
+		trap->S_AddLoopingSound( cent->currentState.number, cg.refdef.vieworg, vec3_origin,
+			trap->S_RegisterSound( "sound/weapons/baton/idle.wav" ) );
 	}
 
 	//NOTE: All effects that should be visible during mindtrick should go above here
@@ -9685,8 +9688,8 @@ void CG_Player( centity_t *cent ) {
 
 			legs.shaderRGBA[3] = ((cent->teamPowerEffectTime - cg.time)/8);
 
-			legs.customShader = trap_R_RegisterShader( "powerups/ysalimarishell" );
-			trap_R_AddRefEntityToScene(&legs);
+			legs.customShader = trap->R_RegisterShader( "powerups/ysalimarishell" );
+			trap->R_AddRefEntityToScene(&legs);
 
 			legs.customShader = 0;
 			legs.renderfx = preRFX;
@@ -9708,12 +9711,12 @@ void CG_Player( centity_t *cent ) {
 		{
 			vec3_t efOrg;
 			vec3_t tAng, fxAng;
-			vec3_t axis[3];
+			matrix3_t axis;
 
 			//VectorSet( tAng, 0, cent->pe.torso.yawAngle, 0 );
 			VectorSet( tAng, cent->turAngles[PITCH], cent->turAngles[YAW], cent->turAngles[ROLL] );
 
-			trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_head, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+			trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_head, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 
 			BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, efOrg);
 			BG_GiveMeVectorFromMatrix(&boltMatrix, NEGATIVE_Y, fxAng);
@@ -9730,8 +9733,8 @@ void CG_Player( centity_t *cent ) {
  			axis[2][1] = boltMatrix.matrix[1][2];
 		 	axis[2][2] = boltMatrix.matrix[2][2];
 
-			//trap_FX_PlayEntityEffectID(trap_FX_RegisterEffect("force/confusion.efx"), efOrg, axis, cent->boltInfo, cent->currentState.number);
-			trap_FX_PlayEntityEffectID(cgs.effects.mForceConfustionOld, efOrg, axis, -1, -1, -1, -1);
+			//trap->FX_PlayEntityEffectID(trap->FX_RegisterEffect("force/confusion.efx"), efOrg, axis, cent->boltInfo, cent->currentState.number);
+			trap->FX_PlayEntityEffectID(cgs.effects.mForceConfustionOld, efOrg, axis, -1, -1, -1, -1);
 		}
 	}
 
@@ -9795,7 +9798,7 @@ void CG_Player( centity_t *cent ) {
 					dir[1] = cos(angle) * 20;
 					dir[2] = 0;
 					VectorAdd(elevated, dir, holoRef.origin);
-			
+
 					VectorCopy(dir, holoRef.axis[1]);
 					VectorNormalize(holoRef.axis[1]);
 					VectorSet(holoRef.axis[2], 0, 0, 1);
@@ -9836,18 +9839,18 @@ void CG_Player( centity_t *cent ) {
 						fxSArgs.sAlpha *= 3;
 						fxSArgs.eAlpha *= 3;
 						fxSArgs.shader = cgs.media.redSaberGlowShader;
-						trap_FX_AddSprite(&fxSArgs);
+						trap->FX_AddSprite(&fxSArgs);
 					}
 					else if (forcePowerDarkLight[i] == FORCE_LIGHTSIDE)
 					{ //light
 						fxSArgs.sAlpha *= 1.5;
 						fxSArgs.eAlpha *= 1.5;
 						fxSArgs.shader = cgs.media.redSaberGlowShader;
-						trap_FX_AddSprite(&fxSArgs);
+						trap->FX_AddSprite(&fxSArgs);
 						fxSArgs.shader = cgs.media.greenSaberGlowShader;
-						trap_FX_AddSprite(&fxSArgs);
+						trap->FX_AddSprite(&fxSArgs);
 						fxSArgs.shader = cgs.media.blueSaberGlowShader;
-						trap_FX_AddSprite(&fxSArgs);
+						trap->FX_AddSprite(&fxSArgs);
 					}
 					else
 					{ //neutral
@@ -9858,22 +9861,22 @@ void CG_Player( centity_t *cent ) {
 							fxSArgs.sAlpha *= 1.5;
 							fxSArgs.eAlpha *= 1.5;
 							fxSArgs.shader = cgs.media.greenSaberGlowShader;
-							trap_FX_AddSprite(&fxSArgs);
+							trap->FX_AddSprite(&fxSArgs);
 						}
 						else
 						{
 							fxSArgs.sAlpha *= 0.5;
 							fxSArgs.eAlpha *= 0.5;
 							fxSArgs.shader = cgs.media.greenSaberGlowShader;
-							trap_FX_AddSprite(&fxSArgs);
+							trap->FX_AddSprite(&fxSArgs);
 							fxSArgs.shader = cgs.media.blueSaberGlowShader;
-							trap_FX_AddSprite(&fxSArgs);
+							trap->FX_AddSprite(&fxSArgs);
 						}
 					}
 				}
 
-				holoRef.hModel = trap_R_RegisterModel(forceHolocronModels[i]);
-				trap_R_AddRefEntityToScene( &holoRef );
+				holoRef.hModel = trap->R_RegisterModel(forceHolocronModels[i]);
+				trap->R_AddRefEntityToScene( &holoRef );
 
 				renderedHolos++;
 			}
@@ -9897,7 +9900,7 @@ void CG_Player( centity_t *cent ) {
 			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysalimariShader );
 		}
 	}
-	
+
 	if (cent->currentState.powerups & (1 << PW_FORCE_BOON))
 	{
 		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 2.0f, cgs.media.boonShader );
@@ -9925,7 +9928,7 @@ stillDoSaber:
 
 		drawPlayerSaber = qtrue;
 	}
-	else if (cent->currentState.weapon == WP_SABER 
+	else if (cent->currentState.weapon == WP_SABER
 		&& cent->currentState.saberHolstered < 2 )
 	{
 		if ( (!cent->currentState.saberInFlight //saber not in flight
@@ -9937,19 +9940,19 @@ stillDoSaber:
 
 			if (cg.snap->ps.clientNum == cent->currentState.number)
 			{
-				//trap_S_AddLoopingSound( cent->currentState.number, cg.refdef.vieworg, vec3_origin, 
-				//	trap_S_RegisterSound( "sound/weapons/saber/saberhum1.wav" ) );
+				//trap->S_AddLoopingSound( cent->currentState.number, cg.refdef.vieworg, vec3_origin,
+				//	trap->S_RegisterSound( "sound/weapons/saber/saberhum1.wav" ) );
 				VectorCopy(cg.refdef.vieworg, soundSpot);
 			}
 			else
 			{
-				//trap_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, 
-				//	trap_S_RegisterSound( "sound/weapons/saber/saberhum1.wav" ) );
+				//trap->S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin,
+				//	trap->S_RegisterSound( "sound/weapons/saber/saberhum1.wav" ) );
 				VectorCopy(cent->lerpOrigin, soundSpot);
 			}
 
-			if (ci->saber[0].model[0] 
-				&& ci->saber[0].soundLoop 
+			if (ci->saber[0].model[0]
+				&& ci->saber[0].soundLoop
 				&& !cent->currentState.saberInFlight)
 			{
 				int i = 0;
@@ -9967,13 +9970,13 @@ stillDoSaber:
 
 				if (hasLen)
 				{
-					trap_S_AddLoopingSound( cent->currentState.number, soundSpot, vec3_origin, 
+					trap->S_AddLoopingSound( cent->currentState.number, soundSpot, vec3_origin,
 						ci->saber[0].soundLoop );
 					didFirstSound = qtrue;
 				}
 			}
-			if (ci->saber[1].model[0] 
-				&& ci->saber[1].soundLoop 
+			if (ci->saber[1].model[0]
+				&& ci->saber[1].soundLoop
 					&& (!didFirstSound || ci->saber[0].soundLoop != ci->saber[1].soundLoop))
 			{
 				int i = 0;
@@ -9991,22 +9994,22 @@ stillDoSaber:
 
 				if (hasLen)
 				{
-					trap_S_AddLoopingSound( cent->currentState.number, soundSpot, vec3_origin, 
+					trap->S_AddLoopingSound( cent->currentState.number, soundSpot, vec3_origin,
 						ci->saber[1].soundLoop );
 				}
 			}
 		}
 
-		if (iwantout 
+		if (iwantout
 			&& !cent->currentState.saberInFlight)
 		{
 			if (cent->currentState.eFlags & EF_DEAD)
 			{
-				if (cent->ghoul2 
-					&& cent->currentState.saberInFlight 
+				if (cent->ghoul2
+					&& cent->currentState.saberInFlight
 					&& g2HasWeapon)
 				{ //special case, kill the saber on a freshly dead player if another source says to.
-					trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
+					trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
 					g2HasWeapon = qfalse;
 				}
 			}
@@ -10014,13 +10017,13 @@ stillDoSaber:
 			//goto endOfCall;
 		}
 
-		if (g2HasWeapon 
+		if (g2HasWeapon
 			&& cent->currentState.saberInFlight)
 		{ //keep this set, so we don't re-unholster the thing when we get it back, even if it's knocked away.
 			cent->saberWasInFlight = qtrue;
 		}
 
-		if (cent->currentState.saberInFlight 
+		if (cent->currentState.saberInFlight
 			&& cent->currentState.saberEntityNum)
 		{
 			centity_t *saberEnt;
@@ -10036,11 +10039,11 @@ stillDoSaber:
 				if (g2HasWeapon)
 				{
 					//ah well, just stick it over the right hand right now.
-					trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &boltMat, cent->turAngles, cent->lerpOrigin,
+					trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &boltMat, cent->turAngles, cent->lerpOrigin,
 						cg.time, cgs.gameModels, cent->modelScale);
 					BG_GiveMeVectorFromMatrix(&boltMat, ORIGIN, saberEnt->currentState.pos.trBase);
 
-					trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
+					trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
 					g2HasWeapon = qfalse;
 				}
 
@@ -10075,29 +10078,29 @@ stillDoSaber:
 
 					if (saberEnt->ghoul2)
 					{ //clean if we already have one (because server changed model string index)
-						trap_G2API_CleanGhoul2Models(&(saberEnt->ghoul2));
+						trap->G2API_CleanGhoul2Models(&(saberEnt->ghoul2));
 						saberEnt->ghoul2 = 0;
 					}
 
 					if (saberModel && saberModel[0])
 					{
-						trap_G2API_InitGhoul2Model(&saberEnt->ghoul2, saberModel, 0, 0, 0, 0, 0);
+						trap->G2API_InitGhoul2Model(&saberEnt->ghoul2, saberModel, 0, 0, 0, 0, 0);
 					}
 					else if (ci->saber[0].model[0])
 					{
-						trap_G2API_InitGhoul2Model(&saberEnt->ghoul2, ci->saber[0].model, 0, 0, 0, 0, 0);
+						trap->G2API_InitGhoul2Model(&saberEnt->ghoul2, ci->saber[0].model, 0, 0, 0, 0, 0);
 					}
 					else
 					{
-						trap_G2API_InitGhoul2Model(&saberEnt->ghoul2, "models/weapons2/saber/saber_w.glm", 0, 0, 0, 0, 0);
+						trap->G2API_InitGhoul2Model(&saberEnt->ghoul2, "models/weapons2/saber/saber_w.glm", 0, 0, 0, 0, 0);
 					}
-					//trap_G2API_DuplicateGhoul2Instance(cent->ghoul2, &saberEnt->ghoul2);
+					//trap->G2API_DuplicateGhoul2Instance(cent->ghoul2, &saberEnt->ghoul2);
 
 					if (saberEnt->ghoul2)
 					{
 						addBolts = qtrue;
 						//cent->bolt4 = 2;
-						
+
 						VectorCopy(saberEnt->currentState.pos.trBase, saberEnt->lerpOrigin);
 						VectorCopy(saberEnt->currentState.apos.trBase, saberEnt->lerpAngles);
 						saberEnt->currentState.pos.trTime = cg.time;
@@ -10114,13 +10117,13 @@ stillDoSaber:
 					while (m < ci->saber[0].numBlades)
 					{
 						tagName = va("*blade%i", m+1);
-						tagBolt = trap_G2API_AddBolt(saberEnt->ghoul2, 0, tagName);
+						tagBolt = trap->G2API_AddBolt(saberEnt->ghoul2, 0, tagName);
 
 						if (tagBolt == -1)
 						{
 							if (m == 0)
 							{ //guess this is an 0ldsk3wl saber
-								tagBolt = trap_G2API_AddBolt(saberEnt->ghoul2, 0, "*flash");
+								tagBolt = trap->G2API_AddBolt(saberEnt->ghoul2, 0, "*flash");
 
 								if (tagBolt == -1)
 								{
@@ -10144,7 +10147,7 @@ stillDoSaber:
 			{
 				if (saberEnt->ghoul2)
 				{
-					trap_G2API_AddBolt(saberEnt->ghoul2, 0, "*flash");
+					trap->G2API_AddBolt(saberEnt->ghoul2, 0, "*flash");
 					cent->bolt4 = 2;
 				}
 			}*/
@@ -10285,7 +10288,7 @@ stillDoSaber:
 				//Make the player's hand glow while guiding the saber
 				VectorSet( tAng, cent->turAngles[PITCH], cent->turAngles[YAW], cent->turAngles[ROLL] );
 
-				trap_G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
+				trap->G2API_GetBoltMatrix(cent->ghoul2, 0, ci->bolt_rhand, &boltMatrix, tAng, cent->lerpOrigin, cg.time, cgs.gameModels, cent->modelScale);
 
 				efOrg[0] = boltMatrix.matrix[0][3];
 				efOrg[1] = boltMatrix.matrix[1][3];
@@ -10293,7 +10296,7 @@ stillDoSaber:
 
 				wv = sin( cg.time * 0.003f ) * 0.08f + 0.1f;
 
-				//trap_FX_AddSprite( NULL, efOrg, NULL, NULL, 8.0f, 8.0f, wv, wv, 0.0f, 0.0f, 1.0f, cgs.media.yellowSaberGlowShader, 0x08000000 );
+				//trap->FX_AddSprite( NULL, efOrg, NULL, NULL, 8.0f, 8.0f, wv, wv, 0.0f, 0.0f, 1.0f, cgs.media.yellowSaberGlowShader, 0x08000000 );
 				VectorCopy(efOrg, fxSArgs.origin);
 				VectorClear(fxSArgs.vel);
 				VectorClear(fxSArgs.accel);
@@ -10306,7 +10309,7 @@ stillDoSaber:
 				fxSArgs.life = 1.0f;
 				fxSArgs.shader = cgs.media.yellowDroppedSaberShader;
 				fxSArgs.flags = 0x08000000;
-				trap_FX_AddSprite(&fxSArgs);
+				trap->FX_AddSprite(&fxSArgs);
 			}
 		}
 		else
@@ -10406,11 +10409,11 @@ stillDoSaber:
 
 			if (/*cent->bolt4 && */!g2HasWeapon)
 			{
-				trap_G2API_CopySpecificGhoul2Model(CG_G2WeaponInstance(cent, WP_SABER), 0, cent->ghoul2, 1);
+				trap->G2API_CopySpecificGhoul2Model(CG_G2WeaponInstance(cent, WP_SABER), 0, cent->ghoul2, 1);
 
 				if (saberEnt && saberEnt->ghoul2)
 				{
-					trap_G2API_CleanGhoul2Models(&(saberEnt->ghoul2));
+					trap->G2API_CleanGhoul2Models(&(saberEnt->ghoul2));
 				}
 
 				saberEnt->currentState.modelindex = 0;
@@ -10501,7 +10504,7 @@ stillDoSaber:
 
 		if (g2HasWeapon)
 		{ //and remember to kill the bolton model in case we didn't get a thrown saber update first
-			trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
+			trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
 			g2HasWeapon = qfalse;
 		}
 		cent->bolt3 = 0;
@@ -10512,7 +10515,7 @@ stillDoSaber:
 	{
 		if (cent->ghoul2 && cent->currentState.saberInFlight && g2HasWeapon)
 		{ //special case, kill the saber on a freshly dead player if another source says to.
-			trap_G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
+			trap->G2API_RemoveGhoul2Model(&(cent->ghoul2), 1);
 			g2HasWeapon = qfalse;
 		}
 	}
@@ -10546,7 +10549,7 @@ stillDoSaber:
 			centity_t *duelEnt;
 
 			duelEnt = &cg_entities[cg.snap->ps.duelIndex];
-			
+
 			if (duelEnt)
 			{
 				vec3_t vecSub;
@@ -10578,7 +10581,7 @@ stillDoSaber:
 					legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 					legs.customShader = cgs.media.forceShell;
 
-					trap_R_AddRefEntityToScene( &legs );	//draw the shell
+					trap->R_AddRefEntityToScene( &legs );	//draw the shell
 
 					legs.customShader = 0;	//reset to player model
 
@@ -10619,15 +10622,15 @@ stillDoSaber:
 			return;
 		}
 
-		trap_G2API_SetBoneAnim(legs.ghoul2, 0, "model_root", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
+		trap->G2API_SetBoneAnim(legs.ghoul2, 0, "model_root", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
 
 		if (!cent->noLumbar)
 		{
-			trap_G2API_SetBoneAnim(legs.ghoul2, 0, "lower_lumbar", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
+			trap->G2API_SetBoneAnim(legs.ghoul2, 0, "lower_lumbar", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
 
 			if (cent->localAnimIndex <= 1)
 			{
-				trap_G2API_SetBoneAnim(legs.ghoul2, 0, "Motion", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
+				trap->G2API_SetBoneAnim(legs.ghoul2, 0, "Motion", cent->miscTime, cent->miscTime, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->miscTime, -1);
 			}
 		}
 
@@ -10658,15 +10661,15 @@ stillDoSaber:
 
 	if (cent->uncloaking > cg.time)
 	{//in the middle of cloaking
-		if ((cg.snap->ps.fd.forcePowersActive & (1 << FP_SEE)) 
+		if ((cg.snap->ps.fd.forcePowersActive & (1 << FP_SEE))
 			&& cg.snap->ps.clientNum != cent->currentState.number)
 		{//just draw him
-			trap_R_AddRefEntityToScene( &legs );
+			trap->R_AddRefEntityToScene( &legs );
 		}
 		else
 		{
 			float perc = (float)(cent->uncloaking - cg.time) / 2000.0f;
-			if (( cent->currentState.powerups & ( 1 << PW_CLOAKED ))) 
+			if (( cent->currentState.powerups & ( 1 << PW_CLOAKED )))
 			{//actually cloaking, so reverse it
 				perc = 1.0f - perc;
 			}
@@ -10678,23 +10681,23 @@ stillDoSaber:
 				legs.shaderRGBA[0] = legs.shaderRGBA[1] = legs.shaderRGBA[2] = 255.0f * perc;
 				legs.shaderRGBA[3] = 0;
 				legs.customShader = cgs.media.cloakedShader;
-				trap_R_AddRefEntityToScene( &legs );
+				trap->R_AddRefEntityToScene( &legs );
 
 				legs.shaderRGBA[0] = legs.shaderRGBA[1] = legs.shaderRGBA[2] = 255;
 				legs.shaderRGBA[3] = 255 * (1.0f - perc); // let model alpha in
 				legs.customShader = 0; // use regular skin
 				legs.renderfx &= ~RF_RGB_TINT;
 				legs.renderfx |= RF_FORCE_ENT_ALPHA;
-				trap_R_AddRefEntityToScene( &legs );
+				trap->R_AddRefEntityToScene( &legs );
 			}
 		}
 	}
-	else if (( cent->currentState.powerups & ( 1 << PW_CLOAKED ))) 
+	else if (( cent->currentState.powerups & ( 1 << PW_CLOAKED )))
 	{//fully cloaked
-		if ((cg.snap->ps.fd.forcePowersActive & (1 << FP_SEE)) 
+		if ((cg.snap->ps.fd.forcePowersActive & (1 << FP_SEE))
 			&& cg.snap->ps.clientNum != cent->currentState.number)
 		{//just draw him
-			trap_R_AddRefEntityToScene( &legs );
+			trap->R_AddRefEntityToScene( &legs );
 		}
 		else
 		{
@@ -10716,8 +10719,8 @@ stillDoSaber:
 
 				ScaleModelAxis(&legs);
 
-				trap_R_AddRefEntityToScene( &legs );
-				
+				trap->R_AddRefEntityToScene( &legs );
+
 				legs.modelScale[0] = 0.98f;
 				legs.modelScale[1] = 0.98f;
 				legs.modelScale[2] = 0.98f;
@@ -10730,9 +10733,9 @@ stillDoSaber:
 
 				if (cg_shadows.integer != 2 && cgs.glconfig.stencilBits >= 4 && cg_renderToTextureFX.integer)
 				{
-					trap_R_SetRefractProp(1.0f, 0.0f, qfalse, qfalse); //don't need to do this every frame.. but..
+					trap->R_SetRefractionProperties(1.0f, 0.0f, qfalse, qfalse); //don't need to do this every frame.. but..
 					legs.customShader = 2; //crazy "refractive" shader
-					trap_R_AddRefEntityToScene( &legs );
+					trap->R_AddRefEntityToScene( &legs );
 					legs.customShader = 0;
 				}
 				else
@@ -10740,7 +10743,7 @@ stillDoSaber:
 					legs.renderfx = 0;//&= ~(RF_RGB_TINT|RF_ALPHA_FADE);
 					legs.shaderRGBA[0] = legs.shaderRGBA[1] = legs.shaderRGBA[2] = legs.shaderRGBA[3] = 255;
 					legs.customShader = cgs.media.cloakedShader;
-					trap_R_AddRefEntityToScene( &legs );
+					trap->R_AddRefEntityToScene( &legs );
 					legs.customShader = 0;
 				}
 			}
@@ -10750,12 +10753,12 @@ stillDoSaber:
 	if (!(cent->currentState.powerups & (1 << PW_CLOAKED)))
 	{ //don't add the normal model if cloaked
 		CG_CheckThirdPersonAlpha( cent, &legs );
-		trap_R_AddRefEntityToScene(&legs);
+		trap->R_AddRefEntityToScene(&legs);
 	}
 
 	//cent->frame_minus2 = cent->frame_minus1;
 	VectorCopy(cent->frame_minus1, cent->frame_minus2);
-	
+
 	if (cent->frame_minus1_refreshed)
 	{
 		cent->frame_minus2_refreshed = 1;
@@ -10777,20 +10780,20 @@ stillDoSaber:
 
 		if (!cent->frame_hold_refreshed)
 		{ //We're taking the ghoul2 instance from the original refent and duplicating it onto our refent alias so that we can then freeze the frame and fade it for the effect
-			if (cent->frame_hold && trap_G2_HaveWeGhoul2Models(cent->frame_hold) &&
+			if (cent->frame_hold && trap->G2_HaveWeGhoul2Models(cent->frame_hold) &&
 				cent->frame_hold != cent->ghoul2)
 			{
-				trap_G2API_CleanGhoul2Models(&(cent->frame_hold));
+				trap->G2API_CleanGhoul2Models(&(cent->frame_hold));
 			}
 			reframe_hold = legs;
 			cent->frame_hold_refreshed = 1;
 			reframe_hold.ghoul2 = NULL;
-	
-			trap_G2API_DuplicateGhoul2Instance(cent->ghoul2, &cent->frame_hold);
+
+			trap->G2API_DuplicateGhoul2Instance(cent->ghoul2, &cent->frame_hold);
 
 			//Set the animation to the current frame and freeze on end
-			//trap_G2API_SetBoneAnim(cent->frame_hold.ghoul2, 0, "model_root", cent->frame_hold.frame, cent->frame_hold.frame, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->frame_hold.frame, -1);
-			trap_G2API_SetBoneAnim(cent->frame_hold, 0, "model_root", legs.frame, legs.frame, 0, 1.0f, cg.time, legs.frame, -1);
+			//trap->G2API_SetBoneAnim(cent->frame_hold.ghoul2, 0, "model_root", cent->frame_hold.frame, cent->frame_hold.frame, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, cent->frame_hold.frame, -1);
+			trap->G2API_SetBoneAnim(cent->frame_hold, 0, "model_root", legs.frame, legs.frame, 0, 1.0f, cg.time, legs.frame, -1);
 		}
 		else
 		{
@@ -10810,7 +10813,7 @@ stillDoSaber:
 		}
 
 		reframe_hold.ghoul2 = cent->frame_hold;
-		trap_R_AddRefEntityToScene(&reframe_hold);
+		trap->R_AddRefEntityToScene(&reframe_hold);
 	}
 	else
 	{
@@ -10841,14 +10844,14 @@ stillDoSaber:
 
 		if ( rand() & 1 )
 		{
-			legs.customShader = cgs.media.electricBodyShader;	
+			legs.customShader = cgs.media.electricBodyShader;
 		}
 		else
 		{
 			legs.customShader = cgs.media.electricBody2Shader;
 		}
 
-		trap_R_AddRefEntityToScene(&legs);
+		trap->R_AddRefEntityToScene(&legs);
 	}
 
 	if (!cg.snap->ps.duelInProgress && cent->currentState.bolt1 && !(cent->currentState.eFlags & EF_DEAD) && cent->currentState.number != cg.snap->ps.clientNum && (!cg.snap->ps.duelInProgress || cg.snap->ps.duelIndex != cent->currentState.number))
@@ -10860,8 +10863,8 @@ stillDoSaber:
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 		legs.customShader = cgs.media.forceSightBubble;
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 	}
 
 	if ( CG_VehicleShouldDrawShields( cent ) //vehicle
@@ -10880,7 +10883,7 @@ stillDoSaber:
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 
-		if ( pVeh 
+		if ( pVeh
 			&& pVeh->m_pVehicleInfo
 			&& pVeh->m_pVehicleInfo->shieldShaderHandle )
 		{//use the vehicle-specific shader
@@ -10890,15 +10893,15 @@ stillDoSaber:
 		{
 			legs.customShader = cgs.media.playerShieldDamage;
 		}
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 	}
 	//For now, these two are using the old shield shader. This is just so that you
 	//can tell it apart from the JM/duel shaders, but it's still very obvious.
 	if (cent->currentState.forcePowersActive & (1 << FP_PROTECT))
 	{ //aborb is represented by green..
 		refEntity_t prot;
-		
+
 		memcpy(&prot, &legs, sizeof(prot));
 
 		prot.shaderRGBA[0] = 0;
@@ -10920,7 +10923,7 @@ stillDoSaber:
 		ScaleModelAxis(&prot);
 		*/
 
-		trap_R_AddRefEntityToScene( &prot );
+		trap->R_AddRefEntityToScene( &prot );
 	}
 	//if (cent->currentState.forcePowersActive & (1 << FP_ABSORB))
 	//Showing only when the power has been active (absorbed something) recently now, instead of always.
@@ -10937,8 +10940,8 @@ stillDoSaber:
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 		legs.customShader = cgs.media.playerShieldDamage;
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 	}
 
 	if (cent->currentState.isJediMaster && cg.snap->ps.clientNum != cent->currentState.number)
@@ -10951,8 +10954,8 @@ stillDoSaber:
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 		legs.renderfx |= RF_NODEPTH;
 		legs.customShader = cgs.media.forceShell;
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 
 		legs.renderfx &= ~RF_NODEPTH;
 	}
@@ -11026,13 +11029,13 @@ stillDoSaber:
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
 		legs.customShader = cgs.media.sightShell;
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 	}
 
 	// Electricity
 	//------------------------------------------------
-	if ( cent->currentState.emplacedOwner > cg.time ) 
+	if ( cent->currentState.emplacedOwner > cg.time )
 	{
 		int	dif = cent->currentState.emplacedOwner - cg.time;
 		vec3_t tempAngles;
@@ -11041,7 +11044,7 @@ stillDoSaber:
 		{
 			// fade out over the last 500 ms
 			int brightness = 255;
-			
+
 			if ( dif < 500 )
 			{
 				brightness = floor((dif - 500.0f) / 500.0f * 255.0f );
@@ -11056,22 +11059,22 @@ stillDoSaber:
 
 			if ( rand() & 1 )
 			{
-				legs.customShader = cgs.media.electricBodyShader;	
+				legs.customShader = cgs.media.electricBodyShader;
 			}
 			else
 			{
 				legs.customShader = cgs.media.electricBody2Shader;
 			}
 
-			trap_R_AddRefEntityToScene( &legs );
+			trap->R_AddRefEntityToScene( &legs );
 
 			if ( random() > 0.9f )
-				trap_S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
+				trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
 		}
 
 		VectorSet(tempAngles, 0, cent->lerpAngles[YAW], 0);
 		CG_ForceElectrocution( cent, legs.origin, tempAngles, cgs.media.boltShader, qfalse );
-	} 
+	}
 
 	if (cent->currentState.powerups & (1 << PW_SHIELDHIT))
 	{
@@ -11088,15 +11091,15 @@ stillDoSaber:
 		legs.renderfx &= ~RF_MINLIGHT;
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.customShader = cgs.media.playerShieldDamage;
-		
-		trap_R_AddRefEntityToScene( &legs );
+
+		trap->R_AddRefEntityToScene( &legs );
 	}
 #if 0
 endOfCall:
-	
+
 	if (cgBoneAnglePostSet.refreshSet)
 	{
-		trap_G2API_SetBoneAngles(cgBoneAnglePostSet.ghoul2, cgBoneAnglePostSet.modelIndex, cgBoneAnglePostSet.boneName,
+		trap->G2API_SetBoneAngles(cgBoneAnglePostSet.ghoul2, cgBoneAnglePostSet.modelIndex, cgBoneAnglePostSet.boneName,
 			cgBoneAnglePostSet.angles, cgBoneAnglePostSet.flags, cgBoneAnglePostSet.up, cgBoneAnglePostSet.right,
 			cgBoneAnglePostSet.forward, cgBoneAnglePostSet.modelList, cgBoneAnglePostSet.blendTime, cgBoneAnglePostSet.currentTime);
 
@@ -11115,14 +11118,14 @@ CG_ResetPlayerEntity
 A player just came into view or teleported, so reset all animation info
 ===============
 */
-void CG_ResetPlayerEntity( centity_t *cent ) 
+void CG_ResetPlayerEntity( centity_t *cent )
 {
 	clientInfo_t *ci;
 	int i = 0;
 	int j = 0;
 
 //	cent->errorTime = -99999;		// guarantee no error decay added
-//	cent->extrapolated = qfalse;	
+//	cent->extrapolated = qfalse;
 
 	if (cent->currentState.eType == ET_NPC)
 	{
@@ -11212,17 +11215,17 @@ void CG_ResetPlayerEntity( centity_t *cent )
 			cent->pe.torso.pitchAngle = 0;
 		}
 
-		if ((cent->ghoul2 == NULL) && ci->ghoul2Model && trap_G2_HaveWeGhoul2Models(ci->ghoul2Model))
+		if ((cent->ghoul2 == NULL) && ci->ghoul2Model && trap->G2_HaveWeGhoul2Models(ci->ghoul2Model))
 		{
-			trap_G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
+			trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cent->ghoul2);
 			cent->weapon = 0;
 			cent->ghoul2weapon = NULL;
 
 			//Attach the instance to this entity num so we can make use of client-server
 			//shared operations if possible.
-			trap_G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
+			trap->G2API_AttachInstanceToEntNum(cent->ghoul2, cent->currentState.number, qfalse);
 
-			if (trap_G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
+			if (trap->G2API_AddBolt(cent->ghoul2, 0, "face") == -1)
 			{ //check now to see if we have this bone for setting anims and such
 				cent->noFace = qtrue;
 			}
@@ -11267,7 +11270,7 @@ void CG_ResetPlayerEntity( centity_t *cent )
 
 
 	if ( cg_debugPosition.integer ) {
-		CG_Printf("%i ResetPlayerEntity yaw=%i\n", cent->currentState.number, cent->pe.torso.yawAngle );
+		trap->Print("%i ResetPlayerEntity yaw=%i\n", cent->currentState.number, cent->pe.torso.yawAngle );
 	}
 }
 

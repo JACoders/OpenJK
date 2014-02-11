@@ -1,5 +1,5 @@
-#ifndef __ANIMS_H__
-#define __ANIMS_H__
+#pragma once
+
 // playerAnimations
 
 
@@ -14,10 +14,10 @@ typedef enum //# animNumber_e
 	FACE_TALK2,			//# semi-quiet
 	FACE_TALK3,			//# semi-loud
 	FACE_TALK4,			//# loud
-	FACE_ALERT,				//# 
-	FACE_SMILE,				//# 
-	FACE_FROWN,				//# 
-	FACE_DEAD,				//# 
+	FACE_ALERT,				//#
+	FACE_SMILE,				//#
+	FACE_FROWN,				//#
+	FACE_DEAD,				//#
 
 	//=================================================
 	//ANIMS IN WHICH UPPER AND LOWER OBJECTS ARE IN MD3
@@ -30,24 +30,24 @@ typedef enum //# animNumber_e
 	BOTH_DEATH5,			//# Fifth Death anim
 	BOTH_DEATH6,			//# Sixth Death anim
 	BOTH_DEATH7,			//# Seventh Death anim
-	BOTH_DEATH8,			//# 
-	BOTH_DEATH9,			//# 
-	BOTH_DEATH10,			//# 
+	BOTH_DEATH8,			//#
+	BOTH_DEATH9,			//#
+	BOTH_DEATH10,			//#
 	BOTH_DEATH11,			//#
-	BOTH_DEATH12,			//# 
-	BOTH_DEATH13,			//# 
-	BOTH_DEATH14,			//# 
-	BOTH_DEATH15,			//# 
-	BOTH_DEATH16,			//# 
-	BOTH_DEATH17,			//# 
-	BOTH_DEATH18,			//# 
-	BOTH_DEATH19,			//# 
-	BOTH_DEATH20,			//# 
-	BOTH_DEATH21,			//# 
-	BOTH_DEATH22,			//# 
-	BOTH_DEATH23,			//# 
-	BOTH_DEATH24,			//# 
-	BOTH_DEATH25,			//# 
+	BOTH_DEATH12,			//#
+	BOTH_DEATH13,			//#
+	BOTH_DEATH14,			//#
+	BOTH_DEATH15,			//#
+	BOTH_DEATH16,			//#
+	BOTH_DEATH17,			//#
+	BOTH_DEATH18,			//#
+	BOTH_DEATH19,			//#
+	BOTH_DEATH20,			//#
+	BOTH_DEATH21,			//#
+	BOTH_DEATH22,			//#
+	BOTH_DEATH23,			//#
+	BOTH_DEATH24,			//#
+	BOTH_DEATH25,			//#
 
 	BOTH_DEATHFORWARD1,		//# First Death in which they get thrown forward
 	BOTH_DEATHFORWARD2,		//# Second Death in which they get thrown forward
@@ -79,24 +79,24 @@ typedef enum //# animNumber_e
 	BOTH_DEAD5,				//# Fifth Death finished pose
 	BOTH_DEAD6,				//# Sixth Death finished pose
 	BOTH_DEAD7,				//# Seventh Death finished pose
-	BOTH_DEAD8,				//# 
-	BOTH_DEAD9,				//# 
-	BOTH_DEAD10,			//# 
+	BOTH_DEAD8,				//#
+	BOTH_DEAD9,				//#
+	BOTH_DEAD10,			//#
 	BOTH_DEAD11,			//#
-	BOTH_DEAD12,			//# 
-	BOTH_DEAD13,			//# 
-	BOTH_DEAD14,			//# 
-	BOTH_DEAD15,			//# 
-	BOTH_DEAD16,			//# 
-	BOTH_DEAD17,			//# 
-	BOTH_DEAD18,			//# 
-	BOTH_DEAD19,			//# 
-	BOTH_DEAD20,			//# 
-	BOTH_DEAD21,			//# 
-	BOTH_DEAD22,			//# 
-	BOTH_DEAD23,			//# 
-	BOTH_DEAD24,			//# 
-	BOTH_DEAD25,			//# 
+	BOTH_DEAD12,			//#
+	BOTH_DEAD13,			//#
+	BOTH_DEAD14,			//#
+	BOTH_DEAD15,			//#
+	BOTH_DEAD16,			//#
+	BOTH_DEAD17,			//#
+	BOTH_DEAD18,			//#
+	BOTH_DEAD19,			//#
+	BOTH_DEAD20,			//#
+	BOTH_DEAD21,			//#
+	BOTH_DEAD22,			//#
+	BOTH_DEAD23,			//#
+	BOTH_DEAD24,			//#
+	BOTH_DEAD25,			//#
 	BOTH_DEADFORWARD1,		//# First thrown forward death finished pose
 	BOTH_DEADFORWARD2,		//# Second thrown forward death finished pose
 	BOTH_DEADBACKWARD1,		//# First thrown backward death finished pose
@@ -122,16 +122,16 @@ typedef enum //# animNumber_e
 	BOTH_PAIN6,				//# Sixth take pain anim - from behind
 	BOTH_PAIN7,				//# Seventh take pain anim - from behind
 	BOTH_PAIN8,				//# Eigth take pain anim - from behind
-	BOTH_PAIN9,				//# 
-	BOTH_PAIN10,			//# 
-	BOTH_PAIN11,			//# 
-	BOTH_PAIN12,			//# 
-	BOTH_PAIN13,			//# 
-	BOTH_PAIN14,			//# 
-	BOTH_PAIN15,			//# 
-	BOTH_PAIN16,			//# 
-	BOTH_PAIN17,			//# 
-	BOTH_PAIN18,			//# 
+	BOTH_PAIN9,				//#
+	BOTH_PAIN10,			//#
+	BOTH_PAIN11,			//#
+	BOTH_PAIN12,			//#
+	BOTH_PAIN13,			//#
+	BOTH_PAIN14,			//#
+	BOTH_PAIN15,			//#
+	BOTH_PAIN16,			//#
+	BOTH_PAIN17,			//#
+	BOTH_PAIN18,			//#
 
 	//# #sep BOTH_ ATTACKS
 	BOTH_ATTACK1,			//# Attack with stun baton
@@ -867,7 +867,7 @@ typedef enum //# animNumber_e
 	BOTH_LK_S_S_T_SB_1_L,	//super break I lost
 	BOTH_LK_S_S_T_SB_1_W,	//super break I won
 //===Dual Saber locks==================================================================
-//DUAL vs. DUAL	
+//DUAL vs. DUAL
 	//side locks
 	BOTH_LK_DL_DL_S_B_1_L,	//normal break I lost
 	BOTH_LK_DL_DL_S_B_1_W,	//normal break I won
@@ -1060,9 +1060,9 @@ typedef enum //# animNumber_e
 	BOTH_STAND5TOSIT3,		//# transition from stand 5 to sit 3
 	BOTH_STAND1TOSTAND5,	//# Transition from stand1 to stand5
 	BOTH_STAND5TOSTAND1,	//# Transition from stand5 to stand1
-	BOTH_STAND5TOAIM,		//# Transition of Kye aiming his gun at Desann (cin #9) 
-	BOTH_STAND5STARTLEDLOOKLEFT,	//# Kyle turning to watch the bridge drop (cin #9) 
-	BOTH_STARTLEDLOOKLEFTTOSTAND5,	//# Kyle returning to stand 5 from watching the bridge drop (cin #9) 
+	BOTH_STAND5TOAIM,		//# Transition of Kye aiming his gun at Desann (cin #9)
+	BOTH_STAND5STARTLEDLOOKLEFT,	//# Kyle turning to watch the bridge drop (cin #9)
+	BOTH_STARTLEDLOOKLEFTTOSTAND5,	//# Kyle returning to stand 5 from watching the bridge drop (cin #9)
 	BOTH_STAND5TOSTAND8,	//# Transition from stand5 to stand8
 	BOTH_STAND7TOSTAND8,	//# Tavion putting hands on back of chair (cin #11)
 	BOTH_STAND8TOSTAND5,	//# Transition from stand8 to stand5
@@ -1081,11 +1081,11 @@ typedef enum //# animNumber_e
 	BOTH_CONSOLE1START,		//# typing at a console
 	BOTH_CONSOLE1,			//# typing at a console
 	BOTH_CONSOLE1STOP,		//# typing at a console
-	BOTH_CONSOLE2START,		//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2,			//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2STOP,		//# typing at a console with comm link in hand (cin #5) 
-	BOTH_CONSOLE2HOLDCOMSTART,	//# lean in to type at console while holding comm link in hand (cin #5) 
-	BOTH_CONSOLE2HOLDCOMSTOP,	//# lean away after typing at console while holding comm link in hand (cin #5) 
+	BOTH_CONSOLE2START,		//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2,			//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2STOP,		//# typing at a console with comm link in hand (cin #5)
+	BOTH_CONSOLE2HOLDCOMSTART,	//# lean in to type at console while holding comm link in hand (cin #5)
+	BOTH_CONSOLE2HOLDCOMSTOP,	//# lean away after typing at console while holding comm link in hand (cin #5)
 
 	BOTH_GUARD_LOOKAROUND1,	//# Cradling weapon and looking around
 	BOTH_GUARD_IDLE1,		//# Cradling weapon and standing
@@ -1098,7 +1098,7 @@ typedef enum //# animNumber_e
 	BOTH_TALKCOMM1,			//# Talking into a comm link
 	BOTH_TALKCOMM1STOP,		//# Stop talking into a comm link
 	BOTH_TALKGESTURE1,		//# Generic talk anim
-	
+
 	BOTH_HEADTILTLSTART,		//# Head tilt to left
 	BOTH_HEADTILTLSTOP,			//# Head tilt to left
 	BOTH_HEADTILTRSTART,		//# Head tilt to right
@@ -1107,7 +1107,7 @@ typedef enum //# animNumber_e
 	BOTH_HEADSHAKE,				//# Head shake NO
 	BOTH_SIT2HEADTILTLSTART,	//# Head tilt to left from seated position 2
 	BOTH_SIT2HEADTILTLSTOP,		//# Head tilt to left from seated position 2
- 
+
 	BOTH_REACH1START,		//# Monmothma reaching for crystal
 	BOTH_REACH1STOP,		//# Monmothma reaching for crystal
 
@@ -1153,10 +1153,10 @@ typedef enum //# animNumber_e
 
 	// Swoop Vehicle animations.
 	//* #sep BOTH_ SWOOP ANIMS
-	BOTH_VS_MOUNT_L,			//# Mount from left		
-	BOTH_VS_DISMOUNT_L,			//# Dismount to left		
-	BOTH_VS_MOUNT_R,			//# Mount from  right (symmetry)		
-	BOTH_VS_DISMOUNT_R,			//# DISMOUNT TO  RIGHT (SYMMETRY)		
+	BOTH_VS_MOUNT_L,			//# Mount from left
+	BOTH_VS_DISMOUNT_L,			//# Dismount to left
+	BOTH_VS_MOUNT_R,			//# Mount from  right (symmetry)
+	BOTH_VS_DISMOUNT_R,			//# DISMOUNT TO  RIGHT (SYMMETRY)
 
 	BOTH_VS_MOUNTJUMP_L,		//#
 	BOTH_VS_MOUNTTHROW,			//# Land on an occupied vehicle & throw off current pilot
@@ -1164,92 +1164,92 @@ typedef enum //# animNumber_e
 	BOTH_VS_MOUNTTHROW_R,		//# Land on an occupied vehicle & throw off current pilot
 	BOTH_VS_MOUNTTHROWEE,		//# Current pilot getting thrown off by another guy
 
-	BOTH_VS_LOOKLEFT,			//# Turn & Look behind and to the left (no weapon)		
-	BOTH_VS_LOOKRIGHT,			//# Turn & Look behind and to the right (no weapon)		
+	BOTH_VS_LOOKLEFT,			//# Turn & Look behind and to the left (no weapon)
+	BOTH_VS_LOOKRIGHT,			//# Turn & Look behind and to the right (no weapon)
 
 	BOTH_VS_TURBO,				//# Hit The Turbo Button
 
-	BOTH_VS_REV,				//# Player looks back as swoop reverses		
+	BOTH_VS_REV,				//# Player looks back as swoop reverses
 
-	BOTH_VS_AIR,				//# Player stands up when swoop is airborn		
+	BOTH_VS_AIR,				//# Player stands up when swoop is airborn
 	BOTH_VS_AIR_G,				//# "" with Gun
 	BOTH_VS_AIR_SL,				//# "" with Saber Left
 	BOTH_VS_AIR_SR,				//# "" with Saber Right
 
-	BOTH_VS_LAND,				//# Player bounces down when swoop lands		
+	BOTH_VS_LAND,				//# Player bounces down when swoop lands
 	BOTH_VS_LAND_G,				//#  "" with Gun
 	BOTH_VS_LAND_SL,			//#  "" with Saber Left
 	BOTH_VS_LAND_SR,			//#  "" with Saber Right
 
 	BOTH_VS_IDLE,				//# Sit
 	BOTH_VS_IDLE_G,				//# Sit (gun)
-	BOTH_VS_IDLE_SL,			//# Sit (saber left)		
-	BOTH_VS_IDLE_SR,			//# Sit (saber right)		
+	BOTH_VS_IDLE_SL,			//# Sit (saber left)
+	BOTH_VS_IDLE_SR,			//# Sit (saber right)
 
 	BOTH_VS_LEANL,				//# Lean left
-	BOTH_VS_LEANL_G,			//# Lean left (gun)		
-	BOTH_VS_LEANL_SL,			//# Lean left (saber left)		
-	BOTH_VS_LEANL_SR,			//# Lean left (saber right)		
+	BOTH_VS_LEANL_G,			//# Lean left (gun)
+	BOTH_VS_LEANL_SL,			//# Lean left (saber left)
+	BOTH_VS_LEANL_SR,			//# Lean left (saber right)
 
-	BOTH_VS_LEANR,				//# Lean right		
-	BOTH_VS_LEANR_G,			//# Lean right (gun)		
-	BOTH_VS_LEANR_SL,			//# Lean right (saber left)		
-	BOTH_VS_LEANR_SR,			//# Lean right (saber right)		
-				
-	BOTH_VS_ATL_S,				//# Attack left with saber		
-	BOTH_VS_ATR_S,				//# Attack right with saber		
+	BOTH_VS_LEANR,				//# Lean right
+	BOTH_VS_LEANR_G,			//# Lean right (gun)
+	BOTH_VS_LEANR_SL,			//# Lean right (saber left)
+	BOTH_VS_LEANR_SR,			//# Lean right (saber right)
+
+	BOTH_VS_ATL_S,				//# Attack left with saber
+	BOTH_VS_ATR_S,				//# Attack right with saber
 	BOTH_VS_ATR_TO_L_S,			//# Attack toss saber from right to left hand
 	BOTH_VS_ATL_TO_R_S,			//# Attack toss saber from left to right hand
-	BOTH_VS_ATR_G,				//# Attack right with gun (90)		
-	BOTH_VS_ATL_G,				//# Attack left with gun (90)		
-	BOTH_VS_ATF_G,				//# Attack forward with gun		
+	BOTH_VS_ATR_G,				//# Attack right with gun (90)
+	BOTH_VS_ATL_G,				//# Attack left with gun (90)
+	BOTH_VS_ATF_G,				//# Attack forward with gun
 
 	BOTH_VS_PAIN1,				//# Pain
 
 	// Added 12/04/02 by Aurelio.
 	//* #sep BOTH_ TAUNTAUN ANIMS
-	BOTH_VT_MOUNT_L,		//# Mount from left	
+	BOTH_VT_MOUNT_L,		//# Mount from left
 	BOTH_VT_MOUNT_R,		//# Mount from right
 	BOTH_VT_MOUNT_B,		//# Mount from air, behind
 	BOTH_VT_DISMOUNT,		//# Dismount for tauntaun
-	BOTH_VT_DISMOUNT_L,		//# Dismount to tauntauns left	
-	BOTH_VT_DISMOUNT_R,		//# Dismount to tauntauns right (symmetry)	
+	BOTH_VT_DISMOUNT_L,		//# Dismount to tauntauns left
+	BOTH_VT_DISMOUNT_R,		//# Dismount to tauntauns right (symmetry)
 
-	BOTH_VT_WALK_FWD,		//# Walk forward	
-	BOTH_VT_WALK_REV,		//# Walk backward	
+	BOTH_VT_WALK_FWD,		//# Walk forward
+	BOTH_VT_WALK_REV,		//# Walk backward
 	BOTH_VT_WALK_FWD_L,		//# walk lean left
 	BOTH_VT_WALK_FWD_R,		//# Walk lean right
-	BOTH_VT_RUN_FWD,		//# Run forward	
-	BOTH_VT_RUN_REV,		//# Look backwards while running (not weapon specific)	
+	BOTH_VT_RUN_FWD,		//# Run forward
+	BOTH_VT_RUN_REV,		//# Look backwards while running (not weapon specific)
 	BOTH_VT_RUN_FWD_L,		//# Run lean left
 	BOTH_VT_RUN_FWD_R,		//# Run lean right
 
-	BOTH_VT_SLIDEF,			//# Tauntaun slides forward with abrupt stop	
-	BOTH_VT_AIR,			//# Tauntaun jump	
-	BOTH_VT_ATB,			//# Tauntaun tail swipe	
-	BOTH_VT_PAIN1,			//# Pain	
-	BOTH_VT_DEATH1,			//# Die	
-	BOTH_VT_STAND,			//# Stand still and breath	
-	BOTH_VT_BUCK,			//# Tauntaun bucking loop animation	
+	BOTH_VT_SLIDEF,			//# Tauntaun slides forward with abrupt stop
+	BOTH_VT_AIR,			//# Tauntaun jump
+	BOTH_VT_ATB,			//# Tauntaun tail swipe
+	BOTH_VT_PAIN1,			//# Pain
+	BOTH_VT_DEATH1,			//# Die
+	BOTH_VT_STAND,			//# Stand still and breath
+	BOTH_VT_BUCK,			//# Tauntaun bucking loop animation
 
-	BOTH_VT_LAND,			//# Player bounces down when tauntaun lands	
+	BOTH_VT_LAND,			//# Player bounces down when tauntaun lands
 	BOTH_VT_TURBO,			//# Hit The Turbo Button
-	BOTH_VT_IDLE_SL,		//# Sit (saber left)		
-	BOTH_VT_IDLE_SR,		//# Sit (saber right)		
+	BOTH_VT_IDLE_SL,		//# Sit (saber left)
+	BOTH_VT_IDLE_SR,		//# Sit (saber right)
 
-	BOTH_VT_IDLE,			//# Sit with no weapon selected	
-	BOTH_VT_IDLE1,			//# Sit with no weapon selected	
-	BOTH_VT_IDLE_S,			//# Sit with saber selected	
-	BOTH_VT_IDLE_G,			//# Sit with gun selected	
+	BOTH_VT_IDLE,			//# Sit with no weapon selected
+	BOTH_VT_IDLE1,			//# Sit with no weapon selected
+	BOTH_VT_IDLE_S,			//# Sit with saber selected
+	BOTH_VT_IDLE_G,			//# Sit with gun selected
 	BOTH_VT_IDLE_T,			//# Sit with thermal grenade selected
 
-	BOTH_VT_ATL_S,			//# Attack left with saber	
-	BOTH_VT_ATR_S,			//# Attack right with saber	
+	BOTH_VT_ATL_S,			//# Attack left with saber
+	BOTH_VT_ATR_S,			//# Attack right with saber
 	BOTH_VT_ATR_TO_L_S,		//# Attack toss saber from right to left hand
 	BOTH_VT_ATL_TO_R_S,		//# Attack toss saber from left to right hand
-	BOTH_VT_ATR_G,			//# Attack right with gun (90)	
-	BOTH_VT_ATL_G,			//# Attack left with gun (90)	
-	BOTH_VT_ATF_G,			//# Attack forward with gun	
+	BOTH_VT_ATR_G,			//# Attack right with gun (90)
+	BOTH_VT_ATL_G,			//# Attack left with gun (90)
+	BOTH_VT_ATF_G,			//# Attack forward with gun
 
 
 	// Added 2/26/02 by Aurelio.
@@ -1303,7 +1303,7 @@ typedef enum //# animNumber_e
 	BOTH_WALKBACK2,			//# Walk2 backwards
 	BOTH_RUNBACK1,			//# Run1 backwards
 	BOTH_RUNBACK2,			//# Run1 backwards
-	
+
 	//# #sep BOTH_ JUMPING
 	BOTH_JUMP1,				//# Jump - wind-up and leave ground
 	BOTH_INAIR1,			//# In air loop (from jump)
@@ -1382,24 +1382,24 @@ typedef enum //# animNumber_e
 	BOTH_VICTORY_DUAL,
 	BOTH_VICTORY_STAFF,
 	//other saber/acro anims
-	BOTH_ARIAL_LEFT,		//# 
-	BOTH_ARIAL_RIGHT,		//# 
-	BOTH_CARTWHEEL_LEFT,	//# 
-	BOTH_CARTWHEEL_RIGHT,	//# 
-	BOTH_FLIP_LEFT,			//# 
-	BOTH_FLIP_BACK1,		//# 
-	BOTH_FLIP_BACK2,		//# 
-	BOTH_FLIP_BACK3,		//# 
-	BOTH_BUTTERFLY_LEFT,	//# 
-	BOTH_BUTTERFLY_RIGHT,	//# 
-	BOTH_WALL_RUN_RIGHT,	//# 
+	BOTH_ARIAL_LEFT,		//#
+	BOTH_ARIAL_RIGHT,		//#
+	BOTH_CARTWHEEL_LEFT,	//#
+	BOTH_CARTWHEEL_RIGHT,	//#
+	BOTH_FLIP_LEFT,			//#
+	BOTH_FLIP_BACK1,		//#
+	BOTH_FLIP_BACK2,		//#
+	BOTH_FLIP_BACK3,		//#
+	BOTH_BUTTERFLY_LEFT,	//#
+	BOTH_BUTTERFLY_RIGHT,	//#
+	BOTH_WALL_RUN_RIGHT,	//#
 	BOTH_WALL_RUN_RIGHT_FLIP,//#
-	BOTH_WALL_RUN_RIGHT_STOP,//# 
-	BOTH_WALL_RUN_LEFT,		//# 
+	BOTH_WALL_RUN_RIGHT_STOP,//#
+	BOTH_WALL_RUN_LEFT,		//#
 	BOTH_WALL_RUN_LEFT_FLIP,//#
-	BOTH_WALL_RUN_LEFT_STOP,//# 
-	BOTH_WALL_FLIP_RIGHT,	//# 
-	BOTH_WALL_FLIP_LEFT,	//# 
+	BOTH_WALL_RUN_LEFT_STOP,//#
+	BOTH_WALL_FLIP_RIGHT,	//#
+	BOTH_WALL_FLIP_LEFT,	//#
 	BOTH_KNOCKDOWN1,		//# knocked backwards
 	BOTH_KNOCKDOWN2,		//# knocked backwards hard
 	BOTH_KNOCKDOWN3,		//#	knocked forwards
@@ -1445,32 +1445,32 @@ typedef enum //# animNumber_e
 	BOTH_BUTTERFLY_FL1,//#
 
 	//NEW SABER/JEDI/FORCE ANIMS
-	BOTH_BACK_FLIP_UP,	//# back flip up Bonus Animation!!!!	
+	BOTH_BACK_FLIP_UP,	//# back flip up Bonus Animation!!!!
 	BOTH_LOSE_SABER,	//# player losing saber (pulled from hand by force pull 4 - Kyle?)
-	BOTH_STAFF_TAUNT,	//# taunt saberstaff			
+	BOTH_STAFF_TAUNT,	//# taunt saberstaff
 	BOTH_DUAL_TAUNT,		//# taunt dual
-	BOTH_A6_FB,				//# dual attack front/back		
+	BOTH_A6_FB,				//# dual attack front/back
 	BOTH_A6_LR,				//# dual attack left/right
 	BOTH_A7_HILT,			//# saber knock (alt + stand still)
-	//Alora			
-	BOTH_ALORA_SPIN,		//#jump spin attack	death ballet	
-	BOTH_ALORA_FLIP_1,		//# gymnast move 1		
-	BOTH_ALORA_FLIP_2,		//# gymnast move 2		
-	BOTH_ALORA_FLIP_3,		//# gymnast move3		
-	BOTH_ALORA_FLIP_B,		//# gymnast move back		
-	BOTH_ALORA_SPIN_THROW,	//# dual saber throw		
-	BOTH_ALORA_SPIN_SLASH,	//# spin slash	special bonus animation!! :)	
+	//Alora
+	BOTH_ALORA_SPIN,		//#jump spin attack	death ballet
+	BOTH_ALORA_FLIP_1,		//# gymnast move 1
+	BOTH_ALORA_FLIP_2,		//# gymnast move 2
+	BOTH_ALORA_FLIP_3,		//# gymnast move3
+	BOTH_ALORA_FLIP_B,		//# gymnast move back
+	BOTH_ALORA_SPIN_THROW,	//# dual saber throw
+	BOTH_ALORA_SPIN_SLASH,	//# spin slash	special bonus animation!! :)
 	BOTH_ALORA_TAUNT,		//# special taunt
-	//Rosh (Kothos battle)			
-	BOTH_ROSH_PAIN,	//# hurt animation (exhausted)		
-	BOTH_ROSH_HEAL,	//# healed/rejuvenated		
-	//Tavion			
+	//Rosh (Kothos battle)
+	BOTH_ROSH_PAIN,	//# hurt animation (exhausted)
+	BOTH_ROSH_HEAL,	//# healed/rejuvenated
+	//Tavion
 	BOTH_TAVION_SCEPTERGROUND, //# stabbing ground with sith sword shoots electricity everywhere
 	BOTH_TAVION_SWORDPOWER,//# Tavion doing the He-Man(tm) thing
 	BOTH_SCEPTER_START,	//#Point scepter and attack start
 	BOTH_SCEPTER_HOLD,	//#Point scepter and attack hold
 	BOTH_SCEPTER_STOP,	//#Point scepter and attack stop
-	//Kyle Boss			
+	//Kyle Boss
 	BOTH_KYLE_GRAB,		//# grab
 	BOTH_KYLE_MISS,		//# miss
 	BOTH_KYLE_PA_1,		//# hold 1
@@ -1517,7 +1517,7 @@ typedef enum //# animNumber_e
 	BOTH_SLEEP6START,		//# Kyle leaning back to sleep (cin 20)
 	BOTH_SLEEP6STOP,		//# Kyle waking up and shaking his head (cin 21)
 	BOTH_SLEEP1GETUP,		//# alarmed and getting up out of sleep1 pose to stand
-	BOTH_SLEEP1GETUP2,		//# 
+	BOTH_SLEEP1GETUP2,		//#
 
 	BOTH_CHOKE1START,		//# tavion in force grip choke
 	BOTH_CHOKE1STARTHOLD,	//# loop of tavion in force grip choke
@@ -1759,30 +1759,30 @@ typedef enum //# animNumber_e
 	BOTH_CIN_23,		//# Level specific cinematic 23
 	BOTH_CIN_24,		//# Level specific cinematic 24
 	BOTH_CIN_25,		//# Level specific cinematic 25
-	BOTH_CIN_26,		//# Level specific cinematic 
-	BOTH_CIN_27,		//# Level specific cinematic 
-	BOTH_CIN_28,		//# Level specific cinematic 
-	BOTH_CIN_29,		//# Level specific cinematic 
-	BOTH_CIN_30,		//# Level specific cinematic 
-	BOTH_CIN_31,		//# Level specific cinematic 
-	BOTH_CIN_32,		//# Level specific cinematic 
-	BOTH_CIN_33,		//# Level specific cinematic 
-	BOTH_CIN_34,		//# Level specific cinematic 
-	BOTH_CIN_35,		//# Level specific cinematic 
-	BOTH_CIN_36,		//# Level specific cinematic 
-	BOTH_CIN_37,		//# Level specific cinematic 
-	BOTH_CIN_38,		//# Level specific cinematic 
-	BOTH_CIN_39,		//# Level specific cinematic 
-	BOTH_CIN_40,		//# Level specific cinematic 
-	BOTH_CIN_41,		//# Level specific cinematic 
-	BOTH_CIN_42,		//# Level specific cinematic 
-	BOTH_CIN_43,		//# Level specific cinematic 
-	BOTH_CIN_44,		//# Level specific cinematic 
-	BOTH_CIN_45,		//# Level specific cinematic 
-	BOTH_CIN_46,		//# Level specific cinematic 
-	BOTH_CIN_47,		//# Level specific cinematic 
-	BOTH_CIN_48,		//# Level specific cinematic 
-	BOTH_CIN_49,		//# Level specific cinematic 
+	BOTH_CIN_26,		//# Level specific cinematic
+	BOTH_CIN_27,		//# Level specific cinematic
+	BOTH_CIN_28,		//# Level specific cinematic
+	BOTH_CIN_29,		//# Level specific cinematic
+	BOTH_CIN_30,		//# Level specific cinematic
+	BOTH_CIN_31,		//# Level specific cinematic
+	BOTH_CIN_32,		//# Level specific cinematic
+	BOTH_CIN_33,		//# Level specific cinematic
+	BOTH_CIN_34,		//# Level specific cinematic
+	BOTH_CIN_35,		//# Level specific cinematic
+	BOTH_CIN_36,		//# Level specific cinematic
+	BOTH_CIN_37,		//# Level specific cinematic
+	BOTH_CIN_38,		//# Level specific cinematic
+	BOTH_CIN_39,		//# Level specific cinematic
+	BOTH_CIN_40,		//# Level specific cinematic
+	BOTH_CIN_41,		//# Level specific cinematic
+	BOTH_CIN_42,		//# Level specific cinematic
+	BOTH_CIN_43,		//# Level specific cinematic
+	BOTH_CIN_44,		//# Level specific cinematic
+	BOTH_CIN_45,		//# Level specific cinematic
+	BOTH_CIN_46,		//# Level specific cinematic
+	BOTH_CIN_47,		//# Level specific cinematic
+	BOTH_CIN_48,		//# Level specific cinematic
+	BOTH_CIN_49,		//# Level specific cinematic
 	BOTH_CIN_50,		//# Level specific cinematic
 
 	//# #eol
@@ -1791,7 +1791,3 @@ typedef enum //# animNumber_e
 } animNumber_t;
 
 #define SABER_ANIM_GROUP_SIZE (BOTH_A2_T__B_ - BOTH_A1_T__B_)
-
-
-#endif// #ifndef __ANIMS_H__
-

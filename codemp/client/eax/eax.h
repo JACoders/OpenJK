@@ -21,36 +21,40 @@ extern "C" {
     /*
      * EAX Unified Interface (using Direct X 7) {4FF53B81-1CE0-11d3-AAB8-00A0C95949D5}
      */
-    DEFINE_GUID(CLSID_EAXDirectSound, 
-        0x4ff53b81, 
-        0x1ce0, 
+    DEFINE_GUID(CLSID_EAXDirectSound,
+        0x4ff53b81,
+        0x1ce0,
         0x11d3,
         0xaa, 0xb8, 0x0, 0xa0, 0xc9, 0x59, 0x49, 0xd5);
-        
+
    /*
     * EAX Unified Interface (using Direct X 8) {CA503B60-B176-11d4-A094-D0C0BF3A560C}
     */
-    DEFINE_GUID(CLSID_EAXDirectSound8, 
+    DEFINE_GUID(CLSID_EAXDirectSound8,
         0xca503b60,
         0xb176,
         0x11d4,
         0xa0, 0x94, 0xd0, 0xc0, 0xbf, 0x3a, 0x56, 0xc);
 
-    
 
-#ifdef DIRECTSOUND_VERSION        
+
+#ifdef DIRECTSOUND_VERSION
 #if DIRECTSOUND_VERSION >= 0x0800
     __declspec(dllimport) HRESULT WINAPI EAXDirectSoundCreate8(GUID*, LPDIRECTSOUND8*, IUnknown FAR *);
     typedef HRESULT (FAR PASCAL *LPEAXDIRECTSOUNDCREATE8)(GUID*, LPDIRECTSOUND8*, IUnknown FAR*);
 #endif
 #endif
-    
+
     __declspec(dllimport) HRESULT WINAPI EAXDirectSoundCreate(GUID*, LPDIRECTSOUND*, IUnknown FAR *);
     typedef HRESULT (FAR PASCAL *LPEAXDIRECTSOUNDCREATE)(GUID*, LPDIRECTSOUND*, IUnknown FAR*);
 
 #else // OPENAL
-    #include "../OpenAL/al.h"
-    
+	#ifdef _WIN32
+		#include "../OpenAL/al.h"
+	#else
+		#include <al.h>
+	#endif
+
     #ifndef GUID_DEFINED
         #define GUID_DEFINED
         typedef struct _GUID
@@ -94,16 +98,16 @@ extern "C" {
 // and EAXSOURCE_ACTIVEFXSLOTID
 
 // {00000000-0000-0000-0000-000000000000}
-DEFINE_GUID(EAX_NULL_GUID, 
-    0x00000000, 
-    0x0000, 
-    0x0000, 
+DEFINE_GUID(EAX_NULL_GUID,
+    0x00000000,
+    0x0000,
+    0x0000,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 
-// The EAX_PrimaryFXSlotID GUID is used by EAXSOURCE_ACTIVEFXSLOTID 
+// The EAX_PrimaryFXSlotID GUID is used by EAXSOURCE_ACTIVEFXSLOTID
 
 // {F317866D-924C-450C-861B-E6DAA25E7C20}
-DEFINE_GUID(EAX_PrimaryFXSlotID, 
+DEFINE_GUID(EAX_PrimaryFXSlotID,
     0xf317866d,
     0x924c,
     0x450c,
@@ -112,9 +116,9 @@ DEFINE_GUID(EAX_PrimaryFXSlotID,
 
 ////////////////////////////////////////////////////////////////////////////
 
-    
 
-    
+
+
 ////////////////////////////////////////////////////////////////////////////
 // Structures
 
@@ -125,7 +129,7 @@ typedef struct _EAXCONTEXTPROPERTIES
     float         flDistanceFactor;
     float         flAirAbsorptionHF;
     float         flHFReference;
-} EAXCONTEXTPROPERTIES, *LPEAXCONTEXTPROPERTIES; 
+} EAXCONTEXTPROPERTIES, *LPEAXCONTEXTPROPERTIES;
 
 // Use this structure for EAXSOURCE_ALLPARAMETERS
 // - all levels are hundredths of decibels
@@ -146,7 +150,7 @@ typedef struct _EAXSOURCEPROPERTIES
     long          lDirectHF;               // relative direct path level at high frequencies
     long          lRoom;                   // room effect level (at low and mid frequencies)
     long          lRoomHF;                 // relative room effect level at high frequencies
-    long          lObstruction;            // main obstruction control (attenuation at high frequencies) 
+    long          lObstruction;            // main obstruction control (attenuation at high frequencies)
     float         flObstructionLFRatio;    // obstruction low-frequency level re. main control
     long          lOcclusion;              // main occlusion control (attenuation at high frequencies)
     float         flOcclusionLFRatio;      // occlusion low-frequency level re. main control
@@ -174,7 +178,7 @@ typedef struct _EAXSOURCEALLSENDPROPERTIES
 	float         flOcclusionLFRatio;
 	float         flOcclusionRoomRatio;
 	float         flOcclusionDirectRatio;
-	long          lExclusion; 
+	long          lExclusion;
 	float         flExclusionLFRatio;
 } EAXSOURCEALLSENDPROPERTIES, *LPEAXSOURCEALLSENDPROPERTIES;
 
@@ -215,7 +219,7 @@ typedef struct _EAXSOURCESENDPROPERTIES
     long          lSendHF;
 } EAXSOURCESENDPROPERTIES, *LPEAXSOURCESENDPROPERTIES;
 
-// Use this structure for EAXSOURCE_OCCLUSIONSENDPARAMETERS 
+// Use this structure for EAXSOURCE_OCCLUSIONSENDPARAMETERS
 typedef struct _EAXSOURCEOCCLUSIONSENDPROPERTIES
 {
 	GUID          guidReceivingFXSlotID;
@@ -286,10 +290,10 @@ typedef struct _EAXVECTOR {
 // Context Object
 
 // {1D4870AD-0DEF-43c0-A40C-523632296342}
-DEFINE_GUID(EAXPROPERTYID_EAX40_Context, 
-    0x1d4870ad, 
-    0xdef, 
-    0x43c0, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_Context,
+    0x1d4870ad,
+    0xdef,
+    0x43c0,
     0xa4, 0xc, 0x52, 0x36, 0x32, 0x29, 0x63, 0x42);
 
 // For compatibility with future EAX versions:
@@ -338,31 +342,31 @@ typedef enum
 // Effect Slot Objects
 
 // {C4D79F1E-F1AC-436b-A81D-A738E7045469}
-DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot0, 
-    0xc4d79f1e, 
-    0xf1ac, 
-    0x436b, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot0,
+    0xc4d79f1e,
+    0xf1ac,
+    0x436b,
     0xa8, 0x1d, 0xa7, 0x38, 0xe7, 0x4, 0x54, 0x69);
 
 // {08C00E96-74BE-4491-93AA-E8AD35A49117}
-DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot1, 
-    0x8c00e96, 
-    0x74be, 
-    0x4491, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot1,
+    0x8c00e96,
+    0x74be,
+    0x4491,
     0x93, 0xaa, 0xe8, 0xad, 0x35, 0xa4, 0x91, 0x17);
 
 // {1D433B88-F0F6-4637-919F-60E7E06B5EDD}
-DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot2, 
-    0x1d433b88, 
-    0xf0f6, 
-    0x4637, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot2,
+    0x1d433b88,
+    0xf0f6,
+    0x4637,
     0x91, 0x9f, 0x60, 0xe7, 0xe0, 0x6b, 0x5e, 0xdd);
 
 // {EFFF08EA-C7D8-44ab-93AD-6DBD5F910064}
-DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot3, 
-    0xefff08ea, 
-    0xc7d8, 
-    0x44ab, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_FXSlot3,
+    0xefff08ea,
+    0xc7d8,
+    0x44ab,
     0x93, 0xad, 0x6d, 0xbd, 0x5f, 0x91, 0x0, 0x64);
 
 // For compatibility with future EAX versions:
@@ -416,10 +420,10 @@ enum
 // Source Object
 
 // {1B86B823-22DF-4eae-8B3C-1278CE544227}
-DEFINE_GUID(EAXPROPERTYID_EAX40_Source, 
-    0x1b86b823, 
-    0x22df, 
-    0x4eae, 
+DEFINE_GUID(EAXPROPERTYID_EAX40_Source,
+    0x1b86b823,
+    0x22df,
+    0x4eae,
     0x8b, 0x3c, 0x12, 0x78, 0xce, 0x54, 0x42, 0x27);
 
 // For compatibility with future EAX versions:
@@ -440,14 +444,14 @@ typedef enum
     EAXSOURCE_OBSTRUCTION,
     EAXSOURCE_OBSTRUCTIONLFRATIO,
     EAXSOURCE_OCCLUSION,
-    EAXSOURCE_OCCLUSIONLFRATIO, 
+    EAXSOURCE_OCCLUSIONLFRATIO,
     EAXSOURCE_OCCLUSIONROOMRATIO,
     EAXSOURCE_OCCLUSIONDIRECTRATIO,
-    EAXSOURCE_EXCLUSION, 
+    EAXSOURCE_EXCLUSION,
     EAXSOURCE_EXCLUSIONLFRATIO,
-    EAXSOURCE_OUTSIDEVOLUMEHF, 
-    EAXSOURCE_DOPPLERFACTOR, 
-    EAXSOURCE_ROLLOFFFACTOR, 
+    EAXSOURCE_OUTSIDEVOLUMEHF,
+    EAXSOURCE_DOPPLERFACTOR,
+    EAXSOURCE_ROLLOFFFACTOR,
     EAXSOURCE_ROOMROLLOFFFACTOR,
     EAXSOURCE_AIRABSORPTIONFACTOR,
     EAXSOURCE_FLAGS,
@@ -580,10 +584,10 @@ typedef enum
 // Reverb Effect
 
 // EAX REVERB {0CF95C8F-A3CC-4849-B0B6-832ECC1822DF}
-DEFINE_GUID(EAX_REVERB_EFFECT, 
-    0xcf95c8f, 
-    0xa3cc, 
-    0x4849, 
+DEFINE_GUID(EAX_REVERB_EFFECT,
+    0xcf95c8f,
+    0xa3cc,
+    0x4849,
     0xb0, 0xb6, 0x83, 0x2e, 0xcc, 0x18, 0x22, 0xdf);
 
 // Reverb effect properties
@@ -690,7 +694,7 @@ enum
 //              myReverb.dwFlags = myFlags /* see EAXREVERBFLAGS below */ ;
 //       instead of:
 //              myReverb = { -1000, -100, ... , 0x00000009 };
-//       If you want to save and load presets in binary form, you 
+//       If you want to save and load presets in binary form, you
 //       should define your own structure to insure future compatibility.
 //
 typedef struct _EAXREVERBPROPERTIES
@@ -700,10 +704,10 @@ typedef struct _EAXREVERBPROPERTIES
     float flEnvironmentDiffusion;  // environment diffusion
     long lRoom;                    // room effect level (at mid frequencies)
     long lRoomHF;                  // relative room effect level at high frequencies
-    long lRoomLF;                  // relative room effect level at low frequencies  
+    long lRoomLF;                  // relative room effect level at low frequencies
     float flDecayTime;             // reverberation decay time at mid frequencies
     float flDecayHFRatio;          // high-frequency to mid-frequency decay time ratio
-    float flDecayLFRatio;          // low-frequency to mid-frequency decay time ratio   
+    float flDecayLFRatio;          // low-frequency to mid-frequency decay time ratio
     long lReflections;             // early reflections level relative to room effect
     float flReflectionsDelay;      // initial reflection delay time
     EAXVECTOR vReflectionsPan;     // early reflections panning vector
@@ -716,7 +720,7 @@ typedef struct _EAXREVERBPROPERTIES
     float flModulationDepth;       // modulation depth
     float flAirAbsorptionHF;       // change in level per meter at high frequencies
     float flHFReference;           // reference high frequency
-    float flLFReference;           // reference low frequency 
+    float flLFReference;           // reference low frequency
     float flRoomRolloffFactor;     // like DS3D flRolloffFactor but for room effect
     unsigned long ulFlags;         // modifies the behavior of properties
 } EAXREVERBPROPERTIES, *LPEAXREVERBPROPERTIES;
@@ -872,7 +876,7 @@ typedef struct _EAXAGCCOMPRESSORPROPERTIES
 // Autowah Effect
 
 // EAX AUTOWAH {EC3130C0-AC7A-11D2-88DD-A024D13CE1}
-DEFINE_GUID(EAX_AUTOWAH_EFFECT, 
+DEFINE_GUID(EAX_AUTOWAH_EFFECT,
     0xec3130c0,
     0xac7a,
     0x11d2,
@@ -906,7 +910,7 @@ typedef struct _EAXAUTOWAHPROPERTIES
 
 // Property ranges and defaults:
 
-#define EAXAUTOWAH_MINATTACKTIME            0.0001f 
+#define EAXAUTOWAH_MINATTACKTIME            0.0001f
 #define EAXAUTOWAH_MAXATTACKTIME            1.0f
 #define EAXAUTOWAH_DEFAULTATTACKTIME        0.06f
 
@@ -914,7 +918,7 @@ typedef struct _EAXAUTOWAHPROPERTIES
 #define EAXAUTOWAH_MAXRELEASETIME           1.0f
 #define EAXAUTOWAH_DEFAULTRELEASETIME       0.06f
 
-#define EAXAUTOWAH_MINRESONANCE             600     
+#define EAXAUTOWAH_MINRESONANCE             600
 #define EAXAUTOWAH_MAXRESONANCE             6000
 #define EAXAUTOWAH_DEFAULTRESONANCE         6000
 
@@ -1107,7 +1111,7 @@ typedef struct _EAXECHOPROPERTIES
 } EAXECHOPROPERTIES, *LPEAXECHOPROPERTIES;
 
 // Property ranges and defaults:
-                    
+
 #define EAXECHO_MINDAMPING          0.0f
 #define EAXECHO_MAXDAMPING          0.99f
 #define EAXECHO_DEFAULTDAMPING      0.5f
@@ -1330,7 +1334,7 @@ typedef enum
 #define EAXFREQUENCYSHIFTER_COMMITDEFERREDSETTINGS (EAXFREQUENCYSHIFTER_NONE | \
                                                     EAXFREQUENCYSHIFTER_IMMEDIATE)
 
-// used by EAXFREQUENCYSHIFTER_LEFTDIRECTION and EAXFREQUENCYSHIFTER_RIGHTDIRECTION 
+// used by EAXFREQUENCYSHIFTER_LEFTDIRECTION and EAXFREQUENCYSHIFTER_RIGHTDIRECTION
 enum
 {
     EAX_FREQUENCYSHIFTER_DOWN,
@@ -1368,7 +1372,7 @@ typedef struct _EAXFREQUENCYSHIFTERPROPERTIES
 
 // EAX VOCAL MORPHER {E41CF10C-3383-11D2-88DD-A024D13CE1}
 
-DEFINE_GUID(EAX_VOCALMORPHER_EFFECT, 
+DEFINE_GUID(EAX_VOCALMORPHER_EFFECT,
     0xe41cf10c,
     0x3383,
     0x11d2,

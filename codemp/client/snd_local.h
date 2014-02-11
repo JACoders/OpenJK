@@ -1,7 +1,6 @@
-// snd_local.h -- private sound definations
+#pragma once
 
-#ifndef SND_LOCAL_H
-#define SND_LOCAL_H
+// snd_local.h -- private sound definations
 
 #define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
 
@@ -34,7 +33,7 @@ extern void AS_Free( void );
 
 
 // !!! if this is changed, the asm code must change !!!
-typedef struct {
+typedef struct portable_samplepair_s {
 	int			left;	// the final values will be clamped to +/- 0x00ffff00 and shifted down
 	int			right;
 } portable_samplepair_t;
@@ -45,7 +44,7 @@ typedef struct {
 typedef enum
 {
 	ct_16 = 0,		// formerly ct_NONE in EF1, now indicates 16-bit samples (the default)
-	ct_MP3,			
+	ct_MP3,
 	//
 	ct_NUMBEROF		// used only for array sizing
 
@@ -56,7 +55,7 @@ typedef struct sfx_s {
 	short			*pSoundData;
 	sboolean		bDefaultSound;			// couldn't be loaded, so use buzz
 	sboolean		bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
-	SoundCompressionMethod_t eSoundCompressionMethod;	
+	SoundCompressionMethod_t eSoundCompressionMethod;
 	MP3STREAM		*pMP3StreamHeader;		// NULL ptr unless this sfx_t is an MP3. Use Z_Malloc and Z_Free
 	int 			iSoundLengthInSamples;	// length in samples, always kept as 16bit now so this is #shorts (watch for stereo later for music?)
 	char 			sSoundName[MAX_QPATH];
@@ -71,7 +70,7 @@ typedef struct sfx_s {
 	struct sfx_s	*next;					// only used because of hash table when registering
 } sfx_t;
 
-typedef struct {
+typedef struct dma_s {
 	int			channels;
 	int			samples;				// mono samples in buffer
 	int			submission_chunk;		// don't mix less than this #
@@ -84,8 +83,7 @@ typedef struct {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
-typedef struct
-{
+typedef struct STREAMINGBUFFER_s {
 	ALuint	BufferID;
 	ALuint	Status;
 	char	*Data;
@@ -98,8 +96,7 @@ typedef struct
 #define UNQUEUED	2
 
 
-typedef struct
-{
+typedef struct channel_s {
 // back-indented fields new in TA codebase, will re-format when MP3 code finished -ste
 // note: field missing in TA: sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 //
@@ -122,6 +119,8 @@ typedef struct
 	int			iMP3SlidingDecodeWritePos;
 	int			iMP3SlidingDecodeWindowPos;
 
+	qboolean	doppler;
+	float		dopplerScale;
 
 	// Open AL specific
 	bool	bLooping;	// Signifies if this channel / source is playing a looping sound
@@ -141,7 +140,7 @@ typedef struct
 #define WAV_FORMAT_MP3		3	// not actually used this way, but just ensures we don't match one of the legit formats
 
 
-typedef struct {
+typedef struct wavinfo_s {
 	int			format;
 	int			rate;
 	int			width;
@@ -201,6 +200,8 @@ extern cvar_t	*s_mixahead;
 extern cvar_t	*s_testsound;
 extern cvar_t	*s_separation;
 
+extern cvar_t	*s_doppler;
+
 wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength);
 
 sboolean S_LoadSound( sfx_t *sfx );
@@ -224,12 +225,11 @@ void	 SND_setup();
 int		 SND_FreeOldestSound(sfx_t *pButNotThisOne = NULL);
 void	 SND_TouchSFX(sfx_t *sfx);
 
+qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
+
 void S_DisplayFreeMemory(void);
 void S_memoryLoad(sfx_t *sfx);
 //
 //////////////////////////////////
 
 #include "snd_mp3.h"
-
-#endif	// #ifndef SND_LOCAL_H
-

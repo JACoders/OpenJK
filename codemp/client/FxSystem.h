@@ -1,21 +1,16 @@
+#pragma once
 
-#ifndef FX_SYSTEM_H_INC
-#define FX_SYSTEM_H_INC
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-	#include "ghoul2/G2_local.h"
-#endif
+#include "client/cl_cgameapi.h"
+#include "ghoul2/G2.h"
 
 extern cvar_t	*fx_debug;
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 extern cvar_t	*fx_freeze;
 #endif
 
 extern cvar_t	*fx_countScale;
 extern cvar_t	*fx_nearCull;
-extern cvar_t	*fx_flashRadius;
 
 inline void Vector2Clear(vec2_t a)
 {
@@ -80,7 +75,7 @@ public:
 	}
 	inline	int		ReadFile( void *data, int len, fileHandle_t fh )
 	{
-		FS_Read2( data, len, fh );
+		FS_Read( data, len, fh );
 		return 1;
 	}
 	inline	void	CloseFile( fileHandle_t fh )
@@ -119,7 +114,7 @@ public:
 			max = vec3_origin;
 		}
 
-		memset(td, sizeof(*td), 0);
+		memset(td, 0, sizeof(*td));
 		VectorCopy(start, td->mStart);
 		VectorCopy(min, td->mMins);
 		VectorCopy(max, td->mMaxs);
@@ -127,7 +122,7 @@ public:
 		td->mSkipNumber = skipEntNum;
 		td->mMask = flags;
 
-		VM_Call( cgvm, CG_TRACE );
+		CGVM_Trace();
 
 		tr = td->mResult;
 	}
@@ -146,7 +141,7 @@ public:
 			max = vec3_origin;
 		}
 
-		memset(td, sizeof(*td), 0);
+		memset(td, 0, sizeof(*td));
 		VectorCopy(start, td->mStart);
 		VectorCopy(min, td->mMins);
 		VectorCopy(max, td->mMaxs);
@@ -154,7 +149,7 @@ public:
 		td->mSkipNumber = skipEntNum;
 		td->mMask = flags;
 
-		VM_Call( cgvm, CG_G2TRACE );
+		CGVM_G2Trace();
 
 		tr = td->mResult;
 	}
@@ -168,7 +163,7 @@ public:
 		VectorCopy(start, td->start);
 		VectorCopy(dir, td->dir);
 
-		VM_Call(cgvm, CG_G2MARK);
+		CGVM_G2Mark();
 	}
 
 	inline	void	AddFxToScene( refEntity_t *ent )
@@ -178,7 +173,7 @@ public:
 
 		assert(!ent || ent->renderfx >= 0);
 #endif
-		re.AddRefEntityToScene( ent );
+		re->AddRefEntityToScene( ent );
 	}
 	inline	void	AddFxToScene( miniRefEntity_t *ent )
 	{
@@ -187,38 +182,34 @@ public:
 
 		assert(!ent || ent->renderfx >= 0);
 #endif
-		re.AddMiniRefEntityToScene( ent );
+		re->AddMiniRefEntityToScene( ent );
 	}
-#ifndef VV_LIGHTING
 	inline	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue )
 	{
-		re.AddLightToScene(	org, radius, red, green, blue );
+		re->AddLightToScene(	org, radius, red, green, blue );
 	}
-#endif
 
 	inline	int		RegisterShader( const char *shader )
 	{
-		return re.RegisterShader( shader );
+		return re->RegisterShader( shader );
 	}
 	inline	int		RegisterModel( const char *model )
 	{
-		return re.RegisterModel( model );
+		return re->RegisterModel( model );
 	}
 
 	inline	void	AddPolyToScene( int shader, int count, polyVert_t *verts )
 	{
-		re.AddPolyToScene( shader, count, verts, 1 );
+		re->AddPolyToScene( shader, count, verts, 1 );
 	}
 
 	inline void AddDecalToScene ( qhandle_t shader, const vec3_t origin, const vec3_t dir, float orientation, float r, float g, float b, float a, qboolean alphaFade, float radius, qboolean temporary )
 	{
-		re.AddDecalToScene ( shader, origin, dir, orientation, r, g, b, a, alphaFade, radius, temporary );
+		re->AddDecalToScene ( shader, origin, dir, orientation, r, g, b, a, alphaFade, radius, temporary );
 	}
 
 	void	CameraShake( vec3_t origin, float intensity, int radius, int time );
-	qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/axis[3]);
+	qboolean GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/axis[3]);
 };
 
 extern SFxHelper	theFxHelper;
-
-#endif // FX_SYSTEM_H_INC

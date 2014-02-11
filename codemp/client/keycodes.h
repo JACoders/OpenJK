@@ -1,5 +1,4 @@
-#ifndef __KEYCODES_H__
-#define __KEYCODES_H__
+#pragma once
 
 // these are the key numbers that should be passed to KeyEvent
 
@@ -268,7 +267,7 @@ typedef enum
 	A_LOW_YACUTE,
 	A_LOW_THORN,
 	A_LOW_YDIERESIS,
-	
+
 	A_JOY0,
 	A_JOY1,
 	A_JOY2,
@@ -343,5 +342,3 @@ typedef enum
 // to avoid duplicating the paths, the char events are just
 // distinguished by or'ing in K_CHAR_FLAG (ugly)
 #define	K_CHAR_FLAG		1024
-
-#endif

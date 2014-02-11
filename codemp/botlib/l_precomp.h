@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_precomp.h
@@ -5,7 +6,7 @@
  * desc:		pre compiler
  *
  * $Archive: /source/code/botlib/l_precomp.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -17,14 +18,14 @@
 #endif
 
 #ifndef PATH_SEPERATORSTR
-	#if defined(WIN32)|defined(_WIN32)|defined(__NT__)|defined(__WINDOWS__)|defined(__WINDOWS_386__)
+	#ifdef _WIN32
 		#define PATHSEPERATOR_STR		"\\"
 	#else
 		#define PATHSEPERATOR_STR		"/"
 	#endif
 #endif
 #ifndef PATH_SEPERATORCHAR
-	#if defined(WIN32)|defined(_WIN32)|defined(__NT__)|defined(__WINDOWS__)|defined(__WINDOWS_386__)
+	#ifdef _WIN32
 		#define PATHSEPERATOR_CHAR		'\\'
 	#else
 		#define PATHSEPERATOR_CHAR		'/'
@@ -165,4 +166,3 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line);
 void PC_CheckOpenSourceHandles(void);
 int PC_LoadGlobalDefines ( const char* filename );
 void PC_RemoveAllGlobalDefines ( void );
-

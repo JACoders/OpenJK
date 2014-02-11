@@ -18,12 +18,6 @@ This file is part of Jedi Academy.
 
 // g_combat.c
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
 #include "g_local.h"
 #include "b_local.h"
 #include "g_functions.h"
@@ -33,6 +27,7 @@ This file is part of Jedi Academy.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "Q3_Interface.h"
+#include "g_navigator.h"
 
 #define TURN_OFF			0x00000100
 
@@ -267,7 +262,7 @@ gentity_t *TossClientItems( gentity_t *self )
 				&& weapon != WP_TRIP_MINE
 				&& weapon != WP_DET_PACK )
 			{
-				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL, NULL, 0, 0);
+				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 				dropped->s.radius = 10;
 			}
 		}
@@ -341,7 +336,6 @@ ExplodeDeath
 
 //FIXME: all hacked up...
 
-//void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );
 void ExplodeDeath( gentity_t *self ) 
 {
 //	gentity_t	*tent;
@@ -941,12 +935,11 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 
 	if ( ent->client 
 		&& ( ent->client->NPC_class == CLASS_R2D2 
-			|| ent->client->NPC_class == CLASS_R2D2 
+			|| ent->client->NPC_class == CLASS_R5D2 
 			|| ent->client->NPC_class == CLASS_GONK
 			|| ent->client->NPC_class == CLASS_MOUSE
 			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_INTERROGATOR
-			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_PROBE ) )
 	{//we don't care about per-surface hit-locations or dismemberment for these guys 
 		return qfalse;
@@ -1290,7 +1283,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 		{//we care about direction (presumably for dismemberment)
 			if (  g_dismemberProbabilities->value<=0.0f||G_Dismemberable( ent, *hitLoc ) )
 			{//the probability let us continue
-				char *tagName = NULL;
+				const char *tagName = NULL;
 				float	aoa = 0.5f;
 				//dir must be roughly perpendicular to the hitLoc's cap bolt
 				switch ( *hitLoc )
@@ -1819,7 +1812,7 @@ float hitLocHealthPercentage[HL_MAX] =
 	0.0f	//HL_GENERIC6
 };
 
-char *hitLocName[HL_MAX] = 
+const char *hitLocName[HL_MAX] = 
 {
 	"none",	//HL_NONE = 0,
 	"right foot",	//HL_FOOT_RT,
@@ -2025,7 +2018,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 				 int limbAnim, float limbRollBase, float limbPitchBase,
 				 int damage, int hitLoc )
 {
-	int newBolt;
+	//int newBolt;
 	vec3_t	dir, newPoint, limbAngles = {0,ent->client->ps.legsYaw,0};
 	gentity_t *limb;
 	trace_t	trace;
@@ -2068,11 +2061,11 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 //2) set the root surf on the limb
 	if ( limbTagName )
 	{//add smoke to cap tag
-		newBolt = gi.G2API_AddBolt( &limb->ghoul2[limb->playerModel], limbTagName );
+		/*newBolt = gi.G2API_AddBolt( &limb->ghoul2[limb->playerModel], limbTagName );
 		if ( newBolt != -1 )
 		{
 			G_PlayEffect( G_EffectIndex("saber/limb_bolton"), limb->playerModel, newBolt, limb->s.number, newPoint);
-		}
+		}*/
 	}
 	/*
 	if ( limbBone && hitLoc == HL_HEAD )
@@ -2389,11 +2382,7 @@ qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, 
 	// dismemberment -- FIXME: should have a check for how long npc has been dead so people can't
 	// continue to dismember a dead body long after it's been dead
 	//NOTE that you can only cut one thing off unless the debug_subdivisions is on
-#ifdef GERMAN_CENSORED
-	if ( 0 ) //germany == censorship
-#else
-	if ( /*!g_iscensored->integer &&*/ ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
-#endif
+	if ( ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
 	{//FIXME: don't do strcmps here
 		if ( G_StandardHumanoid( self ) 
 			&& (force||g_dismemberProbabilities->value>0.0f||G_Dismemberable2( self, hitLoc )) )
@@ -4866,7 +4855,7 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const 
 							G_StartMatrixEffect( self );
 						}
 					}
-					if ( parts == SETANIM_BOTH && damage > 30 || (self->painDebounceTime>level.time&&damage>10))
+					if ( (parts == SETANIM_BOTH && damage > 30) || (self->painDebounceTime>level.time&&damage>10))
 					{//took a lot of damage in 1 hit //or took 2 hits in quick succession
 						self->aimDebounceTime = level.time + self->client->ps.torsoAnimTimer;
 						self->client->ps.pm_time = self->client->ps.torsoAnimTimer; 
@@ -6260,7 +6249,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 		if ( targ->client->NPC_class == CLASS_VEHICLE )
 		{
-			if ( ( targ->m_pVehicle->m_pVehicleInfo->type == VH_ANIMAL ) )
+			if ( targ->m_pVehicle->m_pVehicleInfo->type == VH_ANIMAL )
 			{
 				//((CVehicleNPC *)targ->NPC)->m_ulFlags |= CVehicleNPC::VEH_BUCKING;
 			}

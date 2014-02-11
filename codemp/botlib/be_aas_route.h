@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_route.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_route.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -46,5 +47,3 @@ int AAS_AreaTravelTimeToGoalArea(int areanum, vec3_t origin, int goalareanum, in
 int AAS_PredictRoute(struct aas_predictroute_s *route, int areanum, vec3_t origin,
 							int goalareanum, int travelflags, int maxareas, int maxtime,
 							int stopevent, int stopcontents, int stoptfl, int stopareanum);
-
-

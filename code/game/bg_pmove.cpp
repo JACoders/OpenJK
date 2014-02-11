@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // this include must remain at the top of every bg_xxxx CPP file
 #include "common_headers.h"
 
-#include "../renderer/tr_public.h"
+#include "../rd-common/tr_public.h"
 
 
 // bg_pmove.c -- both games player movement code
@@ -30,7 +30,7 @@ This file is part of Jedi Academy.
 // because we define the full size ones in this file
 
 #define	GAME_INCLUDE
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_shared.h"
 #include "bg_local.h"			   
 #include "g_local.h"			   
@@ -41,10 +41,6 @@ This file is part of Jedi Academy.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include <float.h>
-
-#ifdef _XBOX
-#include "../client/fffx.h"
-#endif
 
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
@@ -181,7 +177,6 @@ int	c_pmove = 0;
 
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
-//extern void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags);
 extern void PM_TorsoAnimation( void );
 extern int PM_TorsoAnimForFrame( gentity_t *ent, int torsoFrame );
 extern int PM_AnimLength( int index, animNumber_t anim );
@@ -5488,158 +5483,6 @@ void PM_HoverTrace( void )
 	PM_GroundTraceMissed();
 }
 
-#ifdef _XBOX
-
-short	npcsToUpdate[MAX_NPC_WATER_UPDATE];		// queue of npcs
-short	npcsToUpdateTop = 0;					// top of the queue
-short	npcsToUpdateCount = 0;					// number of npcs in the queue
-
-
-/*
-=============
-PM_SetWaterLevelAtPoint2
-Xbox version does not depend on a pmove structure
-This function is used to update AI waterlevels every few
-frames.
-=============
-*/
-static void PM_SetWaterLevelAtPoint2( vec3_t org, int *waterlevel, int *watertype, int clientNum, int viewHeight ) 
-{
-	vec3_t		point;
-	int			cont;
-	int			sample1;
-	int			sample2;
-
-	// use the server fucntion directly, we don't have a pmove ptr to work with right now
-	extern int SV_PointContents( const vec3_t p, int passEntityNum );
-
-	//
-	// get waterlevel, accounting for ducking
-	//
-	*waterlevel = 0;
-	*watertype = 0;
-
-	point[0] = org[0];
-	point[1] = org[1];
-	point[2] = org[2] + DEFAULT_MINS_2 + 1;	
-	cont = SV_PointContents( point, clientNum );
-
-	if ( cont & (MASK_WATER|CONTENTS_LADDER) ) 
-	{
-		sample2 = viewHeight - DEFAULT_MINS_2;
-		sample1 = sample2 / 2;
-
-		*watertype = cont;
-		*waterlevel = 1;
-		point[2] = org[2] + DEFAULT_MINS_2 + sample1;
-		cont = SV_PointContents( point, clientNum );
-		if ( cont & (MASK_WATER|CONTENTS_LADDER) ) 
-		{
-			*waterlevel = 2;
-			point[2] = org[2] + DEFAULT_MINS_2 + sample2;
-			cont = SV_PointContents( point, clientNum );
-			if ( cont & (MASK_WATER|CONTENTS_LADDER) )
-			{
-				*waterlevel = 3;
-			}
-		}
-	}
-}
-
-/*
-=============
-AddNPCToWaterUpdate
-This function adds an AI to the water level update queue
-=============
-*/
-static void AddNPCToWaterUpdate(int num)
-{
-	// get an entity pointer
-	gentity_t *ent = g_entities + num;
-
-	// only add this client if it isn't already queued
-	if(ent->wupdate == 0)
-	{
-		// check to make sure we don't have too many NPCs in the queue
-		if((npcsToUpdateCount + 1) < MAX_NPC_WATER_UPDATE)
-		{
-			// figure out where to place this npc in the queue
-			int spot = npcsToUpdateTop + npcsToUpdateCount;
-
-			if(spot < MAX_NPC_WATER_UPDATE)
-			{
-				npcsToUpdate[spot] = num;
-			}
-			else
-			{
-				npcsToUpdate[spot - MAX_NPC_WATER_UPDATE] = num;
-			}
-
-			// set the water update flag
-			ent->wupdate = 1;
-
-			// update the queue count
-			npcsToUpdateCount++;
-		}
-		else
-		{
-			// the queue isn't big enough
-			assert(0);
-		}
-	}
-}
-
-/*
-=============
-UpdateNPCWaterLevels
-This function updates the water level for MAX_NPC_WATER_UPDATES_PER_FRAME NPCs
-=============
-*/
-void UpdateNPCWaterLevels(void)
-{
-	int i;
-	gentity_t *ent;
-
-	// update the maxium number per frame
-	for(i = 0; i < MAX_NPC_WATER_UPDATES_PER_FRAME; i++)
-	{
-		// make sure we have something to update
-		if(npcsToUpdateCount)
-		{
-			// if the clientnum is -1, we've got some serious problems
-			assert(npcsToUpdate[npcsToUpdateTop] != -1);
-
-			// get an enitiy pointer
-			ent	= g_entities + npcsToUpdate[npcsToUpdateTop];
-
-			// make sure this client isn't in Jedi heaven
-			if(ent->client)
-			{
-				// set the previous water level... this is used later to update the water state
-				ent->prev_waterlevel = ent->waterlevel;
-				// get our new state
-				PM_SetWaterLevelAtPoint2( ent->currentOrigin, &ent->waterlevel, &ent->watertype, npcsToUpdate[npcsToUpdateTop], ent->client->ps.viewheight );
-				// flag this client as updated
-				ent->wupdate = 0;
-			}
-
-			// clear this client from the queue
-			npcsToUpdate[npcsToUpdateTop] = -1;
-			// move our queue ptr and decr our count
-			npcsToUpdateTop++;
-			npcsToUpdateCount--;
-
-			// if the top is pointing to the end wrap it around the the start
-			if(npcsToUpdateTop == MAX_NPC_WATER_UPDATE)
-			{
-				npcsToUpdateTop = 0;
-			}
-		}
-	}
-}
-
-#endif // _XBOX
-
 /*
 =============
 PM_SetWaterLevelAtPoint	FIXME: avoid this twice?  certainly if not moving
@@ -7339,8 +7182,8 @@ void PM_FootSlopeTrace( float *pDiff, float *pInterval )
 #if 1
 	for ( int i = 0; i < 3; i++ )
 	{
-		if ( _isnan( pm->gent->client->renderInfo.footLPoint[i] )
-			|| _isnan( pm->gent->client->renderInfo.footRPoint[i] ) )
+		if ( Q_isnan( pm->gent->client->renderInfo.footLPoint[i] )
+			|| Q_isnan( pm->gent->client->renderInfo.footRPoint[i] ) )
 		{
 			if ( pDiff != NULL )
 			{
@@ -9039,7 +8882,8 @@ static void PM_BeginWeaponChange( int weapon ) {
 	}
 
 	// turn of any kind of zooming when weapon switching....except the LA Goggles
-	if ( pm->ps->clientNum == 0 )
+	// eezstreet edit: also ignore if we change to WP_NONE..sorta hacky fix for binoculars using WP_SABER
+	if ( pm->ps->clientNum == 0 && cg.weaponSelect != WP_NONE )
 	{
 		if ( cg.zoomMode > 0 && cg.zoomMode < 3 )
 		{
@@ -9754,6 +9598,8 @@ void PM_SetSaberMove(saberMoveName_t newMove)
 		case LS_STAFF_SOULCAL:
 			//FIXME: probably more...
 			pm->ps->SaberActivate();
+			break;
+		default:
 			break;
 		}
 
@@ -11493,6 +11339,8 @@ void PM_TryAirKick( saberMoveName_t kickMove )
 				case LS_KICK_L_AIR:
 					PM_SetSaberMove( LS_KICK_L );
 					break;
+				default:
+					break;
 				}
 			}
 		}
@@ -12260,7 +12108,8 @@ void PM_WeaponLightsaber(void)
 	}
 
 	qboolean saberInAir = qtrue;
-	if ( !PM_SaberInBrokenParry( pm->ps->saberMove ) && pm->ps->saberBlocked != BLOCKED_PARRY_BROKEN && !PM_DodgeAnim( pm->ps->torsoAnim ) )
+	if ( !PM_SaberInBrokenParry( pm->ps->saberMove ) && pm->ps->saberBlocked != BLOCKED_PARRY_BROKEN && !PM_DodgeAnim( pm->ps->torsoAnim ) &&
+		pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING)
 	{//we're not stuck in a broken parry
 		if ( pm->ps->saberInFlight )
 		{//guiding saber
@@ -12332,7 +12181,7 @@ void PM_WeaponLightsaber(void)
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
+	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
 		if ( pm->ps->weapon != pm->cmd.weapon ) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
 		}
@@ -13050,17 +12899,7 @@ static bool PM_DoChargedWeapons( void )
 				{
 					charging = qtrue;
 					altFire = qtrue; // believe it or not, it really is an alt-fire in this case!
-#ifndef _XBOX
 				}
-#else
-					cgi_FF_StartFX( fffx_StartConst );
-				}
-				else
-				{
-					cgi_FF_StartFX( fffx_StopConst );
-				}
-#endif
-
 			}
 		}
 		else if ( pm->gent && pm->gent->NPC )
@@ -13574,8 +13413,8 @@ static void PM_Weapon( void )
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
-		if ( pm->ps->weapon != pm->cmd.weapon ) {
+	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING)  && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
+		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
 		}
 	}
@@ -13737,6 +13576,22 @@ static void PM_Weapon( void )
 			{
 				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
 			}
+		}
+		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_HAZARD_TROOPER )
+		{
+			// Kneel attack
+			//--------------
+			if( pm->cmd.upmove == -127 )
+			{
+				PM_SetAnim(pm,SETANIM_TORSO, BOTH_KNEELATTACK, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+			else
+			{
+				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+
+			// Standing attack
+			//-----------------
 		}
 		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ASSASSIN_DROID )
 		{
@@ -14872,10 +14727,8 @@ void Pmove( pmove_t *pmove )
 
 	// clear results
 	pm->numtouch = 0;
-#ifndef _XBOX
 	pm->watertype = 0;
 	pm->waterlevel = 0;
-#endif
 
 	// Clear the blocked flag
 	//pm->ps->pm_flags &= ~PMF_BLOCKED;
@@ -14990,45 +14843,14 @@ void Pmove( pmove_t *pmove )
 	}
 
 	// set watertype, and waterlevel
-#ifdef _XBOX
-	// if the client is the player do a normal water test
-	// if it's an npc add the client to the npc water test queue
-	// we don't want to update too many npcs in one frame
-	if(pm->ps->clientNum == 0)
-	{
-		PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-	}
-	else
-	{
-		AddNPCToWaterUpdate(pm->ps->clientNum);
-	}
-#else
 	PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-#endif
 
 	PM_SetWaterHeight();
 
-#ifdef _XBOX
-	if ( !(pm->watertype & CONTENTS_LADDER) )
-	{//Don't want to remember this for ladders, is only for waterlevel change events (sounds)
-
-		// if we're the player set the water test from the pmove
-		// otherwise set it from the entitity structure
-		if(pm->ps->clientNum == 0 )
-		{
-			pml.previous_waterlevel = pmove->waterlevel;
-		}
-		else
-		{
-			pml.previous_waterlevel = (g_entities + pm->ps->clientNum)->prev_waterlevel;
-		}
-	}
-#else
 	if ( !(pm->watertype & CONTENTS_LADDER) )
 	{//Don't want to remember this for ladders, is only for waterlevel change events (sounds)
 		pml.previous_waterlevel = pmove->waterlevel;
 	}
-#endif
 
 
 	waterForceJump = qfalse;
@@ -15161,15 +14983,7 @@ void Pmove( pmove_t *pmove )
 	// Note: ok, so long as we don't have water levels that change.
 	if(!(VectorCompare(pm->ps->origin,pml.previous_origin)))
 	{
-#ifdef _XBOX
-		// only do this on xbox if it's a player not an npc
-		if(pm->ps->clientNum == 0)
-		{
-			PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-		}
-#else
 		PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-#endif
 		PM_SetWaterHeight();
 	}
 

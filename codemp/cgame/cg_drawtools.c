@@ -1,12 +1,3 @@
-/*
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
-#include "cg_media.h"
-#include "cg_text.h"
-*/
-
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc
@@ -16,18 +7,18 @@
 
 /*
 ================
-UI_DrawRect
+CG_DrawRect
 
 Coordinates are 640*480 virtual values
 =================
 */
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color ) {
-	trap_R_SetColor( color );
-	
+	trap->R_SetColor( color );
+
 	CG_DrawTopBottom(x, y, width, height, size);
 	CG_DrawSides(x, y, width, height, size);
-	
-	trap_R_SetColor( NULL );
+
+	trap->R_SetColor( NULL );
 }
 
 
@@ -84,14 +75,14 @@ Coords are virtual 640x480
 */
 void CG_DrawSides(float x, float y, float w, float h, float size) {
 	size *= cgs.screenXScale;
-	trap_R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap_R_DrawStretchPic( x + w - size, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
+	trap->R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
+	trap->R_DrawStretchPic( x + w - size, y, size, h, 0, 0, 0, 0, cgs.media.whiteShader );
 }
 
 void CG_DrawTopBottom(float x, float y, float w, float h, float size) {
 	size *= cgs.screenYScale;
-	trap_R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
-	trap_R_DrawStretchPic( x, y + h - size, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
+	trap->R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
+	trap->R_DrawStretchPic( x, y + h - size, w, size, 0, 0, 0, 0, cgs.media.whiteShader );
 }
 
 /*
@@ -101,9 +92,9 @@ real coords
 -------------------------
 */
 void CG_FillRect2( float x, float y, float width, float height, const float *color ) {
-	trap_R_SetColor( color );
-	trap_R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
-	trap_R_SetColor( NULL );
+	trap->R_SetColor( color );
+	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
+	trap->R_SetColor( NULL );
 }
 
 /*
@@ -114,11 +105,9 @@ Coordinates are 640*480 virtual values
 =================
 */
 void CG_FillRect( float x, float y, float width, float height, const float *color ) {
-	trap_R_SetColor( color );
-
-	trap_R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
-
-	trap_R_SetColor( NULL );
+	trap->R_SetColor( color );
+	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cgs.media.whiteShader);
+	trap->R_SetColor( NULL );
 }
 
 
@@ -131,7 +120,7 @@ A width of 0 will draw with the original image width
 =================
 */
 void CG_DrawPic( float x, float y, float width, float height, qhandle_t hShader ) {
-	trap_R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
+	trap->R_DrawStretchPic( x, y, width, height, 0, 0, 1, 1, hShader );
 }
 
 /*
@@ -144,7 +133,7 @@ rotates around the upper right corner of the passed in point
 =================
 */
 void CG_DrawRotatePic( float x, float y, float width, float height,float angle, qhandle_t hShader ) {
-	trap_R_DrawRotatePic( x, y, width, height, 0, 0, 1, 1, angle, hShader );
+	trap->R_DrawRotatePic( x, y, width, height, 0, 0, 1, 1, angle, hShader );
 }
 
 /*
@@ -157,7 +146,7 @@ Actually rotates around the center point of the passed in coordinates
 =================
 */
 void CG_DrawRotatePic2( float x, float y, float width, float height,float angle, qhandle_t hShader ) {
-	trap_R_DrawRotatePic2( x, y, width, height, 0, 0, 1, 1, angle, hShader );
+	trap->R_DrawRotatePic2( x, y, width, height, 0, 0, 1, 1, angle, hShader );
 }
 
 /*
@@ -193,8 +182,7 @@ void CG_DrawChar( int x, int y, int width, int height, int ch ) {
 	size = 0.03125;
 	size2 = 0.0625;
 
-	trap_R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol + size, frow + size2, 
-		cgs.media.charsetShader );
+	trap->R_DrawStretchPic( ax, ay, aw, ah, fcol, frow, fcol + size, frow + size2, cgs.media.charsetShader );
 
 }
 
@@ -209,21 +197,20 @@ Coordinates are at 640 by 480 virtual resolution
 ==================
 */
 #include "ui/menudef.h"	// for "ITEM_TEXTSTYLE_SHADOWED"
-void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
-		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars )
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars )
 {
-	if (trap_Language_IsAsian())
+	if (trap->R_Language_IsAsian())
 	{
 		// hack-a-doodle-do (post-release quick fix code)...
 		//
 		vec4_t color;
 		memcpy(color,setColor, sizeof(color));	// de-const it
-		CG_Text_Paint(x, y, 1.0f,	// float scale, 
-						color,		// vec4_t color, 
-						string,		// const char *text, 
-						0.0f,		// float adjust, 
-						0,			// int limit, 
-						shadow ? ITEM_TEXTSTYLE_SHADOWED : 0,	// int style, 
+		CG_Text_Paint(x, y, 1.0f,	// float scale,
+						color,		// vec4_t color,
+						string,		// const char *text,
+						0.0f,		// float adjust,
+						0,			// int limit,
+						shadow ? ITEM_TEXTSTYLE_SHADOWED : 0,	// int style,
 						FONT_MEDIUM		// iMenuFont
 						) ;
 	}
@@ -237,7 +224,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		if (shadow) {
 			color[0] = color[1] = color[2] = 0;
 			color[3] = setColor[3];
-			trap_R_SetColor( color );
+			trap->R_SetColor( color );
 			s = string;
 			xx = x;
 			while ( *s ) {
@@ -254,13 +241,13 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		// draw the colored text
 		s = string;
 		xx = x;
-		trap_R_SetColor( setColor );
+		trap->R_SetColor( setColor );
 		while ( *s ) {
 			if ( Q_IsColorString( s ) ) {
 				if ( !forceColor ) {
 					memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 					color[3] = setColor[3];
-					trap_R_SetColor( color );
+					trap->R_SetColor( color );
 				}
 				s += 2;
 				continue;
@@ -269,7 +256,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 			xx += charWidth;
 			s++;
 		}
-		trap_R_SetColor( NULL );
+		trap->R_SetColor( NULL );
 	}
 }
 
@@ -335,7 +322,7 @@ static void CG_TileClearBox( int x, int y, int w, int h, qhandle_t hShader ) {
 	t1 = y/64.0;
 	s2 = (x+w)/64.0;
 	t2 = (y+h)/64.0;
-	trap_R_DrawStretchPic( x, y, w, h, s1, t1, s2, t2, hShader );
+	trap->R_DrawStretchPic( x, y, w, h, s1, t1, s2, t2, hShader );
 }
 
 
@@ -354,7 +341,7 @@ void CG_TileClear( void ) {
 	w = cgs.glconfig.vidWidth;
 	h = cgs.glconfig.vidHeight;
 
-	if ( cg.refdef.x == 0 && cg.refdef.y == 0 && 
+	if ( cg.refdef.x == 0 && cg.refdef.y == 0 &&
 		cg.refdef.width == w && cg.refdef.height == h ) {
 		return;		// full screen rendering
 	}
@@ -420,32 +407,32 @@ float *CG_FadeColor( int startMsec, int totalMsec ) {
 CG_ColorForHealth
 =================
 */
-void CG_ColorForGivenHealth( vec4_t hcolor, int health ) 
+void CG_ColorForGivenHealth( vec4_t hcolor, int health )
 {
 	// set the color based on health
 	hcolor[0] = 1.0;
-	if ( health >= 100 ) 
+	if ( health >= 100 )
 	{
 		hcolor[2] = 1.0;
-	} 
-	else if ( health < 66 ) 
+	}
+	else if ( health < 66 )
 	{
 		hcolor[2] = 0;
-	} 
-	else 
+	}
+	else
 	{
 		hcolor[2] = ( health - 66 ) / 33.0;
 	}
 
-	if ( health > 60 ) 
+	if ( health > 60 )
 	{
 		hcolor[1] = 1.0;
-	} 
-	else if ( health < 30 ) 
+	}
+	else if ( health < 30 )
 	{
 		hcolor[1] = 0;
-	} 
-	else 
+	}
+	else
 	{
 		hcolor[1] = ( health - 30 ) / 30.0;
 	}
@@ -456,7 +443,7 @@ void CG_ColorForGivenHealth( vec4_t hcolor, int health )
 CG_ColorForHealth
 =================
 */
-void CG_ColorForHealth( vec4_t hcolor ) 
+void CG_ColorForHealth( vec4_t hcolor )
 {
 	int		health;
 	int		count;
@@ -466,7 +453,7 @@ void CG_ColorForHealth( vec4_t hcolor )
 	// be sustained at the current health / armor level
 	health = cg.snap->ps.stats[STAT_HEALTH];
 
-	if ( health <= 0 ) 
+	if ( health <= 0 )
 	{
 		VectorClear( hcolor );	// black
 		hcolor[3] = 1;
@@ -475,7 +462,7 @@ void CG_ColorForHealth( vec4_t hcolor )
 
 	count = cg.snap->ps.stats[STAT_ARMOR];
 	max = health * ARMOR_PROTECTION / ( 1.0 - ARMOR_PROTECTION );
-	if ( max < count ) 
+	if ( max < count )
 	{
 		count = max;
 	}
@@ -493,7 +480,7 @@ Take x,y positions as if 640 x 480 and scales them to the proper resolution
 
 ==============
 */
-void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill) 
+void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill)
 {
 	char	num[16], *ptr;
 	int		l;
@@ -605,9 +592,9 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 }
 
 #include "ui/ui_shared.h"	// for some text style junk
-void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color ) 
+void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color )
 {
-	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
+	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...
 	//
 	int iStyle = 0;
@@ -648,9 +635,9 @@ void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 	CG_Text_Paint(x, y, 1.0, color, str, 0, 0, iStyle, iMenuFont);
 }
 
-void UI_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale) 
+void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale)
 {
-	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
+	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff)
 	//	is dumb, but for now...
 	//
 	int iStyle = 0;
@@ -689,7 +676,3 @@ void UI_DrawScaledProportionalString( int x, int y, const char* str, int style, 
 
 	CG_Text_Paint(x, y, scale, color, str, 0, 0, iStyle, FONT_MEDIUM);
 }
-
-
-
-

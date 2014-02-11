@@ -5,7 +5,7 @@
 #include "FxScheduler.h"
 
 //#define __FXCHECKER
- 
+
 #ifdef __FXCHECKER
 	#include <float.h>
 #endif // __FXCHECKER
@@ -55,14 +55,14 @@ void FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean
 	theFxScheduler.PlayEffect(id, org, fwd, vol, rad, !!isPortal );
 }
 
-void FX_PlayBoltedEffectID( int id, vec3_t org, 
-						   const int boltInfo, int iGhoul2, int iLooptime, qboolean isRelative )
+void FX_PlayBoltedEffectID( int id, vec3_t org,
+						   const int boltInfo, CGhoul2Info_v *ghoul2, int iLooptime, qboolean isRelative )
 {
-	theFxScheduler.PlayEffect(id, org, 0, boltInfo, iGhoul2, -1, -1, -1, qfalse, iLooptime, !!isRelative  );
+	theFxScheduler.PlayEffect(id, org, 0, boltInfo, ghoul2, -1, -1, -1, qfalse, iLooptime, !!isRelative  );
 }
 
-void FX_PlayEntityEffectID( int id, vec3_t org, 
-						vec3_t axis[3], const int boltInfo, const int entNum, int vol, int rad )
+void FX_PlayEntityEffectID( int id, vec3_t org,
+						matrix3_t axis, const int boltInfo, const int entNum, int vol, int rad )
 {
 #ifdef __FXCHECKER
 	if (_isnan(org[0]) || _isnan(org[1]) || _isnan(org[2]))
@@ -71,7 +71,7 @@ void FX_PlayEntityEffectID( int id, vec3_t org,
 	}
 #endif // __FXCHECKER
 
-	theFxScheduler.PlayEffect(id, org, axis, boltInfo, NULL, -1, vol, rad );
+	theFxScheduler.PlayEffect(id, org, axis, boltInfo, 0, -1, vol, rad );
 }
 
 void FX_AddScheduledEffects( qboolean portal )

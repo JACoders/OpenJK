@@ -1,70 +1,24 @@
 //bg_vehicleLoad.c
 
-#ifdef _JK2 //SP does not have this preprocessor for game like MP does
-#ifndef _JK2MP
-#define _JK2MP
-#endif
-#endif
+#include "qcommon/q_shared.h"
+#include "bg_public.h"
+#include "bg_vehicles.h"
+#include "bg_weapons.h"
 
-#ifdef _JK2MP
-	#include "qcommon/q_shared.h"
-	#include "bg_public.h"
-	#include "bg_vehicles.h"
-	#include "bg_weapons.h"
-
-	//Could use strap stuff but I don't particularly care at the moment anyway.
-	extern int	trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	extern void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
-	extern void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
-	extern void	trap_FS_FCloseFile( fileHandle_t f );
-	extern int	trap_FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
-#else
+#ifdef _GAME
 	#include "g_local.h"
-	#define QAGAME
-#endif
-
-
-#ifdef _JK2MP
-#ifndef QAGAME
-#ifndef CGAME
-#define WE_ARE_IN_THE_UI
-#include "ui/ui_local.h"
-#endif
-#endif
-#endif
-
-#ifndef _JK2MP
-#include "Ratl/string_vs.h"
-#endif
-
-#ifdef QAGAME
-extern void G_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo );
-extern int G_ModelIndex( const char *name );
-extern int G_SoundIndex( const char *name );
-	#ifdef _JK2MP
-		extern int G_EffectIndex( const char *name );
-	#endif
-#elif CGAME
-extern qhandle_t	trap_R_RegisterModel( const char *name );			// returns rgb axis if not found
-extern qhandle_t	trap_R_RegisterSkin( const char *name );			// returns all white if not found
-extern qhandle_t	trap_R_RegisterShader( const char *name );
-extern qhandle_t	trap_R_RegisterShaderNoMip( const char *name );
-extern int			trap_FX_RegisterEffect(const char *file);
-extern sfxHandle_t	trap_S_RegisterSound( const char *sample);		// returns buzz if not found
-#else//UI
-extern qhandle_t	trap_R_RegisterModel( const char *name );			// returns rgb axis if not found
-extern qhandle_t	trap_R_RegisterSkin( const char *name );			// returns all white if not found
-extern qhandle_t	trap_R_RegisterShader( const char *name );			// returns all white if not found
-extern qhandle_t	trap_R_RegisterShaderNoMip( const char *name );			// returns all white if not found
-extern sfxHandle_t	trap_S_RegisterSound( const char *sample);		// returns buzz if not found
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 // These buffers are filled in with the same contents and then just read from in
 // a few places. We only need one copy on Xbox.
-#define MAX_VEH_WEAPON_DATA_SIZE 0x40000 //Raz: was 0x4000
-#define MAX_VEHICLE_DATA_SIZE 0x100000 //Raz: was 0x10000
+#define MAX_VEH_WEAPON_DATA_SIZE 0x40000 // 0x4000
+#define MAX_VEHICLE_DATA_SIZE 0x100000 // 0x10000
 
 char	VehWeaponParms[MAX_VEH_WEAPON_DATA_SIZE];
 char	VehicleParms[MAX_VEHICLE_DATA_SIZE];
@@ -76,16 +30,12 @@ void BG_ClearVehicleParseParms(void)
 	VehicleParms[0] = 0;
 }
 
-
-#ifdef _JK2MP
-#endif
-
-#ifndef WE_ARE_IN_THE_UI
-//These funcs are actually shared in both projects
-extern void G_SetAnimalVehicleFunctions( vehicleInfo_t *pVehInfo );
-extern void G_SetSpeederVehicleFunctions( vehicleInfo_t *pVehInfo );
-extern void G_SetWalkerVehicleFunctions( vehicleInfo_t *pVehInfo );
-extern void G_SetFighterVehicleFunctions( vehicleInfo_t *pVehInfo );
+#if defined(_GAME) || defined(_CGAME)
+	//These funcs are actually shared in both projects
+	extern void G_SetAnimalVehicleFunctions( vehicleInfo_t *pVehInfo );
+	extern void G_SetSpeederVehicleFunctions( vehicleInfo_t *pVehInfo );
+	extern void G_SetWalkerVehicleFunctions( vehicleInfo_t *pVehInfo );
+	extern void G_SetFighterVehicleFunctions( vehicleInfo_t *pVehInfo );
 #endif
 
 vehWeaponInfo_t g_vehWeaponInfo[MAX_VEH_WEAPONS];
@@ -110,20 +60,19 @@ typedef enum {
 	VF_MODEL_CLIENT,	// (cgame only) take the string, get the G_ModelIndex
 	VF_EFFECT,	// take the string, get the G_EffectIndex
 	VF_EFFECT_CLIENT,	// (cgame only) take the string, get the index
-	VF_SHADER,	// (cgame only) take the string, call trap_R_RegisterShader
-	VF_SHADER_NOMIP,// (cgame only) take the string, call trap_R_RegisterShaderNoMip
+	VF_SHADER,	// (cgame only) take the string, call trap->R_RegisterShader
+	VF_SHADER_NOMIP,// (cgame only) take the string, call trap->R_RegisterShaderNoMip
 	VF_SOUND,	// take the string, get the G_SoundIndex
 	VF_SOUND_CLIENT	// (cgame only) take the string, get the index
 } vehFieldType_t;
 
-typedef struct
-{
+typedef struct vehField_s {
 	char	*name;
 	int		ofs;
 	vehFieldType_t	type;
 } vehField_t;
 
-vehField_t vehWeaponFields[NUM_VWEAP_PARMS] = 
+vehField_t vehWeaponFields[NUM_VWEAP_PARMS] =
 {
 	{"name", VWFOFS(name), VF_LSTRING},	//unique name of the vehicle
 	{"projectile", VWFOFS(bIsProjectile), VF_BOOL},	//traceline or entity?
@@ -169,7 +118,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 		if ( vehWeaponFields[i].name && !Q_stricmp( vehWeaponFields[i].name, parmName ) )
 		{
 			// found it
-			switch( vehWeaponFields[i].type ) 
+			switch( vehWeaponFields[i].type )
 			{
 			case VF_INT:
 				*(int *)(b+vehWeaponFields[i].ofs) = atoi(value);
@@ -180,14 +129,10 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_LSTRING:	// string on disk, pointer in memory, TAG_LEVEL
 				if (!*(char **)(b+vehWeaponFields[i].ofs))
 				{ //just use 1024 bytes in case we want to write over the string
-#ifdef _JK2MP
 					*(char **)(b+vehWeaponFields[i].ofs) = (char *)BG_Alloc(1024);//(char *)BG_Alloc(strlen(value));
 					strcpy(*(char **)(b+vehWeaponFields[i].ofs), value);
-#else
-					(*(char **)(b+vehWeaponFields[i].ofs)) = G_NewString( value );
-#endif
 				}
-				
+
 				break;
 			case VF_VECTOR:
 				_iFieldsRead = sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
@@ -217,64 +162,58 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 				//*(int *)(b+vehWeaponFields[i].ofs) = VEH_VehWeaponIndexForName( value );
 				break;
 			case VF_MODEL:// take the string, get the G_ModelIndex
-#ifdef QAGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-#else
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterModel( value );
-#endif
+				#ifdef _GAME
+					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
+				#else
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
+				#endif
 				break;
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
-#ifndef _JK2MP
-				*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-#elif QAGAME
-				//*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-#else
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterModel( value );
-#endif
+				#ifdef _GAME
+					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
+				#else
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
+				#endif
 				break;
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
-#ifdef QAGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_FX_RegisterEffect( value );
-#endif
+				#ifdef _GAME
+				//	*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
+				#elif _CGAME
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->FX_RegisterEffect( value );
+				#endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the index
-#ifndef _JK2MP
-				*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif QAGAME
-				//*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_FX_RegisterEffect( value );
-#endif
+				#ifdef _GAME
+					//*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
+				#elif _CGAME
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->FX_RegisterEffect( value );
+				#endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
-#ifdef WE_ARE_IN_THE_UI
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#elif CGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterShader( value );
-#endif
+				#ifdef _UI
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
+				#elif _CGAME
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShader( value );
+				#endif
 				break;
 			case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
-#ifndef QAGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#endif
+				#if defined(_CGAME) || defined(_UI)
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
+				#endif
 				break;
 			case VF_SOUND:	// take the string, get the G_SoundIndex
-#ifdef QAGAME
-				*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-#else
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_S_RegisterSound( value );
-#endif
+				#ifdef _GAME
+					*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
+				#else
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
+				#endif
 				break;
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
-#ifndef _JK2MP
-				*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-#elif QAGAME
-				//*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-#else
-				*(int *)(b+vehWeaponFields[i].ofs) = trap_S_RegisterSound( value );
-#endif
+				#ifdef _GAME
+					//*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
+				#else
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
+				#endif
 				break;
 			default:
 				//Unknown type?
@@ -307,15 +246,11 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 	//try to parse data out
 	p = VehWeaponParms;
 
-#ifdef _JK2MP
 	COM_BeginParseSession("vehWeapons");
-#else
-	COM_BeginParseSession();
-#endif
 
 	vehWeapon = &g_vehWeaponInfo[numVehicleWeapons];
 	// look for the right vehicle weapon
-	while ( p ) 
+	while ( p )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
@@ -323,14 +258,14 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, vehWeaponName ) ) 
+		if ( !Q_stricmp( token, vehWeaponName ) )
 		{
 			break;
 		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
+	if ( !p )
 	{
 		return qfalse;
 	}
@@ -341,23 +276,23 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		return VEH_WEAPON_NONE;
 	}
 
-	if ( Q_stricmp( token, "{" ) != 0 ) 
+	if ( Q_stricmp( token, "{" ) != 0 )
 	{
 		return VEH_WEAPON_NONE;
 	}
-	
+
 	// parse the vehWeapon info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		SkipRestOfLine( &p );
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle Weapon '%s'\n", vehWeaponName );
 			return VEH_WEAPON_NONE;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
@@ -377,22 +312,16 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 	}
 	if ( vehWeapon->fHoming )
 	{//all lock-on weapons use these 2 sounds
-#ifdef QAGAME
+#ifdef _GAME
 		//Hmm, no need fo have server register this, is there?
 		//G_SoundIndex( "sound/weapons/torpedo/tick.wav" );
 		//G_SoundIndex( "sound/weapons/torpedo/lock.wav" );
-#elif CGAME
-		trap_S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
-		trap_S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #else
-		trap_S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
-		trap_S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
-		trap_S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #endif
 	}
 	return (numVehicleWeapons++);
@@ -430,7 +359,7 @@ int VEH_VehWeaponIndexForName( const char *vehWeaponName )
 	return vw;
 }
 
-vehField_t vehicleFields[] = 
+vehField_t vehicleFields[] =
 {
 	{"name", VFOFS(name), VF_LSTRING},	//unique name of the vehicle
 
@@ -468,7 +397,7 @@ vehField_t vehicleFields[] =
 	{"friction", VFOFS(friction), VF_FLOAT},		//how much velocity is cut on its own
 	{"maxSlope", VFOFS(maxSlope), VF_FLOAT},		//the max slope that it can go up with control
 	{"speedDependantTurning", VFOFS(speedDependantTurning), VF_BOOL},//vehicle turns faster the faster it's going
-	
+
 	//durability stats
 	{"mass", VFOFS(mass), VF_INT},			//for momentum and impact force (player mass is 10)
 	{"armor", VFOFS(armor), VF_INT},			//total points of damage it can take
@@ -485,7 +414,6 @@ vehField_t vehicleFields[] =
 	{"riderAnim", VFOFS(riderAnim), VF_ANIM},		//what animation the rider uses
 	{"droidNPC", VFOFS(droidNPC), VF_LSTRING},		//NPC to attach to *droidunit tag (if it exists in the model)
 
-#ifdef _JK2MP
 	{"radarIcon", VFOFS(radarIconHandle), VF_SHADER_NOMIP},		//what icon to show on radar in MP
 	{"dmgIndicFrame", VFOFS(dmgIndicFrameHandle), VF_SHADER_NOMIP},	//what image to use for the frame of the damage indicator
 	{"dmgIndicShield", VFOFS(dmgIndicShieldHandle), VF_SHADER_NOMIP},//what image to use for the shield of the damage indicator
@@ -502,9 +430,6 @@ vehField_t vehicleFields[] =
 	{"health_back", VFOFS(health_back), VF_INT},
 	{"health_right", VFOFS(health_right), VF_INT},
 	{"health_left", VFOFS(health_left), VF_INT},
-#else
-	{"radarIcon", 0, VF_IGNORE},		//what icon to show on radar in MP
-#endif
 
 	{"soundOn",			VFOFS(soundOn),			VF_SOUND},//sound to play when get on it
 	{"soundOff",		VFOFS(soundOff),		VF_SOUND},//sound to play when get off
@@ -530,15 +455,10 @@ vehField_t vehicleFields[] =
 	{"explodeFX", VFOFS(iExplodeFX), VF_EFFECT},		//explosion effect, for when it blows up (should have the sound built into explosion effect)
 	{"wakeFX", VFOFS(iWakeFX), VF_EFFECT_CLIENT},		//effect it makes when going across water
 	{"dmgFX", VFOFS(iDmgFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
-#ifdef _JK2MP
 	{"injureFX", VFOFS(iInjureFX), VF_EFFECT_CLIENT}, //effect to play on partially damaged ship surface
 	{"noseFX", VFOFS(iNoseFX), VF_EFFECT_CLIENT},		//effect for nose piece flying away when blown off
 	{"lwingFX", VFOFS(iLWingFX), VF_EFFECT_CLIENT},		//effect for left wing piece flying away when blown off
 	{"rwingFX", VFOFS(iRWingFX), VF_EFFECT_CLIENT},		//effect for right wing piece flying away when blown off
-#else
-	{"armorLowFX", VFOFS(iArmorLowFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
-	{"armorGoneFX", VFOFS(iArmorGoneFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
-#endif
 
 	// Weapon stuff:
 	{"weap1", VFOFS(weapon[0].ID), VF_WEAPON},	//weapon used when press fire
@@ -561,7 +481,7 @@ vehField_t vehicleFields[] =
 	//sound to play when out of ammo (plays default "no ammo" sound if none specified)
 	{"weap1SoundNoAmmo", VFOFS(weapon[0].soundNoAmmo), VF_SOUND_CLIENT},//sound to play when try to fire weapon 1 with no ammo
 	{"weap2SoundNoAmmo", VFOFS(weapon[1].soundNoAmmo), VF_SOUND_CLIENT},//sound to play when try to fire weapon 2 with no ammo
-	
+
 	// Which weapon a muzzle fires (has to match one of the weapons this vehicle has).
 	{"weapMuzzle1", VFOFS(weapMuzzle[0]), VF_WEAPON},
 	{"weapMuzzle2", VFOFS(weapMuzzle[1]), VF_WEAPON},
@@ -629,7 +549,7 @@ vehField_t vehicleFields[] =
 	{"turret1AIRange", VFOFS(turret[0].fAIRange), VF_FLOAT},
 	{"turret1PassengerNum", VFOFS(turret[0].passengerNum), VF_INT},//which number passenger can control this turret
 	{"turret1GunnerViewTag", VFOFS(turret[0].gunnerViewTag), VF_LSTRING},
-	
+
 	//Turret 2
 	{"turret2Weap", VFOFS(turret[1].iWeapon), VF_WEAPON},
 	{"turret2Delay", VFOFS(turret[1].iDelay), VF_INT},
@@ -668,14 +588,15 @@ stringID_table_t VehicleTable[VH_NUM_VEHICLES+1] =
 };
 
 // Setup the shared functions (one's that all vehicles would generally use).
+extern void G_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo );
 void BG_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo )
 {
-#ifdef QAGAME
+#ifdef _GAME
 	//only do the whole thing if we're on game
 	G_SetSharedVehicleFunctions(pVehInfo);
 #endif
 
-#ifndef WE_ARE_IN_THE_UI
+#if defined(_GAME) || defined(_CGAME)
 	switch( pVehInfo->type )
 	{
 		case VH_SPEEDER:
@@ -700,15 +621,11 @@ void BG_VehicleSetDefaults( vehicleInfo_t *vehicle )
 {
 	memset(vehicle, 0, sizeof(vehicleInfo_t));
 /*
-#if _JK2MP
 	if (!vehicle->name)
 	{
 		vehicle->name = (char *)BG_Alloc(1024);
 	}
 	strcpy(vehicle->name, "default");
-#else
-	vehicle->name = G_NewString( "default" );
-#endif
 
 	//general data
 	vehicle->type = VH_SPEEDER;				//what kind of vehicle
@@ -737,7 +654,7 @@ void BG_VehicleSetDefaults( vehicleInfo_t *vehicle )
 	vehicle->pitchLimit = VEH_DEFAULT_PITCH_LIMIT;		//how far it can pitch forward or backward
 	vehicle->braking = VEH_DEFAULT_BRAKING;				//when pressing on decelerator (backwards)
 	vehicle->turningSpeed = VEH_DEFAULT_TURNING_SPEED;	//how quickly you can turn
-	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving	
+	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving
 	vehicle->traction = VEH_DEFAULT_TRACTION;			//how much your command input affects velocity
 	vehicle->friction = VEH_DEFAULT_FRICTION;			//how much velocity is cut on its own
 	vehicle->maxSlope = VEH_DEFAULT_MAX_SLOPE;			//the max slope that it can go up with control
@@ -843,7 +760,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 		if ( !Q_stricmp( vehicleFields[i].name, parmName ) )
 		{
 			// found it
-			switch( vehicleFields[i].type ) 
+			switch( vehicleFields[i].type )
 			{
 			case VF_IGNORE:
 				break;
@@ -856,14 +773,10 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_LSTRING:	// string on disk, pointer in memory, TAG_LEVEL
 				if (!*(char **)(b+vehicleFields[i].ofs))
 				{ //just use 128 bytes in case we want to write over the string
-#ifdef _JK2MP
 					*(char **)(b+vehicleFields[i].ofs) = (char *)BG_Alloc(128);//(char *)BG_Alloc(strlen(value));
 					strcpy(*(char **)(b+vehicleFields[i].ofs), value);
-#else
-					(*(char **)(b+vehicleFields[i].ofs)) = G_NewString( value );
-#endif
 				}
-				
+
 				break;
 			case VF_VECTOR:
 				_iFieldsRead = sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
@@ -893,64 +806,60 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 				*(int *)(b+vehicleFields[i].ofs) = VEH_VehWeaponIndexForName( value );
 				break;
 			case VF_MODEL:	// take the string, get the G_ModelIndex
-#ifdef QAGAME
+			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-#else
-				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterModel( value );
-#endif
+			#else
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
+			#endif
 				break;
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
-#ifndef _JK2MP
-				*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-#elif QAGAME
+			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-#else
-				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterModel( value );
-#endif
+			#else
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
+			#endif
 				break;
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
-#ifdef QAGAME
+			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap_FX_RegisterEffect( value );
-#endif
+			#elif defined(_CGAME)
+				*(int *)(b+vehicleFields[i].ofs) = trap->FX_RegisterEffect( value );
+			#endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the G_EffectIndex
-#ifndef _JK2MP
-				*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif QAGAME
+			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap_FX_RegisterEffect( value );
-#endif
+			#elif defined(_CGAME)
+				*(int *)(b+vehicleFields[i].ofs) = trap->FX_RegisterEffect( value );
+			#endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
-#ifdef WE_ARE_IN_THE_UI
-				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#elif CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterShader( value );
-#endif
+			#ifdef _UI
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
+			#elif defined(_CGAME)
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShader( value );
+			#endif
 				break;
 			case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
-#ifndef QAGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#endif
+			#if defined(_CGAME)
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
+			#elif defined(_UI)
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
+			#endif
 				break;
 			case VF_SOUND:	// take the string, get the G_SoundIndex
-#ifdef QAGAME
+			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-#else
-				*(int *)(b+vehicleFields[i].ofs) = trap_S_RegisterSound( value );
-#endif
+			#else
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
+			#endif
 				break;
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the G_SoundIndex
-#ifndef _JK2MP
-				*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-#elif QAGAME
+			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-#else
-				*(int *)(b+vehicleFields[i].ofs) = trap_S_RegisterSound( value );
-#endif
+			#else
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
+			#endif
 				break;
 			default:
 				//Unknown type?
@@ -991,7 +900,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	vehicleInfo_t	*vehicle = NULL;
 
 	// Load the vehicle parms if no vehicles have been loaded yet.
-	if ( numVehicles == 0 ) 
+	if ( numVehicles == 0 )
 	{
 		BG_VehicleLoadParms();
 	}
@@ -999,15 +908,11 @@ int VEH_LoadVehicle( const char *vehicleName )
 	//try to parse data out
 	p = VehicleParms;
 
-#ifdef _JK2MP
 	COM_BeginParseSession("vehicles");
-#else
-	COM_BeginParseSession();
-#endif
 
 	vehicle = &g_vehicleInfo[numVehicles];
 	// look for the right vehicle
-	while ( p ) 
+	while ( p )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
@@ -1015,7 +920,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 			return VEHICLE_NONE;
 		}
 
-		if ( !Q_stricmp( token, vehicleName ) ) 
+		if ( !Q_stricmp( token, vehicleName ) )
 		{
 			break;
 		}
@@ -1034,24 +939,24 @@ int VEH_LoadVehicle( const char *vehicleName )
 		return VEHICLE_NONE;
 	}
 
-	if ( Q_stricmp( token, "{" ) != 0 ) 
+	if ( Q_stricmp( token, "{" ) != 0 )
 	{
 		return VEHICLE_NONE;
 	}
-	
+
 	BG_VehicleSetDefaults( vehicle );
 	// parse the vehicle info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		SkipRestOfLine( &p );
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle '%s'\n", vehicleName );
 			return VEHICLE_NONE;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
@@ -1229,7 +1134,6 @@ int VEH_LoadVehicle( const char *vehicleName )
 		}
 	}
 
-#ifdef _JK2MP
 	//let's give these guys some defaults
 	if (!vehicle->health_front)
 	{
@@ -1247,47 +1151,21 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 		vehicle->health_left = vehicle->armor/4;
 	}
-#endif
 
 	if ( vehicle->model )
 	{
-#ifdef QAGAME
-		vehicle->modelIndex = G_ModelIndex( va( "models/players/%s/model.glm", vehicle->model ) );
-#else
-		vehicle->modelIndex = trap_R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
-#endif
+		#ifdef _GAME
+			vehicle->modelIndex = G_ModelIndex( va( "models/players/%s/model.glm", vehicle->model ) );
+		#else
+			vehicle->modelIndex = trap->R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
+		#endif
 	}
 
-#ifndef _JK2MP
-	//SP
-	if ( vehicle->skin
-		&& vehicle->skin[0] )
-	{
-		ratl::string_vs<256>			skins(vehicle->skin);
-		for (ratl::string_vs<256>::tokenizer i = skins.begin("|"); i!=skins.end(); i++)
-		{
-			//this will just turn off surfs if there is a *off shader on a surf, the skin will actually get thrown away when cgame starts
-			gi.RE_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, *i) );
-			//this is for the server-side call, it will propgate down to cgame with configstrings and register it at the same time as all the other skins for ghoul2 models
-			G_SkinIndex( va( "models/players/%s/model_%s.skin", vehicle->model, *i) );
-		}
-	}
-	else
-	{
-		//this will just turn off surfs if there is a *off shader on a surf, the skin will actually get thrown away when cgame starts
-		gi.RE_RegisterSkin( va( "models/players/%s/model_default.skin", vehicle->model) );
-		//this is for the server-side call, it will propgate down to cgame with configstrings and register it at the same time as all the other skins for ghoul2 models
-		G_SkinIndex( va( "models/players/%s/model_default.skin", vehicle->model) );
-	}
-#else
-#ifndef QAGAME
-	if ( vehicle->skin
-		&& vehicle->skin[0] )
-	{
-		trap_R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
-	}
-#endif
-#endif
+	#if defined(_CGAME) || defined(_UI)
+		if ( VALIDSTRING( vehicle->skin ) )
+			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
+	#endif
+
 	//sanity check and clamp the vehicle's data
 	BG_VehicleClampData( vehicle );
 	// Setup the shared function pointers.
@@ -1295,56 +1173,52 @@ int VEH_LoadVehicle( const char *vehicleName )
 	//misc effects... FIXME: not even used in MP, are they?
 	if ( vehicle->explosionDamage )
 	{
-#ifdef QAGAME
-		G_EffectIndex( "ships/ship_explosion_mark" );
-#elif CGAME
-		trap_FX_RegisterEffect( "ships/ship_explosion_mark" );
-#endif
+		#ifdef _GAME
+			G_EffectIndex( "ships/ship_explosion_mark" );
+		#elif defined(_CGAME)
+			trap->FX_RegisterEffect( "ships/ship_explosion_mark" );
+		#endif
 	}
 	if ( vehicle->flammable )
 	{
-#ifdef QAGAME
-		G_SoundIndex( "sound/vehicles/common/fire_lp.wav" );
-#elif CGAME
-		trap_S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
-#else
-		trap_S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
-#endif
+		#ifdef _GAME
+			G_SoundIndex( "sound/vehicles/common/fire_lp.wav" );
+		#else
+			trap->S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
+		#endif
 	}
 
 	if ( vehicle->hoverHeight > 0 )
 	{
-#ifndef _JK2MP
-		G_EffectIndex( "ships/swoop_dust" );
-#elif QAGAME
-		G_EffectIndex( "ships/swoop_dust" );
-#elif CGAME
-		trap_FX_RegisterEffect( "ships/swoop_dust" );
-#endif
+		#ifdef _GAME
+			G_EffectIndex( "ships/swoop_dust" );
+		#elif defined(_CGAME)
+			trap->FX_RegisterEffect( "ships/swoop_dust" );
+		#endif
 	}
 
-#ifdef QAGAME
+#ifdef _GAME
 	G_EffectIndex( "volumetric/black_smoke" );
 	G_EffectIndex( "ships/fire" );
 	G_SoundIndex( "sound/vehicles/common/release.wav" );
-#elif CGAME
-	trap_R_RegisterShader( "gfx/menus/radar/bracket" );
-	trap_R_RegisterShader( "gfx/menus/radar/lead" );
-	trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" );
-	trap_S_RegisterSound( "sound/vehicles/common/impactalarm.wav" );
-	trap_S_RegisterSound( "sound/vehicles/common/linkweaps.wav" );
-	trap_S_RegisterSound( "sound/vehicles/common/release.wav" );
-	trap_FX_RegisterEffect("effects/ships/dest_burning.efx");
-	trap_FX_RegisterEffect("effects/ships/dest_destroyed.efx");
-	trap_FX_RegisterEffect( "volumetric/black_smoke" );
-	trap_FX_RegisterEffect( "ships/fire" );
-	trap_FX_RegisterEffect("ships/hyperspace_stars");
+#elif defined(_CGAME)
+	trap->R_RegisterShader( "gfx/menus/radar/bracket" );
+	trap->R_RegisterShader( "gfx/menus/radar/lead" );
+	trap->R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" );
+	trap->S_RegisterSound( "sound/vehicles/common/impactalarm.wav" );
+	trap->S_RegisterSound( "sound/vehicles/common/linkweaps.wav" );
+	trap->S_RegisterSound( "sound/vehicles/common/release.wav" );
+	trap->FX_RegisterEffect("effects/ships/dest_burning.efx");
+	trap->FX_RegisterEffect("effects/ships/dest_destroyed.efx");
+	trap->FX_RegisterEffect( "volumetric/black_smoke" );
+	trap->FX_RegisterEffect( "ships/fire" );
+	trap->FX_RegisterEffect("ships/hyperspace_stars");
 
 	if ( vehicle->hideRider )
 	{
-		trap_R_RegisterShaderNoMip( "gfx/menus/radar/circle_base" );
-		trap_R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_frame" );
-		trap_R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_shield" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_frame" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_shield" );
 	}
 #endif
 
@@ -1370,12 +1244,12 @@ int VEH_VehicleIndexForName( const char *vehicleName )
 	//haven't loaded it yet
 	if ( v >= MAX_VEHICLES )
 	{//no more room!
-		Com_Printf( S_COLOR_RED"ERROR: Too many Vehicles (max 64), aborting load on %s!\n", vehicleName );
+		Com_Printf( S_COLOR_RED"ERROR: Too many Vehicles (max %d), aborting load on %s!\n", MAX_VEHICLES, vehicleName );
 		return VEHICLE_NONE;
 	}
 	//we have room for another one, load it up and return the index
 	//HMM... should we not even load the .veh file until we want to?
-	v = VEH_LoadVehicle( vehicleName ); 
+	v = VEH_LoadVehicle( vehicleName );
  	if ( v == VEHICLE_NONE )
 	{
 		Com_Printf( S_COLOR_RED"ERROR: Could not find Vehicle %s!\n", vehicleName );
@@ -1383,9 +1257,9 @@ int VEH_VehicleIndexForName( const char *vehicleName )
 	return v;
 }
 
-void BG_VehWeaponLoadParms( void ) 
+void BG_VehWeaponLoadParms( void )
 {
-	int			len, totallen, vehExtFNLen, mainBlockLen, fileCnt, i;
+	int			len, totallen, vehExtFNLen, fileCnt, i;
 	char		*holdChar, *marker;
 	char		vehWeaponExtensionListBuf[2048];			//	The list of file names read in
 	fileHandle_t	f;
@@ -1394,89 +1268,63 @@ void BG_VehWeaponLoadParms( void )
 	len = 0;
 
 	//remember where to store the next one
-	totallen = mainBlockLen = len;
+	totallen = len;
 	marker = VehWeaponParms+totallen;
 	*marker = 0;
 
 	//now load in the extra .veh extensions
-#ifdef _JK2MP
-	fileCnt = trap_FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
-#else
-	fileCnt = gi.FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
-#endif
+	fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
 
 	holdChar = vehWeaponExtensionListBuf;
 
-#ifdef _JK2MP
 	tempReadBuffer = (char *)BG_TempAlloc(MAX_VEH_WEAPON_DATA_SIZE);
-#else
-	tempReadBuffer = (char *)gi.Malloc( MAX_VEH_WEAPON_DATA_SIZE, TAG_G_ALLOC, qtrue );
-#endif
-	
+
 	// NOTE: Not use TempAlloc anymore...
 	//Make ABSOLUTELY CERTAIN that BG_Alloc/etc. is not used before
-	//the subsequent BG_TempFree or the pool will be screwed. 
+	//the subsequent BG_TempFree or the pool will be screwed.
 
-	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
 		vehExtFNLen = strlen( holdChar );
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
-#ifdef _JK2MP
-		len = trap_FS_FOpenFile(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
-#else
-//		len = gi.FS_ReadFile( va( "ext_data/vehicles/weapons/%s", holdChar), (void **) &buffer );
-		len = gi.FS_FOpenFile(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
-#endif
+		len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			Com_Printf( "error reading file\n" );
 		}
 		else
 		{
-#ifdef _JK2MP
-			trap_FS_Read(tempReadBuffer, len, f);
+			trap->FS_Read(tempReadBuffer, len, f);
 			tempReadBuffer[len] = 0;
-#else
-			gi.FS_Read(tempReadBuffer, len, f);
-			tempReadBuffer[len] = 0;
-#endif
 
 			// Don't let it end on a } because that should be a stand-alone token.
 			if ( totallen && *(marker-1) == '}' )
 			{
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 
 			if ( totallen + len >= MAX_VEH_WEAPON_DATA_SIZE ) {
 				Com_Error(ERR_DROP, "Vehicle Weapon extensions (*.vwp) are too large" );
 			}
 			strcat( marker, tempReadBuffer );
-#ifdef _JK2MP
-			trap_FS_FCloseFile( f );
-#else
-			gi.FS_FCloseFile( f );
-#endif
+			trap->FS_Close( f );
 
 			totallen += len;
 			marker = VehWeaponParms+totallen;
 		}
 	}
 
-#ifdef _JK2MP
 	BG_TempFree(MAX_VEH_WEAPON_DATA_SIZE);
-#else
-	gi.Free(tempReadBuffer);	tempReadBuffer = NULL;
-#endif
 }
 
-void BG_VehicleLoadParms( void ) 
+void BG_VehicleLoadParms( void )
 {//HMM... only do this if there's a vehicle on the level?
-	int			len, totallen, vehExtFNLen, mainBlockLen, fileCnt, i;
+	int			len, totallen, vehExtFNLen, fileCnt, i;
 //	const char	*filename = "ext_data/vehicles.dat";
 	char		*holdChar, *marker;
 	char		vehExtensionListBuf[2048];			//	The list of file names read in
@@ -1486,85 +1334,59 @@ void BG_VehicleLoadParms( void )
 	len = 0;
 
 	//remember where to store the next one
-	totallen = mainBlockLen = len;
+	totallen = len;
 	marker = VehicleParms+totallen;
 	*marker = 0;
 
 	//now load in the extra .veh extensions
-#ifdef _JK2MP
-	fileCnt = trap_FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
-#else
-	fileCnt = gi.FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
-#endif
+	fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 
 	holdChar = vehExtensionListBuf;
 
-#ifdef _JK2MP
 	tempReadBuffer = (char *)BG_TempAlloc(MAX_VEHICLE_DATA_SIZE);
-#else
-	tempReadBuffer = (char *)gi.Malloc( MAX_VEHICLE_DATA_SIZE, TAG_G_ALLOC, qtrue );
-#endif
-	
+
 	// NOTE: Not use TempAlloc anymore...
 	//Make ABSOLUTELY CERTAIN that BG_Alloc/etc. is not used before
-	//the subsequent BG_TempFree or the pool will be screwed. 
+	//the subsequent BG_TempFree or the pool will be screwed.
 
-	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
 		vehExtFNLen = strlen( holdChar );
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
-#ifdef _JK2MP
-		len = trap_FS_FOpenFile(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
-#else
-//		len = gi.FS_ReadFile( va( "ext_data/vehicles/%s", holdChar), (void **) &buffer );
-		len = gi.FS_FOpenFile(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
-#endif
+		len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			Com_Printf( "error reading file\n" );
 		}
 		else
 		{
-#ifdef _JK2MP
-			trap_FS_Read(tempReadBuffer, len, f);
+			trap->FS_Read(tempReadBuffer, len, f);
 			tempReadBuffer[len] = 0;
-#else
-			gi.FS_Read(tempReadBuffer, len, f);
-			tempReadBuffer[len] = 0;
-#endif
 
 			// Don't let it end on a } because that should be a stand-alone token.
 			if ( totallen && *(marker-1) == '}' )
 			{
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 
 			if ( totallen + len >= MAX_VEHICLE_DATA_SIZE ) {
 				Com_Error(ERR_DROP, "Vehicle extensions (*.veh) are too large" );
 			}
 			strcat( marker, tempReadBuffer );
-#ifdef _JK2MP
-			trap_FS_FCloseFile( f );
-#else
-			gi.FS_FCloseFile( f );
-#endif
+			trap->FS_Close( f );
 
 			totallen += len;
 			marker = VehicleParms+totallen;
 		}
 	}
 
-#ifdef _JK2MP
 	BG_TempFree(MAX_VEHICLE_DATA_SIZE);
-#else
-	gi.Free(tempReadBuffer);	tempReadBuffer = NULL;
-#endif
-	
+
 	numVehicles = 1;//first one is null/default
 	//set the first vehicle to default data
 	BG_VehicleSetDefaults( &g_vehicleInfo[VEHICLE_BASE] );
@@ -1586,50 +1408,37 @@ int BG_VehicleGetIndex( const char *vehicleName )
 //with a $ in front of it.
 //we are expected to then get the model for the
 //vehicle and stomp over modelname with it.
-void BG_GetVehicleModelName(char *modelname)
+void BG_GetVehicleModelName(char *modelname, int len)
 {
 	char *vehName = &modelname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(modelname[0] == '$');
-	
-	if (vIndex == VEHICLE_NONE)
-	{
-		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
-	}
 
-    strcpy(modelname, g_vehicleInfo[vIndex].model);	
+	if (vIndex == VEHICLE_NONE)
+		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
+
+	Q_strncpyz( modelname, g_vehicleInfo[vIndex].model, len );
 }
 
-void BG_GetVehicleSkinName(char *skinname)
+void BG_GetVehicleSkinName(char *skinname, int len)
 {
 	char *vehName = &skinname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(skinname[0] == '$');
-	
-	if (vIndex == VEHICLE_NONE)
-	{
-		Com_Error(ERR_DROP, "BG_GetVehicleSkinName:  couldn't find vehicle %s", vehName);
-	}
 
-    if ( !g_vehicleInfo[vIndex].skin 
-		|| !g_vehicleInfo[vIndex].skin[0] )
-	{
+	if (vIndex == VEHICLE_NONE)
+		Com_Error(ERR_DROP, "BG_GetVehicleSkinName:  couldn't find vehicle %s", vehName);
+
+    if ( !VALIDSTRING( g_vehicleInfo[vIndex].skin ) )
 		skinname[0] = 0;
-	}
 	else
-	{
-		strcpy(skinname, g_vehicleInfo[vIndex].skin);	
-	}
+		Q_strncpyz( skinname, g_vehicleInfo[vIndex].skin, len );
 }
 
-#ifdef _JK2MP
-#ifndef WE_ARE_IN_THE_UI
+#if defined(_GAME) || defined(_CGAME)
 //so cgame can assign the function pointer for the vehicle attachment without having to
 //bother with all the other funcs that don't really exist cgame-side.
 extern int BG_GetTime(void);
-extern int trap_G2API_AddBolt(void *ghoul2, int modelIndex, const char *boneName);
-extern qboolean trap_G2API_GetBoltMatrix(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
 void AttachRidersGeneric( Vehicle_t *pVeh )
 {
 	// If we have a pilot, attach him to the driver tag.
@@ -1639,21 +1448,15 @@ void AttachRidersGeneric( Vehicle_t *pVeh )
 		vec3_t	yawOnlyAngles;
 		bgEntity_t *parent = pVeh->m_pParentEntity;
 		bgEntity_t *pilot = pVeh->m_pPilot;
-		int crotchBolt = trap_G2API_AddBolt(parent->ghoul2, 0, "*driver");
+		int crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
 
 		assert(parent->playerState);
 
 		VectorSet(yawOnlyAngles, 0, parent->playerState->viewangles[YAW], 0);
 
 		// Get the driver tag.
-		trap_G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix,
-								yawOnlyAngles, parent->playerState->origin,
-								BG_GetTime(), NULL, parent->modelScale );
+		trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
 		BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, pilot->playerState->origin );
 	}
 }
 #endif
-
-
-#endif // _JK2MP
-

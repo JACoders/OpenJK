@@ -21,14 +21,11 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
-
-//void DoBolt( vec3_t m_origin, vec3_t m_origin2, float m_scale, float m_deviation );
 
 /*
 ====================
@@ -345,6 +342,8 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 			effect = "chunks/rockbreakmed";
 			break;
 		}
+	default:
+		break;
 	}
 
 	if ( !effect )
@@ -488,6 +487,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 		}
 		*/
 		return;
+	default:
 		break;
 	}
 
@@ -549,6 +549,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 				{
 					chunkModel = cgs.media.chunkModels[CHUNK_METAL2][Q_irand(0, 3)];
 				}
+				break;
+			default:
 				break;
 			}
 		}

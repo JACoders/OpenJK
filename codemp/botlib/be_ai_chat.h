@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 /*****************************************************************************
@@ -6,7 +8,7 @@
  * desc:		char AI
  *
  * $Archive: /source/code/botlib/be_ai_chat.h $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 2003/03/15 23:43:59 $
@@ -94,4 +96,3 @@ int BotLoadChatFile(int chatstate, char *chatfile, char *chatname);
 void BotSetChatGender(int chatstate, int gender);
 //store the bot name in the chat state
 void BotSetChatName(int chatstate, char *name, int client);
-

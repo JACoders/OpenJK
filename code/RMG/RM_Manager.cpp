@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 #include "../server/server.h"
 
 CRMObjective *CRMManager::mCurObjective=0;
@@ -110,7 +110,6 @@ void CRMManager::SetLandScape(CCMLandScape *landscape)
  ************************************************************************************************/
 bool CRMManager::LoadMission ( qboolean IsServer )
 {
-#ifndef PRE_RELEASE_DEMO
 	char	instances[MAX_QPATH];
 	char	mission[MAX_QPATH];
 	char	course[MAX_QPATH];
@@ -129,7 +128,7 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 
 	// Grab the arioche variables
 	Cvar_VariableStringBuffer("rmg_usetimelimit", temp, MAX_QPATH);
-	if (strcmpi(temp, "yes") == 0)
+	if (Q_stricmp(temp, "yes") == 0)
 	{
 		mUseTimeLimit = true;
 	}
@@ -195,9 +194,6 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 #endif
 
 	return true;
-#else
-	return false;
-#endif // PRE_RELEASE_DEMO
 }
 
 /************************************************************************************************

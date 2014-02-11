@@ -5,7 +5,7 @@
  * desc:		bot characters
  *
  * $Archive: /MissionPack/code/botlib/be_ai_char.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 6 $
  * $Modtime: 4/22/01 8:52a $
  * $Date: 4/22/01 8:52a $
@@ -230,7 +230,7 @@ bot_character_t *BotLoadCharacterFromFile(char *charfile, int skill)
 				return NULL;
 			} //end if
 			//if it's the correct skill
-			if (skill < 0 || token.intvalue == skill)
+			if (skill < 0 || (int)token.intvalue == skill)
 			{
 				foundcharacter = qtrue;
 				ch->skill = token.intvalue;

@@ -19,14 +19,13 @@ This file is part of Jedi Knight 2.
 // cg_view.c -- setup all the parameters (position, angle, etc)
 // for a 3D rendering
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
+#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
-#include "..\game\wp_saber.h"
+#include "../game/wp_saber.h"
+#include "../game/anims.h"
+#include "../game/g_functions.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4
@@ -189,7 +188,7 @@ void CG_TestModelAnimate_f(void)
 	char	boneName[100];
 	CGhoul2Info_v	&ghoul2 = *((CGhoul2Info_v *)cg.testModelEntity.ghoul2);
 
-	strcpy(boneName, CG_Argv(1));
+	Q_strncpyz(boneName, CG_Argv(1), sizeof(boneName));
 	gi.G2API_SetBoneAnim(&ghoul2[cg.testModel], boneName, atoi(CG_Argv(2)), atoi(CG_Argv(3)), BONE_ANIM_OVERRIDE_LOOP, atof(CG_Argv(4)), cg.time, -1, -1);
 
 }
@@ -445,6 +444,7 @@ CG_CalcIdealThirdPersonViewLocation
 */
 static void CG_CalcIdealThirdPersonViewLocation(void)
 {
+	gentity_t	*player = &g_entities[0];
 	if ( cg.overrides.active & CG_OVERRIDE_3RD_PERSON_RNG )
 	{
 		VectorMA(cameraIdealTarget, -(cg.overrides.thirdPersonRange), camerafwd, cameraIdealLoc);
@@ -1294,6 +1294,7 @@ qboolean CG_CalcFOVFromX( float fov_x )
 
 float CG_ForceSpeedFOV( void )
 {
+	gentity_t	*player = &g_entities[0];
 	float fov;
 	float timeLeft = player->client->ps.forcePowerDuration[FP_SPEED] - cg.time;
 	float length = FORCE_SPEED_DURATION*forceSpeedValue[player->client->ps.forcePowerLevel[FP_SPEED]];
@@ -1323,6 +1324,7 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 static qboolean	CG_CalcFov( void ) {
 	float	fov_x;
 	float	f;
+		gentity_t	*player = &g_entities[0];
 
 	if ( cg.predicted_player_state.pm_type == PM_INTERMISSION ) {
 		// if in intermission, use a fixed value
@@ -1565,7 +1567,15 @@ static qboolean CG_CalcViewValues( void ) {
 
 	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
 	{
-		ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
+		if( g_entities[cg.snap->ps.viewEntity].client && g_entities[cg.snap->ps.viewEntity].NPC )
+		{
+			ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
+		}
+		else
+		{
+			ps = &cg.predicted_player_state;
+			viewEntIsCam = qtrue;
+		}
 	}
 	else
 	{
@@ -1958,7 +1968,8 @@ wasForceSpeed=isForceSpeed;
 	{
 		CG_AddViewWeapon( &cg.predicted_player_state );
 	}
-	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD &&
+		g_entities[cg.snap->ps.viewEntity].client)
 	{
 		CG_AddViewWeapon( &g_entities[cg.snap->ps.viewEntity ].client->ps );	// HAX - because I wanted to --eez
 	}

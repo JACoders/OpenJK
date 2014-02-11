@@ -23,15 +23,8 @@ This file is part of Jedi Academy.
 #include "../client/snd_music.h"	// didn't want to put this in snd_local because of rebuild times etc.
 #include "server.h"
 
-/*
-Ghoul2 Insert Start
-*/
-#if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
-#endif
-
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/miniheap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 void CM_CleanLeafCache(void);
@@ -187,56 +180,7 @@ void SV_Startup( void ) {
 	Cvar_Set( "sv_running", "1" );
 }
 
-
-#ifdef _XBOX
-//Xbox-only memory freeing.
-extern void R_ModelFree(void);
-extern void Sys_IORequestQueueClear(void);
-extern void Music_Free(void);
-extern void AS_FreePartial(void);
-extern void G_ASPreCacheFree(void);
-extern void Ghoul2InfoArray_Free(void);
-extern void Ghoul2InfoArray_Reset(void);
-extern void Menu_Reset(void);
-extern void G2_FreeRag(void);
-extern void ClearAllNavStructures(void);
-extern void ClearModelsAlreadyDone(void);
-extern void CL_FreeServerCommands(void);
-extern void CL_FreeReliableCommands(void);
-extern void CM_Free(void);
-extern void ShaderEntryPtrs_Clear(void);
-extern void G_FreeRoffs(void);
-extern int	numVehicles;
-void SV_ClearLastLevel(void)
-{
-	Menu_Reset();
-	Z_TagFree(TAG_G_ALLOC);
-	Z_TagFree(TAG_UI_ALLOC);
-	G_FreeRoffs();
-	R_ModelFree();
-	Music_Free();
-	Sys_IORequestQueueClear();
-	AS_FreePartial();
-	G_ASPreCacheFree();
-	Ghoul2InfoArray_Free();
-	G2_FreeRag();
-	ClearAllNavStructures();
-	ClearModelsAlreadyDone();
-	CL_FreeServerCommands();
-	CL_FreeReliableCommands();
-	CM_Free();
-	ShaderEntryPtrs_Clear();
-
-	numVehicles = 0;
-
-	if (svs.clients)
-	{
-		SV_FreeClient( svs.clients );
-	}
-}
-#endif
-
-qboolean CM_SameMap(char *server);
+qboolean CM_SameMap(const char *server);
 qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
@@ -248,12 +192,12 @@ Change the server to a new map, taking all connected
 clients along with it.
 ================
 */
-void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
+void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
 {
 	int			i;
 	int			checksum;
 
-	RE_RegisterMedia_LevelLoadBegin( server, eForceReload, bAllowScreenDissolve );
+	re.RegisterMedia_LevelLoadBegin( server, eForceReload, bAllowScreenDissolve );
 
 
 	Cvar_SetValue( "cl_paused", 0 );
@@ -264,6 +208,13 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 
 	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
 	Com_Printf ("Server: %s\n",server);	
+
+	// Moved up from below to help reduce fragmentation
+	if (svs.snapshotEntities)
+	{
+		Z_Free(svs.snapshotEntities);
+		svs.snapshotEntities = NULL;
+	}
 
 	// don't let sound stutter and dump all stuff on the hunk
 	CL_MapLoading();
@@ -281,13 +232,6 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	G2VertSpaceServer->ResetHeap();
 
 	Hunk_Clear();
-
-	// Moved up from below to help reduce fragmentation
-	if (svs.snapshotEntities)
-	{
-		Z_Free(svs.snapshotEntities);
-		svs.snapshotEntities = NULL;
-	}
 
 	// wipe the entire per-level structure
 	// Also moved up, trying to do all freeing before new allocs
@@ -316,9 +260,11 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	}
 
  	// clear out those shaders, images and Models
-	R_InitImages();
+	/*R_InitImages();
 	R_InitShaders();
-	R_ModelInit();
+	R_ModelInit();*/
+
+	re.SVModelInit();
 
 	// allocate the snapshot entities 
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );
@@ -342,12 +288,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	}
 
 	sv.time = 1000;
-	G2API_SetTime(sv.time,G2T_SV_TIME);
-
-#ifndef _DEBUG
-	Com_Printf("CM_LOADMAP: %s\n", server);
-#endif
-
+	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum, qfalse );
 
@@ -375,10 +316,10 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	for ( i = 0 ;i < 3 ; i++ ) {
 		ge->RunFrame( sv.time );
 		sv.time += 100;
-		G2API_SetTime(sv.time,G2T_SV_TIME);
+		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
 #ifndef __NO_JK2
-	if(!Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && !com_jk2->integer)
 #endif
 	ge->ConnectNavs(sv_mapname->string, sv_mapChecksum->integer);
 
@@ -412,7 +353,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	// run another frame to allow things to look at all connected clients
 	ge->RunFrame( sv.time );
 	sv.time += 100;
-	G2API_SetTime(sv.time,G2T_SV_TIME);
+	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 
 	// save systeminfo and serverinfo strings
@@ -426,9 +367,6 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	// and any configstring changes should be reliably transmitted
 	// to all clients
 	sv.state = SS_GAME;
-	
-	// send a heartbeat now so the master will get up to date info
-	svs.nextHeartbeatTime = -9999999;
 
 	Hunk_SetMark();
 	Z_Validate();
@@ -460,7 +398,7 @@ void SV_Init (void) {
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
 
 	// server vars
-	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_TEMP );
+	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_TEMP );
 	sv_timeout = Cvar_Get ("sv_timeout", "120", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
@@ -492,7 +430,7 @@ not just stuck on the outgoing message list, because the server is going
 to totally exit after returning from this function.
 ==================
 */
-void SV_FinalMessage( char *message ) {
+void SV_FinalMessage( const char *message ) {
 	int			i, j;
 	client_t	*cl;
 	
@@ -520,7 +458,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( char *finalmsg ) {
+void SV_Shutdown( const char *finalmsg ) {
 	int i;
 
 	if ( !com_sv_running || !com_sv_running->integer ) {

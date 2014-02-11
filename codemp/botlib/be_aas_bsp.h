@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_bsp.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_bsp.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -69,4 +70,3 @@ int AAS_VectorForBSPEpairKey(int ent, char *key, vec3_t v);
 int AAS_FloatForBSPEpairKey(int ent, char *key, float *value);
 //get an integer for the BSP epair key
 int AAS_IntForBSPEpairKey(int ent, char *key, int *value);
-

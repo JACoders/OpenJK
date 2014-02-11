@@ -17,11 +17,11 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //wp_saberLoad.cpp
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
+#include "g_local.h"
 #include "wp_saber.h"
+#include "../cgame/cg_local.h"
 
 extern qboolean G_ParseLiteral( const char **data, const char *string );
 extern saber_colors_t TranslateSaberColor( const char *name );
@@ -72,7 +72,7 @@ stringID_table_t SaberTable[] =
 	ENUM2STRING(SABER_STAR),
 	ENUM2STRING(SABER_TRIDENT),
 	ENUM2STRING(SABER_SITH_SWORD),
-	"",	-1
+	{ "",	-1 }
 };
 
 stringID_table_t SaberMoveTable[] =
@@ -137,7 +137,7 @@ stringID_table_t SaberMoveTable[] =
 	ENUM2STRING(LS_DUAL_FB),
 	ENUM2STRING(LS_DUAL_LR),
 	ENUM2STRING(LS_HILT_BASH),
-	"",	-1
+	{ "",	-1 }
 };
 
 
@@ -537,6 +537,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -549,11 +550,13 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 	}
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 
 	if ( G_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 		
@@ -564,6 +567,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		if ( !token[0] ) 
 		{
 			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", SaberName );
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -571,6 +575,10 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		{
 			break;
 		}
+
+#ifdef _WIN32
+#pragma region(Saber Parms)
+#endif
 
 		//saber fullName
 		if ( !Q_stricmp( token, "name" ) ) 
@@ -2421,7 +2429,10 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 	{//precache all the sith sword sounds
 		Saber_SithSwordPrecache();
 	}
-
+#ifdef _WIN32
+#pragma endregion
+#endif
+	COM_EndParseSession(  );
 	return qtrue;
 }
 
@@ -2461,7 +2472,7 @@ void WP_RemoveSaber( gentity_t *ent, int saberNum )
 	}
 }
 
-void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName )
+void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName )
 {
 	if ( !ent || !ent->client )
 	{

@@ -22,12 +22,11 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
-#include "..\game\wp_saber.h"
-#include "..\game\g_vehicles.h"
+#include "../game/wp_saber.h"
+#include "../game/g_vehicles.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4
@@ -102,7 +101,7 @@ void CG_TestG2Model_f (void) {
 	Q_strncpyz (cg.testModelName, CG_Argv( 1 ), MAX_QPATH );
 	cg.testModelEntity.hModel = cgi_R_RegisterModel( cg.testModelName );
 
-	cg.testModel = gi.G2API_InitGhoul2Model(*((CGhoul2Info_v *)cg.testModelEntity.ghoul2), cg.testModelName, cg.testModelEntity.hModel, NULL, NULL,0,0);
+	cg.testModel = gi.G2API_InitGhoul2Model(*((CGhoul2Info_v *)cg.testModelEntity.ghoul2), cg.testModelName, cg.testModelEntity.hModel, NULL_HANDLE, NULL_HANDLE,0,0);
 	cg.testModelEntity.radius = 100.0f;
 
 	if ( cgi_Argc() == 3 ) {
@@ -353,13 +352,13 @@ static void CG_CalcIdealThirdPersonViewTarget(void)
 	{
 
 		gentity_t *gent = &g_entities[cg.snap->ps.viewEntity];
-		if ( gent->client && (gent->client->NPC_class == CLASS_GONK ) 
-			|| (gent->client->NPC_class == CLASS_INTERROGATOR) 
-			|| (gent->client->NPC_class == CLASS_SENTRY) 
-			|| (gent->client->NPC_class == CLASS_PROBE ) 
-			|| (gent->client->NPC_class == CLASS_MOUSE ) 
-			|| (gent->client->NPC_class == CLASS_R2D2 ) 
-			|| (gent->client->NPC_class == CLASS_R5D2) )
+		if ( gent->client && (gent->client->NPC_class == CLASS_GONK
+			|| gent->client->NPC_class == CLASS_INTERROGATOR
+			|| gent->client->NPC_class == CLASS_SENTRY
+			|| gent->client->NPC_class == CLASS_PROBE
+			|| gent->client->NPC_class == CLASS_MOUSE
+			|| gent->client->NPC_class == CLASS_R2D2
+			|| gent->client->NPC_class == CLASS_R5D2) )
 		{	// Droids use a generic offset
 			cameraFocusLoc[2] += 4;
 			VectorCopy( cameraFocusLoc, cameraIdealTarget );
@@ -558,7 +557,10 @@ static void CG_UpdateThirdPersonTargetDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = pow(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf( dampfactor, dtime );
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealTarget, -ratio, targetdiff, cameraCurTarget);
@@ -659,7 +661,10 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = pow(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf( dampfactor, dtime );
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealLoc, -ratio, locdiff, cameraCurLoc);
@@ -1254,6 +1259,16 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	float	fov_y;
 	qboolean	inwater;
 
+	if ( cg_fovAspectAdjust.integer ) {
+		// Based on LordHavoc's code for Darkplaces
+		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+		const float baseAspect = 0.75f; // 3/4
+		const float aspect = (float)cgs.glconfig.vidWidth/(float)cgs.glconfig.vidHeight;
+		const float desiredFov = fov_x;
+
+		fov_x = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+	}
+
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
 	fov_y = fov_y * 360 / M_PI;
@@ -1296,12 +1311,6 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
 
-#ifdef _XBOX
-	if(cg.widescreen)
-//		cg.refdef.fov_x = fov_y * 1.5;//1.77777f;
-		cg.refdef.fov_x *= 1.125f;
-#endif
-
 	return (inwater);
 }
 
@@ -1332,7 +1341,6 @@ CG_CalcFov
 Fixed fov at intermissions, otherwise account for fov variable and zooms.
 ====================
 */
-//extern float	g_fov;
 static qboolean	CG_CalcFov( void ) {
 	float	fov_x;
 	float	f;
@@ -1445,9 +1453,7 @@ static qboolean	CG_CalcFov( void ) {
 			fov_x = cg_zoomFov;
 		} else {
 			f = ( cg.time - cg.zoomTime ) / ZOOM_OUT_TIME;
-			if ( f > 1.0 ) {
-				fov_x = fov_x;
-			} else {
+			if ( f <= 1.0 ) {
 				fov_x = cg_zoomFov + f * ( fov_x - cg_zoomFov );
 			}
 		}
@@ -1570,7 +1576,6 @@ static qboolean CG_CalcViewValues( void ) {
 	playerState_t	*ps;
 	qboolean		viewEntIsHumanoid = qfalse;
 	qboolean		viewEntIsCam = qfalse;
-	//extern vec3_t	cgRefdefVieworg;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
@@ -1795,6 +1800,8 @@ static void CG_DrawSkyBoxPortal(void)
 
 	backuprefdef = cg.refdef;
 
+	// asdf --eez
+	COM_BeginParseSession();
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
@@ -1873,6 +1880,7 @@ static void CG_DrawSkyBoxPortal(void)
 		}
 	}
 
+	COM_EndParseSession();
 /*
 	static float lastfov = cg_zoomFov;	// for transitions back from zoomed in modes
 	float fov_x;
@@ -2050,7 +2058,9 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	// let the client system know what our weapon and zoom settings are
 	//FIXME: should really send forcePowersActive over network onto cg.snap->ps...
-	float speed = cg.refdef.fov_y / 75.0 * ((cg_entities[0].gent->client->ps.forcePowersActive&(1<<FP_SPEED))?1.0f:cg_timescale.value);
+	const int fpActive = cg_entities[0].gent->client->ps.forcePowersActive;
+	const bool matrixMode = !!(fpActive & (1 << FP_SPEED) | (1 << FP_RAGE));
+	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : cg_timescale.value);
 
 //FIXME: junk code, BUG:168
 
@@ -2103,7 +2113,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	cg.renderingThirdPerson = cg_thirdPerson.integer 
 								|| (cg.snap->ps.stats[STAT_HEALTH] <= 0) 
 								|| (cg.snap->ps.eFlags&EF_HELD_BY_SAND_CREATURE)
-								|| (g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST
+								|| ((g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST)
 								|| (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE) );
 
 	if ( cg.zoomMode )
@@ -2206,7 +2216,10 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	}
 	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
 	{
-		CG_AddViewWeapon( &g_entities[cg.snap->ps.viewEntity ].client->ps );	// HAX - because I wanted to --eez
+		if( g_entities[cg.snap->ps.viewEntity].client && g_entities[cg.snap->ps.viewEntity].NPC )
+		{
+			CG_AddViewWeapon( &g_entities[cg.snap->ps.viewEntity ].client->ps );	// HAX - because I wanted to --eez
+		}
 	}
 
 	if ( !cg.hyperspace && fx_freeze.integer<2 ) 

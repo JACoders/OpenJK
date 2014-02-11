@@ -1,5 +1,4 @@
-#ifndef __G_NAVIGATOR__
-#define __G_NAVIGATOR__
+#pragma once
 
 #define	__NEWCOLLECT	1
 
@@ -7,7 +6,6 @@
 
 //Node flags
 #define	NF_ANY			0
-//#define	NF_CLEAR_LOS	0x00000001
 #define NF_CLEAR_PATH	0x00000002
 #define NF_RECALC		0x00000004
 
@@ -16,12 +14,9 @@
 #define EFLAG_BLOCKED	0x00000001
 #define EFLAG_FAILED	0x00000002
 
-//Miscellaneous defines
-#define	NODE_NONE		-1
-#define	NAV_HEADER_ID	'JNV5'
-#define	NODE_HEADER_ID	'NODE'
-
-#pragma warning( disable : 4786) 
+#ifdef _MSC_VER
+#pragma warning( disable : 4786)
+#endif
 
 #if defined(_WIN32)
 	#define COM_NO_WINDOWS_H
@@ -36,6 +31,10 @@ using namespace std;
 #include "server/server.h"
 #include "qcommon/q_shared.h"
 
+//Miscellaneous defines
+#define	NODE_NONE		-1
+#define	NAV_HEADER_ID	INT_ID('J','N','V','5')
+#define	NODE_HEADER_ID	INT_ID('N','O','D','E')
 
 typedef multimap<int, int> EdgeMultimap;
 typedef multimap<int, int>::iterator EdgeMultimapIt;
@@ -52,7 +51,7 @@ class CEdge
 
 public:
 
-	CEdge( void );
+	CEdge( void ) : m_first(-1), m_second(-1), m_cost(-1) {}
 	CEdge( int first, int second, int cost );
 	~CEdge( void );
 
@@ -73,7 +72,7 @@ class CNode
 	{
 		int		ID;
 		int		cost;
-		BYTE	flags;
+		byte	flags;
 	} edge_t;
 
 	typedef	vector< edge_t >	edge_v;
@@ -93,12 +92,12 @@ public:
 
 	int	GetID( void )					const	{	return m_ID;	}
 	void GetPosition( vec3_t position )	const	{	if ( position )	VectorCopy( m_position, position );	}
- 	
+
 	int GetNumEdges( void )				const	{	return m_numEdges;	}
 	int	GetEdgeNumToNode( int ID );
 	int GetEdge( int edgeNum );
 	int GetEdgeCost( int edgeNum );
-	BYTE GetEdgeFlags( int edgeNum );
+	byte GetEdgeFlags( int edgeNum );
 	void SetEdgeFlags( int edgeNum, int newFlags );
 	int	GetRadius( void )				const	{	return m_radius;	}
 
@@ -118,7 +117,7 @@ protected:
 	int				m_flags;
 	int				m_radius;
 	int				m_ID;
-	
+
 	edge_v	m_edges;
 
 	int		*m_ranks;
@@ -137,8 +136,8 @@ class CNavigator
 	typedef	list < CEdge >				edge_l;
 
 #if __NEWCOLLECT
-	
-	typedef struct nodeList_t
+
+	struct nodeList_t
 	{
 		int				nodeID;
 		unsigned int	distance;
@@ -182,7 +181,7 @@ public:
 	float GetNodeLeadDistance( int nodeID );
 
 	int GetNumNodes( void )		const	{	return m_nodes.size();		}
-	
+
 	bool Connected( int startID, int endID );
 
 	unsigned int GetPathCost( int startID, int endID );
@@ -220,7 +219,7 @@ protected:
 	int		TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts );
 	int		TestNodeLOS( sharedEntity_t *ent, vec3_t position );
 	int		TestBestFirst( sharedEntity_t *ent, int lastID, int flags );
-	
+
 #if __NEWCOLLECT
 	int		CollectNearestNodes( vec3_t origin, int radius, int maxCollect, nodeChain_l &nodeChain );
 #else
@@ -232,7 +231,6 @@ protected:
 	float	GetFloat( fileHandle_t file );
 	long	GetLong( fileHandle_t file );
 
-	//void	ConnectNodes( void );
 	void	SetEdgeCost( int ID1, int ID2, int cost );
 	int		GetEdgeCost( CNode *first, CNode *second );
 	void	AddNodeEdges( CNode *node, int addDist, edge_l &edgeList, bool *checkedNodes );
@@ -242,7 +240,7 @@ protected:
 	//rww - made failedEdges private as it doesn't seem to need to be public.
 	//And I'd rather shoot myself than have to devise a way of setting/accessing this
 	//array via trap calls.
-	failedEdge_t	failedEdges[MAX_FAILED_EDGES];	
+	failedEdge_t	failedEdges[MAX_FAILED_EDGES];
 
 	node_v			m_nodes;
 	EdgeMultimap	m_edgeLookupMap;
@@ -258,7 +256,7 @@ class CPriorityQueue
 public:
 	CPriorityQueue() {};
 	~CPriorityQueue();
-	
+
 // Functionality
 //--------------------------------------------------------------
 public:
@@ -267,7 +265,7 @@ public:
 	void	Push( CEdge* theEdge );
 	void	Update(CEdge* edge );
 	bool	Empty();
-	
+
 
 // DATA
 //--------------------------------------------------------------
@@ -276,5 +274,3 @@ private:
 };
 
 extern CNavigator navigator;
-
-#endif	//__G_NAVIGATOR__

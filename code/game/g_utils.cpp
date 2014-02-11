@@ -18,19 +18,13 @@ This file is part of Jedi Academy.
 
 // g_utils.c -- misc utility functions for game module
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
-#ifdef _XBOX
-#include "anims.h"
-#include "..\renderer\mdx_format.h"
-#include "..\qcommon\cm_public.h"
-#include "..\qcommon\cm_local.h"
-#endif
+#include "g_navigator.h"
+#include "b_local.h"
+#include "g_nav.h"
 
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse
@@ -64,7 +58,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 		if ( !s[0] ) {
 			break;
 		}
-		if ( !stricmp( s, name ) ) {
+		if ( !Q_stricmp( s, name ) ) {
 			return i;
 		}
 	}
@@ -100,7 +94,7 @@ int G_ModelIndex( const char *name ) {
 int G_SoundIndex( const char *name ) {
 	assert( name && name[0] );
 	char stripped[MAX_QPATH]; 
-	COM_StripExtension(name, stripped);
+	COM_StripExtension(name, stripped, sizeof(stripped));
 
 	return G_FindConfigstringIndex (stripped, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
@@ -110,7 +104,7 @@ int G_EffectIndex( const char *name )
 	char temp[MAX_QPATH];
 
 	// We just don't want extensions on the things we are registering
-	COM_StripExtension( name, temp );
+	COM_StripExtension( name, temp, sizeof(temp) );
 
 	return G_FindConfigstringIndex( temp, CS_EFFECTS, MAX_FX, qtrue );
 }
@@ -250,39 +244,10 @@ void G_StopEffect(const char *name, const int modelIndex, const int boltIndex, c
 	G_StopEffect( G_EffectIndex( name ), modelIndex, boltIndex, entNum );
 }
 
-#ifdef _XBOX
-//-----------------------------
-void G_EntityPosition( int i, vec3_t ret )
-{
-	if ( /*g_entities &&*/ i >= 0 && i < MAX_GENTITIES && g_entities[i].inuse)
-	{
-		gentity_t *ent = g_entities + i;
-
-		if (ent->bmodel)
-		{
-			vec3_t mins, maxs;
-			clipHandle_t h = CM_InlineModel( ent->s.modelindex );
-			CM_ModelBounds( cmg, h, mins, maxs );
-			ret[0] = (mins[0] + maxs[0]) / 2 + ent->currentOrigin[0];
-			ret[1] = (mins[1] + maxs[1]) / 2 + ent->currentOrigin[1];
-			ret[2] = (mins[2] + maxs[2]) / 2 + ent->currentOrigin[2];
-		}
-		else
-		{
-			VectorCopy(g_entities[i].currentOrigin, ret);
-		}
-	}
-	else
-	{
-		ret[0] = ret[1] = ret[2] = 0;
-	}
-}
-#endif
-
 //===Bypass network for sounds on specific channels====================
 
 extern void cgi_S_StartSound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-#include "..\cgame\cg_media.h"	//access to cgs
+#include "../cgame/cg_media.h"	//access to cgs
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 extern cvar_t *g_timescale;
 //NOTE: Do NOT Try to use this before the cgame DLL is valid, it will NOT work!
@@ -637,7 +602,7 @@ void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 //
 	if (string)
 	{
-		if( !stricmp( string, "self") )
+		if( !Q_stricmp( string, "self") )
 		{
 			t = ent;
 			if (t->e_UseFunc != useF_NULL)	// check can be omitted
@@ -843,7 +808,7 @@ gentity_t *G_Spawn( void )
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL )
 	{
-#ifndef _XBOX
+
 //#ifndef FINAL_BUILD
 		e = &g_entities[0];
 
@@ -873,7 +838,7 @@ gentity_t *G_Spawn( void )
 			}
 		}
 */
-#endif//FINAL_BUILD
+//FINAL_BUILD
 		G_Error( "G_Spawn: no free entities" );
 	}
 	
@@ -933,11 +898,15 @@ void G_FreeEntity( gentity_t *ed ) {
 			gi.Free(ed->client->clientInfo.customBasicSoundDir);
 		}
 		if(ed->client->clientInfo.customCombatSoundDir) {
-			assert(*(int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
+#ifdef _MSC_VER
+			assert(*(unsigned int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
+#endif
 			gi.Free(ed->client->clientInfo.customCombatSoundDir);
 		}
 		if(ed->client->clientInfo.customExtraSoundDir) {
-			assert(*(int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
+#ifdef _MSC_VER
+			assert(*(unsigned int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
+#endif
 			gi.Free(ed->client->clientInfo.customExtraSoundDir);
 		}
 		if(ed->client->clientInfo.customJediSoundDir) {
@@ -1356,7 +1325,7 @@ qboolean infront(gentity_t *from, gentity_t *to)
 
 void Svcmd_Use_f( void )
 {
-	char	*cmd1 = gi.argv(1);
+	const char	*cmd1 = gi.argv(1);
 
 	if ( !cmd1 || !cmd1[0] )
 	{
@@ -1582,11 +1551,11 @@ static qboolean G_IsTriggerUsable(gentity_t* self, gentity_t* other)
 
 	if ((!G_ValidActivateBehavior (self, BSET_USE) && !self->target) ||
 		(self->target && 
-		(stricmp(self->target, "n") == 0 || 
-		(stricmp(self->target, "neveropen") == 0 || 
-		(stricmp(self->target, "run_gran_drop") == 0) ||
-		(stricmp(self->target, "speaker") == 0) ||
-		(stricmp(self->target, "locked") == 0)
+		(Q_stricmp(self->target, "n") == 0 || 
+		(Q_stricmp(self->target, "neveropen") == 0 || 
+		(Q_stricmp(self->target, "run_gran_drop") == 0) ||
+		(Q_stricmp(self->target, "speaker") == 0) ||
+		(Q_stricmp(self->target, "locked") == 0)
 		))))
 	{
 		return qfalse;
@@ -2044,7 +2013,7 @@ void removeBoltSurface( gentity_t *ent)
 	// check first to be sure the bolt is still there on the model
 	if ((hitEnt->ghoul2.size() > ent->damage) &&
 		(hitEnt->ghoul2[ent->damage].mModelindex != -1) &&
-		(hitEnt->ghoul2[ent->damage].mSlist.size() > ent->aimDebounceTime) &&
+		(hitEnt->ghoul2[ent->damage].mSlist.size() > (unsigned int)ent->aimDebounceTime) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].surface != -1) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED)) 
 	{

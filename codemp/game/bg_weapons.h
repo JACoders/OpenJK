@@ -1,9 +1,8 @@
+#pragma once
+
 // Filename:-	bg_weapons.h
 //
 // This crosses both client and server.  It could all be crammed into bg_public, but isolation of this type of data is best.
-
-#ifndef __WEAPONS_H__
-#define __WEAPONS_H__
 
 typedef enum {
 	WP_NONE,
@@ -31,8 +30,8 @@ typedef enum {
 //	WP_MACHINEGUN,			// Bryar
 //	WP_SHOTGUN,				// Blaster
 //	WP_GRENADE_LAUNCHER,	// Thermal
-//	WP_LIGHTNING,			// 
-//	WP_RAILGUN,				// 
+//	WP_LIGHTNING,			//
+//	WP_RAILGUN,				//
 //	WP_GRAPPLING_HOOK,
 
 	WP_NUM_WEAPONS
@@ -67,7 +66,7 @@ typedef struct weaponData_s
 	int		energyPerShot;		// Amount of energy used per shot
 	int		fireTime;			// Amount of time between firings
 	int		range;				// Range of weapon
-	
+
 	int		altEnergyPerShot;	// Amount of energy used for alt-fire
 	int		altFireTime;		// Amount of time between alt-firings
 	int		altRange;			// Range of alt-fire
@@ -104,9 +103,3 @@ extern ammoData_t ammoData[AMMO_MAX];
 #define DEFAULT_SHOTGUN_COUNT	11
 
 #define	LIGHTNING_RANGE		768
-
-
-
-
-
-#endif//#ifndef __WEAPONS_H__

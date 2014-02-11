@@ -16,14 +16,11 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
+#include "g_functions.h"
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
@@ -31,8 +28,6 @@ extern void NPC_TempLookTarget( gentity_t *self, int lookEntNum, int minLookTime
 extern qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs, int ignore, int clipmask );
 extern qboolean FlyingCreature( gentity_t *ent );
 extern void Saboteur_Cloak( gentity_t *self );
-
-//extern	CNavigator	navigator;
 
 #define	SPF_NO_HIDE			2
 

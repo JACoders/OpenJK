@@ -16,11 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "g_headers.h"
 #include "b_local.h"
-//#include "g_nav.h"
-//#include "anims.h"
-//#include "wp_saber.h"
 extern qboolean PM_FlippingAnim( int anim );
 extern void NPC_BSST_Patrol( void );
 
@@ -376,8 +372,11 @@ void RT_FlyStart( gentity_t *self )
 		self->svFlags |= SVF_CUSTOM_GRAVITY;
 		self->client->moveType = MT_FLYSWIM;
 		//Inform NPC_HandleAIFlags we want to fly
-		self->NPC->aiFlags |= NPCAI_FLY;
-		self->lastInAirTime = level.time;
+		
+		if (self->NPC){
+			self->NPC->aiFlags |= NPCAI_FLY;
+			self->lastInAirTime = level.time;
+		}
 		
 		//start jet effect
 		self->client->jetPackTime = Q3_INFINITE;

@@ -16,11 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "anims.h"
 #include "b_local.h"
@@ -28,6 +23,8 @@ This file is part of Jedi Academy.
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "../qcommon/tri_coll_test.h"
+#include "../cgame/cg_local.h"
 
 #define JK2_RAGDOLL_GRIPNOHEALTH
 
@@ -152,7 +149,6 @@ void WP_SaberInFlightReflectCheck( gentity_t *self, usercmd_t *ucmd  );
 void WP_SaberDrop( gentity_t *self, gentity_t *saber );
 qboolean WP_SaberLose( gentity_t *self, vec3_t throwDir );
 void WP_SaberReturn( gentity_t *self, gentity_t *saber );
-void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missleBlock );
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
 qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -338,23 +334,24 @@ float saberAnimSpeedMod[NUM_FORCE_POWER_LEVELS] =
 
 stringID_table_t SaberStyleTable[] =
 {
-	"NULL",SS_NONE,
+	{ "NULL",SS_NONE },
 	ENUM2STRING(SS_FAST),
-	"fast",SS_FAST,
+	{ "fast",SS_FAST },
 	ENUM2STRING(SS_MEDIUM),
-	"medium",SS_MEDIUM,
+	{ "medium",SS_MEDIUM },
 	ENUM2STRING(SS_STRONG),
-	"strong",SS_STRONG,
+	{ "strong",SS_STRONG },
 	ENUM2STRING(SS_DESANN),
-	"desann",SS_DESANN,
+	{ "desann",SS_DESANN },
 	ENUM2STRING(SS_TAVION),
-	"tavion",SS_TAVION,
+	{ "tavion",SS_TAVION },
 	ENUM2STRING(SS_DUAL),
-	"dual",SS_DUAL,
+	{ "dual",SS_DUAL },
 	ENUM2STRING(SS_STAFF),
-	"staff",SS_STAFF,
-	"", NULL
+	{ "staff",SS_STAFF },
+	{ "", 0 },
 };
+
 //SABER INITIALIZATION======================================================================
 
 void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, int boltNum, int weaponNum )
@@ -399,7 +396,7 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, i
 	int wModelIndex = G_ModelIndex( weaponModel );
 	if ( wModelIndex )
 	{
-		ent->weaponModel[weaponNum] = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, wModelIndex, NULL, NULL, 0, 0 );
+		ent->weaponModel[weaponNum] = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, wModelIndex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 		if ( ent->weaponModel[weaponNum] != -1 )
 		{
 			// attach it to the hand
@@ -607,7 +604,7 @@ void WP_SetSaberEntModelSkin( gentity_t *ent, gentity_t *saberent )
 			gi.G2API_RemoveGhoul2Model( saberent->ghoul2, saberent->playerModel );
 		}
 		//add the new one
-		saberent->playerModel = gi.G2API_InitGhoul2Model( saberent->ghoul2, ent->client->ps.saber[0].model, saberModel, NULL, NULL, 0, 0);
+		saberent->playerModel = gi.G2API_InitGhoul2Model( saberent->ghoul2, ent->client->ps.saber[0].model, saberModel, NULL_HANDLE, NULL_HANDLE, 0, 0);
 		saberent->s.modelindex = saberModel; 
 		newModel = qtrue;
 	}
@@ -1921,7 +1918,6 @@ qboolean WP_SabersIntersect( gentity_t *ent1, int ent1SaberNum, int ent1BladeNum
 	return qfalse;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 float WP_SabersDistance( gentity_t *ent1, gentity_t *ent2 )
 {
 	vec3_t	saberBaseNext1, saberTipNext1, saberPoint1;
@@ -2068,7 +2064,6 @@ qboolean WP_SabersIntersection( gentity_t *ent1, gentity_t *ent2, vec3_t interse
 const char *hit_blood_sparks = "sparks/blood_sparks2"; // could have changed this effect directly, but this is just safer in case anyone anywhere else is using the old one for something?
 const char *hit_sparks = "saber/saber_cut";
 
-//extern char *hitLocName[];
 qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, float dmg, vec3_t dmgDir, vec3_t bladeVec, int enemyTeam, saberType_t saberType, saberInfo_t *saber, int bladeNum )
 {
 
@@ -5965,7 +5960,7 @@ void WP_SaberImpact( gentity_t *owner, gentity_t *saber, trace_t *trace )
 			// decrement number of bounces and then see if it should be done bouncing
 			if ( --saber->bounceCount <= 0 ) {
 				// He (or she) will bounce no more (after this current bounce, that is).
-				saber->s.eFlags &= !( EF_BOUNCE | EF_BOUNCE_HALF );
+				saber->s.eFlags &= ~( EF_BOUNCE | EF_BOUNCE_HALF );
 				if ( saber->s.pos.trType == TR_LINEAR && owner && owner->client && owner->client->ps.saberEntityState == SES_RETURNING )
 				{
 					WP_SaberDrop( saber->owner, saber );
@@ -6973,7 +6968,7 @@ void WP_SaberPull( gentity_t *self, gentity_t *saber )
 	}
 }
 
-char *saberColorStringForColor[SABER_PURPLE+1] =
+const char *saberColorStringForColor[SABER_PURPLE+1] =
 {
 	"red",//SABER_RED
 	"orange",//SABER_ORANGE
@@ -6986,7 +6981,6 @@ char *saberColorStringForColor[SABER_PURPLE+1] =
 // Check if we are throwing it, launch it if needed, update position if needed.
 void WP_SaberThrow( gentity_t *self, usercmd_t *ucmd )
 {
-	static float	MAX_SABER_DIST = 400;
 	vec3_t			saberDiff;
 	trace_t			tr;
 	//static float	SABER_SPEED = 10;
@@ -7388,112 +7382,6 @@ void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlo
 		{
 			self->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] = level.time + parryReCalcTime;
 		}
-	}
-}
-
-void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missileBlock )
-{
-	gentity_t *playerent;
-	vec3_t diff, fwdangles={0,0,0}, right;
-	float rightdot;
-	float zdiff;
-
-	if (saber && saber->owner)
-	{
-		playerent = saber->owner;
-		if (!playerent->client)
-		{
-			return;
-		}
-		if ( playerent->client->ps.weaponstate == WEAPON_DROPPING ||
-			playerent->client->ps.weaponstate == WEAPON_RAISING )
-		{//don't block while changing weapons
-			return;
-		}
-	}
-	else
-	{	// Bad entity passed.
-		return;
-	}
-	
-	//temporarily disabling auto-blocking for NPCs...
-	if ( !missileBlock && playerent->s.number != 0 && playerent->client->ps.saberBlocked != BLOCKED_NONE )
-	{
-		return;
-	}
-
-	if ( PM_SuperBreakLoseAnim( playerent->client->ps.torsoAnim ) )
-	{
-		return;
-	}
-
-	VectorSubtract(hitloc, playerent->currentOrigin, diff);
-	VectorNormalize(diff);
-
-	fwdangles[1] = playerent->client->ps.viewangles[1];
-	// Ultimately we might care if the shot was ahead or behind, but for now, just quadrant is fine.
-	AngleVectors( fwdangles, NULL, right, NULL );
-
-	rightdot = DotProduct(right, diff) + Q_flrand(-0.2f,0.2f);
-	zdiff = hitloc[2] - playerent->currentOrigin[2] + Q_irand(-8,8);
-	
-	// Figure out what quadrant the block was in.
-	if (zdiff > 24)
-	{	// Attack from above
-		if (Q_irand(0,1))
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_TOP;
-		}
-		else
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
-		}
-	}
-	else if (zdiff > 13)
-	{	// The upper half has three viable blocks...
-		if (rightdot > 0.25)
-		{	// In the right quadrant...
-			if (Q_irand(0,1))
-			{
-				playerent->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
-			}
-			else
-			{
-				playerent->client->ps.saberBlocked = BLOCKED_LOWER_LEFT;
-			}
-		}
-		else
-		{
-			switch(Q_irand(0,3))
-			{
-			case 0:
-				playerent->client->ps.saberBlocked = BLOCKED_UPPER_RIGHT;
-				break;
-			case 1:
-			case 2:
-				playerent->client->ps.saberBlocked = BLOCKED_LOWER_RIGHT;
-				break;
-			case 3:
-				playerent->client->ps.saberBlocked = BLOCKED_TOP;
-				break;
-			}
-		}
-	}
-	else
-	{	// The lower half is a bit iffy as far as block coverage.  Pick one of the "low" ones at random.
-		if (Q_irand(0,1))
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_LOWER_RIGHT;
-		}
-		else
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_LOWER_LEFT;
-		}
-	}
-
-	if ( missileBlock )
-	{
-		playerent->client->ps.saberBlocked = WP_MissileBlockForBlock( playerent->client->ps.saberBlocked );
 	}
 }
 
@@ -10777,6 +10665,8 @@ void ForceGrip( gentity_t *self )
 				return;
 			}
 			break;
+		default:
+			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )
 		{//FIXME: maybe can pull them out?
@@ -11540,6 +11430,8 @@ qboolean ForceDrain2( gentity_t *self )
 				return qtrue;
 			}
 			break;
+		default:
+			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )
 		{//FIXME: maybe can pull them out?
@@ -11668,6 +11560,7 @@ qboolean FP_ForceDrainableEnt( gentity_t *victim )
 	case CLASS_ASSASSIN_DROID:
 	case CLASS_VEHICLE:
 		return qfalse;
+	default:
 		break;
 	}
 	return qtrue;
@@ -11695,6 +11588,8 @@ qboolean FP_ForceDrainGrippableEnt( gentity_t *victim )
 	case CLASS_ROCKETTROOPER:
 	case CLASS_HAZARD_TROOPER:
 		return qfalse;
+	default:
+		break;
 	}
 	return qtrue;
 }
@@ -12161,7 +12056,7 @@ void ForceProtect( gentity_t *self )
 				}
 				//FIXME: what if in air?
 			}
-			NPC_SetAnim( self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			//don't move or attack during this anim
 			if ( self->client->ps.forcePowerLevel[FP_PROTECT] < FORCE_LEVEL_2 )
 			{
@@ -12643,9 +12538,9 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		addTot = 1;
 	}
 	attacked->client->ps.forcePower += addTot;
-	if (attacked->client->ps.forcePower > 100)
+	if (attacked->client->ps.forcePower > attacked->client->ps.forcePowerMax)
 	{
-		attacked->client->ps.forcePower = 100;
+		attacked->client->ps.forcePower = attacked->client->ps.forcePowerMax;
 	}
 
 	G_SoundOnEnt( attacked, CHAN_ITEM, "sound/weapons/force/absorbhit.wav" );
@@ -12963,6 +12858,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int ove
 					case FP_LIGHTNING:
 					case FP_DRAIN:
 						return qfalse;
+					default:
 						break;
 					}
 				}
@@ -12989,6 +12885,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int ove
 				case FP_LIGHTNING:
 				case FP_DRAIN:
 					return qfalse;
+				default:
 					break;
 				}
 			}
@@ -13678,7 +13575,7 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 					trace_t gripTrace;
 					gi.trace( &gripTrace, self->client->renderInfo.handLPoint, NULL, NULL, gripEntOrg, ENTITYNUM_NONE, MASK_FORCE_PUSH, (EG2_Collision)0, 0 );
 					if ( gripTrace.startsolid
-						|| gripTrace.startsolid
+						|| gripTrace.allsolid
 						|| gripTrace.fraction < 1.0f )
 					{//no clear trace, drop them
 						WP_ForcePowerStop( self, FP_GRIP );
@@ -14479,4 +14376,17 @@ void WP_InitForcePowers( gentity_t *ent )
 			ent->client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_2;
 		}
 	}
+}
+
+bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent)
+{
+	// :P --eez
+	if( !ent->client ) return false;
+	if( ent->client->ps.legsAnim == BOTH_FORCE_ABSORB_START ||
+		ent->client->ps.legsAnim == BOTH_FORCE_ABSORB_END ||
+		ent->client->ps.legsAnim == BOTH_FORCE_ABSORB ||
+		ent->client->ps.torsoAnim == BOTH_FORCE_RAGE ||
+		ent->client->ps.legsAnim == BOTH_FORCE_PROTECT )
+		return true;
+	return false;
 }

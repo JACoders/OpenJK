@@ -13,8 +13,8 @@ qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore
 	trace_t		tr;
 	gentity_t	*hit;
 
-	trap_Trace ( &tr, point1, NULL, NULL, point2, ignore, clipmask );
-	if ( tr.fraction == 1.0 ) 
+	trap->Trace ( &tr, point1, NULL, NULL, point2, ignore, clipmask, qfalse, 0, 0 );
+	if ( tr.fraction == 1.0 )
 	{
 		return qtrue;
 	}
@@ -24,9 +24,9 @@ qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore
 	{
 		vec3_t	newpoint1;
 		VectorCopy(tr.endpos, newpoint1);
-		trap_Trace (&tr, newpoint1, NULL, NULL, point2, hit->s.number, clipmask );
+		trap->Trace (&tr, newpoint1, NULL, NULL, point2, hit->s.number, clipmask, qfalse, 0, 0 );
 
-		if ( tr.fraction == 1.0 ) 
+		if ( tr.fraction == 1.0 )
 		{
 			return qtrue;
 		}
@@ -44,34 +44,33 @@ or take any AI related factors (for example, the NPC's reaction time) into accou
 
 FIXME do we need fat and thin version of this?
 */
-qboolean CanSee ( gentity_t *ent ) 
+qboolean CanSee ( gentity_t *ent )
 {
 	trace_t		tr;
-	vec3_t		eyes;
-	vec3_t		spot;
+	vec3_t		eyes, spot;
 
-	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
+	CalcEntitySpot( NPCS.NPC, SPOT_HEAD_LEAN, eyes );
 
 	CalcEntitySpot( ent, SPOT_ORIGIN, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap->Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE, qfalse, 0, 0 );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
-	if ( tr.fraction == 1.0 ) 
+	if ( tr.fraction == 1.0 )
 	{
 		return qtrue;
 	}
 
 	CalcEntitySpot( ent, SPOT_HEAD, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap->Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE, qfalse, 0, 0 );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
-	if ( tr.fraction == 1.0 ) 
+	if ( tr.fraction == 1.0 )
 	{
 		return qtrue;
 	}
 
 	CalcEntitySpot( ent, SPOT_LEGS, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap->Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE, qfalse, 0, 0 );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
-	if ( tr.fraction == 1.0 ) 
+	if ( tr.fraction == 1.0 )
 	{
 		return qtrue;
 	}
@@ -112,11 +111,11 @@ qboolean InFOV3( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, int vFOV
 
 	VectorSubtract ( spot, from, deltaVector );
 	vectoangles ( deltaVector, angles );
-	
+
 	deltaAngles[PITCH]	= AngleDelta ( fromAngles[PITCH], angles[PITCH] );
 	deltaAngles[YAW]	= AngleDelta ( fromAngles[YAW], angles[YAW] );
 
-	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV ) 
+	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV )
 	{
 		return qtrue;
 	}
@@ -126,7 +125,7 @@ qboolean InFOV3( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, int vFOV
 
 //NPC to position
 
-qboolean InFOV2( vec3_t origin, gentity_t *from, int hFOV, int vFOV ) 
+qboolean InFOV2( vec3_t origin, gentity_t *from, int hFOV, int vFOV )
 {
 	vec3_t	fromAngles, eyes;
 
@@ -146,7 +145,7 @@ qboolean InFOV2( vec3_t origin, gentity_t *from, int hFOV, int vFOV )
 
 //Entity to entity
 
-qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV ) 
+qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV )
 {
 	vec3_t	eyes;
 	vec3_t	spot;
@@ -179,7 +178,7 @@ qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV )
 	vectoangles ( deltaVector, angles );
 	deltaAngles[PITCH] = AngleDelta ( fromAngles[PITCH], angles[PITCH] );
 	deltaAngles[YAW] = AngleDelta ( fromAngles[YAW], angles[YAW] );
-	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV ) 
+	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV )
 	{
 		return qtrue;
 	}
@@ -189,7 +188,7 @@ qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV )
 	vectoangles ( deltaVector, angles );
 	deltaAngles[PITCH] = AngleDelta ( fromAngles[PITCH], angles[PITCH] );
 	deltaAngles[YAW] = AngleDelta ( fromAngles[YAW], angles[YAW] );
-	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV ) 
+	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV )
 	{
 		return qtrue;
 	}
@@ -199,7 +198,7 @@ qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV )
 	vectoangles ( deltaVector, angles );
 	deltaAngles[PITCH] = AngleDelta ( fromAngles[PITCH], angles[PITCH] );
 	deltaAngles[YAW] = AngleDelta ( fromAngles[YAW], angles[YAW] );
-	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV ) 
+	if ( fabs ( deltaAngles[PITCH] ) <= vFOV && fabs ( deltaAngles[YAW] ) <= hFOV )
 	{
 		return qtrue;
 	}
@@ -207,15 +206,15 @@ qboolean InFOV ( gentity_t *ent, gentity_t *from, int hFOV, int vFOV )
 	return qfalse;
 }
 
-qboolean InVisrange ( gentity_t *ent ) 
+qboolean InVisrange ( gentity_t *ent )
 {//FIXME: make a calculate visibility for ents that takes into account
 	//lighting, movement, turning, crouch/stand up, other anims, hide brushes, etc.
 	vec3_t	eyes;
 	vec3_t	spot;
 	vec3_t	deltaVector;
-	float	visrange = (NPCInfo->stats.visrange*NPCInfo->stats.visrange);
+	float	visrange = (NPCS.NPCInfo->stats.visrange * NPCS.NPCInfo->stats.visrange);
 
-	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
+	CalcEntitySpot( NPCS.NPC, SPOT_HEAD_LEAN, eyes );
 
 	CalcEntitySpot( ent, SPOT_ORIGIN, spot );
 	VectorSubtract ( spot, eyes, deltaVector);
@@ -254,23 +253,23 @@ qboolean InVisrange ( gentity_t *ent )
 NPC_CheckVisibility
 */
 
-visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags ) 
+visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 {
 	// flags should never be 0
-	if ( !flags ) 
+	if ( !flags )
 	{
 		return VIS_NOT;
 	}
 
 	// check PVS
-	if ( flags & CHECK_PVS ) 
+	if ( flags & CHECK_PVS )
 	{
-		if ( !trap_InPVS ( ent->r.currentOrigin, NPC->r.currentOrigin ) ) 
+		if ( !trap->InPVS ( ent->r.currentOrigin, NPCS.NPC->r.currentOrigin ) )
 		{
 			return VIS_NOT;
 		}
 	}
-	if ( !(flags & (CHECK_360|CHECK_FOV|CHECK_SHOOT)) ) 
+	if ( !(flags & (CHECK_360|CHECK_FOV|CHECK_SHOOT)) )
 	{
 		return VIS_PVS;
 	}
@@ -278,7 +277,7 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 	// check within visrange
 	if (flags & CHECK_VISRANGE)
 	{
-		if( !InVisrange ( ent ) ) 
+		if( !InVisrange ( ent ) )
 		{
 			return VIS_PVS;
 		}
@@ -286,36 +285,36 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 
 	// check 360 degree visibility
 	//Meaning has to be a direct line of site
-	if ( flags & CHECK_360 ) 
+	if ( flags & CHECK_360 )
 	{
-		if ( !CanSee ( ent ) ) 
+		if ( !CanSee ( ent ) )
 		{
 			return VIS_PVS;
 		}
 	}
-	if ( !(flags & (CHECK_FOV|CHECK_SHOOT)) ) 
+	if ( !(flags & (CHECK_FOV|CHECK_SHOOT)) )
 	{
 		return VIS_360;
 	}
 
 	// check FOV
-	if ( flags & CHECK_FOV ) 
+	if ( flags & CHECK_FOV )
 	{
-		if ( !InFOV ( ent, NPC, NPCInfo->stats.hfov, NPCInfo->stats.vfov) ) 
+		if ( !InFOV ( ent, NPCS.NPC, NPCS.NPCInfo->stats.hfov, NPCS.NPCInfo->stats.vfov) )
 		{
 			return VIS_360;
 		}
 	}
 
-	if ( !(flags & CHECK_SHOOT) ) 
+	if ( !(flags & CHECK_SHOOT) )
 	{
 		return VIS_FOV;
 	}
 
 	// check shootability
-	if ( flags & CHECK_SHOOT ) 
+	if ( flags & CHECK_SHOOT )
 	{
-		if ( !CanShoot ( ent, NPC ) ) 
+		if ( !CanShoot ( ent, NPCS.NPC ) )
 		{
 			return VIS_FOV;
 		}
@@ -447,7 +446,7 @@ static int G_CheckSightEvents( gentity_t *self, int hFOV, int vFOV, float maxSee
 		if ( G_ClearLOS5( self, level.alertEvents[i].position ) == qfalse )
 			continue;
 
-		//FIXME: possibly have the light level at this point affect the 
+		//FIXME: possibly have the light level at this point affect the
 		//			visibility/alert level of this event?  Would also
 		//			need to take into account how bright the event
 		//			itself is.  A lightsaber would stand out more
@@ -482,6 +481,7 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 	int bestSoundAlert = -1;
 	int bestSightAlert = -1;
 
+	//OJKFIXME: clientnum 0
 	if ( &g_entities[0] == NULL || g_entities[0].health <= 0 )
 	{
 		//player is dead
@@ -531,7 +531,7 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 
 int NPC_CheckAlertEvents( qboolean checkSight, qboolean checkSound, int ignoreAlert, qboolean mustHaveOwner, int minAlertLevel )
 {
-	return G_CheckAlertEvents( NPC, checkSight, checkSound, NPCInfo->stats.visrange, NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
+	return G_CheckAlertEvents( NPCS.NPC, checkSight, checkSound, NPCS.NPCInfo->stats.visrange, NPCS.NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
 }
 
 qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
@@ -567,7 +567,7 @@ qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
 }
 qboolean NPC_CheckForDanger( int alertEvent )
 {//FIXME: more bStates need to call this?
-	return G_CheckForDanger( NPC, alertEvent );
+	return G_CheckForDanger( NPCS.NPC, alertEvent );
 }
 
 /*
@@ -586,7 +586,7 @@ void AddSoundEvent( gentity_t *owner, vec3_t position, float radius, alertEventL
 			return;
 		}
 	}
-	
+
 	if ( owner == NULL && alertLevel < AEL_DANGER )	//allows un-owned danger alerts
 		return;
 
@@ -643,7 +643,7 @@ void AddSightEvent( gentity_t *owner, vec3_t position, float radius, alertEventL
 	level.alertEvents[ level.numAlertEvents ].radius	= radius;
 	level.alertEvents[ level.numAlertEvents ].level		= alertLevel;
 	level.alertEvents[ level.numAlertEvents ].type		= AET_SIGHT;
-	level.alertEvents[ level.numAlertEvents ].owner		= owner;		
+	level.alertEvents[ level.numAlertEvents ].owner		= owner;
 	level.alertEvents[ level.numAlertEvents ].addLight	= addLight;	//will get added to actual light at that point when it's checked
 	level.alertEvents[ level.numAlertEvents ].ID		= level.curAlertID++;
 	level.alertEvents[ level.numAlertEvents ].timestamp	= level.time;
@@ -740,16 +740,16 @@ qboolean G_ClearLOS( gentity_t *self, const vec3_t start, const vec3_t end )
 {
 	trace_t		tr;
 	int			traceCount = 0;
-	
+
 	//FIXME: ENTITYNUM_NONE ok?
-	trap_Trace ( &tr, start, NULL, NULL, end, ENTITYNUM_NONE, CONTENTS_OPAQUE/*CONTENTS_SOLID*//*(CONTENTS_SOLID|CONTENTS_MONSTERCLIP)*/ );
+	trap->Trace ( &tr, start, NULL, NULL, end, ENTITYNUM_NONE, CONTENTS_OPAQUE/*CONTENTS_SOLID*//*(CONTENTS_SOLID|CONTENTS_MONSTERCLIP)*/, qfalse, 0, 0 );
 	while ( tr.fraction < 1.0 && traceCount < 3 )
 	{//can see through 3 panes of glass
 		if ( tr.entityNum < ENTITYNUM_WORLD )
 		{
 			if ( &g_entities[tr.entityNum] != NULL && (g_entities[tr.entityNum].r.svFlags&SVF_GLASS_BRUSH) )
 			{//can see through glass, trace again, ignoring me
-				trap_Trace ( &tr, tr.endpos, NULL, NULL, end, tr.entityNum, MASK_OPAQUE );
+				trap->Trace ( &tr, tr.endpos, NULL, NULL, end, tr.entityNum, MASK_OPAQUE, qfalse, 0, 0 );
 				traceCount++;
 				continue;
 			}
@@ -757,7 +757,7 @@ qboolean G_ClearLOS( gentity_t *self, const vec3_t start, const vec3_t end )
 		return qfalse;
 	}
 
-	if ( tr.fraction == 1.0 ) 
+	if ( tr.fraction == 1.0 )
 		return qtrue;
 
 	return qfalse;
@@ -794,13 +794,13 @@ qboolean G_ClearLOS3( gentity_t *self, const vec3_t start, gentity_t *ent )
 }
 
 //NPC's eyes to entity
-qboolean G_ClearLOS4( gentity_t *self, gentity_t *ent ) 
+qboolean G_ClearLOS4( gentity_t *self, gentity_t *ent )
 {
 	vec3_t	eyes;
 
 	//Calculate my position
 	CalcEntitySpot( self, SPOT_HEAD_LEAN, eyes );
-	
+
 	return G_ClearLOS3( self, eyes, ent );
 }
 
@@ -811,7 +811,7 @@ qboolean G_ClearLOS5( gentity_t *self, const vec3_t end )
 
 	//Calculate the my position
 	CalcEntitySpot( self, SPOT_HEAD_LEAN, eyes );
-	
+
 	return G_ClearLOS( self, eyes, end );
 }
 
@@ -829,11 +829,11 @@ float NPC_GetHFOVPercentage( vec3_t spot, vec3_t from, vec3_t facing, float hFOV
 	VectorSubtract ( spot, from, deltaVector );
 
 	vectoangles ( deltaVector, angles );
-	
+
 	delta = fabs( AngleDelta ( facing[YAW], angles[YAW] ) );
 
 	if ( delta > hFOV )
-		return 0.0f; 
+		return 0.0f;
 
 	return ( ( hFOV - delta ) / hFOV );
 }
@@ -852,11 +852,11 @@ float NPC_GetVFOVPercentage( vec3_t spot, vec3_t from, vec3_t facing, float vFOV
 	VectorSubtract ( spot, from, deltaVector );
 
 	vectoangles ( deltaVector, angles );
-	
+
 	delta = fabs( AngleDelta ( facing[PITCH], angles[PITCH] ) );
 
 	if ( delta > vFOV )
-		return 0.0f; 
+		return 0.0f;
 
 	return ( ( vFOV - delta ) / vFOV );
 }
@@ -864,7 +864,7 @@ float NPC_GetVFOVPercentage( vec3_t spot, vec3_t from, vec3_t facing, float vFOV
 #define MAX_INTEREST_DIST	( 256 * 256 )
 /*
 -------------------------
-NPC_FindLocalInterestPoint 
+NPC_FindLocalInterestPoint
 -------------------------
 */
 
@@ -878,7 +878,7 @@ int G_FindLocalInterestPoint( gentity_t *self )
 	for ( i = 0; i < level.numInterestPoints; i++ )
 	{
 		//Don't ignore portals?  If through a portal, need to look at portal!
-		if ( trap_InPVS( level.interestPoints[i].origin, eyes ) )
+		if ( trap->InPVS( level.interestPoints[i].origin, eyes ) )
 		{
 			VectorSubtract( level.interestPoints[i].origin, eyes, diffVec );
 			if ( (fabs(diffVec[0]) + fabs(diffVec[1])) / 2 < 48 &&

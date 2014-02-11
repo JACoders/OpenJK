@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_cluster.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_cluster.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -18,4 +19,3 @@ void AAS_InitClustering(void);
 //
 void AAS_SetViewPortalsAsClusterPortals(void);
 #endif //AASINTERN
-

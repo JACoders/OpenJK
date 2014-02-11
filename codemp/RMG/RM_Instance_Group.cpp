@@ -5,7 +5,7 @@
  *
  * RM_Instance_Group.cpp
  *
- * Implements the CRMGroupInstance class.  This class is reponsible for parsing a 
+ * Implements the CRMGroupInstance class.  This class is reponsible for parsing a
  * group instance as well as spawning it into a landscape.
  *
  ************************************************************************************************/
@@ -19,13 +19,13 @@
  *	constructur
  *
  * inputs:
- *  settlementID:  ID of the settlement being created 
+ *  settlementID:  ID of the settlement being created
  *
  * return:
  *	none
  *
  ************************************************************************************************/
-CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile ) 
+CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instFile )
 	:  CRMInstance ( instGroup, instFile )
 {
 	// Grab the padding and confine radius
@@ -57,18 +57,18 @@ CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instF
 		int			 mincount;
 		int			 maxcount;
 		int			 count;
-		float		 minrange;
-		float		 maxrange;
+		//float		 minrange;
+		//float		 maxrange;
 
 		// Make sure only instances are specified as sub groups
-		assert ( 0 == stricmp ( instGroup->GetName ( ), "instance" ) );
+		assert ( 0 == Q_stricmp ( instGroup->GetName ( ), "instance" ) );
 
 		// Grab the name
 		name     = instGroup->FindPairValue ( "name", "" );
 
 		// Grab the range information
-		minrange = atof(instGroup->FindPairValue ( "minrange", "0" ) );
-		maxrange = atof(instGroup->FindPairValue ( "maxrange", "0" ) );
+		//minrange = atof(instGroup->FindPairValue ( "minrange", "0" ) );
+		//maxrange = atof(instGroup->FindPairValue ( "maxrange", "0" ) );
 
 		// Grab the count information and randomly generate a count value
 		mincount = atoi(instGroup->FindPairValue ( "mincount", "1" ) );
@@ -139,7 +139,7 @@ void CRMGroupInstance::SetFilter( const char *filter )
 	rmInstanceIter_t it;
 
 	CRMInstance::SetFilter(filter);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetFilter(filter);
 	}
@@ -161,7 +161,7 @@ void CRMGroupInstance::SetTeamFilter( const char *teamFilter )
 	rmInstanceIter_t it;
 
 	CRMInstance::SetTeamFilter(teamFilter);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetTeamFilter(teamFilter);
 	}
@@ -172,18 +172,18 @@ void CRMGroupInstance::SetTeamFilter( const char *teamFilter )
  *	Sets the flag to mirror an instance on map
  *
  * inputs:
- *  mirror 
+ *  mirror
  *
  * return:
  *	none
  *
  ************************************************************************************************/
 void CRMGroupInstance::SetMirror(int mirror)
-{ 
+{
 	rmInstanceIter_t it;
 
 	CRMInstance::SetMirror(mirror);
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		(*it)->SetMirror(mirror);
 	}
@@ -205,7 +205,7 @@ void CRMGroupInstance::RemoveInstances ( )
 {
 	rmInstanceIter_t it;
 
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		delete *it;
 	}
@@ -215,7 +215,7 @@ void CRMGroupInstance::RemoveInstances ( )
 
 /************************************************************************************************
  * CRMGroupInstance::PreSpawn
- *	Prepares the group for spawning by 
+ *	Prepares the group for spawning by
  *
  * inputs:
  *  landscape: landscape to calculate the position within
@@ -229,14 +229,14 @@ bool CRMGroupInstance::PreSpawn ( CRandomTerrain* terrain, qboolean IsServer )
 {
 	rmInstanceIter_t it;
 
-	for(it = mInstances.begin(); it != mInstances.end(); it++ )
+	for(it = mInstances.begin(); it != mInstances.end(); ++it )
 	{
 		CRMInstance* instance = *it;
 
 		instance->SetFlattenHeight ( mFlattenHeight );
 
 		// Add the instance to the landscape now
-		instance->PreSpawn ( terrain, IsServer );		
+		instance->PreSpawn ( terrain, IsServer );
 	}
 
 	return CRMInstance::PreSpawn ( terrain, IsServer );
@@ -260,7 +260,7 @@ bool CRMGroupInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 	rmInstanceIter_t it;
 
 	// Spawn all the instances associated with this group
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		CRMInstance* instance = *it;
 		instance->SetSide(GetSide()); // which side owns it?
@@ -290,9 +290,9 @@ void CRMGroupInstance::Preview ( const vec3_t from )
 	rmInstanceIter_t it;
 
 	CRMInstance::Preview ( from );
-	
+
 	// Render all the instances
-	for(it = mInstances.begin(); it != mInstances.end(); it++)
+	for(it = mInstances.begin(); it != mInstances.end(); ++it)
 	{
 		CRMInstance* instance = *it;
 
@@ -326,7 +326,7 @@ void CRMGroupInstance::SetArea ( CRMAreaManager* amanager, CRMArea* area )
 
 	// Prepare for spawn by calculating all the positions of the sub instances
 	// and flattening the ground below them.
-	for(it = mInstances.begin(); it != mInstances.end(); it++ )
+	for(it = mInstances.begin(); it != mInstances.end(); ++it )
 	{
 		CRMInstance  *instance = *it;
 		CRMArea		 *newarea;

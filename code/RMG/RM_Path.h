@@ -36,6 +36,10 @@ This file is part of Jedi Academy.
 #include "../qcommon/cm_randomterrain.h"
 #endif
 
+#ifndef _WIN32
+#include <string>
+#endif
+
 class CRMPathManager;
 
 // directions you can proceed from cells 
@@ -103,7 +107,7 @@ private:
 
 public:
 	CRMLoc (const char *name, const int min_depth, const int max_depth, const int min_paths =1, const int max_paths=1 ) 
-		: mMinDepth(min_depth), mMaxDepth(max_depth), mPlaced(false), mMinPaths(min_paths), mMaxPaths(max_paths)
+		: mMinDepth(min_depth), mMaxDepth(max_depth), mMinPaths(min_paths), mMaxPaths(max_paths), mPlaced(false)
 	{ mName = name; };
 
 	const char*	GetName	 ( ) { return mName.c_str(); }

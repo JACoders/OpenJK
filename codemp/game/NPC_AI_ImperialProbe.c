@@ -45,7 +45,7 @@ Hunter_MaintainHeight
 #define VELOCITY_DECAY	0.85f
 
 void ImperialProbe_MaintainHeight( void )
-{	
+{
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
@@ -54,69 +54,58 @@ void ImperialProbe_MaintainHeight( void )
 	NPC_UpdateAngles( qtrue, qtrue );
 
 	// If we have an enemy, we should try to hover at about enemy eye level
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
 		// Find the height difference
-		dif = NPC->enemy->r.currentOrigin[2] - NPC->r.currentOrigin[2]; 
+		dif = NPCS.NPC->enemy->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 8 )
 		{
 			if ( fabs( dif ) > 16 )
-			{
 				dif = ( dif < 0 ? -16 : 16 );
-			}
 
-			NPC->client->ps.velocity[2] = (NPC->client->ps.velocity[2]+dif)/2;
+			NPCS.NPC->client->ps.velocity[2] = (NPCS.NPC->client->ps.velocity[2]+dif)/2;
 		}
 	}
 	else
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
-		{
-			goal = NPCInfo->goalEntity;
-		}
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
+			goal = NPCS.NPCInfo->goalEntity;
 		else
-		{
-			goal = NPCInfo->lastGoalEntity;
-		}
+			goal = NPCS.NPCInfo->lastGoalEntity;
+
 		if ( goal )
 		{
-			dif = goal->r.currentOrigin[2] - NPC->r.currentOrigin[2];
+			dif = goal->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
-			if ( fabs( dif ) > 24 )
-			{
-				ucmd.upmove = ( ucmd.upmove < 0 ? -4 : 4 );
+			if ( fabs( dif ) > 24 ) {
+				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
-			else
-			{
-				if ( NPC->client->ps.velocity[2] )
+			else {
+				if ( NPCS.NPC->client->ps.velocity[2] )
 				{
-					NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
+					NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-					if ( fabs( NPC->client->ps.velocity[2] ) < 2 )
-					{
-						NPC->client->ps.velocity[2] = 0;
-					}
+					if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 2 )
+						NPCS.NPC->client->ps.velocity[2] = 0;
 				}
 			}
 		}
 		// Apply friction
-		else if ( NPC->client->ps.velocity[2] )
+		else if ( NPCS.NPC->client->ps.velocity[2] )
 		{
-			NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
+			NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-			if ( fabs( NPC->client->ps.velocity[2] ) < 1 )
-			{
-				NPC->client->ps.velocity[2] = 0;
-			}
+			if ( fabsf( NPCS.NPC->client->ps.velocity[2] ) < 1 )
+				NPCS.NPC->client->ps.velocity[2] = 0;
 		}
 
 		// Stay at a given height until we take on an enemy
 /*		VectorSet( endPos, NPC->r.currentOrigin[0], NPC->r.currentOrigin[1], NPC->r.currentOrigin[2] - 512 );
-		trap_Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
+		trap->Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
 
 		if ( trace.fraction != 1.0f )
 		{
@@ -131,7 +120,7 @@ void ImperialProbe_MaintainHeight( void )
 				ucmd.upmove = -32;
 			}
 			else
-			{ 
+			{
 				if ( NPC->client->ps.velocity[2] )
 				{
 					NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
@@ -146,23 +135,23 @@ void ImperialProbe_MaintainHeight( void )
 	}
 
 	// Apply friction
-	if ( NPC->client->ps.velocity[0] )
+	if ( NPCS.NPC->client->ps.velocity[0] )
 	{
-		NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
+		NPCS.NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
 
-		if ( fabs( NPC->client->ps.velocity[0] ) < 1 )
+		if ( fabs( NPCS.NPC->client->ps.velocity[0] ) < 1 )
 		{
-			NPC->client->ps.velocity[0] = 0;
+			NPCS.NPC->client->ps.velocity[0] = 0;
 		}
 	}
 
-	if ( NPC->client->ps.velocity[1] )
+	if ( NPCS.NPC->client->ps.velocity[1] )
 	{
-		NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
+		NPCS.NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
 
-		if ( fabs( NPC->client->ps.velocity[1] ) < 1 )
+		if ( fabs( NPCS.NPC->client->ps.velocity[1] ) < 1 )
 		{
-			NPC->client->ps.velocity[1] = 0;
+			NPCS.NPC->client->ps.velocity[1] = 0;
 		}
 	}
 }
@@ -183,26 +172,26 @@ void ImperialProbe_Strafe( void )
 	vec3_t	end, right;
 	trace_t	tr;
 
-	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
+	AngleVectors( NPCS.NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
 	// Pick a random strafe direction, then check to see if doing a strafe would be
 	//	reasonable valid
 	dir = ( rand() & 1 ) ? -1 : 1;
-	VectorMA( NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
+	VectorMA( NPCS.NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
 
-	trap_Trace( &tr, NPC->r.currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID );
+	trap->Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )
 	{
-		VectorMA( NPC->client->ps.velocity, HUNTER_STRAFE_VEL * dir, right, NPC->client->ps.velocity );
+		VectorMA( NPCS.NPC->client->ps.velocity, HUNTER_STRAFE_VEL * dir, right, NPCS.NPC->client->ps.velocity );
 
 		// Add a slight upward push
-		NPC->client->ps.velocity[2] += HUNTER_UPWARD_PUSH;
+		NPCS.NPC->client->ps.velocity[2] += HUNTER_UPWARD_PUSH;
 
 		// Set the strafe start time so we can do a controlled roll
 		//NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
 
@@ -220,10 +209,10 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 	float	distance, speed;
 	vec3_t	forward;
 
-	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+	NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 
 	//If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
@@ -241,8 +230,8 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 12;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -250,12 +239,12 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 	}
 	else
 	{
-		VectorSubtract( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		VectorSubtract( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = HUNTER_FORWARD_BASE_SPEED + HUNTER_FORWARD_MULTIPLIER * g_npcspskill.integer;
-	VectorMA( NPC->client->ps.velocity, speed, forward, NPC->client->ps.velocity );
+	VectorMA( NPCS.NPC->client->ps.velocity, speed, forward, NPCS.NPC->client->ps.velocity );
 }
 
 /*
@@ -272,23 +261,23 @@ void ImperialProbe_FireBlaster(void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 
-	genBolt1 = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash");
+	genBolt1 = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash");
 
 	//FIXME: use {0, NPC->client->ps.legsYaw, 0}
-	trap_G2API_GetBoltMatrix( NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0,
 				genBolt1,
-				&boltMatrix, NPC->r.currentAngles, NPC->r.currentOrigin, level.time,
-				NULL, NPC->modelScale );
+				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
+				NULL, NPCS.NPC->modelScale );
 
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, muzzle1 );
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle1, vec3_origin );
 
-	G_Sound( NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/probe/misc/fire" ));
+	G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/probe/misc/fire" ));
 
-	if (NPC->health)
+	if (NPCS.NPC->health)
 	{
-		CalcEntitySpot( NPC->enemy, SPOT_CHEST, enemy_org1 );
+		CalcEntitySpot( NPCS.NPC->enemy, SPOT_CHEST, enemy_org1 );
 		enemy_org1[0]+= Q_irand(0,10);
 		enemy_org1[1]+= Q_irand(0,10);
 		VectorSubtract (enemy_org1, muzzle1, delta1);
@@ -297,10 +286,10 @@ void ImperialProbe_FireBlaster(void)
 	}
 	else
 	{
-		AngleVectors (NPC->r.currentAngles, forward, vright, up);
+		AngleVectors (NPCS.NPC->r.currentAngles, forward, vright, up);
 	}
 
-	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPC, qfalse );
+	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPCS.NPC, qfalse );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -309,7 +298,7 @@ void ImperialProbe_FireBlaster(void)
 	{
 		missile->damage = 5;
 	}
-	else 
+	else
 	{
 		missile->damage = 10;
 	}
@@ -328,9 +317,9 @@ ImperialProbe_Ranged
 */
 void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 {
-	int	delay_min,delay_max;
+	int	delay_min, delay_max;
 
-	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
+	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
 
 		if ( g_npcspskill.integer == 0 )
@@ -349,12 +338,12 @@ void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 			delay_max = 1500;
 		}
 
-		TIMER_Set( NPC, "attackDelay", Q_irand( 500, 3000 ) );
+		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( delay_min, delay_max ) );
 		ImperialProbe_FireBlaster();
 //		ucmd.buttons |= BUTTON_ATTACK;
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		ImperialProbe_Hunt( visible, advance );
 	}
@@ -374,21 +363,20 @@ ImperialProbe_AttackDecision
 
 void ImperialProbe_AttackDecision( void )
 {
-	float		distance;	
-	qboolean	visible;
-	qboolean	advance;
+	float		distance;
+	qboolean	visible, advance;
 
 	// Always keep a good height off the ground
 	ImperialProbe_MaintainHeight();
 
 	//randomly talk
-	if ( TIMER_Done(NPC,"patrolNoise") )
+	if ( TIMER_Done(NPCS.NPC,"patrolNoise") )
 	{
-		if (TIMER_Done(NPC,"angerNoise"))
+		if (TIMER_Done(NPCS.NPC,"angerNoise"))
 		{
-			G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/probe/misc/probetalk%d", Q_irand(1, 3)) );
+			G_SoundOnEnt( NPCS.NPC, CHAN_AUTO, va("sound/chars/probe/misc/probetalk%d", Q_irand(1, 3)) );
 
-			TIMER_Set( NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
+			TIMER_Set( NPCS.NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
 		}
 	}
 
@@ -399,17 +387,17 @@ void ImperialProbe_AttackDecision( void )
 		return;
 	}
 
-	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_NORMAL);
+	NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_NORMAL);
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin );	
-	visible		= NPC_ClearLOS4( NPC->enemy );
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
+	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
 	// If we cannot see our target, move to see it
 	if ( visible == qfalse )
 	{
-		if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
 			ImperialProbe_Hunt( visible, advance );
 			return;
@@ -433,7 +421,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 	float	pain_chance;
 	gentity_t *other = attacker;
 	int mod = gPainMOD;
-	
+
 	VectorCopy( self->NPC->lastPathAngles, self->s.angles );
 
 	if ( self->health < 30 || mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT ) // demp2 always messes them up real good
@@ -442,7 +430,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		trace_t	trace;
 
 		VectorSet( endPos, self->r.currentOrigin[0], self->r.currentOrigin[1], self->r.currentOrigin[2] - 128 );
-		trap_Trace( &trace, self->r.currentOrigin, NULL, NULL, endPos, self->s.number, MASK_SOLID );
+		trap->Trace( &trace, self->r.currentOrigin, NULL, NULL, endPos, self->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 		if ( trace.fraction == 1.0f || mod == MOD_DEMP2 ) // demp2 always does this
 		{
@@ -461,7 +449,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				self->client->ps.gravity = g_gravity->value*.1;
 			}
 			*/
-			
+
 			if ( (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT) && other )
 			{
 				vec3_t dir;
@@ -480,7 +468,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			self->client->ps.electrifyTime = level.time + 3000;
 
 			self->NPC->localState = LSTATE_DROP;
-		} 
+		}
 	}
 	else
 	{
@@ -489,7 +477,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		if ( random() < pain_chance )	// Spin around in pain?
 		{
 			NPC_SetAnim( self, SETANIM_BOTH, BOTH_PAIN1, SETANIM_FLAG_OVERRIDE);
-		}	
+		}
 	}
 
 	NPC_Pain( self, attacker, damage );
@@ -524,29 +512,29 @@ void ImperialProbe_Patrol( void )
 	}
 
 	//If we have somewhere to go, then do that
-	if (!NPC->enemy)
+	if (!NPCS.NPC->enemy)
 	{
-		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_NORMAL );
+		NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_NORMAL );
 
 		if ( UpdateGoal() )
 		{
 			//start loop sound once we move
-			NPC->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.NPC->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 		}
 		//randomly talk
-		if (TIMER_Done(NPC,"patrolNoise"))
+		if (TIMER_Done(NPCS.NPC,"patrolNoise"))
 		{
-			G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/probe/misc/probetalk%d", Q_irand(1, 3)) );
+			G_SoundOnEnt( NPCS.NPC, CHAN_AUTO, va("sound/chars/probe/misc/probetalk%d", Q_irand(1, 3)) );
 
-			TIMER_Set( NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
+			TIMER_Set( NPCS.NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
 		}
 	}
 	else	// He's got an enemy. Make him angry.
 	{
-		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/probe/misc/anger1" );
-		TIMER_Set( NPC, "angerNoise", Q_irand( 2000, 4000 ) );
+		G_SoundOnEnt( NPCS.NPC, CHAN_AUTO, "sound/chars/probe/misc/anger1" );
+		TIMER_Set( NPCS.NPC, "angerNoise", Q_irand( 2000, 4000 ) );
 		//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
 	}
 
@@ -560,20 +548,20 @@ ImperialProbe_Wait
 */
 void ImperialProbe_Wait(void)
 {
-	if ( NPCInfo->localState == LSTATE_DROP )
+	if ( NPCS.NPCInfo->localState == LSTATE_DROP )
 	{
 		vec3_t endPos;
 		trace_t	trace;
 
-		NPCInfo->desiredYaw = AngleNormalize360( NPCInfo->desiredYaw + 25 );
+		NPCS.NPCInfo->desiredYaw = AngleNormalize360( NPCS.NPCInfo->desiredYaw + 25 );
 
-		VectorSet( endPos, NPC->r.currentOrigin[0], NPC->r.currentOrigin[1], NPC->r.currentOrigin[2] - 32 );
-		trap_Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
+		VectorSet( endPos, NPCS.NPC->r.currentOrigin[0], NPCS.NPC->r.currentOrigin[1], NPCS.NPC->r.currentOrigin[2] - 32 );
+		trap->Trace( &trace, NPCS.NPC->r.currentOrigin, NULL, NULL, endPos, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 		if ( trace.fraction != 1.0f )
 		{
-			G_Damage(NPC, NPC->enemy, NPC->enemy, NULL, NULL, 2000, 0,MOD_UNKNOWN); 
-		} 
+			G_Damage(NPCS.NPC, NPCS.NPC->enemy, NPCS.NPC->enemy, NULL, NULL, 2000, 0,MOD_UNKNOWN);
+		}
 	}
 
 	NPC_UpdateAngles( qtrue, qtrue );
@@ -587,16 +575,16 @@ NPC_BSImperialProbe_Default
 void NPC_BSImperialProbe_Default( void )
 {
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		ImperialProbe_AttackDecision();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		ImperialProbe_Patrol();
 	}
-	else if ( NPCInfo->localState == LSTATE_DROP )
+	else if ( NPCS.NPCInfo->localState == LSTATE_DROP )
 	{
 		ImperialProbe_Wait();
 	}

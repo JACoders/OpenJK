@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_INSTANCE_GROUP_H_INC)
-#define RM_INSTANCE_GROUP_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Instance_Group.h")
@@ -37,5 +35,3 @@ protected:
 
 	void	RemoveInstances	 ( );
 };
-
-#endif

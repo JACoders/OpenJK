@@ -1,8 +1,7 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-#if !defined(G2_GORE_H_INC)
-#define G2_GORE_H_INC
+
+#include "../ghoul2/ghoul2_shared.h"
+#include "../qcommon/q_shared.h"
 
 #ifdef _G2_GORE
 
@@ -11,30 +10,8 @@ struct GoreTextureCoordinates
 {
 	float *tex[MAX_LODS];
 
-	GoreTextureCoordinates()
-	{
-		int i;
-		for (i=0;i<MAX_LODS;i++)
-		{
-			tex[i]=0;
-		}
-	}
-	~GoreTextureCoordinates()
-	{
-		int i;
-		for (i=0;i<MAX_LODS;i++)
-		{
-			if ( tex[i] )
-			{
-#ifdef _DEBUG
-				extern int g_goreTexAllocs;
-				g_goreTexAllocs--;
-#endif
-				Z_Free(tex[i]);
-				tex[i] = 0;
-			}
-		}
-	}
+	GoreTextureCoordinates();
+	~GoreTextureCoordinates();
 };
 
 int AllocGoreRecord();
@@ -52,8 +29,8 @@ struct SGoreSurface
 	int			mGoreGrowStartTime;
 	int			mGoreGrowEndTime;    // set this to -1 to disable growing
 	//curscale = (curtime-mGoreGrowStartTime)*mGoreGrowFactor + mGoreGrowOffset;
-	float		mGoreGrowFactor;	
-	float		mGoreGrowOffset;	
+	float		mGoreGrowFactor;
+	float		mGoreGrowOffset;
 };
 
 class CGoreSet
@@ -76,7 +53,9 @@ void		DeleteGoreSet(int goreSetTag);
 
 /// ragdoll stuff
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4512)
+#endif
 
 struct SRagDollEffectorCollision
 {
@@ -103,25 +82,25 @@ public:
 	int settleFrame;
 
 	//at some point I'll want to make VM callbacks in here. For now I am just doing nothing.
-	virtual void EffectorCollision(const SRagDollEffectorCollision &data) 
+	virtual void EffectorCollision(const SRagDollEffectorCollision &data)
 	{
 	//	assert(0); // you probably meant to override this
 	}
-	virtual void RagDollBegin() 
+	virtual void RagDollBegin()
 	{
 	//	assert(0); // you probably meant to override this
 	}
-	virtual void RagDollSettled() 
+	virtual void RagDollSettled()
 	{
 	//	assert(0); // you probably meant to override this
 	}
 
-	virtual void Collision() 
+	virtual void Collision()
 	{
 	//	assert(0); // you probably meant to override this
 		// we had a collision, uhh I guess call SetRagDoll RP_DEATH_COLLISION
-	}  
-	
+	}
+
 #ifdef _DEBUG
 	virtual void DebugLine(const vec3_t p1,const vec3_t p2,bool bbox) {assert(0);}
 #endif
@@ -157,7 +136,7 @@ public:
 	int startFrame;
 	int endFrame;
 
-	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum 
+	int collisionType; // 1 = from a fall, 0 from effectors, this will be going away soon, hence no enum
 
 	qboolean CallRagDollBegin; // a return value, means that we are now begininng ragdoll and the NPC stuff needs to happen
 
@@ -197,5 +176,4 @@ public:
 	ERagEffector effectorsToTurnOff;  // set this to an | of the above flags for a RP_DISABLE_EFFECTORS
 
 };
-#endif //G2_GORE_H_INC
 //rww - RAGDOLL_END

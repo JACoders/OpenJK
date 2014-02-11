@@ -22,7 +22,7 @@ This file is part of Jedi Knight 2.
 
 #include "g_local.h"
 #include "g_functions.h"
-#include "..\cgame\cg_local.h"
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "wp_saber.h"
 #include "g_icarus.h"
@@ -842,15 +842,12 @@ void	G_TouchTriggersLerped( gentity_t *ent ) {
 #ifdef _DEBUG
 	for ( int j = 0; j < 3; j++ )
 	{
-		assert( !_isnan(ent->currentOrigin[j]));
-		assert( !_isnan(ent->lastOrigin[j]));
+		assert( !Q_isnan(ent->currentOrigin[j]));
+		assert( !Q_isnan(ent->lastOrigin[j]));
 	}
 #endif// _DEBUG
 	VectorSubtract( ent->currentOrigin, ent->lastOrigin, diff );
 	dist = VectorNormalize( diff );
-#ifdef _DEBUG
-	assert( (dist<1024) && "insane distance in G_TouchTriggersLerped!" );
-#endif// _DEBUG
 
 	memset (touched, qfalse, sizeof(touched) );
 
@@ -1979,6 +1976,8 @@ void G_CheckMovingLoopingSounds( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case CLASS_PROBE:
 				ent->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
+			default:
+				break;
 			}
 		}
 		else

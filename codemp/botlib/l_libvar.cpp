@@ -5,7 +5,7 @@
  * desc:		bot library variables
  *
  * $Archive: /MissionPack/code/botlib/l_libvar.c $
- * $Author: Zaphod $ 
+ * $Author: Zaphod $
  * $Revision: 2 $
  * $Modtime: 11/21/00 11:33a $
  * $Date: 11/21/00 11:49a $

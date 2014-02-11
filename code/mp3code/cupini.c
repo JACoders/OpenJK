@@ -1,5 +1,7 @@
-#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #ifdef COMPILE_ME
+#ifdef _MSC_VER
+#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
+#endif
 /*____________________________________________________________________________
 	
 	FreeAmp - The Free MP3 Player
@@ -293,7 +295,6 @@ int audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
 
 
-   transform_code = transform_code;	/* not used, asm compatability */
    bit_code = 0;
    if (convert_code & 8)
       bit_code = 1;

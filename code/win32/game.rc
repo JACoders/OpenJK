@@ -72,12 +72,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Raven Software"
             VALUE "CompanyName", "Activision Inc"
-            VALUE "FileDescription", "Jedi Academy Game DLL"
+            VALUE "FileDescription", "OpenJK JKA Mode DLL"
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "ja game.dll"
             VALUE "LegalCopyright", "Copyright (C) 2003"
             VALUE "OriginalFilename", "jagamex86.dll"
-            VALUE "ProductName", "Jedi Knight®: Jedi Academy"
+            VALUE "ProductName", "OpenJK Singleplayer"
             VALUE "ProductVersion", VERSION_STRING
         END
     END

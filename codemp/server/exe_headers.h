@@ -5,9 +5,6 @@
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
-#include "../client/client.h"
-#include "../server/server.h"
-#include "../renderer/tr_local.h"
-
+#ifdef _MSC_VER
 #pragma hdrstop
-
+#endif

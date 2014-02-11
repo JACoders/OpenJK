@@ -15,11 +15,6 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 //g_objectives.cpp
 //reads in ext_data\objectives.dat to objectives[]
 
@@ -59,7 +54,7 @@ OBJ_SaveMissionObjectives
 */
 void OBJ_SaveMissionObjectives( gclient_t *client )
 {
-	gi.AppendToSaveGame('OBJT', client->sess.mission_objectives, sizeof(client->sess.mission_objectives));
+	gi.AppendToSaveGame(INT_ID('O','B','J','T'), client->sess.mission_objectives, sizeof(client->sess.mission_objectives));
 }
 
 
@@ -84,7 +79,7 @@ OBJ_LoadMissionObjectives
 */
 void OBJ_LoadMissionObjectives( gclient_t *client )
 {
-	gi.ReadFromSaveGame('OBJT', (void *) &client->sess.mission_objectives, sizeof(client->sess.mission_objectives), NULL);
+	gi.ReadFromSaveGame(INT_ID('O','B','J','T'), (void *) &client->sess.mission_objectives, sizeof(client->sess.mission_objectives), NULL);
 }
 
 

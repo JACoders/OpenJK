@@ -17,10 +17,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //g_inventory.cpp
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "g_local.h"
 
 /*
@@ -87,7 +83,7 @@ qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname )
 
 	for ( int i = 0; i <= 4; i++ )
 	{
-		if ( target->client->ps.security_key_message[i][0] == NULL )
+		if ( target->client->ps.security_key_message[i][0] == '\0' )
 		{//fill in the first empty slot we find with this key
 			target->client->ps.inventory[INV_SECURITY_KEY]++;	// He got the key
 			Q_strncpyz( target->client->ps.security_key_message[i], keyname, MAX_SECURITY_KEY_MESSSAGE, qtrue );
@@ -112,7 +108,7 @@ void INV_SecurityKeyTake( gentity_t *target, char *keyname )
 			if ( !Q_stricmp( keyname, target->client->ps.security_key_message[i] ) )
 			{
 				target->client->ps.inventory[INV_SECURITY_KEY]--;	// Take the key
-				target->client->ps.security_key_message[i][0] = NULL;
+				target->client->ps.security_key_message[i][0] = '\0';
 				return;
 			}
 		}

@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_file.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_file.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -22,4 +23,3 @@ void AAS_DumpAASData(void);
 //print AAS file information
 void AAS_FileInfo(void);
 #endif //AASINTERN
-

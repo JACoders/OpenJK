@@ -75,7 +75,7 @@ CG_SmokePuff
 Adds a smoke puff or blood trail localEntity.
 =====================
 */
-localEntity_t *CG_SmokePuff( const vec3_t p, const vec3_t vel, 
+localEntity_t *CG_SmokePuff( const vec3_t p, const vec3_t vel,
 				   float radius,
 				   float r, float g, float b, float a,
 				   float duration,
@@ -108,7 +108,7 @@ localEntity_t *CG_SmokePuff( const vec3_t p, const vec3_t vel,
 		le->lifeRate = 1.0 / ( le->endTime - le->startTime );
 	}
 	le->color[0] = r;
-	le->color[1] = g; 
+	le->color[1] = g;
 	le->color[2] = b;
 	le->color[3] = a;
 
@@ -177,7 +177,7 @@ void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int ra
 
 	re->reType = RT_LINE;
 	re->radius = 0.5*radius;
-	re->customShader = cgs.media.whiteShader; //trap_R_RegisterShaderNoMip("textures/colombia/canvas_doublesided");
+	re->customShader = cgs.media.whiteShader; //trap->R_RegisterShaderNoMip("textures/colombia/canvas_doublesided");
 
 	re->shaderTexCoord[0] = re->shaderTexCoord[1] = 1.0f;
 
@@ -248,7 +248,7 @@ void CG_ThrowChunk( vec3_t origin, vec3_t velocity, qhandle_t hModel, int option
 //
 //----------------------------
 
-// Since we have shared verts when we tesselate the glass sheet, it helps to have a 
+// Since we have shared verts when we tesselate the glass sheet, it helps to have a
 //	random offset table set up up front.
 
 static float offX[20][20],
@@ -296,7 +296,7 @@ static void CG_DoGlassQuad( vec3_t p[4], vec2_t uv[4], qboolean stick, int time,
 			rgb1, rgb1, 0.0f,		// rgb start, rgb end, rgb parm ( not used )
 			rotDelta, bounce, time,	// rotation amount, bounce, and time to delay motion for ( zero if no delay );
 			6000,					// life
-			cgi_R_RegisterShader( "gfx/misc/test_crackle" ), 
+			cgi_R_RegisterShader( "gfx/misc/test_crackle" ),
 			FX_APPLY_PHYSICS | FX_ALPHA_NONLINEAR | FX_USE_ALPHA );
 
 	if ( random() > 0.95f && pol )
@@ -361,7 +361,7 @@ static void CG_DoGlassQuad( vec3_t p[4], vec2_t uv[4], qboolean stick, int time,
 	apArgs.shader = cgs.media.glassShardShader;
 	apArgs.flags = (FX_APPLY_PHYSICS | FX_ALPHA_NONLINEAR | FX_USE_ALPHA);
 
-	trap_FX_AddPoly(&apArgs);
+	trap->FX_AddPoly(&apArgs);
 }
 
 static void CG_CalcBiLerp( vec3_t verts[4], vec3_t subVerts[4], vec2_t uv[4] )
@@ -398,7 +398,7 @@ static void CG_CalcBiLerp( vec3_t verts[4], vec3_t subVerts[4], vec2_t uv[4] )
 	VectorMA( temp,			uv[3][1],			subVerts[3], subVerts[3] );
 }
 // bilinear
-//f(p',q') = (1 - y) × {[(1 - x) × f(p,q)] + [x × f(p,q+1)]} + y × {[(1 - x) × f(p+1,q)] + [x × f(p+1,q+1)]}. 
+//f(p',q') = (1 - y) × {[(1 - x) × f(p,q)] + [x × f(p,q+1)]} + y × {[(1 - x) × f(p+1,q)] + [x × f(p+1,q+1)]}.
 
 
 static void CG_CalcHeightWidth( vec3_t verts[4], float *height, float *width )
@@ -408,24 +408,24 @@ static void CG_CalcHeightWidth( vec3_t verts[4], float *height, float *width )
 	VectorSubtract( verts[3], verts[0], dir1 ); // v
 	VectorSubtract( verts[1], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*width = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*width = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	VectorSubtract( verts[2], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*width += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*width += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	*width *= 0.5f;
 
 	VectorSubtract( verts[1], verts[0], dir1 ); // v
 	VectorSubtract( verts[2], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*height = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*height = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	VectorSubtract( verts[3], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*height += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*height += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	*height *= 0.5f;
 }
-//Consider a line in 3D with position vector "a" and direction vector "v" and 
+//Consider a line in 3D with position vector "a" and direction vector "v" and
 // let "p" be the position vector of an arbitrary point in 3D
-//dist = len( crossprod(p-a,v) ) / len(v); 
+//dist = len( crossprod(p-a,v) ) / len(v);
 
 void CG_InitGlass( void )
 {
@@ -474,7 +474,7 @@ void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, fl
 	//	hopefully be sufficient.
 	CG_CalcHeightWidth( verts, &height, &width );
 
-	trap_S_StartSound( dmgPt, -1, CHAN_AUTO, trap_S_RegisterSound("sound/effects/glassbreak1.wav"));
+	trap->S_StartSound( dmgPt, -1, CHAN_AUTO, trap->S_RegisterSound("sound/effects/glassbreak1.wav"));
 
 	// Pick "LOD" for height
 	if ( height < 100 )
@@ -619,9 +619,9 @@ void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, fl
 			Vector2Set( biPoints[3], xx, zz + stepHeight );
 
 			CG_CalcBiLerp( verts, subVerts, biPoints );
-			
+
 			dif = DistanceSquared( subVerts[0], dmgPt ) * timeDecay - random() * 32;
-			
+
 			// If we decrease dif, we are increasing the impact area, making it more likely to blow out large holes
 			dif -= dmgRadius * dmgRadius;
 
@@ -659,7 +659,7 @@ void CG_GlassShatter(int entnum, vec3_t dmgPt, vec3_t dmgDir, float dmgRadius, i
 
 	if (cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex])
 	{
-		trap_R_GetBModelVerts(cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex], verts, normal);
+		trap->R_GetBModelVerts(cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex], verts, normal);
 		CG_DoGlass(verts, normal, dmgPt, dmgDir, dmgRadius, maxShards);
 	}
 	//otherwise something awful has happened.
@@ -678,7 +678,7 @@ void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
 	float shardsthrow = 0;
 	char chunkname[256];
 
-	trap_S_StartSound(org, entnum, CHAN_BODY, trap_S_RegisterSound("sound/effects/glassbreak1.wav"));
+	trap->S_StartSound(org, entnum, CHAN_BODY, trap->S_RegisterSound("sound/effects/glassbreak1.wav"));
 
 	VectorSubtract(maxs, mins, a);
 
@@ -692,7 +692,7 @@ void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
 
 		Com_sprintf(chunkname, sizeof(chunkname), "models/chunks/glass/glchunks_%i.md3", Q_irand(1, 6));
 		VectorCopy(org, shardorg);
-	
+
 		dif[0] = (maxs[0]-mins[0])/2;
 		dif[1] = (maxs[1]-mins[1])/2;
 		dif[2] = (maxs[2]-mins[2])/2;
@@ -741,7 +741,7 @@ void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
 
 		//CG_TestLine(org, shardorg, 5000, 0x0000ff, 3);
 
-		CG_ThrowChunk( shardorg, velocity, trap_R_RegisterModel( chunkname ), 0, 254 );
+		CG_ThrowChunk( shardorg, velocity, trap->R_RegisterModel( chunkname ), 0, 254 );
 
 		shardsthrow += 10;
 	}
@@ -777,46 +777,46 @@ void CG_CreateDebris(int entnum, vec3_t org, vec3_t mins, vec3_t maxs, int debri
 
 	if (omodel == DEBRIS_SPECIALCASE_GLASS && !dbModels_Glass[0])
 	{ //glass no longer exists, using it for metal.
-		dbModels_Glass[0] = trap_R_RegisterModel("models/chunks/metal/metal1_1.md3");
-		dbModels_Glass[1] = trap_R_RegisterModel("models/chunks/metal/metal1_2.md3");
-		dbModels_Glass[2] = trap_R_RegisterModel("models/chunks/metal/metal1_3.md3");
-		dbModels_Glass[3] = trap_R_RegisterModel("models/chunks/metal/metal1_4.md3");
-		dbModels_Glass[4] = trap_R_RegisterModel("models/chunks/metal/metal2_1.md3");
-		dbModels_Glass[5] = trap_R_RegisterModel("models/chunks/metal/metal2_2.md3");
-		dbModels_Glass[6] = trap_R_RegisterModel("models/chunks/metal/metal2_3.md3");
-		dbModels_Glass[7] = trap_R_RegisterModel("models/chunks/metal/metal2_4.md3");
+		dbModels_Glass[0] = trap->R_RegisterModel("models/chunks/metal/metal1_1.md3");
+		dbModels_Glass[1] = trap->R_RegisterModel("models/chunks/metal/metal1_2.md3");
+		dbModels_Glass[2] = trap->R_RegisterModel("models/chunks/metal/metal1_3.md3");
+		dbModels_Glass[3] = trap->R_RegisterModel("models/chunks/metal/metal1_4.md3");
+		dbModels_Glass[4] = trap->R_RegisterModel("models/chunks/metal/metal2_1.md3");
+		dbModels_Glass[5] = trap->R_RegisterModel("models/chunks/metal/metal2_2.md3");
+		dbModels_Glass[6] = trap->R_RegisterModel("models/chunks/metal/metal2_3.md3");
+		dbModels_Glass[7] = trap->R_RegisterModel("models/chunks/metal/metal2_4.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_WOOD && !dbModels_Wood[0])
 	{
-		dbModels_Wood[0] = trap_R_RegisterModel("models/chunks/crate/crate1_1.md3");
-		dbModels_Wood[1] = trap_R_RegisterModel("models/chunks/crate/crate1_2.md3");
-		dbModels_Wood[2] = trap_R_RegisterModel("models/chunks/crate/crate1_3.md3");
-		dbModels_Wood[3] = trap_R_RegisterModel("models/chunks/crate/crate1_4.md3");
-		dbModels_Wood[4] = trap_R_RegisterModel("models/chunks/crate/crate2_1.md3");
-		dbModels_Wood[5] = trap_R_RegisterModel("models/chunks/crate/crate2_2.md3");
-		dbModels_Wood[6] = trap_R_RegisterModel("models/chunks/crate/crate2_3.md3");
-		dbModels_Wood[7] = trap_R_RegisterModel("models/chunks/crate/crate2_4.md3");
+		dbModels_Wood[0] = trap->R_RegisterModel("models/chunks/crate/crate1_1.md3");
+		dbModels_Wood[1] = trap->R_RegisterModel("models/chunks/crate/crate1_2.md3");
+		dbModels_Wood[2] = trap->R_RegisterModel("models/chunks/crate/crate1_3.md3");
+		dbModels_Wood[3] = trap->R_RegisterModel("models/chunks/crate/crate1_4.md3");
+		dbModels_Wood[4] = trap->R_RegisterModel("models/chunks/crate/crate2_1.md3");
+		dbModels_Wood[5] = trap->R_RegisterModel("models/chunks/crate/crate2_2.md3");
+		dbModels_Wood[6] = trap->R_RegisterModel("models/chunks/crate/crate2_3.md3");
+		dbModels_Wood[7] = trap->R_RegisterModel("models/chunks/crate/crate2_4.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_CHUNKS && !dbModels_Chunks[0])
 	{
-		dbModels_Chunks[0] = trap_R_RegisterModel("models/chunks/generic/chunks_1.md3");
-		dbModels_Chunks[1] = trap_R_RegisterModel("models/chunks/generic/chunks_2.md3");
+		dbModels_Chunks[0] = trap->R_RegisterModel("models/chunks/generic/chunks_1.md3");
+		dbModels_Chunks[1] = trap->R_RegisterModel("models/chunks/generic/chunks_2.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_ROCK && !dbModels_Rocks[0])
 	{
-		dbModels_Rocks[0] = trap_R_RegisterModel("models/chunks/rock/rock1_1.md3");
-		dbModels_Rocks[1] = trap_R_RegisterModel("models/chunks/rock/rock1_2.md3");
-		dbModels_Rocks[2] = trap_R_RegisterModel("models/chunks/rock/rock1_3.md3");
-		dbModels_Rocks[3] = trap_R_RegisterModel("models/chunks/rock/rock1_4.md3");
+		dbModels_Rocks[0] = trap->R_RegisterModel("models/chunks/rock/rock1_1.md3");
+		dbModels_Rocks[1] = trap->R_RegisterModel("models/chunks/rock/rock1_2.md3");
+		dbModels_Rocks[2] = trap->R_RegisterModel("models/chunks/rock/rock1_3.md3");
+		dbModels_Rocks[3] = trap->R_RegisterModel("models/chunks/rock/rock1_4.md3");
 		/*
-		dbModels_Rocks[4] = trap_R_RegisterModel("models/chunks/rock/rock2_1.md3");
-		dbModels_Rocks[5] = trap_R_RegisterModel("models/chunks/rock/rock2_2.md3");
-		dbModels_Rocks[6] = trap_R_RegisterModel("models/chunks/rock/rock2_3.md3");
-		dbModels_Rocks[7] = trap_R_RegisterModel("models/chunks/rock/rock2_4.md3");
-		dbModels_Rocks[8] = trap_R_RegisterModel("models/chunks/rock/rock3_1.md3");
-		dbModels_Rocks[9] = trap_R_RegisterModel("models/chunks/rock/rock3_2.md3");
-		dbModels_Rocks[10] = trap_R_RegisterModel("models/chunks/rock/rock3_3.md3");
-		dbModels_Rocks[11] = trap_R_RegisterModel("models/chunks/rock/rock3_4.md3");
+		dbModels_Rocks[4] = trap->R_RegisterModel("models/chunks/rock/rock2_1.md3");
+		dbModels_Rocks[5] = trap->R_RegisterModel("models/chunks/rock/rock2_2.md3");
+		dbModels_Rocks[6] = trap->R_RegisterModel("models/chunks/rock/rock2_3.md3");
+		dbModels_Rocks[7] = trap->R_RegisterModel("models/chunks/rock/rock2_4.md3");
+		dbModels_Rocks[8] = trap->R_RegisterModel("models/chunks/rock/rock3_1.md3");
+		dbModels_Rocks[9] = trap->R_RegisterModel("models/chunks/rock/rock3_2.md3");
+		dbModels_Rocks[10] = trap->R_RegisterModel("models/chunks/rock/rock3_3.md3");
+		dbModels_Rocks[11] = trap->R_RegisterModel("models/chunks/rock/rock3_4.md3");
 		*/
 	}
 
@@ -848,7 +848,7 @@ void CG_CreateDebris(int entnum, vec3_t org, vec3_t mins, vec3_t maxs, int debri
 		}
 
 		VectorCopy(org, shardorg);
-	
+
 		dif[0] = (maxs[0]-mins[0])/2;
 		dif[1] = (maxs[1]-mins[1])/2;
 		dif[2] = (maxs[2]-mins[2])/2;
@@ -1019,12 +1019,12 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 	// FIXME: real precache .. VERify that these need to be here...don't think they would because the effects should be registered in g_breakable
 	//rww - No they don't.. indexed effects gameside get precached on load clientside, as server objects are setup before client asset load time.
 	//However, we need to index them, so..
-	eID1 = trap_FX_RegisterEffect( effect );
+	eID1 = trap->FX_RegisterEffect( effect );
 
 	if ( effect2 && effect2[0] )
 	{
 		// FIXME: real precache
-		eID2 = trap_FX_RegisterEffect( effect2 );
+		eID2 = trap->FX_RegisterEffect( effect2 );
 	}
 
 	// spawn chunk roughly in the bbox of the thing..
@@ -1043,11 +1043,11 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 
 		if ( effect2 && effect2[0] && ( rand() & 1 ))
 		{
-			trap_FX_PlayEffectID( eID2, org, dir, -1, -1 );
+			trap->FX_PlayEffectID( eID2, org, dir, -1, -1, qfalse );
 		}
 		else
 		{
-			trap_FX_PlayEffectID( eID1, org, dir, -1, -1 );
+			trap->FX_PlayEffectID( eID1, org, dir, -1, -1, qfalse );
 		}
 	}
 }
@@ -1060,7 +1060,7 @@ Fun chunk spewer
 -------------------------
 */
 
-void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs, 
+void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
 						float speed, int numChunks, material_t chunkType, int customChunk, float baseScale )
 {
 	localEntity_t	*le;
@@ -1084,15 +1084,15 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	default:
 		break;
 	case MAT_GLASS:
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound );
 		return;
 		break;
 	case MAT_GRATE1:
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.grateSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.grateSound );
 		return;
 		break;
 	case MAT_ELECTRICAL:// (sparks)
-		trap_S_StartSound( NULL, owner, CHAN_BODY, trap_S_RegisterSound (va("sound/ambience/spark%d.wav", Q_irand(1, 6))) );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, trap->S_RegisterSound (va("sound/ambience/spark%d.wav", Q_irand(1, 6))) );
 		return;
 		break;
 	case MAT_DRK_STONE:
@@ -1100,28 +1100,28 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	case MAT_GREY_STONE:
 	case MAT_WHITE_METAL:  // not quite sure what this stuff is supposed to be...it's for Stu
 	case MAT_SNOWY_ROCK:
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.rockBreakSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.rockBreakSound );
 		bounce = LEBS_ROCK;
 		speedMod = 0.5f; // rock blows up less
 		break;
 	case MAT_GLASS_METAL:
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound ); // FIXME: should probably have a custom sound
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound ); // FIXME: should probably have a custom sound
 		bounce = LEBS_METAL;
 		break;
 	case MAT_CRATE1:
 	case MAT_CRATE2:
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.crateBreakSound[Q_irand(0,1)] );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.crateBreakSound[Q_irand(0,1)] );
 		break;
 	case MAT_METAL:
 	case MAT_METAL2:
 	case MAT_METAL3:
 	case MAT_ELEC_METAL:// FIXME: maybe have its own sound?
-		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.chunkSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.chunkSound );
 		bounce = LEBS_METAL;
 		speedMod = 0.8f; // metal blows up a bit more
 		break;
 	case MAT_ROPE:
-//		trap_S_StartSound( NULL, owner, CHAN_BODY, cgi_S_RegisterSound( "" ));  FIXME:  needs a sound
+//		trap->S_StartSound( NULL, owner, CHAN_BODY, cgi_S_RegisterSound( "" ));  FIXME:  needs a sound
 		return;
 		break;
 	}
@@ -1238,7 +1238,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 			le->bounceFactor = 0.2f + random() * 0.2f;
 			le->leFlags |= LEF_TUMBLE;
 			//le->ownerGentNum = owner;
-			le->leBounceSoundType = bounce; 
+			le->leBounceSoundType = bounce;
 
 			// Make sure that we have the desired start size set
 			le->radius = flrand( baseScale * 0.75f, baseScale * 1.25f );
@@ -1282,16 +1282,16 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 	le->endTime = cg.time + 4000;
 	le->lifeRate = 1.0 / ( le->endTime - le->startTime );
 
-	
+
 	le->color[0] = le->color[1] = le->color[2] = le->color[3] = 1.0;
 	le->radius = score;
-	
+
 	VectorCopy( org, le->pos.trBase );
 	if (org[2] >= lastPos[2] - 20 && org[2] <= lastPos[2] + 20) {
 		le->pos.trBase[2] -= 20;
 	}
 
-	//CG_Printf( "Plum origin %i %i %i -- %i\n", (int)org[0], (int)org[1], (int)org[2], (int)Distance(org, lastPos));
+	//trap->Print( "Plum origin %i %i %i -- %i\n", (int)org[0], (int)org[1], (int)org[2], (int)Distance(org, lastPos));
 	VectorCopy(org, lastPos);
 
 
@@ -1309,7 +1309,7 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 CG_MakeExplosion
 ====================
 */
-localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir, 
+localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, int numFrames, qhandle_t shader,
 								int msec, qboolean isSprite, float scale, int flags )
 {
@@ -1319,7 +1319,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 	vec3_t			tmpVec, newOrigin;
 
 	if ( msec <= 0 ) {
-		CG_Error( "CG_MakeExplosion: msec = %i", msec );
+		trap->Error( ERR_DROP, "CG_MakeExplosion: msec = %i", msec );
 	}
 
 	// skew the time a bit so they aren't all in sync
@@ -1327,7 +1327,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 
 	ex = CG_AllocLocalEntity();
 	if ( isSprite ) {
-		ex->leType = LE_SPRITE_EXPLOSION; 
+		ex->leType = LE_SPRITE_EXPLOSION;
 		ex->refEntity.rotation = rand() % 360;
 		ex->radius = scale;
 		VectorScale( dir, 16, tmpVec );
@@ -1352,7 +1352,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 
 	ex->startTime = cg.time - offset;
 	ex->endTime = ex->startTime + msec;
-	
+
 	// bias the time so all shader effects start correctly
 	ex->refEntity.shaderTime = ex->startTime / 1000.0f;
 
@@ -1398,16 +1398,15 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 	vec3_t			direction, new_org;
 	vec3_t			velocity		= { 0, 0, 0 };
 	vec3_t			temp_org, temp_vel;
-	float			scale, dscale;
+//	float			scale;
 	int				i, numSparks;
 
 	//Sparks
 	numSparks = 16 + (random() * 16.0f);
-	
+
 	for ( i = 0; i < numSparks; i++ )
-	{	
-		scale = 0.25f + (random() * 2.0f);
-		dscale = -scale*0.5;
+	{
+	//	scale = 0.25f + (random() * 2.0f);
 
 /*		particle = FX_AddTrail( origin,
 								NULL,
@@ -1439,15 +1438,15 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 		VectorSet( temp_vel, velocity[0] + (crandom() * 8.0f), velocity[1] + (crandom() * 8.0f), velocity[2] + (crandom() * 8.0f) );
 
 /*		FX_AddSprite(	temp_org,
-						temp_vel, 
-						NULL, 
-						64.0f + (random() * 32.0f), 
-						16.0f, 
-						1.0f, 
+						temp_vel,
+						NULL,
+						64.0f + (random() * 32.0f),
+						16.0f,
+						1.0f,
 						0.0f,
 						20.0f + (crandom() * 90.0f),
 						0.5f,
-						1500.0f, 
+						1500.0f,
 						cgs.media.smokeShader, FXF_USE_ALPHA_CHAN );*/
 	}
 

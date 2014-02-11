@@ -20,12 +20,81 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
+#include <ShlObj.h>
 
-
-
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "win_local.h"
+
+// Used to determine where to store user-specific files
+static char homePath[ MAX_OSPATH ] = { 0 };
+
+static char binaryPath[ MAX_OSPATH ] = { 0 };
+static char installPath[ MAX_OSPATH ] = { 0 };
+
+/*
+=================
+Sys_SetBinaryPath
+=================
+*/
+void Sys_SetBinaryPath(const char *path)
+{
+	Q_strncpyz(binaryPath, path, sizeof(binaryPath));
+}
+
+/*
+=================
+Sys_BinaryPath
+=================
+*/
+char *Sys_BinaryPath(void)
+{
+	return binaryPath;
+}
+
+/*
+=================
+Sys_SetDefaultInstallPath
+=================
+*/
+void Sys_SetDefaultInstallPath(const char *path)
+{
+	Q_strncpyz(installPath, path, sizeof(installPath));
+}
+
+/*
+=================
+Sys_DefaultInstallPath
+=================
+*/
+char *Sys_DefaultInstallPath(void)
+{
+	if (*installPath)
+		return installPath;
+	else
+		return Sys_Cwd();
+}
+
+/*
+==============
+Sys_Dirname
+==============
+*/
+const char *Sys_Dirname( char *path )
+{
+	static char dir[ MAX_OSPATH ] = { 0 };
+	int length;
+
+	Q_strncpyz( dir, path, sizeof( dir ) );
+	length = strlen( dir ) - 1;
+
+	while( length > 0 && dir[ length ] != '\\' )
+		length--;
+
+	dir[ length ] = '\0';
+
+	return dir;
+}
 
 /*
 ================
@@ -44,9 +113,6 @@ int Sys_Milliseconds (void)
 
 char *Sys_GetCurrentUser( void )
 {
-#ifdef _XBOX
-	return NULL;
-#else
 	static char s_userName[1024];
 	unsigned long size = sizeof( s_userName );
 
@@ -60,5 +126,57 @@ char *Sys_GetCurrentUser( void )
 	}
 
 	return s_userName;
+}
+
+/*
+==============
+Sys_DefaultHomePath
+==============
+*/
+char	*Sys_DefaultHomePath(void) {
+#ifdef _PORTABLE_VERSION
+	Com_Printf("Portable install requested, skipping homepath support\n");
+	return NULL;
+#else
+	typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR); 
+
+	TCHAR szPath[MAX_PATH];
+	GETFOLDERPATH qSHGetFolderPath;
+	HMODULE shfolder = LoadLibrary("shfolder.dll");
+
+	if(shfolder == NULL)
+	{
+		Com_Printf("Unable to load SHFolder.dll\n");
+		return NULL;
+	}
+
+	if(!*homePath && com_homepath)
+	{
+		qSHGetFolderPath = (GETFOLDERPATH)GetProcAddress(shfolder, "SHGetFolderPathA");
+		if(qSHGetFolderPath == NULL)
+		{
+			Com_Printf("Unable to find SHGetFolderPath in SHFolder.dll\n");
+			FreeLibrary(shfolder);
+			return NULL;
+		}
+
+		if( !SUCCEEDED( qSHGetFolderPath( NULL, CSIDL_PERSONAL,
+						NULL, 0, szPath ) ) )
+		{
+			Com_Printf("Unable to detect CSIDL_PERSONAL\n");
+			FreeLibrary(shfolder);
+			return NULL;
+		}
+		
+		Com_sprintf(homePath, sizeof(homePath), "%s%cMy Games%c", szPath, PATH_SEP, PATH_SEP);
+
+		if(com_homepath->string[0])
+			Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+		else
+			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_WIN);
+	}
+
+	FreeLibrary(shfolder);
+	return homePath;
 #endif
 }

@@ -18,14 +18,11 @@ This file is part of Jedi Academy.
 
 //NPC_utils.cpp
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
 #include "b_local.h"
 #include "Q3_Interface.h"
+#include "g_navigator.h"
+#include "../cgame/cg_local.h"
+#include "g_nav.h"
 
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt );
 
@@ -915,7 +912,7 @@ qboolean G_ActivateBehavior (gentity_t *self, int bset )
 		bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
 	}
 
-	if(bSID > -1)
+	if(bSID != -1)
 	{
 		self->NPC->tempBehavior = BS_DEFAULT;
 		self->NPC->behaviorState = bSID;

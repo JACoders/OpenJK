@@ -21,7 +21,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
@@ -37,7 +36,7 @@ and whenever the server updates any serverinfo flagged cvars
 */
 void CG_ParseServerinfo( void ) {
 	const char	*info;
-	char	*mapname;
+	const char	*mapname;
 
 	info = CG_ConfigString( CS_SERVERINFO );
 	cgs.dmflags = atoi( Info_ValueForKey( info, "dmflags" ) );
@@ -46,9 +45,9 @@ void CG_ParseServerinfo( void ) {
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	char *p = strrchr(mapname,'/');
+	const char *p = strrchr(mapname,'/');
 	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
-	strupr( cgs.stripLevelName[0] );
+	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
 		cgs.stripLevelName[i][0]='\0';
@@ -63,7 +62,7 @@ void CG_ParseServerinfo( void ) {
 	// additional String files needed for some levels...
 	//
 	// JKA...
-	if (!stricmp(cgs.stripLevelName[0],"YAVIN1B"))
+	if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN1B"))
 	{
 		strcpy( cgs.stripLevelName[1], "YAVIN1");
 	}
@@ -168,6 +167,58 @@ static void CG_ConfigStringModified( void ) {
 	}
 }
 
+static void CG_CenterPrint_f( void ) {
+	CG_CenterPrint( CG_Argv( 1 ), SCREEN_HEIGHT * 0.25 );
+}
+
+static void CG_Print_f( void ) {
+	CG_Printf( "%s", CG_Argv( 1 ) );
+}
+
+static void CG_CaptionText_f( void ) {
+	sfxHandle_t sound = (sfxHandle_t)atoi( CG_Argv( 2 ) );
+
+	CG_CaptionText( CG_Argv( 1 ), sound >= 0 && sound < MAX_SOUNDS ? cgs.sound_precache[sound] : NULL_SOUND );
+}
+
+static void CG_ScrollText_f( void ) {
+	CG_ScrollText( CG_Argv( 1 ), SCREEN_WIDTH - 16 );
+}
+
+static void CG_LCARSText_f( void ) {
+	CG_Printf( "CG_LCARSText() being called. Tell Ste\n" "String: \"%s\"\n", CG_Argv( 1 ) );
+}
+
+static void CG_ClientLevelShot_f( void ) {
+	// clientLevelShot is sent before taking a special screenshot for
+	// the menu system during development
+	cg.levelShot = qtrue;
+}
+
+typedef struct serverCommand_s {
+	const char	*cmd;
+	void		(*func)(void);
+} serverCommand_t;
+
+int svcmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
+}
+
+/* This array MUST be sorted correctly by alphabetical name field */
+static serverCommand_t	commands[] = {
+	{ "chat",				CG_Print_f },
+	{ "clientLevelShot",	CG_ClientLevelShot_f },
+	{ "cp",					CG_CenterPrint_f },
+	{ "cs",					CG_ConfigStringModified },
+	{ "ct",					CG_CaptionText_f },
+	{ "cts",				CG_CaptionTextStop },
+	{ "lt",					CG_LCARSText_f },
+	{ "print",				CG_Print_f },
+	{ "st",					CG_ScrollText_f },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
+
 /*
 =================
 CG_ServerCommand
@@ -177,77 +228,13 @@ Cmd_Argc() / Cmd_Argv()
 =================
 */
 static void CG_ServerCommand( void ) {
-	const char	*cmd;
+	const char		*cmd = CG_Argv( 0 );
+	serverCommand_t	*command = NULL;
 
-	cmd = CG_Argv(0);
+	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 
-	if ( !strcmp( cmd, "cp" ) ) {
-		CG_CenterPrint( CG_Argv(1), SCREEN_HEIGHT * 0.25 );
-		return;
-	}
-
-	if ( !strcmp( cmd, "cs" ) ) {
-		CG_ConfigStringModified();
-		return;
-	}
-
-	if ( !strcmp( cmd, "print" ) ) {
-		CG_Printf( "%s", CG_Argv(1) );
-		return;
-	}
-
-	if ( !strcmp( cmd, "chat" ) ) {
-//		cgi_S_StartLocalSound ( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-		CG_Printf( "%s\n", CG_Argv(1) );
-		return;
-	}
-
-
-	// Scroll text
-	if ( !strcmp( cmd, "st" ) ) 
-	{
-		CG_ScrollText( CG_Argv(1), SCREEN_WIDTH - 16 );
-		return;
-	}
-
-	// Cinematic text
-	if ( !strcmp( cmd, "ct" ) ) 
-	{
-		CG_CaptionText( CG_Argv(1), cgs.sound_precache[atoi(CG_Argv(2))], SCREEN_HEIGHT * 0.25 );
-		return;
-	}
-
-	// Text stop
-	if ( !strcmp( cmd, "cts" ) ) 
-	{
-		CG_CaptionTextStop();
-		return;
-	}
-
-
-	// Text to appear in center of screen with an LCARS frame around it. 
-	if ( !strcmp( cmd, "lt" ) ) 
-	{
-		CG_Printf("CG_LCARSText() being called. Tell Ste\nString: \"%s\"\n",CG_Argv(1));
-		return;
-	}
-
-	// clientLevelShot is sent before taking a special screenshot for
-	// the menu system during development
-	if ( !strcmp( cmd, "clientLevelShot" ) ) {
-		cg.levelShot = qtrue;
-		return;
-	}
-
-	if ( !strcmp( cmd, "vmsg" ) ) {
-#if 0
-		char snd[MAX_QPATH];
-
-		Com_sprintf(snd, sizeof(snd), 
-			"sound/teamplay/vmsg/%s.wav", CG_Argv(1) );
-		cgi_S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_AUTO, 
-			cgi_S_RegisterSound (snd) );
-#endif
+	if ( command ) {
+		command->func();
 		return;
 	}
 

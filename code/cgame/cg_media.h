@@ -19,6 +19,11 @@ This file is part of Jedi Academy.
 #ifndef __CG_MEDIA_H_
 #define __CG_MEDIA_H_
 
+#include "../qcommon/q_shared.h"
+#include "../rd-common/tr_types.h"
+#include "../cgame/cg_local.h"
+#include "g_shared.h"
+
 #define	NUM_CROSSHAIRS		9
 
 typedef enum {
@@ -60,8 +65,8 @@ typedef enum {
 
 typedef struct HUDMenuItem_s
 {
-	char			*menuName;
-	char			*itemName;
+	const char		*menuName;
+	const char		*itemName;
 	int				xPos;
 	int				yPos;
 	int				width;
@@ -94,7 +99,7 @@ typedef enum
 
 #define NUM_CHUNK_MODELS	4
 
-typedef enum 
+enum 
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,

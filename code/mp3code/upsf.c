@@ -37,9 +37,7 @@ Layer III
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include "L3.h"
-
-//extern int iframe;
+#include "l3.h"
 
 unsigned int bitget(int n);
 

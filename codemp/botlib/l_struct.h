@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_struct.h
@@ -5,7 +6,7 @@
  * desc:		structure reading/writing
  *
  * $Archive: /source/code/botlib/l_struct.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -54,5 +55,3 @@ int WriteStructure(FILE *fp, structdef_t *def, char *structure);
 int WriteIndent(FILE *fp, int indent);
 //writes a float without traling zeros
 int WriteFloat(FILE *fp, float value);
-
-

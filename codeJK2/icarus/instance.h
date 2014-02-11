@@ -21,11 +21,11 @@ This file is part of Jedi Knight 2.
 #ifndef __INSTANCE__
 #define __INSTANCE__
 
-#include "BlockStream.h"
-#include "Interface.h"
-#include "TaskManager.h"
-#include "Sequence.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "interface.h"
+#include "taskmanager.h"
+#include "sequence.h"
+#include "sequencer.h"
 
 class ICARUS_Instance
 {
@@ -36,7 +36,7 @@ public:
 	typedef map < string, unsigned char >	signal_m;
 
 	ICARUS_Instance( void );
-	~ICARUS_Instance( void );
+	virtual ~ICARUS_Instance( void );
 
 	static	ICARUS_Instance *Create( interface_export_t * );
 	int Delete( void );

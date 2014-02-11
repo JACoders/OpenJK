@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
@@ -7,12 +9,14 @@
  * desc:		Area Awareness System, stuff exported to the AI
  *
  * $Archive: /source/code/botlib/be_aas.h $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 2003/03/15 23:43:59 $
  *
  *****************************************************************************/
+
+#define AASINTERN
 
 #ifndef MAX_STRINGFIELD
 #define MAX_STRINGFIELD				80

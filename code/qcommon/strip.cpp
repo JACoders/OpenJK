@@ -19,12 +19,13 @@ This file is part of Jedi Knight 2.
 #ifndef __NO_JK2
 // this include must remain at the top of every CPP file
 #include "../server/server.h"
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 
 
 #include "stringed_ingame.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable:4510)	//default ctor could not be generated
 #pragma warning(disable:4511)
 #pragma warning(disable:4512)
@@ -33,10 +34,13 @@ This file is part of Jedi Knight 2.
 
 #pragma warning (push, 3)		//go back down to 3 for the stl include
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 #include <string>
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning(disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 
 cvar_t	*sp_language;
 static cvar_t	*sp_show_strip;
@@ -88,46 +92,6 @@ static cvar_t	*sp_leet;
 #define SP_REGISTER_MENU	 (0x04)
 #define SP_REGISTER_REQUIRED (0x08)
 
-class cStrings
-{
-private:
-	unsigned int	Flags;
-	char			*Reference;
-	
-public:
-					 cStrings(unsigned int initFlags = 0, char *initReference = NULL);
-	virtual			~cStrings(void);
-
-	virtual void	Clear(void);
-
-	void			SetFlags(unsigned int newFlags);
-	void			SetReference(char *newReference);
-
-	unsigned int	GetFlags(void) { return Flags; }
-	char			*GetReference(void) { return Reference; }
-
-	virtual bool	UnderstandToken(int token, char *data );
-	virtual bool	Load(char *&Data, int &Size );
-};
-
-
-class cStringsSingle : public cStrings
-{
-private:
-	char			*Text;
-
-	virtual void	Clear(void);
-	void			SetText(const char *newText);
-
-public:
-					 cStringsSingle(unsigned int initFlags = 0, char *initReference = NULL);
-	virtual			~cStringsSingle();
-
-	char			*GetText(void) { return Text; }
-
-	virtual bool	UnderstandToken(int token, char *data );
-};
-
 
 //======================================================================
 
@@ -153,7 +117,7 @@ protected:
 
 public:
 					cStringPackage(const char *in, unsigned char initID = 0, char *initDescription = NULL, char *initReference = NULL);
-					~cStringPackage(void);
+	virtual			~cStringPackage(void);
 
 	void			Register(unsigned char newRegistration) { Registration |= newRegistration; }
 	bool			UnRegister(unsigned char oldRegistration) { Registration &= ~oldRegistration; return (Registration == 0); }
@@ -236,7 +200,7 @@ enum
 };
 
 
-char *Tokens[TK_END] = 
+const char *Tokens[TK_END] = 
 {
 	"TEXT_LANGUAGE1",
 	"TEXT_LANGUAGE2", 
@@ -322,14 +286,14 @@ int FindToken(char *token, bool whole)
 	{
 		if (whole)
 		{
-			if (strcmpi(token, Tokens[token_value]) == 0)
+			if (Q_stricmp(token, Tokens[token_value]) == 0)
 			{
 				return token_value;
 			}
 		}
 		else
 		{
-			if (_strnicmp(token, Tokens[token_value], strlen(Tokens[token_value])) == 0)
+			if (Q_stricmpn(token, Tokens[token_value], strlen(Tokens[token_value])) == 0)
 			{
 				i = strlen(Tokens[token_value]);
 				while(token[i] == ' ')
@@ -763,7 +727,7 @@ static void FixIllegalChars(char *psText)
 							'O','0','L','1','E','3','A','4','S','5','T','7','I','!','H','#'	// laziness because of strchr()
 						};
 
-		for (int i=0; i<sizeof(cReplace); i+=2)
+		for (size_t i=0; i<sizeof(cReplace); i+=2)
 		{
 			while ((p=strchr(psText,cReplace[i]))!=NULL)
 				*p = cReplace[i+1];
@@ -960,7 +924,7 @@ int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 	}
 
 	size = strlen(Reference);
-	if (strlen(ReferenceLookup) < size+2)
+	if ((int)strlen(ReferenceLookup) < size+2)
 	{
 		return -1;
 	}
@@ -1044,7 +1008,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
 
 	Q_strncpyz(Package, inPackage, MAX_QPATH);
-	strupr(Package);
+	Q_strupr(Package);
 
 	i = JK2SP_ListByName.find(Package);
 	if (i != JK2SP_ListByName.end())
@@ -1110,7 +1074,7 @@ void JK2SP_Unload(unsigned char Registration)
 
 			id = JK2SP_ListByID.find((*i).second->GetID());
 			JK2SP_ListByID.erase(id);
-			delete (*i).second;
+			delete i->second;
 			JK2SP_ListByName.erase(i);
 		}
 	}
@@ -1125,7 +1089,7 @@ int JK2SP_GetStringID(const char *inReference)
 	int													ID;
 	char Reference[MAX_QPATH];
 	Q_strncpyz(Reference, inReference, MAX_QPATH);
-	strupr(Reference);
+	Q_strupr(Reference);
 
 	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); i++)
 	{
@@ -1223,7 +1187,7 @@ const char *JK2SP_GetReferenceText(unsigned short ID, const char *&psPackageName
 const char *JK2SP_GetStringText(unsigned short ID)
 {
 	cStringsSingle			*string;
-	char					*value;
+	const char					*value;
 
 	string = JK2SP_GetString(ID);
 

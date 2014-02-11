@@ -57,9 +57,10 @@ CRMNode::CRMNode ( )
  ************************************************************************************************/
 CRMPathManager::CRMPathManager ( CRandomTerrain* terrain )
 : mXNodes(0), mYNodes(0), mPathCount(0), mRiverCount(0), mMaxDepth(0), mDepth(0),
+  mCrossed(false),
   mPathPoints(10), mPathMinWidth(0.02f), mPathMaxWidth(0.04f), mPathDepth(0.3f), mPathDeviation(0.03f), mPathBreadth(5),
   mRiverDepth(5), mRiverPoints(10), mRiverMinWidth(0.01f), mRiverMaxWidth(0.02f), mRiverBedDepth(1), mRiverDeviation(0.01f), mRiverBreadth(7),
-  mTerrain(terrain), mCrossed(false)
+  mTerrain(terrain)
 {
 }
 
@@ -99,7 +100,7 @@ void CRMPathManager::CreateLocation ( const char* name, const int min_depth, int
 	}
 
 	for (i = mLocations.size()-1; i>=0; --i)
-		if ( !stricmp ( name, mLocations[i]->GetName ( ) ) )
+		if ( !Q_stricmp ( name, mLocations[i]->GetName ( ) ) )
 		{
 			mLocations[i]->SetMinDepth(min_depth);
 			mLocations[i]->SetMaxDepth(max_depth);
@@ -108,8 +109,8 @@ void CRMPathManager::CreateLocation ( const char* name, const int min_depth, int
 			return;
 		}
 
-	CRMLoc* pLoc= new CRMLoc(name, min_depth, max_depth, min_paths, max_paths); 
-	mLocations.push_back(pLoc); 
+	CRMLoc* pLoc= new CRMLoc(name, min_depth, max_depth, min_paths, max_paths);
+	mLocations.push_back(pLoc);
 	mMaxDepth =  max(mMaxDepth, max_depth);
 }
 
@@ -121,7 +122,7 @@ void CRMPathManager::ClearCells(int x_nodes, int y_nodes)
 	CRMCell empty;
 	for (x=0; x < x_nodes * y_nodes; x++)
 	{
-		if (x >= mCells.size())
+		if (x >= (int)mCells.size())
 			mCells.push_back(empty);
 		else
 			mCells[x] = empty;
@@ -199,7 +200,7 @@ bool CRMPathManager::CreateArray(const int x_nodes, const int y_nodes)
 			pos[0] = TheRandomMissionManager->GetLandScape()->flrand(cell_x - x_rnd, cell_x + x_rnd);
 			pos[1] = TheRandomMissionManager->GetLandScape()->flrand(cell_y - y_rnd, cell_y + y_rnd);
 			pos[2] = 0;
-			 
+
 			SetNodePos(x, y, pos);
 		}
 	}
@@ -253,7 +254,7 @@ void CRMPathManager::PlaceLocation(const int c_x, const int c_y)
 			}
 		}
 
-		if (deepest_loc >= 0 && deepest_loc < mLocations.size())
+		if (deepest_loc >= 0 && deepest_loc < (int)mLocations.size())
 		{	// found a location to place at this node / cell
 			const char * name = mLocations[deepest_loc]->GetName();
 			Node(c_x,c_y)->SetName(name);
@@ -265,7 +266,7 @@ void CRMPathManager::PlaceLocation(const int c_x, const int c_y)
 			{
 				// figure out new max depth based on the max depth of unplaced locations
 				if (!mLocations[i]->Placed() &&	   			// node has not been placed
-					 mLocations[i]->MaxDepth() > max_depth)	// and this is the deepest 
+					 mLocations[i]->MaxDepth() > max_depth)	// and this is the deepest
 				{
 					max_depth = mLocations[i]->MaxDepth();
 				}
@@ -290,7 +291,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 {
 	// does this cell have any neighbors with all walls intact?
 	int i,off;
-	
+
 	// look at neighbors in random order
 	off = TheRandomMissionManager->GetLandScape()->irand(DIR_FIRST, DIR_MAX-1);
 
@@ -316,7 +317,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 				{
 					new_dir = d - HALF_DIR_MAX;
 				}
-	
+
 				// knock down walls
 				Cell(c_x,c_y).RemoveWall(d);
 				Cell(new_c_x,new_c_y).RemoveWall(new_dir); //DIR_MAX - d);
@@ -342,7 +343,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 
 				// flatten a small spot
 				CArea		area;
-				float flat_radius = mPathMaxWidth * 
+				float flat_radius = mPathMaxWidth *
 					fabs(TheRandomMissionManager->GetLandScape()->GetBounds()[1][0] - TheRandomMissionManager->GetLandScape()->GetBounds()[0][0]);
 				area.Init( GetNodePos(c_x,c_y), flat_radius, 0.0f, AT_NONE, 0, 0 );
 				TheRandomMissionManager->GetLandScape()->FlattenArea(&area, 255 * mPathDepth, false, true, true );
@@ -352,16 +353,16 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 			}
 		}
 	}
-	
+
 	--mDepth;
 
 	// NOTE: *whoop* hack alert, the first time this is reached, it should be the very last placed node.
 	if( !mCrossed && TheRandomMissionManager->GetMission()->GetSymmetric() &&
 		TheRandomMissionManager->GetMission()->GetBackUpPath() )
-	{	
-		mCrossed = true; 
-	
-		int directionSet[3][3] = {DIR_NW,DIR_W,DIR_SW,DIR_N,-1,DIR_S,DIR_NE,DIR_E,DIR_SE};
+	{
+		mCrossed = true;
+
+		int directionSet[3][3] = { {DIR_NW,DIR_W,DIR_SW},{DIR_N,-1,DIR_S},{DIR_NE,DIR_E,DIR_SE}};
 		int	ncx	= (mXNodes-1)-c_x;
 		int	ncy	= (mYNodes-1)-c_y;
 
@@ -385,7 +386,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 		{
 			y_delta = 1;
 		}
-		
+
 		// make sure the mirror is actually in a different position than then un-mirrored node
 		if( x_delta || y_delta )
 		{
@@ -413,7 +414,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 			// set path id
 			Node(c_x, c_y)->SetPath(d, mPathCount);
 			Node(ncx, ncy)->SetPath(new_dir, mPathCount); //DIR_MAX - d, mPathCount);
-		
+
 			// create an artificial path that crosses over to connect the symmetric and non-symmetric map parts
 			mTerrain->CreatePath( mPathCount++,
 								-1,
@@ -428,7 +429,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 								mPathDepth,
 								mPathDeviation,
 								mPathBreadth );
-		
+
 		}
 	}
 
@@ -453,7 +454,7 @@ CRMNode* CRMPathManager::FindNodeByName ( const char* name )
 
 	for ( j = mNodes.size() - 1; j >=0; j-- )
 	{
-		if ( !stricmp ( name, mNodes[j]->GetName ( ) ) )
+		if ( !Q_stricmp ( name, mNodes[j]->GetName ( ) ) )
 			return mNodes[j];
 	}
 	return NULL;
@@ -471,7 +472,7 @@ CRMNode* CRMPathManager::FindNodeByName ( const char* name )
  *	none
  *
  ************************************************************************************************/
-void CRMPathManager::SetPathStyle ( 
+void CRMPathManager::SetPathStyle (
 	const int	points,
 	const float	minwidth,
 	const float	maxwidth,
@@ -504,8 +505,8 @@ void CRMPathManager::SetRiverStyle (const int   depth,
 									const int	points,
 									const float minwidth,
 									const float maxwidth,
-									const float beddepth, 
-									const float deviation, 
+									const float beddepth,
+									const float deviation,
 									const float breadth,
 									string bridge_name)
 {
@@ -520,11 +521,11 @@ void CRMPathManager::SetRiverStyle (const int   depth,
 	mRiverBridge   = bridge_name;
 }
 
-vec3_t&	CRMPathManager::GetRiverPos( const int x, const int y ) 
-{ 
+vec3_t&	CRMPathManager::GetRiverPos( const int x, const int y )
+{
 	mRiverPos[0] = (float)(x + 1.0f) / (float)(mXNodes+2);
 	mRiverPos[1] = (float)(y + 1.0f) / (float)(mYNodes+2);
-	return mRiverPos; 
+	return mRiverPos;
 }
 
 void CRMPathManager::RiverVisit(const int c_x, const int c_y)
@@ -579,7 +580,7 @@ void CRMPathManager::RiverVisit(const int c_x, const int c_y)
 
 				// flatten a small spot
 				CArea		area;
-				float flat_radius = mRiverMinWidth * 
+				float flat_radius = mRiverMinWidth *
 					fabs(TheRandomMissionManager->GetLandScape()->GetBounds()[1][0] - TheRandomMissionManager->GetLandScape()->GetBounds()[0][0]);
 				area.Init( GetRiverPos(c_x,c_y), flat_radius, 0.0f, AT_NONE, 0, 0 );
 				TheRandomMissionManager->GetLandScape()->FlattenArea (&area, 255 * mRiverBedDepth, false, true, true );
@@ -589,7 +590,7 @@ void CRMPathManager::RiverVisit(const int c_x, const int c_y)
 			}
 		}
 	}
-	
+
 //	--mDepth;
 }
 
@@ -660,7 +661,7 @@ void CRMPathManager::GenerateRivers ()
 
 /************************************************************************************************
  * CRMPathManager::GeneratePaths
- *	Creates all paths 
+ *	Creates all paths
  *
  * inputs:
  *  none

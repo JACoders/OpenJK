@@ -9,8 +9,8 @@ void InitTrigger( gentity_t *self ) {
 	if (!VectorCompare (self->s.angles, vec3_origin))
 		G_SetMovedir (self->s.angles, self->movedir);
 
-	trap_SetBrushModel( self, self->model );
-	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap_SetBrushModel
+	trap->SetBrushModel( (sharedEntity_t *)self, self->model );
+	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap->SetBrushModel
 	self->r.svFlags = SVF_NOCLIENT;
 
 	if(self->spawnflags & 128)
@@ -29,7 +29,7 @@ void trigger_cleared_fire (gentity_t *self);
 // the trigger was just activated
 // ent->activator should be set to the activator so it can be held through a delay
 // so wait for the delay time before firing
-void multi_trigger_run( gentity_t *ent ) 
+void multi_trigger_run( gentity_t *ent )
 {
 	ent->think = 0;
 
@@ -37,7 +37,7 @@ void multi_trigger_run( gentity_t *ent )
 
 	if ( ent->soundSet && ent->soundSet[0] )
 	{
-		trap_SetConfigstring( CS_GLOBAL_AMBIENT_SET, ent->soundSet );
+		trap->SetConfigstring( CS_GLOBAL_AMBIENT_SET, ent->soundSet );
 	}
 
 	if (ent->genericValue4)
@@ -57,7 +57,7 @@ void multi_trigger_run( gentity_t *ent )
 	}
 
 	G_UseTargets (ent, ent->activator);
-	if ( ent->noise_index ) 
+	if ( ent->noise_index )
 	{
 		G_Sound( ent->activator, CHAN_AUTO, ent->noise_index );
 	}
@@ -67,7 +67,7 @@ void multi_trigger_run( gentity_t *ent )
 		ent->think = trigger_cleared_fire;
 		ent->nextthink = level.time + ent->speed;
 	}
-	else if ( ent->wait > 0 ) 
+	else if ( ent->wait > 0 )
 	{
 		if ( ent->painDebounceTime != level.time )
 		{//first ent to touch it this frame
@@ -75,7 +75,7 @@ void multi_trigger_run( gentity_t *ent )
 			ent->nextthink = level.time + ( ent->wait + ent->random * crandom() ) * 1000;
 			ent->painDebounceTime = level.time;
 		}
-	} 
+	}
 	else if ( ent->wait < 0 )
 	{
 		// we can't just remove (self) here, because this is a touch function
@@ -127,7 +127,7 @@ qboolean G_NameInTriggerClassList(char *list, char *str)
 
 extern qboolean gSiegeRoundBegun;
 void SiegeItemRemoveOwner(gentity_t *ent, gentity_t *carrier);
-void multi_trigger( gentity_t *ent, gentity_t *activator ) 
+void multi_trigger( gentity_t *ent, gentity_t *activator )
 {
 	qboolean haltTrigger = qfalse;
 
@@ -136,13 +136,13 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		return;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		!gSiegeRoundBegun)
 	{ //nothing can be used til the round starts.
 		return;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		activator && activator->client &&
 		ent->alliedTeam &&
 		activator->client->sess.sessionTeam != ent->alliedTeam)
@@ -150,7 +150,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		return;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		ent->idealclass && ent->idealclass[0])
 	{ //only certain classes can activate it
 		if (!activator ||
@@ -166,7 +166,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		}
 	}
 
-	if (g_gametype.integer == GT_SIEGE && ent->genericValue1)
+	if (level.gametype == GT_SIEGE && ent->genericValue1)
 	{
 		haltTrigger = qtrue;
 
@@ -224,7 +224,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		int entityList[MAX_GENTITIES];
 		gentity_t *cl;
 
-		if (g_gametype.integer != GT_SIEGE)
+		if (level.gametype != GT_SIEGE)
 		{
 			return;
 		}
@@ -236,7 +236,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		}
 
 		//Count up the number of clients standing within the bounds of the trigger and the number of them on each team
-		numEnts = trap_EntitiesInBox( ent->r.absmin, ent->r.absmax, entityList, MAX_GENTITIES );
+		numEnts = trap->EntitiesInBox( ent->r.absmin, ent->r.absmax, entityList, MAX_GENTITIES );
 		while (i < numEnts)
 		{
 			if (entityList[i] < MAX_CLIENTS)
@@ -298,7 +298,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		return;
 	}
 
-	if ( ent->nextthink > level.time ) 
+	if ( ent->nextthink > level.time )
 	{
 		if( ent->spawnflags & 2048 ) // MULTIPLE - allow multiple entities to touch this trigger in a single frame
 		{
@@ -317,7 +317,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	// if the player has already activated this trigger this frame
 	if( activator && activator->s.number < MAX_CLIENTS && ent->aimDebounceTime == level.time )
 	{
-		return;	
+		return;
 	}
 
 	if ( ent->flags & FL_INACTIVE )
@@ -332,7 +332,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		ent->think = multi_trigger_run;
 		ent->nextthink = level.time + ent->delay;
 		ent->painDebounceTime = level.time;
-		
+
 	}
 	else
 	{
@@ -340,16 +340,16 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	}
 }
 
-void Use_Multi( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_Multi( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	multi_trigger( ent, activator );
 }
 
 qboolean G_PointInBounds( vec3_t point, vec3_t mins, vec3_t maxs );
 
-void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace ) 
+void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 {
-	if( !other->client ) 
+	if( !other->client )
 	{
 		return;
 	}
@@ -436,7 +436,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 
 		if (self->genericValue7)
 		{ //we have to be holding the use key in this trigger for x milliseconds before firing
-			if (g_gametype.integer == GT_SIEGE &&
+			if (level.gametype == GT_SIEGE &&
 				self->idealclass && self->idealclass[0])
 			{ //only certain classes can activate it
 				if (!other ||
@@ -536,7 +536,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 		}
 		other->client->ps.weaponTime = other->client->ps.torsoTimer;
 	}
-	
+
 	if ( self->think == trigger_cleared_fire )
 	{//We're waiting to fire our target2 first
 		self->nextthink = level.time + self->speed;
@@ -551,7 +551,7 @@ void trigger_cleared_fire (gentity_t *self)
 	G_UseTargets2( self, self->activator, self->target2 );
 	self->think = 0;
 	// should start the wait timer now, because the trigger's just been cleared, so we must "wait" from this point
-	if ( self->wait > 0 ) 
+	if ( self->wait > 0 )
 	{
 		self->nextthink = level.time + ( self->wait + self->random * crandom() ) * 1000;
 	}
@@ -604,10 +604,10 @@ idealclass	-	Can only be used by this class/these classes. You can specify use b
 				multiple classes with the use of |, e.g.:
 				"Imperial Medic|Imperial Assassin|Imperial Demolitionist"
 */
-void SP_trigger_multiple( gentity_t *ent ) 
+void SP_trigger_multiple( gentity_t *ent )
 {
 	char	*s;
-	if ( G_SpawnString( "noise", "", &s ) ) 
+	if ( G_SpawnString( "noise", "", &s ) )
 	{
 		if (s && s[0])
 		{
@@ -652,7 +652,7 @@ void SP_trigger_multiple( gentity_t *ent )
 	}
 
 	InitTrigger( ent );
-	trap_LinkEntity (ent);
+	trap->LinkEntity ((sharedEntity_t *)ent);
 }
 
 
@@ -691,10 +691,10 @@ idealclass	-	Can only be used by this class/these classes. You can specify use b
 				multiple classes with the use of |, e.g.:
 				"Imperial Medic|Imperial Assassin|Imperial Demolitionist"
 */
-void SP_trigger_once( gentity_t *ent ) 
+void SP_trigger_once( gentity_t *ent )
 {
 	char	*s;
-	if ( G_SpawnString( "noise", "", &s ) ) 
+	if ( G_SpawnString( "noise", "", &s ) )
 	{
 		if (s && s[0])
 		{
@@ -727,7 +727,7 @@ void SP_trigger_once( gentity_t *ent )
 	ent->delay *= 1000;//1 = 1 msec, 1000 = 1 sec
 
 	InitTrigger( ent );
-	trap_LinkEntity (ent);
+	trap->LinkEntity ((sharedEntity_t *)ent);
 }
 
 /*
@@ -742,7 +742,7 @@ void Do_Strike(gentity_t *ent)
 	vec3_t strikeFrom;
 	vec3_t strikePoint;
 	vec3_t fxAng;
-	
+
 	//maybe allow custom fx direction at some point?
 	VectorSet(fxAng, 90.0f, 0.0f, 0.0f);
 
@@ -759,7 +759,7 @@ void Do_Strike(gentity_t *ent)
 	strikeFrom[2] = ent->r.absmax[2]-4.0f;
 
 	//now trace for damaging stuff, and do the effect
-	trap_Trace(&localTrace, strikeFrom, NULL, NULL, strikePoint, ent->s.number, MASK_PLAYERSOLID);
+	trap->Trace(&localTrace, strikeFrom, NULL, NULL, strikePoint, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 	VectorCopy(localTrace.endpos, strikePoint);
 
 	if (localTrace.startsolid || localTrace.allsolid)
@@ -798,7 +798,7 @@ void Think_Strike(gentity_t *ent)
 }
 
 //lightning strike trigger use event function
-void Use_Strike( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
+void Use_Strike( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	ent->genericValue1 = !ent->genericValue1;
 
@@ -821,7 +821,7 @@ START_OFF - start trigger disabled
 
 use to toggle on and off
 */
-void SP_trigger_lightningstrike( gentity_t *ent ) 
+void SP_trigger_lightningstrike( gentity_t *ent )
 {
 	char *s;
 
@@ -857,7 +857,7 @@ void SP_trigger_lightningstrike( gentity_t *ent )
 	}
 
 	InitTrigger( ent );
-	trap_LinkEntity (ent);
+	trap->LinkEntity ((sharedEntity_t *)ent);
 }
 
 
@@ -934,10 +934,10 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	// if the player has already activated this trigger this frame
 	if( other && !other->s.number && self->aimDebounceTime == level.time )
 	{
-		return;		
+		return;
 	}
 	*/
-	
+
 	/*
 	if( self->spawnflags & PUSH_CONVEYOR )
 	{   // only push player if he's on the ground
@@ -978,13 +978,13 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 		return;
 	}
 
-	if ( other->client->ps.pm_type != PM_NORMAL 
-		&& other->client->ps.pm_type != PM_DEAD 
-		&& other->client->ps.pm_type != PM_FREEZE ) 
+	if ( other->client->ps.pm_type != PM_NORMAL
+		&& other->client->ps.pm_type != PM_DEAD
+		&& other->client->ps.pm_type != PM_FREEZE )
 	{
 		return;
 	}
-	
+
 	if ( (self->spawnflags&PUSH_RELATIVE) )
 	{//relative, dir to it * speed
 		vec3_t dir;
@@ -1018,7 +1018,7 @@ void trigger_push_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	else if ( self->wait > 0 )
 	{
 		self->painDebounceTime = level.time;
-		
+
 	}
 	/*
 	if( other && !other->s.number )
@@ -1119,7 +1119,7 @@ void SP_trigger_push( gentity_t *self ) {
 	G_SoundIndex("sound/weapons/force/jump.wav");
 
 	self->s.eType = ET_PUSH_TRIGGER;
-	
+
 	if ( !(self->spawnflags&2) )
 	{//start on
 		self->touch = trigger_push_touch;
@@ -1132,7 +1132,7 @@ void SP_trigger_push( gentity_t *self ) {
 
 	self->think = AimAtTarget;
 	self->nextthink = level.time + FRAMETIME;
-	trap_LinkEntity (self);
+	trap->LinkEntity ((sharedEntity_t *)self);
 }
 
 void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) {
@@ -1209,7 +1209,7 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		return;
 	}
 	// Spectators only?
-	if ( ( self->spawnflags & 1 ) && 
+	if ( ( self->spawnflags & 1 ) &&
 		other->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		return;
 	}
@@ -1217,7 +1217,7 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 
 	dest = 	G_PickTarget( self->target );
 	if (!dest) {
-		G_Printf ("Couldn't find teleporter destination\n");
+		trap->Print ("Couldn't find teleporter destination\n");
 		return;
 	}
 
@@ -1250,7 +1250,7 @@ void SP_trigger_teleport( gentity_t *self ) {
 	self->s.eType = ET_TELEPORT_TRIGGER;
 	self->touch = trigger_teleporter_touch;
 
-	trap_LinkEntity (self);
+	trap->LinkEntity ((sharedEntity_t *)self);
 }
 
 
@@ -1290,16 +1290,16 @@ void hurt_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
 	G_ActivateBehavior(self,BSET_USE);
 
 	if ( self->r.linked ) {
-		trap_UnlinkEntity( self );
+		trap->UnlinkEntity( (sharedEntity_t *)self );
 	} else {
-		trap_LinkEntity( self );
+		trap->LinkEntity( (sharedEntity_t *)self );
 	}
 }
 
 void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	int		dflags;
 
-	if (g_gametype.integer == GT_SIEGE && self->team && self->team[0])
+	if (level.gametype == GT_SIEGE && self->team && self->team[0])
 	{
 		int team = atoi(self->team);
 
@@ -1331,7 +1331,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if (self->damage == -1 && other && other->client && other->health < 1)
 	{
 		other->client->ps.fallingToDeath = 0;
-		respawn(other);
+		ClientRespawn(other);
 		return;
 	}
 
@@ -1387,7 +1387,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 
 		self->timestamp = 0; //do not ignore others
 	}
-	else	
+	else
 	{
 		int dmg = self->damage;
 
@@ -1427,11 +1427,11 @@ void SP_trigger_hurt( gentity_t *self ) {
 
 	// link in to the world if starting active
 	if ( ! (self->spawnflags & 1) ) {
-		trap_LinkEntity (self);
+		trap->LinkEntity ((sharedEntity_t *)self);
 	}
 	else if (self->r.linked)
 	{
-		trap_UnlinkEntity(self);
+		trap->UnlinkEntity((sharedEntity_t *)self);
 	}
 }
 
@@ -1474,7 +1474,7 @@ void space_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	other->client->inSpaceIndex = self->s.number;
 }
 
-/*QUAKED trigger_space (.5 .5 .5) ? 
+/*QUAKED trigger_space (.5 .5 .5) ?
 causes human clients to suffocate and have no gravity.
 
 */
@@ -1482,10 +1482,10 @@ void SP_trigger_space(gentity_t *self)
 {
 	InitTrigger(self);
 	self->r.contents = CONTENTS_TRIGGER;
-	
+
 	self->touch = space_touch;
 
-    trap_LinkEntity(self);
+    trap->LinkEntity((sharedEntity_t *)self);
 }
 
 void shipboundary_touch( gentity_t *self, gentity_t *other, trace_t *trace )
@@ -1507,7 +1507,7 @@ void shipboundary_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	ent = G_Find (NULL, FOFS(targetname), self->target);
 	if (!ent || !ent->inuse)
 	{ //this is bad
-		G_Error("trigger_shipboundary has invalid target '%s'\n", self->target);
+		trap->Error( ERR_DROP, "trigger_shipboundary has invalid target '%s'\n", self->target );
 		return;
 	}
 
@@ -1518,7 +1518,7 @@ void shipboundary_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 	}
 
 	//make sure this sucker is linked so the prediction knows where to go
-	trap_LinkEntity(ent);
+	trap->LinkEntity((sharedEntity_t *)ent);
 
 	other->client->ps.vehTurnaroundIndex = ent->s.number;
 	other->client->ps.vehTurnaroundTime = level.time + (self->genericValue1*2);
@@ -1541,7 +1541,7 @@ void shipboundary_think(gentity_t *ent)
 		return;
 	}
 
-	numListedEntities = trap_EntitiesInBox( ent->r.absmin, ent->r.absmax, iEntityList, MAX_GENTITIES );
+	numListedEntities = trap->EntitiesInBox( ent->r.absmin, ent->r.absmax, iEntityList, MAX_GENTITIES );
 	while (i < numListedEntities)
 	{
 		listedEnt = &g_entities[iEntityList[i]];
@@ -1561,7 +1561,7 @@ void shipboundary_think(gentity_t *ent)
 	}
 }
 
-/*QUAKED trigger_shipboundary (.5 .5 .5) ? 
+/*QUAKED trigger_shipboundary (.5 .5 .5) ?
 causes vehicle to turn toward target and travel in that direction for a set time when hit.
 
 "target"		name of entity to turn toward (can be info_notnull, or whatever).
@@ -1572,23 +1572,23 @@ void SP_trigger_shipboundary(gentity_t *self)
 {
 	InitTrigger(self);
 	self->r.contents = CONTENTS_TRIGGER;
-	
+
 	if (!self->target || !self->target[0])
 	{
-		G_Error("trigger_shipboundary without a target.");
+		trap->Error( ERR_DROP, "trigger_shipboundary without a target." );
 	}
 	G_SpawnInt("traveltime", "0", &self->genericValue1);
 
 	if (!self->genericValue1)
 	{
-		G_Error("trigger_shipboundary without traveltime.");
+		trap->Error( ERR_DROP, "trigger_shipboundary without traveltime." );
 	}
 
 	self->think = shipboundary_think;
 	self->nextthink = level.time + 500;
 	self->touch = shipboundary_touch;
 
-    trap_LinkEntity(self);
+    trap->LinkEntity((sharedEntity_t *)self);
 }
 
 void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
@@ -1617,7 +1617,7 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				ent = G_Find (NULL, FOFS(targetname), self->target);
 				if (!ent || !ent->inuse)
 				{ //this is bad
-					G_Error("trigger_hyperspace has invalid target '%s'\n", self->target);
+					trap->Error( ERR_DROP, "trigger_hyperspace has invalid target '%s'\n", self->target );
 					return;
 				}
 				VectorSubtract( other->client->ps.origin, ent->s.origin, diff );
@@ -1629,7 +1629,7 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				ent = G_Find (NULL, FOFS(targetname), self->target2);
 				if (!ent || !ent->inuse)
 				{ //this is bad
-					G_Error("trigger_hyperspace has invalid target2 '%s'\n", self->target2);
+					trap->Error( ERR_DROP, "trigger_hyperspace has invalid target2 '%s'\n", self->target2 );
 					return;
 				}
 				VectorCopy( ent->s.origin, newOrg );
@@ -1638,7 +1638,7 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				VectorMA( newOrg, fDiff, fwd, newOrg );
 				VectorMA( newOrg, rDiff, right, newOrg );
 				VectorMA( newOrg, uDiff, up, newOrg );
-				//G_Printf("hyperspace from %s to %s\n", vtos(other->client->ps.origin), vtos(newOrg) );
+				//trap->Print("hyperspace from %s to %s\n", vtos(other->client->ps.origin), vtos(newOrg) );
 				//now put them in the offset position, facing the angles that position wants them to be facing
 				TeleportPlayer( other, newOrg, ent->s.angles );
 				if ( other->m_pVehicle && other->m_pVehicle->m_pPilot )
@@ -1660,7 +1660,7 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 		ent = G_Find (NULL, FOFS(targetname), self->target);
 		if (!ent || !ent->inuse)
 		{ //this is bad
-			G_Error("trigger_hyperspace has invalid target '%s'\n", self->target);
+			trap->Error( ERR_DROP, "trigger_hyperspace has invalid target '%s'\n", self->target );
 			return;
 		}
 
@@ -1682,20 +1682,20 @@ void trigger_hyperspace_find_targets( gentity_t *self )
 	targEnt = G_Find (NULL, FOFS(targetname), self->target);
 	if (!targEnt || !targEnt->inuse)
 	{ //this is bad
-		G_Error("trigger_hyperspace has invalid target '%s'\n", self->target);
+		trap->Error( ERR_DROP, "trigger_hyperspace has invalid target '%s'\n", self->target );
 		return;
 	}
 	targEnt->r.svFlags |= SVF_BROADCAST;//crap, need to tell the cgame about the target_position
 	targEnt = G_Find (NULL, FOFS(targetname), self->target2);
 	if (!targEnt || !targEnt->inuse)
 	{ //this is bad
-		G_Error("trigger_hyperspace has invalid target2 '%s'\n", self->target2);
+		trap->Error( ERR_DROP, "trigger_hyperspace has invalid target2 '%s'\n", self->target2 );
 		return;
 	}
 	targEnt->r.svFlags |= SVF_BROADCAST;//crap, need to tell the cgame about the target_position
 }
 */
-/*QUAKED trigger_hyperspace (.5 .5 .5) ? 
+/*QUAKED trigger_hyperspace (.5 .5 .5) ?
 Ship will turn to face the angles of the first target_position then fly forward, playing the hyperspace effect, then pop out at a relative point around the target
 
 "target"		whatever position the ship teleports from in relation to the target_position specified here, that's the relative position the ship will spawn at around the target2 target_position
@@ -1708,21 +1708,21 @@ void SP_trigger_hyperspace(gentity_t *self)
 
 	InitTrigger(self);
 	self->r.contents = CONTENTS_TRIGGER;
-	
+
 	if (!self->target || !self->target[0])
 	{
-		G_Error("trigger_hyperspace without a target.");
+		trap->Error( ERR_DROP, "trigger_hyperspace without a target." );
 	}
 	if (!self->target2 || !self->target2[0])
 	{
-		G_Error("trigger_hyperspace without a target2.");
+		trap->Error( ERR_DROP, "trigger_hyperspace without a target2." );
 	}
-	
+
 	self->delay = Distance( self->r.absmax, self->r.absmin );//my size
 
 	self->touch = hyperspace_touch;
 
-    trap_LinkEntity(self);
+    trap->LinkEntity((sharedEntity_t *)self);
 
 	//self->think = trigger_hyperspace_find_targets;
 	//self->nextthink = level.time + FRAMETIME;
@@ -1777,7 +1777,7 @@ void SP_func_timer( gentity_t *self ) {
 
 	if ( self->random >= self->wait ) {
 		self->random = self->wait - 1;//NOTE: was - FRAMETIME, but FRAMETIME is in msec (100) and these numbers are in *seconds*!
-		G_Printf( "func_timer at %s has random >= wait\n", vtos( self->s.origin ) );
+		trap->Print( "func_timer at %s has random >= wait\n", vtos( self->s.origin ) );
 	}
 
 	if ( self->spawnflags & 1 ) {
@@ -1824,7 +1824,7 @@ gentity_t *asteroid_pick_random_asteroid( gentity_t *self )
 		{
 			continue;
 		}
-		
+
 		if(t_count == pick)
 		{
 			return t;
@@ -1952,14 +1952,14 @@ void asteroid_field_think(gentity_t *self)
 	}
 }
 
-/*QUAKED trigger_asteroid_field (.5 .5 .5) ? 
+/*QUAKED trigger_asteroid_field (.5 .5 .5) ?
 speed - how fast, on average, the asteroid moves
 count - how many asteroids, max, to have at one time
 target - target this at func_rotating asteroids
 */
 void SP_trigger_asteroid_field(gentity_t *self)
 {
-	trap_SetBrushModel( self, self->model );
+	trap->SetBrushModel( (sharedEntity_t *)self, self->model );
 	self->r.contents = 0;
 
 	if ( !self->count )
@@ -1975,5 +1975,5 @@ void SP_trigger_asteroid_field(gentity_t *self)
 	self->think = asteroid_field_think;
 	self->nextthink = level.time + 100;
 
-    trap_LinkEntity(self);
+    trap->LinkEntity((sharedEntity_t *)self);
 }

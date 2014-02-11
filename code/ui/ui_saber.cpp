@@ -32,13 +32,7 @@ USER INTERFACE SABER LOADING & DISPLAY CODE
 #include "../ghoul2/G2.h"
 
 #define MAX_SABER_DATA_SIZE 0x80000
-// On Xbox, static linking lets us steal the buffer from wp_saberLoad
-// Just make sure that the saber data size is the same
-#ifdef _XBOX
-extern char SaberParms[MAX_SABER_DATA_SIZE];
-#else
 char	SaberParms[MAX_SABER_DATA_SIZE];
-#endif
 qboolean	ui_saber_parms_parsed = qfalse;
 
 static qhandle_t redSaberGlowShader;
@@ -110,6 +104,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -122,11 +117,13 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 	}
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 
 	if ( UI_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 		
@@ -137,6 +134,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		if ( !token[0] ) 
 		{
 			ui.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -152,6 +150,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 				continue;
 			}
 			strcpy( saberData, value );
+			COM_EndParseSession(  );
 			return qtrue;
 		}
 
@@ -159,6 +158,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		continue;
 	}
 
+	COM_EndParseSession(  );
 	return qfalse;
 }
 
@@ -204,8 +204,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	char	bladeStyle2StartString[8]={0};
 	char	noBladeString[8]={0};
 	UI_SaberParseParm( saberName, "bladeStyle2Start", bladeStyle2StartString );
-	if ( bladeStyle2StartString
-		&& bladeStyle2StartString[0] )
+	if ( bladeStyle2StartString[0] )
 	{
 		bladeStyle2Start = atoi( bladeStyle2StartString );
 	}
@@ -213,8 +212,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 		&& bladeNum >= bladeStyle2Start )
 	{//use second blade style
 		UI_SaberParseParm( saberName, "noBlade2", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}
@@ -222,8 +220,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	else
 	{//use first blade style
 		UI_SaberParseParm( saberName, "noBlade", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}
@@ -559,7 +556,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	float bladeLength = UI_SaberBladeLengthForSaber( saberName, bladeNum );
 	float bladeRadius = UI_SaberBladeRadiusForSaber( saberName, bladeNum );
 	vec3_t	bladeOrigin={0};
-	vec3_t	axis[3]={0};
+	vec3_t	axis[3]={};
 	mdxaBone_t	boltMatrix;
 	qboolean tagHack = qfalse;
 
@@ -740,6 +737,8 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 		case SABER_SITH_SWORD:
 			//no blade
 			break;
+		default:
+			break;
 		}
 	}
 	if ( saberType == SABER_SITH_SWORD )
@@ -901,13 +900,13 @@ void UI_SaberAttachToChar( itemDef_t *item )
 				int boltNum;
 				if ( saberNum == 0 )
 				{
-					boltNum = G2API_AddBolt(&item->ghoul2[0], "*r_hand");
+					boltNum = DC->g2_AddBolt(&item->ghoul2[0], "*r_hand");
 				}
 				else
 				{
-					boltNum = G2API_AddBolt(&item->ghoul2[0], "*l_hand");
+					boltNum = DC->g2_AddBolt(&item->ghoul2[0], "*l_hand");
 				}
-				G2API_AttachG2Model(&item->ghoul2[g2Saber], &item->ghoul2[0], boltNum, 0);
+				re.G2API_AttachG2Model(&item->ghoul2[g2Saber], &item->ghoul2[0], boltNum, 0);
 			}
 		}
 	}

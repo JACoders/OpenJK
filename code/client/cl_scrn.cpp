@@ -192,7 +192,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor ) {
+void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape ) {
 	vec4_t		color;
 	const char	*s;
 	int			xx;
@@ -204,12 +204,12 @@ void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qb
 	s = string;
 	xx = x;
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
+		if ( !noColorEscape && Q_IsColorString( s ) ) {
 			s += 2;
 			continue;
 		}
 		SCR_DrawBigChar( xx+2, y+2, *s );
-		xx+=16;
+		xx += BIGCHAR_WIDTH;
 		s++;
 	}
 
@@ -225,29 +225,67 @@ void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qb
 				color[3] = setColor[3];
 				re.SetColor( color );
 			}
-			s += 2;
-			continue;
+			if ( !noColorEscape ) {
+				s += 2;
+				continue;
+			}
 		}
 		SCR_DrawBigChar( xx, y, *s );
-		xx+=16;
+		xx += BIGCHAR_WIDTH;
 		s++;
 	}
 	re.SetColor( NULL );
 }
 
 
-void SCR_DrawBigString( int x, int y, const char *s, float alpha ) {
+void SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape ) {
 	float	color[4];
 
 	color[0] = color[1] = color[2] = 1.0;
 	color[3] = alpha;
-	SCR_DrawBigStringExt( x, y, s, color, qfalse );
+	SCR_DrawBigStringExt( x, y, s, color, qfalse, noColorEscape );
 }
 
-void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color ) {
-	SCR_DrawBigStringExt( x, y, s, color, qtrue );
+void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape ) {
+	SCR_DrawBigStringExt( x, y, s, color, qtrue, noColorEscape );
 }
 
+/*
+==================
+SCR_DrawSmallString[Color]
+
+Draws a multi-colored string with a drop shadow, optionally forcing
+to a fixed color.
+==================
+*/
+void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor,
+		qboolean noColorEscape ) {
+	vec4_t		color;
+	const char	*s;
+	int			xx;
+
+	// draw the colored text
+	s = string;
+	xx = x;
+	re.SetColor( setColor );
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			if ( !forceColor ) {
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				color[3] = setColor[3];
+				re.SetColor( color );
+			}
+			if ( !noColorEscape ) {
+				s += 2;
+				continue;
+			}
+		}
+		SCR_DrawSmallChar( xx, y, *s );
+		xx += SMALLCHAR_WIDTH;
+		s++;
+	}
+	re.SetColor( NULL );
+}
 
 /*
 ** SCR_Strlen -- skips color escape codes
@@ -272,7 +310,7 @@ static int SCR_Strlen( const char *str ) {
 ** SCR_GetBigStringWidth
 */ 
 int	SCR_GetBigStringWidth( const char *str ) {
-	return SCR_Strlen( str ) * 16;
+	return SCR_Strlen( str ) * BIGCHAR_WIDTH;
 }
 
 //===============================================================================
@@ -285,7 +323,6 @@ DEBUG GRAPH
 
 ===============================================================================
 */
-#ifndef _XBOX
 typedef struct
 {
 	float	value;
@@ -316,7 +353,6 @@ void SCR_DrawDebugGraph (void)
 {
 	int		a, x, y, w, i, h;
 	float	v;
-	int		color;
 
 	//
 	// draw the graph
@@ -333,7 +369,6 @@ void SCR_DrawDebugGraph (void)
 	{
 		i = (current-1-a+1024) & 1023;
 		v = values[i].value;
-		color = values[i].color;
 		v = v * cl_graphscale->integer + cl_graphshift->integer;
 		
 		if (v < 0)
@@ -342,7 +377,6 @@ void SCR_DrawDebugGraph (void)
 		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, 0 );
 	}
 }
-#endif	// _XBOX
 //=============================================================================
 
 /*
@@ -378,9 +412,11 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	re.BeginFrame( stereoFrame );
 
+	qboolean uiFullscreen = _UI_IsFullscreen();
+
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
-	if ( cls.state != CA_ACTIVE ) {
+	if ( uiFullscreen || (cls.state != CA_ACTIVE && cls.state != CA_CINEMATIC) ) {
 		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
 			re.SetColor( g_color_table[0] );
 			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, 0 );
@@ -390,7 +426,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
-	if ( !_UI_IsFullscreen() ) {
+	if ( !uiFullscreen ) {
 		switch( cls.state ) {
 		default:
 			Com_Error( ERR_FATAL, "SCR_DrawScreenField: bad cls.state" );
@@ -400,7 +436,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			break;
 		case CA_DISCONNECTED:
 			// force menu up
-			UI_SetActiveMenu( "mainMenu",NULL );	//			VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+			UI_SetActiveMenu( "mainMenu", NULL );
 			break;
 		case CA_CONNECTING:
 		case CA_CHALLENGING:
@@ -426,9 +462,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		}
 	}
 
-#ifndef _XBOX // on xbox this is rendered right before a flip
 	re.ProcessDissolve();
-#endif // _XBOX
 
 	// draw downloading progress bar
 
@@ -439,11 +473,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	Con_DrawConsole ();
 
 	// debug graph can be drawn on top of anything
-#ifndef _XBOX
 	if ( cl_debuggraph->integer || cl_timegraph->integer ) {
 		SCR_DrawDebugGraph ();
 	}
-#endif
 }
 
 /*
@@ -511,8 +543,7 @@ void SCR_PrecacheScreenshot()
 		return;
 	}
 
-#ifndef _XBOX
-	if (cls.keyCatchers == 0)
+	if (!Key_GetCatcher( ))
 	{
 		// in-game...
 		//
@@ -522,14 +553,6 @@ void SCR_PrecacheScreenshot()
 		re.GetScreenShot( (byte *) &bScreenData, SG_SCR_WIDTH, SG_SCR_HEIGHT);
 		screenDataValid = qtrue;
 	}
-#endif
-
-	// save the current screenshot to the user space to be used
-	// with a savegame
-#ifdef _XBOX
-	extern void SaveCompressedScreenshot( const char* filename );
-	SaveCompressedScreenshot("u:\\saveimage.xbx");
-#endif
 
 }
 

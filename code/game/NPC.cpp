@@ -20,11 +20,6 @@ This file is part of Jedi Academy.
 // NPC.cpp - generic functions
 //
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "b_local.h"
 #include "anims.h"
 #include "g_functions.h"
@@ -34,7 +29,6 @@ This file is part of Jedi Academy.
 
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
-//extern void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority,int *torsoAnimTimer,int *legsAnimTimer,gentity_t *gent);
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
 extern void NPC_BSNoClip ( void );
@@ -1688,6 +1682,8 @@ qboolean G_JediInNormalAI( gentity_t *ent )
 	case BS_FOLLOW_LEADER:
 		return qtrue;
 		break;
+	default:
+		break;
 	}
 	return qfalse;
 }
@@ -2100,6 +2096,8 @@ void NPC_RunBehavior( int team, int bState )
 			case CLASS_MARK2:
 				NPC_BehaviorSet_Mark2( bState );
 				return;
+			default:
+				break;
 			}
 
 
@@ -2526,6 +2524,8 @@ void NPC_Think ( gentity_t *self)//, int msec )
 					break;
 				case CLASS_GONK:				// droid
 					G_SoundOnEnt(self, CHAN_AUTO, va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2)) );
+					break;
+				default:
 					break;
 				}
 				TIMER_Set( self, "patrolNoise", Q_irand( 2000, 4000 ) );

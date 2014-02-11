@@ -20,7 +20,7 @@ This file is part of Jedi Knight 2.
 #define __G_ROFF_H__
 
 
-#include "q_shared.h"
+#include "../../code/qcommon/q_shared.h"
 
 
 // ROFF Defines
@@ -36,7 +36,7 @@ This file is part of Jedi Knight 2.
 typedef struct roff_hdr_s
 {
 	char	mHeader[4];		// should be "ROFF" (Rotation, Origin File Format)
-	long	mVersion;	
+	int	mVersion;	
 	float	mCount;			// There isn't any reason for this to be anything other than an int, sigh...
 		//						
 		//		Move - Rotate data follows....vec3_t delta_origin, vec3_t delta_rotation
@@ -57,7 +57,7 @@ typedef struct roff_hdr2_s
 //-------------------------------
 {
 	char	mHeader[4];				// should match roff_string defined above
-	long	mVersion;				// version num, supported version defined above
+	int	mVersion;				// version num, supported version defined above
 	int		mCount;					// I think this is a float because of a limitation of the roff exporter
 	int		mFrameRate;				// Frame rate the roff should be played at
 	int		mNumNotes;				// number of notes (null terminated strings) after the roff data
@@ -103,4 +103,4 @@ void	G_Roff( gentity_t *ent );
 void	G_SaveCachedRoffs();
 void	G_LoadCachedRoffs();
 
-#endif`
+#endif

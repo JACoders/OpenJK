@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"base"
+#define	GAMEVERSION	"OpenJK"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -80,7 +80,7 @@ This file is part of Jedi Academy.
 #define	VALIDATEB( a )	if ( a == NULL ) {	assert(0);	return qfalse;	}
 #define VALIDATEP( a )	if ( a == NULL ) {	assert(0);	return NULL;	}
 
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != NULL ) )
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
 typedef struct
@@ -278,15 +278,9 @@ void Cmd_Score_f (gentity_t *ent);
 //
 void G_RunItem( gentity_t *ent );
 void RespawnItem( gentity_t *ent );
-
-void UseHoldableItem( gentity_t *ent );
-void PrecacheItem (gitem_t *it);
 gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle, qboolean copytarget );
-void SetRespawn (gentity_t *ent, float delay);
 void G_SpawnItem (gentity_t *ent, gitem_t *item);
 void FinishSpawningItem( gentity_t *ent );
-void Think_Weapon (gentity_t *ent);
-int ArmorIndex (gentity_t *ent);
 void	Add_Ammo (gentity_t *ent, int weapon, int count);
 void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace);
 
@@ -389,12 +383,6 @@ void G_Throw( gentity_t *targ, const vec3_t newDir, float push );
 //
 void G_RunMissile( gentity_t *ent );
 
-gentity_t *fire_blaster (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_plasma (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t aimdir);
-gentity_t *fire_rocket (gentity_t *self, vec3_t start, vec3_t dir);
-
-
 //
 // g_mover.c
 //
@@ -418,9 +406,6 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 //
 // g_weapon.c
 //
-//void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
-//void SnapVectorTowards( vec3_t v, vec3_t to );
-//qboolean CheckGauntletAttack( gentity_t *ent );
 void WP_LoadWeaponParms (void);
 
 void IT_LoadItemParms( void );
@@ -428,12 +413,9 @@ void IT_LoadItemParms( void );
 //
 // g_client.c
 //
-team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec3_t angles );
 void respawn (gentity_t *ent);
-void InitClientPersistant (gclient_t *client);
-void InitClientResp (gclient_t *client);
 qboolean ClientSpawn( gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded );
 void player_die (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int dFlags, int hitLoc);
 void AddScore( gentity_t *ent, int score );
@@ -460,7 +442,7 @@ void DeathmatchScoreboardMessage (gentity_t *client);
 //
 // g_cmds.c
 //
-static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char *name, const char *message );
+void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char *name, const char *message );
 
 //
 // g_pweapon.c
@@ -623,16 +605,5 @@ void		TIMER_Remove( gentity_t *ent, const char *identifier );
 
 float NPC_GetHFOVPercentage( vec3_t spot, vec3_t from, vec3_t facing, float hFOV );
 float NPC_GetVFOVPercentage( vec3_t spot, vec3_t from, vec3_t facing, float vFOV );
-
-#ifdef _XBOX
-// data used for NPC water detection
-#define MAX_NPC_WATER_UPDATE 64						// maximum npcs that can be waiting for a water update
-#define	MAX_NPC_WATER_UPDATES_PER_FRAME 2			// updates per frame
-
-extern	short	npcsToUpdate[MAX_NPC_WATER_UPDATE];	// queue of npcs
-extern	short	npcsToUpdateTop;					// top of the queue
-extern	short	npcsToUpdateCount;					// number of npcs in the queue
-
-#endif // _XBOX
 
 #endif//#ifndef __G_LOCAL_H__

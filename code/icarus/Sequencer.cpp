@@ -21,17 +21,17 @@ This file is part of Jedi Academy.
 //	-- jweier
 
 // this include must remain at the top of every Icarus CPP file
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
 #define S_FAILED(a) (a!=SEQ_OK)
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
+#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
 
@@ -1167,7 +1167,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 
 	case CIcarus::TK_VECTOR:
 
-		tempString1[0] = NULL;
+		tempString1[0] = '\0';
 
 		for ( i = 0; i < 3; i++ )
 		{
@@ -1337,7 +1337,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 
 	case CIcarus::TK_VECTOR:
 
-		tempString2[0] = NULL;
+		tempString2[0] = '\0';
 
 		for ( i = 0; i < 3; i++ )
 		{
@@ -2314,7 +2314,6 @@ Pops a command off the current sequence
 CBlock *CSequencer::PopCommand( int flag )
 {
 	//Make sure everything is ok
-	assert( m_curSequence );
 	if ( m_curSequence == NULL )
 		return NULL;
 
@@ -2401,7 +2400,13 @@ int CSequencer::DestroySequence( CSequence *sequence, CIcarus* icarus )
 	{
 		if((*tsi).second == sequence)
 		{
+#ifdef _WIN32
 			tsi = m_taskSequences.erase(tsi);
+#else
+			taskSequence_m::iterator itTemp = tsi;
+			tsi++;
+			m_taskSequences.erase(itTemp);
+#endif
 		}
 		else
 		{

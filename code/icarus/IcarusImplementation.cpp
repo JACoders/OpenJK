@@ -18,15 +18,19 @@ This file is part of Jedi Academy.
 
 // IcarusImplementation.cpp
 
-#include "stdafx.h"
+#include "StdAfx.h"
+#include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
+#include "../qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
+
+#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
 
@@ -112,40 +116,21 @@ CIcarus::~CIcarus()
 	Delete();
 }
 
-#if defined (_DEBUG) && defined (_WIN32)
-#include "../qcommon/platform.h" // for OutputDebugString
-#endif
-
 void CIcarus::Delete( void )
 {
 
 	Free();
 
 #ifdef _DEBUG
-	
-	char	buffer[1024];
 
-	OutputDebugString( "\nICARUS Instance Debug Info:\n---------------------------\n" );
-
-	sprintf( (char *) buffer, "Sequencers Allocated:\t%d\n", m_DEBUG_NumSequencerAlloc );
-	OutputDebugString( (const char *) &buffer );
-
-	sprintf( (char *) buffer, "Sequencers Freed:\t\t%d\n", m_DEBUG_NumSequencerFreed );
-	OutputDebugString( (const char *) &buffer );
-
-	sprintf( (char *) buffer, "Sequencers Residual:\t%d\n\n", m_DEBUG_NumSequencerResidual );
-	OutputDebugString( (const char *) &buffer );
-
-	sprintf( (char *) buffer, "Sequences Allocated:\t%d\n", m_DEBUG_NumSequenceAlloc );
-	OutputDebugString( (const char *) &buffer );
-
-	sprintf( (char *) buffer, "Sequences Freed:\t\t%d\n", m_DEBUG_NumSequenceFreed );
-	OutputDebugString( (const char *) &buffer );
-
-	sprintf( (char *) buffer, "Sequences Residual:\t\t%d\n\n", m_DEBUG_NumSequenceResidual );
-	OutputDebugString( (const char *) &buffer );
-
-	OutputDebugString( "\n" );
+	Com_Printf( "ICARUS Instance Debug Info:\n" );
+	Com_Printf( "---------------------------\n" );
+	Com_Printf( "Sequencers Allocated:\t%d\n", m_DEBUG_NumSequencerAlloc );
+	Com_Printf( "Sequencers Freed:\t\t%d\n", m_DEBUG_NumSequencerFreed );
+	Com_Printf( "Sequencers Residual:\t%d\n\n", m_DEBUG_NumSequencerResidual );
+	Com_Printf( "Sequences Allocated:\t%d\n", m_DEBUG_NumSequenceAlloc );
+	Com_Printf( "Sequences Freed:\t\t%d\n", m_DEBUG_NumSequenceFreed );
+	Com_Printf( "Sequences Residual:\t\t%d\n\n", m_DEBUG_NumSequenceResidual );
 
 #endif
 }
@@ -380,7 +365,7 @@ void CIcarus::Precache(char* buffer, long length)
 			
 			sVal1 = (const char *) block.GetMemberData( 0 );
 
-			if (!stricmp(sVal1,"PLAY_ROFF"))
+			if (!Q_stricmp(sVal1,"PLAY_ROFF"))
 			{
 				sVal1 = (const char *) block.GetMemberData( 1 );
 
@@ -468,7 +453,7 @@ int CIcarus::SaveSequenceIDTable()
 		idTable[itr++] = (*sqi)->GetID();
 	}
 
-	//game->WriteSaveData( 'SQTB', idTable, sizeof( int ) * numSequences );
+	//game->WriteSaveData( INT_ID('S','Q','T','B'), idTable, sizeof( int ) * numSequences );
 	BufferWrite( idTable, sizeof( int ) * numSequences );
 
 	delete[] idTable;
@@ -515,13 +500,13 @@ int CIcarus::SaveSignals()
 {
 	int	numSignals = m_signals.size();
 
-	//game->WriteSaveData( 'ISIG', &numSignals, sizeof( numSignals ) );
+	//game->WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 	BufferWrite( &numSignals, sizeof( numSignals ) );
 
 	signal_m::iterator	si;
 	STL_ITERATE( si, m_signals )
 	{
-		//game->WriteSaveData( 'ISIG', &numSignals, sizeof( numSignals ) );
+		//game->WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 		const char *name = ((*si).first).c_str();
 		
 		int length = strlen( name ) + 1;
@@ -551,7 +536,7 @@ int CIcarus::Save()
 
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
-	game->WriteSaveData( 'ICAR', &version, sizeof( version ) );
+	game->WriteSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ) );
 
 	//Save out the signals
 	if ( SaveSignals() == false )
@@ -575,7 +560,7 @@ int CIcarus::Save()
 	}
 
 	// Write out the buffer with all our collected data.
-	game->WriteSaveData( 'ISEQ', m_byBuffer, m_ulBufferCurPos );
+	game->WriteSaveData( INT_ID('I','S','E','Q'), m_byBuffer, m_ulBufferCurPos );
 
 	// De-allocate the temporary buffer.
 	DestroyBuffer();
@@ -694,7 +679,7 @@ int CIcarus::Load()
 
 	//Check to make sure we're at the ICARUS save block
 	double	version;
-	game->ReadSaveData( 'ICAR', &version, sizeof( version ) );
+	game->ReadSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ) );
 
 	//Versions must match!
 	if ( version != ICARUS_VERSION )
@@ -705,7 +690,7 @@ int CIcarus::Load()
 	}
 
 	// Read into the buffer all our data.
-	/*m_ulBytesAvailable = */game->ReadSaveData( 'ISEQ', m_byBuffer, 0 );	//fixme, use real buff size
+	/*m_ulBytesAvailable = */game->ReadSaveData( INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//fixme, use real buff size
 
 	//Load all signals
 	if ( LoadSignals() == false )
@@ -793,7 +778,7 @@ void CIcarus::BufferWrite( void *pSrcData, unsigned long ulNumBytesToWrite )
 	if ( MAX_BUFFER_SIZE - m_ulBufferCurPos < ulNumBytesToWrite )
 	{	// Write out the buffer with all our collected data so far...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferWrite: Out of buffer space, Flushing." );
-		IGameInterface::GetGame()->WriteSaveData( 'ISEQ', m_byBuffer, m_ulBufferCurPos );
+		IGameInterface::GetGame()->WriteSaveData( INT_ID('I','S','E','Q'), m_byBuffer, m_ulBufferCurPos );
 		m_ulBufferCurPos = 0;	//reset buffer
 	}
 	
@@ -815,7 +800,7 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 	{// We've tried to read past the buffer...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferRead: Buffer underflow, Looking for new block." );
 		// Read in the next block.
-		/*m_ulBytesAvailable = */IGameInterface::GetGame()->ReadSaveData( 'ISEQ', m_byBuffer, 0 );	//FIXME, to actually check underflows, use real buff size
+		/*m_ulBytesAvailable = */IGameInterface::GetGame()->ReadSaveData( INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//FIXME, to actually check underflows, use real buff size
 		m_ulBytesRead = 0;	//reset buffer
 	}
 

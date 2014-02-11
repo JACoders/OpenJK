@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: l3dq.c,v 1.6 1999/10/19 07:13:09 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -45,7 +45,7 @@ ____________________________________________________________________________*/
 /*----------
 static struct  {
 int l[23];
-int s[14];} sfBandTable[3] =   
+int s[14];} sfBandTable[3] =
 {{{0,4,8,12,16,20,24,30,36,44,52,62,74,90,110,134,162,196,238,288,342,418,576},
  {0,4,8,12,16,22,30,40,52,66,84,106,136,192}},
 {{0,4,8,12,16,20,24,30,36,42,50,60,72,88,106,128,156,190,230,276,330,384,576},

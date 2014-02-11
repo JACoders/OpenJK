@@ -1,19 +1,16 @@
+#pragma once
+
 // Filename:-	snd_music.h
 //
 //
 
-
-
-#ifndef SND_MUSIC_H
-#define SND_MUSIC_H
-
 // if you change this enum, you MUST update the #defines below
-typedef enum 
+typedef enum
 {
 //( eBGRNDTRACK_DATABEGIN )			// begin-label for FOR loops
 	//
 	eBGRNDTRACK_EXPLORE = 0,		// for normal walking around
-	eBGRNDTRACK_ACTION,				// for excitement	
+	eBGRNDTRACK_ACTION,				// for excitement
 	eBGRNDTRACK_BOSS,				// (optional) for final encounter
 	eBGRNDTRACK_DEATH,				// (optional) death "flourish"
 	eBGRNDTRACK_ACTIONTRANS0,		// transition from action to explore
@@ -56,10 +53,4 @@ sboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMu
 
 const char *Music_BaseStateToString		( MusicState_e eMusicState, sboolean bDebugPrintQuery = qfalse);
 
-
-#endif	// #ifndef SND_MUSIC_H
-
-
 //////////////// eof /////////////////
-
-

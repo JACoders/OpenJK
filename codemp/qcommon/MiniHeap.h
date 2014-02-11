@@ -1,8 +1,17 @@
-#if !defined(MINIHEAP_H_INC)
-#define MINIHEAP_H_INC
+#pragma once
 
+#include "../qcommon/q_shared.h"
 
-class CMiniHeap
+class IHeapAllocator
+{
+public:
+	virtual ~IHeapAllocator() {}
+
+	virtual void ResetHeap() = 0;
+	virtual char *MiniHeapAlloc ( int size ) = 0;
+};
+
+class CMiniHeap : public IHeapAllocator
 {
 private:
 	char	*mHeap;
@@ -10,48 +19,46 @@ private:
 	int		mSize;
 public:
 
-// reset the heap back to the start
-void ResetHeap()
-{
-	mCurrentHeap = mHeap;
-}
-
-// initialise the heap
-CMiniHeap(int size)
-{
-	mHeap = (char *)malloc(size);
-	mSize = size;
-	if (mHeap)
+	// reset the heap back to the start
+	void ResetHeap()
 	{
-		ResetHeap();
+		mCurrentHeap = mHeap;
 	}
-}
 
-// free up the heap
-~CMiniHeap()
-{
-	if (mHeap)
+	// initialise the heap
+	CMiniHeap (int size)
 	{
-		free(mHeap);
+		mHeap = (char *)malloc(size);
+		mSize = size;
+		if (mHeap)
+		{
+			ResetHeap();
+		}
 	}
-}
 
-// give me some space from the heap please
-char *MiniHeapAlloc(int size)
-{
-	if (size < (mSize - ((int)mCurrentHeap - (int)mHeap)))
+	// free up the heap
+	~CMiniHeap()
 	{
-		char *tempAddress =  mCurrentHeap;
-		mCurrentHeap += size;
-		return tempAddress;
+		if (mHeap)
+		{
+			free(mHeap);
+		}
 	}
-	return NULL;
-}
+
+	// give me some space from the heap please
+	char *MiniHeapAlloc(int size)
+	{
+		if ((size_t)size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap)))
+		{
+			char *tempAddress =  mCurrentHeap;
+			mCurrentHeap += size;
+			return tempAddress;
+		}
+		return NULL;
+	}
 
 };
 
-extern CMiniHeap *G2VertSpaceServer;
-extern CMiniHeap *G2VertSpaceClient;
-
-
-#endif	//MINIHEAP_H_INC
+// this is in the parent executable, so access ri->GetG2VertSpaceServer() from the rd backends!
+extern IHeapAllocator *G2VertSpaceServer;
+extern IHeapAllocator *G2VertSpaceClient;

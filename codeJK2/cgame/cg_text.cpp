@@ -17,10 +17,7 @@ This file is part of Jedi Knight 2.
 // Copyright 2001-2013 Raven Software
 
 // cg_text.c -- 
-
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
+#include "cg_local.h"
 #include "cg_media.h"
 
 
@@ -41,227 +38,6 @@ extern vec4_t textcolor_scroll;
 #define	GAMETEXT_X_END		600.0f
 
 #define	MAX_NUM_GAMELINES 4
-
-void CG_GameText(int y )
-{
-	CG_Printf("CG_GameText() being called. Tell Ste\n");
-
-/*	const char	*s,*holds;
-	int i, len;
-	float	x, w;
-	int		numChars;
-	int text_i;
-	char str[MAX_QPATH];
-	int	holdCnt,playingTime;
-	int totalLength,sound,max;
-
-	Q_strncpyz (str, CG_Argv( 1 ), MAX_QPATH );
-
-	cg.gameTextSpeaker = atoi(CG_Argv(2));
-	cg.gameTextEntNum = atoi(CG_Argv(3));
-
-	sound = cgs.sound_precache[atoi(CG_Argv(4))];
-
-	text_i = CG_SearchTextPrecache(str);
-	//ensure we found a match
-	if (text_i == -1) 
-	{	
-		Com_Printf("WARNING: CG_GameText given invalid text key :'%s'",str);
-		return; 
-	}
-
-	cg.gameTextTime = cg.time;
-	cg.printTextY = 5 + SMALLCHAR_HEIGHT;
-
-	cg.gameTextCurrentLine = 0;
-
-	// count the number of lines for centering
-	cg.scrollTextLines = 1;
-
-
-	memset (cg.printText, 0, sizeof(cg.printText));
-
-	// Break into individual lines
-	i = 0;
-	len = 0;
-	s = precacheText[text_i].text;
-	holds = s;
-
-	playingTime = cgi_S_GetSampleLength(sound);
-	totalLength = strlen(s);
-	if (totalLength == 0)
-	{
-		totalLength = 1;
-	}
-	cg.gameLetterTime = playingTime / totalLength;
-
-	//We start at column 75 according to DrawGameText
-	x = GAMETEXT_X_START;
-	w = GAMETEXT_X_END - GAMETEXT_X_START;
-	numChars = floor(w/SMALLCHAR_WIDTH);
-
-	while( *s ) 
-	{
-		len++;
-		if (*s == '\n')
-		{//Being told explicitly to start a new line
-			Q_strncpyz( cg.printText[i], holds, len);
-			i++;
-			len = 0;
-			holds = s;
-			holds++;
-			cg.scrollTextLines++;
-		}
-		else if ( len == numChars )
-		{//Reached max length of this line
-			//step back until we find a space
-			while( len && *s != ' ' )
-			{
-				s--;
-				len--;
-			}
-			//break the line here
-			Q_strncpyz( cg.printText[i], holds, len);
-			i++;
-			len = 0;
-			holds = s;
-			holds++;
-			cg.scrollTextLines++;
-		}
-		s++;
-	}
-
-	len++;  // So the NULL will be properly placed at the end of the string of Q_strncpyz
-	Q_strncpyz( cg.printText[i], holds, len); // To get the last line
-
-	//NOTE: This might be able to use the VoiceVolume or TID_VOICE info from the cg.gameTextEntNum
-	//		to decide when to drop the text...
-	max = MAX_NUM_GAMELINES;
-	if (max >cg.scrollTextLines)
-	{
-		max = cg.scrollTextLines;
-	}
-
-	holdCnt = 0;
-	for (i=0;i<max;++i)
-	{
-		holdCnt += strlen(cg.printText[i]);
-	}
-	cg.gameNextTextTime = cg.time + (holdCnt * cg.gameLetterTime);	
-
-
-	cg.scrollTextTime = 0;	// No scrolling during captions
-*/
-}
-
-void CG_DrawGameText(void)
-{
-	if ( !cg.gameTextTime ) 
-	{
-		return;
-	}
-	CG_Printf("CG_DrawGameText() being called. Tell Ste\n");
-/*
-	char	*start;
-	int		l;
-	int		i,max;
-	int		x, y;
-	char linebuffer[1024], string[1024];
-	int	holdCnt;
-	vec4_t		color; 
-
-
-	// Advance to next line (if there are any) and calculate time to show
-	if ( cg.gameNextTextTime < cg.time ) 
-	{
-		cg.gameTextCurrentLine += MAX_NUM_GAMELINES;
-
-		if (cg.gameTextCurrentLine >= cg.scrollTextLines)
-		{
-			cg.gameTextTime = 0;
-			return;
-		}
-		else
-		{
-			max = MAX_NUM_GAMELINES;
-			if ((cg.scrollTextLines - cg.gameTextCurrentLine) < max)
-			{
-				max = cg.scrollTextLines - cg.gameTextCurrentLine;
-			}
-
-			// Loop through next lines to calc how long to show 'em
-			holdCnt = 0;
-			for (i=cg.gameTextCurrentLine;i<(cg.gameTextCurrentLine + max);++i)
-			{
-				holdCnt += strlen(cg.printText[i]);
-			}
-			cg.gameNextTextTime = cg.time + (holdCnt * cg.gameLetterTime);	
-		}
-	}
-
-	// Give a color if one wasn't given
-	if((textcolor_caption[0] == 0) && (textcolor_caption[1] == 0) && 
-		(textcolor_caption[2] == 0) && (textcolor_caption[3] == 0))
-	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor_caption );
-	}
-
-
-	color[0] = colorTable[CT_BLACK][0];
-	color[1] = colorTable[CT_BLACK][1];
-	color[2] = colorTable[CT_BLACK][2];
-	color[3] = 0.350f;
-
-	// Set Y of the first line
-	y = cg.printTextY;
-	x = GAMETEXT_X_START;
-
-	// Background
-	cgi_R_SetColor(color);	// Background, CLAMP TO 4 LINES
-	CG_DrawPic( x - 4, y - SMALLCHAR_HEIGHT - 2, (70 * SMALLCHAR_WIDTH),(( ((cg.scrollTextLines>MAX_NUM_GAMELINES)?MAX_NUM_GAMELINES:cg.scrollTextLines) + 1) * SMALLCHAR_HEIGHT) + 4,	cgs.media.ammoslider );
-
-	sprintf(string, "%s:", speakerTable[cg.gameTextSpeaker].stringID);
-
-	CG_DrawStringExt( x, y - SMALLCHAR_HEIGHT, string, colorTable[CT_LTPURPLE1], qfalse, qtrue, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT );
-
-	for (i=	cg.gameTextCurrentLine;i< cg.gameTextCurrentLine + MAX_NUM_GAMELINES;++i)
-	{
-		start = cg.printText[i];
-		while ( 1 ) 
-		{
-
-			for ( l = 0; l < 80; l++ ) 
-			{
-				if ( !start[l] || start[l] == '\n' ) 
-				{
-					break;
-				}
-				linebuffer[l] = start[l];
-			}
-			linebuffer[l] = 0;
-
-
-			CG_DrawStringExt( x, y, linebuffer, textcolor_caption, qfalse, qtrue,
-				SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT );
-
-			y += SMALLCHAR_HEIGHT;
-
-			while ( *start && ( *start != '\n' ) ) 
-			{
-				start++;
-			}
-
-			if ( !*start ) 
-			{
-				break;
-			}
-			start++;
-		}
-	}
-
-	cgi_R_SetColor( NULL );
-*/
-}
 
 
 // display text in a supplied box, start at top left and going down by however many pixels I feel like internally, 
@@ -438,7 +214,7 @@ static int cg_SP_GetStringTextStringWithRetry( LPCSTR psReference, char *psDest,
 //	the "filename" part of which should be the same as the StripEd reference we're looking for in the current 
 //	level's string package...
 //
-void CG_CaptionText( const char *str, int sound, int y ) 
+void CG_CaptionText( const char *str, int sound ) 
 {
 	const char	*s, *holds;
 	int i;
@@ -461,7 +237,7 @@ void CG_CaptionText( const char *str, int sound, int y )
 	{	
 #ifndef FINAL_BUILD
 		// we only care about some sound dirs...
-		if (!strnicmp(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
+		if (!Q_strncmp(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
 		{
 			Com_Printf("WARNING: CG_CaptionText given invalid text key :'%s'\n",str);
 		}
@@ -712,7 +488,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 	//
 	// malloc space to hold it...
 	//
-	char *psText = (char *) cgi_Z_Malloc( i+1, TAG_STRING );
+	char *psText = (char *) cgi_Z_Malloc( i+1, TAG_TEMP_WORKSPACE );
 	//
 	// now get the string...
 	//	

@@ -29,9 +29,9 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/cm_local.h"
 #include "../server/server.h"
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
-#include "rm_instance_bsp.h"
+#include "RM_Instance_BSP.h"
 
 #include "../client/vmachine.h"
 
@@ -61,14 +61,14 @@ CRMBSPInstance::CRMBSPInstance(CGPGroup *instGroup, CRMInstanceFile& instFile)  
 	mHoleRadius		= atof( instGroup->FindPairValue ( "hole", "0" ) );
 
 	const char * automapSymName = instGroup->FindPairValue ( "automap_symbol", "building" );
-	if (0 == strcmpi(automapSymName, "none"))	   	mAutomapSymbol = AUTOMAP_NONE ;
-	else if (0 == strcmpi(automapSymName, "building"))  	mAutomapSymbol = AUTOMAP_BLD  ;
-	else if (0 == strcmpi(automapSymName, "objective")) 	mAutomapSymbol = AUTOMAP_OBJ  ;
-	else if (0 == strcmpi(automapSymName, "start"))	   	mAutomapSymbol = AUTOMAP_START;
-	else if (0 == strcmpi(automapSymName, "end"))	   	mAutomapSymbol = AUTOMAP_END  ;
-	else if (0 == strcmpi(automapSymName, "enemy"))	   	mAutomapSymbol = AUTOMAP_ENEMY;
-	else if (0 == strcmpi(automapSymName, "friend"))	   	mAutomapSymbol = AUTOMAP_FRIEND;
-	else if (0 == strcmpi(automapSymName, "wall"))	   	mAutomapSymbol = AUTOMAP_WALL;
+	if (0 == Q_stricmp(automapSymName, "none"))	   	mAutomapSymbol = AUTOMAP_NONE ;
+	else if (0 == Q_stricmp(automapSymName, "building"))  	mAutomapSymbol = AUTOMAP_BLD  ;
+	else if (0 == Q_stricmp(automapSymName, "objective")) 	mAutomapSymbol = AUTOMAP_OBJ  ;
+	else if (0 == Q_stricmp(automapSymName, "start"))	   	mAutomapSymbol = AUTOMAP_START;
+	else if (0 == Q_stricmp(automapSymName, "end"))	   	mAutomapSymbol = AUTOMAP_END  ;
+	else if (0 == Q_stricmp(automapSymName, "enemy"))	   	mAutomapSymbol = AUTOMAP_ENEMY;
+	else if (0 == Q_stricmp(automapSymName, "friend"))	   	mAutomapSymbol = AUTOMAP_FRIEND;
+	else if (0 == Q_stricmp(automapSymName, "wall"))	   	mAutomapSymbol = AUTOMAP_WALL;
 	else mAutomapSymbol	= atoi( automapSymName );
 
 	// optional instance objective strings
@@ -97,7 +97,6 @@ CRMBSPInstance::CRMBSPInstance(CGPGroup *instGroup, CRMInstanceFile& instFile)  
  ************************************************************************************************/
 bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 {
-#ifndef PRE_RELEASE_DEMO
 //	TEntity*	ent;
 	float		yaw;
 	char		temp[10000];
@@ -303,8 +302,6 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	// because right after this function is called, mMirror is set to 0 but all the instance data is STILL MIRRORED -- not good
 	VectorCopy(notmirrored, GetOrigin());
 
-#endif  // PRE_RELEASE_DEMO
-	
 	return true;
 }
 

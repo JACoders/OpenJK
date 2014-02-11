@@ -16,9 +16,6 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
-#include "common_headers.h"
-
 // bg_pmove.c -- both games player movement code
 // takes a playerstate and a usercmd as input and returns a modifed playerstate
 
@@ -26,7 +23,8 @@ This file is part of Jedi Knight 2.
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define	GAME_INCLUDE
-#include "q_shared.h"
+#include "../../code/qcommon/q_shared.h"
+#include "b_local.h"
 #include "g_shared.h"
 #include "bg_local.h"			   
 #include "g_local.h"			   
@@ -4328,8 +4326,8 @@ void PM_FootSlopeTrace( float *pDiff, float *pInterval )
 #if 1
 	for ( int i = 0; i < 3; i++ )
 	{
-		if ( _isnan( pm->gent->client->renderInfo.footLPoint[i] )
-			|| _isnan( pm->gent->client->renderInfo.footRPoint[i] ) )
+		if ( Q_isnan( pm->gent->client->renderInfo.footLPoint[i] )
+			|| Q_isnan( pm->gent->client->renderInfo.footRPoint[i] ) )
 		{
 			if ( pDiff != NULL )
 			{
@@ -8043,8 +8041,9 @@ static void PM_Weapon( void )
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
-		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD)) {
+	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
+		// eez- don't switch weapons if we're charging our current one up
+		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
 		}
 	}
@@ -8061,6 +8060,11 @@ static void PM_Weapon( void )
 	}
 
 	if ( pm->ps->weapon == WP_NONE )
+	{
+		return;
+	}
+
+	if ( PM_DoChargedWeapons() )
 	{
 		return;
 	}
@@ -8087,12 +8091,6 @@ static void PM_Weapon( void )
 				break;
 			}
 		}
-		return;
-	}
-
-	if ( PM_DoChargedWeapons())
-	{
-		// In some cases the charged weapon code may want us to short circuit the rest of the firing code
 		return;
 	}
 

@@ -37,9 +37,10 @@ This file is part of Jedi Academy.
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
+#include "../qcommon/q_shared.h"
 #include "hstring.h"
 #include <string.h>
-#include "..\Ratl\hash_pool_vs.h"
+#include "../Ratl/hash_pool_vs.h"
 
 
 
@@ -68,12 +69,6 @@ TStrPool&	Pool()
 }
 
 
-
-
-#ifdef _XBOX
-namespace dllNamespace
-{
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Constructor
@@ -196,8 +191,4 @@ int			hstring::total_strings()	{return Pool().total_allocs();}
 int			hstring::total_bytes()		{return Pool().size();}
 int			hstring::total_finds()		{return Pool().total_finds();}
 int			hstring::total_collisions()	{return Pool().total_collisions();}
-#endif
-
-#ifdef _XBOX
-} // dllNamespace
 #endif

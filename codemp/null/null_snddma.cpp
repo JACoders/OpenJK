@@ -2,7 +2,7 @@
 // snddma_null.c
 // all other sound mixing is portable
 
-#include "client/client.h"
+#include "qcommon/exe_headers.h"
 
 qboolean gbInsideLoadSound = qfalse; // important to default to this!!!
 
@@ -38,7 +38,7 @@ void S_StartLocalSound( sfxHandle_t sfxHandle, int channelNum ) {
 void S_ClearSoundBuffer( void ) {
 }
 
-qboolean SND_RegisterAudio_LevelLoadEnd(qboolean something)
+qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel)
 {
 	return qfalse;
 }

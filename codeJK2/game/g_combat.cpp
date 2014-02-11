@@ -33,7 +33,7 @@ This file is part of Jedi Knight 2.
 #include "g_icarus.h"
 #include "wp_saber.h"
 #include "Q3_Interface.h"
-#include "../qcommon/stripPublic.h"
+#include "../../code/qcommon/strippublic.h"
 
 extern	cvar_t	*g_debugDamage;
 extern qboolean	stop_icarus;

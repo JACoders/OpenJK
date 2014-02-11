@@ -23,13 +23,17 @@ This file is part of Jedi Academy.
 /*
 Ghoul2 Insert Start
 */
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #pragma warning(disable:4702)	//unreachable code
+#endif
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 using namespace std;
 /*
 Ghoul2 Insert End
@@ -92,7 +96,7 @@ typedef struct {
 	float		matrix[3][4];
 } mdxaBone_t;
 */
-#include "../renderer/mdx_format.h"
+#include "../rd-common/mdx_format.h"
 
 // we save the whole structure here.
 struct  boneInfo_t
@@ -282,7 +286,7 @@ public:
 	int				mFlags;	// used for determining whether to do full collision detection against this object
 // to here
 #define BSAVE_END_FIELD mTransformedVertsArray	// this is the end point for loadsave, keep it up to date it you change anything
-	int				*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
+	intptr_t		*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
 	CBoneCache		*mBoneCache;
 	int				mSkin;
 
@@ -297,30 +301,30 @@ public:
 
 	CGhoul2Info():
 	mModelindex(-1),
+	animModelIndexOffset(0),
 	mCustomShader(0),
 	mCustomSkin(0),
 	mModelBoltLink(0),
-	mModel(0),
 	mSurfaceRoot(0),
+	mLodBias(0),
+	mNewOrigin(-1),
+#ifdef _G2_GORE
+	mGoreSetTag(0),
+#endif
+	mModel(0),
 	mAnimFrameDefault(0),
 	mSkelFrameNum(-1),
 	mMeshFrameNum(-1),
 	mFlags(0),
 	mTransformedVertsArray(0),
-	mLodBias(0),
-	mSkin(0),
-	mNewOrigin(-1),
-#ifdef _G2_GORE
-	mGoreSetTag(0),
-#endif
 	mBoneCache(0),
+	mSkin(0),
+	mValid(false),
 	currentModel(0),
 	currentModelSize(0),
 	animModel(0),
-	animModelIndexOffset(0),
 	currentAnimModelSize(0),
-	aHeader(0),
-	mValid(false)
+	aHeader(0)
 	{
 		mFileName[0] = 0;
 	}
@@ -338,8 +342,15 @@ public:
 	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
+#ifdef RENDERER
 IGhoul2InfoArray &TheGhoul2InfoArray();
+#else
+#ifdef _JK2EXE
+IGhoul2InfoArray &_TheGhoul2InfoArray();
+#else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
+#endif
+#endif
 
 class CGhoul2Info_v
 {
@@ -347,10 +358,14 @@ class CGhoul2Info_v
 
 	IGhoul2InfoArray &InfoArray() const
 	{
-#ifdef _JK2EXE
+#ifdef RENDERER
 		return TheGhoul2InfoArray();
 #else
+#ifdef _JK2EXE
+		return _TheGhoul2InfoArray();
+#else
 		return TheGameGhoul2InfoArray();
+#endif
 #endif
 	}
 
@@ -493,8 +508,8 @@ public:
 	float		mBarycentricJ; // K = 1-I-J
 
 	CCollisionRecord():
-	mEntityNum(-1),
-	mDistance(100000)
+	mDistance(100000),
+	mEntityNum(-1)
 	{}
 };
 

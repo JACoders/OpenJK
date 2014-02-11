@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_interface.h
@@ -5,7 +6,7 @@
  * desc:		botlib interface
  *
  * $Archive: /source/code/botlib/be_interface.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -37,4 +38,3 @@ extern int botDeveloper;					//true if developer is on
 
 //
 int Sys_MilliSeconds(void);
-

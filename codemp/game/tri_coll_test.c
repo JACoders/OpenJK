@@ -16,7 +16,7 @@
 #include "qcommon/q_shared.h"
 #include "game/g_local.h"
 
-/* if USE_EPSILON_TEST is true then we do a check: 
+/* if USE_EPSILON_TEST is true then we do a check:
          if |dv|<EPSILON then dv=0.0;
    else no check is done (which is less robust)
 */
@@ -35,16 +35,16 @@
 #define SUB(dest,v1,v2)          \
             dest[0]=v1[0]-v2[0]; \
             dest[1]=v1[1]-v2[1]; \
-            dest[2]=v1[2]-v2[2]; 
+            dest[2]=v1[2]-v2[2];
 
 /* sort so that a<=b */
 #define SORT(a,b)       \
              if(a>b)    \
              {          \
-               float c; \
-               c=a;     \
+               float tmp; \
+               tmp=a;     \
                a=b;     \
-               b=c;     \
+               b=tmp;     \
              }
 
 #define ISECT(VV0,VV1,VV2,D0,D1,D2,isect0,isect1) \
@@ -87,7 +87,7 @@
 
 /* this edge to edge test is based on Franlin Antonio's gem:
    "Faster Line Segment Intersection", in Graphics Gems III,
-   pp. 199-202 */ 
+   pp. 199-202 */
 #define EDGE_EDGE_TEST(V0,U0,U1)                      \
   Bx=U0[i0]-U1[i0];                                   \
   By=U0[i1]-U1[i1];                                   \
@@ -106,7 +106,7 @@
     {                                                 \
       if(e<=0 && e>=f) return 1;                      \
     }                                                 \
-  }                                
+  }
 
 #define EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2) \
 {                                              \
@@ -158,7 +158,7 @@ qboolean coplanar_tri_tri(vec3_t N,vec3_t V0,vec3_t V1,vec3_t V2,
    A[2]=fabs(N[2]);
    if(A[0]>A[1])
    {
-      if(A[0]>A[2])  
+      if(A[0]>A[2])
       {
           i0=1;      /* A[0] is greatest */
           i1=2;
@@ -174,20 +174,20 @@ qboolean coplanar_tri_tri(vec3_t N,vec3_t V0,vec3_t V1,vec3_t V2,
       if(A[2]>A[1])
       {
           i0=0;      /* A[2] is greatest */
-          i1=1;                                           
+          i1=1;
       }
       else
       {
           i0=0;      /* A[1] is greatest */
           i1=2;
       }
-    }               
-                
+    }
+
     /* test all edges of triangle 1 against the edges of triangle 2 */
     EDGE_AGAINST_TRI_EDGES(V0,V1,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V1,V2,U0,U1,U2);
     EDGE_AGAINST_TRI_EDGES(V2,V0,U0,U1,U2);
-                
+
     /* finally, test if tri1 is totally contained in tri2 or vice versa */
     POINT_IN_TRI(V0,U0,U1,U2);
     POINT_IN_TRI(U0,V0,V1,V2);
@@ -254,7 +254,7 @@ qboolean tri_tri_intersect(vec3_t V0,vec3_t V1,vec3_t V2,
 
   dv0dv1=dv0*dv1;
   dv0dv2=dv0*dv2;
-        
+
   if(dv0dv1>0.0f && dv0dv2>0.0f) /* same sign on all of them + not equal 0 ? */
     return 0;                    /* no intersection occurs */
 

@@ -87,7 +87,7 @@ typedef struct {
 	float		matrix[3][4];
 } mdxaBone_t;
 */
-#include "../renderer/mdx_format.h"
+#include "../../code/renderer/mdx_format.h"
 
 // we save the whole structure here.
 struct  boneInfo_t

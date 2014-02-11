@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // This file must be identical in the quake and utils directories
@@ -7,46 +9,74 @@
 
 // these definitions also need to be in q_shared.h!
 
-#define	CONTENTS_SOLID			0x00000001	// Default setting. An eye is never valid in a solid
-#define	CONTENTS_LAVA			0x00000002
-#define	CONTENTS_WATER			0x00000004
-#define	CONTENTS_FOG			0x00000008
-#define	CONTENTS_PLAYERCLIP		0x00000010
-#define	CONTENTS_MONSTERCLIP	0x00000020	// Physically block bots
-#define CONTENTS_BOTCLIP		0x00000040	// A hint for bots - do not enter this brush by navigation (if possible)
-#define CONTENTS_SHOTCLIP		0x00000080
-#define	CONTENTS_BODY			0x00000100	// should never be on a brush, only in game
-#define	CONTENTS_CORPSE			0x00000200	// should never be on a brush, only in game
-#define	CONTENTS_TRIGGER		0x00000400
-#define	CONTENTS_NODROP			0x00000800	// don't leave bodies or items (death fog, lava)
-#define CONTENTS_TERRAIN		0x00001000	// volume contains terrain data
-#define CONTENTS_LADDER			0x00002000
-#define CONTENTS_ABSEIL			0x00004000  // (SOF2) used like ladder to define where an NPC can abseil
-#define CONTENTS_OPAQUE			0x00008000	// defaults to on, when off, solid can be seen through
-#define CONTENTS_OUTSIDE		0x00010000	// volume is considered to be in the outside (i.e. not indoors)
+#define CONTENTS_NONE			(0x00000000u)
+#define	CONTENTS_SOLID			(0x00000001u) // Default setting. An eye is never valid in a solid
+#define	CONTENTS_LAVA			(0x00000002u) //
+#define	CONTENTS_WATER			(0x00000004u) //
+#define	CONTENTS_FOG			(0x00000008u) //
+#define	CONTENTS_PLAYERCLIP		(0x00000010u) //
+#define	CONTENTS_MONSTERCLIP	(0x00000020u) // Physically block bots
+#define CONTENTS_BOTCLIP		(0x00000040u) // A hint for bots - do not enter this brush by navigation (if possible)
+#define CONTENTS_SHOTCLIP		(0x00000080u) //
+#define	CONTENTS_BODY			(0x00000100u) // should never be on a brush, only in game
+#define	CONTENTS_CORPSE			(0x00000200u) // should never be on a brush, only in game
+#define	CONTENTS_TRIGGER		(0x00000400u) //
+#define	CONTENTS_NODROP			(0x00000800u) // don't leave bodies or items (death fog, lava)
+#define CONTENTS_TERRAIN		(0x00001000u) // volume contains terrain data
+#define CONTENTS_LADDER			(0x00002000u) //
+#define CONTENTS_ABSEIL			(0x00004000u) // (SOF2) used like ladder to define where an NPC can abseil
+#define CONTENTS_OPAQUE			(0x00008000u) // defaults to on, when off, solid can be seen through
+#define CONTENTS_OUTSIDE		(0x00010000u) // volume is considered to be in the outside (i.e. not indoors)
+#define CONTENTS_SLIME			(0x00020000u) // CHC needs this since we use same tools
+#define CONTENTS_LIGHTSABER		(0x00040000u) // ""
+#define CONTENTS_TELEPORTER		(0x00080000u) // ""
+#define CONTENTS_ITEM			(0x00100000u) // ""
+#define CONTENTS_NOSHOT			(0x00200000u) // shots pass through me
+#define CONTENTS_UNUSED00400000	(0x00400000u) //
+#define CONTENTS_UNUSED00800000	(0x00800000u) //
+#define CONTENTS_UNUSED01000000	(0x01000000u) //
+#define CONTENTS_UNUSED02000000	(0x02000000u) //
+#define CONTENTS_UNUSED04000000	(0x04000000u) //
+#define	CONTENTS_DETAIL			(0x08000000u) // brushes not used for the bsp
+#define	CONTENTS_INSIDE			(0x10000000u) // volume is considered to be inside (i.e. indoors)
+#define CONTENTS_UNUSED20000000	(0x20000000u) //
+#define CONTENTS_UNUSED40000000	(0x40000000u) //
+#define	CONTENTS_TRANSLUCENT	(0x80000000u) // don't consume surface fragments inside
+#define CONTENTS_ALL			(0xFFFFFFFFu)
 
-#define	CONTENTS_INSIDE			0x10000000	// volume is considered to be inside (i.e. indoors)
-
-#define CONTENTS_SLIME			0x00020000	// CHC needs this since we use same tools
-#define CONTENTS_LIGHTSABER		0x00040000	// ""
-#define CONTENTS_TELEPORTER		0x00080000	// ""
-#define CONTENTS_ITEM			0x00100000	// ""
-#define CONTENTS_NOSHOT			0x00200000	// shots pass through me
-#define	CONTENTS_DETAIL			0x08000000	// brushes not used for the bsp
-#define	CONTENTS_TRANSLUCENT	0x80000000	// don't consume surface fragments inside
-
-#define	SURF_SKY				0x00002000	// lighting from environment map
-#define	SURF_SLICK				0x00004000	// affects game physics
-#define	SURF_METALSTEPS			0x00008000	// CHC needs this since we use same tools (though this flag is temp?)
-#define SURF_FORCEFIELD			0x00010000	// CHC ""			(but not temp)
-#define	SURF_NODAMAGE			0x00040000	// never give falling damage
-#define	SURF_NOIMPACT			0x00080000	// don't make missile explosions
-#define	SURF_NOMARKS			0x00100000	// don't leave missile marks
-#define	SURF_NODRAW				0x00200000	// don't generate a drawsurface at all
-#define	SURF_NOSTEPS			0x00400000	// no footstep sounds
-#define	SURF_NODLIGHT			0x00800000	// don't dlight even if solid (solid lava, skies)
-#define	SURF_NOMISCENTS			0x01000000	// no client models allowed on this surface
-
+#define SURF_NONE				(0x00000000u)
+#define SURF_UNUSED00000001		(0x00000001u) //
+#define SURF_UNUSED00000002		(0x00000002u) //
+#define SURF_UNUSED00000004		(0x00000004u) //
+#define SURF_UNUSED00000008		(0x00000008u) //
+#define SURF_UNUSED00000010		(0x00000010u) //
+#define SURF_UNUSED00000020		(0x00000020u) //
+#define SURF_UNUSED00000040		(0x00000040u) //
+#define SURF_UNUSED00000080		(0x00000080u) //
+#define SURF_UNUSED00000100		(0x00000100u) //
+#define SURF_UNUSED00000200		(0x00000200u) //
+#define SURF_UNUSED00000400		(0x00000400u) //
+#define SURF_UNUSED00000800		(0x00000800u) //
+#define SURF_UNUSED00001000		(0x00001000u) //
+#define	SURF_SKY				(0x00002000u) // lighting from environment map
+#define	SURF_SLICK				(0x00004000u) // affects game physics
+#define	SURF_METALSTEPS			(0x00008000u) // CHC needs this since we use same tools (though this flag is temp?)
+#define SURF_FORCEFIELD			(0x00010000u) // CHC ""			(but not temp)
+#define SURF_UNUSED00020000		(0x00020000u) //
+#define	SURF_NODAMAGE			(0x00040000u) // never give falling damage
+#define	SURF_NOIMPACT			(0x00080000u) // don't make missile explosions
+#define	SURF_NOMARKS			(0x00100000u) // don't leave missile marks
+#define	SURF_NODRAW				(0x00200000u) // don't generate a drawsurface at all
+#define	SURF_NOSTEPS			(0x00400000u) // no footstep sounds
+#define	SURF_NODLIGHT			(0x00800000u) // don't dlight even if solid (solid lava, skies)
+#define	SURF_NOMISCENTS			(0x01000000u) // no client models allowed on this surface
+#define	SURF_FORCESIGHT			(0x02000000u) // not visible without Force Sight
+#define SURF_UNUSED04000000		(0x04000000u) //
+#define SURF_UNUSED08000000		(0x08000000u) //
+#define SURF_UNUSED10000000		(0x10000000u) //
+#define SURF_UNUSED20000000		(0x20000000u) //
+#define SURF_UNUSED40000000		(0x40000000u) //
+#define SURF_UNUSED80000000		(0x80000000u) //
 
 #define MATERIAL_BITS			5
 #define MATERIAL_MASK			0x1f	// mask to get the material type
@@ -61,7 +91,7 @@
 #define MATERIAL_DIRT			7			// hard mud
 #define MATERIAL_SAND			8			// sandy beach
 #define MATERIAL_GRAVEL			9			// lots of small stones
-#define MATERIAL_GLASS			10			// 
+#define MATERIAL_GLASS			10			//
 #define MATERIAL_CONCRETE		11			// hardened concrete pavement
 #define MATERIAL_MARBLE			12			// marble floors
 #define MATERIAL_WATER			13			// light covering of water on a surface
@@ -76,7 +106,7 @@
 #define MATERIAL_CANVAS			22			// tent material
 #define MATERIAL_ROCK			23			//
 #define MATERIAL_RUBBER			24			// hard tire like rubber
-#define MATERIAL_PLASTIC		25			// 
+#define MATERIAL_PLASTIC		25			//
 #define MATERIAL_TILES			26			// tiled floor
 #define MATERIAL_CARPET			27			// lush carpet
 #define MATERIAL_PLASTER		28			// drywall style plaster

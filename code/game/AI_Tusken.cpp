@@ -16,14 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
 #include "g_navigator.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
@@ -50,11 +48,6 @@ extern int PM_AnimLength( int index, animNumber_t anim );
 
 qboolean NPC_CheckPlayerTeamStealth( void );
 
-static qboolean enemyLOS;
-static qboolean enemyCS;
-static qboolean faceEnemy;
-static qboolean move;
-static qboolean shoot;
 static float	enemyDist;
 
 //Local state enums

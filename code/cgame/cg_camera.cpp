@@ -23,10 +23,10 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#include "..\game\g_roff.h"
+#include "../game/g_roff.h"
 
 bool		in_camera = false;
-camera_t	client_camera={0};
+camera_t	client_camera={};
 extern qboolean	player_locked;
 
 extern gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
@@ -64,14 +64,6 @@ void CGCam_Init( void )
 		memset( &client_camera, 0, sizeof ( camera_t ) );
 	}
 }
-
-#ifdef _XBOX
-void CGCam_SetWidescreen( qboolean widescreen )
-{
-	client_camera.widescreen = widescreen;
-	cg.widescreen = widescreen;
-}
-#endif
 
 /*
 -------------------------
@@ -158,7 +150,7 @@ void CGCam_Disable( void )
 		g_entities[0].contents = CONTENTS_BODY;//MASK_PLAYERSOLID;
 	}
 
-	gi.SendServerCommand( NULL, "cts");
+	gi.SendServerCommand( 0, "cts");
 
 	//if ( cg_skippingcin.integer )
 	{//We're skipping the cinematic and it's over now
@@ -568,7 +560,6 @@ void CG_CameraAutoAim( const char *name )
 CGCam_Track
 -------------------------
 */
-//void CGCam_Track( char *trackName, float speed, float duration )
 void CGCam_Track( const char *trackName, float speed, float initLerp )
 {
 	gentity_t	*trackEnt = NULL;
@@ -1910,7 +1901,7 @@ static void CGCam_Roff( void )
 
 	// Yeah, um, I guess this just has to be negated?
 	//ang[PITCH]	=- ang[PITCH];
-	ang[ROLL]	=- ang[ROLL];
+	ang[ROLL]	= -ang[ROLL];
 	// might need to to yaw as well.  need a test...
 
 	if ( cg_developer.integer )

@@ -25,11 +25,7 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#ifdef _XBOX
-#define	MAX_LOCAL_ENTITIES	128
-#else
 #define	MAX_LOCAL_ENTITIES	512
-#endif
 localEntity_t	cg_localEntities[MAX_LOCAL_ENTITIES];
 localEntity_t	cg_activeLocalEntities;		// double linked list
 localEntity_t	*cg_freeLocalEntities;		// single linked list
@@ -136,6 +132,8 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace )
 			break;
 		case LEBS_METAL:
 			s = cgs.media.metalBounceSound[Q_irand(0,1)];// FIXME: make sure that this sound is registered properly...might still be rock bounce sound....
+			break;
+		default:
 			break;
 		}
 

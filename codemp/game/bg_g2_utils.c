@@ -1,36 +1,18 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // bg_g2_utils.c -- both games misc functions, all completely stateless
+// only in game and cgame, NOT ui
 
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
-#include "bg_strap.h"
 
-#ifdef QAGAME
-#include "g_local.h"
+#if defined(_GAME)
+	#include "g_local.h"
+#elif defined(_CGAME)
+	#include "cgame/cg_local.h"
 #endif
 
-#ifdef UI_EXPORTS
-#include "ui/ui_local.h"
-#endif
-
-#ifndef UI_EXPORTS
-#ifndef QAGAME
-#include "cgame/cg_local.h"
-#endif
-#endif
-
-
-void BG_AttachToRancor( void *ghoul2,
-					   float rancYaw,
-					   vec3_t rancOrigin,
-					   int time,
-					   qhandle_t *modelList, 
-					   vec3_t modelScale,
-					   qboolean inMouth,
-					   vec3_t out_origin,
-					   vec3_t out_angles,
-					   vec3_t out_axis[3] )
+void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time, qhandle_t *modelList, vec3_t modelScale, qboolean inMouth, vec3_t out_origin, vec3_t out_angles, matrix3_t out_axis )
 {
 	mdxaBone_t	boltMatrix;
 	int boltIndex;
@@ -39,16 +21,26 @@ void BG_AttachToRancor( void *ghoul2,
 	// Getting the bolt here
 	if ( inMouth )
 	{//in mouth
-		boltIndex = trap_G2API_AddBolt(ghoul2, 0, "jaw_bone");
+	#if defined(_GAME)
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
+	#elif defined(_CGAME)
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
+	#endif
 	}
 	else
 	{//in right hand
-		boltIndex = trap_G2API_AddBolt(ghoul2, 0, "*r_hand");
+	#if defined(_GAME)
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
+	#elif defined(_CGAME)
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
+	#endif
 	}
 	VectorSet( rancAngles, 0, rancYaw, 0 );
-	trap_G2API_GetBoltMatrix( ghoul2, 0, boltIndex, 
-			&boltMatrix, rancAngles, rancOrigin, time,
-			modelList, modelScale );
+#if defined(_GAME)
+	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
+#elif defined(_CGAME)
+	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
+#endif
 	// Storing ent position, bolt position, and bolt axis
 	if ( out_origin )
 	{
@@ -78,7 +70,7 @@ void BG_AttachToRancor( void *ghoul2,
 	}
 	else if ( out_angles )
 	{
-		vec3_t temp_axis[3];
+		matrix3_t temp_axis;
 		if ( inMouth )
 		{//in mouth
 			BG_GiveMeVectorFromMatrix( &boltMatrix, POSITIVE_Z, temp_axis[0] );
@@ -99,7 +91,11 @@ void BG_AttachToRancor( void *ghoul2,
 #define	MAX_VARIANTS 8
 qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, char *returnSurfName, int returnSize )
 {
-	if ( !ghoul2 || !trap_G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
+#if defined(_GAME)
+	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
+#elif defined(_CGAME)
+	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
+#endif
 	{//see if the basic name without variants is on
 		Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 		return qtrue;
@@ -110,7 +106,11 @@ qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, 
 		for ( i = 0; i < MAX_VARIANTS; i++ )
 		{
 			Com_sprintf( returnSurfName, returnSize, "%s%c", rootSurfName, 'a'+i );
-			if ( !trap_G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
+		#if defined(_GAME)
+			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
+		#elif defined(_CGAME)
+			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
+		#endif
 			{
 				return qtrue;
 			}

@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_entity.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_entity.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -43,4 +44,3 @@ void AAS_EntityOrigin(int entnum, vec3_t origin);
 int AAS_EntityType(int entnum);
 //returns the model index of the entity
 int AAS_EntityModelindex(int entnum);
-

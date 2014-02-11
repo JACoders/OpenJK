@@ -1,5 +1,4 @@
-#ifndef __BG_VEHICLES_H
-#define __BG_VEHICLES_H
+#pragma once
 
 #include "qcommon/q_shared.h"
 
@@ -17,7 +16,7 @@ typedef enum
 	VH_NUM_VEHICLES
 } vehicleType_t;
 
-typedef enum	
+typedef enum
 {
 	WPOSE_NONE	= 0,
 	WPOSE_BLASTER,
@@ -30,8 +29,7 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 //START VEHICLE WEAPONS
 //===========================================================================================================
-typedef struct
-{
+typedef struct vehWeaponInfo_s {
 //*** IMPORTANT!!! *** the number of variables in the vehWeaponStats_t struct (including all elements of arrays) must be reflected by NUM_VWEAP_PARMS!!!
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
@@ -63,7 +61,7 @@ typedef struct
 //NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
 #define NUM_VWEAP_PARMS	25
 
-#define	VWFOFS(x) ((int)&(((vehWeaponInfo_t *)0)->x))
+#define	VWFOFS(x) offsetof(vehWeaponInfo_t, x)
 
 #define MAX_VEH_WEAPONS	16	//sigh... no more than 16 different vehicle weapons
 #define VEH_WEAPON_BASE	0
@@ -82,8 +80,7 @@ extern int	numVehicleWeapons;
 #define		MAX_VEHICLE_TURRETS			2
 #define		MAX_VEHICLE_TURRET_MUZZLES	2
 
-typedef struct
-{
+typedef struct turretStats_s {
 	int			iWeapon;	//what vehWeaponInfo index to use
 	int			iDelay;		//delay between turret muzzle shots
 	int			iAmmoMax;	//how much ammo it has
@@ -105,8 +102,7 @@ typedef struct
 	int			passengerNum;//which passenger, if any, has control of this turret (overrides AI)
 } turretStats_t;
 
-typedef struct
-{
+typedef struct vehWeaponStats_s {
 //*** IMPORTANT!!! *** See note at top of next structure!!! ***
 	// Weapon stuff.
 	int			ID;//index into the weapon data
@@ -124,8 +120,7 @@ typedef struct
 	int			soundNoAmmo;
 } vehWeaponStats_t;
 
-typedef struct
-{
+typedef struct vehicleInfo_s {
 //*** IMPORTANT!!! *** vehFields table correponds to this structure!
 	char		*name;	//unique name of the vehicle
 
@@ -231,7 +226,7 @@ typedef struct
 	// Which weapon a muzzle fires (has to match one of the weapons this vehicle has). So 1 would be weapon 1,
 	// 2 would be weapon 2 and so on.
 	int			weapMuzzle[MAX_VEHICLE_MUZZLES];
-	
+
 	//turrets (if any) on the vehicle
 	turretStats_t	turret[MAX_VEHICLE_TURRETS];
 
@@ -311,17 +306,17 @@ typedef struct
 	qboolean (*Eject)( Vehicle_t *pVeh, bgEntity_t *pEnt, qboolean forceEject );
 
 	// Eject all the inhabitants of this vehicle.
-	qboolean (*EjectAll)( Vehicle_t *pVeh );	
+	qboolean (*EjectAll)( Vehicle_t *pVeh );
 
 	// Start a delay until the vehicle dies.
 	void (*StartDeathDelay)( Vehicle_t *pVeh, int iDelayTime );
 
 	// Update death sequence.
 	void (*DeathUpdate)( Vehicle_t *pVeh );
-	
+
 	// Register all the assets used by this vehicle.
 	void (*RegisterAssets)( Vehicle_t *pVeh );
-	
+
 	// Initialize the vehicle (should be called by Spawn?).
 	qboolean (*Initialize)( Vehicle_t *pVeh );
 
@@ -338,7 +333,7 @@ typedef struct
 
 	// ProcessOrientCommands the Vehicle.
 	void (*ProcessOrientCommands)( Vehicle_t *pVeh );
-	
+
 	// Attachs all the riders of this vehicle to their appropriate position/tag (*driver, *pass1, *pass2, whatever...).
 	void (*AttachRiders)( Vehicle_t *pVeh );
 
@@ -356,7 +351,7 @@ typedef struct
 } vehicleInfo_t;
 
 
-#define	VFOFS(x) ((int)&(((vehicleInfo_t *)0)->x))
+#define	VFOFS(x) offsetof(vehicleInfo_t, x)
 
 #define MAX_VEHICLES	16	//sigh... no more than 64 individual vehicles
 #define VEHICLE_BASE	0
@@ -399,11 +394,11 @@ extern int	numVehicles;
 
 typedef enum vehEject_e
 {
-	VEH_EJECT_LEFT, 
-	VEH_EJECT_RIGHT, 
-	VEH_EJECT_FRONT, 
-	VEH_EJECT_REAR, 
-	VEH_EJECT_TOP, 
+	VEH_EJECT_LEFT,
+	VEH_EJECT_RIGHT,
+	VEH_EJECT_FRONT,
+	VEH_EJECT_REAR,
+	VEH_EJECT_TOP,
 	VEH_EJECT_BOTTOM
 } vehEject_t;
 
@@ -441,8 +436,7 @@ typedef enum
 #define SHIPSURF_BROKEN_F	(1<<5) //wing 4
 #define SHIPSURF_BROKEN_G	(1<<6) //front
 
-typedef struct
-{
+typedef struct vehWeaponStatus_s {
 	//linked firing mode
 	qboolean	linked;//weapon 1's muzzles are in linked firing mode
 	//current weapon ammo
@@ -453,8 +447,7 @@ typedef struct
 	int			nextMuzzle;
 } vehWeaponStatus_t;
 
-typedef struct
-{
+typedef struct vehTurretStatus_s {
 	//current weapon ammo
 	int			ammo;
 	//debouncer for ammo recharge
@@ -528,7 +521,7 @@ typedef struct Vehicle_s
 	vec3_t m_vMuzzlePos[MAX_VEHICLE_MUZZLES], m_vMuzzleDir[MAX_VEHICLE_MUZZLES];
 
 	// This is how long to wait before being able to fire a specific muzzle again. This is based on the firing rate
-	// so that a firing rate of 10 rounds/sec would make this value initially 100 miliseconds. 
+	// so that a firing rate of 10 rounds/sec would make this value initially 100 miliseconds.
 	int m_iMuzzleWait[MAX_VEHICLE_MUZZLES];
 
 	// The user commands structure.
@@ -552,7 +545,7 @@ typedef struct Vehicle_s
 	//to make it a pointer to a vec3_t in the playerstate for prediction's sake. -rww
 
 	// How long you have strafed left or right (increments every frame that you strafe to right, decrements every frame you strafe left)
-	int			m_fStrafeTime;	
+	int			m_fStrafeTime;
 
 	// Previous angles of this vehicle.
 	vec3_t		m_vPrevOrientation;
@@ -573,7 +566,7 @@ typedef struct Vehicle_s
 	int			m_iHitDebounce;
 
 	// Timer for all cgame-FX...? ex: exhaust?
-	int			m_iLastFXTime; 
+	int			m_iLastFXTime;
 
 	// When to die.
 	int			m_iDieTime;
@@ -594,7 +587,7 @@ typedef struct Vehicle_s
 
 	//bitflag of surfaces that have broken off
 	int			m_iRemovedSurfaces;
-	
+
 	int			m_iDmgEffectTime;
 
 	// the last time this vehicle fired a turbo burst
@@ -624,5 +617,3 @@ typedef struct Vehicle_s
 #endif
 
 extern int BG_VehicleGetIndex( const char *vehicleName );
-
-#endif	// __BG_VEHICLES_H

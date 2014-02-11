@@ -1,9 +1,11 @@
 
 #include "../client/client.h"
 #include "../renderer/tr_local.h"
+#ifdef _WIN32
 #include "../win32/glw_win_dx8.h"
 #include "../win32/win_local.h"
 #include "../win32/win_file.h"
+#endif
 #include "../ui/ui_splash.h"
 
 #define SP_TextureExt "dds"

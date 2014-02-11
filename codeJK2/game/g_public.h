@@ -72,7 +72,7 @@ typedef enum
 } SavedGameJustLoaded_e;
 
 
-
+#define GAME_INCLUDE
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation
@@ -169,10 +169,10 @@ typedef struct {
 
 	// Savegame handling
 	//
-	qboolean	(*AppendToSaveGame)(unsigned long chid, const void *data, int length);
+	qboolean	(*AppendToSaveGame)(unsigned int chid, const void *data, int length);
 
-	int			(*ReadFromSaveGame)(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-	int			(*ReadFromSaveGameOptional)(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

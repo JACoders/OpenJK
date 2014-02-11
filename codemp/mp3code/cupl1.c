@@ -1,8 +1,10 @@
+#ifdef COMPILE_ME
+#ifdef _MSC_VER
 #pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #pragma warning(disable:4711)	// function 'xxxx' selected for automatic inline expansion
-#ifdef COMPILE_ME
+#endif
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -23,7 +25,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: cupL1.c,v 1.3 1999/10/19 07:13:08 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -242,8 +244,6 @@ int L1audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
       first_pass = 0;
    }
    pMP3Stream->cs_factorL1 = pMP3Stream->cs_factor[0];
-
-   transform_code = transform_code;	/* not used, asm compatability */
 
    bit_code = 0;
    if (convert_code & 8)

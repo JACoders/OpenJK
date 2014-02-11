@@ -21,21 +21,26 @@ This file is part of Jedi Knight 2.
 #ifndef __SEQUENCER__
 #define __SEQUENCER__
 
-#include "BlockStream.h"
-#include "Interface.h"
-#include "TaskManager.h"
-#include "Sequence.h"
+#include "blockstream.h"
+#include "interface.h"
+#include "taskmanager.h"
+#include "sequence.h"
 
-#pragma warning(disable : 4786)	//identifier was truncated 
+#ifdef _MSC_VER
+	#pragma warning(disable : 4786)	//identifier was truncated 
 
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+	#pragma warning (push, 3)	//go back down to 3 for the stl include
+	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 #include <list>
 #include <vector>
 #include <map>
 #include <algorithm>
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#ifdef _MSC_VER
+	#pragma warning (pop)
+	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
+
 using namespace std;
 
 //Defines

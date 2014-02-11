@@ -26,8 +26,8 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 
-#ifdef _XBOX
-#include "cl_input_hotswap.h"
+#ifndef _WIN32
+#include <cmath>
 #endif
 
 unsigned	frame_msec;
@@ -61,58 +61,21 @@ kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
 kbutton_t	in_strafe, in_speed;
 kbutton_t	in_up, in_down;
 
-kbutton_t	in_buttons[9];
+kbutton_t	in_buttons[32];
 
 
 qboolean	in_mlooking;
 
+extern cvar_t	*in_joystick;
 
-#ifdef _XBOX
-HotSwapManager swapMan1(HOTSWAP_ID_WHITE);
-HotSwapManager swapMan2(HOTSWAP_ID_BLACK);
-
-
-void IN_HotSwap1On(void)
-{
-	swapMan1.SetDown();
-}
-
-
-void IN_HotSwap2On(void)
-{
-	swapMan2.SetDown();
-}
-
-
-void IN_HotSwap1Off(void)
-{
-	swapMan1.SetUp();
-}
-
-
-void IN_HotSwap2Off(void)
-{
-	swapMan2.SetUp();
-}
-
-
-void CL_UpdateHotSwap(void)
-{
-	swapMan1.Update();
-	swapMan2.Update();
-}
-
-
-bool CL_ExtendSelectTime(void)
-{
-	return swapMan1.ButtonDown() || swapMan2.ButtonDown();
-}
+#ifndef NO_XINPUT
+void IN_UnloadXInput ( void );
 #endif
 
 
 static void IN_UseGivenForce(void)
 {
-	char *c = Cmd_Argv(1);
+	const char *c = Cmd_Argv(1);
 	int forceNum=-1;
 	int genCmdNum = 0;
 
@@ -184,7 +147,7 @@ void IN_MLookUp( void ) {
 
 void IN_KeyDown( kbutton_t *b ) {
 	int		k;
-	char	*c;
+	const char	*c;
 	
 	c = Cmd_Argv(1);
 	if ( c[0] ) {
@@ -220,7 +183,7 @@ void IN_KeyDown( kbutton_t *b ) {
 
 void IN_KeyUp( kbutton_t *b ) {
 	int		k;
-	char	*c;
+	const char	*c;
 	unsigned	uptime;
 
 	c = Cmd_Argv(1);
@@ -347,6 +310,20 @@ void IN_Button7Down(void) {IN_KeyDown(&in_buttons[7]);}
 void IN_Button7Up(void) {IN_KeyUp(&in_buttons[7]);}
 void IN_Button8Down(void) {IN_KeyDown(&in_buttons[8]);}
 void IN_Button8Up(void) {IN_KeyUp(&in_buttons[8]);}
+void IN_Button9Down(void) {IN_KeyDown(&in_buttons[9]);}
+void IN_Button9Up(void) {IN_KeyUp(&in_buttons[9]);}
+void IN_Button10Down(void) {IN_KeyDown(&in_buttons[10]);}
+void IN_Button10Up(void) {IN_KeyUp(&in_buttons[10]);}
+void IN_Button11Down(void) {IN_KeyDown(&in_buttons[11]);}
+void IN_Button11Up(void) {IN_KeyUp(&in_buttons[11]);}
+void IN_Button12Down(void) {IN_KeyDown(&in_buttons[12]);}
+void IN_Button12Up(void) {IN_KeyUp(&in_buttons[12]);}
+void IN_Button13Down(void) {IN_KeyDown(&in_buttons[13]);}
+void IN_Button13Up(void) {IN_KeyUp(&in_buttons[13]);}
+void IN_Button14Down(void) {IN_KeyDown(&in_buttons[14]);}
+void IN_Button14Up(void) {IN_KeyUp(&in_buttons[14]);}
+void IN_Button15Down(void) {IN_KeyDown(&in_buttons[15]);}
+void IN_Button15Up(void) {IN_KeyUp(&in_buttons[15]);}
 
 
 void IN_CenterView (void) {
@@ -464,7 +441,7 @@ CL_MouseEvent
 =================
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
-	if ( cls.keyCatchers & KEYCATCH_UI ) {
+	if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		_UI_MouseEvent( dx, dy );
 	}
 	else {
@@ -493,52 +470,62 @@ CL_JoystickMove
 =================
 */
 void CL_JoystickMove( usercmd_t *cmd ) {
-	int		movespeed;
 	float	anglespeed;
 
-	if ( in_speed.active ^ cl_run->integer ) {
-		movespeed = 2;
-	} else {
-		movespeed = 1;
-		cmd->buttons |= BUTTON_WALKING;
-	}
-
-	if ( in_speed.active ) {
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
-	} else {
-		anglespeed = 0.001 * cls.frametime;
-	}
-
-#ifndef _XBOX
-	if ( !in_strafe.active ) {
-		if ( cl_mYawOverride )
-		{
-			cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
-		}
-		else
-		{
-			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
-		}
-	} else
-#endif
+	if ( !in_joystick->integer )
 	{
-		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+		return;
 	}
 
-	if ( in_mlooking ) {
-		if ( cl_mPitchOverride )
-		{
-			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
-		}
-		else
-		{
-			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
-		}
-	} else {
-		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+	if( in_joystick->integer == 2 )
+	{
+		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
+		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		cl.viewangles[YAW] -= (cl_yawspeed->value / 100.0f) * (cl.joystickAxis[AXIS_YAW]/1024.0f);
+		cl.viewangles[PITCH] += (cl_pitchspeed->value / 100.0f) * (cl.joystickAxis[AXIS_PITCH]/1024.0f);
 	}
+	else
+	{
+		if ( !(in_speed.active ^ cl_run->integer) ) {
+			cmd->buttons |= BUTTON_WALKING;
+		}
 
-	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+		if ( in_speed.active ) {
+			anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		} else {
+			anglespeed = 0.001 * cls.frametime;
+		}
+
+		if ( !in_strafe.active ) {
+			if ( cl_mYawOverride )
+			{
+				cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
+			}
+			else
+			{
+				cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
+			}
+		} else
+		{
+			cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+		}
+
+		if ( in_mlooking ) {
+			if ( cl_mPitchOverride )
+			{
+				cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
+			}
+			else
+			{
+				cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
+			}
+		} else {
+			cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+		}
+
+		cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+	}
 }
 
 /*
@@ -546,25 +533,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 CL_MouseMove
 =================
 */
-#ifdef _XBOX
-void CL_MouseClamp(int *x, int *y)
-{
-	float ax = Q_fabs(*x);
-	float ay = Q_fabs(*y);
-
-	ax = (ax-10)*(3.0f/45.0f) * (ax-10) * (Q_fabs(*x) > 10);
-	ay = (ay-10)*(3.0f/45.0f) * (ay-10) * (Q_fabs(*y) > 10);
-	if (*x < 0)
-		*x = -ax;
-	else
-		*x = ax;
-	if (*y < 0)
-		*y = -ay;
-	else
-		*y = ay;
-}
-#endif
-
 void CL_MouseMove( usercmd_t *cmd ) {
 	float	mx, my;
 	float	accelSensitivity;
@@ -572,31 +540,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	const float	speed = static_cast<float>(frame_msec);
 	const float pitch = m_pitch->value;
 
-#ifdef _XBOX
-	const float mouseSpeedX = 0.06f;
-	const float mouseSpeedY = 0.05f;
-
-	// allow mouse smoothing
-	if ( m_filter->integer ) {
-		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5f * frame_msec * mouseSpeedX;
-		my = ( cl.mouseDy[0] + cl.mouseDy[1] ) * 0.5f * frame_msec * mouseSpeedY;
-	} else {
-		int ax = cl.mouseDx[cl.mouseIndex];
-		int ay = cl.mouseDy[cl.mouseIndex];
-		CL_MouseClamp(&ax, &ay);
-		
-		mx = ax * speed * mouseSpeedX;	
-		my = ay * speed * mouseSpeedY;		
-	}
-
-	extern short cg_crossHairStatus;
-	const float m_hoverSensitivity = 0.4f;
-	if (cg_crossHairStatus == 1)
-	{
-		mx *= m_hoverSensitivity;
-		my *= m_hoverSensitivity;
-	}
-#else
 	// allow mouse smoothing
 	if ( m_filter->integer ) {
 		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5;
@@ -605,7 +548,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 		mx = cl.mouseDx[cl.mouseIndex];
 		my = cl.mouseDy[cl.mouseIndex];
 	}
-#endif
 
 	cl.mouseIndex ^= 1;
 	cl.mouseDx[cl.mouseIndex] = 0;
@@ -625,44 +567,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	my *= accelSensitivity;
 
 	if (!mx && !my) {
-#ifdef _XBOX
-		// If there was a movement but no change in angles then start auto-leveling the camera
-		extern int g_lastFireTime;
-		float autolevelSpeed = 0.03f;
-
-		if (cg_crossHairStatus != 1 &&							// Not looking at an enemy
-			cl.joystickAxis[AXIS_FORWARD] &&					// Moving forward/backward
-			cl.frame.ps.groundEntityNum != ENTITYNUM_NONE &&	// Not in the air
-			Cvar_VariableIntegerValue("cl_autolevel") &&		// Autolevel is turned on
-			g_lastFireTime < Sys_Milliseconds() - 1000)			// Haven't fired recently
-		{
-			float normAngle = -SHORT2ANGLE(cl.frame.ps.delta_angles[PITCH]);
-			// The adjustment to normAngle below is meant to add or remove some multiple
-			// of 360, so that normAngle is within 180 of viewangles[PITCH]. It should
-			// be correct.
-			int diff = (int)(cl.viewangles[PITCH] - normAngle);
-			if (diff > 180)
-				normAngle += 360.0f * ((diff+180) / 360);
-			else if (diff < -180)
-				normAngle -= 360.0f * ((-diff+180) / 360);
-
-			if (Cvar_VariableIntegerValue("cg_thirdperson") == 1)
-			{
-//				normAngle += 10;	// Removed by BTO, 2003/05/14, I hate it
-				autolevelSpeed *= 1.5f;
-			}
-			if (cl.viewangles[PITCH] > normAngle)
-			{
-				cl.viewangles[PITCH] -= autolevelSpeed * speed;
-				if (cl.viewangles[PITCH] < normAngle) cl.viewangles[PITCH] = normAngle;
-			}
-			else if (cl.viewangles[PITCH] < normAngle)
-			{
-				cl.viewangles[PITCH] += autolevelSpeed * speed;
-				if (cl.viewangles[PITCH] > normAngle) cl.viewangles[PITCH] = normAngle;
-			}
-		}
-#endif
 		return;
 	}
 
@@ -682,11 +586,7 @@ void CL_MouseMove( usercmd_t *cmd ) {
 
 	if ( (in_mlooking || cl_freelook->integer) && !in_strafe.active ) {
 		// VVFIXME - This is supposed to be a CVAR
-#ifdef _XBOX
-		const float cl_pitchSensitivity = 0.5f;
-#else
 		const float cl_pitchSensitivity = 1.0f;
-#endif
 		if ( cl_mPitchOverride )
 		{
 			if ( pitch > 0 )
@@ -721,21 +621,21 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 	// send a button bit even if the key was pressed and released in
 	// less than a frame
 	//	
-	for (i = 0 ; i < 9 ; i++) {
+	for (i = 0 ; i < 32 ; i++) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
 		}
 		in_buttons[i].wasPressed = qfalse;
 	}
 
-	if ( cls.keyCatchers ) {
+	if ( Key_GetCatcher( ) ) {
 		//cmd->buttons |= BUTTON_TALK;
 	}
 
 	// allow the game to know if any key at all is
 	// currently pressed, even if it isn't bound to anything
 	/*
-	if ( kg.anykeydown && !cls.keyCatchers ) {
+	if ( kg.anykeydown && Key_GetCatcher( ) == 0 ) {
 		cmd->buttons |= BUTTON_ANY;
 	}
 	*/
@@ -817,7 +717,6 @@ usercmd_t CL_CreateCmd( void ) {
 	CL_FinishMove( &cmd );
 
 	// draw debug graphs of turning for mouse testing
-#ifndef _XBOX
 	if ( cl_debugMove->integer ) {
 		if ( cl_debugMove->integer == 1 ) {
 			SCR_DebugGraph( abs(cl.viewangles[YAW] - oldAngles[YAW]), 0 );
@@ -826,7 +725,6 @@ usercmd_t CL_CreateCmd( void ) {
 			SCR_DebugGraph( abs(cl.viewangles[PITCH] - oldAngles[PITCH]), 0 );
 		}
 	}
-#endif
 
 	return cmd;
 }
@@ -840,7 +738,6 @@ Create a new usercmd_t structure for this frame
 =================
 */
 void CL_CreateNewCommands( void ) {
-	usercmd_t	*cmd;
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
@@ -857,12 +754,10 @@ void CL_CreateNewCommands( void ) {
 	}
 	old_com_frameTime = com_frameTime;
 
-
 	// generate a command for this frame
 	cl.cmdNumber++;
 	cmdNum = cl.cmdNumber & CMD_MASK;
 	cl.cmds[cmdNum] = CL_CreateCmd ();
-	cmd = &cl.cmds[cmdNum];
 }
 
 /*
@@ -1070,13 +965,6 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-moveright", IN_MoverightUp);
 	Cmd_AddCommand ("+speed", IN_SpeedDown);
 	Cmd_AddCommand ("-speed", IN_SpeedUp);
-	//xbox hot swappable buttons
-#ifdef _XBOX
-	Cmd_AddCommand ("+hotswap1", IN_HotSwap1On);
-	Cmd_AddCommand ("+hotswap2", IN_HotSwap2On);
-	Cmd_AddCommand ("-hotswap1", IN_HotSwap1Off);
-	Cmd_AddCommand ("-hotswap2", IN_HotSwap2Off);
-#endif
 	Cmd_AddCommand ("useGivenForce", IN_UseGivenForce);
 	//buttons
 	Cmd_AddCommand ("+attack", IN_Button0Down);//attack
@@ -1085,8 +973,19 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_lightning", IN_Button1Up);
 	Cmd_AddCommand ("+useforce", IN_Button2Down);	//use current force power
 	Cmd_AddCommand ("-useforce", IN_Button2Up);
+#ifndef __NO_JK2
+	if ( com_jk2 && com_jk2->integer ) {
+		Cmd_AddCommand ("+block", IN_Button3Down);//manual blocking
+		Cmd_AddCommand ("-block", IN_Button3Up);
+	}
+	else {
+		Cmd_AddCommand ("+force_drain", IN_Button3Down);//force drain
+		Cmd_AddCommand ("-force_drain", IN_Button3Up);
+	}
+#else
 	Cmd_AddCommand ("+force_drain", IN_Button3Down);//force drain
 	Cmd_AddCommand ("-force_drain", IN_Button3Up);
+#endif
 	Cmd_AddCommand ("+walk", IN_Button4Down);//walking
 	Cmd_AddCommand ("-walk", IN_Button4Up);
 	Cmd_AddCommand ("+use", IN_Button5Down);//use object
@@ -1095,10 +994,55 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_grip", IN_Button6Up);
 	Cmd_AddCommand ("+altattack", IN_Button7Down);//altattack
 	Cmd_AddCommand ("-altattack", IN_Button7Up);
+#ifndef __NO_JK2
+	if ( !com_jk2 || !com_jk2->integer ) {
+		Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
+		Cmd_AddCommand ("-forcefocus", IN_Button8Up);
+		Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
+		Cmd_AddCommand ("-block", IN_Button8Up);
+	}
+#else
 	Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
 	Cmd_AddCommand ("-forcefocus", IN_Button8Up);
 	Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
 	Cmd_AddCommand ("-block", IN_Button8Up);
+#endif
+
+	Cmd_AddCommand ("+button0", IN_Button0Down);
+	Cmd_AddCommand ("-button0", IN_Button0Up);
+	Cmd_AddCommand ("+button1", IN_Button1Down);
+	Cmd_AddCommand ("-button1", IN_Button1Up);
+	Cmd_AddCommand ("+button2", IN_Button2Down);
+	Cmd_AddCommand ("-button2", IN_Button2Up);
+	Cmd_AddCommand ("+button3", IN_Button3Down);
+	Cmd_AddCommand ("-button3", IN_Button3Up);
+	Cmd_AddCommand ("+button4", IN_Button4Down);
+	Cmd_AddCommand ("-button4", IN_Button4Up);
+	Cmd_AddCommand ("+button5", IN_Button5Down);
+	Cmd_AddCommand ("-button5", IN_Button5Up);
+	Cmd_AddCommand ("+button6", IN_Button6Down);
+	Cmd_AddCommand ("-button6", IN_Button6Up);
+	Cmd_AddCommand ("+button7", IN_Button7Down);
+	Cmd_AddCommand ("-button7", IN_Button7Up);
+	Cmd_AddCommand ("+button8", IN_Button8Down);
+	Cmd_AddCommand ("-button8", IN_Button8Up);
+	Cmd_AddCommand ("+button9", IN_Button9Down);
+	Cmd_AddCommand ("-button9", IN_Button9Up);
+	Cmd_AddCommand ("+button10", IN_Button10Down);
+	Cmd_AddCommand ("-button10", IN_Button10Up);
+	Cmd_AddCommand ("+button11", IN_Button11Down);
+	Cmd_AddCommand ("-button11", IN_Button11Up);
+	Cmd_AddCommand ("+button12", IN_Button12Down);
+	Cmd_AddCommand ("-button12", IN_Button12Up);
+	Cmd_AddCommand ("+button13", IN_Button13Down);
+	Cmd_AddCommand ("-button13", IN_Button13Up);
+	Cmd_AddCommand ("+button14", IN_Button14Down);
+	Cmd_AddCommand ("-button14", IN_Button14Up);
+	Cmd_AddCommand ("+button15", IN_Button15Down);
+	Cmd_AddCommand ("-button15", IN_Button15Up);
+
+	// can add up to button31 this just brings the number of available binds up to par with MP
+
 	//end buttons
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);

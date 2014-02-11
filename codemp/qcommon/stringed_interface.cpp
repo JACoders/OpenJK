@@ -18,9 +18,11 @@
 //////////////////////////////////////////////////
 
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4511 )			// copy constructor could not be generated
 #pragma warning ( disable : 4512 )			// assignment operator could not be generated
 #pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
+#endif
 #include "stringed_interface.h"
 #include "stringed_ingame.h"
 
@@ -86,8 +88,8 @@ unsigned char *SE_LoadFileData( const char *psFileName, int *piLoadedLength /* =
 #endif
 	{
 		// local filename, so prepend the base dir etc according to game and load it however (from PAK?)
-		//		
-		unsigned char *pvLoadedData;		
+		//
+		unsigned char *pvLoadedData;
 		int iLen = FS_ReadFile( psFileName, (void **)&pvLoadedData );
 
 		if (iLen>0)
@@ -117,7 +119,7 @@ void SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile )
 	if ( psLoadedFile )
 	{
 		FS_FreeFile( psLoadedFile );
-	}	
+	}
 #endif
 }
 
@@ -159,8 +161,8 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 	for(i=0; i<numSysFiles; i++)
 	{
 		char	sFilename[MAX_QPATH];
-		Com_sprintf(sFilename, sizeof(sFilename), "%s/%s", psDir, sysFiles[i]);		
-			
+		Com_sprintf(sFilename, sizeof(sFilename), "%s/%s", psDir, sysFiles[i]);
+
 //		Com_Printf("%sFound file: %s",!i?"\n":"",sFilename);
 
 		strResults += sFilename;
@@ -201,7 +203,7 @@ int SE_BuildFileList( const char *psStartDir, string &strResults )
 #else
 	// .ST files...
 	//
-	int iFilesFound = BuildFileList(	va("%s\\*%s",psStartDir, sSE_INGAME_FILE_EXTENSION),	// LPCSTR psPathAndFilter, 
+	int iFilesFound = BuildFileList(	va("%s\\*%s",psStartDir, sSE_INGAME_FILE_EXTENSION),	// LPCSTR psPathAndFilter,
 										true					// bool bRecurseSubDirs
 										);
 

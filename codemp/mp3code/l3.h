@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1996-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: L3.h,v 1.7 1999/12/10 07:16:42 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -40,8 +40,12 @@ ____________________________________________________________________________*/
 #define GLOBAL_GAIN_SCALE (4*15)
 /* #define GLOBAL_GAIN_SCALE 0 */
 
+#ifdef _WIN32
+#if (defined _M_IX86 || defined __i386__)
+#define LITTLE_ENDIAN 1
+#endif
 
-#ifdef _M_IX86
+#if (defined _M_X64 || defined _WIN64 || defined __WIN64__ || defined __x86_64__)
 #define LITTLE_ENDIAN 1
 #endif
 
@@ -57,6 +61,7 @@ ____________________________________________________________________________*/
 #define LITTLE_ENDIAN 0
 #elif defined(__INTEL__)
 #define LITTLE_ENDIAN 1
+#endif
 #endif
 
 #ifndef LITTLE_ENDIAN

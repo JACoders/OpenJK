@@ -18,10 +18,6 @@ This file is part of Jedi Academy.
 
 #include "cm_local.h"
 
-#ifdef _XBOX
-#include "../renderer/tr_local.h"
-#endif
-
 /*
 ===============================================================================
 
@@ -64,11 +60,7 @@ void CM_TestBoxInBrush( traceWork_t *tw, cbrush_t *brush ) {
 	// need to test the remainder
 	for ( i = 6 ; i < brush->numsides ; i++ ) {
 		side = brush->sides + i;
-#ifdef _XBOX
-		plane = &cmg.planes[side->planeNum.GetValue()];
-#else
 		plane = side->plane;
-#endif
 
 		// adjust the plane distance apropriately for mins/maxs
 		dist = plane->dist - DotProduct( tw->offsets[ plane->signbits ], plane->normal );
@@ -99,11 +91,7 @@ bool CM_PlaneCollision(traceWork_t *tw, cbrushside_t *side)
 {
 	float			dist, f;
 	float			d1, d2;
-#ifdef _XBOX
-	cplane_t		*plane = &cmg.planes[side->planeNum.GetValue()];
-#else
 	cplane_t		*plane = side->plane;
-#endif
 
 	// adjust the plane distance apropriately for mins/maxs
 	dist = plane->dist - DotProduct( tw->offsets[ plane->signbits ], plane->normal );
@@ -252,7 +240,6 @@ void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, boo
 }
 
 #ifndef BSPC
-#ifndef _XBOX	// Removing terrain from Xbox
 void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, cbrush_t *brush )
 {
 	CCMLandScape		*landscape;
@@ -354,20 +341,6 @@ void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, cbrush_t *brush )
 		}
 	}
 }
-#endif	// _XBOX
-#endif
-
-#ifdef _XBOX
-static int CM_GetSurfaceIndex(int firstLeafSurface)
-{
-	if(!tr.world || 
-			firstLeafSurface > tr.world->nummarksurfaces || 
-			firstLeafSurface < 0) {
-		return cmg.leafsurfaces[ firstLeafSurface ] ;
-	} else {
-		return tr.world->marksurfaces[firstLeafSurface] - tr.world->surfaces;
-	}
-}
 #endif
 
 /*
@@ -395,7 +368,6 @@ void CM_TestInLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 		}
 		
 #ifndef BSPC
-#ifndef _XBOX	// Removing terrain from Xbox
 		if (com_terrainPhysics->integer && cmg.landScape && (b->contents & CONTENTS_TERRAIN) )
 		{
 			// Invalidate the checkcount for terrain as the terrain brush has to be processed
@@ -406,7 +378,6 @@ void CM_TestInLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 			// If inside a terrain brush don't bother with regular brush collision
 			continue;
 		}
-#endif
 #endif
 
 		CM_TestBoxInBrush( tw, b );
@@ -422,12 +393,8 @@ void CM_TestInLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 	if ( !cm_noCurves->integer ) {
 #endif //BSPC
 		for ( k = 0 ; k < leaf->numLeafSurfaces ; k++ ) {
-#ifdef _XBOX
-			int index = CM_GetSurfaceIndex(leaf->firstLeafSurface + k);
-			patch = cmg.surfaces[ index ];
-#else
 			patch = local->surfaces[ local->leafsurfaces[ leaf->firstLeafSurface + k ] ];
-#endif
+
 			if ( !patch ) {
 				continue;
 			}
@@ -574,11 +541,7 @@ void CM_TraceThroughBrush( traceWork_t *tw, cbrush_t *brush ) {
 	//
 	for (i=0 ; i<brush->numsides ; i++) {
 		side = brush->sides + i;
-#ifdef _XBOX
-		plane = &cmg.planes[side->planeNum.GetValue()];
-#else
 		plane = side->plane;
-#endif
 
 		// adjust the plane distance apropriately for mins/maxs
 		dist = plane->dist - DotProduct( tw->offsets[ plane->signbits ], plane->normal );
@@ -748,7 +711,6 @@ void CM_TraceToLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 		}
 
 #ifndef BSPC
-#ifndef _XBOX	// Removing terrain from Xbox
 		if ( com_terrainPhysics->integer && cmg.landScape && (b->contents & CONTENTS_TERRAIN) )
 		{
 			// Invalidate the checkcount for terrain as the terrain brush has to be processed
@@ -759,7 +721,6 @@ void CM_TraceToLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 			// If inside a terrain brush don't bother with regular brush collision
 			continue;
 		}
-#endif
 #endif
 
 		//if (b->contents & CONTENTS_PLAYERCLIP) continue;
@@ -777,12 +738,7 @@ void CM_TraceToLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 	if ( !cm_noCurves->integer ) {
 #endif
 		for ( k = 0 ; k < leaf->numLeafSurfaces ; k++ ) {
-#ifdef _XBOX
-			int index = CM_GetSurfaceIndex(leaf->firstLeafSurface + k);
-			patch = cmg.surfaces[ index ];
-#else
 			patch = local->surfaces[ local->leafsurfaces[ leaf->firstLeafSurface + k ] ];
-#endif
 			if ( !patch ) {
 				continue;
 			}
@@ -825,12 +781,6 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 	int			side;
 	float		midf;
 
-#ifdef _XBOX
-	if(!tr.world) {
-		return;
-	}
-#endif
-
 	if (tw->trace.fraction <= p1f) {
 		return;		// already hit something nearer
 	}
@@ -846,12 +796,7 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 	// and the offset for the size of the box
 	//
 	node = local->nodes + num;
-
-#ifdef _XBOX
-	plane = cmg.planes + tr.world->nodes[num].planeNum;
-#else   mnode_s
 	plane = node->plane;
-#endif
 
 #if 0
 	// uncomment this to test against every leaf in the world for debugging

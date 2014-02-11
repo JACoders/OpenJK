@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // g_local.h -- local definitions for game module
@@ -6,12 +8,6 @@
 #include "bg_public.h"
 #include "bg_vehicles.h"
 #include "g_public.h"
-
-#ifndef __LCC__
-#define GAME_INLINE ID_INLINE
-#else
-#define GAME_INLINE //none
-#endif
 
 typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
@@ -26,7 +22,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"basejka"
+#define	GAMEVERSION	"OpenJK"
 
 #define SECURITY_LOG "security.log"
 
@@ -84,10 +80,32 @@ extern vec3_t gPainPoint;
 #define DEBUG_SABER_BOX
 #endif
 
+// make sure this matches game/match.h for botlibs
 #define EC "\x19"
 
 #define	MAX_G_SHARED_BUFFER_SIZE		8192
-extern char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
+// used for communication with the engine
+typedef union sharedBuffer_u {
+	char							raw[MAX_G_SHARED_BUFFER_SIZE];
+	T_G_ICARUS_PLAYSOUND			playSound;
+	T_G_ICARUS_SET					set;
+	T_G_ICARUS_LERP2POS				lerp2Pos;
+	T_G_ICARUS_LERP2ORIGIN			lerp2Origin;
+	T_G_ICARUS_LERP2ANGLES			lerp2Angles;
+	T_G_ICARUS_GETTAG				getTag;
+	T_G_ICARUS_LERP2START			lerp2Start;
+	T_G_ICARUS_LERP2END				lerp2End;
+	T_G_ICARUS_USE					use;
+	T_G_ICARUS_KILL					kill;
+	T_G_ICARUS_REMOVE				remove;
+	T_G_ICARUS_PLAY					play;
+	T_G_ICARUS_GETFLOAT				getFloat;
+	T_G_ICARUS_GETVECTOR			getVector;
+	T_G_ICARUS_GETSTRING			getString;
+	T_G_ICARUS_SOUNDINDEX			soundIndex;
+	T_G_ICARUS_GETSETIDFORSTRING	getSetIDForString;
+} sharedBuffer_t;
+extern sharedBuffer_t gSharedBuffer;
 
 // movers are things like doors, plats, buttons, etc
 typedef enum {
@@ -99,7 +117,7 @@ typedef enum {
 
 #define SP_PODIUM_MODEL		"models/mapobjects/podium/podium4.md3"
 
-typedef enum 
+typedef enum
 {
 	HL_NONE = 0,
 	HL_FOOT_RT,
@@ -219,13 +237,13 @@ struct gentity_s {
 	char		*model;
 	char		*model2;
 	int			freetime;			// level.time when the object was freed
-	
+
 	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
 	qboolean	freeAfterEvent;
 	qboolean	unlinkAfterEvent;
 
 	qboolean	physicsObject;		// if true, it can be pushed by movers and fall off edges
-									// all game items are physicsObjects, 
+									// all game items are physicsObjects,
 	float		physicsBounce;		// 1.0 = continuous bounce, 0.0 = no bounce
 	int			clipmask;			// brushes with this content value will be collided against
 									// when moving.  items and corpses do not collide against
@@ -361,6 +379,9 @@ struct gentity_s {
 	float		epGravFactor;
 
 	gitem_t		*item;			// for bonus items
+
+	// OpenJK add
+	int			useDebounceTime;	// for cultist_destroyer
 };
 
 #define DAMAGEREDIRECT_HEAD		1
@@ -385,7 +406,7 @@ typedef enum {
 	TEAM_ACTIVE		// Now actively playing
 } playerTeamStateState_t;
 
-typedef struct {
+typedef struct playerTeamState_s {
 	playerTeamStateState_t	state;
 
 	int			location;
@@ -412,9 +433,9 @@ typedef struct {
 // this is achieved by writing all the data to cvar strings at game shutdown
 // time and reading them back at connection time.  Anything added here
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
-typedef struct {
+typedef struct clientSession_s {
 	team_t		sessionTeam;
-	int			spectatorTime;		// for determining next-in-line to play
+	int			spectatorNum;		// for determining next-in-line to play
 	spectatorState_t	spectatorState;
 	int			spectatorClient;	// for chasecam and follow mode
 	int			wins, losses;		// tournament stats
@@ -427,7 +448,6 @@ typedef struct {
 	int			duelTeam;
 	int			siegeDesiredTeam;
 
-	//JAC: Added
 	char		IP[NET_ADDRSTRMAXLEN];
 } clientSession_t;
 
@@ -441,29 +461,28 @@ typedef struct {
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
-typedef struct {
-	clientConnected_t	connected;	
+typedef struct clientPersistant_s {
+	clientConnected_t	connected;
 	usercmd_t	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
 	qboolean	initialSpawn;		// the first spawn should be at a cool location
 	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
 	qboolean	pmoveFixed;			//
 	char		netname[MAX_NETNAME];
+	char		netname_nocolor[MAX_NETNAME];
 	int			netnameTime;				// Last time the name was changed
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 	playerTeamState_t teamState;	// status in teamplay games
-	int			voteCount;			// to prevent people from constantly calling votes
-	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
 
-	//JAC: Added
 	int			connectTime;
 
-	//Raz: Moved this out of session data.
-	//		userinfo -> pers in ClientUserinfoChanged
-	char		saber1[MAX_QPATH];
-	char		saber2[MAX_QPATH];
+	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
+
+	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
+
+	char		guid[33];
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -761,7 +780,7 @@ struct gclient_s {
 
 #define MAX_INTEREST_POINTS		64
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	char		*target;
@@ -771,7 +790,7 @@ typedef struct
 
 #define MAX_COMBAT_POINTS		512
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	int			flags;
@@ -817,8 +836,7 @@ typedef struct alertEvent_s
 //
 // this structure is cleared as each map is entered
 //
-typedef struct
-{
+typedef struct waypointData_s {
 	char	targetname[MAX_QPATH];
 	char	target[MAX_QPATH];
 	char	target2[MAX_QPATH];
@@ -827,7 +845,7 @@ typedef struct
 	int		nodeID;
 } waypointData_t;
 
-typedef struct {
+typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
 	struct gentity_s	*gentities;
@@ -873,6 +891,7 @@ typedef struct {
 	char		voteDisplayString[MAX_STRING_CHARS];
 	int			voteTime;				// level.time vote was called
 	int			voteExecuteTime;		// time the vote is executed
+	int			voteExecuteDelay;		// set per-vote
 	int			voteYes;
 	int			voteNo;
 	int			numVotingClients;		// set by CalculateRanks
@@ -882,7 +901,10 @@ typedef struct {
 
 	// team voting state
 	char		teamVoteString[2][MAX_STRING_CHARS];
+	char		teamVoteStringClean[2][MAX_STRING_CHARS];
+	char		teamVoteDisplayString[2][MAX_STRING_CHARS];
 	int			teamVoteTime[2];		// level.time vote was called
+	int			teamVoteExecuteTime[2];		// time the vote is executed
 	int			teamVoteYes[2];
 	int			teamVoteNo[2];
 	int			numteamVotingClients[2];// set by CalculateRanks
@@ -936,10 +958,21 @@ typedef struct {
 
 	char		mTeamFilter[MAX_QPATH];
 
-	//JAC: added
 	struct {
 		fileHandle_t	log;
 	} security;
+
+	struct {
+		int num;
+		char *infos[MAX_BOTS];
+	} bots;
+
+	struct {
+		int num;
+		char *infos[MAX_ARENAS];
+	} arenas;
+
+	gametype_t	gametype;
 } level_locals_t;
 
 
@@ -993,15 +1026,10 @@ void G_CheckTeamItems( void );
 void G_RunItem( gentity_t *ent );
 void RespawnItem( gentity_t *ent );
 
-void UseHoldableItem( gentity_t *ent );
-void PrecacheItem (gitem_t *it);
 gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle );
 gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity );
-void SetRespawn (gentity_t *ent, float delay);
 void G_SpawnItem (gentity_t *ent, gitem_t *item);
 void FinishSpawningItem( gentity_t *ent );
-void Think_Weapon (gentity_t *ent);
-int ArmorIndex (gentity_t *ent);
 void	Add_Ammo (gentity_t *ent, int weapon, int count);
 void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace);
 
@@ -1084,81 +1112,6 @@ Ghoul2 Insert Start
 */
 int G_BoneIndex( const char *name );
 
-
-qhandle_t	trap_R_RegisterSkin( const char *name );
-
-// CG specific API access
-void		trap_G2_ListModelSurfaces(void *ghlInfo);
-void		trap_G2_ListModelBones(void *ghlInfo, int frame);
-void		trap_G2_SetGhoul2ModelIndexes(void *ghoul2, qhandle_t *modelList, qhandle_t *skinList);
-qboolean	trap_G2_HaveWeGhoul2Models(void *ghoul2);
-qboolean	trap_G2API_GetBoltMatrix(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-qboolean	trap_G2API_GetBoltMatrix_NoReconstruct(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-qboolean	trap_G2API_GetBoltMatrix_NoRecNoRot(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-int			trap_G2API_InitGhoul2Model(void **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin,
-						  qhandle_t customShader, int modelFlags, int lodBias);
-qboolean	trap_G2API_SetSkin(void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin);
-
-int			trap_G2API_Ghoul2Size ( void* ghlInfo );
-
-int			trap_G2API_AddBolt(void *ghoul2, int modelIndex, const char *boneName);
-void		trap_G2API_SetBoltInfo(void *ghoul2, int modelIndex, int boltInfo);
-
-int			trap_G2API_CopyGhoul2Instance(void *g2From, void *g2To, int modelIndex);
-void		trap_G2API_CopySpecificGhoul2Model(void *g2From, int modelFrom, void *g2To, int modelTo);
-void		trap_G2API_DuplicateGhoul2Instance(void *g2From, void **g2To);
-qboolean	trap_G2API_HasGhoul2ModelOnIndex(void *ghlInfo, int modelIndex);
-qboolean	trap_G2API_RemoveGhoul2Model(void *ghlInfo, int modelIndex);
-qboolean	trap_G2API_RemoveGhoul2Models(void *ghlInfo);
-void		trap_G2API_CleanGhoul2Models(void **ghoul2Ptr);
-void		trap_G2API_CollisionDetect ( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,
-								int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius );
-void		trap_G2API_CollisionDetectCache ( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,
-								int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius );
-
-qboolean	trap_G2API_SetBoneAngles(void *ghoul2, int modelIndex, const char *boneName, const vec3_t angles, const int flags,
-								const int up, const int right, const int forward, qhandle_t *modelList,
-								int blendTime , int currentTime );
-void		trap_G2API_GetGLAName(void *ghoul2, int modelIndex, char *fillBuf);
-qboolean	trap_G2API_SetBoneAnim(void *ghoul2, const int modelIndex, const char *boneName, const int startFrame, const int endFrame,
-							  const int flags, const float animSpeed, const int currentTime, const float setFrame , const int blendTime );
-qboolean	trap_G2API_GetBoneAnim(void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame,
-								int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex);
-void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
-qboolean	trap_G2API_SetRootSurface(void *ghoul2, const int modelIndex, const char *surfaceName);
-qboolean	trap_G2API_SetSurfaceOnOff(void *ghoul2, const char *surfaceName, const int flags);
-qboolean	trap_G2API_SetNewOrigin(void *ghoul2, const int boltIndex);
-qboolean	trap_G2API_DoesBoneExist(void *ghoul2, int modelIndex, const char *boneName);
-int			trap_G2API_GetSurfaceRenderStatus(void *ghoul2, const int modelIndex, const char *surfaceName);
-
-void		trap_G2API_AbsurdSmoothing(void *ghoul2, qboolean status);
-
-void		trap_G2API_SetRagDoll(void *ghoul2, sharedRagDollParams_t *params);
-void		trap_G2API_AnimateG2Models(void *ghoul2, int time, sharedRagDollUpdateParams_t *params);
-
-//additional ragdoll options -rww
-qboolean	trap_G2API_RagPCJConstraint(void *ghoul2, const char *boneName, vec3_t min, vec3_t max); //override default pcj bonee constraints
-qboolean	trap_G2API_RagPCJGradientSpeed(void *ghoul2, const char *boneName, const float speed); //override the default gradient movespeed for a pcj bone
-qboolean	trap_G2API_RagEffectorGoal(void *ghoul2, const char *boneName, vec3_t pos); //override an effector bone's goal position (world coordinates)
-qboolean	trap_G2API_GetRagBonePos(void *ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale); //current position of said bone is put into pos (world coordinates)
-qboolean	trap_G2API_RagEffectorKick(void *ghoul2, const char *boneName, vec3_t velocity); //add velocity to a rag bone
-qboolean	trap_G2API_RagForceSolve(void *ghoul2, qboolean force); //make sure we are actively performing solve/settle routines, if desired
-
-qboolean	trap_G2API_SetBoneIKState(void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
-qboolean	trap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params);
-
-//for removing bones so they no longer have their own seperate animation hierarchy. Or whatever reason you may have. -rww
-qboolean	trap_G2API_RemoveBone(void *ghoul2, const char *boneName, int modelIndex);
-
-void		trap_G2API_AttachInstanceToEntNum(void *ghoul2, int entityNum, qboolean server);
-void		trap_G2API_ClearAttachedInstance(int entityNum);
-void		trap_G2API_CleanEntAttachments(void);
-qboolean	trap_G2API_OverrideServer(void *serverInstance);
-
-
 /*
 Ghoul2 Insert End
 */
@@ -1212,7 +1165,7 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward );
 
 void G_RunMissile( gentity_t *ent );
 
-gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, 
+gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 							gentity_t *owner, qboolean altFire);
 void G_BounceProjectile( vec3_t start, vec3_t impact, vec3_t dir, vec3_t endout );
 void G_ExplodeMissile( gentity_t *ent );
@@ -1276,7 +1229,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 void WP_FireTurretMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod, gentity_t *ignore );
 void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod );
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
+void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRight, const vec3_t inUp, vec3_t muzzlePoint );
 void SnapVectorTowards( vec3_t v, vec3_t to );
 qboolean CheckGauntletAttack( gentity_t *ent );
 
@@ -1284,13 +1237,13 @@ qboolean CheckGauntletAttack( gentity_t *ent );
 //
 // g_client.c
 //
-team_t TeamCount( int ignoreClientNum, int team );
+int TeamCount( int ignoreClientNum, team_t team );
 int TeamLeader( int team );
 team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team );
+gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team, qboolean isbot );
 void MaintainBodyQueue(gentity_t *ent);
-void respawn (gentity_t *ent);
+void ClientRespawn (gentity_t *ent);
 void BeginIntermission (void);
 void InitBodyQue (void);
 void ClientSpawn( gentity_t *ent );
@@ -1344,11 +1297,10 @@ void FindIntermissionPoint( void );
 void SetLeader(int team, int client);
 void CheckTeamLeader( int team );
 void G_RunThink (gentity_t *ent);
+void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
-void QDECL G_Printf( const char *fmt, ... );
-void QDECL G_Error( const char *fmt, ... );
 const char *G_GetStringEdString(char *refSection, char *refName);
 
 //
@@ -1361,6 +1313,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset );
 void G_BreakArm(gentity_t *ent, int arm);
 void G_UpdateClientAnims(gentity_t *self, float animSpeedScale);
 void ClientCommand( int clientNum );
+void G_ClearVote( gentity_t *ent );
+void G_ClearTeamVote( gentity_t *ent, int team );
 
 //
 // g_active.c
@@ -1405,13 +1359,6 @@ extern qboolean G_ClearLOS2( gentity_t *self, gentity_t *ent, const vec3_t end )
 extern qboolean G_ClearLOS3( gentity_t *self, const vec3_t start, gentity_t *ent );
 extern qboolean G_ClearLOS4( gentity_t *self, gentity_t *ent );
 extern qboolean G_ClearLOS5( gentity_t *self, const vec3_t end );
-
-//
-// g_arenas.c
-//
-void UpdateTournamentInfo( void );
-//void SpawnModelsOnVictoryPads( void );
-//void Svcmd_AbortPodium_f( void );
 
 //
 // g_bot.c
@@ -1522,325 +1469,27 @@ int BotAIStartFrame( int time );
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];
 
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))
-
-#define XCVAR_PROTO
-	#include "g_xcvar.h"
-#undef XCVAR_PROTO
-
-void	trap_Print( const char *fmt );
-void	trap_Error( const char *fmt );
-int		trap_Milliseconds( void );
-void	trap_PrecisionTimer_Start(void **theNewTimer);
-int		trap_PrecisionTimer_End(void *theTimer);
-int		trap_Argc( void );
-void	trap_Argv( int n, char *buffer, int bufferLength );
-void	trap_Args( char *buffer, int bufferLength );
-int		trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
-void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
-void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
-void	trap_FS_FCloseFile( fileHandle_t f );
-int		trap_FS_GetFileList( const char *path, const char *extension, char *listbuf, int bufsize );
-void	trap_SendConsoleCommand( int exec_when, const char *text );
-void	trap_Cvar_Register( vmCvar_t *cvar, const char *var_name, const char *value, int flags );
-void	trap_Cvar_Update( vmCvar_t *cvar );
-void	trap_Cvar_Set( const char *var_name, const char *value );
-int		trap_Cvar_VariableIntegerValue( const char *var_name );
-float	trap_Cvar_VariableValue( const char *var_name );
-void	trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
-void	trap_LocateGameData( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *gameClients, int sizeofGameClient );
-void	trap_DropClient( int clientNum, const char *reason );
-void	trap_SendServerCommand( int clientNum, const char *text );
-void	trap_SetConfigstring( int num, const char *string );
-void	trap_GetConfigstring( int num, char *buffer, int bufferSize );
-void	trap_GetUserinfo( int num, char *buffer, int bufferSize );
-void	trap_SetUserinfo( int num, const char *buffer );
-void	trap_GetServerinfo( char *buffer, int bufferSize );
-void	trap_SetServerCull(float cullDistance);
-void	trap_SetBrushModel( gentity_t *ent, const char *name );
-void	trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
-void	trap_G2Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int g2TraceType, int traceLod );
-int		trap_PointContents( const vec3_t point, int passEntityNum );
-qboolean trap_InPVS( const vec3_t p1, const vec3_t p2 );
-qboolean trap_InPVSIgnorePortals( const vec3_t p1, const vec3_t p2 );
-void	trap_AdjustAreaPortalState( gentity_t *ent, qboolean open );
-qboolean trap_AreasConnected( int area1, int area2 );
-void	trap_LinkEntity( gentity_t *ent );
-void	trap_UnlinkEntity( gentity_t *ent );
-int		trap_EntitiesInBox( const vec3_t mins, const vec3_t maxs, int *entityList, int maxcount );
-qboolean trap_EntityContact( const vec3_t mins, const vec3_t maxs, const gentity_t *ent );
-int		trap_BotAllocateClient( void );
-void	trap_BotFreeClient( int clientNum );
-void	trap_GetUsercmd( int clientNum, usercmd_t *cmd );
-qboolean	trap_GetEntityToken( char *buffer, int bufferSize );
-
-//adding giant gamebreaking features post-alpha is fun!
-void	trap_SiegePersSet(siegePers_t *pers);
-void	trap_SiegePersGet(siegePers_t *pers);
-
-#ifdef BOT_ZMALLOC
-void	*trap_BotGetMemoryGame(int size);
-void	trap_BotFreeMemoryGame(void *ptr);
-#endif
-
-int		trap_DebugPolygonCreate(int color, int numPoints, vec3_t *points);
-void	trap_DebugPolygonDelete(int id);
-
-int		trap_BotLibSetup( void );
-int		trap_BotLibShutdown( void );
-int		trap_BotLibVarSet(char *var_name, char *value);
-int		trap_BotLibVarGet(char *var_name, char *value, int size);
-int		trap_BotLibDefine(char *string);
-int		trap_BotLibStartFrame(float time);
-int		trap_BotLibLoadMap(const char *mapname);
-int		trap_BotLibUpdateEntity(int ent, void /* struct bot_updateentity_s */ *bue);
-int		trap_BotLibTest(int parm0, char *parm1, vec3_t parm2, vec3_t parm3);
-
-int		trap_BotGetSnapshotEntity( int clientNum, int sequence );
-int		trap_BotGetServerCommand(int clientNum, char *message, int size);
-void	trap_BotUserCommand(int client, usercmd_t *ucmd);
-
-int		trap_AAS_BBoxAreas(vec3_t absmins, vec3_t absmaxs, int *areas, int maxareas);
-int		trap_AAS_AreaInfo( int areanum, void /* struct aas_areainfo_s */ *info );
-void	trap_AAS_EntityInfo(int entnum, void /* struct aas_entityinfo_s */ *info);
-
-int		trap_AAS_Initialized(void);
-void	trap_AAS_PresenceTypeBoundingBox(int presencetype, vec3_t mins, vec3_t maxs);
-float	trap_AAS_Time(void);
-
-int		trap_AAS_PointAreaNum(vec3_t point);
-int		trap_AAS_PointReachabilityAreaIndex(vec3_t point);
-int		trap_AAS_TraceAreas(vec3_t start, vec3_t end, int *areas, vec3_t *points, int maxareas);
-
-int		trap_AAS_PointContents(vec3_t point);
-int		trap_AAS_NextBSPEntity(int ent);
-int		trap_AAS_ValueForBSPEpairKey(int ent, char *key, char *value, int size);
-int		trap_AAS_VectorForBSPEpairKey(int ent, char *key, vec3_t v);
-int		trap_AAS_FloatForBSPEpairKey(int ent, char *key, float *value);
-int		trap_AAS_IntForBSPEpairKey(int ent, char *key, int *value);
-
-int		trap_AAS_AreaReachability(int areanum);
-
-int		trap_AAS_AreaTravelTimeToGoalArea(int areanum, vec3_t origin, int goalareanum, int travelflags);
-int		trap_AAS_EnableRoutingArea( int areanum, int enable );
-int		trap_AAS_PredictRoute(void /*struct aas_predictroute_s*/ *route, int areanum, vec3_t origin,
-							int goalareanum, int travelflags, int maxareas, int maxtime,
-							int stopevent, int stopcontents, int stoptfl, int stopareanum);
-
-int		trap_AAS_AlternativeRouteGoals(vec3_t start, int startareanum, vec3_t goal, int goalareanum, int travelflags,
-										void /*struct aas_altroutegoal_s*/ *altroutegoals, int maxaltroutegoals,
-										int type);
-int		trap_AAS_Swimming(vec3_t origin);
-int		trap_AAS_PredictClientMovement(void /* aas_clientmove_s */ *move, int entnum, vec3_t origin, int presencetype, int onground, vec3_t velocity, vec3_t cmdmove, int cmdframes, int maxframes, float frametime, int stopevent, int stopareanum, int visualize);
-
-
-void	trap_EA_Say(int client, char *str);
-void	trap_EA_SayTeam(int client, char *str);
-void	trap_EA_Command(int client, char *command);
-
-void	trap_EA_Action(int client, int action);
-void	trap_EA_Gesture(int client);
-void	trap_EA_Talk(int client);
-void	trap_EA_Attack(int client);
-void	trap_EA_Use(int client);
-void	trap_EA_Respawn(int client);
-void	trap_EA_Crouch(int client);
-void	trap_EA_MoveUp(int client);
-void	trap_EA_MoveDown(int client);
-void	trap_EA_MoveForward(int client);
-void	trap_EA_MoveBack(int client);
-void	trap_EA_MoveLeft(int client);
-void	trap_EA_MoveRight(int client);
-void	trap_EA_SelectWeapon(int client, int weapon);
-void	trap_EA_Jump(int client);
-void	trap_EA_DelayedJump(int client);
-void	trap_EA_Move(int client, vec3_t dir, float speed);
-void	trap_EA_View(int client, vec3_t viewangles);
-void	trap_EA_Alt_Attack(int client);
-void	trap_EA_ForcePower(int client);
-
-void	trap_EA_EndRegular(int client, float thinktime);
-void	trap_EA_GetInput(int client, float thinktime, void /* struct bot_input_s */ *input);
-void	trap_EA_ResetInput(int client);
-
-
-int		trap_BotLoadCharacter(char *charfile, float skill);
-void	trap_BotFreeCharacter(int character);
-float	trap_Characteristic_Float(int character, int index);
-float	trap_Characteristic_BFloat(int character, int index, float min, float max);
-int		trap_Characteristic_Integer(int character, int index);
-int		trap_Characteristic_BInteger(int character, int index, int min, int max);
-void	trap_Characteristic_String(int character, int index, char *buf, int size);
-
-int		trap_BotAllocChatState(void);
-void	trap_BotFreeChatState(int handle);
-void	trap_BotQueueConsoleMessage(int chatstate, int type, char *message);
-void	trap_BotRemoveConsoleMessage(int chatstate, int handle);
-int		trap_BotNextConsoleMessage(int chatstate, void /* struct bot_consolemessage_s */ *cm);
-int		trap_BotNumConsoleMessages(int chatstate);
-void	trap_BotInitialChat(int chatstate, char *type, int mcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
-int		trap_BotNumInitialChats(int chatstate, char *type);
-int		trap_BotReplyChat(int chatstate, char *message, int mcontext, int vcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
-int		trap_BotChatLength(int chatstate);
-void	trap_BotEnterChat(int chatstate, int client, int sendto);
-void	trap_BotGetChatMessage(int chatstate, char *buf, int size);
-int		trap_StringContains(char *str1, char *str2, int casesensitive);
-int		trap_BotFindMatch(char *str, void /* struct bot_match_s */ *match, unsigned long int context);
-void	trap_BotMatchVariable(void /* struct bot_match_s */ *match, int variable, char *buf, int size);
-void	trap_UnifyWhiteSpaces(char *string);
-void	trap_BotReplaceSynonyms(char *string, unsigned long int context);
-int		trap_BotLoadChatFile(int chatstate, char *chatfile, char *chatname);
-void	trap_BotSetChatGender(int chatstate, int gender);
-void	trap_BotSetChatName(int chatstate, char *name, int client);
-void	trap_BotResetGoalState(int goalstate);
-void	trap_BotRemoveFromAvoidGoals(int goalstate, int number);
-void	trap_BotResetAvoidGoals(int goalstate);
-void	trap_BotPushGoal(int goalstate, void /* struct bot_goal_s */ *goal);
-void	trap_BotPopGoal(int goalstate);
-void	trap_BotEmptyGoalStack(int goalstate);
-void	trap_BotDumpAvoidGoals(int goalstate);
-void	trap_BotDumpGoalStack(int goalstate);
-void	trap_BotGoalName(int number, char *name, int size);
-int		trap_BotGetTopGoal(int goalstate, void /* struct bot_goal_s */ *goal);
-int		trap_BotGetSecondGoal(int goalstate, void /* struct bot_goal_s */ *goal);
-int		trap_BotChooseLTGItem(int goalstate, vec3_t origin, int *inventory, int travelflags);
-int		trap_BotChooseNBGItem(int goalstate, vec3_t origin, int *inventory, int travelflags, void /* struct bot_goal_s */ *ltg, float maxtime);
-int		trap_BotTouchingGoal(vec3_t origin, void /* struct bot_goal_s */ *goal);
-int		trap_BotItemGoalInVisButNotVisible(int viewer, vec3_t eye, vec3_t viewangles, void /* struct bot_goal_s */ *goal);
-int		trap_BotGetNextCampSpotGoal(int num, void /* struct bot_goal_s */ *goal);
-int		trap_BotGetMapLocationGoal(char *name, void /* struct bot_goal_s */ *goal);
-int		trap_BotGetLevelItemGoal(int index, char *classname, void /* struct bot_goal_s */ *goal);
-float	trap_BotAvoidGoalTime(int goalstate, int number);
-void	trap_BotSetAvoidGoalTime(int goalstate, int number, float avoidtime);
-void	trap_BotInitLevelItems(void);
-void	trap_BotUpdateEntityItems(void);
-int		trap_BotLoadItemWeights(int goalstate, char *filename);
-void	trap_BotFreeItemWeights(int goalstate);
-void	trap_BotInterbreedGoalFuzzyLogic(int parent1, int parent2, int child);
-void	trap_BotSaveGoalFuzzyLogic(int goalstate, char *filename);
-void	trap_BotMutateGoalFuzzyLogic(int goalstate, float range);
-int		trap_BotAllocGoalState(int state);
-void	trap_BotFreeGoalState(int handle);
-
-void	trap_BotResetMoveState(int movestate);
-void	trap_BotMoveToGoal(void /* struct bot_moveresult_s */ *result, int movestate, void /* struct bot_goal_s */ *goal, int travelflags);
-int		trap_BotMoveInDirection(int movestate, vec3_t dir, float speed, int type);
-void	trap_BotResetAvoidReach(int movestate);
-void	trap_BotResetLastAvoidReach(int movestate);
-int		trap_BotReachabilityArea(vec3_t origin, int testground);
-int		trap_BotMovementViewTarget(int movestate, void /* struct bot_goal_s */ *goal, int travelflags, float lookahead, vec3_t target);
-int		trap_BotPredictVisiblePosition(vec3_t origin, int areanum, void /* struct bot_goal_s */ *goal, int travelflags, vec3_t target);
-int		trap_BotAllocMoveState(void);
-void	trap_BotFreeMoveState(int handle);
-void	trap_BotInitMoveState(int handle, void /* struct bot_initmove_s */ *initmove);
-void	trap_BotAddAvoidSpot(int movestate, vec3_t origin, float radius, int type);
-
-int		trap_BotChooseBestFightWeapon(int weaponstate, int *inventory);
-void	trap_BotGetWeaponInfo(int weaponstate, int weapon, void /* struct weaponinfo_s */ *weaponinfo);
-int		trap_BotLoadWeaponWeights(int weaponstate, char *filename);
-int		trap_BotAllocWeaponState(void);
-void	trap_BotFreeWeaponState(int weaponstate);
-void	trap_BotResetWeaponState(int weaponstate);
-
-int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *parent1, int *parent2, int *child);
-
-void	trap_SnapVector( float *v );
-
-int trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
-
-qboolean	trap_ROFF_Clean( void );
-void		trap_ROFF_UpdateEntities( void );
-int			trap_ROFF_Cache( char *file );
-qboolean	trap_ROFF_Play( int entID, int roffID, qboolean doTranslation );
-qboolean	trap_ROFF_Purge_Ent( int entID );
-
-//rww - dynamic vm memory allocation!
-void		trap_TrueMalloc(void **ptr, int size);
-void		trap_TrueFree(void **ptr);
-
-//rww - icarus traps
-int			trap_ICARUS_RunScript( gentity_t *ent, const char *name );
-qboolean	trap_ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInterrogate);
-
-void		trap_ICARUS_Init( void );
-qboolean	trap_ICARUS_ValidEnt( gentity_t *ent );
-qboolean	trap_ICARUS_IsInitialized( int entID );
-qboolean	trap_ICARUS_MaintainTaskManager( int entID );
-qboolean	trap_ICARUS_IsRunning( int entID );
-qboolean	trap_ICARUS_TaskIDPending(gentity_t *ent, int taskID);
-void		trap_ICARUS_InitEnt( gentity_t *ent );
-void		trap_ICARUS_FreeEnt( gentity_t *ent );
-void		trap_ICARUS_AssociateEnt( gentity_t *ent );
-void		trap_ICARUS_Shutdown( void );
-void		trap_ICARUS_TaskIDSet(gentity_t *ent, int taskType, int taskID);
-void		trap_ICARUS_TaskIDComplete(gentity_t *ent, int taskType);
-void		trap_ICARUS_SetVar(int taskID, int entID, const char *type_name, const char *data);
-int			trap_ICARUS_VariableDeclared(const char *type_name);
-int			trap_ICARUS_GetFloatVariable( const char *name, float *value );
-int			trap_ICARUS_GetStringVariable( const char *name, const char *value );
-int			trap_ICARUS_GetVectorVariable( const char *name, const vec3_t value );
-
-
-//rww - BEGIN NPC NAV TRAPS
-void		trap_Nav_Init( void );
-void		trap_Nav_Free( void );
-qboolean	trap_Nav_Load( const char *filename, int checksum );
-qboolean	trap_Nav_Save( const char *filename, int checksum );
-int			trap_Nav_AddRawPoint( vec3_t point, int flags, int radius );
-void		trap_Nav_CalculatePaths( qboolean recalc ); //recalc = qfalse
-void		trap_Nav_HardConnect( int first, int second );
-
-void		trap_Nav_ShowNodes( void );
-void		trap_Nav_ShowEdges( void );
-void		trap_Nav_ShowPath( int start, int end );
-int			trap_Nav_GetNearestNode( gentity_t *ent, int lastID, int flags, int targetID );
-int			trap_Nav_GetBestNode( int startID, int endID, int rejectID ); //rejectID = NODE_NONE
-int			trap_Nav_GetNodePosition( int nodeID, vec3_t out );
-int			trap_Nav_GetNodeNumEdges( int nodeID );
-int			trap_Nav_GetNodeEdge( int nodeID, int edge );
-int			trap_Nav_GetNumNodes( void );
-qboolean	trap_Nav_Connected( int startID, int endID );
-int			trap_Nav_GetPathCost( int startID, int endID );
-int			trap_Nav_GetEdgeCost( int startID, int endID );
-int			trap_Nav_GetProjectedNode( vec3_t origin, int nodeID );
-void		trap_Nav_CheckFailedNodes( gentity_t *ent );
-void		trap_Nav_AddFailedNode( gentity_t *ent, int nodeID );
-qboolean	trap_Nav_NodeFailed( gentity_t *ent, int nodeID );
-qboolean	trap_Nav_NodesAreNeighbors( int startID, int endID );
-void		trap_Nav_ClearFailedEdge( failedEdge_t	*failedEdge );
-void		trap_Nav_ClearAllFailedEdges( void );
-int			trap_Nav_EdgeFailed( int startID, int endID );
-void		trap_Nav_AddFailedEdge( int entID, int startID, int endID );
-qboolean	trap_Nav_CheckFailedEdge( failedEdge_t *failedEdge );
-void		trap_Nav_CheckAllFailedEdges( void );
-qboolean	trap_Nav_RouteBlocked( int startID, int testEdgeID, int endID, int rejectRank );
-int			trap_Nav_GetBestNodeAltRoute( int startID, int endID, int *pathCost, int rejectID ); //rejectID = NODE_NONE
-int			trap_Nav_GetBestNodeAltRoute2( int startID, int endID, int rejectID ); //rejectID = NODE_NONE
-int			trap_Nav_GetBestPathBetweenEnts( gentity_t *ent, gentity_t *goal, int flags );
-int			trap_Nav_GetNodeRadius( int nodeID );
-void		trap_Nav_CheckBlockedEdges( void );
-void		trap_Nav_ClearCheckedNodes( void );
-int			trap_Nav_CheckedNode(int wayPoint, int ent); //return int was byte
-void		trap_Nav_SetCheckedNode(int wayPoint, int ent, int value); //int value was byte value
-void		trap_Nav_FlagAllNodes( int newFlag );
-qboolean	trap_Nav_GetPathsCalculated(void);
-void		trap_Nav_SetPathsCalculated(qboolean newVal);
-//rww - END NPC NAV TRAPS
-
-void		trap_SV_RegisterSharedMemory(char *memory);
-
-void trap_SetActiveSubBSP(int index);
-int	trap_CM_RegisterTerrain(const char *config);
-void trap_RMG_Init(int terrainID);
-
-void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps);
-void trap_Bot_CalculatePaths(int rmg);
+#define	FOFS(x) offsetof(gentity_t, x)
 
 // userinfo validation bitflags
+// default is all except extended ascii
+// numUserinfoFields + USERINFO_VALIDATION_MAX should not exceed 31
 typedef enum userinfoValidationBits_e {
 	// validation & (1<<(numUserinfoFields+USERINFO_VALIDATION_BLAH))
 	USERINFO_VALIDATION_SIZE=0,
 	USERINFO_VALIDATION_SLASH,
 	USERINFO_VALIDATION_EXTASCII,
 	USERINFO_VALIDATION_CONTROLCHARS,
+	USERINFO_VALIDATION_MAX
 } userinfoValidationBits_t;
+
+void Svcmd_ToggleUserinfoValidation_f( void );
+
+// g_cvar.c
+#define XCVAR_PROTO
+	#include "g_xcvar.h"
+#undef XCVAR_PROTO
+void G_RegisterCvars( void );
+void G_UpdateCvars( void );
+
+extern gameImport_t *trap;

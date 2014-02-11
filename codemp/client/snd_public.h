@@ -1,5 +1,4 @@
-#ifndef _SND_PUBLIC_H
-#define _SND_PUBLIC_H
+#pragma once
 
 void S_Init( void );
 void S_Shutdown( void );
@@ -14,7 +13,7 @@ void S_StartLocalLoopingSound( sfxHandle_t sfx);
 
 void S_UnCacheDynamicMusic( void );
 void S_RestartMusic( void );
-void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByCGameStart );
+void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCalledByCGameStart );
 void S_StopBackgroundTrack( void );
 float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle);
 
@@ -36,7 +35,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 
 // recompute the reletive volumes for all running sounds
 // relative to the given entityNum / orientation
-void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwater );
+void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwater );
 
 // let the sound system know where an entity currently is
 void S_UpdateEntityPosition( int entityNum, const vec3_t origin );
@@ -55,5 +54,3 @@ sfxHandle_t	S_RegisterSound( const char *sample );
 extern qboolean s_shutUp;
 
 void S_FreeAllSFXMem(void);
-
-#endif

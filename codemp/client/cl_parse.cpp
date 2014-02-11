@@ -4,12 +4,12 @@
 // cl_parse.c  -- parse a message received from the server
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
-#include "ghoul2/G2_local.h"
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
-#include "../zlib/zlib.h"
+#include "zlib/zlib.h"
 
 static char hiddenCvarVal[128];
 
@@ -19,7 +19,7 @@ char *svc_strings[256] = {
 	"svc_nop",
 	"svc_gamestate",
 	"svc_configstring",
-	"svc_baseline",	
+	"svc_baseline",
 	"svc_serverCommand",
 	"svc_download",
 	"svc_snapshot",
@@ -32,8 +32,6 @@ void SHOWNET( msg_t *msg, char *s) {
 		Com_Printf ("%3i:%s\n", msg->readcount-1, s);
 	}
 }
-
-//void CL_SP_Print(const word ID, byte *Data); //, char* color)
 
 /*
 =========================================================================
@@ -51,7 +49,7 @@ Parses deltas from the given base and adds the resulting entity
 to the current frame
 ==================
 */
-void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t *old, 
+void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t *old,
 					 qboolean unchanged) {
 	entityState_t	*state;
 
@@ -59,11 +57,11 @@ void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t 
 	// it can be used as the source for a later delta
 	state = &cl.parseEntities[cl.parseEntitiesNum & (MAX_PARSE_ENTITIES-1)];
 
-	if ( unchanged ) 
+	if ( unchanged )
 	{
 		*state = *old;
-	} 
-	else 
+	}
+	else
 	{
 		MSG_ReadDeltaEntity( msg, old, state, newnum );
 	}
@@ -122,7 +120,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 				Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 			}
 			CL_DeltaEntity( msg, newframe, oldnum, oldstate, qtrue );
-			
+
 			oldindex++;
 
 			if ( oldindex >= oldframe->numEntities ) {
@@ -170,7 +168,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 		}
 		CL_DeltaEntity( msg, newframe, oldnum, oldstate, qtrue );
-		
+
 		oldindex++;
 
 		if ( oldindex >= oldframe->numEntities ) {
@@ -232,7 +230,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	// If the frame is delta compressed from data that we
 	// no longer have available, we must suck up the rest of
 	// the frame, but not use it, then ask for a non-compressed
-	// message 
+	// message
 	if ( newSnap.deltaNum <= 0 ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
@@ -255,6 +253,13 @@ void CL_ParseSnapshot( msg_t *msg ) {
 
 	// read areamask
 	len = MSG_ReadByte( msg );
+
+	if((unsigned)len > sizeof(newSnap.areamask))
+	{
+		Com_Error (ERR_DROP,"CL_ParseSnapshot: Invalid size %d for areamask", len);
+		return;
+	}
+
 	MSG_ReadData( msg, &newSnap.areamask, len);
 
 	// read playerinfo
@@ -269,7 +274,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 		MSG_ReadDeltaPlayerstate( msg, NULL, &newSnap.ps );
 		if (newSnap.ps.m_iVehicleNum)
 		{ //this means we must have written our vehicle's ps too
-			MSG_ReadDeltaPlayerstate( msg, NULL, &newSnap.vps, qtrue );			
+			MSG_ReadDeltaPlayerstate( msg, NULL, &newSnap.vps, qtrue );
 		}
 	}
 
@@ -351,7 +356,19 @@ void CL_ParseSetGame( msg_t *msg )
 	}
 	newGameDir[i] = 0;
 
-	Cvar_Set("fs_game", newGameDir);
+	if(FS_CheckDirTraversal(newGameDir))
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Server sent invalid fs_game value %s\n", newGameDir);
+		return;
+	}
+
+	if(!FS_FilenameCompare(newGameDir, BASEGAME))
+		Cvar_Set("fs_game", "");
+	else
+		Cvar_Set("fs_game", newGameDir);
+
+	if(!(Cvar_Flags("fs_game") & CVAR_MODIFIED))
+		return;
 
 	//Update the search path for the mod dir
 	FS_UpdateGamedir();
@@ -366,9 +383,6 @@ void CL_ParseSetGame( msg_t *msg )
 
 int cl_connectedToPureServer;
 int cl_connectedToCheatServer;
-int cl_connectedGAME;
-int cl_connectedCGAME;
-int cl_connectedUI;
 
 /*
 ==================
@@ -387,6 +401,10 @@ void CL_SystemInfoChanged( void ) {
 	qboolean		gameSet;
 
 	systemInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SYSTEMINFO ];
+	// NOTE TTimo:
+	// when the serverId changes, any further messages we send to the server will use this new serverId
+	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=475
+	// in some cases, outdated cp commands might get sent with this news serverId
 	cl.serverId = atoi( Info_ValueForKey( systemInfo, "sv_serverid" ) );
 
 	// don't set any vars when playing a demo
@@ -414,8 +432,6 @@ void CL_SystemInfoChanged( void ) {
 	// scan through all the variables in the systeminfo and locally set cvars to match
 	s = systemInfo;
 	while ( s ) {
-		int cvar_flags;
-
 		Info_NextPair( &s, key, value );
 		if ( !key[0] ) {
 			break;
@@ -428,36 +444,21 @@ void CL_SystemInfoChanged( void ) {
 				continue;
 			}
 
-			gameSet = qtrue;
-		}
-
-		if((cvar_flags = Cvar_Flags(key)) == CVAR_NONEXISTENT)
-			Cvar_Get(key, value, CVAR_SERVER_CREATED | CVAR_ROM);
-		else
-		{
-			// If this cvar may not be modified by a server discard the value.
-			if(!(cvar_flags & (CVAR_SYSTEMINFO | CVAR_SERVER_CREATED | CVAR_USER_CREATED)))
+			if(!FS_FilenameCompare(value, BASEGAME))
 			{
-				if(Q_stricmp(key, "g_synchronousClients") && Q_stricmp(key, "pmove_fixed") &&
-				   Q_stricmp(key, "pmove_msec"))
-				{
-					Com_Printf(S_COLOR_YELLOW "WARNING: server is not allowed to set %s=%s\n", key, value);
-					continue;
-				}
+				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent \"%s\" fs_game value, clearing.\n", value);
+				Q_strncpyz(value, "", sizeof(value));
 			}
 
-			Cvar_SetSafe(key, value);
+			gameSet = qtrue;
 		}
+		Cvar_Server_Set( key, value );
 	}
 	// if game folder should not be set and it is set at the client side
 	if ( !gameSet && *Cvar_VariableString("fs_game") ) {
 		Cvar_Set( "fs_game", "" );
 	}
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
-
-	cl_connectedGAME = atoi(Info_ValueForKey( systemInfo, "vm_game" ));
-	cl_connectedCGAME = atoi(Info_ValueForKey( systemInfo, "vm_cgame" ));
-	cl_connectedUI = atoi(Info_ValueForKey( systemInfo, "vm_ui" ));
 }
 
 void CL_ParseAutomapSymbols ( msg_t* msg )
@@ -513,7 +514,7 @@ void CL_ParseRMG ( msg_t* msg )
 	size = (unsigned short)MSG_ReadShort ( msg );
 
 	if ( MSG_ReadBits ( msg, 1 ) )
-	{	
+	{
 		// Read the flatten map
 		memset(&zdata, 0, sizeof(z_stream));
 		inflateInit ( &zdata/*, Z_SYNC_FLUSH*/ );
@@ -532,7 +533,7 @@ void CL_ParseRMG ( msg_t* msg )
 		MSG_ReadData ( msg, (unsigned char*)clc.rmgFlattenMap, size );
 	}
 
-	// Read the seed		
+	// Read the seed
 	clc.rmgSeed = MSG_ReadLong ( msg );
 
 	CL_ParseAutomapSymbols ( msg );
@@ -574,7 +575,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 		if ( cmd == svc_EOF ) {
 			break;
 		}
-		
+
 		if ( cmd == svc_configstring ) {
 			int		len, start;
 
@@ -687,12 +688,18 @@ A download message has been received from the server
 void CL_ParseDownload ( msg_t *msg ) {
 	int		size;
 	unsigned char data[MAX_MSGLEN];
-	int block;
+	uint16_t block;
+
+	if (!*clc.downloadTempName) {
+		Com_Printf("Server sending download, but no download was requested\n");
+		CL_AddReliableCommand("stopdl", qfalse);
+		return;
+	}
 
 	// read the data
-	block = (unsigned short)MSG_ReadShort ( msg );
+	block = MSG_ReadShort ( msg );
 
-	if ( !block )
+	if ( !block && !clc.downloadBlock )
 	{
 		// block zero is special, contains file size
 		clc.downloadSize = MSG_ReadLong ( msg );
@@ -701,34 +708,34 @@ void CL_ParseDownload ( msg_t *msg ) {
 
 		if (clc.downloadSize < 0)
 		{
-			Com_Error(ERR_DROP, MSG_ReadString( msg ) );
+			Com_Error(ERR_DROP, "%s", MSG_ReadString( msg ) );
 			return;
 		}
 	}
 
-	size = (unsigned short)MSG_ReadShort ( msg );
-	if (size > 0)
-		MSG_ReadData( msg, data, size );
+	size = /*(unsigned short)*/MSG_ReadShort ( msg );
+	if (size < 0 || size > (int)sizeof(data))
+	{
+		Com_Error(ERR_DROP, "CL_ParseDownload: Invalid size %d for download chunk", size);
+		return;
+	}
 
-	if (clc.downloadBlock != block) {
-		Com_DPrintf( "CL_ParseDownload: Expected block %d, got %d\n", clc.downloadBlock, block);
+	MSG_ReadData( msg, data, size );
+
+	if((clc.downloadBlock & 0xFFFF) != block)
+	{
+		Com_DPrintf( "CL_ParseDownload: Expected block %d, got %d\n", (clc.downloadBlock & 0xFFFF), block);
 		return;
 	}
 
 	// open the file if not opened yet
 	if (!clc.download)
 	{
-		if (!*clc.downloadTempName) {
-			Com_Printf("Server sending download, but no download was requested\n");
-			CL_AddReliableCommand( "stopdl" );
-			return;
-		}
-
 		clc.download = FS_SV_FOpenFileWrite( clc.downloadTempName );
 
 		if (!clc.download) {
 			Com_Printf( "Could not create %s\n", clc.downloadTempName );
-			CL_AddReliableCommand( "stopdl" );
+			CL_AddReliableCommand( "stopdl", qfalse );
 			CL_NextDownload();
 			return;
 		}
@@ -737,7 +744,7 @@ void CL_ParseDownload ( msg_t *msg ) {
 	if (size)
 		FS_Write( data, size, clc.download );
 
-	CL_AddReliableCommand( va("nextdl %d", clc.downloadBlock) );
+	CL_AddReliableCommand( va("nextdl %d", clc.downloadBlock), qfalse );
 	clc.downloadBlock++;
 
 	clc.downloadCount += size;
@@ -751,10 +758,8 @@ void CL_ParseDownload ( msg_t *msg ) {
 			clc.download = 0;
 
 			// rename the file
-			FS_SV_Rename ( clc.downloadTempName, clc.downloadName );
+			FS_SV_Rename ( clc.downloadTempName, clc.downloadName, qfalse );
 		}
-		*clc.downloadTempName = *clc.downloadName = 0;
-		Cvar_Set( "cl_downloadName", "" );
 
 		// send intentions now
 		// We need this because without it, we would hold the last nextdl and then start
@@ -873,7 +878,7 @@ void CL_ParseServerMessage( msg_t *msg ) {
 
 	// get the reliable sequence acknowledge number
 	clc.reliableAcknowledge = MSG_ReadLong( msg );
-	// 
+	//
 	if ( clc.reliableAcknowledge < clc.reliableSequence - MAX_RELIABLE_COMMANDS ) {
 		clc.reliableAcknowledge = clc.reliableSequence;
 	}
@@ -901,12 +906,12 @@ void CL_ParseServerMessage( msg_t *msg ) {
 				SHOWNET( msg, svc_strings[cmd] );
 			}
 		}
-	
+
 	// other commands
 		switch ( cmd ) {
 		default:
 			Com_Error (ERR_DROP,"CL_ParseServerMessage: Illegible server message\n");
-			break;			
+			break;
 		case svc_nop:
 			break;
 		case svc_serverCommand:
@@ -925,15 +930,9 @@ void CL_ParseServerMessage( msg_t *msg ) {
 			CL_ParseDownload( msg );
 			break;
 		case svc_mapchange:
-			if (cgvm)
-			{
-				VM_Call( cgvm, CG_MAP_CHANGE );
-			}
+			if ( cls.cgameStarted )
+				CGVM_MapChange();
 			break;
 		}
 	}
 }
-
-
-extern int			scr_center_y;
-void SCR_CenterPrint (char *str);//, PalIdx_t colour)

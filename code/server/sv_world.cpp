@@ -29,13 +29,13 @@ Ghoul2 Insert Start
 */
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/miniheap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 #ifdef _DEBUG
@@ -394,9 +394,6 @@ SV_AreaEntities_r
 void SV_AreaEntities_r( worldSector_t *node, areaParms_t *ap ) {
 	svEntity_t	*check, *next;
 	gentity_t	*gcheck;
-	int			count;
-
-	count = 0;
 
 	for ( check = node->entities  ; check ; check = next ) {
 		next = check->nextEntityInWorldSector;
@@ -785,14 +782,14 @@ Ghoul2 Insert Start
 					world_angles[YAW] =  touch->client->legsYaw;
 					world_angles[ROLL] =  0;
 
-					G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
+					re.G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
 							world_angles, touch->client->origin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->eG2TraceType, clip->useLod,radius);
 				}
 				// no, so use the normal entity state
 				else
 				{
 					//use the correct origin and angles!  is this right now?
-					G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
+					re.G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
 						touch->currentAngles, touch->currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->eG2TraceType, clip->useLod,radius);
 				}
 
@@ -852,7 +849,7 @@ void SV_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const ve
 Ghoul2 Insert End
 */
 #ifdef _DEBUG
-	assert( !_isnan(start[0])&&!_isnan(start[1])&&!_isnan(start[2])&&!_isnan(end[0])&&!_isnan(end[1])&&!_isnan(end[2]));
+	assert( !Q_isnan(start[0])&&!Q_isnan(start[1])&&!Q_isnan(start[2])&&!Q_isnan(end[0])&&!Q_isnan(end[1])&&!Q_isnan(end[2]));
 #endif// _DEBUG
 
 #if SV_TRACE_PROFILE

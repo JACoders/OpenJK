@@ -19,13 +19,12 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "..\game\wp_saber.h"
-#include "..\game\g_vehicles.h"
+#include "../game/wp_saber.h"
+#include "../game/g_vehicles.h"
 
-#include "..\game\anims.h"
+#include "../game/anims.h"
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
@@ -82,21 +81,21 @@ void CG_RegisterWeapon( int weaponNum ) {
 	{//in case the weaponmodel isn't _w, precache the _w.glm
 		char weaponModel[64];
 		
-		strcpy (weaponModel, weaponData[weaponNum].weaponMdl);	
+		Q_strncpyz (weaponModel, weaponData[weaponNum].weaponMdl, sizeof(weaponModel));	
 		if (char *spot = strstr(weaponModel, ".md3") ) 
 		{
 			*spot = 0;
 			spot = strstr(weaponModel, "_w");//i'm using the in view weapon array instead of scanning the item list, so put the _w back on
 			if (!spot) 
 			{
-				strcat (weaponModel, "_w");
+				Q_strcat (weaponModel, sizeof(weaponModel), "_w");
 			}
-			strcat (weaponModel, ".glm");	//and change to ghoul2
+			Q_strcat (weaponModel, sizeof(weaponModel), ".glm");	//and change to ghoul2
 		}
 		gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 	}
 
-	if ( weaponInfo->weaponModel == NULL )
+	if ( weaponInfo->weaponModel == 0 )
 	{
 		CG_Error( "Couldn't find weapon model %s for weapon %s\n", weaponData[weaponNum].weaponMdl, weaponData[weaponNum].classname);
 		return;
@@ -126,16 +125,17 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	for (i=0; i< weaponData[weaponNum].numBarrels; i++) {
-		Q_strncpyz( path, weaponData[weaponNum].weaponMdl, MAX_QPATH );
-		COM_StripExtension( path, path );
+		Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+		COM_StripExtension( path, path, sizeof(path) );
 		if (i)
 		{
-			char	crap[50];
-			sprintf(crap, "_barrel%d.md3", i+1);
-			strcat( path, crap);
+			//char	crap[50];
+			//Com_sprintf(crap, sizeof(crap), "_barrel%d.md3", i+1 );
+			//strcat ( path, crap );
+			Q_strcat( path, sizeof(path), va("_barrel%d.md3", i+1) );
 		}
 		else
-			strcat( path, "_barrel.md3" );
+			Q_strcat( path, sizeof(path), "_barrel.md3" );
 		weaponInfo->barrelModel[i] = cgi_R_RegisterModel( path );
 	}
 
@@ -147,9 +147,9 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	// set up the hand that holds the in view weapon - assuming we have one
-	strcpy( path, weaponData[weaponNum].weaponMdl );
-	COM_StripExtension( path, path );
-	strcat( path, "_hand.md3" );
+	Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+	COM_StripExtension( path, path, sizeof(path) );
+	Q_strcat( path, sizeof(path), "_hand.md3" );
 	weaponInfo->handsModel = cgi_R_RegisterModel( path );
 
 	if ( !weaponInfo->handsModel ) {
@@ -208,11 +208,11 @@ void CG_RegisterWeapon( int weaponNum ) {
 	// give ourselves the functions if we can
 	if (weaponData[weaponNum].func)
 	{
-		weaponInfo->missileTrailFunc = (void (__cdecl *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].func;
+		weaponInfo->missileTrailFunc = (void (*)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].func;
 	}
 	if (weaponData[weaponNum].altfunc)
 	{
-		weaponInfo->alt_missileTrailFunc = (void (__cdecl *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
+		weaponInfo->alt_missileTrailFunc = (void (*)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
 	}
 
 	switch ( weaponNum )	//extra client only stuff
@@ -224,10 +224,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 		theFxScheduler.RegisterEffect( "force/force_touch" );
 		theFxScheduler.RegisterEffect( "saber/saber_block" );
 		theFxScheduler.RegisterEffect( "saber/saber_cut" );
-		theFxScheduler.RegisterEffect( "saber/limb_bolton" );
+		//theFxScheduler.RegisterEffect( "saber/limb_bolton" );
 		theFxScheduler.RegisterEffect( "saber/fizz" );
 		theFxScheduler.RegisterEffect( "saber/boil" );
-		theFxScheduler.RegisterEffect( "saber/fire" );//was "sparks/spark"
+		//theFxScheduler.RegisterEffect( "saber/fire" );//was "sparks/spark"
 
 		cgs.effects.forceHeal			= theFxScheduler.RegisterEffect( "force/heal" );
 		//cgs.effects.forceInvincibility	= theFxScheduler.RegisterEffect( "force/invin" );
@@ -635,7 +635,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 
 	item = &bg_itemlist[ itemNum ];
 
-	memset( itemInfo, 0, sizeof( &itemInfo ) );
+	memset( itemInfo, 0, sizeof( *itemInfo ) );
 	itemInfo->registered = qtrue;
 
 	itemInfo->models = cgi_R_RegisterModel( item->world_model );
@@ -1063,17 +1063,17 @@ void CG_AddViewWeapon( playerState_t *ps )
 	}
 	else
 	{
-		actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
+		if ( cg.overrides.active & CG_OVERRIDE_FOV )
+			actualFOV = cg.overrides.fov;
+		else {
+			actualFOV = cg_fovViewmodel.integer ? cg_fovViewmodel.value : cg_fov.value;
+		}
 	}
 
-	if ( actualFOV > 80 ) 
-	{
+	if ( cg_fovViewmodelAdjust.integer && actualFOV > 90 )
 		fovOffset = -0.1 * ( actualFOV - 80 );
-	} 
 	else 
-	{
 		fovOffset = 0;
-	}
 
 	if ( ps->leanofs != 0 )
 	{	//add leaning offset
@@ -1102,14 +1102,31 @@ void CG_AddViewWeapon( playerState_t *ps )
 	// set up gun position
 	CG_CalculateWeaponPosition( hand.origin, angles );
 
-	//VectorMA( hand.origin, cg_gun_x.value, cg.refdef.viewaxis[0], hand.origin );
-	//VectorMA( hand.origin, (cg_gun_y.value+leanOffset), cg.refdef.viewaxis[1], hand.origin );
-	//VectorMA( hand.origin, (cg_gun_z.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
-	VectorMA( hand.origin, 0, cg.refdef.viewaxis[0], hand.origin );
-	VectorMA( hand.origin, (0+leanOffset), cg.refdef.viewaxis[1], hand.origin );
-	VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
+	vec3_t extraOffset;
+	extraOffset[0] = extraOffset[1] = extraOffset[2] = 0.0f;
+
+	if( ps->weapon == WP_TUSKEN_RIFLE || ps->weapon == WP_NOGHRI_STICK || ps->weapon == WP_TUSKEN_STAFF )
+	{
+		extraOffset[0] = 2;
+		extraOffset[1] = -3;
+		extraOffset[2] = -6;
+	}
+
+	VectorMA( hand.origin, cg_gun_x.value+extraOffset[0], cg.refdef.viewaxis[0], hand.origin );
+	VectorMA( hand.origin, (cg_gun_y.value+leanOffset+extraOffset[1]), cg.refdef.viewaxis[1], hand.origin );
+	VectorMA( hand.origin, (cg_gun_z.value+fovOffset+extraOffset[2]), cg.refdef.viewaxis[2], hand.origin );
+	//VectorMA( hand.origin, 0, cg.refdef.viewaxis[0], hand.origin );
+	//VectorMA( hand.origin, (0+leanOffset), cg.refdef.viewaxis[1], hand.origin );
+	//VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
+
+
+	if ( cg_fovViewmodel.integer ) {
+		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = (1.0f / fracDistFOV) * tanf( actualFOV * (M_PI / 180) * 0.5f );
+		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+	}
 
 	// map torso animations to weapon animations
 #ifndef FINAL_BUILD
@@ -1393,7 +1410,7 @@ int CG_WeaponCheck( int weaponIndex )
 
 int cgi_UI_GetItemText(char *menuFile,char *itemName, char *text);
 
-char *weaponDesc[13] = 
+const char *weaponDesc[13] = 
 {
 "SABER_DESC",
 "NEW_BLASTER_PISTOL_DESC",
@@ -1652,14 +1669,14 @@ void CG_DrawDataPadWeaponSelect( void )
 	// Print the weapon description
 	cgi_SP_GetStringTextString( va("SP_INGAME_%s",weaponDesc[cg.DataPadWeaponSelect-1]), text, sizeof(text) );
 
-	const short textboxXPos = 40;
-	const short textboxYPos = 60;
-	const int	textboxWidth = 560;
-	const int	textboxHeight = 300;
-	const float	textScale = 1.0f;
-
-	if (text)
+	if (text[0])
 	{
+		const short textboxXPos = 40;
+		const short textboxYPos = 60;
+		const int	textboxWidth = 560;
+		const int	textboxHeight = 300;
+		const float	textScale = 1.0f;
+
 		CG_DisplayBoxedText(
 			textboxXPos, textboxYPos,
 			textboxWidth, textboxHeight,
@@ -1774,14 +1791,6 @@ void CG_DrawWeaponSelect( void )
 	{
 		return; 
 	}
-
-#ifdef _XBOX
-	if(CL_ExtendSelectTime()) {
-		cg.weaponSelectTime = cg.time;
-	}
-
-	yOffset = -36;
-#endif
 
 	cg.iconSelectTime = cg.weaponSelectTime;
 

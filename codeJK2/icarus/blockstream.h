@@ -21,17 +21,26 @@ This file is part of Jedi Knight 2.
 #ifndef __INTERPRETED_BLOCK_STREAM__
 #define	__INTERPRETED_BLOCK_STREAM__
 
-#pragma warning(disable : 4786)  //identifier was truncated 
-#pragma warning(disable : 4514)  //unreffed inline func removed
+#ifdef _MSC_VER
+	#pragma warning(disable : 4786)  //identifier was truncated 
+	#pragma warning(disable : 4514)  //unreffed inline func removed
+#endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
-#pragma warning (push, 3)	//go back down to 3 for the stl include
+#ifdef _MSC_VER
+	#pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
 #include <vector>
-#pragma warning (pop)
+#ifdef _MSC_VER
+	#pragma warning (pop)
+#endif
+
 using namespace std;
 
+#define IBI_HEADER_ID_LENGTH 4 // Length of IBI_HEADER_ID + 1 for the null terminating byte.
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"
 
@@ -62,7 +71,7 @@ public:
 	void Free( void );
 
 	int WriteMember ( FILE * );				//Writes the member's data, in block format, to FILE *
-	int	ReadMember( char **, long * );		//Reads the member's data, in block format, from FILE *
+	int	ReadMember( char **, int * );		//Reads the member's data, in block format, from FILE *
 
 	void SetID( int id )		{	m_id = id;		}	//Set the ID member variable
 	void SetSize( int size )	{	m_size = size;	}	//Set the size member variable
@@ -84,10 +93,10 @@ public:
 	{
 		if ( m_data )
 		{
-			ICARUS_Free( m_data );
+			free( m_data );
 		}
 
-		m_data = ICARUS_Malloc( sizeof(T) );
+		m_data = malloc( sizeof(T) );
 		*((T *) m_data) = data;
 		m_size = sizeof(T);
 	}
@@ -96,10 +105,10 @@ public:
 	{
 		if ( m_data )
 		{
-			ICARUS_Free( m_data );
+			free( m_data );
 		}
 
-		m_data = ICARUS_Malloc( num*sizeof(T) );
+		m_data = malloc( num*sizeof(T) );
 		memcpy( m_data, data, num*sizeof(T) );
 		m_size = num*sizeof(T);
 	}
@@ -199,7 +208,7 @@ protected:
 	char	m_fileName[MAX_FILENAME_LENGTH];	//Name of the current file
 
 	char	*m_stream;							//Stream of data to be parsed
-	long	m_streamPos;
+	int		m_streamPos;
 };
 
 #endif	//__INTERPRETED_BLOCK_STREAM__

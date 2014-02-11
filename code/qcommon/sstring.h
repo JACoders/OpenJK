@@ -25,6 +25,7 @@ This file is part of Jedi Academy.
 #ifndef SSTRING_H
 #define SSTRING_H
 
+#include "../qcommon/q_shared.h"
 
 template<int MaxSize>
 class sstring
@@ -98,7 +99,7 @@ public:
 	}
 	bool operator==(const sstring<MaxSize> &o) const
 	{
-		if (!strcmpi(mStorage.data,o.mStorage.data))
+		if (!Q_stricmp(mStorage.data,o.mStorage.data))
 		{
 			return true;
 		}
@@ -106,7 +107,7 @@ public:
 	}
 	bool operator!=(const sstring<MaxSize> &o) const
 	{
-		if (strcmpi(mStorage.data,o.mStorage.data)!=0)
+		if (Q_stricmp(mStorage.data,o.mStorage.data)!=0)
 		{
 			return true;
 		}
@@ -114,7 +115,7 @@ public:
 	}
 	bool operator<(const sstring<MaxSize> &o) const
 	{
-		if (strcmpi(mStorage.data,o.mStorage.data)<0)
+		if (Q_stricmp(mStorage.data,o.mStorage.data)<0)
 		{
 			return true;
 		}
@@ -122,7 +123,7 @@ public:
 	}
 	bool operator>(const sstring<MaxSize> &o) const
 	{
-		if (strcmpi(mStorage.data,o.mStorage.data)>0)
+		if (Q_stricmp(mStorage.data,o.mStorage.data)>0)
 		{
 			return true;
 		}

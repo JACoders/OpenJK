@@ -1,7 +1,7 @@
+#pragma once
+
 //B_local.h
 //re-added by MCG
-#ifndef __B_LOCAL_H__
-#define __B_LOCAL_H__
 
 #include "g_local.h"
 #include "b_public.h"
@@ -51,12 +51,16 @@ extern void Debug_Printf( vmCvar_t *cv, int level, char *fmt, ... );
 extern void Debug_NPCPrintf( gentity_t *printNPC, vmCvar_t *cv, int debugLevel, char *fmt, ... );
 
 //MCG - Begin============================================================
-//NPC_ai variables - shared by NPC.cpp andf the following modules
-extern gentity_t	*NPC;
-extern gNPC_t		*NPCInfo;
-extern gclient_t	*client;
-extern usercmd_t	ucmd;
-extern visibility_t	enemyVisibility;
+//NPC_ai variables - shared by NPC.cpp and the following modules
+//OJKFIXME: Should probably construct these at the NPC entry points and pass as arguments to any function that needs them
+typedef struct npcStatic_s {
+	gentity_t		*NPC;
+	gNPC_t			*NPCInfo;
+	gclient_t		*client;
+	usercmd_t		 ucmd;
+	visibility_t	 enemyVisibility;
+} npcStatic_t;
+extern npcStatic_t NPCS;
 
 //AI_Default
 extern qboolean NPC_CheckInvestigate( int alertEventNum );
@@ -166,9 +170,6 @@ extern qboolean InFOV3( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, i
 extern visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags );
 extern qboolean InVisrange ( gentity_t *ent );
 
-//NPC_sounds
-//extern void NPC_AngerSound(void);
-
 //NPC_spawn
 extern void NPC_Spawn ( gentity_t *ent, gentity_t *other, gentity_t *activator );
 
@@ -188,6 +189,7 @@ extern qboolean NPC_UpdateFiringAngles ( qboolean doPitch, qboolean doYaw );
 extern void SetTeamNumbers (void);
 extern qboolean G_ActivateBehavior (gentity_t *self, int bset );
 extern void NPC_AimWiggle( vec3_t enemy_org );
+extern void NPC_ClearLookTarget( gentity_t *self );
 extern void NPC_SetLookTarget( gentity_t *self, int entNum, int clearTime );
 
 //g_nav.cpp
@@ -316,6 +318,3 @@ typedef struct navInfo_s
 extern int	NAV_MoveToGoal( gentity_t *self, navInfo_t *info );
 extern void NAV_GetLastMove( navInfo_t *info );
 extern qboolean NAV_AvoidCollision( gentity_t *self, gentity_t *goal, navInfo_t *info );
-
-
-#endif

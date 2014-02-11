@@ -1,14 +1,10 @@
 #pragma once
-#if !defined(RM_INSTANCE_H_INC)
-#define RM_INSTANCE_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Instance.h")
 #endif
 
-#if !defined(CM_LANDSCAPE_H_INC)
 #include "qcommon/cm_landscape.h"
-#endif
 
 enum
 {
@@ -56,7 +52,7 @@ protected:
 	int				mFlattenHeight;	// height to flatten land
 
 public:
-	
+
 	CRMInstance ( CGPGroup* instance, CRMInstanceFile& instFile);
 
 	virtual ~CRMInstance ( ) { }
@@ -103,9 +99,9 @@ public:
 	virtual float		GetFlattenRadius	( )		{ return mFlattenRadius; }
 	const char			*GetFilter			( )		{ return mFilter; }
 	const char			*GetTeamFilter		( )		{ return mTeamFilter; }
-	
+
 	CRMArea&			GetArea				( )		{ return *mArea; }
-	vec_t*				GetOrigin			( ) 	{return mArea->GetOrigin(); }
+	float*				GetOrigin			( ) 	{return mArea->GetOrigin(); }
 	float				GetAngle			( )		{return mArea->GetAngle();}
 	void				SetAngle(float ang )		{ mArea->SetAngle(ang);}
 	const vec3pair_t&	GetBounds(void) const		{ return(mBounds); }
@@ -118,5 +114,3 @@ public:
 
 typedef list<CRMInstance*>::iterator	rmInstanceIter_t;
 typedef list<CRMInstance*>				rmInstanceList_t;
-
-#endif

@@ -120,29 +120,6 @@ typedef enum {
 #define PMF_FIX_MINS		(1<<19)//524288	// Mins raised for dual forward jump, fix them
 #define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK|PMF_TIME_NOFRICTION)
 
-#if defined(_XBOX) && !defined(_TRACE_FUNCTOR_T_DEFINED_)
-// Function objects to replace the function pointers used for trace in pmove_t
-// We can't have default arguments on function pointers, but this allows us to
-// do the same thing with minimal impact elsewhere.
-struct Trace_Functor_t
-{
-	typedef void (*trace_func_t)(trace_t *, const vec3_t, const vec3_t, const vec3_t, const vec3_t,
-								 const int, const int, const EG2_Collision, const int);
-	trace_func_t trace_func;
-	void operator()( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType = (EG2_Collision)0, const int useLod = 0 )
-		{ trace_func(results, start, mins, maxs, end, passEntityNum, contentMask, eG2TraceType, useLod); }
-	const Trace_Functor_t &operator=(trace_func_t traceRHS)
-	{
-		trace_func = traceRHS;
-		return *this;
-	}
-};
-
-// Always create this class exactly once
-#define _TRACE_FUNCTOR_T_DEFINED_
-#endif
-
 #define	MAXTOUCH	32
 typedef struct gentity_s gentity_t;
 typedef struct {
@@ -171,12 +148,8 @@ typedef struct {
 
 	// callbacks to test the world
 	// these will be different functions during game and cgame
-#ifdef _XBOX
-	Trace_Functor_t	trace;
-#else
 	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType, const int useLod );
-#endif
 	int			(*pointcontents)( const vec3_t point, int passEntityNum );
 } pmove_t;
 
@@ -487,12 +460,7 @@ typedef struct animation_s {
 } animation_t;
 #pragma pack(pop)
 
-#ifdef _XBOX
-// Feel free to re-increase this if necessary, worst case right now is vjun3 -> 9
-#define MAX_ANIM_FILES	10
-#else
 #define MAX_ANIM_FILES	16
-#endif
 #define MAX_ANIM_EVENTS 300
 
 //size of Anim eventData array...
@@ -543,9 +511,6 @@ typedef enum
 	AEV_NUM_AEV
 } animEventType_t;
 
-#ifdef _XBOX
-#pragma pack(push, 1)
-#endif
 typedef struct animevent_s 
 {
 	animEventType_t	eventType;
@@ -555,9 +520,6 @@ typedef struct animevent_s
 	signed short	eventData[AED_ARRAY_SIZE];	//Unique IDs, can be soundIndex of sound file to play OR effect index or footstep type, etc.
 	char			*stringData;		//we allow storage of one string, temporarily (in case we have to look up an index later, then make sure to set stringData to NULL so we only do the look-up once)
 } animevent_t;
-#ifdef _XBOX
-#pragma pack(pop)
-#endif
 
 typedef enum
 {
@@ -648,19 +610,19 @@ typedef enum
 
 
 typedef struct gitem_s {
-	char		*classname;	// spawning name
-	char		*pickup_sound;
-	char		*world_model;
+	const char	*classname;	// spawning name
+	const char	*pickup_sound;
+	const char	*world_model;
 
-	char		*icon;
+	const char	*icon;
 
 	int			quantity;		// for ammo how much, or duration of powerup
 	itemType_t  giType;			// IT_* flags
 
 	int			giTag;
 
-	char		*precaches;		// string of all models and images this item will use
-	char		*sounds;		// string of all sounds this item will use
+	const char	*precaches;		// string of all models and images this item will use
+	const char	*sounds;		// string of all sounds this item will use
 	vec3_t		mins;			// Bbox
 	vec3_t		maxs;			// Bbox
 } gitem_t;
@@ -683,10 +645,10 @@ typedef struct ginfoitem_s
 
 //==============================================================================
 
-extern weaponData_t weaponData[];
+extern weaponData_t weaponData[WP_NUM_WEAPONS];
 
 //==============================================================================
-extern ammoData_t ammoData[];
+extern ammoData_t ammoData[AMMO_MAX];
 
 //==============================================================================
 

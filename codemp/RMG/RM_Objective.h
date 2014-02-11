@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_OBJECTIVE_H_INC)
-#define RM_OBJECTIVE_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Objective.h")
@@ -22,7 +20,7 @@ protected:
 	string		mTrigger;		// trigger associated with objective
 
 public:
-	
+
 	CRMObjective(CGPGroup *group);
 	~CRMObjective(void) {}
 
@@ -60,6 +58,3 @@ private:
 
 typedef list<CRMObjective *>::iterator	rmObjectiveIter_t;
 typedef list<CRMObjective *>			rmObjectiveList_t;
-
-
-#endif

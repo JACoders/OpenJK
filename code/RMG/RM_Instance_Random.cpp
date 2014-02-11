@@ -27,9 +27,9 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
-#include "rm_instance_random.h"
+#include "RM_Instance_Random.h"
 
 /************************************************************************************************
  * CRMRandomInstance::CRMRandomInstance
@@ -56,7 +56,7 @@ CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& ins
 		  group = group->GetNext ( ) )
 	{
 		// If this isnt an instance group then skip it
-		if ( stricmp ( group->GetName ( ), "instance" ) )
+		if ( Q_stricmp ( group->GetName ( ), "instance" ) )
 		{
 			continue;
 		}

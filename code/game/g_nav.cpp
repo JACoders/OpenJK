@@ -16,10 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "g_navigator.h"
@@ -307,7 +303,7 @@ Svcmd_Nav_f
 
 void Svcmd_Nav_f( void )
 {
-	char	*cmd = gi.argv( 1 );
+	const char	*cmd = gi.argv( 1 );
 
 	if ( Q_stricmp( cmd, "show" ) == 0 )
 	{

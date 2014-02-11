@@ -1,3 +1,5 @@
+#pragma once
+
 #include "qcommon/qfiles.h"
 
 #define NUM_FORCE_STAR_IMAGES  9
@@ -16,7 +18,6 @@ extern int uiForcePowersRank[NUM_FORCE_POWERS];
 extern int uiForcePowerDarkLight[NUM_FORCE_POWERS];
 extern int uiSaberColorShaders[NUM_SABER_COLORS];
 // Dots above or equal to a given rank carry a certain color.
-extern vmCvar_t	ui_freeSaber, ui_forcePowerDisable;
 
 void UI_InitForceShaders(void);
 void UI_ReadLegalForce(void);

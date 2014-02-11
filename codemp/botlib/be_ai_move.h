@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
@@ -7,7 +9,7 @@
  * desc:		movement AI
  *
  * $Archive: /source/code/botlib/be_ai_move.h $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 2003/03/15 23:44:00 $
@@ -123,4 +125,3 @@ void BotSetBrushModelTypes(void);
 int BotSetupMoveAI(void);
 //shutdown movement AI
 void BotShutdownMoveAI(void);
-

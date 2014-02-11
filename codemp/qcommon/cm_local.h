@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(CM_LOCAL_H_INC)
-#define CM_LOCAL_H_INC //rwwRMG - include guard
 
 #include "cm_polylib.h"
 #include "cm_landscape.h" //rwwRMG - include
@@ -9,13 +7,17 @@
 #define	BOX_MODEL_HANDLE		(MAX_SUBMODELS-1)
 #define CAPSULE_MODEL_HANDLE	(MAX_SUBMODELS-2)
 
+struct Point
+{
+	long x, y;
+};
 
-typedef struct {
+typedef struct cNode_s {
 	cplane_t	*plane;
 	int			children[2];		// negative numbers are leafs
 } cNode_t;
 
-typedef struct {
+typedef struct cLeaf_s {
 	int			cluster;
 	int			area;
 
@@ -60,7 +62,7 @@ public:
 	void	Destroy(void) { }
 };
 
-typedef struct {
+typedef struct cPatch_s {
 	int			checkcount;				// to avoid repeated testings
 	int			surfaceFlags;
 	int			contents;
@@ -68,12 +70,12 @@ typedef struct {
 } cPatch_t;
 
 
-typedef struct {
+typedef struct cArea_s {
 	int			floodnum;
 	int			floodvalid;
 } cArea_t;
 
-typedef struct {
+typedef struct clipMap_s {
 	char		name[MAX_QPATH];
 
 	int			numShaders;
@@ -136,12 +138,12 @@ extern	int			c_traces, c_brush_traces, c_patch_traces;
 extern	cvar_t		*cm_noAreas;
 extern	cvar_t		*cm_noCurves;
 extern	cvar_t		*cm_playerCurveClip;
+extern	cvar_t		*cm_extraVerbose;
 
 // cm_test.c
 
 // Used for oriented capsule collision detection
-typedef struct
-{
+typedef struct sphere_s {
 	qboolean	use;
 	float		radius;
 	float		halfheight;
@@ -165,8 +167,8 @@ typedef struct traceWork_s { //rwwRMG - modified
 	vec3pair_t		bounds;			// enclosing box of start and end surrounding by size
 	vec3pair_t		localBounds;	// enclosing box of start and end surrounding by size for a segment
 
-	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)	
-	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)	
+	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)
+	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)
 	float			enterFrac;		// fraction where the ray enters the brush
 	float			leaveFrac;		// fraction where the ray leaves the brush
 	cbrushside_t	*leadside;
@@ -186,9 +188,6 @@ typedef struct leafList_s {
 	void	(*storeLeafs)( struct leafList_s *ll, int nodenum );
 } leafList_t;
 
-
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxList, int listsize );
-//rwwRMG - changed to boxList to not conflict with list type
 
 bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds); //rwwRMG - added
 
@@ -219,5 +218,3 @@ void		CM_GetModelFormalName ( const char* model, const char* skin, char* name, i
 
 // cm_load.cpp
 void CM_GetWorldBounds ( vec3_t mins, vec3_t maxs );
-
-#endif

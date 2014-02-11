@@ -796,7 +796,7 @@ void SP_misc_model_cargo_small( gentity_t *ent )
 
 	G_SpawnInt( "health", "25", &ent->health );
 
-	SetMiscModelDefaults( ent, useF_NULL, "11", CONTENTS_SOLID|CONTENTS_OPAQUE|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP, NULL, qtrue, NULL );
+	SetMiscModelDefaults( ent, useF_NULL, "11", CONTENTS_SOLID|CONTENTS_OPAQUE|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP, 0, qtrue, qfalse );
 	ent->s.modelindex2 = G_ModelIndex("/models/map_objects/kejim/cargo_small.md3");	// Precache model
 
 	// we only take damage from a heavy weapon class missile

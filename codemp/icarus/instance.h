@@ -1,7 +1,6 @@
-// ICARUS Intance header
+#pragma once
 
-#ifndef __INSTANCE__
-#define __INSTANCE__
+// ICARUS Intance header
 
 #include "blockstream.h"
 #include "interface.h"
@@ -18,7 +17,7 @@ public:
 	typedef map < string, unsigned char >	signal_m;
 
 	ICARUS_Instance( void );
-	~ICARUS_Instance( void );
+	virtual ~ICARUS_Instance( void );
 
 	static	ICARUS_Instance *Create( interface_export_t * );
 	int Delete( void );
@@ -33,7 +32,7 @@ public:
 	interface_export_t	*GetInterface( void )	const	{	return	m_interface;	}
 
 	//These are overriddable for "worst-case" save / loads
-	virtual int Save( void /*FIXME*/ );	
+	virtual int Save( void /*FIXME*/ );
 	virtual int Load( void /*FIXME*/ );
 
 	void Signal( const char *identifier );
@@ -77,5 +76,3 @@ protected:
 #endif
 
 };
-
-#endif	//__INSTANCE__

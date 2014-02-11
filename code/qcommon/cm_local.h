@@ -16,35 +16,25 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 #include "cm_polylib.h"
 #include "cm_landscape.h"
-
-#ifdef _XBOX
-#include "sparc.h"
-#endif
 
 #ifndef CM_LOCAL_H
 #define CM_LOCAL_H
 
 #define	BOX_MODEL_HANDLE	(MAX_SUBMODELS-1)
 
-#ifdef _XBOX
-#pragma pack(push, 1)
-typedef struct {
-	short		children[2];		// negative numbers are leafs
-} cNode_t;
-#pragma pack(pop)
-
-#else // _XBOX
+struct Point
+{
+	long x, y;
+};
 
 typedef struct {
 	cplane_t	*plane;
 	int			children[2];		// negative numbers are leafs
 } cNode_t;
-
-#endif // _XBOX
 
 typedef struct {
 	int			cluster;
@@ -62,22 +52,10 @@ typedef struct cmodel_s {
 	cLeaf_t		leaf;			// submodels don't reference the main tree
 } cmodel_t;
 
-#ifdef _XBOX
-#pragma pack (push, 1)
-typedef struct cbrushside_s {
-	NotSoShort planeNum;
-	unsigned char	shaderNum;
-} cbrushside_t;
-#pragma pack(pop)
-
-#else // _XBOX
-
 typedef struct cbrushside_s {
 	cplane_t	*plane;
 	int			shaderNum;
 } cbrushside_t;
-
-#endif // _XBOX
 
 typedef struct cbrush_s {
 	int					shaderNum;		// the shader that determined the contents
@@ -114,62 +92,6 @@ typedef struct {
 	int			floodnum;
 	int			floodvalid;
 } cArea_t;
-
-#ifdef _XBOX
-template <class T>
-class SPARC;
-typedef struct {
-	char		name[MAX_QPATH];
-
-	int			numShaders;
-	CCMShader	*shaders;
-
-	int			numBrushSides;
-	cbrushside_t *brushsides;
-
-	int			numPlanes;
-	cplane_t	*planes;
-
-	int			numNodes;
-	cNode_t		*nodes;
-
-	int			numLeafs;
-	cLeaf_t		*leafs;
-
-	int			numLeafBrushes;
-	int			*leafbrushes;
-
-	int			numLeafSurfaces;
-	int			*leafsurfaces;
-
-	int			numSubModels;
-	cmodel_t	*cmodels;
-
-	int			numBrushes;
-	cbrush_t	*brushes;
-
-	int			numClusters;
-	int			clusterBytes;
-	SPARC<byte>	*visibility;
-	qboolean	vised;			// if false, visibility is just a single cluster of ffs
-
-	int			numEntityChars;
-	char		*entityString;
-
-	int			numAreas;
-	cArea_t		*areas;
-	int			*areaPortals;	// [ numAreas*numAreas ] reference counts
-
-	int			numSurfaces;
-	cPatch_t	**surfaces;			// non-patches will be NULL
-
-	int			floodvalid;
-	int			checkcount;					// incremented on each trace
-
-//	CCMLandScape	*landScape;		// Removing terrain from Xbox
-} clipMap_t;
-
-#else // _XBOX
 
 typedef struct {
 	char		name[MAX_QPATH];
@@ -222,9 +144,6 @@ typedef struct {
 
 	CCMLandScape	*landScape;
 } clipMap_t;
-
-#endif // _XBOX
-
 
 // keep 1/8 unit away to keep the position valid before network snapping
 // and to avoid various numeric issues
@@ -290,8 +209,6 @@ typedef struct leafList_s {
 	void	(*storeLeafs)( struct leafList_s *ll, int nodenum );
 } leafList_t;
 
-
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxlist, int listsize );
 
 void CM_StoreLeafs( leafList_t *ll, int nodenum );
 void CM_StoreBrushes( leafList_t *ll, int nodenum );

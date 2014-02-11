@@ -5,7 +5,7 @@
  * desc:		CRC calculation
  *
  * $Archive: /MissionPack/CODE/botlib/l_crc.c $
- * $Author: Raduffy $ 
+ * $Author: Raduffy $
  * $Revision: 1 $
  * $Modtime: 12/20/99 8:42p $
  * $Date: 3/08/00 11:28a $

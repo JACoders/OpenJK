@@ -88,13 +88,13 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other )
 	if ( ent->item->giTag == INV_SECURITY_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @INGAME_YOU_TOOK_SECURITY_KEY" );
+		gi.SendServerCommand( 0, "cp @INGAME_YOU_TOOK_SECURITY_KEY" );
 		INV_SecurityKeyGive( other, ent->message );
 	}
 	else if ( ent->item->giTag == INV_GOODIE_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @INGAME_YOU_TOOK_SUPPLY_KEY" );
+		gi.SendServerCommand( 0, "cp @INGAME_YOU_TOOK_SUPPLY_KEY" );
 		INV_GoodieKeyGive( other );
 	}
 	else
@@ -439,6 +439,13 @@ void RespawnItem( gentity_t *ent ) {
 
 qboolean CheckItemCanBePickedUpByNPC( gentity_t *item, gentity_t *pickerupper )
 {
+	if ( !item->item ) {
+		return qfalse;
+	}
+	if ( item->item->giType == IT_HOLDABLE &&
+		item->item->giTag == INV_SECURITY_KEY ) {
+		return qfalse;
+	}
 	if ( (item->flags&FL_DROPPED_ITEM) 
 		&& item->activator != &g_entities[0] 
 		&& pickerupper->s.number 
@@ -446,8 +453,7 @@ qboolean CheckItemCanBePickedUpByNPC( gentity_t *item, gentity_t *pickerupper )
 		&& pickerupper->enemy 
 		&& pickerupper->painDebounceTime < level.time
 		&& pickerupper->NPC && pickerupper->NPC->surrenderTime < level.time //not surrendering
-		&& !(pickerupper->NPC->scriptFlags&SCF_FORCED_MARCH) //not being forced to march
-		&& item->item->giTag != INV_SECURITY_KEY )
+		&& !(pickerupper->NPC->scriptFlags&SCF_FORCED_MARCH) ) // not being forced to march
 	{//non-player, in combat, picking up a dropped item that does NOT belong to the player and it *not* a security key
 		if ( level.time - item->s.time < 3000 )//was 5000
 		{

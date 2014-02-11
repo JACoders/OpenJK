@@ -9,8 +9,10 @@
 #include "icarus.h"
 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4100)  //unref formal parm
 #pragma warning(disable : 4710)  //member not inlined
+#endif
 
 #include <string.h>
 #include "blockstream.h"
@@ -59,7 +61,7 @@ GetInfo
 */
 
 void CBlockMember::GetInfo( int *id, int *size, void **data )
-{	
+{
 	*id = m_id;
 	*size = m_size;
 	*data = m_data;
@@ -99,28 +101,28 @@ ReadMember
 -------------------------
 */
 
-int CBlockMember::ReadMember( char **stream, long *streamPos )
+int CBlockMember::ReadMember( char **stream, int *streamPos )
 {
-	m_id = *(int *) (*stream + *streamPos);
+	m_id = *(int *) (*stream + *((int *)streamPos));
 	*streamPos += sizeof( int );
 
 	if ( m_id == ID_RANDOM )
 	{//special case, need to initialize this member's data to Q3_INFINITE so we can randomize the number only the first time random is checked when inside a wait
 		m_size = sizeof( float );
-		*streamPos += sizeof( long );
+		*streamPos += sizeof( int );
 		m_data = ICARUS_Malloc( m_size );
 		float infinite = Q3_INFINITE;
 		memcpy( m_data, &infinite, m_size );
 	}
 	else
 	{
-		m_size = *(long *) (*stream + *streamPos);
-		*streamPos += sizeof( long );
+		m_size = *(int *) (*stream + *streamPos);
+		*streamPos += sizeof( int );
 		m_data = ICARUS_Malloc( m_size );
 		memcpy( m_data, (*stream + *streamPos), m_size );
 	}
 	*streamPos += m_size;
-	
+
 	return true;
 }
 
@@ -246,7 +248,7 @@ int CBlock::Write( int member_id, const char *member_data )
 	CBlockMember *bMember = new CBlockMember;
 
 	bMember->SetID( member_id );
-	
+
 	bMember->SetData( member_data );
 	bMember->SetSize( strlen(member_data) + 1 );
 
@@ -257,7 +259,7 @@ int CBlock::Write( int member_id, const char *member_data )
 
 int CBlock::Write( int member_id, vector_t member_data )
 {
-	CBlockMember *bMember; 
+	CBlockMember *bMember;
 
 	bMember = new CBlockMember;
 
@@ -300,7 +302,7 @@ int CBlock::Write( int member_id, int member_data )
 int CBlock::Write( CBlockMember *bMember )
 {
 // findme: this is wrong:	bMember->SetSize( sizeof(bMember->GetData()) );
-	
+
 	AddMember( bMember );
 
 	return true;
@@ -330,7 +332,7 @@ CBlockMember *CBlock::GetMember( int memberNum )
 {
 	if ( memberNum > GetNumMembers()-1 )
 	{
-		return false;
+		return NULL;
 	}
 	return m_members[ memberNum ];
 }
@@ -343,7 +345,7 @@ GetMemberData
 
 void *CBlock::GetMemberData( int memberNum )
 {
-	if ( memberNum > GetNumMembers()-1 )
+	if ( memberNum >= GetNumMembers() )
 	{
 		return NULL;
 	}
@@ -364,12 +366,12 @@ CBlock *CBlock::Duplicate( void )
 	newblock = new CBlock;
 
 	if ( newblock == NULL )
-		return false;
+		return NULL;
 
 	newblock->Create( m_id );
 
 	//Duplicate entire block and return the cc
-	for ( mi = m_members.begin(); mi != m_members.end(); mi++ )
+	for ( mi = m_members.begin(); mi != m_members.end(); ++mi )
 	{
 		newblock->AddMember( (*mi)->Duplicate() );
 	}
@@ -453,7 +455,7 @@ long CBlockStream::GetLong( void )
 {
 	long data;
 
-	data = *(long *) (m_stream + m_streamPos);
+	data = *(int *) (m_stream + m_streamPos);
 	m_streamPos += sizeof( data );
 
 	return data;
@@ -486,7 +488,7 @@ StripExtension
 void CBlockStream::StripExtension( const char *in, char *out )
 {
 	int		i = strlen(in);
-	
+
 	while ( (in[i] != '.') && (i >= 0) )
 	 i--;
 
@@ -526,7 +528,7 @@ int CBlockStream::Create( char *filename )
 {
 	char	newName[MAX_FILENAME_LENGTH], *id_header = IBI_HEADER_ID;
 	float	version = IBI_VERSION;
-	
+
 	//Clear the temp string
 	memset(newName, 0, sizeof(newName));
 
@@ -538,13 +540,13 @@ int CBlockStream::Create( char *filename )
 	//Recover that as the active filename
 	strcpy(m_fileName, newName);
 
-	if ( ((m_fileHandle = fopen(m_fileName, "wb")) == NULL) )
+	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
 		return false;
 	}
 
-	fwrite( id_header, 1, sizeof(id_header), m_fileHandle );
-	fwrite( &version, 1, sizeof(version), m_fileHandle );
+	fwrite( id_header, IBI_HEADER_ID_LENGTH, 1, m_fileHandle );
+	fwrite( &version, sizeof(version), 1, m_fileHandle );
 
 	return true;
 }
@@ -581,12 +583,12 @@ int CBlockStream::WriteBlock( CBlock *block )
 	int				numMembers = block->GetNumMembers();
 	unsigned char	flags = block->GetFlags();
 
-	fwrite ( &id, sizeof(id), 1, m_fileHandle ); 
+	fwrite ( &id, sizeof(id), 1, m_fileHandle );
 	fwrite ( &numMembers, sizeof(numMembers), 1, m_fileHandle );
 	fwrite ( &flags, sizeof( flags ), 1, m_fileHandle );
 
 	for ( int i = 0; i < numMembers; i++ )
-	{	
+	{
 		bMember = block->GetMember( i );
 		bMember->WriteMember( m_fileHandle );
 	}
@@ -638,7 +640,7 @@ int CBlockStream::ReadBlock( CBlock *get )
 	// Stream blocks are generally temporary as they
 	// are just used in an initial parsing phase...
 	while ( numMembers-- > 0)
-	{	
+	{
 		bMember = new CBlockMember;
 		bMember->ReadMember( &m_stream, &m_streamPos );
 		get->AddMember( bMember );
@@ -655,16 +657,16 @@ Open
 
 int CBlockStream::Open( char *buffer, long size )
 {
-	char	id_header[sizeof(IBI_HEADER_ID)];
+	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
-	
+
 	Init();
 
 	m_fileSize = size;
 
 	m_stream = buffer;
 
-	for ( int i = 0; i < sizeof( id_header ); i++ )
+	for ( size_t i = 0; i < sizeof( id_header ); i++ )
 	{
 		id_header[i] = GetChar();
 	}

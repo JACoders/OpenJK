@@ -19,10 +19,9 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\objectives.h"
-#include "..\game\b_local.h"
+#include "../game/objectives.h"
+#include "../game/b_local.h"
 
 #define	SCOREBOARD_WIDTH	(26*BIGCHAR_WIDTH)
 

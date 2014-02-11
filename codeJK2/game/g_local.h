@@ -24,10 +24,11 @@ This file is part of Jedi Knight 2.
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define	GAME_INCLUDE
-#include "../ui/gameinfo.h"
+#include "../../code/ui/gameinfo.h"
 #include "g_shared.h"
 #include "anims.h"
 #include "dmstates.h"
+#include "time.h"
 
 //==================================================================
 
@@ -76,7 +77,7 @@ This file is part of Jedi Knight 2.
 #define	VALIDATEB( a )	if ( a == NULL ) {	assert(0);	return qfalse;	}
 #define VALIDATEP( a )	if ( a == NULL ) {	assert(0);	return NULL;	}
 
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != NULL ) )
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //Interest points
 
@@ -410,11 +411,6 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire );
 void MoveClientToIntermission (gentity_t *client);
 void G_SetStats (gentity_t *ent);
 void DeathmatchScoreboardMessage (gentity_t *client);
-
-//
-// g_cmds.c
-//
-static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char *name, const char *message );
 
 //
 // g_pweapon.c

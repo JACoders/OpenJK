@@ -43,10 +43,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stv_version.h"
 
-#ifdef _XBOX
-#include <xtl.h>
-#define filepathlength 120
-#endif
+#include "../qcommon/q_shared.h"
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
@@ -73,11 +70,7 @@ static struct
 	int				savegameFromFlag;
 } s_savegame;
 
-#ifdef _XBOX
-#define MAX_SAVELOADFILES	8
-#else
 #define MAX_SAVELOADFILES	100
-#endif
 #define MAX_SAVELOADNAME	32
 
 //byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
@@ -163,7 +156,7 @@ void			UI_AdjustSaveGameListBox( int currentLine );
 void			Menus_CloseByName(const char *p);
 
 // Movedata Sounds
-typedef enum
+enum
 {
 	MDS_NONE = 0,
 	MDS_FORCE_JUMP,
@@ -172,7 +165,7 @@ typedef enum
 	MDS_MOVE_SOUNDS_MAX
 };
 
-typedef enum
+enum
 {
 	MD_ACROBATICS = 0,
 	MD_SINGLE_FAST,
@@ -185,7 +178,7 @@ typedef enum
 
 // Some hard coded badness
 // At some point maybe this should be externalized to a .dat file
-char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 {
 "@MENUS_ACROBATICS",
 "@MENUS_SINGLE_FAST",
@@ -195,7 +188,7 @@ char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 "@MENUS_SABER_STAFF",
 };
 
-char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 {
 "BOTH_RUN1",
 "BOTH_SABERFAST_STANCE",
@@ -209,121 +202,133 @@ char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 
 typedef struct 
 {
-	char	*title;	
-	char	*desc;	
-	char	*anim;
+	const char	*title;	
+	const char	*desc;	
+	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
 
 static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] = 
 {
+{
 // Acrobatics
-"@MENUS_FORCE_JUMP1",				"@MENUS_FORCE_JUMP1_DESC",			"BOTH_FORCEJUMP1",				MDS_FORCE_JUMP,
-"@MENUS_FORCE_FLIP",				"@MENUS_FORCE_FLIP_DESC",			"BOTH_FLIP_F",					MDS_FORCE_JUMP,
-"@MENUS_ROLL",						"@MENUS_ROLL_DESC",					"BOTH_ROLL_F",					MDS_ROLL,
-"@MENUS_BACKFLIP_OFF_WALL",			"@MENUS_BACKFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_BACK1",			MDS_FORCE_JUMP,
-"@MENUS_SIDEFLIP_OFF_WALL",			"@MENUS_SIDEFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_RIGHT",			MDS_FORCE_JUMP,
-"@MENUS_WALL_RUN",					"@MENUS_WALL_RUN_DESC",				"BOTH_WALL_RUN_RIGHT",			MDS_FORCE_JUMP,
-"@MENUS_LONG_JUMP",					"@MENUS_LONG_JUMP_DESC",			"BOTH_FORCELONGLEAP_START",		MDS_FORCE_JUMP,
-"@MENUS_WALL_GRAB_JUMP",			"@MENUS_WALL_GRAB_JUMP_DESC",		"BOTH_FORCEWALLREBOUND_FORWARD",MDS_FORCE_JUMP,
-"@MENUS_RUN_UP_WALL_BACKFLIP",		"@MENUS_RUN_UP_WALL_BACKFLIP_DESC",	"BOTH_FORCEWALLRUNFLIP_START",	MDS_FORCE_JUMP,
-"@MENUS_JUMPUP_FROM_KNOCKDOWN",		"@MENUS_JUMPUP_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN3",				MDS_NONE,
-"@MENUS_JUMPKICK_FROM_KNOCKDOWN",	"@MENUS_JUMPKICK_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN2",			MDS_NONE,
-"@MENUS_ROLL_FROM_KNOCKDOWN",		"@MENUS_ROLL_FROM_KNOCKDOWN_DESC",	"BOTH_KNOCKDOWN1",				MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_FORCE_JUMP1",				"@MENUS_FORCE_JUMP1_DESC",			"BOTH_FORCEJUMP1",				MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_FLIP",				"@MENUS_FORCE_FLIP_DESC",			"BOTH_FLIP_F",					MDS_FORCE_JUMP },
+{ "@MENUS_ROLL",						"@MENUS_ROLL_DESC",					"BOTH_ROLL_F",					MDS_ROLL },
+{ "@MENUS_BACKFLIP_OFF_WALL",			"@MENUS_BACKFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_BACK1",			MDS_FORCE_JUMP },
+{ "@MENUS_SIDEFLIP_OFF_WALL",			"@MENUS_SIDEFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_RIGHT",			MDS_FORCE_JUMP },
+{ "@MENUS_WALL_RUN",					"@MENUS_WALL_RUN_DESC",				"BOTH_WALL_RUN_RIGHT",			MDS_FORCE_JUMP },
+{ "@MENUS_LONG_JUMP",					"@MENUS_LONG_JUMP_DESC",			"BOTH_FORCELONGLEAP_START",		MDS_FORCE_JUMP },
+{ "@MENUS_WALL_GRAB_JUMP",			"@MENUS_WALL_GRAB_JUMP_DESC",		"BOTH_FORCEWALLREBOUND_FORWARD",MDS_FORCE_JUMP },
+{ "@MENUS_RUN_UP_WALL_BACKFLIP",		"@MENUS_RUN_UP_WALL_BACKFLIP_DESC",	"BOTH_FORCEWALLRUNFLIP_START",	MDS_FORCE_JUMP },
+{ "@MENUS_JUMPUP_FROM_KNOCKDOWN",		"@MENUS_JUMPUP_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN3",				MDS_NONE },
+{ "@MENUS_JUMPKICK_FROM_KNOCKDOWN",	"@MENUS_JUMPKICK_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN2",			MDS_NONE },
+{ "@MENUS_ROLL_FROM_KNOCKDOWN",		"@MENUS_ROLL_FROM_KNOCKDOWN_DESC",	"BOTH_KNOCKDOWN1",				MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Fast Style
-"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
-"@MENUS_LUNGE_ATTACK",				"@MENUS_LUNGE_ATTACK_DESC",			"BOTH_LUNGE2_B__T_",			MDS_SABER,
-"@MENUS_FORCE_PULL_IMPALE",			"@MENUS_FORCE_PULL_IMPALE_DESC",	"BOTH_PULL_IMPALE_STAB",		MDS_SABER,
-"@MENUS_FAST_ATTACK_KATA",			"@MENUS_FAST_ATTACK_KATA_DESC",		"BOTH_A1_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER },
+{ "@MENUS_LUNGE_ATTACK",				"@MENUS_LUNGE_ATTACK_DESC",			"BOTH_LUNGE2_B__T_",			MDS_SABER },
+{ "@MENUS_FORCE_PULL_IMPALE",			"@MENUS_FORCE_PULL_IMPALE_DESC",	"BOTH_PULL_IMPALE_STAB",		MDS_SABER },
+{ "@MENUS_FAST_ATTACK_KATA",			"@MENUS_FAST_ATTACK_KATA_DESC",		"BOTH_A1_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Medium Style
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_FLIP_ATTACK",				"@MENUS_FLIP_ATTACK_DESC",			"BOTH_JUMPFLIPSLASHDOWN1",		MDS_FORCE_JUMP,
-"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
-"@MENUS_MEDIUM_ATTACK_KATA",		"@MENUS_MEDIUM_ATTACK_KATA_DESC",	"BOTH_A2_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_FLIP_ATTACK",				"@MENUS_FLIP_ATTACK_DESC",			"BOTH_JUMPFLIPSLASHDOWN1",		MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER },
+{ "@MENUS_MEDIUM_ATTACK_KATA",		"@MENUS_MEDIUM_ATTACK_KATA_DESC",	"BOTH_A2_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Strong Style
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_JUMP_ATTACK",				"@MENUS_JUMP_ATTACK_DESC",			"BOTH_FORCELEAP2_T__B_",		MDS_FORCE_JUMP,
-"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
-"@MENUS_STRONG_ATTACK_KATA",		"@MENUS_STRONG_ATTACK_KATA_DESC",	"BOTH_A3_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_JUMP_ATTACK",				"@MENUS_JUMP_ATTACK_DESC",			"BOTH_FORCELEAP2_T__B_",		MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER },
+{ "@MENUS_STRONG_ATTACK_KATA",		"@MENUS_STRONG_ATTACK_KATA_DESC",	"BOTH_A3_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Dual Sabers
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_FLIP_FORWARD_ATTACK",		"@MENUS_FLIP_FORWARD_ATTACK_DESC",	"BOTH_JUMPATTACK6",				MDS_FORCE_JUMP,
-"@MENUS_DUAL_SABERS_TWIRL",			"@MENUS_DUAL_SABERS_TWIRL_DESC",	"BOTH_SPINATTACK6",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_DUAL",			MDS_FORCE_JUMP,
-"@MENUS_DUAL_SABER_BARRIER",		"@MENUS_DUAL_SABER_BARRIER_DESC",	"BOTH_A6_SABERPROTECT",			MDS_SABER,
-"@MENUS_DUAL_STAB_FRONT_BACK",		"@MENUS_DUAL_STAB_FRONT_BACK_DESC", "BOTH_A6_FB",					MDS_SABER,
-"@MENUS_DUAL_STAB_LEFT_RIGHT",		"@MENUS_DUAL_STAB_LEFT_RIGHT_DESC", "BOTH_A6_LR",					MDS_SABER,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_FLIP_FORWARD_ATTACK",		"@MENUS_FLIP_FORWARD_ATTACK_DESC",	"BOTH_JUMPATTACK6",				MDS_FORCE_JUMP },
+{ "@MENUS_DUAL_SABERS_TWIRL",			"@MENUS_DUAL_SABERS_TWIRL_DESC",	"BOTH_SPINATTACK6",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_DUAL",			MDS_FORCE_JUMP },
+{ "@MENUS_DUAL_SABER_BARRIER",		"@MENUS_DUAL_SABER_BARRIER_DESC",	"BOTH_A6_SABERPROTECT",			MDS_SABER },
+{ "@MENUS_DUAL_STAB_FRONT_BACK",		"@MENUS_DUAL_STAB_FRONT_BACK_DESC", "BOTH_A6_FB",					MDS_SABER },
+{ "@MENUS_DUAL_STAB_LEFT_RIGHT",		"@MENUS_DUAL_STAB_LEFT_RIGHT_DESC", "BOTH_A6_LR",					MDS_SABER },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 // Saber Staff
-"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
-"@MENUS_BACK_FLIP_ATTACK",			"@MENUS_BACK_FLIP_ATTACK_DESC",		"BOTH_JUMPATTACK7",				MDS_FORCE_JUMP,
-"@MENUS_SABER_STAFF_TWIRL",			"@MENUS_SABER_STAFF_TWIRL_DESC",	"BOTH_SPINATTACK7",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_STAFF",			MDS_FORCE_JUMP,
-"@MENUS_SPINNING_KATA",				"@MENUS_SPINNING_KATA_DESC",		"BOTH_A7_SOULCAL",				MDS_SABER,
-"@MENUS_KICK1",						"@MENUS_KICK1_DESC",				"BOTH_A7_KICK_F",				MDS_FORCE_JUMP,
-"@MENUS_JUMP_KICK",					"@MENUS_JUMP_KICK_DESC",			"BOTH_A7_KICK_F_AIR",			MDS_FORCE_JUMP,
-"@MENUS_SPLIT_KICK",				"@MENUS_SPLIT_KICK_DESC",			"BOTH_A7_KICK_RL",				MDS_FORCE_JUMP,
-"@MENUS_SPIN_KICK",					"@MENUS_SPIN_KICK_DESC",			"BOTH_A7_KICK_S",				MDS_FORCE_JUMP,
-"@MENUS_FLIP_KICK",					"@MENUS_FLIP_KICK_DESC",			"BOTH_A7_KICK_BF",				MDS_FORCE_JUMP,
-"@MENUS_BUTTERFLY_ATTACK",			"@MENUS_BUTTERFLY_ATTACK_DESC",		"BOTH_BUTTERFLY_FR1",			MDS_SABER,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER },
+{ "@MENUS_BACK_FLIP_ATTACK",			"@MENUS_BACK_FLIP_ATTACK_DESC",		"BOTH_JUMPATTACK7",				MDS_FORCE_JUMP },
+{ "@MENUS_SABER_STAFF_TWIRL",			"@MENUS_SABER_STAFF_TWIRL_DESC",	"BOTH_SPINATTACK7",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_STAFF",			MDS_FORCE_JUMP },
+{ "@MENUS_SPINNING_KATA",				"@MENUS_SPINNING_KATA_DESC",		"BOTH_A7_SOULCAL",				MDS_SABER },
+{ "@MENUS_KICK1",						"@MENUS_KICK1_DESC",				"BOTH_A7_KICK_F",				MDS_FORCE_JUMP },
+{ "@MENUS_JUMP_KICK",					"@MENUS_JUMP_KICK_DESC",			"BOTH_A7_KICK_F_AIR",			MDS_FORCE_JUMP },
+{ "@MENUS_SPLIT_KICK",				"@MENUS_SPLIT_KICK_DESC",			"BOTH_A7_KICK_RL",				MDS_FORCE_JUMP },
+{ "@MENUS_SPIN_KICK",					"@MENUS_SPIN_KICK_DESC",			"BOTH_A7_KICK_S",				MDS_FORCE_JUMP },
+{ "@MENUS_FLIP_KICK",					"@MENUS_FLIP_KICK_DESC",			"BOTH_A7_KICK_BF",				MDS_FORCE_JUMP },
+{ "@MENUS_BUTTERFLY_ATTACK",			"@MENUS_BUTTERFLY_ATTACK_DESC",		"BOTH_BUTTERFLY_FR1",			MDS_SABER },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+}
 };
 
 
@@ -337,8 +342,8 @@ void UI_Load(void);
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char		*cvarName;
+	const char		*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
@@ -424,8 +429,8 @@ void _UI_Refresh( int realtime )
 	{//if not in full screen, don't mess with ghoul2
 		//rww - ghoul2 needs to know what time it is even if the client/server are not running
 		//FIXME: this screws up the game when you go back to the game...
-		G2API_SetTime(realtime, 0);
-		G2API_SetTime(realtime, 1);
+		re.G2API_SetTime(realtime, 0);
+		re.G2API_SetTime(realtime, 1);
 	}
 
 	uiInfo.uiDC.frameTime = realtime - uiInfo.uiDC.realTime;
@@ -465,17 +470,6 @@ void _UI_Refresh( int realtime )
 //		UI_BuildFindPlayerList(qfalse);
 	} 
 
-#ifdef _XBOX
-	// display current map name
-	if (Cvar_VariableIntegerValue( "cl_maphack" ))
-	{
-		float rgba[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
-		extern cvar_t *cl_mapname;
-		Text_Paint(130, 100, /* UI_FONT_DEFAULT, */ 0.9f, rgba, cl_mapname->string, 0, ITEM_TEXTSTYLE_NORMAL, 3);
-	}
-#endif
-
-#ifndef _XBOX
 	// draw cursor
 	UI_SetColor( NULL );
 	if (Menu_Count() > 0)
@@ -485,7 +479,6 @@ void _UI_Refresh( int realtime )
 			UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
 		}
 	}
-#endif
 }
 
 /*
@@ -526,7 +519,7 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .qvm file
 ================
 */
-int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) 
+extern "C" Q_EXPORT intptr_t QDECL vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
 {
 	return 0;
 }
@@ -600,8 +593,8 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	// now print the cursor as well...
 	//
 	char sTemp[1024];
-	int iCopyCount = min(strlen(text), cursorPos);
-		iCopyCount = min(iCopyCount,sizeof(sTemp));
+	int iCopyCount = min((int)strlen(text), cursorPos);
+		iCopyCount = min(iCopyCount,(int)sizeof(sTemp));
 
 	// copy text into temp buffer for pixel measure...
 	//
@@ -645,7 +638,7 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 	{
 #ifndef __NO_JK2
 		// FIXME
-		if(Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && com_jk2->integer)
 			return NULL;
 #endif
 		return SE_GetLanguageName( index );
@@ -858,11 +851,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "loadgame") == 0) 
 		{
-//JLFTODO  PUT THIS BACK (no!)
-//#ifdef _XBOX
-//				Menus_CloseAll();
-//				ui.Cmd_ExecuteText( EXEC_APPEND, va("load JKSG3\n"));
-//#else
 			if (s_savedata[s_savegame.currentLine].currentSaveFileName)// && (*s_file_desc_field.field.buffer))
 			{
 				Menus_CloseAll();
@@ -870,7 +858,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			// after loading a game, the list box (and it's highlight) get's reset back to 0, but currentLine sticks around, so set it to 0 here
 			s_savegame.currentLine = 0;
-//#endif
 
 		}
 		else if (Q_stricmp(name, "deletegame") == 0) 
@@ -903,12 +890,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			// Create a new save game
 //			if ( !s_savedata[s_savegame.currentLine].currentSaveFileName)	// No line was chosen
 			{
-//JLF MPNOTUSED
-#ifdef _XBOX
-				strcpy(fileName, "JKSG3");
-#else
 				CreateNextSaveName(fileName);	// Get a name to save to
-#endif
 			}
 //			else	// Overwrite a current save game? Ask first.
 			{
@@ -1010,7 +992,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			else
 			{
 #ifndef __NO_JK2
-				if( Cvar_VariableIntegerValue("com_jk2") )
+				if( com_jk2 && com_jk2->integer )
 				{
 					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
 				}
@@ -1511,13 +1493,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ResetCharacterListBoxes();
 		}
-#ifdef _XBOX
-		else if (Q_stricmp(name, "multiplayer") == 0)
-		{
-			extern void Sys_Reboot( const char *reason );
-			Sys_Reboot("multiplayer");
-		}
-#endif
 		else 
 		{
 			Com_Printf("unknown UI script %s\n", name);
@@ -1538,7 +1513,7 @@ static float UI_GetValue(int ownerDraw)
 }
 
 //Force Warnings
-typedef enum
+enum
 {
 	FW_VERY_LIGHT = 0,
 	FW_SEMI_LIGHT,
@@ -1736,31 +1711,12 @@ static void UI_HandleLoadSelection()
 		return;
 //	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment 
 
-#ifdef _XBOX
-	void R_UpdateSaveGameImage(const char *filename);
-	//create the correctfilename
-	unsigned short saveGameName[filepathlength];
-	char directoryInfo[filepathlength];
-	char psLocalFilename[filepathlength];
-
-	
-	mbstowcs(saveGameName, s_savedata[s_savegame.currentLine].currentSaveFileName, filepathlength);
-
-	XCreateSaveGame("U:\\", saveGameName, OPEN_ALWAYS, 0,directoryInfo, filepathlength);
-
-	strcpy (psLocalFilename , directoryInfo);
-	strcat (psLocalFilename , "saveimage.xbx");
-
-
-	R_UpdateSaveGameImage(psLocalFilename);
-#else
 /*	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
 >>>>>>> 1.30
 	{
 		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); 
 	}
 */
-#endif
 }
 
 /*
@@ -1770,23 +1726,10 @@ UI_FeederCount
 */
 static int UI_FeederCount(float feederID) 
 {
-#ifdef _XBOX 
-//JLF MPNOTNEEDED
-	static bool firstSaveRequest = true;
-#endif
-
 	if (feederID == FEEDER_SAVEGAMES ) 
 	{
-//JLF MPNOTNEEDED
-#ifdef _XBOX 
-		if (s_savegame.saveFileCnt == -1 || firstSaveRequest)
-		{
-			firstSaveRequest = false;
-#else
 		if (s_savegame.saveFileCnt == -1)
 		{
-#endif
-
 			ReadSaveDirectory();	//refresh
 			UI_HandleLoadSelection();
 			UI_AdjustSaveGameListBox(s_savegame.currentLine);
@@ -2062,13 +2005,6 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 
 //unfortunately we cannot rely on any game/cgame module code to do our animation stuff,
 //because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
-// On Xbox, we need all the RAM we can get, and this is huge. So we just borrow the one from level. I hope
-// this doesn't cause some apocalypse. Getting access to level in here is nigh impossible, as we'd have to
-// include g_local.h, and the consequences of that are bad. So: This pointer is initialized in a global constructor
-// in class UIAnimFileSetInitializer in g_main.cpp! Look there! Don't forget!
-//#ifdef _XBOX
-//animFileSet_t	*ui_knownAnimFileSets = NULL;
-//#else
 #undef MAX_ANIM_FILES
 #define MAX_ANIM_FILES 4
 typedef struct
@@ -2077,7 +2013,6 @@ typedef struct
 	animation_t		animations[MAX_ANIMATIONS];
 } animFileSet_t;
 static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
-//#endif
 
 int				ui_numKnownAnimFileSets;
 
@@ -2098,7 +2033,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	{
 		return qfalse;
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
 		Com_Error( ERR_FATAL, "UI_ParseAnimationFile: File %s too long\n (%d > %d)", af_filename, len, sizeof( text ) - 1);
 		return qfalse;
@@ -2121,6 +2056,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	}
 
 	// read information for each frame
+	COM_BeginParseSession();
 	while(1) 
 	{
 		token = COM_Parse( &text_p );
@@ -2189,6 +2125,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 
 //		animations[animNum].initialLerp = ceil(1000.0f / fabs(fps));
 	}
+	COM_EndParseSession();
 
 	return qtrue;
 }
@@ -2249,7 +2186,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 	int animIndex,blendTime;
 	char *GLAName;
 
-	GLAName = G2API_GetGLAName(ghlInfo);
+	GLAName = re.G2API_GetGLAName(ghlInfo);
 
 	if (!GLAName || !GLAName[0])
 	{
@@ -2293,7 +2230,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 		blendTime = 150;
 
 
-		G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
+		re.G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
 
 		return ((anim->frameLerp * (anim->numFrames-2)));
 	}
@@ -2315,6 +2252,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		token = COM_ParseExt( &p, qtrue );	//looking for the shader
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return species.ColorCount;
 		}
 		Q_strncpyz( species.ColorShader[species.ColorCount], token, sizeof(species.ColorShader[0]), qtrue );
@@ -2322,6 +2260,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -2331,15 +2270,17 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		{
 			if ( token[0] == 0)
 			{	//EOF
+				COM_EndParseSession(  );
 				return qfalse;
 			}
-			assert(species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
+			assert((size_t)species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), token);
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), " ");
 			token = COM_ParseExt( &p, qtrue );	//looking for action commands or final }
 		}
 		species.ColorCount++;	//next color please
 	}
+	COM_EndParseSession(  );
 	return qtrue;//never get here
 }
 
@@ -2354,13 +2295,9 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 	char fpath[MAX_QPATH];
 	int f;
 
-#ifdef _XBOX
-	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.dds", dirptr, skinname);
-#else
+
 	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
-#endif
 	ui.FS_FOpenFile(fpath, &f, FS_READ);
-#if !defined(_XBOX) || defined(_DEBUG)
 	if (!f)
 	{ //not there, try png
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
@@ -2371,7 +2308,6 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
 		ui.FS_FOpenFile(fpath, &f, FS_READ);
 	}
-#endif
 	if (f) 
 	{
 		ui.FS_FCloseFile(f);
@@ -2456,11 +2392,11 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				}
 
 				filelen = strlen(fileptr);
-				COM_StripExtension(fileptr,skinname);
+				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
 				if (bIsImageFile(dirptr, skinname, building))
 				{ //if it exists
-					if (strnicmp(skinname,"head_",5) == 0)
+					if (Q_stricmpn(skinname,"head_",5) == 0)
 					{
 						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadCount < MAX_PLAYERMODELS) 
 						{
@@ -2468,7 +2404,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							iSkinParts |= 1<<0;
 						}
 					} else
-					if (strnicmp(skinname,"torso_",6) == 0)
+					if (Q_stricmpn(skinname,"torso_",6) == 0)
 					{
 						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoCount < MAX_PLAYERMODELS) 
 						{
@@ -2476,7 +2412,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							iSkinParts |= 1<<1;
 						}
 					} else
-					if (strnicmp(skinname,"lower_",6) == 0)
+					if (Q_stricmpn(skinname,"lower_",6) == 0)
 					{
 						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegCount < MAX_PLAYERMODELS) 
 						{
@@ -2521,12 +2457,12 @@ void _UI_Init( qboolean inGameLoad )
 {
 	// Get the list of possible languages
 #ifndef __NO_JK2
-	if(!Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && !com_jk2->integer)
 #endif
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
 
 	#ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		// sod it, parse every menu strip file until we find a gap in the sequence...
 		//
@@ -2605,14 +2541,14 @@ void _UI_Init( qboolean inGameLoad )
 
 	uiInfo.uiDC.registerSkin		= re.RegisterSkin;
 
-	uiInfo.uiDC.g2_SetSkin = G2API_SetSkin;
-	uiInfo.uiDC.g2_SetBoneAnim = G2API_SetBoneAnim;
-	uiInfo.uiDC.g2_RemoveGhoul2Model = G2API_RemoveGhoul2Model;
-	uiInfo.uiDC.g2_InitGhoul2Model = G2API_InitGhoul2Model;
-	uiInfo.uiDC.g2_CleanGhoul2Models = G2API_CleanGhoul2Models;
-	uiInfo.uiDC.g2_AddBolt = G2API_AddBolt;
-	uiInfo.uiDC.g2_GetBoltMatrix = G2API_GetBoltMatrix;
-	uiInfo.uiDC.g2_GiveMeVectorFromMatrix = G2API_GiveMeVectorFromMatrix;
+	uiInfo.uiDC.g2_SetSkin = re.G2API_SetSkin;
+	uiInfo.uiDC.g2_SetBoneAnim = re.G2API_SetBoneAnim;
+	uiInfo.uiDC.g2_RemoveGhoul2Model = re.G2API_RemoveGhoul2Model;
+	uiInfo.uiDC.g2_InitGhoul2Model = re.G2API_InitGhoul2Model;
+	uiInfo.uiDC.g2_CleanGhoul2Models = re.G2API_CleanGhoul2Models;
+	uiInfo.uiDC.g2_AddBolt = re.G2API_AddBolt;
+	uiInfo.uiDC.g2_GetBoltMatrix = re.G2API_GetBoltMatrix;
+	uiInfo.uiDC.g2_GiveMeVectorFromMatrix = re.G2API_GiveMeVectorFromMatrix;
 
 	uiInfo.uiDC.g2hilev_SetAnim = UI_G2SetAnim;
 
@@ -2620,7 +2556,7 @@ void _UI_Init( qboolean inGameLoad )
 
 	String_Init();
 
-	char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
+	const char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
 
 	if (menuSet == NULL || menuSet[0] == '\0') 
 	{
@@ -2647,23 +2583,11 @@ void _UI_Init( qboolean inGameLoad )
 		UI_LoadMenus(menuSet, qtrue);
 	}
 
-#ifdef FINAL_BUILD
-	Com_Printf("UI_LoadMenus completed\n");
-#endif
-
 	Menus_CloseAll();
-
-#ifdef FINAL_BUILD
-	Com_Printf("Menus_CloseAll completed\n");
-#endif
 
 	uiInfo.uiDC.whiteShader = ui.R_RegisterShaderNoMip( "white" );
 
 	AssetCache();
-
-#ifdef FINAL_BUILD
-	Com_Printf("AssetCache() completed\n");
-#endif
 
 	uis.debugMode = qfalse;
 	
@@ -2689,10 +2613,6 @@ void _UI_Init( qboolean inGameLoad )
 
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
 
-#ifdef FINAL_BUILD
-	Com_Printf("_UI_Init completed\n");
-#endif
-
 }
 
 
@@ -2711,31 +2631,6 @@ static void UI_RegisterCvars( void )
 		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
 	}
 }
-
-#ifdef _XBOX
-//JLFCALLOUT  MPNOTNEEDED->(INCLUDE WORKS)
-qboolean Menu_Parse(char *buffer, menuDef_t *menu);
-
-char * UI_ParseInclude(const char *menuFile, menuDef_t * menu) 
-{
-	char	*buffer,*holdBuffer,*token2;
-	int len;
-//	pc_token_t token;
-
-	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
-
-	len = PC_StartParseSession(menuFile,&buffer, true);
-
-	if (len<=0) 
-	{
-		Com_Printf("UI_ParseMenu: Unable to load menu %s\n", menuFile);
-		return NULL;
-	}
-
-	//	PC_EndParseSession(buffer);
-	return buffer;
-}
-#endif
 
 /*
 =================
@@ -2817,7 +2712,7 @@ Load_Menu
 qboolean Load_Menu(const char **holdBuffer) 
 {
 	const char	*token2;
-
+	
 	token2 = COM_ParseExt( holdBuffer, qtrue );
 
 	if (!token2[0])
@@ -2893,6 +2788,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 
 	const char	*token2;
 	holdBuffer = buffer;
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
 		token2 = COM_ParseExt( &holdBuffer, qtrue );
@@ -2926,6 +2822,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 			Com_Printf("Unknown keyword '%s' in menus file %s\n", token2, menuFile);
 		} 
 	}
+	COM_EndParseSession();
 
 	Com_Printf("UI menu load time = %d milli seconds\n", Sys_Milliseconds() - start);
 
@@ -2939,7 +2836,7 @@ UI_Load
 */
 void UI_Load(void) 
 {
-	char *menuSet;
+	const char *menuSet;
 	char lastName[1024];
 	menuDef_t *menu = Menu_GetFocused();
 
@@ -3004,7 +2901,6 @@ qboolean Asset_Parse(char **buffer)
     
 	while ( 1 ) 
 	{
-
 		token = PC_ParseExt();
 
 		if (!token)
@@ -3668,7 +3564,7 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 	if (Display_KeyBindPending()) 
 	{
 #ifndef __NO_JK2
-		if( Cvar_VariableIntegerValue("com_jk2") )
+		if( com_jk2 && com_jk2->integer )
 			Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
 		else
 #endif
@@ -3807,12 +3703,6 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 
 		case UI_ALLMAPS_SELECTION://saved game thumbnail
 
-//JLF MAPIMAGE MPNOTUSED
-#ifdef _XBOX
-			//create a shader
-			UI_DrawHandlePic(x, y, w, h, shader);
-		
-#else
 			int levelshot;
 			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
 			if (levelshot)
@@ -3823,7 +3713,7 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 			{
 				UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
 			}
-#endif
+
 			ui.R_Font_DrawString(	x,		// int ox
 									y+h,	// int oy
 									s_savedata[s_savegame.currentLine].currentSaveFileMap,	// const char *text
@@ -3913,7 +3803,7 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 		if (Display_KeyBindPending()) 
 		{
 #ifndef __NO_JK2
-			if( Cvar_VariableIntegerValue( "com_jk2 " ) )
+			if( com_jk2 && com_jk2->integer )
 				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
 			else
 #endif
@@ -4014,14 +3904,6 @@ void _UI_KeyEvent( int key, qboolean down )
 		if (menu) 
 		{
 			//DemoEnd();
-//JLF MPMOVED
-#ifdef _XBOX
-//			extern void G_DemoKeypress();//JLF new
-//			G_DemoKeypress();			//JLF new
-			extern void UpdateDemoTimer();
-			UpdateDemoTimer();
-
-#endif
 			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible() && !(menu->window.flags & WINDOW_IGNORE_ESCAPE)) 
 			{
 				Menus_CloseAll();
@@ -4089,10 +3971,6 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
-#ifdef _XBOX
-	ui.PrecacheScreenshot();
-#endif
-
 	Menus_CloseByName("mainhud");
 
 	if (menuID)
@@ -4202,9 +4080,9 @@ interface versions of the cvars.
 */
 void UI_GetVideoSetup ( void )
 {
-	// Make sure the cvars are registered as read only.
-	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ROM|CVAR_ARCHIVE );
+	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ARCHIVE );
 
+	// Make sure the cvars are registered as read only.
 	Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM );
@@ -4312,12 +4190,12 @@ static void UI_GetCharacterCvars ( void )
 	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ) );
 	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ) );
 
-	char* model = Cvar_VariableString ( "g_char_model" );
+	const char* model = Cvar_VariableString ( "g_char_model" );
 	Cvar_Set ( "ui_char_model", model );
 
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
-		if ( !stricmp(model, uiInfo.playerSpecies[i].Name) )
+		if ( !Q_stricmp(model, uiInfo.playerSpecies[i].Name) )
 		{
 			uiInfo.playerSpeciesIndex = i;
 		}
@@ -4336,12 +4214,12 @@ static void UI_UpdateSaberCvars ( void )
 static void UI_UpdateFightingStyleChoices ( void )
 {
 	// 
-	if (!strcmpi("staff",Cvar_VariableString ( "ui_saber_type" )))
+	if (!Q_stricmp("staff",Cvar_VariableString ( "ui_saber_type" )))
 	{
 		Cvar_Set ( "ui_fightingstylesallowed", "0" );
 		Cvar_Set ( "ui_newfightingstyle", "4" );		// SS_STAFF
 	}
-	else if (!strcmpi("dual",Cvar_VariableString ( "ui_saber_type" )))
+	else if (!Q_stricmp("dual",Cvar_VariableString ( "ui_saber_type" )))
 	{
 		Cvar_Set ( "ui_fightingstylesallowed", "0" );
 		Cvar_Set ( "ui_newfightingstyle", "3" );		// SS_DUAL
@@ -4435,32 +4313,32 @@ static void UI_UpdateFightingStyleChoices ( void )
 #define MAX_POWER_ENUMS 16
 
 typedef struct {
-	char	*title;
+	const char	*title;
 	short	powerEnum;
 } powerEnum_t;
 
 static powerEnum_t powerEnums[MAX_POWER_ENUMS] = 
 {
-"absorb",		FP_ABSORB,			
-"heal",			FP_HEAL,			
-"mindtrick",	FP_TELEPATHY,		
-"protect",		FP_PROTECT,			
+	{ "absorb",		FP_ABSORB },
+	{ "heal",			FP_HEAL },
+	{ "mindtrick",	FP_TELEPATHY },
+	{ "protect",		FP_PROTECT },
 
-			// Core powers
-"jump",			FP_LEVITATION,		
-"pull",			FP_PULL,			
-"push",			FP_PUSH,			
-"sense",		FP_SEE,				
-"speed",		FP_SPEED,			
-"sabdef",		FP_SABER_DEFENSE,	
-"saboff",		FP_SABER_OFFENSE,	
-"sabthrow",		FP_SABERTHROW,		
+				// Core powers
+	{ "jump",			FP_LEVITATION },
+	{ "pull",			FP_PULL },
+	{ "push",			FP_PUSH },
+	{ "sense",		FP_SEE },
+	{ "speed",		FP_SPEED },
+	{ "sabdef",		FP_SABER_DEFENSE },
+	{ "saboff",		FP_SABER_OFFENSE },
+	{ "sabthrow",		FP_SABERTHROW },
 
-			// Dark powers
-"drain",		FP_DRAIN,			
-"grip",			FP_GRIP,			
-"lightning",	FP_LIGHTNING,		
-"rage",			FP_RAGE				
+				// Dark powers
+	{ "drain",		FP_DRAIN },
+	{ "grip",			FP_GRIP },
+	{ "lightning",	FP_LIGHTNING },
+	{ "rage",			FP_RAGE },
 };
 
 
@@ -4527,7 +4405,7 @@ static void UI_InitAllocForcePowers ( const char *forceName )
 	if (item)
 	{
 		char itemGraphic[128];
-		Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d",forcelevel);
+		Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d",forcelevel == 4 ? 3 : forcelevel);
 		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
 
 		// If maxed out on power - don't allow update
@@ -4605,6 +4483,10 @@ static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 		return;
 	}
 
+	// Cheats are on so lets always let us pass
+	if(trap_Cvar_VariableValue("helpUsObi") != 0)
+		activeFlag = qtrue;
+
 	// Find weaponsbutton
 	itemDef_t	*item;
 	item = (itemDef_s *) Menu_FindItemByName(menu, "weaponbutton");
@@ -4639,11 +4521,11 @@ static void UI_SetHexPicLevel( const menuDef_t	*menu,const int forcePowerI,const
 		char itemGraphic[128];
 		if (goldFlag)
 		{
-			Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d_gold",powerLevel);
+			Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d_gold",powerLevel == 4 ? 3 : powerLevel);
 		}
 		else
 		{
-			Com_sprintf (itemGraphic, sizeof(itemGraphic),  "gfx/menus/hex_pattern_%d",powerLevel);
+			Com_sprintf (itemGraphic, sizeof(itemGraphic),  "gfx/menus/hex_pattern_%d",powerLevel == 4 ? 3 : powerLevel);
 		}
 
 		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
@@ -4869,11 +4751,7 @@ static void UI_ShutdownForceHelp( void )
 		item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
 		if (item)
 		{
-	#ifdef _XBOX
-			Item_SetFocus(item, 0,0); 
-	#else
 			item->window.flags |= WINDOW_HASFOCUS;
-	#endif
 		}
 
 		// Get player state
@@ -5024,11 +4902,7 @@ static void UI_DecrementCurrentForcePower ( void )
 	item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
 	if (item)
 	{
-#ifdef _XBOX
-		Item_SetFocus(item, 0,0); 
-#else
 		item->window.flags |= WINDOW_HASFOCUS;
-#endif
 	}
 
 	uiInfo.forcePowerUpdated = FP_UPDATED_NONE;			// It's as if nothing happened.
@@ -5137,11 +5011,7 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 			UI_SetItemColor(item,"hexpic","forecolor",color);
 			UI_SetItemColor(item,"iconpic","forecolor",color);
 
-#ifdef _XBOX
-			Item_SetFocus(item, 0,0); 
-#else
 			item->window.flags |= WINDOW_HASFOCUS;
-#endif
 		}
 	}
 
@@ -5614,7 +5484,7 @@ static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, 
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// has this weapon already been chosen?
 	if (weaponIndex == uiInfo.selectedWeapon1)
@@ -5733,7 +5603,7 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 	int		ammoIndex,weaponIndex;
 
 	menu = Menu_GetFocused();	// Get current menu
@@ -5923,7 +5793,7 @@ static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIn
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// Has a throw weapon already been chosen?
 	if (uiInfo.selectedThrowWeapon!=NOWEAPON)
@@ -6020,7 +5890,7 @@ static void UI_RemoveThrowWeaponSelection ( void )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 
 	menu = Menu_GetFocused();	// Get current menu
 
@@ -6248,8 +6118,8 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 		return;
 	}
 
-	char *itemName;
-	char *saberCvarName;
+	const char *itemName;
+	const char *saberCvarName;
 	if ( secondSaber )
 	{
 		itemName = "saber2";
@@ -6273,7 +6143,7 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 	{//successfully found a model
 		ItemParse_asset_model_go( item, modelPath );//set the model
 		//get the customSkin, if any
-		//COM_StripExtension( modelPath, skinPath );
+		//COM_StripExtension( modelPath, skinPath, sizeof(skinPath) );
 		//COM_DefaultExtension( skinPath, sizeof( skinPath ), ".skin" );
 		if ( UI_SaberSkinForSaber( model, skinPath ) )
 		{
@@ -6425,85 +6295,6 @@ ReadSaveDirectory
 =================
 */
 //JLFSAVEGAME MPNOTUSED
-#ifdef _XBOX //xbox version
-//for the xbox reading the save directory will consist of 
-//iterating through the save game folders
-
-void ReadSaveDirectory (void)
-{
-	int		i;
-	char	*holdChar;
-	int		len;
-	int		fileCnt;
-
-	// Clear out save data
-	memset(s_savedata,0,sizeof(s_savedata));
-	s_savegame.saveFileCnt = 0;
-	Cvar_Set("ui_gameDesc", "" );	// Blank out comment 
-	Cvar_Set("ui_SelectionOK", "0" );
-	//memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
-
-	// Get everything in saves directory
-//	fileCnt = ui.FS_GetFileList("saves", ".sav", s_savegame.listBuf, LISTBUFSIZE );
-
-	Cvar_Set("ui_ResumeOK", "0" );
-	holdChar = s_savegame.listBuf;
-	XGAME_FIND_DATA SaveGameData;
-	HANDLE searchhandle;
-	BOOL retval;
-
-    // Any saves?
-	searchhandle = XFindFirstSaveGame( "U:\\", &SaveGameData );
-	if ( searchhandle != INVALID_HANDLE_VALUE )
-    do
-	{
-		 // At least one; count up the rest
-		DWORD dwCount = 1;
-		//get the name of the file
-		char saveGameName[filepathlength];
-		
-		wcstombs(saveGameName, SaveGameData.szSaveGameName, filepathlength);
-		strcpy( holdChar, saveGameName);
-		
-
-		if	( Q_stricmp("current",saveGameName)!=0 )
-		{
-			time_t result;
-			if (Q_stricmp("auto",saveGameName)==0)
-			{
-				Cvar_Set("ui_ResumeOK", "1" );
-			}
-			else
-			{	// Is this a valid file??? & Get comment of file
-				//create full path name
-				
-				result = ui.SG_GetSaveGameComment(saveGameName, s_savedata[s_savegame.saveFileCnt].currentSaveFileComments, s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
-				if (result != 0) // ignore Bad save game 
-				{
-					strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileComments,s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
-					s_savedata[s_savegame.saveFileCnt].currentSaveFileName = holdChar;
-					s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTime = result;
-					holdChar += strlen(holdChar)+1;
-					
-					struct tm *localTime;
-					localTime = localtime( &result );
-					strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTimeString,asctime( localTime ) );
-					s_savegame.saveFileCnt++;
-					if (s_savegame.saveFileCnt == MAX_SAVELOADFILES)
-					{
-						break;
-					}
-				}
-			}
-		}
-		
-		retval =XFindNextSaveGame( searchhandle, &SaveGameData );
-	}while(retval);
-    
-}
-
-#else //pc version
-
 void ReadSaveDirectory (void)
 {
 	int		i;
@@ -6562,5 +6353,3 @@ void ReadSaveDirectory (void)
 	qsort( s_savedata, s_savegame.saveFileCnt, sizeof(savedata_t), UI_SortSaveGames );
 
 }
-
-#endif

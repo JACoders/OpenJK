@@ -1,3 +1,5 @@
+#pragma once
+
 /************************************************************************************************
  *
  *	Copyright (C) 2001-2002 Raven Software
@@ -5,10 +7,6 @@
  *  RM_Area.h
  *
  ************************************************************************************************/
-
-#pragma once
-#if !defined(RM_AREA_H_INC)
-#define RM_AREA_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Area.h")
@@ -58,9 +56,9 @@ public:
 	float	GetConfineRadius()	{ return mConfineRadius; }
 	float	GetAngle()			{ return mAngle; }
 	int		GetMoveCount()		{ return mMoveCount; }
-	vec_t*	GetOrigin()			{ return mOrigin; }
-	vec_t*	GetConfineOrigin()	{ return mConfineOrigin; }
-	vec_t*	GetLookAtOrigin()	{ return mLookAtOrigin; }
+	float*	GetOrigin()			{ return mOrigin; }
+	float*	GetConfineOrigin()	{ return mConfineOrigin; }
+	float*	GetLookAtOrigin()	{ return mLookAtOrigin; }
 	bool	GetLookAt()			{ return mLookAt;}
 	bool	GetLockOrigin()		{ return mLockOrigin; }
 	int		GetSymmetric()		{ return mSymmetric; }
@@ -84,7 +82,7 @@ private:
 	float			mHeight;
 
 public:
-	
+
 	CRMAreaManager ( const vec3_t mins, const vec3_t maxs );
 	~CRMAreaManager ( );
 
@@ -94,6 +92,3 @@ public:
 
 //	void		CreateMap		( void );
 };
-
-#endif
-

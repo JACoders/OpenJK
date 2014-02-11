@@ -16,14 +16,13 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 
 #include "b_local.h"
 #include "g_nav.h"
 
-//#define AMMO_POD_HEALTH				40
 #define AMMO_POD_HEALTH				1
 #define TURN_OFF					0x00000100
 
@@ -157,7 +156,6 @@ void Mark2_FireBlaster(qboolean advance)
 {
 	vec3_t	muzzle1,enemy_org1,delta1,angleToEnemy1;
 	static	vec3_t	forward, vright, up;
-	static	vec3_t	muzzle;
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 

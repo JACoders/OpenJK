@@ -54,7 +54,7 @@ TO DO: Test mixed blocks (mixed long/short)
 #include <string.h>
 #include <assert.h>
 #include "mhead.h"		/* mpeg header structure */
-#include "L3.h"
+#include "l3.h"
 #include "jdw.h"
 
 #include "mp3struct.h"
@@ -599,7 +599,7 @@ static int unpack_side_MPEG2(int igr)
        /* region0 discussion says 54 but this would mix long */
        /* and short in region0 if scale factors switch */
        /* at band 36 (6 long scale factors) */
-	 if ((side_info.gr[igr][ch].block_type == 2))
+	 if (side_info.gr[igr][ch].block_type == 2)
 	 {
 	    side_info.gr[igr][ch].region0_count = (6 - 1);	/* 36 samples */
 	    side_info.gr[igr][ch].region1_count = 20 - (6 - 1);
@@ -1134,7 +1134,6 @@ int L3audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
    pMP3Stream->framebytes = framebytes_arg;
 
-   transform_code = transform_code;	/* not used, asm compatability */
    bit_code = 0;
    if (convert_code & 8)
       bit_code = 1;

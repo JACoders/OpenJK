@@ -24,10 +24,6 @@ This file is part of Jedi Academy.
 #include "../qcommon/sstring.h"
 typedef sstring_t fxString_t;
 
-#if !defined(FX_PARSING_H_INC)
-	#include "FxParsing.h"
-#endif
-
 #ifndef FX_SCHEDULER_H_INC
 #define FX_SCHEDULER_H_INC
 
@@ -216,6 +212,7 @@ public:
 
 	CFxRange		mRadius;		// spawn on sphere/ellipse/disk stuff.
 	CFxRange		mHeight;
+	CFxRange		mWindModifier;
 
 	CFxRange		mRotation;
 	CFxRange		mRotationDelta;
@@ -294,6 +291,7 @@ public:
 	bool ParseOrigin2( const char *val );
 	bool ParseRadius( const char *val );
 	bool ParseHeight( const char *val );
+	bool ParseWindModifier( const char *val );
 	bool ParseRotation( const char *val );
 	bool ParseRotationDelta( const char *val );
 	bool ParseAngle( const char *val );
@@ -372,7 +370,7 @@ struct SEffectTemplate
 
 	bool operator == (const char * name) const 
 	{
-		return !stricmp( mEffectName, name );
+		return !Q_stricmp( mEffectName, name );
 	}
 	void operator=(const SEffectTemplate &that);
 };

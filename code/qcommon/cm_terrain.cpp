@@ -28,10 +28,6 @@ This file is part of Jedi Academy.
 #pragma optimize("p", on)
 #endif
 
-void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
-void R_InvertImage		( byte *data, int width, int height, int depth);
-void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-
 //#define _SMOOTH_TERXEL_BRUSH
 
 #ifdef _SMOOTH_TERXEL_BRUSH 
@@ -81,7 +77,7 @@ void CCMLandScape::LoadTerrainDef(const char *td)
 		items = classes->GetSubGroups();
 		while(items)
 		{
-			if(!stricmp(items->GetName(), "altitudetexture"))
+			if(!Q_stricmp(items->GetName(), "altitudetexture"))
 			{
 				int			height;
 				const char	*shaderName;
@@ -101,7 +97,7 @@ void CCMLandScape::LoadTerrainDef(const char *td)
 					}
 				}
 			}
-			else if(!stricmp(items->GetName(), "water"))
+			else if(!Q_stricmp(items->GetName(), "water"))
 			{
 				const char	*shaderName;
 				CCMShader	*shader;
@@ -180,7 +176,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 		int		iWidth, iHeight;
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
-		R_LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
+		re.R_LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 
 		mRandomTerrain = 0;
 
@@ -195,8 +191,8 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 			else
 			{
 				// Flip to make the same as GenSurf
-				R_InvertImage(imageData, iWidth, iHeight, 1);
-				R_Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
+				re.R_InvertImage(imageData, iWidth, iHeight, 1);
+				re.R_Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
 			}
 			Z_Free(imageData);
 		}
@@ -246,13 +242,7 @@ void CCMPatch::InitPlane(struct cbrushside_s *side, cplane_t *plane, vec3_t p0, 
 	plane->dist = DotProduct(p0, plane->normal);
 	plane->type = PlaneTypeForNormal(plane->normal);
 	SetPlaneSignbits(plane);
-
-#ifdef _XBOX
-	// MATT! - does this work?
-	cmg.planes[side->planeNum.GetValue()] = *plane;
-#else
 	side->plane = plane;
-#endif
 }
 
 // Create the planes required for collision detection
@@ -316,12 +306,8 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 
 void CCMPatch::CreatePatchPlaneData(void)
 {				
-#ifndef PRE_RELEASE_DEMO
 	int				realWidth;
 	int				x, y, i, j;
-#if	0
-	int				n;
-#endif
 	cbrush_t		*brush;
 	cbrushside_t	*side;
 	cplane_t		*plane;
@@ -473,11 +459,7 @@ void CCMPatch::CreatePatchPlaneData(void)
 			if ( y > 0 && y < owner->GetPatchHeight ( ) - 1 )
 			{
 				cbrush_t* abovebrush = (cbrush_t*)GetAdjacentBrushY ( x, y );
-#ifdef _XBOX
-				cplane_t* aboveplane = &cmg.planes[abovebrush->sides->planeNum.GetValue()];
-#else
 				cplane_t* aboveplane = abovebrush->sides->plane;
-#endif
 
 				V = DotProduct ( aboveplane->normal, ((y+x)&1)?(localCoords[2]):(localCoords[1]) ) - aboveplane->dist;
 
@@ -495,11 +477,7 @@ void CCMPatch::CreatePatchPlaneData(void)
 			if ( x > 0 && x < owner->GetPatchWidth ( ) - 1 )
 			{
 				cbrush_t* abovebrush = (cbrush_t*)GetAdjacentBrushX ( x, y );
-#ifdef _XBOX
-				cplane_t* aboveplane = &cmg.planes[abovebrush->sides->planeNum.GetValue()];
-#else
 				cplane_t* aboveplane = abovebrush->sides->plane;
-#endif
 
 				V = DotProduct ( aboveplane->normal, localCoords[1] ) - aboveplane->dist;
 
@@ -531,12 +509,10 @@ void CCMPatch::CreatePatchPlaneData(void)
 #endif
 		}
 	}
-#endif // PRE_RELEASE_DEMO
 }
 
 void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, byte *hMap, byte *patchBrushData)
 {
-#ifndef PRE_RELEASE_DEMO
 	int		min, max, x, y, height;
 
 	// Set owning landscape
@@ -600,7 +576,6 @@ void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, by
 	// Set base of brush data from big array
 	mPatchBrushData = (cbrush_t *)patchBrushData; 
 	CreatePatchPlaneData();
-#endif // PRE_RELEASE_DEMO
 }
 
 CCMPatch *CCMLandScape::GetPatch(int x, int y)
@@ -1701,7 +1676,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 {
 	CRandomTerrain	*RandomTerrain = 0;
 
-#ifndef PRE_RELEASE_DEMO
 	char			*ptr;
 	unsigned long	seed;
 
@@ -1711,7 +1685,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 	
 	RandomTerrain = new CRandomTerrain;
 	RandomTerrain->Init(landscape, heightmap, width, height);
-#endif // #ifndef PRE_RELEASE_DEMO
 
 /*
 	RandomTerrain->CreatePath(0, -1, 0, 9, 0.1, 0.5, 0.5, 0.5, 0.05, 0.08, 0.31, 0.1, 3);

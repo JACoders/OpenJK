@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
 #define ARIOCHE_CLIPBRUSH_SIZE	300
 #define	CVAR_OBJECTIVE	0
@@ -149,7 +149,7 @@ CRMObjective* CRMMission::FindObjective ( const char* name )
 	for (it = mObjectives.begin(); it != mObjectives.end(); it++)
 	{
 		// Does it match?
-		if (!stricmp ((*it)->GetName(), name ))
+		if (!Q_stricmp ((*it)->GetName(), name ))
 		{
 			return (*it);
 		}
@@ -505,7 +505,6 @@ void CRMMission::PlaceWallInstance(CRMInstance*	instance, float xpos, float ypos
  ************************************************************************************************/
 bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 {
-#ifndef PRE_RELEASE_DEMO
 	CGPGroup* wallGroup = group->FindSubGroup ( "wallrect" ) ;
 
 	// If NULL that means this particular instance has no wall rect
@@ -737,7 +736,6 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 	}			
 	else
 		return false;
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -757,13 +755,12 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
  ************************************************************************************************/
 bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 {
-#ifndef PRE_RELEASE_DEMO
 	CGPGroup* defenseGroup;
 	for ( defenseGroup = group->GetSubGroups(); 
 		  defenseGroup; 
 		  defenseGroup=defenseGroup->GetNext() )
-	if (stricmp ( defenseGroup->GetName ( ), "defenses" )==0 ||
-		stricmp ( defenseGroup->GetName(), "instanceonpath")==0)
+	if (Q_stricmp ( defenseGroup->GetName ( ), "defenses" )==0 ||
+		Q_stricmp ( defenseGroup->GetName(), "instanceonpath")==0)
 	{
 		const char* defName = defenseGroup->FindPairValue ( "instance", "" );
 		if ( *defName )
@@ -887,7 +884,6 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 			return false;
 
 	}
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -989,7 +985,6 @@ bool CRMMission::ParseInstance ( CGPGroup* group )
  ************************************************************************************************/
 bool CRMMission::ParseInstances ( CGPGroup* group )
 {
-#ifndef PRE_RELEASE_DEMO
 	// If NULL that means this particular difficulty level has no instances
 	if ( NULL == group )
 	{
@@ -1004,7 +999,6 @@ bool CRMMission::ParseInstances ( CGPGroup* group )
 	{
 		ParseInstance ( group );
 	}
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -1224,7 +1218,7 @@ CGPGroup* CRMMission::ParseRandom ( CGPGroup* randomGroup )
 		  group; 
 		  group = group->GetNext ( ) )
 	{
-		if ( stricmp ( group->GetName ( ), "random_choice" ) )
+		if ( Q_stricmp ( group->GetName ( ), "random_choice" ) )
 		{
 			continue;
 		}
@@ -1405,7 +1399,7 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 	// Grab the root parser groop and make sure its mission, otherwise this
 	// isnt a valid mission file
 	root = parser.GetBaseParseGroup()->GetSubGroups();
-	if(stricmp(root->GetName(), "mission"))
+	if(Q_stricmp(root->GetName(), "mission"))
 	{
 		Com_Printf("ERROR: '%s' is not a valid mission file\n", mission );
 		parser.Clean();
@@ -1471,7 +1465,6 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
  ************************************************************************************************/
 bool CRMMission::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 {
-#ifndef PRE_RELEASE_DEMO
 	rmInstanceIter_t	it;
 	int					areaIndex;
 	CRMArea*			area;
@@ -1592,7 +1585,6 @@ bool CRMMission::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 	}
 
 	mInstanceFile.Close ( );
-#endif // PRE_RELEASE_DEMO
 
 	return true;
 }

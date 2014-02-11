@@ -16,16 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
-#include "..\cgame\cg_media.h"
+#include "../cgame/cg_media.h"
+#include "g_navigator.h"
 
 //client side shortcut hacks from cg_local.h
-//extern void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );
 extern void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkType );
 extern void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
 							float speed, int numChunks, material_t chunkType, int customChunk, float baseScale, int customSound = 0 );
@@ -71,6 +67,8 @@ static void CacheChunkEffects( material_t material )
 	case MAT_ROPE:
 		G_EffectIndex( "chunks/ropebreak" );
 //		G_SoundIndex(); // FIXME: give it a sound
+		break;
+	default:
 		break;
 	}
 }
@@ -688,7 +686,7 @@ void misc_model_throw_at_target4( gentity_t *self, gentity_t *activator )
 	}
 	else
 	{
-		self->forcePuller = NULL;
+		self->forcePuller = 0;
 	}
 }
 
@@ -1002,10 +1000,13 @@ void TieBomberThink( gentity_t *self )
 	// Time to attack?
 	if ( player->health > 0 && playerDist < MIN_PLAYER_DIST && self->attackDebounceTime < level.time )  
 	{
-		char name1[200] = "models/players/remote/model.glm";
+		// Doesn't matter what model gets loaded here, as long as it exists.
+		// It's only used as a point on to which the falling effect for the bomb
+		// can be attached to (kinda inefficient, I know).
+		char name1[200] = "models/players/gonk/model.glm";
 		gentity_t *bomb = G_CreateObject( self, self->s.pos.trBase, self->s.apos.trBase, 0, 0, TR_GRAVITY, 0 );
 		bomb->s.modelindex = G_ModelIndex( name1 );
-		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL, NULL, 0, 0);
+		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 		bomb->s.radius = 50;
 		bomb->s.eFlags |= EF_NODRAW;
 

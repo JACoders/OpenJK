@@ -1,9 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-#if !defined(G2_H_INC)
-#define G2_H_INC
-
 
 #define BONE_ANGLES_PREMULT			0x0001
 #define BONE_ANGLES_POSTMULT		0x0002
@@ -30,7 +25,7 @@
 #define		ENTITY_WIDTH 12
 #define		MODEL_WIDTH	10
 #define		BOLT_WIDTH	10
- 
+
 #define		MODEL_AND	((1<<MODEL_WIDTH)-1)
 #define		BOLT_AND	((1<<BOLT_WIDTH)-1)
 #define		ENTITY_AND	((1<<ENTITY_WIDTH)-1)
@@ -38,7 +33,3 @@
 #define		BOLT_SHIFT	0
 #define		MODEL_SHIFT	(BOLT_SHIFT + BOLT_WIDTH)
 #define		ENTITY_SHIFT (MODEL_SHIFT + MODEL_WIDTH)
-
-
-#endif // G2_H_INC
-

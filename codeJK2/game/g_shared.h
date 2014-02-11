@@ -22,14 +22,18 @@ This file is part of Jedi Knight 2.
 #include "bg_public.h"
 #include "g_public.h"
 #include "b_public.h"
-#include "../ICARUS/ICARUS.h"
-#include "../renderer/tr_types.h"
+#include "../icarus/icarus.h"
+#include "../../code/rd-common/tr_types.h"
 #include "../cgame/cg_public.h"
 #include "bset.h"
 
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))
+#define	FOFS(x) offsetof(gentity_t, x)
 
-typedef enum 
+typedef struct centity_s centity_t;
+class CSequencer;
+class CTaskManager;
+
+enum 
 {
 	HL_NONE = 0,
 	HL_FOOT_RT,
@@ -385,24 +389,6 @@ typedef struct {
 	playerTeamState_t teamState;	// status in teamplay games
 } clientPersistant_t;
 
-#define MAX_SABER_TRAIL_SEGS 8
-
-typedef struct 
-{
-	// Actual trail stuff
-	int		inAction;	// controls whether should we even consider starting one
-	int		duration;	// how long each trail seg stays in existence
-	int		lastTime;	// time a saber segement was last stored
-	vec3_t	base;
-	vec3_t	tip;
-
-	// Marks stuff
-	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
-	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
-							//	..then we'll need the normal to project a mark blob onto the impact point
-} saberTrail_t;
-
 typedef enum {
 	BLK_NO,
 	BLK_TIGHT,		// Block only attacks and shots around the saber itself, a bbox of around 12x12x12
@@ -526,6 +512,7 @@ typedef struct
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
+#define GAME_INCLUDE
 #ifdef GAME_INCLUDE
 //these hold the place for the enums in functions.h so i don't have to recompile everytime it changes
 #define thinkFunc_t int
@@ -841,9 +828,7 @@ Ghoul2 Insert End
 #endif //#ifdef GAME_INCLUDE
 
 extern	gentity_t		g_entities[MAX_GENTITIES];
-#ifndef _USRDLL
 extern	game_import_t	gi;
-#endif
 
 // each WP_* weapon enum has an associated weaponInfo_t
 // that contains media references necessary to present the

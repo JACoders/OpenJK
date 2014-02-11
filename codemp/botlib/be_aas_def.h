@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_def.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_def.h $
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 2003/03/15 23:43:54 $
@@ -251,8 +252,6 @@ typedef struct aas_s
 	int *reachabilityareaindex;
 	aas_reachabilityareas_t *reachabilityareas;
 } aas_t;
-
-#define AASINTERN
 
 #ifndef BSPCINCLUDE
 

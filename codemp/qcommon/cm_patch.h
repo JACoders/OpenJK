@@ -1,3 +1,4 @@
+#pragma once
 
 //#define	CULL_BBOX
 
@@ -42,12 +43,12 @@ properly.
 #define	MAX_FACETS			1024
 #define	MAX_PATCH_PLANES	2048
 
-typedef struct {
+typedef struct patchPlane_s {
 	float	plane[4];
 	int		signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
 } patchPlane_t;
 
-typedef struct {
+typedef struct facet_s {
 	int			surfacePlane;
 	int			numBorders;		// 3 or four + 6 axial bevels + 4 or 3 * 4 edge bevels
 	int			borderPlanes[4+6+16];
@@ -65,7 +66,7 @@ typedef struct patchCollide_s {
 
 #define	MAX_GRID_SIZE	129
 
-typedef struct {
+typedef struct cGrid_s {
 	int			width;
 	int			height;
 	qboolean	wrapWidth;

@@ -21,7 +21,6 @@ This file is part of Jedi Academy.
 
 // included in both game dll and client
 
-//#include "q_shared.h"
 #include "g_local.h"
 #include "bg_public.h"
 #include "g_items.h"
@@ -448,6 +447,9 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 			}
 		}
 		return qtrue;
+
+	default:
+		break;
 	}
 
 	return qfalse;

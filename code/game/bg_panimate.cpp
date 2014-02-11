@@ -24,9 +24,8 @@ This file is part of Jedi Academy.
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define GAME_INCLUDE
-//#include "../renderer/tr_local.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "../cgame/cg_local.h"
@@ -323,70 +322,86 @@ saberMoveData_t	saberMoveData[LS_MOVE_MAX] = {//							NB:randomized
 
 saberMoveName_t transitionMove[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_BR__R,//40
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__R_BR,//46
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__R_TR,
-	LS_T1__R_T_,
-	LS_T1__R_TL,
-	LS_T1__R__L,
-	LS_T1__R_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TR_BR,//52
-	LS_T1_TR__R,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TR_T_,
-	LS_T1_TR_TL,
-	LS_T1_TR__L,
-	LS_T1_TR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_T__BR,//58
-	LS_T1_T___R,
-	LS_T1_T__TR,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_T__TL,
-	LS_T1_T___L,
-	LS_T1_T__BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TL_BR,//64
-	LS_T1_TL__R,
-	LS_T1_TL_TR,
-	LS_T1_TL_T_,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TL__L,
-	LS_T1_TL_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__L_BR,//70
-	LS_T1__L__R,
-	LS_T1__L_TR,
-	LS_T1__L_T_,
-	LS_T1__L_TL,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__L_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//76
-	LS_T1_BL__R,
-	LS_T1_BL_TR,
-	LS_T1_BL_T_,
-	LS_T1_BL_TL,
-	LS_T1_BL__L,
-	LS_NONE,	//Can't transition to same pos!
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//NOTE: there are no transitions from bottom, so re-use the bottom right transitions
-	LS_T1_BR__R,
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE		//No transitions to bottom, and no anims start there, so shouldn't need any
+	{
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_BR__R,//40
+		LS_T1_BR_TR,
+		LS_T1_BR_T_,
+		LS_T1_BR_TL,
+		LS_T1_BR__L,
+		LS_T1_BR_BL,
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1__R_BR,//46
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1__R_TR,
+		LS_T1__R_T_,
+		LS_T1__R_TL,
+		LS_T1__R__L,
+		LS_T1__R_BL,
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_TR_BR,//52
+		LS_T1_TR__R,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_TR_T_,
+		LS_T1_TR_TL,
+		LS_T1_TR__L,
+		LS_T1_TR_BL,
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_T__BR,//58
+		LS_T1_T___R,
+		LS_T1_T__TR,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_T__TL,
+		LS_T1_T___L,
+		LS_T1_T__BL,
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_TL_BR,//64
+		LS_T1_TL__R,
+		LS_T1_TL_TR,
+		LS_T1_TL_T_,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_TL__L,
+		LS_T1_TL_BL,
+		LS_NONE 	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1__L_BR,//70
+		LS_T1__L__R,
+		LS_T1__L_TR,
+		LS_T1__L_T_,
+		LS_T1__L_TL,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1__L_BL,
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_BL_BR,//76
+		LS_T1_BL__R,
+		LS_T1_BL_TR,
+		LS_T1_BL_T_,
+		LS_T1_BL_TL,
+		LS_T1_BL__L,
+		LS_NONE,	//Can't transition to same pos!
+		LS_NONE	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_BL_BR,//NOTE: there are no transitions from bottom, so re-use the bottom right transitions
+		LS_T1_BR__R,
+		LS_T1_BR_TR,
+		LS_T1_BR_T_,
+		LS_T1_BR_TL,
+		LS_T1_BR__L,
+		LS_T1_BR_BL,
+		LS_NONE		//No transitions to bottom, and no anims start there, so shouldn't need any
+	}
 };
 
 void PM_VelocityForSaberMove( playerState_t *ps, vec3_t throwDir )
@@ -1832,70 +1847,86 @@ saberMoveName_t PM_AttackMoveForQuad( int quad )
 
 int saberMoveTransitionAngle[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
-	0,//Q_BR,Q_BR,
-	45,//Q_BR,Q_R,
-	90,//Q_BR,Q_TR,
-	135,//Q_BR,Q_T,
-	180,//Q_BR,Q_TL,
-	215,//Q_BR,Q_L,
-	270,//Q_BR,Q_BL,
-	45,//Q_BR,Q_B,
-	45,//Q_R,Q_BR,
-	0,//Q_R,Q_R,
-	45,//Q_R,Q_TR,
-	90,//Q_R,Q_T,
-	135,//Q_R,Q_TL,
-	180,//Q_R,Q_L,
-	215,//Q_R,Q_BL,
-	90,//Q_R,Q_B,
-	90,//Q_TR,Q_BR,
-	45,//Q_TR,Q_R,
-	0,//Q_TR,Q_TR,
-	45,//Q_TR,Q_T,
-	90,//Q_TR,Q_TL,
-	135,//Q_TR,Q_L,
-	180,//Q_TR,Q_BL,
-	135,//Q_TR,Q_B,
-	135,//Q_T,Q_BR,
-	90,//Q_T,Q_R,
-	45,//Q_T,Q_TR,
-	0,//Q_T,Q_T,
-	45,//Q_T,Q_TL,
-	90,//Q_T,Q_L,
-	135,//Q_T,Q_BL,
-	180,//Q_T,Q_B,
-	180,//Q_TL,Q_BR,
-	135,//Q_TL,Q_R,
-	90,//Q_TL,Q_TR,
-	45,//Q_TL,Q_T,
-	0,//Q_TL,Q_TL,
-	45,//Q_TL,Q_L,
-	90,//Q_TL,Q_BL,
-	135,//Q_TL,Q_B,
-	215,//Q_L,Q_BR,
-	180,//Q_L,Q_R,
-	135,//Q_L,Q_TR,
-	90,//Q_L,Q_T,
-	45,//Q_L,Q_TL,
-	0,//Q_L,Q_L,
-	45,//Q_L,Q_BL,
-	90,//Q_L,Q_B,
-	270,//Q_BL,Q_BR,
-	215,//Q_BL,Q_R,
-	180,//Q_BL,Q_TR,
-	135,//Q_BL,Q_T,
-	90,//Q_BL,Q_TL,
-	45,//Q_BL,Q_L,
-	0,//Q_BL,Q_BL,
-	45,//Q_BL,Q_B,
-	45,//Q_B,Q_BR,
-	90,//Q_B,Q_R,
-	135,//Q_B,Q_TR,
-	180,//Q_B,Q_T,
-	135,//Q_B,Q_TL,
-	90,//Q_B,Q_L,
-	45,//Q_B,Q_BL,
-	0//Q_B,Q_B,
+	{
+		0,//Q_BR,Q_BR,
+		45,//Q_BR,Q_R,
+		90,//Q_BR,Q_TR,
+		135,//Q_BR,Q_T,
+		180,//Q_BR,Q_TL,
+		215,//Q_BR,Q_L,
+		270,//Q_BR,Q_BL,
+		45,//Q_BR,Q_B,
+	},
+	{
+		45,//Q_R,Q_BR,
+		0,//Q_R,Q_R,
+		45,//Q_R,Q_TR,
+		90,//Q_R,Q_T,
+		135,//Q_R,Q_TL,
+		180,//Q_R,Q_L,
+		215,//Q_R,Q_BL,
+		90,//Q_R,Q_B,
+	},
+	{
+		90,//Q_TR,Q_BR,
+		45,//Q_TR,Q_R,
+		0,//Q_TR,Q_TR,
+		45,//Q_TR,Q_T,
+		90,//Q_TR,Q_TL,
+		135,//Q_TR,Q_L,
+		180,//Q_TR,Q_BL,
+		135,//Q_TR,Q_B,
+	},
+	{
+		135,//Q_T,Q_BR,
+		90,//Q_T,Q_R,
+		45,//Q_T,Q_TR,
+		0,//Q_T,Q_T,
+		45,//Q_T,Q_TL,
+		90,//Q_T,Q_L,
+		135,//Q_T,Q_BL,
+		180,//Q_T,Q_B,
+	},
+	{
+		180,//Q_TL,Q_BR,
+		135,//Q_TL,Q_R,
+		90,//Q_TL,Q_TR,
+		45,//Q_TL,Q_T,
+		0,//Q_TL,Q_TL,
+		45,//Q_TL,Q_L,
+		90,//Q_TL,Q_BL,
+		135,//Q_TL,Q_B,
+	},
+	{
+		215,//Q_L,Q_BR,
+		180,//Q_L,Q_R,
+		135,//Q_L,Q_TR,
+		90,//Q_L,Q_T,
+		45,//Q_L,Q_TL,
+		0,//Q_L,Q_L,
+		45,//Q_L,Q_BL,
+		90,//Q_L,Q_B,
+	},
+	{
+		270,//Q_BL,Q_BR,
+		215,//Q_BL,Q_R,
+		180,//Q_BL,Q_TR,
+		135,//Q_BL,Q_T,
+		90,//Q_BL,Q_TL,
+		45,//Q_BL,Q_L,
+		0,//Q_BL,Q_BL,
+		45,//Q_BL,Q_B,
+	},
+	{
+		45,//Q_B,Q_BR,
+		90,//Q_B,Q_R,
+		135,//Q_B,Q_TR,
+		180,//Q_B,Q_T,
+		135,//Q_B,Q_TL,
+		90,//Q_B,Q_L,
+		45,//Q_B,Q_BL,
+		0//Q_B,Q_B,
+	}
 };
 
 int PM_SaberAttackChainAngle( int move1, int move2 )
@@ -3441,11 +3472,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 	{//first saber not overridden, check second
 		overrideJumpLeftAttackMove = (saberMoveName_t)pm->ps->saber[1].jumpAtkLeftMove;
 	}
-#ifdef _XBOX
-	if ( rightmove > 64 )
-#else
 	if ( rightmove > 0 )
-#endif // _XBOX
 	{//moving right
 		if ( !noSpecials
 			&& overrideJumpRightAttackMove != LS_NONE
@@ -3527,11 +3554,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 			}
 		}
 	}
-#ifdef _XBOX
-	else if ( rightmove < -64 )
-#else
 	else if ( rightmove < 0 )
-#endif // _XBOX
 	{//moving left
 		if ( !noSpecials
 			&& overrideJumpLeftAttackMove != LS_NONE
@@ -3615,11 +3638,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 	}
 	else
 	{//not moving left or right
-#ifdef _XBOX
-		if ( forwardmove > 64 )
-#else
 		if ( forwardmove > 0 )
-#endif // _XBOX
 		{//forward= T2B slash
 			saberMoveName_t stabDownMove = noSpecials?LS_NONE:PM_CheckStabDown();
 			if ( stabDownMove != LS_NONE )
@@ -3709,11 +3728,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 			//check regular attacks
 			return LS_A_T2B;
 		}
-#ifdef _XBOX
-		else if ( forwardmove < -64 )
-#else
 		else if ( forwardmove < 0 )
-#endif // _XBOX
 		{//backward= T2B slash//B2T uppercut?
 			if ( g_saberNewControlScheme->integer )
 			{
@@ -3792,7 +3807,13 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 							else
 							{//enemy in front
 								float enemyDistSq = DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin );
-								if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_1||pm->ps->saberAnimLevel == SS_STAFF||pm->gent->client->NPC_class==CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA||(pm->gent->client->NPC_class==CLASS_DESANN&&!Q_irand(0,3))) && enemyDistSq > 16384 || pm->gent->enemy->health <= 0 )//128 squared
+								if ( ((pm->ps->saberAnimLevel == FORCE_LEVEL_1 ||
+										pm->ps->saberAnimLevel == SS_STAFF ||
+										pm->gent->client->NPC_class == CLASS_TAVION ||
+										pm->gent->client->NPC_class == CLASS_ALORA ||
+										(pm->gent->client->NPC_class == CLASS_DESANN && !Q_irand(0,3))) &&
+									enemyDistSq > 16384) ||
+									pm->gent->enemy->health <= 0 )//128 squared
 								{//my enemy is pretty far in front of me and I'm using fast attacks
 									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
 										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
@@ -3803,7 +3824,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 										}
 									}
 								}
-								else if ( (pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000 || pm->gent->enemy->health <= 0 )//200 squared
+								else if ( ((pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000) || pm->gent->enemy->health <= 0 )//200 squared
 								{//enemy is very faw away and I'm using medium/strong attacks
 									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
 										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
@@ -3988,6 +4009,8 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 			//transition is the start
 			retmove = LS_S_TL2BR + (newmove-LS_A_TL2BR);
 			break;
+		default:
+			break;
 		}
 	}
 	else
@@ -4008,6 +4031,8 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 			case LS_A_T2B:
 				//transition is the return
 				retmove = LS_R_TL2BR + (newmove-LS_A_TL2BR);
+				break;
+			default:
 				break;
 			}
 			break;
@@ -4117,10 +4142,14 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 					retmove = transitionMove[saberMoveData[curmove].endQuad][saberMoveData[newmove].startQuad];
 					break;
 				//NB: transitioning from transitions is fine
+				default:
+					break;
 				}
 			}
 			break;
 		//transitioning to any other anim is not supported
+		default:
+			break;
 		}
 	}
 
@@ -4635,8 +4664,8 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 	//-------------------------------------------------------
 	if (animations[anim].numFrames==0)
 	{
-		static int	LastAnimWarningNum=0;
 	#ifndef FINAL_BUILD
+		static int	LastAnimWarningNum=0;
 		if (LastAnimWarningNum!=anim)
 		{
 			if ((cg_debugAnim.integer==3)	||												// 3 = do everyone
@@ -7183,6 +7212,8 @@ qboolean PM_SaberInKata( saberMoveName_t saberMove )
 	case LS_DUAL_SPIN_PROTECT:
 	case LS_STAFF_SOULCAL:
 		return qtrue;
+	default:
+		break;
 	}
 	return qfalse;
 }

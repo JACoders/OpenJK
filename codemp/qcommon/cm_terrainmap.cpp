@@ -5,21 +5,17 @@
 #include "cm_patch.h"
 #include "cm_landscape.h"
 #include "qcommon/GenericParser2.h"
-//#include "image.h"
-//#include "qcommon/q_imath.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
-#include "png/png.h"
+//#include "client/client.h" // good enough for now
+#include "rd-common/tr_public.h"
+
+extern	refexport_t		*re;					// interface to refresh .dll
 
 static CTerrainMap	*TerrainMap = 0;
 
 // Hack. This shouldn't be here, but it's easier than including tr_local.h
 typedef unsigned int GLenum;
-
-void R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format ) ;
-
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 
 // simple function for getting a proper color for a side
 inline CPixel32 SideColor(int side)
@@ -74,12 +70,10 @@ CTerrainMap::CTerrainMap(CCMLandScape *landscape) :
 		}
 
 	// Load icons for symbols on map
-	GLenum	format;
-	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
-	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
-	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
-
-	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
+	re->LoadImageJA("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight);
+	re->LoadImageJA("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight);
+	re->LoadImageJA("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight);
+	re->LoadImageJA("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight);
 }
 
 CTerrainMap::~CTerrainMap()
@@ -108,7 +102,7 @@ CTerrainMap::~CTerrainMap()
 		mSymObjective = NULL;
 	}
 
-	CDraw32::CleanUp(); 
+	CDraw32::CleanUp();
 }
 
 void CTerrainMap::ApplyBackground(void)
@@ -117,14 +111,11 @@ void CTerrainMap::ApplyBackground(void)
 	byte	*outPos;
 	float	xRel, yRel, xInc, yInc;
 	byte	*backgroundImage;
-	int		backgroundWidth, backgroundHeight, backgroundDepth;
+	int		backgroundWidth, backgroundHeight;
 	int		pos;
-	GLenum	format;
 
 	memset(mImage, 255, sizeof(mBufImage));
-//	R_LoadImage("textures\\kamchatka\\ice", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);0
-	backgroundDepth = 4;
-	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
+	re->LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight);
 	if (backgroundImage)
 	{
 		outPos = (byte *)mBufImage;
@@ -167,8 +158,8 @@ void CTerrainMap::ApplyHeightmap(void)
 	outPos += (((TM_BORDER * TM_WIDTH) + TM_BORDER) * 4);
 	xInc = (float)width / (float)(TM_REAL_WIDTH);
 	yInc = (float)height / (float)(TM_REAL_HEIGHT);
-	
-	// add in height map as alpha 
+
+	// add in height map as alpha
 	yRel = 0.0;
 	for(y=0;y<TM_REAL_HEIGHT;y++)
 	{
@@ -231,7 +222,7 @@ void CTerrainMap::AddStart(int x, int y, int side)
 	ConvertPos(x, y);
 
 	CDraw32 draw;
-	draw.BlitColor(x-mSymStartWidth/2, y-mSymStartHeight/2, mSymStartWidth, mSymStartHeight, 
+	draw.BlitColor(x-mSymStartWidth/2, y-mSymStartHeight/2, mSymStartWidth, mSymStartHeight,
 			  (CPixel32*)mSymStart, 0, 0, mSymStartWidth, SideColor(side));
 }
 
@@ -240,7 +231,7 @@ void CTerrainMap::AddEnd(int x, int y, int side)
 	ConvertPos(x, y);
 
 	CDraw32 draw;
-	draw.BlitColor(x-mSymEndWidth/2, y-mSymEndHeight/2, mSymEndWidth, mSymEndHeight, 
+	draw.BlitColor(x-mSymEndWidth/2, y-mSymEndHeight/2, mSymEndWidth, mSymEndHeight,
 			  (CPixel32*)mSymEnd, 0, 0, mSymEndWidth, SideColor(side));
 }
 
@@ -249,7 +240,7 @@ void CTerrainMap::AddObjective(int x, int y, int side)
 	ConvertPos(x, y);
 
 	CDraw32 draw;
-	draw.BlitColor(x-mSymObjectiveWidth/2, y-mSymObjectiveHeight/2, mSymObjectiveWidth, mSymObjectiveHeight, 
+	draw.BlitColor(x-mSymObjectiveWidth/2, y-mSymObjectiveHeight/2, mSymObjectiveWidth, mSymObjectiveHeight,
 			  (CPixel32*)mSymObjective, 0, 0, mSymObjectiveWidth, SideColor(side));
 }
 
@@ -258,7 +249,7 @@ void CTerrainMap::AddBuilding(int x, int y, int side)
 	ConvertPos(x, y);
 
 	CDraw32 draw;
-	draw.BlitColor(x-mSymBldWidth/2, y-mSymBldHeight/2, mSymBldWidth, mSymBldHeight, 
+	draw.BlitColor(x-mSymBldWidth/2, y-mSymBldHeight/2, mSymBldWidth, mSymBldHeight,
 			  (CPixel32*)mSymBld, 0, 0, mSymBldWidth, SideColor(side));
 }
 
@@ -310,10 +301,10 @@ void CTerrainMap::AddPlayer(vec3_t origin, vec3_t angles)
 	vec3_t p;
 	int x,y,i;
 	float facing;
-	POINT poly[4];
+	Point poly[4];
 
 	facing = angles[1];
-	
+
 	up[0] = 0;
 	up[1] = 0;
 	up[2] = 1;
@@ -350,7 +341,7 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 	draw.SetBuffer((CPixel32*) mBufImage);
 	draw.SetBufferSize(TM_WIDTH,TM_HEIGHT,TM_WIDTH);
 
-	draw.Blit(0, 0, TM_WIDTH, TM_HEIGHT, 
+	draw.Blit(0, 0, TM_WIDTH, TM_HEIGHT,
 			  (CPixel32*)mImage, 0, 0, TM_WIDTH);
 
 	// now draw player's location on map
@@ -360,17 +351,17 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 	}
 
 	draw.SetAlphaBuffer(255);
-	
-	R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
+
+	re->CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
 
 	draw.SetBuffer((CPixel32*) mImage);
 }
 
 void CTerrainMap::SaveImageToDisk(const char * terrainName, const char * missionName, const char * seed)
 {
-	//ri.COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	//ri->COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed),
 	//		(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
-	PNG_Save(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	re->SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed),
 			(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
 }
 

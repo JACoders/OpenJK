@@ -16,12 +16,10 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire = qfalse );
 void Remote_Strafe( void );
@@ -254,7 +252,6 @@ void Remote_Fire (void)
 	vec3_t	delta1, enemy_org1, muzzle1;
 	vec3_t	angleToEnemy1;
 	static	vec3_t	forward, vright, up;
-	static	vec3_t	muzzle;
 	gentity_t	*missile;
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );

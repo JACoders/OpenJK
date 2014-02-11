@@ -1,8 +1,8 @@
-#ifndef	__SND_AMBIENT__
-#define __SND_AMBIENT__
+#pragma once
 
 // Includes
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #pragma warning ( disable : 4511 )	//copy constructor could not be gen
 #pragma warning ( disable : 4512 )	//assign constructor could not be gen
@@ -12,12 +12,15 @@
 //#pragma warning ( disable : 4018 )	//signed/unsigned
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 
 #include "qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 
 using namespace std;
 
@@ -50,7 +53,7 @@ enum setKeyword_e
 	SET_KEYWORD_AMSDIR,
 	SET_KEYWORD_OUTDIR,
 	SET_KEYWORD_BASEDIR,
-	
+
 	NUM_AS_KEYWORDS,
 };
 
@@ -84,7 +87,7 @@ public:
 	CSetGroup();
 	~CSetGroup();
 
-	void Init( void ) 
+	void Init( void )
 	{
 		Free();
 	}
@@ -92,7 +95,7 @@ public:
 	void Free( void );
 
 	ambientSet_t *AddSet( const char *name );
-	
+
 	ambientSet_t *GetSet ( const char *name );
 	ambientSet_t *GetSet ( int ID );
 
@@ -114,5 +117,3 @@ extern void S_UpdateAmbientSet ( const char *name, vec3_t origin );
 extern int S_AddLocalSet( const char *name, vec3_t listener_origin, vec3_t origin, int entID, int time );
 
 extern sfxHandle_t	AS_GetBModelSound( const char *name, int stage );
-
-#endif	//__SND_AMBIENT__

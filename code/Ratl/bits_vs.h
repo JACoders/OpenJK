@@ -59,9 +59,9 @@ class bits_vs : public bits_base<SZ>
     ////////////////////////////////////////////////////////////////////////////////////
     void	clear_trailing_bits()
 	{
-		for (int i=SIZE; i<ARRAY_SIZE*BITS_INT_SIZE; i++)
+		for (int i=this->SIZE; i<this->ARRAY_SIZE*this->BITS_INT_SIZE; i++)
 		{
-			mV[i>>BITS_SHIFT] &= ~(1<<(i&BITS_AND));
+			this->mV[i>>this->BITS_SHIFT] &= ~(1<<(i&this->BITS_AND));
 		}
 	}
 	
@@ -69,11 +69,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
-	enum	
-	{
-		SIZE			= SZ,
-		CAPACITY		= SZ,
-	};
+	static const int SIZE			= SZ;
+	static const int CAPACITY		= SZ;
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Standard Constructor
@@ -86,7 +83,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	bits_vs(const bits_vs &B)
 	{
-		mem::cpy(mV, B.mV,BYTE_SIZE);
+		mem::cpy(this->mV, B.mV,this->BYTE_SIZE);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +91,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	bits_vs(const char* Str)
 	{
-		clear();
+		this->clear();
 
 		for (int b=0; b<SIZE; b++)
 		{
@@ -104,7 +101,7 @@ public:
 			}
 			if (Str[b]=='1')
 			{
-				set_bit(b);		// Found A True Bit
+				this->set_bit(b);		// Found A True Bit
 			}
 		}
 	}
@@ -114,9 +111,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	bool		empty() const
 	{
-		for (int i=0; i<ARRAY_SIZE; i++)
+		for (int i=0; i<this->ARRAY_SIZE; i++)
 		{
-			if (mV[i])
+			if (this->mV[i])
 			{
 				return false;
 			}
@@ -137,9 +134,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void		invert()
 	{
-		for (int i=0; i<ARRAY_SIZE; i++)
+		for (int i=0; i<this->ARRAY_SIZE; i++)
 		{
-			mV[i] = ~mV[i];
+			this->mV[i] = ~this->mV[i];
 		}
 		clear_trailing_bits();
 	}
@@ -162,7 +159,7 @@ public:
 		// of bits this object can hold.
 		//--------------------------------------------
 		assert(i>=0 && i < SIZE);
-		return ( (mV[i>>BITS_SHIFT] & (1<<(i&BITS_AND)))!=0 );
+		return ( (this->mV[i>>this->BITS_SHIFT] & (1<<(i&this->BITS_AND)))!=0 );
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +175,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	bool		operator==(const bits_vs &B) const
 	{
-		return (mem::eql(mV, B.mV,BYTE_SIZE));
+		return (mem::eql(this->mV, B.mV,this->BYTE_SIZE));
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -194,9 +191,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void		operator|=(const bits_vs &B)
 	{
-		for (int i=0; i<ARRAY_SIZE; i++)
+		for (int i=0; i<this->ARRAY_SIZE; i++)
 		{
-			mV[i] |= B.mV[i];
+			this->mV[i] |= B.mV[i];
 		}
 	}
 
@@ -205,9 +202,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void		operator&=(const bits_vs &B)
 	{
-		for (int i=0; i<ARRAY_SIZE; i++)
+		for (int i=0; i<this->ARRAY_SIZE; i++)
 		{
-			mV[i] &= B.mV[i];
+			this->mV[i] &= B.mV[i];
 		}
 	}
 
@@ -216,9 +213,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void		operator^=(const bits_vs &B)
 	{
-		for (int i=0; i<ARRAY_SIZE; i++)
+		for (int i=0; i<this->ARRAY_SIZE; i++)
 		{
-			mV[i] ^= B.mV[i];
+			this->mV[i] ^= B.mV[i];
 		}
 	}
 
@@ -227,7 +224,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////
 	void		operator=(const bits_vs &B)
 	{
-		mem::cpy(mV, B.mV,BYTE_SIZE);
+		mem::cpy(this->mV, B.mV,this->BYTE_SIZE);
 	}
 
 };

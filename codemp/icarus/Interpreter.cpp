@@ -34,11 +34,11 @@ keywordArray_t CInterpreter::m_symbolKeywords[] =
 	//Blocks
 	"{",	TK_BLOCK_START,
 	"}",	TK_BLOCK_END,
-	
+
 	//Vectors
 	"<",	TK_VECTOR_START,
 	">",	TK_VECTOR_END,
-	
+
 	//Groups
 	"(",	TK_OPEN_PARENTHESIS,
 	")",	TK_CLOSED_PARENTHESIS,
@@ -161,7 +161,7 @@ int CInterpreter::Error( char *format, ... )
 	int			error_line = m_iCurrentLine;	// m_tokenizer->GetCurLine();
 
 	m_tokenizer->GetCurFilename( &error_file );
-	if (!error_file)	
+	if (!error_file)
 	{
 		// 99% of the time we'll get here now, because of pushed parse streams
 		//
@@ -190,7 +190,7 @@ int CInterpreter::Error( char *format, ... )
 		strcat(out_msg, "\n");
 	}
 
-#ifdef __POP_UPS__	
+#ifdef __POP_UPS__
 
 	MessageBox( NULL, out_msg, "Error", MB_OK );
 
@@ -517,7 +517,7 @@ int CInterpreter::Match( int token_id )
 	{
 		//This may have been a check, so don't loose the token
 		m_tokenizer->PutBackToken( token );
-		
+
 		return false;
 	}
 
@@ -559,7 +559,7 @@ int CInterpreter::LookAhead( int token_id )
 	if ( token->GetType() != token_id )
 	{
 		m_tokenizer->PutBackToken( token );
-		
+
 		return false;
 	}
 
@@ -651,7 +651,7 @@ int CInterpreter::GetFloat( CBlock *block )
 	{
 		return Error("syntax error : expected float; found %s", GetTokenName(type) );
 	}
-	
+
 	if (type == TK_FLOAT)
 	{
 		block->Write( TK_FLOAT, (float) token->GetFloatValue() );
@@ -735,7 +735,7 @@ int CInterpreter::GetString( CBlock *block )
 		else
 			temp[i] = temptr[i];
 	}
-	
+
 	temp[ strlen( temptr ) ] = 0;
 
 //UGLY HACK END!!!
@@ -743,7 +743,7 @@ int CInterpreter::GetString( CBlock *block )
 	block->Write( TK_STRING, (const char *) &temp );
 
 	token->Delete();
-	
+
 	return true;
 }
 
@@ -782,7 +782,7 @@ int CInterpreter::GetIdentifier( CBlock *block )
 	block->Write( TK_IDENTIFIER, (const char *) token->GetStringValue() );
 
 	token->Delete();
-	
+
 	return true;
 }
 
@@ -985,7 +985,7 @@ int CInterpreter::GetID( char *id_name )
 
 	switch (id)
 	{
-	
+
 	//Affect takes control of an entity
 
 	case ID_AFFECT:
@@ -1019,7 +1019,7 @@ int CInterpreter::GetID( char *id_name )
 	case ID_FLUSH:
 		return GetFlush();
 		break;
-		
+
 	case ID_RUN:
 		return GetRun();
 		break;
@@ -1564,7 +1564,7 @@ int CInterpreter::GetAffect( void )
 	if (!Match( TK_OPEN_PARENTHESIS ))
 		return Error("syntax error : '(' not found");
 
-	if ( GetString( &block ) == false )	
+	if ( GetString( &block ) == false )
 		return false;
 
 	if (!LookAhead( TK_IDENTIFIER ))
@@ -1582,7 +1582,7 @@ int CInterpreter::GetAffect( void )
 	{
 	case TYPE_INSERT:
 	case TYPE_FLUSH:
-		
+
 		block.Write( TK_FLOAT, (float) type );
 		break;
 
@@ -1678,7 +1678,7 @@ int CInterpreter::GetSet( void )
 		switch( GetNextType() )
 		{
 		case TK_INT:
-			
+
 			if ( GetInteger( &block ) == false )
 				return false;
 
@@ -1692,7 +1692,7 @@ int CInterpreter::GetSet( void )
 			break;
 
 		case TK_STRING:
-			
+
 			if ( GetString( &block ) == false )
 				return false;
 
@@ -1704,7 +1704,7 @@ int CInterpreter::GetSet( void )
 				return false;
 
 			break;
-		
+
 		default:
 
 			if ( MatchTag() )
@@ -1712,7 +1712,7 @@ int CInterpreter::GetSet( void )
 				GetTag( &block );
 				break;
 			}
-			
+
 			if ( MatchRandom() )
 			{
 				GetRandom( &block );
@@ -1960,7 +1960,7 @@ int CInterpreter::GetRemove( void )
 // this is just so people can put comments in scripts in BehavEd and not have them lost as normal comments would be.
 //
 int CInterpreter::GetRem( void )
-{	
+{
 	CBlock	block;
 
 	block.Create( ID_REM );
@@ -1973,7 +1973,7 @@ int CInterpreter::GetRem( void )
 	if (Match( TK_CLOSED_PARENTHESIS ))
 		return true;
 
-	GetString( &block );	
+	GetString( &block );
 
 	if (!Match( TK_CLOSED_PARENTHESIS ))
 		return Error("rem : function only takes 1 optional parameter");
@@ -2026,17 +2026,17 @@ int CInterpreter::GetCamera( void )
 		break;
 
 	case TYPE_ZOOM:		//ZOOM ( FOV, DURATION )
-		
+
 		block.Write( TK_FLOAT, (float) type );
 
 		if ( GetFloat( &block ) == false )
 			return false;
-		
+
 		if ( GetFloat( &block ) == false )
 			return false;
 
 		break;
-	
+
 	case TYPE_MOVE:		//MOVE ( ORIGIN, DURATION )
 
 		block.Write( TK_FLOAT, (float) type );
@@ -2048,9 +2048,9 @@ int CInterpreter::GetCamera( void )
 			return false;
 
 		break;
-	
+
 	case TYPE_FADE:		//FADE ( SOURCE(R,G,B,A), DEST(R,G,B,A), DURATION )
-		
+
 		block.Write( TK_FLOAT, (float) type );
 
 		//Source color
@@ -2358,15 +2358,15 @@ int	CInterpreter::Interpret( CTokenizer *Tokenizer, CBlockStream *BlockStream, c
 	int			type, blockLevel = 0, parenthesisLevel = 0;
 
 	m_sCurrentFile	= filename;		// used during error reporting because you can't ask tokenizer for pushed streams
-	
+
 	m_tokenizer		= Tokenizer;
 	m_blockStream	= BlockStream;
 
 	m_iCurrentLine = m_tokenizer->GetCurLine();
-	token = m_tokenizer->GetToEndOfLine(TK_STRING);		
-	m_sCurrentLine = token->GetStringValue();	
+	token = m_tokenizer->GetToEndOfLine(TK_STRING);
+	m_sCurrentLine = token->GetStringValue();
 	m_tokenizer->PutBackToken(token, false, NULL, true);
-	
+
 	m_iBadCBlockNumber = 0;
 
 	while (m_tokenizer->GetRemainingSize() > 0)
@@ -2390,11 +2390,11 @@ int	CInterpreter::Interpret( CTokenizer *Tokenizer, CBlockStream *BlockStream, c
 			// read the next line, then put it back
 			token->Delete();
 			m_iCurrentLine = m_tokenizer->GetCurLine();
-			token = m_tokenizer->GetToEndOfLine(TK_STRING);			
-			m_sCurrentLine = token->GetStringValue();				
+			token = m_tokenizer->GetToEndOfLine(TK_STRING);
+			m_sCurrentLine = token->GetStringValue();
 			m_tokenizer->PutBackToken(token, false, NULL, true);
 			break;
-		
+
 		case TK_CHAR:
 		case TK_STRING:
 			token->Delete();
@@ -2402,21 +2402,21 @@ int	CInterpreter::Interpret( CTokenizer *Tokenizer, CBlockStream *BlockStream, c
 			Error("syntax error : unexpected string");
 			return m_iBadCBlockNumber;
 			break;
-		
+
 		case TK_INT:
 			token->Delete();
-			m_iBadCBlockNumber = -m_iBadCBlockNumber;		
+			m_iBadCBlockNumber = -m_iBadCBlockNumber;
 			Error("syntax error : unexpected integer");
 			return m_iBadCBlockNumber;
 			break;
-		
+
 		case TK_FLOAT:
 			token->Delete();
 			m_iBadCBlockNumber = -m_iBadCBlockNumber;
 			Error("syntax error : unexpected float");
 			return m_iBadCBlockNumber;
 			break;
-		
+
 		case TK_IDENTIFIER:
 			m_iBadCBlockNumber++;
 			if (!GetID( (char *) token->GetStringValue() ))
@@ -2426,7 +2426,7 @@ int	CInterpreter::Interpret( CTokenizer *Tokenizer, CBlockStream *BlockStream, c
 			}
 			token->Delete();
 			break;
-		
+
 		case TK_BLOCK_START:
 			token->Delete();
 			if (parenthesisLevel)
@@ -2447,7 +2447,7 @@ int	CInterpreter::Interpret( CTokenizer *Tokenizer, CBlockStream *BlockStream, c
 				Error("syntax error : brace inside parenthesis");
 				return m_iBadCBlockNumber;
 			}
-			
+
 			block.Create( ID_BLOCK_END );
 			m_blockStream->WriteBlock( &block );
 			block.Free();

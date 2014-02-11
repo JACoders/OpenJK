@@ -27,15 +27,15 @@ This file is part of Jedi Academy.
 #include "../qcommon/cm_local.h"
 
 #include "server.h"
-#include "..\client\vmachine.h"
-#include "..\client\client.h"
-#include "..\renderer\tr_local.h"
-#include "..\renderer\tr_WorldEffects.h"
+#include "../client/vmachine.h"
+#include "../client/client.h"
+/*#include "..\renderer\tr_local.h"
+#include "..\renderer\tr_WorldEffects.h"*/
 /*
 Ghoul2 Insert Start
 */
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 
 /*
@@ -48,12 +48,7 @@ extern void	*Sys_GetGameAPI( void *parms);
 extern void Com_WriteCam ( const char *text );
 extern void Com_FlushCamFile();
 
-#ifdef _XBOX
-extern int	*s_entityWavVol;
-#else
 extern int	s_entityWavVol[MAX_GENTITIES];
-#endif
-
 
 // these functions must be used instead of pointer arithmetic, because
 // the game allocates gentities with private information after the server shared part
@@ -101,7 +96,7 @@ void SV_GameSendServerCommand( int clientNum, const char *fmt, ... ) {
 	va_list		argptr;
 	
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( clientNum == -1 ) {
@@ -232,11 +227,7 @@ qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
 	int		leafnum;
 	int		cluster;
 	int		area1, area2;
-#ifdef _XBOX 
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 	int		start=0;
 
 	if ( com_speeds->integer ) {
@@ -282,12 +273,7 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 {
 	int		leafnum;
 	int		cluster;
-	int		area1, area2;
-#ifdef _XBOX
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 	int		start=0;
 
 	if ( com_speeds->integer ) {
@@ -296,12 +282,10 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 	
 	leafnum = CM_PointLeafnum (p1);
 	cluster = CM_LeafCluster (leafnum);
-	area1 = CM_LeafArea (leafnum);
 	mask = CM_ClusterPVS (cluster);
 
 	leafnum = CM_PointLeafnum (p2);
 	cluster = CM_LeafCluster (leafnum);
-	area2 = CM_LeafArea (leafnum);
 
 	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
 	{
@@ -324,7 +308,11 @@ SV_AdjustAreaPortalState
 ========================
 */
 void SV_AdjustAreaPortalState( gentity_t *ent, qboolean open ) {
-	if ( !(ent->contents&CONTENTS_OPAQUE) )	{
+#ifndef __NO_JK2
+	if ( !com_jk2->integer && !(ent->contents&CONTENTS_OPAQUE) )	{ //FIXME?: When running the jk2 dll CONTENTS_OPAQUE is not always set correctly, leading to issues. This works around it.
+#else
+	if ( !(ent->contents & CONTENTS_OPAQUE) ) {
+#endif
 #ifndef FINAL_BUILD
 //		Com_Printf( "INFO: entity number %d not opaque: not affecting area portal!\n", ent->s.number );
 #endif
@@ -424,13 +412,7 @@ void SV_ShutdownGameProgs (qboolean shutdownCin) {
 	}
 	ge->Shutdown ();
 	
-#ifdef _XBOX
-	if(shutdownCin) {
-		SCR_StopCinematic();
-	}
-#else
 	SCR_StopCinematic();
-#endif
 	CL_ShutdownCGame();	//we have cgame burried in here.
 	
 	Sys_UnloadGame ();	//this kills cgame as well.
@@ -447,6 +429,7 @@ static void *G_ZMalloc_Helper( int iSize, memtag_t eTag, qboolean bZeroit)
 }
 
 //rww - RAGDOLL_BEGIN
+/*
 void G2API_SetRagDoll(CGhoul2Info_v &ghoul2,CRagDollParams *parms);
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params);
 
@@ -459,10 +442,10 @@ qboolean	G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force);
 
 qboolean G2API_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
 qboolean G2API_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
+*/
 //rww - RAGDOLL_END
 
 //This is as good a place as any I guess.
-#ifndef _XBOX	// Removing terrain from Xbox
 void RMG_Init(int terrainID)
 {
 	if (!TheRandomMissionManager)
@@ -484,7 +467,6 @@ int InterfaceCM_RegisterTerrain (const char *info)
 {
 	return CM_RegisterTerrain(info, false)->GetTerrainId();
 }
-#endif	// _XBOX
 
 /*
 ===============
@@ -553,10 +535,8 @@ void SV_InitGameProgs (void) {
 	import.FS_GetFileList = FS_GetFileList;
 
 	import.AppendToSaveGame = SG_Append;
-#ifndef _XBOX
 	import.ReadFromSaveGame	= SG_Read;
 	import.ReadFromSaveGameOptional = SG_ReadOptional;
-#endif
 
 	import.AdjustAreaPortalState = SV_AdjustAreaPortalState;
 	import.AreasConnected = CM_AreasConnected;
@@ -570,107 +550,103 @@ void SV_InitGameProgs (void) {
 Ghoul2 Insert Start
 */
 
-	import.G2API_AddBolt = G2API_AddBolt;
-	import.G2API_AttachEnt = G2API_AttachEnt;
-	import.G2API_AttachG2Model = G2API_AttachG2Model;
-	import.G2API_CollisionDetect = G2API_CollisionDetect;
-	import.G2API_DetachEnt = G2API_DetachEnt;
-	import.G2API_DetachG2Model = G2API_DetachG2Model;
-	import.G2API_GetAnimFileName = G2API_GetAnimFileName;
-	import.G2API_GetBoltMatrix = G2API_GetBoltMatrix;
-	import.G2API_GetBoneAnim = G2API_GetBoneAnim;
-	import.G2API_GetBoneAnimIndex = G2API_GetBoneAnimIndex;
-	import.G2API_AddSurface = G2API_AddSurface;
-	import.G2API_HaveWeGhoul2Models =G2API_HaveWeGhoul2Models;
-#ifndef _XBOX
-	import.G2API_InitGhoul2Model = G2API_InitGhoul2Model;
-	import.G2API_SetBoneAngles = G2API_SetBoneAngles;
-	import.G2API_SetBoneAnglesMatrix = G2API_SetBoneAnglesMatrix;
-	import.G2API_SetBoneAnim = G2API_SetBoneAnim;
-	import.G2API_SetSkin = G2API_SetSkin;
-	import.G2API_CopyGhoul2Instance = G2API_CopyGhoul2Instance;
-	import.G2API_SetBoneAnglesIndex = G2API_SetBoneAnglesIndex;
-	import.G2API_SetBoneAnimIndex = G2API_SetBoneAnimIndex;
-#endif
-	import.G2API_IsPaused = G2API_IsPaused;
-	import.G2API_ListBones = G2API_ListBones;
-	import.G2API_ListSurfaces = G2API_ListSurfaces;
-	import.G2API_PauseBoneAnim = G2API_PauseBoneAnim;
-	import.G2API_PauseBoneAnimIndex = G2API_PauseBoneAnimIndex;
-	import.G2API_PrecacheGhoul2Model = G2API_PrecacheGhoul2Model;
-	import.G2API_RemoveBolt = G2API_RemoveBolt;
-	import.G2API_RemoveBone = G2API_RemoveBone;
-	import.G2API_RemoveGhoul2Model = G2API_RemoveGhoul2Model;
-	import.G2API_SetLodBias = G2API_SetLodBias;
-	import.G2API_SetRootSurface = G2API_SetRootSurface;
-	import.G2API_SetShader = G2API_SetShader;
-	import.G2API_SetSurfaceOnOff = G2API_SetSurfaceOnOff;
-	import.G2API_StopBoneAngles = G2API_StopBoneAngles;
-	import.G2API_StopBoneAnim = G2API_StopBoneAnim;
-	import.G2API_SetGhoul2ModelFlags = G2API_SetGhoul2ModelFlags;
-	import.G2API_AddBoltSurfNum = G2API_AddBoltSurfNum;
-	import.G2API_RemoveSurface = G2API_RemoveSurface;
-	import.G2API_GetAnimRange = G2API_GetAnimRange;
-	import.G2API_GetAnimRangeIndex = G2API_GetAnimRangeIndex;
-	import.G2API_GiveMeVectorFromMatrix = G2API_GiveMeVectorFromMatrix;
-	import.G2API_GetGhoul2ModelFlags = G2API_GetGhoul2ModelFlags;
-	import.G2API_CleanGhoul2Models = G2API_CleanGhoul2Models;
-	import.TheGhoul2InfoArray = TheGhoul2InfoArray;
-	import.G2API_GetParentSurface = G2API_GetParentSurface;
-	import.G2API_GetSurfaceIndex = G2API_GetSurfaceIndex;
-	import.G2API_GetSurfaceName = G2API_GetSurfaceName;
-	import.G2API_GetGLAName = G2API_GetGLAName;
-	import.G2API_SetNewOrigin = G2API_SetNewOrigin;
-	import.G2API_GetBoneIndex = G2API_GetBoneIndex;
-	import.G2API_StopBoneAnglesIndex = G2API_StopBoneAnglesIndex;
-	import.G2API_StopBoneAnimIndex = G2API_StopBoneAnimIndex;
-	import.G2API_SetBoneAnglesMatrixIndex = G2API_SetBoneAnglesMatrixIndex;
-	import.G2API_SetAnimIndex = G2API_SetAnimIndex;
-	import.G2API_GetAnimIndex = G2API_GetAnimIndex;
+	import.G2API_AddBolt = re.G2API_AddBolt;
+	import.G2API_AttachEnt = re.G2API_AttachEnt;
+	import.G2API_AttachG2Model = re.G2API_AttachG2Model;
+	import.G2API_CollisionDetect = re.G2API_CollisionDetect;
+	import.G2API_DetachEnt = re.G2API_DetachEnt;
+	import.G2API_DetachG2Model = re.G2API_DetachG2Model;
+	import.G2API_GetAnimFileName = re.G2API_GetAnimFileName;
+	import.G2API_GetBoltMatrix = re.G2API_GetBoltMatrix;
+	import.G2API_GetBoneAnim = re.G2API_GetBoneAnim;
+	import.G2API_GetBoneAnimIndex = re.G2API_GetBoneAnimIndex;
+	import.G2API_AddSurface = re.G2API_AddSurface;
+	import.G2API_HaveWeGhoul2Models = re.G2API_HaveWeGhoul2Models;
+	import.G2API_InitGhoul2Model = re.G2API_InitGhoul2Model;
+	import.G2API_SetBoneAngles = re.G2API_SetBoneAngles;
+	import.G2API_SetBoneAnglesMatrix = re.G2API_SetBoneAnglesMatrix;
+	import.G2API_SetBoneAnim = re.G2API_SetBoneAnim;
+	import.G2API_SetSkin = re.G2API_SetSkin;
+	import.G2API_CopyGhoul2Instance = re.G2API_CopyGhoul2Instance;
+	import.G2API_SetBoneAnglesIndex = re.G2API_SetBoneAnglesIndex;
+	import.G2API_SetBoneAnimIndex = re.G2API_SetBoneAnimIndex;
+	import.G2API_IsPaused = re.G2API_IsPaused;
+	import.G2API_ListBones = re.G2API_ListBones;
+	import.G2API_ListSurfaces = re.G2API_ListSurfaces;
+	import.G2API_PauseBoneAnim = re.G2API_PauseBoneAnim;
+	import.G2API_PauseBoneAnimIndex = re.G2API_PauseBoneAnimIndex;
+	import.G2API_PrecacheGhoul2Model = re.G2API_PrecacheGhoul2Model;
+	import.G2API_RemoveBolt = re.G2API_RemoveBolt;
+	import.G2API_RemoveBone = re.G2API_RemoveBone;
+	import.G2API_RemoveGhoul2Model = re.G2API_RemoveGhoul2Model;
+	import.G2API_SetLodBias = re.G2API_SetLodBias;
+	import.G2API_SetRootSurface = re.G2API_SetRootSurface;
+	import.G2API_SetShader = re.G2API_SetShader;
+	import.G2API_SetSurfaceOnOff = re.G2API_SetSurfaceOnOff;
+	import.G2API_StopBoneAngles = re.G2API_StopBoneAngles;
+	import.G2API_StopBoneAnim = re.G2API_StopBoneAnim;
+	import.G2API_SetGhoul2ModelFlags = re.G2API_SetGhoul2ModelFlags;
+	import.G2API_AddBoltSurfNum = re.G2API_AddBoltSurfNum;
+	import.G2API_RemoveSurface = re.G2API_RemoveSurface;
+	import.G2API_GetAnimRange = re.G2API_GetAnimRange;
+	import.G2API_GetAnimRangeIndex = re.G2API_GetAnimRangeIndex;
+	import.G2API_GiveMeVectorFromMatrix = re.G2API_GiveMeVectorFromMatrix;
+	import.G2API_GetGhoul2ModelFlags = re.G2API_GetGhoul2ModelFlags;
+	import.G2API_CleanGhoul2Models = re.G2API_CleanGhoul2Models;
+	import.TheGhoul2InfoArray = re.TheGhoul2InfoArray;
+	import.G2API_GetParentSurface = re.G2API_GetParentSurface;
+	import.G2API_GetSurfaceIndex = re.G2API_GetSurfaceIndex;
+	import.G2API_GetSurfaceName = re.G2API_GetSurfaceName;
+	import.G2API_GetGLAName = re.G2API_GetGLAName;
+	import.G2API_SetNewOrigin = re.G2API_SetNewOrigin;
+	import.G2API_GetBoneIndex = re.G2API_GetBoneIndex;
+	import.G2API_StopBoneAnglesIndex = re.G2API_StopBoneAnglesIndex;
+	import.G2API_StopBoneAnimIndex = re.G2API_StopBoneAnimIndex;
+	import.G2API_SetBoneAnglesMatrixIndex = re.G2API_SetBoneAnglesMatrixIndex;
+	import.G2API_SetAnimIndex = re.G2API_SetAnimIndex;
+	import.G2API_GetAnimIndex = re.G2API_GetAnimIndex;
 
-	import.G2API_SaveGhoul2Models = G2API_SaveGhoul2Models;
-	import.G2API_LoadGhoul2Models = G2API_LoadGhoul2Models;
-	import.G2API_LoadSaveCodeDestructGhoul2Info = G2API_LoadSaveCodeDestructGhoul2Info;
-	import.G2API_GetAnimFileNameIndex = G2API_GetAnimFileNameIndex;
-	import.G2API_GetAnimFileInternalNameIndex = G2API_GetAnimFileInternalNameIndex;
-	import.G2API_GetSurfaceRenderStatus = G2API_GetSurfaceRenderStatus;
+	import.G2API_SaveGhoul2Models = re.G2API_SaveGhoul2Models;
+	import.G2API_LoadGhoul2Models = re.G2API_LoadGhoul2Models;
+	import.G2API_LoadSaveCodeDestructGhoul2Info = re.G2API_LoadSaveCodeDestructGhoul2Info;
+	import.G2API_GetAnimFileNameIndex = re.G2API_GetAnimFileNameIndex;
+	import.G2API_GetAnimFileInternalNameIndex = re.G2API_GetAnimFileInternalNameIndex;
+	import.G2API_GetSurfaceRenderStatus = re.G2API_GetSurfaceRenderStatus;
 
 	//rww - RAGDOLL_BEGIN
-	import.G2API_SetRagDoll = G2API_SetRagDoll;
-	import.G2API_AnimateG2Models = G2API_AnimateG2Models;
+	import.G2API_SetRagDoll = re.G2API_SetRagDoll;
+	import.G2API_AnimateG2Models = re.G2API_AnimateG2Models;
 
-	import.G2API_RagPCJConstraint = G2API_RagPCJConstraint;
-	import.G2API_RagPCJGradientSpeed = G2API_RagPCJGradientSpeed;
-	import.G2API_RagEffectorGoal = G2API_RagEffectorGoal;
-	import.G2API_GetRagBonePos = G2API_GetRagBonePos;
-	import.G2API_RagEffectorKick = G2API_RagEffectorKick;
-	import.G2API_RagForceSolve = G2API_RagForceSolve;
+	import.G2API_RagPCJConstraint = re.G2API_RagPCJConstraint;
+	import.G2API_RagPCJGradientSpeed = re.G2API_RagPCJGradientSpeed;
+	import.G2API_RagEffectorGoal = re.G2API_RagEffectorGoal;
+	import.G2API_GetRagBonePos = re.G2API_GetRagBonePos;
+	import.G2API_RagEffectorKick = re.G2API_RagEffectorKick;
+	import.G2API_RagForceSolve = re.G2API_RagForceSolve;
 
-	import.G2API_SetBoneIKState = G2API_SetBoneIKState;
-    import.G2API_IKMove = G2API_IKMove;
+	import.G2API_SetBoneIKState = re.G2API_SetBoneIKState;
+    import.G2API_IKMove = re.G2API_IKMove;
 	//rww - RAGDOLL_END
 
-	import.G2API_AddSkinGore = G2API_AddSkinGore;
-	import.G2API_ClearSkinGore = G2API_ClearSkinGore;
+	import.G2API_AddSkinGore = re.G2API_AddSkinGore;
+	import.G2API_ClearSkinGore = re.G2API_ClearSkinGore;
 
-#ifndef _XBOX
 	import.RMG_Init = RMG_Init;
 	import.CM_RegisterTerrain = InterfaceCM_RegisterTerrain;
-#endif
 	import.SetActiveSubBSP = SV_SetActiveSubBSP;
 
 	import.RE_RegisterSkin = re.RegisterSkin;
 	import.RE_GetAnimationCFG = re.GetAnimationCFG;
 
 
-	import.WE_GetWindVector	= R_GetWindVector;
-	import.WE_GetWindGusting = R_GetWindGusting;
-	import.WE_IsOutside	= R_IsOutside;
-	import.WE_IsOutsideCausingPain	= R_IsOutsideCausingPain;
-	import.WE_GetChanceOfSaberFizz = R_GetChanceOfSaberFizz;
-	import.WE_IsShaking = R_IsShaking;
-	import.WE_AddWeatherZone = R_AddWeatherZone;
-	import.WE_SetTempGlobalFogColor = R_SetTempGlobalFogColor;
+	import.WE_GetWindVector	= re.GetWindVector;
+	import.WE_GetWindGusting = re.GetWindGusting;
+	import.WE_IsOutside	= re.IsOutside;
+	import.WE_IsOutsideCausingPain	= re.IsOutsideCausingPain;
+	import.WE_GetChanceOfSaberFizz = re.GetChanceOfSaberFizz;
+	import.WE_IsShaking = re.IsShaking;
+	import.WE_AddWeatherZone = re.AddWeatherZone;
+	import.WE_SetTempGlobalFogColor = re.SetTempGlobalFogColor;
 
 
 /*
@@ -683,12 +659,8 @@ Ghoul2 Insert End
 		Com_Error (ERR_DROP, "failed to load game DLL");
 
 	//hook up the client while we're here
-#ifdef _XBOX
-	VM_Create("cl");
-#else
 	if (!VM_Create("cl"))
 		Com_Error (ERR_DROP, "failed to attach to the client DLL");
-#endif
 
 	if (ge->apiversion != GAME_API_VERSION)
 		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion,

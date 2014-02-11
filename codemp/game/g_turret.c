@@ -69,13 +69,13 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	pos[2] += self->r.maxs[2]*0.5f;
 	G_PlayEffect( EFFECT_EXPLOSION_TURRET, pos, forward );
 	G_PlayEffectID( G_EffectIndex( "turret/explode" ), pos, forward );
-	
+
 	if ( self->splashDamage > 0 && self->splashRadius > 0 )
 	{
-		G_RadiusDamage( self->r.currentOrigin, 
-						attacker, 
-						self->splashDamage, 
-						self->splashRadius, 
+		G_RadiusDamage( self->r.currentOrigin,
+						attacker,
+						self->splashDamage,
+						self->splashRadius,
 						attacker,
 						NULL,
 						MOD_UNKNOWN );
@@ -96,7 +96,7 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 
 		VectorCopy( self->r.currentAngles, self->s.apos.trBase );
 		VectorClear( self->s.apos.trDelta );
-		
+
 		if ( self->target )
 		{
 			G_UseTargets( self, attacker );
@@ -132,7 +132,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	vec3_t		org;
 	gentity_t	*bolt;
 
-	if ( (trap_PointContents( start, ent->s.number )&MASK_SHOT) )
+	if ( (trap->PointContents( start, ent->s.number )&MASK_SHOT) )
 	{
 		return;
 	}
@@ -141,7 +141,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	G_PlayEffectID( ent->genericValue13, org, dir );
 
 	bolt = G_Spawn();
-	
+
 	//use a custom shot effect
 	bolt->s.otherEntityNum2 = ent->genericValue14;
 	//use a custom impact effect
@@ -162,7 +162,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	bolt->methodOfDeath = MOD_TARGET_LASER;
 	bolt->splashMethodOfDeath = MOD_TARGET_LASER;
 	bolt->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame	
+	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame
 
 	VectorSet( bolt->r.maxs, 1.5, 1.5, 1.5 );
 	VectorScale( bolt->r.maxs, -1, bolt->r.mins );
@@ -206,13 +206,13 @@ void turret_head_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
 
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org );
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, POSITIVE_Y, fwd );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, POSITIVE_Y, fwd );
 		*/
 		VectorCopy( top->r.currentOrigin, org );
 		org[2] += top->r.maxs[2]-8;
@@ -280,12 +280,12 @@ static void turret_aim( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the "eye" here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
 
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org2 );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org2 );
 		*/
 		VectorCopy( top->r.currentOrigin, org2 );
 
@@ -439,23 +439,27 @@ static qboolean turret_find_enemies( gentity_t *self )
 		{
 			continue;
 		}
+		if ( target->client->tempSpectate >= level.time )
+		{
+			continue;
+		}
 		if ( self->alliedTeam )
 		{
 			if ( target->client )
 			{
 				if ( target->client->sess.sessionTeam == self->alliedTeam )
-				{ 
+				{
 					// A bot/client/NPC we don't want to shoot
 					continue;
 				}
 			}
 			else if ( target->teamnodmg == self->alliedTeam )
-			{ 
+			{
 				// An ent we don't want to shoot
 				continue;
 			}
 		}
-		if ( !trap_InPVS( org2, target->r.currentOrigin ))
+		if ( !trap->InPVS( org2, target->r.currentOrigin ))
 		{
 			continue;
 		}
@@ -463,7 +467,7 @@ static qboolean turret_find_enemies( gentity_t *self )
 		VectorCopy( target->r.currentOrigin, org );
 		org[2] += target->r.maxs[2]*0.5f;
 
-		trap_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( !tr.allsolid && !tr.startsolid && ( tr.fraction == 1.0 || tr.entityNum == target->s.number ))
 		{
@@ -539,6 +543,10 @@ void turret_base_think( gentity_t *self )
 	{//don't keep going after spectators
 		self->enemy = NULL;
 	}
+	else if ( self->enemy->client && self->enemy->client->tempSpectate >= level.time )
+	{//don't keep going after spectators
+		self->enemy = NULL;
+	}
 	else
 	{//FIXME: remain single-minded or look for a new enemy every now and then?
 		if ( self->enemy->health > 0 )
@@ -550,7 +558,7 @@ void turret_base_think( gentity_t *self )
 			if ( enemyDist < (self->radius * self->radius) )
 			{
 				// was in valid radius
-				if ( trap_InPVS( self->r.currentOrigin, self->enemy->r.currentOrigin ) )
+				if ( trap->InPVS( self->r.currentOrigin, self->enemy->r.currentOrigin ) )
 				{
 					// Every now and again, check to see if we can even trace to the enemy
 					trace_t tr;
@@ -572,7 +580,7 @@ void turret_base_think( gentity_t *self )
 					{
 						org2[2] -= 10;
 					}
-					trap_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT );
+					trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 					if ( !tr.allsolid && !tr.startsolid && tr.entityNum == self->enemy->s.number )
 					{
@@ -631,18 +639,18 @@ Large 2-piece turbolaser turret
   dmg	- How much damage each shot does (default 100)
   health - How much damage it can take before exploding (default 3000)
   speed - how fast it turns (default 10)
-  
+
   splashDamage - How much damage the explosion does (300)
   splashRadius - The radius of the explosion (128)
 
   shotspeed - speed at which projectiles will move
-  
+
   targetname - Toggles it on/off
   target - What to use when destroyed
   target2 - What to use when it decides to start shooting at an enemy
 
   showhealth - set to 1 to show health bar on this entity when crosshair is over it
-  
+
   teamowner - crosshair shows green for this team, red for opposite team
 	0 - none
 	1 - red
@@ -668,15 +676,15 @@ void SP_misc_turret( gentity_t *base )
 
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/hoth/turret_bottom.md3" );
 	base->s.modelindex = G_ModelIndex( "models/map_objects/hoth/turret_base.md3" );
-	//base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
+	//base->playerModel = trap->G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
 	//base->s.radius = 80.0f;
 
-	//gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
-	//base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
+	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL );
+	//base->torsoBolt = trap->G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
 
 	G_SpawnString( "icon", "", &s );
 	if (s && s[0])
-	{ 
+	{
 		// We have an icon, so index it now.  We are reusing the genericenemyindex
 		// variable rather than adding a new one to the entity state.
 		base->s.genericenemyindex = G_IconIndex(s);
@@ -695,7 +703,7 @@ void SP_misc_turret( gentity_t *base )
 	// don't start working right away
 	base->nextthink = level.time + FRAMETIME * 5;
 
-	trap_LinkEntity( base );
+	trap->LinkEntity( (sharedEntity_t *)base );
 
 	if ( !turret_base_spawn_top( base ) )
 	{
@@ -725,7 +733,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	base->r.ownerNum = top->s.number;
 	top->r.ownerNum = base->s.number;
 
-	if ( base->team && base->team[0] && //g_gametype.integer == GT_SIEGE &&
+	if ( base->team && base->team[0] && //level.gametype == GT_SIEGE &&
 		!base->teamnodmg)
 	{
 		base->teamnodmg = atoi(base->team);
@@ -857,6 +865,6 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	// But set us as a turret so that we can be identified as a turret
 	top->s.weapon = WP_EMPLACED_GUN;
 
-	trap_LinkEntity( top );
+	trap->LinkEntity( (sharedEntity_t *)top );
 	return qtrue;
 }

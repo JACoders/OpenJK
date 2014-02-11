@@ -32,8 +32,8 @@ This file is part of Jedi Academy.
 ** QGL_Shutdown() - unloads libraries, NULLs function pointers
 */
 #include <float.h>
-#include "../renderer/tr_local.h"
-#include "glw_win.h"
+#include "tr_local.h"
+#include "../win32/glw_win.h"
 
 void QGL_EnableLogging( qboolean enable );
 
@@ -2801,11 +2801,11 @@ static void APIENTRY logViewport(GLint x, GLint y, GLsizei width, GLsizei height
 */
 void QGL_Shutdown( void )
 {
-	VID_Printf( PRINT_ALL, "...shutting down QGL\n" );
+	ri.Printf( PRINT_ALL, "...shutting down QGL\n" );
 
 	if ( glw_state.hinstOpenGL )
 	{
-		VID_Printf( PRINT_ALL, "...unloading OpenGL DLL\n" );
+		ri.Printf( PRINT_ALL, "...unloading OpenGL DLL\n" );
 		FreeLibrary( glw_state.hinstOpenGL );
 	}
 
@@ -3182,16 +3182,16 @@ qboolean QGL_Init( const char *dllname )
 {
 	assert( glw_state.hinstOpenGL == 0 );
 
-	VID_Printf( PRINT_ALL, "...initializing QGL\n" );
+	ri.Printf( PRINT_ALL, "...initializing QGL\n" );
 
-	//VID_Printf( PRINT_ALL, "...calling LoadLibrary( '%s.dll' ): ", dllname );
+	//ri.Printf( PRINT_ALL, "...calling LoadLibrary( '%s.dll' ): ", dllname );
 
 	if ( ( glw_state.hinstOpenGL = LoadLibrary( dllname ) ) == 0 )
 	{
-		VID_Printf( PRINT_ALL, "failed\n" );
+		ri.Printf( PRINT_ALL, "failed\n" );
 		return qfalse;
 	}
-	VID_Printf( PRINT_ALL, "succeeded\n" );
+	ri.Printf( PRINT_ALL, "succeeded\n" );
 
 	qglAccum                     = dllAccum = (void (__stdcall *)(unsigned int,float))GPA( "glAccum" );
 	qglAlphaFunc                 = dllAlphaFunc = (void (__stdcall *)(unsigned int,float))GPA( "glAlphaFunc" );
@@ -3571,7 +3571,7 @@ void QGL_EnableLogging( qboolean enable )
 	// return if we're already active
 	if ( isEnabled && enable ) {
 		// decrement log counter and stop if it has reached 0
-		Cvar_Set( "r_logFile", va("%d", r_logFile->integer - 1 ) );
+		ri.Cvar_Set( "r_logFile", va("%d", r_logFile->integer - 1 ) );
 		if ( r_logFile->integer ) {
 			return;
 		}
@@ -3598,7 +3598,7 @@ void QGL_EnableLogging( qboolean enable )
 
 			asctime( newtime );
 
-			basedir = Cvar_Get( "fs_basepath", "", 0 );
+			basedir = ri.Cvar_Get( "fs_basepath", "", 0 );
 			Com_sprintf( buffer, sizeof(buffer), "%s/gl.log", basedir->string ); 
 			glw_state.log_fp = fopen( buffer, "wt" );
 

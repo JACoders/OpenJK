@@ -16,13 +16,13 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
+#include "bg_public.h"
+#include "../cgame/cg_local.h"
 #include "g_functions.h"
 #include "objectives.h"
+#include "g_local.h"
 
-#include "../Icarus/IcarusInterface.h"
+#include "../icarus/IcarusInterface.h"
 
 
 int	BMS_START = 0;
@@ -557,7 +557,6 @@ G_RunMover
 
 ================
 */
-//void rebolt_turret( gentity_t *base );
 void G_RunMover( gentity_t *ent ) {
 	// if not a team captain, don't do anything, because
 	// the captain will handle everything
@@ -953,7 +952,7 @@ Use_BinaryMover
 void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
 	int	key;
-	char *text;
+	const char *text;
 
 	if ( ent->e_UseFunc == useF_NULL )
 	{//I cannot be used anymore, must be a door with a wait of -1 that's opened.
@@ -1000,7 +999,7 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 				ent->fly_sound_debounce_time = level.time + 5000;
 				text = "cp @SP_INGAME_NEED_KEY_TO_OPEN";
 				//FIXME: temp message, only on certain difficulties?, graphic instead of text?
-				gi.SendServerCommand( NULL, text );
+				gi.SendServerCommand( 0, text );
 				return;
 			}
 		}
@@ -1067,7 +1066,7 @@ void InitMover( gentity_t *ent )
 		if ( strstr( ent->model2, ".glm" ))
 		{
 			ent->s.modelindex2 = G_ModelIndex( ent->model2 );
-			ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, ent->model2, ent->s.modelindex2, NULL, NULL, 0, 0 );
+			ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, ent->model2, ent->s.modelindex2, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 			if ( ent->playerModel >= 0 )
 			{
 				ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
@@ -2610,7 +2609,7 @@ void security_panel_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	}
 	if ( INV_SecurityKeyCheck( activator, self->message ) )
 	{//congrats!
-		gi.SendServerCommand( NULL, "cp @SP_INGAME_SECURITY_KEY_UNLOCKEDDOOR" );
+		gi.SendServerCommand( 0, "cp @SP_INGAME_SECURITY_KEY_UNLOCKEDDOOR" );
 		//use targets
 		G_UseTargets( self, activator );
 		//take key
@@ -2630,11 +2629,11 @@ void security_panel_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	{//failure sound/display
 		if ( activator->message )
 		{//have a key, just the wrong one
-			gi.SendServerCommand( NULL, "cp @SP_INGAME_INCORRECT_KEY" );
+			gi.SendServerCommand( 0, "cp @SP_INGAME_INCORRECT_KEY" );
 		}
 		else
 		{//don't have a key at all
-			gi.SendServerCommand( NULL, "cp @SP_INGAME_NEED_SECURITY_KEY" );
+			gi.SendServerCommand( 0, "cp @SP_INGAME_NEED_SECURITY_KEY" );
 		}
 		G_UseTargets2( self, activator, self->target2 );
 		//FIXME: change display?  Maybe shader animmap change?

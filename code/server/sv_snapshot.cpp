@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 
 
 
-#include "..\client\vmachine.h"
+#include "../client/vmachine.h"
 #include "server.h"
 
 
@@ -347,7 +347,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	int		l;
 	int		clientarea, clientcluster;
 	int		leafnum;
-	int		c_fullsend;
 	const byte *clientpvs;
 	const byte *bitvector;
 	qboolean sightOn = qfalse;
@@ -367,8 +366,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	frame->areabytes = CM_WriteAreaBits( frame->areabits, clientarea );
 
 	clientpvs = CM_ClusterPVS (clientcluster);
-
-	c_fullsend = 0;
 
 	if ( !portal )
 	{//not if this if through a portal...???  James said to do this...
@@ -450,26 +447,17 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 		l = 0;
-#ifdef _XBOX
-		if(bitvector) {
-#endif
+
 		for ( i=0 ; i < svEnt->numClusters ; i++ ) {
 			l = svEnt->clusternums[i];
 			if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
 				break;
 			}
 		}
-#ifdef _XBOX
-		}
-#endif
 
 		// if we haven't found it to be visible,
 		// check overflow clusters that coudln't be stored
-#ifdef _XBOX
-		if ( bitvector && i == svEnt->numClusters ) {
-#else
 		if ( i == svEnt->numClusters ) {
-#endif
 			if ( svEnt->lastCluster ) {
 				for ( ; l <= svEnt->lastCluster ; l++ ) {
 					if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
@@ -490,10 +478,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 		// if its a portal entity, add everything visible from its camera position
 		if ( ent->svFlags & SVF_PORTAL ) {
 			SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
-#ifdef _XBOX
-			//Must get clientpvs again since above call destroyed it.
-		clientpvs = CM_ClusterPVS (clientcluster);
-#endif
 		}
 	}
 }

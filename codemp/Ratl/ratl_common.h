@@ -1,3 +1,5 @@
+#pragma once
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
 //  (c) 2002 Activision
@@ -10,7 +12,7 @@
 //
 // Also included is a safeguarded assert file for all the asserts in RTL.
 //
-// This file is included in EVERY TEMPLATE, so it should be very light in order to 
+// This file is included in EVERY TEMPLATE, so it should be very light in order to
 // reduce compile times.
 //
 //
@@ -42,8 +44,6 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined(RATL_COMMON_INC)
-#define RATL_COMMON_INC
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // In VC++, Don't Bother With These Warnings
@@ -55,6 +55,7 @@
 	#pragma warning ( disable : 4512 )			// unable to generate default operator=
 	#pragma warning ( disable : 4130 )			// logical operation on address of string constant
 	#pragma warning ( disable : 4127 )			// conditional expression is constant
+	#pragma warning ( disable : 4996 )			// This function or variable may be unsafe.
 #endif
 
 
@@ -88,7 +89,7 @@ inline void *operator new(size_t,TRatlNew *where)
 
 inline void operator delete(void *, TRatlNew *)
 {
-	return; 
+	return;
 }
 
 namespace ratl
@@ -126,7 +127,7 @@ namespace	mem
 	{
 		unsigned char space[16];
 	} __attribute__ ((aligned(16)));
-#endif 
+#endif
 
 	inline void*	cpy( void *dest, const void *src, size_t count )
 	{
@@ -225,19 +226,19 @@ namespace str
 	}
 	inline int		icmp(const char *s1,const char *s2)
 	{
-		return stricmp(s1,s2);
+		return Q_stricmp(s1,s2);
 	}
 	inline int		cmpi(const char *s1,const char *s2)
 	{
-		return stricmp(s1,s2);
+		return Q_stricmp(s1,s2);
 	}
 	inline bool	ieql(const char *s1,const char *s2)
 	{
-		return !stricmp(s1,s2);
+		return !Q_stricmp(s1,s2);
 	}
 	inline bool	eqli(const char *s1,const char *s2)
 	{
-		return !stricmp(s1,s2);
+		return !Q_stricmp(s1,s2);
 	}
 
 	inline char	*tok(char *s,const char *gap)
@@ -280,19 +281,19 @@ public:
 	{
 		return 1;
 	}
-#endif;
+#endif
 };
 
 
 
 
 
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // The Raven Template Library Base Class
 //
 // This is the base class for all the Raven Template Library container classes like
-// vector_vs and pool_vs.  
+// vector_vs and pool_vs.
 //
 // This class might be a good place to put memory profile code in the future.
 //
@@ -300,10 +301,8 @@ public:
 class	ratl_base
 {
 public:
-#ifndef _XBOX
 	void	save(hfile& file);
 	void	load(hfile& file);
-#endif
 
 	void	ProfilePrint(const char * format, ...);
 
@@ -333,7 +332,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////
 	unsigned int						mV[ARRAY_SIZE];
 public:
-	enum	
+	enum
 	{
 		SIZE			= SZ,
 		CAPACITY		= SZ,
@@ -465,7 +464,7 @@ struct ratl_compare
 	float	mCost;
 	int		mHandle;
 
-	bool	operator<(const ratl_compare& t) const	
+	bool	operator<(const ratl_compare& t) const
 	{
 		return (mCost<t.mCost);
 	}
@@ -508,7 +507,7 @@ namespace storage
 	template<class T,int SIZE>
 	struct value_semantics
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -520,7 +519,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -578,7 +577,7 @@ namespace storage
 	template<class T,int SIZE>
 	struct object_semantics
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -593,7 +592,7 @@ namespace storage
 		};
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -602,15 +601,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -641,12 +640,12 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE>
 	struct virtual_semantics
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -661,7 +660,7 @@ namespace storage
 		};
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -670,11 +669,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -705,7 +704,7 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{
@@ -714,9 +713,6 @@ namespace storage
 			assert(dynamic_cast<const T *>(p));
 			T *ptr=p; // if this doesn't compile, you are trying to alloc something that is not derived from base
 			assert(dynamic_cast<const CAST_TO *>(ptr));
-			int i=VALUE_SIZE;
-			int k=MAX_CLASS_SIZE;
-			int j=sizeof(CAST_TO);
 			compile_assert<sizeof(CAST_TO)<=MAX_CLASS_SIZE>();
 			assert(sizeof(CAST_TO)<=MAX_CLASS_SIZE);
 #endif
@@ -729,7 +725,7 @@ namespace storage
 	template<class T,int SIZE,class NODE>
 	struct value_semantics_node
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -745,7 +741,7 @@ namespace storage
 		typedef bits_true TConstructed;
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -787,11 +783,11 @@ namespace storage
 		// this is so node support does not need to be added to the primitive containers
 		static NODE & node(TValue &v)
 		{
-			return *(NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		static const NODE & node(const TValue &v)
 		{
-			return *(const NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(const NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		static void swap(TStorage *s1,TStorage *s2)
 		{
@@ -800,16 +796,16 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
-				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+			return
+				((TStorage *)(((unsigned char *)s1)-size_t(&((TStorage *)0)->value))) -
+				((TStorage *)(((unsigned char *)s2)-size_t(&((TStorage *)0)->value)));
+		}
 	};
 
 	template<class T,int SIZE,class NODE>
 	struct object_semantics_node
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -831,7 +827,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -840,15 +836,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -882,11 +878,11 @@ namespace storage
 		// this is so node support does not need to be added to the primitive containers
 		static NODE & node(TValue &v)
 		{
-			return *(NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		static const NODE & node(const TValue &v)
 		{
-			return *(const NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(const NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		static void swap(TStorage *s1,TStorage *s2)
 		{
@@ -897,15 +893,15 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
-				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+			return
+				((TStorage *)(((unsigned char *)s1)-size_t(&((TStorage *)0)->value))) -
+				((TStorage *)(((unsigned char *)s2)-size_t(&((TStorage *)0)->value)));
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE,class NODE>
 	struct virtual_semantics_node
 	{
-		enum	
+		enum
 		{
 			CAPACITY		= SIZE,
 		};
@@ -926,7 +922,7 @@ namespace storage
 		typedef SNode		TStorage;		// this is what we make our array of
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -935,11 +931,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -973,11 +969,11 @@ namespace storage
 		// this is so node support does not need to be added to the primitive containers
 		static NODE & node(TValue &v)
 		{
-			return *(NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		static const NODE & node(const TValue &v)
 		{
-			return *(const NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(const NODE *)((unsigned char *)(&v)+size_t(&((TStorage *)0)->nodeData)-size_t(&((TStorage *)0)->value));
 		}
 		// this is a bit suspicious, we are forced to do a memory swap, and for a class, that, say
 		// stores a pointer to itself, it won't work right
@@ -988,10 +984,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
-				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+			return
+				((TStorage *)(((unsigned char *)s1)-size_t(&((TStorage *)0)->value))) -
+				((TStorage *)(((unsigned char *)s2)-size_t(&((TStorage *)0)->value)));
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{
@@ -1000,9 +996,6 @@ namespace storage
 			assert(dynamic_cast<const T *>(p));
 			T *ptr=p; // if this doesn't compile, you are trying to alloc something that is not derived from base
 			assert(dynamic_cast<const CAST_TO *>(ptr));
-			int i=VALUE_SIZE;
-			int k=MAX_CLASS_SIZE;
-			int j=sizeof(CAST_TO);
 			compile_assert<sizeof(CAST_TO)<=MAX_CLASS_SIZE>();
 			assert(sizeof(CAST_TO)<=MAX_CLASS_SIZE);
 #endif
@@ -1022,7 +1015,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		CAPACITY	= T::CAPACITY,
 		SIZE		= T::CAPACITY,
@@ -1181,4 +1174,3 @@ public:
 };
 
 }
-#endif

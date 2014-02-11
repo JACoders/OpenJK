@@ -17,9 +17,6 @@ This file is part of Jedi Knight 2.
 // Copyright 2001-2013 Raven Software
 
 
-// this include must remain at the top of every CPP file
-#include "common_headers.h"
-
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
@@ -83,7 +80,7 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 {
 	// I'm assuming that doing a memcpy wouldn't work here
 	// If you are looking at this and know a better way to do this, please tell me.
-	strcpy( mName, that.mName );
+	Q_strncpyz( mName, that.mName, sizeof(mName) );
 
 	mType				= that.mType;
 
@@ -2267,7 +2264,7 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 			if ( val )
 			{
 				// just stash the descriptive name of the primitive
-				strcpy( mName, val );
+				Q_strncpyz( mName, val, sizeof(mName) );
 			}
 		}
 		else

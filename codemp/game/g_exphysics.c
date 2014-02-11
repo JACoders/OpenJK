@@ -5,7 +5,7 @@
  *
  * desc:		Custom physics system (Expensive Physics)
  *
- * $Author: osman $ 
+ * $Author: osman $
  * $Revision: 1.4 $
  *
  *****************************************************************************/
@@ -32,7 +32,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 		VectorCopy(ent->r.currentOrigin, ground);
 		ground[2] -= 0.1f;
 
-		trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ground, ent->s.number, ent->clipmask);
+		trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ground, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 		if (tr.fraction == 1.0f)
 		{
@@ -64,7 +64,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 	{ //nothing to do if we have no velocity even after gravity.
 		if (ent->touch)
 		{ //call touch if we're in something
-			trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, ent->clipmask);
+			trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
 			if (tr.startsolid || tr.allsolid)
 			{
 				ent->touch(ent, &g_entities[tr.entityNum], &tr);
@@ -85,7 +85,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 	{ //we've pretty much stopped moving anyway, just clear it out then.
 		VectorClear(ent->epVelocity);
 		ent->epGravFactor = 0;
-		trap_LinkEntity(ent);
+		trap->LinkEntity((sharedEntity_t *)ent);
 		return;
 	}
 
@@ -112,17 +112,17 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 
 		//Get the difference relative to the entity origin and projected origin, to add to each bolt position.
 		VectorSubtract(ent->r.currentOrigin, projectedOrigin, trajDif);
-        
+
 		while (i < numG2Bolts)
 		{
 			//Get the position of the actual bolt for this frame
-			trap_G2API_GetBoltMatrix(ent->ghoul2, 0, g2Bolts[i], &matrix, gbmAngles, ent->r.currentOrigin, level.time, NULL, ent->modelScale);
+			trap->G2API_GetBoltMatrix(ent->ghoul2, 0, g2Bolts[i], &matrix, gbmAngles, ent->r.currentOrigin, level.time, NULL, ent->modelScale);
 			BG_GiveMeVectorFromMatrix(&matrix, ORIGIN, boneOrg);
 
 			//Now add the projected positional difference into the result
 			VectorAdd(boneOrg, trajDif, projectedBoneOrg);
 
-			trap_Trace(&tr, boneOrg, tMins, tMaxs, projectedBoneOrg, ent->s.number, ent->clipmask);
+			trap->Trace(&tr, boneOrg, tMins, tMaxs, projectedBoneOrg, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 			if (tr.fraction != 1.0 || tr.startsolid || tr.allsolid)
 			{ //we've hit something
@@ -170,7 +170,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 	//If we didn't collide with any bolts projectedOrigin will still be the original desired
 	//projected position so all is well. If we did then projectedOrigin will be modified
 	//to provide us with a relative position which does not place the bolt in a solid.
-	trap_Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, projectedOrigin, ent->s.number, ent->clipmask);
+	trap->Trace(&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, projectedOrigin, ent->s.number, ent->clipmask, qfalse, 0, 0);
 
 	if (tr.startsolid || tr.allsolid)
 	{ //can't go anywhere from here
@@ -187,7 +187,7 @@ void G_RunExPhys(gentity_t *ent, float gravity, float mass, float bounce, qboole
 
 	//Go ahead and set it to the trace endpoint regardless of what it hit
 	G_SetOrigin(ent, tr.endpos);
-	trap_LinkEntity(ent);
+	trap->LinkEntity((sharedEntity_t *)ent);
 
 	if (tr.fraction == 1.0f)
 	{ //Nothing was in the way.

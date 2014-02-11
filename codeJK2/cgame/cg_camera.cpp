@@ -19,11 +19,11 @@ This file is part of Jedi Knight 2.
 //Client camera controls for cinematics
 
 // this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
+#include "cg_local.h"
 
 #include "cg_media.h"
 
-#include "..\game\g_roff.h"
+#include "../game/g_roff.h"
 
 bool		in_camera = false;
 camera_t	client_camera={0};
@@ -150,7 +150,7 @@ void CGCam_Disable( void )
 		g_entities[0].contents = CONTENTS_BODY;//MASK_PLAYERSOLID;
 	}
 
-	gi.SendServerCommand( NULL, "cts");
+	gi.SendServerCommand( 0, "cts");
 
 	if ( cg_skippingcin.integer )
 	{//We're skipping the cinematic and it's over now
@@ -677,7 +677,7 @@ void CGCam_FollowUpdate ( void )
 
 			if ( num_subjects >= MAX_CAMERA_GROUP_SUBJECTS )
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s", client_camera.cameraGroup);
+				gi.Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s\n", client_camera.cameraGroup);
 				break;
 			}
 

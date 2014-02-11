@@ -8,14 +8,6 @@ void RB_StageIteratorSky(void)
 {
 }
 
-void RB_StageIteratorVertexLitTexture(void)
-{
-}
-
-void RB_StageIteratorLightmappedMultitexture(void)
-{
-}
-
-void R_SyncRenderThread(void)
+void R_IssuePendingRenderCommands(void)
 {
 }

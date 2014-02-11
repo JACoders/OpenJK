@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // bg_local.h -- local definitions for the bg (both games) files
@@ -12,7 +14,7 @@
 // all of the locals will be zeroed before each
 // pmove, just to make damn sure we don't have
 // any differences when running on client or server
-typedef struct 
+typedef struct
 {
 	vec3_t		forward, right, up;
 	float		frametime;
@@ -52,12 +54,6 @@ extern	int		c_pmove;
 
 extern int forcePowerNeeded[NUM_FORCE_POWER_LEVELS][NUM_FORCE_POWERS];
 
-// Had to add these here because there was no file access within the BG right now.
-int		trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
-void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
-void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
-void	trap_FS_FCloseFile( fileHandle_t f );
-
 //PM anim utility functions:
 qboolean PM_SaberInParry( int move );
 qboolean PM_SaberInKnockaway( int move );
@@ -94,7 +90,7 @@ void PM_ForceLegsAnim( int anim );
 void PM_BeginWeaponChange( int weapon );
 void PM_FinishWeaponChange( void );
 
-void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags, int blendTime);
+void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags);
 
 void PM_WeaponLightsaber(void);
 void PM_SetSaberMove(short newMove);

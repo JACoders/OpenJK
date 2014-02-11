@@ -26,11 +26,18 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 #include <limits.h>
-#include "../ghoul2/g2.h"
+#include "../ghoul2/G2.h"
 
 #include "../RMG/RM_Headers.h"
 
+#ifndef _WIN32
+#include "../sys/sys_loadlib.h"
+#include "../sys/sys_local.h"
+#endif
+
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
+
+cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
 cvar_t	*cl_debugMove;
@@ -57,9 +64,6 @@ cvar_t	*cl_sensitivity;
 
 cvar_t	*cl_mouseAccel;
 cvar_t	*cl_showMouseRate;
-cvar_t  *cl_VideoQuality;
-cvar_t	*cl_VidFadeUp;	// deliberately kept as "Vid" rather than "Video" so tab-matching matches only VideoQuality
-cvar_t	*cl_VidFadeDown;
 cvar_t	*cl_framerate;
 
 cvar_t	*m_pitch;
@@ -68,19 +72,14 @@ cvar_t	*m_forward;
 cvar_t	*m_side;
 cvar_t	*m_filter;
 
-#ifdef _XBOX
-//MAP HACK
-cvar_t	*cl_mapname;
-qboolean vidRestartReloadMap = qfalse;
-#endif
-
 cvar_t	*cl_activeAction;
 
-cvar_t	*cl_updateInfoString;
 
-cvar_t	*cl_ingameVideo;
+cvar_t	*cl_inGameVideo;
 
-cvar_t	*cl_thumbStickMode;
+#ifndef _WIN32
+cvar_t	*cl_consoleKeys;
+#endif
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -88,10 +87,14 @@ clientStatic_t		cls;
 
 // Structure containing functions exported from refresh DLL
 refexport_t	re;
+static void *rendererLib = NULL;
 
-ping_t	cl_pinglist[MAX_PINGREQUESTS];
+//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
+	return re.TheGhoul2InfoArray();
+}
 
-void CL_ShutdownRef( void );
+static void CL_ShutdownRef( qboolean restarting );
 void CL_InitRef( void );
 void CL_CheckForResend( void );
 
@@ -175,7 +178,7 @@ void CL_FlushMemory( void ) {
 	CL_ShutdownUI();
 
 	if ( re.Shutdown ) {
-		re.Shutdown( qfalse );		// don't destroy window or context
+		re.Shutdown( qfalse, qfalse );		// don't destroy window or context
 	}
 
 	//rwwFIXMEFIXME: The game server appears to continue running, so clearing common bsp data causes crashing and other bad things
@@ -202,7 +205,7 @@ void CL_MapLoading( void ) {
 	}
 
 	Con_Close();
-	cls.keyCatchers = 0;
+	Key_SetCatcher( 0 );
 
 	// if we are already connected to the local host, stay connected
 	if ( cls.state >= CA_CONNECTED && !Q_stricmp( cls.servername, "localhost" ) )  {
@@ -215,19 +218,11 @@ void CL_MapLoading( void ) {
 	} else {
 		// clear nextmap so the cinematic shutdown doesn't execute it
 		Cvar_Set( "nextmap", "" );
-#ifdef _XBOX	// This was done at E3 time - it's nasty, but we may just keep it.
-		connstate_t oldState = cls.state;
-		cls.state = CA_CHALLENGING;
-		SCR_UpdateScreen();
-		cls.state = oldState;
-#endif
 		CL_Disconnect();
 		Q_strncpyz( cls.servername, "localhost", sizeof(cls.servername) );
 		cls.state = CA_CHALLENGING;		// so the connect screen is drawn
-		cls.keyCatchers = 0;
-#ifndef _XBOX
+		Key_SetCatcher( 0 );
 		SCR_UpdateScreen();
-#endif
 		clc.connectTime = -RETRANSMIT_TIMEOUT;
 		NET_StringToAdr( cls.servername, &clc.serverAddress);
 		// we don't need a challenge on the localhost
@@ -287,21 +282,11 @@ void CL_Disconnect( void ) {
 		return;
 	}
 
-#ifdef _XBOX
-	Cvar_Set("r_norefresh", "0");
-#endif
-
 	if (cls.uiStarted)
 		UI_SetActiveMenu( NULL,NULL );
 
 	SCR_StopCinematic ();
 	S_ClearSoundBuffer();
-
-#ifdef _XBOX
-//	extern qboolean RE_RegisterImages_LevelLoadEnd(void);
-//	RE_RegisterImages_LevelLoadEnd();
-	R_DeleteTextures();
-#endif
 
 	// send a disconnect message to the server
 	// send it a few times in case one is dropped
@@ -339,7 +324,7 @@ so when they are typed in at the console, they will need to be forwarded.
 ===================
 */
 void CL_ForwardCommandToServer( void ) {
-	char	*cmd;
+	const char	*cmd;
 	char	string[MAX_STRING_CHARS];
 
 	cmd = Cmd_Argv(0);
@@ -418,7 +403,7 @@ Restart the video subsystem
 void CL_Vid_Restart_f( void ) {
 	S_StopAllSounds();		// don't let them loop during the restart
 	S_BeginRegistration();	// all sound handles are now invalid
-	CL_ShutdownRef();
+	CL_ShutdownRef(qtrue);
 	CL_ShutdownUI();
 	CL_ShutdownCGame();
 
@@ -503,7 +488,7 @@ void CL_Clientinfo_f( void ) {
 
 //====================================================================
 
-void UI_UpdateConnectionString( char *string );
+void UI_UpdateConnectionString( const char *string );
 
 /*
 =================
@@ -544,7 +529,7 @@ void CL_CheckForResend( void ) {
 
 	case CA_CHALLENGING:
 	// sending back the challenge
-		port = Cvar_VariableIntegerValue("qport");
+		port = Cvar_VariableIntegerValue("net_qport");
 
 		UI_UpdateConnectionString( va("(%i)", clc.connectPacketCount ) );
 
@@ -605,7 +590,7 @@ Responses to broadcasts, etc
 */
 void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	char	*s;
-	char	*c;
+	const char	*c;
 	
 	MSG_BeginReading( msg );
 	MSG_ReadLong( msg );	// skip the -1
@@ -652,7 +637,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 				NET_AdrToString( clc.serverAddress ) );
 			return;
 		}
-		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableIntegerValue( "qport" ) );
+		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableIntegerValue( "net_qport" ) );
 		cls.state = CA_CONNECTED;
 		clc.lastPacketSentTime = -9999;		// send first packet immediately
 		return;
@@ -692,8 +677,6 @@ A packet has arrived from the main event loop
 =================
 */
 void CL_PacketEvent( netadr_t from, msg_t *msg ) {
-	int		headerBytes;
-
 	clc.lastPacketTime = cls.realtime;
 
 	if ( msg->cursize >= 4 && *(int *)msg->data == -1 ) {
@@ -724,9 +707,6 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 		return;		// out of order, duplicated, etc
 	}
 
-	// the header is different lengths for reliable and unreliable messages
-	headerBytes = msg->readcount;
-
 	clc.lastPacketTime = cls.realtime;
 	CL_ParseServerMessage( msg );
 }
@@ -741,7 +721,7 @@ void CL_CheckTimeout( void ) {
 	//
 	// check timeout
 	//
-	if ( ( !cl_paused->integer || !sv_paused->integer ) 
+	if ( ( !CL_CheckPaused() || !sv_paused->integer ) 
 //		&& cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
 		&& cls.state >= CA_CONNECTED && (cls.state != CA_CINEMATIC && !CL_IsRunningInGameCinematic())
 		&& cls.realtime - clc.lastPacketTime > cl_timeout->value*1000) {
@@ -755,6 +735,22 @@ void CL_CheckTimeout( void ) {
 	}
 }
 
+/*
+==================
+CL_CheckPaused
+Check whether client has been paused.
+==================
+*/
+qboolean CL_CheckPaused(void)
+{
+	// if cl_paused->modified is set, the cvar has only been changed in
+	// this frame. Keep paused in this frame to ensure the server doesn't
+	// lag behind.
+	if(cl_paused->integer || cl_paused->modified)
+		return qtrue;
+
+	return qfalse;
+}
 
 //============================================================================
 
@@ -768,7 +764,10 @@ void CL_CheckUserinfo( void ) {
 	if ( cls.state < CA_CHALLENGING ) {
 		return;
 	}
-
+	// don't overflow the reliable command buffer when paused
+	if ( CL_CheckPaused() ) {
+		return;
+	}
 	// send a reliable userinfo update if needed
 	if ( cvar_modifiedFlags & CVAR_USERINFO ) {
 		cvar_modifiedFlags &= ~CVAR_USERINFO;
@@ -796,46 +795,14 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	// load the ref / cgame if needed
 	CL_StartHunkUsers();
 
-#if defined (_XBOX)// && !defined(_DEBUG)
-	// Play the intro movies once
-	static bool firstRun = true;
-	if(firstRun)
-	{
-	//	SP_DoLicense();
-		SP_DisplayLogos();
-	}
-	
-#endif
-
-#if defined (_XBOX)	//xbox doesn't load ui in StartHunkUsers, so check it here
-	// load ui if needed
-	if ( !cls.uiStarted && cls.state != CA_CINEMATIC) {
-		cls.uiStarted = qtrue;
-		SCR_StopCinematic();
-		CL_InitUI();
-	}
-#endif
-
-	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
+	if ( cls.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
 		&& !com_sv_running->integer ) {		
 		// if disconnected, bring up the menu
 		if (!CL_CheckPendingCinematic())	// this avoid having the menu flash for one frame before pending cinematics
 		{
-#ifdef _XBOX
-			if (firstRun)
-			{
-			
-				UI_SetActiveMenu("splashMenu", NULL);
-			}
-			else
-#endif
 			UI_SetActiveMenu( "mainMenu",NULL );
 		}
 	}
-
-#ifdef _XBOX
-	firstRun = false;
-#endif
 
 
 	// if recording an avi, lock to a fixed fps
@@ -885,16 +852,9 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		}
 		cls.realtimeFraction-=1.0f;
 	}
-#ifndef _XBOX
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
-#endif
-
-#ifdef _XBOX
-	//Check on the hot swappable button states.
-	CL_UpdateHotSwap();
-#endif
 
 	// see if we need to update any userinfo
 	CL_CheckUserinfo();
@@ -931,7 +891,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		if (cl_skippingcin->modified){
 			S_StopSounds();		//kill em all but music	
 			cl_skippingcin->modified=qfalse;
-			Com_Printf (va(S_COLOR_YELLOW"%s"), SE_GetString("CON_TEXT_SKIPPING"));
+			Com_Printf (S_COLOR_YELLOW "%s", SE_GetString("CON_TEXT_SKIPPING"));
 			SCR_UpdateScreen();
 		}
 	} else {
@@ -949,48 +909,24 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	cls.framecount++;
 }
 
-
 //============================================================================
-
-/*
-================
-VID_Printf
-
-DLL glue
-================
-*/
-#define	MAXPRINTMSG	4096
-void VID_Printf (int print_level, const char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-	
-	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
-	va_end (argptr);
-
-	if ( print_level == PRINT_ALL ) {
-		Com_Printf ("%s", msg);
-	} else if ( print_level == PRINT_WARNING ) {
-		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-	} else if ( print_level == PRINT_DEVELOPER ) {
-		Com_DPrintf (S_COLOR_RED"%s", msg);
-	}
-}
-
-
 
 /*
 ============
 CL_ShutdownRef
 ============
 */
-void CL_ShutdownRef( void ) {
-	if ( !re.Shutdown ) {
-		return;
+static void CL_ShutdownRef( qboolean restarting ) {
+	if ( re.Shutdown ) {
+		re.Shutdown( qtrue, restarting );
 	}
-	re.Shutdown( qtrue );
+
 	memset( &re, 0, sizeof( re ) );
+
+	if ( rendererLib != NULL ) {
+		Sys_UnloadDll (rendererLib);
+		rendererLib = NULL;
+	}
 }
 
 /*
@@ -1027,25 +963,15 @@ void CL_StartHunkUsers( void ) {
 	}
 
 	if ( !cls.rendererStarted ) {
-#ifdef _XBOX
-		//if ((!com_sv_running->integer || com_errorEntered) && !vidRestartReloadMap)
-		//{
-		//	// free up some memory
-		//	extern void SV_ClearLastLevel(void);
-		//	SV_ClearLastLevel();
-		//}
-#endif
-
 		cls.rendererStarted = qtrue;
 		re.BeginRegistration( &cls.glconfig );
 
 		// load character sets
-//		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/bigchars" );
 		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
 		cls.whiteShader = re.RegisterShader( "white" );
 		cls.consoleShader = re.RegisterShader( "console" );
 		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
-		kg.g_consoleField.widthInChars = g_console_field_width;
+		g_consoleField.widthInChars = g_console_field_width;
 	}
 
 	if ( !cls.soundStarted ) {
@@ -1058,13 +984,11 @@ void CL_StartHunkUsers( void ) {
 		S_BeginRegistration();
 	}
 
-#if !defined (_XBOX)	//i guess xbox doesn't want the ui loaded all the time?
 	//we require the ui to be loaded here or else it crashes trying to access the ui on command line map loads
 	if ( !cls.uiStarted ) {
 		cls.uiStarted = qtrue;
 		CL_InitUI();
 	}
-#endif
 
 //	if ( !cls.cgameStarted && cls.state > CA_CONNECTED && cls.state != CA_CINEMATIC ) {
 	if ( !cls.cgameStarted && cls.state > CA_CONNECTED && (cls.state != CA_CINEMATIC && !CL_IsRunningInGameCinematic()) ) 
@@ -1075,26 +999,237 @@ void CL_StartHunkUsers( void ) {
 }
 
 /*
+================
+CL_RefPrintf
+
+DLL glue
+================
+*/
+#define	MAXPRINTMSG	4096
+void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	
+	va_start (argptr,fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+
+	if ( print_level == PRINT_ALL ) {
+		Com_Printf ("%s", msg);
+	} else if ( print_level == PRINT_WARNING ) {
+		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
+	} else if ( print_level == PRINT_DEVELOPER ) {
+		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
+	}
+}
+
+/*
+============
+String_GetStringValue
+
+DLL glue, but highly reusuable DLL glue at that
+============
+*/
+
+#ifndef __NO_JK2
+extern cStringsSingle *JK2SP_GetString(const char *Reference);
+#endif
+const char *String_GetStringValue( const char *reference )
+{
+#ifdef __NO_JK2
+	return SE_GetString(reference);
+#else
+	if( com_jk2 && com_jk2->integer )
+	{
+		return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
+	}
+	else
+	{
+		return const_cast<const char *>(SE_GetString(reference));
+	}
+#endif
+}
+
+#ifdef _WIN32
+// DLL glue --eez
+WinVars_t *GetWindowsVariables( void )
+{
+	extern WinVars_t g_wv;
+	return &g_wv;
+}
+#endif
+
+extern qboolean gbAlreadyDoingLoad;
+extern void *gpvCachedMapDiskImage;
+extern char  gsCachedMapDiskImage[MAX_QPATH];
+extern qboolean gbUsingCachedMapDataRightNow;
+
+char *get_gsCachedMapDiskImage( void )
+{
+	return gsCachedMapDiskImage;
+}
+
+void *get_gpvCachedMapDiskImage( void )
+{
+	return gpvCachedMapDiskImage;
+}
+
+qboolean *get_gbUsingCachedMapDataRightNow( void )
+{
+	return &gbUsingCachedMapDataRightNow;
+}
+
+qboolean *get_gbAlreadyDoingLoad( void )
+{
+	return &gbAlreadyDoingLoad;
+}
+
+int get_com_frameTime( void )
+{
+	return com_frameTime;
+}
+
+/*
 ============
 CL_InitRef
 ============
 */
+extern qboolean S_FileExists( const char *psFilename );
+extern bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
+extern void ShaderTableCleanup();
+extern void CM_ShutdownTerrain( thandle_t terrainId);
+extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
+extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
+extern cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
+extern CMiniHeap *G2VertSpaceServer;
+static CMiniHeap *GetG2VertSpaceServer( void ) {
+	return G2VertSpaceServer;
+}
+
+#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+
 void CL_InitRef( void ) {
 	refexport_t	*ret;
+	refimport_t rit;
+	char		dllName[MAX_OSPATH];
+	GetRefAPI_t	GetRefAPI;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
 
-	// cinematic stuff
+	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
-	ret = GetRefAPI( REF_API_VERSION );
+	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+	{
+		Com_Printf( "failed: trying to load fallback renderer\n" );
+		Cvar_ForceReset( "cl_renderer" );
 
-	Com_Printf( "-------------------------------\n");
+		Com_sprintf( dllName, sizeof( dllName ), DEFAULT_RENDER_LIBRARY "_" ARCH_STRING DLL_EXT );
+		rendererLib = Sys_LoadDll( dllName, qfalse );
+	}
+
+	if ( !rendererLib ) {
+		Com_Error( ERR_FATAL, "Failed to load renderer" );
+	}
+
+	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
+	if ( !GetRefAPI )
+		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
+
+#define RIT(y)	rit.y = y
+	RIT(CIN_PlayCinematic);
+	RIT(CIN_RunCinematic);
+	RIT(CIN_UploadCinematic);
+	RIT(CL_IsRunningInGameCinematic);
+	RIT(Cmd_AddCommand);
+	RIT(Cmd_Argc);
+	RIT(Cmd_ArgsBuffer);
+	RIT(Cmd_Argv);
+	RIT(Cmd_ExecuteString);
+	RIT(Cmd_RemoveCommand);
+	RIT(CM_ClusterPVS);
+	RIT(CM_CullWorldBox);
+	RIT(CM_DeleteCachedMap);
+	RIT(CM_DrawDebugSurface);
+	RIT(CM_PointContents);
+	RIT(CM_RegisterTerrain);
+	RIT(CM_ShutdownTerrain);
+	RIT(CM_TerrainPatchIterate);
+	RIT(Cvar_Get);
+	RIT(Cvar_Set);
+	RIT(Cvar_SetValue);
+	RIT(Cvar_CheckRange);
+	RIT(Cvar_VariableIntegerValue);
+	RIT(Cvar_VariableString);
+	RIT(Cvar_VariableStringBuffer);
+	RIT(Cvar_VariableValue);
+	RIT(FS_FCloseFile);
+	RIT(FS_FileIsInPAK);
+	RIT(FS_FOpenFileByMode);
+	RIT(FS_FOpenFileRead);
+	RIT(FS_FOpenFileWrite);
+	RIT(FS_FreeFile);
+	RIT(FS_FreeFileList);
+	RIT(FS_ListFiles);
+	RIT(FS_Read);
+	RIT(FS_ReadFile);
+	RIT(FS_Write);
+	RIT(FS_WriteFile);
+	RIT(Hunk_ClearToMark);
+	RIT(SG_Append);
+	RIT(SND_RegisterAudio_LevelLoadEnd);
+	RIT(SV_GetConfigstring);
+	//RIT(SV_PointContents);
+	RIT(SV_SetConfigstring);
+	RIT(SV_Trace);
+	RIT(S_RestartMusic);
+	RIT(Z_Free);
+	RIT(Z_Malloc);
+	RIT(Z_MemSize);
+	RIT(Z_MorphMallocTag);
+
+	RIT(Hunk_ClearToMark);
+
+#ifndef _WIN32
+    RIT(IN_Init);
+    RIT(IN_Shutdown);
+    RIT(IN_Restart);
+#endif
+
+	rit.PD_Load = PD_Load;
+	rit.PD_Store = PD_Store;
+
+	rit.Error = Com_Error;
+	rit.FS_FileExists = S_FileExists;
+	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
+#ifdef _WIN32
+	rit.GetWinVars = GetWindowsVariables;
+#endif
+	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
+	rit.Milliseconds = Sys_Milliseconds;
+	rit.Printf = CL_RefPrintf;
+	rit.SE_GetString = String_GetStringValue;
+
+	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
+	rit.SV_Trace = SV_Trace;
+
+	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
+	rit.gsCachedMapDiskImage = get_gsCachedMapDiskImage;
+	rit.gbUsingCachedMapDataRightNow = get_gbUsingCachedMapDataRightNow;
+	rit.gbAlreadyDoingLoad = get_gbAlreadyDoingLoad;
+	rit.com_frameTime = get_com_frameTime;
+
+	rit.SV_PointContents = SV_PointContents;
+
+	ret = GetRefAPI( REF_API_VERSION, &rit );
 
 	if ( !ret ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
 	re = *ret;
+
+	Com_Printf( "-------------------------------\n");
 
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
@@ -1112,7 +1247,7 @@ void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
 
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
 		JK2SP_Register("keynames", SP_REGISTER_REQUIRED);	// reference is KEYNAMES
@@ -1124,15 +1259,12 @@ void CL_Init( void ) {
 	CL_ClearState ();
 
 	cls.state = CA_DISCONNECTED;	// no longer CA_UNINITIALIZED
-	cls.keyCatchers = KEYCATCH_CONSOLE;
+	//cls.keyCatchers = KEYCATCH_CONSOLE;
 	cls.realtime = 0;
 	cls.realtimeFraction=0.0f;	// fraction of a msec accumulated
 
 	CL_InitInput ();
-
-#ifndef _XBOX	// No terrain on Xbox
 	RM_InitTerrain();
-#endif
 
 	//
 	// register our variables
@@ -1167,13 +1299,8 @@ void CL_Init( void ) {
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
-	cl_ingameVideo = Cvar_Get ("cl_ingameVideo", "1", CVAR_ARCHIVE);
-	cl_VideoQuality = Cvar_Get ("cl_VideoQuality", "0", CVAR_ARCHIVE);
-	cl_VidFadeUp	= Cvar_Get ("cl_VidFadeUp", "1", CVAR_TEMP);
-	cl_VidFadeDown	= Cvar_Get ("cl_VidFadeDown", "1", CVAR_TEMP);
+	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
-
-	cl_thumbStickMode = Cvar_Get ("ui_thumbStickMode", "0", CVAR_ARCHIVE);
 
 	// init autoswitch so the ui will have it correctly even
 	// if the cgame hasn't been started
@@ -1184,12 +1311,11 @@ void CL_Init( void ) {
 	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE);
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
-
-#ifdef _XBOX
-	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);
+	
+#ifndef _WIN32
+	// ~ and `, as keys and characters
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 #endif
-
-	cl_updateInfoString = Cvar_Get( "cl_updateInfoString", "", CVAR_ROM );
 
 	// userinfo
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
@@ -1224,11 +1350,6 @@ void CL_Init( void ) {
 	
 	Cvar_Set( "cl_running", "1" );
 
-#ifdef _XBOX
-	Com_Printf( "Initializing Cinematics...\n");
-	CIN_Init();
-#endif
-
 	Com_Printf( "----- Client Initialization Complete -----\n" );
 }
 
@@ -1258,7 +1379,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect();
 
 	S_Shutdown();
-	CL_ShutdownRef();
+	CL_ShutdownRef(qfalse);
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
@@ -1279,129 +1400,3 @@ void CL_Shutdown( void ) {
 	Com_Printf( "-----------------------\n" );
 }
 
-
-/*
-==================
-CL_GetPing
-==================
-*/
-void CL_GetPing( int n, char *adrstr, int *pingtime )
-{
-	const char*	str;
-	int		time;
-
-	if (!cl_pinglist[n].adr.port)
-	{
-		// empty slot
-		adrstr[0] = '\0';
-		*pingtime = 0;
-		return;
-	}
-
-	str = NET_AdrToString( cl_pinglist[n].adr );
-	strcpy( adrstr, str );
-
-	time = cl_pinglist[n].time;
-	if (!time)
-	{
-		// check for timeout
-		time = cls.realtime - cl_pinglist[n].start;
-		if (time < 500)
-		{
-			// not timed out yet
-			time = 0;
-		}
-	}
-
-	*pingtime = time;
-}
-
-/*
-==================
-CL_ClearPing
-==================
-*/
-void CL_ClearPing( int n )
-{
-	if (n < 0 || n >= MAX_PINGREQUESTS)
-		return;
-
-	cl_pinglist[n].adr.port = 0;
-}
-
-/*
-==================
-CL_GetPingQueueCount
-==================
-*/
-int CL_GetPingQueueCount( void )
-{
-	int		i;
-	int		count;
-	ping_t*	pingptr;
-
-	count   = 0;
-	pingptr = cl_pinglist;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-		if (pingptr->adr.port)
-			count++;
-
-	return (count);
-}
-
-/*
-==================
-CL_GetFreePing
-==================
-*/
-ping_t* CL_GetFreePing( void )
-{
-	ping_t*	pingptr;
-	ping_t*	best;	
-	int		oldest;
-	int		i;
-	int		time;
-
-	pingptr = cl_pinglist;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-	{
-		// find free ping slot
-		if (pingptr->adr.port)
-		{
-			if (!pingptr->time)
-			{
-				if (cls.realtime - pingptr->start < 500)
-				{
-					// still waiting for response
-					continue;
-				}
-			}
-			else if (pingptr->time < 500)
-			{
-				// results have not been queried
-				continue;
-			}
-		}
-
-		// clear it
-		pingptr->adr.port = 0;
-		return (pingptr);
-	}
-
-	// use oldest entry
-	pingptr = cl_pinglist;
-	best    = cl_pinglist;
-	oldest  = INT_MIN;
-	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
-	{
-		// scan for oldest
-		time = cls.realtime - pingptr->start;
-		if (time > oldest)
-		{
-			oldest = time;
-			best   = pingptr;
-		}
-	}
-
-	return (best);
-}

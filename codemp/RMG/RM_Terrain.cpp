@@ -1,18 +1,18 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
-
 #include "qcommon/cm_local.h"
-#include "cgame/tr_types.h"
+#include "rd-common/tr_types.h"
+#include "client/cl_cgameapi.h"
 #include "RM_Headers.h"
 
-//#include "qcommon/q_imath.h"
-
+#ifdef _MSC_VER
 #pragma optimize("", off)
 
-void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
-void R_InvertImage		( byte *data, int width, int height, int depth);
-void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-void RE_GetModelBounds	(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
+// The above optmization triggers this warning:
+// "/GS can not protect parameters and local variables from local buffer overrun because optimizations are disabled in function"
+// We don't give a rats ass.
+#pragma warning(disable: 4748)
+#endif
 
 static CRMLandScape		*rm_landscape;
 static CCMLandScape		*origin_land;
@@ -85,7 +85,7 @@ void CRMLandScape::LoadMiscentDef(const char *td)
 		items = classes->GetSubGroups();
 		while(items)
 		{
-			if(!stricmp(items->GetName(), "miscent"))
+			if(!Q_stricmp(items->GetName(), "miscent"))
 			{
 				int			height, maxheight;
 
@@ -96,7 +96,7 @@ void CRMLandScape::LoadMiscentDef(const char *td)
 				model = items->GetSubGroups();
 				while(model)
 				{
-					if(!stricmp(model->GetName(), "model"))
+					if(!Q_stricmp(model->GetName(), "model"))
 					{
 						CRandomModel	hd;
 
@@ -109,19 +109,19 @@ void CRMLandScape::LoadMiscentDef(const char *td)
 						pair = model->GetPairs();
 						while(pair)
 						{
-							if(!stricmp(pair->GetName(), "name"))
+							if(!Q_stricmp(pair->GetName(), "name"))
 							{
 								hd.SetModel(pair->GetTopValue());
 							}
-							else if(!stricmp(pair->GetName(), "frequency"))
+							else if(!Q_stricmp(pair->GetName(), "frequency"))
 							{
 								hd.SetFrequency((float)atof(pair->GetTopValue()));
 							}
-							else if(!stricmp(pair->GetName(), "minscale"))
+							else if(!Q_stricmp(pair->GetName(), "minscale"))
 							{
 								hd.SetMinScale((float)atof(pair->GetTopValue()));
 							}
-							else if(!stricmp(pair->GetName(), "maxscale"))
+							else if(!Q_stricmp(pair->GetName(), "maxscale"))
 							{
 								hd.SetMaxScale((float)atof(pair->GetTopValue()));
 							}
@@ -277,8 +277,8 @@ void CRMLandScape::CreateRandomDensityMap(byte *density, int width, int height, 
 void CRMLandScape::LoadDensityMap(const char *td)
 {
 	char		densityMap[MAX_QPATH];
-	byte		*imageData;
 #ifndef DEDICATED
+	byte		*imageData;
 	int			iWidth, iHeight, seed;
 	char 		*ptr;
 #endif
@@ -292,10 +292,8 @@ void CRMLandScape::LoadDensityMap(const char *td)
 	if(strlen(densityMap))
 	{
 		Com_DPrintf("CG_Terrain: Loading density map %s.....\n", densityMap);
-#ifdef DEDICATED
-		imageData = NULL;
-#else
-		R_LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
+#ifndef DEDICATED
+		re->LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
 		if(imageData)
 		{
 			if(strstr(densityMap, "density_"))
@@ -303,8 +301,8 @@ void CRMLandScape::LoadDensityMap(const char *td)
 				seed = strtoul(Info_ValueForKey(td, "seed"),&ptr,10);
 				CreateRandomDensityMap(imageData, iWidth, iHeight, seed);
 			}
-			R_Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
-			R_InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re->Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re->InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
 			Z_Free(imageData);
 		}
 #endif
@@ -358,13 +356,13 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 
 			rm = hd->GetRandomModel(common);
 
-			refEnt.hModel = re.RegisterModel(rm->GetModelName());
+			refEnt.hModel = re->RegisterModel(rm->GetModelName());
 			refEnt.frame = 0;
-			RE_GetModelBounds(&refEnt, bounds[0], bounds[1]);
+			re->ModelBoundsRef(&refEnt, bounds[0], bounds[1]);
 
 			// Calculate the scale using some magic to help ensure that the
 			// scales are never too different from eachother.  Otherwise you
-			// could get an entity that is really small on one axis but huge 
+			// could get an entity that is really small on one axis but huge
 			// on another.
 			temp[0] = common->flrand(rm->GetMinScale(), rm->GetMaxScale());
 			temp[1] = common->flrand(rm->GetMinScale(), rm->GetMaxScale());
@@ -409,8 +407,8 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			{
 				continue;
 			}
-			// FIXME: shouldn't be using a hard-coded 1280 number, only allow to spawn if inside player clip brush? 
-	//		if( !(CONTENTS_PLAYERCLIP & VM_Call( cgvm, CG_POINT_CONTENTS )) )
+			// FIXME: shouldn't be using a hard-coded 1280 number, only allow to spawn if inside player clip brush?
+	//		if( !(CONTENTS_PLAYERCLIP & CGVM_PointContents()) )
 	//		{
 	//			continue;
 	//		}
@@ -422,7 +420,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			}*/
 			// Make sure there is no architecture around - doesn't work for ents though =(
 
-			memset(td, sizeof(*td), 0);
+			memset( td, 0, sizeof( *td ) );
 			VectorCopy(origin, td->mStart);
 			VectorCopy(bounds[0], td->mMins);
 			VectorCopy(bounds[1], td->mMaxs);
@@ -430,7 +428,8 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			td->mSkipNumber = -1;
 			td->mMask = MASK_PLAYERSOLID;
 
-			VM_Call( cgvm, CG_TRACE );
+			CGVM_Trace();
+
 			if(td->mResult.surfaceFlags & SURF_NOMISCENTS)
 			{
 				continue;
@@ -444,13 +443,13 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			// Account for relative origin
 			origin[2] -= bounds[0][2] * scale[2];
 			origin[2] -= common->flrand(2.0, (bounds[1][2] - bounds[0][2]) / 4);
-			
+
 			// Spawn the client model
 			strcpy(data->mModel, rm->GetModelName());
 			VectorCopy(origin, data->mOrigin);
 			VectorCopy(angles, data->mAngles);
 			VectorCopy(scale, data->mScale);
-			VM_Call( cgvm, CG_MISC_ENT);
+			CGVM_MiscEnt();
 			mModelCount++;
 		}
 	}
@@ -516,4 +515,8 @@ void RM_ShutdownTerrain(void)
 
 // end
 
+#ifdef _MSC_VER
+#pragma warning(default: 4748)
+
 #pragma optimize("", on)
+#endif

@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(GENERICPARSER2_H_INC)
-#define GENERICPARSER2_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including GenericParser2.h")
@@ -100,7 +98,7 @@ private:
 	CGPGroup			*mParent;
 	bool				mWriteable;
 
-	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList, 
+	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList,
 					   CGPObject **lastObject);
 
 public:
@@ -109,10 +107,10 @@ public:
 
 	CGPGroup	*GetParent(void) { return mParent; }
 	CGPGroup	*GetNext(void) { return (CGPGroup *)mNext; }
-	int			GetNumSubGroups(void); 
+	int			GetNumSubGroups(void);
 	int			GetNumPairs(void);
 
-	void		Clean(void); 
+	void		Clean(void);
 	CGPGroup	*Duplicate(CTextPool **textPool = 0, CGPGroup *initParent = 0);
 
 	void		SetWriteable(const bool writeable) { mWriteable = writeable; }
@@ -198,7 +196,3 @@ bool		GPV_IsList(TGPValue GPV);
 const char	*GPV_GetTopValue(TGPValue GPV);
 bool		GPV_GetTopValue(TGPValue GPV, char *Value);
 TGPValue	GPV_GetList(TGPValue GPV);
-
-
-
-#endif // GENERICPARSER2_H_INC

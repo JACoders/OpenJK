@@ -1,6 +1,4 @@
-#ifndef __FIXEDMAP_H
-#define __FIXEDMAP_H
-
+#pragma once
 
 /*
    An STL map-like container.  Quickly thrown together to replace STL maps
@@ -56,7 +54,7 @@ public:
 		if(!FindUnsorted(key, storage)) {
 		   storage = items + numItems;
 		   numItems++;
-		}	   
+		}
 
 		storage->data = newItem;
 		storage->key = key;
@@ -65,9 +63,9 @@ public:
 	}
 
 
-	void Sort(void) 
+	void Sort(void)
 	{
-		qsort(items, numItems, sizeof(Data), 
+		qsort(items, numItems, sizeof(Data),
 				VVFixedMap< T, U >::FixedMapSorter);
 	}
 
@@ -143,6 +141,3 @@ public:
 		}
 	}
 };
-
-
-#endif

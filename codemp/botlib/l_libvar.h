@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_libvar.h
@@ -5,7 +6,7 @@
  * desc:		botlib vars
  *
  * $Archive: /source/code/botlib/l_libvar.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -43,4 +44,3 @@ void LibVarSet(char *var_name, char *value);
 qboolean LibVarChanged(char *var_name);
 //sets the library variable to unmodified
 void LibVarSetNotModified(char *var_name);
-

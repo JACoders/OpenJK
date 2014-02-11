@@ -22,14 +22,9 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\objectives.h"
-#include "..\game\g_vehicles.h"
-
-#ifdef _XBOX
-#include "../client/fffx.h"
-#endif
+#include "../game/objectives.h"
+#include "../game/g_vehicles.h"
 
 extern vmCvar_t	cg_debugHealthBars;
 
@@ -645,7 +640,7 @@ static void CG_DrawVehicleSheild( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -760,7 +755,7 @@ static void CG_DrawVehicleSpeed( const centity_t *cent, const Vehicle_t *pVeh, c
 	inc = (float) maxSpeed / MAX_VHUD_SPEED_TICS;
 	for (i=1;i<=MAX_VHUD_SPEED_TICS;i++)
 	{
-		sprintf( itemName, "speed_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "speed_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			entHud,
@@ -855,7 +850,7 @@ static void CG_DrawVehicleArmor( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxArmor / MAX_VHUD_ARMOR_TICS;
 	for (i=1;i<=MAX_VHUD_ARMOR_TICS;i++)
 	{
-		sprintf( itemName, "armor_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "armor_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -917,7 +912,7 @@ static void CG_DrawVehicleAmmo( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<=MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammo_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammo_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -979,7 +974,7 @@ static void CG_DrawVehicleAmmoUpper( const centity_t *cent, const Vehicle_t *pVe
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammoupper_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammoupper_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1041,7 +1036,7 @@ static void CG_DrawVehicleAmmoLower( const centity_t *cent, const Vehicle_t *pVe
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammolower_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammolower_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1236,7 +1231,7 @@ static void CG_DrawEmplacedGunHealth( const centity_t *cent )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1339,7 +1334,7 @@ static void CG_DrawItemHealth( float currValue, float maxHealth )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1653,6 +1648,8 @@ static void CG_DrawBatteryCharge( void )
 CG_DrawHUD
 ================
 */
+extern void *cgi_UI_GetMenuByName( const char *menu );
+extern void cgi_UI_Menu_Paint( void *menu, qboolean force );
 static void CG_DrawHUD( centity_t *cent )
 {
 	int value;
@@ -1661,6 +1658,8 @@ static void CG_DrawHUD( centity_t *cent )
 	// Draw the lower left section of the HUD
 	if (cgi_UI_GetMenuInfo("lefthud",&sectionXPos,&sectionYPos,&sectionWidth,&sectionHeight))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "lefthud" ), qtrue );
 
 		// Draw armor & health values
 		if ( cg_drawStatus.integer == 2 ) 
@@ -1699,6 +1698,9 @@ static void CG_DrawHUD( centity_t *cent )
 	// Draw the lower right section of the HUD
 	if (cgi_UI_GetMenuInfo("righthud",&sectionXPos,&sectionYPos,&sectionWidth,&sectionHeight))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "righthud" ), qtrue );
+
 		// Draw armor & health values
 		if ( cg_drawStatus.integer == 2 ) 
 		{
@@ -1754,15 +1756,15 @@ CG_ClearDataPadCvars
 */
 void CG_ClearDataPadCvars( void )
 {
-	cg_updatedDataPadForcePower1.integer = 0; //don't wait for the cvar-refresh.
-	cg_updatedDataPadForcePower2.integer = 0; //don't wait for the cvar-refresh.
-	cg_updatedDataPadForcePower3.integer = 0; //don't wait for the cvar-refresh.
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower1", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower1 );
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower2", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower2 );
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower3", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower3 );
 
-	cg_updatedDataPadObjective.integer = 0; //don't wait for the cvar-refresh.
 	cgi_Cvar_Set( "cg_updatedDataPadObjective", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadObjective );
 }
 
 /*
@@ -2213,7 +2215,7 @@ static void CG_DrawPickupItem( void ) {
 	}
 }
 
-extern int cgi_EndGame(void);
+void CMD_CGCam_Disable( void );
 
 /*
 ===================
@@ -2240,7 +2242,8 @@ void CG_DrawCredits(void)
 		if ( !CG_Credits_Running() ) 
 		{
 			cgi_Cvar_Set( "cg_endcredits", "0" );
-			cgi_EndGame();
+			CMD_CGCam_Disable();
+			cgi_SendConsoleCommand("disconnect\n");
 		}
 	}
 }
@@ -2356,9 +2359,6 @@ CROSSHAIR
 CG_DrawCrosshair
 =================
 */
-#ifdef _XBOX
-short cg_crossHairStatus = 0;
-#endif
 static void CG_DrawCrosshair( vec3_t worldPoint ) 
 {
 	float		w, h;
@@ -2379,9 +2379,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 		return;
 	}
 
-#ifdef _XBOX
-	cg_crossHairStatus = 0;
-#endif
 	//set color based on what kind of ent is under crosshair
 	if ( g_crosshairEntNum >= ENTITYNUM_WORLD )
 	{
@@ -2409,9 +2406,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			}
 			else if ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_FREE )
 			{//evil player: everyone is red
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				//Enemies are red
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 0.1f;//G
@@ -2433,9 +2427,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			}
 			else
 			{
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				//Enemies are red
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 0.1f;//G
@@ -2455,9 +2446,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			else
 			{
 				// hostile ones are red
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				ecolor[0] = 1.0;//R
 				ecolor[1] = 0.0;//G
 				ecolor[2] = 0.0;//B
@@ -2466,9 +2454,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 		else if ( crossEnt->s.weapon == WP_TRIP_MINE )
 		{
 			// tripmines are red
-#ifdef _XBOX
-			cg_crossHairStatus = 1;
-#endif
 			ecolor[0] = 1.0;//R
 			ecolor[1] = 0.0;//G
 			ecolor[2] = 0.0;//B
@@ -2868,7 +2853,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	}
 	if ( !cg_forceCrosshair )
 	{
-		if ( 1 ) //(cg_dynamicCrosshair.integer )
+		if ( cg_dynamicCrosshair.integer )
 		{//100% accurate
 			vec3_t d_f, d_rt, d_up;
 			// If you're riding a vehicle and not being drawn.
@@ -2912,7 +2897,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 		{//old way
 			VectorCopy( cg.refdef.vieworg, start );
 			//FIXME: increase this?  Increase when zoom in?
-			VectorMA( start, 4096, cg.refdef.viewaxis[0], end );//was 8192
+			VectorMA( start, 131072, cg.refdef.viewaxis[0], end );//was 8192
 		}
 		//YES!  This is very very bad... but it works!  James made me do it.  Really, he did.  Blame James.
 		gi.trace( &trace, start, vec3_origin, vec3_origin, end, 
@@ -2942,11 +2927,8 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 		return;
 	}
 */
-	//CROSSHAIR is now always drawn from this trace so it's 100% accurate
-	if ( 1 )	//(cg_dynamicCrosshair.integer )
-	{//draw crosshair at endpoint
-		CG_DrawCrosshair( trace.endpos );
-	}
+	//draw crosshair at endpoint
+	CG_DrawCrosshair( trace.endpos );
 
 	g_crosshairEntNum = trace.entityNum;
 	g_crosshairEntDist = 4096*trace.fraction;
@@ -3017,7 +2999,7 @@ static void CG_DrawCrosshairNames( void )
 	qboolean	scanAll = qfalse;
 	centity_t	*player = &cg_entities[0];
 
-	if ( 1 ) //cg_dynamicCrosshair.integer )
+	if ( cg_dynamicCrosshair.integer )
 	{
 		// still need to scan for dynamic crosshair
 		CG_ScanForCrosshairEntity( scanAll );
@@ -3203,24 +3185,12 @@ static void CG_RunRocketLocking( void )
 
 			if ( g_rocketLockEntNum > 0 && g_rocketLockEntNum < ENTITYNUM_WORLD && g_rocketLockTime > 0 )
 			{
-#ifdef _XBOX
-				FFFX_START( fffx_StartConst );
-#endif
 				CG_DrawRocketLocking( g_rocketLockEntNum, g_rocketLockTime );
 			}
-#ifdef _XBOX
-			else
-			{
-				FFFX_START( fffx_StopConst );
-			}
-#endif
 		}
 		else
 		{
 			// disengage any residual locking
-#ifdef _XBOX
-			FFFX_START( fffx_StopConst );
-#endif
 			g_rocketLockEntNum = ENTITYNUM_WORLD;
 			g_rocketLockTime = 0;
 		}
@@ -3269,11 +3239,7 @@ static float CG_DrawFPS( float y ) {
 	static int	previous, lastupdate;
 	int		t, i, fps, total;
 	unsigned short frameTime;
-#ifdef _XBOX
-	const int		xOffset = 30;
-#else
 	const int		xOffset = 0;
-#endif
 
 	// don't use serverTime, because that will be drifting to
 	// correct for internet lag changes, timescales, timedemos, etc
@@ -3877,11 +3843,7 @@ static void CG_Draw2D( void )
 	}
 	CG_SaberClashFlare();
 
-#ifdef _XBOX
-	float y = 32;
-#else
 	float y = 0;
-#endif
 	if (cg_drawSnapshot.integer) {
 		y=CG_DrawSnapshot(y);
 	} 
@@ -3939,7 +3901,7 @@ static void CG_Draw2D( void )
 			
 			int x_pos = 0;
 			y_pos = 20;
-			w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontSmall, 1.0f);
+			w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontMedium, 1.0f);
 			x_pos = (SCREEN_WIDTH/2)-(w/2);
 			cgi_R_Font_DrawString(x_pos, y_pos, text,  colorTable[CT_LTRED1], cgs.media.qhFontMedium, -1, 1.0f);
 		}
@@ -3951,7 +3913,7 @@ static void CG_Draw2D( void )
 		y_pos = 5;
 		gi.Cvar_VariableStringBuffer( "cg_WeaponPickupText", text, sizeof(text) );
 
-		w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontSmall, 0.8f);
+		w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontMedium, 0.8f);
 		x_pos = (SCREEN_WIDTH/2)-(w/2);
 
 		cgi_R_Font_DrawString(x_pos, y_pos, text,  colorTable[CT_WHITE], cgs.media.qhFontMedium, -1, 0.8f);

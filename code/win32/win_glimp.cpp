@@ -38,11 +38,11 @@ This file is part of Jedi Academy.
 ** related functions that are relevant ONLY to win_glimp.c
 */
 #include <assert.h>
-#include "../renderer/tr_local.h"
+#include "tr_local.h"
 #include "../qcommon/qcommon.h"
-#include "glw_win.h"
-#include "win_local.h"
-#include "resource.h"	//JFM: to get icon
+#include "../win32/glw_win.h"
+#include "../win32/win_local.h"
+#include "../win32/resource.h"	//JFM: to get icon
 
 extern void WG_CheckHardwareGamma( void );
 extern void WG_RestoreGamma( void );
@@ -60,7 +60,7 @@ typedef enum {
 #define TRY_PFD_FAIL_SOFT	1
 #define TRY_PFD_FAIL_HARD	2
 
-#define	WINDOW_CLASS_NAME	"Jedi Knight®: Jedi Academy"
+#define	WINDOW_CLASS_NAME	"OpenJK (SP)"
 
 static void		GLW_InitExtensions( void );
 static rserr_t	GLW_SetMode( int mode, 
@@ -82,7 +82,6 @@ void     QGL_Shutdown( void );
 glwstate_t glw_state;
 
 cvar_t	*r_allowSoftwareGL;		// don't abort out if the pixelformat claims software
-cvar_t	*r_maskMinidriver;		// allow a different dll name to be treated as if it were opengl32.dll
 
 // Whether the current hardware supports dynamic glows/flares.
 extern bool g_bDynamicGlowSupported;
@@ -106,10 +105,10 @@ static qboolean GLW_StartDriverAndSetMode( int mode,
 	switch ( err )
 	{
 	case RSERR_INVALID_FULLSCREEN:
-		VID_Printf( PRINT_ALL, "...WARNING: fullscreen unavailable in this mode\n" );
+		ri.Printf( PRINT_ALL, "...WARNING: fullscreen unavailable in this mode\n" );
 		return qfalse;
 	case RSERR_INVALID_MODE:
-		VID_Printf( PRINT_ALL, "...WARNING: could not set the given mode (%d)\n", mode );
+		ri.Printf( PRINT_ALL, "...WARNING: could not set the given mode (%d)\n", mode );
 		return qfalse;
 	default:
 		break;
@@ -131,17 +130,17 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 	int i;
 	int bestMatch = 0;
 
-	VID_Printf( PRINT_ALL, "...GLW_ChoosePFD( %d, %d, %d )\n", ( int ) pPFD->cColorBits, ( int ) pPFD->cDepthBits, ( int ) pPFD->cStencilBits );
+	ri.Printf( PRINT_ALL, "...GLW_ChoosePFD( %d, %d, %d )\n", ( int ) pPFD->cColorBits, ( int ) pPFD->cDepthBits, ( int ) pPFD->cStencilBits );
 
 	// count number of PFDs
 	maxPFD = DescribePixelFormat( hDC, 1, sizeof( PIXELFORMATDESCRIPTOR ), &pfds[0] );
 	if ( maxPFD > MAX_PFDS )
 	{
-		VID_Printf( PRINT_WARNING, "...numPFDs > MAX_PFDS (%d > %d)\n", maxPFD, MAX_PFDS );
+		ri.Printf( PRINT_WARNING, "...numPFDs > MAX_PFDS (%d > %d)\n", maxPFD, MAX_PFDS );
 		maxPFD = MAX_PFDS;
 	}
 
-	VID_Printf( PRINT_ALL, "...%d PFDs found\n", maxPFD - 1 );
+	ri.Printf( PRINT_ALL, "...%d PFDs found\n", maxPFD - 1 );
 
 	// grab information
 	for ( i = 1; i <= maxPFD; i++ )
@@ -161,7 +160,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 			{
 				if ( r_verbose->integer )
 				{
-					VID_Printf( PRINT_ALL, "...PFD %d rejected, software acceleration\n", i );
+					ri.Printf( PRINT_ALL, "...PFD %d rejected, software acceleration\n", i );
 				}
 				continue;
 			}
@@ -172,7 +171,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 		{
 			if ( r_verbose->integer )
 			{
-				VID_Printf( PRINT_ALL, "...PFD %d rejected, not RGBA\n", i );
+				ri.Printf( PRINT_ALL, "...PFD %d rejected, not RGBA\n", i );
 			}
 			continue;
 		}
@@ -182,7 +181,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 		{
 			if ( r_verbose->integer )
 			{
-				VID_Printf( PRINT_ALL, "...PFD %d rejected, improper flags (%x instead of %x)\n", i, pfds[i].dwFlags, pPFD->dwFlags );
+				ri.Printf( PRINT_ALL, "...PFD %d rejected, improper flags (%x instead of %x)\n", i, pfds[i].dwFlags, pPFD->dwFlags );
 			}
 			continue;
 		}
@@ -285,21 +284,21 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 	{
 		if ( !r_allowSoftwareGL->integer )
 		{
-			VID_Printf( PRINT_ALL, "...no hardware acceleration found\n" );
+			ri.Printf( PRINT_ALL, "...no hardware acceleration found\n" );
 			return 0;
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL, "...using software emulation\n" );
+			ri.Printf( PRINT_ALL, "...using software emulation\n" );
 		}
 	}
 	else if ( pfds[bestMatch].dwFlags & PFD_GENERIC_ACCELERATED )
 	{
-		VID_Printf( PRINT_ALL, "...MCD acceleration found\n" );
+		ri.Printf( PRINT_ALL, "...MCD acceleration found\n" );
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...hardware acceleration found\n" );
+		ri.Printf( PRINT_ALL, "...hardware acceleration found\n" );
 	}
 
 	*pPFD = pfds[bestMatch];
@@ -342,7 +341,7 @@ static void GLW_CreatePFD( PIXELFORMATDESCRIPTOR *pPFD, int colorbits, int depth
 
 	if ( stereo )
 	{
-		VID_Printf( PRINT_ALL, "...attempting to use stereo\n" );
+		ri.Printf( PRINT_ALL, "...attempting to use stereo\n" );
 		src.dwFlags |= PFD_STEREO;
 		glConfig.stereoEnabled = qtrue;
 	}
@@ -374,16 +373,16 @@ static int GLW_MakeContext( PIXELFORMATDESCRIPTOR *pPFD )
 		//
 		if ( ( pixelformat = GLW_ChoosePFD( glw_state.hDC, pPFD ) ) == 0 )
 		{
-			VID_Printf( PRINT_ALL, "...GLW_ChoosePFD failed\n");
+			ri.Printf( PRINT_ALL, "...GLW_ChoosePFD failed\n");
 			return TRY_PFD_FAIL_SOFT;
 		}
-		VID_Printf( PRINT_ALL, "...PIXELFORMAT %d selected\n", pixelformat );
+		ri.Printf( PRINT_ALL, "...PIXELFORMAT %d selected\n", pixelformat );
 
 		DescribePixelFormat( glw_state.hDC, pixelformat, sizeof( *pPFD ), pPFD );
 
 		if ( SetPixelFormat( glw_state.hDC, pixelformat, pPFD ) == FALSE )
 		{
-			VID_Printf (PRINT_ALL, "...SetPixelFormat failed\n", glw_state.hDC );
+			ri.Printf (PRINT_ALL, "...SetPixelFormat failed\n", glw_state.hDC );
 			return TRY_PFD_FAIL_SOFT;
 		}
 
@@ -395,24 +394,24 @@ static int GLW_MakeContext( PIXELFORMATDESCRIPTOR *pPFD )
 	//
 	if ( !glw_state.hGLRC )
 	{
-		VID_Printf( PRINT_ALL, "...creating GL context: " );
+		ri.Printf( PRINT_ALL, "...creating GL context: " );
 		if ( ( glw_state.hGLRC = qwglCreateContext( glw_state.hDC ) ) == 0 )
 		{
-			VID_Printf (PRINT_ALL, "failed\n");
+			ri.Printf (PRINT_ALL, "failed\n");
 
 			return TRY_PFD_FAIL_HARD;
 		}
-		VID_Printf( PRINT_ALL, "succeeded\n" );
+		ri.Printf( PRINT_ALL, "succeeded\n" );
 
-		VID_Printf( PRINT_ALL, "...making context current: " );
+		ri.Printf( PRINT_ALL, "...making context current: " );
 		if ( !qwglMakeCurrent( glw_state.hDC, glw_state.hGLRC ) )
 		{
 			qwglDeleteContext( glw_state.hGLRC );
 			glw_state.hGLRC = NULL;
-			VID_Printf (PRINT_ALL, "failed\n");
+			ri.Printf (PRINT_ALL, "failed\n");
 			return TRY_PFD_FAIL_HARD;
 		}
-		VID_Printf( PRINT_ALL, "succeeded\n" );
+		ri.Printf( PRINT_ALL, "succeeded\n" );
 	}
 
 	return TRY_PFD_SUCCESS;
@@ -431,21 +430,21 @@ static qboolean GLW_InitDriver( int colorbits )
 	int		depthbits, stencilbits;
     static PIXELFORMATDESCRIPTOR pfd;		// save between frames since 'tr' gets cleared
 
-	VID_Printf( PRINT_ALL, "Initializing OpenGL driver\n" );
+	ri.Printf( PRINT_ALL, "Initializing OpenGL driver\n" );
 
 	//
 	// get a DC for our window if we don't already have one allocated
 	//
 	if ( glw_state.hDC == NULL )
 	{
-		VID_Printf( PRINT_ALL, "...getting DC: " );
+		ri.Printf( PRINT_ALL, "...getting DC: " );
 
-		if ( ( glw_state.hDC = GetDC( g_wv.hWnd ) ) == NULL )
+		if ( ( glw_state.hDC = GetDC( tr.wv->hWnd ) ) == NULL )
 		{
-			VID_Printf( PRINT_ALL, "failed\n" );
+			ri.Printf( PRINT_ALL, "failed\n" );
 			return qfalse;
 		}
-		VID_Printf( PRINT_ALL, "succeeded\n" );
+		ri.Printf( PRINT_ALL, "succeeded\n" );
 	}
 
 	if ( colorbits == 0 )
@@ -489,7 +488,7 @@ static qboolean GLW_InitDriver( int colorbits )
 		{
 			if ( tpfd == TRY_PFD_FAIL_HARD )
 			{
-				VID_Printf( PRINT_WARNING, "...failed hard\n" );
+				ri.Printf( PRINT_WARNING, "...failed hard\n" );
 				return qfalse;
 			}
 
@@ -499,10 +498,10 @@ static qboolean GLW_InitDriver( int colorbits )
 			if ( ( r_colorbits->integer == glw_state.desktopBitsPixel ) &&
 				 ( stencilbits == 0 ) )
 			{
-				ReleaseDC( g_wv.hWnd, glw_state.hDC );
+				ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 				glw_state.hDC = NULL;
 
-				VID_Printf( PRINT_ALL, "...failed to find an appropriate PIXELFORMAT\n" );
+				ri.Printf( PRINT_ALL, "...failed to find an appropriate PIXELFORMAT\n" );
 
 				return qfalse;
 			}
@@ -519,11 +518,11 @@ static qboolean GLW_InitDriver( int colorbits )
 			{
 				if ( glw_state.hDC )
 				{
-					ReleaseDC( g_wv.hWnd, glw_state.hDC );
+					ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 					glw_state.hDC = NULL;
 				}
 
-				VID_Printf( PRINT_ALL, "...failed to find an appropriate PIXELFORMAT\n" );
+				ri.Printf( PRINT_ALL, "...failed to find an appropriate PIXELFORMAT\n" );
 
 				return qfalse;
 			}
@@ -534,7 +533,7 @@ static qboolean GLW_InitDriver( int colorbits )
 		*/
 		if ( !( pfd.dwFlags & PFD_STEREO ) && ( r_stereo->integer != 0 ) ) 
 		{
-			VID_Printf( PRINT_ALL, "...failed to select stereo pixel format\n" );
+			ri.Printf( PRINT_ALL, "...failed to select stereo pixel format\n" );
 			glConfig.stereoEnabled = qfalse;
 		}
 	}
@@ -576,8 +575,8 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		wc.lpfnWndProc   = (WNDPROC) glw_state.wndproc;
 		wc.cbClsExtra    = 0;
 		wc.cbWndExtra    = 0;
-		wc.hInstance     = g_wv.hInstance;
-	    wc.hIcon         = LoadIcon (g_wv.hInstance, MAKEINTRESOURCE(IDI_ICON1));	//jfm: to get icon
+		wc.hInstance     = tr.wv->hInstance;
+		wc.hIcon         = LoadIcon( tr.wv->hInstance, MAKEINTRESOURCE(IDI_ICON1));
 		wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
 		wc.hbrBackground = 0;//(struct HBRUSH__ *)COLOR_GRAYTEXT;
 		wc.lpszMenuName  = 0;
@@ -585,16 +584,16 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 
 		if ( !RegisterClass( &wc ) )
 		{
-			Com_Error( ERR_FATAL, "GLW_CreateWindow: could not register window class" );
+			Com_Error( ERR_FATAL, "GLW_CreateWindow: could not register window class, error code: 0x%x", GetLastError() );
 		}
 		s_classRegistered = qtrue;
-		VID_Printf( PRINT_ALL, "...registered window class\n" );
+		ri.Printf( PRINT_ALL, "...registered window class\n" );
 	}
 
 	//
 	// create the HWND if one does not already exist
 	//
-	if ( !g_wv.hWnd )
+	if ( !tr.wv->hWnd )
 	{
 		//
 		// compute width and height
@@ -606,13 +605,20 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 
 		if ( cdsFullscreen )
 		{
-			exstyle = WS_EX_TOPMOST;
+			exstyle = 0;//WS_EX_TOPMOST;
 			stylebits = WS_SYSMENU|WS_POPUP|WS_VISIBLE;	//sysmenu gives you the icon
 		}
 		else
 		{
 			exstyle = 0;
-			stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			if ( r_noborder->integer == 0 )
+			{
+				stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			}
+			else
+			{
+				stylebits = WS_POPUP|WS_VISIBLE;
+			}
 			AdjustWindowRect (&r, stylebits, FALSE);
 		}
 
@@ -626,10 +632,18 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		}
 		else
 		{
-			vid_xpos = Cvar_Get ("vid_xpos", "", 0);
-			vid_ypos = Cvar_Get ("vid_ypos", "", 0);
-			x = vid_xpos->integer;
-			y = vid_ypos->integer;
+			vid_xpos = ri.Cvar_Get ("vid_xpos", "", 0);
+			vid_ypos = ri.Cvar_Get ("vid_ypos", "", 0);
+			if ( r_centerWindow->integer == 0 )
+			{
+				x = vid_xpos->integer;
+				y = vid_ypos->integer;
+			}
+			else
+			{
+				x = ( glw_state.desktopWidth - w ) / 2;
+				y = ( glw_state.desktopHeight - h ) / 2;
+			}
 
 			// adjust window coordinates if necessary 
 			// so that the window is completely on screen
@@ -648,7 +662,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			}
 		}
 
-		g_wv.hWnd = CreateWindowEx (
+		tr.wv->hWnd = CreateWindowEx (
 			 exstyle, 
 			 WINDOW_CLASS_NAME,	//class
 			 WINDOW_CLASS_NAME,	//window title
@@ -656,34 +670,34 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			 x, y, w, h,
 			 NULL,
 			 NULL,
-			 g_wv.hInstance,
+			 tr.wv->hInstance,
 			 NULL);
 
-		if ( !g_wv.hWnd )
+		if ( !tr.wv->hWnd )
 		{
 			Com_Error (ERR_FATAL, "GLW_CreateWindow() - Couldn't create window");
 		}
 	
-		ShowWindow( g_wv.hWnd, SW_SHOW );
-		UpdateWindow( g_wv.hWnd );
-		VID_Printf( PRINT_ALL, "...created window@%d,%d (%dx%d)\n", x, y, w, h );
+		ShowWindow( tr.wv->hWnd, SW_SHOW );
+		UpdateWindow( tr.wv->hWnd );
+		ri.Printf( PRINT_ALL, "...created window@%d,%d (%dx%d)\n", x, y, w, h );
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...window already present, CreateWindowEx skipped\n" );
+		ri.Printf( PRINT_ALL, "...window already present, CreateWindowEx skipped\n" );
 	}
 
 	if ( !GLW_InitDriver( colorbits ) )
 	{
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 
 		return qfalse;
 	}
 
-	SetForegroundWindow( g_wv.hWnd );
-	SetFocus( g_wv.hWnd );
+	SetForegroundWindow( tr.wv->hWnd );
+	SetFocus( tr.wv->hWnd );
 
 	return qtrue;
 }
@@ -693,25 +707,25 @@ static void PrintCDSError( int value )
 	switch ( value )
 	{
 	case DISP_CHANGE_RESTART:
-		VID_Printf( PRINT_ALL, "restart required\n" );
+		ri.Printf( PRINT_ALL, "restart required\n" );
 		break;
 	case DISP_CHANGE_BADPARAM:
-		VID_Printf( PRINT_ALL, "bad param\n" );
+		ri.Printf( PRINT_ALL, "bad param\n" );
 		break;
 	case DISP_CHANGE_BADFLAGS:
-		VID_Printf( PRINT_ALL, "bad flags\n" );
+		ri.Printf( PRINT_ALL, "bad flags\n" );
 		break;
 	case DISP_CHANGE_FAILED:
-		VID_Printf( PRINT_ALL, "DISP_CHANGE_FAILED\n" );
+		ri.Printf( PRINT_ALL, "DISP_CHANGE_FAILED\n" );
 		break;
 	case DISP_CHANGE_BADMODE:
-		VID_Printf( PRINT_ALL, "bad mode\n" );
+		ri.Printf( PRINT_ALL, "bad mode\n" );
 		break;
 	case DISP_CHANGE_NOTUPDATED:
-		VID_Printf( PRINT_ALL, "not updated\n" );
+		ri.Printf( PRINT_ALL, "not updated\n" );
 		break;
 	default:
-		VID_Printf( PRINT_ALL, "unknown error %d\n", value );
+		ri.Printf( PRINT_ALL, "unknown error %d\n", value );
 		break;
 	}
 }
@@ -731,13 +745,34 @@ static rserr_t GLW_SetMode( int mode,
 	//
 	// print out informational messages
 	//
-	VID_Printf( PRINT_ALL, "...setting mode %d:", mode );
-	if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, mode ) )
+	ri.Printf( PRINT_ALL, "...setting mode %d:", mode );
+	if (mode == -2)
 	{
-		VID_Printf( PRINT_ALL, " invalid mode\n" );
+		int OSwidth = GetSystemMetrics (SM_CXSCREEN);
+		int OSheight = GetSystemMetrics (SM_CYSCREEN);
+
+		// use desktop video resolution
+		if( OSheight > 0 )
+		{
+			glConfig.vidWidth = OSwidth;
+			glConfig.vidHeight = OSheight;
+		}
+		else
+		{
+			glConfig.vidWidth = 640;
+			glConfig.vidHeight = 480;
+			ri.Printf( PRINT_ALL, "Cannot determine display resolution, assuming 640x480\n" );
+		}
+
+		//TODO Aspect stuff?
+		//glConfig.windowAspect = (float)glConfig.vidWidth / (float)glConfig.vidHeight;
+	}
+	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, mode ) )
+	{
+		ri.Printf( PRINT_ALL, " invalid mode\n" );
 		return RSERR_INVALID_MODE;
 	}
-	VID_Printf( PRINT_ALL, " %d %d %s\n", glConfig.vidWidth, glConfig.vidHeight, win_fs[cdsFullscreen] );
+	ri.Printf( PRINT_ALL, " %d %d %s\n", glConfig.vidWidth, glConfig.vidHeight, win_fs[cdsFullscreen] );
 
 	//
 	// check our desktop attributes
@@ -762,7 +797,7 @@ static rserr_t GLW_SetMode( int mode,
 			char sErrorHead[1024];	// ott
 
 			extern qboolean Language_IsAsian(void);
-			Q_strncpyz(sErrorHead, Language_IsAsian() ? "Low Desktop Color Depth" : SE_GetString("CON_TEXT_LOW_DESKTOP_COLOUR_DEPTH"), sizeof(sErrorHead) );
+			Q_strncpyz(sErrorHead, Language_IsAsian() ? "Low Desktop Color Depth" : ri.SE_GetString("CON_TEXT_LOW_DESKTOP_COLOUR_DEPTH"), sizeof(sErrorHead) );
 
 			const char *psErrorBody = Language_IsAsian() ?
 												"It is highly unlikely that a correct windowed\n"
@@ -771,7 +806,7 @@ static rserr_t GLW_SetMode( int mode,
 												"anyway.  Select 'Cancel' to try a fullscreen\n"
 												"mode instead."
 												:
-												SE_GetString("CON_TEXT_TRY_ANYWAY");
+												ri.SE_GetString("CON_TEXT_TRY_ANYWAY");
 
 			if ( MessageBox( NULL, 							
 						psErrorBody,
@@ -807,16 +842,16 @@ static rserr_t GLW_SetMode( int mode,
 			{
 				dm.dmBitsPerPel = colorbits;
 				dm.dmFields |= DM_BITSPERPEL;
-				VID_Printf( PRINT_ALL, "...using colorsbits of %d\n", colorbits );
+				ri.Printf( PRINT_ALL, "...using colorsbits of %d\n", colorbits );
 			}
 			else
 			{
-				VID_Printf( PRINT_ALL, "WARNING:...changing depth not supported on Win95 < pre-OSR 2.x\n" );
+				ri.Printf( PRINT_ALL, "WARNING:...changing depth not supported on Win95 < pre-OSR 2.x\n" );
 			}
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL, "...using desktop display depth of %d\n", glw_state.desktopBitsPixel );
+			ri.Printf( PRINT_ALL, "...using desktop display depth of %d\n", glw_state.desktopBitsPixel );
 		}
 
 		//
@@ -824,11 +859,11 @@ static rserr_t GLW_SetMode( int mode,
 		//
 		if ( glw_state.cdsFullscreen )
 		{
-			VID_Printf( PRINT_ALL, "...already fullscreen, avoiding redundant CDS\n" );
+			ri.Printf( PRINT_ALL, "...already fullscreen, avoiding redundant CDS\n" );
 
 			if ( !GLW_CreateWindow ( glConfig.vidWidth, glConfig.vidHeight, colorbits, qtrue ) )
 			{
-				VID_Printf( PRINT_ALL, "...restoring display settings\n" );
+				ri.Printf( PRINT_ALL, "...restoring display settings\n" );
 				ChangeDisplaySettings( 0, 0 );
 				return RSERR_INVALID_MODE;
 			}
@@ -838,17 +873,17 @@ static rserr_t GLW_SetMode( int mode,
 		//
 		else
 		{
-			VID_Printf( PRINT_ALL, "...calling CDS: " );
+			ri.Printf( PRINT_ALL, "...calling CDS: " );
 			
 			// try setting the exact mode requested, because some drivers don't report
 			// the low res modes in EnumDisplaySettings, but still work
 			if ( ( cdsRet = ChangeDisplaySettings( &dm, CDS_FULLSCREEN ) ) == DISP_CHANGE_SUCCESSFUL )
 			{
-				VID_Printf( PRINT_ALL, "ok\n" );
+				ri.Printf( PRINT_ALL, "ok\n" );
 
 				if ( !GLW_CreateWindow ( glConfig.vidWidth, glConfig.vidHeight, colorbits, qtrue) )
 				{
-					VID_Printf( PRINT_ALL, "...restoring display settings\n" );
+					ri.Printf( PRINT_ALL, "...restoring display settings\n" );
 					ChangeDisplaySettings( 0, 0 );
 					return RSERR_INVALID_MODE;
 				}
@@ -863,11 +898,11 @@ static rserr_t GLW_SetMode( int mode,
 				DEVMODE		devmode;
 				int			modeNum;
 
-				VID_Printf( PRINT_ALL, "failed, " );
+				ri.Printf( PRINT_ALL, "failed, " );
 				
 				PrintCDSError( cdsRet );
 				
-				VID_Printf( PRINT_ALL, "...trying next higher resolution:" );
+				ri.Printf( PRINT_ALL, "...trying next higher resolution:" );
 				
 				// we could do a better matching job here...
 				for ( modeNum = 0 ; ; modeNum++ ) {
@@ -884,10 +919,10 @@ static rserr_t GLW_SetMode( int mode,
 				
 				if ( modeNum != -1 && ( cdsRet = ChangeDisplaySettings( &devmode, CDS_FULLSCREEN ) ) == DISP_CHANGE_SUCCESSFUL )
 				{
-					VID_Printf( PRINT_ALL, " ok\n" );
+					ri.Printf( PRINT_ALL, " ok\n" );
 					if ( !GLW_CreateWindow( glConfig.vidWidth, glConfig.vidHeight, colorbits, qtrue) )
 					{
-						VID_Printf( PRINT_ALL, "...restoring display settings\n" );
+						ri.Printf( PRINT_ALL, "...restoring display settings\n" );
 						ChangeDisplaySettings( 0, 0 );
 						return RSERR_INVALID_MODE;
 					}
@@ -896,11 +931,11 @@ static rserr_t GLW_SetMode( int mode,
 				}
 				else
 				{
-					VID_Printf( PRINT_ALL, " failed, " );
+					ri.Printf( PRINT_ALL, " failed, " );
 					
 					PrintCDSError( cdsRet );
 					
-					VID_Printf( PRINT_ALL, "...restoring display settings\n" );
+					ri.Printf( PRINT_ALL, "...restoring display settings\n" );
 					ChangeDisplaySettings( 0, 0 );
 					
 /*				jfm:  i took out the following code to allow fallback to mode 3, with this code it goes half windowed and just doesn't work.
@@ -946,38 +981,64 @@ static rserr_t GLW_SetMode( int mode,
 	return RSERR_OK;
 }
 
+/*
+** GLW_CheckForExtension
+
+  Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
+*/
+
+bool GL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
+static const char *wglExtensions = NULL;
+
+/* WGL version of the above, ASSUMES wglExtensions is non-null */
+bool WGL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( wglExtensions, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
 //--------------------------------------------
 static void GLW_InitTextureCompression( void )
 {
-	qboolean newer_tc, old_tc;
+	bool newer_tc, old_tc;
 
 	// Check for available tc methods.
-	newer_tc = ( strstr( glConfig.extensions_string, "ARB_texture_compression" )
-		&& strstr( glConfig.extensions_string, "EXT_texture_compression_s3tc" )) ? qtrue : qfalse;
-	old_tc = ( strstr( glConfig.extensions_string, "GL_S3_s3tc" )) ? qtrue : qfalse;
+	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
+	old_tc = GL_CheckForExtension("GL_S3_s3tc");
 
 	if ( old_tc )
 	{
-		VID_Printf( PRINT_ALL, "...GL_S3_s3tc available\n" );
+		ri.Printf( PRINT_ALL, "...GL_S3_s3tc available\n" );
 	}
 
 	if ( newer_tc )
 	{
-		VID_Printf( PRINT_ALL, "...GL_EXT_texture_compression_s3tc available\n" );
+		ri.Printf( PRINT_ALL, "...GL_EXT_texture_compression_s3tc available\n" );
 	}
 
 	if ( !r_ext_compressed_textures->value )
 	{
 		// Compressed textures are off
 		glConfig.textureCompression = TC_NONE;
-		VID_Printf( PRINT_ALL, "...ignoring texture compression\n" );
+		ri.Printf( PRINT_ALL, "...ignoring texture compression\n" );
 	}
 	else if ( !old_tc && !newer_tc )
 	{
 		// Requesting texture compression, but no method found
 		glConfig.textureCompression = TC_NONE;
-		VID_Printf( PRINT_ALL, "...no supported texture compression method found\n" );
-		VID_Printf( PRINT_ALL, ".....ignoring texture compression\n" );
+		ri.Printf( PRINT_ALL, "...no supported texture compression method found\n" );
+		ri.Printf( PRINT_ALL, ".....ignoring texture compression\n" );
 	}
 	else
 	{
@@ -987,14 +1048,14 @@ static void GLW_InitTextureCompression( void )
 			// No preference, so pick the best
 			if ( newer_tc )
 			{
-				VID_Printf( PRINT_ALL, "...no tc preference specified\n" );
-				VID_Printf( PRINT_ALL, ".....using GL_EXT_texture_compression_s3tc\n" );
+				ri.Printf( PRINT_ALL, "...no tc preference specified\n" );
+				ri.Printf( PRINT_ALL, ".....using GL_EXT_texture_compression_s3tc\n" );
 				glConfig.textureCompression = TC_S3TC_DXT;
 			}
 			else
 			{
-				VID_Printf( PRINT_ALL, "...no tc preference specified\n" );
-				VID_Printf( PRINT_ALL, ".....using GL_S3_s3tc\n" );
+				ri.Printf( PRINT_ALL, "...no tc preference specified\n" );
+				ri.Printf( PRINT_ALL, ".....using GL_S3_s3tc\n" );
 				glConfig.textureCompression = TC_S3TC;
 			}
 		}
@@ -1006,12 +1067,12 @@ static void GLW_InitTextureCompression( void )
 				// both are avaiable, so we can use the desired tc method
 				if ( r_ext_preferred_tc_method->integer == TC_S3TC )
 				{
-					VID_Printf( PRINT_ALL, "...using preferred tc method, GL_S3_s3tc\n" );
+					ri.Printf( PRINT_ALL, "...using preferred tc method, GL_S3_s3tc\n" );
 					glConfig.textureCompression = TC_S3TC;
 				}
 				else
 				{
-					VID_Printf( PRINT_ALL, "...using preferred tc method, GL_EXT_texture_compression_s3tc\n" );
+					ri.Printf( PRINT_ALL, "...using preferred tc method, GL_EXT_texture_compression_s3tc\n" );
 					glConfig.textureCompression = TC_S3TC_DXT;
 				}
 			}
@@ -1023,14 +1084,14 @@ static void GLW_InitTextureCompression( void )
 					// Preferring to user older compression
 					if ( old_tc )
 					{
-						VID_Printf( PRINT_ALL, "...using GL_S3_s3tc\n" );
+						ri.Printf( PRINT_ALL, "...using GL_S3_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC;
 					}
 					else
 					{
 						// Drat, preference can't be honored 
-						VID_Printf( PRINT_ALL, "...preferred tc method, GL_S3_s3tc not available\n" );
-						VID_Printf( PRINT_ALL, ".....falling back to GL_EXT_texture_compression_s3tc\n" );
+						ri.Printf( PRINT_ALL, "...preferred tc method, GL_S3_s3tc not available\n" );
+						ri.Printf( PRINT_ALL, ".....falling back to GL_EXT_texture_compression_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC_DXT;
 					}
 				}
@@ -1039,14 +1100,14 @@ static void GLW_InitTextureCompression( void )
 					// Preferring to user newer compression
 					if ( newer_tc )
 					{
-						VID_Printf( PRINT_ALL, "...using GL_EXT_texture_compression_s3tc\n" );
+						ri.Printf( PRINT_ALL, "...using GL_EXT_texture_compression_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC_DXT;
 					}
 					else
 					{
 						// Drat, preference can't be honored 
-						VID_Printf( PRINT_ALL, "...preferred tc method, GL_EXT_texture_compression_s3tc not available\n" );
-						VID_Printf( PRINT_ALL, ".....falling back to GL_S3_s3tc\n" );
+						ri.Printf( PRINT_ALL, "...preferred tc method, GL_EXT_texture_compression_s3tc not available\n" );
+						ri.Printf( PRINT_ALL, ".....falling back to GL_S3_s3tc\n" );
 						glConfig.textureCompression = TC_S3TC;
 					}
 				}
@@ -1062,40 +1123,40 @@ static void GLW_InitExtensions( void )
 {
 	if ( !r_allowExtensions->integer )
 	{
-		VID_Printf( PRINT_ALL, "*** IGNORING OPENGL EXTENSIONS ***\n" );
+		ri.Printf( PRINT_ALL, "*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
-	VID_Printf( PRINT_ALL, "Initializing OpenGL extensions\n" );
+	ri.Printf( PRINT_ALL, "Initializing OpenGL extensions\n" );
 
 	// Select our tc scheme
 	GLW_InitTextureCompression();
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_env_add" ) )
+	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
 			glConfig.textureEnvAddAvailable = qtrue;
-			VID_Printf( PRINT_ALL, "...using GL_EXT_texture_env_add\n" );
+			ri.Printf( PRINT_ALL, "...using GL_EXT_texture_env_add\n" );
 		}
 		else
 		{
 			glConfig.textureEnvAddAvailable = qfalse;
-			VID_Printf( PRINT_ALL, "...ignoring GL_EXT_texture_env_add\n" );
+			ri.Printf( PRINT_ALL, "...ignoring GL_EXT_texture_env_add\n" );
 		}
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...GL_EXT_texture_env_add not found\n" );
+		ri.Printf( PRINT_ALL, "...GL_EXT_texture_env_add not found\n" );
 	}
 
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.maxTextureFilterAnisotropy = 0;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_filter_anisotropic" ) )
+	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
 	{
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF	//can't include glext.h here ... sigh
 		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
@@ -1109,43 +1170,39 @@ static void GLW_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+			ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
-	glConfig.clampToEdgeAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_texture_edge_clamp" ) )
-	{
-		glConfig.clampToEdgeAvailable = qtrue;
-		VID_Printf( PRINT_ALL, "...Using GL_EXT_texture_edge_clamp\n" );
-	}
+	glConfig.clampToEdgeAvailable = qtrue;
+	Com_Printf ("...using GL_EXT_texture_edge_clamp\n" );
 
 	// WGL_EXT_swap_control
 	qwglSwapIntervalEXT = ( BOOL (WINAPI *)(int)) qwglGetProcAddress( "wglSwapIntervalEXT" );
 	if ( qwglSwapIntervalEXT )
 	{
-		VID_Printf( PRINT_ALL, "...using WGL_EXT_swap_control\n" );
+		ri.Printf( PRINT_ALL, "...using WGL_EXT_swap_control\n" );
 		r_swapInterval->modified = qtrue;	// force a set next frame
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...WGL_EXT_swap_control not found\n" );
+		ri.Printf( PRINT_ALL, "...WGL_EXT_swap_control not found\n" );
 	}
 
 	// GL_ARB_multitexture
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_multitexture" )  )
+	if ( GL_CheckForExtension( "GL_ARB_multitexture" )  )
 	{
 		if ( r_ext_multitexture->integer )
 		{
@@ -1159,35 +1216,35 @@ static void GLW_InitExtensions( void )
 
 				if ( glConfig.maxActiveTextures > 1 )
 				{
-					VID_Printf( PRINT_ALL, "...using GL_ARB_multitexture\n" );
+					ri.Printf( PRINT_ALL, "...using GL_ARB_multitexture\n" );
 				}
 				else
 				{
 					qglMultiTexCoord2fARB = NULL;
 					qglActiveTextureARB = NULL;
 					qglClientActiveTextureARB = NULL;
-					VID_Printf( PRINT_ALL, "...not using GL_ARB_multitexture, < 2 texture units\n" );
+					ri.Printf( PRINT_ALL, "...not using GL_ARB_multitexture, < 2 texture units\n" );
 				}
 			}
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL, "...ignoring GL_ARB_multitexture\n" );
+			ri.Printf( PRINT_ALL, "...ignoring GL_ARB_multitexture\n" );
 		}
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...GL_ARB_multitexture not found\n" );
+		ri.Printf( PRINT_ALL, "...GL_ARB_multitexture not found\n" );
 	}
 
 	// GL_EXT_compiled_vertex_array
 	qglLockArraysEXT = NULL;
 	qglUnlockArraysEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_compiled_vertex_array" ) )
+	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
-			VID_Printf( PRINT_ALL, "...using GL_EXT_compiled_vertex_array\n" );
+			ri.Printf( PRINT_ALL, "...using GL_EXT_compiled_vertex_array\n" );
 			qglLockArraysEXT = ( void ( APIENTRY * )( int, int ) ) qwglGetProcAddress( "glLockArraysEXT" );
 			qglUnlockArraysEXT = ( void ( APIENTRY * )( void ) ) qwglGetProcAddress( "glUnlockArraysEXT" );
 			if (!qglLockArraysEXT || !qglUnlockArraysEXT) {
@@ -1196,18 +1253,18 @@ static void GLW_InitExtensions( void )
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL, "...ignoring GL_EXT_compiled_vertex_array\n" );
+			ri.Printf( PRINT_ALL, "...ignoring GL_EXT_compiled_vertex_array\n" );
 		}
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...GL_EXT_compiled_vertex_array not found\n" );
+		ri.Printf( PRINT_ALL, "...GL_EXT_compiled_vertex_array not found\n" );
 	}
 
 	// GL_EXT_point_parameters
 	qglPointParameterfEXT = NULL;
 	qglPointParameterfvEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
+	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
 	{
 		if ( r_ext_point_parameters->integer )
 		{
@@ -1215,24 +1272,24 @@ static void GLW_InitExtensions( void )
 			qglPointParameterfvEXT = ( void ( APIENTRY * )( GLenum, GLfloat *) ) qwglGetProcAddress( "glPointParameterfvEXT" );
 			if (!qglPointParameterfEXT || !qglPointParameterfvEXT) 
 			{
-				VID_Printf( ERR_FATAL, "Bad GetProcAddress for GL_EXT_point_parameters");
+				ri.Printf( ERR_FATAL, "Bad GetProcAddress for GL_EXT_point_parameters");
 			}
-			VID_Printf( PRINT_ALL, "...using GL_EXT_point_parameters\n" );
+			ri.Printf( PRINT_ALL, "...using GL_EXT_point_parameters\n" );
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL, "...ignoring GL_EXT_point_parameters\n" );
+			ri.Printf( PRINT_ALL, "...ignoring GL_EXT_point_parameters\n" );
 		}
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...GL_EXT_point_parameters not found\n" );
+		ri.Printf( PRINT_ALL, "...GL_EXT_point_parameters not found\n" );
 	}
 
 	// GL_NV_point_sprite
 	qglPointParameteriNV = NULL;
 	qglPointParameterivNV = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_NV_point_sprite" ) )
+	if ( GL_CheckForExtension( "GL_NV_point_sprite" ) )
 	{
 		if ( r_ext_nv_point_sprite->integer )
 		{
@@ -1240,23 +1297,23 @@ static void GLW_InitExtensions( void )
 			qglPointParameterivNV = ( void ( APIENTRY * )( GLenum, const GLint *) ) qwglGetProcAddress( "glPointParameterivNV" );
 			if (!qglPointParameteriNV || !qglPointParameterivNV) 
 			{
-				VID_Printf( ERR_FATAL, "Bad GetProcAddress for GL_NV_point_sprite");
+				ri.Printf( ERR_FATAL, "Bad GetProcAddress for GL_NV_point_sprite");
 			}
-			VID_Printf( PRINT_ALL, "...using GL_NV_point_sprite\n" );
+			ri.Printf( PRINT_ALL, "...using GL_NV_point_sprite\n" );
 		}
 		else
 		{
-			VID_Printf( PRINT_ALL,  "...ignoring GL_NV_point_sprite\n" );
+			ri.Printf( PRINT_ALL,  "...ignoring GL_NV_point_sprite\n" );
 		}
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "...GL_NV_point_sprite not found\n" );
+		ri.Printf( PRINT_ALL, "...GL_NV_point_sprite not found\n" );
 	}
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
-	if ( strstr( glConfig.extensions_string, "GL_NV_register_combiners" ) )
+	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
 	{
 		// NOTE: This extension requires multitexture support (over 2 units).
 		if ( glConfig.maxActiveTextures >= 2 )
@@ -1309,7 +1366,7 @@ static void GLW_InitExtensions( void )
 
 	// Vertex Programs.
 	bool bARBVertexProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_vertex_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
 	{
 		bARBVertexProgram = true;
 	}
@@ -1321,7 +1378,7 @@ static void GLW_InitExtensions( void )
 
 	bool bARBFragmentProgram = false;
 	// Fragment Programs.
-	if ( strstr( glConfig.extensions_string, "GL_ARB_fragment_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
 	{
 		bARBFragmentProgram = true;
 	}
@@ -1373,15 +1430,14 @@ static void GLW_InitExtensions( void )
 
 	// Figure out which texture rectangle extension to use.
 	bool bTexRectSupported = false;
-	if ( strnicmp( glConfig.vendor_string, "ATI Technologies",16 )==0
-		&& strnicmp( glConfig.version_string, "1.3.3",5 )==0 
+	if ( Q_stricmpn( glConfig.vendor_string, "ATI Technologies",16 )==0
+		&& Q_stricmpn( glConfig.version_string, "1.3.3",5 )==0 
 		&& glConfig.version_string[5] < '9' ) //1.3.34 and 1.3.37 and 1.3.38 are broken for sure, 1.3.39 is not
 	{
 		g_bTextureRectangleHack = true;
 	}
 	
-	if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" )
-		   || strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
+	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}
@@ -1391,7 +1447,6 @@ static void GLW_InitExtensions( void )
 	PFNWGLGETEXTENSIONSSTRINGARBPROC			qwglGetExtensionsStringARB;
 	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) qwglGetProcAddress("wglGetExtensionsStringARB");
 
-	const char *wglExtensions = NULL;
 	bool bHasPixelFormat = false;
 	bool bHasRenderTexture = false;
 
@@ -1405,7 +1460,7 @@ static void GLW_InitExtensions( void )
 	if ( wglExtensions )
 	{
 		// Pixel Format.
-		if ( strstr( wglExtensions, "WGL_ARB_pixel_format" ) )
+		if ( WGL_CheckForExtension( "WGL_ARB_pixel_format" ) )
 		{
 			qwglGetPixelFormatAttribivARB			=	(PFNWGLGETPIXELFORMATATTRIBIVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribivARB");
 			qwglGetPixelFormatAttribfvARB			=	(PFNWGLGETPIXELFORMATATTRIBFVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
@@ -1429,7 +1484,7 @@ static void GLW_InitExtensions( void )
 		// Offscreen pixel-buffer.
 		// NOTE: VV guys can use the equivelant SetRenderTarget() with the correct texture surfaces.
 		bool bWGLARBPbuffer = false;
-		if ( strstr( wglExtensions, "WGL_ARB_pbuffer" ) && bHasPixelFormat )
+		if ( WGL_CheckForExtension( "WGL_ARB_pbuffer" ) && bHasPixelFormat )
 		{
 			bWGLARBPbuffer = true;
 			qwglCreatePbufferARB		=	(PFNWGLCREATEPBUFFERARBPROC) qwglGetProcAddress("wglCreatePbufferARB");
@@ -1452,7 +1507,7 @@ static void GLW_InitExtensions( void )
 		}
 
 		// Render-Texture (requires pbuffer ext (and it's dependancies of course).
-		if ( strstr( wglExtensions, "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
+		if ( WGL_CheckForExtension( "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
 		{
 			qwglBindTexImageARB			=	(PFNWGLBINDTEXIMAGEARBPROC) qwglGetProcAddress("wglBindTexImageARB");
 			qwglReleaseTexImageARB		=	(PFNWGLRELEASETEXIMAGEARBPROC) qwglGetProcAddress("wglReleaseTexImageARB");
@@ -1477,7 +1532,8 @@ static void GLW_InitExtensions( void )
 	// Find out how many general combiners they have.
 	#define GL_MAX_GENERAL_COMBINERS_NV       0x854D
 	GLint iNumGeneralCombiners = 0;
-	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
+	if(bNVRegisterCombiners)
+		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram && bHasRenderTexture && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
@@ -1490,7 +1546,7 @@ static void GLW_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
 
@@ -1530,7 +1586,7 @@ static qboolean GLW_CheckOSVersion( void )
 	}
 	else
 	{
-		VID_Printf( PRINT_ALL, "GLW_CheckOSVersion() - GetVersionEx failed\n" );
+		ri.Printf( PRINT_ALL, "GLW_CheckOSVersion() - GetVersionEx failed\n" );
 		return qfalse;
 	}
 
@@ -1545,15 +1601,12 @@ static qboolean GLW_CheckOSVersion( void )
 */
 static qboolean GLW_LoadOpenGL()
 {
-	char buffer[1024];
 	qboolean cdsFullscreen;
-
-	strlwr( strcpy( buffer, OPENGL_DRIVER_NAME ) );
 
 	//
 	// load the driver and bind our function pointers to it
 	// 
-	if ( QGL_Init( buffer ) ) 
+	if ( QGL_Init( "opengl32" ) ) 
 	{
 		cdsFullscreen = r_fullscreen->integer;
 
@@ -1563,7 +1616,7 @@ static qboolean GLW_LoadOpenGL()
 			// if we're on a 24/32-bit desktop and we're going fullscreen
 			// try it again but with a 16-bit desktop
 			if ( r_colorbits->integer != 16 ||
-				 cdsFullscreen != (int)qtrue ||
+				 cdsFullscreen != qtrue ||
 				 r_mode->integer != 3 )
 			{
 				if ( !GLW_StartDriverAndSetMode( 3, 16, qtrue ) )
@@ -1634,10 +1687,10 @@ static void GLW_StartOpenGL( void )
 void GLimp_Init( void )
 {
 	char	buf[MAX_STRING_CHARS];
-	cvar_t *lastValidRenderer = Cvar_Get( "r_lastValidRenderer", "(uninitialized)", CVAR_ARCHIVE );
+	cvar_t *lastValidRenderer = ri.Cvar_Get( "r_lastValidRenderer", "(uninitialized)", CVAR_ARCHIVE );
 	cvar_t	*cv;
 
-	VID_Printf( PRINT_ALL, "Initializing OpenGL subsystem\n" );
+	ri.Printf( PRINT_ALL, "Initializing OpenGL subsystem\n" );
 
 	//
 	// check OS version to see if we can do fullscreen display changes
@@ -1648,13 +1701,13 @@ void GLimp_Init( void )
 	}
 
 	// save off hInstance and wndproc
-	cv = Cvar_Get( "win_hinstance", "", 0 );
-	sscanf( cv->string, "%i", (int *)&g_wv.hInstance );
+	cv = ri.Cvar_Get( "win_hinstance", "", 0 );
+	sscanf( cv->string, "%i", (int *)&tr.wv->hInstance );
 
-	cv = Cvar_Get( "win_wndproc", "", 0 );
+	cv = ri.Cvar_Get( "win_wndproc", "", 0 );
 	sscanf( cv->string, "%i", (int *)&glw_state.wndproc );
 
-	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
+	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 
 	// load appropriate DLL and initialize subsystem
 	GLW_StartOpenGL();
@@ -1689,57 +1742,56 @@ void GLimp_Init( void )
 	// to be overridden when testing driver fixes, etc. but only sets
 	// them to their default state when the hardware is first installed/run.
 	//
-extern qboolean Sys_LowPhysicalMemory();
 	if ( Q_stricmp( lastValidRenderer->string, glConfig.renderer_string ) )
 	{
-		if (Sys_LowPhysicalMemory())
+		if (ri.LowPhysicalMemory())
 		{
-			Cvar_Set("s_khz", "11");// this will get called before S_Init
-			Cvar_Set("cg_VariantSoundCap", "2");
-			Cvar_Set("s_allowDynamicMusic","0");
+			ri.Cvar_Set("s_khz", "11");// this will get called before S_Init
+			ri.Cvar_Set("cg_VariantSoundCap", "2");
+			ri.Cvar_Set("s_allowDynamicMusic","0");
 		}
 		//reset to defaults
-		Cvar_Set( "r_picmip", "1" );
+		ri.Cvar_Set( "r_picmip", "1" );
 		
 		// Savage3D and Savage4 should always have trilinear enabled
 		if ( strstr( buf, "savage3d" ) || strstr( buf, "s3 savage4" ) || strstr( buf, "geforce" ) || strstr( buf, "quadro" ) )
 		{
-			Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
+			ri.Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 		}
 		else
 		{
-			Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
+			ri.Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
 		}
 
 		if ( strstr( buf, "kyro" ) )	
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
-			Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
+			ri.Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
 		}
 
 		if ( strstr( buf, "geforce2" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
 		}
 
 		if ( strstr( buf, "radeon 9000" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
 		}
 
 		GLW_InitExtensions();	//get the values for test below
 		//this must be a really sucky card!
 		if ( (glConfig.textureCompression == TC_NONE) || (glConfig.maxActiveTextures < 2)  || (glConfig.maxTextureSize <= 512) )
 		{
-			Cvar_Set( "r_picmip", "2");
-			Cvar_Set( "r_colorbits", "16");
-			Cvar_Set( "r_texturebits", "16");
-			Cvar_Set( "r_mode", "3");	//force 640
-			Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
+			ri.Cvar_Set( "r_picmip", "2");
+			ri.Cvar_Set( "r_colorbits", "16");
+			ri.Cvar_Set( "r_texturebits", "16");
+			ri.Cvar_Set( "r_mode", "3");	//force 640
+			ri.Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
 		}
 	}
 	
-	Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
+	ri.Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
 	GLW_InitExtensions();
 
 	WG_CheckHardwareGamma();
@@ -1762,7 +1814,7 @@ void GLimp_Shutdown( void )
 		return;
 	}
 
-	VID_Printf( PRINT_ALL, "Shutting down OpenGL subsystem\n" );
+	ri.Printf( PRINT_ALL, "Shutting down OpenGL subsystem\n" );
 
 	// restore gamma.  We do this first because 3Dfx's extension needs a valid OGL subsystem
 	WG_RestoreGamma();
@@ -1772,33 +1824,43 @@ void GLimp_Shutdown( void )
 	{
 		retVal = qwglMakeCurrent( NULL, NULL ) != 0;
 
-		VID_Printf( PRINT_ALL, "...wglMakeCurrent( NULL, NULL ): %s\n", success[retVal] );
+		ri.Printf( PRINT_ALL, "...wglMakeCurrent( NULL, NULL ): %s\n", success[retVal] );
 	}
 
 	// delete HGLRC
 	if ( glw_state.hGLRC )
 	{
 		retVal = qwglDeleteContext( glw_state.hGLRC ) != 0;
-		VID_Printf( PRINT_ALL, "...deleting GL context: %s\n", success[retVal] );
+		ri.Printf( PRINT_ALL, "...deleting GL context: %s\n", success[retVal] );
 		glw_state.hGLRC = NULL;
 	}
 
 	// release DC
 	if ( glw_state.hDC )
 	{
-		retVal = ReleaseDC( g_wv.hWnd, glw_state.hDC ) != 0;
-		VID_Printf( PRINT_ALL, "...releasing DC: %s\n", success[retVal] );
+		retVal = ReleaseDC( tr.wv->hWnd, glw_state.hDC ) != 0;
+		ri.Printf( PRINT_ALL, "...releasing DC: %s\n", success[retVal] );
 		glw_state.hDC   = NULL;
 	}
 
 	// destroy window
-	if ( g_wv.hWnd )
+	if ( tr.wv->hWnd )
 	{
-		VID_Printf( PRINT_ALL, "...destroying window\n" );
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ri.Printf( PRINT_ALL, "...destroying window\n" );
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 		glw_state.pixelFormatSet = qfalse;
+	}
+
+	// unregister the window class
+	if ( s_classRegistered )
+	{
+		if ( FAILED (UnregisterClass (WINDOW_CLASS_NAME, tr.wv->hInstance)) )
+		{
+			Com_Error (ERR_FATAL, "GLimp_Shutdown: could not unregister window class, error code 0x%x", GetLastError());
+		}
+		s_classRegistered = qfalse;
 	}
 
 	// close the r_logFile
@@ -1811,7 +1873,7 @@ void GLimp_Shutdown( void )
 	// reset display settings
 	if ( glw_state.cdsFullscreen )
 	{
-		VID_Printf( PRINT_ALL, "...resetting display\n" );
+		ri.Printf( PRINT_ALL, "...resetting display\n" );
 		ChangeDisplaySettings( 0, 0 );
 		glw_state.cdsFullscreen = qfalse;
 	}
@@ -1824,9 +1886,25 @@ void GLimp_Shutdown( void )
 }
 
 /*
+===============
+GLimp_Minimize
+
+Minimize the game so that user is back at the desktop
+===============
+*/
+void GLimp_Minimize(void)
+{
+	if ( tr.wv->hWnd )
+	{
+		// Todo with viewlog maybe should try to unminimize but mer.
+		ShowWindow( tr.wv->hWnd, SW_MINIMIZE );
+	}
+}
+
+/*
 ** GLimp_LogComment
 */
-void GLimp_LogComment( char *comment ) 
+void GLimp_LogComment( const char *comment ) 
 {
 	if ( glw_state.log_fp ) {
 		fprintf( glw_state.log_fp, "%s", comment );

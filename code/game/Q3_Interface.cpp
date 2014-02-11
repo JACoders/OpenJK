@@ -22,10 +22,6 @@ This file is part of Jedi Academy.
 //	is not directly portable from engine to engine.
 //
 //	-- jweier
-
-// leave this line at the top for PCH reasons...
-#include "g_headers.h"
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "Q3_Interface.h"
@@ -33,18 +29,18 @@ This file is part of Jedi Academy.
 #include "b_local.h"
 #include "events.h"
 #include "g_nav.h"
-#include "..\cgame\cg_camera.h"
-#include "..\game\objectives.h"
+#include "../cgame/cg_camera.h"
+#include "../game/objectives.h"
 #include "g_roff.h"
-#include "..\cgame\cg_local.h"
+#include "../cgame/cg_local.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "g_navigator.h"
 
 extern	cvar_t	*com_buildScript;
 
 extern void InitMover( gentity_t *ent );
 extern void MatchTeam( gentity_t *teamLeader, int moverState, int time );
-//extern void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern char *G_GetLocationForEnt( gentity_t *ent );
 extern void NPC_BSSearchStart( int homeWp, bState_t bState );
@@ -53,7 +49,6 @@ extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
-//extern void FX_BorgTeleport( vec3_t org );
 static void Q3_SetWeapon (int entID, const char *wp_name);
 static void Q3_SetItem (int entID, const char *item_name);
 extern void CG_ChangeWeapon( int num );
@@ -64,7 +59,7 @@ extern void G_PlayDoorSound( gentity_t *ent, int type );
 extern void NPC_SetLookTarget( gentity_t *self, int entNum, int clearTime );
 extern void NPC_ClearLookTarget( gentity_t *self );
 extern void WP_SaberSetColor( gentity_t *ent, int saberNum, int bladeNum, char *colorName );
-extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
+extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 extern vehicleType_t TranslateVehicleName( char *name );
@@ -83,16 +78,7 @@ extern cvar_t	*g_skippingcin;
 
 extern qboolean	stop_icarus;
 
-static void PrisonerObjCheck(const char *name,const char *data);
-
-#define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
-//#define stringIDExpand(str, strEnum)	str,strEnum
-
-/*
-stringID_table_t tagsTable [] = 
-{
-}
-*/
+#define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
 
 stringID_table_t BSTable[] =
 {
@@ -108,7 +94,7 @@ stringID_table_t BSTable[] =
 	ENUM2STRING(BS_CINEMATIC),//# Does nothing but face it's angles and move to a goal if it has one
 	ENUM2STRING(BS_FLEE),//# Run toward the nav goal, avoiding danger
 	//the rest are internal only
-	"",				-1,
+	{ "",				-1 }
 };
 
 
@@ -132,12 +118,12 @@ stringID_table_t BSETTable[] =
 	ENUM2STRING(BSET_FFIRE),//# script to run when player shoots their own teammates
 	ENUM2STRING(BSET_FFDEATH),//# script to run when player kills a teammate
 	stringIDExpand("", BSET_INVALID),
-	"",				-1,
+	{ "",				-1 }
 };
 
 stringID_table_t WPTable[] =
 {
-	"NULL",WP_NONE,
+	{ "NULL",WP_NONE },
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_SABER),				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
@@ -170,7 +156,7 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TUSKEN_STAFF),
 	ENUM2STRING(WP_SCEPTER),
 	ENUM2STRING(WP_NOGHRI_STICK),
-	"", NULL
+	{ "", 0 }
 };
 
 stringID_table_t INVTable[] =
@@ -180,31 +166,31 @@ stringID_table_t INVTable[] =
 	ENUM2STRING(INV_SEEKER),
 	ENUM2STRING(INV_LIGHTAMP_GOGGLES),
 	ENUM2STRING(INV_SENTRY),
-	"", NULL
+	{ "", 0 }
 };
 
 stringID_table_t eventTable[] =
 {
 	//BOTH_h
 	//END
-	"",				EV_BAD,
+	{ "",				EV_BAD }
 };
 
 stringID_table_t DMSTable[] =
 {
-	"NULL",-1,
+	{ "NULL",-1 },
 	ENUM2STRING(DM_AUTO),	//# let the game determine the dynamic music as normal
 	ENUM2STRING(DM_SILENCE),	//# stop the music
 	ENUM2STRING(DM_EXPLORE),	//# force the exploration music to play
 	ENUM2STRING(DM_ACTION),	//# force the action music to play
 	ENUM2STRING(DM_BOSS),	//# force the boss battle music to play (if there is any)
 	ENUM2STRING(DM_DEATH),	//# force the "player dead" music to play
-	"", -1
+	{ "", -1 }
 };
 
 stringID_table_t HLTable[] =
 {
-	"NULL",-1,
+	{ "NULL",-1 },
 	ENUM2STRING(HL_FOOT_RT),
 	ENUM2STRING(HL_FOOT_LT),
 	ENUM2STRING(HL_LEG_RT),
@@ -227,7 +213,7 @@ stringID_table_t HLTable[] =
 	ENUM2STRING(HL_GENERIC4),
 	ENUM2STRING(HL_GENERIC5),
 	ENUM2STRING(HL_GENERIC6),
-	"", -1
+	{ "", -1 }
 };
 
 stringID_table_t setTable[] =
@@ -495,7 +481,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_SABER_ORIGIN),
 	ENUM2STRING(SET_SKIN),
 
-	"",	SET_,
+	{ "",	SET_ }
 };
 
 qboolean COM_ParseString( char **data, char **s ); 
@@ -737,7 +723,7 @@ static char *Q3_GetAnimBoth( gentity_t *ent )
 		return NULL;
 	}
 
-	if ( stricmp( lowerName, upperName ) )
+	if ( Q_stricmp( lowerName, upperName ) )
 	{
 #ifdef _DEBUG	// sigh, cut down on tester reports that aren't important
 		Quake3Game()->DebugPrint( IGameInterface::WL_WARNING, "Q3_GetAnimBoth: legs and torso animations did not match : returning legs\n" );
@@ -923,7 +909,7 @@ Prints a message in the center of the screen
 */
 static void Q3_ScrollText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "st \"%s\"", id);
+	gi.SendServerCommand( 0, "st \"%s\"", id);
 
 	return;
 }
@@ -937,7 +923,7 @@ Prints a message in the center of the screen giving it an LCARS frame around it
 */
 static void Q3_LCARSText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "lt \"%s\"", id);
+	gi.SendServerCommand( 0, "lt \"%s\"", id);
 
 	return;
 }
@@ -1032,8 +1018,6 @@ static qboolean G_AddSexToPlayerString ( char *string, qboolean qDoBoth )
 	return qtrue;
 }
 
-
-/*
 
 /*
 =============
@@ -1605,7 +1589,7 @@ Lerps the origin and angles of an entity to the destination values
 
 		moverState = MOVER_1TO2;
 	}
-	else /*if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
+	else / *if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
 /*	{
 		VectorCopy( ent->currentOrigin, ent->pos2 );
 		VectorCopy( origin, ent->pos1 );
@@ -2215,7 +2199,7 @@ stringID_table_t teamTable [] =
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
-	"", TEAM_FREE,
+	{ "", TEAM_FREE },
 };
 
 
@@ -2408,7 +2392,7 @@ static qboolean Q3_SetBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID > -1 )
+	if ( bSID != -1 )
 	{
 		if ( bSID == BS_SEARCH || bSID == BS_WANDER )
 		{
@@ -2527,7 +2511,7 @@ static qboolean Q3_SetTempBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID > -1 )
+	if ( bSID != -1 )
 	{
 		ent->NPC->tempBehavior = bSID;
 	}
@@ -2577,7 +2561,7 @@ static void Q3_SetDefaultBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID > -1 )
+	if ( bSID != -1 )
 	{
 		ent->NPC->defaultBehavior = bSID;
 	}
@@ -4047,7 +4031,7 @@ static void Q3_GiveSecurityKey( int entID, char *keyname )
 	other->client->ps.stats[STAT_ITEMS] |= (1<<INV_SECURITY_KEY);
 
 	//give the key
-	gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
+	gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
 	INV_SecurityKeyGive( other, keyname );
 	// Got a security key
 
@@ -4106,16 +4090,16 @@ void Q3_SetParm (int entID, int parmNum, const char *parmValue)
 	if ( (val = Q3_CheckStringCounterIncrement( parmValue )) )
 	{
 		val += atof( ent->parms->parm[parmNum] );
-		sprintf( ent->parms->parm[parmNum], "%f", val );
+		Com_sprintf( ent->parms->parm[parmNum], sizeof(ent->parms->parm[parmNum]), "%f", val );
 	}
 	else
 	{//Just copy the string
 		//copy only 16 characters
-		strncpy( ent->parms->parm[parmNum], parmValue, sizeof(ent->parms->parm[0]) );
-		//set the last charcter to null in case we had to truncate their passed string
-		if ( ent->parms->parm[parmNum][sizeof(ent->parms->parm[0]) - 1] != 0 )
+		strncpy( ent->parms->parm[parmNum], parmValue, sizeof(ent->parms->parm[parmNum]) );
+		//set the last character to null in case we had to truncate their passed string
+		if ( ent->parms->parm[parmNum][sizeof(ent->parms->parm[parmNum]) - 1] != 0 )
 		{//Tried to set a string that is too long
-			ent->parms->parm[parmNum][sizeof(ent->parms->parm[0]) - 1] = 0;
+			ent->parms->parm[parmNum][sizeof(ent->parms->parm[parmNum]) - 1] = 0;
 			Quake3Game()->DebugPrint( IGameInterface::WL_WARNING, "SET_PARM: parm%d string too long, truncated to '%s'!\n", parmNum, ent->parms->parm[parmNum] );
 		}
 	}
@@ -5912,7 +5896,7 @@ static void Q3_AddRHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), 0, 0, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -5930,7 +5914,7 @@ static void Q3_AddLHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), 0, 0, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -7218,7 +7202,7 @@ VariableSaveFloats
 void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
-	gi.AppendToSaveGame( 'FVAR', &numFloats, sizeof( numFloats ) );
+	gi.AppendToSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ) );
 
 	varFloat_m::iterator	vfi;
 	STL_ITERATE( vfi, fmap )
@@ -7227,11 +7211,11 @@ void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'FIDS', (void *) ((*vfi).first).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('F','I','D','S'), (void *) ((*vfi).first).c_str(), idSize );
 
 		//Save out the float value
-		gi.AppendToSaveGame( 'FVAL', &((*vfi).second), sizeof( float ) );
+		gi.AppendToSaveGame( INT_ID('F','V','A','L'), &((*vfi).second), sizeof( float ) );
 	}
 }
 
@@ -7244,7 +7228,7 @@ VariableSaveStrings
 void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
-	gi.AppendToSaveGame( 'SVAR', &numStrings, sizeof( numStrings ) );
+	gi.AppendToSaveGame( INT_ID('S','V','A','R'), &numStrings, sizeof( numStrings ) );
 
 	varString_m::iterator	vsi;
 	STL_ITERATE( vsi, smap )
@@ -7253,14 +7237,14 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'SIDS', (void *) ((*vsi).first).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('S','I','D','S'), (void *) ((*vsi).first).c_str(), idSize );
 
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-		gi.AppendToSaveGame( 'SVSZ', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'SVAL', (void *) ((*vsi).second).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('S','V','A','L'), (void *) ((*vsi).second).c_str(), idSize );
 	}
 }
 
@@ -7290,19 +7274,19 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	gi.ReadFromSaveGame( 'FVAR', &numFloats, sizeof( numFloats ), NULL );
+	gi.ReadFromSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('F','I','D','S'), &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		gi.ReadFromSaveGame( 'FVAL', &val, sizeof( float ), NULL );
+		gi.ReadFromSaveGame( INT_ID('F','V','A','L'), &val, sizeof( float ), NULL );
 
 		DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		SetFloatVariable( (const char *) &tempBuffer, val );
@@ -7321,18 +7305,18 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	gi.ReadFromSaveGame( 'SVAR', &numFloats, sizeof( numFloats ), NULL );
+	gi.ReadFromSaveGame( INT_ID('S','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('S','I','D','S'), &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
-		gi.ReadFromSaveGame( 'SVSZ', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'SVAL', &tempBuffer2, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('S','V','A','L'), &tempBuffer2, idSize, NULL );
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )
@@ -7409,6 +7393,8 @@ CQuake3GameInterface::CQuake3GameInterface() : IGameInterface()
 
 	m_entFilter = -1;
 
+	player_locked = qfalse;
+
 	gclient_t* client = &level.clients[0];
 	memset(&client->sess, 0, sizeof(client->sess));
 }
@@ -7480,7 +7466,7 @@ void CQuake3GameInterface::FreeEntity( gentity_t *pEntity )
 		strncpy( (char *) temp, pEntity->script_targetname, 1023 );
 		temp[ 1023 ] = 0;
 
-		entitylist_t::iterator it = m_EntityList.find( strupr(temp) );
+		entitylist_t::iterator it = m_EntityList.find( Q_strupr(temp) );
 
 		if (it != m_EntityList.end())
 		{
@@ -7529,7 +7515,7 @@ void CQuake3GameInterface::AssociateEntity( gentity_t *pEntity )
 	strncpy( (char *) temp, pEntity->script_targetname, 1023 );
 	temp[ 1023 ] = 0;
 
-	m_EntityList[ strupr( (char *) temp ) ] = pEntity->s.number;
+	m_EntityList[ Q_strupr( (char *) temp ) ] = pEntity->s.number;
 }
 
 // Make a valid script name.
@@ -7660,7 +7646,6 @@ int CQuake3GameInterface::RegisterScript( const char *strFileName, void **ppBuf,
 // Precache all the resources needed by a Script and it's Entity (or vice-versa).
 int CQuake3GameInterface::PrecacheEntity( gentity_t *pEntity )
 {
-	extern stringID_table_t BSTable[];
 	int		i;
 
 	for ( i = 0; i < NUM_BSETS; i++ )
@@ -7767,7 +7752,7 @@ void	CQuake3GameInterface::CenterPrint( const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	// FIXME: added '!' so you can print something that's hasn't been precached, '@' searches only for precache text
@@ -7777,11 +7762,11 @@ void	CQuake3GameInterface::CenterPrint( const char *format, ... )
 	{
 		if( text[0] == '!')
 		{
-			gi.SendServerCommand( NULL, "cp \"%s\"", (text+1) );
+			gi.SendServerCommand( 0, "cp \"%s\"", (text+1) );
 			return;
 		}
 
-		gi.SendServerCommand( NULL, "cp \"%s\"", text );
+		gi.SendServerCommand( 0, "cp \"%s\"", text );
 	}
 
 	DebugPrint( WL_VERBOSE, "%s\n", text); 	// Just a developers note
@@ -7798,7 +7783,7 @@ void	CQuake3GameInterface::DebugPrint( e_DebugPrintLevel level, const char *form
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	//Add the color formatting
@@ -7825,7 +7810,7 @@ void	CQuake3GameInterface::DebugPrint( e_DebugPrintLevel level, const char *form
 				buffer = (char *) text;
 				buffer += 5;
 
-				if ( ( entNum < 0 ) || ( entNum > MAX_GENTITIES ) )
+				if ( ( entNum < 0 ) || ( entNum >= MAX_GENTITIES ) )
 					entNum = 0;
 
 				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", g_entities[entNum].script_targetname, entNum, buffer );
@@ -7849,7 +7834,7 @@ unsigned int CQuake3GameInterface::GetTime( void )
 // NOTE: This extern does not really fit here, fix later please...
 extern void G_SoundBroadcast( gentity_t *ent, int soundIndex );
 // Plays a sound from an entity.
-int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, const char *channel )
+int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *name, const char *channel )
 {
 	gentity_t		*ent = &g_entities[entID];
 	char			finalName[MAX_QPATH];
@@ -7857,32 +7842,32 @@ int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, c
 	qboolean		type_voice = qfalse;
 
 	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
-	strlwr(finalName);
+	Q_strlwr(finalName);
 	G_AddSexToPlayerString( finalName, qtrue );
 
-	COM_StripExtension( (const char *)finalName, finalName );
+	COM_StripExtension( (const char *)finalName, finalName, sizeof(finalName) );
 
 	int soundHandle = G_SoundIndex( (char *) finalName );
 	bool bBroadcast = false;
 
-	if ( ( stricmp( channel, "CHAN_ANNOUNCER" ) == 0 ) || (ent->classname && Q_stricmp("target_scriptrunner", ent->classname ) == 0) ) {
+	if ( ( Q_stricmp( channel, "CHAN_ANNOUNCER" ) == 0 ) || (ent->classname && Q_stricmp("target_scriptrunner", ent->classname ) == 0) ) {
 		bBroadcast = true;
 	}
 
 
 	// moved here from further down so I can easily check channel-type without code dup...
 	//
-	if ( stricmp( channel, "CHAN_VOICE" ) == 0 )
+	if ( Q_stricmp( channel, "CHAN_VOICE" ) == 0 )
 	{
 		voice_chan = CHAN_VOICE;
 		type_voice = qtrue;
 	}
-	else if ( stricmp( channel, "CHAN_VOICE_ATTEN" ) == 0 )
+	else if ( Q_stricmp( channel, "CHAN_VOICE_ATTEN" ) == 0 )
 	{
 		voice_chan = CHAN_VOICE_ATTEN;
 		type_voice = qtrue;
 	}
-	else if ( stricmp( channel, "CHAN_VOICE_GLOBAL" ) == 0 ) // this should broadcast to everyone, put only casue animation on G_SoundOnEnt...
+	else if ( Q_stricmp( channel, "CHAN_VOICE_GLOBAL" ) == 0 ) // this should broadcast to everyone, put only casue animation on G_SoundOnEnt...
 	{
 		voice_chan = CHAN_VOICE_GLOBAL;
 		type_voice = qtrue;
@@ -7901,8 +7886,8 @@ int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, c
 		if (g_subtitles->integer == 1 || (ent->NPC && (ent->NPC->scriptFlags & SCF_USE_SUBTITLES) ) ) // Show all text
 		{
 			if ( in_camera)	// Cinematic
-			{					
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+			{
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 			}
 			else //if (precacheWav[i].speaker==SP_NONE)	//  lower screen text
 			{
@@ -7911,7 +7896,7 @@ int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, c
 				//
 				if (bBroadcast || (DistanceSquared(ent->currentOrigin, ent2->currentOrigin) < ((voice_chan == CHAN_VOICE_ATTEN)?(350 * 350):(1200 * 1200)) ) )
 				{
-					gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+					gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 				}
 			}
 		}
@@ -7919,8 +7904,8 @@ int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, c
 		else if (g_subtitles->integer == 2) // Show only talking head text and CINEMATIC
 		{
 			if ( in_camera)	// Cinematic text
-			{							
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle);
+			{
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle);
 			}
 		}
 	}
@@ -8482,58 +8467,58 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_IGNOREPAIN:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnorePain( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnorePain( entID, qfalse);
 		break;
 
 	case SET_IGNOREENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnoreEnemies( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnoreEnemies( entID, qfalse);
 		break;
 
 	case SET_IGNOREALERTS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnoreAlerts( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnoreAlerts( entID, qfalse);
 		break;
 		
 	case SET_DONTSHOOT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontShoot( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetDontShoot( entID, qfalse);
 		break;
 	
 	case SET_DONTFIRE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontFire( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetDontFire( entID, qfalse);
 		break;
 
 	case SET_LOCKED_ENEMY:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetLockedEnemy( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetLockedEnemy( entID, qfalse);
 		break;
 
 	case SET_NOTARGET:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoTarget( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetNoTarget( entID, qfalse);
 		break;
 
 	case SET_LEAN:
-		if(!stricmp("right", ((char *)data)))
+		if(!Q_stricmp("right", ((char *)data)))
 			Q3_SetLean( entID, LEAN_RIGHT);
-		else if(!stricmp("left", ((char *)data)))
+		else if(!Q_stricmp("left", ((char *)data)))
 			Q3_SetLean( entID, LEAN_LEFT);
 		else
 			Q3_SetLean( entID, LEAN_NONE);
@@ -8640,7 +8625,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_NO_MINDTRICK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoMindTrick( entID, qtrue);
 		else
 			Q3_SetNoMindTrick( entID, qfalse);
@@ -8664,133 +8649,133 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_CROUCHED:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetCrouched( entID, qtrue);
 		else
 			Q3_SetCrouched( entID, qfalse);
 		break;
 
 	case SET_WALKING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetWalking( entID, qtrue);	
 		else
 			Q3_SetWalking( entID, qfalse);	
 		break;
 
 	case SET_RUNNING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetRunning( entID, qtrue);	
 		else
 			Q3_SetRunning( entID, qfalse);	
 		break;
 
 	case SET_CHASE_ENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetChaseEnemies( entID, qtrue);	
 		else
 			Q3_SetChaseEnemies( entID, qfalse);	
 		break;
 
 	case SET_LOOK_FOR_ENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetLookForEnemies( entID, qtrue);	
 		else
 			Q3_SetLookForEnemies( entID, qfalse);	
 		break;
 
 	case SET_FACE_MOVE_DIR:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetFaceMoveDir( entID, qtrue);	
 		else
 			Q3_SetFaceMoveDir( entID, qfalse);	
 		break;
 
 	case SET_ALT_FIRE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetAltFire( entID, qtrue);	
 		else
 			Q3_SetAltFire( entID, qfalse);	
 		break;
 
 	case SET_DONT_FLEE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontFlee( entID, qtrue);	
 		else
 			Q3_SetDontFlee( entID, qfalse);	
 		break;
 
 	case SET_FORCED_MARCH:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetForcedMarch( entID, qtrue);	
 		else
 			Q3_SetForcedMarch( entID, qfalse);	
 		break;
 
 	case SET_NO_RESPONSE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoResponse( entID, qtrue);	
 		else
 			Q3_SetNoResponse( entID, qfalse);	
 		break;
 
 	case SET_NO_COMBAT_TALK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetCombatTalk( entID, qtrue);	
 		else
 			Q3_SetCombatTalk( entID, qfalse);	
 		break;
 
 	case SET_NO_ALERT_TALK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetAlertTalk( entID, qtrue);	
 		else
 			Q3_SetAlertTalk( entID, qfalse);	
 		break;
 
 	case SET_USE_CP_NEAREST:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUseCpNearest( entID, qtrue);	
 		else
 			Q3_SetUseCpNearest( entID, qfalse);	
 		break;
 
 	case SET_NO_FORCE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoForce( entID, qtrue);	
 		else
 			Q3_SetNoForce( entID, qfalse);	
 		break;
 
 	case SET_NO_ACROBATICS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoAcrobatics( entID, qtrue);	
 		else
 			Q3_SetNoAcrobatics( entID, qfalse);	
 		break;
 
 	case SET_USE_SUBTITLES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUseSubtitles( entID, qtrue);	
 		else
 			Q3_SetUseSubtitles( entID, qfalse);	
 		break;
 
 	case SET_NO_FALLTODEATH:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoFallToDeath( entID, qtrue);	
 		else
 			Q3_SetNoFallToDeath( entID, qfalse);	
 		break;
 
 	case SET_DISMEMBERABLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDismemberable( entID, qtrue);	
 		else
 			Q3_SetDismemberable( entID, qfalse);	
 		break;
 
 	case SET_MORELIGHT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetMoreLight( entID, qtrue);	
 		else
 			Q3_SetMoreLight( entID, qfalse);	
@@ -8806,28 +8791,28 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_UNDYING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUndying( entID, qtrue);	
 		else
 			Q3_SetUndying( entID, qfalse);	
 		break;
 
 	case SET_INVINCIBLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetInvincible( entID, qtrue);	
 		else
 			Q3_SetInvincible( entID, qfalse);	
 		break;
 
 	case SET_NOAVOID:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoAvoid( entID, qtrue);	
 		else
 			Q3_SetNoAvoid( entID, qfalse);	
 		break;
 
 	case SET_SOLID:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			if ( !Q3_SetSolid( entID, qtrue) )
 			{
@@ -8842,49 +8827,49 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_INVISIBLE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetInvisible( entID, qtrue );
 		else
 			Q3_SetInvisible( entID, qfalse );
 		break;
 
 	case SET_VAMPIRE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetVampire( entID, qtrue );
 		else
 			Q3_SetVampire( entID, qfalse );
 		break;
 
 	case SET_FORCE_INVINCIBLE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetForceInvincible( entID, qtrue );
 		else
 			Q3_SetForceInvincible( entID, qfalse );
 		break;
 
 	case SET_GREET_ALLIES:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetGreetAllies( entID, qtrue );
 		else
 			Q3_SetGreetAllies( entID, qfalse );
 		break;
 
 	case SET_PLAYER_LOCKED:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetPlayerLocked( entID, qtrue );
 		else
 			Q3_SetPlayerLocked( entID, qfalse );
 		break;
 		
 	case SET_LOCK_PLAYER_WEAPONS:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetLockPlayerWeapons( entID, qtrue );
 		else
 			Q3_SetLockPlayerWeapons( entID, qfalse );
 		break;
 
 	case SET_NO_IMPACT_DAMAGE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetNoImpactDamage( entID, qtrue );
 		else
 			Q3_SetNoImpactDamage( entID, qfalse );
@@ -8970,7 +8955,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_PLAYER_USABLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetPlayerUsable(entID, qtrue);
 		}
@@ -9000,7 +8985,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 		
 	case SET_LOOP_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetLoopAnim(entID, qtrue);
 		}
@@ -9011,7 +8996,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_INTERFACE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetInterface(entID, "1");
 		}
@@ -9023,7 +9008,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_SHIELDS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShields(entID, qtrue);
 		}
@@ -9034,7 +9019,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 	
 	case SET_SABERACTIVE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetSaberActive( entID, qtrue );
 		}
@@ -9084,7 +9069,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_ADJUST_AREA_PORTALS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetAdjustAreaPortals( entID, qtrue );
 		}
@@ -9095,7 +9080,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 	
 	case SET_DMG_BY_HEAVY_WEAP_ONLY:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetDmgByHeavyWeapOnly( entID, qtrue );
 		}
@@ -9106,7 +9091,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_SHIELDED:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShielded( entID, qtrue );
 		}
@@ -9117,7 +9102,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_NO_GROUPS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetNoGroups( entID, qtrue );
 		}
@@ -9128,63 +9113,63 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 		break;
 
 	case SET_FIRE_WEAPON:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetFireWeapon( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetFireWeapon( entID, qfalse);
 		}
 		break;
 
 	case SET_FIRE_WEAPON_NO_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetFireWeaponNoAnim( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetFireWeaponNoAnim( entID, qfalse);
 		}
 		break;
 	case SET_SAFE_REMOVE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetSafeRemove( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetSafeRemove( entID, qfalse);
 		}
 		break;
 
 	case SET_BOBA_JET_PACK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetBobaJetPack( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetBobaJetPack( entID, qfalse);
 		}
 		break;
 
 	case SET_INACTIVE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetInactive( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetInactive( entID, qfalse);
 		}
-		else if(!stricmp("unlocked", ((char *)data)))
+		else if(!Q_stricmp("unlocked", ((char *)data)))
 		{
 extern void UnLockDoors(gentity_t *const ent);
 			UnLockDoors(&g_entities[entID]);
 		}
-		else if(!stricmp("locked", ((char *)data)))
+		else if(!Q_stricmp("locked", ((char *)data)))
 		{
 extern void LockDoors(gentity_t *const ent);
 			LockDoors(&g_entities[entID]);
@@ -9196,18 +9181,18 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_FUNC_USABLE_VISIBLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetFuncUsableVisible( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetFuncUsableVisible( entID, qfalse);
 		}
 		break;
 
 	case SET_NO_KNOCKBACK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetNoKnockback(entID, qtrue);
 		}
@@ -9229,7 +9214,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_VIDEO_FADE_IN:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cl_VidFadeUp", "1");
 		}
@@ -9240,7 +9225,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_VIDEO_FADE_OUT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cl_VidFadeDown", "1");
 		}
@@ -9310,7 +9295,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_DISABLE_SHADER_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetDisableShaderAnims( entID, qtrue);
 		}
@@ -9321,7 +9306,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_SHADER_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShaderAnim( entID, qtrue);
 		}
@@ -9340,7 +9325,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_HUD:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cg_drawHUD", "1");
 		}
@@ -9405,9 +9390,8 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 	// Set a Saboteur to cloak (true) or un-cloak (false).
 	case SET_CLOAK:		// Created: 01/08/03 by AReis.
-//extern void Jedi_Cloak( gentity_t *self );
 extern void Saboteur_Cloak( gentity_t *self );
-		if( stricmp("true", ((char *)data)) == 0 )
+		if( Q_stricmp("true", ((char *)data)) == 0 )
 		{
 			Saboteur_Cloak( &g_entities[entID] );
 		}
@@ -9463,13 +9447,17 @@ extern cvar_t	*g_char_skin_legs;
 	case SET_WINTER_GEAR:	// Created: 03/26/03 by AReis.
 	{
 		// If this is a (fake) Player NPC or this IS the Player...
-		if ( entID == 0 || ( ent->NPC_type && stricmp( ent->NPC_type, "player" ) == 0 ) )
+		if ( entID == 0 || ( ent->NPC_type && Q_stricmp( ent->NPC_type, "player" ) == 0 ) )
 		{
 			char strSkin[MAX_QPATH];
 			// Set the Winter Gear Skin if true, otherwise set back to normal configuration.
-			if( stricmp( "true", ((char *)data) ) == 0 )
+			if( Q_stricmp( "true", ((char *)data) ) == 0 )
 			{
 				Com_sprintf( strSkin, sizeof( strSkin ), "models/players/%s/|%s|%s|%s", g_char_model->string, g_char_skin_head->string, "torso_g1", "lower_e1" );
+			}
+			else if(Q_stricmp(g_char_skin_head->string, "model_default") == 0 && Q_stricmp(g_char_skin_torso->string, "model_default") == 0 && Q_stricmp(g_char_skin_legs->string, "model_default") == 0)
+			{
+				Com_sprintf( strSkin, sizeof( strSkin ), "models/players/%s/model_default.skin", g_char_model->string );
 			}
 			else
 			{
@@ -9586,11 +9574,11 @@ void	CQuake3GameInterface::Kill( int entID, const char *name )
 	gentity_t	*victim = NULL;
 	int			o_health;
 
-	if( !stricmp( name, "self") )
+	if( !Q_stricmp( name, "self") )
 	{
 		victim = ent;
 	}
-	else if( !stricmp( name, "enemy" ) )
+	else if( !Q_stricmp( name, "enemy" ) )
 	{
 		victim = ent->enemy;
 	}
@@ -9676,14 +9664,14 @@ void	CQuake3GameInterface::Remove( int entID, const char *name )
 // Get a random (float) number.
 float	CQuake3GameInterface::Random( float min, float max )
 {
-	return ((rand() * (max - min)) / 32768.0F) + min;
+	return ((rand() * (max - min)) / (float)RAND_MAX) + min;
 }
 
 void	CQuake3GameInterface::Play( int taskID, int entID, const char *type, const char *name )
 {
 	gentity_t *ent = &g_entities[entID];
 
-	if ( !stricmp( type, "PLAY_ROFF" ) )
+	if ( !Q_stricmp( type, "PLAY_ROFF" ) )
 	{
 		// Try to load the requested ROFF
 		if ( G_LoadRoff( name ) )
@@ -10122,6 +10110,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->scriptFlags&SCF_IGNORE_ALERTS);
+		break;
 
 	case SET_DONTSHOOT://## %t="BOOL_TYPES" # Others won't shoot you
 		*value = (ent->flags&FL_DONT_SHOOT);
@@ -10229,6 +10218,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->aiFlags&NPCAI_SHIELDS);
+		break;
 	case SET_SABERACTIVE:
 		if ( ent->client == NULL )
 		{
@@ -10842,7 +10832,7 @@ int		CQuake3GameInterface::Evaluate( int p1Type, const char *p1, int p2Type, con
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) !stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
+			return (int) !Q_stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
 			break;
 
 		default:
@@ -10942,7 +10932,7 @@ int		CQuake3GameInterface::Evaluate( int p1Type, const char *p1, int p2Type, con
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) stricmp( c1, c2 );
+			return (int) Q_stricmp( c1, c2 );
 			break;
 
 		default:
@@ -11056,7 +11046,7 @@ void	CQuake3GameInterface::DeclareVariable( int type, const char *name )
 		break;
 
 	default:
-		DebugPrint( WL_ERROR, "unknown 'type' for declare() function!\n" );
+		DebugPrint( WL_ERROR, "unknown INT_ID('t','y','p','e') for declare() function!\n" );
 		return;
 		break;
 	}
@@ -11098,12 +11088,12 @@ void	CQuake3GameInterface::FreeVariable( const char *name )
 }
 
 //Save / Load functions
-int		CQuake3GameInterface::WriteSaveData( unsigned long chid, void *data, int length )
+int		CQuake3GameInterface::WriteSaveData( unsigned int chid, void *data, int length )
 {
 	return gi.AppendToSaveGame( chid, data, length );
 }
 
-int		CQuake3GameInterface::ReadSaveData( unsigned long chid, void *address, int length, void **addressptr )
+int		CQuake3GameInterface::ReadSaveData( unsigned int chid, void *address, int length, void **addressptr )
 {
 	return gi.ReadFromSaveGame( chid, address, length, addressptr );
 }
@@ -11143,13 +11133,13 @@ int		CQuake3GameInterface::GetByName( const char *name )
 	entitylist_t::iterator		ei;
 	char					temp[1024];
 
-	if ( name == NULL || name[0] == NULL )
+	if ( name == NULL || name[0] == '\0' )
 		return -1;
 
 	strncpy( (char *) temp, name, sizeof(temp) );
 	temp[sizeof(temp)-1] = 0;
 
-	ei = m_EntityList.find( strupr( (char *) temp ) );
+	ei = m_EntityList.find( Q_strupr( (char *) temp ) );
 
 	if ( ei == m_EntityList.end() )
 		return -1;
@@ -11197,7 +11187,7 @@ void	CQuake3GameInterface::PrecacheScript( const char *name )
 {
 	char	newname[1024];	//static char newname[1024];
 	// Strip the extension since we want the real name of the script.
-	COM_StripExtension( name, (char *) newname );
+	COM_StripExtension( name, (char *) newname, sizeof(newname) );
 
 	char *pBuf = NULL;
 	int iLength = 0;
@@ -11229,7 +11219,7 @@ void	CQuake3GameInterface::PrecacheSound( const char *name )
 	char			finalName[MAX_QPATH];
 
 	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
-	strlwr(finalName);
+	Q_strlwr(finalName);
 	if (com_buildScript->integer)
 	{	//get the male sound first
 		G_SoundIndex( finalName );
@@ -11280,7 +11270,7 @@ void	CQuake3GameInterface::PrecacheFromSet( const char *setname, const char *fil
 				} else {
 					Com_sprintf ( name, sizeof(name), "%s", filename );
 				}
-				COM_StripExtension( name, name );
+				COM_StripExtension( name, name, sizeof(name) );
 				COM_DefaultExtension( name, sizeof( name ), ".roq" );
 
 				gi.FS_FOpenFile( name, &file, FS_READ );	// trigger the file copy

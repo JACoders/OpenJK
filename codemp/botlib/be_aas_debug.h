@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_debug.h
@@ -5,7 +6,7 @@
  * desc:		AAS
  *
  * $Archive: /source/code/botlib/be_aas_debug.h $
- * $Author: Mrelusive $ 
+ * $Author: Mrelusive $
  * $Revision: 2 $
  * $Modtime: 10/05/99 3:32p $
  * $Date: 10/05/99 3:42p $
@@ -42,4 +43,3 @@ void AAS_DrawArrow(vec3_t start, vec3_t end, int linecolor, int arrowcolor);
 void AAS_ShowReachability(struct aas_reachability_s *reach);
 //show the reachable areas from the given area
 void AAS_ShowReachableAreas(int areanum);
-

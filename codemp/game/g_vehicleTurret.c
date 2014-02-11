@@ -1,4 +1,3 @@
-#include "g_headers.h"
 #include "bg_vehicles.h"
 #include "b_local.h"
 #include "ghoul2/G2.h"
@@ -9,11 +8,11 @@ extern gentity_t *WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir
 
 extern void G_VehMuzzleFireFX( gentity_t *ent, gentity_t *broadcaster, int muzzlesFired );
 //-----------------------------------------------------
-void VEH_TurretCheckFire( Vehicle_t *pVeh, 
+void VEH_TurretCheckFire( Vehicle_t *pVeh,
 						 gentity_t *parent,
 						 //gentity_t *turretEnemy,
-						 turretStats_t *turretStats, 
-						 vehWeaponInfo_t *vehWeapon, 
+						 turretStats_t *turretStats,
+						 vehWeaponInfo_t *vehWeapon,
 						 int turretNum, int curMuzzle )
 {
 	// if it's time to fire and we have an enemy, then gun 'em down!  pushDebounce time controls next fire time
@@ -21,7 +20,7 @@ void VEH_TurretCheckFire( Vehicle_t *pVeh,
 	{//invalid muzzle?
 		return;
 	}
-	
+
 	if ( pVeh->m_iMuzzleWait[curMuzzle] >= level.time )
 	{//can't fire yet
 		return;
@@ -31,7 +30,7 @@ void VEH_TurretCheckFire( Vehicle_t *pVeh,
 	{//no ammo, can't fire
 		return;
 	}
-	
+
 	//if ( turretEnemy )
 	{
 		//FIXME: check to see if I'm aiming generally where I want to
@@ -86,11 +85,11 @@ void VEH_TurretAnglesToEnemy( Vehicle_t *pVeh, int curMuzzle, float fSpeed, gent
 }
 
 //-----------------------------------------------------
-qboolean VEH_TurretAim( Vehicle_t *pVeh, 
-						 gentity_t *parent, 
+qboolean VEH_TurretAim( Vehicle_t *pVeh,
+						 gentity_t *parent,
 						 gentity_t *turretEnemy,
-						 turretStats_t *turretStats, 
-						 vehWeaponInfo_t *vehWeapon, 
+						 turretStats_t *turretStats,
+						 vehWeaponInfo_t *vehWeapon,
 						 int turretNum, int curMuzzle, vec3_t desiredAngles )
 //-----------------------------------------------------
 {
@@ -108,7 +107,7 @@ qboolean VEH_TurretAim( Vehicle_t *pVeh,
 		aimCorrect = qtrue;
 		// ...then we'll calculate what new aim adjustments we should attempt to make this frame
 		// Aim at enemy
-		VEH_TurretAnglesToEnemy( pVeh, curMuzzle, vehWeapon->fSpeed, turretEnemy, turretStats->bAILead, desiredAngles ); 
+		VEH_TurretAnglesToEnemy( pVeh, curMuzzle, vehWeapon->fSpeed, turretEnemy, turretStats->bAILead, desiredAngles );
 	}
 	//subtract out the vehicle's angles to get the relative desired alignment
 	AnglesSubtract( desiredAngles, pVeh->m_vOrientation, desiredAngles );
@@ -190,9 +189,9 @@ qboolean VEH_TurretAim( Vehicle_t *pVeh,
 }
 
 //-----------------------------------------------------
-static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh, 
-						 gentity_t *parent, 
-						 turretStats_t *turretStats, 
+static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
+						 gentity_t *parent,
+						 turretStats_t *turretStats,
 						 int turretNum, int curMuzzle )
 //-----------------------------------------------------
 {
@@ -214,9 +213,9 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 		trace_t	tr;
 		target = entity_list[i];
 
-		if ( target == parent 
-			|| !target->takedamage 
-			|| target->health <= 0 
+		if ( target == parent
+			|| !target->takedamage
+			|| target->health <= 0
 			|| ( target->flags & FL_NOTARGET ))
 		{
 			continue;
@@ -243,6 +242,10 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 		{
 			continue;
 		}
+		else if ( target->client->tempSpectate >= level.time )
+		{
+			continue;
+		}
 		if ( target == ((gentity_t*)pVeh->m_pPilot)
 			|| target->r.ownerNum == parent->s.number )
 		{//don't get angry at my pilot or passengers?
@@ -254,7 +257,7 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 			if ( target->client )
 			{
 				if ( target->client->sess.sessionTeam == parent->client->sess.sessionTeam )
-				{ 
+				{
 					// A bot/client/NPC we don't want to shoot
 					continue;
 				}
@@ -264,14 +267,14 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 				continue;
 			}
 		}
-		if ( !trap_InPVS( org2, target->r.currentOrigin ))
+		if ( !trap->InPVS( org2, target->r.currentOrigin ))
 		{
 			continue;
 		}
 
 		VectorCopy( target->r.currentOrigin, org );
 
-		trap_Trace( &tr, org2, NULL, NULL, org, parent->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, parent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( tr.entityNum == target->s.number
 			|| (!tr.allsolid && !tr.startsolid && tr.fraction == 1.0 ) )
@@ -331,14 +334,14 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 	vehWeaponInfo_t	*vehWeapon = NULL;
 	gentity_t	*turretEnemy = NULL;
 	int			curMuzzle = 0;//?
-	
+
 
 	if ( !turretStats || !turretStats->iAmmoMax )
 	{//not a valid turret
 		return;
 	}
-	
-	if ( turretStats->passengerNum 
+
+	if ( turretStats->passengerNum
 		&& pVeh->m_iNumPassengers >= turretStats->passengerNum )
 	{//the passenger that has control of this turret is on the ship
 		VEH_TurretObeyPassengerControl( pVeh, parent, turretNum );
@@ -356,12 +359,13 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 	if ( pVeh->turretStatus[turretNum].enemyEntNum < ENTITYNUM_WORLD )
 	{
 		turretEnemy = &g_entities[pVeh->turretStatus[turretNum].enemyEntNum];
-		if ( turretEnemy->health < 0 
+		if ( turretEnemy->health < 0
 			|| !turretEnemy->inuse
 			|| turretEnemy == ((gentity_t*)pVeh->m_pPilot)//enemy became my pilot///?
 			|| turretEnemy == parent
 			|| turretEnemy->r.ownerNum == parent->s.number // a passenger?
-			|| ( turretEnemy->client && turretEnemy->client->sess.sessionTeam == TEAM_SPECTATOR ) )
+			|| ( turretEnemy->client && turretEnemy->client->sess.sessionTeam == TEAM_SPECTATOR )
+			|| ( turretEnemy->client && turretEnemy->client->tempSpectate >= level.time ) )
 		{//don't keep going after spectators, pilot, self, dead people, etc.
 			turretEnemy = NULL;
 			pVeh->turretStatus[turretNum].enemyEntNum = ENTITYNUM_NONE;
@@ -404,7 +408,7 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 			if ( enemyDist < rangeSq )
 			{
 				// was in valid radius
-				if ( trap_InPVS( pVeh->m_vMuzzlePos[curMuzzle], turretEnemy->r.currentOrigin ) )
+				if ( trap->InPVS( pVeh->m_vMuzzlePos[curMuzzle], turretEnemy->r.currentOrigin ) )
 				{
 					// Every now and again, check to see if we can even trace to the enemy
 					trace_t tr;
@@ -412,7 +416,7 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 					VectorCopy( pVeh->m_vMuzzlePos[curMuzzle], start );
 
 					VectorCopy( turretEnemy->r.currentOrigin, end );
-					trap_Trace( &tr, start, NULL, NULL, end, parent->s.number, MASK_SHOT );
+					trap->Trace( &tr, start, NULL, NULL, end, parent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 					if ( tr.entityNum == turretEnemy->s.number
 						|| (!tr.allsolid && !tr.startsolid ) )

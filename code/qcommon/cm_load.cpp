@@ -265,6 +265,13 @@ void CMod_LoadBrushes( lump_t *l, clipMap_t &cm ) {
 			Com_Error( ERR_DROP, "CMod_LoadBrushes: bad shaderNum: %i", out->shaderNum );
 		}
 		out->contents = cm.shaders[out->shaderNum].contentFlags;
+#ifndef __NO_JK2
+		//JK2 HACK: for water that cuts vis but is not solid!!! (used on yavin swamp)
+		if ( com_jk2->integer && cm.shaders[out->shaderNum].surfaceFlags & SURF_SLICK )
+		{
+			out->contents &= ~CONTENTS_SOLID;
+		}
+#endif
 		CM_OrOfAllContentsFlagsInMap |= out->contents;
 		out->checkcount=0;
 
@@ -567,27 +574,6 @@ void CM_FreeMap(void) {
 }
 #endif //BSPC
 
-unsigned CM_LumpChecksum(lump_t *lump) {
-	return LittleLong (Com_BlockChecksum (cmod_base + lump->fileofs, lump->filelen));
-}
-
-unsigned CM_Checksum(dheader_t *header) {
-	unsigned checksums[16];
-	checksums[0] = CM_LumpChecksum(&header->lumps[LUMP_SHADERS]);
-	checksums[1] = CM_LumpChecksum(&header->lumps[LUMP_LEAFS]);
-	checksums[2] = CM_LumpChecksum(&header->lumps[LUMP_LEAFBRUSHES]);
-	checksums[3] = CM_LumpChecksum(&header->lumps[LUMP_LEAFSURFACES]);
-	checksums[4] = CM_LumpChecksum(&header->lumps[LUMP_PLANES]);
-	checksums[5] = CM_LumpChecksum(&header->lumps[LUMP_BRUSHSIDES]);
-	checksums[6] = CM_LumpChecksum(&header->lumps[LUMP_BRUSHES]);
-	checksums[7] = CM_LumpChecksum(&header->lumps[LUMP_MODELS]);
-	checksums[8] = CM_LumpChecksum(&header->lumps[LUMP_NODES]);
-	checksums[9] = CM_LumpChecksum(&header->lumps[LUMP_SURFACES]);
-	checksums[10] = CM_LumpChecksum(&header->lumps[LUMP_DRAWVERTS]);
-
-	return LittleLong(Com_BlockChecksum(checksums, 11 * 4));
-}
-
 /*
 ==================
 CM_LoadMap
@@ -630,7 +616,7 @@ qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete)
 
 static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *checksum, clipMap_t &cm ) {
 	const int		*buf;
-	int				i;
+	size_t			i;
 	dheader_t		header;
 	static unsigned	last_checksum;
 	void			*subBSPData = NULL;
@@ -833,6 +819,7 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 {
 	if (subBSP)
 	{
+		Com_DPrintf("^5CM_LoadMap->CMLoadSubBSP(%s, %i)\n", name, qfalse);
 		CM_LoadSubBSP(va("maps/%s.bsp", ((const char *)name) + 1), qfalse);
 		//CM_LoadMap_Actual( name, clientload, checksum, cmg );
 	}
@@ -840,9 +827,6 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	{
 		gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!!!!!!!
 
-#ifndef _DEBUG
-		Com_Printf("CM_LoadMapActual: %s\n", name);
-#endif
 			CM_LoadMap_Actual( name, clientload, checksum, cmg );
 
 		gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!!!!!!!
@@ -856,7 +840,7 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	*/
 }
 
-qboolean CM_SameMap(char *server)
+qboolean CM_SameMap(const char *server)
 {
 	if (!cmg.name[0] || !server || !server[0])
 	{
@@ -979,6 +963,7 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap )
 
 	return NULL;
 }
+
 /*
 ==================
 CM_InlineModel
@@ -986,13 +971,9 @@ CM_InlineModel
 */
 clipHandle_t	CM_InlineModel( int index ) {
 	if ( index < 0 || index >= TotalSubModels ) {
-		Com_Error (ERR_DROP, "CM_InlineModel: bad number (may need to re-BSP map?)");
+		Com_Error( ERR_DROP, "CM_InlineModel: bad number: %d >= %d (may need to re-BSP map?)", index, TotalSubModels );
 	}
 	return index;
-}
-
-int		CM_NumClusters( void ) {
-	return cmg.numClusters;
 }
 
 int		CM_NumInlineModels( void ) {
@@ -1204,6 +1185,8 @@ int CM_LoadSubBSP(const char *name, qboolean clientload)
 		Com_Error (ERR_DROP, "CM_LoadSubBSP: too many unique sub BSPs");
 	}
 
+	Com_DPrintf("CM_LoadSubBSP(%s, %i)\n", name, clientload);
+
 	CM_LoadMap_Actual( name, clientload, &checksum, SubBSP[NumSubBSP] );
 	NumSubBSP++;
 
@@ -1295,12 +1278,12 @@ Writes the portal state to a savegame file
 ===================
 */
 //
-qboolean SG_Append(unsigned long chid, const void *data, int length);
-int SG_Read(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+qboolean SG_Append(unsigned int chid, const void *data, int length);
+int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 
 void CM_WritePortalState ()
 {	
-	SG_Append('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Append(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 }
 
 /*
@@ -1313,7 +1296,7 @@ and recalculates the area connections
 */
 void	CM_ReadPortalState ()
 {
-	SG_Read('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Read(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 	CM_FloodAreaConnections (cmg);
 }
 

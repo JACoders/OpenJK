@@ -3,6 +3,8 @@
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
+#include "server/sv_gameapi.h"
+#include "qcommon/game_version.h"
 
 /*
 ===============================================================================
@@ -15,12 +17,6 @@ These commands can only be entered from stdin or by a remote operator datagram
 
 const char *SV_GetStringEdString(char *refSection, char *refName)
 {
-	/*
-	static char text[1024]={0};
-	trap_SP_GetStringTextString(va("%s_%s", refSection, refName), text, sizeof(text));
-	return text;
-	*/
-
 	//Well, it would've been lovely doing it the above way, but it would mean mixing
 	//languages for the client depending on what the server is. So we'll mark this as
 	//a stringed reference with @@@ and send the refname to the client, and when it goes
@@ -83,7 +79,8 @@ static client_t *SV_GetPlayerByHandle( void ) {
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, s ) ) {
 			return cl;
 		}
@@ -149,16 +146,13 @@ Restart the server on a different map
 ==================
 */
 static void SV_Map_f( void ) {
-	char		*cmd;
-	char		*map;
-	qboolean	killBots, cheat;
-	char		expanded[MAX_QPATH];
-	char		mapname[MAX_QPATH];
+	char		*cmd = NULL, *map = NULL;
+	qboolean	killBots=qfalse, cheat=qfalse;
+	char		expanded[MAX_QPATH] = {0}, mapname[MAX_QPATH] = {0};
 
 	map = Cmd_Argv(1);
-	if ( !map ) {
+	if ( !map )
 		return;
-	}
 
 	// make sure the level exists before trying to change, so that
 	// a typo at the server console won't end the game
@@ -177,28 +171,12 @@ static void SV_Map_f( void ) {
 	Cvar_Get ("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH );
 
 	cmd = Cmd_Argv(0);
-	if( Q_stricmpn( cmd, "sp", 2 ) == 0 ) {
-		Cvar_SetValue( "g_gametype", GT_SINGLE_PLAYER );
-		Cvar_SetValue( "g_doWarmup", 0 );
-		// may not set sv_maxclients directly, always set latched
-		Cvar_SetLatched( "sv_maxclients", "8" );
-		cmd += 2;
-		cheat = qfalse;
+	if ( !Q_stricmpn( cmd, "devmap", 6 ) ) {
+		cheat = qtrue;
 		killBots = qtrue;
-	}
-	else {
-		if ( !Q_stricmpn( cmd, "devmap",6 ) || !Q_stricmp( cmd, "spdevmap" ) ) {
-			cheat = qtrue;
-			killBots = qtrue;
-		} else {
-			cheat = qfalse;
-			killBots = qfalse;
-		}
-		/*
-		if( sv_gametype->integer == GT_SINGLE_PLAYER ) {
-			Cvar_SetValue( "g_gametype", GT_FFA );
-		}
-		*/
+	} else {
+		cheat = qfalse;
+		killBots = qfalse;
 	}
 
 	// save the map name here cause on a map restart we reload the jampconfig.cfg
@@ -226,11 +204,7 @@ static void SV_Map_f( void ) {
 	// if the level was started with "map <levelname>", then
 	// cheats will not be allowed.  If started with "devmap <levelname>"
 	// then cheats will be allowed
-	if ( cheat ) {
-		Cvar_Set( "sv_cheats", "1" );
-	} else {
-		Cvar_Set( "sv_cheats", "0" );
-	}
+	Cvar_Set( "sv_cheats", cheat ? "1" : "0" );
 }
 
 
@@ -289,14 +263,18 @@ static void SV_MapRestart_f( void ) {
 		return;
 	}
 
+	SV_StopAutoRecordDemos();
+
 	// toggle the server bit so clients can detect that a
 	// map_restart has happened
 	svs.snapFlagServerBit ^= SNAPFLAG_SERVERCOUNT;
 
 	// generate a new serverid
-	sv.restartedServerId = sv.serverId;
+	// TTimo - don't update restartedserverId there, otherwise we won't deal correctly with multiple map_restart
 	sv.serverId = com_frameTime;
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
+
+	time( &sv.realMapTimeStarted );
 
 	// if a map_restart occurs while a client is changing maps, we need
 	// to give them the correct time so that when they finish loading
@@ -313,11 +291,11 @@ static void SV_MapRestart_f( void ) {
 	sv.state = SS_LOADING;
 	sv.restarting = qtrue;
 
-	SV_RestartGameProgs();
+	SV_RestartGame();
 
 	// run a few frames to allow everything to settle
 	for ( i = 0 ;i < 3 ; i++ ) {
-		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+		GVM_RunFrame( sv.time );
 		sv.time += 100;
 		svs.time += 100;
 	}
@@ -344,7 +322,7 @@ static void SV_MapRestart_f( void ) {
 		SV_AddServerCommand( client, "map_restart\n" );
 
 		// connect the client again, without the firstTime flag
-		denied = (char *)VM_ExplicitArgPtr( gvm, VM_Call( gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot ) );
+		denied = GVM_ClientConnect( i, qfalse, isBot );
 		if ( denied ) {
 			// this generally shouldn't happen, because the client
 			// was connected before the level change
@@ -353,15 +331,23 @@ static void SV_MapRestart_f( void ) {
 			continue;
 		}
 
-		client->state = CS_ACTIVE;
-
-		SV_ClientEnterWorld( client, &client->lastUsercmd );
-	}	
+		if(client->state == CS_ACTIVE)
+			SV_ClientEnterWorld(client, &client->lastUsercmd);
+		else
+		{
+			// If we don't reset client->lastUsercmd and are restarting during map load,
+			// the client will hang because we'll use the last Usercmd from the previous map,
+			// which is wrong obviously.
+			SV_ClientEnterWorld(client, NULL);
+		}
+	}
 
 	// run another frame to allow things to look at all the players
-	VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+	GVM_RunFrame( sv.time );
 	sv.time += 100;
 	svs.time += 100;
+
+	SV_BeginAutoRecordDemos();
 }
 
 //===============================================================
@@ -396,7 +382,8 @@ static void SV_KickBlankPlayers( void ) {
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, "" ) ) {
 			SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
 			cl->lastPacketTime = svs.time;	// in case there is a funny zombie
@@ -460,9 +447,6 @@ static void SV_Kick_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
-		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
-//		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
 		Com_Printf("Cannot kick host player\n");
 		return;
 	}
@@ -558,9 +542,6 @@ static void SV_KickNum_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
-		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
-//		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
 		Com_Printf("Cannot kick host player\n");
 		return;
 	}
@@ -574,9 +555,9 @@ static void SV_KickNum_f( void ) {
 SV_Status_f
 ================
 */
-static void SV_Status_f( void ) 
+static void SV_Status_f( void )
 {
-	int				i;
+	int				i, humans, bots;
 	client_t		*cl;
 	playerState_t	*ps;
 	const char		*s;
@@ -585,11 +566,9 @@ static void SV_Status_f( void )
 	qboolean		avoidTruncation = qfalse;
 
 	// make sure server is running
-	if ( !com_sv_running->integer ) 
+	if ( !com_sv_running->integer )
 	{
-		//Ensiform: Why raven why, you didn't do this in other cmds.
 		Com_Printf( "Server is not running.\n" );
-		//Com_Printf( SE_GetString("STR_SERVER_SERVER_NOT_RUNNING") );
 		return;
 	}
 
@@ -601,7 +580,41 @@ static void SV_Status_f( void )
 		}
 	}
 
-	Com_Printf ("map: %s\n", sv_mapname->string );
+	humans = bots = 0;
+	for ( i = 0 ; i < sv_maxclients->integer ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED ) {
+			if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ) {
+				humans++;
+			}
+			else {
+				bots++;
+			}
+		}
+	}
+
+#if defined(_WIN32)
+#define STATUS_OS "Windows"
+#elif defined(__linux__)
+#define STATUS_OS "Linux"
+#elif defined(MACOS_X)
+#define STATUS_OS "OSX"
+#else
+#define STATUS_OS "Unknown"
+#endif
+
+	const char *ded_table[] =
+	{
+		"listen",
+		"lan dedicated",
+		"public dedicated",
+	};
+
+	Com_Printf ("hostname: %s^7\n", sv_hostname->string );
+	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
+	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);
+	Com_Printf ("map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
+	Com_Printf ("players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer);
 
 	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
 	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
@@ -631,8 +644,8 @@ static void SV_Status_f( void )
 
 		if (!avoidTruncation)
 		{
-			Com_Printf ("%3i %5i %s %-15.15s %7i %21s %5i %5i\n", 
-				i, 
+			Com_Printf ("%3i %5i %s %-15.15s %7i %21s %5i %5i\n",
+				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
@@ -644,8 +657,8 @@ static void SV_Status_f( void )
 		}
 		else
 		{
-			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n", 
-				i, 
+			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n",
+				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
@@ -659,14 +672,16 @@ static void SV_Status_f( void )
 	Com_Printf ("\n");
 }
 
+char	*SV_ExpandNewlines( char *in );
+#define SVSAY_PREFIX "Server^7\x19: "
+
 /*
 ==================
 SV_ConSay_f
 ==================
 */
 static void SV_ConSay_f(void) {
-	char	*p;
-	char	text[1024];
+	char	text[MAX_SAY_TEXT] = {0};
 
 	if( !com_dedicated->integer ) {
 		Com_Printf( "Server is not dedicated.\n" );
@@ -683,97 +698,76 @@ static void SV_ConSay_f(void) {
 		return;
 	}
 
-	strcpy (text, "Server^7\x19: ");
-	p = Cmd_Args();
+	Cmd_ArgsBuffer( text, sizeof(text) );
 
-	if ( *p == '"' ) {
-		p++;
-		p[strlen(p)-1] = 0;
-	}
-
-	strcat(text, p);
-
-	SV_SendServerCommand(NULL, "chat \"%s\n\"", text);
+	Com_Printf ("broadcast: chat \""SVSAY_PREFIX"%s\\n\"\n", SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
 }
 
-static const char *forceToggleNamePrints[] = 
-{
-	"HEAL",//FP_HEAL
-	"JUMP",//FP_LEVITATION
-	"SPEED",//FP_SPEED
-	"PUSH",//FP_PUSH
-	"PULL",//FP_PULL
-	"MINDTRICK",//FP_TELEPTAHY
-	"GRIP",//FP_GRIP
-	"LIGHTNING",//FP_LIGHTNING
-	"DARK RAGE",//FP_RAGE
-	"PROTECT",//FP_PROTECT
-	"ABSORB",//FP_ABSORB
-	"TEAM HEAL",//FP_TEAM_HEAL
-	"TEAM REPLENISH",//FP_TEAM_FORCE
-	"DRAIN",//FP_DRAIN
-	"SEEING",//FP_SEE
-	"SABER OFFENSE",//FP_SABER_OFFENSE
-	"SABER DEFENSE",//FP_SABER_DEFENSE
-	"SABER THROW",//FP_SABERTHROW
-	NULL
+const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {
+	"HEAL",
+	"JUMP",
+	"SPEED",
+	"PUSH",
+	"PULL",
+	"MINDTRICK",
+	"GRIP",
+	"LIGHTNING",
+	"DARK RAGE",
+	"PROTECT",
+	"ABSORB",
+	"TEAM HEAL",
+	"TEAM REPLENISH",
+	"DRAIN",
+	"SEEING",
+	"SABER OFFENSE",
+	"SABER DEFENSE",
+	"SABER THROW",
 };
 
-/*
-==================
-SV_ForceToggle_f
-==================
-*/
-void SV_ForceToggle_f(void)
-{
-	int i = 0;
-	int fpDisabled = Cvar_VariableValue("g_forcePowerDisable");
-	int targetPower = 0;
-	const char *powerDisabled = "Enabled";
+static void SV_ForceToggle_f( void ) {
+	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
+	int i, val;
+	char *s;
+	const char *enablestrings[] =
+	{
+		"Disabled",
+		"Enabled"
+	};
 
-	if ( Cmd_Argc () < 2 )
-	{ //no argument supplied, spit out a list of force powers and their numbers
-		while (i < NUM_FORCE_POWERS)
-		{
-			if (fpDisabled & (1 << i))
-			{
-				powerDisabled = "Disabled";
-			}
-			else
-			{
-				powerDisabled = "Enabled";
-			}
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
 
-			Com_Printf(va("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], powerDisabled));
-			i++;
+	if ( Cmd_Argc() != 2 ) {
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
 		}
-
-		Com_Printf("Example usage: forcetoggle 3\n(toggles PUSH)\n");
+		Com_Printf ("Example usage: forcetoggle 3(toggles PUSH)\n");
 		return;
 	}
 
-	targetPower = atoi(Cmd_Argv(1));
+	s = Cmd_Argv(1);
 
-	if (targetPower < 0 || targetPower >= NUM_FORCE_POWERS)
-	{
-		Com_Printf("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
-		return;
+	if( Q_isanumber( s ) ) {
+		val = atoi(s);
+		if( val >= 0 && val < NUM_FORCE_POWERS) {
+			bits ^= (1 << val);
+			Cvar_SetValue("g_forcePowerDisable", bits);
+			Com_Printf ("%s has been %s.\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "disabled" : "enabled");
+		}
+		else {
+			Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
+		}
 	}
-
-	if (fpDisabled & (1 << targetPower))
-	{
-		powerDisabled = "enabled";
-		fpDisabled &= ~(1 << targetPower);
+	else {
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		}
+		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 	}
-	else
-	{
-		powerDisabled = "disabled";
-		fpDisabled |= (1 << targetPower);
-	}
-
-	Cvar_SetValue("g_forcePowerDisable", fpDisabled);
-
-	Com_Printf("%s has been %s.\n", forceToggleNamePrints[targetPower], powerDisabled);
 }
 
 /*
@@ -795,7 +789,7 @@ Examine the serverinfo string
 ===========
 */
 static void SV_Serverinfo_f( void ) {
-// make sure server is running
+	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
 		return;
@@ -813,14 +807,14 @@ Examine or change the serverinfo string
 ===========
 */
 static void SV_Systeminfo_f( void ) {
-// make sure server is running
+	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
 		return;
 	}
 
 	Com_Printf ("System info settings:\n");
-	Info_Print ( Cvar_InfoString( CVAR_SYSTEMINFO ) );
+	Info_Print ( Cvar_InfoString_Big( CVAR_SYSTEMINFO ) );
 }
 
 /*
@@ -863,7 +857,334 @@ static void SV_KillServer_f( void ) {
 	SV_Shutdown( "killserver" );
 }
 
+void SV_WriteDemoMessage ( client_t *cl, msg_t *msg, int headerBytes ) {
+	int		len, swlen;
+
+	// write the packet sequence
+	len = cl->netchan.outgoingSequence;
+	swlen = LittleLong( len );
+	FS_Write( &swlen, 4, cl->demo.demofile );
+
+	// skip the packet sequencing information
+	len = msg->cursize - headerBytes;
+	swlen = LittleLong( len );
+	FS_Write( &swlen, 4, cl->demo.demofile );
+	FS_Write( msg->data + headerBytes, len, cl->demo.demofile );
+}
+
+void SV_StopRecordDemo( client_t *cl ) {
+	int		len;
+
+	if ( !cl->demo.demorecording ) {
+		Com_Printf( "Client %d is not recording a demo.\n", cl - svs.clients );
+		return;
+	}
+
+	// finish up
+	len = -1;
+	FS_Write (&len, 4, cl->demo.demofile);
+	FS_Write (&len, 4, cl->demo.demofile);
+	FS_FCloseFile (cl->demo.demofile);
+	cl->demo.demofile = 0;
+	cl->demo.demorecording = qfalse;
+	Com_Printf ("Stopped demo for client %d.\n", cl - svs.clients);
+}
+
+// stops all recording demos
+void SV_StopAutoRecordDemos() {
+	if ( svs.clients && sv_autoDemo->integer ) {
+		for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+			if ( client->demo.demorecording) {
+				SV_StopRecordDemo( client );
+			}
+		}
+	}
+}
+
+/*
+====================
+SV_StopRecording_f
+
+stop recording a demo
+====================
+*/
+void SV_StopRecord_f( void ) {
+	int		i;
+
+	client_t *cl = NULL;
+	if ( Cmd_Argc() == 2 ) {
+		int clIndex = atoi( Cmd_Argv( 1 ) );
+		if ( clIndex < 0 || clIndex >= sv_maxclients->integer ) {
+			Com_Printf( "Unknown client number %d.\n", clIndex );
+			return;
+		}
+		cl = &svs.clients[clIndex];
+	} else {
+		for (i = 0; i < sv_maxclients->integer; i++) {
+			if ( svs.clients[i].demo.demorecording ) {
+				cl = &svs.clients[i];
+				break;
+			}
+		}
+		if ( cl == NULL ) {
+			Com_Printf( "No demo being recorded.\n" );
+			return;
+		}
+	}
+	SV_StopRecordDemo( cl );
+}
+
+/*
+==================
+SV_DemoFilename
+==================
+*/
+void SV_DemoFilename( char *buf, int bufSize ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
+
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+
+	Com_sprintf( buf, bufSize, "demo%s", timeStr );
+}
+
+// defined in sv_client.cpp
+extern void SV_CreateClientGameStateMessage( client_t *client, msg_t* msg );
+
+void SV_RecordDemo( client_t *cl, char *demoName ) {
+	char		name[MAX_OSPATH];
+	byte		bufData[MAX_MSGLEN];
+	msg_t		msg;
+	int			len;
+
+	if ( cl->demo.demorecording ) {
+		Com_Printf( "Already recording.\n" );
+		return;
+	}
+
+	if ( cl->state != CS_ACTIVE ) {
+		Com_Printf( "Client is not active.\n" );
+		return;
+	}
+
+	// open the demo file
+	Q_strncpyz( cl->demo.demoName, demoName, sizeof( cl->demo.demoName ) );
+	Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", cl->demo.demoName, PROTOCOL_VERSION );
+	Com_Printf( "recording to %s.\n", name );
+	cl->demo.demofile = FS_FOpenFileWrite( name );
+	if ( !cl->demo.demofile ) {
+		Com_Printf ("ERROR: couldn't open.\n");
+		return;
+	}
+	cl->demo.demorecording = qtrue;
+
+	// don't start saving messages until a non-delta compressed message is received
+	cl->demo.demowaiting = qtrue;
+
+	cl->demo.isBot = ( cl->netchan.remoteAddress.type == NA_BOT ) ? qtrue : qfalse;
+	cl->demo.botReliableAcknowledge = cl->reliableSent;
+
+	// write out the gamestate message
+	MSG_Init( &msg, bufData, sizeof( bufData ) );
+
+	// NOTE, MRE: all server->client messages now acknowledge
+	int tmp = cl->reliableSent;
+	SV_CreateClientGameStateMessage( cl, &msg );
+	cl->reliableSent = tmp;
+
+	// finished writing the client packet
+	MSG_WriteByte( &msg, svc_EOF );
+
+	// write it to the demo file
+	len = LittleLong( cl->netchan.outgoingSequence - 1 );
+	FS_Write( &len, 4, cl->demo.demofile );
+
+	len = LittleLong( msg.cursize );
+	FS_Write( &len, 4, cl->demo.demofile );
+	FS_Write( msg.data, msg.cursize, cl->demo.demofile );
+
+	// the rest of the demo file will be copied from net messages
+}
+
+void SV_AutoRecordDemo( client_t *cl ) {
+	char demoName[MAX_OSPATH];
+	char demoFolderName[MAX_OSPATH];
+	char demoFileName[MAX_OSPATH];
+	char *demoNames[] = { demoFolderName, demoFileName };
+	char date[MAX_OSPATH];
+	char folderDate[MAX_OSPATH];
+	time_t rawtime;
+	struct tm * timeinfo;
+	char *c;
+	time( &rawtime );
+	timeinfo = localtime( &rawtime );
+	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
+	timeinfo = localtime( &sv.realMapTimeStarted );
+	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
+	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
+	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
+	// sanitize filename
+	int tmp = sizeof( demoNames ) / sizeof( *demoNames );
+	for ( char **start = demoNames; start - demoNames < sizeof( demoNames ) / sizeof( *demoNames ); start++ ) {
+		for ( c = *start; *c != 0 && c - *start < MAX_OSPATH; c++ ) {
+			if ( *c == '\\' || *c == '/' || *c == '.' ) {
+				*c = '_';
+			}
+		}
+	}
+	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s", demoFolderName, demoFileName );
+	SV_RecordDemo( cl, demoName );
+}
+
+static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
+	int timeLen = strlen( "0000-00-00_00-00-00" );
+	if ( strlen( folder ) < timeLen ) {
+		return 0;
+	}
+	struct tm timeinfo;
+	timeinfo.tm_isdst = 0;
+	int numMatched = sscanf( folder + ( strlen(folder) - timeLen ), "%4d-%2d-%2d_%2d-%2d-%2d",
+		&timeinfo.tm_year, &timeinfo.tm_mon, &timeinfo.tm_mday, &timeinfo.tm_hour, &timeinfo.tm_min, &timeinfo.tm_sec);
+	if ( numMatched < 6 ) {
+		// parsing failed
+		return 0;
+	}
+	timeinfo.tm_year -= 1900;
+	return mktime( &timeinfo );
+}
+
+static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2 ) {
+	char *folder1 = (char *) arg1;
+	char *folder2 = (char *) arg2;
+	return SV_ExtractTimeFromDemoFolder( (char *) arg2 ) - SV_ExtractTimeFromDemoFolder( (char *) arg1 );
+}
+
+// starts demo recording on all active clients
+void SV_BeginAutoRecordDemos() {
+	if ( sv_autoDemo->integer ) {
+		for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+			if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+				if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+					SV_AutoRecordDemo( client );
+				}
+			}
+		}
+		if ( sv_autoDemoMaxMaps->integer > 0 ) {
+			char fileList[MAX_QPATH * 500];
+			char autorecordDirList[500][MAX_QPATH];
+			int autorecordDirListCount = 0;
+			char *fileName;
+			int i;
+			int numFiles = FS_GetFileList( "demos/autorecord", "/", fileList, sizeof( fileList ) );
+
+			fileName = fileList;
+			for ( i = 0; i < numFiles; i++ )
+			{
+				if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) ) {
+					Q_strncpyz( autorecordDirList[autorecordDirListCount++], fileName, MAX_QPATH );
+				}
+				fileName += strlen( fileName ) + 1;
+			}
+			qsort( autorecordDirList, autorecordDirListCount, sizeof( autorecordDirList[0] ), SV_DemoFolderTimeComparator );
+			for ( i = sv_autoDemoMaxMaps->integer; i < autorecordDirListCount; i++ ) {
+				FS_HomeRmdir( va( "demos/autorecord/%s", autorecordDirList[i] ), qtrue );
+			}
+		}
+	}
+}
+
+// code is a merge of the cl_main.cpp function of the same name and SV_SendClientGameState in sv_client.cpp
+static void SV_Record_f( void ) {
+	char		demoName[MAX_OSPATH];
+	char		name[MAX_OSPATH];
+	int			i;
+	char		*s;
+	client_t	*cl;
+
+	if ( svs.clients == NULL ) {
+		Com_Printf( "cannot record server demo - null svs.clients\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() > 3 ) {
+		Com_Printf( "record <demoname> <clientnum>\n" );
+		return;
+	}
+
+
+	if ( Cmd_Argc() == 3 ) {
+		int clIndex = atoi( Cmd_Argv( 2 ) );
+		if ( clIndex < 0 || clIndex >= sv_maxclients->integer ) {
+			Com_Printf( "Unknown client number %d.\n", clIndex );
+			return;
+		}
+		cl = &svs.clients[clIndex];
+	} else {
+		for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++, cl++ )
+		{
+			if ( !cl->state )
+			{
+				continue;
+			}
+
+			if ( cl->demo.demorecording )
+			{
+				continue;
+			}
+
+			if ( cl->state == CS_ACTIVE )
+			{
+				break;
+			}
+		}
+	}
+
+	if (cl - svs.clients >= sv_maxclients->integer) {
+		Com_Printf( "No active client could be found.\n" );
+		return;
+	}
+
+	if ( cl->demo.demorecording ) {
+		Com_Printf( "Already recording.\n" );
+		return;
+	}
+
+	if ( cl->state != CS_ACTIVE ) {
+		Com_Printf( "Client is not active.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() >= 2 ) {
+		s = Cmd_Argv( 1 );
+		Q_strncpyz( demoName, s, sizeof( demoName ) );
+		Com_sprintf( name, sizeof( name ), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+	} else {
+		// timestamp the file
+		SV_DemoFilename( demoName, sizeof( demoName ) );
+
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+
+		if ( FS_FileExists( name ) ) {
+			Com_Printf( "Record: Couldn't create a file\n");
+			return;
+ 		}
+	}
+
+	SV_RecordDemo( cl, demoName );
+}
+
 //===========================================================
+
+/*
+==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteMapName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "maps", "bsp", qtrue, qfalse );
+}
 
 /*
 ==================
@@ -891,19 +1212,20 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("map_restart", SV_MapRestart_f);
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "map", SV_CompleteMapName );
 	Cmd_AddCommand ("devmap", SV_Map_f);
-	Cmd_AddCommand ("spmap", SV_Map_f);
-	Cmd_AddCommand ("spdevmap", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmap", SV_CompleteMapName );
 //	Cmd_AddCommand ("devmapbsp", SV_Map_f);	// not used in MP codebase, no server BSP_cacheing
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapmdl", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapall", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
-//	if( com_dedicated->integer ) 
-	{
-		Cmd_AddCommand ("svsay", SV_ConSay_f);
-	}
+	Cmd_AddCommand ("svsay", SV_ConSay_f);
 
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
+	Cmd_AddCommand ("svrecord", SV_Record_f);
+	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
 }
 
 /*

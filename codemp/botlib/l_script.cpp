@@ -5,7 +5,7 @@
  * desc:		lexicographical parser
  *
  * $Archive: /MissionPack/code/botlib/l_script.c $
- * $Author: Ttimo $ 
+ * $Author: Ttimo $
  * $Revision: 9 $
  * $Modtime: 4/13/01 4:45p $
  * $Date: 4/13/01 4:45p $
@@ -197,7 +197,7 @@ void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations)
 // Returns:					-
 // Changes Globals:		-
 //===========================================================================
-char *PunctuationFromNum(script_t *script, int num)
+const char *PunctuationFromNum(script_t *script, int num)
 {
 	int i;
 
@@ -691,14 +691,14 @@ int PS_ReadNumber(script_t *script, token_t *token)
 	{
 		c = *script->script_p;
 		//check for a LONG number
-		if ( (c == 'l' || c == 'L') // bk001204 - brackets 
+		if ( (c == 'l' || c == 'L') // bk001204 - brackets
 		     && !(token->subtype & TT_LONG))
 		{
 			script->script_p++;
 			token->subtype |= TT_LONG;
 		} //end if
 		//check for an UNSIGNED number
-		else if ( (c == 'u' || c == 'U') // bk001204 - brackets 
+		else if ( (c == 'u' || c == 'U') // bk001204 - brackets
 			  && !(token->subtype & (TT_UNSIGNED | TT_FLOAT)))
 		{
 			script->script_p++;
@@ -768,7 +768,7 @@ int PS_ReadLiteral(script_t *script, token_t *token)
 int PS_ReadPunctuation(script_t *script, token_t *token)
 {
 	int len;
-	char *p;
+	const char *p;
 	punctuation_t *punc;
 
 #ifdef PUNCTABLE
@@ -787,7 +787,7 @@ int PS_ReadPunctuation(script_t *script, token_t *token)
 		if (script->script_p + len <= script->end_p)
 		{
 			//if the script contains the punctuation
-			if (!strncmp(script->script_p, p, len))
+			if (!Q_strncmp(script->script_p, p, len))
 			{
 				strncpy(token->string, p, MAX_TOKEN);
 				script->script_p += len;
@@ -975,7 +975,7 @@ int PS_ExpectTokenType(script_t *script, int type, int subtype, token_t *token)
 		if (token->subtype != subtype)
 		{
 			ScriptError(script, "expected %s, found %s",
-							script->punctuations[subtype], token->string);
+							script->punctuations[subtype].p, token->string);
 			return 0;
 		} //end if
 	} //end else if
@@ -1149,7 +1149,7 @@ long double ReadSignedFloat(script_t *script)
 
 		sign = -1;
 	}
-	
+
 	if (token.type != TT_NUMBER)
 	{
 		ScriptError(script, "expected float value, found %s", token.string);
@@ -1186,7 +1186,7 @@ signed long int ReadSignedInt(script_t *script)
 		ScriptError(script, "expected integer value, found %s", token.string);
 		return 0;
 	}
-	
+
 	return sign * token.intvalue;
 } //end of the function ReadSignedInt
 //============================================================================
@@ -1272,7 +1272,7 @@ int ScriptSkipTo(script_t *script, char *value)
 		if (!PS_ReadWhiteSpace(script)) return 0;
 		if (*script->script_p == firstchar)
 		{
-			if (!strncmp(script->script_p, value, len))
+			if (!Q_strncmp(script->script_p, value, len))
 			{
 				return 1;
 			} //end if

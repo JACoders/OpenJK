@@ -38,12 +38,16 @@ This file is part of Jedi Knight 2.
 #include "b_local.h"
 #include "events.h"
 #include "g_nav.h"
-#include "..\cgame\cg_camera.h"
-#include "..\game\objectives.h"
+#include "../cgame/cg_camera.h"
+#include "../game/objectives.h"
 #include "g_roff.h"
-#include "..\cgame\cg_local.h"
+#include "../cgame/cg_local.h"
 #include "g_icarus.h"
 #include "wp_saber.h"
+
+#ifndef _WIN32
+#include <cstdlib>
+#endif
 
 extern int ICARUS_LinkEntity( int entID, CSequencer *sequencer, CTaskManager *taskManager );
 
@@ -98,7 +102,7 @@ stringID_table_t BSTable[] =
 	ENUM2STRING(BS_REMOVE),//# Waits for player to leave PVS then removes itself
 	ENUM2STRING(BS_CINEMATIC),//# Does nothing but face it's angles and move to a goal if it has one
 	//the rest are internal only
-	"",				-1,
+	{"",				-1},
 };
 
 
@@ -154,7 +158,7 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TIE_FIGHTER),
 	ENUM2STRING(WP_RAPID_FIRE_CONC),
 	ENUM2STRING(WP_BLASTER_PISTOL),	// apparently some enemy only version of the blaster
-	"", NULL
+	{"", 0}
 };
 
 stringID_table_t INVTable[] =
@@ -164,26 +168,26 @@ stringID_table_t INVTable[] =
 	ENUM2STRING(INV_SEEKER),
 	ENUM2STRING(INV_LIGHTAMP_GOGGLES),
 	ENUM2STRING(INV_SENTRY),
-	"", NULL
+	{"", 0}
 };
 
 stringID_table_t eventTable[] =
 {
 	//BOTH_h
 	//END
-	"",				EV_BAD,
+	{"",				EV_BAD},
 };
 
 stringID_table_t DMSTable[] =
 {
-	"NULL",-1,
+	{"NULL",-1},
 	ENUM2STRING(DM_AUTO),	//# let the game determine the dynamic music as normal
 	ENUM2STRING(DM_SILENCE),	//# stop the music
 	ENUM2STRING(DM_EXPLORE),	//# force the exploration music to play
 	ENUM2STRING(DM_ACTION),	//# force the action music to play
 	ENUM2STRING(DM_BOSS),	//# force the boss battle music to play (if there is any)
 	ENUM2STRING(DM_DEATH),	//# force the "player dead" music to play
-	"", -1
+	{"", -1}
 };
 
 stringID_table_t setTable[] =
@@ -401,7 +405,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_HUD),
 
 //FIXME: add BOTH_ attributes here too
-	"",	SET_,
+	{"",	SET_},
 };
 
 qboolean COM_ParseString( char **data, char **s ); 
@@ -457,11 +461,11 @@ static void Q3_CenterPrint ( const char *format, ... )
 	{
 		if( text[0] == '!')
 		{
-			gi.SendServerCommand( NULL, "cp \"%s\"", (text+1) );
+			gi.SendServerCommand( 0, "cp \"%s\"", (text+1) );
 			return;
 		}
 
-		gi.SendServerCommand( NULL, "cp \"%s\"", text );
+		gi.SendServerCommand( 0, "cp \"%s\"", text );
 	}
 
 	Q3_DebugPrint( WL_VERBOSE, "%s\n", text); 	// Just a developers note
@@ -880,7 +884,7 @@ Prints a message in the center of the screen
 */
 static void Q3_ScrollText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "st \"%s\"", id);
+	gi.SendServerCommand( 0, "st \"%s\"", id);
 
 	return;
 }
@@ -894,7 +898,7 @@ Prints a message in the center of the screen giving it an LCARS frame around it
 */
 static void Q3_LCARSText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "lt \"%s\"", id);
+	gi.SendServerCommand( 0, "lt \"%s\"", id);
 
 	return;
 }
@@ -912,13 +916,13 @@ static gentity_t *Q3_GetEntityByName( const char *name )
 	entlist_t::iterator		ei;
 	char					temp[1024];
 
-	if ( name == NULL || name[0] == NULL )
+	if ( name == NULL || name[0] == '\0' )
 		return NULL;
 
 	strncpy( (char *) temp, name, sizeof(temp) );
 	temp[sizeof(temp)-1] = 0;
 
-	ei = ICARUS_EntList.find( strupr( (char *) temp ) );
+	ei = ICARUS_EntList.find( Q_strupr( (char *) temp ) );
 
 	if ( ei == ICARUS_EntList.end() )
 		return NULL;
@@ -939,7 +943,7 @@ Q3_GetTime
 Get the current game time
 =============
 */
-static DWORD Q3_GetTime( void )
+static unsigned int Q3_GetTime( void )
 {
 	return level.time;
 }
@@ -1008,10 +1012,10 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	qboolean		type_voice = qfalse;
 
 	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
-	strupr(finalName);
+	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
-	COM_StripExtension( (const char *)finalName, finalName );
+	COM_StripExtension( (const char *)finalName, finalName, sizeof(finalName) );
 
 	int soundHandle = G_SoundIndex( (char *) finalName );
 	bool bBroadcast = false;
@@ -1053,7 +1057,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 		{
 			if ( in_camera)	// Cinematic
 			{					
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 			}
 			else //if (precacheWav[i].speaker==SP_NONE)	//  lower screen text
 			{
@@ -1062,7 +1066,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 				//
 				if (bBroadcast || (DistanceSquared(ent->currentOrigin, ent2->currentOrigin) < ((voice_chan == CHAN_VOICE_ATTEN)?(350 * 350):(1200 * 1200)) ) )
 				{
-					gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+					gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 				}
 			}
 		}
@@ -1071,7 +1075,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 		{
 			if ( in_camera)	// Cinematic text
 			{							
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle);
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle);
 			}
 		}
 
@@ -2976,11 +2980,11 @@ static void Q3_SetWidth( int entID, int data )
 ============
 Q3_GetTimeScale
   Description	: 
-  Return type	: static DWORD 
+  Return type	: static unsigned int 
   Argument		: void
 ============
 */
-static DWORD Q3_GetTimeScale( void )
+static unsigned int Q3_GetTimeScale( void )
 {
 	//return	Q3_TIME_SCALE;
 	return g_timescale->value;
@@ -5820,7 +5824,7 @@ static void Q3_AddRHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -5838,7 +5842,7 @@ static void Q3_AddLHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -9273,7 +9277,7 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_FreeVariable			=	Q3_FreeVariable;
 
 	//Save / Load functions
-	pe->I_WriteSaveData			=	(int(*)(unsigned long, void *, int))gi.AppendToSaveGame;
+	pe->I_WriteSaveData			=	(int(*)(unsigned int, void *, int))gi.AppendToSaveGame;
 	pe->I_ReadSaveData			=	gi.ReadFromSaveGame;
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
 

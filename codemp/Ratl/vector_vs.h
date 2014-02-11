@@ -1,3 +1,5 @@
+#pragma once
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
 //  (c) 2002 Activision
@@ -17,16 +19,12 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined(RATL_VECTOR_VS_INC)
-#define RATL_VECTOR_VS_INC
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
-#if !defined(RATL_COMMON_INC)
-	#include "ratl_common.h"
-#endif
+#include "ratl_common.h"
+
 namespace ratl
 {
 
@@ -47,7 +45,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		CAPACITY		= T::CAPACITY
 	};
@@ -93,7 +91,7 @@ public:
 		assert(mSize>=0&&mSize<=CAPACITY);
 		return (mSize);
 	}
-    
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Have Any Objects Have Been Added To This Vector?
     ////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +189,7 @@ public:
 		mArray.construct(mSize,value);
 		mSize++;
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////
 	// Add raw
 	////////////////////////////////////////////////////////////////////////////////////
@@ -352,7 +350,7 @@ public:
 			}
 		}
 
-	
+
 
 
 		// PHASE 2, POP OFF THE TOP OF THE HEAP ONE AT A TIME (AND FIX)       O(n log n)
@@ -400,7 +398,7 @@ private:
 	// For Heap Sort
 	// Returns The Location Of Node (i)'s Parent Node (The Parent Node Of Zero Is Zero)
 	////////////////////////////////////////////////////////////////////////////////////
-	static int			parent(int i)				
+	static int			parent(int i)
 	{
 		return ((i-1)/2);
 	}
@@ -409,7 +407,7 @@ private:
 	// For Heap Sort
 	// Returns The Location Of Node (i)'s Left Child (The Child Of A Leaf Is The Leaf)
 	////////////////////////////////////////////////////////////////////////////////////
-	static int			left(int i)	
+	static int			left(int i)
 	{
 		return ((2*i)+1);
 	}
@@ -469,7 +467,7 @@ public:
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 
@@ -480,21 +478,21 @@ public:
 		{
 			return (mLoc!=t.mLoc  || mOwner!=t.mOwner);
 		}
-		bool		operator==(const iterator &t)	const				
+		bool		operator==(const iterator &t)	const
 		{
 			return (mLoc==t.mLoc && mOwner==t.mOwner);
 		}
 
 		// DeReference Operator
 		//----------------------
-		TTValue&			operator* ()	const			
+		TTValue&			operator* ()	const
 		{
 			assert(mLoc>=0 && mLoc<mOwner->mSize);
 			return (mOwner->mArray[mLoc]);
 		}
 		// DeReference Operator
 		//----------------------
-		TTValue&			value()	const			
+		TTValue&			value()	const
 		{
 			assert(mLoc>=0 && mLoc<mOwner->mSize);
 			return (mOwner->mArray[mLoc]);
@@ -502,7 +500,7 @@ public:
 
 		// DeReference Operator
 		//----------------------
-		TTValue*			operator-> ()	const			
+		TTValue*			operator-> ()	const
 		{
 			assert(mLoc>=0 && mLoc<mOwner->mSize);
 			return (&mOwner->mArray[mLoc]);
@@ -555,14 +553,14 @@ public:
 		//---------------------
 		void		operator= (const const_iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 		// Assignment Operator
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 
@@ -574,7 +572,7 @@ public:
 		{
 			return (mLoc!=t.mLoc  || mOwner!=t.mOwner);
 		}
-		bool		operator==(const iterator &t)		const				
+		bool		operator==(const iterator &t)		const
 		{
 			return (mLoc==t.mLoc && mOwner==t.mOwner);
 		}
@@ -585,7 +583,7 @@ public:
 		{
 			return (mLoc!=t.mLoc || mOwner!=t.mOwner);
 		}
-		bool		operator==(const const_iterator &t)		const				
+		bool		operator==(const const_iterator &t)		const
 		{
 			return (mLoc==t.mLoc  && mOwner==t.mOwner);
 		}
@@ -723,7 +721,7 @@ class vector_vs : public vector_base<storage::value_semantics<T,ARG_CAPACITY> >
 public:
 	typedef typename storage::value_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
+ 	enum
 	{
 		CAPACITY		= ARG_CAPACITY
 	};
@@ -736,7 +734,7 @@ class vector_os : public vector_base<storage::object_semantics<T,ARG_CAPACITY> >
 public:
 	typedef typename storage::object_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
+ 	enum
 	{
 		CAPACITY		= ARG_CAPACITY
 	};
@@ -749,7 +747,7 @@ class vector_is : public vector_base<storage::virtual_semantics<T,ARG_CAPACITY,A
 public:
 	typedef typename storage::virtual_semantics<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
+ 	enum
 	{
 		CAPACITY		= ARG_CAPACITY,
 		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
@@ -758,4 +756,3 @@ public:
 };
 
 }
-#endif

@@ -27,7 +27,7 @@ This file is part of Jedi Academy.
 Ghoul2 Insert Start
 */
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/miniheap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 /*
 Ghoul2 Insert End
@@ -67,7 +67,7 @@ Converts newlines to "\n" so a line prints nicer
 */
 char	*SV_ExpandNewlines( char *in ) {
 	static	char	string[1024];
-	int		l;
+	size_t		l;
 
 	l = 0;
 	while ( *in && l < sizeof(string) - 3 ) {
@@ -122,16 +122,22 @@ A NULL client will broadcast to all clients
 void SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	va_list		argptr;
 	byte		message[MAX_MSGLEN];
-	int			len;
 	client_t	*client;
 	int			j;
 	
 	message[0] = svc_serverCommand;
 
 	va_start (argptr,fmt);
-	vsprintf ((char *)message+1, fmt,argptr);
+	Q_vsnprintf( (char *)message+1, sizeof(message)-1, fmt, argptr );
 	va_end (argptr);
-	len = strlen( (char *)message ) + 1;
+
+	// Fix to http://aluigi.altervista.org/adv/q3msgboom-adv.txt
+	// The actual cause of the bug is probably further downstream
+	// and should maybe be addressed later, but this certainly
+	// fixes the problem for now
+	if ( strlen ((char *)message+1) > 1022 ) {
+		return;
+	}
 
 	if ( cl != NULL ) {
 		SV_AddServerCommand( cl, (char *)message );
@@ -196,7 +202,7 @@ void SVC_Status( netadr_t from ) {
 			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
 				score, cl->ping, cl->name);
 			playerLength = strlen(player);
-			if (statusLength + playerLength >= sizeof(status) ) {
+			if (statusLength + playerLength >= (int)sizeof(status) ) {
 				break;		// can't hold any more
 			}
 			strcpy (status + statusLength, player);
@@ -254,7 +260,7 @@ connectionless packets.
 */
 static void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	char	*s;
-	char	*c;
+	const char	*c;
 
 	MSG_BeginReading( msg );
 	MSG_ReadLong( msg );		// skip the -1 marker
@@ -453,7 +459,7 @@ qboolean SV_CheckPaused( void ) {
 		return qfalse;
 	}
 
-	sv_paused->integer = 1;
+	Cvar_Set("sv_paused", "1");
 	return qtrue;
 }
 
@@ -564,7 +570,7 @@ void SV_Frame( int msec,float fractionMsec ) {
 	while ( sv.timeResidual >= frameMsec ) {
 		sv.timeResidual -= frameMsec;
 		sv.time += frameMsec;
-		G2API_SetTime(sv.time,G2T_SV_TIME);
+		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 		// let everything in the world think and move
 		ge->RunFrame( sv.time );

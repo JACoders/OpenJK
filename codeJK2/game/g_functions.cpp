@@ -29,7 +29,7 @@ This file is part of Jedi Knight 2.
 // This file contains the 8 (so far) function calls that replace the 8 function ptrs in the gentity_t structure
 
 #include "g_local.h"
-#include "..\cgame\cg_local.h"
+#include "../cgame/cg_local.h"
 #include "g_functions.h"
 
 void GEntity_ThinkFunc(gentity_t *self)

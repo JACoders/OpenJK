@@ -15,10 +15,10 @@ void FX_DisruptorMainShot( vec3_t start, vec3_t end )
 //	vec3_t	dir;
 //	float	len;
 
-	trap_FX_AddLine( start, end, 0.1f, 6.0f, 0.0f, 
+	trap->FX_AddLine( start, end, 0.1f, 6.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							150, trap_R_RegisterShader( "gfx/effects/redLine" ), 
+							150, trap->R_RegisterShader( "gfx/effects/redLine" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 //	VectorSubtract( end, start, dir );
@@ -40,10 +40,10 @@ FX_DisruptorAltShot
 */
 void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean fullCharge )
 {
-	trap_FX_AddLine( start, end, 0.1f, 10.0f, 0.0f, 
+	trap->FX_AddLine( start, end, 0.1f, 10.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							175, trap_R_RegisterShader( "gfx/effects/redLine" ), 
+							175, trap->R_RegisterShader( "gfx/effects/redLine" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 	if ( fullCharge )
@@ -51,10 +51,10 @@ void FX_DisruptorAltShot( vec3_t start, vec3_t end, qboolean fullCharge )
 		vec3_t	YELLER={0.8f,0.7f,0.0f};
 
 		// add some beef
-		trap_FX_AddLine( start, end, 0.1f, 7.0f, 0.0f, 
+		trap->FX_AddLine( start, end, 0.1f, 7.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							YELLER, YELLER, 0.0f,
-							150, trap_R_RegisterShader( "gfx/misc/whiteline2" ), 
+							150, trap->R_RegisterShader( "gfx/misc/whiteline2" ),
 							FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 	}
 }
@@ -76,13 +76,13 @@ void FX_DisruptorAltMiss( vec3_t origin, vec3_t normal )
 	VectorCopy( c1, c2 );
 	c1[2] += 4;
 	c2[2] += 12;
-	
+
 	VectorAdd( origin, normal, pos );
 	pos[2] += 28;
 
 	/*
 	FX_AddBezier( origin, pos, c1, vec3_origin, c2, vec3_origin, 6.0f, 6.0f, 0.0f, 0.0f, 0.2f, 0.5f,
-	WHITE, WHITE, 0.0f, 4000, trap_R_RegisterShader( "gfx/effects/smokeTrail" ), FX_ALPHA_WAVE );
+	WHITE, WHITE, 0.0f, 4000, trap->R_RegisterShader( "gfx/effects/smokeTrail" ), FX_ALPHA_WAVE );
 	*/
 
 	VectorCopy(origin, b.start);
@@ -98,18 +98,18 @@ void FX_DisruptorAltMiss( vec3_t origin, vec3_t normal )
 	b.alpha1 = 0.0f;
 	b.alpha2 = 0.2f;
 	b.alphaParm = 0.5f;
-	
+
 	VectorCopy(WHITE, b.sRGB);
 	VectorCopy(WHITE, b.eRGB);
 
 	b.rgbParm = 0.0f;
 	b.killTime = 4000;
-	b.shader = trap_R_RegisterShader( "gfx/effects/smokeTrail" );
+	b.shader = trap->R_RegisterShader( "gfx/effects/smokeTrail" );
 	b.flags = FX_ALPHA_WAVE;
 
-	trap_FX_AddBezier(&b);
+	trap->FX_AddBezier(&b);
 
-	trap_FX_PlayEffectID( cgs.effects.disruptorAltMissEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.disruptorAltMissEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -120,7 +120,7 @@ FX_DisruptorAltHit
 
 void FX_DisruptorAltHit( vec3_t origin, vec3_t normal )
 {
-	trap_FX_PlayEffectID( cgs.effects.disruptorAltHitEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.disruptorAltHitEffect, origin, normal, -1, -1, qfalse );
 }
 
 
@@ -133,7 +133,7 @@ FX_DisruptorHitWall
 
 void FX_DisruptorHitWall( vec3_t origin, vec3_t normal )
 {
-	trap_FX_PlayEffectID( cgs.effects.disruptorWallImpactEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.disruptorWallImpactEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -144,5 +144,5 @@ FX_DisruptorHitPlayer
 
 void FX_DisruptorHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid )
 {
-	trap_FX_PlayEffectID( cgs.effects.disruptorFleshImpactEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.disruptorFleshImpactEffect, origin, normal, -1, -1, qfalse );
 }

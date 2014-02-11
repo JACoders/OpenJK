@@ -23,9 +23,9 @@ This file is part of Jedi Academy.
 
 
 #include "server.h"
-#include "..\game\weapons.h"
-#include "..\game\g_items.h"
-#include "..\game\statindex.h"
+#include "../game/weapons.h"
+#include "../game/g_items.h"
+#include "../game/statindex.h"
 
 
 /*
@@ -63,7 +63,7 @@ static client_t *SV_SetPlayer( void ) {
 //
 static bool SV_Map_( ForceReload_e eForceReload ) 
 {
-	char	*map;
+	const char	*map;
 	char	expanded[MAX_QPATH];
 
 	map = Cmd_Argv(1);
@@ -79,11 +79,8 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		return false;
 	}
 
-#ifndef _DEBUG
-	Com_Printf("SV_Map_ CHECK HERE: %s\n", expanded);
-#endif
-#ifndef _XBOX	// Could check for maps/%s/brushes.mle or something...
 	Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
+
 	if ( FS_ReadFile (expanded, NULL) == -1 ) {
 		Com_Printf ("Can't find map %s\n", expanded);
 		extern	cvar_t	*com_buildScript;
@@ -93,7 +90,6 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		}
 		return false;
 	}
-#endif
 
 	if (map[0]!='_')
 	{
@@ -112,7 +108,9 @@ static bool SV_Map_( ForceReload_e eForceReload )
 void SV_Player_EndOfLevelSave(void)						   
 {
 	int	i;	
-	qboolean usesJK2 = (qboolean)Cvar_VariableIntegerValue("com_jk2");
+#ifndef __NO_JK2
+	qboolean usesJK2 = (qboolean)(com_jk2 && com_jk2->integer);
+#endif
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...
@@ -131,6 +129,7 @@ void SV_Player_EndOfLevelSave(void)
 		playerState_t*		pState = cl->gentity->client;
 		const char	*s2;
 		const char *s;
+#ifndef __NO_JK2
 		if(usesJK2)
 		{
 			s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
@@ -153,6 +152,7 @@ void SV_Player_EndOfLevelSave(void)
 							);
 		}
 		else
+#endif
 		{
 					//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
 					s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
@@ -247,16 +247,15 @@ void SV_Player_EndOfLevelSave(void)
 
 // Restart the server on a different map
 //
-//extern void	SCR_PrecacheScreenshot();  //scr_scrn.cpp
 static void SV_MapTransition_f(void)
 {		
-	char	*spawntarget;
+	const char	*spawntarget;
 
 //	SCR_PrecacheScreenshot();
 	SV_Player_EndOfLevelSave();
 
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != NULL ) 
+	if ( *spawntarget != '\0' ) 
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}
@@ -276,7 +275,6 @@ Restart the server on a different map, but clears a cvar so that typing "map bla
 player weapons/ammo/etc from the previous level that you haven't really exited (ie ignores KEEP_PREV on spawn points)
 ==================
 */
-//void SCR_UnprecacheScreenshot();	//scr_scrn.cpp
 static void SV_Map_f( void ) 
 {
 	Cvar_Set( sCVARNAME_PLAYERSAVE, "");
@@ -308,11 +306,7 @@ static void SV_Map_f( void )
 		if ( !Q_stricmpn( Cmd_Argv(0), "devmap", 6 ) ) {
 			Cvar_Set( "helpUsObi", "1" );
 		} else {
-#ifdef _XBOX
-			Cvar_Set( "helpUsObi", "1" );
-#else
 			Cvar_Set( "helpUsObi", "0" );
-#endif
 		}
 	}
 }
@@ -324,8 +318,8 @@ SV_LoadTransition_f
 */
 void SV_LoadTransition_f(void)
 {
-	char	*map;
-	char	*spawntarget;
+	const char	*map;
+	const char	*spawntarget;
 
 	map = Cmd_Argv(1);
 	if ( !*map ) {
@@ -342,7 +336,7 @@ void SV_LoadTransition_f(void)
 
 	//set the spawntarget if there is one
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != NULL ) 
+	if ( *spawntarget != '\0' ) 
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}
@@ -480,6 +474,26 @@ static void SV_DumpUser_f( void ) {
 
 /*
 ==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteMapName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "maps", "bsp", qtrue, qfalse );
+}
+
+/*
+==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteSaveName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "saves", "sav", qtrue, qtrue );
+}
+
+/*
+==================
 SV_AddOperatorCommands
 ==================
 */
@@ -497,13 +511,20 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("dumpuser", SV_DumpUser_f);
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "map", SV_CompleteMapName );
 	Cmd_AddCommand ("devmap", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmap", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapbsp", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapbsp", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapmdl", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapsnd", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapsnd", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapall", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
 	Cmd_AddCommand ("maptransition", SV_MapTransition_f);
 	Cmd_AddCommand ("load", SV_LoadGame_f);
+	Cmd_SetCommandCompletionFunc( "load", SV_CompleteSaveName );
 	Cmd_AddCommand ("loadtransition", SV_LoadTransition_f);
 	Cmd_AddCommand ("save", SV_SaveGame_f);
 	Cmd_AddCommand ("wipe", SV_WipeGame_f);

@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
 #ifdef _WIN32
 #pragma optimize("p", on)
@@ -203,7 +203,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 		vec3_t point;
 		vec3_t dir;
 		vec3_t tang;
-		bool   push;
+		//bool   push;
 		float  len;
 
 		VectorSubtract( movedArea->GetOrigin(), bounds[0], point );
@@ -216,7 +216,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 		VectorSubtract ( movedArea->GetOrigin(), tang, dir );
 
 		dir[2] = 0;
-		push   = false;
+		//push   = false;
 		len    = VectorNormalize(dir);
 
 		if ( len < movedArea->GetRadius ( ) )
@@ -485,7 +485,7 @@ CRMArea* CRMAreaManager::EnumArea ( const int index )
 {
 	// This isnt an assertion case because there is no size method for
 	// the area manager so the areas are enumerated until NULL is returned.
-	if ( index < 0 || index >= mAreas.size ( ) )
+	if ( index < 0 || index >= (int)mAreas.size ( ) )
 	{
 		return NULL;
 	}

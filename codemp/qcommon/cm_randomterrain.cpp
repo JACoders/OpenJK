@@ -1,4 +1,5 @@
 //Anything above this #include will be ignored by the compiler
+#define NOGDI
 #include "qcommon/exe_headers.h"
 
 #include "cm_local.h"
@@ -117,7 +118,7 @@ static void lerp(float t, float a0, float a1, vec4_t p0, vec4_t p1, int m, vec4_
     n+1 of them are provided. The work array must have room for n+1 points.
  */
 static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work[],
-                    unsigned int Cn, bool interp, vec4_t val)
+                    int Cn, bool interp, vec4_t val)
 {
     register int i, j, k, h, lo, hi;
 
@@ -158,32 +159,30 @@ static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work
 
 #define BIG (1.0e12)
 
-static vec_t Vector2Normalize( vec2_t v ) 
+static float Vector2Normalize( vec2_t v )
 {
 	float	length, ilength;
 
 	length = v[0]*v[0] + v[1]*v[1];
 	length = sqrt (length);
 
-	if ( length ) 
+	if ( length )
 	{
 		ilength = 1/length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 	}
-		
+
 	return length;
 }
 
-CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey, 
+CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by, float ex, float ey,
 					 float minWidth, float maxWidth, float depth, float deviation, float breadth,
 					 CPathInfo *Connected, unsigned CreationFlags) :
 	mNumPoints(numPoints),
-	mMinWidth(minWidth),
-	mMaxWidth(maxWidth),
 	mDepth(depth),
-	mDeviation(deviation),
-	mBreadth(breadth)
+	mBreadth(breadth),
+	mDeviation(deviation)
 {
 	int		i, numConnected, index;
 	float	position, goal, deltaGoal;
@@ -193,8 +192,8 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 	float	currentWidth;
 	float	currentPosition;
 	vec2_t	testPoint, percPoint, diffPoint, normalizedPath;
-	float	distance, length;
-	
+	float	distance;
+
 	CreateCircle();
 
 	numConnected = -1;
@@ -213,9 +212,8 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 
 	mPoints = (vec4_t *)malloc(sizeof(vec4_t) * mNumPoints);
 	mWork = (vec4_t *)malloc(sizeof(vec4_t) * (mNumPoints+1));
-	mWeights = (vec_t *)malloc(sizeof(vec_t) * (mNumPoints+1));
+	mWeights = (float *)malloc(sizeof(float) * (mNumPoints+1));
 
-	length = sqrt((ex-bx)*(ex-bx) + (ey-by)*(ey-by));
 	if (fabs(ex - bx) >= fabs(ey - by))
 	{	// this appears to be a horizontal path
 		mInc = 1.0 / fabs(ex - bx);
@@ -393,11 +391,11 @@ void CPathInfo::Stamp(int x, int y, int size, int depth, unsigned char *Data, in
 //	int xPos;
 //	float yPos;
 	int		dx, dy, fx, fy;
-	float	offset;
+	//float	offset;
 	byte	value;
 	byte	invDepth;
 
-	offset = (float)(CIRCLE_STAMP_SIZE-1) / size;
+	//offset = (float)(CIRCLE_STAMP_SIZE-1) / size;
 	invDepth = 255-depth;
 
 	for(dx = -size; dx <= size; dx++)
@@ -417,7 +415,7 @@ void CPathInfo::Stamp(int x, int y, int size, int depth, unsigned char *Data, in
 			{
 				continue;
 			}
-			
+
 			fy = y + dy;
 			if (fy < 2 || fy > DataHeight-2)
 			{
@@ -482,21 +480,21 @@ void CPathInfo::GetInfo(float PercentInto, vec4_t Coord, vec4_t Vector)
 	vec4_t	before, after;
 	float	testPercent;
 
-	DialASpline(PercentInto, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, Coord);
+	DialASpline(PercentInto, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, Coord);
 
 	testPercent = PercentInto - 0.01;
 	if (testPercent < 0)
 	{
 		testPercent = 0;
 	}
-	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, before);
+	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, before);
 
 	testPercent = PercentInto + 0.01;
 	if (testPercent > 1.0)
 	{
 		testPercent = 1.0;
 	}
-	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(vec_t), mNumPoints-1, mWork, 2, true, after);
+	DialASpline(testPercent, mWeights, mPoints, sizeof(vec4_t) / sizeof(float), mNumPoints-1, mWork, 2, true, after);
 
 	Coord[2] = mDepth;
 
@@ -517,7 +515,7 @@ void CPathInfo::DrawPath(unsigned char *Data, int DataWidth, int DataHeight )
 
 	lastX = lastY = -999;
 
-	for (t=0.0; t<=1.0; t+=inc) 
+	for (t=0.0; t<=1.0; t+=inc)
 	{
 		GetInfo(t, val, vector);
 
@@ -602,8 +600,8 @@ void CRandomTerrain::Shutdown(void)
 	ClearPaths ( );
 }
 
-bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints, 
-					float bx, float by, float ex, float ey, 
+bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFlags, int numPoints,
+					float bx, float by, float ex, float ey,
 					float minWidth, float maxWidth, float depth, float deviation, float breadth )
 {
 	CPathInfo	*connected = 0;
@@ -618,7 +616,7 @@ bool CRandomTerrain::CreatePath(int PathID, int ConnectedID, unsigned CreationFl
 		connected = mPaths[ConnectedID];
 	}
 
-	mPaths[PathID] = new CPathInfo(mLandScape, numPoints, bx, by, ex, ey, 
+	mPaths[PathID] = new CPathInfo(mLandScape, numPoints, bx, by, ex, ey,
 		minWidth, maxWidth, depth, deviation, breadth,
 		connected, CreationFlags );
 
@@ -713,8 +711,8 @@ void CRandomTerrain::Smooth ( void )
 	int		xx, yy, dx, dy;
 	float	total, num;
 
-	R_Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
-	R_Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
+	re->Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
+	re->Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
 
 	// now lets filter it.
 	memcpy(temp, mGrid, mWidth * mHeight);
@@ -803,7 +801,7 @@ void CRandomTerrain::Generate(int symmetric)
 		for (x = 0; x < mWidth; x++)
 		{
 			i = x + y*mWidth;
-			byte val = (byte)Com_Clamp(0, 255, (int)(mGrid[i] + (CM_NoiseGet4f( x, y, 0, t1 ) * 5))); 
+			byte val = (byte)Com_Clamp(0, 255, (int)(mGrid[i] + (CM_NoiseGet4f( x, y, 0, t1 ) * 5)));
 			mGrid[i] = val;
 		}
 
@@ -837,11 +835,11 @@ typedef enum
 
 typedef struct SCharacterPiece
 {
-	char	*mPiece;
+	const char	*mPiece;
 	int		mCommonality;
 } TCharacterPiece;
 
-static TCharacterPiece	Consonants[] = 
+static TCharacterPiece	Consonants[] =
 {
 	{	"b", 6 },
 	{	"c", 8 },
@@ -865,7 +863,7 @@ static TCharacterPiece	Consonants[] =
 	{	0, 0 }
 };
 
-static TCharacterPiece	ComplexConsonants[] = 
+static TCharacterPiece	ComplexConsonants[] =
 {
 	{	"st", 10 },
 	{	"ck", 10 },
@@ -876,23 +874,23 @@ static TCharacterPiece	ComplexConsonants[] =
 	{	"rn", 6 },
 	{	"nc", 6 },
 	{	"mp", 4 },
-	{	"sc", 10 }, 
-	{	"sl", 10 }, 
-	{	"tch", 6 }, 
-	{	"th", 4 }, 
-	{	"rn", 5 }, 
-	{	"cl", 10 }, 
-	{	"sp", 10 }, 
-	{	"st", 10 }, 
-	{	"fl", 4 }, 
-	{	"sh", 7 }, 
-	{	"ng", 4 }, 
+	{	"sc", 10 },
+	{	"sl", 10 },
+	{	"tch", 6 },
+	{	"th", 4 },
+	{	"rn", 5 },
+	{	"cl", 10 },
+	{	"sp", 10 },
+	{	"st", 10 },
+	{	"fl", 4 },
+	{	"sh", 7 },
+	{	"ng", 4 },
 //	{	"" },
 
 	{	0, 0 }
 };
 
-static TCharacterPiece	Vowels[] = 
+static TCharacterPiece	Vowels[] =
 {
 	{	"a", 10 },
 	{	"e", 10 },
@@ -904,7 +902,7 @@ static TCharacterPiece	Vowels[] =
 	{	0, 0 }
 };
 
-static TCharacterPiece	ComplexVowels[] = 
+static TCharacterPiece	ComplexVowels[] =
 {
 	{	"ea", 10  },
 	{	"ue", 3 },
@@ -916,14 +914,14 @@ static TCharacterPiece	ComplexVowels[] =
 	{	"au", 3 },
 	{	"ee", 7 },
 	{	"ei", 7 },
-	{	"ou", 7 }, 
-	{	"ia", 4 }, 
+	{	"ou", 7 },
+	{	"ia", 4 },
 //	{	"" },
 
 	{	0, 0 }
 };
 
-static TCharacterPiece	Endings[] = 
+static TCharacterPiece	Endings[] =
 {
 	{	"ing", 10 },
 	{	"ed", 10 },
@@ -946,9 +944,9 @@ static TCharacterPiece	Endings[] =
 	{	"ious", 10 },
 	{	"ative", 10 },
 	{	"er", 10 },
-	{	"ize", 10 }, 
-	{	"able", 10 }, 
-	{	"itude", 10 }, 
+	{	"ize", 10 },
+	{	"able", 10 },
+	{	"itude", 10 },
 //	{	"" },
 
 	{	0, 0 }
@@ -1013,7 +1011,7 @@ unsigned RMG_CreateSeed(char *TextSeed)
 	Length = irand(4, 9);
 
 	if (irand(0, 100) < 20)
-	{ 
+	{
 		LookingFor = CP_VOWEL;
 	}
 	else

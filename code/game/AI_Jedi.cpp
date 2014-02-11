@@ -16,14 +16,14 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "../qcommon/tri_coll_test.h"
+#include "g_navigator.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 //Externs
 extern qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy );
@@ -1855,7 +1855,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							}
 						}
 						else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 ) 
-							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) )
 						{
 							ForceLightning( NPC );
 							if ( NPC->client->ps.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1868,7 +1868,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						else if ( NPC->health < NPC->max_health * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
 							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 ) 
-							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) )
 						{
 							ForceDrain2( NPC );
 							NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_spskill->integer*500) );
@@ -2743,11 +2743,7 @@ int Jedi_ReCalcParryTime( gentity_t *self, evasionType_t evasionType )
 				}
 				else if ( self->NPC->rank >= RANK_LT_JG )
 				{//fencers, bosses, shadowtroopers, luke, desann, et al use the norm
-					if ( Q_irand( 0, 2 ) )
-					{//medium speed parry
-						baseTime = baseTime;
-					}
-					else
+					if ( !Q_irand( 0, 2 ) )
 					{//with the occasional fast parry
 						baseTime = ceil(baseTime/2.0f);
 					}
@@ -3851,7 +3847,6 @@ static evasionType_t Jedi_CheckEvadeSpecialAttacks( void )
 	return EVASION_NONE;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 extern int WPDEBUG_SaberColor( saber_colors_t saberColor );
 static qboolean Jedi_SaberBlock( void )
 {
@@ -6843,7 +6838,8 @@ static void Jedi_Attack( void )
 			}
 		}
 	}
-	if ( NPC->enemy->NPC  
+	else if ( NPC->enemy &&
+		NPC->enemy->NPC  
 		&& NPC->enemy->NPC->charmedTime > level.time )
 	{//my enemy was charmed
 		if ( OnSameTeam( NPC, NPC->enemy ) )
@@ -6979,8 +6975,10 @@ static void Jedi_Attack( void )
 					{
 					case 0:
 						chance = 9;
+						break;
 					case 1:
 						chance = 3;
+						break;
 					case 2:
 						chance = 1;
 						break;

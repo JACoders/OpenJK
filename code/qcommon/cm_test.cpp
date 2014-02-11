@@ -17,13 +17,7 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 #include "cm_local.h"
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (pop)
 using namespace std;
-
-#ifdef _XBOX
-#include "../renderer/tr_local.h"
-#endif
 
 class CPoint
 {
@@ -99,20 +93,10 @@ int CM_PointLeafnum_r( const vec3_t p, int num, clipMap_t *local ) {
 	cNode_t		*node;
 	cplane_t	*plane;
 
-#ifdef _XBOX
-	if(!tr.world) {
-		return 0;
-	}
-#endif
-
 	while (num >= 0)
 	{
 		node = local->nodes + num;
-#ifdef _XBOX
-		plane = cmg.planes + tr.world->nodes[num].planeNum;
-#else
 		plane = node->plane;
-#endif
 		
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
@@ -218,12 +202,6 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 	cNode_t		*node;
 	int			s;
 
-#ifdef _XBOX
-	if(!tr.world) {
-		return;
-	}
-#endif
-
 	while (1) {
 		if (nodenum < 0) {
 			ll->storeLeafs( ll, nodenum );
@@ -231,12 +209,8 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 		}
 	
 		node = &cmg.nodes[nodenum];
-
-#ifdef _XBOX
-		plane = cmg.planes + tr.world->nodes[nodenum].planeNum;
-#else
 		plane = node->plane;
-#endif
+
 		s = BoxOnPlaneSide( ll->bounds[0], ll->bounds[1], plane );
 		if (s == 1) {
 			nodenum = node->children[0];
@@ -273,30 +247,6 @@ int	CM_BoxLeafnums( const vec3_t mins, const vec3_t maxs, int *boxList, int list
 	CM_BoxLeafnums_r( &ll, 0 );
 
 	*lastLeaf = ll.lastLeaf;
-	return ll.count;
-}
-
-/*
-==================
-CM_BoxBrushes
-==================
-*/
-int CM_BoxBrushes( const vec3_t mins, const vec3_t maxs, cbrush_t **boxlist, int listsize ) {
-	leafList_t	ll;
-
-	cmg.checkcount++;
-
-	VectorCopy( mins, ll.bounds[0] );
-	VectorCopy( maxs, ll.bounds[1] );
-	ll.count = 0;
-	ll.maxcount = listsize;
-	ll.list = (int *)boxlist;
-	ll.storeLeafs = CM_StoreBrushes;
-	ll.lastLeaf = 0;
-	ll.overflowed = qfalse;
-	
-	CM_BoxLeafnums_r( &ll, 0 );
-
 	return ll.count;
 }
 
@@ -409,26 +359,17 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 
 		// see if the point is in the brush
 		for ( i = 0 ; i < b->numsides ; i++ ) {
-#ifdef _XBOX
-			d = DotProduct( p, 
-					cmg.planes[b->sides[i].planeNum.GetValue()].normal );
-#else
 			d = DotProduct( p, b->sides[i].plane->normal );
-#endif
+
 // FIXME test for Cash
 //			if ( d >= b->sides[i].plane->dist ) {
-#ifdef _XBOX
-			if ( d > cmg.planes[b->sides[i].planeNum.GetValue()].dist ) {
-#else
 			if ( d > b->sides[i].plane->dist ) {
-#endif
 				break;
 			}
 		}
 
 		if ( i == b->numsides ) {
 			contents |= b->contents;
-#ifndef _XBOX	// Removing terrain from Xbox
 			if(cmg.landScape && (contents & CONTENTS_TERRAIN) )
 			{
 				if(p[2] < cmg.landScape->GetWaterHeight())
@@ -436,7 +377,6 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 					contents |= cmg.landScape->GetWaterContents();
 				}
 			}
-#endif
 		}
 	}
 
@@ -560,17 +500,6 @@ PVS
 ===============================================================================
 */
 
-#ifdef _XBOX
-extern trGlobals_t tr;
-const byte	*CM_ClusterPVS (int cluster) {
-	if (cluster < 0 || cluster >= cmg.numClusters || !cmg.vised ) {
-		return NULL;
-	}
-
-	return cmg.visibility->Decompress(cluster * cmg.clusterBytes,
-			cmg.numClusters);
-}
-#else
 byte	*CM_ClusterPVS (int cluster) {
 	if (cluster < 0 || cluster >= cmg.numClusters || !cmg.vised ) {
 		return cmg.visibility;
@@ -578,8 +507,6 @@ byte	*CM_ClusterPVS (int cluster) {
 
 	return cmg.visibility + cluster * cmg.clusterBytes;
 }
-#endif
-
 
 /*
 ===============================================================================
@@ -588,31 +515,6 @@ AREAPORTALS
 
 ===============================================================================
 */
-
-#ifdef _XBOX
-void CM_FloodArea_r( int areaNum, int floodnum) {
-	int		i;
-	cArea_t *area;
-	int		*con;
-
-	area = &cmg.areas[ areaNum ];
-
-	if ( area->floodvalid == cmg.floodvalid ) {
-		if (area->floodnum == floodnum)
-			return;
-		Com_Error (ERR_DROP, "FloodArea_r: reflooded");
-	}
-
-	area->floodnum = floodnum;
-	area->floodvalid = cmg.floodvalid;
-	con = cmg.areaPortals + areaNum * cmg.numAreas;
-	for ( i=0 ; i < cmg.numAreas  ; i++ ) {
-		if ( con[i] > 0 ) {
-			CM_FloodArea_r( i, floodnum );
-		}
-	}
-}
-#else  // _XBOX
 
 void CM_FloodArea_r( int areaNum, int floodnum, clipMap_t &cm) {
 	int		i;
@@ -636,7 +538,6 @@ void CM_FloodArea_r( int areaNum, int floodnum, clipMap_t &cm) {
 		}
 	}
 }
-#endif // XBOX
 
 /*
 ====================
@@ -644,27 +545,6 @@ CM_FloodAreaConnections
 
 ====================
 */
-#ifdef _XBOX
-void	CM_FloodAreaConnections( void ) {
-	int		i;
-	cArea_t	*area;
-	int		floodnum;
-
-	// all current floods are now invalid
-	cmg.floodvalid++;
-	floodnum = 0;
-
-	for (i = 0 ; i < cmg.numAreas ; i++) {
-		area = &cmg.areas[i];
-		if (area->floodvalid == cmg.floodvalid) {
-			continue;		// already flooded into
-		}
-		floodnum++;
-		CM_FloodArea_r (i, floodnum);
-	}
-
-}
-#else // _XBOX
 void	CM_FloodAreaConnections( clipMap_t &cm ) {
 	int		i;
 	cArea_t	*area;
@@ -684,7 +564,6 @@ void	CM_FloodAreaConnections( clipMap_t &cm ) {
 	}
 
 }
-#endif // _XBOX
 
 /*
 ====================
@@ -712,11 +591,7 @@ void	CM_AdjustAreaPortalState( int area1, int area2, qboolean open ) {
 		}
 	}
 
-#ifdef _XBOX
-	CM_FloodAreaConnections ();
-#else
 	CM_FloodAreaConnections (cmg);
-#endif
 }
 
 /*
