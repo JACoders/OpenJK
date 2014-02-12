@@ -3,6 +3,7 @@
 #include "qcommon/MiniHeap.h"
 #include "server/server.h"
 #include "ghoul2/g2_local.h"
+#include "tr_local.h"
 
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"

@@ -1,6 +1,7 @@
 #include "ghoul2/G2.h"
 #include "ghoul2/g2_local.h"
 #include "qcommon/MiniHeap.h"
+#include "tr_local.h"
 
 //rww - RAGDOLL_BEGIN
 #include "ghoul2/G2_gore.h"
