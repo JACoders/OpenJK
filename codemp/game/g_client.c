@@ -3525,7 +3525,14 @@ void ClientSpawn(gentity_t *ent) {
 		wDisable = g_weaponDisable.integer;
 	}
 
-
+	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
+		client->pers.raceMode = qtrue;
+	else if (!g_raceMode.integer && client->pers.raceMode) 
+		client->pers.raceMode = qfalse;
+	if (client->pers.raceMode) 
+		client->ps.stats[STAT_RACEMODE] = 1;
+	else
+		client->ps.stats[STAT_RACEMODE] = 0;
 
 	if ( level.gametype != GT_HOLOCRON 
 		&& level.gametype != GT_JEDIMASTER 
@@ -4049,15 +4056,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
-
-	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
-		client->pers.raceMode = qtrue;
-	else if (!g_raceMode.integer && client->pers.raceMode) 
-		client->pers.raceMode = qfalse;
-	if (client->pers.raceMode) 
-		client->ps.stats[STAT_RACEMODE] = 1;
-	else
-		client->ps.stats[STAT_RACEMODE] = 0;
 
 	if (client->pers.movementStyle == 0)
 		client->ps.stats[STAT_MOVEMENTSTYLE] = 0;

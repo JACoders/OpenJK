@@ -6480,7 +6480,7 @@ command_t commands[] = {
 	{ "amsurrender",		Cmd_EmoteSurrender_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt",			Cmd_EmoteTaunt_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt2",			Cmd_EmoteTaunt2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
-	{ "amtele",				Cmd_Amtele_f,				CMD_NOINTERMISSION|CMD_ALIVE },
+	{ "amtele",				Cmd_Amtele_f,				CMD_NOINTERMISSION },
 	{ "amtelemark",			Cmd_Amtelemark_f,			CMD_NOINTERMISSION },
 	{ "amvictory",			Cmd_EmoteVictory_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },

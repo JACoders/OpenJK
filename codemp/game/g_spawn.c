@@ -1692,8 +1692,9 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 			level.warpY[args / 5] = atoi(pch);
 		else if ((args % 5) == 4)
 			level.warpZ[args / 5] = atoi(pch);
-		else if ((args % 5) == 5)
-			level.warpYaw[args / 5] = atoi(pch);
+		else if ((args % 5) == 0) {
+			level.warpYaw[(args / 5) - 1] = atoi(pch);//Uhhhhh
+		}
 		pch = strtok(NULL, " \n\r");// \t really just does fucking nothing here
 		args++;
 	}

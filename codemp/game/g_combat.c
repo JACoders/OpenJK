@@ -4700,6 +4700,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		&& targ->client->NPC_class == CLASS_RANCOR 
 		&& (!attacker||!attacker->client||attacker->client->NPC_class!=CLASS_RANCOR) )
 	{
+		/*
 		// I guess always do 10 points of damage...feel free to tweak as needed
 		if ( damage < 10 )
 		{//ignore piddly little damage
@@ -4708,7 +4709,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if ( damage >= 10 )
 		{
 			damage = 10;
-		}
+		}*/
+		damage *= 0.5;//yeah this is much better, but makes rancors weaker usually, maybe a log scale?
 	}
 
 	client = targ->client;
