@@ -41,6 +41,9 @@ cvar_t	*sv_floodProtect;
 cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
 cvar_t	*sv_needpass;
 cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
+cvar_t	*sv_autoDemo;
+cvar_t	*sv_autoDemoBots;
+cvar_t	*sv_autoDemoMaxMaps;
 
 typedef enum {
 	LIMIT_USERCMD,
@@ -49,6 +52,7 @@ typedef enum {
 	LIMIT_GETSTATUS,
 	LIMIT_RCON
 } floodProtect_t;
+
 /*
 =============================================================================
 
