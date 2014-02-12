@@ -2230,20 +2230,26 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		Q_strncpyz( client->pers.netname_nocolor, "scoreboard", sizeof( client->pers.netname_nocolor ) );
 	}
 
-	if ( client->pers.connected == CON_CONNECTED && strcmp( oldname, client->pers.netname ) ) {
-		if ( client->pers.netnameTime > level.time ) {
-			trap->SendServerCommand( clientNum, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NONAMECHANGE" ) ) );
+	if ( client->pers.connected == CON_CONNECTED )
+	{
+		if ( strcmp( oldname, client->pers.netname ) ) 
+		{
+			if ( client->pers.netnameTime > level.time  )
+			{
+				trap->SendServerCommand( clientNum, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NONAMECHANGE")) );
 
-			Info_SetValueForKey( userinfo, "name", oldname );
-			trap->SetUserinfo( clientNum, userinfo );
-			Q_strncpyz( client->pers.netname, oldname, sizeof( client->pers.netname ) );
-			Q_strncpyz( client->pers.netname_nocolor, oldname, sizeof( client->pers.netname_nocolor ) );
-			Q_StripColor( client->pers.netname_nocolor );
-		}
-		else {
-			trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
-			G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
-			client->pers.netnameTime = level.time + 5000;
+				Info_SetValueForKey( userinfo, "name", oldname );
+				trap->SetUserinfo( clientNum, userinfo );			
+				Q_strncpyz( client->pers.netname, oldname, sizeof( client->pers.netname ) );
+				Q_strncpyz( client->pers.netname_nocolor, oldname, sizeof( client->pers.netname_nocolor ) );
+				Q_StripColor( client->pers.netname_nocolor );
+			}
+			else
+			{				
+				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
+				G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
+				client->pers.netnameTime = level.time + 5000;
+			}
 		}
 	}
 
@@ -2506,6 +2512,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	gclient_t	*client;
 	char		userinfo[MAX_INFO_STRING] = {0},
 				tmpIP[NET_ADDRSTRMAXLEN] = {0},
+				name[MAX_NETNAME] = {0},
 				guid[33] = {0};
 
 	ent = &g_entities[ clientNum ];

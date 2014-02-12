@@ -672,28 +672,6 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 
 /*
 ============
-Cmd_VM_RemoveCommand
-
-Only remove commands with no associated function
-============
-*/
-void Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot ) {
-	cmd_function_t *cmd = Cmd_FindCommand( cmd_name );
-
-	if( !cmd )
-		return;
-
-	if( cmd->function )
-	{
-		Com_Printf( "%s tried to remove system command \"%s\"", vmStrs[vmslot], cmd_name );
-		return;
-	}
-
-	Cmd_RemoveCommand( cmd_name );
-}
-
-/*
-============
 Cmd_CommandCompletion
 ============
 */

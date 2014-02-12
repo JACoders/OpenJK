@@ -138,7 +138,7 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 
 	if( !*in ) return 0;
 
-	while( (c = *(unsigned char* /*eurofix*/)in++) != '\0' )
+	while( (c = *in++) != '\0' )
 	{
 		if( c <= '/' || c >= '{' )	// skip lot of conditions if c is regular char
 		{
@@ -152,7 +152,7 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 				else {
 					*out = ( c == '\n' ? '\n' : ' ' );
 				}				
-				while( *in && *(unsigned char* /*eurofix*/)in <= ' ' ) {
+				while( *in && *in <= ' ' ) {
 					if( *in++ == '\n' ) {
 						shader_lines++;
 						*out = '\n';
@@ -3322,7 +3322,7 @@ static shader_t *FinishShader( void ) {
 	// set appropriate stage information
 	//
 	stageIndex = 0; //rwwRMG - needed for AGEN_BLEND
-	for ( stage = 0; stage < MAX_SHADER_STAGES; ) {
+	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ ) {
 		shaderStage_t *pStage = &stages[stage];
 
 		if ( !pStage->active ) {
@@ -3333,7 +3333,6 @@ static shader_t *FinishShader( void ) {
 		if ( !pStage->bundle[0].image ) {
 			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "Shader %s has a stage with no image\n", shader.name );
 			pStage->active = qfalse;
-			stage++;
 			continue;
 		}
 
@@ -3341,22 +3340,13 @@ static shader_t *FinishShader( void ) {
 		// ditch this stage if it's detail and detail textures are disabled
 		//
 		if ( pStage->isDetail && !r_detailTextures->integer ) {
-			int index;
-			
-			for ( index=stage+1; index<MAX_SHADER_STAGES; index++ ) {
-				if ( !stages[index].active )
-					break;
-			}
-			
-			if ( index < MAX_SHADER_STAGES )
-				memmove( pStage, pStage + 1, sizeof( *pStage ) * ( index - stage ) );
-			else {
-				if ( stage + 1 < MAX_SHADER_STAGES )
-					memmove( pStage, pStage + 1, sizeof( *pStage ) * ( index - stage - 1 ) );
+			if ( stage < ( MAX_SHADER_STAGES - 1 ) ) {
+				memmove( pStage, pStage + 1, sizeof( *pStage ) * ( MAX_SHADER_STAGES - stage - 1 ) );
 				
-				Com_Memset( &stages[index - 1], 0, sizeof( *stages ) );
+				// rww - 9-13-01 [1-26-01-sof2]
+				memset(  pStage + ( MAX_SHADER_STAGES - stage - 1 ), 0, sizeof( *pStage ) );	//clear the last one moved down
+				stage--;	//look at this stage next time around
 			}
-
 			continue;
 		}
 
@@ -3501,7 +3491,6 @@ static shader_t *FinishShader( void ) {
 		//rww - end hw fog
 
 		stageIndex++; //rwwRMG - needed for AGEN_BLEND
-		stage++;
 	}
 
 	// there are times when you will need to manually apply a sort to
@@ -3534,7 +3523,7 @@ static shader_t *FinishShader( void ) {
 		} 
 		else 
 		{
-			ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
+			ri->Printf( PRINT_ALL,  "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 			memcpy(shader.lightmapIndex, lightmapsNone, sizeof(shader.lightmapIndex));
 			memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
 		}

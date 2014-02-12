@@ -301,7 +301,7 @@ static char *CommaParse( char **data_p ) {
 				*data_p = ( char * ) data;
 				return com_token;
 			}
-			if (len < MAX_TOKEN_CHARS - 1)
+			if (len < MAX_TOKEN_CHARS)
 			{
 				com_token[len] = c;
 				len++;
@@ -312,7 +312,7 @@ static char *CommaParse( char **data_p ) {
 	// parse a regular word
 	do
 	{
-		if (len < MAX_TOKEN_CHARS - 1)
+		if (len < MAX_TOKEN_CHARS)
 		{
 			com_token[len] = c;
 			len++;
@@ -321,6 +321,11 @@ static char *CommaParse( char **data_p ) {
 		c = *data;
 	} while (c>32 && c != ',' );
 
+	if (len == MAX_TOKEN_CHARS)
+	{
+//		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
+		len = 0;
+	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;

@@ -198,7 +198,6 @@ int SV_BotAllocateClient(void) {
 	cl->netchan.remoteAddress.type = NA_BOT;
 	cl->rate = 16384;
 
-	// cannot start recording auto demos here since bot's name is not set yet
 	return i;
 }
 
@@ -218,10 +217,6 @@ void SV_BotFreeClient( int clientNum ) {
 	cl->name[0] = 0;
 	if ( cl->gentity ) {
 		cl->gentity->r.svFlags &= ~SVF_BOT;
-	}
-
-	if ( cl->demo.demorecording ) {
-		SV_StopRecordDemo( cl );
 	}
 }
 

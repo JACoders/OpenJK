@@ -270,8 +270,6 @@ typedef struct vm_s {
 
 extern vm_t *currentVM;
 
-extern const char *vmStrs[MAX_VM];
-
 typedef enum {
 	TRAP_MEMSET = 100,
 	TRAP_MEMCPY,
@@ -364,7 +362,6 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 // as a clc_clientCommand instead of executed locally
 
 void	Cmd_RemoveCommand( const char *cmd_name );
-void	Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot );
 typedef void (*completionFunc_t)( char *args, int argNum );
 
 void	Cmd_CommandCompletion( callbackFunc_t callback );

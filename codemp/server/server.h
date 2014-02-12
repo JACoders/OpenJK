@@ -40,6 +40,7 @@ typedef struct server_s {
 	int				snapshotCounter;	// incremented for each snapshot built
 	int				timeResidual;		// <= 1000 / sv_frame->value
 	int				nextFrameTime;		// when time > nextFrameTime, process world
+	struct cmodel_s	*models[MAX_MODELS];
 	char			*configstrings[MAX_CONFIGSTRINGS];
 	svEntity_t		svEntities[MAX_GENTITIES];
 
@@ -62,8 +63,6 @@ typedef struct server_s {
 	char			*mLocalSubBSPEntityParsePoint;
 
 	char			*mSharedMemory;
-
-	time_t			realMapTimeStarted;	// time the current map was started
 } server_t;
 
 
@@ -256,9 +255,6 @@ extern	cvar_t	*sv_floodProtect;
 extern	cvar_t	*sv_lanForceRate;
 extern	cvar_t	*sv_needpass;
 extern	cvar_t	*sv_filterCommands;
-extern	cvar_t	*sv_autoDemo;
-extern	cvar_t	*sv_autoDemoBots;
-extern	cvar_t	*sv_autoDemoMaxMaps;
 
 //===========================================================
 
@@ -339,11 +335,6 @@ void SV_WriteDownloadToClient( client_t *cl , msg_t *msg );
 // sv_ccmds.c
 //
 void SV_Heartbeat_f( void );
-void SV_RecordDemo( client_t *cl, char *demoName );
-void SV_StopRecordDemo( client_t *cl );
-void SV_AutoRecordDemo( client_t *cl );
-void SV_StopAutoRecordDemos();
-void SV_BeginAutoRecordDemos();
 
 //
 // sv_snapshot.c

@@ -3278,7 +3278,7 @@ static shader_t *FinishShader( void ) {
 	}
 
 	if ( shader.lightmapIndex[0] >= 0 && !hasLightmapStage ) {
-		ri.Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
+		ri.Printf( PRINT_ERROR, "ERROR: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 		memcpy(shader.lightmapIndex, lightmapsNone, sizeof(shader.lightmapIndex));
 		memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
 	}

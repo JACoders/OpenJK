@@ -628,12 +628,8 @@ FS_HomeRemove
 void FS_HomeRemove( const char *homePath ) {
 	FS_CheckFilenameIsMutable( homePath, __func__ );
 
-	char *fileName = FS_BuildOSPath( fs_homepath->string,
-			fs_gamedir, homePath );
-
-	if ( remove( fileName ) != 0 ) {
-		rmdir( fileName );
-	}
+	remove( FS_BuildOSPath( fs_homepath->string,
+			fs_gamedir, homePath ) );
 }
 
 /*

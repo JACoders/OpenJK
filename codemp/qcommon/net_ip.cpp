@@ -239,7 +239,7 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		if( err == EAGAIN || err == ECONNRESET )
 			return qfalse;
 
-		Com_Printf( "NET_GetPacket: %s\n", NET_ErrorString() );
+		Com_Printf( "NET_GetPacket: %s from %s\n", NET_ErrorString(), NET_AdrToString(*net_from) );
 		return qfalse;
 	}
 
@@ -262,7 +262,7 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		net_message->readcount = 0;
 	}
 
-	if( ret >= net_message->maxsize ) {
+	if( ret == net_message->maxsize ) {
 		Com_Printf( "Oversize packet from %s\n", NET_AdrToString (*net_from) );
 		return qfalse;
 	}

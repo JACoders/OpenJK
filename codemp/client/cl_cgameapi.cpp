@@ -774,10 +774,6 @@ static void CGVM_Cvar_Set( const char *var_name, const char *value ) {
 	Cvar_VM_Set( var_name, value, VM_CGAME );
 }
 
-static void CGVM_Cmd_RemoveCommand( const char *cmd_name ) {
-	Cmd_VM_RemoveCommand( cmd_name, VM_CGAME );
-}
-
 // legacy syscall
 
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
@@ -916,7 +912,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_REMOVECOMMAND:
-		Cmd_VM_RemoveCommand( (const char *)VMA(1), VM_CGAME );
+		Cmd_RemoveCommand( (const char *)VMA(1) );
 		return 0;
 
 	case CG_SENDCLIENTCOMMAND:
@@ -1672,7 +1668,7 @@ void CL_BindCGame( void ) {
 		cgi.Cmd_Argc							= Cmd_Argc;
 		cgi.Cmd_Args							= Cmd_ArgsBuffer;
 		cgi.Cmd_Argv							= Cmd_ArgvBuffer;
-		cgi.RemoveCommand						= CGVM_Cmd_RemoveCommand;
+		cgi.RemoveCommand						= Cmd_RemoveCommand;
 		cgi.SendClientCommand					= CL_AddReliableCommand2;
 		cgi.SendConsoleCommand					= Cbuf_AddText;
 		cgi.FS_Close							= FS_FCloseFile;

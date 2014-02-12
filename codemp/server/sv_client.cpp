@@ -145,7 +145,7 @@ void SV_DirectConnect( netadr_t from ) {
 
 	version = atoi( Info_ValueForKey( userinfo, "protocol" ) );
 	if ( version != PROTOCOL_VERSION ) {
-		NET_OutOfBandPrint( NS_SERVER, from, "print\nServer uses protocol version %i (yours is %i).\n", PROTOCOL_VERSION, version );
+		NET_OutOfBandPrint( NS_SERVER, from, "print\nServer uses protocol version %i.\n", PROTOCOL_VERSION );
 		Com_DPrintf ("    rejected connect from version %i\n", version);
 		return;
 	}
@@ -444,10 +444,6 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		drop->state = CS_ZOMBIE;		// become free in a few seconds
 	}
 
-	if ( drop->demo.demorecording ) {
-		SV_StopRecordDemo( drop );
-	}
-
 	// if this was the last client on the server, send a heartbeat
 	// to the master so it is known the server is empty
 	// send a heartbeat now so the master will get up to date info
@@ -682,8 +678,6 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 
 	// call the game begin function
 	GVM_ClientBegin( client - svs.clients, qfalse );
-
-	SV_BeginAutoRecordDemos();
 }
 
 /*

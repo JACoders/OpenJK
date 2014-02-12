@@ -10,12 +10,6 @@ static const char *vmNames[MAX_VM] = {
 	"ui"
 };
 
-const char *vmStrs[MAX_VM] = {
-	"GameVM",
-	"CGameVM",
-	"UIVM",
-};
-
 // VM slots are automatically allocated by VM_Create, and freed by VM_Free
 // The VM table should never be directly accessed from other files.
 
@@ -311,6 +305,9 @@ an OP_ENTER instruction, which will subtract space for
 locals from sp
 ==============
 */
+#define	MAX_STACK	256
+#define	STACK_MASK	(MAX_STACK-1)
+
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t *oldVM = NULL;
 	intptr_t r = 0;
