@@ -98,6 +98,3 @@ void PM_SetSaberMove(short newMove);
 void PM_SetForceJumpZStart(float value);
 
 void BG_CycleInven(playerState_t *ps, int direction);
-
-void CPM_PM_Aircontrol ( pmove_t *pm, vec3_t wishdir, float wishspeed );
-

@@ -1304,8 +1304,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
 		}
 
-		if (valid && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
-			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);
+		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
+			G_Sound(player, CHAN_AUTO, trigger->awesomenoise_index);//Just play it in jka physics for now...
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
 

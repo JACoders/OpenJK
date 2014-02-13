@@ -270,6 +270,34 @@ qboolean QINLINE PM_IsRocketTrooper(void)
 	return qfalse;
 }
 
+int PM_GetMovePhysics(void)
+{
+	//if (!pm || !pm->ps)
+		//return 1;
+#if _GAME
+	if (pm->ps->stats[STAT_RACEMODE])
+		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
+	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 3)
+		return (g_movementStyle.integer);
+	else if (g_movementStyle.integer < 0)
+		return 0;
+	else if (g_movementStyle.integer > 3)
+		return 3;
+#else
+	if (!cgs.isJAPro)
+		return 1;
+	else if (pm->ps->stats[STAT_RACEMODE])
+		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
+	else if (cgs.jcinfo & JAPRO_CINFO_CPM)
+		return 3;
+	else if (cgs.jcinfo & JAPRO_CINFO_HL2)
+		return 2;
+	else if (cgs.jcinfo & JAPRO_CINFO_NOSTRAFE)
+		return 0;
+#endif
+	return 1;
+}
+
 int PM_GetSaberStance(void)
 {
 	int anim = BOTH_STAND2;
@@ -998,11 +1026,7 @@ static void PM_Friction( void ) {
 		pEnt = pm_entSelf;
 	}
 
-#if _GAME
-	if ((g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
-#else
-	if ((cgs.jcinfo & JAPRO_CINFO_CPM) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
-#endif
+	if (PM_GetMovePhysics() == 3)
 		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
@@ -1153,13 +1177,7 @@ Handles user intended acceleration
 */
 static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 {
-#ifdef _GAME
-	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 0) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
-#else
-		if ((cgs.isJAPro && ((!(cgs.jcinfo & JAPRO_CINFO_NOSTRAFE) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL))
-			||
-		((!cgs.isJAPro) && (pm->gametype != GT_DUEL || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)))
-#endif
+	if ((PM_GetMovePhysics() != 0) || pm->ps->m_iVehicleNum || pm->ps->clientNum >= MAX_CLIENTS || pm->ps->pm_type != PM_NORMAL)
 	{ //standard method, allows "bunnyhopping" and whatnot
 		int			i;
 		float		addspeed, accelspeed, currentspeed;
@@ -1265,8 +1283,7 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 		return 0;
 	}
 
-	total = sqrt( (float)(cmd->forwardmove * cmd->forwardmove
-		+ cmd->rightmove * cmd->rightmove + umove * umove) );
+	total = sqrt((float)(cmd->forwardmove * cmd->forwardmove + cmd->rightmove * cmd->rightmove + umove * umove));
 	scale = (float)pm->ps->speed * max / ( 127.0 * total );
 
 	return scale;
@@ -2215,16 +2232,10 @@ static qboolean PM_CheckJump( void )
 							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-#ifdef _GAME
-				if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer == 3)) {}//not racinga and global cpm, skip
-#else
-				if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {}//not racinga and global cpm, skip
-#endif
-				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {}//racing and local cpm, skip
-				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {}//racing and local q3, skip
-				else
+				if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5) {
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
-				return qfalse;
+					return qfalse;
+				}
 			}
 		}
 	}
@@ -2240,14 +2251,7 @@ static qboolean PM_CheckJump( void )
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
 		// clear upmove so cmdscale doesn't lower running speed
-#ifdef _GAME
-		if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer == 3)) {}//not racinga and global cpm, skip
-#else
-		if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {}//not racinga and global cpm, skip
-#endif
-		else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {}//racing and local cpm, skip
-		else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {}//racing and local q3, skip
-		else
+		if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5)
 		{
 			pm->cmd.upmove = 0;
 			return qfalse;
@@ -2276,7 +2280,7 @@ static qboolean PM_CheckJump( void )
 		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
-		!(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4) &&
+		(PM_GetMovePhysics() != 4) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
@@ -2945,7 +2949,7 @@ static qboolean PM_CheckJump( void )
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
-		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+		if (PM_GetMovePhysics() == 4)
 			realjumpvelocity = 270.0f;
 
 #ifdef _GAME
@@ -3506,17 +3510,9 @@ static void PM_AirMove( void ) {
 		}
 	}
 	// not on ground, so little effect on velocity
-#ifdef _GAME
-	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 2)) // QW or HL1.. idk fuck this
-#else
-	if (cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_HL2) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 2)))
-#endif
+	if (PM_GetMovePhysics() == 2)
 		PM_AirAccelerate(wishdir, wishspeed, 0.7f);//pm_qw_airaccel
-#ifdef _GAME
-	else if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
-#else
-	else if ((cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE])) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)))
-#endif
+	else if ((PM_GetMovePhysics() == 3) || PM_GetMovePhysics() == 5)
 	{
 		float		accel;
 		float		wishspeed2;
@@ -3526,7 +3522,7 @@ static void PM_AirMove( void ) {
 			accel = 2.5f;//cpm_pm_airstopaccelerate 
 		else
 			accel = pm_airaccelerate;
-		if (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)
+		if ((PM_GetMovePhysics() == 3 && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) || (PM_GetMovePhysics() == 5 && (pm->ps->movementDir == 0)))
 		{
 			if (wishspeed > 30.0f)//cpm_pm_wishspeed
 				wishspeed = 30.0f;	
@@ -3853,17 +3849,10 @@ static void PM_WalkMove( void ) {
 		}
 	}
 
-#if _GAME
-	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
-#else
-	if ((!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
-#endif
-	{
+	if (PM_GetMovePhysics() == 3)
 		realaccelerate = 15.0f;
-	}
-	else if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+	else if (PM_GetMovePhysics() == 4)
 		realduckscale = 0.25f;
-
 
 	PM_Friction ();
 
@@ -4155,7 +4144,7 @@ static int PM_TryRoll( void )
 	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
-		(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4) ||
+		(PM_GetMovePhysics() == 4) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;
