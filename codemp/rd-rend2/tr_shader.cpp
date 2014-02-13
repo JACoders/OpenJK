@@ -2793,8 +2793,16 @@ static qboolean CollapseStagesToGLSL(void)
 			if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE ||
 				pStage->rgbGen == CGEN_LIGHTING_DIFFUSE_ENTITY)
 			{
-				pStage->glslShaderGroup = tr.lightallShader;
-				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHT_VECTOR;
+				if (pStage->glslShaderGroup != tr.lightallShader)
+				{
+					pStage->glslShaderGroup = tr.lightallShader;
+					pStage->glslShaderIndex = LIGHTDEF_USE_LIGHT_VECTOR;
+				}
+				else if (!(pStage->glslShaderIndex & LIGHTDEF_USE_LIGHT_VECTOR))
+				{
+					pStage->glslShaderIndex &= ~LIGHTDEF_LIGHTTYPE_MASK;
+					pStage->glslShaderIndex |= LIGHTDEF_USE_LIGHT_VECTOR;
+				}
 
 				if (pStage->bundle[0].tcGen != TCGEN_TEXTURE || pStage->bundle[0].numTexMods != 0)
 					pStage->glslShaderIndex |= LIGHTDEF_USE_TCGEN_AND_TCMOD;

@@ -1113,7 +1113,7 @@ void GLSL_InitGPUShaders(void)
 				attribs |= ATTR_TANGENT;
 #endif
 
-				if ((i & LIGHTDEF_USE_PARALLAXMAP) && !(i & LIGHTDEF_ENTITY) && r_parallaxMapping->integer)
+				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
 					Q_strcat(extradefines, 1024, "#define USE_PARALLAXMAP\n");
 			}
 
