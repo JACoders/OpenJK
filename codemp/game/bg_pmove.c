@@ -1004,7 +1004,11 @@ static void PM_Friction( void ) {
 		pEnt = pm_entSelf;
 	}
 
-	if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
+#if _GAME
+	if ((g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+#else
+	if ((cgs.jcinfo & JAPRO_CINFO_CPM) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+#endif
 		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
@@ -3841,7 +3845,11 @@ static void PM_WalkMove( void ) {
 		}
 	}
 
-	if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
+#if _GAME
+	if ((g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+#else
+	if ((cgs.jcinfo & JAPRO_CINFO_CPM) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+#endif
 		realaccelerate = 15.0f;
 
 	PM_Friction ();
