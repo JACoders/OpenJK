@@ -5725,25 +5725,36 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
-		if ((g_raceMode.integer < 2) || !ent->client->pers.raceMode) {//Skip admin stuff if its optional racemode setting and client is racing
-			if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
-			{
-				if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK)))
-				{
+		if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+			if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK))) {
+				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
+					return;
+				}
+				else if (ent->client->pers.raceMode && !g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
 					return;
 				}
 			}
-			else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
-			{
-				if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK)))
-				{
+		}
+		else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+			if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK))) {
+				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
+					return;
+				}
+				else if (ent->client->pers.raceMode && !g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
 					return;
 				}
 			}
-			else//Not logged in
-			{
+		}
+		else {//Not logged in
+			if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
+				return;
+			}
+			else if (!g_allowRaceTele.integer || !g_raceMode.integer) {
 				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTelemark).\n\"" );
 				return;
 			}
@@ -5872,8 +5883,10 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if (ent->client->pers.raceMode)
+			if (ent->client->pers.raceMode && g_allowRaceTele.integer)
 				Cmd_RaceTele_f(ent);
+			else if (g_raceMode.integer && g_allowRaceTele.integer)
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
 			else
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
@@ -5883,8 +5896,10 @@ void Cmd_Amtele_f(gentity_t *ent)
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if (ent->client->pers.raceMode)
+			if (ent->client->pers.raceMode && g_allowRaceTele.integer)
 				Cmd_RaceTele_f(ent);
+			else if (g_raceMode.integer && g_allowRaceTele.integer)
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
 			else
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele).\n\"" );
 			return;
@@ -5892,8 +5907,10 @@ void Cmd_Amtele_f(gentity_t *ent)
 	}
 	else  //Not logged in
 	{
-		if (ent->client->pers.raceMode)
+		if (ent->client->pers.raceMode && g_allowRaceTele.integer)
 			Cmd_RaceTele_f(ent);
+		else if (g_raceMode.integer && g_allowRaceTele.integer)
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amTele).\n\"" );
 		return;	
