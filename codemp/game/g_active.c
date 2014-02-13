@@ -3082,7 +3082,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 		client->ps.speed = g_speed.value;
 		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 4)
-			client->ps.speed *= 1.28;//bring it up to 320 on g_speed 250 for vq3 physics mode
+			client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3 physics mode
 
 		//Check for a siege class speed multiplier
 		if (level.gametype == GT_SIEGE &&

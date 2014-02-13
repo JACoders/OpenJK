@@ -3970,8 +3970,7 @@ static void PM_WalkMove( void ) {
 	}
 	else
 	{
-		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
-			accelerate = realaccelerate;
+		accelerate = realaccelerate;
 	}
 
 	PM_Accelerate (wishdir, wishspeed, accelerate);
