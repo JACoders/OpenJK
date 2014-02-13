@@ -144,7 +144,7 @@ qboolean SNDDMA_Init(void)
 
 	if (!s_sdlBits) {
 		s_sdlBits = Cvar_Get("s_sdlBits", "16", CVAR_ARCHIVE);
-		s_sdlSpeed = Cvar_Get("s_sdlSpeed", "0", CVAR_ARCHIVE);
+		s_sdlSpeed = Cvar_Get("s_sdlSpeed", "44100", CVAR_ARCHIVE);
 		s_sdlChannels = Cvar_Get("s_sdlChannels", "2", CVAR_ARCHIVE);
 		s_sdlDevSamps = Cvar_Get("s_sdlDevSamps", "0", CVAR_ARCHIVE);
 		s_sdlMixSamps = Cvar_Get("s_sdlMixSamps", "0", CVAR_ARCHIVE);
@@ -173,7 +173,7 @@ qboolean SNDDMA_Init(void)
 		tmp = 16;
 
 	desired.freq = (int) s_sdlSpeed->value;
-	if(!desired.freq) desired.freq = 22050;
+	if(!desired.freq) desired.freq = 44100;
 	desired.format = ((tmp == 16) ? AUDIO_S16SYS : AUDIO_U8);
 
 	// I dunno if this is the best idea, but I'll give it a try...
