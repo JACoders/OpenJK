@@ -975,8 +975,7 @@ Handles both ground friction and water friction
 static void PM_Friction( void ) {
 	vec3_t	vec;
 	float	*vel;
-	float	speed, newspeed, control;
-	float	drop;
+	float	speed, newspeed, control, drop, realfriction = pm_friction;
 	bgEntity_t *pEnt = NULL;
 	
 	vel = pm->ps->velocity;
@@ -1004,6 +1003,9 @@ static void PM_Friction( void ) {
 	{
 		pEnt = pm_entSelf;
 	}
+
+	if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
+		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
 	if (pm_flying != FLY_VEHICLE &&
@@ -1050,7 +1052,7 @@ static void PM_Friction( void ) {
 				// if getting knocked back, no friction
 				if ( ! (pm->ps->pm_flags & PMF_TIME_KNOCKBACK) ) {
 					control = speed < pm_stopspeed ? pm_stopspeed : speed;
-					drop += control*pm_friction*pml.frametime;
+					drop += control*realfriction*pml.frametime;
 				}
 			}
 		}
@@ -1206,18 +1208,6 @@ static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 		}
 
 		VectorMA( pm->ps->velocity, canPush, pushDir, pm->ps->velocity );
-	}
-}
-
-void CPM_UpdateSettings(int num)
-{
-	pm_accelerate = 10;
-	pm_friction = 6;
-
-	if (num == 3)
-	{
-		pm_accelerate = 15;
-		pm_friction = 8;
 	}
 }
 
@@ -3827,7 +3817,7 @@ static void PM_WalkMove( void ) {
 	float		scale;
 	usercmd_t	cmd;
 	float		accelerate;
-	float		vel;
+	float		vel, realaccelerate = pm_accelerate;
 	qboolean	npcMovement = qfalse;
 	
 
@@ -3850,6 +3840,9 @@ static void PM_WalkMove( void ) {
 			return;
 		}
 	}
+
+	if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
+		realaccelerate = 15.0f;
 
 	PM_Friction ();
 
@@ -3958,7 +3951,8 @@ static void PM_WalkMove( void ) {
 	}
 	else
 	{
-		accelerate = pm_accelerate;
+		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)
+			accelerate = realaccelerate;
 	}
 
 	PM_Accelerate (wishdir, wishspeed, accelerate);
@@ -4094,7 +4088,7 @@ static void PM_NoclipMove( void ) {
 	wishspeed = VectorNormalize(wishdir);
 	wishspeed *= scale;
 
-	PM_Accelerate( wishdir, wishspeed, pm_accelerate );
+	PM_Accelerate( wishdir, wishspeed, pm_accelerate );//dont care about CPM movement when in noclip so whatever
 
 	// move
 	VectorMA (pm->ps->origin, pml.frametime, pm->ps->velocity, pm->ps->origin);
