@@ -58,12 +58,6 @@ float	pm_waterfriction = 1.0f;
 float	pm_flightfriction = 3.0f;
 float	pm_spectatorfriction = 5.0f;
 
-float	cpm_pm_airstopaccelerate = 2.5f;
-float	cpm_pm_aircontrol = 150.0f;
-float	cpm_pm_strafeaccelerate = 70.0f;
-float	cpm_pm_wishspeed = 30.0f;
-float	pm_qw_airaccel = 0.7f;
-
 int		c_pmove = 0;
 
 float forceSpeedLevels[4] = 
@@ -1229,7 +1223,7 @@ void CPM_PM_Aircontrol (pmove_t *pm, vec3_t wishdir, float wishspeed )
 
 	dot = DotProduct(pm->ps->velocity,wishdir);
 	k = 32; 
-	k *= cpm_pm_aircontrol*dot*dot*pml.frametime;
+	k *= 150.0f*dot*dot*pml.frametime;//cpm_pm_aircontrol
 	
 	
 	if (dot > 0) {	// we can't change direction while slowing down
@@ -2222,16 +2216,12 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 #ifdef _GAME
-				if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer > 2)) {//not racinga and global cpm, skip
-				}
+				if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer == 3)) {}//not racinga and global cpm, skip
 #else
-				if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {//not racinga and global cpm, skip
-				}
+				if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {}//not racinga and global cpm, skip
 #endif
-				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {//racing and local cpm, skip
-				}
-				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {//racing and local q3, skip
-				}
+				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {}//racing and local cpm, skip
+				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {}//racing and local q3, skip
 				else
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 				return qfalse;
@@ -2251,10 +2241,13 @@ static qboolean PM_CheckJump( void )
 	{
 		// clear upmove so cmdscale doesn't lower running speed
 #ifdef _GAME
-		if ((((g_movementStyle.integer != 3) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3)))
+		if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer == 3)) {}//not racinga and global cpm, skip
 #else
-		if ((!(cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
+		if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {}//not racinga and global cpm, skip
 #endif
+		else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {}//racing and local cpm, skip
+		else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {}//racing and local q3, skip
+		else
 		{
 			pm->cmd.upmove = 0;
 			return qfalse;
@@ -2951,6 +2944,10 @@ static qboolean PM_CheckJump( void )
 	}
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
+		float realjumpvelocity = JUMP_VELOCITY;
+		if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+			realjumpvelocity = 270.0f;
+
 #ifdef _GAME
 		if (g_rampJump.integer) //rampjump
 #else
@@ -2965,7 +2962,7 @@ if ( pm->cmd.upmove > 0 )
 			hVel[2] = 0;
 			xyspeed = sqrt(hVel[0] * hVel[0] + hVel[1] * hVel[1]);
 			added = -DotProduct(hVel, pml.groundTrace.plane.normal);
-			pm->ps->velocity[2] = JUMP_VELOCITY;
+			pm->ps->velocity[2] = realjumpvelocity;
 
 			if (added > xyspeed)
 				added = xyspeed;//Sad sanity check hack
@@ -2977,7 +2974,7 @@ if ( pm->cmd.upmove > 0 )
 
 		}
 		else
-			pm->ps->velocity[2] = JUMP_VELOCITY;
+			pm->ps->velocity[2] = realjumpvelocity;
 		PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
 		pm->ps->pm_flags |= PMF_JUMP_HELD;
 	}
@@ -3514,7 +3511,7 @@ static void PM_AirMove( void ) {
 #else
 	if (cgs.isJAPro && (((cgs.jcinfo & JAPRO_CINFO_HL2) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 2)))
 #endif
-		PM_AirAccelerate(wishdir, wishspeed, pm_qw_airaccel);
+		PM_AirAccelerate(wishdir, wishspeed, 0.7f);//pm_qw_airaccel
 #ifdef _GAME
 	else if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer == 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
 #else
@@ -3526,14 +3523,14 @@ static void PM_AirMove( void ) {
 
 		wishspeed2 = wishspeed;
 		if (DotProduct(pm->ps->velocity, wishdir) < 0)
-			accel = cpm_pm_airstopaccelerate;
+			accel = 2.5f;//cpm_pm_airstopaccelerate 
 		else
 			accel = pm_airaccelerate;
 		if (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)
 		{
-			if (wishspeed > cpm_pm_wishspeed)
-				wishspeed = cpm_pm_wishspeed;	
-			accel = cpm_pm_strafeaccelerate;
+			if (wishspeed > 30.0f)//cpm_pm_wishspeed
+				wishspeed = 30.0f;	
+			accel = 70.0f;//cpm_pm_strafeaccelerate
 		}
 
 		PM_Accelerate (wishdir, wishspeed, accel); // change dis?
@@ -3832,7 +3829,7 @@ static void PM_WalkMove( void ) {
 	float		scale;
 	usercmd_t	cmd;
 	float		accelerate;
-	float		vel, realaccelerate = pm_accelerate;
+	float		vel, realaccelerate = pm_accelerate, realduckscale = pm_duckScale;
 	qboolean	npcMovement = qfalse;
 	
 
@@ -3857,11 +3854,16 @@ static void PM_WalkMove( void ) {
 	}
 
 #if _GAME
-	if ((g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+	if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer > 2) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
 #else
-	if ((cgs.jcinfo & JAPRO_CINFO_CPM) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
+	if ((!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 3))
 #endif
+	{
 		realaccelerate = 15.0f;
+	}
+	else if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+		realduckscale = 0.25f;
+
 
 	PM_Friction ();
 
@@ -3935,15 +3937,15 @@ static void PM_WalkMove( void ) {
 
 	// clamp the speed lower if ducking
 	if ( pm->ps->pm_flags & PMF_DUCKED ) {
-		if ( wishspeed > pm->ps->speed * pm_duckScale ) {
-			wishspeed = pm->ps->speed * pm_duckScale;
+		if ( wishspeed > pm->ps->speed * realduckscale ) {
+			wishspeed = pm->ps->speed * realduckscale;
 		}
 	}
 	else if ( (pm->ps->pm_flags & PMF_ROLLING) && !BG_InRoll(pm->ps, pm->ps->legsAnim) &&
 		!PM_InRollComplete(pm->ps, pm->ps->legsAnim))
 	{
-		if ( wishspeed > pm->ps->speed * pm_duckScale ) {
-			wishspeed = pm->ps->speed * pm_duckScale;
+		if ( wishspeed > pm->ps->speed * realduckscale ) {
+			wishspeed = pm->ps->speed * realduckscale;
 		}
 	}
 

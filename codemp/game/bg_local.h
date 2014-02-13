@@ -99,9 +99,5 @@ void PM_SetForceJumpZStart(float value);
 
 void BG_CycleInven(playerState_t *ps, int direction);
 
-extern float	cpm_pm_airstopaccelerate;
-extern float	cpm_pm_aircontrol;
-extern float	cpm_pm_strafeaccelerate;
-extern float	cpm_pm_wishspeed;
 void CPM_PM_Aircontrol ( pmove_t *pm, vec3_t wishdir, float wishspeed );
 

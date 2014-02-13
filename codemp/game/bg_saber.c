@@ -2249,16 +2249,12 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			overrideJumpLeftAttackMove = (saberMoveName_t)saber1->jumpAtkLeftMove;
 		}
 
-		if ( saber1
-			&& (saber1->saberFlags&SFL_NO_CARTWHEELS) )
-		{
+		if (saber1	&& (saber1->saberFlags&SFL_NO_CARTWHEELS))
 			allowCartwheels = qfalse;
-		}
-		if ( saber2
-			&& (saber2->saberFlags&SFL_NO_CARTWHEELS) )
-		{
+		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		}
+		else if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+			allowCartwheels = qfalse;
 	}
 
 	if ( pm->cmd.rightmove > 0 )
