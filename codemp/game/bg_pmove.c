@@ -1347,6 +1347,9 @@ qboolean PM_ForceJumpingUp(void)
 		return qfalse;
 	}
 
+	if 	(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+		return qfalse;
+
 	if (!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{
 		return qfalse;
@@ -2219,10 +2222,17 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 #ifdef _GAME
-				if ((!pm->ps->stats[STAT_RACEMODE] && g_movementStyle.integer != 3) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
+				if (!pm->ps->stats[STAT_RACEMODE] && (g_movementStyle.integer > 2)) {//not racinga and global cpm, skip
+				}
 #else
-				if ((!(cgs.jcinfo & JAPRO_CINFO_CPM) && !pm->ps->stats[STAT_RACEMODE]) || (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] != 3))
+				if (!pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_CPM)) {//not racinga and global cpm, skip
+				}
 #endif
+				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3)) {//racing and local cpm, skip
+				}
+				else if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)) {//racing and local q3, skip
+				}
+				else
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 				return qfalse;
 			}
@@ -2273,6 +2283,7 @@ static qboolean PM_CheckJump( void )
 		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
+		!(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
@@ -4143,6 +4154,7 @@ static int PM_TryRoll( void )
 	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
+		(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;

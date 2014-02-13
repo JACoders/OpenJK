@@ -47,7 +47,8 @@ typedef enum {
 	LIMIT_GETCHALLENGE, // Must be 0 since its used in sv_client
 	LIMIT_GETINFO,
 	LIMIT_GETSTATUS,
-	LIMIT_RCON
+	LIMIT_RCON,
+	DISABLE_INFOSTATUS
 } floodProtect_t;
 /*
 =============================================================================
@@ -464,6 +465,9 @@ void SVC_Status( netadr_t from ) {
 	}
 	*/
 
+	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS))
+		return;
+
 	if (sv_floodProtect->integer & (1<<LIMIT_GETSTATUS)) {
 		// Prevent using getstatus as an amplifier
 		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
@@ -535,6 +539,9 @@ void SVC_Info( netadr_t from ) {
 	{
 		return;
 	}
+
+	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS))
+		return;
 
 	if (sv_floodProtect->integer & (1<<LIMIT_GETINFO)) {
 		// Prevent using getinfo as an amplifier

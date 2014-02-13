@@ -3079,7 +3079,10 @@ void ClientThink_real( gentity_t *ent ) {
 		(!ent->NPC || ent->s.NPC_class != CLASS_VEHICLE)) //if riding a vehicle it will manage our speed and such
 	{
 		// set speed
+
 		client->ps.speed = g_speed.value;
+		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 4)
+			client->ps.speed *= 1.28;//bring it up to 320 on g_speed 250 for vq3 physics mode
 
 		//Check for a siege class speed multiplier
 		if (level.gametype == GT_SIEGE &&

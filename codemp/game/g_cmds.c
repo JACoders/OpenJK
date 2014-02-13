@@ -5667,7 +5667,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, or cpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, q3, or cpm>.\n\"" );
 		return;
 	}
 
@@ -5715,6 +5715,10 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || !Q_stricmp("3", mStyle)) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
 		ent->client->pers.movementStyle = 3;
+	}
+	else if (!Q_stricmp("q3", mStyle) || !Q_stricmp("vq3", mStyle) || !Q_stricmp("4", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 4;
+		ent->client->pers.movementStyle = 4;
 	}
 }
 
