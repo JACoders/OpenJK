@@ -37,8 +37,6 @@ glstate_t	glState;
 static void GfxInfo_f( void );
 static void GfxMemInfo_f( void );
 
-cvar_t  *com_altivec;
-
 cvar_t	*se_language;
 
 cvar_t	*r_flareSize;
@@ -1184,8 +1182,6 @@ R_Register
 */
 void R_Register( void ) 
 {
-	com_altivec = ri->Cvar_Get("com_altivec", "1", CVAR_ARCHIVE);
-
 	//
 	// latched and archived variables
 	//
