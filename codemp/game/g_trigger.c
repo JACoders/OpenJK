@@ -1196,10 +1196,6 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (g_jediVmerc.integer)
 		return qfalse;
-	if (g_rampJump.integer)
-		return qfalse;
-	if (g_overBounce.integer)
-		return qfalse;
 	if (g_startingItems.integer & (1 << HI_JETPACK))
 		return qfalse;
 	if (g_quakeStyleTeleport.integer)
@@ -1320,6 +1316,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				Q_strncpyz(style, "cpm", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 4)
 				Q_strncpyz(style, "q3", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 5)
+				Q_strncpyz(style, "pjk", sizeof(style));
 		}
 		else if (g_movementStyle.integer == 0)
 			Q_strncpyz(style, "siege", sizeof(style));

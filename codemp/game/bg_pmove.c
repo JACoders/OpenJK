@@ -2199,14 +2199,8 @@ static qboolean PM_CheckJump( void )
 
 					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
 					pm->ps->velocity[2] /= 10;
-#ifdef _GAME
-					if (g_rampJump.integer ) //rampjump
-#else
-					if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_RAMPJUMP))
-#endif
-					{
+					if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4))
 						pm->ps->velocity[2] += pm->ps->stats[STAT_LASTJUMPSPEED];
-					}
 					else 
 						pm->ps->velocity[2] += JUMP_VELOCITY;
 					pm->ps->pm_flags |= PMF_JUMP_HELD;
@@ -2224,11 +2218,7 @@ static qboolean PM_CheckJump( void )
 				{
 					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
 					{
-#ifdef _GAME
-						if (!g_rampJump.integer) //rampjump
-#else
-						if (!(cgs.jcinfo & JAPRO_CINFO_RAMPJUMP))
-#endif
+						if ((PM_GetMovePhysics() != 3) && (PM_GetMovePhysics() != 4))
 							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
@@ -2949,14 +2939,7 @@ static qboolean PM_CheckJump( void )
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
-		if (PM_GetMovePhysics() == 4)
-			realjumpvelocity = 270.0f;
-
-#ifdef _GAME
-		if (g_rampJump.integer) //rampjump
-#else
-		if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_RAMPJUMP))
-#endif
+		if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4))
 		{
 			vec3_t hVel;
 			float added, xyspeed;
@@ -2972,7 +2955,7 @@ if ( pm->cmd.upmove > 0 )
 				added = xyspeed;//Sad sanity check hack
 
 			if (added > 0)
-				pm->ps->velocity[2] += (added * 1.5);//Make rampjump stronger
+				pm->ps->velocity[2] += (added * 1.25);//Make rampjump stronger
 
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
 
@@ -4524,11 +4507,7 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
-#ifdef _GAME
-	if (g_overBounce.integer && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))//|| ((g_overBounce.integer > 1) && pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
-#else
-	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_OVERBOUNCE) && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
-#endif
+	if ((PM_GetMovePhysics() == 4) && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
 	{
 		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel
 			pm->ps->velocity[2] = -vel;

@@ -208,10 +208,8 @@ XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE,									qtr
 XCVAR_DEF( g_movementStyle,				"1",			CVU_MovementStyle,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_dodge,						"0",			CVU_Dodge,			CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_rampJump,					"0",			CVU_RampJump,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_overBounce,				"0",			CVU_OverBounce,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING

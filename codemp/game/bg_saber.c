@@ -2255,6 +2255,8 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
 			allowCartwheels = qfalse;
+		else if (pm->ps->stats[STAT_ONLYBHOP])
+			allowCartwheels = qfalse;
 	}
 
 	if ( pm->cmd.rightmove > 0 )
