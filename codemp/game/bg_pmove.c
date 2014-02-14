@@ -2199,7 +2199,7 @@ static qboolean PM_CheckJump( void )
 
 					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
 					pm->ps->velocity[2] /= 10;
-					if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4))
+					if (PM_GetMovePhysics() == 3)
 						pm->ps->velocity[2] += pm->ps->stats[STAT_LASTJUMPSPEED];
 					else 
 						pm->ps->velocity[2] += JUMP_VELOCITY;
@@ -2218,11 +2218,11 @@ static qboolean PM_CheckJump( void )
 				{
 					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
 					{
-						if ((PM_GetMovePhysics() != 3) && (PM_GetMovePhysics() != 4))
+						if (PM_GetMovePhysics() != 3)
 							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-				if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5) {
+				if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 5) {
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 					return qfalse;
 				}
@@ -2943,6 +2943,8 @@ if ( pm->cmd.upmove > 0 )
 		{
 			vec3_t hVel;
 			float added, xyspeed;
+
+			realjumpvelocity = 270.0f;
 
 			hVel[0] = pm->ps->velocity[0];
 			hVel[1] = pm->ps->velocity[1];
@@ -4507,8 +4509,7 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
-	if ((PM_GetMovePhysics() == 4) && (pm->ps->fd.forceJumpZStart > pm->ps->origin[2]))
-	{
+	if ((PM_GetMovePhysics() == 4) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
 		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel
 			pm->ps->velocity[2] = -vel;
 	}
