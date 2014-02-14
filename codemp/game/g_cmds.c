@@ -5099,9 +5099,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "throwFlag ");
 	if (g_tweakJetpack.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
-	if (g_dodge.integer == 1) 
-		Q_strcat(buf, sizeof(buf), "+button13 (dodge) ");
-	else if (g_dodge.integer > 1) 
+	if (g_raceMode.integer) 
 		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -5387,8 +5385,11 @@ static void Cmd_Clanwhois_f(gentity_t *ent)
 }
 //[JAPRO - Serverside - All - Clanwhois Function - End]
 
-extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
+static void Cmd_ModVersion_f(gentity_t *ent) {
+	trap->SendServerCommand(ent-g_entities, va("print \"^5The servers version of the mod was compiled on %s\n\"", __DATE__)); 
+}
 
+extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
 static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 {
 	if (!ent->client)
@@ -5667,7 +5668,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, or pjk>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, or wsw>.\n\"" );
 		return;
 	}
 
@@ -5723,6 +5724,10 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	else if (!Q_stricmp("pjk", mStyle) || !Q_stricmp("5", mStyle)) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 5;
 		ent->client->pers.movementStyle = 5;
+	}
+	else if (!Q_stricmp("wsw", mStyle) || !Q_stricmp("warsow", mStyle) || !Q_stricmp("6", mStyle)) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 6;
+		ent->client->pers.movementStyle = 6;
 	}
 }
 
@@ -6537,6 +6542,7 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },

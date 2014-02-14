@@ -1026,7 +1026,7 @@ static void PM_Friction( void ) {
 		pEnt = pm_entSelf;
 	}
 
-	if (PM_GetMovePhysics() == 3)
+	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 6)
 		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
@@ -1358,7 +1358,7 @@ qboolean PM_ForceJumpingUp(void)
 		return qfalse;
 	}
 
-	if 	(pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+	if ((PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
 		return qfalse;
 
 	if (!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
@@ -2241,7 +2241,7 @@ static qboolean PM_CheckJump( void )
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
 		// clear upmove so cmdscale doesn't lower running speed
-		if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5)
+		if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5 && PM_GetMovePhysics() != 6)
 		{
 			pm->cmd.upmove = 0;
 			return qfalse;
@@ -2271,6 +2271,7 @@ static qboolean PM_CheckJump( void )
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
 		(PM_GetMovePhysics() != 4) &&
+		(PM_GetMovePhysics() != 6) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
@@ -2939,12 +2940,14 @@ static qboolean PM_CheckJump( void )
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
-		if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4))
+		if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
 		{
 			vec3_t hVel;
 			float added, xyspeed;
 
-			realjumpvelocity = 270.0f;
+			if (PM_GetMovePhysics() == 6)
+				realjumpvelocity = 280.0f;
+			else realjumpvelocity = 270.0f;
 
 			hVel[0] = pm->ps->velocity[0];
 			hVel[1] = pm->ps->velocity[1];
@@ -3497,7 +3500,7 @@ static void PM_AirMove( void ) {
 	// not on ground, so little effect on velocity
 	if (PM_GetMovePhysics() == 2)
 		PM_AirAccelerate(wishdir, wishspeed, 0.7f);//pm_qw_airaccel
-	else if ((PM_GetMovePhysics() == 3) || PM_GetMovePhysics() == 5)
+	else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || (PM_GetMovePhysics() == 6))
 	{
 		float		accel;
 		float		wishspeed2;
@@ -3507,7 +3510,7 @@ static void PM_AirMove( void ) {
 			accel = 2.5f;//cpm_pm_airstopaccelerate 
 		else
 			accel = pm_airaccelerate;
-		if ((PM_GetMovePhysics() == 3 && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) || (PM_GetMovePhysics() == 5 && (pm->ps->movementDir == 0)))
+		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 6)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) || (PM_GetMovePhysics() == 5 && (pm->ps->movementDir == 0)))
 		{
 			if (wishspeed > 30.0f)//cpm_pm_wishspeed
 				wishspeed = 30.0f;	
@@ -3558,8 +3561,8 @@ static void PM_AirMove( void ) {
 static void PM_DodgeMove(int forward, int right)
 {
 	vec3_t dodgedir;
-	static const int DODGE_SPEED = 320;
-	static const int DODGE_JUMP_SPEED = 150;
+	static const int DODGE_SPEED = 400;
+	static const int DODGE_JUMP_SPEED = 180;
 
 	VectorMA( vec3_origin, right, pml.right, dodgedir );
 	VectorMA( dodgedir, forward, pml.forward, dodgedir );
@@ -3574,8 +3577,8 @@ static void PM_DodgeMove(int forward, int right)
 static void PM_DashMove(void)
 {
 	vec3_t dashdir;
-	static const int DASH_SPEED = 380;
-	static const int DASH_JUMP_SPEED = 200;
+	static const int DASH_SPEED = 475;
+	static const int DASH_JUMP_SPEED = 280;
 	float xyspeed;
 
 	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
@@ -3602,14 +3605,7 @@ static void PM_CheckDash(void)
 	if (pm->ps->weaponTime > 0)
 		return;
 
-	if (pm->ps->stats[STAT_RACEMODE])
-		return;
-
-#ifdef _GAME
-	if (!g_dodge.integer)
-#else
-	if (!(cgs.jcinfo & JAPRO_CINFO_DODGE))
-#endif
+	if (PM_GetMovePhysics() != 6)
 		return;
 
 	if (pm->ps->stats[STAT_DASHTIME] > 0)
@@ -3625,14 +3621,7 @@ static void PM_CheckDash(void)
 		else if (pm->cmd.rightmove < 0) //A
 			PM_DodgeMove(1, -1);
 		else {//only W, do "dash" instead of dodge
-#ifdef _GAME
-			if (g_dodge.integer > 1)
-#else
-			if (cgs.jcinfo & JAPRO_CINFO_DASH)
-#endif
-				PM_DashMove();
-			else
-				PM_DodgeMove(1, 0);
+			PM_DashMove();
 		}
 	}
 	else if (pm->cmd.forwardmove < 0) {//S
@@ -3649,14 +3638,7 @@ static void PM_CheckDash(void)
 		else if (pm->cmd.rightmove < 0) //A
 			PM_DodgeMove(0, -1);
 		else {
-#ifdef _GAME
-			if (g_dodge.integer > 1)
-#else
-			if (cgs.jcinfo & JAPRO_CINFO_DASH)
-#endif
-				PM_DashMove();
-			else
-				PM_DodgeMove(1, 0);
+			PM_DashMove();
 		}
 	}
 }
@@ -3727,20 +3709,13 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	if (pm->ps->weaponTime > 0)
 		return;
 
-	if (pm->ps->stats[STAT_RACEMODE])
-		return;
-
 	if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
 		return;
 
 	if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
 		return;
 
-#ifdef _GAME
-	if (g_dodge.integer <= 1)
-#else
-	if (!(cgs.jcinfo & JAPRO_CINFO_DASH))
-#endif
+	if (PM_GetMovePhysics() != 6)
 		return;
 
 	if (pm->ps->stats[STAT_DASHTIME] > 0)
@@ -3838,6 +3813,10 @@ static void PM_WalkMove( void ) {
 		realaccelerate = 15.0f;
 	else if (PM_GetMovePhysics() == 4)
 		realduckscale = 0.25f;
+	else if (PM_GetMovePhysics() == 6) {
+		realaccelerate = 15.0f;
+		realduckscale = 0.3125f;
+	}
 
 	PM_Friction ();
 
@@ -4130,6 +4109,7 @@ static int PM_TryRoll( void )
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
 		(PM_GetMovePhysics() == 4) ||
+		(PM_GetMovePhysics() == 6) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;

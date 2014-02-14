@@ -118,10 +118,7 @@
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
-#define JAPRO_CINFO_DODGE			(1<<26) //Dodge +button13
-#define JAPRO_CINFO_DASH			(1<<27) //Also Dash +button13
-#define JAPRO_CINFO_BHOP2			(1<<28) //option for only bhop mode
-
+#define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
 typedef enum {
 	FOOTSTEP_STONEWALK,
 	FOOTSTEP_STONERUN,

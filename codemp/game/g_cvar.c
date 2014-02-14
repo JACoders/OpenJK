@@ -183,22 +183,6 @@ static void CVU_Jawarun(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }	
 
-static void CVU_Dodge(void) {
-	if (g_dodge.integer == 1) {
-		jcinfo.integer |= JAPRO_CINFO_DODGE;
-		jcinfo.integer &= ~JAPRO_CINFO_DASH;
-	}
-	else if (g_dodge.integer > 1) {
-		jcinfo.integer |= JAPRO_CINFO_DODGE;
-		jcinfo.integer |= JAPRO_CINFO_DASH;
-	}
-	else {
-		jcinfo.integer &= ~JAPRO_CINFO_DODGE;
-		jcinfo.integer &= ~JAPRO_CINFO_DASH;
-	}
-	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
-
 //
 // Cvar table
 //
