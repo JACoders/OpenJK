@@ -4057,14 +4057,7 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	if (client->pers.movementStyle == 0)
-		client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
-	else if (client->pers.movementStyle == 1)
-		client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
-	else if (client->pers.movementStyle == 2)
-		client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
-	else if (client->pers.movementStyle == 3)
-		client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
+	client->ps.stats[STAT_MOVEMENTSTYLE] = client->pers.movementStyle;
 
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;

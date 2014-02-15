@@ -53,6 +53,9 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
+	if (sv_floodProtect->integer & (1<<6))
+		return;
+
 	if (sv_floodProtect->integer & (1<<1)) {
 		// Prevent using getchallenge as an amplifier
 		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {

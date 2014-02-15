@@ -5306,8 +5306,14 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 					Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
 					Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
-				else
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 3)
 					Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 4)
+					Q_strncpyz(strStyle, "^7q3^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 5)
+					Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
+					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
 			}
 
 			if (g_entities[i].r.svFlags & SVF_BOT)

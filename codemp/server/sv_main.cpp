@@ -44,11 +44,12 @@ cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
 
 typedef enum {
 	LIMIT_USERCMD,
-	LIMIT_GETCHALLENGE, // Must be 0 since its used in sv_client
+	LIMIT_GETCHALLENGE, // Must be 1 since its used in sv_client
 	LIMIT_GETINFO,
 	LIMIT_GETSTATUS,
 	LIMIT_RCON,
-	DISABLE_INFOSTATUS
+	DISABLE_INFOSTATUS,
+	DISABLE_GETCHALLENGE //must be 6 since used in sv_client.  dangerous
 } floodProtect_t;
 /*
 =============================================================================

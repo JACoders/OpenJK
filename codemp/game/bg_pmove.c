@@ -3814,7 +3814,7 @@ static void PM_WalkMove( void ) {
 	else if (PM_GetMovePhysics() == 4)
 		realduckscale = 0.25f;
 	else if (PM_GetMovePhysics() == 6) {
-		realaccelerate = 15.0f;
+		realaccelerate = 12.0f;
 		realduckscale = 0.3125f;
 	}
 
@@ -12268,6 +12268,7 @@ void PmoveSingle (pmove_t *pmove) {
 	// snap velocity to integer coordinates to save network bandwidth
 	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
 		trap->SnapVector( pm->ps->velocity );
+
 	else if (pm->ps->stats[STAT_RACEMODE])
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
