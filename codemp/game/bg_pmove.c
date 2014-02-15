@@ -3566,7 +3566,7 @@ static void PM_DodgeMove(int forward, int right)
 
 	VectorMA( vec3_origin, right, pml.right, dodgedir );
 	VectorMA( dodgedir, forward, pml.forward, dodgedir );
-	VectorNormalizeFast( dodgedir );
+	VectorNormalize( dodgedir );
 	VectorScale( dodgedir, DODGE_SPEED, dodgedir );
 
 	VectorCopy( dodgedir, pm->ps->velocity );
@@ -3584,7 +3584,7 @@ static void PM_DashMove(void)
 	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
 
 	VectorMA(vec3_origin, 1, pml.forward, dashdir);
-	VectorNormalizeFast( dashdir );
+	VectorNormalize( dashdir );
 	if(xyspeed <= DASH_SPEED)
 		VectorScale(dashdir, DASH_SPEED, dashdir);
 	else
