@@ -1204,6 +1204,8 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
+	if (g_jk2Lunge.integer)
+		return qfalse;
 	if (sv_fps.integer < 20)//Dosnt really make a difference.. but eh....
 		return qfalse;
 
