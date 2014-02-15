@@ -285,13 +285,10 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		tr.deluxemaps = (image_t **)ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
-	if (r_hdr->integer)
-	{
-		if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer)
-			textureInternalFormat = GL_RGBA16F_ARB;
-		else
-			textureInternalFormat = GL_RGBA8;
-	}
+	if (glRefConfig.floatLightmap)
+		textureInternalFormat = GL_RGBA16F_ARB;
+	else
+		textureInternalFormat = GL_RGBA8;
 
 	if (r_mergeLightmaps->integer)
 	{
@@ -404,12 +401,12 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 
 					R_ColorShiftLightingFloats(color, color, 1.0f/255.0f);
 
-					if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer)
+					if (glRefConfig.floatLightmap)
 						ColorToRGBA16F(color, (unsigned short *)(&image[j*8]));
 					else
 						ColorToRGBM(color, &image[j*4]);
 				}
-				else if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer) 
+				else if (glRefConfig.floatLightmap)
 				{
 					vec4_t color;
 

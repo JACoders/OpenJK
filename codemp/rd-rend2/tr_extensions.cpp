@@ -727,4 +727,7 @@ void GLimp_InitExtraExtensions()
 	{
 		ri->Printf(PRINT_ALL, result[2], extension);
 	}
+
+	// use float lightmaps?
+	glRefConfig.floatLightmap = (qboolean)(glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer && r_hdr->integer);
 }
