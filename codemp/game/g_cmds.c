@@ -6473,6 +6473,8 @@ int cmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((command_t*)b)->name );
 }
 
+void Cmd_ACLogin_f( gentity_t *ent );
+
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
 	{ "addbot",				Cmd_AddBot_f,				0 },
@@ -6548,6 +6550,8 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
+
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?

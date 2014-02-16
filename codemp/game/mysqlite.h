@@ -7,7 +7,7 @@
         if (i != SQLITE_OK) {                                   \
             fprintf (stderr, "%s failed with status %d: %s\n",  \
                      #f, i, sqlite3_errmsg (db));               \
-            exit (1);                                           \
+            /*exit (1);*/                                       \
         }                                                       \
     }                                                           \
 
@@ -18,6 +18,6 @@
         if (i != SQLITE_ ## x) {                                \
             fprintf (stderr, "%s failed with status %d: %s\n",  \
                      #f, i, sqlite3_errmsg (db));               \
-            exit (1);                                           \
+           /* exit (1);			*/			    				 \
         }                                                       \
     }   

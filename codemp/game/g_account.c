@@ -9,22 +9,21 @@
 //No register function, thats done on master website.
 //ent->client->accountID ? if 0 , not logged in ?, use this in interaction with db?
 
-#define LOCAL_DB_PATH "data.db"
-// GLOBAL_DB_PATH uhh do this as a cvar incase it changes
+#define LOCAL_DB_PATH "japro/data.db"
+#define GLOBAL_DB_PATH sv_globalDBPath.string
 
 void TestInsert ()
 {
     sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int i;
 
     CALL_SQLITE (open (LOCAL_DB_PATH, & db));
     sql = "INSERT INTO t (xyz) VALUES (?)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, "testtesttest", 6, SQLITE_STATIC));
     CALL_SQLITE_EXPECT (step (stmt), DONE);
-    printf ("row id was %d\n", (int) sqlite3_last_insert_rowid (db));
+    trap->Print("row id was %d\n", (int)sqlite3_last_insert_rowid(db));
 }
 
 void TestSelect ()
@@ -32,9 +31,6 @@ void TestSelect ()
     sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int nrecs;
-    char * errmsg;
-    int i;
     int row = 0;
 
     CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -47,24 +43,24 @@ void TestSelect ()
         s = sqlite3_step (stmt);
         if (s == SQLITE_ROW) {
             int bytes;
-            const unsigned char * text;
+            const unsigned char *text;
             bytes = sqlite3_column_bytes(stmt, 0);
             text  = sqlite3_column_text (stmt, 0);
-            printf ("%d: %s\n", row, text);
+            trap->Print("%d: %s\n", row, text);
             row++;
         }
-        else if (s == SQLITE_DONE) {
+        else if (s == SQLITE_DONE)
             break;
-        }
         else {
-            fprintf (stderr, "Failed.\n");
-            exit (1);
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			break;
         }
     }
+	
 }
 
 
-static void Cmd_ACLogin_f( gentity_t *ent ) {
+void Cmd_ACLogin_f( gentity_t *ent ) {
 	//Client inputs account name, server querys user database on website, checks last known IP for that username, if match, client is logged in.
 	//This will require client to revisit the master website if their IP changes (and be logged in there).
 	//But it stops client from having to send password over JKA, and lets global accounts work nice
@@ -73,6 +69,9 @@ static void Cmd_ACLogin_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /login <username>\n\"" );
 		return;
 	}
+
+	TestInsert();
+	TestSelect();
 
 	//Connect to master acounts db, check lastKnownIP of username, compare to ent->client->ip, if match, log player in.
 	//If not, print message and quit (no account found, invalid pass, etc).
