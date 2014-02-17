@@ -1700,7 +1700,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 		addresses[numservers].port = BigShort( addresses[numservers].port );
 
 		// syntax check
-		if (*buffptr != '\\' && *buffptr != '/')
+		if (*buffptr != '\\')
 			break;
 
 		numservers++;
