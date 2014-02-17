@@ -2126,6 +2126,7 @@ typedef struct trGlobals_s {
 	float					fogTable[FOG_TABLE_SIZE];
 
 	float					rangedFog;
+	float					distanceCull, distanceCullSquared; //rwwRMG - added
 
 #ifdef _WIN32
 	WinVars_t *wv;
