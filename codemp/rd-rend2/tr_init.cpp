@@ -1205,10 +1205,10 @@ void R_Register( void )
 			"0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_max_anisotropy = ri->Cvar_Get( "r_ext_max_anisotropy", "2", CVAR_ARCHIVE | CVAR_LATCH );
 
-	r_picmip = ri->Cvar_Get ("r_picmip", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_picmip = ri->Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_roundImagesDown = ri->Cvar_Get ("r_roundImagesDown", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_colorMipLevels = ri->Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
-	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_detailTextures = ri->Cvar_Get( "r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_texturebits = ri->Cvar_Get( "r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_colorbits = ri->Cvar_Get( "r_colorbits", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1218,9 +1218,9 @@ void R_Register( void )
 	ri->Cvar_CheckRange( r_ext_multisample, 0, 4, qtrue );
 	r_overBrightBits = ri->Cvar_Get ("r_overBrightBits", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ignorehwgamma = ri->Cvar_Get( "r_ignorehwgamma", "0", CVAR_ARCHIVE | CVAR_LATCH);
-	r_mode = ri->Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
-	r_fullscreen = ri->Cvar_Get( "r_fullscreen", "1", CVAR_ARCHIVE );
-	r_noborder = ri->Cvar_Get("r_noborder", "0", CVAR_ARCHIVE);
+	r_mode = ri->Cvar_Get( "r_mode", "4", CVAR_ARCHIVE | CVAR_LATCH );
+	r_fullscreen = ri->Cvar_Get( "r_fullscreen", "0", CVAR_ARCHIVE|CVAR_LATCH );
+	r_noborder = ri->Cvar_Get("r_noborder", "0", CVAR_ARCHIVE|CVAR_LATCH);
 	r_centerWindow = ri->Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE|CVAR_LATCH );
 	r_customwidth = ri->Cvar_Get( "r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customheight = ri->Cvar_Get( "r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1308,8 +1308,8 @@ void R_Register( void )
 	r_lodbias = ri->Cvar_Get( "r_lodbias", "0", CVAR_ARCHIVE );
 	r_flares = ri->Cvar_Get ("r_flares", "0", CVAR_ARCHIVE );
 	r_znear = ri->Cvar_Get( "r_znear", "4", CVAR_CHEAT );
-	r_autolodscalevalue	= ri->Cvar_Get( "r_autolodscalevalue", "0", CVAR_ROM );
 	ri->Cvar_CheckRange( r_znear, 0.001f, 200, qfalse );
+	r_autolodscalevalue	= ri->Cvar_Get( "r_autolodscalevalue", "0", CVAR_ROM );
 	r_zproj = ri->Cvar_Get( "r_zproj", "64", CVAR_ARCHIVE );
 	r_stereoSeparation = ri->Cvar_Get( "r_stereoSeparation", "64", CVAR_ARCHIVE );
 	r_ignoreGLErrors = ri->Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
