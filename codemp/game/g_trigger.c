@@ -1273,6 +1273,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->ps.duelTime = level.time;
 }
 
+void G_AddRunToDB(int account, char *courseName, float time, int style, int topspeed, int average); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;
@@ -1375,6 +1376,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
 				player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
+			G_AddRunToDB(player->client->pers.account/*_id?*/, courseName, time, player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average); //Add time right now?
 			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
 		}
 

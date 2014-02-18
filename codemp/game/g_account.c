@@ -36,13 +36,14 @@
 +------------+-------------+------+-----+---------+-------+
 | Field		 | Type        | Null | Key | Default | Extra |
 +------------+-------------+------+-----+---------+-------+
-| mapname    | varchar(32) | YES  |     | NULL    |       | //Dunno what the longest jka map would be, 32 seems more than enough
-| coursename | varchar(16) | YES  |     | NULL    |       | //longest coursename atm is .. lotiymens? only 9 long.  If it goes over its not gamebraeking, it will still be unique most likely.
-| user_id	 | int		   | YES  |     | NULL    |       |
-| duration_ms| int		   | YES  |     | NULL    |       | //24 bits would allow 4+ hours of time to be recorded, should be plenty? or maybe go to 26bits for people with autism.
-| end_time	 | datetime    | YES  |     | NULL    |       | 
 | id         | int         | YES  |     | NULL    |       | 
+| user_id	 | int		   | YES  |     | NULL    |       |
+| coursename | varchar(40) | YES  |     | NULL    |       | //Mapname + coursename, or just mapname if only 1 course per map
+| duration_ms| int		   | YES  |     | NULL    |       | //24 bits would allow 4+ hours of time to be recorded, should be plenty? or maybe go to 26bits for people with autism.
 | style      | int         | YES  |     | NULL    |       | //max value atm is 6, future proof to 16?
+| topspeed   | int         | YES  |     | NULL    |       | 
+| average    | int         | YES  |     | NULL    |       | 
+| end_time	 | datetime    | YES  |     | NULL    |       | 
 +------------+-------------+------+-----+---------+-------+
 
 "PlayerServerAccount" Entity, account of player specific to this server (though he logs in using IP matching tied to his website account)
@@ -89,6 +90,21 @@ void TestInsert ()
     CALL_SQLITE (bind_text (stmt, 1, "testtesttest", 6, SQLITE_STATIC));
     CALL_SQLITE_EXPECT (step (stmt), DONE);
     trap->Print("row id was %d\n", (int)sqlite3_last_insert_rowid(db));
+}
+
+void G_AddRunToDB(int account, char *courseName, float time, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+
+	int datetime = 0;//yeah use rawtime or something?
+
+    CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = va("INSERT INTO Run (account, courseName, duration, style, topspeed, average) VALUES (%i, %s, %i, %i, %i, %i, %i)", //the last %i should be datetime or something 
+		account, courseName, time, style, topspeed, average, datetime);
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));//what does this do, send the insert query?
+    CALL_SQLITE (bind_text (stmt, 1, "testtesttest", 6, SQLITE_STATIC));//what does this do?
+    CALL_SQLITE_EXPECT (step (stmt), DONE); //what does this do?
 }
 
 void TestSelect ()
