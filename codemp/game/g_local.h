@@ -662,6 +662,7 @@ typedef struct clientPersistant_s {
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 
 	char		guid[33];
+	char		accountName[16];
 	stats_t		stats;
 } clientPersistant_t;
 

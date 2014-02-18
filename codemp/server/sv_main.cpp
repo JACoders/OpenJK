@@ -49,7 +49,6 @@ typedef enum {
 	LIMIT_GETSTATUS,
 	LIMIT_RCON,
 	DISABLE_INFOSTATUS,
-	DISABLE_GETCHALLENGE //must be 6 since used in sv_client.  dangerous
 } floodProtect_t;
 /*
 =============================================================================

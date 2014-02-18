@@ -32,7 +32,7 @@
 //When user logs in, if no PlayerServerAccount is created for them yet, create it.  If it already exists, just update it.
 
 /*
-"Run" Entity
+"LocalRun" Entity
 +------------+-------------+------+-----+---------+-------+
 | Field		 | Type        | Null | Key | Default | Extra |
 +------------+-------------+------+-----+---------+-------+
@@ -46,11 +46,11 @@
 | end_time	 | datetime    | YES  |     | NULL    |       | 
 +------------+-------------+------+-----+---------+-------+
 
-"PlayerServerAccount" Entity, account of player specific to this server (though he logs in using IP matching tied to his website account)
+"LocalAccount" Entity, account of player specific to this server (though he logs in using IP matching tied to his website account)
 +------------+-------------+------+-----+---------+-------+
 | Field		 | Type        | Null | Key | Default | Extra |
 +------------+-------------+------+-----+---------+-------+
-| username   | varchar(32) | YES  |     | NULL    |       |
+| username   | varchar(16) | YES  |     | NULL    |       |
 | id		 | int		   | YES  |     | NULL    |       |
 //The following (rest of fields in gameaccount, and the Duel entity) will be in v2 update, after defrag functionality is complete
 //Simple stuff that does not need to be described or have its own entity
@@ -92,7 +92,7 @@ void TestInsert ()
     trap->Print("row id was %d\n", (int)sqlite3_last_insert_rowid(db));
 }
 
-void G_AddRunToDB(int account, char *courseName, float time, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
+void G_AddRunToDB(char *account, char *courseName, float time, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -144,21 +144,38 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
 	//This will require client to revisit the master website if their IP changes (and be logged in there).
 	//But it stops client from having to send password over JKA, and lets global accounts work nice
 
+	//Connect to master acounts db, check lastKnownIP of username, compare to ent->client->ip, if match, log player in.
+	//If not, print message and quit (no account found, invalid pass, etc).
+
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /login <username>\n\"" );
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /login <username>\n\"");
 		return;
 	}
 
-	TestInsert();
-	TestSelect();
+	//TestInsert();
+	//TestSelect();
 
-	//Connect to master acounts db, check lastKnownIP of username, compare to ent->client->ip, if match, log player in.
-	//If not, print message and quit (no account found, invalid pass, etc).
+	if (ent->client->pers.accountName) { //check cuz its a string if [0] = \0 or w/e
+		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
+		return;
+	}
+
+	//Query GLOBAL database with this: select lastKnownIP and user_name from users where user_name == trap->arg2, 
+	//If that ip matches, ent->client->pers.accountName = user_name
+	//else account_id = "", print that 
+
+	//If no LocalRun entity exists with user_name == trap->arg2, then create one.
 
 }
 
 static void Cmd_ACLogout_f( gentity_t *ent ) {
 	//If logged in, print logout msg, remove login status.
+	if (ent->client->pers.accountName) {
+		Q_strncpyz(ent->client->pers.accountName, "", sizeof(ent->client->pers.accountName));
+		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
+	}
+	else
+		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
 }
 
 static void DFBuildTop10( gentity_t *ent ) {
@@ -173,6 +190,8 @@ static void Cmd_DFTop10_f( gentity_t *ent ) {
 
 	//if more than 1 course per map, require usage "/dftop10 <coursename>"
 	//else display map top10
+
+	//dftop10 <mapname> <coursename> <style> is full syntax... how deal with partial entries?
 
 	//At mapload, get 10thfastest time for that map
 	//Every time someone completes course, check if it was faster than 10thfastest
@@ -192,13 +211,12 @@ static void Cmd_ACWhois_f( gentity_t *ent ) {
 		if (cl->pers.netname[0]) {
 			char strNum[12] = {0};
 			char strName[MAX_NETNAME] = {0};
-			char strAccount[32] = {0};
+			char strAccount[16] = {0};
 
 			Q_strncpyz(strNum, va("(%i)", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 
-			if (1)//they are logged in ?
-				Q_strncpyz( strAccount, "dehhh", sizeof(strAccount));	
+			Q_strncpyz( strAccount, cl->pers.accountName, sizeof(strAccount));	
 			tmpMsg = va("%-5s%-18s^7%-14s^7\n", strNum, strName, strAccount);
 
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
@@ -215,18 +233,14 @@ static void AddRaceTime( gentity_t *ent ) {
 
 	//Create db connection TO LOCAL DB or whatever? or is it already created?
 
-	//Send the following to database:
-		//Player account name
-		// ?? Player IP ??
-		//Mapname
-		//Course name
+	//Send the following to database LocalRun table:
+		//Player account id
+		//Map + course name
 		//Time duration of run
 		//Avg speed
 		//Max speed
 		//Physics mode
 		//Time right now
-		//Player netname ?
-		//Server IP?
 }
 
 static void SyncToGlobalDB( gentity_t *ent ) {
