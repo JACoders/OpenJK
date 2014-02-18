@@ -64,8 +64,9 @@
 +---------------+---------=----+------+-----+---------+-------+
 | Field		    | Type         | Null | Key | Default | Extra |
 +---------------+--------------+------+-----+---------+-------+
-| winner_id		| int		   | YES  |     | NULL    |       |
-| loser_id		| int		   | YES  |     | NULL    |       |
+| player1_id	| int		   | YES  |     | NULL    |       |
+| player2_id	| int		   | YES  |     | NULL    |       |
+| outcome		| int		   | YES  |     | NULL    |       | //2 bits, 0 = draw, 1 = player1 wins, 2 = player2 wins.  cuz ties in duels are a thing so whatever
 | end_time		| datetime     | YES  |     | NULL    |       |
 | duration		| int          | YES  |     | NULL    |       | //in ms or sec?
 | type			| int          | YES  |     | NULL    |       | //What weapon was used, (melee, saber, pistol, etc.. "fullforce duel",...
