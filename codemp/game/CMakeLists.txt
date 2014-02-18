@@ -60,7 +60,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/g_vehicles.c"
 	"${MPDir}/game/g_vehicleTurret.c"
 	"${MPDir}/game/g_weapon.c"
-	"${MPDir}/game/mysqlite.h"
 	"${MPDir}/game/NPC.c"
 	"${MPDir}/game/NPC_AI_Atst.c"
 	"${MPDir}/game/NPC_AI_Default.c"

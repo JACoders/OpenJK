@@ -4,13 +4,77 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sqlite3.h"
-#include "mysqlite.h"
+
+#define LOCAL_DB_PATH "japro/data.db"
+#define GLOBAL_DB_PATH sv_globalDBPath.string
+
+#define CALL_SQLITE(f) {                                        \
+        int i;                                                  \
+        i = sqlite3_ ## f;                                      \
+        if (i != SQLITE_OK) {                                   \
+            fprintf (stderr, "%s failed with status %d: %s\n",  \
+                     #f, i, sqlite3_errmsg (db));               \
+        }                                                       \
+    }                                                           \
+
+#define CALL_SQLITE_EXPECT(f,x) {                               \
+        int i;                                                  \
+        i = sqlite3_ ## f;                                      \
+        if (i != SQLITE_ ## x) {                                \
+            fprintf (stderr, "%s failed with status %d: %s\n",  \
+                     #f, i, sqlite3_errmsg (db));               \
+        }                                                       \
+    }   
 
 //No register function, thats done on master website.
 //ent->client->accountID ? if 0 , not logged in ?, use this in interaction with db?
 
-#define LOCAL_DB_PATH "japro/data.db"
-#define GLOBAL_DB_PATH sv_globalDBPath.string
+//When user logs in, if no PlayerServerAccount is created for them yet, create it.  If it already exists, just update it.
+
+/*
+"Run" Entity
++------------+-------------+------+-----+---------+-------+
+| Field		 | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| mapname    | varchar(32) | YES  |     | NULL    |       | //Dunno what the longest jka map would be, 32 seems more than enough
+| coursename | varchar(16) | YES  |     | NULL    |       | //longest coursename atm is .. lotiymens? only 9 long.  If it goes over its not gamebraeking, it will still be unique most likely.
+| user_id	 | int		   | YES  |     | NULL    |       |
+| duration_ms| int		   | YES  |     | NULL    |       | //24 bits would allow 4+ hours of time to be recorded, should be plenty? or maybe go to 26bits for people with autism.
+| end_time	 | datetime    | YES  |     | NULL    |       | 
+| id         | int         | YES  |     | NULL    |       | 
+| style      | int         | YES  |     | NULL    |       | //max value atm is 6, future proof to 16?
++------------+-------------+------+-----+---------+-------+
+
+"PlayerServerAccount" Entity, account of player specific to this server (though he logs in using IP matching tied to his website account)
++------------+-------------+------+-----+---------+-------+
+| Field		 | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| username   | varchar(32) | YES  |     | NULL    |       |
+| id		 | int		   | YES  |     | NULL    |       |
+//The following (rest of fields in gameaccount, and the Duel entity) will be in v2 update, after defrag functionality is complete
+//Simple stuff that does not need to be described or have its own entity
+| playtime	 | int		   | YES  |     | NULL    |       |
+| kills      | int         | YES  |     | NULL    |       |
+| deaths     | int         | YES  |     | NULL    |       |
+| captures   | int         | YES  |     | NULL    |       |
+| returns    | int         | YES  |     | NULL    |       | //I guess all these could be 16bits or something really
++------------+-------------+------+-----+---------+-------+
+
+"Duel" Entity, can we just user winner_id, loser_id, and ignore ties? or do we have to do id1, id2, and make 'outcome' to store wether id1>id2, id2>id1, or tie?
++---------------+---------=----+------+-----+---------+-------+
+| Field		    | Type         | Null | Key | Default | Extra |
++---------------+--------------+------+-----+---------+-------+
+| winner_id		| int		   | YES  |     | NULL    |       |
+| loser_id		| int		   | YES  |     | NULL    |       |
+| end_time		| datetime     | YES  |     | NULL    |       |
+| duration		| int          | YES  |     | NULL    |       | //in ms or sec?
+| type			| int          | YES  |     | NULL    |       | //What weapon was used, (melee, saber, pistol, etc.. "fullforce duel",...
+| winner_hp		| int          | YES  |     | NULL    |       | //7bits
+| winner_shield | int          | YES  |     | NULL    |       | //7bits
++----------------+-------------+------+-----+---------+-------+
+*/
+
+//In the v2 update, maybe also add ingame passwords, so people sharing a net connection (at university etc) wont be able to login to eachothers accounts ingame.
 
 void TestInsert ()
 {
@@ -56,9 +120,7 @@ void TestSelect ()
 			break;
         }
     }
-	
 }
-
 
 void Cmd_ACLogin_f( gentity_t *ent ) {
 	//Client inputs account name, server querys user database on website, checks last known IP for that username, if match, client is logged in.
