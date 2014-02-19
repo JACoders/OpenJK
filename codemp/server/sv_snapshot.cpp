@@ -790,9 +790,14 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
+	if ( client->netchan.remoteAddress.type == NA_BOT && sv_autoDemo->integer &&
+			sv_autoDemoBots->integer && !client->demo.demorecording ) {
+		SV_BeginAutoRecordDemos();
+	}
+
 	// bots need to have their snapshots built, but
 	// they query them directly without needing to be sent
-	if ( client->gentity && client->gentity->r.svFlags & SVF_BOT && !client->demo.demorecording ) {
+	if ( client->netchan.remoteAddress.type == NA_BOT && !client->demo.demorecording ) {
 		return;
 	}
 

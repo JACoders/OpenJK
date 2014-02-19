@@ -41,15 +41,10 @@ cvar_t	*sv_floodProtect;
 cvar_t	*sv_lanForceRate; // dedicated 1 (LAN) server forces local client rates to 99999 (bug #491)
 cvar_t	*sv_needpass;
 cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
+cvar_t	*sv_autoDemo;
+cvar_t	*sv_autoDemoBots;
+cvar_t	*sv_autoDemoMaxMaps;
 
-typedef enum {
-	LIMIT_USERCMD,
-	LIMIT_GETCHALLENGE, // Must be 1 since its used in sv_client
-	LIMIT_GETINFO,
-	LIMIT_GETSTATUS,
-	LIMIT_RCON,
-	DISABLE_INFOSTATUS,
-} floodProtect_t;
 /*
 =============================================================================
 
@@ -118,7 +113,7 @@ void SV_AddServerCommand( client_t *client, const char *cmd ) {
 =================
 SV_SendServerCommand
 
-Sends a reliable command string to be interpreted by 
+Sends a reliable command string to be interpreted by
 the client game module: "cp", "print", "chat", etc
 A NULL client will broadcast to all clients
 =================
@@ -128,7 +123,7 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	byte		message[MAX_MSGLEN];
 	client_t	*client;
 	int			j;
-	
+
 	va_start (argptr,fmt);
 	Q_vsnprintf((char *)message, sizeof(message), fmt, argptr);
 	va_end (argptr);
@@ -232,7 +227,7 @@ void SV_MasterHeartbeat( void ) {
 			sv_master[i]->modified = qfalse;
 
 			g_lastResolveTime[i] = time;
-	
+
 			Com_Printf( "Resolving %s\n", sv_master[i]->string );
 			if ( !NET_StringToAdr( sv_master[i]->string, &adr[i] ) ) {
 				// if the address failed to resolve, clear it
@@ -360,7 +355,7 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 			} else {
 				bucketHashes[ bucket->hash ] = bucket->next;
 			}
-			
+
 			if ( bucket->next != NULL ) {
 				bucket->next->prev = bucket->prev;
 			}
@@ -465,23 +460,18 @@ void SVC_Status( netadr_t from ) {
 	}
 	*/
 
-	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS))
+	// Prevent using getstatus as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
 		return;
+	}
 
-	if (sv_floodProtect->integer & (1<<LIMIT_GETSTATUS)) {
-		// Prevent using getstatus as an amplifier
-		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-			Com_DPrintf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-			return;
-		}
-
-		// Allow getstatus to be DoSed relatively easily, but prevent
-		// excess outbound bandwidth usage when being flooded inbound
-		if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-			Com_DPrintf( "SVC_Status: rate limit exceeded, dropping request\n" );
-			return;
-		}
+	// Allow getstatus to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SVC_Status: rate limit exceeded, dropping request\n" );
+		return;
 	}
 
 	// A maximum challenge length of 128 should be more than plenty.
@@ -501,7 +491,7 @@ void SVC_Status( netadr_t from ) {
 		cl = &svs.clients[i];
 		if ( cl->state >= CS_CONNECTED ) {
 			ps = SV_GameClientNum( i );
-			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
+			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n",
 				ps->persistant[PERS_SCORE], cl->ping, cl->name);
 			playerLength = strlen(player);
 			if (statusLength + playerLength >= (int)sizeof(status) ) {
@@ -540,23 +530,18 @@ void SVC_Info( netadr_t from ) {
 		return;
 	}
 
-	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS))
+	// Prevent using getinfo as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
 		return;
+	}
 
-	if (sv_floodProtect->integer & (1<<LIMIT_GETINFO)) {
-		// Prevent using getinfo as an amplifier
-		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-			Com_DPrintf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-			return;
-		}
-
-		// Allow getinfo to be DoSed relatively easily, but prevent
-		// excess outbound bandwidth usage when being flooded inbound
-		if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-			Com_DPrintf( "SVC_Info: rate limit exceeded, dropping request\n" );
-			return;
-		}
+	// Allow getinfo to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SVC_Info: rate limit exceeded, dropping request\n" );
+		return;
 	}
 
 	/*
@@ -590,7 +575,7 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
 	Info_SetValueForKey(infostring, "g_humanplayers", va("%i", humans));
-	Info_SetValueForKey( infostring, "sv_maxclients", 
+	Info_SetValueForKey( infostring, "sv_maxclients",
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
 	Info_SetValueForKey( infostring, "needpass", va("%i", sv_needpass->integer ) );
@@ -649,25 +634,21 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 	char		*cmd_aux;
 
-	if (sv_floodProtect->integer & (1<<LIMIT_RCON)) {
-		// Prevent using rcon as an amplifier and make dictionary attacks impractical
-		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-			Com_DPrintf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
-				NET_AdrToString( from ) );
-			return;
-		}
+	// Prevent using rcon as an amplifier and make dictionary attacks impractical
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
 	}
 
 	if ( !strlen( sv_rconPassword->string ) ||
 		strcmp (Cmd_Argv(1), sv_rconPassword->string) ) {
 		static leakyBucket_t bucket;
 
-		if (sv_floodProtect->integer & (1<<LIMIT_RCON)) {
-			// Make DoS via rcon impractical
-			if ( SVC_RateLimit( &bucket, 10, 1000 ) ) {
-				Com_DPrintf( "SVC_RemoteCommand: rate limit exceeded, dropping request\n" );
-				return;
-			}
+		// Make DoS via rcon impractical
+		if ( SVC_RateLimit( &bucket, 10, 1000 ) ) {
+			Com_DPrintf( "SVC_RemoteCommand: rate limit exceeded, dropping request\n" );
+			return;
 		}
 
 		valid = qfalse;
@@ -817,7 +798,7 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		}
 		return;
 	}
-	
+
 	// if we received a sequenced packet from an address we don't reckognize,
 	// send an out of band disconnect packet to it
 	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
@@ -882,7 +863,7 @@ void SV_CalcPings( void ) {
 ==================
 SV_CheckTimeouts
 
-If a packet has not been received from a client for timeout->integer 
+If a packet has not been received from a client for timeout->integer
 seconds, drop the conneciton.  Server time is used instead of
 realtime to avoid dropping the local client while debugging.
 
@@ -916,7 +897,7 @@ void SV_CheckTimeouts( void ) {
 			// wait several frames so a debugger session doesn't
 			// cause a timeout
 			if ( ++cl->timeoutCount > 5 ) {
-				SV_DropClient (cl, "timed out"); 
+				SV_DropClient (cl, "timed out");
 				cl->state = CS_FREE;	// don't bother with zombie state
 			}
 		} else {
@@ -968,12 +949,12 @@ SV_CheckCvars
 void SV_CheckCvars( void ) {
 	static int lastModHostname = -1, lastModFramerate = -1, lastModSnapsMin = -1, lastModSnapsMax = -1;
 	qboolean changed = qfalse;
-	
+
 	if ( sv_hostname->modificationCount != lastModHostname ) {
 		char hostname[MAX_INFO_STRING];
 		char *c = hostname;
 		lastModHostname = sv_hostname->modificationCount;
-		
+
 		strcpy( hostname, sv_hostname->string );
 		while( *c )
 		{
