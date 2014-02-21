@@ -61,7 +61,7 @@
 | returns    | int         | YES  |     | NULL    |       | //I guess all these could be 16bits or something really
 +------------+-------------+------+-----+---------+-------+
 
-"Duel" Entity, can we just user winner_id, loser_id, and ignore ties? or do we have to do id1, id2, and make 'outcome' to store wether id1>id2, id2>id1, or tie?
+"LocalDuel" Entity, can we just user winner_id, loser_id, and ignore ties? or do we have to do id1, id2, and make 'outcome' to store wether id1>id2, id2>id1, or tie?
 +---------------+---------=----+------+-----+---------+-------+
 | Field		    | Type         | Null | Key | Default | Extra |
 +---------------+--------------+------+-----+---------+-------+
@@ -139,6 +139,29 @@ void TestSelect ()
     }
 }
 
+void InitGameAccountStuff( void ) {
+	/*
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    sql = "SELECT COUNT(*) FROM LocalAccount";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	*/
+
+	//if (atoi((const char *)sqlite3_column_text (stmt, 0)) == 0) //Table not created yet..? actually no it could be created but empty :S
+
+	//if (sqlite3FindTable(db, "sqlite_stat1", pDb->zName))
+		//return;
+
+	//If no "LocalAccount" table exists, create one
+	//If no "LocalRun" table exists, create one
+	//If no "LocalDuel" table exists, create one
+
+	//Check if stuff needs to be sent to global db? idk
+}
+
 void Cmd_ACLogin_f( gentity_t *ent ) {
 	//Client inputs account name, server querys user database on website, checks last known IP for that username, if match, client is logged in.
 	//This will require client to revisit the master website if their IP changes (and be logged in there).
@@ -147,30 +170,96 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
 	//Connect to master acounts db, check lastKnownIP of username, compare to ent->client->ip, if match, log player in.
 	//If not, print message and quit (no account found, invalid pass, etc).
 
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+    int row = 0;
+	char accountName[16] = {0};
+	int i = 0;
+	qboolean newAccount;
+
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /login <username>\n\"");
 		return;
 	}
 
-	//TestInsert();
-	//TestSelect();
-
-	if (ent->client->pers.accountName) { //check cuz its a string if [0] = \0 or w/e
+	//if (ent->client->pers.accountName) { //check cuz its a string if [0] = \0 or w/e
+	if (Q_stricmp(ent->client->pers.accountName, "")) {
 		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
 		return;
 	}
+
+	while (ent->client->pers.accountName[i]) {
+		accountName[i] = tolower(ent->client->pers.accountName[i]);
+		i++;
+	}
+	Q_CleanStr(accountName);//also strip other chars..?
+
+	//set accountName equal to account name on global database
 
 	//Query GLOBAL database with this: select lastKnownIP and user_name from users where user_name == trap->arg2, 
 	//If that ip matches, ent->client->pers.accountName = user_name
 	//else account_id = "", print that 
 
-	//If no LocalRun entity exists with user_name == trap->arg2, then create one.
+	//To query the global database, i guess we could use libcurl to open a webpage, and login, make sure we are a whitelisted IP, and have the webpage do the sql query
 
+	//To log someone in, open the page mysite.com/gameserverlogin.php and send username with POST? (since we are probably going to add passwords later)
+	//If the page says "account not found" print the error to user and return.
+	//If the page returns an IP address, compare it to ent->clients ip address, and if it matches log them in.
+
+	//mysite.com/gameserverlogin.php
+		//makes sure querying server address is whitelisted
+		//check against sql injection
+		//checks to see if ACCOUNTNAME is a valid account, if not, return a webpage with "account not found"
+		//for v2, check if PASSWORD matches
+		//if the account exists, return the last known IP for that account
+
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    sql = va("SELECT COUNT(*) FROM LocalAccount where username=%s"), accountName;
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, &stmt, NULL));
+
+	while (1) {
+		int s;
+		s = sqlite3_step (stmt);
+		if (s == SQLITE_ROW) {
+			int bytes;
+			const unsigned char *text;
+			bytes = sqlite3_column_bytes(stmt, 0);
+			text = sqlite3_column_text (stmt, 0);
+			trap->Print("%d: %s\n", row, text);
+			if (atoi((const char *)text) == 0) //woof
+				newAccount = qtrue;
+			row++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			break;
+		}
+    }
+
+	if (row != 1) { //Count only returns one row, double check
+		trap->Print("ERROR: SQL Select Failed.\n");
+		return;
+	}
+	
+	if (newAccount) {//Found no results, make the account
+		sql = va("INSERT INTO LocalAccount (accountname) VALUES (%s)", accountName);
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));//what does this do, send the insert query?
+		CALL_SQLITE (bind_text (stmt, 1, "testtesttest", 6, SQLITE_STATIC));//what does this do?
+		CALL_SQLITE_EXPECT (step (stmt), DONE); //what does this do?
+	}
+
+
+	Q_strncpyz(ent->client->pers.accountName, accountName, sizeof(ent->client->pers.accountName));
 }
 
 static void Cmd_ACLogout_f( gentity_t *ent ) {
 	//If logged in, print logout msg, remove login status.
-	if (ent->client->pers.accountName) {
+	//if (ent->client->pers.accountName) {
+	if (Q_stricmp(ent->client->pers.accountName, "")) {
 		Q_strncpyz(ent->client->pers.accountName, "", sizeof(ent->client->pers.accountName));
 		trap->SendServerCommand(ent-g_entities, "print \"Logged out.\n\"");
 	}
@@ -188,7 +277,7 @@ static void Cmd_DFTop10_f( gentity_t *ent ) {
 
 	//This is a server specific top 10, not global.
 
-	//if more than 1 course per map, require usage "/dftop10 <coursename>"
+	//if more than 1 course per map, require usage "/dftop10 <coursename>", how to find this out?  or do it based on how many courses there are for this map in the db?
 	//else display map top10
 
 	//dftop10 <mapname> <coursename> <style> is full syntax... how deal with partial entries?

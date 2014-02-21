@@ -1076,7 +1076,7 @@ void SV_BeginAutoRecordDemos() {
 			int autorecordDirListCount = 0;
 			char *fileName;
 			int i;
-			int len;
+			//int len;
 			int numFiles = FS_GetFileList( "demos/autorecord", "/", fileList, sizeof( fileList ) );
 
 			fileName = fileList;
@@ -1102,7 +1102,7 @@ static void SV_Record_f( void ) {
 	int			i;
 	char		*s;
 	client_t	*cl;
-	int			len;
+	//int			len;
 
 	if ( svs.clients == NULL ) {
 		Com_Printf( "cannot record server demo - null svs.clients\n" );
