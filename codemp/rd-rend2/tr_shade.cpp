@@ -1071,9 +1071,9 @@ static void RB_FogPass( void ) {
 }
 
 
-static unsigned int RB_CalcShaderVertexAttribs( shaderCommands_t *input )
+static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 {
-	unsigned int vertexAttribs = input->shader->vertexAttribs;
+	unsigned int vertexAttribs = shader->vertexAttribs;
 
 	if(glState.vertexAnimation)
 	{
@@ -1598,7 +1598,7 @@ void RB_StageIteratorGeneric( void )
 		RB_DeformTessGeometry();
 	}
 
-	vertexAttribs = RB_CalcShaderVertexAttribs( input );
+	vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
 
 	if (tess.useInternalVBO)
 	{

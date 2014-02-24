@@ -738,6 +738,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			{
 				stage->bundle[0].isLightmap = qtrue;
 				if ( shader.lightmapIndex[0] < 0 || shader.lightmapIndex[0] >= tr.numLightmaps ) {
+#ifndef FINAL_BUILD
+					ri->Printf (PRINT_ALL, S_COLOR_RED "Lightmap requested but none avilable for shader '%s'\n", shader.name);
+#endif
 					stage->bundle[0].image[0] = tr.whiteImage;
 				} else {
 					stage->bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[0]];
@@ -2509,10 +2512,27 @@ static qboolean CollapseStagesToGLSL(void)
 	int i, j, numStages;
 	qboolean skip = qfalse;
 
+	ri->Printf (PRINT_DEVELOPER, "Collapsing stages for shader '%s'\n", shader.name);
+
 	// skip shaders with deforms
 	if (shader.numDeforms != 0)
 	{
 		skip = qtrue;
+		ri->Printf (PRINT_DEVELOPER, "> Shader has vertex deformations. Aborting stage collapsing\n");
+	}
+
+	ri->Printf (PRINT_DEVELOPER, "> Original shader stage order:\n");
+
+	for ( int i = 0; i < MAX_SHADER_STAGES; i++ )
+	{
+		shaderStage_t *stage = &stages[i];
+
+		if ( !stage->active )
+		{
+			continue;
+		}
+
+		ri->Printf (PRINT_DEVELOPER, "-> %s\n", stage->bundle[0].image[0]->imgName);
 	}
 
 	if (!skip)
@@ -2520,8 +2540,7 @@ static qboolean CollapseStagesToGLSL(void)
 		// if 2+ stages and first stage is lightmap, switch them
 		// this makes it easier for the later bits to process
 		if (stages[0].active &&
-			stages[0].bundle[0].tcGen >= TCGEN_LIGHTMAP &&
-			stages[0].bundle[0].tcGen <= TCGEN_LIGHTMAP3 &&
+			stages[0].bundle[0].tcGen == TCGEN_LIGHTMAP &&
 			stages[1].active)
 		{
 			int blendBits = stages[1].stateBits & ( GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS );
@@ -2539,6 +2558,10 @@ static qboolean CollapseStagesToGLSL(void)
 
 				stages[0].stateBits = stateBits0;
 				stages[1].stateBits = stateBits1;
+
+				ri->Printf (PRINT_DEVELOPER, "> Swapped first and second stage.\n");
+				ri->Printf (PRINT_DEVELOPER, "-> First stage is now: %s\n", stages[0].bundle[0].image[0]->imgName);
+				ri->Printf (PRINT_DEVELOPER, "-> Second stage is now: %s\n", stages[1].bundle[0].image[0]->imgName);
 			}
 		}
 	}
@@ -2559,7 +2582,7 @@ static qboolean CollapseStagesToGLSL(void)
 				break;
 			}
 
-			if (pStage->bundle[0].tcGen >= TCGEN_LIGHTMAP && pStage->bundle[0].tcGen <= TCGEN_LIGHTMAP3)
+			if (pStage->bundle[0].tcGen == TCGEN_LIGHTMAP)
 			{
 				int blendBits = pStage->stateBits & ( GLS_DSTBLEND_BITS | GLS_SRCBLEND_BITS );
 				
@@ -2600,6 +2623,22 @@ static qboolean CollapseStagesToGLSL(void)
 
 	if (!skip)
 	{
+		shaderStage_t *lightmaps[MAX_SHADER_STAGES] = {};
+		size_t numLightmapStages = 0;
+
+		for (i = 0; i < MAX_SHADER_STAGES; i++)
+		{
+			shaderStage_t *pStage = &stages[i];
+
+			if (!pStage->active)
+				continue;
+
+			if (pStage->bundle[0].tcGen == TCGEN_LIGHTMAP)
+			{
+				lightmaps[i] = pStage;
+			}
+		}
+
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{
 			shaderStage_t *pStage = &stages[i];
@@ -2622,6 +2661,7 @@ static qboolean CollapseStagesToGLSL(void)
 			parallax = qfalse;
 			specular = NULL;
 			lightmap = NULL;
+
 
 			// we have a diffuse map, find matching normal, specular, and lightmap
 			for (j = i + 1; j < MAX_SHADER_STAGES; j++)
@@ -2656,9 +2696,11 @@ static qboolean CollapseStagesToGLSL(void)
 						break;
 
 					case ST_COLORMAP:
-						if (pStage2->bundle[0].tcGen >= TCGEN_LIGHTMAP && pStage2->bundle[0].tcGen <= TCGEN_LIGHTMAP3)
+						if (pStage2->bundle[0].tcGen == TCGEN_LIGHTMAP && pStage2->rgbGen != pStage->rgbGen)
 						{
+							ri->Printf (PRINT_DEVELOPER, "> Setting lightmap for %s to %s\n", pStage->bundle[0].image[0]->imgName, pStage2->bundle[0].image[0]->imgName);
 							lightmap = pStage2;
+							lightmaps[j] = NULL;
 						}
 						break;
 
@@ -2699,7 +2741,7 @@ static qboolean CollapseStagesToGLSL(void)
 			if (!pStage->active)
 				continue;
 
-			if (pStage->bundle[0].tcGen >= TCGEN_LIGHTMAP && pStage->bundle[0].tcGen <= TCGEN_LIGHTMAP3)
+			if (pStage->bundle[0].tcGen == TCGEN_LIGHTMAP && lightmaps[i] == NULL)
 			{
 				pStage->active = qfalse;
 			}
@@ -2765,7 +2807,7 @@ static qboolean CollapseStagesToGLSL(void)
 			if (pStage->adjustColorsForFog)
 				continue;
 
-			if (pStage->bundle[TB_DIFFUSEMAP].tcGen >= TCGEN_LIGHTMAP && pStage->bundle[TB_DIFFUSEMAP].tcGen <= TCGEN_LIGHTMAP3)
+			if (pStage->bundle[TB_DIFFUSEMAP].tcGen == TCGEN_LIGHTMAP)
 			{
 				pStage->glslShaderGroup = tr.lightallShader;
 				pStage->glslShaderIndex = LIGHTDEF_USE_LIGHTMAP;
@@ -2831,6 +2873,20 @@ static qboolean CollapseStagesToGLSL(void)
 			if (!pStage->materialInfo[1])
 				pStage->materialInfo[1] = r_baseGloss->value;
 		}
+	}
+
+	ri->Printf (PRINT_DEVELOPER, "> New shader stage order:\n");
+
+	for ( int i = 0; i < MAX_SHADER_STAGES; i++ )
+	{
+		shaderStage_t *stage = &stages[i];
+
+		if ( !stage->active )
+		{
+			continue;
+		}
+
+		ri->Printf (PRINT_DEVELOPER, "-> %s\n", stage->bundle[0].image[0]->imgName);
 	}
 
 	return (qboolean)numStages;
@@ -3139,8 +3195,7 @@ from the current global working shader
 =========================
 */
 static shader_t *FinishShader( void ) {
-	int stage, firstLightmapStage;
-	shaderStage_t *lmStage;
+	int stage;
 	qboolean hasLightmapStage = qfalse;
 
 	//
@@ -3157,6 +3212,10 @@ static shader_t *FinishShader( void ) {
 		shader.sort = SS_DECAL;
 	}
 
+#if 0
+	int firstLightmapStage;
+	shaderStage_t *lmStage;
+
 	firstLightmapStage = FindFirstLightmapStage (stages, MAX_SHADER_STAGES);
 	lmStage = &stages[firstLightmapStage];
 
@@ -3166,20 +3225,21 @@ static shader_t *FinishShader( void ) {
 		{
 			if ( firstLightmapStage == 0 )
 			{
-				// Shift all stages above it down 1.
+				/*// Shift all stages above it down 1.
 				memmove (lmStage,
 					lmStage + 1,
 					sizeof (shaderStage_t) * (MAX_SHADER_STAGES - firstLightmapStage - 1));
 				memset (stages + MAX_SHADER_STAGES - 1, 0, sizeof (shaderStage_t));
 
 				// Set state bits back to default on the over-written stage.
-				 lmStage->stateBits = GLS_DEFAULT;
+				 lmStage->stateBits = GLS_DEFAULT;*/
+				ri->Printf (PRINT_ALL, "Shader '%s' has first stage as lightmap by vertex.\n", shader.name);
 			}
 
-			lmStage->rgbGen = CGEN_EXACT_VERTEX_LIT;
+			/*lmStage->rgbGen = CGEN_EXACT_VERTEX_LIT;
 			lmStage->alphaGen = AGEN_SKIP;
 
-			firstLightmapStage = MAX_SHADER_STAGES;
+			firstLightmapStage = MAX_SHADER_STAGES;*/
 		}
 	}
 
@@ -3187,7 +3247,8 @@ static shader_t *FinishShader( void ) {
 	{
 		int numStyles = GetNumStylesInShader (&shader);
 
-		if ( numStyles > 0 )
+		ri->Printf (PRINT_ALL, "Shader '%s' has %d stages with light styles.\n", shader.name, numStyles);
+		/*if ( numStyles > 0 )
 		{
 			// Move back all stages, after the first lightmap stage, by 'numStyles' elements.
 			memmove (lmStage + numStyles,
@@ -3226,8 +3287,85 @@ static shader_t *FinishShader( void ) {
 		for ( int i = 0; i <= numStyles; i++ )
 		{
 			lmStage[i].lightmapStyle = shader.styles[i];
+		}*/
+	}
+#else
+	int lmStage;
+	for(lmStage = 0; lmStage < MAX_SHADER_STAGES; lmStage++)
+	{
+		shaderStage_t *pStage = &stages[lmStage];
+		if (pStage->active && pStage->bundle[0].isLightmap)
+		{
+			break;
 		}
 	}
+
+	if (lmStage < MAX_SHADER_STAGES)
+	{
+		if (shader.lightmapIndex[0] == LIGHTMAP_BY_VERTEX)
+		{
+			if (lmStage == 0)	//< MAX_SHADER_STAGES-1)
+			{//copy the rest down over the lightmap slot
+				memmove(&stages[lmStage], &stages[lmStage+1], sizeof(shaderStage_t) * (MAX_SHADER_STAGES-lmStage-1));
+				memset(&stages[MAX_SHADER_STAGES-1], 0, sizeof(shaderStage_t));
+				//change blending on the moved down stage
+				stages[lmStage].stateBits = GLS_DEFAULT;
+			}
+			//change anything that was moved down (or the *white if LM is first) to use vertex color
+			stages[lmStage].rgbGen = CGEN_EXACT_VERTEX;
+			stages[lmStage].alphaGen = AGEN_SKIP;
+			lmStage = MAX_SHADER_STAGES;	//skip the style checking below
+		}
+	}
+
+	if (lmStage < MAX_SHADER_STAGES)// && !r_fullbright->value)
+	{
+		int	numStyles;
+		int	i;
+
+		for(numStyles=0;numStyles<MAXLIGHTMAPS;numStyles++)
+		{
+			if (shader.styles[numStyles] >= LS_UNUSED)
+			{
+				break;
+			}
+		}
+		numStyles--;
+		if (numStyles > 0)
+		{
+			for(i=MAX_SHADER_STAGES-1;i>lmStage+numStyles;i--)
+			{
+				stages[i] = stages[i-numStyles];
+			}
+
+			for(i=0;i<numStyles;i++)
+			{
+				stages[lmStage+i+1] = stages[lmStage];
+				if (shader.lightmapIndex[i+1] == LIGHTMAP_BY_VERTEX)
+				{
+					stages[lmStage+i+1].bundle[0].image[0] = tr.whiteImage;
+				}
+				else if (shader.lightmapIndex[i+1] < 0)
+				{
+					Com_Error( ERR_DROP, "FinishShader: light style with no light map or vertex color for shader %s", shader.name);
+				}
+				else
+				{
+					stages[lmStage+i+1].bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[i+1]];
+					stages[lmStage+i+1].bundle[0].tcGen = (texCoordGen_t)(TCGEN_LIGHTMAP+i+1);
+				}
+				stages[lmStage+i+1].rgbGen = CGEN_LIGHTMAPSTYLE;
+				stages[lmStage+i+1].stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
+				stages[lmStage+i+1].stateBits |= GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE;
+			}
+		}
+
+		for(i=0;i<=numStyles;i++)
+		{
+			stages[lmStage+i].lightmapStyle = shader.styles[i];
+		}
+	}
+#endif
 
 	//
 	// set appropriate stage information
