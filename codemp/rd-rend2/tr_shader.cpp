@@ -2696,7 +2696,7 @@ static qboolean CollapseStagesToGLSL(void)
 						break;
 
 					case ST_COLORMAP:
-						if (pStage2->bundle[0].tcGen == TCGEN_LIGHTMAP && pStage2->rgbGen != pStage->rgbGen)
+						if (pStage2->bundle[0].tcGen == TCGEN_LIGHTMAP && pStage2->rgbGen != CGEN_EXACT_VERTEX)
 						{
 							ri->Printf (PRINT_DEVELOPER, "> Setting lightmap for %s to %s\n", pStage->bundle[0].image[0]->imgName, pStage2->bundle[0].image[0]->imgName);
 							lightmap = pStage2;

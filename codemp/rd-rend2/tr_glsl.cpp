@@ -909,7 +909,7 @@ void GLSL_InitGPUShaders(void)
 			continue;
 		}
 
-		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD | ATTR_NORMAL | ATTR_COLOR;
+		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
 		if (i & GENERICDEF_USE_DEFORM_VERTEXES)
@@ -940,7 +940,10 @@ void GLSL_InitGPUShaders(void)
 			Q_strcat(extradefines, 1024, "#define USE_RGBAGEN\n");
 
 		if (i & GENERICDEF_USE_LIGHTMAP)
+		{
 			Q_strcat(extradefines, 1024, "#define USE_LIGHTMAP\n");
+			attribs |= ATTR_LIGHTCOORD;
+		}
 
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
 			Q_strcat(extradefines, 1024, "#define RGBM_LIGHTMAP\n");
