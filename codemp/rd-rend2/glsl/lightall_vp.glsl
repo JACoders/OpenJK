@@ -1,6 +1,6 @@
-attribute vec4 attr_TexCoord0;
+attribute vec2 attr_TexCoord0;
 #if defined(USE_LIGHTMAP) || defined(USE_TCGEN)
-attribute vec4 attr_TexCoord1;
+attribute vec2 attr_TexCoord1;
 #endif
 attribute vec4 attr_Color;
 

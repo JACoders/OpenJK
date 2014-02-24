@@ -1,7 +1,7 @@
 attribute vec3  attr_Position;
 attribute vec3  attr_Normal;
 
-attribute vec4  attr_TexCoord0;
+attribute vec2  attr_TexCoord0;
 
 #if defined(USE_VERTEX_ANIMATION)
 attribute vec3  attr_Position2;
