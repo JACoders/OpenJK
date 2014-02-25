@@ -138,14 +138,18 @@ typedef unsigned long		ulong;
 typedef unsigned short		word;
 typedef unsigned char 		byte;
 
-typedef enum {qfalse, qtrue}	qboolean;
+typedef enum { qfalse=0, qtrue } qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
-typedef union {
+// 32 bit field aliasing
+typedef union byteAlias_u {
 	float f;
-	int i;
-	unsigned int ui;
-} floatint_t;
+	int32_t i;
+	uint32_t ui;
+	qboolean qb;
+	byte b[4];
+	char c[4];
+} byteAlias_t;
 
 typedef int		qhandle_t;
 typedef int		thandle_t;

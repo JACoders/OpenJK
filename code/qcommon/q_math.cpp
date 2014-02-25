@@ -537,7 +537,7 @@ void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up) {
 */
 float Q_rsqrt( float number )
 {
-	floatint_t t;
+	byteAlias_t t;
 	float x2, y;
 	const float threehalfs = 1.5F;
 
@@ -554,7 +554,7 @@ float Q_rsqrt( float number )
 }
 
 float Q_fabs( float f ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = f;
 	fi.i &= 0x7FFFFFFF;
 	return fi.f;
