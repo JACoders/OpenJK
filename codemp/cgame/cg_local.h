@@ -1543,6 +1543,7 @@ typedef struct cgs_s {
 	int				fDisable;
 
 	char			mapname[MAX_QPATH];
+	char			rawmapname[MAX_QPATH];
 //	char			redTeam[MAX_QPATH];
 //	char			blueTeam[MAX_QPATH];
 
