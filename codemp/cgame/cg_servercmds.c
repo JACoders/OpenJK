@@ -6,7 +6,6 @@
 
 #include "cg_local.h"
 #include "ui/menudef.h"
-#include "cg_lights.h"
 #include "ghoul2/G2.h"
 #include "ui/ui_public.h"
 
