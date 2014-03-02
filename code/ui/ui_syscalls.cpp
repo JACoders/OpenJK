@@ -26,10 +26,6 @@ This file is part of Jedi Academy.
 float trap_Cvar_VariableValue( const char *var_name ) 
 {
 	return Cvar_VariableValue( var_name );
-//	floatint_t fi;
-//	fi.i = syscall( UI_CVAR_VARIABLEVALUE, var_name );
-//	fi.i = Cvar_VariableValue( var_name );
-//	return fi.f;
 }
 
 

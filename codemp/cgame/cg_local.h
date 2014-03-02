@@ -1543,6 +1543,7 @@ typedef struct cgs_s {
 	int				fDisable;
 
 	char			mapname[MAX_QPATH];
+	char			rawmapname[MAX_QPATH];
 //	char			redTeam[MAX_QPATH];
 //	char			blueTeam[MAX_QPATH];
 
@@ -2039,6 +2040,10 @@ void *CG_G2WeaponInstance(centity_t *cent, int weapon);
 void CG_CheckPlayerG2Weapons(playerState_t *ps, centity_t *cent);
 
 void CG_SetSiegeTimerCvar( int msec );
+
+void	CG_ClearLightStyles (void);
+void	CG_RunLightStyles (void);
+void	CG_SetLightstyle (int i);
 
 /*
 Ghoul2 Insert End
