@@ -65,7 +65,7 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y);
 
 static scrollInfo_t scrollInfo;
 
-static void (*captureFunc) (void *p) = 0;
+static void (*captureFunc) (void *p) = NULL;
 static void *captureData = NULL;
 static itemDef_t *itemCapture = NULL;   // item that has the mouse captured ( if any )
 
@@ -112,53 +112,17 @@ extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName
 #endif
 
 static char memoryPool[MEM_POOL_SIZE];
-static int allocPoint, outOfMemory;
-
+static int allocPoint;
+static qboolean outOfMemory;
 
 typedef struct  itemFlagsDef_s {
 	const char *string;
 	int value;
-}	itemFlagsDef_t;
+}itemFlagsDef_t;
 
-itemFlagsDef_t itemFlags [] = {
+itemFlagsDef_t itemFlags[] = {
 	{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
 	{ NULL,					0 }
-};
-
-char *styles [] = {
-	"WINDOW_STYLE_EMPTY",
-	"WINDOW_STYLE_FILLED",
-	"WINDOW_STYLE_GRADIENT",
-	"WINDOW_STYLE_SHADER",
-	"WINDOW_STYLE_TEAMCOLOR",
-	"WINDOW_STYLE_CINEMATIC",
-	NULL
-};
-
-char *alignment [] = {
-	"ITEM_ALIGN_LEFT",
-	"ITEM_ALIGN_CENTER",
-	"ITEM_ALIGN_RIGHT",
-	NULL
-};
-
-char *types [] = {
-	"ITEM_TYPE_TEXT",
-	"ITEM_TYPE_BUTTON",
-	"ITEM_TYPE_RADIOBUTTON",
-	"ITEM_TYPE_CHECKBOX",
-	"ITEM_TYPE_EDITFIELD",
-	"ITEM_TYPE_COMBO",
-	"ITEM_TYPE_LISTBOX",
-	"ITEM_TYPE_MODEL",
-	"ITEM_TYPE_OWNERDRAW",
-	"ITEM_TYPE_NUMERICFIELD",
-	"ITEM_TYPE_SLIDER",
-	"ITEM_TYPE_YESNO",
-	"ITEM_TYPE_MULTI",
-	"ITEM_TYPE_BIND",
-	"ITEM_TYPE_TEXTSCROLL",
-	NULL
 };
 
 extern int MenuFontToHandle(int iMenuFont);
@@ -196,13 +160,9 @@ void UI_InitMemory( void ) {
 	outOfMemory = qfalse;
 }
 
-qboolean UI_OutOfMemory() {
+qboolean UI_OutOfMemory( void ) {
 	return outOfMemory;
 }
-
-
-
-
 
 #define HASH_TABLE_SIZE 2048
 /*
@@ -1381,31 +1341,31 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow) {
 }
 
 void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut) {
-  itemDef_t *item;
-  int i;
-  int count = Menu_ItemsMatchingGroup(menu, p);
-  for (i = 0; i < count; i++) {
-    item = Menu_GetMatchingItemByNumber(menu, i, p);
-    if (item != NULL) {
-      if (fadeOut) {
-        item->window.flags |= (WINDOW_FADINGOUT | WINDOW_VISIBLE);
-        item->window.flags &= ~WINDOW_FADINGIN;
-      } else {
-        item->window.flags |= (WINDOW_VISIBLE | WINDOW_FADINGIN);
-        item->window.flags &= ~WINDOW_FADINGOUT;
-      }
-    }
-  }
+	itemDef_t *item;
+	int i;
+	int count = Menu_ItemsMatchingGroup(menu, p);
+	for (i = 0; i < count; i++) {
+		item = Menu_GetMatchingItemByNumber(menu, i, p);
+		if (item != NULL) {
+			if (fadeOut) {
+				item->window.flags |= (WINDOW_FADINGOUT | WINDOW_VISIBLE);
+				item->window.flags &= ~WINDOW_FADINGIN;
+			} else {
+				item->window.flags |= (WINDOW_VISIBLE | WINDOW_FADINGIN);
+				item->window.flags &= ~WINDOW_FADINGOUT;
+			}
+		}
+	}
 }
 
 menuDef_t *Menus_FindByName(const char *p) {
-  int i;
-  for (i = 0; i < menuCount; i++) {
-    if (Q_stricmp(Menus[i].window.name, p) == 0) {
-      return &Menus[i];
-    }
-  }
-  return NULL;
+	int i;
+	for (i = 0; i < menuCount; i++) {
+		if (Q_stricmp(Menus[i].window.name, p) == 0) {
+			return &Menus[i];
+		}
+	}
+	return NULL;
 }
 
 void Menus_ShowByName(const char *p) {
@@ -1416,14 +1376,14 @@ void Menus_ShowByName(const char *p) {
 }
 
 void Menus_OpenByName(const char *p) {
-  Menus_ActivateByName(p);
+	Menus_ActivateByName(p);
 }
 
 static void Menu_RunCloseScript(menuDef_t *menu) {
 	if (menu && menu->window.flags & WINDOW_VISIBLE && menu->onClose) {
 		itemDef_t item;
-    item.parent = menu;
-    Item_RunScript(&item, menu->onClose);
+		item.parent = menu;
+		Item_RunScript(&item, menu->onClose);
 	}
 }
 
@@ -1639,12 +1599,6 @@ void Menu_Transition3ItemByName(menuDef_t *menu, const char *p, const float minx
 
 #endif
 
-
-
-
-
-
-
 #define MAX_DEFERRED_SCRIPT		2048
 
 char		ui_deferredScript [ MAX_DEFERRED_SCRIPT ];
@@ -1719,21 +1673,21 @@ qboolean Script_Transition(itemDef_t *item, char **args)
 
 void Menu_OrbitItemByName(menuDef_t *menu, const char *p, float x, float y, float cx, float cy, int time)
 {
-  itemDef_t *item;
-  int i;
-  int count = Menu_ItemsMatchingGroup(menu, p);
-  for (i = 0; i < count; i++) {
-    item = Menu_GetMatchingItemByNumber(menu, i, p);
-    if (item != NULL) {
-      item->window.flags |= (WINDOW_ORBITING | WINDOW_VISIBLE);
-      item->window.offsetTime = time;
-      item->window.rectEffects.x = cx;
-      item->window.rectEffects.y = cy;
-      item->window.rectClient.x = x;
-      item->window.rectClient.y = y;
-      Item_UpdatePosition(item);
-    }
-  }
+	itemDef_t *item;
+	int i;
+	int count = Menu_ItemsMatchingGroup(menu, p);
+	for (i = 0; i < count; i++) {
+		item = Menu_GetMatchingItemByNumber(menu, i, p);
+		if (item != NULL) {
+			item->window.flags |= (WINDOW_ORBITING | WINDOW_VISIBLE);
+			item->window.offsetTime = time;
+			item->window.rectEffects.x = cx;
+			item->window.rectEffects.y = cy;
+			item->window.rectClient.x = x;
+			item->window.rectClient.y = y;
+			Item_UpdatePosition(item);
+		}
+	}
 }
 
 void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag)
@@ -1783,7 +1737,6 @@ qboolean Script_Disable(itemDef_t *item, char **args)
 
 	return qtrue;
 }
-
 
 // Scale the given item instantly.
 qboolean Script_Scale(itemDef_t *item, char **args)
@@ -1904,6 +1857,7 @@ qboolean ParseRect(const char **p, rectDef_t *r)
 	}
 	return qfalse;
 }
+
 /*
 =================
 Script_Transition2
@@ -2013,28 +1967,6 @@ qboolean Script_Transition3(itemDef_t *item, char **args)
 }
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 qboolean Script_SetCvar(itemDef_t *item, char **args)
 {
 	const char *cvar, *val;
@@ -2079,7 +2011,6 @@ qboolean Script_playLooped(itemDef_t *item, char **args) {
 	}
 	return qtrue;
 }
-
 
 commandDef_t commandList[] =
 {
@@ -5294,24 +5225,24 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 	return qtrue;
 }
 
+// scale the model should we need to
 void UI_ScaleModelAxis(refEntity_t	*ent)
-
-{		// scale the model should we need to
-		if (ent->modelScale[0] && ent->modelScale[0] != 1.0f)
-		{
-			VectorScale( ent->axis[0], ent->modelScale[0] , ent->axis[0] );
-			ent->nonNormalizedAxes = qtrue;
-		}
-		if (ent->modelScale[1] && ent->modelScale[1] != 1.0f)
-		{
-			VectorScale( ent->axis[1], ent->modelScale[1] , ent->axis[1] );
-			ent->nonNormalizedAxes = qtrue;
-		}
-		if (ent->modelScale[2] && ent->modelScale[2] != 1.0f)
-		{
-			VectorScale( ent->axis[2], ent->modelScale[2] , ent->axis[2] );
-			ent->nonNormalizedAxes = qtrue;
-		}
+{
+	if (ent->modelScale[0] && ent->modelScale[0] != 1.0f)
+	{
+		VectorScale( ent->axis[0], ent->modelScale[0] , ent->axis[0] );
+		ent->nonNormalizedAxes = qtrue;
+	}
+	if (ent->modelScale[1] && ent->modelScale[1] != 1.0f)
+	{
+		VectorScale( ent->axis[1], ent->modelScale[1] , ent->axis[1] );
+		ent->nonNormalizedAxes = qtrue;
+	}
+	if (ent->modelScale[2] && ent->modelScale[2] != 1.0f)
+	{
+		VectorScale( ent->axis[2], ent->modelScale[2] , ent->axis[2] );
+		ent->nonNormalizedAxes = qtrue;
+	}
 }
 
 #ifndef _CGAME
@@ -7538,7 +7469,7 @@ qboolean ItemParse_rect( itemDef_t *item, int handle ) {
 /*
 ===============
 ItemParse_flag
-	style <integer>
+	flag <flag string>
 ===============
 */
 qboolean ItemParse_flag( itemDef_t *item, int handle)
@@ -7551,7 +7482,7 @@ qboolean ItemParse_flag( itemDef_t *item, int handle)
 		return qfalse;
 	}
 
-	for ( i=0; styles[i]; i++ )
+	for ( i=0; itemFlags[i].string; i++ )
 	{
 		if (Q_stricmp(token.string,itemFlags[i].string)==0)
 		{
@@ -7562,7 +7493,7 @@ qboolean ItemParse_flag( itemDef_t *item, int handle)
 
 	if (itemFlags[i].string == NULL)
 	{
-		Com_Printf(va( S_COLOR_YELLOW "Unknown item style value '%s'",token.string));
+		Com_Printf( S_COLOR_YELLOW "Unknown item style value '%s'", token.string );
 	}
 
 	return qtrue;
