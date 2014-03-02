@@ -1883,7 +1883,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
 			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
-			ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
+			ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %u surfaces!\n", name, (unsigned int)ARRAY_LEN(skin->surfaces) );
 			break;
 		}
 		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
