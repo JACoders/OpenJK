@@ -1635,9 +1635,12 @@ extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
 extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
+// cg_cvar.c
 #define XCVAR_PROTO
 	#include "cg_xcvar.h"
 #undef XCVAR_PROTO
+void CG_RegisterCvars( void );
+void CG_UpdateCvars( void );
 
 //
 // cg_main.c
