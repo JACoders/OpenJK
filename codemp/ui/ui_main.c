@@ -5918,6 +5918,7 @@ static void UI_RunMenuScript(char **args)
 			UI_GameType_HandleKey(0, 0, A_MOUSE2, qfalse);
 		} else if (Q_stricmp(name, "resetDefaults") == 0) {
 			trap->Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+			Controls_SetDefaults();
 			trap->Cmd_ExecuteText( EXEC_APPEND, "exec mpdefault.cfg\n");
 			trap->Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
 
@@ -5927,7 +5928,7 @@ static void UI_RunMenuScript(char **args)
 			Menu_SetFeederSelection(NULL, FEEDER_ALLMAPS, gUISelectedMap, "createserver");
 			uiForceRank = trap->Cvar_VariableValue("g_maxForceRank");
 		} else if (Q_stricmp(name, "saveControls") == 0) {
-			Controls_SetConfig(qtrue);
+			Controls_SetConfig();
 		} else if (Q_stricmp(name, "loadControls") == 0) {
 			Controls_GetConfig();
 		} else if (Q_stricmp(name, "clearError") == 0) {
