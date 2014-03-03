@@ -10240,7 +10240,7 @@ stillDoSaber:
 				{
 					BG_SI_SetDesiredLength(&ci->saber[0], -1, -1);
 				}
-				if ( ci->saber[1].model	//dual sabers
+				if ( ci->saber[1].model[0]	//dual sabers
 					&& cent->currentState.saberHolstered == 1 )//second one off
 				{
 					BG_SI_SetDesiredLength(&ci->saber[1], 0, -1);
@@ -10324,7 +10324,7 @@ stillDoSaber:
 			{
 				BG_SI_SetDesiredLength(&ci->saber[0], -1, -1);
 			}
-			if ( ci->saber[1].model	//dual sabers
+			if ( ci->saber[1].model[0]	//dual sabers
 				&& cent->currentState.saberHolstered == 1 )//second one off
 			{
 				BG_SI_SetDesiredLength(&ci->saber[1], 0, -1);
