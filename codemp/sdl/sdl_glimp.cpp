@@ -478,7 +478,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		if (!driverName)
 		{
 			Com_Error( ERR_FATAL, "No video driver initialized" );
-			return;
+			return qfalse;
 		}
 
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
