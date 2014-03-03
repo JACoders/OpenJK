@@ -101,3 +101,4 @@ Key: - removed, + added, * modified
 [MP] * gamecode: Rewrote callvote code to allow disabling specific votes, added more options (e.g. display map list)
 [SP] + gamecode: Added cg_smoothCamera (default 1)
 [SP] + gamecode: Added cg_dynamicCrosshair (default 1)
+[MP] + Added support for surfaceSprites flattened in MP.  (Fixes surface sprites on t2_trip)
