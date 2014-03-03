@@ -1025,8 +1025,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
-	int tmp = sizeof( demoNames ) / sizeof( *demoNames );
-	for ( char **start = demoNames; start - demoNames < sizeof( demoNames ) / sizeof( *demoNames ); start++ ) {
+	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
 		for ( c = *start; *c != 0 && c - *start < MAX_OSPATH; c++ ) {
 			if ( *c == '\\' || *c == '/' || *c == '.' ) {
 				*c = '_';
@@ -1038,7 +1037,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 }
 
 static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
-	int timeLen = strlen( "0000-00-00_00-00-00" );
+	size_t timeLen = strlen( "0000-00-00_00-00-00" );
 	if ( strlen( folder ) < timeLen ) {
 		return 0;
 	}
@@ -1055,9 +1054,7 @@ static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
 }
 
 static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2 ) {
-	char *folder1 = (char *) arg1;
-	char *folder2 = (char *) arg2;
-	return SV_ExtractTimeFromDemoFolder( (char *) arg2 ) - SV_ExtractTimeFromDemoFolder( (char *) arg1 );
+	return SV_ExtractTimeFromDemoFolder( (char *)arg2 ) - SV_ExtractTimeFromDemoFolder( (char *)arg1 );
 }
 
 // starts demo recording on all active clients
