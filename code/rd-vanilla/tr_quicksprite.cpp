@@ -208,7 +208,8 @@ void CQuickSpriteSystem::Add(float *pointdata, color4ub_t color, vec2_t fog)
 	}
 
 	curcoord = mVerts[mNextVert];
-	memcpy(curcoord, pointdata, 4*sizeof(vec4_t));
+	// This is 16*sizeof(float) because, pointdata comes from a float[16]
+	memcpy(curcoord, pointdata, 16*sizeof(float));
 
 	// Set up color
 	curcolor = &mColors[mNextVert];
