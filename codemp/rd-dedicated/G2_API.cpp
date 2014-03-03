@@ -569,8 +569,6 @@ qhandle_t G2API_PrecacheGhoul2Model( const char *fileName )
 		return RE_RegisterModel( fileName );
 }
 
-void CL_InitRef( void );
-
 // initialise all that needs to be on a new Ghoul II model
 int G2API_InitGhoul2Model(CGhoul2Info_v **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin,
 						  qhandle_t customShader, int modelFlags, int lodBias)
