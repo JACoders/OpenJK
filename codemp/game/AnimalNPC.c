@@ -252,9 +252,8 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 
 	if (rider)
 	{
-		riderPS = rider->playerState;
-
 		float angDif = AngleSubtract(pVeh->m_vOrientation[YAW], riderPS->viewangles[YAW]);
+		riderPS = rider->playerState;
 		if (parentPS && parentPS->speed)
 		{
 			float s = parentPS->speed;
