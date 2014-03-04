@@ -124,7 +124,7 @@ FloatAsInt
 */
 static int FloatAsInt( float f ) 
 {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = f;
 	return fi.i;
 }

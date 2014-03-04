@@ -6,7 +6,6 @@
 
 #include "cg_local.h"
 #include "ui/menudef.h"
-#include "cg_lights.h"
 #include "ghoul2/G2.h"
 #include "ui/ui_public.h"
 
@@ -167,6 +166,7 @@ void CG_ParseServerinfo( void ) {
 	trap->Cvar_Set ( "ui_about_mapname", mapname );
 
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
+	Com_sprintf( cgs.rawmapname, sizeof( cgs.rawmapname ), "maps/%s", mapname );
 //	Q_strncpyz( cgs.redTeam, Info_ValueForKey( info, "g_redTeam" ), sizeof(cgs.redTeam) );
 //	trap->Cvar_Set("g_redTeam", cgs.redTeam);
 //	Q_strncpyz( cgs.blueTeam, Info_ValueForKey( info, "g_blueTeam" ), sizeof(cgs.blueTeam) );

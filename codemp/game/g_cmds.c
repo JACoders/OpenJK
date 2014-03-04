@@ -275,8 +275,8 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 	{
 		int num = 999;
 		if ( argc == 3 )
-			num = atoi( args );
-		for ( i=0; i<MAX_WEAPONS; i++ )
+			num = Com_Clampi( 0, 999, atoi( args ) );
+		for ( i=AMMO_BLASTER; i<AMMO_MAX; i++ )
 			ent->client->ps.ammo[i] = num;
 		if ( !give_all )
 			return;

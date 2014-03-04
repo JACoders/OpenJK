@@ -37,6 +37,7 @@ set(MPCGameFiles ${MPCGameFiles} ${MPCGameGameFiles})
 
 set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_consolecmds.c"
+	"${MPDir}/cgame/cg_cvar.c"
 	"${MPDir}/cgame/cg_draw.c"
 	"${MPDir}/cgame/cg_drawtools.c"
 	"${MPDir}/cgame/cg_effects.c"
@@ -71,7 +72,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/fx_heavyrepeater.c"
 	"${MPDir}/cgame/fx_rocketlauncher.c"
 	"${MPDir}/cgame/animtable.h"
-	"${MPDir}/cgame/cg_lights.h"
 	"${MPDir}/cgame/cg_local.h"
 	"${MPDir}/cgame/cg_public.h"
 	"${MPDir}/cgame/cg_xcvar.h"

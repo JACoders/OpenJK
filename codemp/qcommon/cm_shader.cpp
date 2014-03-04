@@ -413,7 +413,7 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 		}
 		// sun parms
 		// q3map_sun deprecated as of 11 Jan 01
-		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) )
+		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) || !Q_stricmp( token, "q3map_sunExt" ) )
 		{
 //			float	a, b;
 
@@ -439,6 +439,9 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 //			shader->sunDirection[0] = cos( a ) * cos( b );
 //			shader->sunDirection[1] = sin( a ) * cos( b );
 //			shader->sunDirection[2] = sin( b );
+
+			SkipRestOfLine( text );
+			continue;
 		}
 		else if ( !Q_stricmp( token, "surfaceParm" ) )
 		{

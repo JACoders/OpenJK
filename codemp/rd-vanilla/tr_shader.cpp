@@ -1125,6 +1125,10 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	{
 		sstype = SURFSPRITE_EFFECT;
 	}
+	else if (!Q_stricmp(token, "flattened"))
+	{
+		sstype = SURFSPRITE_FLATTENED;
+	}
 	else
 	{
 		ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: invalid type in shader '%s'\n", shader.name );
@@ -2582,6 +2586,9 @@ static qboolean ParseShader( const char **text )
 			tr.sunDirection[0] = cos( a ) * cos( b );
 			tr.sunDirection[1] = sin( a ) * cos( b );
 			tr.sunDirection[2] = sin( b );
+
+			SkipRestOfLine( text );
+			continue;
 		}
 		// q3map_surfacelight deprecated as of 16 Jul 01
 		else if ( !Q_stricmp( token, "surfacelight" ) || !Q_stricmp( token, "q3map_surfacelight" ) )

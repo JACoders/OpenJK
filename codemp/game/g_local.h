@@ -845,6 +845,13 @@ typedef struct waypointData_s {
 	int		nodeID;
 } waypointData_t;
 
+typedef struct {
+	char	message[MAX_SPAWN_VARS_CHARS];
+	int		count;
+	int		cs_index;
+	vec3_t	origin;
+} locationData_t;
+
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
@@ -929,8 +936,6 @@ typedef struct level_locals_s {
 	vec3_t		intermission_origin;	// also used for spectator spawns
 	vec3_t		intermission_angle;
 
-	qboolean	locationLinked;			// target_locations get linked
-	gentity_t	*locationHead;			// head of the location list
 	int			bodyQueIndex;			// dead bodies
 	gentity_t	*bodyQue[BODY_QUEUE_SIZE];
 	int			portalSequence;
@@ -971,6 +976,12 @@ typedef struct level_locals_s {
 		int num;
 		char *infos[MAX_ARENAS];
 	} arenas;
+
+	struct {
+		int num;
+		qboolean linked;
+		locationData_t data[MAX_LOCATIONS];
+	} locations;
 
 	gametype_t	gametype;
 } level_locals_t;

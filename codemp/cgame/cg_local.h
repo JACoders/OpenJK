@@ -1543,6 +1543,7 @@ typedef struct cgs_s {
 	int				fDisable;
 
 	char			mapname[MAX_QPATH];
+	char			rawmapname[MAX_QPATH];
 //	char			redTeam[MAX_QPATH];
 //	char			blueTeam[MAX_QPATH];
 
@@ -1634,9 +1635,12 @@ extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
 extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
+// cg_cvar.c
 #define XCVAR_PROTO
 	#include "cg_xcvar.h"
 #undef XCVAR_PROTO
+void CG_RegisterCvars( void );
+void CG_UpdateCvars( void );
 
 //
 // cg_main.c
@@ -2039,6 +2043,10 @@ void *CG_G2WeaponInstance(centity_t *cent, int weapon);
 void CG_CheckPlayerG2Weapons(playerState_t *ps, centity_t *cent);
 
 void CG_SetSiegeTimerCvar( int msec );
+
+void	CG_ClearLightStyles (void);
+void	CG_RunLightStyles (void);
+void	CG_SetLightstyle (int i);
 
 /*
 Ghoul2 Insert End

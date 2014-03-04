@@ -216,11 +216,25 @@ enum clc_ops_e {
 	clc_clientCommand		// [string] message
 };
 
+/*
+==============================================================
+
+VIRTUAL MACHINE
+
+==============================================================
+*/
+
+typedef enum vmSlots_e {
+	VM_GAME=0,
+	VM_CGAME,
+	VM_UI,
+	MAX_VM
+} vmSlots_t;
 
 #define	VMA(x) ((void*)args[x])
 inline float _vmf(intptr_t x)
 {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.i = (int) x;
 	return fi.f;
 }

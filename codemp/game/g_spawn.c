@@ -1483,7 +1483,12 @@ void SP_worldspawn( void )
 	trap->SetConfigstring( CS_GLOBAL_AMBIENT_SET, text );
 
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
+	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;
 	g_entities[ENTITYNUM_WORLD].classname = "worldspawn";
+
+	g_entities[ENTITYNUM_NONE].s.number = ENTITYNUM_WORLD;
+	g_entities[ENTITYNUM_NONE].r.ownerNum = ENTITYNUM_NONE;
+	g_entities[ENTITYNUM_NONE].classname = "nothing";
 
 	// see if we want a warmup time
 	trap->SetConfigstring( CS_WARMUP, "" );
@@ -1555,6 +1560,24 @@ void G_PrecacheSoundsets( void )
 	}
 }
 
+void G_LinkLocations( void ) {
+	int i, n;
+
+	if ( level.locations.linked ) 
+		return;
+
+	level.locations.linked = qtrue;
+
+	trap->SetConfigstring( CS_LOCATIONS, "unknown" );
+
+	for ( i=0, n=1; i<level.locations.num; i++ ) {
+		level.locations.data[i].cs_index = n;
+		trap->SetConfigstring( CS_LOCATIONS + n, level.locations.data[i].message );
+		n++;
+	}
+	// All linked together now
+}
+
 /*
 ==============
 G_SpawnEntitiesFromString
@@ -1614,6 +1637,8 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 	{
 		level.spawning = qfalse;			// any future calls to G_Spawn*() will be errors
 	}
+
+	G_LinkLocations();
 
 	G_PrecacheSoundsets();
 }
