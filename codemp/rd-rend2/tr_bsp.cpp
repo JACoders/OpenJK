@@ -2700,6 +2700,8 @@ void R_LoadEntities( lump_t *l ) {
 	w->lightGridSize[1] = 64;
 	w->lightGridSize[2] = 128;
 
+	tr.distanceCull = 6000;//DEFAULT_DISTANCE_CULL;
+
 	p = (char *)(fileBase + l->fileofs);
 
 	// store for reference by the cgame
@@ -2754,6 +2756,10 @@ void R_LoadEntities( lump_t *l ) {
 			}
 			*s++ = 0;
 			R_RemapShader(value, s, "0");
+			continue;
+		}
+ 		if (!Q_stricmp(keyname, "distanceCull")) {
+			sscanf(value, "%f", &tr.distanceCull );
 			continue;
 		}
 		// check for a different grid size

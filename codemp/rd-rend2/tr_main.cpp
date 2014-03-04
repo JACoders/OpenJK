@@ -926,18 +926,20 @@ static void R_SetFarClip( void )
 	// if not rendering the world (icons, menus, etc)
 	// set a 2k far clip plane
 	if ( tr.refdef.rdflags & RDF_NOWORLDMODEL ) {
-		tr.viewParms.zFar = 2048;
+		// override the zfar then
+		if ( tr.refdef.rdflags & RDF_AUTOMAP )
+			tr.viewParms.zFar = 32768.0f;
+		else
+			tr.viewParms.zFar = 2048.0f;
 		return;
 	}
 
 	//
 	// set far clipping planes dynamically
 	//
-	farthestCornerDistance = 0;
 	for ( i = 0; i < 8; i++ )
 	{
 		vec3_t v;
-		vec3_t vecTo;
 		float distance;
 
 		if ( i & 1 )
@@ -967,16 +969,17 @@ static void R_SetFarClip( void )
 			v[2] = tr.viewParms.visBounds[1][2];
 		}
 
-		VectorSubtract( v, tr.viewParms.ori.origin, vecTo );
-
-		distance = vecTo[0] * vecTo[0] + vecTo[1] * vecTo[1] + vecTo[2] * vecTo[2];
+		distance = DistanceSquared( tr.viewParms.ori.origin, v );
 
 		if ( distance > farthestCornerDistance )
 		{
 			farthestCornerDistance = distance;
 		}
 	}
-	tr.viewParms.zFar = sqrt( farthestCornerDistance );
+	// Bring in the zFar to the distanceCull distance
+	// The sky renders at zFar so need to move it out a little
+	// ...and make sure there is a minimum zfar to prevent problems
+	tr.viewParms.zFar = Com_Clamp(2048.0f, tr.distanceCull * (1.732), sqrtf( farthestCornerDistance ));
 }
 
 /*
