@@ -123,9 +123,10 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_ModelMatrix",               GLSL_MAT16, 1 },
 	{ "u_ModelViewProjectionMatrix", GLSL_MAT16, 1 },
 
-	{ "u_Time",         GLSL_FLOAT, 1 },
-	{ "u_VertexLerp"  , GLSL_FLOAT, 1 },
-	{ "u_MaterialInfo", GLSL_VEC2, 1 },
+	{ "u_Time",          GLSL_FLOAT, 1 },
+	{ "u_VertexLerp" ,   GLSL_FLOAT, 1 },
+	{ "u_NormalScale",   GLSL_VEC4, 1 },
+	{ "u_SpecularScale", GLSL_VEC4, 1 },
 
 	{ "u_ViewInfo",				GLSL_VEC4, 1 },
 	{ "u_ViewOrigin",			GLSL_VEC3, 1 },
