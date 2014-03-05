@@ -313,6 +313,8 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
+		if ( !it_ent || !it_ent->inuse )
+			return;
 		FinishSpawningItem( it_ent );
 		if ( !it_ent || !it_ent->inuse )
 			return;
