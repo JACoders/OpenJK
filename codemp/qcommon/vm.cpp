@@ -2,7 +2,6 @@
 #include "qcommon/exe_headers.h"
 
 vm_t *currentVM = NULL; // bk001212
-vm_t *lastVM    = NULL; // bk001212
 
 static const char *vmNames[MAX_VM] = {
 	"jampgame",
@@ -224,7 +223,6 @@ void VM_Free( vm_t *vm ) {
 	Z_Free( vm );
 
 	currentVM = NULL;
-	lastVM = NULL;
 }
 
 void VM_Clear( void ) {
@@ -232,7 +230,6 @@ void VM_Clear( void ) {
 		VM_Free( vmTable[i] );
 
 	currentVM = NULL;
-	lastVM = NULL;
 }
 
 void VM_Shifted_Alloc( void **ptr, int size )
@@ -339,7 +336,6 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 
 	oldVM = currentVM;
 	currentVM = vm;
-	lastVM = vm;
 
 	//rcg010207 -  see dissertation at top of VM_DllSyscall() in this file.
 	va_list ap;
