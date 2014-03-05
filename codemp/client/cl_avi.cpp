@@ -448,6 +448,7 @@ static qboolean CL_CheckFileSize( int bytesToAdd )
     ( afd.numIndices * 16 ) +     // The index
     4;                            // The index size
 
+#if 0
   // I assume all the operating systems
   // we target can handle a 2Gb file
   if( newFileSize > INT_MAX )
@@ -460,6 +461,7 @@ static qboolean CL_CheckFileSize( int bytesToAdd )
 
     return qtrue;
   }
+#endif
 
   return qfalse;
 }

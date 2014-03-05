@@ -2068,6 +2068,7 @@ static unsigned int frameCount;
 static float avgFrametime=0.0;
 extern void SE_CheckForLanguageUpdates(void);
 void CL_Frame ( int msec ) {
+	qboolean takeVideoFrame = qfalse;
 
 	if ( !com_cl_running->integer ) {
 		return;
@@ -2085,11 +2086,10 @@ void CL_Frame ( int msec ) {
 
 	// if recording an avi, lock to a fixed fps
 	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
-		// save the current screen
 		if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
 			float fps = min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
 			float frameDuration = max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
-			CL_TakeVideoFrame( );
+			takeVideoFrame = qtrue;
 
 			msec = (int)frameDuration;
 			clc.aviVideoFrameRemainder = frameDuration - msec;
@@ -2162,6 +2162,11 @@ void CL_Frame ( int msec ) {
 	}
 
 	cls.framecount++;
+
+	if ( takeVideoFrame ) {
+		// save the current screen
+		CL_TakeVideoFrame( );
+	}
 }
 
 
