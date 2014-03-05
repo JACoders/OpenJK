@@ -159,7 +159,11 @@ void S_TransferStereo16 (unsigned long *pbuf, int endtime)
 		ls_paintedtime += (snd_linear_count>>1);
 
 		if( CL_VideoRecording( ) )
-			CL_WriteAVIAudioFrame( (byte *)snd_out, snd_linear_count << 1 );
+		{
+			if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
+				CL_WriteAVIAudioFrame( (byte *)snd_out, snd_linear_count << 1 );
+			}
+		}
 	}
 }
 
