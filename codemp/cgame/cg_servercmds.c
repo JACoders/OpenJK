@@ -1635,6 +1635,10 @@ Cmd_Argc() / Cmd_Argv()
 */
 static void CG_ServerCommand( void ) {
 	const char		*cmd = CG_Argv( 0 );
+	if ( !cmd[0] ) {
+		// server claimed the command
+		return;
+	}
 	serverCommand_t	*command = NULL;
 
 	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
