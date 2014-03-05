@@ -28,9 +28,12 @@ void UIVM_Init( qboolean inGameLoad ) {
 		VM_Call( uivm, UI_INIT, inGameLoad );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->Init( inGameLoad );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 void UIVM_Shutdown( void ) {
@@ -39,10 +42,13 @@ void UIVM_Shutdown( void ) {
 		VM_Call( uivm, UI_MENU_RESET );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->Shutdown();
 	uie->MenuReset();
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 void UIVM_KeyEvent( int key, qboolean down ) {
@@ -50,9 +56,12 @@ void UIVM_KeyEvent( int key, qboolean down ) {
 		VM_Call( uivm, UI_KEY_EVENT, key, down );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->KeyEvent( key, down );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 void UIVM_MouseEvent( int dx, int dy ) {
@@ -60,9 +69,12 @@ void UIVM_MouseEvent( int dx, int dy ) {
 		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->MouseEvent( dx, dy );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 void UIVM_Refresh( int realtime ) {
@@ -70,18 +82,25 @@ void UIVM_Refresh( int realtime ) {
 		VM_Call( uivm, UI_REFRESH, realtime );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->Refresh( realtime );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 qboolean UIVM_IsFullscreen( void ) {
 	if ( uivm->isLegacy ) {
 		return (qboolean)VM_Call( uivm, UI_IS_FULLSCREEN );
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
-	return uie->IsFullscreen();
+	qboolean r = uie->IsFullscreen();
+	if ( oldVM != NULL )
+		currentVM = oldVM;
+	return r;
 }
 
 void UIVM_SetActiveMenu( uiMenuCommand_t menu ) {
@@ -89,27 +108,37 @@ void UIVM_SetActiveMenu( uiMenuCommand_t menu ) {
 		VM_Call( uivm, UI_SET_ACTIVE_MENU, menu );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->SetActiveMenu( menu );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 qboolean UIVM_ConsoleCommand( int realTime ) {
 	if ( uivm->isLegacy ) {
 		return (qboolean)VM_Call( uivm, UI_CONSOLE_COMMAND, realTime );
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
-	return uie->ConsoleCommand( realTime );
+	qboolean r = uie->ConsoleCommand( realTime );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
+	return r;
 }
 void UIVM_DrawConnectScreen( qboolean overlay ) {
 	if ( uivm->isLegacy ) {
 		VM_Call( uivm, UI_DRAW_CONNECT_SCREEN, overlay );
 		return;
 	}
+	vm_t *oldVM = currentVM;
 	currentVM = uivm;
 
 	uie->DrawConnectScreen( overlay );
+	if ( oldVM != NULL )
+		currentVM = oldVM;
 }
 
 //
