@@ -322,8 +322,6 @@ void SV_GetChallenge( netadr_t from );
 
 void SV_DirectConnect( netadr_t from );
 
-void SV_AuthorizeIpPacket( netadr_t from );
-
 void SV_SendClientMapChange( client_t *client );
 void SV_ExecuteClientMessage( client_t *cl, msg_t *msg );
 void SV_UserinfoChanged( client_t *cl );
