@@ -499,7 +499,7 @@ int		FS_FTell( fileHandle_t f );
 
 void	FS_Flush( fileHandle_t f );
 
-void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, callbackFunc_t callback, qboolean allowNonPureFilesOnDisk );
 
 const char *FS_GetCurrentGameDir(bool emptybase=false);
 
@@ -734,7 +734,7 @@ void CL_FlushMemory( void );
 
 void CL_StartHunkUsers( void );
 
-void Key_KeynameCompletion ( void(*callback)( const char *s ) );
+void Key_KeynameCompletion ( callbackFunc_t callback );
 // for keyname autocompletion
 
 void Key_WriteBindings( fileHandle_t f );
