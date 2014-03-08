@@ -2,7 +2,6 @@
 #include "qcommon/exe_headers.h"
 
 #include "server.h"
-#include "qcommon/stringed_ingame.h"
 #include "server/sv_gameapi.h"
 #include "qcommon/game_version.h"
 
