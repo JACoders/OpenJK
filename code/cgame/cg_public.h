@@ -219,7 +219,7 @@ Ghoul2 Insert End
 	CG_OPENJK_GETMENU_BYNAME,
 } cgameImport_t;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 typedef enum {
 	CG_PRINT_JK2,
 	CG_ERROR_JK2,

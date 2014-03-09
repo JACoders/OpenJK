@@ -16,7 +16,7 @@ This file is part of Jedi Knight 2.
 */
 // Copyright 2001-2013 Raven Software
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 // this include must remain at the top of every CPP file
 #include "../server/server.h"
 #include "q_shared.h"
