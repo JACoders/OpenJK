@@ -38,8 +38,6 @@ static void GfxInfo_f( void );
 void R_TerrainInit(void);
 void R_TerrainShutdown(void);
 
-cvar_t	*com_jk2;
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
@@ -1154,9 +1152,6 @@ void R_Register( void )
 	//
 	// latched and archived variables
 	//
-#ifdef JK2_MODE
-	com_jk2 = ri.Cvar_Get( "com_jk2", "1", CVAR_INIT );
-#endif
 
 	r_allowExtensions = ri.Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compressed_textures = ri.Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );

@@ -194,10 +194,7 @@ CL_InitUI
 */
 void CL_InitUI( void ) {
 #ifdef JK2_MODE
-	if(com_jk2 && com_jk2->integer)
-	{
-		JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
-	}
+	JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
 #endif
 
 	uiimport_t	uii;

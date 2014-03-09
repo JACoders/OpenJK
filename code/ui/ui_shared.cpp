@@ -4419,11 +4419,10 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The displayed text
 			multiPtr->cvarList[multiPtr->count] = "@MENUS_MYLANGUAGE";
 			// The cvar value that goes into se_language
-#ifdef JK2_MODE
-			// FIXME
-			if(com_jk2 && !com_jk2->integer)
+
+#ifndef JK2_MODE // FIXME
+				multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName(multiPtr->count);
 #endif
-			multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName( multiPtr->count );
 		}
 		return qtrue;
 	}
@@ -6096,15 +6095,10 @@ bool HasStringLanguageChanged ( const itemDef_t *item )
 
 	int modificationCount;
 #ifdef JK2_MODE
-	if ( com_jk2 && com_jk2->integer )
-	{
-		modificationCount = sp_language->modificationCount;
-	}
-	else
+	modificationCount = sp_language->modificationCount;
+#else
+	modificationCount = se_language->modificationCount;
 #endif
-	{
-		modificationCount = se_language->modificationCount;
-	}
 
 	return item->asset != modificationCount;
 }
@@ -6164,16 +6158,12 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
 #ifdef JK2_MODE
-		if( com_jk2 && com_jk2->integer )
-		{
-			if(item->text && item->text[0]=='@')
-				item->asset = sp_language->modificationCount;
-		}
-		else
-#endif
+		if(item->text && item->text[0]=='@')
+			item->asset = sp_language->modificationCount;
+#else
 		if (item->text && item->text[0]=='@' )//string package
 			item->asset = se_language->modificationCount; //mark language
-
+#endif
 	}
 }
 
@@ -6330,21 +6320,14 @@ void Item_Text_Paint(itemDef_t *item)
 		textPtr = item->text;
 	}
 #ifdef JK2_MODE
-	if(com_jk2 && !com_jk2->integer)
+	if (*textPtr == '@')
 	{
-#endif
+		textPtr = JK2SP_GetStringTextString(&textPtr[1]);
+	}
+#else
 	if (*textPtr == '@')	// string reference
 	{
 		textPtr = SE_GetString( &textPtr[1] );
-	}
-#ifdef JK2_MODE
-	}
-	else
-	{
-		if(*textPtr == '@')
-		{
-			textPtr = JK2SP_GetStringTextString(&textPtr[1]);
-		}
 	}
 #endif
 
@@ -6826,11 +6809,10 @@ void BindingFromName(const char *cvar)
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
 #ifdef JK2_MODE
-				if(com_jk2 && com_jk2->integer)
-					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
-				else
-#endif
+				strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
+#else
 				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
+#endif
 				strcat( g_nameBind1, g_nameBind2 );
 			}
 			return;
@@ -7053,94 +7035,87 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// Fuck all the logic --eez
 #ifdef JK2_MODE
-	if(com_jk2 && com_jk2->integer)
+	// setup the refdef
+	memset( &refdef, 0, sizeof( refdef ) );
+	refdef.rdflags = RDF_NOWORLDMODEL;
+	AxisClear( refdef.viewaxis );
+	x = item->window.rect.x+1;
+	y = item->window.rect.y+1;
+	w = item->window.rect.w-2;
+	h = item->window.rect.h-2;
+
+	refdef.x = x * DC->xscale;
+	refdef.y = y * DC->yscale;
+	refdef.width = w * DC->xscale;
+	refdef.height = h * DC->yscale;
+
+	DC->modelBounds( item->asset, mins, maxs );
+
+	origin[2] = -0.5 * ( mins[2] + maxs[2] );
+	origin[1] = 0.5 * ( mins[1] + maxs[1] );
+
+	// calculate distance so the model nearly fills the box
+	if (qtrue) 
 	{
-		// setup the refdef
-		memset( &refdef, 0, sizeof( refdef ) );
-		refdef.rdflags = RDF_NOWORLDMODEL;
-		AxisClear( refdef.viewaxis );
-		x = item->window.rect.x+1;
-		y = item->window.rect.y+1;
-		w = item->window.rect.w-2;
-		h = item->window.rect.h-2;
-
-		refdef.x = x * DC->xscale;
-		refdef.y = y * DC->yscale;
-		refdef.width = w * DC->xscale;
-		refdef.height = h * DC->yscale;
-
-		DC->modelBounds( item->asset, mins, maxs );
-
-		origin[2] = -0.5 * ( mins[2] + maxs[2] );
-		origin[1] = 0.5 * ( mins[1] + maxs[1] );
-
-		// calculate distance so the model nearly fills the box
-		if (qtrue) 
-		{
-			float len = 0.5 * ( maxs[2] - mins[2] );		
-			origin[0] = len / 0.268;	// len / tan( fov/2 )
-			//origin[0] = len / tan(w/2);
-		} 
-		else 
-		{
-			origin[0] = item->textscale;
-		}
-		// WTF..? --eez
-		//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
-		//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
-
-		refdef.fov_x = 45;
-		refdef.fov_y = 45;
-		
-		//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
-		//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
-		//refdef.fov_y = atan2( refdef.height, xx );
-		//refdef.fov_y *= ( 360 / M_PI );
-
-		DC->clearScene();
-
-		refdef.time = DC->realTime;
-
-		// add the model
-
-		memset( &ent, 0, sizeof(ent) );
-
-		//adjust = 5.0 * sin( (float)uis.realtime / 500 );
-		//adjust = 360 % (int)((float)uis.realtime / 1000);
-		//VectorSet( angles, 0, 0, 1 );
-
-		// use item storage to track
-	/*
-		if (modelPtr->rotationSpeed) 
-		{
-			if (DC->realTime > item->window.nextTime) 
-			{
-				item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
-				modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
-			}
-		}
-		VectorSet( angles, 0, modelPtr->angle, 0 );
-	*/
-		VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
-		
-		AnglesToAxis( angles, ent.axis );
-
-		ent.hModel = item->asset;
-		VectorCopy( origin, ent.origin );
-		VectorCopy( ent.origin, ent.oldorigin );
-
-		// Set up lighting
-		VectorCopy( refdef.vieworg, ent.lightingOrigin );
-		ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
-
-		DC->addRefEntityToScene( &ent );
-		DC->renderScene( &refdef );
+		float len = 0.5 * ( maxs[2] - mins[2] );		
+		origin[0] = len / 0.268;	// len / tan( fov/2 )
+		//origin[0] = len / tan(w/2);
+	} 
+	else 
+	{
+		origin[0] = item->textscale;
 	}
-	else
+	// WTF..? --eez
+	//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
+	//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
+
+	refdef.fov_x = 45;
+	refdef.fov_y = 45;
+		
+	//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
+	//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
+	//refdef.fov_y = atan2( refdef.height, xx );
+	//refdef.fov_y *= ( 360 / M_PI );
+
+	DC->clearScene();
+
+	refdef.time = DC->realTime;
+
+	// add the model
+
+	memset( &ent, 0, sizeof(ent) );
+
+	//adjust = 5.0 * sin( (float)uis.realtime / 500 );
+	//adjust = 360 % (int)((float)uis.realtime / 1000);
+	//VectorSet( angles, 0, 0, 1 );
+
+	// use item storage to track
+/*
+	if (modelPtr->rotationSpeed) 
 	{
-#endif
+		if (DC->realTime > item->window.nextTime) 
+		{
+			item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
+			modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
+		}
+	}
+	VectorSet( angles, 0, modelPtr->angle, 0 );
+*/
+	VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
+		
+	AnglesToAxis( angles, ent.axis );
 
+	ent.hModel = item->asset;
+	VectorCopy( origin, ent.origin );
+	VectorCopy( ent.origin, ent.oldorigin );
 
+	// Set up lighting
+	VectorCopy( refdef.vieworg, ent.lightingOrigin );
+	ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
+	DC->addRefEntityToScene( &ent );
+	DC->renderScene( &refdef );
+#else
 	// a moves datapad anim is playing
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{ 
@@ -7307,8 +7282,6 @@ void Item_Model_Paint(itemDef_t *item)
 
 	DC->addRefEntityToScene( &ent );
 	DC->renderScene( &refdef );
-#ifdef JK2_MODE
-	}
 #endif
 }
 
@@ -7407,18 +7380,8 @@ void Item_YesNo_Paint(itemDef_t *item)
 	}
 
 #ifdef JK2_MODE
-	const char *psYes;
-	const char *psNo;
-	if( com_jk2 && com_jk2->integer )
-	{
-		psYes = ui.SP_GetStringTextString( "MENUS_YES" );
-		psNo = ui.SP_GetStringTextString( "MENUS_NO" );
-	}
-	else
-	{
-		psYes = SE_GetString( "MENUS_YES" );
-		psNo  = SE_GetString( "MENUS_NO" );
-	}
+	const char *psYes = ui.SP_GetStringTextString( "MENUS_YES" );;
+	const char *psNo = ui.SP_GetStringTextString( "MENUS_NO" );
 #else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );

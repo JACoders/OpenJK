@@ -267,7 +267,7 @@ void CMod_LoadBrushes( lump_t *l, clipMap_t &cm ) {
 		out->contents = cm.shaders[out->shaderNum].contentFlags;
 #ifdef JK2_MODE
 		//JK2 HACK: for water that cuts vis but is not solid!!! (used on yavin swamp)
-		if ( com_jk2->integer && cm.shaders[out->shaderNum].surfaceFlags & SURF_SLICK )
+		if ( cm.shaders[out->shaderNum].surfaceFlags & SURF_SLICK )
 		{
 			out->contents &= ~CONTENTS_SOLID;
 		}
