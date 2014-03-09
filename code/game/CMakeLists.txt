@@ -11,6 +11,13 @@ if(WIN32)
 	set(SPGameLibraries "winmm")
 endif(WIN32)
 
+# game/G_Timer.cpp needs <unordered_map> from C++11
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "CLANG")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+
 set(SPGameGameFiles
 	"${SPDir}/game/AI_Animal.cpp"
 	"${SPDir}/game/AI_AssassinDroid.cpp"
