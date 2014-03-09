@@ -1867,24 +1867,17 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 			else
 			{
 #ifdef JK2_MODE
-				if(com_jk2 && com_jk2->integer)
+				hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
+				if(!hCrawl)
 				{
-					hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
-					if(!hCrawl)
-					{
-						// failed, so go back to english
-						hCrawl = re.RegisterShaderNoMip( "menu/video/tc_0" );
-					}
+					// failed, so go back to english
+					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_0" );
 				}
-				else
-				{
-#endif
+#else
 				hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%s",se_language->string) );
 				if (!hCrawl)
 				{
 					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_english" );//failed, so go back to english
-				}
-#ifdef JK2_MODE
 				}
 #endif
 

@@ -588,10 +588,6 @@ extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
 
-#ifdef JK2_MODE
-extern	cvar_t	*com_jk2;
-#endif
-
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
 extern	cvar_t	*sv_paused;

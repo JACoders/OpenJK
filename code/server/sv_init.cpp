@@ -318,10 +318,9 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 		sv.time += 100;
 		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
-#ifdef JK2_MODE
-	if(com_jk2 && !com_jk2->integer)
-#endif
+#ifndef JK2_MODE
 	ge->ConnectNavs(sv_mapname->string, sv_mapChecksum->integer);
+#endif
 
 	// create a baseline for more efficient communications
 	SV_CreateBaseline ();

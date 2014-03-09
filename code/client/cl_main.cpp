@@ -1039,14 +1039,7 @@ const char *String_GetStringValue( const char *reference )
 #ifndef JK2_MODE
 	return SE_GetString(reference);
 #else
-	if( com_jk2 && com_jk2->integer )
-	{
-		return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
-	}
-	else
-	{
-		return const_cast<const char *>(SE_GetString(reference));
-	}
+	return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
 #endif
 }
 
@@ -1252,11 +1245,8 @@ void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
 
 #ifdef JK2_MODE
-	if(com_jk2 && com_jk2->integer)
-	{
-		JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
-		JK2SP_Register("keynames", SP_REGISTER_REQUIRED);	// reference is KEYNAMES
-	}
+	JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
+	JK2SP_Register("keynames", SP_REGISTER_REQUIRED);	// reference is KEYNAMES
 #endif
 	
 	Con_Init ();

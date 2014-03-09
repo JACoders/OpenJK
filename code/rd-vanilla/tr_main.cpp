@@ -139,28 +139,8 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 
 	// check against frustum planes
 #ifdef JK2_MODE
-	if( com_jk2 && com_jk2->integer )
-	{
-		// They used 4 frustrum planes in JK2, and 5 in JKA --eez
-		for (i = 0 ; i < 4 ; i++) 
-		{
-			frust = &tr.viewParms.frustum[i];
-
-			dist = DotProduct( pt, frust->normal) - frust->dist;
-			if ( dist < -radius )
-			{
-				return CULL_OUT;
-			}
-			else if ( dist <= radius ) 
-			{
-				mightBeClipped = qtrue;
-			}
-		}
-	}
-	else
-	{
-#endif
-	for (i = 0 ; i < 5 ; i++) 
+	// They used 4 frustrum planes in JK2, and 5 in JKA --eez
+	for (i = 0 ; i < 4 ; i++) 
 	{
 		frust = &tr.viewParms.frustum[i];
 
@@ -174,7 +154,20 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 			mightBeClipped = qtrue;
 		}
 	}
-#ifdef JK2_MODE
+#else
+	for (i = 0 ; i < 5 ; i++) 
+	{
+		frust = &tr.viewParms.frustum[i];
+
+		dist = DotProduct( pt, frust->normal) - frust->dist;
+		if ( dist < -radius )
+		{
+			return CULL_OUT;
+		}
+		else if ( dist <= radius ) 
+		{
+			mightBeClipped = qtrue;
+		}
 	}
 #endif
 

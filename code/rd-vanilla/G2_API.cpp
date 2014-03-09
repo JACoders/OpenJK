@@ -854,18 +854,13 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifdef JK2_MODE
-	if(com_jk2->integer)
+	if (ghlInfo)
 	{
-		if (ghlInfo)
-		{
-			ghlInfo->mCustomSkin = customSkin;
-			return qtrue;
-		}
-		return qfalse;
+		ghlInfo->mCustomSkin = customSkin;
+		return qtrue;
 	}
-	else
-	{
-#endif
+	return qfalse;
+#else
 	if (ghlInfo)
 	{
 		ghlInfo->mCustomSkin = customSkin;
@@ -875,8 +870,6 @@ extern void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t rende
 			G2API_SetSurfaceOnOffFromSkin( ghlInfo, renderSkin );
 		}
 		return qtrue;
-	}
-#ifdef JK2_MODE
 	}
 #endif
 	return qfalse;
@@ -1457,8 +1450,7 @@ extern int ragTraceCount;
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
 #ifdef JK2_MODE
-	if(com_jk2->integer)
-		return;			// handled elsewhere
+	return;			// handled elsewhere
 #endif
 	int model;
 	int currentTime=G2API_GetTime(AcurrentTime);

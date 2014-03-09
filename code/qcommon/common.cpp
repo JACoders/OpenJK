@@ -55,11 +55,6 @@ cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 cvar_t  *com_homepath;
 
-#ifdef JK2_MODE
-// Support for JK2 binaries --eez
-cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
-#endif
-
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
@@ -1077,11 +1072,6 @@ void Com_Init( char *commandLine ) {
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
 
-#ifdef JK2_MODE
-		Com_StartupVariable( "com_jk2" );
-		com_jk2 = Cvar_Get( "com_jk2", "1", CVAR_INIT );
-#endif
-
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
@@ -1144,17 +1134,12 @@ void Com_Init( char *commandLine ) {
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifdef JK2_MODE
-		if(com_jk2 && com_jk2->integer)
-		{
-			JK2SP_Init();
-			Com_Printf("Running Jedi Outcast Mode\n");
-		}
-		else
+		JK2SP_Init();
+		Com_Printf("Running Jedi Outcast Mode\n");
+#else
+		SE_Init();	// Initialize StringEd
+		Com_Printf("Running Jedi Academy Mode\n");
 #endif
-		{
-			SE_Init();	// Initialize StringEd
-			Com_Printf("Running Jedi Academy Mode\n");
-		}
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
@@ -1564,13 +1549,10 @@ void Com_Shutdown (void) {
 	}
 
 #ifdef JK2_MODE
-	if(com_jk2 && com_jk2->integer)
-	{
-		JK2SP_Shutdown();
-	}
-	else
-#endif
+	JK2SP_Shutdown();
+#else
 	SE_ShutDown();//close the string packages
+#endif
 
 	extern void Netchan_Shutdown();
 	Netchan_Shutdown();
