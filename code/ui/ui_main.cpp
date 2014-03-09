@@ -636,10 +636,9 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 	} 
 	else if (feederID == FEEDER_LANGUAGES) 
 	{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		// FIXME
-		if(com_jk2 && com_jk2->integer)
-			return NULL;
+		return NULL;
 #endif
 		return SE_GetLanguageName( index );
 	} 
@@ -991,14 +990,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			else
 			{
-#ifndef __NO_JK2
-				if( com_jk2 && com_jk2->integer )
-				{
-					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
-				}
-				else
-#endif
+#ifdef JK2_MODE
+				ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
+#else
 				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
+#endif
 			}
 		} 
 		else if (Q_stricmp(name, "startmap") == 0) 
@@ -2456,21 +2452,15 @@ UI_Init
 void _UI_Init( qboolean inGameLoad ) 
 {
 	// Get the list of possible languages
-#ifndef __NO_JK2
-	if(com_jk2 && !com_jk2->integer)
-#endif
+#ifndef JK2_MODE
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
-
-	#ifndef __NO_JK2
-	if(com_jk2 && com_jk2->integer)
+#else
+	// sod it, parse every menu strip file until we find a gap in the sequence...
+	//
+	for (int i=0; i<10; i++)
 	{
-		// sod it, parse every menu strip file until we find a gap in the sequence...
-		//
-		for (int i=0; i<10; i++)
-		{
-			if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
-				break;
-		}
+		if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
+			break;
 	}
 #endif
 
@@ -2970,7 +2960,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if (Q_stricmp(token, "stripedFile") == 0) 
 		{
 			if (!PC_ParseStringMem((const char **) &tempStr))
@@ -3563,12 +3553,11 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 {
 	if (Display_KeyBindPending()) 
 	{
-#ifndef __NO_JK2
-		if( com_jk2 && com_jk2->integer )
-			Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
-		else
-#endif
+#ifdef JK2_MODE
+		Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
+#else
 		Text_Paint(rect->x, rect->y, scale, color, SE_GetString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
+#endif
 	} 
 	else 
 	{
@@ -3802,12 +3791,11 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 	case UI_KEYBINDSTATUS:
 		if (Display_KeyBindPending()) 
 		{
-#ifndef __NO_JK2
-			if( com_jk2 && com_jk2->integer )
-				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
-			else
-#endif
+#ifdef JK2_MODE
+			s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
+#else
 			s = SE_GetString("MENUS_WAITINGFORKEY");
+#endif
 		} 
 		else 
 		{

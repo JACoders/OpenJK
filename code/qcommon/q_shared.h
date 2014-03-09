@@ -1972,7 +1972,7 @@ typedef struct playerState_s {
 	vec3_t		serverViewOrg;
 
 	qboolean	saberInFlight;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	qboolean	saberActive;	// -- JK2 --
 
 	int			vehicleModel;	// -- JK2 --
@@ -2138,7 +2138,7 @@ typedef struct playerState_s {
 	short		saberBlocked;
 	short		leanStopDebounceTime;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	float		saberLengthOld;
 #endif
 	int			saberEntityNum;
@@ -2154,7 +2154,7 @@ typedef struct playerState_s {
 	int			saberLockTime;
 	int			saberLockEnemy;
 	int			saberStylesKnown;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	char		*saberModel;
 #endif
 
@@ -2346,7 +2346,7 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	qboolean	saberInFlight;
 	qboolean	saberActive;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	int		vehicleModel;	// For overriding your playermodel with a drivable vehicle
 #endif
 

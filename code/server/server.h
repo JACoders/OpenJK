@@ -322,7 +322,7 @@ extern qboolean qbLoadTransition;
 //
 ///////////////////////////////////////////////
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 // glue
 class cStrings
 {

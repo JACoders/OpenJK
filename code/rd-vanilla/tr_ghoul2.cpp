@@ -3548,20 +3548,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 	
 	bool isAnOldModelFile = false;
-#ifndef __NO_JK2
-	if (com_jk2 && !com_jk2->integer) 
-	{
-#endif
+#ifndef JK2_MODE
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
 	{
 		isAnOldModelFile = true;
 	}
-#ifndef __NO_JK2
-	}
-	else
-	{
-		isAnOldModelFile = false;	// JK2 used JK2 models before it was even cool
-	}
+#else
+	isAnOldModelFile = false;	// JK2 used JK2 models before it was even cool
 #endif
 
 	if (!mdxm->animIndex) 

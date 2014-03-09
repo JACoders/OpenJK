@@ -107,10 +107,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 // (now also called by auto-save code to setup the cvars correctly
 void SV_Player_EndOfLevelSave(void)						   
 {
-	int	i;	
-#ifndef __NO_JK2
-	qboolean usesJK2 = (qboolean)(com_jk2 && com_jk2->integer);
-#endif
+	int	i;
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...
@@ -129,92 +126,87 @@ void SV_Player_EndOfLevelSave(void)
 		playerState_t*		pState = cl->gentity->client;
 		const char	*s2;
 		const char *s;
-#ifndef __NO_JK2
-		if(usesJK2)
-		{
-			s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
-							pState->stats[STAT_HEALTH],
-							pState->stats[STAT_ARMOR],
-							pState->stats[STAT_WEAPONS],
-							pState->stats[STAT_ITEMS],
-							pState->weapon,
-							pState->weaponstate,
-							pState->batteryCharge,
-							pState->viewangles[0],
-							pState->viewangles[1],
-							pState->viewangles[2],
-							pState->forcePowersKnown,
-							pState->forcePower,
-							pState->saberActive,
-							pState->saberAnimLevel,
-							pState->saberLockEnemy,
-							pState->saberLockTime
-							);
-		}
-		else
+#ifdef JK2_MODE
+		s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
+						pState->stats[STAT_HEALTH],
+						pState->stats[STAT_ARMOR],
+						pState->stats[STAT_WEAPONS],
+						pState->stats[STAT_ITEMS],
+						pState->weapon,
+						pState->weaponstate,
+						pState->batteryCharge,
+						pState->viewangles[0],
+						pState->viewangles[1],
+						pState->viewangles[2],
+						pState->forcePowersKnown,
+						pState->forcePower,
+						pState->saberActive,
+						pState->saberAnimLevel,
+						pState->saberLockEnemy,
+						pState->saberLockTime
+						);
+#else
+				//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
+				s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+						pState->stats[STAT_HEALTH],
+						pState->stats[STAT_ARMOR],
+						pState->stats[STAT_WEAPONS],
+						pState->stats[STAT_ITEMS],
+						pState->weapon,
+						pState->weaponstate,
+						pState->batteryCharge,
+						pState->viewangles[0],
+						pState->viewangles[1],
+						pState->viewangles[2],
+						//force power data
+						pState->forcePowersKnown,
+						pState->forcePower,
+						pState->forcePowerMax,
+						pState->forcePowerRegenRate,
+						pState->forcePowerRegenAmount,
+						//saber 1 data
+						pState->saber[0].name,
+						pState->saber[0].blade[0].active,
+						pState->saber[0].blade[1].active,
+						pState->saber[0].blade[2].active,
+						pState->saber[0].blade[3].active,
+						pState->saber[0].blade[4].active,
+						pState->saber[0].blade[5].active,
+						pState->saber[0].blade[6].active,
+						pState->saber[0].blade[7].active,
+						pState->saber[0].blade[0].color,
+						pState->saber[0].blade[1].color,
+						pState->saber[0].blade[2].color,
+						pState->saber[0].blade[3].color,
+						pState->saber[0].blade[4].color,
+						pState->saber[0].blade[5].color,
+						pState->saber[0].blade[6].color,
+						pState->saber[0].blade[7].color,
+						//saber 2 data
+						pState->saber[1].name,
+						pState->saber[1].blade[0].active,
+						pState->saber[1].blade[1].active,
+						pState->saber[1].blade[2].active,
+						pState->saber[1].blade[3].active,
+						pState->saber[1].blade[4].active,
+						pState->saber[1].blade[5].active,
+						pState->saber[1].blade[6].active,
+						pState->saber[1].blade[7].active,
+						pState->saber[1].blade[0].color,
+						pState->saber[1].blade[1].color,
+						pState->saber[1].blade[2].color,
+						pState->saber[1].blade[3].color,
+						pState->saber[1].blade[4].color,
+						pState->saber[1].blade[5].color,
+						pState->saber[1].blade[6].color,
+						pState->saber[1].blade[7].color,
+						//general saber data
+						pState->saberStylesKnown,
+						pState->saberAnimLevel,
+						pState->saberLockEnemy,
+						pState->saberLockTime
+						);
 #endif
-		{
-					//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
-					s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
-							pState->stats[STAT_HEALTH],
-							pState->stats[STAT_ARMOR],
-							pState->stats[STAT_WEAPONS],
-							pState->stats[STAT_ITEMS],
-							pState->weapon,
-							pState->weaponstate,
-							pState->batteryCharge,
-							pState->viewangles[0],
-							pState->viewangles[1],
-							pState->viewangles[2],
-							//force power data
-							pState->forcePowersKnown,
-							pState->forcePower,
-							pState->forcePowerMax,
-							pState->forcePowerRegenRate,
-							pState->forcePowerRegenAmount,
-							//saber 1 data
-							pState->saber[0].name,
-							pState->saber[0].blade[0].active,
-							pState->saber[0].blade[1].active,
-							pState->saber[0].blade[2].active,
-							pState->saber[0].blade[3].active,
-							pState->saber[0].blade[4].active,
-							pState->saber[0].blade[5].active,
-							pState->saber[0].blade[6].active,
-							pState->saber[0].blade[7].active,
-							pState->saber[0].blade[0].color,
-							pState->saber[0].blade[1].color,
-							pState->saber[0].blade[2].color,
-							pState->saber[0].blade[3].color,
-							pState->saber[0].blade[4].color,
-							pState->saber[0].blade[5].color,
-							pState->saber[0].blade[6].color,
-							pState->saber[0].blade[7].color,
-							//saber 2 data
-							pState->saber[1].name,
-							pState->saber[1].blade[0].active,
-							pState->saber[1].blade[1].active,
-							pState->saber[1].blade[2].active,
-							pState->saber[1].blade[3].active,
-							pState->saber[1].blade[4].active,
-							pState->saber[1].blade[5].active,
-							pState->saber[1].blade[6].active,
-							pState->saber[1].blade[7].active,
-							pState->saber[1].blade[0].color,
-							pState->saber[1].blade[1].color,
-							pState->saber[1].blade[2].color,
-							pState->saber[1].blade[3].color,
-							pState->saber[1].blade[4].color,
-							pState->saber[1].blade[5].color,
-							pState->saber[1].blade[6].color,
-							pState->saber[1].blade[7].color,
-							//general saber data
-							pState->saberStylesKnown,
-							pState->saberAnimLevel,
-							pState->saberLockEnemy,
-							pState->saberLockTime
-							);
-		}
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
 		//ammo
