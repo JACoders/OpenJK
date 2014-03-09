@@ -636,7 +636,7 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 	} 
 	else if (feederID == FEEDER_LANGUAGES) 
 	{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		// FIXME
 		if(com_jk2 && com_jk2->integer)
 			return NULL;
@@ -991,7 +991,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			else
 			{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 				if( com_jk2 && com_jk2->integer )
 				{
 					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
@@ -2456,12 +2456,12 @@ UI_Init
 void _UI_Init( qboolean inGameLoad ) 
 {
 	// Get the list of possible languages
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && !com_jk2->integer)
 #endif
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
 
-	#ifndef __NO_JK2
+	#ifdef JK2_MODE
 	if(com_jk2 && com_jk2->integer)
 	{
 		// sod it, parse every menu strip file until we find a gap in the sequence...
@@ -2970,7 +2970,7 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if (Q_stricmp(token, "stripedFile") == 0) 
 		{
 			if (!PC_ParseStringMem((const char **) &tempStr))
@@ -3563,7 +3563,7 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 {
 	if (Display_KeyBindPending()) 
 	{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if( com_jk2 && com_jk2->integer )
 			Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
 		else
@@ -3802,7 +3802,7 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 	case UI_KEYBINDSTATUS:
 		if (Display_KeyBindPending()) 
 		{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 			if( com_jk2 && com_jk2->integer )
 				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
 			else

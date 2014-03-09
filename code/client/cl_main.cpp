@@ -1031,12 +1031,12 @@ DLL glue, but highly reusuable DLL glue at that
 ============
 */
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 extern cStringsSingle *JK2SP_GetString(const char *Reference);
 #endif
 const char *String_GetStringValue( const char *reference )
 {
-#ifdef __NO_JK2
+#ifndef JK2_MODE
 	return SE_GetString(reference);
 #else
 	if( com_jk2 && com_jk2->integer )
@@ -1106,7 +1106,12 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
-#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+#ifdef JK2_MODE
+#define DEFAULT_RENDER_LIBRARY	"rdjosp-vanilla"	
+#else
+#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla"	
+#endif
 
 void CL_InitRef( void ) {
 	refexport_t	*ret;
@@ -1246,7 +1251,7 @@ CL_Init
 void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT

@@ -138,7 +138,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 	}
 
 	// check against frustum planes
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if( com_jk2 && com_jk2->integer )
 	{
 		// They used 4 frustrum planes in JK2, and 5 in JKA --eez
@@ -174,7 +174,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 			mightBeClipped = qtrue;
 		}
 	}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 

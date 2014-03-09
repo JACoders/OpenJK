@@ -411,7 +411,7 @@ void CL_ShutdownCGame( void ) {
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
 //RMG
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 /*
 ====================
 CL_ConvertJK2SysCall
@@ -787,7 +787,7 @@ void CM_SnapPVS(vec3_t origin,byte *buffer);
 extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
 extern menuDef_t *Menus_FindByName(const char *p);
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if( com_jk2 && com_jk2->integer )
 	{
 		args[0] = (intptr_t)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
@@ -1217,7 +1217,7 @@ Ghoul2 Insert End
 	case CG_UI_GETMENUINFO:
 		menuDef_t *menu;
 		int		*xPos,*yPos,*w,*h,result;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if(com_jk2 && !com_jk2->integer)
 		{
 #endif
@@ -1241,7 +1241,7 @@ Ghoul2 Insert End
 		}
 
 		return result;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		}
 		else
 		{
@@ -1341,7 +1341,7 @@ Ghoul2 Insert End
 		return result;
 		
 	case CG_SP_GETSTRINGTEXTSTRING:
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	case CG_SP_GETSTRINGTEXT:
 		if(com_jk2 && com_jk2->integer)
 		{
@@ -1392,7 +1392,7 @@ Ghoul2 Insert End
 			}
 		}
 		return strlen(text);
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		}
 		//break;
 

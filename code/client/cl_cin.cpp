@@ -1866,7 +1866,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 			}
 			else
 			{
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 				if(com_jk2 && com_jk2->integer)
 				{
 					hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
@@ -1884,7 +1884,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 				{
 					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_english" );//failed, so go back to english
 				}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 				}
 #endif
 

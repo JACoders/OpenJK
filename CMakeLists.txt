@@ -11,21 +11,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 # Customizable options
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
 
-option(BuildJK2Support "Build JK2 support" OFF)
-
 option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
+option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-vanilla_x86.dll)" ON)
 option(BuildMPDed "Whether to create projects for the MP dedicated server (openjkded.exe)" ON)
 option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" ON)
 option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
 option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" ON)
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
+option(BuildSPRdVanilla "Whether to create projects for the SP default renderer (rdsp-vanilla_x86.dll)" ON)
 
-if(BuildJK2Support)
-	option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
-else()
-	set(BuildJK2SPGame OFF)
-endif()
+option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openjo_sp.exe)" ON)
+option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
+option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" ON)
 
 # Customizable libraries
 if(WIN32)
@@ -81,13 +79,15 @@ message("Git revision is ${GIT_SHA1}")
 set(SPEngine "openjk_sp.${Architecture}")
 set(SPGame "jagame${Architecture}")
 set(SPRDVanillaRenderer "rdsp-vanilla_${Architecture}")
-set(JK2SPGame "jk2game${Architecture}")
 set(MPEngine "openjk.${Architecture}")
 set(MPVanillaRenderer "rd-vanilla_${Architecture}")
 set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
 set(MPCGame "cgame${Architecture}")
 set(MPUI "ui${Architecture}")
+set(JK2SPEngine "openjo_sp.${Architecture}")
+set(JK2SPGame "jospgame${Architecture}")
+set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
 # Library names
 set(MPBotLib "botlib")
 
@@ -175,10 +175,6 @@ endif()
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
-endif()
-
-if(NOT BuildJK2Support)
-	set(SharedDefines ${SharedDefines} "__NO_JK2")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")

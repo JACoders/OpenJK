@@ -1002,7 +1002,7 @@ const char *SE_GetString( const char *psPackageReference, const char *psStringRe
 
 const char *SE_GetString( const char *psPackageAndStringReference )
 {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	// Hacky but saves me from fixing 1000000 references --eez
 	if(com_jk2 && com_jk2->integer)
 	{

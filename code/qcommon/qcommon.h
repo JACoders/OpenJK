@@ -588,7 +588,7 @@ extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 extern	cvar_t	*com_jk2;
 #endif
 

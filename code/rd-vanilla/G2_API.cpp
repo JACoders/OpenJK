@@ -853,7 +853,7 @@ qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2->integer)
 	{
 		if (ghlInfo)
@@ -876,7 +876,7 @@ extern void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t rende
 		}
 		return qtrue;
 	}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 	return qfalse;
@@ -1456,7 +1456,7 @@ extern int ragTraceCount;
 
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2->integer)
 		return;			// handled elsewhere
 #endif

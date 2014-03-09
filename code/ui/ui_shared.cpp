@@ -4419,7 +4419,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The displayed text
 			multiPtr->cvarList[multiPtr->count] = "@MENUS_MYLANGUAGE";
 			// The cvar value that goes into se_language
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 			// FIXME
 			if(com_jk2 && !com_jk2->integer)
 #endif
@@ -6095,7 +6095,7 @@ bool HasStringLanguageChanged ( const itemDef_t *item )
 	}
 
 	int modificationCount;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if ( com_jk2 && com_jk2->integer )
 	{
 		modificationCount = sp_language->modificationCount;
@@ -6163,7 +6163,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		}
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if( com_jk2 && com_jk2->integer )
 		{
 			if(item->text && item->text[0]=='@')
@@ -6329,7 +6329,7 @@ void Item_Text_Paint(itemDef_t *item)
 	{
 		textPtr = item->text;
 	}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && !com_jk2->integer)
 	{
 #endif
@@ -6337,7 +6337,7 @@ void Item_Text_Paint(itemDef_t *item)
 	{
 		textPtr = SE_GetString( &textPtr[1] );
 	}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 	else
 	{
@@ -6825,7 +6825,7 @@ void BindingFromName(const char *cvar)
 				DC->keynumToStringBuf( b2, g_nameBind2, sizeof(g_nameBind2) );
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 				if(com_jk2 && com_jk2->integer)
 					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
 				else
@@ -7052,7 +7052,7 @@ void Item_Model_Paint(itemDef_t *item)
 	}
 
 	// Fuck all the logic --eez
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && com_jk2->integer)
 	{
 		// setup the refdef
@@ -7307,7 +7307,7 @@ void Item_Model_Paint(itemDef_t *item)
 
 	DC->addRefEntityToScene( &ent );
 	DC->renderScene( &refdef );
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 }
@@ -7406,7 +7406,7 @@ void Item_YesNo_Paint(itemDef_t *item)
 		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
 	}
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	const char *psYes;
 	const char *psNo;
 	if( com_jk2 && com_jk2->integer )

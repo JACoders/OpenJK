@@ -703,7 +703,7 @@ void *Sys_GetGameAPI (void *parms)
 	const char *gamename;
 	if(Cvar_VariableIntegerValue("com_jk2"))
 	{
-		gamename = "jk2game" ARCH_STRING DLL_EXT;
+		gamename = "jospgame" ARCH_STRING DLL_EXT;
 	}
 	else
 	{

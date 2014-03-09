@@ -108,7 +108,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 void SV_Player_EndOfLevelSave(void)						   
 {
 	int	i;	
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	qboolean usesJK2 = (qboolean)(com_jk2 && com_jk2->integer);
 #endif
 
@@ -129,7 +129,7 @@ void SV_Player_EndOfLevelSave(void)
 		playerState_t*		pState = cl->gentity->client;
 		const char	*s2;
 		const char *s;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if(usesJK2)
 		{
 			s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
