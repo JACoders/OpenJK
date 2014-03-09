@@ -52,6 +52,15 @@ This file is part of Jedi Academy.
 //rww - conveniently toggle "gore" code, for model decals and stuff.
 #define _G2_GORE
 
+#if JK2_MODE
+#define PRODUCT_NAME			"openjo_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJO (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJO Console (SP)"
+#define HOMEPATH_NAME_UNIX "openjo"
+#define HOMEPATH_NAME_WIN "OpenJO"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+#else
 #define PRODUCT_NAME			"openjk_sp"
 
 #define CLIENT_WINDOW_TITLE "OpenJK (SP)"
@@ -59,6 +68,7 @@ This file is part of Jedi Academy.
 #define HOMEPATH_NAME_UNIX "openjk"
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+#endif
 
 #define	BASEGAME "base"
 
