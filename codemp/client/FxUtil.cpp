@@ -206,7 +206,7 @@ void FX_Add( bool portal )
 	{
 		theFxHelper.Print( "Active    FX: %i\n", activeFx );
 		theFxHelper.Print( "Drawn     FX: %i\n", drawnFx );
-		theFxHelper.Print( "Scheduled FX: %i\n", theFxScheduler.NumScheduledFx() );
+		theFxHelper.Print( "Scheduled FX: %i High: %i\n", theFxScheduler.NumScheduledFx(), theFxScheduler.GetHighWatermark() );
 	}
 }
 
