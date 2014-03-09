@@ -183,7 +183,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 		next = itr;
 		++next;
 
-		delete *itr;
+		mScheduledEffectsPool.Free (*itr);
 		mFxSchedule.erase(itr);
 
 		itr = next;
@@ -910,10 +910,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 			}
 			else
 			{
-				// We have to create a new scheduled effect so that we can create it at a later point
-				//	you should avoid this because it's much more expensive
-				SScheduledEffect		*sfx;
-				sfx = new SScheduledEffect;
+				SScheduledEffect		*sfx = mScheduledEffectsPool.Alloc();
 				sfx->mStartTime = theFxHelper.mTime + delay;
 				sfx->mpTemplate = prim;
 				sfx->mIsRelative = isRelative;
@@ -1051,75 +1048,71 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 		AddLoopedEffects();
 	}
 
-	itr = mFxSchedule.begin();
-
-	while ( itr != mFxSchedule.end() )
+	for ( itr = mFxSchedule.begin(); itr != mFxSchedule.end(); /* do nothing */ )
 	{
-		next = itr;
-		++next;
+		SScheduledEffect *effect = *itr;
 
-		if (portal == (*itr)->mPortalEffect)
+		if (portal == effect->mPortalEffect && effect->mStartTime <= theFxHelper.mTime )
 		{ //only render portal fx on the skyportal pass and vice versa
-			if ( *(*itr) <= theFxHelper.mTime )
-			{
-				if ((*itr)->mBoltNum == -1)
-				{// ok, are we spawning a bolt on effect or a normal one?
-					if ( (*itr)->mEntNum != ENTITYNUM_NONE )
-					{
-						// Find out where the entity currently is
-						TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
+			if (effect->mBoltNum == -1)
+			{// ok, are we spawning a bolt on effect or a normal one?
+				if ( effect->mEntNum != ENTITYNUM_NONE )
+				{
+					// Find out where the entity currently is
+					TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
-						data->mEntityNum = (*itr)->mEntNum;
-						CGVM_GetLerpOrigin();
-						CreateEffect( (*itr)->mpTemplate,
-									data->mPoint, (*itr)->mAxis,
-									theFxHelper.mTime - (*itr)->mStartTime );
+					data->mEntityNum = effect->mEntNum;
+					CGVM_GetLerpOrigin();
+					CreateEffect( effect->mpTemplate,
+								data->mPoint, effect->mAxis,
+								theFxHelper.mTime - effect->mStartTime );
+				}
+				else
+				{
+					CreateEffect( effect->mpTemplate,
+								effect->mOrigin, effect->mAxis,
+								theFxHelper.mTime - effect->mStartTime );
+				}
+			}
+			else
+			{	//bolted on effect
+				// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
+				if ((effect->mModelNum != oldModelNum) ||
+					(effect->mEntNum != oldEntNum) ||
+					(effect->mBoltNum != oldBoltIndex))
+				{
+					oldModelNum = effect->mModelNum;
+					oldEntNum = effect->mEntNum;
+					oldBoltIndex = effect->mBoltNum;
+
+					doesBoltExist = theFxHelper.GetOriginAxisFromBolt(effect->ghoul2, effect->mEntNum, effect->mModelNum, effect->mBoltNum, origin, axis);
+				}
+
+				// only do this if we found the bolt
+				if (doesBoltExist)
+				{
+					if (effect->mIsRelative )
+					{
+						CreateEffect( effect->mpTemplate,
+									origin, axis, 0, -1,
+									effect->ghoul2, effect->mEntNum, effect->mModelNum, effect->mBoltNum );
 					}
 					else
 					{
-						CreateEffect( (*itr)->mpTemplate,
-									(*itr)->mOrigin, (*itr)->mAxis,
-									theFxHelper.mTime - (*itr)->mStartTime );
+						CreateEffect( effect->mpTemplate,
+									origin, axis,
+									theFxHelper.mTime - effect->mStartTime );
 					}
 				}
-				else
-				{	//bolted on effect
-					// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
-					if (((*itr)->mModelNum != oldModelNum) ||
-						((*itr)->mEntNum != oldEntNum) ||
-						((*itr)->mBoltNum != oldBoltIndex))
-					{
-						oldModelNum = (*itr)->mModelNum;
-						oldEntNum = (*itr)->mEntNum;
-						oldBoltIndex = (*itr)->mBoltNum;
-
-						doesBoltExist = theFxHelper.GetOriginAxisFromBolt((*itr)->ghoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum, origin, axis);
-					}
-
-					// only do this if we found the bolt
-					if (doesBoltExist)
-					{
-						if ((*itr)->mIsRelative )
-						{
-							CreateEffect( (*itr)->mpTemplate,
-										origin, axis, 0, -1,
-										(*itr)->ghoul2, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum );
-						}
-						else
-						{
-							CreateEffect( (*itr)->mpTemplate,
-										origin, axis,
-										theFxHelper.mTime - (*itr)->mStartTime );
-						}
-					}
-				}
-
-				delete *itr;
-				mFxSchedule.erase(itr);
 			}
-		}
 
-		itr = next;
+			mScheduledEffectsPool.Free (effect);
+			itr = mFxSchedule.erase(itr);
+		}
+		else
+		{
+			++itr;
+		}
 	}
 
 	// Add all active effects into the scene
