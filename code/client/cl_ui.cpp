@@ -193,7 +193,7 @@ CL_InitUI
 ====================
 */
 void CL_InitUI( void ) {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
@@ -279,7 +279,7 @@ void CL_InitUI( void ) {
 	uii.Key_ClearStates			= Key_ClearStates;
 	uii.Key_GetCatcher			= Key_GetCatcher;
 	uii.Key_SetCatcher			= Key_SetCatcher;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	uii.SP_Register				= JK2SP_Register;
 	uii.SP_GetStringText		= JK2SP_GetStringText;
 	uii.SP_GetStringTextString  = JK2SP_GetStringTextString;

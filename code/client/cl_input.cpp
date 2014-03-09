@@ -973,7 +973,7 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_lightning", IN_Button1Up);
 	Cmd_AddCommand ("+useforce", IN_Button2Down);	//use current force power
 	Cmd_AddCommand ("-useforce", IN_Button2Up);
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if ( com_jk2 && com_jk2->integer ) {
 		Cmd_AddCommand ("+block", IN_Button3Down);//manual blocking
 		Cmd_AddCommand ("-block", IN_Button3Up);
@@ -994,7 +994,7 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_grip", IN_Button6Up);
 	Cmd_AddCommand ("+altattack", IN_Button7Down);//altattack
 	Cmd_AddCommand ("-altattack", IN_Button7Up);
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if ( !com_jk2 || !com_jk2->integer ) {
 		Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
 		Cmd_AddCommand ("-forcefocus", IN_Button8Up);

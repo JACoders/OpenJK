@@ -57,7 +57,7 @@ Language_e GetLanguageEnum()
 
 	// only re-strcmp() when language string has changed from what we knew it as...
 	//
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(!com_jk2->integer)
 	{
 #endif
@@ -74,7 +74,7 @@ Language_e GetLanguageEnum()
 			else	if ( Language_IsThai()		)	eLanguage = eThai;
 			else	eLanguage = eWestern;
 		}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 
@@ -688,7 +688,7 @@ static int Thai_InitFields(int &iGlyphTPs, const char *&psLang)
 //
 unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */)
 {	
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	// JK2 does this func a little differently --eez
 	if( com_jk2->integer )
 	{
@@ -896,12 +896,12 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 	}
 
 	return uiLetter;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 }
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 unsigned int AnyLanguage_ReadCharFromString( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */)
 {	
 	int advance = 0;
@@ -1459,7 +1459,7 @@ CFontInfo *GetFont(int index)
 
 int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
 {	
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
 	if( com_jk2->integer )
 	{
@@ -1554,7 +1554,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 	}
 
 	return iMaxWidth;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 }
@@ -1616,7 +1616,7 @@ int RE_Font_HeightPixels(const int iFontHandle, const float fScale)
 void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float fScale)
 {
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if( com_jk2->integer )
 	{
 		static qboolean gbInShadow = qfalse;	// MUST default to this
@@ -1932,7 +1932,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		}		
 	}
 	//let it remember the old color //RE_SetColor(NULL);;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 #endif
 }

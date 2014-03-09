@@ -308,7 +308,7 @@ SV_AdjustAreaPortalState
 ========================
 */
 void SV_AdjustAreaPortalState( gentity_t *ent, qboolean open ) {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if ( !com_jk2->integer && !(ent->contents&CONTENTS_OPAQUE) )	{ //FIXME?: When running the jk2 dll CONTENTS_OPAQUE is not always set correctly, leading to issues. This works around it.
 #else
 	if ( !(ent->contents & CONTENTS_OPAQUE) ) {

@@ -55,7 +55,7 @@ cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 cvar_t  *com_homepath;
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 // Support for JK2 binaries --eez
 cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
 #endif
@@ -1077,9 +1077,9 @@ void Com_Init( char *commandLine ) {
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		Com_StartupVariable( "com_jk2" );
-		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
+		com_jk2 = Cvar_Get( "com_jk2", "1", CVAR_INIT );
 #endif
 
 		// done early so bind command exists
@@ -1143,7 +1143,7 @@ void Com_Init( char *commandLine ) {
 		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 		if(com_jk2 && com_jk2->integer)
 		{
 			JK2SP_Init();
@@ -1563,7 +1563,7 @@ void Com_Shutdown (void) {
 		com_journalFile = 0;
 	}
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Shutdown();

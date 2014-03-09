@@ -3548,7 +3548,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 	
 	bool isAnOldModelFile = false;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	if (com_jk2 && !com_jk2->integer) 
 	{
 #endif
@@ -3556,7 +3556,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	{
 		isAnOldModelFile = true;
 	}
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	}
 	else
 	{
