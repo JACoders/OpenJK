@@ -1002,13 +1002,10 @@ const char *SE_GetString( const char *psPackageReference, const char *psStringRe
 
 const char *SE_GetString( const char *psPackageAndStringReference )
 {
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	// Hacky but saves me from fixing 1000000 references --eez
-	if(com_jk2 && com_jk2->integer)
-	{
-extern const char *JK2SP_GetStringTextString(const char *Reference);
-		return JK2SP_GetStringTextString((const char *)psPackageAndStringReference); 
-	}
+	extern const char *JK2SP_GetStringTextString(const char *Reference);
+	return JK2SP_GetStringTextString((const char *)psPackageAndStringReference); 
 #endif
 	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
 	assert(strlen(psPackageAndStringReference) < sizeof(sReference) );

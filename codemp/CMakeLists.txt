@@ -23,9 +23,9 @@ if(BuildMPUI)
 endif(BuildMPUI)
 
 #	 Add Vanilla JKA Renderer Project
-if(BuildMPEngine)
+if(BuildMPRdVanilla)
 	add_subdirectory("${MPDir}/rd-vanilla")
-endif(BuildMPEngine)
+endif(BuildMPRdVanilla)
 
 #	Add rend2 JKA Renderer Project
 if(BuildMPRend2)

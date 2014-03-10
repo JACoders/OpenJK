@@ -5,10 +5,19 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+set(JK2SPGameDefines ${JK2SPGameDefines} "JK2_MODE")
+
 set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
+
+# game/G_Timer.cpp needs <unordered_map> from C++11
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "CLANG")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 set(JK2SPGameFiles
 	"${JK2SPDir}/game/AI_Atst.cpp"
@@ -253,7 +262,7 @@ set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${JK2SPGameDefines};${ReleaseDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${JK2SPGameDefines};${DebugDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
-set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2SP Game Library")
+set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2 SP Game Library")
 # no libraries used
 if(JK2SPGameLibraries)
 	target_link_libraries(${JK2SPGame} ${JK2SPGameLibraries})

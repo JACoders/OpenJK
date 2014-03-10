@@ -76,6 +76,8 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-rend2 (Maintainer: Xycaleth)
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
+* rd-palpatine (Maintainer: mrwonko)
+* rd-sidious (Maintainer: mrwonko)
 
 ### Engine "hax" ###
 * You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
