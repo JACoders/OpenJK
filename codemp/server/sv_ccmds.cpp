@@ -1027,11 +1027,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
-		for ( c = *start; *c != 0 && c - *start < MAX_OSPATH; c++ ) {
-			if ( *c == '\\' || *c == '/' || *c == '.' ) {
-				*c = '_';
-			}
-		}
+		Q_strstrip( *start, "\n\r;?*<>|\\/\"", "" );
 	}
 	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s", demoFolderName, demoFileName );
 	SV_RecordDemo( cl, demoName );
