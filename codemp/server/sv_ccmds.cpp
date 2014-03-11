@@ -1022,7 +1022,8 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
 	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
-	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
+	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s",
+			cl - svs.clients, Q_CleanStr( cl->name ), Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
