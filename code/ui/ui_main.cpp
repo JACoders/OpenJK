@@ -376,7 +376,11 @@ vmCvar_t	ui_hideXcallout;
 static cvarTable_t cvarTable[] = 
 {
 	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
+#ifdef JK2_MODE
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jk2hud.txt",CVAR_ARCHIVE}, 
+#else
 	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt",CVAR_ARCHIVE}, 
+#endif
 
 	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1",0}, 
 
