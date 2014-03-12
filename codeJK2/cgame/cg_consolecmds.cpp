@@ -264,7 +264,6 @@ static const char *gcmds[] = {
 	"force_grip",
 	"force_heal",
 	"force_pull",
-	"force_sight",
 	"force_speed",
 	"force_throw",
 	"give",
