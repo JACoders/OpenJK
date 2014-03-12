@@ -2490,11 +2490,6 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		cgi_R_LAGoggles();
 	}
 
-	if ( (cg.snap->ps.forcePowersActive&(1<<FP_SEE)) )
-	{
-		cg.refdef.rdflags |= RDF_ForceSightOn;
-	}
-
 	// draw 3D view
 	cgi_R_RenderScene( &cg.refdef );
 
