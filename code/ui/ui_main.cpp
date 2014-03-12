@@ -366,13 +366,6 @@ vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
 
-//JLFCALLOUT MPMOVED
-vmCvar_t	ui_hideAcallout;
-vmCvar_t	ui_hideBcallout;
-vmCvar_t	ui_hideXcallout;
-//END JLFCALLOUT
-
-
 static cvarTable_t cvarTable[] = 
 {
 	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
@@ -400,11 +393,6 @@ static cvarTable_t cvarTable[] =
 	{ &ui_char_color_blue,		"ui_char_color_blue",	"", 0}, 
 
 	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", CVAR_ARCHIVE}, 
-//JLFCALLOUT MPMOVED
-	{ &ui_hideAcallout,		"ui_hideAcallout",	"", 0}, 
-	{ &ui_hideBcallout,		"ui_hideBcallout",	"", 0}, 
-	{ &ui_hideXcallout,		"ui_hideXcallout",	"", 0}, 
-//END JLFCALLOUT
 };
 
 #define FP_UPDATED_NONE -1
