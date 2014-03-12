@@ -350,7 +350,9 @@ static void InitOpenGL( void )
 		// print info the first time only
 		// set default state
 		GL_SetDefaultState();
+#ifndef JK2_MODE
 		R_Splash();	//get something on screen asap
+#endif
 		GfxInfo_f();
 	}
 	else
