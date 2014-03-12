@@ -551,9 +551,9 @@ void G_InitCvars( void ) {
 
 	// change anytime vars
 	g_speed = gi.cvar( "g_speed", "250", CVAR_CHEAT );
-	g_gravity = gi.cvar( "g_gravity", "800", CVAR_USERINFO|CVAR_ROM );	//using userinfo as savegame flag
-	g_sex = gi.cvar ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
-	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_USERINFO);	//using userinfo as savegame flag
+	g_gravity = gi.cvar( "g_gravity", "800", CVAR_SAVEGAME|CVAR_ROM );
+	g_sex = gi.cvar ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
 	g_knockback = gi.cvar( "g_knockback", "1000", CVAR_CHEAT );
 	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head, 4 = mega dismemberment
 	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_ARCHIVE );//0 = ignore probabilities, 1 = use probabilities
@@ -638,6 +638,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	// initialize all clients for this game
 	level.maxclients = 1;
 	level.clients = (struct gclient_s *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
+	memset(level.clients, 0, level.maxclients * sizeof(level.clients[0]));
 
 	// set client fields on player
 	g_entities[0].client = level.clients;
@@ -765,7 +766,7 @@ and global variables
 =================
 */
 extern int PM_ValidateAnimRange( int startFrame, int endFrame, float animSpeed );
-extern "C" Q_EXPORT game_export_t *GetGameAPI( game_import_t *import ) {
+extern "C" Q_EXPORT game_export_t* QDECL GetGameAPI( game_import_t *import ) {
 	gameinfo_import_t	gameinfo_import;
 
 	gi = *import;
@@ -811,14 +812,11 @@ void QDECL G_Error( const char *fmt, ... ) {
 	char		text[1024];
 
 	va_start (argptr, fmt);
-	vsprintf (text, fmt, argptr);
+	Q_vsnprintf (text, sizeof(text), fmt, argptr);
 	va_end (argptr);
 
 	gi.Error( ERR_DROP, "%s", text);
 }
-
-#ifndef GAME_HARD_LINKED
-// this is only here so the functions in q_shared.c and bg_*.c can link
 
 /*
 -------------------------
@@ -831,7 +829,7 @@ void Com_Error ( int level, const char *error, ... ) {
 	char		text[1024];
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	gi.Error( level, "%s", text);
@@ -848,13 +846,11 @@ void Com_Printf( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	gi.Printf ("%s", text);
 }
-
-#endif
 
 /*
 ========================================================================
@@ -873,7 +869,7 @@ FUNCTIONS CALLED EVERY FRAME
 ========================================================================
 */
 
-void G_CheckTasksCompleted (gentity_t *ent) 
+static void G_CheckTasksCompleted (gentity_t *ent) 
 {
 	if ( Q3_TaskIDPending( ent, TID_CHAN_VOICE ) )
 	{
@@ -896,7 +892,7 @@ void G_CheckTasksCompleted (gentity_t *ent)
 	}
 }
 
-void G_CheckSpecialPersistentEvents( gentity_t *ent )
+static void G_CheckSpecialPersistentEvents( gentity_t *ent )
 {//special-case alerts that would be a pain in the ass to have the ent's think funcs generate
 	if ( ent == NULL )
 	{
