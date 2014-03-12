@@ -210,7 +210,7 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num >= CS_CHARSKINS && num < CS_CHARSKINS+MAX_CHARSKINS ) {
 		cgs.skins[ num-CS_CHARSKINS ] = cgi_R_RegisterSkin( str );
 // Ghoul2 Insert end
-	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_MODELS ) {
+	} else if ( num >= CS_SOUNDS && num < CS_SOUNDS+MAX_SOUNDS ) {
 		if ( str[0] != '*' ) {
 			cgs.sound_precache[ num-CS_SOUNDS] = cgi_S_RegisterSound( str );
 		}
