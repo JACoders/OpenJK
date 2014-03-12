@@ -440,7 +440,7 @@ void SV_SaveGame_f(void)
 	//
 	if ( Cmd_Argc() != 2 ) 
 	{
-		Com_Printf( "USAGE: \"save <filename>\"\n" );
+		Com_Printf( "USAGE: save <filename>\n" );
 		return;
 	}
 
