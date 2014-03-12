@@ -1148,6 +1148,40 @@ R_CreateDlightImage
 #define	DLIGHT_SIZE	64
 static void R_CreateDlightImage( void ) 
 {
+#ifdef JK2_MODE
+	int		x,y;
+	byte	data[DLIGHT_SIZE][DLIGHT_SIZE][4];
+	int		xs, ys;
+	int b;
+
+	// The old code claims to have made a centered inverse-square falloff blob for dynamic lighting
+	//	and it looked nasty, so, just doing something simpler that seems to have a much softer result
+	for ( x = 0; x < DLIGHT_SIZE; x++ ) 
+	{
+		for ( y = 0; y < DLIGHT_SIZE; y++ ) 
+		{
+			xs = (DLIGHT_SIZE * 0.5f - x);
+			ys = (DLIGHT_SIZE * 0.5f - y);
+
+            b = 255 - sqrt((double) xs * xs + ys * ys ) * 9.0f; // try and generate numbers in the range of 255-0
+
+			// should be close, but clamp anyway
+			if ( b > 255 ) 
+			{
+				b = 255;
+			} 
+			else if ( b < 0 ) 
+			{
+				b = 0;
+			}
+			data[y][x][0] = 
+			data[y][x][1] = 
+			data[y][x][2] = b;
+			data[y][x][3] = 255;			
+		}
+	}
+	tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, GL_RGBA, qfalse, qfalse, qfalse, GL_CLAMP );
+#else
 	int		width, height;
 	byte	*pic;
 
@@ -1184,6 +1218,7 @@ static void R_CreateDlightImage( void )
 		}
 		tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, GL_RGBA, qfalse, qfalse, qfalse, GL_CLAMP );
 	}
+#endif
 }
 
 /*
