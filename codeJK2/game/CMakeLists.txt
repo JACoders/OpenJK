@@ -238,6 +238,13 @@ set(JK2SPGameIcarusFiles
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
 
+set(JK2SPGameRuflFiles
+	"${SPDir}/Rufl/hstring.cpp"
+	"${SPDir}/Rufl/hstring.h"
+	)
+source_group("rufl" FILES ${JK2SPGameRuflFiles})
+set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameRuflFiles})
+
 if(WIN32)
 	set(JK2SPGameWin32Files
 		"${JK2SPDir}/win32/game.rc")
