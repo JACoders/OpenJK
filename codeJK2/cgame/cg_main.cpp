@@ -2193,13 +2193,13 @@ void CG_ParseMenu(const char *menuFile)
 	int				result;
 	char			*buf,*p;
 
-	Com_Printf("Parsing menu file:%s\n", menuFile);
+	Com_Printf("Parsing menu file: %s\n", menuFile);
 
 	result = cgi_UI_StartParseSession((char *) menuFile,&buf);
 
 	if (!result)
 	{
-		Com_Printf("Unable to load hud menu file:%s. Using default ui/testhud.menu.\n", menuFile);
+		Com_Printf("Unable to load hud menu file: %s. Using default ui/testhud.menu.\n", menuFile);
 		result = cgi_UI_StartParseSession("ui/testhud.menu",&buf);
 		if (!result)
 		{
