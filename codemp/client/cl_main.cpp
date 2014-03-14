@@ -2799,7 +2799,7 @@ void CL_Init( void ) {
 
 	G2VertSpaceClient = new CMiniHeap(G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
-	CL_GenerateQKey();
+	CL_GenerateQKey(); //loda fixme, malware warning!
 	Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
 	CL_UpdateGUID( NULL, 0 );
 

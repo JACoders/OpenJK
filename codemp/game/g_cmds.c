@@ -54,7 +54,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 			ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 
 			if (g_fakeClients.integer && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
-				ping = Q_irand(30, 60);
+				ping = Q_irand(25, 55);
 		}
 
 		if( cl->accuracy_shots ) {
@@ -471,7 +471,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		int num = 999;
 		if ( argc == 3 )
 			num = atoi( args );
-		for ( i=0; i<MAX_WEAPONS; i++ )
+		for ( i=AMMO_BLASTER; i<AMMO_MAX; i++ )
 			ent->client->ps.ammo[i] = num;
 		if ( !give_all )
 			return;

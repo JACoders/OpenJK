@@ -197,7 +197,8 @@ char *Sys_GetCurrentUser( void )
 }
 
 char	*Sys_DefaultHomePath(void) {
-#ifdef _PORTABLE_VERSION
+//#ifdef _PORTABLE_VERSION
+#if 1
 	Com_Printf("Portable install requested, skipping homepath support\n");
 	return NULL;
 #else
