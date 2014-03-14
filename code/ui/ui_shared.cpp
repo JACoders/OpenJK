@@ -225,7 +225,6 @@ void PC_SourceError(int handle, char *format, ...)
 
 	va_start (argptr, format);
 	Q_vsnprintf (string, sizeof(string), format, argptr);
-	vsprintf (string, format, argptr);
 	va_end (argptr);
 
 	filename[0] = '\0';
