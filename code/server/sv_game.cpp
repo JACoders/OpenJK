@@ -308,12 +308,14 @@ SV_AdjustAreaPortalState
 ========================
 */
 void SV_AdjustAreaPortalState( gentity_t *ent, qboolean open ) {
+#ifndef JK2_MODE
 	if ( !(ent->contents & CONTENTS_OPAQUE) ) {
 #ifndef FINAL_BUILD
 //		Com_Printf( "INFO: entity number %d not opaque: not affecting area portal!\n", ent->s.number );
 #endif
 		return;
 	}
+#endif
 
 	svEntity_t	*svEnt;
 
