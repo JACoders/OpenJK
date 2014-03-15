@@ -1104,7 +1104,7 @@ typedef enum
 // GLSL vertex and one GLSL fragment shader
 typedef struct shaderProgram_s
 {
-	char            name[MAX_QPATH];
+	char *name;
 
 	GLhandleARB     program;
 	GLhandleARB     vertexShader;
@@ -1112,8 +1112,9 @@ typedef struct shaderProgram_s
 	uint32_t        attribs;	// vertex array attributes
 
 	// uniform parameters
-	GLint uniforms[UNIFORM_COUNT];
-	short uniformBufferOffsets[UNIFORM_COUNT]; // max 32767/64=511 uniforms
+	int numUniforms;
+	GLint *uniforms;
+	short *uniformBufferOffsets;
 	char  *uniformBuffer;
 } shaderProgram_t;
 
@@ -2678,7 +2679,8 @@ GLSL
 ============================================================
 */
 
-void GLSL_InitGPUShaders(void);
+int GLSL_BeginLoadGPUShaders(void);
+void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits);
 void GLSL_VertexAttribPointers(uint32_t attribBits);
