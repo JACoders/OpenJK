@@ -1047,7 +1047,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if(!Q_stricmp(token, "specularMap"))
 			{
 				stage->type = ST_SPECULARMAP;
-				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				VectorSet4(stage->specularScale, r_baseSpecular->integer, r_baseSpecular->integer, r_baseSpecular->integer, 1.0f);
 			}
 			else
 			{
