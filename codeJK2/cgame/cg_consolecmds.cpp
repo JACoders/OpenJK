@@ -29,8 +29,25 @@ void CG_NextInventory_f( void );
 void CG_PrevInventory_f( void );
 void CG_NextForcePower_f( void );
 void CG_PrevForcePower_f( void );
-void CG_LoadHud_f( void );
 
+/*
+=================
+CG_TargetCommand_f
+
+=================
+*/
+void CG_TargetCommand_f( void ) {
+	int		targetNum;
+	char	test[4];
+
+	targetNum = CG_CrosshairPlayer();
+	if ( targetNum == -1 ) {
+		return;
+	}
+
+	cgi_Argv( 1, test, 4 );
+	cgi_SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
+}
 
 /*
 =============
@@ -48,12 +65,12 @@ static void CG_Viewpos_f (void) {
 void CG_WriteCam_f (void)
 {
 	char	text[1024];
-	char	*targetname;
+	const char	*targetname;
 	static	int	numCams;
 
 	numCams++;
 	
-	targetname = (char	*)CG_Argv(1);
+	targetname = CG_Argv(1);
 
 	if( !targetname || !targetname[0] )
 	{
@@ -61,7 +78,7 @@ void CG_WriteCam_f (void)
 	}
 
 	CG_Printf( "Camera #%d ('%s') written to: ", numCams, targetname );
-	sprintf( text, "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov.integer );
+	Com_sprintf( text, sizeof(text), "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov.integer );
 	gi.WriteCam( text );
 }
 
@@ -162,88 +179,64 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-static void CG_InfoDown_f( void ) {
-//	cg.showInformation = qtrue;
-}
-
-static void CG_InfoUp_f( void ) 
+void CG_LoadHud_f( void) 
 {
-//	cg.showInformation = qfalse;
+	const char *hudSet = cg_hudFiles.string;
+	if ( hudSet[0] == '\0' ) 
+		hudSet = "ui/jk2hud.txt";
+
+	CG_LoadMenus(hudSet);
 }
 
 typedef struct {
-	char	*cmd;
-	void	(*function)(void);
+	const char	*cmd;
+	void		(*func)(void);
 } consoleCommand_t;
 
+int cmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((consoleCommand_t*)b)->cmd );
+}
+
+/* This array MUST be sorted correctly by alphabetical name field */
 static consoleCommand_t	commands[] = {
-	{ "testgun", CG_TestGun_f },
-	{ "testmodel", CG_TestModel_f },
-	{ "nextframe", CG_TestModelNextFrame_f },
-	{ "prevframe", CG_TestModelPrevFrame_f },
-	{ "nextskin", CG_TestModelNextSkin_f },
-	{ "prevskin", CG_TestModelPrevSkin_f },
-/*
-Ghoul2 Insert Start
-*/
-	{ "testG2Model", CG_TestG2Model_f},
-	{ "testsurface", CG_TestModelSurfaceOnOff_f },
-	{ "testanglespre", CG_TestModelSetAnglespre_f},
-	{ "testanglespost", CG_TestModelSetAnglespost_f},
-	{ "testanimate", CG_TestModelAnimate_f},
-	{ "testlistbones", CG_ListModelBones_f},
-	{ "testlistsurfaces", CG_ListModelSurfaces_f},
-/*
-Ghoul2 Insert End
-*/
-	{ "viewpos", CG_Viewpos_f },
-	{ "writecam", CG_WriteCam_f },
-	{ "+info", CG_InfoDown_f },
-	{ "-info", CG_InfoUp_f },
-	{ "weapnext", CG_NextWeapon_f },
-	{ "weapprev", CG_PrevWeapon_f },
-	{ "weapon", CG_Weapon_f },
-	{ "tcmd", CG_TargetCommand_f },
 	{ "cam_disable", CMD_CGCam_Disable },	//gets out of camera mode for debuggin
 	{ "cam_enable", CGCam_Enable },	//gets into camera mode for precise camera placement
-	{ "lock_disable", Lock_Disable },	//player can move now
-	{ "zoom", CG_ToggleBinoculars },
-	{ "la_zoom", CG_ToggleLAGoggles },
-	{ "invnext", CG_NextInventory_f },
-	{ "invprev", CG_PrevInventory_f },
-	{ "forcenext", CG_NextForcePower_f },
-	{ "forceprev", CG_PrevForcePower_f },
-	{ "loadhud", CG_LoadHud_f },
-	{ "dpweapnext", CG_DPNextWeapon_f },
-	{ "dpweapprev", CG_DPPrevWeapon_f },
-	{ "dpinvnext", CG_DPNextInventory_f },
-	{ "dpinvprev", CG_DPPrevInventory_f },
 	{ "dpforcenext", CG_DPNextForcePower_f },
 	{ "dpforceprev", CG_DPPrevForcePower_f },
+	{ "dpinvnext", CG_DPNextInventory_f },
+	{ "dpinvprev", CG_DPPrevInventory_f },
+	{ "dpweapnext", CG_DPNextWeapon_f },
+	{ "dpweapprev", CG_DPPrevWeapon_f },
+	{ "forcenext", CG_NextForcePower_f },
+	{ "forceprev", CG_PrevForcePower_f },
+	{ "invnext", CG_NextInventory_f },
+	{ "invprev", CG_PrevInventory_f },
+	{ "la_zoom", CG_ToggleLAGoggles },
+	{ "loadhud", CG_LoadHud_f },
+	{ "lock_disable", Lock_Disable },	//player can move now
+	{ "nextframe", CG_TestModelNextFrame_f },
+	{ "nextskin", CG_TestModelNextSkin_f },
+	{ "prevframe", CG_TestModelPrevFrame_f },
+	{ "prevskin", CG_TestModelPrevSkin_f },
+	{ "tcmd", CG_TargetCommand_f },
+	{ "testG2Model", CG_TestG2Model_f},
+	{ "testanglespost", CG_TestModelSetAnglespost_f},
+	{ "testanglespre", CG_TestModelSetAnglespre_f},
+	{ "testanimate", CG_TestModelAnimate_f},
+	{ "testgun", CG_TestGun_f },
+	{ "testlistbones", CG_ListModelBones_f},
+	{ "testlistsurfaces", CG_ListModelSurfaces_f},
+	{ "testmodel", CG_TestModel_f },
+	{ "testsurface", CG_TestModelSurfaceOnOff_f },
+	{ "viewpos", CG_Viewpos_f },
+	{ "weapnext", CG_NextWeapon_f },
+	{ "weapon", CG_Weapon_f },
+	{ "weapprev", CG_PrevWeapon_f },
+	{ "writecam", CG_WriteCam_f },
+	{ "zoom", CG_ToggleBinoculars },
 };
 
-
-//extern menuDef_t *menuScoreboard;
-void Menu_Reset();	
-
-void CG_LoadHud_f( void) 
-{
-	const char *hudSet;
-
-//	cgi_UI_String_Init();
-
-//	cgi_UI_Menu_Reset();
-	
-	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0') 
-	{
-		hudSet = "ui/jk2hud.txt";
-	}
-
-	CG_LoadMenus(hudSet);
-//	menuScoreboard = NULL;
-
-}
+static const size_t numCommands = ARRAY_LEN( commands );
 
 /*
 =================
@@ -254,21 +247,50 @@ Cmd_Argc() / Cmd_Argv()
 =================
 */
 qboolean CG_ConsoleCommand( void ) {
-	const char	*cmd;
-	int		i;
+	consoleCommand_t	*command = NULL;
 
-	cmd = CG_Argv(0);
+	command = (consoleCommand_t *)bsearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
-		if ( !Q_stricmp( cmd, commands[i].cmd ) ) {
-			commands[i].function();
-			return qtrue;
-		}
-	}
+	if ( !command )
+		return qfalse;
 
-	return qfalse;
+	command->func();
+	return qtrue;
 }
 
+static const char *gcmds[] = {
+	"entitylist",
+	"force_distract",
+	"force_grip",
+	"force_heal",
+	"force_pull",
+	"force_speed",
+	"force_throw",
+	"give",
+	"god",
+	"invuse",
+	"kill",
+	"nav",
+	"noclip",
+	"notarget",
+	"npc",
+	"playerteam",
+	"runscript",
+	"saberAttackCycle",
+	"saberColor",
+	"setForceAll",
+	"setobjective",
+	"setviewpos",
+	"taunt",
+	"undying",
+	"use_bacta",
+	"use_electrobinoculars",
+	"use_lightamp_goggles",
+	"use_seeker",
+	"use_sentry",
+	"viewobjective"
+};
+static const size_t numgcmds = ARRAY_LEN( gcmds );
 
 /*
 =================
@@ -279,9 +301,15 @@ so it can perform tab completion
 =================
 */
 void CG_InitConsoleCommands( void ) {
-	int		i;
+	size_t i;
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
+	for ( i = 0 ; i < numCommands ; i++ )
 		cgi_AddCommand( commands[i].cmd );
-	}
+
+	//
+	// the game server will interpret these commands, which will be automatically
+	// forwarded to the server after they are not recognized locally
+	//
+	for( i = 0; i < numgcmds; i++ )
+		cgi_AddCommand( gcmds[i] );
 }

@@ -19,7 +19,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "CLANG")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-set(JK2SPGameFiles
+set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/AI_Atst.cpp"
 	"${JK2SPDir}/game/AI_Default.cpp"
 	"${JK2SPDir}/game/AI_Droid.cpp"
@@ -237,6 +237,13 @@ set(JK2SPGameIcarusFiles
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
+
+set(JK2SPGameRuflFiles
+	"${SPDir}/Rufl/hstring.cpp"
+	"${SPDir}/Rufl/hstring.h"
+	)
+source_group("rufl" FILES ${JK2SPGameRuflFiles})
+set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameRuflFiles})
 
 if(WIN32)
 	set(JK2SPGameWin32Files
