@@ -142,7 +142,7 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale )
 	g = in[1] * scale;
 	b = in[2] * scale;
 
-	if ( !r_hdr->integer && (r > 1 || g > 1 || b > 1) )
+	if ( r > 1.0f || g > 1.0f || b > 1.0f )
 	{
 		float max = max (max (r, g), b);
 
@@ -2792,7 +2792,7 @@ qboolean R_GetEntityToken( char *buffer, int size ) {
 
 	s = COM_Parse( (const char **)&s_worldData.entityParsePoint );
 	Q_strncpyz( buffer, s, size );
-	if ( !s_worldData.entityParsePoint || !s[0] ) {
+	if ( !s_worldData.entityParsePoint && !s[0] ) {
 		s_worldData.entityParsePoint = s_worldData.entityString;
 		return qfalse;
 	} else {
@@ -2819,7 +2819,8 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 		return qfalse;
 	}
 	if ( com_token[0] != '{' ) {
-		ri->Printf( PRINT_ALL, "R_ParseSpawnVars: found %s when expecting {",com_token );
+		ri->Printf( PRINT_ALL, "R_ParseSpawnVars: found %s when expecting {\n",com_token );
+		return qfalse;
 	}
 
 	// go through all the key / value pairs
@@ -2828,7 +2829,8 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 
 		// parse key
 		if ( !R_GetEntityToken( keyname, sizeof( keyname ) ) ) {
-			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace" );
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace\n" );
+			return qfalse;
 		}
 
 		if ( keyname[0] == '}' ) {
@@ -2837,18 +2839,18 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 
 		// parse value  
 		if ( !R_GetEntityToken( com_token, sizeof( com_token ) ) ) {
-			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace" );
-			break;
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace\n" );
+			return qfalse;
 		}
 
 		if ( com_token[0] == '}' ) {
-			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: closing brace without data" );
-			break;
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: closing brace without data\n" );
+			return qfalse;
 		}
 
 		if ( *numSpawnVars == MAX_SPAWN_VARS ) {
-			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VARS" );
-			break;
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VARS\n" );
+			return qfalse;
 		}
 
 		keyLength = strlen(keyname) + 1;
@@ -2856,8 +2858,8 @@ static qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int
 
 		if (numSpawnVarChars + keyLength + tokenLength > maxSpawnVarChars)
 		{
-			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VAR_CHARS" );
-			break;
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VAR_CHARS\n" );
+			return qfalse;
 		}
 
 		strcpy(spawnVarChars + numSpawnVarChars, keyname);
