@@ -2014,6 +2014,17 @@ static qboolean ParseShader( const char **text )
 
 				token = COM_ParseExt( text, qfalse );
 				tr.sunShadowScale = atof(token);
+
+				if (tr.sunShadowScale < 0.0f)
+				{
+					ri->Printf (PRINT_WARNING, "WARNING: q3gl2_sun's 'shadow scale' value must be between 0 and 1. Clamping to 0.0.\n");
+					tr.sunShadowScale = 0.0f;
+				}
+				else if (tr.sunShadowScale > 1.0f)
+				{
+					ri->Printf (PRINT_WARNING, "WARNING: q3gl2_sun's 'shadow scale' value must be between 0 and 1. Clamping to 1.0.\n");
+					tr.sunShadowScale = 1.0f;
+				}
 			}
 
 			SkipRestOfLine( text );
