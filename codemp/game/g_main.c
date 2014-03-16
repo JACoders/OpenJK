@@ -139,7 +139,7 @@ G_InitGame
 
 ============
 */
-void InitGameAccountStuff(void);
+//void InitGameAccountStuff(void);
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
@@ -319,7 +319,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//setup the teleto functionality - japro
 	G_SpawnWarpLocationsFromCfg();
-	InitGameAccountStuff();
+	//InitGameAccountStuff();
 
 	// general initialization
 	G_FindTeams();

@@ -6550,7 +6550,8 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
+
+	//{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
 
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE

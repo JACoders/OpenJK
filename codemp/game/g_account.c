@@ -1,3 +1,5 @@
+/*
+
 #include "g_local.h"
 
 #include <stdio.h>
@@ -30,7 +32,7 @@
 //ent->client->accountID ? if 0 , not logged in ?, use this in interaction with db?
 
 //When user logs in, if no PlayerServerAccount is created for them yet, create it.  If it already exists, just update it.
-
+*/
 /*
 "LocalRun" Entity
 +------------+-------------+------+-----+---------+-------+
@@ -75,7 +77,7 @@
 | winner_shield | int          | YES  |     | NULL    |       | //7bits
 +----------------+-------------+------+-----+---------+-------+
 */
-
+/*
 //In the v2 update, maybe also add ingame passwords, so people sharing a net connection (at university etc) wont be able to login to eachothers accounts ingame.
 
 void TestInsert ()
@@ -139,16 +141,17 @@ void TestSelect ()
     }
 }
 
-void InitGameAccountStuff( void ) {
-	/*
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-    sql = "SELECT COUNT(*) FROM LocalAccount";
-    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	*/
+void InitGameAccountStuff( void ) {
+	
+	//sqlite3 * db;
+    //char * sql;
+    //sqlite3_stmt * stmt;
+
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    //sql = "SELECT COUNT(*) FROM LocalAccount";
+    //CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	
 
 	//if (atoi((const char *)sqlite3_column_text (stmt, 0)) == 0) //Table not created yet..? actually no it could be created but empty :S
 
@@ -335,3 +338,4 @@ static void AddRaceTime( gentity_t *ent ) {
 static void SyncToGlobalDB( gentity_t *ent ) {
 	//every map load, local DB is sends changes to global DB, hosted on master website.
 }
+*/
