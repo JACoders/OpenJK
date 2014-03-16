@@ -791,13 +791,8 @@ void R_AddWorldSurfaces (void) {
 	ClearBounds( tr.viewParms.visBounds[0], tr.viewParms.visBounds[1] );
 
 	// perform frustum culling and flag all the potentially visible surfaces
-	if ( tr.refdef.num_dlights > 32 ) {
-		tr.refdef.num_dlights = 32 ;
-	}
-
-	if ( tr.refdef.num_pshadows > 32 ) {
-		tr.refdef.num_pshadows = 32 ;
-	}
+	tr.refdef.num_dlights = min (tr.refdef.num_dlights, 32) ;
+	tr.refdef.num_pshadows = min (tr.refdef.num_pshadows, 32) ;
 
 	planeBits = (tr.viewParms.flags & VPF_FARPLANEFRUSTUM) ? 31 : 15;
 
