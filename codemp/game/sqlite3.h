@@ -1,3 +1,5 @@
+#if 0
+
 /*
 ** 2001 September 15
 **
@@ -6935,4 +6937,6 @@ int sqlite3_backup_pagecount(sqlite3_backup *p);
 #ifdef __cplusplus
 }  /* End of the 'extern "C"' block */
 #endif
+#endif
+
 #endif
