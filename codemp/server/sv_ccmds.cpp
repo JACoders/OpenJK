@@ -1016,7 +1016,6 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	char folderDate[MAX_OSPATH];
 	time_t rawtime;
 	struct tm * timeinfo;
-	char *c;
 	time( &rawtime );
 	timeinfo = localtime( &rawtime );
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
