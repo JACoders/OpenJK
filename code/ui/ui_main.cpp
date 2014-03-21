@@ -748,7 +748,11 @@ static int CreateNextSaveName(char *fileName)
 	// Loop through all the save games and look for the first open name
 	for (i=0;i<MAX_SAVELOADFILES;i++)
 	{
+#ifdef JK2_MODE
+		Com_sprintf( fileName, MAX_SAVELOADNAME, "jkii%02d", i );
+#else
 		Com_sprintf( fileName, MAX_SAVELOADNAME, "jedi_%02d", i );
+#endif
 
 		if (!ui.SG_GetSaveGameComment(fileName, NULL, NULL))
 		{
@@ -976,18 +980,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 		else if (Q_stricmp(name, "startgame") == 0) 
 		{
 			Menus_CloseAll();
-			if ( Cvar_VariableIntegerValue("com_demo") )
-			{
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map demo\n");
-			}
-			else
-			{
 #ifdef JK2_MODE
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
+			ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
 #else
-				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
+			ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
 #endif
-			}
 		} 
 		else if (Q_stricmp(name, "startmap") == 0) 
 		{
@@ -1463,7 +1460,11 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "load_quick") == 0) 
 		{
+#ifdef JK2_MODE
+			ui.Cmd_ExecuteText(EXEC_APPEND,"load quik\n");
+#else
 			ui.Cmd_ExecuteText(EXEC_APPEND,"load quick\n");
+#endif
 		}
 		else if (Q_stricmp(name, "load_auto") == 0) 
 		{
@@ -2544,23 +2545,14 @@ void _UI_Init( qboolean inGameLoad )
 	{
 		menuSet = "ui/menus.txt";
 	}
-	if ( Cvar_VariableIntegerValue("com_demo") )
-	{
-		menuSet = "ui/demo_menus.txt";
-	}
 
+#ifndef JK2_MODE
 	if (inGameLoad)
 	{
-		if ( Cvar_VariableIntegerValue("com_demo") )
-		{
-			UI_LoadMenus("ui/demo_ingame.txt", qtrue);
-		}
-		else
-		{
-			UI_LoadMenus("ui/ingame.txt", qtrue);
-		}
+		UI_LoadMenus("ui/ingame.txt", qtrue);
 	}
-	else 
+	else
+#endif
 	{
 		UI_LoadMenus(menuSet, qtrue);
 	}
@@ -2593,7 +2585,10 @@ void _UI_Init( qboolean inGameLoad )
 
 	uiInfo.uiDC.Assets.nullSound = trap_S_RegisterSound("sound/null", qfalse);
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
+#endif
 
 }
 
@@ -2625,7 +2620,7 @@ void UI_ParseMenu(const char *menuFile)
 	int len;
 //	pc_token_t token;
 
-	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
+	//Com_DPrintf("Parsing menu file: %s\n", menuFile);
 	len = PC_StartParseSession(menuFile,&buffer);
 
 	holdBuffer = buffer;
@@ -2831,11 +2826,13 @@ void UI_Load(void)
 		lastName[0] = 0;
 	}
 
+#ifndef JK2_MODE
 	if (uiInfo.inGameLoad)
 	{
 		menuSet= "ui/ingame.txt";
 	}
-	else 
+	else
+#endif
 	{
 		menuSet= UI_Cvar_VariableString("ui_menuFiles");
 	}
@@ -2844,14 +2841,7 @@ void UI_Load(void)
 		menuSet = "ui/menus.txt";
 	}
 
-	if ( Cvar_VariableIntegerValue("com_demo") )
-	{
-		menuSet = "ui/demo_menus.txt";
-	}
-
-
 	String_Init();
-
 
 	UI_LoadMenus(menuSet, qtrue);
 	Menus_CloseAll();
@@ -4362,19 +4352,17 @@ static void UI_InitAllocForcePowers ( const char *forceName )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
-
 	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
 
 	// NOTE: this UIScript can be called outside the running game now, so handle that case
 	// by getting info frim UIInfo instead of PlayerState
-	if( cl && !com_demo )
+	if( cl )
 	{
 		playerState_t*		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	
@@ -4803,20 +4791,18 @@ static void UI_DecrementCurrentForcePower ( void )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
-
 	// Get player state
 	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
 	playerState_t*		pState = NULL;
 	int forcelevel;
 
-	if( cl && !com_demo )
+	if( cl )
 	{
 		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 	}
 
@@ -4829,7 +4815,7 @@ static void UI_DecrementCurrentForcePower ( void )
 
 	if (forcelevel>0)
 	{
-		if( pState && !com_demo )
+		if( pState )
 		{
 			pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
 			forcelevel = pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
@@ -4840,7 +4826,7 @@ static void UI_DecrementCurrentForcePower ( void )
 			}
 		}
 		else
-		{	// always want this to happen in demo mode
+		{
 			uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
 			forcelevel = uiInfo.forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum];
 		}
@@ -4910,18 +4896,17 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 		return;
 	}
 
-	int com_demo = Cvar_VariableIntegerValue( "com_demo" );
 	// Get player state
 	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
 	playerState_t*		pState = NULL;
 	int	forcelevel;
-	if( cl && !com_demo)
+	if( cl )
 	{
 		pState = cl->gentity->client;
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	
@@ -4936,14 +4921,14 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 
 	uiInfo.forcePowerUpdated = forcePowerI;	// Remember which power was updated
 
-	if( pState && !com_demo )
+	if( pState )
 	{
 		pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
 		pState->forcePowersKnown |= ( 1 << powerEnums[forcePowerI].powerEnum );
 		forcelevel = pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
 	else
-	{	// always want this to happen in demo mode
+	{
 		uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
 		forcelevel = uiInfo.forcePowerLevel[powerEnums[forcePowerI].powerEnum];
 	}
@@ -5690,7 +5675,10 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 		uiInfo.selectedWeapon2AmmoIndex = 0;
 	}
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	DC->startLocalSound(DC->registerSound("sound/interface/weapon_deselect.mp3", qfalse), CHAN_LOCAL );
+#endif
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
 
@@ -5946,7 +5934,10 @@ static void UI_RemoveThrowWeaponSelection ( void )
 		uiInfo.weaponThrowButton = NULL;
 	}
 
+#ifndef JK2_MODE
+	//FIXME hack to prevent error in jk2 by disabling
 	DC->startLocalSound(DC->registerSound("sound/interface/weapon_deselect.mp3", qfalse), CHAN_LOCAL );
+#endif
 
 	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
 
