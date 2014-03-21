@@ -485,14 +485,17 @@ void SV_SaveGame_f(void)
 	}
 
 	const char *psFilename = Cmd_Argv(1);
+	char filename[MAX_QPATH] = {0};
 
-	if (!Q_stricmp (psFilename, "current"))
+	Q_strncpyz(filename, psFilename, sizeof(filename));
+
+	if (!Q_stricmp (filename, "current"))
 	{
 		Com_Printf (S_COLOR_RED "Can't save to 'current'\n");
 		return;
 	}
 
-	if (strstr (psFilename, "..") || strstr (psFilename, "/") || strstr (psFilename, "\\") )
+	if (strstr (filename, "..") || strstr (filename, "/") || strstr (filename, "\\") )
 	{
 		Com_Printf (S_COLOR_RED "Bad savegame name.\n");
 		return;
@@ -501,19 +504,27 @@ void SV_SaveGame_f(void)
 	if (!SG_GameAllowedToSaveHere(qfalse))	//full check
 		return;	// this prevents people saving via quick-save now during cinematics.
 
-	if ( !Q_stricmp (psFilename, "auto") )
+#ifdef JK2_MODE
+	if ( !Q_stricmp (filename, "quik*") || !Q_stricmp (filename, "auto*") )
 	{
-		
+		if ( filename[4]=='*' )
+			filename[4]=0;	//remove the *
 		SG_StoreSaveGameComment("");	// clear previous comment/description, which will force time/date comment.
 	}
-
-#ifdef JK2_MODE
-	Com_Printf (S_COLOR_CYAN "Saving game \"%s\"...\n", psFilename);
 #else
-	Com_Printf (S_COLOR_CYAN "%s \"%s\"...\n", SE_GetString("CON_TEXT_SAVING_GAME"), psFilename);
+	if ( !Q_stricmp (filename, "auto") )
+	{
+		SG_StoreSaveGameComment("");	// clear previous comment/description, which will force time/date comment.
+	}
 #endif
 
-	if (SG_WriteSavegame(psFilename, qfalse))
+#ifdef JK2_MODE
+	Com_Printf (S_COLOR_CYAN "Saving game \"%s\"...\n", filename);
+#else
+	Com_Printf (S_COLOR_CYAN "%s \"%s\"...\n", SE_GetString("CON_TEXT_SAVING_GAME"), filename);
+#endif
+
+	if (SG_WriteSavegame(filename, qfalse))
 	{
 #ifdef JK2_MODE
 		Com_Printf (S_COLOR_CYAN "Done.\n");
@@ -769,7 +780,7 @@ static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 	}
 	else
 	{
-		strcpy(sComment,saveGameComment);
+		Q_strncpyz(sComment,saveGameComment, sizeof(sComment));
 	}
 
 	SG_Append(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
@@ -1019,13 +1030,17 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	const char *psServerInfo = sv.configstrings[CS_SERVERINFO];
 	const char *psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
 //JLF
+#ifdef JK2_MODE
+	if ( !strcmp("quik",psPathlessBaseName))
+#else
 	if ( !strcmp("quick",psPathlessBaseName))
+#endif
 	{
 		SG_StoreSaveGameComment(va("--> %s <--",psMapName));
 	}
 
 	if(!SG_Create( "current" ))
-			{
+	{
 		Com_Printf (GetString_FailedToOpenSaveGame("current",qfalse));//S_COLOR_RED "Failed to create savegame\n");
 		SG_WipeSavegame( "current" );
 		sv_testsave->integer = iPrevTestSave;
@@ -1034,7 +1049,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 //END JLF
 
 	char   sMapCmd[iSG_MAPCMD_SIZE]={0};
-	strcpy( sMapCmd,psMapName);	// need as array rather than ptr because const strlen needed for MPCM chunk
+	Q_strncpyz( sMapCmd,psMapName, sizeof(sMapCmd));	// need as array rather than ptr because const strlen needed for MPCM chunk
 
 	SG_WriteComment(qbAutosave, sMapCmd);
 //	SG_WriteScreenshot(qbAutosave, sMapCmd);
