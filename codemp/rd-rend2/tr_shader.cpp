@@ -2732,7 +2732,6 @@ static qboolean CollapseStagesToGLSL(void)
 	if (!skip)
 	{
 		shaderStage_t *lightmaps[MAX_SHADER_STAGES] = {};
-		size_t numLightmapStages = 0;
 
 		for (i = 0; i < MAX_SHADER_STAGES; i++)
 		{

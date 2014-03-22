@@ -69,7 +69,6 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 		if( !CModelCache->LoadFile( namebuf, (void**)&buf, &bAlreadyCached ) )
 			continue;
 
-		const char *blah = (const char *)(*buf);
 		ident = *(unsigned *)buf;
 		if( !bAlreadyCached )
 			ident = LittleLong(ident);
@@ -648,7 +647,6 @@ qhandle_t R_RegisterMDX_Server(const char *name, model_t *mod)
 		if( !CModelCache->LoadFile( namebuf, (void**)&buf, &bAlreadyCached ) )
 			continue;
 
-		const char *blah = (const char *)(*buf);
 		ident = *(unsigned *)buf;
 		if( !bAlreadyCached )
 			ident = LittleLong(ident);

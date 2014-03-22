@@ -1119,18 +1119,6 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
-static void ForceAlpha (unsigned char *dstColors, int forceEntAlpha)
-{
-	int	i;
-
-	dstColors += 3;
-
-	for ( i = 0; i < tess.numVertexes; i++, dstColors += 4 )
-	{
-		*dstColors = forceEntAlpha;
-	}
-}
-
 static void RB_IterateStagesGeneric( shaderCommands_t *input )
 {
 	int stage;
@@ -1154,7 +1142,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		int stateBits;
 		colorGen_t forceRGBGen = CGEN_BAD;
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
-		float forceAlpha = 0.0f;
 
 		if ( !pStage )
 		{

@@ -468,9 +468,9 @@ R_SubdividePatchToGrid
 srfBspSurface_t *R_SubdividePatchToGrid( int width, int height,
 								srfVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE] ) {
 	int			i, j, k, l;
-	srfVert_t_cleared( prev );
-	srfVert_t_cleared( next );
-	srfVert_t_cleared( mid );
+	srfVert_t prev;
+	srfVert_t next;
+	srfVert_t mid;
 	float		len, maxLen;
 	int			dir;
 	int			t;
@@ -479,6 +479,10 @@ srfBspSurface_t *R_SubdividePatchToGrid( int width, int height,
 	int			numIndexes;
 	static glIndex_t indexes[(MAX_GRID_SIZE-1)*(MAX_GRID_SIZE-1)*2*3];
 	int consecutiveComplete;
+    
+    Com_Memset (&prev, 0, sizeof (prev));
+    Com_Memset (&next, 0, sizeof (next));
+    Com_Memset (&mid, 0, sizeof (mid));
 
 	for ( i = 0 ; i < width ; i++ ) {
 		for ( j = 0 ; j < height ; j++ ) {

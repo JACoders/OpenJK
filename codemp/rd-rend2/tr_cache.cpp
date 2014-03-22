@@ -9,13 +9,6 @@ using namespace std;
 CImageCacheManager *CImgCache = new CImageCacheManager();
 CModelCacheManager *CModelCache = new CModelCacheManager();
 
-static int GetModelDataAllocSize(void)
-{
-	return	Z_MemSize( TAG_MODEL_MD3) +
-			Z_MemSize( TAG_MODEL_GLM) +
-			Z_MemSize( TAG_MODEL_GLA);
-}
-
 /*
  * CCacheManager::SearchLoaded
  * Return -1 if asset not currently loaded, return positive qhandle_t if found
@@ -100,7 +93,7 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	}
 
 	int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
-	if ( *ppFileBuffer == NULL )
+	if ( len == -1 || *ppFileBuffer == NULL )
 	{
 		return qfalse;
 	}
@@ -193,7 +186,6 @@ void CCacheManager::DumpNonPure( void )
 	{
 		int iChecksum;
 		int iInPak = ri->FS_FileIsInPAK( it->first.c_str(), &iChecksum );
-		qboolean bEraseOccurred = qfalse;
 
 		if( iInPak == -1 || iChecksum != it->second.iPAKChecksum )
 		{
