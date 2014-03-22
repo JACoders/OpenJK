@@ -2012,7 +2012,6 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	int			i;
 	const char		*token;
 	float		fps;
-	int			skip;
 	char		text[80000];
 	int			animNum;
 	animation_t	*animations = ui_knownAnimFileSets[ui_numKnownAnimFileSets].animations;
@@ -2030,7 +2029,6 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 
 	// parse the text
 	text_p = text;
-	skip = 0;	// quiet the compiler warning
 
 	//FIXME: have some way of playing anims backwards... negative numFrames?
 
