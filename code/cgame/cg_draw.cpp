@@ -2157,14 +2157,12 @@ CG_DrawStats
 static void CG_DrawStats( void ) 
 {
 	centity_t		*cent;
-	playerState_t	*ps;
 
 	if ( cg_drawStatus.integer == 0 ) {
 		return;
 	}
 
 	cent = &cg_entities[cg.snap->ps.clientNum];
-	ps = &cg.snap->ps;
 
 	if ((cg.snap->ps.viewEntity>0&&cg.snap->ps.viewEntity<ENTITYNUM_WORLD))
 	{
@@ -2252,7 +2250,6 @@ void CG_DrawCredits(void)
 void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float chH)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = chX-(chW/2);
 	float y = chY-chH;
@@ -2274,12 +2271,6 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 	aColor[1] = 0.0f;
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
