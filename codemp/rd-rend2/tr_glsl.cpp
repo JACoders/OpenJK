@@ -144,6 +144,8 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_PrimaryLightAmbient", GLSL_VEC3, 1  },
 	{ "u_PrimaryLightRadius",  GLSL_FLOAT, 1 },
 
+	{ "u_CubeMapInfo", GLSL_VEC4, 1 },
+
 	{ "u_BoneMatrices",			GLSL_MAT16, 80 },
 };
 
