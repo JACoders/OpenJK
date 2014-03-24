@@ -1226,22 +1226,25 @@ void Q_strstrip( char *string, const char *strip, const char *repl )
 	char		*out=string, *p=string, c;
 	const char	*s=strip;
 	int			replaceLen = repl?strlen( repl ):0, offset=0;
+	qboolean	recordChar = qtrue;
 
 	while ( (c = *p++) != '\0' )
 	{
+		recordChar = qtrue;
 		for ( s=strip; *s; s++ )
 		{
 			offset = s-strip;
 			if ( c == *s )
 			{
 				if ( !repl || offset >= replaceLen )
-					c = *p++;
+					recordChar = qfalse;
 				else
 					c = repl[offset];
 				break;
 			}
 		}
-		*out++ = c;
+		if ( recordChar )
+			*out++ = c;
 	}
 	*out = '\0';
 }

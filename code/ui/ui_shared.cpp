@@ -3089,9 +3089,7 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name )
 qboolean ItemParse_asset_model( itemDef_t *item ) 
 {
 	const char *temp;
-	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
 
 	if (PC_ParseString(&temp)) 
 	{
@@ -4592,9 +4590,9 @@ qboolean ItemParse_enableCvar( itemDef_t *item)
 ItemParse_disableCvar 
 ===============
 */
-qboolean ItemParse_disableCvar( itemDef_t *item ) 
+qboolean ItemParse_disableCvar( itemDef_t *item )
 {
-	if (PC_Script_Parse(&item->enableCvar)) 
+	if (PC_Script_Parse(&item->enableCvar))
 	{
 		item->cvarFlags = CVAR_DISABLE;
 		return qtrue;
@@ -4607,7 +4605,7 @@ qboolean ItemParse_disableCvar( itemDef_t *item )
 ItemParse_showCvar 
 ===============
 */
-qboolean ItemParse_showCvar( itemDef_t *item ) 
+qboolean ItemParse_showCvar( itemDef_t *item )
 {
 	if (PC_Script_Parse(&item->enableCvar)) 
 	{
@@ -4622,9 +4620,9 @@ qboolean ItemParse_showCvar( itemDef_t *item )
 ItemParse_hideCvar 
 ===============
 */
-qboolean ItemParse_hideCvar( itemDef_t *item) 
+qboolean ItemParse_hideCvar( itemDef_t *item )
 {
-	if (PC_Script_Parse(&item->enableCvar)) 
+	if (PC_Script_Parse(&item->enableCvar))
 	{
 		item->cvarFlags = CVAR_HIDE;
 		return qtrue;
@@ -4637,7 +4635,7 @@ qboolean ItemParse_hideCvar( itemDef_t *item)
 ItemParse_cvarsubstring
 ===============
 */
-qboolean ItemParse_cvarsubstring( itemDef_t *item) 
+qboolean ItemParse_cvarsubstring( itemDef_t *item )
 {
 	assert(item->cvarFlags);	//need something set first, then we or in our flag.
 	item->cvarFlags |= CVAR_SUBSTRING;
@@ -5248,22 +5246,13 @@ menuDef_t *Menus_ActivateByName(const char *p)
 		}
 	}
 
-
-	const int	com_demo = Cvar_VariableIntegerValue( "com_demo" );
 	if (!m)
 	{	// A hack so we don't have to load all three mission menus before we know what tier we're on
 		if (!Q_stricmp( p, "ingameMissionSelect1" ) )
 		{
-			if ( com_demo )
-			{
-				Menus_OpenByName("demo_MissionSelect");
-			}
-			else
-			{
-				UI_LoadMenus("ui/tier1.txt",qfalse);
-				Menus_CloseAll();
-				Menus_OpenByName("ingameMissionSelect1");
-			}
+			UI_LoadMenus("ui/tier1.txt",qfalse);
+			Menus_CloseAll();
+			Menus_OpenByName("ingameMissionSelect1");
 		}
 		else if (!Q_stricmp( p, "ingameMissionSelect2" ) )
 		{
@@ -5282,53 +5271,26 @@ menuDef_t *Menus_ActivateByName(const char *p)
 			Com_Printf(S_COLOR_YELLOW"WARNING: Menus_ActivateByName: Unable to find menu \"%s\"\n",p);
 		}
 	}
-	
-	if( !com_demo )
+
+	// First time, show force select instructions
+	if (!Q_stricmp( p, "ingameForceSelect" ) )
 	{
-		// First time, show force select instructions
-		if (!Q_stricmp( p, "ingameForceSelect" ) )
+		int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+
+		if (tier_storyinfo==1)
 		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (tier_storyinfo==1)
-			{
-				Menus_OpenByName("ingameForceHelp");
-			}
-		}
-
-		// First time, show weapons select instructions
-		if (!Q_stricmp( p, "ingameWpnSelect" ) )
-		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (tier_storyinfo==1)
-			{
-				Menus_OpenByName("ingameWpnSelectHelp");
-			}
+			Menus_OpenByName("ingameForceHelp");
 		}
 	}
-	else // demo
+
+	// First time, show weapons select instructions
+	if (!Q_stricmp( p, "ingameWpnSelect" ) )
 	{
-		// First time, show force select instructions
-		if (!Q_stricmp( p, "demo_ForceSelect" ) )
+		int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+
+		if (tier_storyinfo==1)
 		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (!tier_storyinfo)
-			{
-				Menus_OpenByName("ingameForceHelp");
-			}
-		}
-
-		// First time, show weapons select instructions
-		if (!Q_stricmp( p, "demo_WpnSelect" ) )
-		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (!tier_storyinfo)
-			{
-				Menus_OpenByName("ingameWpnSelectHelp");
-			}
+			Menus_OpenByName("ingameWpnSelectHelp");
 		}
 	}
 
@@ -6521,8 +6483,6 @@ void Item_ListBox_Paint(itemDef_t *item)
 	qhandle_t image;
 	qhandle_t optionalImage;
 	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
-//JLF MPMOVED
-	int numlines;
 
 	// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
 	// elements are enumerated from the DC and either text or image handles are acquired from the DC as well
@@ -6623,9 +6583,6 @@ void Item_ListBox_Paint(itemDef_t *item)
 	}
 	else 
 	{
-//JLF MPMOVED
-		numlines = item->window.rect.h / listPtr->elementHeight;
-//JLFEND
 //JLF new variable (code idented with if)
 		if (!listPtr->scrollhidden)
 		{
@@ -7303,7 +7260,6 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
 	if (DC->ownerDrawItem) 
 	{
 		vec4_t color, lowLight;
-		menuDef_t *parent = (menuDef_t*)item->parent;
 		Fade(&item->window.flags, &item->window.foreColor[3], parent->fadeClamp, &item->window.nextTime, parent->fadeCycle, qtrue, parent->fadeAmount);
 		memcpy(&color, &item->window.foreColor, sizeof(color));
 		if (item->numColors > 0 && DC->getValue) 
@@ -7510,10 +7466,8 @@ int Item_TextScroll_OverLB ( itemDef_t *item, float x, float y )
 	rectDef_t		r;
 	textScrollDef_t *scrollPtr;
 	int				thumbstart;
-	int				count;
 
 	scrollPtr = (textScrollDef_t*)item->typeData;
-	count     = scrollPtr->iLineCount;
 
 	// Scroll bar isn't drawing so ignore this input 
 	if ((( scrollPtr->iLineCount * scrollPtr->lineHeight ) <= (item->window.rect.h - 2)) && (item->type == ITEM_TYPE_TEXTSCROLL))
@@ -7663,10 +7617,8 @@ Item_Slider_Paint
 void Item_Slider_Paint(itemDef_t *item) 
 {
 	vec4_t newColor, lowLight;
-	float x, y, value;
+	float x, y;
 	menuDef_t *parent = (menuDef_t*)item->parent;
-
-	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
 
 	if (item->window.flags & WINDOW_HASFOCUS) 
 	{
@@ -8887,12 +8839,8 @@ Item_ListBox_OverLB
 int Item_ListBox_OverLB(itemDef_t *item, float x, float y) 
 {
 	rectDef_t r;
-	listBoxDef_t *listPtr;
 	int thumbstart;
-	int count;
 
-	count = DC->feederCount(item->special);
-	listPtr = (listBoxDef_t*)item->typeData;
 	if (item->window.flags & WINDOW_HORIZONTAL) 
 	{
 		// check if on left arrow
