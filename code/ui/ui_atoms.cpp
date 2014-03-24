@@ -268,6 +268,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "cg_drawCrosshair", "1", CVAR_ARCHIVE );
 	ui.Cvar_Create( "cg_marks", "1", CVAR_ARCHIVE );
 	ui.Cvar_Create ("s_language",			"english",	CVAR_ARCHIVE | CVAR_NORESTART);
+#ifndef JK2_MODE
 	ui.Cvar_Create( "g_char_model",			"jedi_tf",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_skin_head",		"head_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_skin_torso",	"torso_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
@@ -302,6 +303,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "cg_bobroll", "0.002", CVAR_ARCHIVE );
 
 	ui.Cvar_Create( "ui_disableWeaponSway", "0", CVAR_ARCHIVE );
+#endif
 
 	
 
