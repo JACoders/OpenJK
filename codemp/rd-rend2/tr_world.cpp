@@ -717,7 +717,7 @@ static void R_MarkLeaves (void) {
 		{
 			if(tr.visClusters[i] != tr.visClusters[tr.visIndex] && r_showcluster->integer)
 			{
-				ri.Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n", cluster, leaf->area, i);
+				ri->Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n", cluster, leaf->area, i);
 			}
 			tr.visIndex = i;
 			return;
