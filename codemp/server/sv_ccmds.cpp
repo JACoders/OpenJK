@@ -1014,6 +1014,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	char *demoNames[] = { demoFolderName, demoFileName };
 	char date[MAX_OSPATH];
 	char folderDate[MAX_OSPATH];
+	char demoPlayerName[MAX_NAME_LENGTH];
 	time_t rawtime;
 	struct tm * timeinfo;
 	time( &rawtime );
@@ -1021,8 +1022,10 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
 	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
+	Q_strncpyz( demoPlayerName, cl->name, sizeof( demoPlayerName ) );
+	Q_CleanStr( demoPlayerName );
 	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s",
-			cl - svs.clients, Q_CleanStr( cl->name ), Cvar_VariableString( "mapname" ), date );
+			cl - svs.clients, demoPlayerName, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
