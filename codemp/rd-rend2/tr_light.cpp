@@ -418,7 +418,7 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// clamp ambient
-	if ( !r_hdr->integer )
+	//if ( !r_hdr->integer )
 	{
 		for ( i = 0 ; i < 3 ; i++ ) {
 			if ( ent->ambientLight[i] > tr.identityLightByte ) {
