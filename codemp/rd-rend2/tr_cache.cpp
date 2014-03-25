@@ -173,6 +173,32 @@ void CCacheManager::DeleteAll( void )
 	loaded.clear();
 }
 
+void CImageCacheManager::DeleteLightMaps( void )
+{
+	for( auto it = cache.begin(); it != cache.end(); /* empty */ )
+	{
+		CachedFile_t pFile = it->second;
+		if( pFile.fileName[0] == '*' && strstr(pFile.fileName, "lightmap") )
+		{
+			if( pFile.pDiskImage )
+				Z_Free( pFile.pDiskImage );
+
+			it = cache.erase(it);
+		}
+		else if( pFile.fileName[0] == '_' && strstr(pFile.fileName, "fatlightmap") )
+		{
+			if( pFile.pDiskImage )
+				Z_Free( pFile.pDiskImage );
+
+			it = cache.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 /*
  * CCacheManager::DumpNonPure
  * Scans the cache for assets which don't match the checksum, and dumps
@@ -364,6 +390,7 @@ void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload)
 
 	tr.numBSPModels = 0;
 
+	CImgCache->DeleteLightMaps();
 	//R_Images_DeleteLightMaps();
 
 	/* If we're switching to the same level, don't increment current level */

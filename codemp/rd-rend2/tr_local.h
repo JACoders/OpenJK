@@ -3140,6 +3140,8 @@ class CImageCacheManager : public CCacheManager
 {
 public:
 	qboolean			LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
+
+	void				DeleteLightMaps( void );
 };
 
 class CModelCacheManager : public CCacheManager
