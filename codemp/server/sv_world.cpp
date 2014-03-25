@@ -888,7 +888,7 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
 
-		c2 = CM_TransformedPointContents (p, clipHandle, hit->s.origin, hit->s.angles);
+		c2 = CM_TransformedPointContents (p, clipHandle, hit->r.currentOrigin, hit->r.currentAngles);
 
 		contents |= c2;
 	}
