@@ -28,8 +28,6 @@ bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp fro
 
 glconfig_t  glConfig;
 glRefConfig_t glRefConfig;
-qboolean    textureFilterAnisotropic = qfalse;
-int         maxAnisotropy = 0;
 float       displayAspect = 0.0f;
 
 glstate_t	glState;
@@ -92,7 +90,6 @@ cvar_t	*r_ext_multitexture;
 cvar_t	*r_ext_compiled_vertex_array;
 cvar_t	*r_ext_texture_env_add;
 cvar_t	*r_ext_texture_filter_anisotropic;
-cvar_t	*r_ext_max_anisotropy;
 cvar_t	*r_ext_preferred_tc_method;
 
 cvar_t  *r_ext_draw_range_elements;
@@ -1203,8 +1200,7 @@ void R_Register( void )
 	r_arb_vertex_type_2_10_10_10_rev = ri->Cvar_Get( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH);
 
 	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic",
-			"0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_max_anisotropy = ri->Cvar_Get( "r_ext_max_anisotropy", "2", CVAR_ARCHIVE | CVAR_LATCH );
+			"16", CVAR_ARCHIVE | CVAR_LATCH );
 
 	r_picmip = ri->Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );

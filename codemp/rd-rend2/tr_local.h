@@ -130,7 +130,6 @@ extern cvar_t	*r_ext_multitexture;
 extern cvar_t	*r_ext_compiled_vertex_array;
 extern cvar_t	*r_ext_texture_env_add;
 extern cvar_t	*r_ext_texture_filter_anisotropic;
-extern cvar_t	*r_ext_max_anisotropy;
 
 extern cvar_t  *r_ext_draw_range_elements;
 extern cvar_t  *r_ext_multi_draw_arrays;
@@ -3055,9 +3054,6 @@ qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);
 image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, int flags, int internalFormat );
-
-extern qboolean    textureFilterAnisotropic;
-extern int         maxAnisotropy;
 
 float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
