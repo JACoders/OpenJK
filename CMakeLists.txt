@@ -98,6 +98,9 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
 # Common settings
 if(WIN32)
+	if(MSVC)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # enable parallel compilation
+	endif(MSVC)
 	if(WIN64)
 		if(MSVC)
 			set(SharedDefines "WIN64" "_CRT_SECURE_NO_WARNINGS")
