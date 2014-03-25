@@ -102,6 +102,11 @@ void GL_TextureMode( const char *string ) {
 
 	gl_filter_min = modes[i].minimize;
 	gl_filter_max = modes[i].maximize;
+	
+	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
+	{
+		ri->Cvar_SetValue ("r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy);
+	}
 
 	// change all the existing mipmap texture objects
 	for ( i = 0 ; i < tr.numImages ; i++ ) {
@@ -110,6 +115,18 @@ void GL_TextureMode( const char *string ) {
 			GL_Bind (glt);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+			
+			if ( r_ext_texture_filter_anisotropic->value > 0.0f )
+			{
+				if ( glConfig.maxTextureFilterAnisotropy > 1.0f )
+				{
+					qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, r_ext_texture_filter_anisotropic->value);
+				}
+				else
+				{
+					qglTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f);
+				}
+			}
 		}
 	}
 }
@@ -1941,9 +1958,8 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 
 	if (flags & IMGFLAG_MIPMAP)
 	{
-		int miplevel;
-
-		miplevel = 0;
+		int miplevel = 0;
+		
 		while (width > 1 || height > 1)
 		{
 			if (data)
@@ -1994,6 +2010,10 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 	}
 }
 
+static bool IsPowerOfTwo ( int i )
+{
+	return (i & (i - 1)) == 0;
+}
 
 /*
 ===============
@@ -2007,11 +2027,15 @@ static void Upload32( byte *data, int width, int height, imgType_t type, int fla
 {
 	byte		*scaledBuffer = NULL;
 	byte		*resampledBuffer = NULL;
-	int			scaled_width, scaled_height;
+	int			scaled_width = width;
+	int			scaled_height = height;
 	int			i, c;
 	byte		*scan;
 
-	RawImage_ScaleToPower2(&data, &width, &height, &scaled_width, &scaled_height, type, flags, &resampledBuffer);
+	if ( !IsPowerOfTwo (width) || !IsPowerOfTwo (height) )
+	{
+		RawImage_ScaleToPower2(&data, &width, &height, &scaled_width, &scaled_height, type, flags, &resampledBuffer);
+	}
 
 	scaledBuffer = (byte *)ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
@@ -2134,10 +2158,10 @@ done:
 
 	if (flags & IMGFLAG_MIPMAP)
 	{
-		if (r_ext_texture_filter_anisotropic->integer > 1 && glConfig.maxTextureFilterAnisotropy > 0)
+		if (r_ext_texture_filter_anisotropic->value > 1.0f && glConfig.maxTextureFilterAnisotropy > 0.0f)
 		{
-			qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
-					(GLint)Com_Clamp( 1, glConfig.maxTextureFilterAnisotropy, r_ext_texture_filter_anisotropic->integer ) );
+			qglTexParameterf ( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,
+							  Com_Clamp( 1.0f, glConfig.maxTextureFilterAnisotropy, r_ext_texture_filter_anisotropic->value ) );
 		}
 
 		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
@@ -2582,8 +2606,9 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		R_CreateNormalMap( name, pic, width, height, flags );
 	}
 
-	image = R_CreateImage( name, pic, width, height, type, flags, 0 );
+	image = R_CreateImage( name, pic, width, height, type, flags, GL_RGBA8 );
 	Z_Free( pic );
+	
 	return image;
 }
 

@@ -1198,9 +1198,7 @@ void R_Register( void )
 	r_ext_framebuffer_multisample = ri->Cvar_Get( "r_ext_framebuffer_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_seamless_cube_map = ri->Cvar_Get( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_vertex_type_2_10_10_10_rev = ri->Cvar_Get( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH);
-
-	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic",
-			"16", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
 
 	r_picmip = ri->Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );
