@@ -5,7 +5,6 @@
 
 #include "client.h"
 #include "cl_cgameapi.h"
-#include "qcommon/stringed_ingame.h"
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif

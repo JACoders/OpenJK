@@ -4,7 +4,7 @@
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
-#include "qcommon/stringed_ingame.h"
+
 /*
 
 key up events are sent even if in console mode
