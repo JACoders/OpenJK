@@ -1457,7 +1457,7 @@ siegeTeam_t *BG_SiegeFindTeamForTheme(char *themeName)
 
 	while (i < bgNumSiegeTeams)
 	{
-		if (bgSiegeTeams[i].name &&
+		if (bgSiegeTeams[i].name[0] &&
 			!Q_stricmp(bgSiegeTeams[i].name, themeName))
 		{ //this is what we're looking for
 			return &bgSiegeTeams[i];
