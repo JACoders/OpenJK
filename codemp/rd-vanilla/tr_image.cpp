@@ -556,7 +556,6 @@ Upload32
 
 ===============
 */
-extern qboolean charSet;
 static void Upload32( unsigned *data,
 						 GLenum format,
 						 qboolean mipmap,
