@@ -1705,8 +1705,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = ent->client->saber[0].tauntAnim;
 			}
-			else if ( ent->client->saber[1].model
-					&& ent->client->saber[1].model[0]
+			else if ( ent->client->saber[1].model[0]
 					&& ent->client->saber[1].tauntAnim != -1 )
 			{
 				anim = ent->client->saber[1].tauntAnim;
@@ -1718,7 +1717,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 				case SS_FAST:
 				case SS_TAVION:
 					if ( ent->client->ps.saberHolstered == 1
-						&& ent->client->saber[1].model
 						&& ent->client->saber[1].model[0] )
 					{//turn off second saber
 						G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
@@ -1737,7 +1735,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 					break;
 				case SS_DUAL:
 					if ( ent->client->ps.saberHolstered == 1
-						&& ent->client->saber[1].model
 						&& ent->client->saber[1].model[0] )
 					{//turn on second saber
 						G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
@@ -1765,8 +1762,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = ent->client->saber[0].bowAnim;
 			}
-			else if ( ent->client->saber[1].model
-					&& ent->client->saber[1].model[0]
+			else if ( ent->client->saber[1].model[0]
 					&& ent->client->saber[1].bowAnim != -1 )
 			{
 				anim = ent->client->saber[1].bowAnim;
@@ -1776,7 +1772,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 				anim = BOTH_BOW;
 			}
 			if ( ent->client->ps.saberHolstered == 1
-				&& ent->client->saber[1].model
 				&& ent->client->saber[1].model[0] )
 			{//turn off second saber
 				G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
@@ -1792,8 +1787,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = ent->client->saber[0].meditateAnim;
 			}
-			else if ( ent->client->saber[1].model
-					&& ent->client->saber[1].model[0]
+			else if ( ent->client->saber[1].model[0]
 					&& ent->client->saber[1].meditateAnim != -1 )
 			{
 				anim = ent->client->saber[1].meditateAnim;
@@ -1803,7 +1797,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 				anim = BOTH_MEDITATE;
 			}
 			if ( ent->client->ps.saberHolstered == 1
-				&& ent->client->saber[1].model
 				&& ent->client->saber[1].model[0] )
 			{//turn off second saber
 				G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOff );
@@ -1818,7 +1811,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			if ( ent->client->ps.weapon == WP_SABER )
 			{
 				if ( ent->client->ps.saberHolstered == 1
-					&& ent->client->saber[1].model
 					&& ent->client->saber[1].model[0] )
 				{//turn on second saber
 					G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
@@ -1832,8 +1824,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 				{
 					anim = ent->client->saber[0].flourishAnim;
 				}
-				else if ( ent->client->saber[1].model
-					&& ent->client->saber[1].model[0]
+				else if ( ent->client->saber[1].model[0]
 					&& ent->client->saber[1].flourishAnim != -1 )
 				{
 					anim = ent->client->saber[1].flourishAnim;
@@ -1868,8 +1859,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = ent->client->saber[0].gloatAnim;
 			}
-			else if ( ent->client->saber[1].model
-					&& ent->client->saber[1].model[0]
+			else if ( ent->client->saber[1].model[0]
 					&& ent->client->saber[1].gloatAnim != -1 )
 			{
 				anim = ent->client->saber[1].gloatAnim;
@@ -1896,7 +1886,6 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 					break;
 				case SS_DUAL:
 					if ( ent->client->ps.saberHolstered == 1
-						&& ent->client->saber[1].model
 						&& ent->client->saber[1].model[0] )
 					{//turn on second saber
 						G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
@@ -3050,8 +3039,7 @@ void ClientThink_real( gentity_t *ent ) {
 						lockHits -= 1;
 					}
 					lockHits += ent->client->saber[0].lockBonus;
-					if ( ent->client->saber[1].model
-						&& ent->client->saber[1].model[0]
+					if ( ent->client->saber[1].model[0]
 						&& !ent->client->ps.saberHolstered )
 					{
 						lockHits += ent->client->saber[1].lockBonus;

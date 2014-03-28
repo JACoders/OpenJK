@@ -815,7 +815,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 	dir = ci->modelName;
 
-	if ( !ci->skinName || !Q_stricmp( "default", ci->skinName ) )
+	if ( !ci->skinName[0] || !Q_stricmp( "default", ci->skinName ) )
 	{//try default sounds.cfg first
 		fLen = trap->FS_Open(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
 		if ( !f )
@@ -4376,7 +4376,6 @@ static void CG_TrailItem( centity_t *cent, qhandle_t hModel ) {
 	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
-
 
 /*
 ===============
