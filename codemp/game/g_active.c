@@ -35,7 +35,7 @@ void P_DamageFeedback( gentity_t *player ) {
 	vec3_t	angles;
 
 	client = player->client;
-	if ( client->ps.pm_type == PM_DEAD ) {
+	if ( client->ps.pm_type == PM_DEAD || client->tempSpectate >= level.time ) {
 		return;
 	}
 
@@ -75,7 +75,7 @@ void P_DamageFeedback( gentity_t *player ) {
 	}
 
 	// play an appropriate pain sound
-	if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) && !(player->s.eFlags & EF_DEAD) ) {
+	if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) && !(player->s.eFlags & EF_DEAD) && (player->client->tempSpectate < level.time)) {
 
 		// don't do more than two pain sounds a second
 		// nmckenzie: also don't make him loud and whiny if he's only getting nicked.
@@ -153,7 +153,7 @@ void P_WorldEffects( gentity_t *ent ) {
 		if ( ent->client->airOutTime < level.time) {
 			// drown!
 			ent->client->airOutTime += 1000;
-			if ( ent->health > 0 ) {
+			if ( ent->health > 0 && ent->client->tempSpectate < level.time ) {
 				// take more damage the longer underwater
 				ent->damage += 2;
 				if (ent->damage > 15)
@@ -185,7 +185,7 @@ void P_WorldEffects( gentity_t *ent ) {
 	//
 	if ( waterlevel && (ent->watertype & (CONTENTS_LAVA|CONTENTS_SLIME)) )
 	{
-		if ( ent->health > 0 && ent->pain_debounce_time <= level.time )
+		if ( ent->health > 0 && ent->client->tempSpectate < level.time && ent->pain_debounce_time <= level.time )
 		{
 		#ifdef BASE_COMPAT
 			if ( envirosuit )
