@@ -1445,36 +1445,18 @@ public:
 
 		// Enable And Disable Things
 		//---------------------------
-		if (mGLModeEnum==GL_POINTS && qglPointParameteriNV)
-		{
-			qglEnable(GL_POINT_SPRITE_NV);
+		qglEnable(GL_TEXTURE_2D);
+		qglDisable(GL_CULL_FACE);
 
-			qglPointSize(mWidth);
-#ifdef WIN32
-			qglPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 4.0f );
-			qglPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, 2047.0f );
-#else
-			qglPointParameterfEXT( GL_POINT_SIZE_MIN, 4.0f );
-			qglPointParameterfEXT( GL_POINT_SIZE_MAX, 2047.0f );
-#endif
-
-			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_TRUE);
-		}
-		else
-		{
-			qglEnable(GL_TEXTURE_2D);
-			qglDisable(GL_CULL_FACE);
-
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
-			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (mFilterMode==0)?(GL_LINEAR):(GL_NEAREST));
 
 
-			// Setup Matrix Mode And Translation
-			//-----------------------------------
-			qglMatrixMode(GL_MODELVIEW);
-			qglPushMatrix();
+		// Setup Matrix Mode And Translation
+		//-----------------------------------
+		qglMatrixMode(GL_MODELVIEW);
+		qglPushMatrix();
 
-		}
 
 		// Begin
 		//-------
@@ -1520,16 +1502,10 @@ public:
 				qglColor4f(mColor[0]*part->mAlpha, mColor[1]*part->mAlpha, mColor[2]*part->mAlpha, mColor[3]*part->mAlpha);
 			}
 
-			// Render A Point
-			//----------------
-			if (mGLModeEnum==GL_POINTS)
-			{
-				qglVertex3fv(part->mPosition.v);
-			}
 
 			// Render A Triangle
 			//-------------------
-			else if (mVertexCount==3)
+			if (mVertexCount==3)
 			{
  				qglTexCoord2f(1.0, 0.0);
 				qglVertex3f(part->mPosition[0],
@@ -1578,16 +1554,8 @@ public:
 		}
 		qglEnd();
 
-		if (mGLModeEnum==GL_POINTS)
-		{
-			qglDisable(GL_POINT_SPRITE_NV);
-			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_FALSE);
-		}
-		else
-		{
-			qglEnable(GL_CULL_FACE);
-			qglPopMatrix();
-		}
+		qglEnable(GL_CULL_FACE);
+		qglPopMatrix();
 
 		mParticlesRendered += mParticleCountRender;
 	}
