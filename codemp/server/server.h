@@ -260,6 +260,7 @@ extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
+extern	cvar_t	*sv_blockJumpSelect;
 
 //===========================================================
 
