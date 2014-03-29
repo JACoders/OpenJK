@@ -760,10 +760,14 @@ done:
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	GL_SelectTexture( 1 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
-	GL_SelectTexture( 0 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
+	if ( qglActiveTextureARB ) {
+		GL_SelectTexture( 1 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+		GL_SelectTexture( 0 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	} else {
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	}
 }
 
 
