@@ -408,6 +408,9 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		drawLen = len - prestep;
 	}
 
+	if ( drawLen < 0 )
+		return;
+
 	// extract <drawLen> characters from the field at <prestep>
 	if ( drawLen >= MAX_STRING_CHARS ) {
 		Com_Error( ERR_DROP, "drawLen >= MAX_STRING_CHARS" );
