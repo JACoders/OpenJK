@@ -16,7 +16,7 @@
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
 qboolean stdin_active = qtrue;
-qboolean stdinIsATTY;
+qboolean stdinIsATTY = qfalse;
 
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };

@@ -32,12 +32,12 @@ This file is part of Jedi Academy.
 #include "openal\alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
-#elif defined MACOS_X
+/*#elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
-#include <AL/alc.h>
+#include <AL/alc.h>*/
 #endif
 
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
@@ -84,7 +84,9 @@ typedef struct sfx_s {
 	float			fVolRange;				// used to set the highest volume this sample has at load time - used for lipsynching
 
 	// Open AL
+#ifdef _WIN32
 	ALuint		Buffer;
+#endif
 	char		*lipSyncData;
 
 	struct sfx_s	*next;					// only used because of hash table when registering
@@ -103,12 +105,14 @@ typedef struct {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
+#ifdef _WIN32
 typedef struct
 {
 	ALuint	BufferID;
 	ALuint	Status;
 	char	*Data;
 } STREAMINGBUFFER;
+#endif
 
 #define NUM_STREAMING_BUFFERS	4
 #define STREAMING_BUFFER_SIZE	4608		// 4 decoded MP3 frames
@@ -147,8 +151,10 @@ typedef struct
 //	bool	bAmbient;	// Signifies if this channel / source is playing a looping ambient sound
 	bool	bProcessed;	// Signifies if this channel / source has been processed
 	bool	bStreaming;	// Set to true if the data needs to be streamed (MP3 or dialogue)
+#ifdef _WIN32
 	STREAMINGBUFFER	buffers[NUM_STREAMING_BUFFERS];	// AL Buffers for streaming
 	ALuint		alSource;		// Open AL Source
+#endif
 	bool		bPlaying;		// Set to true when a sound is playing on this channel / source
 	int			iStartTime;		// Time playback of Source begins
 	int			lSlotID;		// ID of Slot rendering Source's environment (enables a send to this FXSlot)
