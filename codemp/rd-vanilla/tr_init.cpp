@@ -204,13 +204,6 @@ void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 void ( APIENTRY * qglLockArraysEXT)( GLint, GLint);
 void ( APIENTRY * qglUnlockArraysEXT) ( void );
 
-void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
-
-//3d textures -rww
-void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
-
 
 // Declare Register Combiners function pointers.
 PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
