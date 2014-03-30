@@ -1242,40 +1242,6 @@ static void GLW_InitExtensions( void )
 		Com_Printf ("...GL_EXT_compiled_vertex_array not found\n" );
 	}
 
-	qglPointParameterfEXT = NULL;
-	qglPointParameterfvEXT = NULL;
-
-	//3d textures -rww
-	qglTexImage3DEXT = NULL;
-	qglTexSubImage3DEXT = NULL;
-
-	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
-	{
-		if ( r_ext_compiled_vertex_array->integer || 1)
-		{
-			Com_Printf ("...using GL_EXT_point_parameters\n" );
-			qglPointParameterfEXT = ( void ( APIENTRY * )( GLenum, GLfloat) ) qwglGetProcAddress( "glPointParameterfEXT" );
-			qglPointParameterfvEXT = ( void ( APIENTRY * )( GLenum, GLfloat *) ) qwglGetProcAddress( "glPointParameterfvEXT" );
-
-			//3d textures -rww
-			qglTexImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *) ) qwglGetProcAddress( "glTexImage3DEXT" );
-			qglTexSubImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *) ) qwglGetProcAddress( "glTexSubImage3DEXT" );
-
-			if (!qglPointParameterfEXT || !qglPointParameterfvEXT)
-			{
-				Com_Error (ERR_FATAL, "bad getprocaddress");
-			}
-		}
-		else
-		{
-			Com_Printf ("...ignoring GL_EXT_point_parameters\n" );
-		}
-	}
-	else
-	{
-		Com_Printf ("...GL_EXT_point_parameters not found\n" );
-	}
-
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
 	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )

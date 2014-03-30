@@ -381,11 +381,6 @@ extern PFNGLISPROGRAMARBPROC qglIsProgramARB;
 
 extern void ( * qglLockArraysEXT)( int, int);
 extern void ( * qglUnlockArraysEXT) ( void );
-extern void ( APIENTRY * qglPointParameterfEXT)( GLenum param, GLfloat value );
-extern void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, GLfloat *value );
-
-extern void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-extern void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
 
 #define GL_TEXTURE_RECTANGLE_EXT GL_TEXTURE_RECTANGLE_ARB
 
