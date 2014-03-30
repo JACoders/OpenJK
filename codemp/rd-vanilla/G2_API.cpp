@@ -2635,7 +2635,6 @@ qboolean G2API_SetNewOrigin(CGhoul2Info_v &ghoul2, const int boltIndex)
 		{
             char modelName[MAX_QPATH];
 			if (ghlInfo->currentModel &&
-				ghlInfo->currentModel->name &&
 				ghlInfo->currentModel->name[0])
 			{
 				strcpy(modelName, ghlInfo->currentModel->name);
@@ -2709,7 +2708,7 @@ qboolean G2API_SkinlessModel(CGhoul2Info_v& ghoul2, int modelIndex)
 
 			for (i = 0; i < mod->mdxm->numSurfaces; i++)
 			{
-				if (surf->shader && surf->shader[0])
+				if (surf->shader[0])
 				{ //found a surface with a shader name, ok.
                     return qfalse;
 				}

@@ -229,7 +229,7 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 	qboolean dualSabers = qfalse;
 	int	validStyles=0, styleNum;
 
-	if ( saber2 && saber2->model && saber2->model[0] )
+	if ( saber2 && saber2->model[0] )
 		dualSabers = qtrue;
 
 	//dual

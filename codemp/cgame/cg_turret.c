@@ -157,10 +157,7 @@ void TurretClientRun(centity_t *ent)
 
 	if (ent->currentState.fireflag == 2)
 	{ //I'm about to blow
-		if (ent->turAngles)
-		{
-			trap->G2API_SetBoneAngles( ent->ghoul2, 0, "bone_hinge", ent->turAngles, BONE_ANGLES_REPLACE, NEGATIVE_Y, NEGATIVE_Z, NEGATIVE_X, NULL, 100, cg.time );
-		}
+		trap->G2API_SetBoneAngles( ent->ghoul2, 0, "bone_hinge", ent->turAngles, BONE_ANGLES_REPLACE, NEGATIVE_Y, NEGATIVE_Z, NEGATIVE_X, NULL, 100, cg.time );
 		return;
 	}
 	else if (ent->currentState.fireflag && ent->bolt4 != ent->currentState.fireflag)

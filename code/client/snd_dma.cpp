@@ -740,6 +740,7 @@ void S_Shutdown( void )
 /*
 	Mutes / Unmutes all OpenAL sound
 */
+#ifdef _WIN32
 void S_AL_MuteAllSounds(qboolean bMute)
 {
      if (!s_soundStarted)
@@ -757,6 +758,7 @@ void S_AL_MuteAllSounds(qboolean bMute)
           alListenerf(AL_GAIN, 1.0f);
      }
 }
+#endif
 
 
 
