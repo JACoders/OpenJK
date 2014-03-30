@@ -693,7 +693,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 		}
 	}
 
-	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT);
+	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT, qtrue);
 }
 
 void GLSL_FinishGPUShader(shaderProgram_t *program)
