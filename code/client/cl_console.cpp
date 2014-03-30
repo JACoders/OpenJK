@@ -543,7 +543,7 @@ void Con_DrawSolidConsole( float frac )
 	}
 	else {
 		// draw the background only if fullscreen
-		if ( frac != 1.0f )
+		if ( frac < 1.0f )
 		{
 			vec4_t	con_color;
 			MAKERGBA( con_color, 0.0f, 0.0f, 0.0f, frac*con_conAlpha->value );
