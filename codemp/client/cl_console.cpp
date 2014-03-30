@@ -15,6 +15,7 @@ console_t	con;
 
 cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
+cvar_t		*con_conAlpha; //background alpha multiplier
 cvar_t		*con_autoclear;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
@@ -338,6 +339,7 @@ void Con_Init (void) {
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
+	con_conAlpha = Cvar_Get ("conAlpha", "1.6", CVAR_ARCHIVE);
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE);
 
 	Field_Clear( &g_consoleField );
@@ -692,6 +694,17 @@ void Con_DrawSolidConsole( float frac ) {
 		y = 0;
 	}
 	else {
+		// draw the background only if fullscreen
+		if (frac < 1.0f)
+		{
+			vec4_t con_color;
+			MAKERGBA(con_color, 0.0f, 0.0f, 0.0f, frac * con_conAlpha->value);
+			re->SetColor(con_color);
+		}
+		else
+		{
+			re->SetColor(NULL);
+		}
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, (float) y, cls.consoleShader );
 	}
 
