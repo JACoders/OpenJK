@@ -24,7 +24,7 @@ This file is part of Jedi Knight 2.
 #include "g_local.h"
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*func)(centity_t *cent, const struct weaponInfo_s *weapon );
 } func_t;
 
@@ -95,7 +95,7 @@ func_t	funcs[] = {
 //qboolean COM_ParseString( char **data, char **s ); 
 //qboolean COM_ParseFloat( char **data, float *f );
 
-struct 
+struct wpnParms_s
 {
 	int	weaponNum;	// Current weapon number
 	int	ammoNum;
@@ -152,7 +152,7 @@ void WPN_FuncSkip(const char **holdBuf);
 
 typedef struct 
 {
-	char	*parmName;
+	const char	*parmName;
 	void	(*func)(const char **holdBuf);
 } wpnParms_t;
 
@@ -315,58 +315,58 @@ const float defaultAltSplashRadius[] = {
 
 wpnParms_t WpnParms[] = 
 {
-	"ammo",				WPN_Ammo,	//ammo
-	"ammoicon",			WPN_AmmoIcon,
-	"ammomax",			WPN_AmmoMax,
-	"ammolowcount",		WPN_AmmoLowCnt, //weapons
-	"ammotype",			WPN_AmmoType,
-	"energypershot",	WPN_EnergyPerShot,
-	"fireTime",			WPN_FireTime,
-	"firingsound",		WPN_FiringSnd,
-	"altfiringsound",	WPN_AltFiringSnd,
-	"stopsound",		WPN_StopSnd,
-	"chargesound",		WPN_ChargeSnd,
-	"altchargesound",	WPN_AltChargeSnd,
-	"selectsound",		WPN_SelectSnd,
-	"range",			WPN_Range,
-	"weaponclass",		WPN_WeaponClass,
-	"weaponicon",		WPN_WeaponIcon,
-	"weaponmodel",		WPN_WeaponModel,
-	"weapontype",		WPN_WeaponType,
-	"altenergypershot",	WPN_AltEnergyPerShot,
-	"altfireTime",		WPN_AltFireTime,
-	"altrange",			WPN_AltRange,
-	"barrelcount",		WPN_BarrelCount,
-	"missileModel",		WPN_MissileName,
-	"altmissileModel", 	WPN_AltMissileName,
-	"missileSound",		WPN_MissileSound,
-	"altmissileSound", 	WPN_AltMissileSound,
-	"missileLight",		WPN_MissileLight,
-	"altmissileLight", 	WPN_AltMissileLight,
-	"missileLightColor",WPN_MissileLightColor,
-	"altmissileLightColor",	WPN_AltMissileLightColor,
-	"missileFuncName",		WPN_FuncName,
-	"altmissileFuncName",	WPN_AltFuncName,
-	"missileHitSound",		WPN_MissileHitSound,
-	"altmissileHitSound",	WPN_AltMissileHitSound,
-	"muzzleEffect",			WPN_MuzzleEffect,
-	"altmuzzleEffect",		WPN_AltMuzzleEffect,
+	{ "ammo",				WPN_Ammo },	//ammo
+	{ "ammoicon",			WPN_AmmoIcon },
+	{ "ammomax",			WPN_AmmoMax },
+	{ "ammolowcount",		WPN_AmmoLowCnt }, //weapons
+	{ "ammotype",			WPN_AmmoType },
+	{ "energypershot",	WPN_EnergyPerShot },
+	{ "fireTime",			WPN_FireTime },
+	{ "firingsound",		WPN_FiringSnd },
+	{ "altfiringsound",	WPN_AltFiringSnd },
+	{ "stopsound",		WPN_StopSnd },
+	{ "chargesound",		WPN_ChargeSnd },
+	{ "altchargesound",	WPN_AltChargeSnd },
+	{ "selectsound",		WPN_SelectSnd },
+	{ "range",			WPN_Range },
+	{ "weaponclass",		WPN_WeaponClass },
+	{ "weaponicon",		WPN_WeaponIcon },
+	{ "weaponmodel",		WPN_WeaponModel },
+	{ "weapontype",		WPN_WeaponType },
+	{ "altenergypershot",	WPN_AltEnergyPerShot },
+	{ "altfireTime",		WPN_AltFireTime },
+	{ "altrange",			WPN_AltRange },
+	{ "barrelcount",		WPN_BarrelCount },
+	{ "missileModel",		WPN_MissileName },
+	{ "altmissileModel", 	WPN_AltMissileName },
+	{ "missileSound",		WPN_MissileSound },
+	{ "altmissileSound", 	WPN_AltMissileSound },
+	{ "missileLight",		WPN_MissileLight },
+	{ "altmissileLight", 	WPN_AltMissileLight },
+	{ "missileLightColor",WPN_MissileLightColor },
+	{ "altmissileLightColor",	WPN_AltMissileLightColor },
+	{ "missileFuncName",		WPN_FuncName },
+	{ "altmissileFuncName",	WPN_AltFuncName },
+	{ "missileHitSound",		WPN_MissileHitSound },
+	{ "altmissileHitSound",	WPN_AltMissileHitSound },
+	{ "muzzleEffect",			WPN_MuzzleEffect },
+	{ "altmuzzleEffect",		WPN_AltMuzzleEffect },
 	// OPENJK NEW FIELDS
-	"damage",			WPN_Damage,
-	"altdamage",		WPN_AltDamage,
-	"splashDamage",		WPN_SplashDamage,
-	"splashRadius",		WPN_SplashRadius,
-	"altSplashDamage",	WPN_AltSplashDamage,
-	"altSplashRadius",	WPN_AltSplashRadius,
-	
+	{ "damage",			WPN_Damage },
+	{ "altdamage",		WPN_AltDamage },
+	{ "splashDamage",		WPN_SplashDamage },
+	{ "splashRadius",		WPN_SplashRadius },
+	{ "altSplashDamage",	WPN_AltSplashDamage },
+	{ "altSplashRadius",	WPN_AltSplashRadius },
+
 	// Old legacy files contain these, so we skip them to shut up warnings
-	"firingforce",		WPN_FuncSkip,
-	"chargeforce",		WPN_FuncSkip,
-	"altchargeforce",	WPN_FuncSkip,
-	"selectforce",		WPN_FuncSkip,
+	{ "firingforce",		WPN_FuncSkip },
+	{ "chargeforce",		WPN_FuncSkip },
+	{ "altchargeforce",	WPN_FuncSkip },
+	{ "selectforce",		WPN_FuncSkip },
 };
 
-const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
+static const size_t numWpnParms = ARRAY_LEN(WpnParms);
 
 void WPN_FuncSkip( const char **holdBuf)
 {
@@ -611,6 +611,7 @@ void WPN_StopSnd( const char **holdBuf )
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].stopSnd,tokenStr,len);
 }
+
 //--------------------------------------------
 void WPN_ChargeSnd(const char **holdBuf)
 {
@@ -898,8 +899,7 @@ void WPN_BarrelCount(const char **holdBuf)
 static void WP_ParseWeaponParms(const char **holdBuf)
 {
 	const char	*token;
-	int		i;
-
+	size_t	i;
 
 	while (holdBuf)
 	{
@@ -909,7 +909,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 			break;
 
 		// Loop through possible parameters
-		for (i=0;i<WPN_PARM_MAX;++i)
+		for (i=0;i<numWpnParms;++i)
 		{
 			if (!Q_stricmp(token,WpnParms[i].parmName))	
 			{
@@ -918,7 +918,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 			}
 		}
 
-		if (i < WPN_PARM_MAX)	// Find parameter???
+		if (i < numWpnParms)	// Find parameter???
 		{
 			continue;
 		}
@@ -1205,7 +1205,6 @@ void WPN_AltFuncName(const char **holdBuf)
 		}
 	}
 	gi.Printf(S_COLOR_YELLOW"WARNING: AltFuncName %s in external WEAPONS.DAT does not exist\n", tokenStr);
-
 }
 
 //--------------------------------------------
@@ -1229,7 +1228,6 @@ void WPN_MuzzleEffect(const char **holdBuf)
 
 	G_EffectIndex( tokenStr );
 	Q_strncpyz(weaponData[wpnParms.weaponNum].mMuzzleEffect,tokenStr,len);
-
 }
 
 //--------------------------------------------
@@ -1259,84 +1257,90 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 
 void WPN_Damage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].damage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].damage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].splashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].splashRadius = tokenFlt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashRadius = tokenFlt;
 }
 
 //--------------------------------------------
@@ -1354,7 +1358,6 @@ static void WP_ParseParms(const char *buffer)
 
 		if ( !Q_stricmp( token, "{" ) ) 
 		{
-			token =token;
 			WP_ParseWeaponParms(&holdBuf);
 		}
 		 
@@ -1373,7 +1376,7 @@ void WP_LoadWeaponParms (void)
 	len = gi.FS_ReadFile("ext_data/weapons.dat",(void **) &buffer);
 
 	// initialise the data area
-	memset(weaponData, 0, WP_NUM_WEAPONS * sizeof(weaponData_t));	
+	memset(weaponData, 0, sizeof(weaponData));	
 
 	// put in the default values, because backwards compatibility is awesome!
 	for(int i = 0; i < WP_NUM_WEAPONS; i++)
