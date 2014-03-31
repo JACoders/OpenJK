@@ -1440,6 +1440,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if ( !Q_stricmp( token, "surfaceSprites" ) )
 		{
+			// Mark this stage as a surface sprite so we can skip it for now
+			stage->isSurfaceSprite = qtrue;
 			SkipRestOfLine( text );
 			/*char buffer[1024] = "";
 

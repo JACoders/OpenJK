@@ -714,6 +714,8 @@ typedef struct {
 	vec4_t normalScale;
 	vec4_t specularScale;
 
+	qboolean		isSurfaceSprite;
+
 } shaderStage_t;
 
 struct shaderCommands_s;
