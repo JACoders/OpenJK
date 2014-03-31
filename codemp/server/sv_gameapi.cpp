@@ -388,12 +388,6 @@ int GVM_BG_GetItemIndexByTag( int tag, int type ) {
 //	only used by legacy mods!
 //
 
-static int FloatAsInt( float f ) {
-	byteAlias_t fi;
-	fi.f = f;
-	return fi.i;
-}
-
 // legacy syscall
 
 siegePers_t sv_siegePersData = {qfalse, 0, 0};
