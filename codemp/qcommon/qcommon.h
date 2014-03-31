@@ -272,6 +272,15 @@ typedef struct vm_s {
 
 extern vm_t *currentVM;
 
+class VMSwap {
+private:
+	VMSwap();
+	vm_t *oldVM;
+public:
+	VMSwap( vm_t *newVM ) : oldVM( currentVM ) { currentVM = newVM; };
+	~VMSwap() { if ( oldVM ) currentVM = oldVM; };
+};
+
 extern const char *vmStrs[MAX_VM];
 
 typedef enum {
