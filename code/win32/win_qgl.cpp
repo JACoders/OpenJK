@@ -3553,10 +3553,6 @@ qboolean QGL_Init( const char *dllname )
 	qglMultiTexCoord2fARB = 0;
 	qglLockArraysEXT = 0;
 	qglUnlockArraysEXT = 0;
-	qglPointParameterfEXT = NULL;
-	qglPointParameterfvEXT = NULL;
-	qglPointParameteriNV	= NULL;
-	qglPointParameterivNV	= NULL;
 
 	// check logging
 	QGL_EnableLogging( r_logFile->integer );

@@ -323,13 +323,6 @@ extern	void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 extern	void ( APIENTRY * qglLockArraysEXT) (GLint, GLint);
 extern	void ( APIENTRY * qglUnlockArraysEXT) (void);
 
-extern	void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-extern	void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
-
-// Added 10/23/02 by Aurelio Reis.
-extern	void ( APIENTRY * qglPointParameteriNV)( GLenum, GLint);
-extern	void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
-
 //===========================================================================
 
 // non-windows systems will just redefine qgl* to gl*
