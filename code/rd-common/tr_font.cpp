@@ -971,13 +971,25 @@ CFontInfo::CFontInfo(const char *_fontName)
 
 		for(i = 0; i < GLYPH_COUNT; i++)
 		{
+#ifdef Q3_BIG_ENDIAN
+			mGlyphs[i].width = LittleShort(fontdat->mGlyphs[i].width);
+			mGlyphs[i].height = LittleShort(fontdat->mGlyphs[i].height);
+			mGlyphs[i].horizAdvance = LittleShort(fontdat->mGlyphs[i].horizAdvance);
+			mGlyphs[i].horizOffset = LittleShort(fontdat->mGlyphs[i].horizOffset);
+			mGlyphs[i].baseline = LittleLong(fontdat->mGlyphs[i].baseline);
+			mGlyphs[i].s = LittleFloat(fontdat->mGlyphs[i].s);
+			mGlyphs[i].t = LittleFloat(fontdat->mGlyphs[i].t);
+			mGlyphs[i].s2 = LittleFloat(fontdat->mGlyphs[i].s2);
+			mGlyphs[i].t2 = LittleFloat(fontdat->mGlyphs[i].t2);
+#else
 			mGlyphs[i] = fontdat->mGlyphs[i];
+#endif
 		}
-		mPointSize = fontdat->mPointSize;
-		mHeight = fontdat->mHeight;
-		mAscender = fontdat->mAscender;
-		mDescender = fontdat->mDescender;
-//		mAsianHack = fontdat->mKoreanHack;	// ignore this crap, it's some junk in the fontdat file that no-one uses
+		mPointSize = LittleShort(fontdat->mPointSize);
+		mHeight = LittleShort(fontdat->mHeight);
+		mAscender = LittleShort(fontdat->mAscender);
+		mDescender = LittleShort(fontdat->mDescender);
+//		mAsianHack = LittleShort(fontdat->mKoreanHack);	// ignore this crap, it's some junk in the fontdat file that no-one uses
 		mbRoundCalcs = !!strstr(fontName,"ergo");
 
 		// cope with bad fontdat headers...
