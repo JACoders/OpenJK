@@ -1278,6 +1278,12 @@ int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	return len;
 }
 
+int FloatAsInt( float f ) {
+	byteAlias_t fi;
+	fi.f = f;
+	return fi.i;
+}
+
 /*
 ============
 va

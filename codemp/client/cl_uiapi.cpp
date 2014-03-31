@@ -117,12 +117,6 @@ void UIVM_DrawConnectScreen( qboolean overlay ) {
 //	only used by legacy mods!
 //
 
-static int FloatAsInt( float f ) {
-	byteAlias_t fi;
-	fi.f = f;
-	return fi.i;
-}
-
 // wrappers and such
 
 static int CL_Milliseconds( void ) {

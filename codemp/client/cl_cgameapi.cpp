@@ -289,12 +289,6 @@ void CGVM_CameraShake( void ) {
 //	only used by legacy mods!
 //
 
-static int FloatAsInt( float f ) {
-	byteAlias_t fi;
-	fi.f = f;
-	return fi.i;
-}
-
 extern int CL_GetValueForHidden( const char *s ); //cl_parse.cpp
 extern qboolean cl_bUseFighterPitch; //cl_input.cpp
 int CM_LoadSubBSP( const char *name, qboolean clientload ); //cm_load.cpp
