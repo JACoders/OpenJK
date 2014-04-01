@@ -62,6 +62,7 @@ This file is part of Jedi Academy.
 	TAGDEF(DEFLATE),				// Temp memory used by zlib32
 	TAGDEF(POINTCACHE),					// weather effects
 	TAGDEF(NEWDEL),
+	TAGDEF(MINIZIP),
 	TAGDEF(COUNT)
 	
 //////////////// eof //////////////
