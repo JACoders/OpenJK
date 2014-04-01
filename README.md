@@ -13,13 +13,13 @@ Please use discretion when making issue requests on github. The [JKHub sub-forum
 
 ## Jedi Outcast Support ##
 
-_Do not make issues regarding Jedi Outcast support problems at this time.  It is considered mostly unfinished, broken and use at your own risk!  (We know things like saving and using the JK2 Mode are broken for sure)_
+_Do not make issues regarding Jedi Outcast support problems at this time.  It is considered mostly unfinished, broken and use at your own risk!_
 
-There is no Multi-Player code for JK2MP at all on our repository at this time.   The Single-Player support must be explicitly turned on in your own compile.  The prebuilt versions will not include this.
+There is no Multiplayer code for JK2MP at all on our repository at this time.  The Singleplayer support must be explicitly turned on in your own compile.  The prebuilt versions will not include this.
 
 ## 64-bit Support
 
-64-bit is now mostly working on non-Windows platforms.
+64-bit is currently supported on non-Windows platforms.
 
 ## Installation ##
 
@@ -29,7 +29,6 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 * eezstreet
 * Ensiform
-* ImperatorPrime
 * Razish
 * redsaurus
 * Xycaleth
@@ -37,6 +36,7 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 ## Significant contributors (in alphabetical order) ##
 
 * exidl
+* ImperatorPrime
 * mrwonko
 * Scooper
 * Sil
@@ -72,8 +72,8 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 ### Reserved renderer names ###
 * rd-vanilla (JA's original renderer)
 * rd-dedicated (Stripped down renderer for use with dedicated server)
-* rd-raspberry (OpenGL ES compliant renderer for use with Raspberry Pi - feel free to maintain!)
 * rd-rend2 (Maintainer: Xycaleth)
+* rd-es (OpenGL ES compliant renderer for use with Raspberry Pi, Ouya, etc - please contribute!)
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
 * rd-palpatine (Maintainer: mrwonko)
@@ -85,4 +85,5 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)
 * [Buildbot builds](http://builds.openjk.org/)
+* [Compilation Guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
 * [JKHub sub-forum](http://jkhub.org/forum/51-discussion/)

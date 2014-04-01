@@ -1234,10 +1234,6 @@ Ghoul2 Insert End
 extern	cvar_t	*r_environmentMapping;
 //====================================================================
 
-// Point sprite stuff.
-extern cvar_t	*r_ext_point_parameters;
-extern cvar_t	*r_ext_nv_point_sprite;
-
 
 void R_SwapBuffers( int );
 
