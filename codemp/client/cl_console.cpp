@@ -716,7 +716,7 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH,
+		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
 	}
 
