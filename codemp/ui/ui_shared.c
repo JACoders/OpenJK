@@ -118,7 +118,7 @@ static qboolean outOfMemory;
 typedef struct  itemFlagsDef_s {
 	const char *string;
 	int value;
-}itemFlagsDef_t;
+} itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags[] = {
 	{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
@@ -949,7 +949,7 @@ qboolean Script_SetColor ( itemDef_t *item, char **args )
 				{
 					return qtrue;
 				}
-			(*out)[i] = f;
+				(*out)[i] = f;
 			}
 		}
 	}
@@ -1071,20 +1071,19 @@ qboolean Script_SetItemText(itemDef_t *item, char **args)
 	return qtrue;
 }
 
-
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p) {
-  int i;
-  if (menu == NULL || p == NULL) {
-    return NULL;
-  }
+	int i;
+	if (menu == NULL || p == NULL) {
+		return NULL;
+	}
 
-  for (i = 0; i < menu->itemCount; i++) {
-    if (Q_stricmp(p, menu->items[i]->window.name) == 0) {
-      return menu->items[i];
-    }
-  }
+	for (i = 0; i < menu->itemCount; i++) {
+		if (Q_stricmp(p, menu->items[i]->window.name) == 0) {
+			return menu->items[i];
+		}
+	}
 
-  return NULL;
+	return NULL;
 }
 
 qboolean Script_SetTeamColor(itemDef_t *item, char **args)
@@ -3426,7 +3425,6 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 		if ( key & K_CHAR_FLAG ) {
 			key &= ~K_CHAR_FLAG;
 
-
 			if (key == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 				if ( item->cursorPos > 0 ) {
 					memmove( &buff[item->cursorPos - 1], &buff[item->cursorPos], len + 1 - item->cursorPos);
@@ -3438,7 +3436,6 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 				DC->setCVar(item->cvar, buff);
 	    		return qtrue;
 			}
-
 
 			//
 			// ignore any non printable chars
@@ -5156,20 +5153,17 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 }
 
 // scale the model should we need to
-void UI_ScaleModelAxis(refEntity_t	*ent)
+void UI_ScaleModelAxis( refEntity_t *ent )
 {
-	if (ent->modelScale[0] && ent->modelScale[0] != 1.0f)
-	{
+	if ( ent->modelScale[0] && ent->modelScale[0] != 1.0f ) {
 		VectorScale( ent->axis[0], ent->modelScale[0] , ent->axis[0] );
 		ent->nonNormalizedAxes = qtrue;
 	}
-	if (ent->modelScale[1] && ent->modelScale[1] != 1.0f)
-	{
+	if ( ent->modelScale[1] && ent->modelScale[1] != 1.0f ) {
 		VectorScale( ent->axis[1], ent->modelScale[1] , ent->axis[1] );
 		ent->nonNormalizedAxes = qtrue;
 	}
-	if (ent->modelScale[2] && ent->modelScale[2] != 1.0f)
-	{
+	if ( ent->modelScale[2] && ent->modelScale[2] != 1.0f ) {
 		VectorScale( ent->axis[2], ent->modelScale[2] , ent->axis[2] );
 		ent->nonNormalizedAxes = qtrue;
 	}
@@ -7294,10 +7288,8 @@ qboolean ItemParse_model_g2anim( itemDef_t *item, int handle ) {
 // model_g2skin <string>
 qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName )
 {
-
 	modelDef_t *modelPtr;
 	int defSkin;
-
 
 	Item_ValidateTypeData(item);
 	modelPtr = (modelDef_t*)item->typeData;
@@ -7446,7 +7438,6 @@ qboolean ItemParse_style( itemDef_t *item, int handle)
 	return qtrue;
 }
 
-
 // decoration
 qboolean ItemParse_decoration( itemDef_t *item, int handle ) {
 	item->window.flags |= WINDOW_DECORATION;
@@ -7483,10 +7474,6 @@ qboolean ItemParse_scrollhidden( itemDef_t *item , int handle)
 	return qtrue;
 }
 
-
-
-
-
 // manually wrapped
 qboolean ItemParse_wrapped( itemDef_t *item, int handle ) {
 	item->window.flags |= WINDOW_WRAPPED;
@@ -7498,7 +7485,6 @@ qboolean ItemParse_autowrapped( itemDef_t *item, int handle ) {
 	item->window.flags |= WINDOW_AUTOWRAPPED;
 	return qtrue;
 }
-
 
 // horizontalscroll
 qboolean ItemParse_horizontalscroll( itemDef_t *item, int handle ) {
@@ -7514,8 +7500,6 @@ ItemParse_type
 */
 qboolean ItemParse_type( itemDef_t *item, int handle  )
 {
-//	int		i,holdInt;
-
 	if (!PC_Int_Parse(handle, &item->type))
 	{
 		return qfalse;
@@ -7670,7 +7654,6 @@ qboolean ItemParse_isCharacter( itemDef_t *item, int handle  )
 	}
 	return qfalse;
 }
-
 
 /*
 ===============
