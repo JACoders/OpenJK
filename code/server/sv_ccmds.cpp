@@ -27,6 +27,8 @@ This file is part of Jedi Academy.
 #include "../game/g_items.h"
 #include "../game/statindex.h"
 
+#include "../win32/AutoVersion.h"
+
 
 /*
 ===============================================================================
@@ -363,9 +365,7 @@ SV_Status_f
 ================
 */
 static void SV_Status_f( void ) {
-	int				i, j, l, humans;
 	client_t	*cl;
-	const char		*s;
 
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
@@ -373,21 +373,12 @@ static void SV_Status_f( void ) {
 		return;
 	}
 
-	humans = 0;
-	for ( i = 0 ; i < MAX_CLIENTS ; i++ ) {
-		if ( svs.clients[i].state >= CS_CONNECTED ) {
-			if ( svs.clients[i].netchan.remoteAddress.type == NA_LOOPBACK ) {
-				humans++;
-			}
-		}
-	}
+	cl = &svs.clients[0];
 
-	if ( !humans ) {
-		Com_Printf( "Server is not running.\n" );
+	if ( !cl ) {
+		Com_Printf("Server is not running.\n");
 		return;
 	}
-
-	cl = &svs.clients[0];
 
 #if defined(_WIN32)
 #define STATUS_OS "Windows"
@@ -399,47 +390,15 @@ static void SV_Status_f( void ) {
 #define STATUS_OS "Unknown"
 #endif
 
-	char hostname[MAX_NAME_LENGTH]={0};
-
-	Q_strncpyz( hostname, cl->name, sizeof( hostname ) );
-	Q_StripColor( hostname );
-
-	Com_Printf( "hostname: %s^7\n", hostname );
-	Com_Printf( "version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
-	Com_Printf( "game    : %s\n", FS_GetCurrentGameDir() );
-	Com_Printf( "udp/ip  : localhost:%i os(%s) type(%s)\n", PORT_SERVER, STATUS_OS, "listen" );
+	Com_Printf( "name    : %s^7\n", cl->name );
+	Com_Printf( "score   : %i\n", cl->gentity->client->persistant[PERS_SCORE] );
+	Com_Printf( "version : %s %s %i\n", STATUS_OS, VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+#ifdef JK2_MODE
+	Com_Printf( "game    : Jedi Outcast %s\n", FS_GetCurrentGameDir() );
+#else
+	Com_Printf( "game    : Jedi Academy %s\n", FS_GetCurrentGameDir() );
+#endif
 	Com_Printf( "map     : %s at %s\n", sv_mapname->string, ivtos( cl->gentity->client->origin ) );
-	Com_Printf( "players : %i humans, 0 bots (1 max)\n", humans );
-
-	Com_Printf ("num score ping name            lastmsg address               qport\n" );
-	Com_Printf ("--- ----- ---- --------------- ------- --------------------- -----\n" );
-	if ( !cl->state )
-		return;
-	Com_Printf( "%3i ", 0 );
-	Com_Printf( "%5i ", cl->gentity->client->persistant[PERS_SCORE] );
-	if ( cl->state == CS_CONNECTED )
-		Com_Printf( "CNCT " );
-	else if ( cl->state == CS_ZOMBIE )
-		Com_Printf( "ZMBI " );
-	else
-		Com_Printf( "%4i ", 0);
-	Com_Printf( "%s", cl->name );
-	l = 16 - strlen( cl->name );
-	for (j=0 ; j<l ; j++)
-		Com_Printf( " " );
-
-	Com_Printf( "%7i ", sv.time - cl->lastPacketTime );
-
-	s = NET_AdrToString( cl->netchan.remoteAddress );
-	Com_Printf( "%s", s );
-	l = 22 - strlen( s );
-	for (j=0 ; j<l ; j++)
-		Com_Printf( " " );
-		
-	Com_Printf( "%5i", cl->netchan.qport );
-
-	Com_Printf( "\n" );
-	Com_Printf( "\n" );
 }
 
 /*
