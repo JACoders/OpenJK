@@ -1,5 +1,6 @@
 #include "qcommon/exe_headers.h"
 
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 vm_t *currentVM = NULL;
