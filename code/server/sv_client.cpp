@@ -307,10 +307,9 @@ SV_UpdateUserinfo_f
 static void SV_UpdateUserinfo_f( client_t *cl ) {
 	Q_strncpyz( cl->userinfo, Cmd_Argv(1), sizeof(cl->userinfo) );
 
+	SV_UserinfoChanged( cl );
 	// call prog code to allow overrides
 	ge->ClientUserinfoChanged( cl - svs.clients );
-	
-	SV_UserinfoChanged( cl );
 }
 
 typedef struct {
