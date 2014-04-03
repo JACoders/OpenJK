@@ -345,13 +345,27 @@ void SV_LoadTransition_f(void)
 }
 //===============================================================
 
+char	*ivtos( const vec3_t v ) {
+	static	int		index;
+	static	char	str[8][32];
+	char	*s;
+
+	// use an array so that multiple vtos won't collide
+	s = str[index];
+	index = (index + 1)&7;
+
+	Com_sprintf (s, 32, "( %i %i %i )", (int)v[0], (int)v[1], (int)v[2]);
+
+	return s;
+}
+
 /*
 ================
 SV_Status_f
 ================
 */
 static void SV_Status_f( void ) {
-	int			i, j, l;
+	int				i, j, l, humans;
 	client_t	*cl;
 	const char		*s;
 
@@ -361,40 +375,73 @@ static void SV_Status_f( void ) {
 		return;
 	}
 
-	Com_Printf ("map: %s\n", sv_mapname->string );
-
-	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
-	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
-	for (i=0,cl=svs.clients ; i < 1 ; i++,cl++)
-	{
-		if (!cl->state)
-			continue;
-		Com_Printf ("%3i ", i);
-		Com_Printf ("%5i ", cl->gentity->client->persistant[PERS_SCORE]);
-
-		if (cl->state == CS_CONNECTED)
-			Com_Printf ("CNCT ");
-		else if (cl->state == CS_ZOMBIE)
-			Com_Printf ("ZMBI ");
-
-		Com_Printf ("%s", cl->name);
-		l = 16 - strlen(cl->name);
-		for (j=0 ; j<l ; j++)
-			Com_Printf (" ");
-
-		Com_Printf ("%7i ", sv.time - cl->lastPacketTime );
-
-		s = NET_AdrToString( cl->netchan.remoteAddress );
-		Com_Printf ("%s", s);
-		l = 22 - strlen(s);
-		for (j=0 ; j<l ; j++)
-			Com_Printf (" ");
-		
-		Com_Printf ("%5i", cl->netchan.qport);
-
-		Com_Printf ("\n");
+	humans = 0;
+	for ( i = 0 ; i < MAX_CLIENTS ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED ) {
+			if ( svs.clients[i].netchan.remoteAddress.type == NA_LOOPBACK ) {
+				humans++;
+			}
+		}
 	}
-	Com_Printf ("\n");
+
+	if ( !humans ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	cl = &svs.clients[0];
+
+#if defined(_WIN32)
+#define STATUS_OS "Windows"
+#elif defined(__linux__)
+#define STATUS_OS "Linux"
+#elif defined(MACOS_X)
+#define STATUS_OS "OSX"
+#else
+#define STATUS_OS "Unknown"
+#endif
+
+	char hostname[MAX_NAME_LENGTH]={0};
+
+	Q_strncpyz( hostname, cl->name, sizeof( hostname ) );
+	Q_StripColor( hostname );
+
+	Com_Printf( "hostname: %s^7\n", hostname );
+	Com_Printf( "version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+	Com_Printf( "game    : %s\n", FS_GetCurrentGameDir() );
+	Com_Printf( "udp/ip  : localhost:%i os(%s) type(%s)\n", PORT_SERVER, STATUS_OS, "listen" );
+	Com_Printf( "map     : %s at %s\n", sv_mapname->string, ivtos( cl->gentity->client->origin ) );
+	Com_Printf( "players : %i humans, 0 bots (1 max)\n", humans );
+
+	Com_Printf ("num score ping name            lastmsg address               qport\n" );
+	Com_Printf ("--- ----- ---- --------------- ------- --------------------- -----\n" );
+	if ( !cl->state )
+		return;
+	Com_Printf( "%3i ", 0 );
+	Com_Printf( "%5i ", cl->gentity->client->persistant[PERS_SCORE] );
+	if ( cl->state == CS_CONNECTED )
+		Com_Printf( "CNCT " );
+	else if ( cl->state == CS_ZOMBIE )
+		Com_Printf( "ZMBI " );
+	else
+		Com_Printf( "%4i ", 0);
+	Com_Printf( "%s", cl->name );
+	l = 16 - strlen( cl->name );
+	for (j=0 ; j<l ; j++)
+		Com_Printf( " " );
+
+	Com_Printf( "%7i ", sv.time - cl->lastPacketTime );
+
+	s = NET_AdrToString( cl->netchan.remoteAddress );
+	Com_Printf( "%s", s );
+	l = 22 - strlen( s );
+	for (j=0 ; j<l ; j++)
+		Com_Printf( " " );
+		
+	Com_Printf( "%5i", cl->netchan.qport );
+
+	Com_Printf( "\n" );
+	Com_Printf( "\n" );
 }
 
 /*
