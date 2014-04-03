@@ -42,7 +42,6 @@ This file is part of Jedi Academy.
 struct snapshot_s 
 {
 	int				snapFlags;			// SNAPFLAG_RATE_DELAYED, SNAPFLAG_DROPPED_COMMANDS
-	int				ping;
 
 	int				serverTime;		// server time the message is valid for (in msec)
 
