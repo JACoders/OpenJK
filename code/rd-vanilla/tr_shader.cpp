@@ -2900,7 +2900,7 @@ static shader_t *GeneratePermanentShader( void ) {
 VertexLightingCollapse
 
 If vertex lighting is enabled, only render a single
-pass, trying to guess which is the correct one to best aproximate
+pass, trying to guess which is the correct one to best approximate
 what it is supposed to look like.
 
   OUTPUT:  Number of stages after the collapse (in the case of surfacesprites this isn't one).
