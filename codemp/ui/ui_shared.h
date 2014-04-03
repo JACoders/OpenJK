@@ -279,7 +279,14 @@ typedef struct itemDef_s {
 	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
 	float		special;					// used for feeder id's etc.. diff per type
 	int			cursorPos;					// cursor position in characters
-	void		*typeData;					// type specific data ptr's
+	union {
+		void			*data;
+		listBoxDef_t	*listbox;
+		textScrollDef_t	*textscroll;
+		editFieldDef_t	*edit;
+		multiDef_t		*multi;
+		modelDef_t		*model;
+	} typeData;								// type specific data ptr's
 	const char	*descText;					//	Description text
 	int			appearanceSlot;				// order of appearance
 	int			iMenuFont;					// FONT_SMALL,FONT_MEDIUM,FONT_LARGE	// changed from 'font' so I could see what didn't compile, and differentiate between font handles returned from RegisterFont -ste

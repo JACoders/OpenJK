@@ -5384,7 +5384,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "headlistbox");
 		if (item)
 		{
-			listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5395,7 +5395,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "torsolistbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5406,7 +5406,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "lowerlistbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5417,7 +5417,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "colorbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -6368,7 +6368,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 				if (item)
 				{
-					modelPtr = (modelDef_t*)item->typeData;
+					modelPtr = item->typeData.model;
 					if (modelPtr)
 					{
 						char modelPath[MAX_QPATH];
@@ -6860,7 +6860,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "itemdescription");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6881,7 +6881,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "description");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6896,7 +6896,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_weapons_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6907,7 +6907,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_inventory_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6918,7 +6918,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_force_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6942,7 +6942,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "maplist");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						trap->Cvar_Set("ui_currentNetMap", va("%d",listPtr->cursorPos));
@@ -8584,7 +8584,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_force_feed");
 			if (item)
 			{
-				listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+				listBoxDef_t *listPtr = item->typeData.listbox;
 				if (listPtr)
 				{
 					slotI = listPtr->startPos;
@@ -8646,7 +8646,7 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 			if (item)
 			{
-				modelPtr = (modelDef_t*)item->typeData;
+				modelPtr = item->typeData.model;
 				if (modelPtr)
 				{
 					char modelPath[MAX_QPATH];
@@ -8727,7 +8727,7 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 			if (item)
 			{
-				modelPtr = (modelDef_t*)item->typeData;
+				modelPtr = item->typeData.model;
 				if (modelPtr)
 				{
 					char modelPath[MAX_QPATH];
