@@ -63,8 +63,8 @@ static client_t *SV_SetPlayer( void ) {
 //
 static bool SV_Map_( ForceReload_e eForceReload ) 
 {
-	const char	*map;
-	char	expanded[MAX_QPATH];
+	char		*map = NULL;
+	char		expanded[MAX_QPATH] = {0};
 
 	map = Cmd_Argv(1);
 	if ( !*map ) {
@@ -277,17 +277,19 @@ static void SV_Map_f( void )
 
 	ForceReload_e eForceReload = eForceReload_NOTHING;	// default for normal load
 
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapbsp") ) {
+	char *cmd = Cmd_Argv( 0 );
+	if ( !Q_stricmp( cmd, "devmapbsp") )
 		eForceReload = eForceReload_BSP;
-	}
-	else
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapmdl") ) {
+	else if ( !Q_stricmp( cmd, "devmapmdl") )
 		eForceReload = eForceReload_MODELS;
-	}
-	else
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapall") ) {
+	else if ( !Q_stricmp( cmd, "devmapall") )
 		eForceReload = eForceReload_ALL;
-	}
+
+	qboolean cheat = (qboolean)(!Q_stricmpn( cmd, "devmap", 6 ) );
+
+	// retain old cheat state
+	if ( !cheat && Cvar_VariableIntegerValue( "helpUsObi" ) )
+		cheat = qtrue;
 
 	if (SV_Map_( eForceReload ))
 	{
@@ -295,11 +297,7 @@ static void SV_Map_f( void )
 		// if the level was started with "map <levelname>", then
 		// cheats will not be allowed.  If started with "devmap <levelname>"
 		// then cheats will be allowed
-		if ( !Q_stricmpn( Cmd_Argv(0), "devmap", 6 ) ) {
-			Cvar_Set( "helpUsObi", "1" );
-		} else {
-			Cvar_Set( "helpUsObi", "0" );
-		}
+		Cvar_Set( "helpUsObi", cheat ? "1" : "0" );
 	}
 }
 
