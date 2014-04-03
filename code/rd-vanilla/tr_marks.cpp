@@ -43,8 +43,8 @@ Out must have space for two more vertexes than in
 static void R_ChopPolyBehindPlane( int numInPoints, vec3_t inPoints[MAX_VERTS_ON_POLY],
 								   int *numOutPoints, vec3_t outPoints[MAX_VERTS_ON_POLY], 
 							vec3_t normal, vec_t dist, vec_t epsilon) {
-	float		dists[MAX_VERTS_ON_POLY+4];
-	int			sides[MAX_VERTS_ON_POLY+4];
+	float		dists[MAX_VERTS_ON_POLY+4] = { 0 };
+	int			sides[MAX_VERTS_ON_POLY+4] = { 0 };
 	int			counts[3];
 	float		dot;
 	int			i, j;
@@ -404,13 +404,6 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 				continue;
 			}
 
-			/*
-			VectorSubtract(clipPoints[0][0], clipPoints[0][1], v1);
-			VectorSubtract(clipPoints[0][2], clipPoints[0][1], v2);
-			CrossProduct(v1, v2, normal);
-			VectorNormalize(normal);
-			if (DotProduct(normal, projectionDir) > -0.5) continue;
-			*/
 			const int * const indexes = (int *)( (byte *)surf + surf->ofsIndices );
 
 			for ( k = 0 ; k < surf->numIndices ; k += 3 ) {
