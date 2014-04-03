@@ -354,7 +354,6 @@ static void SV_Status_f( void ) {
 	int			i, j, l;
 	client_t	*cl;
 	const char		*s;
-	int			ping;
 
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
@@ -377,11 +376,6 @@ static void SV_Status_f( void ) {
 			Com_Printf ("CNCT ");
 		else if (cl->state == CS_ZOMBIE)
 			Com_Printf ("ZMBI ");
-		else
-		{
-			ping = cl->ping < 9999 ? cl->ping : 9999;
-			Com_Printf ("%4i ", ping);
-		}
 
 		Com_Printf ("%s", cl->name);
 		l = 16 - strlen(cl->name);
@@ -397,8 +391,6 @@ static void SV_Status_f( void ) {
 			Com_Printf (" ");
 		
 		Com_Printf ("%5i", cl->netchan.qport);
-
-		Com_Printf (" %5i", cl->rate);
 
 		Com_Printf ("\n");
 	}

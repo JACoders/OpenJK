@@ -291,22 +291,11 @@ static void SV_Disconnect_f( client_t *cl ) {
 =================
 SV_UserinfoChanged
 
-Pull specific info from a newly changed userinfo string
-into a more C friendly form.
+Pull specific info from a newly changed userinfo string into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	const char	*val;
-	int		i;
-
-	// name for C code
-	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
-
-	// rate command
-
-	// if the client is on the same subnet as the server and we aren't running an
-	// internet public server, assume they don't need a rate choke
-	cl->rate = 99999;	// lans should not rate limit
+	Q_strncpyz( cl->name, Info_ValueForKey( cl->userinfo, "name" ), sizeof( cl->name ) );
 }
 
 
