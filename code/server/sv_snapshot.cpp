@@ -626,8 +626,6 @@ Called by SV_SendClientSnapshot and SV_SendClientGameState
 */
 #define	HEADER_RATE_BYTES	48		// include our header, IP header, and some overhead
 void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
-	int			rateMsec;
-
 	// record information about the message
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSize = msg->cursize;
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSent = sv.time;
