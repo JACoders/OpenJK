@@ -988,7 +988,9 @@ For some reason, other dll's can't just cal fclose()
 on files returned by FS_FOpenFile...
 ==============
 */
+#ifdef USE_AIO
 void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*notify_function) (sigval_t) );
+#endif
 void FS_FCloseFile( fileHandle_t f ) {
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
@@ -1742,6 +1744,7 @@ int FS_Read( void *buffer, int len, fileHandle_t f ) {
 	}
 }
 
+#ifdef USE_AIO
 static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*notify_function) (sigval_t) ) {
 	FILE *f = FS_FileForHandle(h);
 	fileBufferNode_t *node = ( fileBufferNode_t * ) Z_Malloc( sizeof( fileBufferNode_t ), TAG_FILESYS, qtrue );
@@ -1784,6 +1787,7 @@ static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*not
 		prevNode->next = node;
 	}
 }
+#endif
 
 /*
 =================

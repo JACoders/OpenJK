@@ -125,7 +125,9 @@ float FloatSwap( const float *f );
 
 #include "qcommon/q_platform.h"
 
-#define USE_AIO
+#if defined(__linux__)
+	#define USE_AIO
+#endif
 
 #if defined(USE_AIO)
 	#include <aio.h>
