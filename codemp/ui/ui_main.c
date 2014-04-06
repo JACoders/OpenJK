@@ -4375,8 +4375,11 @@ static void UI_LoadDemosInDirectory( const char *directory )
 
 		for( ; uiInfo.loadedDemos<uiInfo.demoCount; uiInfo.loadedDemos++)
 		{
+			char dirPath[MAX_QPATH];
+			Q_strncpyz( dirPath, directory + strlen( DEMO_DIRECTORY ), sizeof( dirPath ) );
+			Q_strcat( dirPath, sizeof( dirPath ), "/" );
 			len = strlen( demoname );
-			Com_sprintf( uiInfo.demoList[uiInfo.loadedDemos], sizeof( uiInfo.demoList[0] ), "%s/%s", directory + strlen( DEMO_DIRECTORY ), demoname );
+			Com_sprintf( uiInfo.demoList[uiInfo.loadedDemos], sizeof( uiInfo.demoList[0] ), "%s%s", dirPath + 1, demoname );
 			demoname += len + 1;
 		}
 
@@ -4400,7 +4403,7 @@ static void UI_LoadDemosInDirectory( const char *directory )
 	{
 		len = strlen( fileName );
 		fileName[len] = '\0';
-		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) )
+		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) && len )
 			UI_LoadDemosInDirectory( va( "%s/%s", directory, fileName ) );
 		fileName += len+1;
 	}
