@@ -1030,7 +1030,7 @@ void FS_FCloseFile( fileHandle_t f ) {
 					fileBufferNode_t *nextNode = node->next;
 					Z_Free(node->buffer);
 					Z_Free(node);
-					node = node->next;
+					node = nextNode;
 				}
 			}
 		} else
@@ -1767,6 +1767,7 @@ static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*not
 	fileBufferNode_t *lastNode = fsh[h].pending;
 	fileBufferNode_t *prevNode = NULL;
 	while ( lastNode != NULL ) {
+		fileBufferNode_t *nextNode = lastNode->next;
 		if ( aio_error( &lastNode->cb ) != EINPROGRESS ) {
 			// this write completed, so remove it from the list
 			if ( prevNode == NULL ) {
@@ -1779,7 +1780,7 @@ static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*not
 		} else {
 			prevNode = lastNode;
 		}
-		lastNode = lastNode->next;
+		lastNode = nextNode;
 	}
 	if ( prevNode == NULL ) {
 		fsh[h].pending = node;
