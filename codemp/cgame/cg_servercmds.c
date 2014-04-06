@@ -1314,8 +1314,10 @@ static void CG_SiegeClassSelect_f( void ) {
 }
 
 static void CG_SiegeProfileMenu_f( void ) {
-	trap->Cvar_Set( "ui_myteam", "3" );
-	trap->OpenUIMenu( UIMENU_PLAYERCONFIG ); //UIMENU_CLASSSEL
+	if ( !cg.demoPlayback ) {
+		trap->Cvar_Set( "ui_myteam", "3" );
+		trap->OpenUIMenu( UIMENU_PLAYERCONFIG ); //UIMENU_CLASSSEL
+	}
 }
 
 static void CG_NewForceRank_f( void ) {
@@ -1339,7 +1341,7 @@ static void CG_NewForceRank_f( void ) {
 
 	trap->Cvar_Set( "ui_myteam", va( "%i", setTeam ) );
 
-	if ( !( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu )
+	if ( !( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu && !cg.demoPlayback )
 		trap->OpenUIMenu( UIMENU_PLAYERCONFIG );
 }
 
