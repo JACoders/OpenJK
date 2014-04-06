@@ -125,6 +125,13 @@ float FloatSwap( const float *f );
 
 #include "qcommon/q_platform.h"
 
+#define USE_AIO
+
+#if defined(USE_AIO)
+	#include <aio.h>
+	#include <signal.h>
+#endif
+
 // ================================================================
 // TYPE DEFINITIONS
 // ================================================================
