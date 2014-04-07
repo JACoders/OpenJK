@@ -51,14 +51,14 @@ char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	return ge->ClientConnect( clientNum, firstTime, isBot );
 }
 
-void GVM_ClientBegin( int clientNum, qboolean allowTeamReset ) {
+void GVM_ClientBegin( int clientNum ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_CLIENT_BEGIN, clientNum, allowTeamReset );
+		VM_Call( gvm, GAME_CLIENT_BEGIN, clientNum );
 		return;
 	}
 	VMSwap v( gvm );
 
-	ge->ClientBegin( clientNum, allowTeamReset );
+	ge->ClientBegin( clientNum, qtrue );
 }
 
 qboolean GVM_ClientUserinfoChanged( int clientNum ) {
