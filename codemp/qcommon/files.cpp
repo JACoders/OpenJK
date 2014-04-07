@@ -1048,6 +1048,7 @@ fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
 	FILE *fp;
 	f = FS_FOpenFileWrite( filename, safe );
 	fsh[f].handleAsync = qtrue;
+	fsh[f].pending = NULL;
 	fp = FS_FileForHandle( f );
 	// need to set O_APPEND in order to not have every aio_write overwrite the others
 	fcntl( fileno( fp ), F_SETFL, O_APPEND );
