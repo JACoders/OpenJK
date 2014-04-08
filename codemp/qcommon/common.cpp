@@ -108,14 +108,8 @@ to the appropriate place.
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
-void QDECL Com_Printf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
+static inline void QDECL Com_PrintfWrapped( const char * msg ) {
 	static qboolean opening_qconsole = qfalse;
-
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
 
 	if ( rd_buffer ) {
 		if ((strlen (msg) + strlen(rd_buffer)) > (size_t)(rd_buffersize - 1)) {
@@ -180,6 +174,30 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 #endif
 }
 
+void QDECL Com_Printf( const char *fmt, ... ) {
+#ifdef USE_AIO
+	static SDL_mutex *lock = NULL;
+
+	// would be racy, but this gets called prior to renderer threads etc. being started
+	if ( !lock )
+	{
+		lock = SDL_CreateMutex();
+	}
+
+	SDL_LockMutex( lock );
+#endif
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+
+	va_start (argptr,fmt);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+
+	Com_PrintfWrapped( msg );
+#ifdef USE_AIO
+	SDL_UnlockMutex( lock );
+#endif
+}
 
 /*
 ================
