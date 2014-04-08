@@ -248,6 +248,7 @@ typedef struct fileHandleData_s {
 #ifdef USE_AIO
 	qboolean	handleAsync;
 	fileBufferNode_t	*pending;
+	qboolean	closing; // set if FS_FClose was called on this, needed since file close happens asynchronously
 #endif
 	int			fileSize;
 	int			zipFilePos;
@@ -959,6 +960,11 @@ static void aio_completion_handler( sigval_t sigval ) {
 	fileHandle_t f = (fileHandle_t) sigval.sival_int;
 	fileBufferNode_t *node = fsh[f].pending;
 	int numPendingWrites = 0;
+	if ( !fsh[f].closing ) {
+		Com_Printf( "Warning: closing file not set to closing: %d\n", f );
+	} else {
+		Com_Printf( "Closing file %d (%s)\n", f, fsh[f].name );
+	}
 	while ( node != NULL ) {
 		fileBufferNode_t *nextNode = node->next;
 		// busy-wait for completion of the write
@@ -1009,6 +1015,11 @@ void FS_FCloseFile( fileHandle_t f ) {
 	if (fsh[f].handleFiles.file.o) {
 #ifdef USE_AIO
 		if ( fsh[f].handleAsync ) {
+			if ( fsh[f].closing ) {
+				// file is already closing
+				Com_Printf( "Ignoring duplicate FCloseFile call for handle %d\n", f );
+				return;
+			}
 			fileBufferNode_t *node = fsh[f].pending;
 			int numPendingWrites = 0;
 			while ( node != NULL ) {
@@ -1020,6 +1031,7 @@ void FS_FCloseFile( fileHandle_t f ) {
 			if ( numPendingWrites > 0 ) {
 				byte empty[] = { 0 };
 				Com_Printf( "Waiting for %d pending writes to complete before closing\n", numPendingWrites );
+				fsh[f].closing = qtrue;
 				FS_WriteAio( empty, 0, f, aio_completion_handler );
 				// need to keep around the data
 				return;
@@ -1049,6 +1061,7 @@ fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
 	f = FS_FOpenFileWrite( filename, safe );
 	fsh[f].handleAsync = qtrue;
 	fsh[f].pending = NULL;
+	fsh[f].closing = qfalse;
 	fp = FS_FileForHandle( f );
 	// need to set O_APPEND in order to not have every aio_write overwrite the others
 	fcntl( fileno( fp ), F_SETFL, O_APPEND );
