@@ -1068,9 +1068,6 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-void	Sys_BeginProfiling( void );
-void	Sys_EndProfiling( void );
-
 qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
 
