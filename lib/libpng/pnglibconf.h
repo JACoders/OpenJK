@@ -1,8 +1,8 @@
-/* libpng 1.6.1 STANDARD API DEFINITION */
+/* libpng 1.6.6 STANDARD API DEFINITION */
 
 /* pnglibconf.h - library build configuration */
 
-/* Libpng version 1.6.1 - March 28, 2013 */
+/* Libpng version 1.6.6 - September 16, 2013 */
 
 /* Copyright (c) 1998-2013 Glenn Randers-Pehrson */
 
@@ -20,7 +20,6 @@
 #define PNG_ALIGNED_MEMORY_SUPPORTED
 /*#undef PNG_ARM_NEON_API_SUPPORTED*/
 /*#undef PNG_ARM_NEON_CHECK_SUPPORTED*/
-/*#undef PNG_ARM_NEON_SUPPORTED*/
 #define PNG_BENIGN_ERRORS_SUPPORTED
 #define PNG_BENIGN_READ_ERRORS_SUPPORTED
 /*#undef PNG_BENIGN_WRITE_ERRORS_SUPPORTED*/
