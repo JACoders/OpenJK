@@ -172,17 +172,7 @@ char *Sys_ConsoleInput(void)
 	return NULL;
 }
 
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
-}
-
-void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
-{
+void Sys_ShowConsole( int visLevel, qboolean quitOnClose ) {
 }
 
 /*
