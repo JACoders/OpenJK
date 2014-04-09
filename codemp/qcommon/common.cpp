@@ -112,8 +112,49 @@ to the appropriate place.
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
-static inline void QDECL Com_PrintfWrapped( const char * msg ) {
+#ifdef USE_AIO
+class autolock
+{
+	pthread_mutex_t *lock_;
+
+public:
+	autolock(pthread_mutex_t *lock )
+		: lock_(lock)
+	{
+		pthread_mutex_lock( lock );
+	}
+	~autolock()
+	{
+		pthread_mutex_unlock( lock_ );
+	}
+};
+#endif
+void QDECL Com_Printf( const char *fmt, ... ) {
+#ifdef USE_AIO
+	static pthread_mutex_t lock;
+	static qboolean initialized = qfalse;
+
+	// would be racy, but this gets called prior to renderer threads etc. being started
+	if ( !initialized )
+	{
+		pthread_mutexattr_t attr;
+
+		pthread_mutexattr_init( &attr );
+		pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+		pthread_mutex_init( &lock, &attr );
+		initialized = qtrue;
+	}
+
+	autolock autolock( &lock );
+#endif
+
 	static qboolean opening_qconsole = qfalse;
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+
+	va_start (argptr,fmt);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
 
 	if ( rd_buffer ) {
 		if ((strlen (msg) + strlen(rd_buffer)) > (size_t)(rd_buffersize - 1)) {
@@ -175,33 +216,6 @@ static inline void QDECL Com_PrintfWrapped( const char * msg ) {
 		OutputDebugString ( Q_CleanStr(msg) );
 		OutputDebugString ("\n");
 	}
-#endif
-}
-
-void QDECL Com_Printf( const char *fmt, ... ) {
-#ifdef USE_AIO
-	static pthread_mutex_t lock;
-	static qboolean initialized = qfalse;
-
-	// would be racy, but this gets called prior to renderer threads etc. being started
-	if ( !initialized )
-	{
-		pthread_mutex_init(&lock, NULL);
-		initialized = qtrue;
-	}
-
-	pthread_mutex_lock( &lock );
-#endif
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
-
-	Com_PrintfWrapped( msg );
-#ifdef USE_AIO
-	pthread_mutex_unlock( &lock );
 #endif
 }
 

@@ -3954,7 +3954,7 @@ void FS_InitFilesystem( void ) {
 #ifdef USE_AIO
 	struct aioinit init;
 	memset( &init, 0, sizeof( init ) );
-	init.aio_threads = 2;
+	init.aio_threads = 20;
 	init.aio_num = 64;
 	init.aio_idle_time = 300;
 	aio_init( &init );
