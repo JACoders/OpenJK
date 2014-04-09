@@ -1060,15 +1060,17 @@ fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
 	fileHandle_t f;
 	FILE *fp;
 	f = FS_FOpenFileWrite( filename, safe );
-	fsh[f].handleAsync = qtrue;
-	fsh[f].pending = NULL;
-	fsh[f].closing = qfalse;
-	fsh[f].pendingBuffer.buffer = ( byte * ) Z_Malloc( BUFFER_SIZE, TAG_FILESYS, qtrue );
-	fsh[f].pendingBuffer.bufferLen = BUFFER_SIZE;
-	fsh[f].pendingBuffer.bufferOffset = 0;
-	fp = FS_FileForHandle( f );
-	// need to set O_APPEND in order to not have every aio_write overwrite the others
-	fcntl( fileno( fp ), F_SETFL, O_APPEND );
+	if ( f ) {
+		fsh[f].handleAsync = qtrue;
+		fsh[f].pending = NULL;
+		fsh[f].closing = qfalse;
+		fsh[f].pendingBuffer.buffer = ( byte * ) Z_Malloc( BUFFER_SIZE, TAG_FILESYS, qtrue );
+		fsh[f].pendingBuffer.bufferLen = BUFFER_SIZE;
+		fsh[f].pendingBuffer.bufferOffset = 0;
+		fp = FS_FileForHandle( f );
+		// need to set O_APPEND in order to not have every aio_write overwrite the others
+		fcntl( fileno( fp ), F_SETFL, O_APPEND );
+	}
 	return f;
 }
 #endif
