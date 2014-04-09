@@ -8,6 +8,10 @@
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
 
+#ifdef USE_AIO
+#include <pthread.h>
+#endif
+
 #define	MAXPRINTMSG	4096
 
 FILE *debuglogfile;
@@ -176,15 +180,17 @@ static inline void QDECL Com_PrintfWrapped( const char * msg ) {
 
 void QDECL Com_Printf( const char *fmt, ... ) {
 #ifdef USE_AIO
-	static SDL_mutex *lock = NULL;
+	static pthread_mutex_t lock;
+	static qboolean initialized = qfalse;
 
 	// would be racy, but this gets called prior to renderer threads etc. being started
-	if ( !lock )
+	if ( !initialized )
 	{
-		lock = SDL_CreateMutex();
+		pthread_mutex_init(&lock, NULL);
+		initialized = qtrue;
 	}
 
-	SDL_LockMutex( lock );
+	pthread_mutex_lock( &lock );
 #endif
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -195,7 +201,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	Com_PrintfWrapped( msg );
 #ifdef USE_AIO
-	SDL_UnlockMutex( lock );
+	pthread_mutex_unlock( &lock );
 #endif
 }
 

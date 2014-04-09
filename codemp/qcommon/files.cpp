@@ -240,6 +240,12 @@ typedef struct fileBufferNode_s {
 	struct aiocb cb;
 	struct fileBufferNode_s *next;
 } fileBufferNode_t;
+
+typedef struct pendingBuffer_s {
+	byte *buffer;
+	size_t bufferLen;
+	size_t bufferOffset;
+} pendingBuffer_t;
 #endif
 
 typedef struct fileHandleData_s {
@@ -249,6 +255,7 @@ typedef struct fileHandleData_s {
 	qboolean	handleAsync;
 	fileBufferNode_t	*pending;
 	qboolean	closing; // set if FS_FClose was called on this, needed since file close happens asynchronously
+	pendingBuffer_t pendingBuffer; // buffer writes before calling AIO to reduce thread churn
 #endif
 	int			fileSize;
 	int			zipFilePos;
@@ -980,6 +987,7 @@ static void aio_completion_handler( sigval_t sigval ) {
 		Com_Printf( "Waited for %d pending writes to complete before closing\n", numPendingWrites );
 	}
 	fclose (fsh[f].handleFiles.file.o);
+	Z_Free( fsh[f].pendingBuffer.buffer );
 	Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
 }
 #endif
@@ -1028,22 +1036,14 @@ void FS_FCloseFile( fileHandle_t f ) {
 				}
 				node = node->next;
 			}
-			if ( numPendingWrites > 0 ) {
-				byte empty[] = { 0 };
+			numPendingWrites++;
+			{
+				pendingBuffer_t *pb = &fsh[f].pendingBuffer;
 				Com_Printf( "Waiting for %d pending writes to complete before closing\n", numPendingWrites );
 				fsh[f].closing = qtrue;
-				FS_WriteAio( empty, 0, f, aio_completion_handler );
+				FS_WriteAio( pb->buffer, pb->bufferOffset, f, aio_completion_handler );
 				// need to keep around the data
 				return;
-			} else {
-				fclose (fsh[f].handleFiles.file.o);
-				node = fsh[f].pending;
-				while ( node != NULL ) {
-					fileBufferNode_t *nextNode = node->next;
-					Z_Free(node->buffer);
-					Z_Free(node);
-					node = nextNode;
-				}
 			}
 		} else
 #endif
@@ -1055,6 +1055,7 @@ void FS_FCloseFile( fileHandle_t f ) {
 }
 
 #ifdef USE_AIO
+static size_t BUFFER_SIZE = 64 * 1024;
 fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
 	fileHandle_t f;
 	FILE *fp;
@@ -1062,6 +1063,9 @@ fileHandle_t FS_FOpenFileWriteAsync( const char *filename, qboolean safe ) {
 	fsh[f].handleAsync = qtrue;
 	fsh[f].pending = NULL;
 	fsh[f].closing = qfalse;
+	fsh[f].pendingBuffer.buffer = ( byte * ) Z_Malloc( BUFFER_SIZE, TAG_FILESYS, qtrue );
+	fsh[f].pendingBuffer.bufferLen = BUFFER_SIZE;
+	fsh[f].pendingBuffer.bufferOffset = 0;
 	fp = FS_FileForHandle( f );
 	// need to set O_APPEND in order to not have every aio_write overwrite the others
 	fcntl( fileno( fp ), F_SETFL, O_APPEND );
@@ -1830,7 +1834,20 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 
 #if defined(USE_AIO)
 	if ( fsh[h].handleAsync ) {
-		FS_WriteAio( buffer, len, h, NULL );
+		// first buffer as much as we can
+		pendingBuffer_t *pb = &fsh[h].pendingBuffer;
+		int remainingLen = len;
+		while ( remainingLen > 0 ) {
+			int copyLen = min( remainingLen, pb->bufferLen - pb->bufferOffset );
+			memcpy( &pb->buffer[pb->bufferOffset], buffer, copyLen );
+			pb->bufferOffset += copyLen;
+			remainingLen -= copyLen;
+			if ( pb->bufferOffset >= pb->bufferLen ) {
+				// buffer is full, dump it
+				FS_WriteAio( pb->buffer, pb->bufferLen, h, NULL );
+				pb->bufferOffset = 0;
+			}
+		}
 		return len;
 	} else
 #else
@@ -3935,12 +3952,13 @@ is resetting due to a game change
 */
 void FS_InitFilesystem( void ) {
 #ifdef USE_AIO
-	aioinit_t init;
+	struct aioinit init;
 	memset( &init, 0, sizeof( init ) );
-	init.aio_threads = 20;
+	init.aio_threads = 2;
 	init.aio_num = 64;
-	init.aio_idle_time = 60;
+	init.aio_idle_time = 300;
 	aio_init( &init );
+	Com_Printf( "Initialized AIO\n" );
 #endif
 	// allow command line parms to override our defaults
 	// we have to specially handle this, because normal command
