@@ -1852,7 +1852,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 		}
 		return len;
 	} else
-#else
+#endif
 	{
 		buf = (byte *)buffer;
 
@@ -1879,7 +1879,6 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 			buf += written;
 		}
 	}
-#endif
 	if ( fsh[h].handleSync ) {
 		fflush( f );
 	}
