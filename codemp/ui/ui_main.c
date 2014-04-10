@@ -3573,6 +3573,10 @@ static qboolean UI_Chat_Spot_HandleKey(int key)
 	{
 		item = Menu_FindItemByName(menu, "spot_04");
 	}
+	else if ((key == A_5) || (key == A_PERCENT))
+	{
+		item = Menu_FindItemByName(menu, "spot_05");
+	}
 	else
 	{
 		return (qfalse);
