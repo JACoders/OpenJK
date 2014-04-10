@@ -1099,6 +1099,7 @@ int Q_PrintStrlen( const char *string ) {
 }
 
 
+/* This function modifies INPUT (is mutable) */
 char *Q_CleanStr( char *string ) {
 	char*	d;
 	char*	s;
@@ -1125,6 +1126,8 @@ char *Q_CleanStr( char *string ) {
 Q_StripColor
 
 Strips coloured strings in-place using multiple passes: "fgs^^56fds" -> "fgs^6fds" -> "fgsfds"
+
+This function modifies INPUT (is mutable)
 
 (Also strips ^8 and ^9)
 ==================
