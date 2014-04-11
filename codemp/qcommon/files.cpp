@@ -963,10 +963,11 @@ void FS_Rename( const char *from, const char *to ) {
 Callback for final write which will free all memory and close the file
 (at this point no blocking should be needed).
 */
+extern void Com_PushEvent( sysEvent_t *event );
 static void aio_completion_handler( sigval_t sigval ) {
 	fileHandle_t f = sigval.sival_int;
 	sysEvent_t event;
-	Com_Memset( event, 0, sizeof( event ) );
+	Com_Memset( &event, 0, sizeof( event ) );
 	event.evType = SE_AIO_FCLOSE;
 	event.evValue = f;
 	Com_PushEvent( &event );

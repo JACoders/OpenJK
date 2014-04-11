@@ -702,10 +702,15 @@ journaled file
 // bk001129 - here we go again: upped from 64
 #define	MAX_PUSHED_EVENTS	            1024
 // bk001129 - init, also static
-static int		com_pushedEventsHead = 0;
-static int             com_pushedEventsTail = 0;
+#ifdef USE_AIO
+#define THREADACCESS volatile
+#else
+#define THREADACCESS
+#endif
+static THREADACCESS int		com_pushedEventsHead = 0;
+static THREADACCESS int             com_pushedEventsTail = 0;
 // bk001129 - static
-static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
+static THREADACCESS sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
 =================
@@ -839,9 +844,14 @@ Com_GetEvent
 =================
 */
 sysEvent_t	Com_GetEvent( void ) {
-	if ( com_pushedEventsHead > com_pushedEventsTail ) {
-		com_pushedEventsTail++;
-		return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+	{
+#ifdef USE_AIO
+		autolock autolock( &pushLock );
+#endif
+		if ( com_pushedEventsHead > com_pushedEventsTail ) {
+			com_pushedEventsTail++;
+			return com_pushedEvents[ (com_pushedEventsTail-1) & (MAX_PUSHED_EVENTS-1) ];
+		}
 	}
 	return Com_GetRealEvent();
 }
