@@ -710,7 +710,7 @@ journaled file
 static THREADACCESS int		com_pushedEventsHead = 0;
 static THREADACCESS int             com_pushedEventsTail = 0;
 // bk001129 - static
-static THREADACCESS sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
+static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
 =================
