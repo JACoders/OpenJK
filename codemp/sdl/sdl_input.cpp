@@ -240,7 +240,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down )
 	if( in_keyboardDebug->integer )
 		IN_PrintKey( keysym, key, down );
 
-	if( IN_IsConsoleKey( *key, 0 ) )
+	if( IN_IsConsoleKey( key, 0 ) )
 	{
 		// Console keys can't be bound or generate characters
 		key = A_CONSOLE;
@@ -512,20 +512,19 @@ static void IN_ProcessEvents( void )
 		switch( e.type )
 		{
 			case SDL_KEYDOWN:
-				if ( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, &key, qtrue ) ) != A_NULL )
+				if ( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue ) ) != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
 
 				if (key == A_BACKSPACE)
 					Sys_QueEvent( 0, SE_CHAR, CTRL('h'), qfalse, 0, NULL);
-				else if (kg.keys[A_CTRL].down && && key >= 'a' && key <= 'z' )
-					Com_QueueEvent( 0, SE_CHAR, CTRL(key), qfalse, 0, NULL );
+				else if (kg.keys[A_CTRL].down && key >= 'a' && key <= 'z' )
+					Sys_QueEvent( 0, SE_CHAR, CTRL(key), qfalse, 0, NULL );
 
 				lastKeyDown = key;
 				break;
 
 			case SDL_KEYUP:
-				IN_TranslateSDLToJKKey( &e.key.keysym, &key, qfalse );
-				if( key != A_NULL )
+				if ( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qfalse ) ) != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
 
 				lastKeyDown = A_NULL;
