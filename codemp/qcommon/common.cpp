@@ -128,24 +128,13 @@ public:
 		pthread_mutex_unlock( lock_ );
 	}
 };
+
+static pthread_mutex_t printfLock;
+static pthread_mutex_t pushLock;
 #endif
 void QDECL Com_Printf( const char *fmt, ... ) {
 #ifdef USE_AIO
-	static pthread_mutex_t lock;
-	static qboolean initialized = qfalse;
-
-	// would be racy, but this gets called prior to renderer threads etc. being started
-	if ( !initialized )
-	{
-		pthread_mutexattr_t attr;
-
-		pthread_mutexattr_init( &attr );
-		pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
-		pthread_mutex_init( &lock, &attr );
-		initialized = qtrue;
-	}
-
-	autolock autolock( &lock );
+	autolock autolock( &printfLock );
 #endif
 
 	static qboolean opening_qconsole = qfalse;
@@ -815,6 +804,10 @@ Com_PushEvent
 =================
 */
 void Com_PushEvent( sysEvent_t *event ) {
+#ifdef USE_AIO
+	autolock autolock( &pushLock );
+#endif
+
 	sysEvent_t		*ev;
 	static int printedWarning = 0; // bk001129 - init, bk001204 - explicit int
 
@@ -974,6 +967,14 @@ int Com_EventLoop( void ) {
 				CL_PacketEvent( evFrom, &buf );
 			}
 			break;
+#ifdef USE_AIO
+		case SE_AIO_FCLOSE:
+			{
+				extern void	FS_FCloseAio( int handle );
+				FS_FCloseAio( ev.evValue );
+				break;
+			}
+#endif
 		}
 
 		// free any block data
@@ -1183,6 +1184,17 @@ void Com_Init( char *commandLine ) {
 
 	try
 	{
+#ifdef USE_AIO
+		{
+			pthread_mutexattr_t attr;
+
+			pthread_mutexattr_init( &attr );
+			pthread_mutexattr_settype( &attr, PTHREAD_MUTEX_RECURSIVE );
+			pthread_mutex_init( &printfLock, &attr );
+			pthread_mutex_init( &pushLock, &attr );
+		}
+#endif
+
 		// initialize the weak pseudo-random number generator for use later.
 		Com_InitRand();
 

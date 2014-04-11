@@ -964,7 +964,19 @@ Callback for final write which will free all memory and close the file
 (at this point no blocking should be needed).
 */
 static void aio_completion_handler( sigval_t sigval ) {
-	fileHandle_t f = (fileHandle_t) sigval.sival_int;
+	fileHandle_t f = sigval.sival_int;
+	sysEvent_t event;
+	Com_Memset( event, 0, sizeof( event ) );
+	event.evType = SE_AIO_FCLOSE;
+	event.evValue = f;
+	Com_PushEvent( &event );
+}
+
+void FS_FCloseAio( int handle ) {
+	fileHandle_t f = (fileHandle_t) handle;
+	if ( f < 1 || f >= MAX_FILE_HANDLES ) {
+		Com_Error( ERR_FATAL, "FCloseAio called with invalid handle %d\n", f );
+	}
 	fileBufferNode_t *node = fsh[f].pending;
 	int numPendingWrites = 0;
 	if ( !fsh[f].closing ) {
@@ -1770,6 +1782,7 @@ static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*not
 	fileBufferNode_t *node = ( fileBufferNode_t * ) Z_Malloc( sizeof( fileBufferNode_t ), TAG_FILESYS, qtrue );
 	node->buffer = Z_Malloc( len, TAG_FILESYS, qfalse );
 	memcpy( node->buffer, buffer, len );
+	node->next = NULL;
 	node->cb.aio_fildes = fileno( f );
 	node->cb.aio_buf = node->buffer;
 	node->cb.aio_nbytes = len;
@@ -1834,15 +1847,22 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 
 	f = FS_FileForHandle(h);
 
+	buf = (byte *)buffer;
+
 #if defined(USE_AIO)
 	if ( fsh[h].handleAsync ) {
+		if ( fsh[h].closing ) {
+			Com_Printf( "Denying attempt to write to async file %d after closing it\n", h );
+			return;
+		}
 		// first buffer as much as we can
 		pendingBuffer_t *pb = &fsh[h].pendingBuffer;
 		int remainingLen = len;
 		while ( remainingLen > 0 ) {
 			int copyLen = min( remainingLen, pb->bufferLen - pb->bufferOffset );
-			memcpy( &pb->buffer[pb->bufferOffset], buffer, copyLen );
+			memcpy( &pb->buffer[pb->bufferOffset], buf, copyLen );
 			pb->bufferOffset += copyLen;
+			buf += copyLen;
 			remainingLen -= copyLen;
 			if ( pb->bufferOffset >= pb->bufferLen ) {
 				// buffer is full, dump it
@@ -1854,7 +1874,6 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	} else
 #endif
 	{
-		buf = (byte *)buffer;
 
 		remaining = len;
 		tries = 0;
@@ -1865,13 +1884,13 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 				if (!tries) {
 					tries = 1;
 				} else {
-					Com_Printf( "FS_Write: 0 bytes written\n" );
+					Com_Printf( "FS_Write: 0 bytes written to file %d (%s)\n", h, fsh[h].name );
 					return 0;
 				}
 			}
 
 			if (written == -1) {
-				Com_Printf( "FS_Write: -1 bytes written\n" );
+				Com_Printf( "FS_Write: -1 bytes written to file %d (%s)\n", h, fsh[h].name );
 				return 0;
 			}
 
