@@ -3267,25 +3267,6 @@ static void UI_Update(const char *name)
 	{
 		Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
  	} 
-	else if (Q_stricmp(name, "ui_setRate") == 0) 
-	{
-		float rate = trap_Cvar_VariableValue("rate");
-		if (rate >= 5000) 
-		{
-			Cvar_Set("cl_maxpackets", "30");
-			Cvar_Set("cl_packetdup", "1");
-		} 
-		else if (rate >= 4000) 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "2");		// favor less prediction errors when there's packet loss
-		} 
-		else 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
-		}
-	} 
 	else if (Q_stricmp(name, "ui_GetName") == 0) 
 	{
 		Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));

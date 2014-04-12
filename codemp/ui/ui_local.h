@@ -27,8 +27,6 @@ qboolean UI_FeederSelection( float feederID, int index, itemDef_t *item );
 void UI_Report( void );
 void UI_Load( void );
 void UI_LoadMenus( const char *menuFile, qboolean reset );
-void UI_ShowPostGame( qboolean newHigh );
-void UI_ClearScores( void );
 void UI_LoadArenas( void );
 void UI_LoadForceConfig_List( void );
 

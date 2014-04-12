@@ -1,7 +1,7 @@
 
 /* pngset.c - storage of image information into info struct
  *
- * Last changed in libpng 1.6.1 [March 28, 2013]
+ * Last changed in libpng 1.6.8 [December 19, 2013]
  * Copyright (c) 1998-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
@@ -238,16 +238,7 @@ png_set_IHDR(png_const_structrp png_ptr, png_inforp info_ptr,
 
    info_ptr->pixel_depth = (png_byte)(info_ptr->channels * info_ptr->bit_depth);
 
-   /* Check for potential overflow */
-   if (width >
-       (PNG_UINT_32_MAX >> 3)      /* 8-byte RRGGBBAA pixels */
-       - 48       /* bigrowbuf hack */
-       - 1        /* filter byte */
-       - 7*8      /* rounding of width to multiple of 8 pixels */
-       - 8)       /* extra max_pixel_depth pad */
-      info_ptr->rowbytes = 0;
-   else
-      info_ptr->rowbytes = PNG_ROWBYTES(info_ptr->pixel_depth, width);
+   info_ptr->rowbytes = PNG_ROWBYTES(info_ptr->pixel_depth, width);
 }
 
 #ifdef PNG_oFFs_SUPPORTED
@@ -536,7 +527,7 @@ png_set_PLTE(png_structrp png_ptr, png_inforp info_ptr,
 #        endif
       ))
    {
-      png_chunk_report(png_ptr, "Invalid palette", PNG_CHUNK_ERROR);
+      png_error(png_ptr, "Invalid palette");
       return;
    }
 

@@ -3547,14 +3547,12 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 	}
 	
-	bool isAnOldModelFile = false;
 #ifndef JK2_MODE
+	bool isAnOldModelFile = false;
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
 	{
 		isAnOldModelFile = true;
 	}
-#else
-	isAnOldModelFile = false;	// JK2 used JK2 models before it was even cool
 #endif
 
 	if (!mdxm->animIndex) 
@@ -3562,6 +3560,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		ri.Printf( PRINT_WARNING, "R_LoadMDXM: missing animation file %s for mesh %s\n", mdxm->animName, mdxm->name);
 		return qfalse;
 	}
+#ifndef JK2_MODE
 	else
 	{
 		assert (tr.models[mdxm->animIndex]->mdxa->numBones == mdxm->numBones);
@@ -3585,6 +3584,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			}
 		}
 	}
+#endif
 
 	mod->numLods = mdxm->numLODs -1 ;	//copy this up to the model for ease of use - it wil get inced after this.
 
@@ -3723,6 +3723,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			}
 #endif
 
+#ifndef JK2_MODE
 			if (isAnOldModelFile)
 			{
 				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
@@ -3739,6 +3740,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 					}
 				}
 			}
+#endif
 			// find the next surface
 			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
 		}

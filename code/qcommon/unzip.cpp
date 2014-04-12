@@ -61,7 +61,7 @@ woven in by Terry Thorsen 1/2003.
 #endif
 
 #ifndef ALLOC
-# define ALLOC(size) (Z_Malloc(size + 1, TAG_FILESYS, qfalse))
+# define ALLOC(size) (Z_Malloc(size + 1, TAG_MINIZIP, qfalse))
 #endif
 #ifndef TRYFREE
 # define TRYFREE(p) {if (p) Z_Free(p);}

@@ -695,7 +695,7 @@ void Cvar_SetCheatState( void ) {
 
 	// set all default vars to the safe value
 	for ( var = cvar_vars ; var ; var = var->next ) {
-		if ( var->flags & CVAR_CHEAT) {
+		if ( var->flags & CVAR_CHEAT ) {
 			// the CVAR_LATCHED|CVAR_CHEAT vars might escape the reset here 
 			// because of a different var->latchedString
 			if (var->latchedString)
@@ -779,7 +779,8 @@ void Cvar_Print_f(void)
 ============
 Cvar_Toggle_f
 
-Toggles a cvar for easy single key binding
+Toggles a cvar for easy single key binding, optionally through a list of
+given values
 ============
 */
 void Cvar_Toggle_f( void ) {
@@ -1199,7 +1200,7 @@ void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultVa
 
 /*
 =====================
-Cvar_Register
+Cvar_Update
 
 updates an interpreted modules' version of a cvar
 =====================
