@@ -1,8 +1,8 @@
 
 /* pngrutil.c - utilities to read a PNG file
  *
- * Last changed in libpng 1.6.1 [March 28, 2013]
- * Copyright (c) 1998-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.10 [March 6, 2014]
+ * Copyright (c) 1998-2014 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -17,8 +17,6 @@
 #include "pngpriv.h"
 
 #ifdef PNG_READ_SUPPORTED
-
-#define png_strtod(p,a,b) strtod(a,b)
 
 png_uint_32 PNGAPI
 png_get_uint_31(png_const_structrp png_ptr, png_const_bytep buf)
@@ -221,7 +219,7 @@ png_crc_finish(png_structrp png_ptr, png_uint_32 skip)
 
    if (png_crc_error(png_ptr))
    {
-      if (PNG_CHUNK_ANCILLIARY(png_ptr->chunk_name) ?
+      if (PNG_CHUNK_ANCILLARY(png_ptr->chunk_name) ?
           !(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN) :
           (png_ptr->flags & PNG_FLAG_CRC_CRITICAL_USE))
       {
@@ -229,10 +227,7 @@ png_crc_finish(png_structrp png_ptr, png_uint_32 skip)
       }
 
       else
-      {
-         png_chunk_benign_error(png_ptr, "CRC error");
-         return (0);
-      }
+         png_chunk_error(png_ptr, "CRC error");
 
       return (1);
    }
@@ -250,7 +245,7 @@ png_crc_error(png_structrp png_ptr)
    png_uint_32 crc;
    int need_crc = 1;
 
-   if (PNG_CHUNK_ANCILLIARY(png_ptr->chunk_name))
+   if (PNG_CHUNK_ANCILLARY(png_ptr->chunk_name))
    {
       if ((png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_MASK) ==
           (PNG_FLAG_CRC_ANCILLARY_USE | PNG_FLAG_CRC_ANCILLARY_NOWARN))
@@ -280,6 +275,10 @@ png_crc_error(png_structrp png_ptr)
       return (0);
 }
 
+#if defined(PNG_READ_iCCP_SUPPORTED) || defined(PNG_READ_iTXt_SUPPORTED) ||\
+    defined(PNG_READ_pCAL_SUPPORTED) || defined(PNG_READ_sCAL_SUPPORTED) ||\
+    defined(PNG_READ_sPLT_SUPPORTED) || defined(PNG_READ_tEXt_SUPPORTED) ||\
+    defined(PNG_READ_zTXt_SUPPORTED) || defined(PNG_SEQUENTIAL_READ_SUPPORTED)
 /* Manage the read buffer; this simply reallocates the buffer if it is not small
  * enough (or if it is not allocated).  The routine returns a pointer to the
  * buffer; if an error occurs and 'warn' is set the routine returns NULL, else
@@ -312,21 +311,17 @@ png_read_buffer(png_structrp png_ptr, png_alloc_size_t new_size, int warn)
 
       else if (warn < 2) /* else silent */
       {
-#ifdef PNG_WARNINGS_SUPPORTED
          if (warn)
              png_chunk_warning(png_ptr, "insufficient memory to read chunk");
+
          else
-#endif
-         {
-#ifdef PNG_ERROR_TEXT_SUPPORTED
              png_chunk_error(png_ptr, "insufficient memory to read chunk");
-#endif
-         }
       }
    }
 
    return buffer;
 }
+#endif /* PNG_READ_iCCP|iTXt|pCAL|sCAL|sPLT|tEXt|zTXt|SEQUENTIAL_READ */
 
 /* png_inflate_claim: claim the zstream for some nefarious purpose that involves
  * decompression.  Returns Z_OK on success, else a zlib error code.  It checks
@@ -334,7 +329,7 @@ png_read_buffer(png_structrp png_ptr, png_alloc_size_t new_size, int warn)
  * chunk apparently owns the stream.  Prior to release it does a png_error.
  */
 static int
-png_inflate_claim(png_structrp png_ptr, png_uint_32 owner, int window_bits)
+png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
 {
    if (png_ptr->zowner != 0)
    {
@@ -369,6 +364,22 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner, int window_bits)
     */
    {
       int ret; /* zlib return code */
+#     if PNG_ZLIB_VERNUM >= 0x1240
+
+#        if defined(PNG_SET_OPTION_SUPPORTED) && \
+            defined(PNG_MAXIMUM_INFLATE_WINDOW)
+            int window_bits;
+
+            if (((png_ptr->options >> PNG_MAXIMUM_INFLATE_WINDOW) & 3) ==
+               PNG_OPTION_ON)
+               window_bits = 15;
+
+            else
+               window_bits = 0;
+#        else
+#           define window_bits 0
+#        endif
+#     endif
 
       /* Set this for safety, just in case the previous owner left pointers to
        * memory allocations.
@@ -380,8 +391,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner, int window_bits)
 
       if (png_ptr->flags & PNG_FLAG_ZSTREAM_INITIALIZED)
       {
-#        if ZLIB_VERNUM < 0x1240
-            PNG_UNUSED(window_bits)
+#        if PNG_ZLIB_VERNUM < 0x1240
             ret = inflateReset(&png_ptr->zstream);
 #        else
             ret = inflateReset2(&png_ptr->zstream, window_bits);
@@ -390,7 +400,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner, int window_bits)
 
       else
       {
-#        if ZLIB_VERNUM < 0x1240
+#        if PNG_ZLIB_VERNUM < 0x1240
             ret = inflateInit(&png_ptr->zstream);
 #        else
             ret = inflateInit2(&png_ptr->zstream, window_bits);
@@ -408,6 +418,10 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner, int window_bits)
 
       return ret;
    }
+
+#  ifdef window_bits
+#     undef window_bits
+#  endif
 }
 
 #ifdef PNG_READ_COMPRESSED_TEXT_SUPPORTED
@@ -580,14 +594,8 @@ png_decompress_chunk(png_structrp png_ptr,
       if (limit < *newlength)
          *newlength = limit;
 
-      /* Now try to claim the stream; the 'warn' setting causes zlib to be told
-       * to use the maximum window size during inflate; this hides errors in the
-       * deflate header window bits value which is used if '0' is passed.  In
-       * fact this only has an effect with zlib versions 1.2.4 and later - see
-       * the comments in png_inflate_claim above.
-       */
-      ret = png_inflate_claim(png_ptr, png_ptr->chunk_name,
-         png_ptr->flags & PNG_FLAG_BENIGN_ERRORS_WARN ? 15 : 0);
+      /* Now try to claim the stream. */
+      ret = png_inflate_claim(png_ptr, png_ptr->chunk_name);
 
       if (ret == Z_OK)
       {
@@ -970,22 +978,15 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_USE))
       {
          if (png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN)
-         {
-            png_chunk_benign_error(png_ptr, "CRC error");
-         }
+            return;
 
          else
-         {
-            png_chunk_warning(png_ptr, "CRC error");
-            return;
-         }
+            png_chunk_error(png_ptr, "CRC error");
       }
 
       /* Otherwise, we (optionally) emit a warning and use the chunk. */
       else if (!(png_ptr->flags & PNG_FLAG_CRC_ANCILLARY_NOWARN))
-      {
          png_chunk_warning(png_ptr, "CRC error");
-      }
    }
 #endif
 
@@ -1096,12 +1097,11 @@ png_handle_gAMA(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 void /* PRIVATE */
 png_handle_sBIT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 {
-   unsigned int truelen;
+   unsigned int truelen, i;
+   png_byte sample_depth;
    png_byte buf[4];
 
    png_debug(1, "in png_handle_sBIT");
-
-   buf[0] = buf[1] = buf[2] = buf[3] = 0;
 
    if (!(png_ptr->mode & PNG_HAVE_IHDR))
       png_chunk_error(png_ptr, "missing IHDR");
@@ -1121,10 +1121,16 @@ png_handle_sBIT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    }
 
    if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE)
+   {
       truelen = 3;
+      sample_depth = 8;
+   }
 
    else
+   {
       truelen = png_ptr->channels;
+      sample_depth = png_ptr->bit_depth;
+   }
 
    if (length != truelen || length > 4)
    {
@@ -1133,10 +1139,18 @@ png_handle_sBIT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return;
    }
 
+   buf[0] = buf[1] = buf[2] = buf[3] = sample_depth;
    png_crc_read(png_ptr, buf, truelen);
 
    if (png_crc_finish(png_ptr, 0))
       return;
+
+   for (i=0; i<truelen; ++i)
+      if (buf[i] == 0 || buf[i] > sample_depth)
+      {
+         png_chunk_benign_error(png_ptr, "invalid");
+         return;
+      }
 
    if (png_ptr->color_type & PNG_COLOR_MASK_COLOR)
    {
@@ -1357,8 +1371,7 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
          {
             read_length -= keyword_length+2;
 
-            if (png_inflate_claim(png_ptr, png_iCCP,
-               png_ptr->flags & PNG_FLAG_BENIGN_ERRORS_WARN ? 15 : 0) == Z_OK)
+            if (png_inflate_claim(png_ptr, png_iCCP) == Z_OK)
             {
                Byte profile_header[132];
                Byte local_buffer[PNG_INFLATE_BUF_SIZE];
@@ -1408,7 +1421,7 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                               (sizeof local_buffer), &length,
                               profile + (sizeof profile_header), &size, 0);
 
-                           /* Still expect a a buffer error because we expect
+                           /* Still expect a buffer error because we expect
                             * there to be some tag data!
                             */
                            if (size == 0)
@@ -2857,7 +2870,7 @@ png_handle_unknown(png_structrp png_ptr, png_inforp info_ptr,
 
          if (keep == PNG_HANDLE_CHUNK_ALWAYS ||
             (keep == PNG_HANDLE_CHUNK_IF_SAFE &&
-             PNG_CHUNK_ANCILLIARY(png_ptr->chunk_name)))
+             PNG_CHUNK_ANCILLARY(png_ptr->chunk_name)))
          {
             if (!png_cache_unknown_chunk(png_ptr, length))
                keep = PNG_HANDLE_CHUNK_NEVER;
@@ -2891,7 +2904,7 @@ png_handle_unknown(png_structrp png_ptr, png_inforp info_ptr,
        */
       if (keep == PNG_HANDLE_CHUNK_ALWAYS ||
          (keep == PNG_HANDLE_CHUNK_IF_SAFE &&
-          PNG_CHUNK_ANCILLIARY(png_ptr->chunk_name)))
+          PNG_CHUNK_ANCILLARY(png_ptr->chunk_name)))
       {
 #     ifdef PNG_USER_LIMITS_SUPPORTED
          switch (png_ptr->user_chunk_cache_max)
@@ -2922,9 +2935,8 @@ png_handle_unknown(png_structrp png_ptr, png_inforp info_ptr,
          }
 #     endif
       }
-#  else /* no store support! */
+#  else /* no store support: the chunk must be handled by the user callback */
       PNG_UNUSED(info_ptr)
-#     error untested code (reading unknown chunks with no store support)
 #  endif
 
    /* Regardless of the error handling below the cached data (if any) can be
@@ -3684,7 +3696,7 @@ png_do_read_interlace(png_row_infop row_info, png_bytep row, int pass,
 
             for (i = 0; i < row_info->width; i++)
             {
-               png_byte v[8];
+               png_byte v[8]; /* SAFE; pixel_depth does not exceed 64 */
                int j;
 
                memcpy(v, sp, pixel_bytes);
@@ -3862,7 +3874,6 @@ png_read_filter_row_paeth_multibyte_pixel(png_row_infop row_info, png_bytep row,
       if (pb < pa) pa = pb, a = b;
       if (pc < pa) a = c;
 
-      c = b;
       a += *row;
       *row++ = (png_byte)a;
    }
@@ -3870,12 +3881,13 @@ png_read_filter_row_paeth_multibyte_pixel(png_row_infop row_info, png_bytep row,
 
 static void
 png_init_filter_functions(png_structrp pp)
-   /* This function is called once for every PNG image to set the
+   /* This function is called once for every PNG image (except for PNG images
+    * that only use PNG_FILTER_VALUE_NONE for all rows) to set the
     * implementations required to reverse the filtering of PNG rows.  Reversing
     * the filter is the first transformation performed on the row data.  It is
     * performed in place, therefore an implementation can be selected based on
     * the image pixel format.  If the implementation depends on image width then
-    * take care to ensure that it works corretly if the image is interlaced -
+    * take care to ensure that it works correctly if the image is interlaced -
     * interlacing causes the actual row width to vary.
     */
 {
@@ -3912,10 +3924,13 @@ png_read_filter_row(png_structrp pp, png_row_infop row_info, png_bytep row,
     * PNG_FILTER_OPTIMIZATIONS to a function that overrides the generic
     * implementations.  See png_init_filter_functions above.
     */
-   if (pp->read_filter[0] == NULL)
-      png_init_filter_functions(pp);
    if (filter > PNG_FILTER_VALUE_NONE && filter < PNG_FILTER_VALUE_LAST)
+   {
+      if (pp->read_filter[0] == NULL)
+         png_init_filter_functions(pp);
+
       pp->read_filter[filter-1](row_info, row, prev_row);
+   }
 }
 
 #ifdef PNG_SEQUENTIAL_READ_SUPPORTED
@@ -3983,7 +3998,7 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
          png_ptr->zstream.avail_out = out;
       }
 
-      else /* check for end */
+      else /* after last row, checking for end */
       {
          png_ptr->zstream.next_out = tmpbuf;
          png_ptr->zstream.avail_out = (sizeof tmpbuf);
@@ -3998,10 +4013,13 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
        */
       ret = inflate(&png_ptr->zstream, Z_NO_FLUSH);
 
-      /* Take the unconsumed output back (so, in the 'check' case this just
-       * counts up).
-       */
-      avail_out += png_ptr->zstream.avail_out;
+      /* Take the unconsumed output back. */
+      if (output != NULL)
+         avail_out += png_ptr->zstream.avail_out;
+
+      else /* avail_out counts the extra bytes */
+         avail_out += (sizeof tmpbuf) - png_ptr->zstream.avail_out;
+
       png_ptr->zstream.avail_out = 0;
 
       if (ret == Z_STREAM_END)
@@ -4040,7 +4058,7 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
       if (output != NULL)
          png_error(png_ptr, "Not enough image data");
 
-      else /* checking */
+      else /* the deflate stream contained extra data */
          png_chunk_benign_error(png_ptr, "Too much image data");
    }
 }
@@ -4451,7 +4469,7 @@ defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
     * IDAT stream has a bogus deflate header window_bits value, but this should
     * not be happening any longer!)
     */
-   if (png_inflate_claim(png_ptr, png_IDAT, 0) != Z_OK)
+   if (png_inflate_claim(png_ptr, png_IDAT) != Z_OK)
       png_error(png_ptr, png_ptr->zstream.msg);
 
    png_ptr->flags |= PNG_FLAG_ROW_INIT;

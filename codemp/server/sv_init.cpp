@@ -658,7 +658,7 @@ Ghoul2 Insert End
 					client->deltaMessage = -1;
 					client->nextSnapshotTime = svs.time;	// generate a snapshot immediately
 
-					GVM_ClientBegin( i, qfalse );
+					GVM_ClientBegin( i );
 				}
 			}
 		}

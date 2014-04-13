@@ -50,6 +50,8 @@ cvar_t  *com_homepath;
 
 cvar_t	*com_RMG;
 
+static cvar_t *com_affinity;
+
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -1129,6 +1131,37 @@ static void Com_CatchError ( int code )
 	}
 }
 
+#ifdef _WIN32
+static const char *GetErrorString( DWORD error ) {
+	static char buf[MAX_STRING_CHARS];
+	buf[0] = '\0';
+
+	if ( error ) {
+		LPVOID lpMsgBuf;
+		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
+		if ( bufLen ) {
+			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
+			LocalFree( lpMsgBuf );
+		}
+	}
+	return buf;
+}
+#endif
+
+// based on Smod code
+static void Com_SetProcessorAffinity( void ) {
+#ifdef _WIN32
+	DWORD processMask;
+	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
+		processMask = 1; // set to first core only
+
+	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
+		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
+#endif
+}
+
 /*
 =================
 Com_Init
@@ -1256,6 +1289,8 @@ void Com_Init( char *commandLine ) {
 
 		com_RMG = Cvar_Get("RMG", "0", 0);
 
+		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
+
 		Cvar_Get ("RMG_seed", "0", 0);
 		Cvar_Get ("RMG_time", "day", 0);
 		Cvar_Get ("RMG_soundset", "", 0);
@@ -1289,6 +1324,8 @@ void Com_Init( char *commandLine ) {
 		SE_Init();
 
 		Sys_Init();
+
+		Com_SetProcessorAffinity();
 
 		// Pick a random port value
 		Com_RandomBytes( (byte*)&qport, sizeof(int) );

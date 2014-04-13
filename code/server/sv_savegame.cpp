@@ -94,12 +94,11 @@ CChidInfo_t	save_info;
 
 const char *SG_GetChidText(unsigned int chid)
 {
-	static char	chidtext[5];
+	static union { char c[5]; int i; } chidtext;
 
-	*(unsigned int *)chidtext = BigLong(chid);
-	chidtext[4] = 0;
+	chidtext.i = BigLong(chid);
 
-	return chidtext;
+	return chidtext.c;
 }
 
 

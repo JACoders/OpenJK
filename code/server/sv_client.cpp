@@ -140,7 +140,6 @@ gotnewcl:
 	NET_OutOfBandPrint( NS_SERVER, from, "connectResponse" );
 
 	newcl->state = CS_CONNECTED;
-	newcl->nextSnapshotTime = sv.time;
 	newcl->lastPacketTime = sv.time;
 	newcl->lastConnectTime = sv.time;
 
@@ -261,7 +260,6 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd, SavedGameJustLoaded_
 	//
 	client->deltaMessage = -1;
 	client->cmdNum = 0;
-	client->nextSnapshotTime = sv.time;	// generate a snapshot immediately
 
 	// call the game begin function
 	ge->ClientBegin( client - svs.clients, cmd, eSavedGameJustLoaded );
@@ -293,36 +291,11 @@ static void SV_Disconnect_f( client_t *cl ) {
 =================
 SV_UserinfoChanged
 
-Pull specific info from a newly changed userinfo string
-into a more C friendly form.
+Pull specific info from a newly changed userinfo string into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	const char	*val;
-	int		i;
-
-	// name for C code
-	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
-
-	// rate command
-
-	// if the client is on the same subnet as the server and we aren't running an
-	// internet public server, assume they don't need a rate choke
-	cl->rate = 99999;	// lans should not rate limit
-
-	// snaps command
-	val = Info_ValueForKey (cl->userinfo, "snaps");
-	if (strlen(val)) {
-		i = atoi(val);
-		if ( i < 1 ) {
-			i = 1;
-		} else if ( i > 30 ) {
-			i = 30;
-		}
-		cl->snapshotMsec = 1000/i;
-	} else {
-		cl->snapshotMsec = 50;
-	}
+	Q_strncpyz( cl->name, Info_ValueForKey( cl->userinfo, "name" ), sizeof( cl->name ) );
 }
 
 
@@ -334,10 +307,9 @@ SV_UpdateUserinfo_f
 static void SV_UpdateUserinfo_f( client_t *cl ) {
 	Q_strncpyz( cl->userinfo, Cmd_Argv(1), sizeof(cl->userinfo) );
 
+	SV_UserinfoChanged( cl );
 	// call prog code to allow overrides
 	ge->ClientUserinfoChanged( cl - svs.clients );
-	
-	SV_UserinfoChanged( cl );
 }
 
 typedef struct {

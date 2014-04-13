@@ -118,7 +118,7 @@ static qboolean outOfMemory;
 typedef struct  itemFlagsDef_s {
 	const char *string;
 	int value;
-}itemFlagsDef_t;
+} itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags[] = {
 	{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
@@ -782,18 +782,14 @@ void Item_SetScreenCoords(itemDef_t *item, float x, float y)
 	item->textRect.w = 0;
 	item->textRect.h = 0;
 
-	switch ( item->type ) {
-		case ITEM_TYPE_TEXTSCROLL:
-		{
-			textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
-			if ( scrollPtr ) {
-				scrollPtr->startPos = 0;
-				scrollPtr->endPos = 0;
-			}
-
-			Item_TextScroll_BuildLines ( item );
-			break;
+	if ( item->type == ITEM_TYPE_TEXTSCROLL ) {
+		textScrollDef_t *scrollPtr = item->typeData.textscroll;
+		if ( scrollPtr ) {
+			scrollPtr->startPos = 0;
+			scrollPtr->endPos = 0;
 		}
+
+		Item_TextScroll_BuildLines ( item );
 	}
 }
 
@@ -949,7 +945,7 @@ qboolean Script_SetColor ( itemDef_t *item, char **args )
 				{
 					return qtrue;
 				}
-			(*out)[i] = f;
+				(*out)[i] = f;
 			}
 		}
 	}
@@ -1071,20 +1067,19 @@ qboolean Script_SetItemText(itemDef_t *item, char **args)
 	return qtrue;
 }
 
-
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p) {
-  int i;
-  if (menu == NULL || p == NULL) {
-    return NULL;
-  }
+	int i;
+	if (menu == NULL || p == NULL) {
+		return NULL;
+	}
 
-  for (i = 0; i < menu->itemCount; i++) {
-    if (Q_stricmp(p, menu->items[i]->window.name) == 0) {
-      return menu->items[i];
-    }
-  }
+	for (i = 0; i < menu->itemCount; i++) {
+		if (Q_stricmp(p, menu->items[i]->window.name) == 0) {
+			return menu->items[i];
+		}
+	}
 
-  return NULL;
+	return NULL;
 }
 
 qboolean Script_SetTeamColor(itemDef_t *item, char **args)
@@ -1560,9 +1555,9 @@ void Menu_Transition3ItemByName(menuDef_t *menu, const char *p, const float minx
 		item = Menu_GetMatchingItemByNumber(menu, i, p);
 		if (item != NULL)
 		{
-			if ( item->type == ITEM_TYPE_MODEL)
+			if ( item->type == ITEM_TYPE_MODEL )
 			{
-				modelptr = (modelDef_t*)item->typeData;
+				modelptr = item->typeData.model;
 
 				item->window.flags |= (WINDOW_INTRANSITIONMODEL | WINDOW_VISIBLE);
 				item->window.offsetTime = time;
@@ -1592,7 +1587,6 @@ void Menu_Transition3ItemByName(menuDef_t *menu, const char *p, const float minx
 				modelptr->fov_Effectx = abs(modelptr->fov_x2 - modelptr->fov_x) / amt;
 				modelptr->fov_Effecty = abs(modelptr->fov_y2 - modelptr->fov_y) / amt;
 			}
-
 		}
 	}
 }
@@ -2091,14 +2085,25 @@ void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *te
 			{
 				item->text = NULL;		// Null this out because this would take presidence over cvar text.
 				item->cvar = text+1;
-				// Just copying what was in ItemParse_cvar()
-				if ( item->typeData)
+				switch ( item->type )
 				{
-					editFieldDef_t *editPtr;
-					editPtr = (editFieldDef_t*)item->typeData;
-					editPtr->minVal = -1;
-					editPtr->maxVal = -1;
-					editPtr->defVal = -1;
+					case ITEM_TYPE_EDITFIELD:
+					case ITEM_TYPE_NUMERICFIELD:
+					case ITEM_TYPE_YESNO:
+					case ITEM_TYPE_BIND:
+					case ITEM_TYPE_SLIDER:
+					case ITEM_TYPE_TEXT:
+					{
+						if ( item->typeData.edit )
+						{
+							item->typeData.edit->minVal = -1;
+							item->typeData.edit->maxVal = -1;
+							item->typeData.edit->defVal = -1;
+						}
+						break;
+					}
+					default:
+						break;
 				}
 			}
 			else
@@ -2106,7 +2111,7 @@ void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *te
 				item->text = text;
 				if ( item->type == ITEM_TYPE_TEXTSCROLL )
 				{
-					textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
+					textScrollDef_t *scrollPtr = item->typeData.textscroll;
 					if ( scrollPtr )
 					{
 						scrollPtr->startPos = 0;
@@ -2294,7 +2299,7 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y) {
 
 int Item_TextScroll_MaxScroll ( itemDef_t *item )
 {
-	textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
+	textScrollDef_t *scrollPtr = item->typeData.textscroll;
 
 	int count = scrollPtr->iLineCount;
 	int max   = count - (int)(item->window.rect.h / scrollPtr->lineHeight) + 1;
@@ -2310,7 +2315,7 @@ int Item_TextScroll_MaxScroll ( itemDef_t *item )
 int Item_TextScroll_ThumbPosition ( itemDef_t *item )
 {
 	float max, pos, size;
-	textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
+	textScrollDef_t *scrollPtr = item->typeData.textscroll;
 
 	max  = Item_TextScroll_MaxScroll ( item );
 	size = item->window.rect.h - (SCROLLBAR_SIZE * 2) - 2;
@@ -2400,7 +2405,7 @@ void Item_TextScroll_MouseEnter (itemDef_t *item, float x, float y)
 
 qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qboolean force)
 {
-	textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
+	textScrollDef_t *scrollPtr = item->typeData.textscroll;
 	int				max;
 	int				viewmax;
 
@@ -2538,7 +2543,7 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 }
 
 int Item_ListBox_MaxScroll(itemDef_t *item) {
-	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+	listBoxDef_t *listPtr = item->typeData.listbox;
 	int count = DC->feederCount(item->special);
 	int max;
 
@@ -2556,7 +2561,7 @@ int Item_ListBox_MaxScroll(itemDef_t *item) {
 
 int Item_ListBox_ThumbPosition(itemDef_t *item) {
 	float max, pos, size;
-	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+	listBoxDef_t *listPtr = item->typeData.listbox;
 
 	max = Item_ListBox_MaxScroll(item);
 	if (item->window.flags & WINDOW_HORIZONTAL) {
@@ -2622,7 +2627,7 @@ int Item_ListBox_ThumbDrawPosition(itemDef_t *item)
 
 float Item_Slider_ThumbPosition(itemDef_t *item) {
 	float value, range, x;
-	editFieldDef_t *editDef = (editFieldDef_t *) item->typeData;
+	editFieldDef_t *editDef = item->typeData.edit;
 
 	if (item->text) {
 		x = item->textRect.x + item->textRect.w + 8;
@@ -2673,7 +2678,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 	listBoxDef_t *listPtr;
 	int thumbstart;
 
-	listPtr = (listBoxDef_t*)item->typeData;
+	listPtr = item->typeData.listbox;
 	if (item->window.flags & WINDOW_HORIZONTAL)
 	{
 		// check if on left arrow
@@ -2787,7 +2792,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
 {
 	rectDef_t r;
-	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+	listBoxDef_t *listPtr = item->typeData.listbox;
 
 	item->window.flags &= ~(WINDOW_LB_LEFTARROW | WINDOW_LB_RIGHTARROW | WINDOW_LB_THUMB | WINDOW_LB_PGUP | WINDOW_LB_PGDN);
 	item->window.flags |= Item_ListBox_OverLB(item, x, y);
@@ -2989,7 +2994,7 @@ qboolean Item_OwnerDraw_HandleKey(itemDef_t *item, int key) {
 
 
 qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolean force) {
-	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+	listBoxDef_t *listPtr = item->typeData.listbox;
 	int count = DC->feederCount(item->special);
 	int max, viewmax;
 	if (force || (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS))
@@ -3261,7 +3266,7 @@ qboolean Item_YesNo_HandleKey(itemDef_t *item, int key) {
 }
 
 int Item_Multi_CountSettings(itemDef_t *item) {
-	multiDef_t *multiPtr = (multiDef_t*)item->typeData;
+	multiDef_t *multiPtr = item->typeData.multi;
 	if (multiPtr == NULL) {
 		return 0;
 	}
@@ -3272,7 +3277,7 @@ int Item_Multi_FindCvarByValue(itemDef_t *item) {
 	char buff[2048];
 	float value = 0;
 	int i;
-	multiDef_t *multiPtr = (multiDef_t*)item->typeData;
+	multiDef_t *multiPtr = item->typeData.multi;
 	if (multiPtr) {
 		if (multiPtr->strDef) {
 	    DC->getCVarString(item->cvar, buff, sizeof(buff));
@@ -3298,7 +3303,7 @@ const char *Item_Multi_Setting(itemDef_t *item) {
 	char buff[2048];
 	float value = 0;
 	int i;
-	multiDef_t *multiPtr = (multiDef_t*)item->typeData;
+	multiDef_t *multiPtr = item->typeData.multi;
 	if (multiPtr)
 	{
 		if (multiPtr->strDef)
@@ -3339,7 +3344,7 @@ const char *Item_Multi_Setting(itemDef_t *item) {
 
 qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 {
-	multiDef_t *multiPtr = (multiDef_t*)item->typeData;
+	multiDef_t *multiPtr = item->typeData.multi;
 	if (multiPtr)
 	{
 		if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS)
@@ -3401,7 +3406,7 @@ void Leaving_EditField(itemDef_t *item)
 	// switching fields so reset printed text of edit field
 	if ((g_editingField==qtrue) && (item->type==ITEM_TYPE_EDITFIELD))
 	{
-		editFieldDef_t *editPtr = (editFieldDef_t*)item->typeData;
+		editFieldDef_t *editPtr = item->typeData.edit;
 		if (editPtr)
 		{
 			editPtr->paintOffset = 0;
@@ -3413,7 +3418,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 	char buff[2048];
 	int len;
 	itemDef_t *newItem = NULL;
-	editFieldDef_t *editPtr = (editFieldDef_t*)item->typeData;
+	editFieldDef_t *editPtr = item->typeData.edit;
 
 	if (item->cvar) {
 
@@ -3426,7 +3431,6 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 		if ( key & K_CHAR_FLAG ) {
 			key &= ~K_CHAR_FLAG;
 
-
 			if (key == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
 				if ( item->cursorPos > 0 ) {
 					memmove( &buff[item->cursorPos - 1], &buff[item->cursorPos], len + 1 - item->cursorPos);
@@ -3438,7 +3442,6 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 				DC->setCVar(item->cvar, buff);
 	    		return qtrue;
 			}
-
 
 			//
 			// ignore any non printable chars
@@ -3608,7 +3611,7 @@ static void Scroll_TextScroll_ThumbFunc(void *p)
 	int			 pos;
 	int			 max;
 
-	textScrollDef_t *scrollPtr = (textScrollDef_t*)si->item->typeData;
+	textScrollDef_t *scrollPtr = si->item->typeData.textscroll;
 
 	if (DC->cursory != si->yStart)
 	{
@@ -3674,7 +3677,7 @@ static void Scroll_ListBox_ThumbFunc(void *p) {
 	rectDef_t r;
 	int pos, max;
 
-	listBoxDef_t *listPtr = (listBoxDef_t*)si->item->typeData;
+	listBoxDef_t *listPtr = si->item->typeData.listbox;
 	if (si->item->window.flags & WINDOW_HORIZONTAL) {
 		if (DC->cursorx == si->xStart) {
 			return;
@@ -3747,7 +3750,7 @@ static void Scroll_ListBox_ThumbFunc(void *p) {
 static void Scroll_Slider_ThumbFunc(void *p) {
 	float x, value, cursorx;
 	scrollInfo_t *si = (scrollInfo_t*)p;
-	editFieldDef_t *editDef = (editFieldDef_t *) si->item->typeData;
+	editFieldDef_t *editDef = si->item->typeData.edit;
 
 	if (si->item->text) {
 		x = si->item->textRect.x + si->item->textRect.w + 8;
@@ -3854,7 +3857,7 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down) {
 	//DC->Print("slider handle key\n");
 	if (item->window.flags & WINDOW_HASFOCUS && item->cvar && Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory)) {
 		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3) {
-			editFieldDef_t *editDef = (editFieldDef_t *) item->typeData;
+			editFieldDef_t *editDef = item->typeData.edit;
 			if (editDef) {
 				rectDef_t testRect;
 				width = SLIDER_WIDTH;
@@ -3919,7 +3922,7 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down) {
 	case ITEM_TYPE_NUMERICFIELD:
 		if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER)
 		{
-			editFieldDef_t *editPtr = (editFieldDef_t*)item->typeData;
+			editFieldDef_t *editPtr = item->typeData.edit;
 
 			if (item->cvar && editPtr)
 			{
@@ -4637,7 +4640,7 @@ void Item_TextField_Paint(itemDef_t *item) {
 	vec4_t newColor, lowLight;
 	int offset;
 	menuDef_t *parent = (menuDef_t*)item->parent;
-	editFieldDef_t *editPtr = (editFieldDef_t*)item->typeData;
+	editFieldDef_t *editPtr = item->typeData.edit;
 
 	Item_Text_Paint(item);
 
@@ -4994,7 +4997,7 @@ void Item_Bind_Paint(itemDef_t *item)
 	int		textHeight,yAdj,startingXPos;
 
 	menuDef_t *parent = (menuDef_t*)item->parent;
-	editFieldDef_t *editPtr = (editFieldDef_t*)item->typeData;
+	editFieldDef_t *editPtr = item->typeData.edit;
 	if (editPtr)
 	{
 		maxChars = editPtr->maxPaintChars;
@@ -5156,20 +5159,17 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 }
 
 // scale the model should we need to
-void UI_ScaleModelAxis(refEntity_t	*ent)
+void UI_ScaleModelAxis( refEntity_t *ent )
 {
-	if (ent->modelScale[0] && ent->modelScale[0] != 1.0f)
-	{
+	if ( ent->modelScale[0] && ent->modelScale[0] != 1.0f ) {
 		VectorScale( ent->axis[0], ent->modelScale[0] , ent->axis[0] );
 		ent->nonNormalizedAxes = qtrue;
 	}
-	if (ent->modelScale[1] && ent->modelScale[1] != 1.0f)
-	{
+	if ( ent->modelScale[1] && ent->modelScale[1] != 1.0f ) {
 		VectorScale( ent->axis[1], ent->modelScale[1] , ent->axis[1] );
 		ent->nonNormalizedAxes = qtrue;
 	}
-	if (ent->modelScale[2] && ent->modelScale[2] != 1.0f)
-	{
+	if ( ent->modelScale[2] && ent->modelScale[2] != 1.0f ) {
 		VectorScale( ent->axis[2], ent->modelScale[2] , ent->axis[2] );
 		ent->nonNormalizedAxes = qtrue;
 	}
@@ -5186,7 +5186,7 @@ void Item_Model_Paint(itemDef_t *item)
 	refEntity_t		ent;
 	vec3_t			mins, maxs, origin;
 	vec3_t			angles;
-	modelDef_t *modelPtr = (modelDef_t*)item->typeData;
+	modelDef_t *modelPtr = item->typeData.model;
 
 	if (modelPtr == NULL)
 	{
@@ -5197,8 +5197,6 @@ void Item_Model_Paint(itemDef_t *item)
 #ifdef _UI
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{
-		modelDef_t *modelPtr;
-		modelPtr = (modelDef_t*)item->typeData;
 		if (modelPtr)
 		{
 			char modelPath[MAX_QPATH];
@@ -5401,7 +5399,7 @@ void Item_TextScroll_Paint(itemDef_t *item)
 	char cvartext[1024];
 	float x, y, size, count, thumb;
 	int	  i;
-	textScrollDef_t *scrollPtr = (textScrollDef_t*)item->typeData;
+	textScrollDef_t *scrollPtr = item->typeData.textscroll;
 
 	count = scrollPtr->iLineCount;
 
@@ -5469,7 +5467,7 @@ void Item_ListBox_Paint(itemDef_t *item) {
 	int startPos;
 	qhandle_t image;
 	qhandle_t optionalImage1, optionalImage2, optionalImage3;
-	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+	listBoxDef_t *listPtr = item->typeData.listbox;
 //JLF MPMOVED
 
 	// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
@@ -6057,7 +6055,7 @@ void Item_Paint(itemDef_t *item)
 //				vec3_t g2mins2, g2maxs2, g2minsEffect, g2maxsEffect;
 //	float fov_x2, fov_y2, fov_Effectx, fov_Effecty;
 
-			modelDef_t  * modelptr = (modelDef_t *)item->typeData;
+			modelDef_t  * modelptr = item->typeData.model;
 
 			if (DC->realTime > item->window.nextTime)
 			{
@@ -6522,7 +6520,7 @@ void Menu_SetFeederSelection(menuDef_t *menu, int feeder, int index, const char 
 		for (i = 0; i < menu->itemCount; i++) {
 			if (menu->items[i]->special == feeder) {
 				if (index == 0) {
-					listBoxDef_t *listPtr = (listBoxDef_t*)menu->items[i]->typeData;
+					listBoxDef_t *listPtr = menu->items[i]->typeData.listbox;
 					listPtr->cursorPos = 0;
 					listPtr->startPos = 0;
 				}
@@ -6721,40 +6719,53 @@ Item_ValidateTypeData
 */
 void Item_ValidateTypeData(itemDef_t *item)
 {
-	if (item->typeData)
+	if (item->typeData.data)
 	{
 		return;
 	}
 
-	if (item->type == ITEM_TYPE_LISTBOX)
+	switch ( item->type )
 	{
-		item->typeData = UI_Alloc(sizeof(listBoxDef_t));
-		memset(item->typeData, 0, sizeof(listBoxDef_t));
-	}
-	else if (item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD || item->type == ITEM_TYPE_YESNO || item->type == ITEM_TYPE_BIND || item->type == ITEM_TYPE_SLIDER || item->type == ITEM_TYPE_TEXT)
-	{
-		item->typeData = UI_Alloc(sizeof(editFieldDef_t));
-		memset(item->typeData, 0, sizeof(editFieldDef_t));
-		if (item->type == ITEM_TYPE_EDITFIELD)
+		case ITEM_TYPE_LISTBOX:
 		{
-			if (!((editFieldDef_t *) item->typeData)->maxPaintChars)
-			{
-				((editFieldDef_t *) item->typeData)->maxPaintChars = MAX_EDITFIELD;
-			}
+			item->typeData.listbox = (listBoxDef_t *)UI_Alloc(sizeof(listBoxDef_t));
+			memset(item->typeData.listbox, 0, sizeof(listBoxDef_t));
+			break;
 		}
-	}
-	else if (item->type == ITEM_TYPE_MULTI)
-	{
-		item->typeData = UI_Alloc(sizeof(multiDef_t));
-	}
-	else if (item->type == ITEM_TYPE_MODEL)
-	{
-		item->typeData = UI_Alloc(sizeof(modelDef_t));
-		memset(item->typeData, 0, sizeof(modelDef_t));
-	}
-	else if (item->type == ITEM_TYPE_TEXTSCROLL )
-	{
-		item->typeData = UI_Alloc(sizeof(textScrollDef_t));
+		case ITEM_TYPE_TEXT:
+		case ITEM_TYPE_EDITFIELD:
+		case ITEM_TYPE_NUMERICFIELD:
+		case ITEM_TYPE_YESNO:
+		case ITEM_TYPE_BIND:
+		case ITEM_TYPE_SLIDER:
+		{
+			item->typeData.edit = (editFieldDef_t *)UI_Alloc(sizeof(editFieldDef_t));
+			memset(item->typeData.edit, 0, sizeof(editFieldDef_t));
+
+			if ( item->type == ITEM_TYPE_EDITFIELD || item->type == ITEM_TYPE_NUMERICFIELD )
+				item->typeData.edit->maxPaintChars = MAX_EDITFIELD;
+			break;
+		}
+		case ITEM_TYPE_MULTI:
+		{
+			item->typeData.multi = (multiDef_t *)UI_Alloc(sizeof(multiDef_t));
+			memset(item->typeData.multi, 0, sizeof(multiDef_t));
+			break;
+		}
+		case ITEM_TYPE_MODEL:
+		{
+			item->typeData.model = (modelDef_t *)UI_Alloc(sizeof(modelDef_t));
+			memset(item->typeData.model, 0, sizeof(modelDef_t));
+			break;
+		}
+		case ITEM_TYPE_TEXTSCROLL:
+		{
+			item->typeData.textscroll = (textScrollDef_t *)UI_Alloc(sizeof(textScrollDef_t));
+			memset(item->typeData.textscroll, 0, sizeof(textScrollDef_t));
+			break;
+		}
+		default:
+			break;
 	}
 }
 
@@ -7007,7 +7018,7 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 	int g2Model;
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 	*runTimeLength =0.0f;
 
 	if (!Q_stricmp(&name[strlen(name) - 4], ".glm"))
@@ -7130,7 +7141,7 @@ qboolean ItemParse_asset_shader( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_origin( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (PC_Float_Parse(handle, &modelPtr->origin[0])) {
 		if (PC_Float_Parse(handle, &modelPtr->origin[1])) {
@@ -7146,7 +7157,7 @@ qboolean ItemParse_model_origin( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_fovx( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!PC_Float_Parse(handle, &modelPtr->fov_x)) {
 		return qfalse;
@@ -7158,7 +7169,7 @@ qboolean ItemParse_model_fovx( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_fovy( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!PC_Float_Parse(handle, &modelPtr->fov_y)) {
 		return qfalse;
@@ -7170,7 +7181,7 @@ qboolean ItemParse_model_fovy( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_rotation( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!PC_Int_Parse(handle, &modelPtr->rotationSpeed)) {
 		return qfalse;
@@ -7182,7 +7193,7 @@ qboolean ItemParse_model_rotation( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_angle( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!PC_Int_Parse(handle, &modelPtr->angle)) {
 		return qfalse;
@@ -7194,7 +7205,7 @@ qboolean ItemParse_model_angle( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_g2mins( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (PC_Float_Parse(handle, &modelPtr->g2mins[0])) {
 		if (PC_Float_Parse(handle, &modelPtr->g2mins[1])) {
@@ -7210,7 +7221,7 @@ qboolean ItemParse_model_g2mins( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_g2maxs( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (PC_Float_Parse(handle, &modelPtr->g2maxs[0])) {
 		if (PC_Float_Parse(handle, &modelPtr->g2maxs[1])) {
@@ -7226,7 +7237,7 @@ qboolean ItemParse_model_g2maxs( itemDef_t *item, int handle ) {
 qboolean ItemParse_model_g2scale( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (PC_Float_Parse(handle, &modelPtr->g2scale[0])) {
 		if (PC_Float_Parse(handle, &modelPtr->g2scale[1])) {
@@ -7243,7 +7254,7 @@ qboolean ItemParse_model_g2skin( itemDef_t *item, int handle ) {
 	pc_token_t token;
 
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
@@ -7266,7 +7277,7 @@ qboolean ItemParse_model_g2anim( itemDef_t *item, int handle ) {
 	int i = 0;
 
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
@@ -7294,13 +7305,11 @@ qboolean ItemParse_model_g2anim( itemDef_t *item, int handle ) {
 // model_g2skin <string>
 qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName )
 {
-
 	modelDef_t *modelPtr;
 	int defSkin;
 
-
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!skinName || !skinName[0])
 	{ //it was parsed correctly so still return true.
@@ -7327,7 +7336,7 @@ qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName )
 	int i = 0;
 
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
+	modelPtr = item->typeData.model;
 
 	if (!animName || !animName[0])
 	{ //it was parsed correctly so still return true.
@@ -7446,7 +7455,6 @@ qboolean ItemParse_style( itemDef_t *item, int handle)
 	return qtrue;
 }
 
-
 // decoration
 qboolean ItemParse_decoration( itemDef_t *item, int handle ) {
 	item->window.flags |= WINDOW_DECORATION;
@@ -7457,7 +7465,7 @@ qboolean ItemParse_decoration( itemDef_t *item, int handle ) {
 qboolean ItemParse_notselectable( itemDef_t *item, int handle ) {
 	listBoxDef_t *listPtr;
 	Item_ValidateTypeData(item);
-	listPtr = (listBoxDef_t*)item->typeData;
+	listPtr = item->typeData.listbox;
 	if (item->type == ITEM_TYPE_LISTBOX && listPtr) {
 		listPtr->notselectable = qtrue;
 	}
@@ -7474,7 +7482,7 @@ qboolean ItemParse_scrollhidden( itemDef_t *item , int handle)
 {
 	listBoxDef_t *listPtr;
 	Item_ValidateTypeData(item);
-	listPtr = (listBoxDef_t*)item->typeData;
+	listPtr = item->typeData.listbox;
 
 	if (item->type == ITEM_TYPE_LISTBOX && listPtr)
 	{
@@ -7482,10 +7490,6 @@ qboolean ItemParse_scrollhidden( itemDef_t *item , int handle)
 	}
 	return qtrue;
 }
-
-
-
-
 
 // manually wrapped
 qboolean ItemParse_wrapped( itemDef_t *item, int handle ) {
@@ -7498,7 +7502,6 @@ qboolean ItemParse_autowrapped( itemDef_t *item, int handle ) {
 	item->window.flags |= WINDOW_AUTOWRAPPED;
 	return qtrue;
 }
-
 
 // horizontalscroll
 qboolean ItemParse_horizontalscroll( itemDef_t *item, int handle ) {
@@ -7514,8 +7517,6 @@ ItemParse_type
 */
 qboolean ItemParse_type( itemDef_t *item, int handle  )
 {
-//	int		i,holdInt;
-
 	if (!PC_Int_Parse(handle, &item->type))
 	{
 		return qfalse;
@@ -7530,8 +7531,8 @@ qboolean ItemParse_elementwidth( itemDef_t *item, int handle ) {
 	listBoxDef_t *listPtr;
 
 	Item_ValidateTypeData(item);
-	listPtr = (listBoxDef_t*)item->typeData;
-	if (!PC_Float_Parse(handle, &listPtr->elementWidth)) {
+	listPtr = item->typeData.listbox;
+	if (!listPtr || !PC_Float_Parse(handle, &listPtr->elementWidth)) {
 		return qfalse;
 	}
 	return qtrue;
@@ -7543,8 +7544,8 @@ qboolean ItemParse_elementheight( itemDef_t *item, int handle ) {
 	listBoxDef_t *listPtr;
 
 	Item_ValidateTypeData(item);
-	listPtr = (listBoxDef_t*)item->typeData;
-	if (!PC_Float_Parse(handle, &listPtr->elementHeight)) {
+	listPtr = item->typeData.listbox;
+	if (!listPtr || !PC_Float_Parse(handle, &listPtr->elementHeight)) {
 		return qfalse;
 	}
 	return qtrue;
@@ -7564,10 +7565,8 @@ qboolean ItemParse_elementtype( itemDef_t *item, int handle ) {
 	listBoxDef_t *listPtr;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
-	listPtr = (listBoxDef_t*)item->typeData;
-	if (!PC_Int_Parse(handle, &listPtr->elementStyle)) {
+	listPtr = item->typeData.listbox;
+	if (!listPtr || !PC_Int_Parse(handle, &listPtr->elementStyle)) {
 		return qfalse;
 	}
 	return qtrue;
@@ -7575,19 +7574,16 @@ qboolean ItemParse_elementtype( itemDef_t *item, int handle ) {
 
 // columns sets a number of columns and an x pos and width per..
 qboolean ItemParse_columns( itemDef_t *item, int handle ) {
-	int num, i;
+	int i;
 	listBoxDef_t *listPtr;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
-	listPtr = (listBoxDef_t*)item->typeData;
-	if (PC_Int_Parse(handle, &num)) {
-		if (num > MAX_LB_COLUMNS) {
-			num = MAX_LB_COLUMNS;
+	listPtr = item->typeData.listbox;
+	if (listPtr && PC_Int_Parse(handle, &listPtr->numColumns)) {
+		if (listPtr->numColumns > MAX_LB_COLUMNS) {
+			listPtr->numColumns = MAX_LB_COLUMNS;
 		}
-		listPtr->numColumns = num;
-		for (i = 0; i < num; i++) {
+		for (i = 0; i < listPtr->numColumns; i++) {
 			int pos, width, maxChars;
 
 			if (PC_Int_Parse(handle, &pos) && PC_Int_Parse(handle, &width) && PC_Int_Parse(handle, &maxChars)) {
@@ -7670,7 +7666,6 @@ qboolean ItemParse_isCharacter( itemDef_t *item, int handle  )
 	}
 	return qfalse;
 }
-
 
 /*
 ===============
@@ -7822,13 +7817,9 @@ qboolean ItemParse_doubleClick( itemDef_t *item, int handle ) {
 	listBoxDef_t *listPtr;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData) {
-		return qfalse;
-	}
+	listPtr = item->typeData.listbox;
 
-	listPtr = (listBoxDef_t*)item->typeData;
-
-	if (!PC_Script_Parse(handle, &listPtr->doubleClick)) {
+	if (!listPtr || !PC_Script_Parse(handle, &listPtr->doubleClick)) {
 		return qfalse;
 	}
 	return qtrue;
@@ -7905,23 +7896,22 @@ qboolean ItemParse_cvar( itemDef_t *item, int handle )
 		return qfalse;
 	}
 
-	if ( item->typeData)
+	switch ( item->type )
 	{
-		editFieldDef_t *editPtr;
-
-		switch ( item->type )
+		case ITEM_TYPE_EDITFIELD:
+		case ITEM_TYPE_NUMERICFIELD:
+		case ITEM_TYPE_YESNO:
+		case ITEM_TYPE_BIND:
+		case ITEM_TYPE_SLIDER:
+		case ITEM_TYPE_TEXT:
 		{
-			case ITEM_TYPE_EDITFIELD:
-			case ITEM_TYPE_NUMERICFIELD:
-			case ITEM_TYPE_YESNO:
-			case ITEM_TYPE_BIND:
-			case ITEM_TYPE_SLIDER:
-			case ITEM_TYPE_TEXT:
-				editPtr = (editFieldDef_t*)item->typeData;
-				editPtr->minVal = -1;
-				editPtr->maxVal = -1;
-				editPtr->defVal = -1;
-				break;
+			if ( item->typeData.edit )
+			{
+				item->typeData.edit->minVal = -1;
+				item->typeData.edit->maxVal = -1;
+				item->typeData.edit->defVal = -1;
+			}
+			break;
 		}
 	}
 	return qtrue;
@@ -7940,73 +7930,51 @@ qboolean ItemParse_font( itemDef_t *item, int handle )
 
 qboolean ItemParse_maxChars( itemDef_t *item, int handle ) {
 	editFieldDef_t *editPtr;
-	int maxChars;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
+	editPtr = (editFieldDef_t*)item->typeData.edit;
 
-	if (!PC_Int_Parse(handle, &maxChars)) {
+	if (!editPtr || !PC_Int_Parse(handle, &editPtr->maxChars)) {
 		return qfalse;
 	}
-	editPtr = (editFieldDef_t*)item->typeData;
-	editPtr->maxChars = maxChars;
 	return qtrue;
 }
 
 qboolean ItemParse_maxPaintChars( itemDef_t *item, int handle ) {
 	editFieldDef_t *editPtr;
-	int maxChars;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
+	editPtr = (editFieldDef_t*)item->typeData.edit;
 
-	if (!PC_Int_Parse(handle, &maxChars)) {
+	if (!editPtr || !PC_Int_Parse(handle, &editPtr->maxPaintChars)) {
 		return qfalse;
 	}
-	editPtr = (editFieldDef_t*)item->typeData;
-	editPtr->maxPaintChars = maxChars;
 	return qtrue;
 }
 
-qboolean ItemParse_maxLineChars( itemDef_t *item, int handle )
-{
+qboolean ItemParse_maxLineChars( itemDef_t *item, int handle ) {
 	textScrollDef_t *scrollPtr;
-	int				maxChars;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
+	scrollPtr = item->typeData.textscroll;
 
-	if (!PC_Int_Parse(handle, &maxChars))
-	{
+	if (!scrollPtr || !PC_Int_Parse(handle, &scrollPtr->maxLineChars)) {
 		return qfalse;
 	}
-
-	scrollPtr = (textScrollDef_t*)item->typeData;
-	scrollPtr->maxLineChars = maxChars;
-
 	return qtrue;
 }
 
-qboolean ItemParse_lineHeight( itemDef_t *item, int handle )
-{
+qboolean ItemParse_lineHeight( itemDef_t *item, int handle ) {
 	textScrollDef_t *scrollPtr;
-	int				height;
+	int height;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-		return qfalse;
+	scrollPtr = item->typeData.textscroll;
 
-	if (!PC_Int_Parse(handle, &height))
-	{
+	if (!scrollPtr || !PC_Int_Parse(handle, &height)) {
 		return qfalse;
 	}
-
-	scrollPtr = (textScrollDef_t*)item->typeData;
 	scrollPtr->lineHeight = height;
-
 	return qtrue;
 }
 
@@ -8014,9 +7982,11 @@ qboolean ItemParse_cvarFloat( itemDef_t *item, int handle ) {
 	editFieldDef_t *editPtr;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
+	editPtr = item->typeData.edit;
+
+	if (!editPtr)
 		return qfalse;
-	editPtr = (editFieldDef_t*)item->typeData;
+
 	if (PC_String_Parse(handle, &item->cvar) &&
 		PC_Float_Parse(handle, &editPtr->defVal) &&
 		PC_Float_Parse(handle, &editPtr->minVal) &&
@@ -8035,9 +8005,11 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	int pass;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
+	multiPtr = item->typeData.multi;
+
+	if (!multiPtr)
 		return qfalse;
-	multiPtr = (multiDef_t*)item->typeData;
+
 	multiPtr->count = 0;
 	multiPtr->strDef = qtrue;
 
@@ -8122,12 +8094,11 @@ qboolean ItemParse_cvarFloatList( itemDef_t *item, int handle )
 	multiDef_t *multiPtr;
 
 	Item_ValidateTypeData(item);
-	if (!item->typeData)
-	{
-		return qfalse;
-	}
+	multiPtr = item->typeData.multi;
 
-	multiPtr = (multiDef_t*)item->typeData;
+	if (!multiPtr)
+		return qfalse;
+
 	multiPtr->count = 0;
 	multiPtr->strDef = qfalse;
 
@@ -8465,7 +8436,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 	// new asian-aware line breaker...  (pasted from elsewhere late @ night, hence aliasing-vars ;-)
 	//
-	textScrollDef_t* scrollPtr = (textScrollDef_t*) item->typeData;
+	textScrollDef_t* scrollPtr = item->typeData.textscroll;
 	const char *psText = item->text;	// for copy/paste ease
 	int iBoxWidth = item->window.rect.w - SCROLLBAR_SIZE - 10;
 
@@ -8604,7 +8575,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 	float			 w;
 	float			 cw;
 
-	textScrollDef_t* scrollPtr = (textScrollDef_t*) item->typeData;
+	textScrollDef_t* scrollPtr = item->typeData.textscroll;
 
 	scrollPtr->iLineCount = 0;
 	width = scrollPtr->maxLineChars;
@@ -8680,21 +8651,16 @@ void Item_InitControls(itemDef_t *item)
 		return;
 	}
 
-	switch ( item->type )
+	if ( item->type == ITEM_TYPE_LISTBOX )
 	{
-		case ITEM_TYPE_LISTBOX:
+		listBoxDef_t *listPtr = item->typeData.listbox;
+		item->cursorPos = 0;
+		if (listPtr)
 		{
-			listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
-			item->cursorPos = 0;
-			if (listPtr)
-			{
-				listPtr->cursorPos = 0;
-				listPtr->startPos = 0;
-				listPtr->endPos = 0;
-				listPtr->cursorPos = 0;
-			}
-
-			break;
+			listPtr->cursorPos = 0;
+			listPtr->startPos = 0;
+			listPtr->endPos = 0;
+			listPtr->cursorPos = 0;
 		}
 	}
 }

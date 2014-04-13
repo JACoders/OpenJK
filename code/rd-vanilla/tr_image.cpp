@@ -1839,6 +1839,12 @@ qhandle_t RE_RegisterSkin( const char *name) {
 
 	// If not a .skin file, load as a single shader	- then return
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
+#ifdef JK2_MODE
+		skin->numSurfaces = 1;
+		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
+		return hSkin;
+#endif
 /*		skin->numSurfaces = 1;
 		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
