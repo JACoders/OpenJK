@@ -24,13 +24,13 @@ extern void CG_PreInit();
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
-extern "C" Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
+extern "C" Q_EXPORT void QDECL dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg, ... ) ) {
 	Q_syscall = syscallptr;
 	CG_PreInit();
 }
 
 inline int PASSFLOAT( float x ) {
-	floatint_t fi;
+	byteAlias_t fi;
 	fi.f = x;
 	return fi.i;
 }
@@ -41,6 +41,8 @@ void	cgi_Printf( const char *fmt ) {
 
 void	cgi_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
+	// shut up GCC warning about returning functions, because we know better
+	exit(1);
 }
 
 int		cgi_Milliseconds( void ) {
@@ -221,9 +223,7 @@ qhandle_t cgi_R_RegisterSkin( const char *name ) {
 }
 
 qhandle_t cgi_R_RegisterShader( const char *name ) {
-	qhandle_t hShader = Q_syscall( CG_R_REGISTERSHADER, name );
-	assert (hShader);
-	return  hShader;
+	return Q_syscall( CG_R_REGISTERSHADER, name );
 }
 
 qhandle_t cgi_R_RegisterShaderNoMip( const char *name ) {
@@ -523,13 +523,6 @@ int cgi_SP_GetStringTextString(const char *text, char *buffer, int bufferLength)
 int cgi_SP_GetStringText(int ID, char *buffer, int bufferLength)
 {
 	return Q_syscall( CG_SP_GETSTRINGTEXT, ID, buffer, bufferLength );
-}
-
-int cgi_EndGame(void)
-{
-//extern void CMD_CGCam_Disable( void );
-	//CMD_CGCam_Disable();	//can't do it here because it will draw the hud when we're out of camera
-	return Q_syscall( CG_SENDCONSOLECOMMAND, "cam_disable; set nextmap disconnect; cinematic outcast\n" );
 }
 
 /*

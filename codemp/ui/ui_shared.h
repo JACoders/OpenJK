@@ -517,7 +517,8 @@ void UI_InitMemory( void );
 qboolean UI_OutOfMemory();
 
 void Controls_GetConfig( void );
-void Controls_SetConfig(qboolean restart);
+void Controls_SetConfig( void );
+void Controls_SetDefaults( void );
 
 /*
 Ghoul2 Insert End

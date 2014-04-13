@@ -936,47 +936,42 @@ void RB_SurfacePolychain( srfPoly_t *p ) {
 	tess.numVertexes = numv;
 }
 
-inline static ulong ComputeFinalVertexColor(const byte *colors)
-{
-	int			k;
-	byte		result[4];
-	ulong		r, g, b;
+inline static uint32_t ComputeFinalVertexColor( const byte *colors ) {
+	int k;
+	byteAlias_t result;
+	uint32_t r, g, b;
 
-	*(int *)result = *(int *)colors;
-	if (tess.shader->lightmapIndex[0] != LIGHTMAP_BY_VERTEX )
-	{
-		return *(ulong *)result;
-	}
-	if (r_fullbright->integer)
-	{
-		result[0] = 255;
-		result[1] = 255;
-		result[2] = 255;
-		return *(ulong *)result;
+	for ( k=0; k<4; k++ )
+		result.b[k] = colors[k];
+
+	if ( tess.shader->lightmapIndex[0] != LIGHTMAP_BY_VERTEX )
+		return result.ui;
+
+	if ( r_fullbright->integer ) {
+		result.b[0] = 255;
+		result.b[1] = 255;
+		result.b[2] = 255;
+		return result.ui;
 	}
 	// an optimization could be added here to compute the style[0] (which is always the world normal light)
 	r = g = b = 0;
-	for(k = 0; k < MAXLIGHTMAPS; k++)
-	{
-		if (tess.shader->styles[k] < LS_UNUSED)
-		{
-			byte	*styleColor = styleColors[tess.shader->styles[k]];
+	for( k=0; k<MAXLIGHTMAPS; k++ ) {
+		if ( tess.shader->styles[k] < LS_UNUSED ) {
+			byte *styleColor = styleColors[tess.shader->styles[k]];
 
-			r += (ulong)(*colors++) * (ulong)(*styleColor++);
-			g += (ulong)(*colors++) * (ulong)(*styleColor++);
-			b += (ulong)(*colors++) * (ulong)(*styleColor);
+			r += (uint32_t)(*colors++) * (uint32_t)(*styleColor++);
+			g += (uint32_t)(*colors++) * (uint32_t)(*styleColor++);
+			b += (uint32_t)(*colors++) * (uint32_t)(*styleColor);
 			colors++;
 		}
 		else
-		{
 			break;
-		}
 	}
-	result[0] = Com_Clamp(0, 255, r >> 8);
-	result[1] = Com_Clamp(0, 255, g >> 8);
-	result[2] = Com_Clamp(0, 255, b >> 8);
+	result.b[0] = Com_Clamp( 0, 255, r >> 8 );
+	result.b[1] = Com_Clamp( 0, 255, g >> 8 );
+	result.b[2] = Com_Clamp( 0, 255, b >> 8 );
 
-	return *(ulong *)result;
+	return result.ui;
 }
 
 /*
@@ -1041,7 +1036,7 @@ void RB_SurfaceTriangles( srfTriangles_t *srf ) {
 		}
 		texCoords += NUM_TEX_COORDS*2;
 
-		*(unsigned int*)color = ComputeFinalVertexColor((byte *)dv->color);
+		*(unsigned *)color = ComputeFinalVertexColor((byte *)dv->color);
 		color += 4;
 	}
 
@@ -1327,15 +1322,16 @@ RB_SurfaceFace
 ==============
 */
 void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
-	int			i, k;
+	int			i, j, k;
+	unsigned int *indices;
+	glIndex_t	*tessIndexes;
+	float		*v;
 	float		*normal;
 	int			ndx;
 	int			Bob;
 	int			numPoints;
 	int			dlightBits;
-	unsigned int *indices;
-	glIndex_t	*tessIndexes;
-	float		*v;
+	byteAlias_t	ba;
 
 	RB_CHECKOVERFLOW( surf->numPoints, surf->numIndices );
 
@@ -1382,7 +1378,9 @@ void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 				break;
 			}
 		}
-		*(unsigned int*) &tess.vertexColors[ndx] = ComputeFinalVertexColor((byte *)&v[VERTEX_COLOR]);
+		ba.ui = ComputeFinalVertexColor( (byte *)&v[VERTEX_COLOR] );
+		for ( j=0; j<4; j++ )
+			tess.vertexColors[ndx][j] = ba.b[j];
 		tess.vertexDlightBits[ndx] = dlightBits;
 	}
 
@@ -2095,7 +2093,7 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 
 
 void RB_SurfaceDisplayList( srfDisplayList_t *surf ) {
-	// all apropriate state must be set in RB_BeginSurface
+	// all appropriate state must be set in RB_BeginSurface
 	// this isn't implemented yet...
 	qglCallList( surf->listNum );
 }

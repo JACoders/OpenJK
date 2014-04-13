@@ -38,8 +38,6 @@ static void GfxInfo_f( void );
 void R_TerrainInit(void);
 void R_TerrainShutdown(void);
 
-cvar_t	*com_jk2;
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
@@ -203,7 +201,7 @@ cvar_t	*broadsword_dircap=0;
 cvar_t	*sv_mapname;
 cvar_t	*sv_mapChecksum;
 cvar_t	*se_language;			// JKA
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 cvar_t	*sp_language;			// JK2
 #endif
 cvar_t	*com_buildScript;
@@ -352,7 +350,9 @@ static void InitOpenGL( void )
 		// print info the first time only
 		// set default state
 		GL_SetDefaultState();
+#ifndef JK2_MODE
 		R_Splash();	//get something on screen asap
+#endif
 		GfxInfo_f();
 	}
 	else
@@ -1154,9 +1154,6 @@ void R_Register( void )
 	//
 	// latched and archived variables
 	//
-#ifndef __NO_JK2
-	com_jk2 = ri.Cvar_Get( "com_jk2", "0", CVAR_INIT );
-#endif
 
 	r_allowExtensions = ri.Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compressed_textures = ri.Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1325,7 +1322,7 @@ Ghoul2 Insert End
 	sv_mapname = ri.Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
 	sv_mapChecksum = ri.Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );
 	se_language = ri.Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	sp_language = ri.Cvar_Get ( "sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART );
 #endif
 	com_buildScript = ri.Cvar_Get ( "com_buildScript", "0", 0 );
@@ -1687,7 +1684,7 @@ extern void G2Time_ReportTimers(void);
 #endif
 extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 unsigned int AnyLanguage_ReadCharFromString_JK2 ( char **text, qboolean *pbIsTrailingPunctuation ) {
 	return AnyLanguage_ReadCharFromString (text, pbIsTrailingPunctuation);
 }
@@ -1778,7 +1775,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.Language_IsAsian = Language_IsAsian;
 	re.Language_UsesSpaces = Language_UsesSpaces;
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
-#ifndef __NO_JK2
+#ifdef JK2_MODE
 	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString_JK2;
 #endif
 
@@ -1786,6 +1783,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.R_LoadDataImage = R_LoadDataImage;
 	re.R_InvertImage = R_InvertImage;
 	re.SavePNG = RE_SavePNG;
+	re.SaveJPG = RE_SaveJPG;
 	re.R_InitWorldEffects = R_InitWorldEffects;
 	re.R_CreateAutomapImage = R_CreateAutomapImage;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;

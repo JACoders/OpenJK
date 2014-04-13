@@ -309,6 +309,7 @@ typedef struct texModInfo_s {
 #define SURFSPRITE_ORIENTED		2
 #define SURFSPRITE_EFFECT		3
 #define SURFSPRITE_WEATHERFX	4
+#define SURFSPRITE_FLATTENED	5
 
 #define SURFSPRITE_FACING_NORMAL	0
 #define SURFSPRITE_FACING_UP		1
@@ -1217,6 +1218,8 @@ extern	cvar_t	*r_simpleMipMaps;
 
 extern	cvar_t	*r_showImages;
 extern	cvar_t	*r_debugSort;
+
+extern	cvar_t	*r_marksOnTriangleMeshes;
 
 /*
 Ghoul2 Insert Start

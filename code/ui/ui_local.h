@@ -178,6 +178,19 @@ typedef struct {
 	itemDef_t *weaponThrowButton;
 	qhandle_t litThrowableIcon;
 	qhandle_t unlitThrowableIcon;
+	
+	short	selectedInventory1;
+	char	selectedInventory1ItemName[64];
+	short	selectedInventory2;
+	char	selectedInventory2ItemName[64];
+	itemDef_t *inventory1ItemButton;
+	qhandle_t litInventory1Icon;
+	qhandle_t unlitInventory1Icon;
+	itemDef_t *inventory2ItemButton;
+	qhandle_t litInventory2Icon;
+	qhandle_t unlitInventory2Icon;
+	
+	
 	short		movesTitleIndex;
 	const char	*movesBaseAnim;
 	int			moveAnimTime;

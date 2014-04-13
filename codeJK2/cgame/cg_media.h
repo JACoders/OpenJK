@@ -19,7 +19,7 @@ This file is part of Jedi Knight 2.
 #ifndef __CG_MEDIA_H_
 #define __CG_MEDIA_H_
 
-#define	NUM_CROSSHAIRS		10
+#define	NUM_CROSSHAIRS		9
 
 typedef enum {
 	FOOTSTEP_NORMAL,

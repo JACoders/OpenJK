@@ -225,7 +225,6 @@ void PC_SourceError(int handle, char *format, ...)
 
 	va_start (argptr, format);
 	Q_vsnprintf (string, sizeof(string), format, argptr);
-	vsprintf (string, format, argptr);
 	va_end (argptr);
 
 	filename[0] = '\0';
@@ -3090,9 +3089,7 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name )
 qboolean ItemParse_asset_model( itemDef_t *item ) 
 {
 	const char *temp;
-	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
-	modelPtr = (modelDef_t*)item->typeData;
 
 	if (PC_ParseString(&temp)) 
 	{
@@ -4419,11 +4416,10 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The displayed text
 			multiPtr->cvarList[multiPtr->count] = "@MENUS_MYLANGUAGE";
 			// The cvar value that goes into se_language
-#ifndef __NO_JK2
-			// FIXME
-			if(com_jk2 && !com_jk2->integer)
+
+#ifndef JK2_MODE // FIXME
+				multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName(multiPtr->count);
 #endif
-			multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName( multiPtr->count );
 		}
 		return qtrue;
 	}
@@ -4594,9 +4590,9 @@ qboolean ItemParse_enableCvar( itemDef_t *item)
 ItemParse_disableCvar 
 ===============
 */
-qboolean ItemParse_disableCvar( itemDef_t *item ) 
+qboolean ItemParse_disableCvar( itemDef_t *item )
 {
-	if (PC_Script_Parse(&item->enableCvar)) 
+	if (PC_Script_Parse(&item->enableCvar))
 	{
 		item->cvarFlags = CVAR_DISABLE;
 		return qtrue;
@@ -4609,7 +4605,7 @@ qboolean ItemParse_disableCvar( itemDef_t *item )
 ItemParse_showCvar 
 ===============
 */
-qboolean ItemParse_showCvar( itemDef_t *item ) 
+qboolean ItemParse_showCvar( itemDef_t *item )
 {
 	if (PC_Script_Parse(&item->enableCvar)) 
 	{
@@ -4624,9 +4620,9 @@ qboolean ItemParse_showCvar( itemDef_t *item )
 ItemParse_hideCvar 
 ===============
 */
-qboolean ItemParse_hideCvar( itemDef_t *item) 
+qboolean ItemParse_hideCvar( itemDef_t *item )
 {
-	if (PC_Script_Parse(&item->enableCvar)) 
+	if (PC_Script_Parse(&item->enableCvar))
 	{
 		item->cvarFlags = CVAR_HIDE;
 		return qtrue;
@@ -4639,7 +4635,7 @@ qboolean ItemParse_hideCvar( itemDef_t *item)
 ItemParse_cvarsubstring
 ===============
 */
-qboolean ItemParse_cvarsubstring( itemDef_t *item) 
+qboolean ItemParse_cvarsubstring( itemDef_t *item )
 {
 	assert(item->cvarFlags);	//need something set first, then we or in our flag.
 	item->cvarFlags |= CVAR_SUBSTRING;
@@ -5250,22 +5246,13 @@ menuDef_t *Menus_ActivateByName(const char *p)
 		}
 	}
 
-
-	const int	com_demo = Cvar_VariableIntegerValue( "com_demo" );
 	if (!m)
 	{	// A hack so we don't have to load all three mission menus before we know what tier we're on
 		if (!Q_stricmp( p, "ingameMissionSelect1" ) )
 		{
-			if ( com_demo )
-			{
-				Menus_OpenByName("demo_MissionSelect");
-			}
-			else
-			{
-				UI_LoadMenus("ui/tier1.txt",qfalse);
-				Menus_CloseAll();
-				Menus_OpenByName("ingameMissionSelect1");
-			}
+			UI_LoadMenus("ui/tier1.txt",qfalse);
+			Menus_CloseAll();
+			Menus_OpenByName("ingameMissionSelect1");
 		}
 		else if (!Q_stricmp( p, "ingameMissionSelect2" ) )
 		{
@@ -5284,53 +5271,26 @@ menuDef_t *Menus_ActivateByName(const char *p)
 			Com_Printf(S_COLOR_YELLOW"WARNING: Menus_ActivateByName: Unable to find menu \"%s\"\n",p);
 		}
 	}
-	
-	if( !com_demo )
+
+	// First time, show force select instructions
+	if (!Q_stricmp( p, "ingameForceSelect" ) )
 	{
-		// First time, show force select instructions
-		if (!Q_stricmp( p, "ingameForceSelect" ) )
+		int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+
+		if (tier_storyinfo==1)
 		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (tier_storyinfo==1)
-			{
-				Menus_OpenByName("ingameForceHelp");
-			}
-		}
-
-		// First time, show weapons select instructions
-		if (!Q_stricmp( p, "ingameWpnSelect" ) )
-		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (tier_storyinfo==1)
-			{
-				Menus_OpenByName("ingameWpnSelectHelp");
-			}
+			Menus_OpenByName("ingameForceHelp");
 		}
 	}
-	else // demo
+
+	// First time, show weapons select instructions
+	if (!Q_stricmp( p, "ingameWpnSelect" ) )
 	{
-		// First time, show force select instructions
-		if (!Q_stricmp( p, "demo_ForceSelect" ) )
+		int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+
+		if (tier_storyinfo==1)
 		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (!tier_storyinfo)
-			{
-				Menus_OpenByName("ingameForceHelp");
-			}
-		}
-
-		// First time, show weapons select instructions
-		if (!Q_stricmp( p, "demo_WpnSelect" ) )
-		{
-			int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
-
-			if (!tier_storyinfo)
-			{
-				Menus_OpenByName("ingameWpnSelectHelp");
-			}
+			Menus_OpenByName("ingameWpnSelectHelp");
 		}
 	}
 
@@ -6095,16 +6055,11 @@ bool HasStringLanguageChanged ( const itemDef_t *item )
 	}
 
 	int modificationCount;
-#ifndef __NO_JK2
-	if ( com_jk2 && com_jk2->integer )
-	{
-		modificationCount = sp_language->modificationCount;
-	}
-	else
+#ifdef JK2_MODE
+	modificationCount = sp_language->modificationCount;
+#else
+	modificationCount = se_language->modificationCount;
 #endif
-	{
-		modificationCount = se_language->modificationCount;
-	}
 
 	return item->asset != modificationCount;
 }
@@ -6163,17 +6118,13 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		}
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
-#ifndef __NO_JK2
-		if( com_jk2 && com_jk2->integer )
-		{
-			if(item->text && item->text[0]=='@')
-				item->asset = sp_language->modificationCount;
-		}
-		else
-#endif
+#ifdef JK2_MODE
+		if(item->text && item->text[0]=='@')
+			item->asset = sp_language->modificationCount;
+#else
 		if (item->text && item->text[0]=='@' )//string package
 			item->asset = se_language->modificationCount; //mark language
-
+#endif
 	}
 }
 
@@ -6329,22 +6280,15 @@ void Item_Text_Paint(itemDef_t *item)
 	{
 		textPtr = item->text;
 	}
-#ifndef __NO_JK2
-	if(com_jk2 && !com_jk2->integer)
+#ifdef JK2_MODE
+	if (*textPtr == '@')
 	{
-#endif
+		textPtr = JK2SP_GetStringTextString(&textPtr[1]);
+	}
+#else
 	if (*textPtr == '@')	// string reference
 	{
 		textPtr = SE_GetString( &textPtr[1] );
-	}
-#ifndef __NO_JK2
-	}
-	else
-	{
-		if(*textPtr == '@')
-		{
-			textPtr = JK2SP_GetStringTextString(&textPtr[1]);
-		}
 	}
 #endif
 
@@ -6539,8 +6483,6 @@ void Item_ListBox_Paint(itemDef_t *item)
 	qhandle_t image;
 	qhandle_t optionalImage;
 	listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
-//JLF MPMOVED
-	int numlines;
 
 	// the listbox is horizontal or vertical and has a fixed size scroll bar going either direction
 	// elements are enumerated from the DC and either text or image handles are acquired from the DC as well
@@ -6641,9 +6583,6 @@ void Item_ListBox_Paint(itemDef_t *item)
 	}
 	else 
 	{
-//JLF MPMOVED
-		numlines = item->window.rect.h / listPtr->elementHeight;
-//JLFEND
 //JLF new variable (code idented with if)
 		if (!listPtr->scrollhidden)
 		{
@@ -6825,12 +6764,11 @@ void BindingFromName(const char *cvar)
 				DC->keynumToStringBuf( b2, g_nameBind2, sizeof(g_nameBind2) );
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
-#ifndef __NO_JK2
-				if(com_jk2 && com_jk2->integer)
-					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
-				else
-#endif
+#ifdef JK2_MODE
+				strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
+#else
 				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
+#endif
 				strcat( g_nameBind1, g_nameBind2 );
 			}
 			return;
@@ -7052,95 +6990,88 @@ void Item_Model_Paint(itemDef_t *item)
 	}
 
 	// Fuck all the logic --eez
-#ifndef __NO_JK2
-	if(com_jk2 && com_jk2->integer)
+#ifdef JK2_MODE
+	// setup the refdef
+	memset( &refdef, 0, sizeof( refdef ) );
+	refdef.rdflags = RDF_NOWORLDMODEL;
+	AxisClear( refdef.viewaxis );
+	x = item->window.rect.x+1;
+	y = item->window.rect.y+1;
+	w = item->window.rect.w-2;
+	h = item->window.rect.h-2;
+
+	refdef.x = x * DC->xscale;
+	refdef.y = y * DC->yscale;
+	refdef.width = w * DC->xscale;
+	refdef.height = h * DC->yscale;
+
+	DC->modelBounds( item->asset, mins, maxs );
+
+	origin[2] = -0.5 * ( mins[2] + maxs[2] );
+	origin[1] = 0.5 * ( mins[1] + maxs[1] );
+
+	// calculate distance so the model nearly fills the box
+	if (qtrue) 
 	{
-		// setup the refdef
-		memset( &refdef, 0, sizeof( refdef ) );
-		refdef.rdflags = RDF_NOWORLDMODEL;
-		AxisClear( refdef.viewaxis );
-		x = item->window.rect.x+1;
-		y = item->window.rect.y+1;
-		w = item->window.rect.w-2;
-		h = item->window.rect.h-2;
-
-		refdef.x = x * DC->xscale;
-		refdef.y = y * DC->yscale;
-		refdef.width = w * DC->xscale;
-		refdef.height = h * DC->yscale;
-
-		DC->modelBounds( item->asset, mins, maxs );
-
-		origin[2] = -0.5 * ( mins[2] + maxs[2] );
-		origin[1] = 0.5 * ( mins[1] + maxs[1] );
-
-		// calculate distance so the model nearly fills the box
-		if (qtrue) 
-		{
-			float len = 0.5 * ( maxs[2] - mins[2] );		
-			origin[0] = len / 0.268;	// len / tan( fov/2 )
-			//origin[0] = len / tan(w/2);
-		} 
-		else 
-		{
-			origin[0] = item->textscale;
-		}
-		// WTF..? --eez
-		//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
-		//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
-
-		refdef.fov_x = 45;
-		refdef.fov_y = 45;
-		
-		//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
-		//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
-		//refdef.fov_y = atan2( refdef.height, xx );
-		//refdef.fov_y *= ( 360 / M_PI );
-
-		DC->clearScene();
-
-		refdef.time = DC->realTime;
-
-		// add the model
-
-		memset( &ent, 0, sizeof(ent) );
-
-		//adjust = 5.0 * sin( (float)uis.realtime / 500 );
-		//adjust = 360 % (int)((float)uis.realtime / 1000);
-		//VectorSet( angles, 0, 0, 1 );
-
-		// use item storage to track
-	/*
-		if (modelPtr->rotationSpeed) 
-		{
-			if (DC->realTime > item->window.nextTime) 
-			{
-				item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
-				modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
-			}
-		}
-		VectorSet( angles, 0, modelPtr->angle, 0 );
-	*/
-		VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
-		
-		AnglesToAxis( angles, ent.axis );
-
-		ent.hModel = item->asset;
-		VectorCopy( origin, ent.origin );
-		VectorCopy( ent.origin, ent.oldorigin );
-
-		// Set up lighting
-		VectorCopy( refdef.vieworg, ent.lightingOrigin );
-		ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
-
-		DC->addRefEntityToScene( &ent );
-		DC->renderScene( &refdef );
+		float len = 0.5 * ( maxs[2] - mins[2] );		
+		origin[0] = len / 0.268;	// len / tan( fov/2 )
+		//origin[0] = len / tan(w/2);
+	} 
+	else 
+	{
+		origin[0] = item->textscale;
 	}
-	else
+	// WTF..? --eez
+	//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
+	//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
+
+	refdef.fov_x = 45;
+	refdef.fov_y = 45;
+		
+	//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
+	//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
+	//refdef.fov_y = atan2( refdef.height, xx );
+	//refdef.fov_y *= ( 360 / M_PI );
+
+	DC->clearScene();
+
+	refdef.time = DC->realTime;
+
+	// add the model
+
+	memset( &ent, 0, sizeof(ent) );
+
+	//adjust = 5.0 * sin( (float)uis.realtime / 500 );
+	//adjust = 360 % (int)((float)uis.realtime / 1000);
+	//VectorSet( angles, 0, 0, 1 );
+
+	// use item storage to track
+/*
+	if (modelPtr->rotationSpeed) 
 	{
-#endif
+		if (DC->realTime > item->window.nextTime) 
+		{
+			item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
+			modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
+		}
+	}
+	VectorSet( angles, 0, modelPtr->angle, 0 );
+*/
+	VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
+		
+	AnglesToAxis( angles, ent.axis );
 
+	ent.hModel = item->asset;
+	VectorCopy( origin, ent.origin );
+	VectorCopy( ent.origin, ent.oldorigin );
 
+	// Set up lighting
+	VectorCopy( refdef.vieworg, ent.lightingOrigin );
+	ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
+	DC->addRefEntityToScene( &ent );
+	DC->renderScene( &refdef );
+#else
 	// a moves datapad anim is playing
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{ 
@@ -7307,8 +7238,6 @@ void Item_Model_Paint(itemDef_t *item)
 
 	DC->addRefEntityToScene( &ent );
 	DC->renderScene( &refdef );
-#ifndef __NO_JK2
-	}
 #endif
 }
 
@@ -7331,7 +7260,6 @@ void Item_OwnerDraw_Paint(itemDef_t *item)
 	if (DC->ownerDrawItem) 
 	{
 		vec4_t color, lowLight;
-		menuDef_t *parent = (menuDef_t*)item->parent;
 		Fade(&item->window.flags, &item->window.foreColor[3], parent->fadeClamp, &item->window.nextTime, parent->fadeCycle, qtrue, parent->fadeAmount);
 		memcpy(&color, &item->window.foreColor, sizeof(color));
 		if (item->numColors > 0 && DC->getValue) 
@@ -7406,19 +7334,9 @@ void Item_YesNo_Paint(itemDef_t *item)
 		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
 	}
 
-#ifndef __NO_JK2
-	const char *psYes;
-	const char *psNo;
-	if( com_jk2 && com_jk2->integer )
-	{
-		psYes = ui.SP_GetStringTextString( "MENUS_YES" );
-		psNo = ui.SP_GetStringTextString( "MENUS_NO" );
-	}
-	else
-	{
-		psYes = SE_GetString( "MENUS_YES" );
-		psNo  = SE_GetString( "MENUS_NO" );
-	}
+#ifdef JK2_MODE
+	const char *psYes = ui.SP_GetStringTextString( "MENUS_YES" );;
+	const char *psNo = ui.SP_GetStringTextString( "MENUS_NO" );
 #else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
@@ -7548,10 +7466,8 @@ int Item_TextScroll_OverLB ( itemDef_t *item, float x, float y )
 	rectDef_t		r;
 	textScrollDef_t *scrollPtr;
 	int				thumbstart;
-	int				count;
 
 	scrollPtr = (textScrollDef_t*)item->typeData;
-	count     = scrollPtr->iLineCount;
 
 	// Scroll bar isn't drawing so ignore this input 
 	if ((( scrollPtr->iLineCount * scrollPtr->lineHeight ) <= (item->window.rect.h - 2)) && (item->type == ITEM_TYPE_TEXTSCROLL))
@@ -7701,10 +7617,8 @@ Item_Slider_Paint
 void Item_Slider_Paint(itemDef_t *item) 
 {
 	vec4_t newColor, lowLight;
-	float x, y, value;
+	float x, y;
 	menuDef_t *parent = (menuDef_t*)item->parent;
-
-	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
 
 	if (item->window.flags & WINDOW_HASFOCUS) 
 	{
@@ -8925,12 +8839,8 @@ Item_ListBox_OverLB
 int Item_ListBox_OverLB(itemDef_t *item, float x, float y) 
 {
 	rectDef_t r;
-	listBoxDef_t *listPtr;
 	int thumbstart;
-	int count;
 
-	count = DC->feederCount(item->special);
-	listPtr = (listBoxDef_t*)item->typeData;
 	if (item->window.flags & WINDOW_HORIZONTAL) 
 	{
 		// check if on left arrow

@@ -23,9 +23,9 @@ if(BuildMPUI)
 endif(BuildMPUI)
 
 #	 Add Vanilla JKA Renderer Project
-if(BuildMPEngine)
+if(BuildMPRdVanilla)
 	add_subdirectory("${MPDir}/rd-vanilla")
-endif(BuildMPEngine)
+endif(BuildMPRdVanilla)
 
 
 #    Common things between Engine and Dedicated Server

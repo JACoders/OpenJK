@@ -374,6 +374,8 @@ void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 void	SCR_DrawBigChar( int x, int y, int ch );
 void	SCR_DrawSmallChar( int x, int y, int ch );
 
+void	SCR_PrecacheScreenshot();
+
 //
 // cl_cin.c
 //

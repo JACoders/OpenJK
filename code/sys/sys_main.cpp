@@ -167,15 +167,11 @@ void *Sys_GetGameAPI (void *parms)
 #endif
 	const char	*fn;
 	
-	const char *gamename;
-	if(Cvar_VariableIntegerValue("com_jk2"))
-	{
-		gamename = "jk2game" ARCH_STRING DLL_EXT;
-	}
-	else
-	{
-		gamename = "jagame" ARCH_STRING DLL_EXT;
-	}
+#ifdef JK2_MODE
+	const char *gamename = "jospgame" ARCH_STRING DLL_EXT;
+#else
+	const char *gamename = "jagame" ARCH_STRING DLL_EXT;
+#endif
 	
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without calling Sys_UnloadGame");
