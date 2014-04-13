@@ -59,10 +59,10 @@ qboolean	PM_SlideMove( float gravMod ) {
 	numbumps = 4;
 
 	VectorCopy (pm->ps->velocity, primal_velocity);
+	VectorCopy( pm->ps->velocity, endVelocity );
 
 	if ( gravMod ) 
 	{
-		VectorCopy( pm->ps->velocity, endVelocity );
 		if ( !(pm->ps->eFlags&EF_FORCE_GRIPPED) )
 		{
 			endVelocity[2] -= pm->ps->gravity * pml.frametime * gravMod;
