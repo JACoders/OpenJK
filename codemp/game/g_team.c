@@ -1256,16 +1256,24 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 		player = g_entities + i;
 		if (player->inuse && player->client->sess.sessionTeam == team ) {
 
-			h = player->client->ps.stats[STAT_HEALTH];
-			a = player->client->ps.stats[STAT_ARMOR];
-			if (h < 0) h = 0;
-			if (a < 0) a = 0;
+			if ( player->client->tempSpectate >= level.time ) {
+				h = a = 0;
 
-			Com_sprintf (entry, sizeof(entry),
-				" %i %i %i %i %i %i",
-			//	level.sortedClients[i], player->client->pers.teamState.location, h, a,
-				i, player->client->pers.teamState.location, h, a,
-				player->client->ps.weapon, player->s.powerups);
+				Com_sprintf( entry, sizeof(entry),
+					" %i %i %i %i %i %i",
+					i, 0, h, a, 0, 0 );
+			}
+			else {
+				h = player->client->ps.stats[STAT_HEALTH];
+				a = player->client->ps.stats[STAT_ARMOR];
+				if ( h < 0 ) h = 0;
+				if ( a < 0 ) a = 0;
+
+				Com_sprintf( entry, sizeof(entry),
+					" %i %i %i %i %i %i",
+					i, player->client->pers.teamState.location, h, a,
+					player->client->ps.weapon, player->s.powerups );
+			}
 			j = strlen(entry);
 			if (stringlength + j >= sizeof(string))
 				break;
