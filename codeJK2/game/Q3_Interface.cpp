@@ -8252,6 +8252,7 @@ static int Q3_GetFloat( int entID, int type, const char *name, float *value )
 			return false;
 		}
 		*value = (ent->NPC->scriptFlags&SCF_IGNORE_ALERTS);
+		break;
 
 	case SET_DONTSHOOT://## %t="BOOL_TYPES" # Others won't shoot you
 		*value = (ent->flags&FL_DONT_SHOOT);
