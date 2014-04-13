@@ -2434,6 +2434,8 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			shader = R_GetShaderByHandle( surfInfo->shaderIndex );
 		}
 
+		int cubemapIndex = R_CubemapForPoint (tr.currentEntity->e.origin);
+
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
 		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
@@ -2443,7 +2445,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
-			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), 0 );
+			R_AddDrawSurf ((surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), cubemapIndex);
 
 #ifdef _G2_GORE
 			if (RS.gore_set && drawGore)
@@ -2523,7 +2525,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 
 						last->goreChain=newSurf2;
 						last=newSurf2;
-						R_AddDrawSurf( (surfaceType_t *)newSurf2,gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), 0 );
+						R_AddDrawSurf ((surfaceType_t *)newSurf2, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), cubemapIndex);
 					}
 				}
 			}

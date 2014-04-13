@@ -1196,7 +1196,8 @@ typedef enum {
 	VPF_ORTHOGRAPHIC    = 0x10,
 	VPF_USESUNLIGHT     = 0x20,
 	VPF_FARPLANEFRUSTUM = 0x40,
-	VPF_NOCUBEMAPS      = 0x80
+	VPF_NOCUBEMAPS      = 0x80,
+	VPF_NOPOSTPROCESS	= 0x100
 } viewParmFlags_t;
 
 typedef struct {

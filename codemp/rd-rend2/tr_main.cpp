@@ -2923,7 +2923,7 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene )
 	parms.viewportHeight = tr.renderCubeFbo->height;
 	parms.isPortal = qfalse;
 	parms.isMirror = qtrue;
-	parms.flags =  VPF_NOVIEWMODEL | VPF_NOCUBEMAPS;
+	parms.flags =  VPF_NOVIEWMODEL | VPF_NOCUBEMAPS | VPF_NOPOSTPROCESS;
 
 	parms.fovX = 90;
 	parms.fovY = 90;

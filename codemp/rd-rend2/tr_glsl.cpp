@@ -1119,30 +1119,6 @@ int GLSL_BeginLoadGPUShaders(void)
 			if (r_specularMapping->integer)
 			{
 				Q_strcat(extradefines, 1024, "#define USE_SPECULARMAP\n");
-
-				switch (r_specularMapping->integer)
-				{
-					case 1:
-					default:
-						Q_strcat(extradefines, 1024, "#define USE_BLINN\n");
-						break;
-
-					case 2:
-						Q_strcat(extradefines, 1024, "#define USE_BLINN_FRESNEL\n");
-						break;
-
-					case 3:
-						Q_strcat(extradefines, 1024, "#define USE_MCAULEY\n");
-						break;
-
-					case 4:
-						Q_strcat(extradefines, 1024, "#define USE_GOTANDA\n");
-						break;
-
-					case 5:
-						Q_strcat(extradefines, 1024, "#define USE_LAZAROV\n");
-						break;
-				}
 			}
 
 			if (r_cubeMapping->integer)

@@ -139,32 +139,6 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 }
 #endif
 
-vec3 CalcDiffuse(vec3 diffuseAlbedo, vec3 N, vec3 L, vec3 E, float NE, float NL, float shininess)
-{
-  #if defined(USE_OREN_NAYAR) || defined(USE_TRIACE_OREN_NAYAR)
-	float gamma = dot(E, L) - NE * NL;
-	float B = 2.22222 + 0.1 * shininess;
-		
-    #if defined(USE_OREN_NAYAR)
-	float A = 1.0 - 1.0 / (2.0 + 0.33 * shininess);
-	gamma = clamp(gamma, 0.0, 1.0);
-    #endif
-	
-    #if defined(USE_TRIACE_OREN_NAYAR)
-	float A = 1.0 - 1.0 / (2.0 + 0.65 * shininess);
-
-	if (gamma >= 0.0)
-    #endif
-	{
-		B = max(B * max(NL, NE), EPSILON);
-	}
-
-	return diffuseAlbedo * (A + gamma / B);
-  #else
-	return diffuseAlbedo;
-  #endif
-}
-
 vec3 EnvironmentBRDF(float gloss, float NE, vec3 specular)
 {
   #if 1
@@ -181,36 +155,6 @@ vec3 EnvironmentBRDF(float gloss, float NE, vec3 specular)
     // from http://advances.realtimerendering.com/s2011/Lazarov-Physically-Based-Lighting-in-Black-Ops%20%28Siggraph%202011%20Advances%20in%20Real-Time%20Rendering%20Course%29.pptx
 	return mix(specular.rgb, vec3(1.0), CalcFresnel(NE) / (4.0 - 3.0 * gloss));
   #endif
-}
-
-float CalcBlinn(float NH, float shininess)
-{
-#if defined(USE_BLINN) || defined(USE_BLINN_FRESNEL)
-	// Normalized Blinn-Phong
-	float norm = shininess * 0.125    + 1.0;
-#elif defined(USE_MCAULEY)
-	// Cook-Torrance as done by Stephen McAuley
-	// http://blog.selfshadow.com/publications/s2012-shading-course/mcauley/s2012_pbs_farcry3_notes_v2.pdf
-	float norm = shininess * 0.25     + 0.125;
-#elif defined(USE_GOTANDA)
-	// Neumann-Neumann as done by Yoshiharu Gotanda
-	// http://research.tri-ace.com/Data/s2012_beyond_CourseNotes.pdf
-	float norm = shininess * 0.124858 + 0.269182;
-#elif defined(USE_LAZAROV)
-	// Cook-Torrance as done by Dimitar Lazarov
-	// http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	float norm = shininess * 0.125    + 0.25;
-#else
-	float norm = 1.0;
-#endif
-
-#if 0
-	// from http://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/
-	float a = shininess + 0.775;
-	return norm * exp(a * NH - a);
-#else
-	return norm * pow(NH, shininess);
-#endif
 }
 
 float CalcGGX(float NH, float gloss)
@@ -243,16 +187,6 @@ float CalcFresnel(float EH)
 
 float CalcVisibility(float NH, float NL, float NE, float EH, float gloss)
 {
-#if defined(USE_GOTANDA)
-	// Neumann-Neumann as done by Yoshiharu Gotanda
-	// http://research.tri-ace.com/Data/s2012_beyond_CourseNotes.pdf
-	return 1.0 / max(max(NL, NE), EPSILON);
-#elif defined(USE_LAZAROV)
-	// Cook-Torrance as done by Dimitar Lazarov
-	// http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	float k = min(1.0, gloss + 0.545);
-	return 1.0 / (k * (EH * EH - 1.0) + 1.0);
-#elif defined(USE_GGX)
 	float roughness = exp2(gloss * -6.5);
 
 	// Modified from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -266,25 +200,14 @@ float CalcVisibility(float NH, float NL, float NE, float EH, float gloss)
 	float invGeo2 = NE * k2 + k;
 
 	return 1.0 / (invGeo1 * invGeo2);
-#else
-	return 1.0;
-#endif
 }
 
 
 vec3 CalcSpecular(vec3 specular, float NH, float NL, float NE, float EH, float gloss, float shininess)
 {
-#if defined(USE_GGX)
 	float distrib = CalcGGX(NH, gloss);
-#else
-	float distrib = CalcBlinn(NH, shininess);
-#endif
 
-#if defined(USE_BLINN)
-	vec3 fSpecular = specular;
-#else
 	vec3 fSpecular = mix(specular, vec3(1.0), CalcFresnel(EH));
-#endif
 
 	float vis = CalcVisibility(NH, NL, NE, EH, gloss);
 
@@ -460,7 +383,7 @@ void main()
 	diffuse.rgb *= vec3(1.0) - specular.rgb;
   #endif
 
-	reflectance = CalcDiffuse(diffuse.rgb, N, L, E, NE, NL, shininess);
+	reflectance = diffuse.rgb;
 
   #if defined(r_deluxeSpecular) || defined(USE_LIGHT_VECTOR)
 	float adjGloss = gloss;
@@ -539,7 +462,7 @@ void main()
 	EH2 = clamp(dot(E, H2), 0.0, 1.0);
 	NH2 = clamp(dot(N, H2), 0.0, 1.0);
 
-	reflectance  = CalcDiffuse(diffuse.rgb, N, L2, E, NE, NL2, shininess);
+	reflectance  = diffuse.rgb;
 	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, EH2, gloss, shininess);
 
 	lightColor = u_PrimaryLightColor;
