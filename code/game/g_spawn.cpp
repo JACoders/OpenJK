@@ -497,6 +497,8 @@ void SP_PAS( gentity_t *ent );
 void SP_misc_weapon_shooter( gentity_t *self );
 void SP_misc_weather_zone( gentity_t *ent );
 
+void SP_misc_cubemap( gentity_t *ent );
+
 //New spawn functions
 void SP_reference_tag ( gentity_t *ent );
 
@@ -726,6 +728,8 @@ spawn_t	spawns[] = {
 	{"misc_gas_tank", SP_misc_gas_tank},
 	{"misc_crystal_crate", SP_misc_crystal_crate},
 	{"misc_atst_drivable", SP_misc_atst_drivable},
+
+	{"misc_cubemap", SP_misc_cubemap},
 	
 	{"shooter_rocket", SP_shooter_rocket},
 	{"shooter_grenade", SP_shooter_grenade},

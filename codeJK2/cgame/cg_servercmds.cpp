@@ -246,6 +246,11 @@ static void CG_ServerCommand( void ) {
 
 	cmd = CG_Argv(0);
 
+	if ( !cmd[0] ) {
+		// server claimed the command
+		return;
+	}
+
 	if ( !strcmp( cmd, "cp" ) ) {
 		CG_CenterPrint( CG_Argv(1), SCREEN_HEIGHT * 0.25 );
 		return;

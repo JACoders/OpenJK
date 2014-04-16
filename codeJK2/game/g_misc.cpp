@@ -2781,3 +2781,8 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	//do an explosion and play the death anim, remove use func.
 	ent->e_DieFunc = dieF_misc_atst_die;
 }
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
+}
