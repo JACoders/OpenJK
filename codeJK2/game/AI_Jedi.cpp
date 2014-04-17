@@ -5193,8 +5193,10 @@ static void Jedi_Attack( void )
 			{
 			case 0:
 				chance = 9;
+				break;
 			case 1:
 				chance = 3;
+				break;
 			case 2:
 				chance = 1;
 				break;
