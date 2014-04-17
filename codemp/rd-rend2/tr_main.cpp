@@ -2905,15 +2905,7 @@ void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene )
 		}
 	}
 
-	{
-		vec3_t ambient, directed, lightDir;
-		R_LightForPoint(tr.refdef.vieworg, ambient, directed, lightDir);
-		tr.refdef.colorScale = 766.0f / (directed[0] + directed[1] + directed[2] + 1.0f);
-		if (cubemapSide == 0 && (directed[0] + directed[1] + directed[2] == 0))
-		{
-			ri->Printf(PRINT_ALL, "cubemap %d (%f, %f, %f) is outside the lightgrid!\n", cubemapIndex, tr.refdef.vieworg[0], tr.refdef.vieworg[1], tr.refdef.vieworg[2]);
-		}
-	}
+	tr.refdef.colorScale = 1.0f;
 
 	Com_Memset( &parms, 0, sizeof( parms ) );
 

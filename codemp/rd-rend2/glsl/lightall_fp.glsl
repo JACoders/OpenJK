@@ -66,9 +66,7 @@ varying vec3   var_ViewDir;
   #endif
 #endif
 
-#if defined(USE_LIGHT_VERTEX) && !defined(USE_FAST_LIGHT)
-varying vec3      var_LightColor;
-#endif
+varying vec3 var_N;
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 varying vec4      var_LightDir;
@@ -253,9 +251,9 @@ mat3 cotangent_frame( vec3 N, vec3 p, vec2 uv )
 
 void main()
 {
-	vec3 viewDir;
+	vec3 viewDir, lightColor, ambientColor;
 	vec3 L, N, E, H;
-	float NL, NH, NE, EH;
+	float NL, NH, NE, EH, attenuation;
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
   #if defined(USE_VERT_TANGENT_SPACE)
@@ -276,16 +274,10 @@ void main()
 #endif
 
 #if defined(USE_LIGHTMAP)
-	vec4 lightSample = texture2D(u_LightMap, var_TexCoords.zw);
-	vec3 lightColor = lightSample.rgb;
+	vec4 lightmapColor = texture2D(u_LightMap, var_TexCoords.zw);
   #if defined(RGBM_LIGHTMAP)
-	lightColor *= lightSample.a;
+	lightmapColor.rgb *= lightmapColor.a;
   #endif
-#elif defined(USE_LIGHT_VECTOR) && !defined(USE_FAST_LIGHT)
-	vec3 lightColor   = u_DirectedLight * CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
-	vec3 ambientColor = u_AmbientLight;
-#elif defined(USE_LIGHT_VERTEX) && !defined(USE_FAST_LIGHT)
-	vec3 lightColor = var_LightColor;
 #endif
 
 	vec2 texCoords = var_TexCoords.xy;
@@ -305,6 +297,19 @@ void main()
 
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
+	ambientColor = vec3 (0.0);
+	attenuation = 1.0;
+
+  #if defined(USE_LIGHTMAP)
+	lightColor	= lightmapColor.rgb * var_Color.rgb;
+  #elif defined(USE_LIGHT_VECTOR)
+	lightColor	= u_DirectedLight * var_Color.rgb;
+	ambientColor = u_AmbientLight * var_Color.rgb;
+	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
+  #elif defined(USE_LIGHT_VERTEX)
+	lightColor	= var_Color.rgb;
+  #endif
+
   #if defined(USE_NORMALMAP)
     #if defined(SWIZZLE_NORMALMAP)
 	N.xy = texture2D(u_NormalMap, texCoords).ag - vec2(0.5);
@@ -341,7 +346,7 @@ void main()
   #endif
 
   #if defined(USE_LIGHTMAP) || defined(USE_LIGHT_VERTEX)
-	vec3 ambientColor = lightColor;
+	ambientColor = lightColor;
 	float surfNL = clamp(dot(var_Normal.xyz, L), 0.0, 1.0);
 
 	// Scale the incoming light to compensate for the baked-in light angle
@@ -350,7 +355,7 @@ void main()
 
 	// Recover any unused light as ambient, in case attenuation is over 4x or
 	// light is below the surface
-	ambientColor -= lightColor * surfNL;
+	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
   #endif
   
 	vec3 reflectance;
@@ -406,7 +411,7 @@ void main()
     #endif
   #endif
 
-	gl_FragColor.rgb  = lightColor   * reflectance * NL;
+	gl_FragColor.rgb  = lightColor   * reflectance * (attenuation * NL);
 
 #if 0
 	vec3 aSpecular = EnvironmentBRDF(gloss, NE, specular.rgb);
@@ -430,20 +435,13 @@ void main()
 
 	// parallax corrected cubemap (cheaper trick)
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-	R += u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
+	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
 
-	vec3 cubeLightColor = textureCubeLod(u_CubeMap, R, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
+	vec3 cubeLightColor = textureCubeLod(u_CubeMap, R + parallax, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
 
-	#if defined(USE_LIGHTMAP)
-	cubeLightColor *= lightSample.rgb;
-	#elif defined (USE_LIGHT_VERTEX)
-	cubeLightColor *= var_LightColor;
-	#else
-	cubeLightColor *= lightColor * NL + ambientColor;
-	#endif
-
-	//gl_FragColor.rgb += diffuse.rgb * textureCubeLod(u_CubeMap, N, 7.0).rgb * u_EnableTextures.w;
-	gl_FragColor.rgb += cubeLightColor * reflectance;
+	gl_FragColor.rgb = cubeLightColor * reflectance;
+	gl_FragColor.a = 1.0;
+	return;
   #endif
 
   #if defined(USE_PRIMARY_LIGHT)
@@ -465,7 +463,7 @@ void main()
 	reflectance  = diffuse.rgb;
 	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, EH2, gloss, shininess);
 
-	lightColor = u_PrimaryLightColor;
+	lightColor = u_PrimaryLightColor * var_Color.rgb;
 
 	// enable when point lights are supported as primary lights
 	//lightColor *= CalcLightAttenuation(float(u_PrimaryLightDir.w > 0.0), u_PrimaryLightDir.w / sqrLightDist);
@@ -474,16 +472,18 @@ void main()
 	lightColor *= shadowValue;
     #endif
 
+	// enable when point lights are supported as primary lights
+	//lightColor *= CalcLightAttenuation(float(u_PrimaryLightDir.w > 0.0), u_PrimaryLightDir.w / sqrLightDist);
+
 	gl_FragColor.rgb += lightColor * reflectance * NL2;
   #endif
 
-	gl_FragColor.a = diffuse.a;
 #else
-	gl_FragColor = diffuse;
+	lightColor = var_Color.rgb;
   #if defined(USE_LIGHTMAP) 
-	gl_FragColor.rgb *= lightColor;
+	lightColor *= lightmapColor.rgb;
   #endif
 #endif
-
-	gl_FragColor *= var_Color;
+	
+	gl_FragColor = vec4 (diffuse.rgb * lightColor, diffuse.a * var_Color.a);
 }
