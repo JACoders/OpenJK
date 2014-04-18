@@ -169,10 +169,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	endif(WIN32)
 
 	if(NOT WIN32)
-		find_package(OpenGL REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${OPENGL_LIBRARIES})
-
 		set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
 		find_package(SDL2 REQUIRED)
 		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
