@@ -2879,9 +2879,8 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle,int iMenuFont)
 {
 	char buff[4096] = {0};
-	char * eptr = buff;
-	const char *lines[128];
-	int y, numLines=0, i=0;
+	char *extensionName;
+	int y, i=0;
 
 	Text_Paint(rect->x + 2, rect->y, scale, color, va("GL_VENDOR: %s", uiInfo.uiDC.glconfig.vendor_string), 0, rect->w, textStyle,iMenuFont);
 	Text_Paint(rect->x + 2, rect->y + 15, scale, color, va("GL_VERSION: %s: %s", uiInfo.uiDC.glconfig.version_string,uiInfo.uiDC.glconfig.renderer_string), 0, rect->w, textStyle,iMenuFont);
@@ -2890,33 +2889,22 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 	// build null terminated extension strings
 	Q_strncpyz(buff, uiInfo.uiDC.glconfig.extensions_string, sizeof(buff));
 	y = rect->y + 45;
-	while ( y < rect->y + rect->h && *eptr )
+
+	extensionName = strtok (buff, " ");
+	while ( y < rect->y + rect->h && extensionName != NULL )
 	{
-		while ( *eptr && *eptr == ' ' )
-			*eptr++ = '\0';
-
-		// track start of valid string
-		if (*eptr && *eptr != ' ')
+		if ( (i % 2) == 0 )
 		{
-			lines[numLines++] = eptr;
+			Text_Paint (rect->x + 2, y, scale, color, extensionName, 0, (rect->w / 2), textStyle, iMenuFont);
+		}
+		else
+		{
+			Text_Paint (rect->x + rect->w / 2, y, scale, color, extensionName, 0, (rect->w / 2), textStyle, iMenuFont);
+			y += 11;
 		}
 
-		while ( *eptr && *eptr != ' ' )
-			eptr++;
-	}
-
-	while (i < numLines)
-	{
-		Text_Paint(rect->x + 2, y, scale, color, lines[i++], 0, (rect->w/2), textStyle,iMenuFont);
-		if (i < numLines)
-		{
-			Text_Paint(rect->x + rect->w / 2, y, scale, color, lines[i++], 0, (rect->w/2), textStyle,iMenuFont);
-		}
-		y += 10;
-		if (y > rect->y + rect->h - 11)
-		{
-			break;
-		}
+		extensionName = strtok (NULL, " ");
+		i++;
 	}
 }
 
