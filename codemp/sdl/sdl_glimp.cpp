@@ -520,7 +520,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 bool GL_CheckForExtension(const char *ext)
 {
-	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
 	if (ptr == NULL)
 		return false;
 	ptr += strlen(ext);
@@ -922,6 +922,35 @@ static void GLimp_InitExtensions( void )
 	}
 }
 
+// Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
+static const char *TruncateGLExtensionsString (const char *extensionsString, int maxExtensions)
+{
+	const char *p = extensionsString;
+	const char *q;
+	int numExtensions = 0;
+	size_t extensionsLen = strlen (extensionsString);
+
+	char *truncatedExtensions;
+
+	while ( (q = strchr (p, ' ')) != NULL && numExtensions <= maxExtensions )
+	{
+		p = q + 1;
+		numExtensions++;
+	}
+
+	if ( q != NULL )
+	{
+		// We still have more extensions. We'll call this the end
+
+		extensionsLen = p - extensionsString - 1;
+	}
+
+	truncatedExtensions = (char *)ri->Hunk_Alloc (extensionsLen + 1, h_low);
+	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
+
+	return truncatedExtensions;
+}
+
 void 		GLimp_Init( void )
 {
 	ri->Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
@@ -976,6 +1005,9 @@ success:
 	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
 	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
 	glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
+	
+	glConfigExt.originalExtensionString = glConfig.extensions_string;
+	glConfig.extensions_string = TruncateGLExtensionsString (glConfigExt.originalExtensionString, 128);
 
 	// OpenGL driver constants
 	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
