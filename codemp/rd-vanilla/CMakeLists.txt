@@ -128,11 +128,16 @@ else(UseInternalZlib)
 endif(UseInternalZlib)
 
 if(NOT WIN32)
+	find_package(OpenGL REQUIRED)
+	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
+
 	set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
 	find_package(SDL2 REQUIRED)
 	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${SDL2_LIBRARY})
 endif(NOT WIN32)
+
 
 if(WIN32)
 	set(MPVanillaRendererWin32Files
