@@ -25,12 +25,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir})
 	
 	#    Dependencies
-	
-	# OpenGL
-	# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-	find_package(OpenGL REQUIRED)
-	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(SPEngineLibraries ${SPEngineLibraries} ${OPENGL_LIBRARIES})
 
 	# OpenAL (is optionally included for Windows)
 	if(UseInternalOpenAL)
