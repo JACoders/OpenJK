@@ -997,7 +997,7 @@ void NET_Sleep( int msec ) {
 	if ( !com_dedicated->integer )
 		return; // we're not a server, just run full speed
 
-	if ( ip_socket == -1 )
+	if ( ip_socket == INVALID_SOCKET )
 		return;
 
 	FD_ZERO(&fdset);
