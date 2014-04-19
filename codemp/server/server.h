@@ -226,8 +226,6 @@ extern	server_t		sv;					// cleared each map
 //FIXME: dedi server probably can't have this..
 extern	refexport_t		*re;					// interface to refresh .dll
 
-#define	MAX_MASTER_SERVERS	5
-
 extern	cvar_t	*sv_snapsMin;
 extern	cvar_t	*sv_snapsMax;
 extern	cvar_t	*sv_fps;
