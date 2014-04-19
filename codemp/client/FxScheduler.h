@@ -377,7 +377,6 @@ public:
 	{
 		if ( numFree == 0 )
 		{
-			Com_Printf (S_COLOR_YELLOW "WARNING: Ran out of instances from memory pool.\n");
 			return NULL;
 		}
 
@@ -389,6 +388,24 @@ public:
 		highWatermark = max (highWatermark, N - numFree);
 
 		return ptr;
+	}
+
+	void TransferTo ( PoolAllocator<T, N>& allocator )
+	{
+		allocator.freeAndAllocated = freeAndAllocated;
+		allocator.highWatermark = highWatermark;
+		allocator.numFree = numFree;
+		allocator.pool = pool;
+
+		highWatermark = 0;
+		numFree = N;
+		freeAndAllocated = NULL;
+		pool = NULL;
+	}
+
+	bool OwnsPtr ( const T *ptr ) const
+	{
+		return ptr >= pool && ptr < (pool + N);
 	}
 
 	void Free ( T *ptr )
@@ -428,6 +445,9 @@ public:
 	}
 
 private:
+	PoolAllocator ( const PoolAllocator<T, N>& );
+	PoolAllocator& operator = ( const PoolAllocator<T, N>& );
+
 	T *pool;
 
 	// The first 'numFree' elements are the indexes of the free slots.
@@ -436,6 +456,80 @@ private:
 	int numFree;
 
 	int highWatermark;
+};
+
+template<typename T, int N>
+class PagedPoolAllocator
+{
+	public:
+		PagedPoolAllocator ()
+			: numPages (1)
+			, pages (new PoolAllocator<T, N>[1]())
+		{
+		}
+
+		T *Alloc ()
+		{
+			T *ptr = NULL;
+			for ( int i = 0; i < numPages && ptr == NULL; i++ )
+			{
+				ptr = pages[i].Alloc ();
+			}
+
+			if ( ptr == NULL )
+			{
+				PoolAllocator<T, N> *newPages = new PoolAllocator<T, N>[numPages + 1] ();
+				for ( int i = 0; i < numPages; i++ )
+				{
+					pages[i].TransferTo (newPages[i]);
+				}
+
+				delete[] pages;
+				pages = newPages;
+				
+				ptr = pages[numPages].Alloc ();
+				if ( ptr == NULL )
+				{
+					return NULL;
+				}
+
+				numPages++;
+			}
+
+			return ptr;
+		}
+
+		void Free ( T *ptr )
+		{
+			for ( int i = 0; i < numPages; i++ )
+			{
+				if ( pages[i].OwnsPtr (ptr) )
+				{
+					pages[i].Free (ptr);
+					break;
+				}
+			}
+		}
+
+		int GetHighWatermark () const
+		{
+			int total = 0;
+			for ( int i = 0; i < numPages; i++ )
+			{
+				total += pages[i].GetHighWatermark ();
+			}
+
+			return total;
+		}
+
+		~PagedPoolAllocator ()
+		{
+			delete[] pages;
+		}
+
+	private:
+		int numPages;
+		PoolAllocator<T, N> *pages;
 };
 
 //-----------------------------------------------------------------
@@ -522,7 +616,7 @@ private:
 	// List of scheduled effects that will need to be created at the correct time.
 	TScheduledEffect	mFxSchedule;
 
-	PoolAllocator<SScheduledEffect, 2048> mScheduledEffectsPool;
+	PagedPoolAllocator<SScheduledEffect, 1024> mScheduledEffectsPool;
 
 	// Private function prototypes
 	SEffectTemplate *GetNewEffectTemplate( int *id, const char *file );
