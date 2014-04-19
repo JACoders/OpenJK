@@ -21,6 +21,7 @@
 #define Q3_SCRIPT_DIR	"scripts"
 
 #define MAX_TEAMNAME 32
+#define MAX_MASTER_SERVERS      5	// number of supported master servers
 
 #define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
