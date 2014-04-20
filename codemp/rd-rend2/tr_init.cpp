@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp from whining at us. --eez
 
 glconfig_t  glConfig;
+glconfigExt_t glConfigExt;
 glRefConfig_t glRefConfig;
 float       displayAspect = 0.0f;
 
@@ -1072,7 +1073,7 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
 	ri->Printf( PRINT_ALL, "GL_EXTENSIONS: " );
-	R_PrintLongString( glConfig.extensions_string );
+	R_PrintLongString( glConfigExt.originalExtensionString );
 	ri->Printf( PRINT_ALL, "\n" );
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_UNITS_ARB: %d\n", glConfig.numTextureUnits );

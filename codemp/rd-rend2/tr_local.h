@@ -2135,6 +2135,13 @@ typedef struct trGlobals_s {
 	int						currentLevel;
 } trGlobals_t;
 
+struct glconfigExt_t
+{
+	glconfig_t *glConfig;
+
+	const char *originalExtensionString;
+};
+
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
@@ -2366,6 +2373,7 @@ void	GL_Cull( int cullType );
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
 
 extern glconfig_t  glConfig;
+extern glconfigExt_t	glConfigExt;
 
 typedef _skinSurface_t skinSurface_t;
 
