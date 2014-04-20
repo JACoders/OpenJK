@@ -201,8 +201,6 @@ protected:
 	long	GetLong( void );
 	float	GetFloat( void );
 
-	void	StripExtension( const char *, char * );	//Utility function to strip away file extensions
-
 	long	m_fileSize;							//Size of the file	
 	FILE	*m_fileHandle;						//Global file handle of current I/O source
 	char	m_fileName[MAX_FILENAME_LENGTH];	//Name of the current file

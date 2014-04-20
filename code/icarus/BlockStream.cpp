@@ -426,23 +426,9 @@ Create
 
 int CBlockStream::Create( char *filename )
 {	
-	// strip extension
-	int		extensionloc = strlen(filename);
-	while ( (filename[extensionloc] != '.') && (extensionloc >= 0) )
-	{
-		extensionloc--;
-	}
-	if ( extensionloc < 0 )
-	{
-		strcpy(m_fileName, filename);
-	}
-	else
-	{
-		strncpy(m_fileName, filename, extensionloc);
-		m_fileName[extensionloc] = '\0';
-	}
-	// add extension
-	strcat((char *) m_fileName, s_IBI_EXT);
+	//Strip the extension and add the BLOCK_EXT extension
+	COM_StripExtension( filename, m_fileName, sizeof(m_fileName) );
+	COM_DefaultExtension( m_fileName, sizeof(m_fileName), s_IBI_EXT );
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{

@@ -140,8 +140,6 @@ protected:
 
 	int Prime( CTaskManager *taskManager, CBlock *command,  CIcarus* icarus);
 
-	void StripExtension( const char *in, char *out );
-
 	int ParseRun( CBlock *block , CIcarus* icarus);
 	int ParseLoop( CBlock *block, bstream_t *bstream , CIcarus* icarus);
 	int ParseAffect( CBlock *block, bstream_t *bstream, CIcarus* icarus );

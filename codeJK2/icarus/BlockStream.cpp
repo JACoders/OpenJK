@@ -492,30 +492,6 @@ float CBlockStream::GetFloat( void )
 	return data;
 }
 
-//	Extension stripping utility
-
-/*
--------------------------
-StripExtension
--------------------------
-*/
-
-void CBlockStream::StripExtension( const char *in, char *out )
-{
-	int		i = strlen(in);
-	
-	while ( (in[i] != '.') && (i >= 0) )
-	 i--;
-
-	if ( i < 0 )
-	{
-		strcpy(out, in);
-		return;
-	}
-
-	strncpy(out, in, i);
-}
-
 /*
 -------------------------
 Free
@@ -541,18 +517,12 @@ Create
 
 int CBlockStream::Create( char *filename )
 {
-	char	newName[MAX_FILENAME_LENGTH], *id_header = IBI_HEADER_ID;
+	char	*id_header = IBI_HEADER_ID;
 	float	version = IBI_VERSION;
-	
-	//Clear the temp string
-	memset(newName, 0, sizeof(newName));
 
 	//Strip the extension and add the BLOCK_EXT extension
-	StripExtension( filename, newName );
-	Q_strcat(newName, sizeof(newName), IBI_EXT);
-
-	//Recover that as the active filename
-	Q_strncpyz(m_fileName, newName, sizeof(m_fileName));
+	COM_StripExtension( filename, m_fileName, sizeof(m_fileName) );
+	COM_DefaultExtension( m_fileName, sizeof(m_fileName), IBI_EXT );
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
