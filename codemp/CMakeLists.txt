@@ -171,7 +171,6 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
 		"${MPDir}/qcommon/q_platform.h"
-		"${MPDir}/qcommon/chash.h"
 		"${MPDir}/qcommon/cm_load.cpp"
 		"${MPDir}/qcommon/cm_local.h"
 		"${MPDir}/qcommon/cm_patch.cpp"
