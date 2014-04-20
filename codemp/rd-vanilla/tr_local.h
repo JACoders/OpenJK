@@ -2,6 +2,7 @@
 
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
+#include "rd-common/tr_common.h"
 
 #ifdef _WIN32
 	#include "qgl.h"
