@@ -264,6 +264,7 @@ typedef struct serverInfo_s {
 	int			trueJedi;
 	int			weaponDisable;
 	int			forceDisable;
+	int			humans, bots;
 } serverInfo_t;
 
 typedef struct clientStatic_s {

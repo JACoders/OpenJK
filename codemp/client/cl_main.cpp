@@ -1637,6 +1637,7 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->ping = -1;
 	server->game[0] = '\0';
 	server->gameType = 0;
+	server->humans = server->bots = 0;
 }
 
 #define MAX_SERVERSPERPACKET	256
@@ -2890,6 +2891,8 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 			server->trueJedi = atoi(Info_ValueForKey(info, "truejedi" ));
 			server->weaponDisable = atoi(Info_ValueForKey(info, "wdisable" ));
 			server->forceDisable = atoi(Info_ValueForKey(info, "fdisable" ));
+			server->humans = atoi( Info_ValueForKey( info, "g_humanplayers" ) );
+			server->bots = atoi( Info_ValueForKey( info, "bots" ) );
 //			server->pure = (qboolean)atoi(Info_ValueForKey(info, "pure" ));
 		}
 		server->ping = ping;
