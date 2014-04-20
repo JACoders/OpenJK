@@ -932,7 +932,7 @@ void CL_FlushMemory( void );
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
 
-qboolean CL_ConnectedToServer( void );
+qboolean CL_ConnectedToRemoteServer( void );
 // returns qtrue if connected to a server
 
 void Key_KeynameCompletion ( void(*callback)( const char *s ) );
