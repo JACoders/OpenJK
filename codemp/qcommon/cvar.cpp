@@ -532,7 +532,7 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, uint32_t defaultFlag
 
 	if (!force)
 	{
-		if ( (var->flags & (CVAR_SYSTEMINFO|CVAR_SERVER_CREATED)) && com_sv_running && !com_sv_running->integer && CL_ConnectedToServer() )
+		if ( (var->flags & (CVAR_SYSTEMINFO|CVAR_SERVER_CREATED)) && CL_ConnectedToRemoteServer() )
 		{
 			Com_Printf ("%s can only be set by server.\n", var_name);
 			return var;
@@ -703,7 +703,7 @@ void Cvar_VM_Set( const char *var_name, const char *value, vmSlots_t vmslot )
 {
 	uint32_t flags = Cvar_Flags( var_name );
 
-	if ( vmslot != VM_GAME && (flags & CVAR_SYSTEMINFO) && !com_sv_running->integer && CL_ConnectedToServer() )
+	if ( vmslot != VM_GAME && (flags & CVAR_SYSTEMINFO) && CL_ConnectedToRemoteServer() )
 	{
 		Com_Printf ("%s can only be set by server.\n", var_name);
 		return;
