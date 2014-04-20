@@ -166,6 +166,8 @@ void UI_LoadArenas( void ) {
 		if( *type ) {
 			if( strstr( type, "ffa" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_FFA);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_TEAM);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_JEDIMASTER);
 			}
 			if( strstr( type, "holocron" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_HOLOCRON);
