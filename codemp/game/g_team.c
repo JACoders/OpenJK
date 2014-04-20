@@ -322,28 +322,6 @@ void Team_CheckDroppedItem( gentity_t *dropped ) {
 
 /*
 ================
-Team_ForceGesture
-================
-*/
-void Team_ForceGesture(int team) {
-	int i;
-	gentity_t *ent;
-
-	for (i = 0; i < MAX_CLIENTS; i++) {
-		ent = &g_entities[i];
-		if (!ent->inuse)
-			continue;
-		if (!ent->client)
-			continue;
-		if (ent->client->sess.sessionTeam != team)
-			continue;
-		//
-		ent->flags |= FL_FORCE_GESTURE;
-	}
-}
-
-/*
-================
 Team_FragBonuses
 
 Calculate the bonuses for flag defense, flag carrier defense, etc.
@@ -831,8 +809,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	// Increase the team's score
 	AddTeamScore(ent->s.pos.trBase, other->client->sess.sessionTeam, 1);
-//	Team_ForceGesture(other->client->sess.sessionTeam);
-	//rww - don't really want to do this now. Mainly because performing a gesture disables your upper torso animations until it's done and you can't fire
 
 	other->client->pers.teamState.captures++;
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;
