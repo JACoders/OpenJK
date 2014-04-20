@@ -27,6 +27,8 @@ This file is part of Jedi Academy.
 #include "../game/g_items.h"
 #include "../game/statindex.h"
 
+#include "../win32/AutoVersion.h"
+
 
 /*
 ===============================================================================
@@ -39,32 +41,13 @@ These commands can only be entered from stdin or by a remote operator datagram
 
 qboolean qbLoadTransition = qfalse;
 
-/*
-==================
-SV_SetPlayer
-
-Returns the player
-==================
-*/
-static client_t *SV_SetPlayer( void ) {
-	client_t	*cl;
-
-	cl = &svs.clients[0];
-	if ( !cl->state ) {
-		Com_Printf( "Client is not active\n" );
-		return NULL;
-	}
-	return cl;
-}
-
-
 //=========================================================
 // don't call this directly, it should only be called from SV_Map_f() or SV_MapTransition_f()
 //
 static bool SV_Map_( ForceReload_e eForceReload ) 
 {
-	const char	*map;
-	char	expanded[MAX_QPATH];
+	char		*map = NULL;
+	char		expanded[MAX_QPATH] = {0};
 
 	map = Cmd_Argv(1);
 	if ( !*map ) {
@@ -277,17 +260,19 @@ static void SV_Map_f( void )
 
 	ForceReload_e eForceReload = eForceReload_NOTHING;	// default for normal load
 
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapbsp") ) {
+	char *cmd = Cmd_Argv( 0 );
+	if ( !Q_stricmp( cmd, "devmapbsp") )
 		eForceReload = eForceReload_BSP;
-	}
-	else
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapmdl") ) {
+	else if ( !Q_stricmp( cmd, "devmapmdl") )
 		eForceReload = eForceReload_MODELS;
-	}
-	else
-	if ( !Q_stricmp( Cmd_Argv(0), "devmapall") ) {
+	else if ( !Q_stricmp( cmd, "devmapall") )
 		eForceReload = eForceReload_ALL;
-	}
+
+	qboolean cheat = (qboolean)(!Q_stricmpn( cmd, "devmap", 6 ) );
+
+	// retain old cheat state
+	if ( !cheat && Cvar_VariableIntegerValue( "helpUsObi" ) )
+		cheat = qtrue;
 
 	if (SV_Map_( eForceReload ))
 	{
@@ -295,11 +280,7 @@ static void SV_Map_f( void )
 		// if the level was started with "map <levelname>", then
 		// cheats will not be allowed.  If started with "devmap <levelname>"
 		// then cheats will be allowed
-		if ( !Q_stricmpn( Cmd_Argv(0), "devmap", 6 ) ) {
-			Cvar_Set( "helpUsObi", "1" );
-		} else {
-			Cvar_Set( "helpUsObi", "0" );
-		}
+		Cvar_Set( "helpUsObi", cheat ? "1" : "0" );
 	}
 }
 
@@ -345,16 +326,27 @@ void SV_LoadTransition_f(void)
 }
 //===============================================================
 
+char	*ivtos( const vec3_t v ) {
+	static	int		index;
+	static	char	str[8][32];
+	char	*s;
+
+	// use an array so that multiple vtos won't collide
+	s = str[index];
+	index = (index + 1)&7;
+
+	Com_sprintf (s, 32, "( %i %i %i )", (int)v[0], (int)v[1], (int)v[2]);
+
+	return s;
+}
+
 /*
 ================
 SV_Status_f
 ================
 */
 static void SV_Status_f( void ) {
-	int			i, j, l;
 	client_t	*cl;
-	const char		*s;
-	int			ping;
 
 	// make sure server is running
 	if ( !com_sv_running->integer ) {
@@ -362,47 +354,32 @@ static void SV_Status_f( void ) {
 		return;
 	}
 
-	Com_Printf ("map: %s\n", sv_mapname->string );
+	cl = &svs.clients[0];
 
-	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
-	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
-	for (i=0,cl=svs.clients ; i < 1 ; i++,cl++)
-	{
-		if (!cl->state)
-			continue;
-		Com_Printf ("%3i ", i);
-		Com_Printf ("%5i ", cl->gentity->client->persistant[PERS_SCORE]);
-
-		if (cl->state == CS_CONNECTED)
-			Com_Printf ("CNCT ");
-		else if (cl->state == CS_ZOMBIE)
-			Com_Printf ("ZMBI ");
-		else
-		{
-			ping = cl->ping < 9999 ? cl->ping : 9999;
-			Com_Printf ("%4i ", ping);
-		}
-
-		Com_Printf ("%s", cl->name);
-		l = 16 - strlen(cl->name);
-		for (j=0 ; j<l ; j++)
-			Com_Printf (" ");
-
-		Com_Printf ("%7i ", sv.time - cl->lastPacketTime );
-
-		s = NET_AdrToString( cl->netchan.remoteAddress );
-		Com_Printf ("%s", s);
-		l = 22 - strlen(s);
-		for (j=0 ; j<l ; j++)
-			Com_Printf (" ");
-		
-		Com_Printf ("%5i", cl->netchan.qport);
-
-		Com_Printf (" %5i", cl->rate);
-
-		Com_Printf ("\n");
+	if ( !cl ) {
+		Com_Printf("Server is not running.\n");
+		return;
 	}
-	Com_Printf ("\n");
+
+#if defined(_WIN32)
+#define STATUS_OS "Windows"
+#elif defined(__linux__)
+#define STATUS_OS "Linux"
+#elif defined(MACOS_X)
+#define STATUS_OS "OSX"
+#else
+#define STATUS_OS "Unknown"
+#endif
+
+	Com_Printf( "name    : %s^7\n", cl->name );
+	Com_Printf( "score   : %i\n", cl->gentity->client->persistant[PERS_SCORE] );
+	Com_Printf( "version : %s %s %i\n", STATUS_OS, VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+#ifdef JK2_MODE
+	Com_Printf( "game    : Jedi Outcast %s\n", FS_GetCurrentGameDir() );
+#else
+	Com_Printf( "game    : Jedi Academy %s\n", FS_GetCurrentGameDir() );
+#endif
+	Com_Printf( "map     : %s at %s\n", sv_mapname->string, ivtos( cl->gentity->client->origin ) );
 }
 
 /*
@@ -447,13 +424,14 @@ static void SV_DumpUser_f( void ) {
 		return;
 	}
 
-	if ( Cmd_Argc() != 2 ) {
-		Com_Printf ("Usage: info <userid>\n");
+	if ( Cmd_Argc() != 1 ) {
+		Com_Printf ("Usage: info\n");
 		return;
 	}
 
-	cl = SV_SetPlayer();
-	if ( !cl ) {
+	cl = &svs.clients[0];
+	if ( !cl->state ) {
+		Com_Printf("Client is not active\n");
 		return;
 	}
 

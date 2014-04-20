@@ -44,6 +44,7 @@ cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
 cvar_t	*sv_autoDemo;
 cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
+cvar_t	*sv_blockJumpSelect;
 
 /*
 =============================================================================
@@ -574,7 +575,8 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
-	Info_SetValueForKey(infostring, "g_humanplayers", va("%i", humans));
+	Info_SetValueForKey( infostring, "g_humanplayers", va("%i", humans) );
+	Info_SetValueForKey( infostring, "bots", va("%i", count-humans) );
 	Info_SetValueForKey( infostring, "sv_maxclients",
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );

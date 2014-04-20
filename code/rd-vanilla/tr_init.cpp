@@ -103,10 +103,6 @@ cvar_t	*r_DynamicGlowSoft;
 cvar_t	*r_DynamicGlowWidth;
 cvar_t	*r_DynamicGlowHeight;
 
-// Point sprite support.
-cvar_t	*r_ext_point_parameters;
-cvar_t	*r_ext_nv_point_sprite;
-
 cvar_t	*r_ignoreGLErrors;
 cvar_t	*r_logFile;
 
@@ -221,14 +217,7 @@ void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 
 void ( APIENTRY * qglLockArraysEXT)( GLint, GLint);
 void ( APIENTRY * qglUnlockArraysEXT) ( void );
-
-void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
 #endif
-
-// Added 10/23/02 by Aurelio Reis.
-void ( APIENTRY * qglPointParameteriNV)( GLenum, GLint);
-void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
 
 #ifdef _WIN32	// GLOWXXX
 // Declare Register Combiners function pointers.
@@ -1172,10 +1161,6 @@ void R_Register( void )
 	r_DynamicGlowSoft = ri.Cvar_Get( "r_DynamicGlowSoft", "1", CVAR_ARCHIVE );
 	r_DynamicGlowWidth = ri.Cvar_Get( "r_DynamicGlowWidth", "320", CVAR_ARCHIVE | CVAR_LATCH );
 	r_DynamicGlowHeight = ri.Cvar_Get( "r_DynamicGlowHeight", "240", CVAR_ARCHIVE | CVAR_LATCH );
-
-	// Register point sprite stuff here.
-	r_ext_point_parameters = ri.Cvar_Get( "r_ext_point_parameters", "1", CVAR_ARCHIVE );
-	r_ext_nv_point_sprite = ri.Cvar_Get( "r_ext_nv_point_sprite", "1", CVAR_ARCHIVE );
 
 	r_picmip = ri.Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );

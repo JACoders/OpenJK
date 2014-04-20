@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp from whining at us. --eez
 
 glconfig_t  glConfig;
+glconfigExt_t glConfigExt;
 glRefConfig_t glRefConfig;
 float       displayAspect = 0.0f;
 
@@ -66,7 +67,6 @@ cvar_t	*r_inGameVideo;
 cvar_t	*r_fastsky;
 cvar_t	*r_drawSun;
 cvar_t	*r_dynamiclight;
-cvar_t	*r_dlightBacks;
 
 cvar_t	*r_lodbias;
 cvar_t	*r_lodscale;
@@ -1073,7 +1073,7 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
 	ri->Printf( PRINT_ALL, "GL_EXTENSIONS: " );
-	R_PrintLongString( glConfig.extensions_string );
+	R_PrintLongString( glConfigExt.originalExtensionString );
 	ri->Printf( PRINT_ALL, "\n" );
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_UNITS_ARB: %d\n", glConfig.numTextureUnits );
@@ -1262,8 +1262,8 @@ void R_Register( void )
 	r_baseNormalY = ri->Cvar_Get( "r_baseNormalY", "1.0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_baseParallax = ri->Cvar_Get( "r_baseParallax", "0.05", CVAR_ARCHIVE | CVAR_LATCH );
    	r_baseSpecular = ri->Cvar_Get( "r_baseSpecular", "0.04", CVAR_ARCHIVE | CVAR_LATCH ); 
-   	r_baseGloss = ri->Cvar_Get( "r_baseGloss", "0.3", CVAR_ARCHIVE | CVAR_LATCH );
-	r_dlightMode = ri->Cvar_Get( "r_dlightMode", "0", CVAR_ARCHIVE | CVAR_LATCH );
+   	r_baseGloss = ri->Cvar_Get( "r_baseGloss", "0.1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_dlightMode = ri->Cvar_Get( "r_dlightMode", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_pshadowDist = ri->Cvar_Get( "r_pshadowDist", "128", CVAR_ARCHIVE );
 	r_recalcMD3Normals = ri->Cvar_Get( "r_recalcMD3Normals", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_mergeLightmaps = ri->Cvar_Get( "r_mergeLightmaps", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1313,7 +1313,6 @@ void R_Register( void )
 	r_inGameVideo = ri->Cvar_Get( "r_inGameVideo", "1", CVAR_ARCHIVE );
 	r_drawSun = ri->Cvar_Get( "r_drawSun", "0", CVAR_ARCHIVE );
 	r_dynamiclight = ri->Cvar_Get( "r_dynamiclight", "1", CVAR_ARCHIVE );
-	r_dlightBacks = ri->Cvar_Get( "r_dlightBacks", "1", CVAR_ARCHIVE );
 	r_finish = ri->Cvar_Get ("r_finish", "0", CVAR_ARCHIVE);
 	r_textureMode = ri->Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST", CVAR_ARCHIVE );
 	r_swapInterval = ri->Cvar_Get( "r_swapInterval", "0",
@@ -1527,7 +1526,7 @@ void R_Init( void ) {
 	if (glRefConfig.framebufferObject)
 		FBO_Init();
 
-	GLSL_InitGPUShaders();
+	int shadersStartTime = GLSL_BeginLoadGPUShaders();
 
 	R_InitVBOs();
 
@@ -1543,6 +1542,7 @@ void R_Init( void ) {
 
 	R_InitQueries();
 
+	GLSL_EndLoadGPUShaders (shadersStartTime);
 
 	err = qglGetError();
 	if ( err != GL_NO_ERROR )

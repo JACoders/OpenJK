@@ -173,7 +173,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	MSG_WriteByte (msg, lastframe);				// what we are delta'ing from
 	MSG_WriteLong (msg, client->cmdNum);		// we have executed up to here
 
-	snapFlags = client->rateDelayed | ( client->droppedCommands << 1 );
+	snapFlags = client->droppedCommands << 1;
 	client->droppedCommands = 0;
 
 	MSG_WriteByte (msg, snapFlags);
@@ -626,43 +626,12 @@ Called by SV_SendClientSnapshot and SV_SendClientGameState
 */
 #define	HEADER_RATE_BYTES	48		// include our header, IP header, and some overhead
 void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
-	int			rateMsec;
-
 	// record information about the message
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSize = msg->cursize;
 	client->frames[client->netchan.outgoingSequence & PACKET_MASK].messageSent = sv.time;
 
 	// send the datagram
 	Netchan_Transmit( &client->netchan, msg->cursize, msg->data );
-
-	// set nextSnapshotTime based on rate and requested number of updates
-
-	// local clients get snapshots every frame (FIXME: also treat LAN clients)
-	if ( client->netchan.remoteAddress.type == NA_LOOPBACK ) {
-		client->nextSnapshotTime = sv.time - 1;
-		return;
-	}
-
-	// normal rate / snapshotMsec calculation
-	rateMsec = ( msg->cursize + HEADER_RATE_BYTES ) * 1000 / client->rate;
-	if ( rateMsec < client->snapshotMsec ) {
-		rateMsec = client->snapshotMsec;
-		client->rateDelayed = qfalse;
-	} else {
-		client->rateDelayed = qtrue;
-	}
-
-	client->nextSnapshotTime = sv.time + rateMsec;
-
-	// if we haven't gotten a message from the client in over a second, we will
-	// drop to only sending one snapshot a second until they timeout
-	if ( sv.time - client->lastPacketTime > 1000 || client->state != CS_ACTIVE ) {
-		if ( client->nextSnapshotTime < sv.time + 1000 ) {
-			client->nextSnapshotTime = sv.time + 1000;
-		}
-		return;
-	}
-
 }
 
 /*
@@ -732,10 +701,6 @@ void SV_SendClientMessages( void ) {
 	for (i=0, c = svs.clients ; i < 1 ; i++, c++) {
 		if (!c->state) {
 			continue;		// not connected
-		}
-
-		if ( sv.time < c->nextSnapshotTime ) {
-			continue;		// not time yet
 		}
 
 		if ( c->state != CS_ACTIVE ) {

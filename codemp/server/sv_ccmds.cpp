@@ -609,7 +609,12 @@ static void SV_Status_f( void )
 		"public dedicated",
 	};
 
-	Com_Printf ("hostname: %s^7\n", sv_hostname->string );
+	char hostname[MAX_HOSTNAMELENGTH]={0};
+
+	Q_strncpyz(hostname, sv_hostname->string, sizeof(hostname));
+	Q_StripColor(hostname);
+
+	Com_Printf ("hostname: %s^7\n", hostname );
 	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
 	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
 	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);

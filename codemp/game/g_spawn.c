@@ -97,7 +97,7 @@ typedef enum {
 } fieldtype_t;
 
 typedef struct field_s {
-	char	*name;
+	const char	*name;
 	int		ofs;
 	fieldtype_t	type;
 } field_t;
@@ -330,6 +330,8 @@ void SP_reference_tag ( gentity_t *ent );
 
 void SP_misc_weapon_shooter( gentity_t *self );
 
+void SP_misc_cubemap( gentity_t *ent );
+
 void SP_NPC_spawner( gentity_t *self );
 
 void SP_NPC_Vehicle( gentity_t *self);
@@ -536,6 +538,7 @@ spawn_t	spawns[] = {
 	{ "light",								SP_light },
 	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
 	{ "misc_bsp",							SP_misc_bsp },
+	{ "misc_cubemap",						SP_misc_cubemap },
 	{ "misc_faller",						SP_misc_faller },
 	{ "misc_G2model",						SP_misc_G2model },
 	{ "misc_holocron",						SP_misc_holocron },

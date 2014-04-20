@@ -170,13 +170,13 @@ typedef struct listBoxDef_s {
 } listBoxDef_t;
 
 typedef struct editFieldDef_s {
-  float minVal;                  //	edit field limits
-  float maxVal;                  //
-  float defVal;                  //
-	float range;									 //
-  int maxChars;                  // for edit fields
-  int maxPaintChars;             // for edit fields
-	int paintOffset;							 //
+	float minVal;			//	edit field limits
+	float maxVal;			//
+	float defVal;			//
+	float range;			//
+	int maxChars;			// for edit fields
+	int maxPaintChars;		// for edit fields
+	int paintOffset;		//
 } editFieldDef_t;
 
 #define MAX_MULTI_CVARS 32
@@ -279,7 +279,14 @@ typedef struct itemDef_s {
 	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
 	float		special;					// used for feeder id's etc.. diff per type
 	int			cursorPos;					// cursor position in characters
-	void		*typeData;					// type specific data ptr's
+	union {
+		void			*data;
+		listBoxDef_t	*listbox;
+		textScrollDef_t	*textscroll;
+		editFieldDef_t	*edit;
+		multiDef_t		*multi;
+		modelDef_t		*model;
+	} typeData;								// type specific data ptr's
 	const char	*descText;					//	Description text
 	int			appearanceSlot;				// order of appearance
 	int			iMenuFont;					// FONT_SMALL,FONT_MEDIUM,FONT_LARGE	// changed from 'font' so I could see what didn't compile, and differentiate between font handles returned from RegisterFont -ste
@@ -320,44 +327,44 @@ typedef struct menuDef_s {
 } menuDef_t;
 
 typedef struct cachedAssets_s {
-  const char *fontStr;
-  const char *cursorStr;
-  const char *gradientStr;
-  qhandle_t	qhSmallFont;
-  qhandle_t	qhSmall2Font;
-  qhandle_t	qhMediumFont;
-  qhandle_t	qhBigFont;
-  qhandle_t cursor;
-  qhandle_t gradientBar;
-  qhandle_t scrollBarArrowUp;
-  qhandle_t scrollBarArrowDown;
-  qhandle_t scrollBarArrowLeft;
-  qhandle_t scrollBarArrowRight;
-  qhandle_t scrollBar;
-  qhandle_t scrollBarThumb;
-  qhandle_t buttonMiddle;
-  qhandle_t buttonInside;
-  qhandle_t solidBox;
-  qhandle_t sliderBar;
-  qhandle_t sliderThumb;
-  sfxHandle_t menuEnterSound;
-  sfxHandle_t menuExitSound;
-  sfxHandle_t menuBuzzSound;
-  sfxHandle_t itemFocusSound;
-  float fadeClamp;
-  int fadeCycle;
-  float fadeAmount;
-  float shadowX;
-  float shadowY;
-  vec4_t shadowColor;
-  float shadowFadeClamp;
-  qboolean fontRegistered;
+	const char *fontStr;
+	const char *cursorStr;
+	const char *gradientStr;
+	qhandle_t	qhSmallFont;
+	qhandle_t	qhSmall2Font;
+	qhandle_t	qhMediumFont;
+	qhandle_t	qhBigFont;
+	qhandle_t cursor;
+	qhandle_t gradientBar;
+	qhandle_t scrollBarArrowUp;
+	qhandle_t scrollBarArrowDown;
+	qhandle_t scrollBarArrowLeft;
+	qhandle_t scrollBarArrowRight;
+	qhandle_t scrollBar;
+	qhandle_t scrollBarThumb;
+	qhandle_t buttonMiddle;
+	qhandle_t buttonInside;
+	qhandle_t solidBox;
+	qhandle_t sliderBar;
+	qhandle_t sliderThumb;
+	sfxHandle_t menuEnterSound;
+	sfxHandle_t menuExitSound;
+	sfxHandle_t menuBuzzSound;
+	sfxHandle_t itemFocusSound;
+	float fadeClamp;
+	int fadeCycle;
+	float fadeAmount;
+	float shadowX;
+	float shadowY;
+	vec4_t shadowColor;
+	float shadowFadeClamp;
+	qboolean fontRegistered;
 
-    qhandle_t needPass;
-    qhandle_t noForce;
-    qhandle_t forceRestrict;
-    qhandle_t saberOnly;
-    qhandle_t trueJedi;
+	qhandle_t needPass;
+	qhandle_t noForce;
+	qhandle_t forceRestrict;
+	qhandle_t saberOnly;
+	qhandle_t trueJedi;
 
 	sfxHandle_t moveRollSound;
 	sfxHandle_t moveJumpSound;
@@ -368,11 +375,10 @@ typedef struct cachedAssets_s {
 	sfxHandle_t datapadmoveSaberSound5;
 	sfxHandle_t datapadmoveSaberSound6;
 
-  // player settings
+	// player settings
 	qhandle_t fxBasePic;
-  qhandle_t fxPic[7];
-	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
-
+	qhandle_t fxPic[7];
+	qhandle_t crosshairShader[NUM_CROSSHAIRS];
 } cachedAssets_t;
 
 typedef struct commandDef_s {

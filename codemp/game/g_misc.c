@@ -3659,3 +3659,8 @@ void SP_misc_weather_zone( gentity_t *ent )
 {
 	G_FreeEntity(ent);
 }
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
+}

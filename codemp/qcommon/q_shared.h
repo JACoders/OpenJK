@@ -1111,6 +1111,9 @@ float	LittleFloat (const float *l);
 
 void	Swap_Init (void);
 */
+
+int FloatAsInt( float f );
+
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64

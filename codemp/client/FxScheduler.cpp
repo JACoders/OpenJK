@@ -911,6 +911,13 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 			else
 			{
 				SScheduledEffect		*sfx = mScheduledEffectsPool.Alloc();
+
+				if ( sfx == NULL )
+				{
+					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.\n");
+					return;
+				}
+
 				sfx->mStartTime = theFxHelper.mTime + delay;
 				sfx->mpTemplate = prim;
 				sfx->mIsRelative = isRelative;

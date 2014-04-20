@@ -59,6 +59,7 @@ cvar_t  *com_homepath;
 cvar_t	*com_G2Report;
 #endif
 
+static cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -1044,6 +1045,37 @@ static void Com_CatchError ( int code )
 	}
 }
 
+#ifdef _WIN32
+static const char *GetErrorString( DWORD error ) {
+	static char buf[MAX_STRING_CHARS];
+	buf[0] = '\0';
+
+	if ( error ) {
+		LPVOID lpMsgBuf;
+		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
+		if ( bufLen ) {
+			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
+			LocalFree( lpMsgBuf );
+		}
+	}
+	return buf;
+}
+#endif
+
+// based on Smod code
+static void Com_SetProcessorAffinity( void ) {
+#ifdef _WIN32
+	DWORD processMask;
+	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
+		processMask = 1; // set to first core only
+
+	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
+		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
+#endif
+}
+
 /*
 =================
 Com_Init
@@ -1122,7 +1154,9 @@ void Com_Init( char *commandLine ) {
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
+		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
+
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1142,6 +1176,8 @@ void Com_Init( char *commandLine ) {
 #endif
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
+
+		Com_SetProcessorAffinity();
 
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();

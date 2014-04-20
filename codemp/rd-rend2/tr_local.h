@@ -106,7 +106,6 @@ extern cvar_t	*r_inGameVideo;
 extern cvar_t	*r_fastsky;
 extern cvar_t	*r_drawSun;
 extern cvar_t	*r_dynamiclight;
-extern cvar_t	*r_dlightBacks;
 
 extern cvar_t	*r_lodbias;
 extern cvar_t	*r_lodscale;
@@ -714,6 +713,8 @@ typedef struct {
 	vec4_t normalScale;
 	vec4_t specularScale;
 
+	qboolean		isSurfaceSprite;
+
 } shaderStage_t;
 
 struct shaderCommands_s;
@@ -1104,7 +1105,7 @@ typedef enum
 // GLSL vertex and one GLSL fragment shader
 typedef struct shaderProgram_s
 {
-	char            name[MAX_QPATH];
+	char *name;
 
 	GLhandleARB     program;
 	GLhandleARB     vertexShader;
@@ -1112,8 +1113,9 @@ typedef struct shaderProgram_s
 	uint32_t        attribs;	// vertex array attributes
 
 	// uniform parameters
-	GLint uniforms[UNIFORM_COUNT];
-	short uniformBufferOffsets[UNIFORM_COUNT]; // max 32767/64=511 uniforms
+	int numUniforms;
+	GLint *uniforms;
+	short *uniformBufferOffsets;
 	char  *uniformBuffer;
 } shaderProgram_t;
 
@@ -1193,7 +1195,8 @@ typedef enum {
 	VPF_ORTHOGRAPHIC    = 0x10,
 	VPF_USESUNLIGHT     = 0x20,
 	VPF_FARPLANEFRUSTUM = 0x40,
-	VPF_NOCUBEMAPS      = 0x80
+	VPF_NOCUBEMAPS      = 0x80,
+	VPF_NOPOSTPROCESS	= 0x100
 } viewParmFlags_t;
 
 typedef struct {
@@ -2132,6 +2135,13 @@ typedef struct trGlobals_s {
 	int						currentLevel;
 } trGlobals_t;
 
+struct glconfigExt_t
+{
+	glconfig_t *glConfig;
+
+	const char *originalExtensionString;
+};
+
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
@@ -2166,7 +2176,6 @@ extern cvar_t	*r_inGameVideo;				// controls whether in game video should be dra
 extern cvar_t	*r_fastsky;				// controls whether sky should be cleared or drawn
 extern cvar_t	*r_drawSun;				// controls drawing of sun quad
 extern cvar_t	*r_dynamiclight;		// dynamic lights enabled/disabled
-extern cvar_t	*r_dlightBacks;			// dlight non-facing surfaces for continuity
 
 extern	cvar_t	*r_norefresh;			// bypasses the ref rendering
 extern	cvar_t	*r_drawentities;		// disable/enable entity rendering
@@ -2364,6 +2373,7 @@ void	GL_Cull( int cullType );
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
 
 extern glconfig_t  glConfig;
+extern glconfigExt_t	glConfigExt;
 
 typedef _skinSurface_t skinSurface_t;
 
@@ -2678,7 +2688,8 @@ GLSL
 ============================================================
 */
 
-void GLSL_InitGPUShaders(void);
+int GLSL_BeginLoadGPUShaders(void);
+void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits);
 void GLSL_VertexAttribPointers(uint32_t attribBits);

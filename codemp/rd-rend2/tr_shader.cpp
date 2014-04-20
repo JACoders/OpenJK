@@ -150,7 +150,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
 
 	sh = R_FindShaderByName( shaderName );
 	if (sh == NULL || sh == tr.defaultShader) {
-		h = RE_RegisterShaderLightMap(shaderName, 0, stylesDefault);
+		h = RE_RegisterShaderLightMap (shaderName, lightmapsNone, stylesDefault);
 		sh = R_GetShaderByHandle(h);
 	}
 	if (sh == NULL || sh == tr.defaultShader) {
@@ -160,7 +160,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
 
 	sh2 = R_FindShaderByName( newShaderName );
 	if (sh2 == NULL || sh2 == tr.defaultShader) {
-		h = RE_RegisterShaderLightMap(newShaderName, 0, stylesDefault);
+		h = RE_RegisterShaderLightMap (newShaderName, lightmapsNone, stylesDefault);
 		sh2 = R_GetShaderByHandle(h);
 	}
 
@@ -1047,7 +1047,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if(!Q_stricmp(token, "specularMap"))
 			{
 				stage->type = ST_SPECULARMAP;
-				VectorSet4(stage->specularScale, 1.0f, 1.0f, 1.0f, 1.0f);
+				VectorSet4(stage->specularScale, r_baseSpecular->integer, r_baseSpecular->integer, r_baseSpecular->integer, 1.0f);
 			}
 			else
 			{
@@ -1197,7 +1197,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				continue;
 			}
 
-			stage->specularScale[2] = atof( token );
+			stage->specularScale[3] = atof( token );
 		}
 		//
 		// rgbGen
@@ -1440,6 +1440,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if ( !Q_stricmp( token, "surfaceSprites" ) )
 		{
+			// Mark this stage as a surface sprite so we can skip it for now
+			stage->isSurfaceSprite = qtrue;
 			SkipRestOfLine( text );
 			/*char buffer[1024] = "";
 
@@ -2014,6 +2016,17 @@ static qboolean ParseShader( const char **text )
 
 				token = COM_ParseExt( text, qfalse );
 				tr.sunShadowScale = atof(token);
+
+				if (tr.sunShadowScale < 0.0f)
+				{
+					ri->Printf (PRINT_WARNING, "WARNING: q3gl2_sun's 'shadow scale' value must be between 0 and 1. Clamping to 0.0.\n");
+					tr.sunShadowScale = 0.0f;
+				}
+				else if (tr.sunShadowScale > 1.0f)
+				{
+					ri->Printf (PRINT_WARNING, "WARNING: q3gl2_sun's 'shadow scale' value must be between 0 and 1. Clamping to 1.0.\n");
+					tr.sunShadowScale = 1.0f;
+				}
 			}
 
 			SkipRestOfLine( text );

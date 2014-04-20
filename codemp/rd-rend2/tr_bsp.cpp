@@ -2965,10 +2965,16 @@ static void R_AssignCubemapsToWorldSurfaces(void)
 static void R_RenderAllCubemaps(void)
 {
 	int i, j;
+	GLenum cubemapFormat = GL_RGBA8;
+
+	if ( r_hdr->integer )
+	{
+		cubemapFormat = GL_RGBA16F;
+	}
 
 	for (i = 0; i < tr.numCubemaps; i++)
 	{
-		tr.cubemaps[i] = R_CreateImage(va("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, GL_RGBA8);
+		tr.cubemaps[i] = R_CreateImage (va ("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, cubemapFormat);
 	}
 	
 	for (i = 0; i < tr.numCubemaps; i++)

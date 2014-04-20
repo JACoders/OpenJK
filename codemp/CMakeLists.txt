@@ -314,6 +314,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/server/sv_snapshot.cpp"
 		"${MPDir}/server/sv_world.cpp"
 		"${MPDir}/server/sv_gameapi.cpp"
+		"${MPDir}/server/sv_gameapi.h"
 		)
 	source_group("server" FILES ${MPEngineAndDedServerFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedServerFiles})
@@ -362,11 +363,12 @@ if(BuildMPEngine)
 
 	#    Dependencies
 
-	# OpenGL
-	# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-	find_package(OpenGL REQUIRED)
-	set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
+	if (NOT WIN32)
+		# OpenGL
+		find_package(OpenGL REQUIRED)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+		set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
+	endif()
 
 	# OpenAL (is optionally included for Windows)
 	if(UseInternalOpenAL)

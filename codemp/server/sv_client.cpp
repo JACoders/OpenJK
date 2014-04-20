@@ -677,7 +677,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 		memset(&client->lastUsercmd, '\0', sizeof(client->lastUsercmd));
 
 	// call the game begin function
-	GVM_ClientBegin( client - svs.clients, qfalse );
+	GVM_ClientBegin( client - svs.clients );
 
 	SV_BeginAutoRecordDemos();
 }

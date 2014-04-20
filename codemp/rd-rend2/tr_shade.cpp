@@ -1148,6 +1148,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			break;
 		}
 
+		if ( pStage->isSurfaceSprite )
+		{
+			continue;
+		}
+
 		if (backEnd.depthFill)
 		{
 			if (pStage->glslShaderGroup == tr.lightallShader)

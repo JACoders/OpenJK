@@ -658,7 +658,7 @@ Ghoul2 Insert End
 					client->deltaMessage = -1;
 					client->nextSnapshotTime = svs.time;	// generate a snapshot immediately
 
-					GVM_ClientBegin( i, qfalse );
+					GVM_ClientBegin( i );
 				}
 			}
 		}
@@ -973,6 +973,8 @@ void SV_Init (void) {
 	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
 	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE );
 	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE );
+
+	sv_blockJumpSelect = Cvar_Get( "sv_blockJumpSelect", "1", CVAR_ARCHIVE );
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();

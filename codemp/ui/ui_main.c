@@ -1370,7 +1370,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset) {
 		Com_Printf( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile );
 		handle = trap->PC_LoadSource( "ui/jampmenus.txt" );
 		if (!handle) {
-			trap->Error( ERR_DROP, S_COLOR_RED "default menu file not found: ui/menus.txt, unable to continue!\n" );
+			trap->Error( ERR_DROP, S_COLOR_RED "default menu file not found: ui/jampmenus.txt, unable to continue!\n" );
 		}
 	}
 
@@ -2879,9 +2879,8 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle,int iMenuFont)
 {
 	char buff[4096] = {0};
-	char * eptr = buff;
-	const char *lines[128];
-	int y, numLines=0, i=0;
+	char *extensionName;
+	int y, i=0;
 
 	Text_Paint(rect->x + 2, rect->y, scale, color, va("GL_VENDOR: %s", uiInfo.uiDC.glconfig.vendor_string), 0, rect->w, textStyle,iMenuFont);
 	Text_Paint(rect->x + 2, rect->y + 15, scale, color, va("GL_VERSION: %s: %s", uiInfo.uiDC.glconfig.version_string,uiInfo.uiDC.glconfig.renderer_string), 0, rect->w, textStyle,iMenuFont);
@@ -2890,33 +2889,22 @@ static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textSt
 	// build null terminated extension strings
 	Q_strncpyz(buff, uiInfo.uiDC.glconfig.extensions_string, sizeof(buff));
 	y = rect->y + 45;
-	while ( y < rect->y + rect->h && *eptr )
+
+	extensionName = strtok (buff, " ");
+	while ( y < rect->y + rect->h && extensionName != NULL )
 	{
-		while ( *eptr && *eptr == ' ' )
-			*eptr++ = '\0';
-
-		// track start of valid string
-		if (*eptr && *eptr != ' ')
+		if ( (i % 2) == 0 )
 		{
-			lines[numLines++] = eptr;
+			Text_Paint (rect->x + 2, y, scale, color, extensionName, 0, (rect->w / 2), textStyle, iMenuFont);
+		}
+		else
+		{
+			Text_Paint (rect->x + rect->w / 2, y, scale, color, extensionName, 0, (rect->w / 2), textStyle, iMenuFont);
+			y += 11;
 		}
 
-		while ( *eptr && *eptr != ' ' )
-			eptr++;
-	}
-
-	while (i < numLines)
-	{
-		Text_Paint(rect->x + 2, y, scale, color, lines[i++], 0, (rect->w/2), textStyle,iMenuFont);
-		if (i < numLines)
-		{
-			Text_Paint(rect->x + rect->w / 2, y, scale, color, lines[i++], 0, (rect->w/2), textStyle,iMenuFont);
-		}
-		y += 10;
-		if (y > rect->y + rect->h - 11)
-		{
-			break;
-		}
+		extensionName = strtok (NULL, " ");
+		i++;
 	}
 }
 
@@ -3572,6 +3560,10 @@ static qboolean UI_Chat_Spot_HandleKey(int key)
 	else if ((key == A_4) || ( key == A_STRING))
 	{
 		item = Menu_FindItemByName(menu, "spot_04");
+	}
+	else if ((key == A_5) || (key == A_PERCENT))
+	{
+		item = Menu_FindItemByName(menu, "spot_05");
 	}
 	else
 	{
@@ -5384,7 +5376,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "headlistbox");
 		if (item)
 		{
-			listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5395,7 +5387,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "torsolistbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5406,7 +5398,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "lowerlistbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -5417,7 +5409,7 @@ static void UI_ResetCharacterListBoxes( void )
 		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "colorbox");
 		if (item)
 		{
-			listPtr = (listBoxDef_t*)item->typeData;
+			listPtr = item->typeData.listbox;
 			if( listPtr )
 			{
 				listPtr->cursorPos = 0;
@@ -6368,7 +6360,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 				if (item)
 				{
-					modelPtr = (modelDef_t*)item->typeData;
+					modelPtr = item->typeData.model;
 					if (modelPtr)
 					{
 						char modelPath[MAX_QPATH];
@@ -6860,7 +6852,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "itemdescription");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6881,7 +6873,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "description");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6896,7 +6888,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_weapons_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6907,7 +6899,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_inventory_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6918,7 +6910,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_force_feed");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						listPtr->startPos = 0;
@@ -6942,7 +6934,7 @@ static void UI_RunMenuScript(char **args)
 				item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "maplist");
 				if (item)
 				{
-					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					listBoxDef_t *listPtr = item->typeData.listbox;
 					if (listPtr)
 					{
 						trap->Cvar_Set("ui_currentNetMap", va("%d",listPtr->cursorPos));
@@ -8584,7 +8576,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "base_class_force_feed");
 			if (item)
 			{
-				listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+				listBoxDef_t *listPtr = item->typeData.listbox;
 				if (listPtr)
 				{
 					slotI = listPtr->startPos;
@@ -8646,7 +8638,7 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 			if (item)
 			{
-				modelPtr = (modelDef_t*)item->typeData;
+				modelPtr = item->typeData.model;
 				if (modelPtr)
 				{
 					char modelPath[MAX_QPATH];
@@ -8727,7 +8719,7 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 			item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "character");
 			if (item)
 			{
-				modelPtr = (modelDef_t*)item->typeData;
+				modelPtr = item->typeData.model;
 				if (modelPtr)
 				{
 					char modelPath[MAX_QPATH];

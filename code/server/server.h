@@ -123,14 +123,9 @@ typedef struct client_s {
 	int				deltaMessage;		// frame last client usercmd message
 	int				lastPacketTime;		// sv.time when packet was last received
 	int				lastConnectTime;	// sv.time when connection started
-	int				nextSnapshotTime;	// send another snapshot when sv.time >= nextSnapshotTime
-	qboolean		rateDelayed;		// true if nextSnapshotTime was set based on rate instead of snapshotMsec
 	qboolean		droppedCommands;	// true if enough pakets to pass the cl_packetdup were dropped
 	int				timeoutCount;		// must timeout a few frames in a row so debugging doesn't break
 	clientSnapshot_t	frames[PACKET_BACKUP];	// updates can be delta'd from here
-	int				ping;
-	int				rate;				// bytes / second
-	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
 	netchan_t		netchan;
 } client_t;
 
