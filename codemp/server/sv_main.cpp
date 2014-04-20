@@ -989,8 +989,12 @@ void SV_CheckCvars( void ) {
 		lastModSnapsMax = sv_snapsMax->modificationCount;
 
 		for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
-			int val = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-			cl->snapshotMsec = 1000/val;
+			int val = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+			if ( val != cl->snapshotMsec ) {
+				// Reset last sent snapshot so we avoid desync between server frame time and snapshot send time
+				cl->nextSnapshotTime = -1;
+				cl->snapshotMsec = val;
+			}
 		}
 	}
 }
