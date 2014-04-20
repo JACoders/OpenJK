@@ -7,6 +7,7 @@
 #include "ghoul2/g2_local.h"
 
 glconfig_t	glConfig;
+glconfigExt_t glConfigExt;
 glstate_t	glState;
 static void GfxInfo_f( void );
 
@@ -920,7 +921,7 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
-	R_PrintLongString( glConfig.extensions_string );
+	R_PrintLongString( glConfigExt.originalExtensionString );
 	ri->Printf( PRINT_ALL, "\n");
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	ri->Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
