@@ -1633,6 +1633,13 @@ void Com_Frame( void ) {
 				timeAfter = Sys_Milliseconds ();
 			}
 		}
+		else
+		{
+			if ( com_speeds->integer )
+			{
+				timeBeforeEvents = timeBeforeClient = timeAfter = Sys_Milliseconds ();
+			}
+		}
 
 		//
 		// report timing information
