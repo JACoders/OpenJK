@@ -194,7 +194,7 @@ typedef struct clientInfo_s {
 
 	int				duelTeam;
 
-	int				botSkill;		// 0 = not bot, 1-5 = bot
+	int				botSkill;		// -1 = not bot, 0-5 = bot
 
 	int				frame;
 
