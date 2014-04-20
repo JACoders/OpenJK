@@ -7,7 +7,6 @@
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/RoffSystem.h"
 #include "ghoul2/ghoul2_shared.h"
-#include "RMG/RM_Headers.h"
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_public.h"
 #include "icarus/GameInterface.h"

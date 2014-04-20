@@ -570,7 +570,6 @@ typedef enum {
 	SF_GRID,
 	SF_TRIANGLES,
 	SF_POLY,
-	SF_TERRAIN, //rwwRMG - added
 	SF_MD3,
 /*
 Ghoul2 Insert Start
@@ -624,12 +623,6 @@ typedef struct srfFlare_s {
 #define	VERTEX_COLOR		(5+(MAXLIGHTMAPS*2))
 
 #define	VERTEX_FINAL_COLOR	(5+(MAXLIGHTMAPS*3))
-
-typedef struct srfTerrain_s
-{
-	surfaceType_t			surfaceType;
-	class CTRLandScape		*landscape;
-} srfTerrain_t;
 
 typedef struct srfGridMesh_s {
 	surfaceType_t	surfaceType;
@@ -695,20 +688,6 @@ typedef struct srfTriangles_s {
 
 
 extern	void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])(void *);
-
-/*
-==============================================================================
-
-TERRAIN DATA
-
-==============================================================================
-*/
-
-void RE_InitRendererTerrain( const char *info );
-void RB_SurfaceTerrain( surfaceInfo_t *surface );
-void R_TerrainInit (void);
-void R_TerrainShutdown(void);
-
 
 /*
 ==============================================================================
@@ -1054,9 +1033,7 @@ typedef struct trGlobals_s {
 	float					fogTable[FOG_TABLE_SIZE];
 
 	float					rangedFog;
-	float					distanceCull, distanceCullSquared; //rwwRMG - added
-
-	srfTerrain_t			landScape; //rwwRMG - added
+	float					distanceCull;
 
 #ifdef _WIN32
 	WinVars_t *wv;

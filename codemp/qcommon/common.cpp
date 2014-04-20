@@ -36,8 +36,6 @@ cvar_t	*com_optvehtrace;
 cvar_t	*com_G2Report;
 #endif
 
-cvar_t	*com_terrainPhysics; //rwwRMG - added
-
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
@@ -47,8 +45,6 @@ cvar_t	*com_cameraMode;
 cvar_t	*com_unfocused;
 cvar_t	*com_minimized;
 cvar_t  *com_homepath;
-
-cvar_t	*com_RMG;
 
 static cvar_t *com_affinity;
 
@@ -1264,8 +1260,6 @@ void Com_Init( char *commandLine ) {
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
-		com_terrainPhysics = Cvar_Get ("com_terrainPhysics", "1", CVAR_CHEAT);
-
 		com_dropsim = Cvar_Get ("com_dropsim", "0", CVAR_CHEAT);
 		com_viewlog = Cvar_Get( "viewlog", "0", 0 );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
@@ -1287,28 +1281,7 @@ void Com_Init( char *commandLine ) {
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
 #endif
 
-		com_RMG = Cvar_Get("RMG", "0", 0);
-
 		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
-
-		Cvar_Get ("RMG_seed", "0", 0);
-		Cvar_Get ("RMG_time", "day", 0);
-		Cvar_Get ("RMG_soundset", "", 0);
-
-		Cvar_Get ("RMG_textseed", "0", CVAR_SYSTEMINFO|CVAR_ARCHIVE);
-		Cvar_Get ("RMG_map", "small", CVAR_ARCHIVE|CVAR_SYSTEMINFO);
-		Cvar_Get ("RMG_timefile", "day", CVAR_ARCHIVE);
-		Cvar_Get ("RMG_terrain", "grassyhills", CVAR_ARCHIVE);
-
-		Cvar_Get ("RMG_sky", "", CVAR_SYSTEMINFO );
-		Cvar_Get ("RMG_fog", "", CVAR_SYSTEMINFO );
-		Cvar_Get ("RMG_weather", "", CVAR_SYSTEMINFO|CVAR_SERVERINFO|CVAR_CHEAT );
-		Cvar_Get ("RMG_instances", "colombia", CVAR_SYSTEMINFO );
-		Cvar_Get ("RMG_miscents", "deciduous", 0);
-		Cvar_Get ("RMG_music", "music/dm_kam1", 0);
-		Cvar_Get ("RMG_mission", "ctf", CVAR_SYSTEMINFO );
-		Cvar_Get ("RMG_course", "standard", CVAR_SYSTEMINFO );
-		Cvar_Get ("RMG_distancecull", "5000", CVAR_CHEAT );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 

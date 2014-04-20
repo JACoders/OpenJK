@@ -6,7 +6,6 @@
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/RoffSystem.h"
 #include "ghoul2/ghoul2_shared.h"
-#include "RMG/RM_Headers.h"
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_public.h"
 #include "icarus/GameInterface.h"
@@ -476,15 +475,7 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 		VectorCopy (mins, ent->r.mins);
 		VectorCopy (maxs, ent->r.maxs);
 		ent->r.bmodel = qtrue;
-
-		if (com_RMG && com_RMG->integer)
-		{
-			ent->r.contents = CM_ModelContents( h, sv.mLocalSubBSPIndex );
-		}
-		else
-		{
-			ent->r.contents = CM_ModelContents( h, -1 );
-		}
+		ent->r.contents = CM_ModelContents( h, -1 );
 	}
 	else if (name[0] == '#')
 	{
@@ -1442,21 +1433,10 @@ static qhandle_t SV_RE_RegisterSkin( const char *name ) {
 }
 
 static int SV_CM_RegisterTerrain( const char *config ) {
-	return CM_RegisterTerrain( config, true )->GetTerrainId();
+	return 0;
 }
 
-static void SV_RMG_Init( void ) {
-	if ( com_RMG && com_RMG->integer ) {
-		if ( !TheRandomMissionManager )
-			TheRandomMissionManager = new CRMManager;
-
-		TheRandomMissionManager->SetLandScape( cmg.landScape );
-
-		if ( TheRandomMissionManager->LoadMission( qtrue ) )
-			TheRandomMissionManager->SpawnMission( qtrue );
-	//	cmg.landScape->UpdatePatches();
-	}
-}
+static void SV_RMG_Init( void ) { }
 
 static void SV_G2API_ListModelSurfaces( void *ghlInfo ) {
 	re->G2API_ListSurfaces( (CGhoul2Info *)ghlInfo );
@@ -2842,11 +2822,10 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_RMG_INIT:
-		SV_RMG_Init();
 		return 0;
 
 	case G_CM_REGISTER_TERRAIN:
-		return CM_RegisterTerrain((const char *)VMA(1), true)->GetTerrainId();
+		return 0;
 
 	case G_BOT_UPDATEWAYPOINTS:
 		SV_BotWaypointReception(args[1], (wpobject_t **)VMA(2));
