@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cm_polylib.h"
-#include "cm_landscape.h" //rwwRMG - include
 
 #define	MAX_SUBMODELS			512
 #define	BOX_MODEL_HANDLE		(MAX_SUBMODELS-1)
@@ -122,9 +121,6 @@ typedef struct clipMap_s {
 
 	int			floodvalid;
 	int			checkcount;					// incremented on each trace
-
-	//rwwRMG - added:
-	CCMLandScape	*landScape;
 } clipMap_t;
 
 
@@ -204,10 +200,6 @@ struct patchCollide_s	*CM_GeneratePatchCollide( int width, int height, vec3_t *p
 void CM_TraceThroughPatchCollide( traceWork_t *tw, trace_t &trace, const struct patchCollide_s *pc );
 qboolean CM_PositionTestInPatchCollide( traceWork_t *tw, const struct patchCollide_s *pc );
 void CM_ClearLevelPatches( void );
-
-//rwwRMG - added
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-void CM_ShutdownTerrain( thandle_t terrainId );
 
 // cm_shader.cpp
 void CM_SetupShaderProperties( void );

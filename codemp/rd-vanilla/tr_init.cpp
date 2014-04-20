@@ -1361,8 +1361,6 @@ void R_Init( void ) {
 	R_InitShaders(qfalse);
 	R_InitSkins();
 
-	R_TerrainInit(); //rwwRMG - added
-
 	R_InitFonts();
 
 	R_ModelInit();
@@ -1437,8 +1435,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );
 	}
-
-	R_TerrainShutdown(); //rwwRMG - added
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {
@@ -1618,7 +1614,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.InitializeWireframeAutomap			= R_InitializeWireframeAutomap; //tr_world.cpp
 	re.AddWeatherZone						= RE_AddWeatherZone;
 	re.WorldEffectCommand					= RE_WorldEffectCommand;
-	re.InitRendererTerrain					= RE_InitRendererTerrain;
 	re.RegisterMedia_LevelLoadBegin			= RE_RegisterMedia_LevelLoadBegin;
 	re.RegisterMedia_LevelLoadEnd			= RE_RegisterMedia_LevelLoadEnd;
 	re.RegisterMedia_GetLevel				= RE_RegisterMedia_GetLevel;
@@ -1728,14 +1723,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.G2API_AddSkinGore					= G2API_AddSkinGore;
 	re.G2API_ClearSkinGore					= G2API_ClearSkinGore;
 	#endif // _SOF2
-
-	// RMG / Terrain stuff
-	re.LoadDataImage						= R_LoadDataImage;
-	re.InvertImage							= R_InvertImage;
-	re.Resample								= R_Resample;
-	re.LoadImageJA							= R_LoadImage;
-	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.SavePNG								= RE_SavePNG;
 
 	// this is set in R_Init
 	//re.G2VertSpaceServer	= G2VertSpaceServer;

@@ -17,8 +17,6 @@ static	byte		*fileBase;
 int			c_subdivisions;
 int			c_gridVerts;
 
-void R_RMGInit(void);
-
 //===============================================================================
 
 static void HSVtoRGB( float h, float s, float v, float rgb[3] )
@@ -2078,11 +2076,6 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 		// only set tr.world now that we know the entire level has loaded properly
 		tr.world = &worldData;
-
-		if ( ri->Cvar_VariableIntegerValue( "com_RMG" ) )
-		{
-			R_RMGInit();
-		}
 	}
 
 	if (ri->CM_GetCachedMapDiskImage())

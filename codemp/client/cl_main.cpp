@@ -10,15 +10,9 @@
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
 
-//rwwRMG - added:
 #include "qcommon/cm_local.h"
-#include "qcommon/cm_landscape.h"
 #include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
-
-#ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
-#endif
 
 #ifndef _WIN32
 #include "sys/sys_loadlib.h"
@@ -351,38 +345,8 @@ void CL_Record_f( void ) {
 	// write the checksum feed
 	MSG_WriteLong(&buf, clc.checksumFeed);
 
-	// RMG stuff
-	if ( clc.rmgHeightMapSize )
-	{
-		int i;
-
-		// Height map
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgHeightMapSize );
-		MSG_WriteBits ( &buf, 0, 1 );
-		MSG_WriteData( &buf, clc.rmgHeightMap, clc.rmgHeightMapSize );
-
-		// Flatten map
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgHeightMapSize );
-		MSG_WriteBits ( &buf, 0, 1 );
-		MSG_WriteData( &buf, clc.rmgFlattenMap, clc.rmgHeightMapSize );
-
-		// Seed
-		MSG_WriteLong ( &buf, clc.rmgSeed );
-
-		// Automap symbols
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgAutomapSymbolCount );
-		for ( i = 0; i < clc.rmgAutomapSymbolCount; i ++ )
-		{
-			MSG_WriteByte ( &buf, (unsigned char)clc.rmgAutomapSymbols[i].mType );
-			MSG_WriteByte ( &buf, (unsigned char)clc.rmgAutomapSymbols[i].mSide );
-			MSG_WriteLong ( &buf, (long)clc.rmgAutomapSymbols[i].mOrigin[0] );
-			MSG_WriteLong ( &buf, (long)clc.rmgAutomapSymbols[i].mOrigin[1] );
-		}
-	}
-	else
-	{
-		MSG_WriteShort ( &buf, 0 );
-	}
+	// Filler for old RMG system.
+	MSG_WriteShort ( &buf, 0 );
 
 	// finished writing the client packet
 	MSG_WriteByte( &buf, svc_EOF );
@@ -2424,9 +2388,6 @@ void CL_InitRef( void ) {
 	ri.CM_BoxTrace = CM_BoxTrace;
 	ri.CM_DrawDebugSurface = CM_DrawDebugSurface;
 	ri.CM_CullWorldBox = CM_CullWorldBox;
-	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
-	ri.CM_RegisterTerrain = CM_RegisterTerrain;
-	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
 	ri.CM_ClusterPVS = CM_ClusterPVS;
 	ri.CM_LeafArea = CM_LeafArea;
 	ri.CM_LeafCluster = CM_LeafCluster;
