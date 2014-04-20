@@ -4,7 +4,6 @@
 #include "qcommon/RoffSystem.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/timing.h"
-#include "RMG/RM_Headers.h"
 #include "client.h"
 #include "cl_uiapi.h"
 #include "botlib/botlib.h"
@@ -326,7 +325,7 @@ static void CL_AddReliableCommand2( const char *cmd ) {
 }
 
 static int CL_CM_RegisterTerrain( const char *config ) {
-	return CM_RegisterTerrain( config, false )->GetTerrainId();
+	return 0;
 }
 
 extern int s_entityWavVol[MAX_GENTITIES];
@@ -420,20 +419,7 @@ static int CL_PrecisionTimerEnd( void *p ) {
 	return r; //return the result
 }
 
-static void CL_RMG_Init( int terrainID, const char *terrainInfo ) {
-	if ( !com_sv_running->integer ) {
-		if ( !TheRandomMissionManager )
-			TheRandomMissionManager = new CRMManager;
-		TheRandomMissionManager->SetLandScape( cmg.landScape );
-		if ( TheRandomMissionManager->LoadMission( qfalse ) ) {
-			if ( !TheRandomMissionManager->SpawnMission( qfalse ) )
-				Com_Error( ERR_DROP, "Error spawning mission for terrain" );
-		}
-		cmg.landScape->UpdatePatches();
-	}
-	RM_CreateRandomModels( terrainID, terrainInfo );
-//	TheRandomMissionManager->CreateMap();
-}
+static void CL_RMG_Init( int /* terrainID */, const char * /* terrainInfo */ ) { }
 
 static qboolean CGFX_PlayBoltedEffectID( int id, vec3_t org, void *ghoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
@@ -1608,14 +1594,12 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CM_REGISTER_TERRAIN:
-		return CL_CM_RegisterTerrain( (const char *)VMA(1) );
+		return 0;
 
 	case CG_RMG_INIT:
-		CL_RMG_Init( args[1], (const char *)VMA(2) );
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		re->InitRendererTerrain((const char *)VMA(1));
 		return 0;
 
 	case CG_R_WEATHER_CONTENTS_OVERRIDE:
@@ -1636,6 +1620,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	}
 	return 0;
 }
+
+// Stub function for old RMG system.
+static void RE_InitRendererTerrain ( const char * /*info*/ ) {}
 
 void CL_BindCGame( void ) {
 	static cgameImport_t cgi;
@@ -1745,7 +1732,7 @@ void CL_BindCGame( void ) {
 		cgi.R_SetRangedFog						= re->SetRangedFog;
 		cgi.R_SetRefractionProperties			= re->SetRefractionProperties;
 		cgi.R_WorldEffectCommand				= re->WorldEffectCommand;
-		cgi.RE_InitRendererTerrain				= re->InitRendererTerrain;
+		cgi.RE_InitRendererTerrain				= RE_InitRendererTerrain;
 		cgi.WE_AddWeatherZone					= re->AddWeatherZone;
 		cgi.GetCurrentSnapshotNumber			= CL_GetCurrentSnapshotNumber;
 		cgi.GetCurrentCmdNumber					= CL_GetCurrentCmdNumber;

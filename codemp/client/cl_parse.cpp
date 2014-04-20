@@ -6,9 +6,6 @@
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
-#ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
-#endif
 #include "zlib/zlib.h"
 
 static char hiddenCvarVal[128];
@@ -461,84 +458,6 @@ void CL_SystemInfoChanged( void ) {
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
 }
 
-void CL_ParseAutomapSymbols ( msg_t* msg )
-{
-	int i;
-
-	clc.rmgAutomapSymbolCount = (unsigned short) MSG_ReadShort ( msg );
-
-	for ( i = 0; i < clc.rmgAutomapSymbolCount; i ++ )
-	{
-		clc.rmgAutomapSymbols[i].mType = (int)MSG_ReadByte ( msg );
-		clc.rmgAutomapSymbols[i].mSide = (int)MSG_ReadByte ( msg );
-		clc.rmgAutomapSymbols[i].mOrigin[0] = (float)MSG_ReadLong ( msg );
-		clc.rmgAutomapSymbols[i].mOrigin[1] = (float)MSG_ReadLong ( msg );
-	}
-}
-
-void CL_ParseRMG ( msg_t* msg )
-{
-	clc.rmgHeightMapSize = (unsigned short)MSG_ReadShort ( msg );
-	if ( !clc.rmgHeightMapSize )
-	{
-		return;
-	}
-
-	z_stream zdata;
-	int		 size;
-	unsigned char heightmap1[15000];
-
-	if ( MSG_ReadBits ( msg, 1 ) )
-	{
-		// Read the heightmap
-		memset(&zdata, 0, sizeof(z_stream));
-		inflateInit ( &zdata/*, Z_SYNC_FLUSH*/ );
-
-		MSG_ReadData ( msg, heightmap1, clc.rmgHeightMapSize );
-
-		zdata.next_in = heightmap1;
-		zdata.avail_in = clc.rmgHeightMapSize;
-		zdata.next_out = (unsigned char*)clc.rmgHeightMap;
-		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate (&zdata,Z_SYNC_FLUSH );
-
-		clc.rmgHeightMapSize = zdata.total_out;
-
-		inflateEnd(&zdata);
-	}
-	else
-	{
-		MSG_ReadData ( msg, (unsigned char*)clc.rmgHeightMap, clc.rmgHeightMapSize );
-	}
-
-	size = (unsigned short)MSG_ReadShort ( msg );
-
-	if ( MSG_ReadBits ( msg, 1 ) )
-	{
-		// Read the flatten map
-		memset(&zdata, 0, sizeof(z_stream));
-		inflateInit ( &zdata/*, Z_SYNC_FLUSH*/ );
-
-		MSG_ReadData ( msg, heightmap1, size );
-
-		zdata.next_in = heightmap1;
-		zdata.avail_in = clc.rmgHeightMapSize;
-		zdata.next_out = (unsigned char*)clc.rmgFlattenMap;
-		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate (&zdata, Z_SYNC_FLUSH);
-		inflateEnd(&zdata);
-	}
-	else
-	{
-		MSG_ReadData ( msg, (unsigned char*)clc.rmgFlattenMap, size );
-	}
-
-	// Read the seed
-	clc.rmgSeed = MSG_ReadLong ( msg );
-
-	CL_ParseAutomapSymbols ( msg );
-}
-
 /*
 ==================
 CL_ParseGamestate
@@ -649,7 +568,8 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// read the checksum feed
 	clc.checksumFeed = MSG_ReadLong( msg );
 
-	CL_ParseRMG ( msg ); //rwwRMG - get info for it from the server
+	// Throw away the info for the old RMG system.
+	MSG_ReadShort (msg);
 
 #ifdef _DONETPROFILE_
 	endBytes=msg->readcount;

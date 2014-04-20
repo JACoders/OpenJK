@@ -652,13 +652,5 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.G2API_ClearSkinGore					= G2API_ClearSkinGore;
 	#endif // _SOF2
 
-	// RMG / Terrain stuff
-//	re.LoadDataImage						= R_LoadDataImage;
-	re.InvertImage							= R_InvertImage;
-	re.Resample								= R_Resample;
-//	re.LoadImageJA							= RE_LoadImage;
-//	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.SavePNG								= RE_SavePNG;
-
 	return &re;
 }

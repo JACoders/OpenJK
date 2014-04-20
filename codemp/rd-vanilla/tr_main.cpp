@@ -20,8 +20,6 @@ static float	s_flipMatrix[16] = {
 
 refimport_t	*ri = NULL;
 
-void R_AddTerrainSurfaces(void);
-
 // entities that will have procedurally generated surfaces will just
 // point at this for their sorting surface
 surfaceType_t	entitySurface = SF_ENTITY;
@@ -1300,8 +1298,6 @@ void R_GenerateDrawSurfs( void ) {
 	R_AddWorldSurfaces ();
 
 	R_AddPolygonSurfaces();
-
-	R_AddTerrainSurfaces(); //rwwRMG - added
 
 	// set the projection matrix with the minimum zfar
 	// now that we have the world bounded
