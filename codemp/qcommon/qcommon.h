@@ -761,8 +761,6 @@ extern	cvar_t	*com_optvehtrace;
 extern	cvar_t	*com_G2Report;
 #endif
 
-extern	cvar_t	*com_RMG;
-
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
 extern	cvar_t	*sv_paused;
@@ -932,7 +930,7 @@ void CL_FlushMemory( void );
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
 
-qboolean CL_ConnectedToServer( void );
+qboolean CL_ConnectedToRemoteServer( void );
 // returns qtrue if connected to a server
 
 void Key_KeynameCompletion ( void(*callback)( const char *s ) );

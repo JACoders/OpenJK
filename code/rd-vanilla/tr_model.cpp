@@ -989,7 +989,6 @@ void CM_SetupShaderProperties(void);
 ** RE_BeginRegistration
 */
 void RE_BeginRegistration( glconfig_t *glconfigOut ) {
-	ri.CM_ShaderTableCleanup();
 	ri.Hunk_ClearToMark();
 
 	R_Init();

@@ -4,7 +4,6 @@
 #include "qcommon/RoffSystem.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/timing.h"
-#include "RMG/RM_Headers.h"
 #include "client.h"
 #include "cl_lan.h"
 #include "botlib/botlib.h"

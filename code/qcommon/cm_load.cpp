@@ -19,9 +19,6 @@ This file is part of Jedi Academy.
 // cmodel.c -- model loading
 
 #include "cm_local.h"
-#include "../RMG/RM_Headers.h"
-
-void CM_LoadShaderText(bool forceReload);
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {
@@ -787,14 +784,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 
 		if (&cm == &cmg)
 		{
-#if !defined(BSPC)
-			CM_LoadShaderText(false);
-//			MAT_Init((bool)(!clientload));
-#endif
 			CM_InitBoxHull ();
-#if !defined(BSPC)
-			CM_SetupShaderProperties();
-#endif
 
 			Q_strncpyz( gsCachedMapDiskImage, name, sizeof(gsCachedMapDiskImage) );	// so the renderer can check it
 		}
@@ -855,16 +845,6 @@ qboolean CM_SameMap(const char *server)
 	return qtrue;
 }
 
-qboolean CM_HasTerrain(void)
-{
-	if (cmg.landScape)
-	{
-		return qtrue;
-	}
-
-	return qfalse;
-}
-
 /*
 ==================
 CM_ClearMap
@@ -875,23 +855,6 @@ void CM_ClearMap( void )
 	int		i;
 
 	CM_OrOfAllContentsFlagsInMap = CONTENTS_BODY;
-
-#if !defined(BSPC)
-	CM_ShutdownShaderProperties();
-//	MAT_Shutdown();
-#endif
-
-	if (TheRandomMissionManager)
-	{
-		delete TheRandomMissionManager;
-		TheRandomMissionManager = 0;
-	}
-
-	if (cmg.landScape)
-	{
-		delete cmg.landScape;
-		cmg.landScape = 0;
-	}
 
 	memset( &cmg, 0, sizeof( cmg ) );
 	CM_ClearLevelPatches();
@@ -1106,63 +1069,6 @@ void CM_ModelBounds( clipMap_t &cm, clipHandle_t model, vec3_t mins, vec3_t maxs
 	VectorCopy( cmod->mins, mins );
 	VectorCopy( cmod->maxs, maxs );
 }
-
-/*
-===================
-CM_RegisterTerrain
-
-Allows physics to examine the terrain data.
-===================
-*/
-#if !defined(BSPC)
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server)
-{
-	thandle_t		terrainId;
-	CCMLandScape	*ls;
-
-	terrainId = atol(Info_ValueForKey(config, "terrainId"));
-	if(terrainId && cmg.landScape)
-	{
-		// Already spawned so just return
-		ls = cmg.landScape;
-		ls->IncreaseRefCount();
-		return(ls);
-	}
-	// Doesn't exist so create and link in
-	//cmg.numTerrains++;
-	ls = CM_InitTerrain(config, 1, server);
-
-	// Increment for the next instance
-	if (cmg.landScape)
-	{
-		Com_Error(ERR_DROP, "You can't have more than one terrain brush.");
-	}
-	cmg.landScape = ls;
-	return(ls);
-}
-
-/*
-===================
-CM_ShutdownTerrain
-===================
-*/
-
-void CM_ShutdownTerrain( thandle_t terrainId)
-{
-	CCMLandScape	*landscape;
-
-	landscape = cmg.landScape;
-	if (landscape)
-	{
-		landscape->DecreaseRefCount();
-		if(landscape->GetRefCount() <= 0)
-		{
-			delete landscape;
-			cmg.landScape = NULL;
-		}
-	}
-}
-#endif
 
 int CM_LoadSubBSP(const char *name, qboolean clientload)
 {

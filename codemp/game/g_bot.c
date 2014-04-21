@@ -276,7 +276,7 @@ G_LoadArenas
 */
 
 #define MAX_MAPS 256
-#define MAPSBUFSIZE (MAX_MAPS * 32)
+#define MAPSBUFSIZE (MAX_MAPS * 64)
 
 void G_LoadArenas( void ) {
 #if 0

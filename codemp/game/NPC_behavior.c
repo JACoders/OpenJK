@@ -818,14 +818,10 @@ void NPC_BSJump (void)
 			xy *= 0.5;
 
 			assert(xy > 0);
+		}
 
-			VectorMA( p1, xy, dir, apex );
-			apex[2] += apexHeight;
-		}
-		else
-		{
-			VectorSet (apex, p1[0], p1[1], apexHeight);
-		}
+		VectorMA (p1, xy, dir, apex);
+		apex[2] += apexHeight;
 
 		VectorCopy(apex, NPCS.NPC->pos1);
 

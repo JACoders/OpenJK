@@ -566,7 +566,6 @@ typedef enum {
 	SF_GRID,
 	SF_TRIANGLES,
 	SF_POLY,
-	SF_TERRAIN,
 	SF_MD3,
 /*
 Ghoul2 Insert Start
@@ -946,12 +945,6 @@ typedef struct {
 	trRefEntity_t	entity2D;	// currentEntity will point at this when doing 2D rendering
 } backEndState_t;
 
-typedef struct srfTerrain_s
-{
-	surfaceType_t			surfaceType;
-	class CTRLandScape		*landscape;
-} srfTerrain_t;
-
 /*
 ** trGlobals_t 
 **
@@ -1071,7 +1064,6 @@ typedef struct {
 	float					rangedFog;
 
 	float					distanceCull;
-	srfTerrain_t			landScape;
 
 #ifdef _WIN32
 	WinVars_t *wv;

@@ -10,15 +10,9 @@
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
 
-//rwwRMG - added:
 #include "qcommon/cm_local.h"
-#include "qcommon/cm_landscape.h"
 #include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
-
-#ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
-#endif
 
 #ifndef _WIN32
 #include "sys/sys_loadlib.h"
@@ -351,38 +345,8 @@ void CL_Record_f( void ) {
 	// write the checksum feed
 	MSG_WriteLong(&buf, clc.checksumFeed);
 
-	// RMG stuff
-	if ( clc.rmgHeightMapSize )
-	{
-		int i;
-
-		// Height map
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgHeightMapSize );
-		MSG_WriteBits ( &buf, 0, 1 );
-		MSG_WriteData( &buf, clc.rmgHeightMap, clc.rmgHeightMapSize );
-
-		// Flatten map
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgHeightMapSize );
-		MSG_WriteBits ( &buf, 0, 1 );
-		MSG_WriteData( &buf, clc.rmgFlattenMap, clc.rmgHeightMapSize );
-
-		// Seed
-		MSG_WriteLong ( &buf, clc.rmgSeed );
-
-		// Automap symbols
-		MSG_WriteShort ( &buf, (unsigned short)clc.rmgAutomapSymbolCount );
-		for ( i = 0; i < clc.rmgAutomapSymbolCount; i ++ )
-		{
-			MSG_WriteByte ( &buf, (unsigned char)clc.rmgAutomapSymbols[i].mType );
-			MSG_WriteByte ( &buf, (unsigned char)clc.rmgAutomapSymbols[i].mSide );
-			MSG_WriteLong ( &buf, (long)clc.rmgAutomapSymbols[i].mOrigin[0] );
-			MSG_WriteLong ( &buf, (long)clc.rmgAutomapSymbols[i].mOrigin[1] );
-		}
-	}
-	else
-	{
-		MSG_WriteShort ( &buf, 0 );
-	}
+	// Filler for old RMG system.
+	MSG_WriteShort ( &buf, 0 );
 
 	// finished writing the client packet
 	MSG_WriteByte( &buf, svc_EOF );
@@ -1637,6 +1601,7 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->ping = -1;
 	server->game[0] = '\0';
 	server->gameType = 0;
+	server->humans = server->bots = 0;
 }
 
 #define MAX_SERVERSPERPACKET	256
@@ -2423,9 +2388,6 @@ void CL_InitRef( void ) {
 	ri.CM_BoxTrace = CM_BoxTrace;
 	ri.CM_DrawDebugSurface = CM_DrawDebugSurface;
 	ri.CM_CullWorldBox = CM_CullWorldBox;
-	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
-	ri.CM_RegisterTerrain = CM_RegisterTerrain;
-	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
 	ri.CM_ClusterPVS = CM_ClusterPVS;
 	ri.CM_LeafArea = CM_LeafArea;
 	ri.CM_LeafCluster = CM_LeafCluster;
@@ -2869,8 +2831,8 @@ void CL_Shutdown( void ) {
 
 }
 
-qboolean CL_ConnectedToServer( void ) {
-	return (qboolean)( cls.state >= CA_CONNECTED && !clc.demoplaying );
+qboolean CL_ConnectedToRemoteServer( void ) {
+	return (qboolean)( com_sv_running && !com_sv_running->integer && cls.state >= CA_CONNECTED && !clc.demoplaying );
 }
 
 static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
@@ -2890,6 +2852,8 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 			server->trueJedi = atoi(Info_ValueForKey(info, "truejedi" ));
 			server->weaponDisable = atoi(Info_ValueForKey(info, "wdisable" ));
 			server->forceDisable = atoi(Info_ValueForKey(info, "fdisable" ));
+			server->humans = atoi( Info_ValueForKey( info, "g_humanplayers" ) );
+			server->bots = atoi( Info_ValueForKey( info, "bots" ) );
 //			server->pure = (qboolean)atoi(Info_ValueForKey(info, "pure" ));
 		}
 		server->ping = ping;
@@ -3246,28 +3210,37 @@ CL_GlobalServers_f
 void CL_GlobalServers_f( void ) {
 	netadr_t	to;
 	int			count, i, masterNum;
-	char		command[1024];
+	char		command[1024], *masteraddress;
 
-	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > 1)
+	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS - 1)
 	{
-		Com_Printf("usage: globalservers <master# 0-1> <protocol> [keywords]\n");
+		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS - 1);
+		return;
+	}
+
+	Com_sprintf( command, sizeof(command), "sv_master%d", masterNum + 1 );
+	masteraddress = Cvar_VariableString( command );
+
+	if ( !*masteraddress )
+	{
+		Com_Printf( "CL_GlobalServers_f: Error: No master server address given.\n" );
 		return;
 	}
 
 	// reset the list, waiting for response
 	// -1 is used to distinguish a "no response"
 
-	i = NET_StringToAdr(MASTER_SERVER_NAME, &to);
+	i = NET_StringToAdr( masteraddress, &to );
 
 	if (!i)
 	{
-		Com_Printf("CL_GlobalServers_f: Error: could not resolve address of master %s\n", MASTER_SERVER_NAME);
+		Com_Printf( "CL_GlobalServers_f: Error: could not resolve address of master %s\n", masteraddress );
 		return;
 	}
 	to.type = NA_IP;
 	to.port = BigShort(PORT_MASTER);
 
-	Com_Printf("Requesting servers from the master %s (%s)...\n", MASTER_SERVER_NAME, NET_AdrToString(to));
+	Com_Printf( "Requesting servers from the master %s (%s)...\n", masteraddress, NET_AdrToString( to ) );
 
 	cls.numglobalservers = -1;
 	cls.pingUpdateSource = AS_GLOBAL;

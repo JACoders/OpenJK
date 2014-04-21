@@ -123,10 +123,12 @@ static void UI_LoadArenasFromFile( char *filename ) {
 UI_LoadArenas
 ===============
 */
+
+#define MAPSBUFSIZE (MAX_MAPS * 64)
 void UI_LoadArenas( void ) {
 	int			numdirs;
-	char		filename[128];
-	char		dirlist[1024];
+	char		filename[MAX_QPATH];
+	char		dirlist[MAPSBUFSIZE];
 	char*		dirptr;
 	int			i, n;
 	int			dirlen;
@@ -136,7 +138,7 @@ void UI_LoadArenas( void ) {
 	uiInfo.mapCount = 0;
 
 	// get all arenas from .arena files
-	numdirs = trap->FS_GetFileList("scripts", ".arena", dirlist, 1024 );
+	numdirs = trap->FS_GetFileList( "scripts", ".arena", dirlist, ARRAY_LEN( dirlist ) );
 	dirptr  = dirlist;
 	for (i = 0; i < numdirs; i++, dirptr += dirlen+1) {
 		dirlen = strlen(dirptr);
@@ -164,6 +166,8 @@ void UI_LoadArenas( void ) {
 		if( *type ) {
 			if( strstr( type, "ffa" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_FFA);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_TEAM);
+				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_JEDIMASTER);
 			}
 			if( strstr( type, "holocron" ) ) {
 				uiInfo.mapList[uiInfo.mapCount].typeBits |= (1 << GT_HOLOCRON);

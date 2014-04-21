@@ -181,7 +181,6 @@ void SV_Startup( void ) {
 }
 
 qboolean CM_SameMap(const char *server);
-qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
 /*
@@ -221,10 +220,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	if (!CM_SameMap(server))
 	{ //rww - only clear if not loading the same map
-		CM_ClearMap();
-	}
-	else if (CM_HasTerrain())
-	{ //always clear when going between maps with terrain
 		CM_ClearMap();
 	}
 

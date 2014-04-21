@@ -176,10 +176,6 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
 		"${MPDir}/qcommon/q_platform.h"
-		"${MPDir}/qcommon/chash.h"
-		"${MPDir}/qcommon/cm_draw.cpp"
-		"${MPDir}/qcommon/cm_draw.h"
-		"${MPDir}/qcommon/cm_landscape.h"
 		"${MPDir}/qcommon/cm_load.cpp"
 		"${MPDir}/qcommon/cm_local.h"
 		"${MPDir}/qcommon/cm_patch.cpp"
@@ -187,11 +183,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_polylib.cpp"
 		"${MPDir}/qcommon/cm_polylib.h"
 		"${MPDir}/qcommon/cm_public.h"
-		"${MPDir}/qcommon/cm_randomterrain.cpp"
-		"${MPDir}/qcommon/cm_randomterrain.h"
-		"${MPDir}/qcommon/cm_shader.cpp"
-		"${MPDir}/qcommon/cm_terrain.cpp"
-		"${MPDir}/qcommon/cm_terrainmap.h"
 		"${MPDir}/qcommon/cm_test.cpp"
 		"${MPDir}/qcommon/cm_trace.cpp"
 		"${MPDir}/qcommon/cmd.cpp"
@@ -269,36 +260,6 @@ if(BuildMPEngine OR BuildMPDed)
 		)
 	source_group("icarus" FILES ${MPEngineAndDedIcarusFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedIcarusFiles})
-
-	set(MPEngineAndDedRmgFiles
-		"${MPDir}/RMG/RM_Area.cpp"
-		"${MPDir}/RMG/RM_Area.h"
-		"${MPDir}/RMG/RM_Headers.h"
-		"${MPDir}/RMG/RM_Instance.cpp"
-		"${MPDir}/RMG/RM_Instance.h"
-		"${MPDir}/RMG/RM_Instance_BSP.cpp"
-		"${MPDir}/RMG/RM_Instance_BSP.h"
-		"${MPDir}/RMG/RM_Instance_Group.cpp"
-		"${MPDir}/RMG/RM_Instance_Group.h"
-		"${MPDir}/RMG/RM_Instance_Random.cpp"
-		"${MPDir}/RMG/RM_Instance_Random.h"
-		"${MPDir}/RMG/RM_Instance_Void.cpp"
-		"${MPDir}/RMG/RM_Instance_Void.h"
-		"${MPDir}/RMG/RM_InstanceFile.cpp"
-		"${MPDir}/RMG/RM_InstanceFile.h"
-		"${MPDir}/RMG/RM_Manager.cpp"
-		"${MPDir}/RMG/RM_Manager.h"
-		"${MPDir}/RMG/RM_Mission.cpp"
-		"${MPDir}/RMG/RM_Mission.h"
-		"${MPDir}/RMG/RM_Objective.cpp"
-		"${MPDir}/RMG/RM_Objective.h"
-		"${MPDir}/RMG/RM_Path.cpp"
-		"${MPDir}/RMG/RM_Path.h"
-		"${MPDir}/RMG/RM_Terrain.cpp"
-		"${MPDir}/RMG/RM_Terrain.h"
-		)
-	source_group("rmg" FILES ${MPEngineAndDedRmgFiles})
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedRmgFiles})
 
 	set(MPEngineAndDedServerFiles
 		"${MPDir}/server/NPCNav/navigator.cpp"
@@ -448,13 +409,10 @@ if(BuildMPEngine)
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineClientFiles})
 
 	set(MPEngineCommonFiles
-		"${MPDir}/qcommon/cm_terrainmap.cpp"
-		"${MPDir}/qcommon/CNetProfile.cpp"
 		"${MPDir}/qcommon/exe_headers.cpp"
 		"${MPDir}/qcommon/exe_headers.h"
 		"${MPDir}/qcommon/hstring.cpp"
 		"${MPDir}/qcommon/hstring.h"
-		"${MPDir}/qcommon/INetProfile.h"
 		)
 	source_group("common" FILES ${MPEngineCommonFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineCommonFiles})
@@ -582,8 +540,6 @@ if(BuildMPDed)
 	set(MPDedicatedRendererFiles
 		"${MPDir}/ghoul2/G2_gore.cpp"
 		"${MPDir}/rd-common/mdx_format.h"
-		"${MPDir}/rd-common/tr_image_manipulation.cpp"
-		"${MPDir}/rd-common/tr_image_png.cpp"
 		"${MPDir}/rd-common/tr_public.h"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
@@ -601,32 +557,6 @@ if(BuildMPDed)
 		"${MPDir}/rd-dedicated/tr_skin.cpp")
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
-
-	if(UseInternalPNG)
-		set(MPDedLibPngFiles
-			"${OpenJKLibDir}/libpng/png.c"
-			"${OpenJKLibDir}/libpng/pngerror.c"
-			"${OpenJKLibDir}/libpng/pngget.c"
-			"${OpenJKLibDir}/libpng/pngmem.c"
-			"${OpenJKLibDir}/libpng/pngpread.c"
-			"${OpenJKLibDir}/libpng/pngread.c"
-			"${OpenJKLibDir}/libpng/pngrio.c"
-			"${OpenJKLibDir}/libpng/pngrtran.c"
-			"${OpenJKLibDir}/libpng/pngrutil.c"
-			"${OpenJKLibDir}/libpng/pngset.c"
-			"${OpenJKLibDir}/libpng/pngtrans.c"
-			"${OpenJKLibDir}/libpng/pngwio.c"
-			"${OpenJKLibDir}/libpng/pngwrite.c"
-			"${OpenJKLibDir}/libpng/pngwtran.c"
-			"${OpenJKLibDir}/libpng/pngwutil.c")
-		source_group("libpng" FILES ${MPDedLibPngFiles})
-		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} "${OpenJKLibDir}/libpng")
-		set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
-	else(UseInternalPNG)
-		find_package(PNG REQUIRED)
-		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} ${PNG_INCLUDE_DIR})
-		set(MPDedLibraries ${MPDedLibraries} ${PNG_LIBRARIES})
-	endif(UseInternalPNG)
 
 	set(MPDedNullFiles
 		"${MPDir}/null/null_client.cpp"

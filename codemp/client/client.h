@@ -219,14 +219,6 @@ typedef struct clientConnection_s {
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
-
-	//rwwRMG - added:
-	int					rmgSeed;
-	int					rmgHeightMapSize;
-	unsigned char		rmgHeightMap[MAX_HEIGHTMAP_SIZE];
-	unsigned char		rmgFlattenMap[MAX_HEIGHTMAP_SIZE];
-	rmAutomapSymbol_t	rmgAutomapSymbols[MAX_AUTOMAP_SYMBOLS];
-	int					rmgAutomapSymbolCount;
 } clientConnection_t;
 
 extern	clientConnection_t clc;
@@ -264,6 +256,7 @@ typedef struct serverInfo_s {
 	int			trueJedi;
 	int			weaponDisable;
 	int			forceDisable;
+	int			humans, bots;
 } serverInfo_t;
 
 typedef struct clientStatic_s {
