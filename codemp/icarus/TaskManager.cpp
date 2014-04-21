@@ -2,19 +2,12 @@
 //
 //	-- jweier
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-// this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
 
-
-
 #include <assert.h>
+#include "server/server.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
-
-#include "server/server.h"
 
 /*
 =================================================

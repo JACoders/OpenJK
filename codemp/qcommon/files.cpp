@@ -5,8 +5,7 @@
  *
  *****************************************************************************/
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 #ifndef DEDICATED
 #ifndef FINAL_BUILD

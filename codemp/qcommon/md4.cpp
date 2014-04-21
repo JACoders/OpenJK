@@ -1,7 +1,4 @@
 /* GLOBAL.H - RSAREF types and constants */
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "q_shared.h"
 #include "qcommon.h"
 

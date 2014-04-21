@@ -1,6 +1,5 @@
 // cl_cgameapi.cpp  -- client system interaction with client game
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/cm_public.h"
 #include "qcommon/RoffSystem.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/timing.h"

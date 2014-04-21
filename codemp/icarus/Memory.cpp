@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "icarus.h"
 
 // leave these two as standard mallocs for the moment, there's something weird happening in ICARUS...

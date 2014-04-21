@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"

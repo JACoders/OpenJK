@@ -2,7 +2,6 @@
 
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 
-#include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
 
 //============================================================================

@@ -2,8 +2,6 @@
 
 // snd_local.h -- private sound definations
 
-#define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
-
 #include "snd_public.h"
 #include "mp3code/mp3struct.h"
 
@@ -11,8 +9,8 @@
 #ifdef _WIN32
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
-#include "eax\eax.h"
-#include "eax\eaxman.h"
+#include "eax/eax.h"
+#include "eax/eaxman.h"
 /*#elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
@@ -21,7 +19,7 @@
 #include <AL/alc.h>*/
 #endif
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
-void S_AL_MuteAllSounds(sboolean bMute);
+void S_AL_MuteAllSounds(qboolean bMute);
 
 
 //from SND_AMBIENT
@@ -53,8 +51,8 @@ typedef enum
 
 typedef struct sfx_s {
 	short			*pSoundData;
-	sboolean		bDefaultSound;			// couldn't be loaded, so use buzz
-	sboolean		bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
+	qboolean		bDefaultSound;			// couldn't be loaded, so use buzz
+	qboolean		bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
 	SoundCompressionMethod_t eSoundCompressionMethod;
 	MP3STREAM		*pMP3StreamHeader;		// NULL ptr unless this sfx_t is an MP3. Use Z_Malloc and Z_Free
 	int 			iSoundLengthInSamples;	// length in samples, always kept as 16bit now so this is #shorts (watch for stereo later for music?)
@@ -102,7 +100,7 @@ typedef struct STREAMINGBUFFER_s {
 
 typedef struct channel_s {
 // back-indented fields new in TA codebase, will re-format when MP3 code finished -ste
-// note: field missing in TA: sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
+// note: field missing in TA: qboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 //
 	unsigned int startSample;	// START_SAMPLE_IMMEDIATE = set immediately on next mix
 	int			entnum;			// to allow overriding a specific sound
@@ -114,9 +112,9 @@ typedef struct channel_s {
 
 	vec3_t		origin;			// only use if fixed_origin is set
 
-	sboolean	fixed_origin;	// use origin instead of fetching entnum's origin
+	qboolean	fixed_origin;	// use origin instead of fetching entnum's origin
 	sfx_t		*thesfx;		// sfx structure
-	sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
+	qboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 	//
 	MP3STREAM	MP3StreamHeader;
 	byte		MP3SlidingDecodeBuffer[50000/*12000*/];	// typical back-request = -3072, so roughly double is 6000 (safety), then doubled again so the 6K pos is in the middle of the buffer)
@@ -210,7 +208,7 @@ extern cvar_t	*s_doppler;
 
 wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength);
 
-sboolean S_LoadSound( sfx_t *sfx );
+qboolean S_LoadSound( sfx_t *sfx );
 
 
 void S_PaintChannels(int endtime);

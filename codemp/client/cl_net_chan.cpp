@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client.h"
 
 // TTimo: unused, commenting out to make gcc happy

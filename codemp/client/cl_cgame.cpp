@@ -1,7 +1,4 @@
 // cl_cgame.c  -- client system interaction with client game
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "botlib/botlib.h"

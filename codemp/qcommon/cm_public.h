@@ -60,3 +60,6 @@ void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *poin
 const char *CM_GetShaderText(const char *key);
 void CM_FreeShaderText(void);
 void CM_LoadShaderText(qboolean forceReload);
+
+// cm_trace.cpp
+bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);

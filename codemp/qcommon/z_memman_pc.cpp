@@ -1,8 +1,5 @@
 // Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client/client.h" // hi i'm bad
 
 ////////////////////////////////////////////////

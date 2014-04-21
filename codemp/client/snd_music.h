@@ -4,6 +4,8 @@
 //
 //
 
+#include "qcommon/qcommon.h"
+
 // if you change this enum, you MUST update the #defines below
 typedef enum
 {
@@ -43,14 +45,14 @@ typedef enum
 
 
 void		Music_SetLevelName			( const char *psLevelName );
-sboolean	Music_DynamicDataAvailable	( const char *psDynamicMusicLabel );
+qboolean	Music_DynamicDataAvailable	( const char *psDynamicMusicLabel );
 const char *Music_GetFileNameForState	( MusicState_e eMusicState );
-sboolean	Music_StateIsTransition		( MusicState_e eMusicState );
-sboolean	Music_StateCanBeInterrupted	( MusicState_e eMusicState, MusicState_e eProposedMusicState );
+qboolean	Music_StateIsTransition		( MusicState_e eMusicState );
+qboolean	Music_StateCanBeInterrupted	( MusicState_e eMusicState, MusicState_e eProposedMusicState );
 float		Music_GetRandomEntryTime	( MusicState_e eMusicState );
 
-sboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMusicState, MusicState_e	*peTransition = NULL, float *pfNewTrackEntryTime = NULL);
+qboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMusicState, MusicState_e	*peTransition = NULL, float *pfNewTrackEntryTime = NULL);
 
-const char *Music_BaseStateToString		( MusicState_e eMusicState, sboolean bDebugPrintQuery = qfalse);
+const char *Music_BaseStateToString		( MusicState_e eMusicState, qboolean bDebugPrintQuery = qfalse);
 
 //////////////// eof /////////////////

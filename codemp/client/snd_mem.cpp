@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // snd_mem.c: sound caching
 
 #include "snd_local.h"
@@ -294,8 +291,8 @@ char *Filename_WithoutExt(const char *psFilename)
 int iFilesFound;
 int iFilesUpdated;
 int iErrors;
-sboolean qbForceRescan;
-sboolean qbForceStereo;
+qboolean qbForceRescan;
+qboolean qbForceStereo;
 string strErrors;
 
 void R_CheckMP3s( const char *psDir )
@@ -338,7 +335,7 @@ void R_CheckMP3s( const char *psDir )
 
 			// do NOT check 'qbForceRescan' here as an opt, because we need to actually fill in 'pTAG' if there is one...
 			//
-			sboolean qbTagNeedsUpdating = (/* qbForceRescan || */ !MP3_ReadSpecialTagInfo(pbData, iSize, &pTAG))?qtrue:qfalse;
+			qboolean qbTagNeedsUpdating = (/* qbForceRescan || */ !MP3_ReadSpecialTagInfo(pbData, iSize, &pTAG))?qtrue:qfalse;
 
 			if (pTAG == NULL || qbTagNeedsUpdating || qbForceRescan)
 			{
@@ -563,7 +560,7 @@ void S_MP3_CalcVols_f( void )
 // returns qfalse if failed to load, else fills in *pData
 //
 extern	cvar_t	*com_buildScript;
-static sboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pData, int *piSize, int iNameStrlen)
+static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pData, int *piSize, int iNameStrlen)
 {
 	char *psVoice = strstr(psFilename,"chars");
 	if (psVoice)
@@ -692,7 +689,7 @@ static sboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 //	they'd have noticed, but we therefore need to stop other levels using those. "sound/ambience" I can check for,
 //	but doors etc could be anything. Sigh...)
 //
-static sboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
+static qboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 {
 	static const char *psAllowedDirs[] =
 	{
@@ -720,7 +717,7 @@ of a forced fallback of a player specific sound	(or of a wav/mp3 substitution no
 ==============
 */
 qboolean gbInsideLoadSound = qfalse;
-static sboolean S_LoadSound_Actual( sfx_t *sfx )
+static qboolean S_LoadSound_Actual( sfx_t *sfx )
 {
 	byte	*data;
 	short	*samples;
@@ -945,11 +942,11 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 // wrapper function for above so I can guarantee that we don't attempt any audio-dumping during this call because
 //	of a z_malloc() fail recovery...
 //
-sboolean S_LoadSound( sfx_t *sfx )
+qboolean S_LoadSound( sfx_t *sfx )
 {
 	gbInsideLoadSound = qtrue;	// !!!!!!!!!!!!!
 
-		sboolean bReturn = S_LoadSound_Actual( sfx );
+		qboolean bReturn = S_LoadSound_Actual( sfx );
 
 	gbInsideLoadSound = qfalse;	// !!!!!!!!!!!!!
 

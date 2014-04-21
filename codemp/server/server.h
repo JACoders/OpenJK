@@ -66,10 +66,6 @@ typedef struct server_s {
 	time_t			realMapTimeStarted;	// time the current map was started
 } server_t;
 
-
-
-
-
 typedef struct clientSnapshot_s {
 	int				areabytes;
 	byte			areabits[MAX_MAP_AREA_BYTES];		// portalarea visibility bits

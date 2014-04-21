@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include <float.h>
 
 #include "client/snd_local.h"
@@ -368,7 +365,7 @@ void SNDDMA_Activate( qboolean bAppActive )
 {
 	if (s_UseOpenAL)
 	{
-		S_AL_MuteAllSounds(!bAppActive);
+		S_AL_MuteAllSounds((qboolean)!bAppActive);
 	}
 
 	if ( !pDS ) {
