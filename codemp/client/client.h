@@ -373,6 +373,8 @@ extern	cvar_t	*cl_timedemo;
 extern	cvar_t	*cl_aviFrameRate;
 extern	cvar_t	*cl_aviMotionJpeg;
 
+extern	cvar_t	*cl_forceavidemo;
+
 extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_allowDownload;
