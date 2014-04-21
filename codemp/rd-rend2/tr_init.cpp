@@ -1757,7 +1757,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.InitializeWireframeAutomap = stub_InitializeWireframeAutomap;
 	re.AddWeatherZone = stub_RE_AddWeatherZone;
 	re.WorldEffectCommand = stub_RE_WorldEffectCommand;
-	// RE_InitRendererTerrain
 	re.RegisterMedia_LevelLoadBegin = C_LevelLoadBegin;
 	re.RegisterMedia_LevelLoadEnd = C_LevelLoadEnd;
 	re.RegisterMedia_GetLevel = C_GetLevel;
@@ -1868,13 +1867,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	/*
 	Ghoul2 Insert End
 	*/
-
-	re.LoadDataImage						= R_LoadDataImage;
-	re.InvertImage							= R_InvertImage;
-	re.Resample								= R_Resample;
-	re.LoadImageJA							= R_LoadImage;
-	//re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.SavePNG								= RE_SavePNG;
 
 	return &re;
 }
