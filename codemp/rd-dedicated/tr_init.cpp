@@ -508,14 +508,12 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	tr.registered = qfalse;
 }
 
+static void G2API_BoltMatrixReconstruction( qboolean reconstruct ) { gG2_GBMNoReconstruct = (qboolean)!reconstruct; }
+static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod = spMethod; }
+
 extern void R_SVModelInit( void ); //tr_model.cpp
 extern qboolean gG2_GBMNoReconstruct;
 extern qboolean gG2_GBMUseSPMethod;
-static void G2API_BoltMatrixReconstruction( qboolean reconstruct ) { gG2_GBMNoReconstruct = (qboolean)!reconstruct; }
-static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod = spMethod; }
-extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
-extern void R_InvertImage(byte *data, int width, int height, int depth);
-extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 extern qhandle_t RE_RegisterServerSkin( const char *name );
 
 /*
