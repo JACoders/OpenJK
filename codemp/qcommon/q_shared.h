@@ -3,7 +3,6 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
-
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 

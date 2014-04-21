@@ -1,8 +1,5 @@
 // Ambient Sound System (ASS!)
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #ifdef _MSC_VER
 #pragma warning ( disable : 4710 )	//not inlined
 #endif
@@ -595,7 +592,7 @@ Parses an individual set group out of a set file buffer
 -------------------------
 */
 
-static sboolean AS_ParseSet( int setID, CSetGroup *sg )
+static qboolean AS_ParseSet( int setID, CSetGroup *sg )
 {
 	ambientSet_t	*set;
 	const char		*name;
@@ -705,7 +702,7 @@ Opens and parses a sound set file
 -------------------------
 */
 
-static sboolean AS_ParseFile( const char *filename, CSetGroup *sg )
+static qboolean AS_ParseFile( const char *filename, CSetGroup *sg )
 {
 	//Open the file and read the information from it
 	parseSize = FS_ReadFile( filename, (void **) &parseBuffer );

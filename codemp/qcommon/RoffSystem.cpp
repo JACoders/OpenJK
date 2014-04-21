@@ -1,8 +1,5 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "RoffSystem.h"
-//#include "client/client.h"
+
 #ifndef DEDICATED
 #include "client/cl_cgameapi.h"
 #endif

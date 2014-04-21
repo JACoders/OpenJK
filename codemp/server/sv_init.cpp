@@ -1,11 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
-/*
-Ghoul2 Insert Start
-*/
 #include "ghoul2/G2.h"
+#include "qcommon/cm_public.h"
 #include "qcommon/MiniHeap.h"
 #include "qcommon/stringed_ingame.h"
 #include "sv_gameapi.h"

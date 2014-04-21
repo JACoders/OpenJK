@@ -1,10 +1,8 @@
 // common.c -- misc functions used in client and server
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
+#include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
 

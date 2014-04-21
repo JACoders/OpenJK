@@ -1,11 +1,8 @@
-
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined
  * by the location of a node within a doubly-linked list */
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
+#include "qcommon/qcommon.h"
 
 static int			bloc = 0;
 

@@ -1,9 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+// tr_shader.c -- this file deals with the parsing and definition of shaders
 
 #include "tr_local.h"
-
-// tr_shader.c -- this file deals with the parsing and definition of shaders
 
 #define USE_NEW_SHADER_HASH
 

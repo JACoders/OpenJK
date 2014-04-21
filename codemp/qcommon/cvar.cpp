@@ -1,9 +1,8 @@
 // cvar.c -- dynamic variable tracking
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
 #include <vector>
 #include <algorithm>
+#include "qcommon/qcommon.h"
 
 typedef std::vector<cvar_t *> cvarvec_t;
 

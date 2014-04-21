@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // ICARUS Engine Interface File
 //
 //	This file is the only section of the ICARUS systems that

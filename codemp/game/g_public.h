@@ -5,6 +5,8 @@
 
 // g_public.h -- game module information visible to server
 
+#include "qcommon/q_shared.h"
+
 #define Q3_INFINITE			16777216
 
 #define	GAME_API_VERSION	1

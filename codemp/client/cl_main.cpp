@@ -1,18 +1,15 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // cl_main.c  -- client main loop
 
 #include "client.h"
-#include "qcommon/stringed_ingame.h"
+
 #include <limits.h>
-#include "snd_local.h"
+#include "ghoul2/G2.h"
+#include "qcommon/cm_public.h"
+#include "qcommon/MiniHeap.h"
+#include "qcommon/stringed_ingame.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
-
-#include "qcommon/cm_local.h"
-#include "ghoul2/G2.h"
-#include "qcommon/MiniHeap.h"
+#include "snd_local.h"
 
 #ifndef _WIN32
 #include "sys/sys_loadlib.h"

@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "win_local.h"
 #include <lmerr.h>
 #include <lmcons.h>
@@ -13,6 +10,7 @@
 #include <conio.h>
 #include <wincrypt.h>
 #include <shlobj.h>
+#include "qcommon/qcommon.h"
 
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };

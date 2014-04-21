@@ -1,8 +1,3 @@
-
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-
 /*
 
 packet header
@@ -25,6 +20,8 @@ channel matches even if the IP port differs.  The IP port should be updated
 to the new value before sending out any replies.
 
 */
+
+#include "qcommon/qcommon.h"
 
 #define	MAX_PACKETLEN			1400		// max size of a network packet
 #define	FRAGMENT_SIZE			(MAX_PACKETLEN - 100)

@@ -1,10 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // this is only used for visualization tools in cm_ debug functions
-
-
 #include "cm_local.h"
+#include "qcommon/qcommon.h"
 
 
 // counters are only bumped when running single threaded,

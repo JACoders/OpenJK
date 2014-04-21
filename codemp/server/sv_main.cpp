@@ -1,12 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
 
-//rww - RAGDOLL_BEGIN
 #include "ghoul2/ghoul2_shared.h"
-//rww - RAGDOLL_END
-
 #include "sv_gameapi.h"
 
 serverStatic_t	svs;				// persistant server info

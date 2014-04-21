@@ -403,15 +403,6 @@ if(BuildMPEngine)
 	source_group("client" FILES ${MPEngineClientFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineClientFiles})
 
-	set(MPEngineCommonFiles
-		"${MPDir}/qcommon/exe_headers.cpp"
-		"${MPDir}/qcommon/exe_headers.h"
-		"${MPDir}/qcommon/hstring.cpp"
-		"${MPDir}/qcommon/hstring.h"
-		)
-	source_group("common" FILES ${MPEngineCommonFiles})
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineCommonFiles})
-
 	set(MPEngineRatlFiles
 		"${MPDir}/Ratl/bits_vs.h"
 		"${MPDir}/Ratl/ratl_common.h"

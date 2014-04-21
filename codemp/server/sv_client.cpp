@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"

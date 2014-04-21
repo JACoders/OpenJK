@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "cm_local.h"
 
 // always use bbox vs. bbox collision and never capsule vs. bbox or vice versa

@@ -1,9 +1,7 @@
 // sv_bot.c
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
 #include "botlib/botlib.h"
+#include "qcommon/cm_public.h"
 #include "server/sv_gameapi.h"
 
 typedef struct bot_debugpoly_s

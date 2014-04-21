@@ -1,7 +1,4 @@
 // tr_main.c -- main control flow for each frame
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "tr_local.h"
 #include "ghoul2/g2_local.h"
 // Yeah, this might be kind of bad, but no linux version is planned so far :-) - AReis
