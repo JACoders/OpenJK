@@ -105,24 +105,15 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 	# qcommon files
 	set(SPEngineCommonFiles
-		"${SPDir}/qcommon/cm_draw.cpp"
 		"${SPDir}/qcommon/cm_load.cpp"
 		"${SPDir}/qcommon/cm_patch.cpp"
 		"${SPDir}/qcommon/cm_polylib.cpp"
-		"${SPDir}/qcommon/cm_randomterrain.cpp"
-		"${SPDir}/qcommon/cm_shader.cpp"
-		"${SPDir}/qcommon/cm_terrain.cpp"
-		"${SPDir}/qcommon/cm_terrainmap.cpp"
 		"${SPDir}/qcommon/cm_test.cpp"
 		"${SPDir}/qcommon/cm_trace.cpp"
-		"${SPDir}/qcommon/cm_draw.h"
-		"${SPDir}/qcommon/cm_landscape.h"
 		"${SPDir}/qcommon/cm_local.h"
 		"${SPDir}/qcommon/cm_patch.h"
 		"${SPDir}/qcommon/cm_polylib.h"
 		"${SPDir}/qcommon/cm_public.h"
-		"${SPDir}/qcommon/cm_randomterrain.h"
-		"${SPDir}/qcommon/cm_terrainmap.h"
 
 		"${SPDir}/qcommon/cmd.cpp"
 		"${SPDir}/qcommon/common.cpp"
@@ -154,7 +145,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${OpenJKLibDir}/zlib/ioapi.h"
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
-		"${SPDir}/qcommon/chash.h"
 		"${SPDir}/qcommon/qfiles.h"
 		"${SPDir}/qcommon/files.h"
 		"${SPDir}/qcommon/qcommon.h"
@@ -270,38 +260,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		)
 	source_group("ui" FILES ${SPEngineUIFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineUIFiles})
-
-
-	# RMG files
-	set(SPEngineRMGFiles
-		"${SPDir}/RMG/RM_Area.cpp"
-		"${SPDir}/RMG/RM_Instance.cpp"
-		"${SPDir}/RMG/RM_Instance_BSP.cpp"
-		"${SPDir}/RMG/RM_Instance_Group.cpp"
-		"${SPDir}/RMG/RM_Instance_Random.cpp"
-		"${SPDir}/RMG/RM_Instance_Void.cpp"
-		"${SPDir}/RMG/RM_InstanceFile.cpp"
-		"${SPDir}/RMG/RM_Manager.cpp"
-		"${SPDir}/RMG/RM_Mission.cpp"
-		"${SPDir}/RMG/RM_Objective.cpp"
-		"${SPDir}/RMG/RM_Path.cpp"
-		"${SPDir}/RMG/RM_Terrain.cpp"
-		"${SPDir}/RMG/RM_Area.h"
-		"${SPDir}/RMG/RM_Headers.h"
-		"${SPDir}/RMG/RM_Instance.h"
-		"${SPDir}/RMG/RM_Instance_BSP.h"
-		"${SPDir}/RMG/RM_Instance_Group.h"
-		"${SPDir}/RMG/RM_Instance_Random.h"
-		"${SPDir}/RMG/RM_Instance_Void.h"
-		"${SPDir}/RMG/RM_InstanceFile.h"
-		"${SPDir}/RMG/RM_Manager.h"
-		"${SPDir}/RMG/RM_Mission.h"
-		"${SPDir}/RMG/RM_Objective.h"
-		"${SPDir}/RMG/RM_Path.h"
-		"${SPDir}/RMG/RM_Terrain.h"
-		)
-	source_group("rmg" FILES ${SPEngineRMGFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRMGFiles})
 
 
 	# Ghoul2 files

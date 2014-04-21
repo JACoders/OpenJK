@@ -23,8 +23,6 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 #include "../ui/ui_shared.h"
 
-#include "../RMG/RM_Headers.h"
-
 #include "client.h"
 #include "vmachine.h"
 
@@ -400,15 +398,10 @@ void CL_ShutdownCGame( void ) {
 		return;
 	}
 	VM_Call( CG_SHUTDOWN );
-	RM_ShutdownTerrain();
 
 //	VM_Free( cgvm );
 //	cgvm = NULL;
 }
-
-//RMG
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-//RMG
 
 #ifdef JK2_MODE
 /*
@@ -841,30 +834,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		SCR_UpdateScreen();
 		return 0;
 	case CG_RMG_INIT:
-		/*
-		if (!com_sv_running->integer)
-		{	// don't do this if we are connected locally
-			if (!TheRandomMissionManager)
-			{
-				TheRandomMissionManager = new CRMManager;
-			}
-			TheRandomMissionManager->SetLandScape( cmg.landScapes[args[1]] );
-			TheRandomMissionManager->LoadMission(qfalse);
-			TheRandomMissionManager->SpawnMission(qfalse);
-			cmg.landScapes[args[1]]->UpdatePatches();
-		}
-		*/ //this is SP.. I guess we're always the client and server.
-//		cl.mRMGChecksum = cm.landScapes[args[1]]->get_rand_seed();
-		RM_CreateRandomModels(args[1], (const char *)VMA(2));
-		//cmg.landScapes[args[1]]->rand_seed(cl.mRMGChecksum);		// restore it, in case we do a vid restart
-		cmg.landScape->rand_seed(cmg.landScape->get_rand_seed());
-//		TheRandomMissionManager->CreateMap();
 		return 0;
 	case CG_CM_REGISTER_TERRAIN:
-		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
+		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		re.InitRendererTerrain((const char *)VMA(1));
 		return 0;
 
 	case CG_CM_LOADMAP:

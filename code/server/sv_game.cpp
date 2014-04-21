@@ -22,8 +22,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-#include "../RMG/RM_Headers.h"
-
 #include "../qcommon/cm_local.h"
 
 #include "server.h"
@@ -167,14 +165,7 @@ void SV_SetBrushModel( gentity_t *ent, const char *name ) {
 		VectorCopy (maxs, ent->maxs);
 		ent->bmodel = qtrue;
 
-		if (0) //com_RMG && com_RMG->integer //fixme: this test really should be do we have bsp instances
-		{
-			ent->contents = CM_ModelContents( h, sv.mLocalSubBSPIndex );
-		}
-		else
-		{
-			ent->contents = CM_ModelContents( h, -1 );
-		}
+		ent->contents = CM_ModelContents( h, -1 );
 	}
 	else if (name[0] == '#')
 	{
@@ -443,29 +434,6 @@ qboolean G2API_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *par
 */
 //rww - RAGDOLL_END
 
-//This is as good a place as any I guess.
-void RMG_Init(int terrainID)
-{
-	if (!TheRandomMissionManager)
-	{
-		TheRandomMissionManager = new CRMManager;
-	}
-	TheRandomMissionManager->SetLandScape(cmg.landScape);
-	if (TheRandomMissionManager->LoadMission(qtrue))
-	{
-		TheRandomMissionManager->SpawnMission(qtrue);
-	}
-//		cmg.landScapes[args[1]]->UpdatePatches();
-	//sv.mRMGChecksum = cm.landScapes[terrainID]->get_rand_seed();
-}
-
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-
-int InterfaceCM_RegisterTerrain (const char *info)
-{
-	return CM_RegisterTerrain(info, false)->GetTerrainId();
-}
-
 /*
 ===============
 SV_InitGameProgs
@@ -629,8 +597,6 @@ Ghoul2 Insert Start
 	import.G2API_AddSkinGore = re.G2API_AddSkinGore;
 	import.G2API_ClearSkinGore = re.G2API_ClearSkinGore;
 
-	import.RMG_Init = RMG_Init;
-	import.CM_RegisterTerrain = InterfaceCM_RegisterTerrain;
 	import.SetActiveSubBSP = SV_SetActiveSubBSP;
 
 	import.RE_RegisterSkin = re.RegisterSkin;
