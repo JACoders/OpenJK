@@ -29,8 +29,6 @@ This file is part of Jedi Academy.
 	#include "../ghoul2/G2.h"
 #endif
 
-void R_AddTerrainSurfaces(void);
-
 trGlobals_t		tr;
 
 static float	s_flipMatrix[16] = {
@@ -1382,8 +1380,6 @@ void R_GenerateDrawSurfs( void ) {
 	R_AddWorldSurfaces ();
 
 	R_AddPolygonSurfaces();
-
-	R_AddTerrainSurfaces();
 
 	// set the projection matrix with the minimum zfar
 	// now that we have the world bounded

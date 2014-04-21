@@ -35,9 +35,6 @@ glstate_t	glState;
 
 static void GfxInfo_f( void );
 
-void R_TerrainInit(void);
-void R_TerrainShutdown(void);
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
@@ -1435,7 +1432,6 @@ void R_Init( void ) {
 	R_InitImages();
 	R_InitShaders();
 	R_InitSkins();
-	R_TerrainInit();
 	R_ModelInit();
 	R_InitWorldEffects();
 	R_InitFonts();
@@ -1482,7 +1478,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	ri.Cmd_RemoveCommand ("minimize");
 
 	R_ShutdownWorldEffects();
-	R_TerrainShutdown();
 	R_ShutdownFonts();
 
 	if ( tr.registered ) {
@@ -1626,7 +1621,6 @@ void RE_SetRangedFog( float dist )
 bool inServer = false;
 void RE_SVModelInit( void )
 {
-	//ri.CM_ShaderTableCleanup();
 	tr.numModels = 0;
 	tr.numShaders = 0;
 	tr.numSkins = 0;
@@ -1651,7 +1645,6 @@ extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, 
 extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_WorldEffectCommand(const char *command);
 extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
-extern void RE_InitRendererTerrain( const char *info );
 extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 extern void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params);
 extern qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
@@ -1764,16 +1757,9 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString_JK2;
 #endif
 
-	re.R_Resample = R_Resample;
-	re.R_LoadDataImage = R_LoadDataImage;
-	re.R_InvertImage = R_InvertImage;
-	re.SavePNG = RE_SavePNG;
 	re.R_InitWorldEffects = R_InitWorldEffects;
-	re.R_CreateAutomapImage = R_CreateAutomapImage;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;
 	re.R_inPVS = R_inPVS;
-
-	REX(InitRendererTerrain);
 
 	re.tr_distortionAlpha = get_tr_distortionAlpha;
 	re.tr_distortionStretch = get_tr_distortionStretch;

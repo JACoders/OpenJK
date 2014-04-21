@@ -28,8 +28,6 @@ This file is part of Jedi Academy.
 #include <limits.h>
 #include "../ghoul2/G2.h"
 
-#include "../RMG/RM_Headers.h"
-
 #ifndef _WIN32
 #include "../sys/sys_loadlib.h"
 #include "../sys/sys_local.h"
@@ -1088,10 +1086,7 @@ CL_InitRef
 */
 extern qboolean S_FileExists( const char *psFilename );
 extern bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
-extern void ShaderTableCleanup();
-extern void CM_ShutdownTerrain( thandle_t terrainId);
 extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
-extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
 extern cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
 extern CMiniHeap *G2VertSpaceServer;
 static CMiniHeap *GetG2VertSpaceServer( void ) {
@@ -1149,9 +1144,6 @@ void CL_InitRef( void ) {
 	RIT(CM_DeleteCachedMap);
 	RIT(CM_DrawDebugSurface);
 	RIT(CM_PointContents);
-	RIT(CM_RegisterTerrain);
-	RIT(CM_ShutdownTerrain);
-	RIT(CM_TerrainPatchIterate);
 	RIT(Cvar_Get);
 	RIT(Cvar_Set);
 	RIT(Cvar_SetValue);
@@ -1207,7 +1199,6 @@ void CL_InitRef( void ) {
 	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
 
-	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
 	rit.SV_Trace = SV_Trace;
 
 	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
@@ -1258,7 +1249,6 @@ void CL_Init( void ) {
 	cls.realtimeFraction=0.0f;	// fraction of a msec accumulated
 
 	CL_InitInput ();
-	RM_InitTerrain();
 
 	//
 	// register our variables

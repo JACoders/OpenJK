@@ -99,7 +99,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	set(SPRDVanillaMainFiles
 		"${SPDir}/rd-vanilla/glext.h"
 		"${SPDir}/rd-vanilla/qgl.h"
-		"${SPDir}/rd-vanilla/tr_arioche.cpp"
 		"${SPDir}/rd-vanilla/tr_backend.cpp"
 		"${SPDir}/rd-vanilla/tr_bsp.cpp"
 		"${SPDir}/rd-vanilla/tr_cmds.cpp"
@@ -109,7 +108,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/rd-vanilla/tr_ghoul2.cpp"
 		"${SPDir}/rd-vanilla/tr_image.cpp"
 		"${SPDir}/rd-vanilla/tr_init.cpp"
-		"${SPDir}/rd-vanilla/tr_landscape.h"
 		"${SPDir}/rd-vanilla/tr_light.cpp"
 		"${SPDir}/rd-vanilla/tr_local.h"
 		"${SPDir}/rd-vanilla/tr_main.cpp"
@@ -129,7 +127,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/rd-vanilla/tr_subs.cpp"
 		"${SPDir}/rd-vanilla/tr_surface.cpp"
 		"${SPDir}/rd-vanilla/tr_surfacesprites.cpp"
-		"${SPDir}/rd-vanilla/tr_terrain.cpp"
 		"${SPDir}/rd-vanilla/tr_world.cpp"
 		"${SPDir}/rd-vanilla/tr_WorldEffects.cpp"
 		"${SPDir}/rd-vanilla/tr_WorldEffects.h"

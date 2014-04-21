@@ -41,7 +41,6 @@ static	byte		*fileBase;
 int			c_subdivisions;
 int			c_gridVerts;
 
-void R_RMGInit(void);
 //===============================================================================
 
 static void HSVtoRGB( float h, float s, float v, float rgb[3] )

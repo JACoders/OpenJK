@@ -45,7 +45,6 @@ cvar_t	*com_sv_running;
 cvar_t	*com_cl_running;
 cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
 cvar_t	*com_showtrace;
-cvar_t	*com_terrainPhysics;
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
@@ -1139,7 +1138,6 @@ void Com_Init( char *commandLine ) {
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
-		com_terrainPhysics = Cvar_Get ("com_terrainPhysics", "1", CVAR_CHEAT);
 		com_viewlog = Cvar_Get( "viewlog", "0", CVAR_TEMP );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		
@@ -1557,11 +1555,8 @@ void Com_Frame( void ) {
 Com_Shutdown
 =================
 */
-extern void CM_FreeShaderText(void);
 void Com_Shutdown (void) {
 	CM_ClearMap();
-
-	CM_FreeShaderText();
 
 	if (logfile) {
 		FS_FCloseFile (logfile);
