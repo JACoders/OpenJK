@@ -2,11 +2,12 @@
 //
 //  Stuff to parse in special x-fade music format and handle blending etc
 
+#include "qcommon/q_shared.h"
+
 #ifndef _WIN32
 #include <string>
 #endif
 
-#include "qcommon/q_shared.h"
 #include "qcommon/sstring.h"
 
 #ifdef _MSC_VER
