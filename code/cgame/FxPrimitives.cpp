@@ -1883,10 +1883,8 @@ void CPoly::Draw()
 		VectorAdd( mOrigin1, mOrg[i], verts[i].xyz );
 
 		// Assign the same color to each vert
-		verts[i].modulate[0] = mRefEnt.shaderRGBA[0];
-		verts[i].modulate[1] = mRefEnt.shaderRGBA[1];
-		verts[i].modulate[2] = mRefEnt.shaderRGBA[2];
-		verts[i].modulate[3] = mRefEnt.shaderRGBA[3];
+		for ( int k=0; k<4; k++ )
+			verts[i].modulate[k] = mRefEnt.shaderRGBA[k];
 
 		// Copy the ST coords
 		Vector2Copy( mST[i], verts[i].st );
