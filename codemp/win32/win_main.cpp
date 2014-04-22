@@ -764,11 +764,28 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
+static const char *GetErrorString( DWORD error ) {
+	static char buf[MAX_STRING_CHARS];
+	buf[0] = '\0';
+
+	if ( error ) {
+		LPVOID lpMsgBuf;
+		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
+		if ( bufLen ) {
+			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
+			LocalFree( lpMsgBuf );
+		}
+	}
+	return buf;
+}
+
 void Sys_SetProcessorAffinity( void ) {
-	DWORD processMask;
+	DWORD processMask, dummy;
 	HWND handle = CurrentProcess();
 
-	if ( !GetProcessAffinityMask( handle ) )
+	if ( !GetProcessAffinityMask( handle, &dummy, &dummy ) )
 		return;
 
 	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
@@ -778,7 +795,7 @@ void Sys_SetProcessorAffinity( void ) {
 		return;
 
 	if ( !SetProcessAffinityMask( handle, processMask ) )
-		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
+		Com_DPrintf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
 }
 
 /*
