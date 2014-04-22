@@ -764,6 +764,23 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
+void Sys_SetProcessorAffinity( void ) {
+	DWORD processMask;
+	HWND handle = CurrentProcess();
+
+	if ( !GetProcessAffinityMask( handle ) )
+		return;
+
+	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
+		processMask = 1; // set to first core only
+
+	if ( !processMask )
+		return;
+
+	if ( !SetProcessAffinityMask( handle, processMask ) )
+		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
+}
+
 /*
 ================
 Sys_Init

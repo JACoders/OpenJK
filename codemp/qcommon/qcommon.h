@@ -760,6 +760,8 @@ extern	cvar_t	*com_optvehtrace;
 extern	cvar_t	*com_G2Report;
 #endif
 
+extern	cvar_t	*com_affinity;
+
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
 extern	cvar_t	*sv_paused;
@@ -1070,6 +1072,8 @@ void	Sys_FreeFileList( char **fileList );
 
 qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
+
+void Sys_SetProcessorAffinity( void );
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

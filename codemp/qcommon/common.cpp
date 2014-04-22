@@ -44,7 +44,7 @@ cvar_t	*com_unfocused;
 cvar_t	*com_minimized;
 cvar_t  *com_homepath;
 
-static cvar_t *com_affinity;
+cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -1296,7 +1296,7 @@ void Com_Init( char *commandLine ) {
 
 		Sys_Init();
 
-		Com_SetProcessorAffinity();
+		Sys_SetProcessorAffinity();
 
 		// Pick a random port value
 		Com_RandomBytes( (byte*)&qport, sizeof(int) );
