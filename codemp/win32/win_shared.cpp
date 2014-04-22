@@ -261,7 +261,7 @@ static const char *GetErrorString( DWORD error ) {
 
 void Sys_SetProcessorAffinity( void ) {
 	DWORD processMask, dummy;
-	HWND handle = CurrentProcess();
+	HWND handle = GetCurrentProcess();
 
 	if ( !GetProcessAffinityMask( handle, &dummy, &dummy ) )
 		return;
