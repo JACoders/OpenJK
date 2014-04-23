@@ -656,15 +656,6 @@ void trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, cha
 void trap_CG_RegisterSharedMemory(char *memory) {
 	Q_syscall(CG_SET_SHARED_BUFFER, memory);
 }
-int trap_CM_RegisterTerrain(const char *config) {
-	return Q_syscall(CG_CM_REGISTER_TERRAIN, config);
-}
-void trap_RMG_Init(int terrainID, const char *terrainInfo) {
-	Q_syscall(CG_RMG_INIT, terrainID, terrainInfo);
-}
-void trap_RE_InitRendererTerrain( const char *info ) {
-	Q_syscall(CG_RE_INIT_RENDERER_TERRAIN, info);
-}
 void trap_R_WeatherContentsOverride( int contents ) {
 	Q_syscall(CG_R_WEATHER_CONTENTS_OVERRIDE, contents);
 }
@@ -755,12 +746,10 @@ static void TranslateSyscalls( void ) {
 	trap->CM_LoadMap						= trap_CM_LoadMap;
 	trap->CM_NumInlineModels				= trap_CM_NumInlineModels;
 	trap->CM_PointContents					= trap_CM_PointContents;
-	trap->CM_RegisterTerrain				= trap_CM_RegisterTerrain;
 	trap->CM_TempModel						= CGSyscall_CM_TempModel;
 	trap->CM_Trace							= CGSyscall_CM_Trace;
 	trap->CM_TransformedPointContents		= trap_CM_TransformedPointContents;
 	trap->CM_TransformedTrace				= CGSyscall_CM_TransformedTrace;
-	trap->RMG_Init							= trap_RMG_Init;
 	trap->S_AddLocalSet						= trap_S_AddLocalSet;
 	trap->S_AddLoopingSound					= trap_S_AddLoopingSound;
 	trap->S_ClearLoopingSounds				= trap_S_ClearLoopingSounds;
@@ -821,7 +810,6 @@ static void TranslateSyscalls( void ) {
 	trap->R_SetRangedFog					= trap_R_SetRangeFog;
 	trap->R_SetRefractionProperties			= trap_R_SetRefractProp;
 	trap->R_WorldEffectCommand				= trap_R_WorldEffectCommand;
-	trap->RE_InitRendererTerrain			= trap_RE_InitRendererTerrain;
 	trap->WE_AddWeatherZone					= trap_WE_AddWeatherZone;
 	trap->GetCurrentSnapshotNumber			= trap_GetCurrentSnapshotNumber;
 	trap->GetCurrentCmdNumber				= trap_GetCurrentCmdNumber;
