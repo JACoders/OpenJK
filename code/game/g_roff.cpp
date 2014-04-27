@@ -264,11 +264,11 @@ static qboolean G_ValidRoff( roff_hdr2_t *header )
 {
 	if ( !strncmp( header->mHeader, "ROFF", 4 ))
 	{
-		if ( header->mCount > 0 && header->mVersion == ROFF_VERSION2 )
+		if ( LittleLong(header->mVersion) == ROFF_VERSION2 && LittleLong(header->mCount) > 0 )
 		{
 			return qtrue;
 		}
-		else if ( header->mVersion == ROFF_VERSION && ((roff_hdr_t*)header)->mCount > 0.0f )
+		else if ( LittleLong(header->mVersion) == ROFF_VERSION && LittleFloat(((roff_hdr_t*)header)->mCount) > 0.0f )
 		{ // version 1 defines the count as a float, so we best do the count check as a float or we'll get bogus results
 			return qtrue;
 		}
@@ -288,13 +288,15 @@ static void G_FreeRoff(int index)
 static qboolean G_InitRoff( char *file, unsigned char *data )
 {
 	roff_hdr_t *header = (roff_hdr_t *)data;
-	int	count = (int)header->mCount;
+	int	count;
 	int i;
 
 	roffs[num_roffs].fileName = G_NewString( file );
 
-	if ( header->mVersion == ROFF_VERSION )
+	if ( LittleLong(header->mVersion) == ROFF_VERSION )
 	{
+		count = (int)LittleFloat(header->mCount);
+
 		// We are Old School(tm)
 		roffs[num_roffs].type = 1;
 
@@ -315,20 +317,29 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 			move_rotate_t *roff_data = ( move_rotate_t *)&header[1];
 
 			// Copy all of the goods into our ROFF cache
-			for ( int i = 0; i < count; i++, roff_data++, mem++ )
+			for ( i = 0; i < count; i++, roff_data++, mem++ )
 			{
 				// Copy just the delta position and orientation which can be applied to anything at a later point
+#ifdef Q3_BIG_ENDIAN
+				mem->origin_delta[0] = LittleFloat(roff_data->origin_delta[0]);
+				mem->origin_delta[1] = LittleFloat(roff_data->origin_delta[1]);
+				mem->origin_delta[2] = LittleFloat(roff_data->origin_delta[2]);
+				mem->rotate_delta[0] = LittleFloat(roff_data->rotate_delta[0]);
+				mem->rotate_delta[1] = LittleFloat(roff_data->rotate_delta[1]);
+				mem->rotate_delta[2] = LittleFloat(roff_data->rotate_delta[2]);
+#else
 				VectorCopy( roff_data->origin_delta, mem->origin_delta );
 				VectorCopy( roff_data->rotate_delta, mem->rotate_delta );
+#endif
 			}
 			return qtrue;
 		}
 	}
-	else if ( header->mVersion == ROFF_VERSION2 )
+	else if ( LittleLong(header->mVersion) == ROFF_VERSION2 )
 	{
 		// Version 2.0, heck yeah!
 		roff_hdr2_t *hdr = (roff_hdr2_t *)data;
-		count = hdr->mCount;
+		count = LittleLong(hdr->mCount);
 
 		roffs[num_roffs].frames	= count;
 		roffs[num_roffs].data	= (void *) G_Alloc( count * sizeof( move_rotate2_t ));		
@@ -336,9 +347,9 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 
 		if ( mem )
 		{
-			roffs[num_roffs].mFrameTime			= hdr->mFrameRate;
-			roffs[num_roffs].mLerp				= 1000 / hdr->mFrameRate;
-			roffs[num_roffs].mNumNoteTracks		= hdr->mNumNotes;
+			roffs[num_roffs].mFrameTime			= LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mLerp				= 1000 / LittleLong(hdr->mFrameRate);
+			roffs[num_roffs].mNumNoteTracks		= LittleLong(hdr->mNumNotes);
 
 			if (roffs[num_roffs].mFrameTime < 50)
 			{
@@ -354,14 +365,23 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 			// Copy all of the goods into our ROFF cache
 			for ( i = 0; i < count; i++ )
 			{
+#ifdef Q3_BIG_ENDIAN
+				mem[i].origin_delta[0] = LittleFloat(roff_data[i].origin_delta[0]);
+				mem[i].origin_delta[1] = LittleFloat(roff_data[i].origin_delta[1]);
+				mem[i].origin_delta[2] = LittleFloat(roff_data[i].origin_delta[2]);
+				mem[i].rotate_delta[0] = LittleFloat(roff_data[i].rotate_delta[0]);
+				mem[i].rotate_delta[1] = LittleFloat(roff_data[i].rotate_delta[1]);
+				mem[i].rotate_delta[2] = LittleFloat(roff_data[i].rotate_delta[2]);
+#else
 				VectorCopy( roff_data[i].origin_delta, mem[i].origin_delta );
 				VectorCopy( roff_data[i].rotate_delta, mem[i].rotate_delta );
+#endif
 
-				mem[i].mStartNote = roff_data[i].mStartNote;
-				mem[i].mNumNotes = roff_data[i].mNumNotes;
+				mem[i].mStartNote = LittleLong(roff_data[i].mStartNote);
+				mem[i].mNumNotes = LittleLong(roff_data[i].mNumNotes);
 			}
 
-			if ( hdr->mNumNotes )
+			if ( LittleLong(hdr->mNumNotes) )
 			{
 				int		size;
 				char	*ptr, *start;
@@ -369,18 +389,18 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 				ptr = start = (char *)&roff_data[i];
 				size = 0;
 
-				for( i = 0; i < hdr->mNumNotes; i++ )
+				for( i = 0; i < LittleLong(hdr->mNumNotes); i++ )
 				{
 					size += strlen(ptr) + 1;
 					ptr += strlen(ptr) + 1;
 				}
 
 				// ? Get rid of dynamic memory ?
-				roffs[num_roffs].mNoteTrackIndexes = new char *[hdr->mNumNotes];
+				roffs[num_roffs].mNoteTrackIndexes = new char *[LittleLong(hdr->mNumNotes)];
 				ptr = roffs[num_roffs].mNoteTrackIndexes[0] = new char[size];
 				memcpy(roffs[num_roffs].mNoteTrackIndexes[0], start, size);
 
-				for( i = 1; i < hdr->mNumNotes; i++ )
+				for( i = 1; i < LittleLong(hdr->mNumNotes); i++ )
 				{
 					ptr += strlen(ptr) + 1;
 					roffs[num_roffs].mNoteTrackIndexes[i] = ptr;
