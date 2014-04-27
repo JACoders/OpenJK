@@ -872,10 +872,6 @@ void Com_TouchMemory( void );
 void Com_Init( char *commandLine );
 void Com_Frame( void );
 void Com_Shutdown( void );
-//rwwRMG: Inserted:
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
 
 
 /*
