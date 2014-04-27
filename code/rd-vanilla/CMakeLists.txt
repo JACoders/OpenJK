@@ -76,14 +76,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	endif(UseInternalZlib)
 
 	# Misc files
-	set(SPRDVanillaGameFiles
-		"${SPDir}/game/genericparser2.h"
-		"${SPDir}/game/genericparser2.cpp"
-		)
-	source_group("game" FILES ${SPRDVanillaGameFiles})
-	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaGameFiles})
-
-	# Misc files
 	set(SPRDVanillaCommonFiles
 		"${SPDir}/qcommon/matcomp.cpp"
 		"${SPDir}/qcommon/q_math.cpp"

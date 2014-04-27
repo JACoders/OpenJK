@@ -35,6 +35,8 @@ This file is part of Jedi Academy.
 //
 #include "snd_music.h"
 
+#include "../game/genericparser2.h"
+
 extern qboolean S_FileExists( const char *psFilename );
 
 #define sKEY_MUSICFILES	"musicfiles"
