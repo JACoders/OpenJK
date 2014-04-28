@@ -912,7 +912,7 @@ qboolean G_ActivateBehavior (gentity_t *self, int bset )
 		bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
 	}
 
-	if(bSID != -1)
+	if(bSID != (bState_t)-1)
 	{
 		self->NPC->tempBehavior = BS_DEFAULT;
 		self->NPC->behaviorState = bSID;
