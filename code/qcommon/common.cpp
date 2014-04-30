@@ -1366,7 +1366,7 @@ void G2Time_ReportTimers(void);
 void Com_Frame( void ) {
 	try 
 	{
-		int		timeBeforeFirstEvents, timeBeforeServer, timeBeforeEvents, timeBeforeClient, timeAfter;
+		int		timeBeforeFirstEvents = 0, timeBeforeServer = 0, timeBeforeEvents = 0, timeBeforeClient = 0, timeAfter = 0;
 		int		msec, minMsec;
 		static int	lastTime = 0;
 

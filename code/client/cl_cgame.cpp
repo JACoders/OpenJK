@@ -872,7 +872,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_S_STARTSOUND:
 		// stops an ERR_DROP internally if called illegally from game side, but note that it also gets here 
 		//	legally during level start where normally the internal s_soundStarted check would return. So ok to hit this.
-		if (!cls.cgameStarted){
+		if (!cls.cgameStarted) {
 			return 0;	
 		}
 		S_StartSound( (float *) VMA(1), args[2], (soundChannel_t)args[3], args[4] );
@@ -880,7 +880,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_S_UPDATEAMBIENTSET:
 		// stops an ERR_DROP internally if called illegally from game side, but note that it also gets here 
 		//	legally during level start where normally the internal s_soundStarted check would return. So ok to hit this.
-		if (!cls.cgameStarted){
+		if (!cls.cgameStarted) {
 			return 0;
 		}
 		S_UpdateAmbientSet( (const char *) VMA(1), (float *) VMA(2) );
@@ -898,7 +898,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_S_STARTLOCALSOUND:
 		// stops an ERR_DROP internally if called illegally from game side, but note that it also gets here 
 		//	legally during level start where normally the internal s_soundStarted check would return. So ok to hit this.
-		if (!cls.cgameStarted){
+		if (!cls.cgameStarted) {
 			return 0;
 		}
 		S_StartLocalSound( args[1], args[2] );
@@ -909,7 +909,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_S_ADDLOOPINGSOUND:
 		// stops an ERR_DROP internally if called illegally from game side, but note that it also gets here 
 		//	legally during level start where normally the internal s_soundStarted check would return. So ok to hit this.
-		if (!cls.cgameStarted){
+		if (!cls.cgameStarted) {
 			return 0;
 		}
 		S_AddLoopingSound( args[1], (const float *) VMA(2), (const float *) VMA(3), args[4], (soundChannel_t)args[5] );
@@ -1007,16 +1007,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		re.DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 	case CG_R_SETRANGEFOG:
-		// FIXME: Figure out if this is how it's done in MP :S --eez
-		/*if (tr.rangedFog <= 0.0f)
-		{
-			g_oldRangedFog = tr.rangedFog;
-		}
-		tr.rangedFog = VMF(1);
-		if (tr.rangedFog == 0.0f && g_oldRangedFog)
-		{ //restore to previous state if applicable
-			tr.rangedFog = g_oldRangedFog;
-		}*/
 		re.SetRangedFog( VMF( 1 ) );
 		return 0;
 	case CG_R_LA_GOGGLES:

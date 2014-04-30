@@ -975,9 +975,7 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 	gentity_t		*touch[MAX_GENTITIES], *hit;
 	int			i, num;
 	int			contents, c2;
-//	int			startMS, endMS;
 	clipHandle_t	clipHandle;
-	const float		*angles;
 
 #if MEM_DEBUG
 #if SV_TRACE_PROFILE
@@ -988,11 +986,6 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 	}
 #endif
 #endif
-
-	/*
-	startMS = Sys_Milliseconds ();
-	numTraces++;
-	*/
 
 	// get base contents from world
 	contents = CM_PointContents( p, 0 );
@@ -1007,20 +1000,12 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		}
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
-		angles = hit->s.angles;
-		if ( !hit->bmodel ) {
-			angles = vec3_origin;	// boxes don't rotate
-		}
 
 		c2 = CM_TransformedPointContents (p, clipHandle, hit->s.origin, hit->s.angles);
 
 		contents |= c2;
 	}
 
-	/*
-	endMS = Sys_Milliseconds ();
-	timeInTrace += endMS - startMS;
-	*/
 	return contents;
 }
 
