@@ -2115,13 +2115,6 @@ void CL_Frame ( int msec ) {
 
 	cls.realtime += cls.frametime;
 
-#ifdef _DONETPROFILE_
-	if(cls.state==CA_ACTIVE)
-	{
-		ClReadProf().IncTime(cls.frametime);
-	}
-#endif
-
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
