@@ -485,11 +485,6 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// wipe local client state
 	CL_ClearState();
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-	startBytes=msg->readcount;
-#endif
-
 	// a gamestate always marks a server command sequence
 	clc.serverCommandSequence = MSG_ReadLong( msg );
 
@@ -578,10 +573,6 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// Throw away the info for the old RMG system.
 	MSG_ReadShort (msg);
 
-#ifdef _DONETPROFILE_
-	endBytes=msg->readcount;
-//	ClReadProf().AddField("svc_gamestate",endBytes-startBytes);
-#endif
 
 	// parse serverId and other cvars
 	CL_SystemInfoChanged();
@@ -719,16 +710,9 @@ void CL_ParseCommandString( msg_t *msg ) {
 	int		seq;
 	int		index;
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-	startBytes=msg->readcount;
-#endif
 	seq = MSG_ReadLong( msg );
 	s = MSG_ReadString( msg );
-#ifdef _DONETPROFILE_
-	endBytes=msg->readcount;
-	ClReadProf().AddField("svc_serverCommand",endBytes-startBytes);
-#endif
+
 	// see if we have already executed stored it off
 	if ( clc.serverCommandSequence >= seq ) {
 		return;
