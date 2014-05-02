@@ -6,7 +6,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 4
+#define	REF_API_VERSION 5
 
 //
 // these are the functions exported by the refresh module
@@ -292,10 +292,6 @@ typedef struct refimport_s {
 	vm_t *			(*GetCurrentVM)						( void );
 	qboolean		(*CGVMLoaded)						( void );
 	int				(*CGVM_RagCallback)					( int callType );
-
-	// server only stuff
-	void			(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	void			(*SV_SetConfigstring)				( int index, const char *val );
 
 	// ugly win32 backend
 	void *			(*GetWinVars)						( void ); //g_wv
