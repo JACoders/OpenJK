@@ -30,7 +30,7 @@ This file is part of Jedi Academy.
 #include "../win32/win_local.h"
 #endif
 
-#define	REF_API_VERSION		12
+#define	REF_API_VERSION		13
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -91,9 +91,6 @@ typedef struct {
 	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
-
-	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	void				(*SV_SetConfigstring)				( int index, const char *value );
 
 #ifdef _WIN32
 	WinVars_t *			(*GetWinVars)						( void ); //g_wv
