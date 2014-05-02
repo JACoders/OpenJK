@@ -21,7 +21,6 @@ This file is part of Jedi Knight 2.
 
 #include "../../code/client/vmachine.h"
 #include "../game/characters.h"
-#include "cg_lights.h"
 
 #include "../../code/qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
