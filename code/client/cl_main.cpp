@@ -1167,9 +1167,7 @@ void CL_InitRef( void ) {
 	RIT(Hunk_ClearToMark);
 	RIT(SG_Append);
 	RIT(SND_RegisterAudio_LevelLoadEnd);
-	RIT(SV_GetConfigstring);
 	//RIT(SV_PointContents);
-	RIT(SV_SetConfigstring);
 	RIT(SV_Trace);
 	RIT(S_RestartMusic);
 	RIT(Z_Free);
