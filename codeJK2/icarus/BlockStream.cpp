@@ -137,7 +137,7 @@ int CBlockMember::ReadMember( char **stream, int *streamPos )
 		memcpy( m_data, (*stream + *streamPos), m_size );
 #ifdef Q3_BIG_ENDIAN
 		// only TK_INT, TK_VECTOR and TK_FLOAT has to be swapped, but just in case
-		if (m_size == 4 && m_id != CIcarus::TK_STRING && m_id != CIcarus::TK_IDENTIFIER && m_id != CIcarus::TK_CHAR)
+		if (m_size == 4 && m_id != TK_STRING && m_id != TK_IDENTIFIER && m_id != TK_CHAR)
 			*(int *)m_data = LittleLong(*(int *)m_data);
 #endif
 	}
@@ -658,7 +658,8 @@ int CBlockStream::Open( char *buffer, long size )
 		id_header[i] = GetChar();
 	}
 
-	version = LittleFloat(GetFloat());
+	version = GetFloat();
+	version = LittleFloat(version);
 
 	//Check for valid header
 	if ( strcmp( id_header, IBI_HEADER_ID ) )
