@@ -7282,8 +7282,10 @@ static void UI_InsertServerIntoDisplayList(int num, int position) {
 
 	trap->LAN_GetServerInfo( UI_SourceForLAN(), num, info, sizeof(info) );
 
+#if 0
 	if ( !UI_ServerInfoIsValid( info ) ) // don't list servers with invalid info
 		return;
+#endif
 
 	uiInfo.serverStatus.numDisplayServers++;
 	for (i = uiInfo.serverStatus.numDisplayServers; i > position; i--) {
