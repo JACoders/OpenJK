@@ -7238,16 +7238,53 @@ static int UI_HeadCountByColor(void) {
 
 /*
 ==================
+UI_ServerInfoIsValid
+
+Return false if the infostring contains nonprinting characters,
+or if the hostname is blank/undefined
+==================
+*/
+static qboolean UI_ServerInfoIsValid( char *info )
+{
+	char *c;
+	int  len = 0;
+
+	for ( c = info; *c; c++ )
+	{
+		if ( !isprint( *(unsigned char *)c ) )
+			return qfalse;
+	}
+
+	for ( c = Info_ValueForKey( info, "hostname" ); *c; c++ )
+	{
+		if ( isgraph( *(unsigned char *)c ) )
+			len++;
+	}
+
+	if ( len )
+		return qtrue;
+	else
+		return qfalse;
+}
+
+/*
+==================
 UI_InsertServerIntoDisplayList
 ==================
 */
 static void UI_InsertServerIntoDisplayList(int num, int position) {
 	int i;
+	static char info[MAX_STRING_CHARS] = { 0 };
 
 	if (position < 0 || position > uiInfo.serverStatus.numDisplayServers ) {
 		return;
 	}
-	//
+
+	trap->LAN_GetServerInfo( UI_SourceForLAN(), num, info, sizeof(info) );
+
+	if ( !UI_ServerInfoIsValid( info ) ) // don't list servers with invalid info
+		return;
+
 	uiInfo.serverStatus.numDisplayServers++;
 	for (i = uiInfo.serverStatus.numDisplayServers; i > position; i--) {
 		uiInfo.serverStatus.displayServers[i] = uiInfo.serverStatus.displayServers[i-1];
@@ -10273,7 +10310,7 @@ static void UI_StopServerRefresh( void )
 					uiInfo.serverStatus.numPlayersOnServers);
 	count = trap->LAN_GetServerCount(UI_SourceForLAN());
 	if (count - uiInfo.serverStatus.numDisplayServers > 0) {
-		Com_Printf("%d servers not listed due to filters, packet loss, or pings higher than %d\n",
+		Com_Printf("%d servers not listed due to filters, packet loss, invalid info, or pings higher than %d\n",
 						count - uiInfo.serverStatus.numDisplayServers,
 						(int) trap->Cvar_VariableValue("cl_maxPing"));
 	}
