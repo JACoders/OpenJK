@@ -2432,7 +2432,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 				{
 					case ct_16:
 					{
-						sample = LittleShort(current_pos_s[i*100]);
+						sample = current_pos_s[i*100];
 					}
 					break;
 
@@ -2441,7 +2441,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 						const int iIndex = (i*100) + ((offset * /*ch->thesfx->width*/2) - ch->iMP3SlidingDecodeWindowPos);
 						const short* pwSamples = (short*) (ch->MP3SlidingDecodeBuffer + iIndex);
 
-						sample = LittleShort(*pwSamples);
+						sample = *pwSamples;
 					}
 					break;
 
