@@ -1840,6 +1840,9 @@ R_LoadLightGridArray
 */
 void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 	world_t	*w;
+#ifdef Q3_BIG_ENDIAN
+	int		i;
+#endif
 
 	w = &worldData;
 
@@ -1853,6 +1856,11 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 
 	w->lightGridArray = (unsigned short *)Hunk_Alloc( l->filelen, h_low );
 	memcpy( w->lightGridArray, (void *)(fileBase + l->fileofs), l->filelen );
+#ifdef Q3_BIG_ENDIAN
+	for ( i = 0 ; i < w->numGridArrayElements ; i++ ) {
+		w->lightGridArray[i] = LittleShort(w->lightGridArray[i]);
+	}
+#endif
 }
 
 /*
