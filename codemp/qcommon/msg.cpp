@@ -158,13 +158,15 @@ void MSG_WriteBits( msg_t *msg, int value, int bits ) {
 			msg->cursize += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			short temp = value;
+			short *sp = (short *)&msg->data[msg->cursize];
 
-			CopyLittleShort(&msg->data[msg->cursize], &temp);
+			*sp = LittleShort(value);
 			msg->cursize += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			CopyLittleLong(&msg->data[msg->cursize], &value);
+			int *ip = (int *)&msg->data[msg->cursize];
+
+			*ip = LittleLong(value);
 			msg->cursize += 4;
 			msg->bit += 32;
 		} else {
@@ -214,14 +216,15 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 			msg->readcount += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			short temp;
+			short *sp = (short *)&msg->data[msg->readcount];
 
-			CopyLittleShort(&temp, &msg->data[msg->readcount]);
-			value = temp;
+			value = LittleShort(*sp);
 			msg->readcount += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			CopyLittleLong(&value, &msg->data[msg->readcount]);
+			int *ip = (int *)&msg->data[msg->readcount];
+
+			value = LittleLong(*ip);
 			msg->readcount += 4;
 			msg->bit += 32;
 		} else {
