@@ -10,11 +10,6 @@
 #include "snd_music.h"
 #include "client.h"
 
-#ifndef USE_OPENAL
-#include <algorithm>
-#include <string>
-#endif
-
 qboolean s_shutUp = qfalse;
 
 static void S_Play_f(void);
@@ -854,12 +849,7 @@ sfx_t *S_FindName( const char *name ) {
 	sfx = &s_knownSfx[i];
 	memset (sfx, 0, sizeof(*sfx));
 	Q_strncpyz(sfx->sSoundName, sSoundNameNoExt, sizeof(sfx->sSoundName));
-#ifdef USE_OPENAL
 	strlwr(sfx->sSoundName);//force it down low
-#else
-	std::string s = sfx->sSoundName;
-	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
 
 	sfx->next = sfxHash[hash];
 	sfxHash[hash] = sfx;
@@ -3644,7 +3634,7 @@ void S_SetLipSyncs()
 	int currentTime, timePlayed;
 	channel_t *ch;
 
-#ifdef USE_OPENAL
+#ifdef _WIN32
 	currentTime = timeGetTime();
 #else
 	// FIXME: alternative to timeGetTime ?
