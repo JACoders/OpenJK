@@ -143,7 +143,6 @@ if(BuildMPEngine OR BuildMPDed)
 			"${OpenJKLibDir}/zlib/inffast.c"
 			"${OpenJKLibDir}/zlib/inflate.c"
 			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/ioapi.c"
 			"${OpenJKLibDir}/zlib/trees.c"
 			"${OpenJKLibDir}/zlib/uncompr.c"
 			"${OpenJKLibDir}/zlib/zutil.c"
@@ -154,7 +153,6 @@ if(BuildMPEngine OR BuildMPDed)
 			"${OpenJKLibDir}/zlib/inffixed.h"
 			"${OpenJKLibDir}/zlib/inflate.h"
 			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/ioapi.h"
 			"${OpenJKLibDir}/zlib/trees.h"
 			"${OpenJKLibDir}/zlib/zconf.h"
 			"${OpenJKLibDir}/zlib/zlib.h"
@@ -308,10 +306,11 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
 
-	# TODO: replace the following with proper library? Update it?
 	set(MPEngineAndDedMinizipFiles
-		"${MPDir}/qcommon/unzip.cpp"
-		"${MPDir}/qcommon/unzip.h"
+		"${OpenJKLibDir}/minizip/ioapi.c"
+		"${OpenJKLibDir}/minizip/ioapi.h"
+		"${OpenJKLibDir}/minizip/unzip.cpp"
+		"${OpenJKLibDir}/minizip/unzip.h"
 		)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
