@@ -260,7 +260,7 @@ static const char *GetErrorString( DWORD error ) {
 }
 
 void Sys_SetProcessorAffinity( void ) {
-	DWORD processMask, dummy;
+	DWORD_PTR processMask, dummy;
 	HANDLE handle = GetCurrentProcess();
 
 	if ( !GetProcessAffinityMask( handle, &dummy, &dummy ) )
