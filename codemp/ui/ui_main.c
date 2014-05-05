@@ -7247,7 +7247,6 @@ or if the hostname is blank/undefined
 static qboolean UI_ServerInfoIsValid( char *info )
 {
 	char *c;
-	int  len = 0;
 
 	for ( c = info; *c; c++ )
 	{
@@ -7258,13 +7257,10 @@ static qboolean UI_ServerInfoIsValid( char *info )
 	for ( c = Info_ValueForKey( info, "hostname" ); *c; c++ )
 	{
 		if ( isgraph( *(unsigned char *)c ) )
-			len++;
+			return qtrue;
 	}
 
-	if ( len )
-		return qtrue;
-	else
-		return qfalse;
+	return qfalse;
 }
 
 /*
