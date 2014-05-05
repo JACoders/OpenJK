@@ -849,7 +849,7 @@ sfx_t *S_FindName( const char *name ) {
 	sfx = &s_knownSfx[i];
 	memset (sfx, 0, sizeof(*sfx));
 	Q_strncpyz(sfx->sSoundName, sSoundNameNoExt, sizeof(sfx->sSoundName));
-	strlwr(sfx->sSoundName);//force it down low
+	Q_strlwr(sfx->sSoundName);//force it down low
 
 	sfx->next = sfxHash[hash];
 	sfxHash[hash] = sfx;
