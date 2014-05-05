@@ -4,11 +4,6 @@
 #include "snd_mp3.h"
 #include "snd_ambient.h"
 
-#ifndef _WIN32
-#include <algorithm>
-#include <string>
-#endif
-
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
 extern int s_UseOpenAL;
@@ -825,7 +820,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 						S_LoadSound_Finalize(&info,sfx,pbUnpackBuffer);
 
 						// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 						if (s_UseOpenAL)
 						{
 							if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
@@ -898,7 +893,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 		ResampleSfx( sfx, info.rate, info.width, data + info.dataofs );
 
 		// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
