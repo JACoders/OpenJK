@@ -225,14 +225,14 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 
 int			s_UseOpenAL	= 0;	// Determines if using Open AL or the default software mixer
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 ALfloat		listener_pos[3];		// Listener Position
 ALfloat		listener_ori[6];		// Listener Orientation
 #endif
 int			s_numChannels;			// Number of AL Sources == Num of Channels
 short		s_rawdata[MAX_RAW_SAMPLES*2];	// Used for Raw Samples (Music etc...)
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel);
 int  S_MP3PreProcessLipSync(channel_t *ch, short *data);
 void UpdateSingleShotSounds();
@@ -329,7 +329,7 @@ const GUID EAX_REVERB_EFFECT = { 0xcf95c8f, 0xa3cc, 0x4849, { 0xb0, 0xb6, 0x83, 
 *
 \**************************************************************************************************/
 
-#endif /* _WIN32 */
+#endif /* USE_OPENAL */
 
 // instead of clearing a whole channel_t struct, we're going to skip the MP3SlidingDecodeBuffer[] buffer in the middle...
 //
@@ -384,7 +384,7 @@ void S_SoundInfo_f(void) {
 		if ( s_soundMuted ) {
 			Com_Printf ("sound system is muted\n");
 		}
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			Com_Printf("EAX 4.0 %s supported\n",s_bEAX?"is":"not");
@@ -401,7 +401,7 @@ void S_SoundInfo_f(void) {
 			Com_Printf("%5d submission_chunk\n", dma.submission_chunk);
 			Com_Printf("%5d speed\n", dma.speed);
 			Com_Printf("0x%x dma buffer\n", dma.buffer);
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		}	
 #endif
 
@@ -481,13 +481,13 @@ void S_Init( void ) {
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
 
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	s_UseOpenAL = !!(cv->integer);
 #else
 	s_UseOpenAL = 0;
 #endif
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -630,7 +630,7 @@ void S_Init( void ) {
 
 			//S_SoundInfo_f();
 		}
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -673,7 +673,7 @@ void S_Shutdown( void )
 	S_FreeAllSFXMem();
 	S_UnCacheDynamicMusic();
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -718,7 +718,7 @@ void S_Shutdown( void )
 	{
 #endif
 		SNDDMA_Shutdown();
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -740,7 +740,7 @@ void S_Shutdown( void )
 /*
 	Mutes / Unmutes all OpenAL sound
 */
-#ifdef _WIN32
+#ifdef USE_OPENAL
 void S_AL_MuteAllSounds(qboolean bMute)
 {
      if (!s_soundStarted)
@@ -923,7 +923,7 @@ void S_BeginRegistration( void )
 {
 	s_soundMuted = qfalse;		// we can play again
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
@@ -954,7 +954,7 @@ void S_BeginRegistration( void )
 }
 
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 static void EALFileInit(const char *level)
 {
 	// If an EAL File is already unloaded, remove it
@@ -1030,7 +1030,7 @@ sfxHandle_t	S_RegisterSound( const char *name)
 	if ( sfx->bDefaultSound )
 		return 0;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if ((sfx->pSoundData) || (sfx->Buffer))
@@ -1106,7 +1106,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 	channel_t	*ch, *firstToDie;
 	qboolean	foundChan = qfalse;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 		return S_OpenALPickChannel(entnum, entchannel);
 #endif
@@ -1179,7 +1179,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 */
 channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
     int			ch_idx;
 	channel_t	*ch, *ch_firstToDie;
 	bool	foundChan = false;
@@ -1475,7 +1475,7 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 	}	
 	SND_TouchSFX(sfx);
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (volume==0)
@@ -1559,7 +1559,7 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 	if ( s_show->integer == 1 ) {
 		Com_Printf( "%i : %s for ent %d, chan=%d\n", s_paintedtime, sfx->sSoundName, entityNum, entchannel );
 	}
-#if _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i;
@@ -1747,7 +1747,7 @@ void S_ClearSoundBuffer( void ) {
 			memset(dma.buffer, clear, dma.samples * dma.samplebits/8);
 		SNDDMA_Submit ();
 	}
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	else
 	{
 		s_paintedtime = 0;
@@ -1776,7 +1776,7 @@ void S_CIN_StopSound(sfxHandle_t sfxHandle)
 		}
 		if (ch->thesfx == sfx)
 		{
-#ifdef _WIN32
+#ifdef USE_OPENAL
 			if (s_UseOpenAL)
 			{
 				alSourceStop(s_channels[i].alSource);
@@ -1809,7 +1809,7 @@ void S_StopSounds(void)
 	// stop looping sounds
 	S_ClearLoopingSounds();
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	// clear all the s_channels
 	if (s_UseOpenAL)
 	{
@@ -1831,7 +1831,7 @@ void S_StopSounds(void)
 	{
 #endif
 		memset(s_channels, 0, sizeof(s_channels));
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -1946,7 +1946,7 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		return;
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (volume == 0)
@@ -2277,7 +2277,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (entityNum == 0)
@@ -2454,7 +2454,7 @@ Change the volumes of all the playing sounds for changes in their positions
 */
 void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean inwater )
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
 #endif
@@ -2465,7 +2465,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 		return; 
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		listener_pos[0] = head[0];
@@ -2598,7 +2598,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 
 		// add loopsounds
 		S_AddLoopSounds ();
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -2785,7 +2785,7 @@ void S_Update_(void) {
 		return;
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i,j;
@@ -3067,7 +3067,7 @@ void S_Update_(void) {
 		SNDDMA_Submit ();
 
 		S_DoLipSynchs( s_oldpaintedtime );
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 }
@@ -3075,7 +3075,7 @@ void S_Update_(void) {
 
 void UpdateSingleShotSounds()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	int i, j, k;
 	ALint state;
 	ALint processed;
@@ -3249,7 +3249,7 @@ void UpdateSingleShotSounds()
 
 void UpdateLoopingSounds()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	int i,j;
 	ALuint source;
 	channel_t *ch;
@@ -3440,7 +3440,7 @@ void UpdateLoopingSounds()
 
 void AL_UpdateRawSamples()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	ALuint buffer;
 	ALint size;
 	ALint processed;
@@ -5089,7 +5089,7 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 {
 	int iBytesFreed = 0;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		alGetError();
@@ -5308,7 +5308,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5426,7 +5426,7 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5445,7 +5445,7 @@ void ReleaseEAXManager()
 }
 
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 /*
 	Try to load the given .eal file
 */
@@ -5730,7 +5730,7 @@ static bool LoadEALFile(char *szEALFilename)
 }
 #endif	
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 /*
 	Unload current .eal file
 */
@@ -5754,7 +5754,7 @@ static void UnloadEALFile()
 }
 #endif
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 /*
 	Updates the current EAX Reverb setting, based on the location of the listener
 */
@@ -6350,7 +6350,7 @@ static void UpdateEAXBuffer(channel_t *ch)
 }
 #endif
 
-#ifndef _WIN32
+#ifndef USE_OPENAL
 typedef struct _EMPOINT {
     float fX;
     float fY;
