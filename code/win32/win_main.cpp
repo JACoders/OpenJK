@@ -890,19 +890,12 @@ are initialized
 #define OSR2_BUILD_NUMBER 1111
 #define WIN98_BUILD_NUMBER 1998
 
-#if MEM_DEBUG
-void SH_Register(void);
-#endif
-
 void Sys_Init( void ) {
 	// make sure the timer is high precision, otherwise
 	// NT gets 18ms resolution
 	timeBeginPeriod( 1 );
 
 	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-#if MEM_DEBUG
-	SH_Register();
-#endif
 
 	g_wv.osversion.dwOSVersionInfoSize = sizeof( g_wv.osversion );
 
