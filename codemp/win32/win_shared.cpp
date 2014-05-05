@@ -180,8 +180,7 @@ qboolean Sys_RandomBytes( byte *string, int len )
 char *Sys_GetCurrentUser( void )
 {
 	static char s_userName[1024];
-	unsigned long size = sizeof( s_userName );
-
+	DWORD size = sizeof( s_userName );
 
 	if ( !GetUserName( s_userName, &size ) )
 		strcpy( s_userName, "player" );

@@ -795,8 +795,8 @@ void Sys_Init( void ) {
 	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 
 	// save out a couple things in rom cvars for the renderer to access
-	Cvar_Get( "win_hinstance", va("%i", (int)g_wv.hInstance), CVAR_ROM );
-	Cvar_Get( "win_wndproc", va("%i", (int)MainWndProc), CVAR_ROM );
+	Cvar_Get( "win_hinstance", va("%p", g_wv.hInstance), CVAR_ROM );
+	Cvar_Get( "win_wndproc", va("%p", MainWndProc), CVAR_ROM );
 
 	Cvar_Set( "username", Sys_GetCurrentUser() );
 
