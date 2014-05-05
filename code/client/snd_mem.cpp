@@ -851,7 +851,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 #endif
 
 						// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 						if (s_UseOpenAL)
 						{
 							if (strstr(sfx->sSoundName, "chars"))
@@ -924,7 +924,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 		ResampleSfx( sfx, info.rate, info.width, data + info.dataofs );
 
 		// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
