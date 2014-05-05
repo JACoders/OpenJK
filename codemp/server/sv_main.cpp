@@ -469,6 +469,10 @@ void SVC_Status( netadr_t from ) {
 	}
 	*/
 
+	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS)) {
+		return;
+	}
+
 	if (sv_floodProtect->integer & (1<<LIMIT_GETSTATUS)) {
 		// Prevent using getstatus as an amplifier
 		if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
@@ -538,6 +542,10 @@ void SVC_Info( netadr_t from ) {
 
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
+		return;
+	}
+
+	if (sv_floodProtect->integer & (1<<DISABLE_INFOSTATUS)) {
 		return;
 	}
 

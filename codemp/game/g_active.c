@@ -4196,6 +4196,13 @@ void ClientThink_real( gentity_t *ent ) {
 					G_Damage( faceKicked, ent, ent, 0, 0, strength, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg
 				}
 				else G_Damage( faceKicked, ent, ent, 0, 0, 20, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
+
+				if (g_fixKillCredit.integer) {//JAPRO - Serverside - fix flipkick not giving killcredit..?
+					faceKicked->client->ps.otherKillerTime = level.time + 2000;
+					faceKicked->client->ps.otherKiller = ent->s.number;
+					faceKicked->client->ps.otherKillerDebounceTime = level.time + 100;
+				}
+
 //JAPRO - Serverside - New flipkick damage options - End
 
 				if ( faceKicked->client->ps.weapon != WP_SABER ||

@@ -3709,8 +3709,8 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 				dueltypes[ent->client->ps.clientNum] = dueltypes[challenged->client->ps.clientNum];//dueltype;//k this is y
 			}
 
-			ent->client->ps.duelTime = level.time + 2000;
-			challenged->client->ps.duelTime = level.time + 2000;
+			ent->client->ps.duelTime = level.time + 2000; //loda fixme
+			challenged->client->ps.duelTime = level.time + 2000; //loda fixme
 
 			switch (dueltype)
 			{
