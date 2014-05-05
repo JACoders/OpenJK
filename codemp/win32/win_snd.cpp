@@ -8,7 +8,9 @@ HRESULT (WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS
 
 #define SECONDARY_BUFFER_SIZE	0x10000
 
+#ifdef USE_OPENAL
 extern int s_UseOpenAL;
+#endif
 
 static qboolean	dsound_init;
 static int		sample16;
@@ -363,10 +365,12 @@ When we change windows we need to do this
 */
 void SNDDMA_Activate( qboolean bAppActive )
 {
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		S_AL_MuteAllSounds((qboolean)!bAppActive);
 	}
+#endif
 
 	if ( !pDS ) {
 		return;
