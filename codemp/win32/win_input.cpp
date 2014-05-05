@@ -319,8 +319,8 @@ DEFINE_GUIDX(GUID_ZAxis,   0xA36D02E2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x5
 #define DINPUT_BUFFERSIZE           16
 #define iDirectInputCreate(a,b,c,d)	pDirectInputCreate(a,b,c,d)
 
-HRESULT (WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion,
-	LPDIRECTINPUT * lplpDirectInput, LPUNKNOWN punkOuter);
+typedef HRESULT (WINAPI *DirectInputCreateFn)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUT * lplpDirectInput, LPUNKNOWN punkOuter);
+DirectInputCreateFn pDirectInputCreate;
 
 static HINSTANCE hInstDI;
 
@@ -390,8 +390,7 @@ qboolean IN_InitDIMouse( void ) {
 	}
 
 	if (!pDirectInputCreate) {
-		pDirectInputCreate = (long (__stdcall *)(struct HINSTANCE__ *,unsigned long,struct IDirectInputA ** ,struct IUnknown *))
-			GetProcAddress(hInstDI,"DirectInputCreateA");
+		pDirectInputCreate = (DirectInputCreateFn)GetProcAddress(hInstDI,"DirectInputCreateA");
 
 		if (!pDirectInputCreate) {
 			Com_Printf ("Couldn't get DI proc addr\n");
