@@ -138,8 +138,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 		"${SPDir}/qcommon/strip.cpp"
 		"${SPDir}/qcommon/persistence.cpp"
-		"${SPDir}/qcommon/unzip.cpp"
-		"${SPDir}/qcommon/unzip.h"
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/qfiles.h"
@@ -151,6 +149,15 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
+
+	set(SPEngineMinizipFiles
+		"${OpenJKLibDir}/minizip/ioapi.c"
+		"${OpenJKLibDir}/minizip/ioapi.h"
+		"${OpenJKLibDir}/minizip/unzip.cpp"
+		"${OpenJKLibDir}/minizip/unzip.h"
+		)
+	source_group("minizip" FILES ${SPEngineMinizipFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
 
 
 	# Server files
@@ -323,7 +330,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			"${OpenJKLibDir}/zlib/inffast.c"
 			"${OpenJKLibDir}/zlib/inflate.c"
 			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/ioapi.c"
 			"${OpenJKLibDir}/zlib/trees.c"
 			"${OpenJKLibDir}/zlib/uncompr.c"
 			"${OpenJKLibDir}/zlib/zutil.c"
@@ -334,7 +340,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			"${OpenJKLibDir}/zlib/inffixed.h"
 			"${OpenJKLibDir}/zlib/inflate.h"
 			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/ioapi.h"
 			"${OpenJKLibDir}/zlib/trees.h"
 			"${OpenJKLibDir}/zlib/zconf.h"
 			"${OpenJKLibDir}/zlib/zlib.h"

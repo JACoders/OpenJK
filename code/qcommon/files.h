@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 */
 
 #include "zlib/zlib.h"
-#include "unzip.h"
+#include "minizip/unzip.h"
 
 #define MAX_ZPATH			256
 #define	MAX_SEARCH_PATHS	4096

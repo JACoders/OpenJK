@@ -12,7 +12,7 @@
 #include "client/client.h"
 #endif
 #endif
-#include "unzip.h"
+#include "minizip/unzip.h"
 
 // for rmdir
 #if defined (_MSC_VER)
