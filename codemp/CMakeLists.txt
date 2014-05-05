@@ -351,7 +351,7 @@ if(BuildMPEngine)
 	endif()
 
 	# OpenAL (is optionally included for Windows)
-	if (WIN32)
+	if (WIN32 AND NOT WIN64)
 		if(UseInternalOpenAL)
 			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
 			# There's a libs/OpenAL32.lib
