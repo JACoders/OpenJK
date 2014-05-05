@@ -4,6 +4,8 @@
 #include "snd_mp3.h"
 #include "snd_ambient.h"
 
+#include <string>
+
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
 extern int s_UseOpenAL;
@@ -735,12 +737,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 	// make up a local filename to try wav/mp3 substitutes...
 	//
 	Q_strncpyz(sLoadName, sfx->sSoundName, sizeof(sLoadName));
-#ifdef _WIN32
 	strlwr( sLoadName );
-#else
-	string s = sLoadName;
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
 	//
 	// Ensure name has an extension (which it must have, but you never know), and get ptr to it...
 	//
