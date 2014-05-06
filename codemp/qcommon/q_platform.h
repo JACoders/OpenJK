@@ -14,9 +14,9 @@
 	#define QCALL __stdcall
 
 	#if defined(_MSC_VER)
-		#define OS_STRING "win_msvc64"
+		#define OS_STRING "win_msvc"
 	#elif defined(__MINGW64__)
-		#define OS_STRING "win_mingw64"
+		#define OS_STRING "win_mingw"
 	#endif
 
 	#define QINLINE __inline
