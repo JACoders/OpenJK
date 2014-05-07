@@ -25,7 +25,8 @@ Called on game shutdown
 void G_WriteClientSessionData( gclient_t *client )
 {
 	char		s[MAX_CVAR_VALUE_STRING] = {0},
-				siegeClass[64] = {0}, IP[NET_ADDRSTRMAXLEN] = {0};
+				siegeClass[64] = {0}, IP[NET_ADDRSTRMAXLEN] = {0}, 
+				filename[64] = {0};
 	const char	*var;
 	int			i = 0;
 
@@ -45,6 +46,12 @@ void G_WriteClientSessionData( gclient_t *client )
 			IP[i] = 1;
 	}
 
+	Q_strncpyz( filename, client->sess.filename, sizeof( filename ) );
+	for ( i=0; filename[i]; i++ ) {
+		if (filename[i] == ' ')
+			filename[i] = 1;
+	}
+
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorNum ) );
@@ -58,6 +65,11 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.selectedFP ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.duelTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.siegeDesiredTeam ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.amrpgmode ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally1 ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally2 ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally3 ) );
+	Q_strcat( s, sizeof( s ), va( "%s ", filename ) );
 	Q_strcat( s, sizeof( s ), va( "%s ", siegeClass ) );
 	Q_strcat( s, sizeof( s ), va( "%s", IP ) );
 
@@ -82,7 +94,7 @@ void G_ReadSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %s %s",
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -95,6 +107,11 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.selectedFP,
 		&client->sess.duelTeam,
 		&client->sess.siegeDesiredTeam,
+		&client->sess.amrpgmode,
+		&client->sess.ally1,
+		&client->sess.ally2,
+		&client->sess.ally3,
+		client->sess.filename,
 		client->sess.siegeClass,
 		client->sess.IP
 		);
@@ -114,6 +131,12 @@ void G_ReadSessionData( gclient_t *client )
 	{
 		if (client->sess.IP[i] == 1)
 			client->sess.IP[i] = ' ';
+	}
+
+	for ( i=0; client->sess.filename[i]; i++ )
+	{
+		if (client->sess.filename[i] == 1)
+			client->sess.filename[i] = ' ';
 	}
 
 	client->ps.fd.saberAnimLevel = client->sess.saberLevel;
@@ -220,6 +243,15 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	AddTournamentQueue(client);
 
 	sess->siegeClass[0] = 0;
+
+	// zyk: setting initial value of RPG mode session attributes
+	sess->amrpgmode = 0;
+	strcpy(sess->filename,"");
+
+	// zyk: initializing ally attributes
+	sess->ally1 = -1;
+	sess->ally2 = -1;
+	sess->ally3 = -1;
 
 	G_WriteClientSessionData( client );
 }

@@ -418,7 +418,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 
 	ent->client->ps.fd.forceDeactivateAll = 0;
 
-	ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax = FORCE_POWER_MAX;
+	ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
 	ent->client->ps.fd.forcePowerRegenDebounceTime = level.time;
 	ent->client->ps.fd.forceGripEntityNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceMindtrickTargetIndex = 0;

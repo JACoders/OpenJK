@@ -449,6 +449,18 @@ typedef struct clientSession_s {
 	int			siegeDesiredTeam;
 
 	char		IP[NET_ADDRSTRMAXLEN];
+
+	// zyk: sets the Player Mode:
+	// 0 - Player is not logged in: in this mode, player didnt login his account yet
+	// 1 - Admin-Only mode: in this mode, player can use admin commands if he has them
+	// 2 - RPG mode: in this mode, player can use admin commands and play the level system
+	int	amrpgmode; // zyk: saved in session so the player account can be loaded again in map changes
+	char filename[64]; // zyk: player account filename
+
+	// zyk: used to set the ally ids. The allies dont receive damage from this player
+	int ally1;
+	int ally2;
+	int ally3;
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -458,6 +470,34 @@ typedef struct clientSession_s {
 //
 #define MAX_NETNAME			36
 #define	MAX_VOTE_COUNT		3
+
+// zyk: number of lines in the player account file
+#define NUMBER_OF_LINES 70
+
+// zyk: number of Light Quest guardians to be defeated 
+#define NUMBER_OF_GUARDIANS 9
+
+// zyk: number of Dark Quest objectives
+#define NUMBER_OF_OBJECTIVES 10
+
+// zyk: number of Eternity Quest objectives
+#define NUMBER_OF_ETERNITY_QUEST_OBJECTIVES 11
+
+// zyk: number of Universe Quest objectives
+#define NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES 15
+
+// zyk: number of RPG Mode skills
+#define NUMBER_OF_SKILLS 56
+
+// zyk: max value of the skill counter to increase level up score of the rpg player
+#define MAX_SKILL_COUNTER 50000
+
+// zyk: max level a player can be in RPG Mode
+#define MAX_RPG_LEVEL 100
+
+// zyk: max jetpack fuel the player can have
+#define MAX_JETPACK_FUEL 10000
+#define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -483,6 +523,257 @@ typedef struct clientPersistant_s {
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 
 	char		guid[33];
+
+	// zyk: account system
+	int	bitvalue; // zyk: player is considered as admin if bitvalue is > 0, because he has at least 1 admin command
+	
+	int level; // zyk: RPG mode level
+	int level_up_score; // zyk: RPG mode Level Up Score
+	int skillpoints; // zyk: RPG mode skillpoints
+
+	// zyk: turn on or off features of this player in his account file. It is a bit value attribute
+	// Possible bit values are:
+	// 0 - RPG quests
+	// 1 - Light Power
+	// 2 - Dark Power
+	// 3 - Eternity Power
+	// 4 - Universe Power
+	// 5 - Resurrection skill
+	// 6 - Allow Force Powers from allies
+	// 7 - Use Movers with Stun Baton - Ability to GlobalUse ET_MOVER entities with stun baton if player has the stun baton upgrade
+	// Starting Saber Style - When player doesnt have any of the flags below, saber starts Off
+	// 9 - RPG Starting Dual Saber Style
+	// 10 - RPG Starting Staff Style
+	// 11 - Saber Starts ON/OFF
+	// 12 - Jetpack
+	// 13 - Admin Protect
+	// 14 - Mind Control
+	// 15 - Difficulty
+	// 26 - Saber Starts with Single Yellow/Dual style
+	// 27 - Saber Starts with Single Red/Dual/Staff style
+	// 28 - Saber Starts with Desann/Dual/Staff style
+	// 29 - Saber Starts with Tavion/Dual/Staff style
+	int player_settings;
+
+	// zyk: used to set the player class in the RPG Mode
+	// Possible values are:
+	// 0 - Free Warrior (default)
+	// 1 - Force User
+	// 2 - Bounty Hunter
+	// 3 - Armored Soldier
+	// 4 - Monk
+	// 5 - Stealth Attacker
+	// 6 - Duelist
+	int rpg_class;
+
+	int force_powers_levels[18]; // zyk: RPG mode level of each force power
+	int ammo_levels[7]; // zyk: RPG mode level of each type of ammo
+	int weapons_levels[10]; // zyk: RPG mode level of each weapon excluding saber, melee and stun baton
+	int holdable_items_levels[8]; // zyk: RPG mode level of each Holdable Item
+
+	int vehicle_cloak_timer; // zyk: debounce timer used by the Cloak Item 2/2 skill in RPG Mode
+
+	int starting_shield_level; // zyk: RPG mode Max Shield skill level
+
+	int max_rpg_health; // zyk: max health the player can have in RPG Mode. This is set to STAT_MAX_HEALTH for RPG players
+	int max_rpg_shield; // zyk: max shield the player can have in RPG Mode based in the starting_shield_level value
+
+	int jetpack_level; // zyk: RPG mode Jetpack skill level
+	int jetpack_fuel; // zyk: now this is the fuel that is spent. Then we scale this value to the 0 - 100 range to set it in the jetpackFuel attribute to show the fuel bar correctly to the client
+
+	int playerhealth; // zyk: Sense Health skill level. Used in RPG mode
+	int sense_health_timer; // zyk: used to periodically show health of player or npc with Sense Health skill
+
+	int shield; // zyk: shield heal level. Used in RPG mode
+	int teamshield; // zyk: teamshield heal level. Used in RPG mode
+
+	int grapple_hook; // zyk: grapple hook level. Used in RPG mode
+	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect, if in level 3, causes triple damage and fires the flame thrower with alternate fire
+	
+	int flame_thrower; // zyk: used by stun baton level 3 skill. Its the flame thrower timer
+
+	int mind_control; // zyk: mind control skill level. Used in RPG mode
+	
+	// zyk: tests if this player or npc is being mind controlled by a player. If -1, means that he is not being controlled, otherwise it has the player id of the player who is controlling this player or npc
+	int being_mind_controlled;
+
+	// zyk: entity ids of the mind controlled entities. Default -1, which means player is not controlling anyone
+	int mind_controlled1_id;
+
+	int melee_level; // zyk: melee RPG mode level. In level 1 causes normal damage, level 2 causes 2 times more damage and level 3 causes 5 times more damage
+	
+	int health_strength; // zyk: increases player resistance to damage in health.
+	int shield_strength; // zyk: shield strength level. Used in RPG mode
+
+	// zyk: bit flag, loaded in load_account()
+	// Possible bit values (1 << bit_value) are:
+	// 0 - Unused
+	// 1 - Bounty Hunter Upgrade - bought from the jawa seller
+	// 2 - Unused
+	// 3 - Unused
+	// 4 - Unused
+	// 5 - Unused
+	// 6 - Unused
+	// 7 - Stealth Attacker Upgrade
+	// 8 - Unused
+	// 9 - Impact Reducer
+	// 10 - Flame Thrower Upgrade
+	// 11 - Power Cell Weapons Upgrade
+	// 12 - Blaster Pack Weapons Upgrade
+	// 13 - Metal Bolts Weapons Upgrade
+	// 14 - Rocket Upgrade
+	// 15 - Stun Baton Upgrade
+	// 16 - Armored Soldier Upgrade
+	int secrets_found;
+
+	int max_force_power_level; // zyk: force power skill level. Has 5 levels, each one giving 25 per cent of max force power cvar to the player
+	int max_force_power; // zyk: max force power the player can have based on max_force_power_level value
+
+	int improvements_level; // zyk: improvements skill. Each class gets some improvements in its unique features
+
+	int score_modifier; // zyk: sets the amount of extra score a player can get by defeating some npcs
+
+	int credits_modifier; // zyk: sets the amount of extra credits a player can get by killing rpg players or some npcs
+	int credits; // zyk: the amount of credits (RPG Mode currency) this player has now
+
+	int print_products_timer; // zyk: used to prevent the spam of chat messages of the seller in console
+
+	// zyk: Race Mode. Sets the initial position of this racer which is calculated in racemode command. Default 0. If greater than 0, player joined a race
+	int race_position;
+
+	// zyk: used by quest powers that require a check every second
+	int quest_skill_timer;
+
+	// zyk: tests if this player can play a RPG Mode quest. Default 0. If 1, player can play a quest now
+	int can_play_quest;
+
+	// zyk: amount of skills used by the player. After a certain amount of uses, player gets 1 experience point (level up score)
+	int skill_counter;
+
+	// zyk: number of guardians the player already defeated
+	// the value will be NUMBER_OF_GUARDIANS after completing the quest
+	// before that, has bitvalue of each defeated guardian. Possible bitvalues are:
+	// 4 - Guardian of Water
+	// 5 - Guardian of Earth
+	// 6 - Guardian of Forest
+	// 7 - Guardian of Intelligence
+	// 8 - Guardian of Agility
+	// 9 - Guardian of Fire
+	// 10 - Guardian of Wind
+	// 11 - Guardian of Resistance
+	int defeated_guardians; 
+
+	// zyk: number of notes collected in Dark Quest
+	// the value will be NUMBER_OF_OBJECTIVES after completing the quest
+	// before that, has bitvalue of each collected note. Possible bitvalues are:
+	// 4 - Note at yavin1b
+	// 5 - Note at t1_sour
+	// 6 - Note at t1_surprise
+	// 7 - Note at t3_rift
+	// 8 - Note at hoth2
+	// 9 - Note at t3_bounty
+	// 10 - Note at t2_rogue
+	// 11 - Note at t1_danger
+	// 12 - Note at kor2
+	int hunter_quest_progress;
+
+	// zyk: number of objectives completed in Eternity Quest
+	int eternity_quest_progress;
+
+	// zyk: Universe Quest progress of this player
+	int universe_quest_progress;
+
+	// zyk: counter used in the artifacts objective, and in the amulets one, of the Universe Quest
+	// Possible bit values in artifacts objective:
+	// 0 - Light Quest artifact got with the Sage of Light
+	// 1 - Eternity Quest artifact got with the Sage of Eternity
+	// 2 - Dark Quest artifact got with the Sage of Darkness
+	// 3 - Artifact in yavin1b
+	// 4 - Artifact in t1_danger
+	// 5 - Artifact in t1_fatal
+	// 6 - Artifact in t3_bounty
+	// 7 - Artifact in hoth3
+	// 8 - Artifact in yavin2
+	// 9 - Artifact in t2_dpred
+
+	// Possible bit values in amulets objective:
+	// 0 - Amulet of Light
+	// 1 - Amulet of Darkness
+	// 2 - Amulet of Eternity
+
+	// The Second Act can have permanent bit values with these possible values:
+	// 0 - Player chose to allow the sages to get into the Sacred Dimension
+	// 1 - Player chose to allow the guardians to get into the Sacred Dimension
+	// 2 - Player chose to allow the Master of Evil to get into the Sacred Dimension
+	// 3 - Player chose to allow the Guardian of Time to get into the Sacred Dimension
+	
+	// it can also have temporaty values with these possible values:
+	// 0 - Player got the Crystal of Destiny
+	// 1 - Player got the Crystal of Truth
+	// 2 - Player got the Crystal of Time
+	int universe_quest_counter;
+
+	// zyk: used to control some events in Universe Quest. In the quest_reborn_red npc, sets the player id who is playing the quest. In the player, sets how much quest_reborn_red npcs the player must kill to complete the first objective
+	int universe_quest_objective_control;
+
+	// zyk: used to set the npc who holds the artifact in the third objective of Universe Quest
+	int universe_quest_artifact_holder_id;
+
+	// zyk: controls the timed events in Universe Quest
+	int universe_quest_messages;
+	int universe_quest_timer;
+
+	// zyk: controls the Ultimate Power. Set in the player who uses it
+	// also sets the player id who is using Blowing Wind in the target player
+	int ultimate_power_user;
+
+	// zyk: set in the target player to control events that happen to him when hit by Ultimate Power
+	int ultimate_power_target;
+
+	// zyk: timer used by the Ultimate Power
+	int ultimate_power_timer;
+
+	// zyk: timer used in the target of the Ultimate Power
+	int ultimate_power_target_timer;
+
+	// zyk: controls the timed events in Light Quest
+	int light_quest_messages;
+	int light_quest_timer;
+
+	// zyk: controls the timed events in Dark Quest
+	int hunter_quest_timer;
+	int hunter_quest_messages; // zyk: also used by the Guardian of Universe to know she already spawned the other guardians
+
+	// zyk: used to show the riddles from time to time
+	int eternity_quest_timer;
+
+	// zyk: this attribute sets the player as fighting a guardian
+	// the values of guardian_mode are:
+	// 0 - Player is not fighting a guardian
+	// 1 - Guardian of Water
+	// 2 - Guardian of Earth
+	// 3 - Guardian of Forest
+	// 4 - Guardian of Intelligence
+	// 5 - Guardian of Agility
+	// 6 - Guardian of Fire
+	// 7 - Guardian of Wind
+	// 8 - Guardian of Light
+	// 9 - Guardian of Darkness
+	// 10 - Guardian of Eternity
+	// 11 - Guardian of Resistance
+	// 12 - Master of Evil
+	// 13 - Guardian of Universe
+	// 14 - Guardian of Chaos
+	int guardian_mode; 
+
+	// zyk: used by the last guardians in quests for their special abilities
+	int guardian_timer;
+
+	// zyk: backup of the guardians weapons. Some guardians can get his weapons back if the player pulls them
+	int guardian_weapons_backup;
+
+	// zyk: player id that is fighting this guardian
+	int guardian_invoked_by_id; 
 } clientPersistant_t;
 
 typedef struct renderInfo_s

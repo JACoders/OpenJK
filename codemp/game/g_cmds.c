@@ -3333,6 +3333,933 @@ void Cmd_AddBot_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s.\n\"", G_GetStringEdString( "MP_SVGAME", "ONLY_ADD_BOTS_AS_SERVER" ) ) );
 }
 
+// zyk: new functions
+
+// zyk: sets the Max HP a player can have in RPG Mode
+void set_max_health(gentity_t *ent)
+{
+	// zyk: Universe Power
+	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4)))
+		ent->client->pers.max_rpg_health = 150 + (ent->client->pers.level * 2);
+	else
+		ent->client->pers.max_rpg_health = 100 + (ent->client->pers.level * 2);
+}
+
+// zyk: sets the Max Shield a player can have in RPG Mode
+void set_max_shield(gentity_t *ent)
+{
+	ent->client->pers.max_rpg_shield = (int)ceil(((ent->client->pers.starting_shield_level * 1.0)/5) * ent->client->pers.max_rpg_health);
+}
+
+
+
+// zyk: loads the player account
+void load_account(gentity_t *ent, qboolean change_mode)
+{
+	FILE *account_file;
+	char content[128];
+	char file_content[1024];
+	int value = 0;
+	int i = 0;
+	strcpy(content,"");
+	strcpy(file_content,"");
+	account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
+	if (account_file != NULL)
+	{
+		// zyk: loading the amrpgmode value
+		fscanf(account_file,"%s",content);
+		value = atoi(content);
+		ent->client->sess.amrpgmode = value;
+
+		if (change_mode == qtrue)
+		{
+			if (ent->client->sess.amrpgmode == 2)
+				ent->client->sess.amrpgmode = 1;
+			else
+				ent->client->sess.amrpgmode = 2;
+		}
+
+		ent->client->pers.vehicle_cloak_timer = 0;
+
+		// zyk: initializing mind control attributes used in RPG mode
+		ent->client->pers.being_mind_controlled = -1;
+		ent->client->pers.mind_control = 0;
+		ent->client->pers.mind_controlled1_id = -1;
+
+		// zyk: loading player_settings value
+		fscanf(account_file,"%s",content);
+		value = atoi(content);
+		ent->client->pers.player_settings = value;
+
+		// zyk: loading the admin command bit value
+		fscanf(account_file,"%s",content);
+		value = atoi(content);
+		ent->client->pers.bitvalue = value;
+
+		if (ent->client->sess.amrpgmode == 2)
+		{
+			// zyk: loading level up score value
+			fscanf(account_file,"%s",content);
+			ent->client->pers.level_up_score = atoi(content);
+
+			// zyk: loading Level value
+			fscanf(account_file,"%s",content);
+			ent->client->pers.level = atoi(content);
+
+			// zyk: loading Skillpoints value
+			fscanf(account_file,"%s",content);
+			ent->client->pers.skillpoints = atoi(content);
+
+			// zyk: loading Jump value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[0] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
+			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = value;
+
+			// zyk: loading Push value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[1] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PUSH);
+			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = value;
+
+			// zyk: loading Pull value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[2] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
+			ent->client->ps.fd.forcePowerLevel[FP_PULL] = value;
+
+			// zyk: loading Speed value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[3] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
+			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = value;
+
+			// zyk: loading Sense value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[4] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+			ent->client->ps.fd.forcePowerLevel[FP_SEE] = value;
+
+			// zyk: loading Saber Offense value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[5] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && value > 0)
+			{
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
+				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+			}
+			if (value == 0)
+			{
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
+				ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
+				ent->client->ps.weapon = WP_MELEE;
+			}
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = value;
+
+			// zyk: loading the saber style based in the player settings
+			if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
+			{ // zyk: Duals
+				ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_DUAL;
+				
+				if (ent->client->pers.player_settings & (1 << 9) && ent->client->pers.force_powers_levels[5] >= 1)
+				{
+					ent->client->ps.saberHolstered = 1;
+				}
+			}
+			else if (ent->client->saber[0].saberFlags&SFL_TWO_HANDED)
+			{ // zyk: Staff
+				ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_STAFF;
+
+				if (ent->client->pers.player_settings & (1 << 10) && ent->client->pers.force_powers_levels[5] >= 1)
+				{
+					ent->client->ps.saberHolstered = 1;
+				}
+			}
+			else
+			{ // zyk: Single Saber
+				ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
+
+				if (ent->client->pers.player_settings & (1 << 26) && ent->client->pers.force_powers_levels[5] >= 2)
+				{
+					// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
+					// ent->client->saberCycleQueue = ent->client->ps.fd.saberAnimLevel;
+					ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
+				}
+				else if (ent->client->pers.player_settings & (1 << 27) && ent->client->pers.force_powers_levels[5] >= 3)
+				{
+					ent->client->ps.fd.saberAnimLevel = SS_STRONG;
+				}
+				else if (ent->client->pers.player_settings & (1 << 28) && ent->client->pers.force_powers_levels[5] >= 4)
+				{
+					ent->client->ps.fd.saberAnimLevel = SS_DESANN;
+				}
+				else if (ent->client->pers.player_settings & (1 << 29) && ent->client->pers.force_powers_levels[5] == 5)
+				{
+					ent->client->ps.fd.saberAnimLevel = SS_TAVION;
+				}
+				else if (ent->client->pers.force_powers_levels[5] >= 1)
+				{
+					ent->client->ps.fd.saberAnimLevel = SS_FAST;
+				}
+			}
+
+			// zyk: loading the holster state of the saber based in the player settings
+			if (ent->client->pers.player_settings & (1 << 11))
+			{
+				ent->client->ps.saberHolstered = 2;
+			}
+
+			// zyk: loading Saber Defense value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[6] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = value;
+
+			// zyk: loading Saber Throw value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[7] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
+			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = value;
+
+			// zyk: loading Absorb value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[8] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
+
+			if (value < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = value;
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
+
+			// zyk: loading Heal value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[9] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
+			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = value;
+
+			// zyk: loading Protect value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[10] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
+			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = value;
+
+			// zyk: loading Mind Trick value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[11] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
+			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = value;
+
+			// zyk: loading Team Heal value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[12] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = value;
+
+			// zyk: loading Lightning value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[13] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
+			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = value;
+
+			// zyk: loading Grip value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[14] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
+			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = value;
+
+			// zyk: loading Drain value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[15] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
+			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = value;
+
+			// zyk: loading Rage value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[16] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
+
+			if (value < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = value;
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
+
+			// zyk: loading Team Energize value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.force_powers_levels[17] = value;
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)) && value > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
+			if (value == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = value;
+
+			// zyk: loading Stun Baton value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.stun_baton_level = value;
+
+			// zyk: loading Blaster Pistol value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[0] = value;
+
+			// zyk: loading E11 Blaster Rifle value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[1] = value;
+
+			// zyk: loading Sniper value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[2] = value;
+
+			// zyk: loading Bowcaster value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[3] = value;
+
+			// zyk: loading Repeater value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[4] = value;
+
+			// zyk: loading Demp2 value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[5] = value;
+
+			// zyk: loading Flechette value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[6] = value;
+
+			// zyk: loading Rocket Launcher value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[7] = value;
+
+			// zyk: loading Concussion value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[8] = value;
+
+			// zyk: loading Bryar Old value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.weapons_levels[9] = value;
+
+			// zyk: loading Melee value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_MELEE)))
+				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+			ent->client->pers.melee_level = value;
+
+			// zyk: loading Max Shield value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.starting_shield_level = value;
+
+			// zyk: loading Shield Strength value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.shield_strength = value;
+
+			// zyk: loading Health Strength value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.health_strength = value;
+
+			// zyk: loading grapple hook value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.grapple_hook = value;
+
+			// zyk: loading jetpack value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.jetpack_level = value;
+
+			// zyk: player starts with jetpack if he has the skill and it is enabled in settings
+			if (value > 0 && !(ent->client->pers.player_settings & (1 << 12)))
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			}
+			else
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+				if (ent->client->jetPackOn)
+				{
+					Jetpack_Off(ent);
+				}
+			}
+
+			// zyk: loading Sense Health value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.playerhealth = value;
+			ent->client->pers.sense_health_timer = 0;
+
+			// zyk: loading Shield value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.shield = value;
+
+			// zyk: loading Team Shield value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.teamshield = value;
+
+			// zyk: loading Mind Control value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.mind_control = value;
+
+			// zyk: loading blaster pack ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[0] = value;
+
+			// zyk: loading power cell ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[1] = value;
+
+			// zyk: loading metallic bolts ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[2] = value;
+
+			// zyk: loading rocket ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[3] = value;
+
+			// zyk: loading thermal ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[4] = value;
+
+			// zyk: loading trip mine ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[5] = value;
+
+			// zyk: loading det pack ammo value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.ammo_levels[6] = value;
+
+			// zyk: loading Binoculars value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[0] = value;
+
+			// zyk: loading Bacta Canister value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[1] = value;
+
+			// zyk: loading Sentry Gun value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[2] = value;
+
+			// zyk: loading Seeker Drone value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[3] = value;
+
+			// zyk: loading E-Web value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[4] = value;
+
+			// zyk: loading Big Bacta value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[5] = value;
+
+			// zyk: loading Force Field value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[6] = value;
+
+			// zyk: loading Cloak Item value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.holdable_items_levels[7] = value;
+
+			// zyk: loading Force Power level skill value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.max_force_power_level = value;
+			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
+			ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
+			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
+
+			// zyk: loading Improvements level skill value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.improvements_level = value;
+
+			// zyk: Other RPG attributes
+			// zyk: loading Light Quest Defeated Guardians number value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.defeated_guardians = value;
+
+			// zyk: loading Dark Quest completed objectives value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.hunter_quest_progress = value;
+
+			// zyk: loading Eternity Quest progress value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.eternity_quest_progress = value;
+
+			// zyk: resetting quest_skill_timer to 0 on account loading
+			ent->client->pers.quest_skill_timer = 0;
+
+			// zyk: loading secrets found value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.secrets_found = value;
+
+			// zyk: loading Universe Quest Progress value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.universe_quest_progress = value;
+
+			// zyk: loading Universe Quest Counter value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.universe_quest_counter = value;
+
+			// zyk: loading credits value
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.credits = value;
+
+			// zyk: loading RPG class
+			fscanf(account_file,"%s",content);
+			value = atoi(content);
+			ent->client->pers.rpg_class = value;
+
+			if (ent->client->pers.rpg_class == 3)
+			{ // zyk: setting the shot deflect of the Armored Soldier
+				ent->flags |= FL_SHIELDED;
+			}
+			else
+			{
+				ent->flags &= ~FL_SHIELDED;
+			}
+
+			// zyk: setting rpg control attributes
+
+			// zyk: setting the RPG Max Health of the player and the RPG Max Shield
+			set_max_health(ent);
+			set_max_shield(ent);
+
+			ent->client->pers.print_products_timer = 0;
+
+			ent->client->pers.credits_modifier = 0;
+			ent->client->pers.score_modifier = 0;
+
+			// zyk: setting default value of can_play_quest
+			ent->client->pers.can_play_quest = 0;
+
+			ent->client->pers.guardian_mode = 0;
+			ent->client->pers.guardian_timer = 0;
+			ent->client->pers.guardian_invoked_by_id = -1;
+
+			ent->client->pers.eternity_quest_timer = 0;
+
+			ent->client->pers.universe_quest_artifact_holder_id = -1;
+			ent->client->pers.universe_quest_messages = 0;
+			ent->client->pers.universe_quest_timer = 0;
+
+			ent->client->pers.light_quest_timer = 0;
+			ent->client->pers.light_quest_messages = 0;
+
+			ent->client->pers.hunter_quest_timer = 0;
+			ent->client->pers.hunter_quest_messages = 0;
+		}
+		else if (ent->client->sess.amrpgmode == 1)
+		{
+			// zyk: loading the holster state of the saber based in the player settings
+			if (ent->client->pers.player_settings & (1 << 11))
+			{
+				ent->client->ps.saberHolstered = 2;
+			}
+		
+			// zyk: player starts with jetpack if it is enabled in player settings
+			if (!(ent->client->pers.player_settings & (1 << 12)))
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			}
+			else
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+				if (ent->client->jetPackOn)
+				{
+					Jetpack_Off(ent);
+				}
+			}
+
+			ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
+
+			// zyk: setting default max hp and shield
+			ent->client->ps.stats[STAT_MAX_HEALTH] = 100;
+
+			if (ent->health > 100)
+				ent->health = 100;
+
+			if (ent->client->ps.stats[STAT_ARMOR] > 100)
+				ent->client->ps.stats[STAT_ARMOR] = 100;
+
+			// zyk: reset the force powers of this player
+			WP_InitForcePowers( ent );
+		}
+
+		fclose(account_file);
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"There is no account with this login or password.\n\"" ); 
+	}
+}
+
+// zyk: saves the player account
+void save_account(gentity_t *ent)
+{
+	// zyk: used to prevent account save in map change time or before loading account after changing map
+	if (level.voteExecuteTime < level.time && ent->client->pers.connected == CON_CONNECTED)
+	{
+		if (ent->client->sess.amrpgmode == 2)
+		{
+			FILE *account_file;
+			gclient_t *client;
+			client = ent->client;
+			account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
+			fprintf(account_file,"%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
+			client->sess.amrpgmode,client->pers.player_settings,client->pers.bitvalue,client->pers.level_up_score,client->pers.level,client->pers.skillpoints,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
+			,client->pers.force_powers_levels[3],client->pers.force_powers_levels[4],client->pers.force_powers_levels[5],client->pers.force_powers_levels[6],client->pers.force_powers_levels[7],client->pers.force_powers_levels[8]
+			,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
+			,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.stun_baton_level,client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
+			,client->pers.weapons_levels[4],client->pers.weapons_levels[5],client->pers.weapons_levels[6],client->pers.weapons_levels[7],client->pers.weapons_levels[8],client->pers.weapons_levels[9],client->pers.melee_level,client->pers.starting_shield_level,client->pers.shield_strength
+			,client->pers.health_strength,client->pers.grapple_hook,client->pers.jetpack_level,client->pers.playerhealth,client->pers.shield,client->pers.teamshield,client->pers.mind_control,client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
+			,client->pers.ammo_levels[3],client->pers.ammo_levels[4],client->pers.ammo_levels[5],client->pers.ammo_levels[6],client->pers.holdable_items_levels[0],client->pers.holdable_items_levels[1],client->pers.holdable_items_levels[2],client->pers.holdable_items_levels[3]
+			,client->pers.holdable_items_levels[4],client->pers.holdable_items_levels[5],client->pers.holdable_items_levels[6],client->pers.holdable_items_levels[7],client->pers.max_force_power_level,client->pers.improvements_level,client->pers.defeated_guardians,client->pers.hunter_quest_progress
+			,client->pers.eternity_quest_progress,client->pers.secrets_found,client->pers.universe_quest_progress,client->pers.universe_quest_counter,client->pers.credits,client->pers.rpg_class);
+			fclose(account_file);
+		}
+		else if (ent->client->sess.amrpgmode == 1)
+		{
+			FILE *account_file;
+			FILE *updated_account_file;
+			char content[128];
+			char file_content[1024];
+			int i = 0;
+			strcpy(content,"");
+			strcpy(file_content,"");
+
+			account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
+			fscanf(account_file,"%s",content); // zyk: reads the player mode
+			fscanf(account_file,"%s",content); // zyk: reads the player settings
+			fscanf(account_file,"%s",content); // zyk: reads the bitvalue
+			while (i < (NUMBER_OF_LINES - 3))
+			{
+				i++;
+				fscanf(account_file,"%s",content);
+				sprintf(file_content,"%s%s\n",file_content,content);
+			}
+			fclose(account_file);
+
+			updated_account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
+			fprintf(account_file,"%d\n%d\n%d\n%s",ent->client->sess.amrpgmode,ent->client->pers.player_settings,ent->client->pers.bitvalue,file_content);
+			fclose(updated_account_file);
+		}
+		else if (ent->client->sess.amrpgmode == 0)
+		{ // zyk: if this is a new account file, creates it with default values
+			FILE *new_file;
+			new_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
+			if (new_file != NULL)
+			{
+				fprintf(new_file,"2\n0\n0\n0\n1\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n");
+				fclose(new_file);
+
+				// zyk: removing the pistol when creating account because player starts without any skill
+				ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_PISTOL);
+
+				trap->SendServerCommand( ent-g_entities, "print \"Account created succesfully. Now use ^3/list^7\n\"" ); 
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Error in account creation.\n\"" ); 
+			}
+		}
+	}
+}
+
+/*
+==================
+Cmd_NewAccount_f
+==================
+*/
+void Cmd_NewAccount_f( gentity_t *ent ) {
+	FILE *logins_file;
+	char arg1[MAX_STRING_CHARS];
+	char arg2[MAX_STRING_CHARS];
+	char content[1024];
+	int i = 0;
+	strcpy(content,"");
+	if ( trap->Argc() != 3) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must write a login and a password of your choice. Example: ^3/new test_login test_pass^7.\n\"" ); 
+		return;
+	}
+	trap->Argv(1, arg1, sizeof( arg1 ));
+	trap->Argv(2, arg2, sizeof( arg2 ));
+
+	// zyk: creates the account if player is not logged in
+	if (ent->client->sess.amrpgmode != 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are already logged in.\n\"" ); 
+		return;
+	}
+
+	if (strlen(arg1) > 30)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Login has a maximum of 30 characters.\n\"" ); 
+		return;
+	}
+	if (strlen(arg2) > 30)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Password has a maximum of 30 characters.\n\"" ); 
+		return;
+	}
+
+	// zyk: validating if this login already exists
+	system("dir /B accounts > accounts/accounts.txt");
+
+	logins_file = fopen("accounts/accounts.txt","r");
+	if (logins_file != NULL)
+	{
+		i = fscanf(logins_file, "%s", content);
+		while (i != -1)
+		{
+			if (strstr(content,"_S_") != NULL)
+			{ // zyk: validation must occur on the lines that contains the account file names and in files that the login has the same size as the arg1
+				int j = 0;
+				char login_name[64];
+				strcpy(login_name,"");
+
+				for (j = 0; j < strlen(content); j++)
+				{
+					if (content[j] == '_' && content[j+1] == 'S' && content[j+2] == '_')
+					{
+						break;
+					}
+					strcpy(login_name,va("%s%c",login_name,content[j]));
+				}
+
+				// zyk: 0 means it is the same login as login_name, which is not a valid one
+				if (Q_stricmp( login_name, arg1 ) == 0)
+				{ // zyk: login already exists
+					fclose(logins_file);
+					trap->SendServerCommand( ent-g_entities, "print \"Login is used by another player.\n\"" );
+					return;
+				}
+			}
+			i = fscanf(logins_file, "%s", content);
+		}
+		fclose(logins_file);
+	}
+
+	strcpy(ent->client->sess.filename, va("%s_S_%s",arg1,arg2));
+
+	save_account(ent);
+
+	// zyk: login the account file already
+	load_account(ent, qfalse);
+}
+
+/*
+==================
+Cmd_LoginAccount_f
+==================
+*/
+void Cmd_LoginAccount_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 0)
+	{
+		char   arg1[MAX_STRING_CHARS];
+		char   arg2[MAX_STRING_CHARS];
+
+		if ( trap->Argc() != 3)
+		{ 
+			trap->SendServerCommand( ent-g_entities, "print \"You must write your login and password.\n\"" ); 
+			return;
+		}
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to login.\n\"" );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+		trap->Argv(2, arg2, sizeof( arg2 ));
+
+		strcpy(ent->client->sess.filename, va("%s_S_%s",arg1,arg2));
+
+		load_account(ent, qfalse);
+
+		if (ent->client->sess.amrpgmode == 1)
+			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2Admin-Only Mode^7. Now use command ^3/list^7.\n\"" );
+		else if (ent->client->sess.amrpgmode == 2)
+			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Now use command ^3/list^7.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are already logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_LogoutAccount_f
+==================
+*/
+void Cmd_LogoutAccount_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		int i = 0;
+
+		if (ent->client->pers.being_mind_controlled != -1)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You cant logout while being mind-controlled.\n\"" );
+			return;
+		}
+
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.mind_controlled1_id != -1)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You cant logout while using Mind Control on someone.\n\"" );
+			return;
+		}
+
+		// zyk: if player was fighting a guardian, allow other players to fight the guardian now
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+		{
+			//clean_guardians(ent);
+			ent->client->pers.guardian_mode = 0;
+		}
+
+		// zyk: saving the not logged player mode in session
+		ent->client->sess.amrpgmode = 0;
+
+		// zyk: if this player was playing a quest, find a new one to play quests in this map
+		if (ent->client->pers.can_play_quest == 1)
+		{
+			//quest_get_new_player(ent);
+		}
+
+		ent->client->pers.bitvalue = 0;
+
+		// zyk: initializing mind control attributes used in RPG mode
+		ent->client->pers.being_mind_controlled = -1;
+		ent->client->pers.mind_control = 0;
+		ent->client->pers.mind_controlled1_id = -1;
+
+		// zyk: resetting the forcePowerMax to the cvar value
+		ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
+
+		// zyk: resetting max hp and shield to 100 in case the player has the Universe Power
+		ent->client->ps.stats[STAT_MAX_HEALTH] = 100;
+
+		if (ent->health > 100)
+			ent->health = 100;
+
+		if (ent->client->ps.stats[STAT_ARMOR] > 100)
+			ent->client->ps.stats[STAT_ARMOR] = 100;
+
+		// zyk: resetting force powers
+		WP_InitForcePowers( ent );
+			
+		trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" ); 
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" ); 
+	}
+}
+
 /*
 =================
 ClientCommand
@@ -3376,7 +4303,10 @@ command_t commands[] = {
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "login",				Cmd_LoginAccount_f,			CMD_NOINTERMISSION },
+	{ "logout",				Cmd_LogoutAccount_f,			CMD_NOINTERMISSION },
 	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
+	{ "new",				Cmd_NewAccount_f,				CMD_NOINTERMISSION },
 	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
