@@ -453,7 +453,7 @@ static inline int CM_FindPlane2(float plane[4], int *flipped) {
 
 	// add a new plane
 	if ( numPlanes == MAX_PATCH_PLANES ) {
-		Com_Error( ERR_DROP, "MAX_PATCH_PLANES" );
+		Com_Error( ERR_DROP, "CM_FindPlane2: MAX_PATCH_PLANES (%d)", MAX_PATCH_PLANES );
 	}
 
 	VectorCopy4( plane, planes[numPlanes].plane );
@@ -507,7 +507,7 @@ static inline int CM_FindPlane( float *p1, float *p2, float *p3 ) {
 
 	// add a new plane
 	if ( numPlanes == MAX_PATCH_PLANES ) {
-		Com_Error( ERR_DROP, "MAX_PATCH_PLANES" );
+		Com_Error( ERR_DROP, "CM_FindPlane: MAX_PATCH_PLANES (%d)", MAX_PATCH_PLANES );
 	}
 
 	VectorCopy4( plane, planes[numPlanes].plane );
