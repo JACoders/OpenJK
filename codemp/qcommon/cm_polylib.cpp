@@ -166,8 +166,8 @@ ChopWindingInPlace
 void ChopWindingInPlace (winding_t **inout, vec3_t normal, float dist, float epsilon)
 {
 	winding_t	*in;
-	float	dists[MAX_POINTS_ON_WINDING+4];
-	int		sides[MAX_POINTS_ON_WINDING+4];
+	float	dists[MAX_POINTS_ON_WINDING+4] = { 0 };
+	int		sides[MAX_POINTS_ON_WINDING+4] = { 0 };
 	int		counts[3];
 	static	float	dot;		// VC 4.2 optimizer bug if not static
 	int		i, j;
