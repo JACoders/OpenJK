@@ -393,6 +393,32 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			SP_info_jedimaster_start( ent );
 		}
 	}
+
+	// zyk: initializing race mode
+	level.race_mode = 0;
+
+	// zyk: initializing quest_map value
+	level.quest_map = 0;
+
+	// zyk: initializing quest_model_id value
+	level.quest_model_id = -1;
+
+	// zyk: initializing quest_note_id value
+	level.quest_note_id = -1;
+
+	// zyk: initializing quest_effect_id value
+	level.quest_effect_id = -1;
+
+	// zyk: initializing bounty_quest_target_id value
+	level.bounty_quest_target_id = 0;
+	level.bounty_quest_choose_target = qtrue;
+
+	// zyk: initializing guardian quest values
+	level.guardian_quest = 0;
+	level.guardian_quest_timer = 0;
+	level.validated_map_guardian = qfalse;
+	level.map_guardian_counter = 0;
+	level.initial_map_guardian_weapons = 0;
 }
 
 

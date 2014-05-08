@@ -2257,7 +2257,12 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		health = maxHealth;
 	}
 	else
-		health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	{
+		if (client->sess.amrpgmode == 2)
+			health = client->pers.max_rpg_health;
+		else
+			health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	}
 
 	client->pers.maxHealth = health;
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
@@ -3066,6 +3071,9 @@ Initializes all non-persistant parts of playerState
 ============
 */
 extern qboolean WP_HasForcePowers( const playerState_t *ps );
+extern void initialize_rpg_skills(gentity_t *ent);
+extern void quest_get_new_player(gentity_t *ent);
+extern void clean_guardians(gentity_t *ent);
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;
@@ -3708,6 +3716,37 @@ void ClientSpawn(gentity_t *ent) {
 
 	G_SetOrigin( ent, spawn_origin );
 	VectorCopy( spawn_origin, client->ps.origin );
+
+	// zyk: initializing universe_quest_objective_control value
+	ent->client->pers.universe_quest_objective_control = -1;
+
+	// zyk: initializing mind control attributes on spawn time
+	ent->client->pers.being_mind_controlled = -1;
+	ent->client->pers.mind_control = 0;
+	ent->client->pers.mind_controlled1_id = -1;
+
+	// zyk: loading default value of race_position
+	ent->client->pers.race_position = 0;
+
+	// zyk: initializing flame thrower timer
+	ent->client->pers.flame_thrower = 0;
+
+	// zyk: initializing Ultimate Power attributes
+	ent->client->pers.ultimate_power_user = 0;
+	ent->client->pers.ultimate_power_target = 0;
+	ent->client->pers.ultimate_power_timer = 0;
+	ent->client->pers.ultimate_power_target_timer = 0;
+
+	// zyk: if player is already logged at spawn, load his account again to get his settings back
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		clean_guardians(ent);
+
+		// zyk: getting the player who can play a quest in this map
+		quest_get_new_player(ent);
+
+		initialize_rpg_skills(ent);
+	}
 
 	// the respawned flag will be cleared after the attack and jump keys come up
 	client->ps.pm_flags |= PMF_RESPAWNED;

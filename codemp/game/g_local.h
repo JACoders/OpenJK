@@ -1275,6 +1275,50 @@ typedef struct level_locals_s {
 	} locations;
 
 	gametype_t	gametype;
+
+	// zyk: Race Mode
+	int race_mode; // zyk: sets 1 when someone joined the race and 2 when countdown starts and 3 when race starts. Default 0
+	int race_start_timer; // zyk: timer to determine the time to start the race if race_mode is 1
+	int race_countdown_timer; // zyk: shows the countdown on the players screens
+	int race_countdown; // zyk: used to print each of the countdown messages
+	int race_last_player_position; // zyk: after race starts, sets the position of the last player who crossed the finish line
+
+	// zyk: the player id who is the target in Bounty Quest. Default 0
+	int bounty_quest_target_id;
+
+	// zyk: determines if a target can be chosen now. Default qtrue
+	qboolean bounty_quest_choose_target;
+
+	// zyk: sets the map in which the player must complete a quest objective
+	int quest_map;
+
+	// zyk: has the quest crystal id that a player must get. Default -1.
+	// gets cleaned when the player gets the crystal
+	int quest_model_id;
+
+	// zyk: has the quest note id that a player must get. Default -1.
+	// gets cleaned when the player gets the note
+	int quest_note_id;
+
+	// zyk: has the quest effect id of the fx_runner entity in the guardian area. Default -1.
+	// gets cleaned when the player arrives at it
+	int quest_effect_id;
+
+	// zyk: Guardian Quest. Default 0. If someone uses command to activate this quest, will have value 1
+	// after the guardian is spawned, sets the guardian npc id
+	int guardian_quest;
+	int guardian_quest_timer;
+
+	// zyk: used to test if the map guardian npc is stuck in the spawn area
+	vec3_t initial_guardian_origin;
+
+	// zyk: if npc is not stuck, set this as qtrue
+	qboolean validated_map_guardian;
+
+	// zyk: counts how many support npcs the map guardian has spawned
+	int map_guardian_counter;
+
+	int initial_map_guardian_weapons;
 } level_locals_t;
 
 
