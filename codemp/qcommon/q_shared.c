@@ -859,6 +859,24 @@ int Q_isprint( int c )
 	return ( 0 );
 }
 
+int Q_isprintext( int c )
+{
+	if ( c >= 0x20 && c <= 0x7E )
+		return (1);
+	if ( c >= 0x80 && c <= 0xFE )
+		return (1);
+	return (0);
+}
+
+int Q_isgraph( int c )
+{
+	if ( c >= 0x21 && c <= 0x7E )
+		return (1);
+	if ( c >= 0x80 && c <= 0xFE )
+		return (1);
+	return (0);
+}
+
 int Q_islower( int c )
 {
 	if (c >= 'a' && c <= 'z')
