@@ -432,6 +432,7 @@ Adds score to both the client and his team
 ============
 */
 extern qboolean g_dontPenalizeTeam; //g_cmds.c
+extern void rpg_score(gentity_t *ent);
 void AddScore( gentity_t *ent, vec3_t origin, int score )
 {
 	/*
@@ -452,6 +453,12 @@ void AddScore( gentity_t *ent, vec3_t origin, int score )
 	//ScorePlum(ent, origin, score);
 	//
 	ent->client->ps.persistant[PERS_SCORE] += score;
+
+	if (!ent->NPC && ent->client->sess.amrpgmode == 2 && score > 0)
+	{
+		rpg_score(ent);
+	}
+
 	if ( level.gametype == GT_TEAM && !g_dontPenalizeTeam )
 		level.teamScores[ ent->client->ps.persistant[PERS_TEAM] ] += score;
 	CalculateRanks();
@@ -2068,6 +2075,9 @@ extern qboolean g_endPDuel;
 extern qboolean g_noPDuelCheck;
 extern void saberReactivate(gentity_t *saberent, gentity_t *saberOwner);
 extern void saberBackToOwner(gentity_t *saberent);
+extern void quest_get_new_player(gentity_t *ent);
+extern void try_finishing_race();
+extern void save_account(gentity_t *ent);
 void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	gentity_t	*ent;
 	int			anim;
@@ -2077,6 +2087,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	qboolean	wasJediMaster = qfalse;
 	int			sPMType = 0;
 	char		buf[512] = {0};
+	gentity_t	*quest_player = NULL;
 
 	if ( self->client->ps.pm_type == PM_DEAD ) {
 		return;
@@ -2088,6 +2099,279 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 	if ( !attacker )
 		return;
+
+	if (self->client->pers.race_position > 0) // zyk: if a player dies during a race, he loses the race
+	{
+		self->client->pers.race_position = 0;
+		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7died during the race!\n\"",self->client->pers.netname) );
+		try_finishing_race();
+	}
+
+	// zyk: setting the credits_modifier and the bonus score for the RPG player
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
+	{
+		if (!self->NPC && self->client->sess.amrpgmode == 2)
+		{ // zyk: RPG Mode player score and credits
+			attacker->client->pers.credits_modifier = self->client->pers.level;
+			attacker->client->pers.score_modifier = self->client->pers.level/50;
+		}
+		else if (self->NPC && self->client->pers.guardian_invoked_by_id != -1)
+		{ // zyk: guardians give more score and credits
+			attacker->client->pers.credits_modifier = 190;
+			attacker->client->pers.score_modifier = 2;
+		}
+		else if (self->NPC && self->client->ps.fd.forcePowerMax > 0 && self->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		{ // zyk: force-user saber npcs give more score and credits
+			attacker->client->pers.credits_modifier = 10;
+			attacker->client->pers.score_modifier = 1;
+		}
+
+		if (level.guardian_quest > 1 && self->NPC && self->s.number == level.guardian_quest)
+		{ // zyk: if player defeated the map guardian npc
+			attacker->client->pers.score_modifier = 4;
+			attacker->client->pers.credits_modifier = 990;
+			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the map guardian\n\"", attacker->client->pers.netname) );
+			level.guardian_quest = 0;
+		}
+
+		if (attacker->client->pers.rpg_class == 2)
+		{ // zyk: Bounty Hunter class receives more credits
+			attacker->client->pers.credits_modifier += 10 * (attacker->client->pers.improvements_level + 1);
+		}
+
+		// zyk: Bounty Quest manager
+		if (level.bounty_quest_choose_target == qfalse && attacker != self && self->client->sess.amrpgmode == 2)
+		{
+			if (level.bounty_quest_target_id == (attacker-g_entities))
+			{ // zyk: attacker was the target, so the attacker receives 200 bonus credits
+				attacker->client->pers.credits_modifier += 200;
+				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s ^7was defeated by the target player, ^3200 ^7bonus credits\n\"", self->client->pers.netname) );
+			}
+			else if (level.bounty_quest_target_id == (self-g_entities))
+			{ // zyk: target player was defeated. Gives the reward to the attacker
+				attacker->client->pers.credits_modifier += (self->client->pers.level*15);
+				level.bounty_quest_choose_target = qtrue;
+				level.bounty_quest_target_id++;
+				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s^7 receives ^3%d ^7bonus credits\n\"", attacker->client->pers.netname, (self->client->pers.level*15)) );
+			}
+		}
+	}
+
+	if (level.guardian_quest > 1 && self->NPC && self->s.number == level.guardian_quest)
+	{ // zyk: map guardian npc defeated by a non-rpg player
+		trap->SendServerCommand( -1, va("chat \"^3Guardian Quest:^7Map Guardian not defeated by rpg player\n\"") );
+		level.guardian_quest = 0;
+	}
+
+	// zyk: if player dies being mind controlled or controlling someone, stop mind control
+	if (self->client->pers.being_mind_controlled > -1)
+	{
+		gentity_t *controller_ent = &g_entities[self->client->pers.being_mind_controlled];
+		controller_ent->client->pers.mind_controlled1_id = -1;
+		self->client->pers.being_mind_controlled = -1;
+	}
+
+	if (!self->NPC && self->client->sess.amrpgmode == 2 && self->client->pers.mind_control > 0 && self->client->pers.mind_controlled1_id > -1)
+	{
+		gentity_t *controlled_ent = &g_entities[self->client->pers.mind_controlled1_id];
+		self->client->pers.mind_controlled1_id = -1;
+		controlled_ent->client->pers.being_mind_controlled = -1;
+	}
+
+	if (self->NPC && Q_stricmp( self->NPC_type, "map_guardian_support" ) == 0)
+	{
+		level.map_guardian_counter--;
+	}
+
+	if (self->client->pers.guardian_invoked_by_id != -1)
+	{ // zyk: rpg mode boss. Getting the quest player
+		quest_player = &g_entities[self->client->pers.guardian_invoked_by_id];
+	}
+
+	// zyk: artifact holder of Universe Quest, set the player universe_quest_artifact_holder_id to -2 so he can get the artifact when he touches the force boon item
+	if (self->client->pers.universe_quest_artifact_holder_id != -1 && self->NPC)
+	{
+		if (Q_stricmp( self->NPC_type, "quest_ragnos" ) == 0) // zyk: quest_ragnos npc has a different way to get the artifact
+		{
+			gentity_t *player_ent = &g_entities[self->client->pers.universe_quest_artifact_holder_id];
+
+			trap->SendServerCommand( -1, va("chat \"^3Spooky voice^7: I am going away, since I am not welcome here...\""));
+			player_ent->client->pers.universe_quest_artifact_holder_id = -1;
+
+			quest_get_new_player(player_ent);
+		}
+		else 
+			g_entities[self->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id = -2;
+	}
+	else if (self->client->pers.universe_quest_objective_control > -1 && self->NPC)
+	{ // zyk: Universe Quest objective verification
+		gentity_t *the_old_player = &g_entities[self->client->pers.universe_quest_objective_control];
+
+		self->client->pers.universe_quest_objective_control = -1;
+
+		if (Q_stricmp( self->NPC_type, "quest_protocol_imp" ) == 0)
+		{ // zyk: quest_protocol_imp npc of the sixth objective of Universe Quest died, player can now receive the Amulet of Darkness from the jawa by setting this value to universe_quest_messages
+			the_old_player->client->pers.universe_quest_messages = 51;
+		}
+		else if (the_old_player->client->pers.universe_quest_progress == 6 && Q_stricmp( self->NPC_type, "quest_reborn_boss" ) == 0)
+		{ // zyk: quest reborn npc of the Master of Evil mission of Universe Quest died
+			the_old_player->client->pers.universe_quest_messages = 2;
+		}
+		else if (Q_stricmp( self->NPC_type, "quest_sand_raider_green" ) == 0 || Q_stricmp( self->NPC_type, "quest_sand_raider_brown" ) == 0 || Q_stricmp( self->NPC_type, "quest_sand_raider_blue" ) == 0 || Q_stricmp( self->NPC_type, "quest_sand_raider_red" ) == 0)
+		{
+			the_old_player->client->pers.universe_quest_objective_control--;
+			if (the_old_player->client->pers.universe_quest_objective_control == 0)
+			{ // zyk: killed all raiders, set 65 so player can receive the Amulet of Eternity from the jawa citizen
+				the_old_player->client->pers.universe_quest_messages = 65;
+			}
+		}
+		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9) // zyk: if its a Sage, player fails the objective
+		{
+			trap->SendServerCommand( -1, va("chat \"%s^7: Oh no! One of the sages is dead! I failed to protect them...\"", the_old_player->client->pers.netname));
+
+			// zyk: if player fails the first Universe Quest objective, pass the turn to another player
+			quest_get_new_player(the_old_player);
+		}
+		else if (the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_objective_control != -1 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9)
+		{
+			if (the_old_player->client->pers.universe_quest_objective_control > 1 || Q_stricmp( self->NPC_type, "quest_reborn_boss" ) == 0)
+			{
+				the_old_player->client->pers.universe_quest_objective_control--;
+				if (the_old_player->client->pers.universe_quest_objective_control == 0)
+				{ // zyk: all quest reborn npcs were defeated. The player then completed the first Universe Quest objective
+					the_old_player->client->pers.universe_quest_messages = 10;
+				}
+			}
+		}
+		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 1 && level.quest_map == 9)
+		{ // zyk: if sage dies, player fails the second objective
+			trap->SendServerCommand( -1, va("chat \"%s^7: I cant believe it! Now it is all lost...\"", the_old_player->client->pers.netname));
+
+			quest_get_new_player(the_old_player);
+		}
+		else if (Q_stricmp( self->NPC_type, "sage_of_universe" ) == 0 && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_objective_control == 5 && the_old_player->client->pers.universe_quest_progress == 4)
+		{ // zyk: Sage of Universe died in the fifth Universe Quest objective, pass turn to another player
+			trap->SendServerCommand( -1, va("chat \"%s^7: It cannot be! The Sage of Universe is dead...\"", the_old_player->client->pers.netname));
+
+			quest_get_new_player(the_old_player);
+		}
+		else if (the_old_player->client->pers.universe_quest_progress == 11)
+		{ // zyk: Battle for the Temple, soldier was defeated by the player
+			if (Q_stricmp( self->NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( self->NPC_type, "quest_reborn_boss" ) == 0)
+			{
+				the_old_player->client->pers.universe_quest_objective_control--;
+
+				if (the_old_player->client->pers.universe_quest_objective_control == 0)
+				{ // zyk: player defeated all soldiers, so he completed the mission
+					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7We defeated them all.\"");
+					the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
+					the_old_player->client->pers.hunter_quest_messages = 40;
+				}
+				else if (the_old_player->client->pers.universe_quest_objective_control == 14)
+				{ // zyk: after the player defeats some soldiers, Master of Evil will send more
+					the_old_player->client->pers.hunter_quest_messages = 15;
+					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7More soldiers coming.\"");
+				}
+			}
+			else
+			{
+				trap->SendServerCommand( -1, va("chat \"%s: ^7No! One of my allies died...\"", the_old_player->client->pers.netname));
+				the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
+				the_old_player->client->pers.hunter_quest_messages = 50;
+			}
+		}
+	}
+	else if (quest_player && (quest_player->client->pers.guardian_mode <= 8 || quest_player->client->pers.guardian_mode == 11))
+	{ // zyk: Light Quest. If guardian was defeated by the invoker, increase the defeated_guardians value
+		if (quest_player->client->pers.guardian_mode == 8)
+		{ // zyk: defeated the Guardian of Light
+			quest_player->client->pers.defeated_guardians = NUMBER_OF_GUARDIANS;
+			trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Well done, brave warrior! Now i shall grant you the ^5Light Power^7!\"");
+		}
+		else
+		{
+			int light_quest_bitvalue = quest_player->client->pers.guardian_mode + 3;
+			if (quest_player->client->pers.guardian_mode == 11)
+			{
+				light_quest_bitvalue = 11;
+			}
+
+			quest_player->client->pers.defeated_guardians |= (1 << light_quest_bitvalue);
+
+			// zyk: make the chat message for each guardian the player defeats
+			if (light_quest_bitvalue == 4)
+				trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Well done... continue your quest... if you seek the power of light...\"");
+			else if (light_quest_bitvalue == 5)
+				trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Incredible! you are indeed a strong warrior...\"");
+			else if (light_quest_bitvalue == 6)
+				trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7You just defeated the power of forest! Amazing!\"");
+			else if (light_quest_bitvalue == 7)
+				trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7You must be quite intelligent to beat me.\"");
+			else if (light_quest_bitvalue == 8)
+				trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Wow! You are fast and strong, you deserve the victory!\"");
+			else if (light_quest_bitvalue == 9)
+				trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7I cant believe it, you defeated the power of fire!\"");
+			else if (light_quest_bitvalue == 10)
+				trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7You are indeed the chosen warrior... may the power of the wind guide you in your quest.\"");
+			else if (light_quest_bitvalue == 11)
+				trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
+		}
+
+		quest_player->client->pers.guardian_mode = 0;
+		quest_player->client->pers.light_quest_messages = 0;
+
+		save_account(quest_player);
+
+		quest_get_new_player(quest_player);
+	}
+	else if (quest_player && quest_player->client->pers.guardian_mode == 9)
+	{ // zyk: Dark Quest. Defeated the Guardian of Darkness
+		quest_player->client->pers.guardian_mode = 0;
+		quest_player->client->pers.hunter_quest_progress = NUMBER_OF_OBJECTIVES;
+
+		save_account(quest_player);
+
+		trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Well done, mighty warrior... now I shall grant you the ^1Dark Power^7!\"");
+
+		quest_get_new_player(quest_player);
+	}
+	else if (quest_player && quest_player->client->pers.guardian_mode == 10)
+	{ // zyk: Eternity Quest. Defeated the Guardian of Eternity
+		quest_player->client->pers.guardian_mode = 0;
+		quest_player->client->pers.eternity_quest_progress = NUMBER_OF_ETERNITY_QUEST_OBJECTIVES;
+
+		save_account(quest_player);
+
+		trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Very well...you are a worthy warrior...you deserve my ^3Eternity Power^7!\"");
+
+		quest_get_new_player(quest_player);
+	}
+	else if (quest_player && quest_player->client->pers.guardian_mode == 12)
+	{ // zyk: defeated the Master of Evil
+		quest_player->client->pers.universe_quest_messages = 12;
+		quest_player->client->pers.universe_quest_timer = level.time + 2000;
+		quest_player->client->pers.guardian_mode = 0;
+
+		trap->SendServerCommand( -1, va("chat \"^1Master of Evil: ^7Nooooo...\""));
+	}
+	else if (quest_player && quest_player->client->pers.guardian_mode == 13)
+	{ // zyk: defeated the Guardian of Universe
+		quest_player->client->pers.universe_quest_messages = 5;
+		quest_player->client->pers.universe_quest_timer = level.time + 2000;
+		quest_player->client->pers.guardian_mode = 0;
+	}
+	else if (quest_player && quest_player->client->pers.guardian_mode == 14)
+	{ // zyk: defeated the Guardian of Chaos
+		quest_player->client->pers.universe_quest_messages = 20;
+		quest_player->client->pers.universe_quest_timer = level.time + 8000;
+		quest_player->client->pers.guardian_mode = 0;
+		G_Sound(quest_player, CHAN_AUTO, G_SoundIndex("sound/chars/ragnos/misc/death3.mp3"));
+	}
+	
+	if (self->client->sess.amrpgmode == 2 && self->client->pers.guardian_mode > 0)
+	{ // zyk: player lost to a guardian
+		self->client->pers.guardian_mode = 0;
+	}
 
 	//check player stuff
 	g_dontFrickinCheck = qfalse;
@@ -4413,13 +4697,205 @@ int gPainMOD = 0;
 int gPainHitLoc = -1;
 vec3_t gPainPoint;
 
+extern void Jedi_Decloak( gentity_t *self );
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
-	int			take, asave, max, subamt = 0, knockback;
+	int			take, asave, subamt = 0, knockback;
 	float		famt = 0, hamt = 0, shieldAbsorbed = 0;
+	qboolean	is_a_monk = qfalse; // zyk: will be qtrue if attacker is a RPG Mode Monk
 
 	if (!targ)
 		return;
+
+	// zyk: allies will not receive damage from attacker
+	if (attacker && attacker->client && !attacker->NPC && targ && targ->client)
+	{
+		if (attacker->client->sess.ally1 == (targ-g_entities) || attacker->client->sess.ally2 == (targ-g_entities) || attacker->client->sess.ally3 == (targ-g_entities))
+		{
+			return;
+		}
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)
+	{ // zyk: player in RPG mode, with duals or staff, has a better damage depending on Saber Attack level
+		if (attacker->client->saber[0].saberFlags&SFL_TWO_HANDED || (attacker->client->saber[0].model[0] && attacker->client->saber[1].model[0]))
+		{
+			if (attacker->client->pers.force_powers_levels[5] <= FORCE_LEVEL_1)
+			{
+				damage = (int)ceil(damage*0.25);
+			}
+			else if (attacker->client->pers.force_powers_levels[5] == FORCE_LEVEL_2)
+			{
+				damage = (int)ceil(damage*0.5);
+			}
+			else if (attacker->client->pers.force_powers_levels[5] == FORCE_LEVEL_3)
+			{
+				damage = (int)ceil(damage*0.75);
+			}
+			else if (attacker->client->pers.force_powers_levels[5] == FORCE_LEVEL_5)
+			{
+				damage = (int)ceil(damage*1.1);
+			}
+		}
+	}
+
+	if (attacker && attacker->client && mod == MOD_SABER && attacker->client->ps.fd.saberAnimLevel == SS_DESANN)
+	{ // zyk: lowering damage a bit of desann style attack, because its too strong
+		damage = (int)ceil(damage*0.82);
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_MELEE)
+	{ // zyk: setting melee damage in RPG Mode
+		if (attacker->client->pers.melee_level == 0)
+			damage = (int)ceil((damage * 1.0)/2.0);
+		else if (attacker->client->pers.melee_level == 2)
+			damage = damage * 2;
+		else if (attacker->client->pers.melee_level == 3)
+			damage = damage * 3;
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
+	{ // zyk: setting saber damage of Force User, weapon damage of Bounty Hunter and melee damage of Monk. Free Warrior gets a little more damage in all attacks
+		if (attacker->client->pers.rpg_class == 0)
+			damage = (int)ceil(damage * (1 + (0.04 * attacker->client->pers.improvements_level)));
+		else if (attacker->client->pers.rpg_class == 1 && mod == MOD_SABER)
+			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.improvements_level)));
+		else if (attacker->client->pers.rpg_class == 2 && mod != MOD_SABER && mod != MOD_MELEE && mod != MOD_FORCE_DARK)
+			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.improvements_level)));
+		else if (attacker->client->pers.rpg_class == 4 && mod == MOD_MELEE)
+		{
+			damage = damage * (1 + attacker->client->pers.improvements_level);
+			is_a_monk = qtrue;
+		}
+		else if (attacker->client->pers.rpg_class == 5 && mod != MOD_MELEE)
+		{ // zyk: Stealth Attacker has more gun damage
+			float stealth_attacker_bonus_damage = 0.0;
+			// zyk: Stealth Attacker Upgrade increases damage
+			if (attacker->client->pers.secrets_found & (1 << 7))
+				stealth_attacker_bonus_damage = 0.05;
+
+			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level) + stealth_attacker_bonus_damage));
+		}
+		else if (attacker->client->pers.rpg_class == 6 && (mod == MOD_SABER || mod == MOD_MELEE))
+		{ // zyk: Duelist has higher damage in saber and melee
+			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level)));
+		}
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.weapons_levels[5] == 2 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
+	{ // zyk: DEMP2 2/2 in RPG Mode causes more damage
+		damage = damage * 1.25;
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.weapons_levels[6] == 2 && (mod == MOD_FLECHETTE || mod == MOD_FLECHETTE_ALT_SPLASH))
+	{ // zyk: Flechette 2/2 in RPG Mode causes more damage
+		damage = damage * 1.25;
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.weapons_levels[8] == 2 && (mod == MOD_CONC || mod == MOD_CONC_ALT))
+	{ // zyk: Concussion Rifle 2/2 in RPG Mode causes more damage
+		damage = damage * 1.25;
+	}
+
+	if (attacker && attacker->client && attacker->NPC)
+	{
+		if (attacker->client->pers.guardian_mode == 12 || attacker->client->pers.guardian_mode == 13 || attacker->client->pers.universe_quest_artifact_holder_id != -1)
+		{ // zyk: these quest npcs have bonus damage
+			damage = (int)ceil(damage*1.2);
+		}
+	}
+
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(attacker->client->pers.player_settings & (1 << 2)))
+	{ // zyk: Dark Power increases damage of every attack
+		damage = (int)ceil(damage*1.15);
+	}
+
+	if (attacker && attacker->client && attacker->NPC && attacker->client->pers.guardian_invoked_by_id != -1)
+	{ // zyk: attacker is a RPG boss. Increase damage based in the number of allies of the quest player
+		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
+		int number_of_allies = 0;
+
+		if (quest_player_ent->client->sess.ally1 != -1)
+			number_of_allies++;
+		if (quest_player_ent->client->sess.ally2 != -1)
+			number_of_allies++;
+		if (quest_player_ent->client->sess.ally3 != -1)
+			number_of_allies++;
+
+		if (quest_player_ent->client->pers.guardian_mode != 14)
+			damage += ((int)ceil(damage * 0.15 * number_of_allies));
+
+		// zyk: Guardian of Darkness used his Dark Power. Increase damage
+		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
+			damage = (int)ceil(damage*1.15);
+	}
+
+	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
+	{ // zyk: targ is a RPG mode boss
+		// zyk: chaos power and map entities cannot hit the boss
+		if (mod == MOD_UNKNOWN || !attacker || !attacker->client)
+			return;
+
+		if (targ->client->pers.guardian_invoked_by_id != (attacker-g_entities))
+		{			
+			if (attacker->client->sess.amrpgmode != 2 || attacker->client->pers.guardian_mode == 0)
+				return;
+		}
+
+		// zyk: guardians remove cloak of the player when hit by him
+		if (attacker->client->ps.powerups[PW_CLOAKED])
+			Jedi_Decloak(attacker);
+
+		// zyk: Guardian of Resistance takes less damage after using Ultra Resistance
+		if (targ->client->pers.guardian_mode == 11 && targ->client->pers.hunter_quest_messages == 1)
+			damage = (int)ceil(damage * 0.7);
+
+		// zyk: Guardian of Eternity used his Eternity Power. Decrease damage taken
+		if (targ->client->pers.guardian_mode == 10 && targ->client->pers.hunter_quest_messages == 1)
+			damage = (int)ceil(damage*0.85);
+	}
+
+	if (targ && targ->client && targ->NPC)
+	{
+		if (targ->client->pers.universe_quest_messages == -2000)
+		{ // zyk: npcs spawned in the Universe Quest last mission. They cannot be killed
+			return;
+		}
+	}
+
+	if (targ && targ->client && targ->client->sess.amrpgmode == 2 && targ->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(targ->client->pers.player_settings & (1 << 3)))
+	{ // zyk: Eternity Power reduces damage of every attack
+		damage = (int)ceil(damage*0.85);
+	}
+
+	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
+	{
+		// zyk: when player is in Hard Mode, he takes more damage
+		if (targ->client->pers.player_settings & (1 << 15))
+			damage = (int)ceil(damage * 1.5);
+
+		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
+		{
+			float armored_soldier_bonus_resistance = 0.0;
+			// zyk: Armored Soldier Upgrade increases damage resistance
+			if (targ->client->pers.secrets_found & (1 << 16))
+				armored_soldier_bonus_resistance = 0.05;
+			
+			damage = (int)ceil(damage * (0.9 - ((0.05 * targ->client->pers.improvements_level) + armored_soldier_bonus_resistance)));
+		}
+		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
+		{
+			damage = (int)ceil(damage * (1 - (0.04 * targ->client->pers.improvements_level)));
+		}
+		else if (targ->client->pers.rpg_class == 5 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
+		{ // zyk: Stealth Attacker damage resistance against DEMP2
+			// zyk: only takes damage if he does not have the upgrade
+			if (targ->client->pers.secrets_found & (1 << 7))
+				return;
+
+			damage = (int)ceil(damage * (1 - (0.25 * targ->client->pers.improvements_level)));
+		}
+	}
 
 	if (targ && targ->damageRedirect)
 	{
@@ -4580,16 +5056,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		return;
 	}
-	// reduce damage by the attacker's handicap value
-	// unless they are rocket jumping
-	if ( attacker->client
-		&& attacker != targ
-		&& attacker->s.eType == ET_PLAYER
-		&& level.gametype != GT_SIEGE )
-	{
-		max = attacker->client->ps.stats[STAT_MAX_HEALTH];
-		damage = damage * max / 100;
-	}
 
 	if ( !(dflags&DAMAGE_NO_HIT_LOC) )
 	{//see if we should modify it by damage location
@@ -4597,21 +5063,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			attacker->inuse && (attacker->client || attacker->s.eType == ET_NPC))
 		{ //check for location based damage stuff.
 			G_LocationBasedDamageModifier(targ, point, mod, dflags, &damage);
-		}
-	}
-
-	if ( targ->client
-		&& targ->client->NPC_class == CLASS_RANCOR
-		&& (!attacker||!attacker->client||attacker->client->NPC_class!=CLASS_RANCOR) )
-	{
-		// I guess always do 10 points of damage...feel free to tweak as needed
-		if ( damage < 10 )
-		{//ignore piddly little damage
-			damage = 0;
-		}
-		else if ( damage >= 10 )
-		{
-			damage = 10;
 		}
 	}
 
@@ -4629,7 +5080,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		VectorNormalize(dir);
 	}
 
-	knockback = damage;
+	// zyk: lowered knockback. Default: knockback = damage
+	knockback = damage/2;
 	if ( knockback > 200 ) {
 		knockback = 200;
 	}
@@ -4638,6 +5090,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 	if ( dflags & DAMAGE_NO_KNOCKBACK ) {
 		knockback = 0;
+	}
+
+	// zyk: if player is in RPG Mode, reduce knockback based on the Impact Reducer item of the player
+	if (targ && targ->client && targ->client->sess.amrpgmode == 2 && targ->client->pers.secrets_found & (1 << 9))
+	{
+		knockback = knockback * 0.2;
 	}
 
 	// figure momentum add, even if the damage won't be taken

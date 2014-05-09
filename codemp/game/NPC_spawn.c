@@ -1736,6 +1736,20 @@ finish:
 		G_SetOrigin( ent, saveOrg );
 	}
 
+	// zyk: added some attributes initialization
+	if (newent && newent->client)
+	{
+		newent->client->pers.being_mind_controlled = -1;
+		newent->client->pers.mind_control = 0;
+		newent->client->pers.mind_controlled1_id = -1;
+		newent->client->pers.guardian_invoked_by_id = -1;
+		newent->client->pers.guardian_mode = 0;
+		newent->client->pers.player_statuses = 0;
+		newent->client->pers.universe_quest_objective_control = -1;
+		newent->client->pers.universe_quest_artifact_holder_id = -1;
+		newent->client->pers.race_position = 0;
+	}
+
 	return newent;
 }
 

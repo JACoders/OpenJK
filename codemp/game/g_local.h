@@ -524,7 +524,10 @@ typedef struct clientPersistant_s {
 
 	char		guid[33];
 
-	// zyk: account system
+	// zyk: account system attributes
+
+	int player_statuses;
+
 	int	bitvalue; // zyk: player is considered as admin if bitvalue is > 0, because he has at least 1 admin command
 	
 	int level; // zyk: RPG mode level

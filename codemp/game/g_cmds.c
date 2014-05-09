@@ -3351,6 +3351,22 @@ void set_max_shield(gentity_t *ent)
 	ent->client->pers.max_rpg_shield = (int)ceil(((ent->client->pers.starting_shield_level * 1.0)/5) * ent->client->pers.max_rpg_health);
 }
 
+// zyk: gives credits to the player
+void add_credits(gentity_t *ent, int credits)
+{
+	ent->client->pers.credits += credits;
+	if (ent->client->pers.credits > 500000)
+		ent->client->pers.credits = 500000;
+}
+
+// zyk: removes credits from the player
+void remove_credits(gentity_t *ent, int credits)
+{
+	ent->client->pers.credits -= credits;
+	if (ent->client->pers.credits < 0)
+		ent->client->pers.credits = 0;
+}
+
 // zyk: loads the player account
 void load_account(gentity_t *ent, qboolean change_mode)
 {
@@ -3774,7 +3790,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 	}
 }
 
-// zyk: saves the player account
+// zyk: saves info into the player account file
 void save_account(gentity_t *ent)
 {
 	// zyk: used to prevent account save in map change time or before loading account after changing map
@@ -3842,6 +3858,61 @@ void save_account(gentity_t *ent)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"Error in account creation.\n\"" ); 
 			}
+		}
+	}
+}
+
+// zyk: gives rpg score to the player
+void rpg_score(gentity_t *ent)
+{
+	int send_message = 0; // zyk: if its 1, sends the message in player console
+	char message[1024];
+
+	strcpy(message,"");
+
+	add_credits(ent, (10 + ent->client->pers.credits_modifier));
+
+	if (ent->client->pers.level < MAX_RPG_LEVEL)
+	{
+		ent->client->pers.level_up_score += (1 + ent->client->pers.score_modifier); // zyk: add score to the RPG mode score
+
+		if (ent->client->pers.level_up_score >= ent->client->pers.level)
+		{ // zyk: player got a new level
+			ent->client->pers.level_up_score -= ent->client->pers.level;
+			ent->client->pers.level++;
+
+			if (ent->client->pers.level % 10 == 0) // zyk: every level divisible by 10 the player will get bonus skillpoints
+			{
+				ent->client->pers.skillpoints+=(ent->client->pers.level/10) + 1;
+				sprintf(message,"%sYou reached ^3level %d ^7and got 1 + %d bonus skillpoints!\n", message, ent->client->pers.level, (ent->client->pers.level/10));
+			}
+			else
+			{
+				ent->client->pers.skillpoints++;
+				sprintf(message,"%sYou reached ^3level %d ^7and have %d skillpoints.\n", message, ent->client->pers.level, ent->client->pers.skillpoints);
+			}
+
+			// zyk: got a new level, so change the max health and max shield
+			set_max_health(ent);
+			set_max_shield(ent);
+			send_message = 1;
+		}
+	}
+	save_account(ent); // zyk: saves new score and credits in the account file
+
+	// zyk: cleaning the modifiers after they are applied
+	ent->client->pers.credits_modifier = 0;
+	ent->client->pers.score_modifier = 0;
+
+	if (send_message == 1)
+	{
+		if (ent->client->pers.level == MAX_RPG_LEVEL)
+		{ // zyk: if this is the max level, show this message
+			trap->SendServerCommand( ent-g_entities, va("chat \"^7Congratulations, %s^7! You reached the max level %d!\n\"", ent->client->pers.netname, MAX_RPG_LEVEL) );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, va("chat \"%s\"", message) );
 		}
 	}
 }
@@ -4377,6 +4448,400 @@ void clean_guardians(gentity_t *ent)
 	}
 }
 
+// zyk: number of artifacts collected by the player in Universe Quest
+int number_of_artifacts(gentity_t *ent)
+{
+	int i = 0, collected_artifacts = 0;
+
+	if (ent->client->pers.universe_quest_progress == 2)
+	{
+		for (i = 0; i < 10; i++)
+		{
+			if (ent->client->pers.universe_quest_counter & (1 << i))
+			{
+				collected_artifacts++;
+			}
+		}
+	}
+
+	return collected_artifacts;
+}
+
+// zyk: tests if the player has beaten the guardians before the Guardian of Light in Light Quest
+qboolean light_quest_defeated_guardians(gentity_t *ent)
+{
+	int j = 0, number_of_guardians_defeated = 0;
+
+	for (j = 4; j < 12; j++)
+	{
+		if (ent->client->pers.defeated_guardians & (1 << j))
+		{
+			number_of_guardians_defeated++;
+		}
+	}
+
+	if (number_of_guardians_defeated == (NUMBER_OF_GUARDIANS - 1))
+		return qtrue;
+	else
+		return qfalse;
+}
+
+// zyk: tests if the player has collected the 9 notes before the Guardian of Darkness in Dark Quest
+qboolean dark_quest_collected_notes(gentity_t *ent)
+{
+	if (ent->client->pers.hunter_quest_progress & (1 << 4) && ent->client->pers.hunter_quest_progress & (1 << 5) && ent->client->pers.hunter_quest_progress & (1 << 6) && ent->client->pers.hunter_quest_progress & (1 << 7) && ent->client->pers.hunter_quest_progress & (1 << 8) && ent->client->pers.hunter_quest_progress & (1 << 9) && ent->client->pers.hunter_quest_progress & (1 << 10) && ent->client->pers.hunter_quest_progress & (1 << 11) && ent->client->pers.hunter_quest_progress & (1 << 12))
+	{
+		return qtrue;
+	}
+	else
+	{
+		return qfalse;
+	}
+}
+
+// zyk: loads the datapad md3 model for the Dark Quest notes
+void load_note_model(gentity_t *ent,int x,int y,int z)
+{
+
+}
+
+// zyk: loads the crystal md3 model for the Universe Quest crystals
+gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number)
+{
+	return NULL;
+}
+
+// zyk: load an effect used in quests
+gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile)
+{
+	gentity_t *ent = G_Spawn();
+
+	//zyk_set_entity_field(ent,"classname","fx_runner");
+	//zyk_set_entity_field(ent,"spawnflags",va("%d",spawnflags));
+	//zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
+
+	ent->s.modelindex = G_EffectIndex( fxFile );
+
+	//zyk_spawn_entity(ent);
+
+	level.quest_effect_id = ent->s.number;
+
+	return ent;
+}
+
+// zyk: cleans the note model if player gets it
+void clean_note_model()
+{
+	if (level.quest_note_id != -1)
+	{
+		G_FreeEntity(&g_entities[level.quest_note_id]);
+		level.quest_note_id = -1;
+	}
+}
+
+// zyk: amount of amulets got by the player in Amulets Mission of Universe Quest
+int number_of_amulets(gentity_t *ent)
+{
+	int i = 0, number_of_amulets = 0;
+	for (i = 0; i < 3; i++)
+	{
+		if (ent->client->pers.universe_quest_counter & (1 << i))
+		{
+			number_of_amulets++;
+		}
+	}
+	return number_of_amulets;
+}
+
+// zyk: tests if player got all 3 amulets in Amulets Mission of Universe Quest
+void got_all_amulets(gentity_t *ent)
+{
+	if (number_of_amulets(ent) == 3)
+	{
+		ent->client->pers.universe_quest_timer = level.time + 3000;
+		ent->client->pers.universe_quest_messages = 199;
+	}
+}
+
+// zyk: used by the quest_get_new_player function to actually get the new player based on his quest settings
+void choose_new_player(gentity_t *next_player)
+{
+	int found = 0;
+	if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && !(next_player->client->pers.player_settings & (1 << 0)) && next_player->client->pers.can_play_quest == 0 && next_player->client->pers.connected == CON_CONNECTED && next_player->client->sess.sessionTeam != TEAM_SPECTATOR && next_player->inuse == qtrue)
+	{
+		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 0)) || !(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 2)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
+			found = 1;
+		else if (level.quest_map == 2 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
+			found = 1;
+		else if (level.quest_map == 3 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
+			found = 1;
+		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 2)))))
+			found = 1;
+		else if (level.quest_map == 5 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
+			found = 1;
+		else if (level.quest_map == 6 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 9))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 6)))))
+			found = 1;
+		else if (level.quest_map == 7 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 7))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 10)))))
+			found = 1;
+		else if (level.quest_map == 8 && next_player->client->pers.universe_quest_progress == 4)
+			found = 1;
+		else if (level.quest_map == 9 && (next_player->client->pers.universe_quest_progress < 2 || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))))
+			found = 1;
+		else if (level.quest_map == 10 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 6))) || light_quest_defeated_guardians(next_player) == qtrue || dark_quest_collected_notes(next_player) == qtrue || next_player->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 8)))))
+			found = 1;
+		else if (level.quest_map == 11 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 9)))
+			found = 1;
+		else if (level.quest_map == 12 && (next_player->client->pers.universe_quest_progress == 7 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 1)))))
+			found = 1;
+		else if (level.quest_map == 13 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 5))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 5)))))
+			found = 1;
+		else if (level.quest_map == 14 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 11)))
+			found = 1;
+		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
+			found = 1;
+		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
+			found = 1;
+		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
+			found = 1;
+		else if (level.quest_map == 20 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 7)))))
+			found = 1;
+		else if (level.quest_map == 22 && next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))
+			found = 1;
+		else if (level.quest_map == 24 && next_player->client->pers.universe_quest_progress == 5)
+			found = 1;
+		else if (level.quest_map == 25 && next_player->client->pers.universe_quest_progress == 6)
+			found = 1;
+		else if (level.quest_map == 26 && next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1)))
+			found = 1;
+	}
+
+	if (found == 1)
+	{ // zyk: clean quest npcs of this map
+		int j = 0;
+		for (j = MAX_CLIENTS; j < level.num_entities; j++)
+		{
+			if (&g_entities[j] && g_entities[j].NPC && g_entities[j].health > 0 && (Q_stricmp( g_entities[j].NPC_type, "quest_ragnos" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_jawa" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_protocol_imp" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_green" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_brown" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_boss" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_light" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_time" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_boss_9" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "master_of_evil" ) == 0))
+			{
+				G_FreeEntity(&g_entities[j]);
+			}
+		}
+
+		// zyk: setting the attributes depending on the quests this player must complete in this map
+		next_player->client->pers.guardian_mode = 0;
+		next_player->client->pers.guardian_timer = 0;
+
+		next_player->client->pers.universe_quest_artifact_holder_id = -1;
+		next_player->client->pers.universe_quest_messages = 0;
+
+		// zyk: give some seconds to the new player to start his quest
+		next_player->client->pers.universe_quest_timer = level.time + 3000;
+
+		next_player->client->pers.hunter_quest_timer = level.time + 3000;
+		next_player->client->pers.hunter_quest_messages = 0;
+
+		next_player->client->pers.light_quest_timer = level.time + 3000;
+		next_player->client->pers.light_quest_messages = 0;
+
+		next_player->client->pers.eternity_quest_timer = 0;
+
+		// zyk: must clean here too so in yavin1b the correct note is spawned for this player
+		if (level.quest_map == 1)
+			clean_note_model();
+
+		if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 0) 
+		{ // zyk: first Universe Quest objective
+			next_player->client->pers.universe_quest_objective_control = 20; // zyk: player must kill quest reborn npcs to complete the first objective
+		}
+		else if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 1)
+		{ // zyk: second Universe Quest objective
+			next_player->client->pers.universe_quest_objective_control = 2; // zyk: sets this player as playing the second objective of Universe Quest
+		}
+		else if (next_player->client->pers.universe_quest_progress == 2)
+		{ // zyk: third Universe Quest objective
+			next_player->client->pers.universe_quest_objective_control = 3; // zyk: sets this player as playing the third objective of Universe Quest
+		}
+		else if (level.quest_map == 1 && next_player->client->pers.universe_quest_progress == 3)
+		{
+			if (level.quest_note_id == -1)
+				load_note_model(next_player,2780,3966,1411);
+
+			next_player->client->pers.universe_quest_objective_control = 4; // zyk: fourth Universe Quest objective
+		}
+		else if (level.quest_map == 8 && next_player->client->pers.universe_quest_progress == 4)
+		{ // zyk: fifth Universe Quest objective
+			next_player->client->pers.universe_quest_objective_control = 5;
+			next_player->client->pers.universe_quest_timer = level.time + 2000;
+		}
+		else if (level.quest_map == 24 && next_player->client->pers.universe_quest_progress == 5)
+		{
+			next_player->client->pers.universe_quest_objective_control = -6;
+			got_all_amulets(next_player);
+		}
+		else if (level.quest_map == 25 && next_player->client->pers.universe_quest_progress == 6)
+		{ // zyk: seventh Universe Quest objective
+			next_player->client->pers.universe_quest_timer = level.time + 3000;
+			next_player->client->pers.universe_quest_objective_control = -7;
+		}
+		else if (level.quest_map == 17 && next_player->client->pers.universe_quest_progress == 11)
+		{ // zyk: Universe Quest. Player must defeat this quantity of quest_super_soldier npcs in this mission
+			next_player->client->pers.universe_quest_timer = level.time + 3000;
+			next_player->client->pers.universe_quest_objective_control = 28;
+		}
+
+		// zyk: loading note models if player must find a Dark Quest note
+		if (level.quest_note_id == -1 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES)
+		{
+			if (level.quest_map == 1 && !(next_player->client->pers.hunter_quest_progress & (1 << 4)))
+			{
+				load_note_model(next_player,2375,4600,1810);
+			}
+			else if (level.quest_map == 2 && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
+			{
+				load_note_model(next_player,7500,-755,2);
+			}
+			else if (level.quest_map == 3 && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
+			{
+				load_note_model(next_player,-765,4790,196);
+			}
+			else if (level.quest_map == 4 && !(next_player->client->pers.hunter_quest_progress & (1 << 7)))
+			{
+				load_note_model(next_player,2400,2990,-2093);
+			}
+			else if (level.quest_map == 5 && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
+			{
+				load_note_model(next_player,-500,-4690,928);
+			}
+			else if (level.quest_map == 6 && !(next_player->client->pers.hunter_quest_progress & (1 << 9)))
+			{
+				load_note_model(next_player,-9838,-1547,2);
+			}
+			else if (level.quest_map == 7 && !(next_player->client->pers.hunter_quest_progress & (1 << 10)))
+			{
+				load_note_model(next_player,1905,1180,706);
+			}
+			else if (level.quest_map == 18 && !(next_player->client->pers.hunter_quest_progress & (1 << 11)))
+			{
+				load_note_model(next_player,-1148,-1458,593);
+			}
+			else if (level.quest_map == 9 && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))
+			{
+				load_note_model(next_player,14100,-1580,-3165);
+			}
+		}
+
+		// zyk: loading effects in guardian area
+		if (level.quest_effect_id == -1 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+		{
+			if (level.quest_map == 1 && !(next_player->client->pers.defeated_guardians & (1 << 4)))
+			{ // zyk: Guardian of Water
+				load_effect(2062,4089,351,0,"env/btend");
+			}
+			else if (level.quest_map == 13 && !(next_player->client->pers.defeated_guardians & (1 << 5)))
+			{ // zyk: Guardian of Earth
+				load_effect(-380,1578,4751,0,"env/btend");
+			}
+			else if (level.quest_map == 10 && !(next_player->client->pers.defeated_guardians & (1 << 6)))
+			{ // zyk: Guardian of Forest
+				load_effect(512,4829,62,0,"env/btend");
+			}
+			else if (level.quest_map == 7 && !(next_player->client->pers.defeated_guardians & (1 << 7)))
+			{ // zyk: Guardian of Intelligence
+				load_effect(2500,2140,-551,0,"env/btend");
+			}
+			else if (level.quest_map == 20 && !(next_player->client->pers.defeated_guardians & (1 << 8)))
+			{ // zyk: Guardian of Agility
+				load_effect(8474,-1322,-159,0,"env/btend");
+			}
+			else if (level.quest_map == 11 && !(next_player->client->pers.defeated_guardians & (1 << 9)))
+			{ // zyk: Guardian of Fire
+				load_effect(2742,-25,-3808,0,"env/btend");
+			}
+			else if (level.quest_map == 15 && !(next_player->client->pers.defeated_guardians & (1 << 10)))
+			{ // zyk: Guardian of Wind
+				load_effect(5225,462,665,0,"env/btend");
+			}
+			else if (level.quest_map == 14 && !(next_player->client->pers.defeated_guardians & (1 << 11)))
+			{ // zyk: Guardian of Resistance
+				load_effect(0,1135,9,0,"env/btend");
+			}
+		}
+
+		next_player->client->pers.can_play_quest = 1;
+
+		trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7%s ^7turn.\"",next_player->client->pers.netname));
+	}
+}
+
+// zyk: searches for a new player to play a quest if he died or failed
+void quest_get_new_player(gentity_t *ent)
+{
+	int i = 0;
+	gentity_t *next_player = NULL;
+
+	ent->client->pers.can_play_quest = 0;
+
+	for (i = 0; i < level.maxclients; i++)
+	{ // zyk: verify if there is someone who is already playing a quest and is not in spectator mode
+		next_player = &g_entities[i];
+		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.can_play_quest == 1 && next_player->client->sess.sessionTeam != TEAM_SPECTATOR)
+			return;
+	}
+
+	for (i = 0; i < level.maxclients; i++)
+	{ // zyk: remove guardian_mode from all players that were fighting a boss battle
+		next_player = &g_entities[i];
+		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.guardian_mode != 0)
+			next_player->client->pers.guardian_mode = 0;
+	}
+
+	// zyk: no one is already playing the quest, so choose a new player
+
+	for (i = ((ent-g_entities) + 1); i < level.maxclients; i++)
+	{
+		next_player = &g_entities[i];
+
+		choose_new_player(next_player);
+
+		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
+			return;
+	}
+
+	for (i = 0; i < (ent-g_entities); i++)
+	{
+		next_player = &g_entities[i];
+
+		choose_new_player(next_player);
+
+		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
+			return;
+	}
+
+	// zyk: didnt find anyone to play this quest, so choose the same player again if he still needs to play a quest in this map
+	choose_new_player(ent);
+}
+
+// zyk: tests if the race must be finished
+void try_finishing_race()
+{
+	int j = 0, has_someone_racing = 0;
+	gentity_t *this_ent = NULL;
+
+	for (j = 0; j < MAX_CLIENTS; j++)
+	{ 
+		this_ent = &g_entities[j];
+		if (this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR && this_ent->client->pers.race_position > 0)
+		{ // zyk: searches for the players who are still racing to see if we must finish the race
+			has_someone_racing = 1;
+		}
+	}
+
+	if (has_someone_racing == 0)
+	{ // zyk: no one is racing, so finish the race
+		level.race_mode = 0;
+		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7The race is over!\""));
+	}
+}
+
 /*
 ==================
 Cmd_LogoutAccount_f
@@ -4412,7 +4877,7 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 		// zyk: if this player was playing a quest, find a new one to play quests in this map
 		if (ent->client->pers.can_play_quest == 1)
 		{
-			//quest_get_new_player(ent);
+			quest_get_new_player(ent);
 		}
 
 		ent->client->pers.bitvalue = 0;
@@ -4445,23 +4910,1903 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	}
 }
 
-// zyk: number of artifacts collected by the player in Universe Quest
-int number_of_artifacts(gentity_t *ent)
-{
-	int i = 0, collected_artifacts = 0;
-
-	if (ent->client->pers.universe_quest_progress == 2)
+/*
+==================
+Cmd_UpSkill_f
+==================
+*/
+void Cmd_UpSkill_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
 	{
-		for (i = 0; i < 10; i++)
+		char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be upgraded
+		int upgrade_value; // zyk: the integer value of arg1
+		    
+		if ( trap->Argc() != 2) 
+		{ 
+			trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be upgraded.\n\"" ); 
+			return;
+		}
+
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+		upgrade_value = atoi(arg1);
+
+		// zyk: validation on the upgrade level, which must be in the range of valid skills.
+		if (upgrade_value < 1 || upgrade_value > NUMBER_OF_SKILLS)
 		{
-			if (ent->client->pers.universe_quest_counter & (1 << i))
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid skill number.\n\"" );
+			return;
+		}
+
+		// zyk: the user must have skillpoints to get a new skill level
+		if (ent->client->pers.skillpoints == 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You dont have enough skillpoints.\n\"" );
+			return;
+		}
+
+		// zyk: validation on skills that are allowed to specific RPG classes
+		if (ent->client->pers.rpg_class == 1 && ((upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 40 && upgrade_value <= 54)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Force User class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.rpg_class == 2 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 55))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Bounty Hunter class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.rpg_class == 3 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 49 || (upgrade_value >= 52 && upgrade_value <= 55)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Armored Soldier class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.rpg_class == 4 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 9) || upgrade_value == 11 || upgrade_value == 14 || upgrade_value == 17 || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 39 && upgrade_value <= 54)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Monk class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.rpg_class == 5 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 21) || upgrade_value == 23 || (upgrade_value >= 26 && upgrade_value <= 27) || upgrade_value == 29 || (upgrade_value >= 36 && upgrade_value <= 40) || (upgrade_value >= 43 && upgrade_value <= 44) || (upgrade_value >= 48 && upgrade_value <= 53) || upgrade_value == 55))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Stealth Attacker class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 16 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 38 && upgrade_value <= 54)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Duelist class doesn't allow this skill.\n\"" );
+			return;
+		}
+
+		// zyk: validation on skills that require certain conditions to be upgraded
+		if (upgrade_value == 20 && ent->client->pers.weapons_levels[0] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Blaster Pistol.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 21 && ent->client->pers.weapons_levels[1] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in E11 Blaster Rifle.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 22 && ent->client->pers.weapons_levels[2] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Disruptor.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 23 && ent->client->pers.weapons_levels[3] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Bowcaster.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 24 && ent->client->pers.weapons_levels[4] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Repeater.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 25 && ent->client->pers.weapons_levels[5] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in DEMP2.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 26 && ent->client->pers.weapons_levels[6] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Flechette.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 27 && ent->client->pers.weapons_levels[7] == 1 && !(ent->client->pers.secrets_found & (1 << 14)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Rocket Upgrade to get 2/2 in Rocket Launcher.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 28 && ent->client->pers.weapons_levels[8] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Concussion Rifle.\n\"" );
+			return;
+		}
+
+		if (upgrade_value == 29 && ent->client->pers.weapons_levels[9] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Bryar Pistol.\n\"" );
+			return;
+		}
+
+		// zyk: the upgrade is done if it doesnt go above the maximum level of the skill
+		if (upgrade_value == 1)
+		{
+			if (ent->client->pers.force_powers_levels[0] < 5)
 			{
-				collected_artifacts++;
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
+				ent->client->pers.force_powers_levels[0]++;
+				ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jump ^7skill.\n\"" );
+				return;
 			}
 		}
-	}
+			
+		if (upgrade_value == 2)
+		{
+			if (ent->client->pers.force_powers_levels[1] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
+				ent->client->pers.force_powers_levels[1]++;
+				ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Push ^7skill.\n\"" );
+				return;
+			}
+		}
 
-	return collected_artifacts;
+		if (upgrade_value == 3)
+		{
+			if (ent->client->pers.force_powers_levels[2] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
+				ent->client->pers.force_powers_levels[2]++;
+				ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Pull ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 4)
+		{
+			if (ent->client->pers.force_powers_levels[3] < 4)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
+				ent->client->pers.force_powers_levels[3]++;
+				ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Speed ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 5)
+		{
+			if (ent->client->pers.force_powers_levels[4] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+				ent->client->pers.force_powers_levels[4]++;
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 6)
+		{
+			if (ent->client->pers.force_powers_levels[5] < 5)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)))
+				{
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
+					ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+				}
+				ent->client->pers.force_powers_levels[5]++;
+				ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+				if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
+				{
+					ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
+				}
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Attack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 7)
+		{
+			if (ent->client->pers.force_powers_levels[6] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+				ent->client->pers.force_powers_levels[6]++;
+				ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Defense ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 8)
+		{
+			if (ent->client->pers.force_powers_levels[7] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
+				ent->client->pers.force_powers_levels[7]++;
+				ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Throw ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 9)
+		{
+			if (ent->client->pers.force_powers_levels[8] < 4)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
+				ent->client->pers.force_powers_levels[8]++;
+
+				if (ent->client->pers.force_powers_levels[8] < 4)
+					ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+				else
+					ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
+
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Absorb ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 10)
+		{
+			if (ent->client->pers.force_powers_levels[9] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
+				ent->client->pers.force_powers_levels[9]++;
+				ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 11)
+		{
+			if (ent->client->pers.force_powers_levels[10] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
+				ent->client->pers.force_powers_levels[10]++;
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Protect ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 12)
+		{
+			if (ent->client->pers.force_powers_levels[11] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
+				ent->client->pers.force_powers_levels[11]++;
+				ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Trick ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 13)
+		{
+			if (ent->client->pers.force_powers_levels[12] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
+				ent->client->pers.force_powers_levels[12]++;
+				ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 14)
+		{
+			if (ent->client->pers.force_powers_levels[13] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
+				ent->client->pers.force_powers_levels[13]++;
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Lightning ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 15)
+		{
+			if (ent->client->pers.force_powers_levels[14] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
+				ent->client->pers.force_powers_levels[14]++;
+				ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Grip ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 16)
+		{
+			if (ent->client->pers.force_powers_levels[15] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
+				ent->client->pers.force_powers_levels[15]++;
+				ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 17)
+		{
+			if (ent->client->pers.force_powers_levels[16] < 4)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
+				ent->client->pers.force_powers_levels[16]++;
+
+				if (ent->client->pers.force_powers_levels[16] < 4)
+					ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+				else
+					ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
+
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rage ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 18)
+		{
+			if (ent->client->pers.force_powers_levels[17] < 3)
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
+				ent->client->pers.force_powers_levels[17]++;
+				ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Energize ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 19)
+		{
+			if (ent->client->pers.stun_baton_level < 3)
+			{
+				ent->client->pers.stun_baton_level++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Stun Baton ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 20)
+		{
+			if (ent->client->pers.weapons_levels[0] < 2)
+			{
+				ent->client->pers.weapons_levels[0]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pistol ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 21)
+		{
+			if (ent->client->pers.weapons_levels[1] < 2)
+			{
+				ent->client->pers.weapons_levels[1]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E11 Blaster Rifle ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 22)
+		{
+			if (ent->client->pers.weapons_levels[2] < 2)
+			{
+				ent->client->pers.weapons_levels[2]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Disruptor ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 23)
+		{
+			if (ent->client->pers.weapons_levels[3] < 2)
+			{
+				ent->client->pers.weapons_levels[3]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bowcaster ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 24)
+		{
+			if (ent->client->pers.weapons_levels[4] < 2)
+			{
+				ent->client->pers.weapons_levels[4]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Repeater ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 25)
+		{
+			if (ent->client->pers.weapons_levels[5] < 2)
+			{
+				ent->client->pers.weapons_levels[5]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3DEMP2 ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 26)
+		{
+			if (ent->client->pers.weapons_levels[6] < 2)
+			{
+				ent->client->pers.weapons_levels[6]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Flechette ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 27)
+		{
+			if (ent->client->pers.weapons_levels[7] < 2)
+			{
+				ent->client->pers.weapons_levels[7]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rocket Launcher ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 28)
+		{
+			if (ent->client->pers.weapons_levels[8] < 2)
+			{
+				ent->client->pers.weapons_levels[8]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Concussion Rifle ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 29)
+		{
+			if (ent->client->pers.weapons_levels[9] < 2)
+			{
+				ent->client->pers.weapons_levels[9]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bryar Pistol ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 30)
+		{
+			if (ent->client->pers.melee_level < 3)
+			{
+				ent->client->pers.melee_level++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Melee ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 31)
+		{
+			if (ent->client->pers.starting_shield_level < 5)
+			{
+				ent->client->pers.starting_shield_level++;
+				set_max_shield(ent);
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Max Shield ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 32)
+		{
+			if (ent->client->pers.shield_strength < 4)
+			{
+				ent->client->pers.shield_strength++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Strength ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 33)
+		{
+			if (ent->client->pers.health_strength < 4)
+			{
+				ent->client->pers.health_strength++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Health Strength ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 34)
+		{
+			if (ent->client->pers.grapple_hook < 1)
+			{
+				ent->client->pers.grapple_hook++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Grapple Hook ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 35)
+		{
+			if (ent->client->pers.jetpack_level < 3)
+			{
+				ent->client->pers.jetpack_level++;
+				if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
+					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jetpack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 36)
+		{
+			if (ent->client->pers.playerhealth < 3)
+			{
+				ent->client->pers.playerhealth++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense Health ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 37)
+		{
+			if (ent->client->pers.shield < 3)
+			{
+				ent->client->pers.shield++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 38)
+		{
+			if (ent->client->pers.teamshield < 3)
+			{
+				ent->client->pers.teamshield++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Shield Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 39)
+		{
+			if (ent->client->pers.mind_control < 1)
+			{
+				ent->client->pers.mind_control++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Control ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 40)
+		{
+			if (ent->client->pers.ammo_levels[0] < 3)
+			{
+				ent->client->pers.ammo_levels[0]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 41)
+		{
+			if (ent->client->pers.ammo_levels[1] < 3)
+			{
+				ent->client->pers.ammo_levels[1]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Power Cell ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 42)
+		{
+			if (ent->client->pers.ammo_levels[2] < 3)
+			{
+				ent->client->pers.ammo_levels[2]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Metallic Bolts ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 43)
+		{
+			if (ent->client->pers.ammo_levels[3] < 3)
+			{
+				ent->client->pers.ammo_levels[3]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rockets ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 44)
+		{
+			if (ent->client->pers.ammo_levels[4] < 3)
+			{
+				ent->client->pers.ammo_levels[4]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Thermals ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 45)
+		{
+			if (ent->client->pers.ammo_levels[5] < 3)
+			{
+				ent->client->pers.ammo_levels[5]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Trip Mines ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 46)
+		{
+			if (ent->client->pers.ammo_levels[6] < 3)
+			{
+				ent->client->pers.ammo_levels[6]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Det Packs ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 47)
+		{
+			if (ent->client->pers.holdable_items_levels[0] < 1)
+			{
+				ent->client->pers.holdable_items_levels[0]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Binoculars ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 48)
+		{
+			if (ent->client->pers.holdable_items_levels[1] < 2)
+			{
+				ent->client->pers.holdable_items_levels[1]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bacta Canister ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 49)
+		{
+			if (ent->client->pers.holdable_items_levels[2] < 1)
+			{
+				ent->client->pers.holdable_items_levels[2]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sentry Gun ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 50)
+		{
+			if (ent->client->pers.holdable_items_levels[3] < 1)
+			{
+				ent->client->pers.holdable_items_levels[3]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Seeker Drone ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 51)
+		{
+			if (ent->client->pers.holdable_items_levels[4] < 1)
+			{
+				ent->client->pers.holdable_items_levels[4]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E-Web ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 52)
+		{
+			if (ent->client->pers.holdable_items_levels[5] < 2)
+			{
+				ent->client->pers.holdable_items_levels[5]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Big Bacta ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 53)
+		{
+			if (ent->client->pers.holdable_items_levels[6] < 2)
+			{
+				ent->client->pers.holdable_items_levels[6]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Field ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 54)
+		{
+			if (ent->client->pers.holdable_items_levels[7] < 2)
+			{
+				ent->client->pers.holdable_items_levels[7]++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Cloak Item ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 55)
+		{
+			if (ent->client->pers.max_force_power_level < 5)
+			{
+				ent->client->pers.max_force_power_level++;
+				ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
+				ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Power ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (upgrade_value == 56)
+		{
+			if (ent->client->pers.improvements_level < 3)
+			{
+				ent->client->pers.improvements_level++;
+				ent->client->pers.skillpoints--;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Improvements ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		// zyk: saving the account file with the upgraded skill
+		save_account(ent);
+
+		trap->SendServerCommand( ent-g_entities, "print \"Skill upgraded successfully.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not in RPG mode.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_DownSkill_f
+==================
+*/
+void Cmd_DownSkill_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be downgraded
+		int downgrade_value; // zyk: the integer value of arg1
+
+		if ( trap->Argc() != 2) 
+		{ 
+			trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be downgraded.\n\"" ); 
+			return;
+		}
+
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+		downgrade_value = atoi(arg1);
+
+		// zyk: validation on the downgrade level, which must be in the range of valid skills.
+		if (downgrade_value < 1 || downgrade_value > NUMBER_OF_SKILLS)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid skill number.\n\"" );
+			return;
+		}
+
+		// zyk: the downgrade is done if it doesnt go below the minimum level of the skill
+		if (downgrade_value == 1)
+		{
+			if (ent->client->pers.force_powers_levels[0] > 0)
+			{
+				ent->client->pers.force_powers_levels[0]--;
+				ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+				if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Jump ^7skill.\n\"" );
+				return;
+			}
+		}
+			
+		if (downgrade_value == 2)
+		{
+			if (ent->client->pers.force_powers_levels[1] > 0)
+			{
+				ent->client->pers.force_powers_levels[1]--;
+				ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+				if (ent->client->ps.fd.forcePowerLevel[FP_PUSH] == 0)
+					ent->client->ps.fd.forcePowersKnown  &= ~(1 << FP_PUSH);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Push ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 3)
+		{
+			if (ent->client->pers.force_powers_levels[2] > 0)
+			{
+				ent->client->pers.force_powers_levels[2]--;
+				ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+				if (ent->client->ps.fd.forcePowerLevel[FP_PULL] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Pull ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 4)
+		{
+			if (ent->client->pers.force_powers_levels[3] > 0)
+			{
+				ent->client->pers.force_powers_levels[3]--;
+				ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+				if (ent->client->ps.fd.forcePowerLevel[FP_SPEED] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Speed ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 5)
+		{
+			if (ent->client->pers.force_powers_levels[4] > 0)
+			{
+				ent->client->pers.force_powers_levels[4]--;
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+				if (ent->client->ps.fd.forcePowerLevel[FP_SEE] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Sense ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 6)
+		{
+			if (ent->client->pers.force_powers_levels[5] > 0)
+			{
+				ent->client->pers.force_powers_levels[5]--;
+				ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+				if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
+				{
+					ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
+				}
+				if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] == 0)
+				{
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
+					ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
+					ent->client->ps.weapon = WP_MELEE;
+				}
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Saber Attack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 7)
+		{
+			if (ent->client->pers.force_powers_levels[6] > 0)
+			{
+				ent->client->pers.force_powers_levels[6]--;
+				ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+				if (ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Saber Defense ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 8)
+		{
+			if (ent->client->pers.force_powers_levels[7] > 0)
+			{
+				ent->client->pers.force_powers_levels[7]--;
+				ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+				if (ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Saber Throw ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 9)
+		{
+			if (ent->client->pers.force_powers_levels[8] > 0)
+			{
+				ent->client->pers.force_powers_levels[8]--;
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+				if (ent->client->ps.fd.forcePowerLevel[FP_ABSORB] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Absorb ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 10)
+		{
+			if (ent->client->pers.force_powers_levels[9] > 0)
+			{
+				ent->client->pers.force_powers_levels[9]--;
+				ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+				if (ent->client->ps.fd.forcePowerLevel[FP_HEAL] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 11)
+		{
+			if (ent->client->pers.force_powers_levels[10] > 0)
+			{
+				ent->client->pers.force_powers_levels[10]--;
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+				if (ent->client->ps.fd.forcePowerLevel[FP_PROTECT] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Protect ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 12)
+		{
+			if (ent->client->pers.force_powers_levels[11] > 0)
+			{
+				ent->client->pers.force_powers_levels[11]--;
+				ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+				if (ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Mind Trick ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 13)
+		{
+			if (ent->client->pers.force_powers_levels[12] > 0)
+			{
+				ent->client->pers.force_powers_levels[12]--;
+				ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+				if (ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Team Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 14)
+		{
+			if (ent->client->pers.force_powers_levels[13] > 0)
+			{
+				ent->client->pers.force_powers_levels[13]--;
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+				if (ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Lightning ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 15)
+		{
+			if (ent->client->pers.force_powers_levels[14] > 0)
+			{
+				ent->client->pers.force_powers_levels[14]--;
+				ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+				if (ent->client->ps.fd.forcePowerLevel[FP_GRIP] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Grip ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 16)
+		{
+			if (ent->client->pers.force_powers_levels[15] > 0)
+			{
+				ent->client->pers.force_powers_levels[15]--;
+				ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+				if (ent->client->ps.fd.forcePowerLevel[FP_DRAIN] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Drain ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 17)
+		{
+			if (ent->client->pers.force_powers_levels[16] > 0)
+			{
+				ent->client->pers.force_powers_levels[16]--;
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+				if (ent->client->ps.fd.forcePowerLevel[FP_RAGE] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Rage ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 18)
+		{
+			if (ent->client->pers.force_powers_levels[17] > 0)
+			{
+				ent->client->pers.force_powers_levels[17]--;
+				ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+				if (ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Team Energize ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 19)
+		{
+			if (ent->client->pers.stun_baton_level > 0)
+			{
+				ent->client->pers.stun_baton_level--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Stun Baton ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 20)
+		{
+			if (ent->client->pers.weapons_levels[0] > 0)
+			{
+				ent->client->pers.weapons_levels[0]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Blaster Pistol ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 21)
+		{
+			if (ent->client->pers.weapons_levels[1] > 0)
+			{
+				ent->client->pers.weapons_levels[1]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3E11 Blaster Rifle ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 22)
+		{
+			if (ent->client->pers.weapons_levels[2] > 0)
+			{
+				ent->client->pers.weapons_levels[2]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Disruptor ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 23)
+		{
+			if (ent->client->pers.weapons_levels[3] > 0)
+			{
+				ent->client->pers.weapons_levels[3]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Bowcaster ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 24)
+		{
+			if (ent->client->pers.weapons_levels[4] > 0)
+			{
+				ent->client->pers.weapons_levels[4]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Repeater ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 25)
+		{
+			if (ent->client->pers.weapons_levels[5] > 0)
+			{
+				ent->client->pers.weapons_levels[5]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3DEMP2 ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 26)
+		{
+			if (ent->client->pers.weapons_levels[6] > 0)
+			{
+				ent->client->pers.weapons_levels[6]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Flechette ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 27)
+		{
+			if (ent->client->pers.weapons_levels[7] > 0)
+			{
+				ent->client->pers.weapons_levels[7]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Rocket Launcher ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 28)
+		{
+			if (ent->client->pers.weapons_levels[8] > 0)
+			{
+				ent->client->pers.weapons_levels[8]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Concussion Rifle ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 29)
+		{
+			if (ent->client->pers.weapons_levels[9] > 0)
+			{
+				ent->client->pers.weapons_levels[9]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Bryar Pistol ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 30)
+		{
+			if (ent->client->pers.melee_level > 0)
+			{
+				ent->client->pers.melee_level--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Melee ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 31)
+		{
+			if (ent->client->pers.starting_shield_level > 0)
+			{
+				ent->client->pers.starting_shield_level--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Max Shield ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 32)
+		{
+			if (ent->client->pers.shield_strength > 0)
+			{
+				ent->client->pers.shield_strength--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Shield Strength ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 33)
+		{
+			if (ent->client->pers.health_strength > 0)
+			{
+				ent->client->pers.health_strength--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Health Strength ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 34)
+		{
+			if (ent->client->pers.grapple_hook > 0)
+			{
+				ent->client->pers.grapple_hook--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Grapple Hook ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 35)
+		{
+			if (ent->client->pers.jetpack_level > 0)
+			{
+				ent->client->pers.jetpack_level--;
+				if (ent->client->pers.jetpack_level == 0)
+				{
+					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+					if (ent->client->jetPackOn)
+					{
+						Jetpack_Off(ent);
+					}
+				}
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Jetpack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 36)
+		{
+			if (ent->client->pers.playerhealth > 0)
+			{
+				ent->client->pers.playerhealth--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Sense Health ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 37)
+		{
+			if (ent->client->pers.shield > 0)
+			{
+				ent->client->pers.shield--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Shield Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 38)
+		{
+			if (ent->client->pers.teamshield > 0)
+			{
+				ent->client->pers.teamshield--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Team Shield Heal ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 39)
+		{
+			if (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Mind Control ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 40)
+		{
+			if (ent->client->pers.ammo_levels[0] > 0)
+			{
+				ent->client->pers.ammo_levels[0]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Blaster Pack ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 41)
+		{
+			if (ent->client->pers.ammo_levels[1] > 0)
+			{
+				ent->client->pers.ammo_levels[1]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Power Cell ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 42)
+		{
+			if (ent->client->pers.ammo_levels[2] > 0)
+			{
+				ent->client->pers.ammo_levels[2]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Metallic Bolts ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 43)
+		{
+			if (ent->client->pers.ammo_levels[3] > 0)
+			{
+				ent->client->pers.ammo_levels[3]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Rockets ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 44)
+		{
+			if (ent->client->pers.ammo_levels[4] > 0)
+			{
+				ent->client->pers.ammo_levels[4]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Thermals ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 45)
+		{
+			if (ent->client->pers.ammo_levels[5] > 0)
+			{
+				ent->client->pers.ammo_levels[5]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Trip Mines ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 46)
+		{
+			if (ent->client->pers.ammo_levels[6] > 0)
+			{
+				ent->client->pers.ammo_levels[6]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Det Packs ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 47)
+		{
+			if (ent->client->pers.holdable_items_levels[0] > 0)
+			{
+				ent->client->pers.holdable_items_levels[0]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Binoculars ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 48)
+		{
+			if (ent->client->pers.holdable_items_levels[1] > 0)
+			{
+				ent->client->pers.holdable_items_levels[1]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Bacta Canister ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 49)
+		{
+			if (ent->client->pers.holdable_items_levels[2] > 0)
+			{
+				ent->client->pers.holdable_items_levels[2]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Sentry Gun ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 50)
+		{
+			if (ent->client->pers.holdable_items_levels[3] > 0)
+			{
+				ent->client->pers.holdable_items_levels[3]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Seeker Drone ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 51)
+		{
+			if (ent->client->pers.holdable_items_levels[4] > 0)
+			{
+				ent->client->pers.holdable_items_levels[4]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3E-Web ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 52)
+		{
+			if (ent->client->pers.holdable_items_levels[5] > 0)
+			{
+				ent->client->pers.holdable_items_levels[5]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Big Bacta ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 53)
+		{
+			if (ent->client->pers.holdable_items_levels[6] > 0)
+			{
+				ent->client->pers.holdable_items_levels[6]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Force Field ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 54)
+		{
+			if (ent->client->pers.holdable_items_levels[7] > 0)
+			{
+				ent->client->pers.holdable_items_levels[7]--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Cloak Item ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 55)
+		{
+			if (ent->client->pers.max_force_power_level > 0)
+			{
+				ent->client->pers.max_force_power_level--;
+				ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
+				ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Force Power ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		if (downgrade_value == 56)
+		{
+			if (ent->client->pers.improvements_level > 0)
+			{
+				ent->client->pers.improvements_level--;
+				ent->client->pers.skillpoints++;
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Improvements ^7skill.\n\"" );
+				return;
+			}
+		}
+
+		// zyk: saving the account file with the downgraded skill
+		save_account(ent);
+
+		trap->SendServerCommand( ent-g_entities, "print \"Skill downgraded successfully.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not in RPG mode.\n\"" );
+	}
 }
 
 /*
@@ -5327,357 +7672,186 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 	}
 }
 
-// zyk: tests if the player has beaten the guardians before the Guardian of Light in Light Quest
-qboolean light_quest_defeated_guardians(gentity_t *ent)
-{
-	int j = 0, number_of_guardians_defeated = 0;
-
-	for (j = 4; j < 12; j++)
+/*
+==================
+Cmd_RaceMode_f
+==================
+*/
+extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
+void Cmd_RaceMode_f( gentity_t *ent ) {
+	if (ent->client->pers.race_position == 0)
 	{
-		if (ent->client->pers.defeated_guardians & (1 << j))
+		int j = 0, swoop_number = -1;
+		int occupied_positions[MAX_CLIENTS]; // zyk: sets 1 to each race position already occupied by a player
+		gentity_t *this_ent = NULL;
+		vec3_t origin, yaw;
+		char zyk_info[1024];
+		char zyk_mapname[128];
+
+		// zyk: getting the map name
+		trap->GetServerinfo(zyk_info, sizeof(zyk_info));
+		strncpy(zyk_mapname, Info_ValueForKey( zyk_info, "mapname" ), sizeof(zyk_mapname)-1);
+		zyk_mapname[sizeof(zyk_mapname)-1] = '\0';
+
+		if (Q_stricmp(zyk_mapname, "t2_trip") == 0)
 		{
-			number_of_guardians_defeated++;
+			int max_racers = 8; // zyk: each race map will have its own max_racers
+
+			if (level.race_mode > 1)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Race has already started. Try again at the next race!\n\"" );
+				return;
+			}
+
+			for (j = 0; j < MAX_CLIENTS; j++)
+			{ // zyk: if race already started, this player cant join anymore
+				this_ent = &g_entities[j];
+				if (this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.amrpgmode == 2 && this_ent->client->pers.guardian_mode > 0)
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"You can't start a race while someone is in a Guardian Battle!\n\"" );
+					return;
+				}
+			}
+
+			// zyk: initializing array of occupied_positions
+			for (j = 0; j < MAX_CLIENTS; j++)
+			{
+				occupied_positions[j] = 0;
+			}
+
+			// zyk: calculates which position the swoop of this player must be spawned
+			for (j = 0; j < MAX_CLIENTS; j++)
+			{
+				this_ent = &g_entities[j];
+				if (this_ent && ent != this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR && this_ent->client->pers.race_position > 0)
+					occupied_positions[this_ent->client->pers.race_position - 1] = 1;
+			}
+
+			for (j = 0; j < max_racers; j++)
+			{
+				if (occupied_positions[j] == 0)
+				{ // zyk: an empty race position, use this one
+					swoop_number = j;
+					break;
+				}
+			}
+
+			if (swoop_number == -1)
+			{ // zyk: the meximum allowed number of racers is 8 in this map
+				trap->SendServerCommand( ent-g_entities, "print \"The race is already full of racers! Try again later!\n\"" );
+				return;
+			}
+
+			if (swoop_number == 0)
+			{					
+				origin[0] = -3930;
+				origin[1] = -20683;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 1)
+			{
+				origin[0] = -3930;
+				origin[1] = -20603;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 2)
+			{
+				origin[0] = -3930;
+				origin[1] = -20523;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 3)
+			{
+				origin[0] = -3930;
+				origin[1] = -20443;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 4)
+			{
+				origin[0] = -3930;
+				origin[1] = -20363;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 5)
+			{
+				origin[0] = -3930;
+				origin[1] = -20283;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 6)
+			{
+				origin[0] = -3930;
+				origin[1] = -20203;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+			else if (swoop_number == 7)
+			{
+				origin[0] = -3930;
+				origin[1] = -20123;
+				origin[2] = 1509;
+
+				yaw[0] = 0.0f;
+				yaw[1] = -179.0f;
+				yaw[2] = 0.0f;
+			}
+
+			if (swoop_number < max_racers)
+			{
+				// zyk: teleporting player to the swoop area
+				TeleportPlayer( ent, origin, yaw);
+
+				ent->client->pers.race_position = swoop_number + 1;
+
+				NPC_SpawnType(ent,"swoop",NULL,qtrue);
+
+				level.race_start_timer = level.time + 15000; // zyk: race will start 15 seconds after the last player who joined the race
+				level.race_mode = 1;
+
+				trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7joined the race!\n\"",ent->client->pers.netname) );
+			}
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Races can only be done in ^3t2_trip ^7map.\n\"" );
 		}
 	}
-
-	if (number_of_guardians_defeated == (NUMBER_OF_GUARDIANS - 1))
-		return qtrue;
 	else
-		return qfalse;
-}
-
-// zyk: tests if the player has collected the 9 notes before the Guardian of Darkness in Dark Quest
-qboolean dark_quest_collected_notes(gentity_t *ent)
-{
-	if (ent->client->pers.hunter_quest_progress & (1 << 4) && ent->client->pers.hunter_quest_progress & (1 << 5) && ent->client->pers.hunter_quest_progress & (1 << 6) && ent->client->pers.hunter_quest_progress & (1 << 7) && ent->client->pers.hunter_quest_progress & (1 << 8) && ent->client->pers.hunter_quest_progress & (1 << 9) && ent->client->pers.hunter_quest_progress & (1 << 10) && ent->client->pers.hunter_quest_progress & (1 << 11) && ent->client->pers.hunter_quest_progress & (1 << 12))
 	{
-		return qtrue;
+		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7abandoned the race!\n\"",ent->client->pers.netname) );
+
+		ent->client->pers.race_position = 0;
+		try_finishing_race();
+
+		return;
 	}
-	else
-	{
-		return qfalse;
-	}
-}
-
-// zyk: loads the datapad md3 model for the Dark Quest notes
-void load_note_model(gentity_t *ent,int x,int y,int z)
-{
-
-}
-
-// zyk: loads the crystal md3 model for the Universe Quest crystals
-gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number)
-{
-	return NULL;
-}
-
-// zyk: load an effect used in quests
-gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile)
-{
-	gentity_t *ent = G_Spawn();
-
-	//zyk_set_entity_field(ent,"classname","fx_runner");
-	//zyk_set_entity_field(ent,"spawnflags",va("%d",spawnflags));
-	//zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
-
-	ent->s.modelindex = G_EffectIndex( fxFile );
-
-	//zyk_spawn_entity(ent);
-
-	level.quest_effect_id = ent->s.number;
-
-	return ent;
-}
-
-// zyk: cleans the note model if player gets it
-void clean_note_model()
-{
-	if (level.quest_note_id != -1)
-	{
-		G_FreeEntity(&g_entities[level.quest_note_id]);
-		level.quest_note_id = -1;
-	}
-}
-
-// zyk: amount of amulets got by the player in Amulets Mission of Universe Quest
-int number_of_amulets(gentity_t *ent)
-{
-	int i = 0, number_of_amulets = 0;
-	for (i = 0; i < 3; i++)
-	{
-		if (ent->client->pers.universe_quest_counter & (1 << i))
-		{
-			number_of_amulets++;
-		}
-	}
-	return number_of_amulets;
-}
-
-// zyk: tests if player got all 3 amulets in Amulets Mission of Universe Quest
-void got_all_amulets(gentity_t *ent)
-{
-	if (number_of_amulets(ent) == 3)
-	{
-		ent->client->pers.universe_quest_timer = level.time + 3000;
-		ent->client->pers.universe_quest_messages = 199;
-	}
-}
-
-// zyk: used by the quest_get_new_player function to actually get the new player based on his quest settings
-void choose_new_player(gentity_t *next_player)
-{
-	int found = 0;
-	if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && !(next_player->client->pers.player_settings & (1 << 0)) && next_player->client->pers.can_play_quest == 0 && next_player->client->pers.connected == CON_CONNECTED && next_player->client->sess.sessionTeam != TEAM_SPECTATOR && next_player->inuse == qtrue)
-	{
-		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 0)) || !(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 2)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
-			found = 1;
-		else if (level.quest_map == 2 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
-			found = 1;
-		else if (level.quest_map == 3 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
-			found = 1;
-		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 2)))))
-			found = 1;
-		else if (level.quest_map == 5 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
-			found = 1;
-		else if (level.quest_map == 6 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 9))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 6)))))
-			found = 1;
-		else if (level.quest_map == 7 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 7))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 10)))))
-			found = 1;
-		else if (level.quest_map == 8 && next_player->client->pers.universe_quest_progress == 4)
-			found = 1;
-		else if (level.quest_map == 9 && (next_player->client->pers.universe_quest_progress < 2 || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))))
-			found = 1;
-		else if (level.quest_map == 10 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 6))) || light_quest_defeated_guardians(next_player) == qtrue || dark_quest_collected_notes(next_player) == qtrue || next_player->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 8)))))
-			found = 1;
-		else if (level.quest_map == 11 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 9)))
-			found = 1;
-		else if (level.quest_map == 12 && (next_player->client->pers.universe_quest_progress == 7 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 1)))))
-			found = 1;
-		else if (level.quest_map == 13 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 5))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 5)))))
-			found = 1;
-		else if (level.quest_map == 14 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 11)))
-			found = 1;
-		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
-			found = 1;
-		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
-			found = 1;
-		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
-			found = 1;
-		else if (level.quest_map == 20 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 7)))))
-			found = 1;
-		else if (level.quest_map == 22 && next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))
-			found = 1;
-		else if (level.quest_map == 24 && next_player->client->pers.universe_quest_progress == 5)
-			found = 1;
-		else if (level.quest_map == 25 && next_player->client->pers.universe_quest_progress == 6)
-			found = 1;
-		else if (level.quest_map == 26 && next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1)))
-			found = 1;
-	}
-
-	if (found == 1)
-	{ // zyk: clean quest npcs of this map
-		int j = 0;
-		for (j = MAX_CLIENTS; j < level.num_entities; j++)
-		{
-			if (&g_entities[j] && g_entities[j].NPC && g_entities[j].health > 0 && (Q_stricmp( g_entities[j].NPC_type, "quest_ragnos" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_jawa" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_protocol_imp" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_green" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_brown" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_boss" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_light" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_time" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_boss_9" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "master_of_evil" ) == 0))
-			{
-				G_FreeEntity(&g_entities[j]);
-			}
-		}
-
-		// zyk: setting the attributes depending on the quests this player must complete in this map
-		next_player->client->pers.guardian_mode = 0;
-		next_player->client->pers.guardian_timer = 0;
-
-		next_player->client->pers.universe_quest_artifact_holder_id = -1;
-		next_player->client->pers.universe_quest_messages = 0;
-
-		// zyk: give some seconds to the new player to start his quest
-		next_player->client->pers.universe_quest_timer = level.time + 3000;
-
-		next_player->client->pers.hunter_quest_timer = level.time + 3000;
-		next_player->client->pers.hunter_quest_messages = 0;
-
-		next_player->client->pers.light_quest_timer = level.time + 3000;
-		next_player->client->pers.light_quest_messages = 0;
-
-		next_player->client->pers.eternity_quest_timer = 0;
-
-		// zyk: must clean here too so in yavin1b the correct note is spawned for this player
-		if (level.quest_map == 1)
-			clean_note_model();
-
-		if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 0) 
-		{ // zyk: first Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 20; // zyk: player must kill quest reborn npcs to complete the first objective
-		}
-		else if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 1)
-		{ // zyk: second Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 2; // zyk: sets this player as playing the second objective of Universe Quest
-		}
-		else if (next_player->client->pers.universe_quest_progress == 2)
-		{ // zyk: third Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 3; // zyk: sets this player as playing the third objective of Universe Quest
-		}
-		else if (level.quest_map == 1 && next_player->client->pers.universe_quest_progress == 3)
-		{
-			if (level.quest_note_id == -1)
-				load_note_model(next_player,2780,3966,1411);
-
-			next_player->client->pers.universe_quest_objective_control = 4; // zyk: fourth Universe Quest objective
-		}
-		else if (level.quest_map == 8 && next_player->client->pers.universe_quest_progress == 4)
-		{ // zyk: fifth Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 5;
-			next_player->client->pers.universe_quest_timer = level.time + 2000;
-		}
-		else if (level.quest_map == 24 && next_player->client->pers.universe_quest_progress == 5)
-		{
-			next_player->client->pers.universe_quest_objective_control = -6;
-			got_all_amulets(next_player);
-		}
-		else if (level.quest_map == 25 && next_player->client->pers.universe_quest_progress == 6)
-		{ // zyk: seventh Universe Quest objective
-			next_player->client->pers.universe_quest_timer = level.time + 3000;
-			next_player->client->pers.universe_quest_objective_control = -7;
-		}
-		else if (level.quest_map == 17 && next_player->client->pers.universe_quest_progress == 11)
-		{ // zyk: Universe Quest. Player must defeat this quantity of quest_super_soldier npcs in this mission
-			next_player->client->pers.universe_quest_timer = level.time + 3000;
-			next_player->client->pers.universe_quest_objective_control = 28;
-		}
-
-		// zyk: loading note models if player must find a Dark Quest note
-		if (level.quest_note_id == -1 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES)
-		{
-			if (level.quest_map == 1 && !(next_player->client->pers.hunter_quest_progress & (1 << 4)))
-			{
-				load_note_model(next_player,2375,4600,1810);
-			}
-			else if (level.quest_map == 2 && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
-			{
-				load_note_model(next_player,7500,-755,2);
-			}
-			else if (level.quest_map == 3 && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
-			{
-				load_note_model(next_player,-765,4790,196);
-			}
-			else if (level.quest_map == 4 && !(next_player->client->pers.hunter_quest_progress & (1 << 7)))
-			{
-				load_note_model(next_player,2400,2990,-2093);
-			}
-			else if (level.quest_map == 5 && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
-			{
-				load_note_model(next_player,-500,-4690,928);
-			}
-			else if (level.quest_map == 6 && !(next_player->client->pers.hunter_quest_progress & (1 << 9)))
-			{
-				load_note_model(next_player,-9838,-1547,2);
-			}
-			else if (level.quest_map == 7 && !(next_player->client->pers.hunter_quest_progress & (1 << 10)))
-			{
-				load_note_model(next_player,1905,1180,706);
-			}
-			else if (level.quest_map == 18 && !(next_player->client->pers.hunter_quest_progress & (1 << 11)))
-			{
-				load_note_model(next_player,-1148,-1458,593);
-			}
-			else if (level.quest_map == 9 && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))
-			{
-				load_note_model(next_player,14100,-1580,-3165);
-			}
-		}
-
-		// zyk: loading effects in guardian area
-		if (level.quest_effect_id == -1 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
-		{
-			if (level.quest_map == 1 && !(next_player->client->pers.defeated_guardians & (1 << 4)))
-			{ // zyk: Guardian of Water
-				load_effect(2062,4089,351,0,"env/btend");
-			}
-			else if (level.quest_map == 13 && !(next_player->client->pers.defeated_guardians & (1 << 5)))
-			{ // zyk: Guardian of Earth
-				load_effect(-380,1578,4751,0,"env/btend");
-			}
-			else if (level.quest_map == 10 && !(next_player->client->pers.defeated_guardians & (1 << 6)))
-			{ // zyk: Guardian of Forest
-				load_effect(512,4829,62,0,"env/btend");
-			}
-			else if (level.quest_map == 7 && !(next_player->client->pers.defeated_guardians & (1 << 7)))
-			{ // zyk: Guardian of Intelligence
-				load_effect(2500,2140,-551,0,"env/btend");
-			}
-			else if (level.quest_map == 20 && !(next_player->client->pers.defeated_guardians & (1 << 8)))
-			{ // zyk: Guardian of Agility
-				load_effect(8474,-1322,-159,0,"env/btend");
-			}
-			else if (level.quest_map == 11 && !(next_player->client->pers.defeated_guardians & (1 << 9)))
-			{ // zyk: Guardian of Fire
-				load_effect(2742,-25,-3808,0,"env/btend");
-			}
-			else if (level.quest_map == 15 && !(next_player->client->pers.defeated_guardians & (1 << 10)))
-			{ // zyk: Guardian of Wind
-				load_effect(5225,462,665,0,"env/btend");
-			}
-			else if (level.quest_map == 14 && !(next_player->client->pers.defeated_guardians & (1 << 11)))
-			{ // zyk: Guardian of Resistance
-				load_effect(0,1135,9,0,"env/btend");
-			}
-		}
-
-		next_player->client->pers.can_play_quest = 1;
-
-		trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7%s ^7turn.\"",next_player->client->pers.netname));
-	}
-}
-
-// zyk: searches for a new player to play a quest if he died or failed
-void quest_get_new_player(gentity_t *ent)
-{
-	int i = 0;
-	gentity_t *next_player = NULL;
-
-	ent->client->pers.can_play_quest = 0;
-
-	for (i = 0; i < level.maxclients; i++)
-	{ // zyk: verify if there is someone who is already playing a quest and is not in spectator mode
-		next_player = &g_entities[i];
-		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.can_play_quest == 1 && next_player->client->sess.sessionTeam != TEAM_SPECTATOR)
-			return;
-	}
-
-	for (i = 0; i < level.maxclients; i++)
-	{ // zyk: remove guardian_mode from all players that were fighting a boss battle
-		next_player = &g_entities[i];
-		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.guardian_mode != 0)
-			next_player->client->pers.guardian_mode = 0;
-	}
-
-	// zyk: no one is already playing the quest, so choose a new player
-
-	for (i = ((ent-g_entities) + 1); i < level.maxclients; i++)
-	{
-		next_player = &g_entities[i];
-
-		choose_new_player(next_player);
-
-		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
-			return;
-	}
-
-	for (i = 0; i < (ent-g_entities); i++)
-	{
-		next_player = &g_entities[i];
-
-		choose_new_player(next_player);
-
-		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
-			return;
-	}
-
-	// zyk: didnt find anyone to play this quest, so choose the same player again if he still needs to play a quest in this map
-	choose_new_player(ent);
 }
 
 /*
@@ -5710,6 +7884,7 @@ command_t commands[] = {
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Right",	Cmd_BotMoveRight_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
+	{ "down",				Cmd_DownSkill_f,			CMD_NOINTERMISSION },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "follow",				Cmd_Follow_f,				CMD_NOINTERMISSION },
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
@@ -5731,6 +7906,7 @@ command_t commands[] = {
 	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
+	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "score",				Cmd_Score_f,				0 },
@@ -5742,6 +7918,7 @@ command_t commands[] = {
 	{ "tell",				Cmd_Tell_f,					0 },
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
+	{ "up",					Cmd_UpSkill_f,				CMD_NOINTERMISSION },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
