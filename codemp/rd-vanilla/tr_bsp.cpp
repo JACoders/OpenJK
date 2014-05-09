@@ -280,19 +280,6 @@ static	void R_LoadVisibility( lump_t *l, world_t &worldData ) {
 
 //===============================================================================
 
-qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
-{
-	qhandle_t	shader;
-
-	if ( (shaderNum < 0) || (shaderNum >= worldData.numShaders) )
-	{
-		ri->Printf( PRINT_ALL, "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
-		return(0);
-	}
-	shader = RE_RegisterShader(worldData.shaders[ shaderNum ].shader);
-	return(shader);
-}
-
 /*
 ===============
 ShaderForShaderNum
