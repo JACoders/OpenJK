@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 /*****************************************************************************
  * name:		snd_dma.c
  *
@@ -12,11 +9,6 @@
 #include "snd_mp3.h"
 #include "snd_music.h"
 #include "client.h"
-
-#ifndef _WIN32
-#include <algorithm>
-#include <string>
-#endif
 
 qboolean s_shutUp = qfalse;
 
@@ -41,7 +33,7 @@ const int iMP3MusicStream_DiskBytesToRead = 10000;//4096;
 const int iMP3MusicStream_DiskBufferSize = iMP3MusicStream_DiskBytesToRead*2; //*10;
 
 typedef struct MusicInfo_s {
-	sboolean	bIsMP3;
+	qboolean	bIsMP3;
 	//
 	// MP3 specific...
 	//
@@ -70,12 +62,12 @@ typedef struct MusicInfo_s {
 									//	to actually be a bool later.
 	int			iXFadeVolume;		// 0 = silent, 255 = max mixer vol, though still modulated via overall music_volume
 	float		fSmoothedOutVolume;
-	sboolean	bActive;			// whether playing or not
-	sboolean	bExists;			// whether was even loaded for this level (ie don't try and start playing it)
+	qboolean	bActive;			// whether playing or not
+	qboolean	bExists;			// whether was even loaded for this level (ie don't try and start playing it)
 	//
 	// new dynamic fields...
 	//
-	sboolean	bTrackSwitchPending;
+	qboolean	bTrackSwitchPending;
 	MusicState_e eTS_NewState;
 	float		 fTS_NewTime;
 	//
@@ -105,7 +97,7 @@ static void S_SetDynamicMusicState( MusicState_e musicState );
 #define fDYNAMIC_XFADE_SECONDS (1.0f)
 
 static MusicInfo_t	tMusic_Info[eBGRNDTRACK_NUMBEROF]	= {};
-static sboolean		bMusic_IsDynamic					= qfalse;
+static qboolean		bMusic_IsDynamic					= qfalse;
 static MusicState_e	eMusic_StateActual					= eBGRNDTRACK_EXPLORE;	// actual state, can be any enum
 static MusicState_e	eMusic_StateRequest					= eBGRNDTRACK_EXPLORE;	// requested state, can only be explore, action, boss, or silence
 static char			sMusic_BackgroundLoop[MAX_QPATH]	= {0};	// only valid for non-dynamic music
@@ -216,14 +208,14 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 
 int			s_UseOpenAL	= 0;	// Determines if using Open AL or the default software mixer
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 ALfloat		listener_pos[3];		// Listener Position
 ALfloat		listener_ori[6];		// Listener Orientation
 #endif
 int			s_numChannels;			// Number of AL Sources == Num of Channels
 short		s_rawdata[MAX_RAW_SAMPLES*2];	// Used for Raw Samples (Music etc...)
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel);
 int  S_MP3PreProcessLipSync(channel_t *ch, short *data);
 void UpdateSingleShotSounds();
@@ -317,7 +309,7 @@ const GUID EAX_REVERB_EFFECT = { 0xcf95c8f, 0xa3cc, 0x4849, { 0xb0, 0xb6, 0x83, 
 *	End of Open AL Specific
 *
 \**************************************************************************************************/
-#endif /* _WIN32 */
+#endif /* USE_OPENAL */
 
 // instead of clearing a whole channel_t struct, we're going to skip the MP3SlidingDecodeBuffer[] buffer in the middle...
 //
@@ -373,7 +365,7 @@ void S_SoundInfo_f(void) {
 			Com_Printf ("sound system is muted\n");
 		}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			Com_Printf("EAX 4.0 %s supported\n",s_bEAX?"is":"not");
@@ -390,7 +382,7 @@ void S_SoundInfo_f(void) {
 			Com_Printf("%5d submission_chunk\n", dma.submission_chunk);
 			Com_Printf("%5d speed\n", dma.speed);
 			Com_Printf("0x%x dma buffer\n", dma.buffer);
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		}
 #endif
 
@@ -428,7 +420,7 @@ S_Init
 */
 void S_Init( void ) {
 	cvar_t	*cv;
-	sboolean	r;
+	qboolean	r;
 
 	Com_Printf("\n------- sound initialization -------\n");
 
@@ -472,13 +464,13 @@ void S_Init( void ) {
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
 
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	s_UseOpenAL = !!(cv->integer);
 #else
 	s_UseOpenAL = 0;
 #endif
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -618,7 +610,7 @@ void S_Init( void ) {
 
 			S_SoundInfo_f();
 		}
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -661,7 +653,7 @@ void S_Shutdown( void )
 	S_FreeAllSFXMem();
 	S_UnCacheDynamicMusic();
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -706,7 +698,7 @@ void S_Shutdown( void )
 	{
 #endif
 		SNDDMA_Shutdown();
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -728,8 +720,8 @@ void S_Shutdown( void )
 /*
 	Mutes / Unmutes all OpenAL sound
 */
-#ifdef _WIN32
-void S_AL_MuteAllSounds(sboolean bMute)
+#ifdef USE_OPENAL
+void S_AL_MuteAllSounds(qboolean bMute)
 {
      if (!s_soundStarted)
           return;
@@ -857,12 +849,7 @@ sfx_t *S_FindName( const char *name ) {
 	sfx = &s_knownSfx[i];
 	memset (sfx, 0, sizeof(*sfx));
 	Q_strncpyz(sfx->sSoundName, sSoundNameNoExt, sizeof(sfx->sSoundName));
-#ifdef _WIN32
-	strlwr(sfx->sSoundName);//force it down low
-#else
-	std::string s = sfx->sSoundName;
-	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
+	Q_strlwr(sfx->sSoundName);//force it down low
 
 	sfx->next = sfxHash[hash];
 	sfxHash[hash] = sfx;
@@ -915,7 +902,7 @@ void S_BeginRegistration( void )
 
 	s_soundMuted = qfalse;		// we can play again
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
@@ -949,7 +936,7 @@ void S_BeginRegistration( void )
 void EALFileInit(const char *level)
 {
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
 	{
@@ -1022,7 +1009,7 @@ sfxHandle_t	S_RegisterSound( const char *name)
 	if ( sfx->bDefaultSound )
 		return 0;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if ((sfx->pSoundData) || (sfx->Buffer))
@@ -1071,7 +1058,7 @@ void S_memoryLoad(sfx_t	*sfx)
 
 
 //=============================================================================
-static sboolean S_CheckChannelStomp( int chan1, int chan2 )
+static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 {
 	if (!s_UseOpenAL)
 	{
@@ -1099,9 +1086,9 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 {
     int			ch_idx;
 	channel_t	*ch, *firstToDie;
-	sboolean	foundChan = qfalse;
+	qboolean	foundChan = qfalse;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 		return S_OpenALPickChannel(entnum, entchannel);
 #endif
@@ -1174,7 +1161,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 */
 channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
     int			ch_idx;
 	channel_t	*ch, *ch_firstToDie;
 	bool	foundChan = false;
@@ -1470,7 +1457,7 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 	}
 	SND_TouchSFX(sfx);
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (volume==0)
@@ -1582,7 +1569,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 		Com_Printf( "%i : %s on (%d)\n", s_paintedtime, sfx->sSoundName, entityNum );
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i;
@@ -1760,7 +1747,7 @@ void S_ClearSoundBuffer( void ) {
 			memset(dma.buffer, clear, dma.samples * dma.samplebits/8);
 		SNDDMA_Submit ();
 	}
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	else
 	{
 		s_paintedtime = 0;
@@ -1789,7 +1776,7 @@ void S_CIN_StopSound(sfxHandle_t sfxHandle)
 		}
 		if (ch->thesfx == sfx)
 		{
-#ifdef _WIN32
+#ifdef USE_OPENAL
 			if (s_UseOpenAL)
 			{
 				alSourceStop(s_channels[i].alSource);
@@ -1823,7 +1810,7 @@ void S_StopSounds(void)
 	// stop looping sounds
 	S_ClearLoopingSounds();
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	// clear all the s_channels
 	if (s_UseOpenAL)
 	{
@@ -1845,7 +1832,7 @@ void S_StopSounds(void)
 	{
 #endif
 		memset(s_channels, 0, sizeof(s_channels));
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -1887,7 +1874,7 @@ S_ClearLoopingSounds
 */
 void S_ClearLoopingSounds( void )
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		for (int i = 0; i < MAX_LOOP_SOUNDS; i++)
@@ -2005,7 +1992,7 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		return;
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (volume == 0)
@@ -2341,7 +2328,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		if (entityNum == 0)
@@ -2435,7 +2422,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 				{
 					case ct_16:
 					{
-						sample = LittleShort(current_pos_s[i*100]);
+						sample = current_pos_s[i*100];
 					}
 					break;
 
@@ -2444,7 +2431,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 						const int iIndex = (i*100) + ((offset * /*ch->thesfx->width*/2) - ch->iMP3SlidingDecodeWindowPos);
 						const short* pwSamples = (short*) (ch->MP3SlidingDecodeBuffer + iIndex);
 
-						sample = LittleShort(*pwSamples);
+						sample = *pwSamples;
 					}
 					break;
 
@@ -2517,7 +2504,7 @@ Change the volumes of all the playing sounds for changes in their positions
 */
 void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwater )
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
 #endif
@@ -2529,7 +2516,7 @@ void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwat
 		return;
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		listener_pos[0] = head[0];
@@ -2661,7 +2648,7 @@ void S_Respatialize( int entityNum, const vec3_t head, matrix3_t axis, int inwat
 
 		// add loopsounds
 		S_AddLoopSounds ();
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 
@@ -2676,10 +2663,10 @@ S_ScanChannelStarts
 Returns qtrue if any new sounds were started since the last mix
 ========================
 */
-sboolean S_ScanChannelStarts( void ) {
+qboolean S_ScanChannelStarts( void ) {
 	channel_t		*ch;
 	int				i;
-	sboolean		newSamples;
+	qboolean		newSamples;
 
 	newSamples = qfalse;
 	ch = s_channels;
@@ -2859,7 +2846,7 @@ void S_Update_(void) {
 		return;
 	}
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i,j;
@@ -3129,7 +3116,7 @@ void S_Update_(void) {
 		SNDDMA_Submit ();
 
 		S_DoLipSynchs( s_oldpaintedtime );
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	}
 #endif
 }
@@ -3137,7 +3124,7 @@ void S_Update_(void) {
 
 void UpdateSingleShotSounds()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	int i, j, k;
 	ALint state;
 	ALint processed;
@@ -3305,7 +3292,7 @@ void UpdateSingleShotSounds()
 
 void UpdateLoopingSounds()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	int i,j;
 	ALuint source;
 	channel_t *ch;
@@ -3459,7 +3446,7 @@ void UpdateLoopingSounds()
 				loop->bRelative = false;
 			}
 
-			ch->fixed_origin = loop->bRelative;
+			ch->fixed_origin = (qboolean)loop->bRelative;
 			pos[0] = ch->origin[0];
 			pos[1] = ch->origin[2];
 			pos[2] = -ch->origin[1];
@@ -3490,7 +3477,7 @@ void UpdateLoopingSounds()
 
 void AL_UpdateRawSamples()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	ALuint buffer;
 	ALint size;
 	ALint processed;
@@ -3606,7 +3593,7 @@ void AL_UpdateRawSamples()
 	if (alGetError() != AL_NO_ERROR)
 		Com_OPrintf("OAL Error : UpdateRawSamples\n");
 #endif
-#endif /* _WIN32 */
+#endif /* USE_OPENAL */
 }
 
 
@@ -3848,8 +3835,8 @@ void S_SoundList_f( void ) {
 	int		iTotalBytes = 0;
 	char	*arg = NULL;
 
-	sboolean bWavOnly = qfalse;
-	sboolean bShouldBeMP3 = qfalse;
+	qboolean bWavOnly = qfalse;
+	qboolean bShouldBeMP3 = qfalse;
 
 	if ( Cmd_Argc() == 2 )
 	{
@@ -3901,11 +3888,11 @@ void S_SoundList_f( void ) {
 	for (sfx=s_knownSfx, i=0 ; i<s_numSfx ; i++, sfx++)
 	{
 		extern cvar_t *cv_MP3overhead;
-		sboolean bMP3DumpOverride = bShouldBeMP3 && cv_MP3overhead && !sfx->bDefaultSound && !sfx->pMP3StreamHeader && sfx->pSoundData && (Z_Size(sfx->pSoundData) > cv_MP3overhead->integer);
+		qboolean bMP3DumpOverride = (qboolean)(bShouldBeMP3 && cv_MP3overhead && !sfx->bDefaultSound && !sfx->pMP3StreamHeader && sfx->pSoundData && (Z_Size(sfx->pSoundData) > cv_MP3overhead->integer));
 
 		if (bMP3DumpOverride || (!bShouldBeMP3 && (!bWavOnly || sfx->eSoundCompressionMethod == ct_16)))
 		{
-			sboolean bDumpThisOne = qtrue;
+			qboolean bDumpThisOne = qtrue;
 			if (iVariantCap >= 1 && iVariantCap <= 3)
 			{
 				int iStrLen = strlen(sfx->sSoundName);
@@ -4024,7 +4011,7 @@ int S_FindWavChunk( fileHandle_t f, char *chunk ) {
 //
 // DO NOT replace this with a call to FS_FileExists, that's for checking about writing out, and doesn't work for this.
 //
-sboolean S_FileExists( const char *psFilename )
+qboolean S_FileExists( const char *psFilename )
 {
 	fileHandle_t fhTemp;
 
@@ -4117,7 +4104,7 @@ void S_UnCacheDynamicMusic( void )
 	}
 }
 
-static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean qbDynamic, const char *intro, const char *loop )
+static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean qbDynamic, const char *intro, const char *loop )
 {
 	int		len;
 	char	dump[16];
@@ -4171,7 +4158,7 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 		int iInitialMP3ReadSize = 8192;		// fairly arbitrary, whatever size this is then the decoder is allowed to
 											// scan up to halfway of it to find floating headers, so don't make it
 											// too small. 8k works fine.
-		sboolean bMusicSucceeded = qfalse;
+		qboolean bMusicSucceeded = qfalse;
 		if (qbDynamic)
 		{
 			if (!pMusicInfo->pLoadedData)
@@ -4323,7 +4310,7 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 }
 
 
-static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewState, sboolean bNewTrackStartsFullVolume )
+static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewState, qboolean bNewTrackStartsFullVolume )
 {
 	// copy old track into fader...
 	//
@@ -4415,7 +4402,7 @@ static void S_HandleDynamicMusicStateChange( void )
 							float			fNewTrackEntryTime = 0.0f;
 							if (Music_AllowedToTransition( fPlayingTimeElapsed, eBGRNDTRACK_ACTION, &eTransition, &fNewTrackEntryTime))
 							{
-								S_SwitchDynamicTracks( eMusic_StateActual, eTransition, qfalse );	// sboolean bNewTrackStartsFullVolume
+								S_SwitchDynamicTracks( eMusic_StateActual, eTransition, qfalse );	// qboolean bNewTrackStartsFullVolume
 
 								tMusic_Info[eTransition].Rewind();
 								tMusic_Info[eTransition].bTrackSwitchPending	= qtrue;
@@ -4427,7 +4414,7 @@ static void S_HandleDynamicMusicStateChange( void )
 
 						case eBGRNDTRACK_SILENCE:	// silence->explore
 						{
-							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// sboolean bNewTrackStartsFullVolume
+							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// qboolean bNewTrackStartsFullVolume
 
 //							float fEntryTime = Music_GetRandomEntryTime( eMusic_StateRequest );
 //							tMusic_Info[ eMusic_StateRequest ].SeekTo(fEntryTime);
@@ -4438,7 +4425,7 @@ static void S_HandleDynamicMusicStateChange( void )
 						default:	// trying to transition from some state I wasn't aware you could transition from (shouldn't happen), so ignore
 						{
 							assert(0);
-							S_SwitchDynamicTracks( eMusic_StateActual, eBGRNDTRACK_SILENCE, qfalse );	// sboolean bNewTrackStartsFullVolume
+							S_SwitchDynamicTracks( eMusic_StateActual, eBGRNDTRACK_SILENCE, qfalse );	// qboolean bNewTrackStartsFullVolume
 						}
 						break;
 					}
@@ -4461,7 +4448,7 @@ static void S_HandleDynamicMusicStateChange( void )
 							float			fNewTrackEntryTime = 0.0f;
 							if (Music_AllowedToTransition( fPlayingTimeElapsed, eMusic_StateActual, &eTransition, &fNewTrackEntryTime))
 							{
-								S_SwitchDynamicTracks( eMusic_StateActual, eTransition, qfalse );	// sboolean bNewTrackStartsFullVolume
+								S_SwitchDynamicTracks( eMusic_StateActual, eTransition, qfalse );	// qboolean bNewTrackStartsFullVolume
 
 								tMusic_Info[eTransition].Rewind();
 								tMusic_Info[eTransition].bTrackSwitchPending	= qtrue;
@@ -4476,7 +4463,7 @@ static void S_HandleDynamicMusicStateChange( void )
 
 						case eBGRNDTRACK_BOSS:	// boss->silence
 						{
-							S_SwitchDynamicTracks( eMusic_StateActual, eBGRNDTRACK_SILENCE, qfalse );	// sboolean bNewTrackStartsFullVolume
+							S_SwitchDynamicTracks( eMusic_StateActual, eBGRNDTRACK_SILENCE, qfalse );	// qboolean bNewTrackStartsFullVolume
 						}
 						break;
 					}
@@ -4489,14 +4476,14 @@ static void S_HandleDynamicMusicStateChange( void )
 					{
 						case eBGRNDTRACK_SILENCE:	// silence->action
 						{
-							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// sboolean bNewTrackStartsFullVolume
+							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// qboolean bNewTrackStartsFullVolume
 							tMusic_Info[ eMusic_StateRequest ].Rewind();
 						}
 						break;
 
 						default:	// !silence->action
 						{
-							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qtrue );	// sboolean bNewTrackStartsFullVolume
+							S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qtrue );	// qboolean bNewTrackStartsFullVolume
 							float fEntryTime = Music_GetRandomEntryTime( eMusic_StateRequest );
 							tMusic_Info[ eMusic_StateRequest ].SeekTo(fEntryTime);
 						}
@@ -4507,7 +4494,7 @@ static void S_HandleDynamicMusicStateChange( void )
 
 				case eBGRNDTRACK_BOSS:
 				{
-					S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// sboolean bNewTrackStartsFullVolume
+					S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qfalse );	// qboolean bNewTrackStartsFullVolume
 					//
 					// ( no need to fast forward or rewind, boss track is only entered into once, at start, and can't exit )
 					//
@@ -4516,7 +4503,7 @@ static void S_HandleDynamicMusicStateChange( void )
 
 				case eBGRNDTRACK_DEATH:
 				{
-					S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qtrue );	// sboolean bNewTrackStartsFullVolume
+					S_SwitchDynamicTracks( eMusic_StateActual, eMusic_StateRequest, qtrue );	// qboolean bNewTrackStartsFullVolume
 					//
 					// ( no need to fast forward or rewind, death track is only entered into once, at start, and can't exit or loop)
 					//
@@ -4609,7 +4596,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 			Q_strncpyz(sInfoOnly_CurrentDynamicMusicSet, Music_GetLevelSetName(), sizeof(sInfoOnly_CurrentDynamicMusicSet));
 			for (int i = eBGRNDTRACK_DATABEGIN; i != eBGRNDTRACK_DATAEND; i++)
 			{
-				sboolean bOk = qfalse;
+				qboolean bOk = qfalse;
 				const char *psMusicName = Music_GetFileNameForState( (MusicState_e) i);
 				if (psMusicName && (!Q_stricmp(tMusic_Info[i].sLoadedDataName, psMusicName) || S_FileExists( psMusicName )) )
 				{
@@ -4691,9 +4678,9 @@ void S_StopBackgroundTrack( void )
 
 
 
-// sboolean return is true only if we're changing from a streamed intro to a dynamic loop...
+// qboolean return is true only if we're changing from a streamed intro to a dynamic loop...
 //
-static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean bFirstOrOnlyMusicTrack, float fDefaultVolume)
+static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean bFirstOrOnlyMusicTrack, float fDefaultVolume)
 {
 	int		bufferSamples;
 	int		fileSamples;
@@ -4769,7 +4756,7 @@ static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolea
 			fileSamples = fileBytes / (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
 		}
 
-		sboolean qbForceFinish = qfalse;
+		qboolean qbForceFinish = qfalse;
 		if (pMusicInfo->bIsMP3)
 		{
 			int iStartingSampleNum = pMusicInfo->chMP3_Bgrnd.thesfx->iSoundLengthInSamples - pMusicInfo->s_backgroundSamples;	// but this IS relevant
@@ -5007,7 +4994,7 @@ static void S_UpdateBackgroundTrack( void )
 					if (pMusicInfoCurrent->bTrackSwitchPending)
 					{
 						pMusicInfoCurrent->bTrackSwitchPending = qfalse;	// ack
-						S_SwitchDynamicTracks( eMusic_StateActual, pMusicInfoCurrent->eTS_NewState, qfalse);	// sboolean bNewTrackStartsFullVolume
+						S_SwitchDynamicTracks( eMusic_StateActual, pMusicInfoCurrent->eTS_NewState, qfalse);	// qboolean bNewTrackStartsFullVolume
 						if (tMusic_Info[ pMusicInfoCurrent->eTS_NewState ].bExists)	// don't do this if switching to silence
 						{
 							tMusic_Info[ pMusicInfoCurrent->eTS_NewState ].SeekTo(pMusicInfoCurrent->fTS_NewTime);
@@ -5052,12 +5039,12 @@ static void S_UpdateBackgroundTrack( void )
 		// standard / non-dynamic one-track music...
 		//
 		const char *psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
-		sboolean bShouldBeSilent = (psCommand && !Q_stricmp(psCommand,"silence"));
+		qboolean bShouldBeSilent = (qboolean)(psCommand && !Q_stricmp(psCommand,"silence"));
 		float fDesiredVolume = bShouldBeSilent ? 0.0f : s_musicVolume->value;
 		//
 		// internal to this code is a volume-smoother...
 		//
-		sboolean bNewTrackDesired = S_UpdateBackgroundTrack_Actual(&tMusic_Info[eBGRNDTRACK_NONDYNAMIC], qtrue, fDesiredVolume);
+		qboolean bNewTrackDesired = S_UpdateBackgroundTrack_Actual(&tMusic_Info[eBGRNDTRACK_NONDYNAMIC], qtrue, fDesiredVolume);
 
 		if (bNewTrackDesired)
 		{
@@ -5130,7 +5117,7 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 {
 	int iBytesFreed = 0;
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		alGetError();
@@ -5305,15 +5292,15 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 
 			if (sfx->bInMemory)
 			{
-				sboolean bDeleteThis = qfalse;
+				qboolean bDeleteThis = qfalse;
 
 				if (bDeleteEverythingNotUsedThisLevel)
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn != re->RegisterMedia_GetLevel());
+					bDeleteThis = (qboolean)(sfx->iLastLevelUsedOn != re->RegisterMedia_GetLevel());
 				}
 				else
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn < re->RegisterMedia_GetLevel());
+					bDeleteThis = (qboolean)(sfx->iLastLevelUsedOn < re->RegisterMedia_GetLevel());
 				}
 
 				if (bDeleteThis)
@@ -5348,7 +5335,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5466,7 +5453,7 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5490,7 +5477,7 @@ void ReleaseEAXManager()
 */
 bool LoadEALFile(char *szEALFilename)
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5774,7 +5761,7 @@ bool LoadEALFile(char *szEALFilename)
 */
 void UnloadEALFile()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5798,7 +5785,7 @@ void UnloadEALFile()
 */
 void UpdateEAXListener()
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -6254,7 +6241,7 @@ void UpdateEAXListener()
 */
 void UpdateEAXBuffer(channel_t *ch)
 {
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	HRESULT hr;
 	EMPOINT EMSourcePoint;
 	EMPOINT EMVirtualSourcePoint;
@@ -6390,7 +6377,7 @@ void UpdateEAXBuffer(channel_t *ch)
 #endif
 }
 
-#ifndef _WIN32
+#ifndef USE_OPENAL
 typedef struct _EMPOINT {
   float fX;
   float fY;

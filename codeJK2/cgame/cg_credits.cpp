@@ -119,7 +119,7 @@ struct CreditData_t
 CreditData_t CreditData;
 
 
-static LPCSTR Capitalize(LPCSTR psTest)
+static const char *Capitalize( const char *psTest )
 {
 	static char sTemp[MAX_LINE_BYTES];
 
@@ -137,7 +137,7 @@ static bool CountsAsWhiteSpaceForCaps( char c )
 { 
 	return !!(isspace(c) || c == '-' || c == '.' || c == '(' || c == ')');
 }
-static LPCSTR UpperCaseFirstLettersOnly(LPCSTR psTest)
+static const char *UpperCaseFirstLettersOnly( const char *psTest )
 {
 	static char sTemp[MAX_LINE_BYTES];
 
@@ -214,8 +214,8 @@ static int SortBySurname(const void *elem1, const void *elem2)
 	StringAndSize_t *p1 = (StringAndSize_t *) elem1;
 	StringAndSize_t *p2 = (StringAndSize_t *) elem2;
 
-	LPCSTR psSurName1 = p1->c_str() + (strlen(p1->c_str())-1);
-	LPCSTR psSurName2 = p2->c_str() + (strlen(p2->c_str())-1);
+	const char *psSurName1 = p1->c_str() + (strlen( p1->c_str() ) - 1);
+	const char *psSurName2 = p2->c_str() + (strlen( p2->c_str() ) - 1);
 
 	while (psSurName1 > p1->c_str() && !isspace(*psSurName1)) psSurName1--;
 	while (psSurName2 > p2->c_str() && !isspace(*psSurName2)) psSurName2--;
@@ -227,7 +227,7 @@ static int SortBySurname(const void *elem1, const void *elem2)
 
 
 
-void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
+void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 {
 	// could make these into parameters later, but for now...
 	//

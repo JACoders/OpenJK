@@ -1776,27 +1776,6 @@ void G2_FreeSaveBuffer(char *buffer)
 	Z_Free(buffer);
 }
 
-int G2_FindConfigStringSpace(char *name, int start, int max)
-{
-	char	s[MAX_STRING_CHARS];
-	int i;
-	for ( i=1 ; i<max ; i++ )
-	{
-		ri->SV_GetConfigstring( start + i, s, sizeof( s ) );
-		if ( !s[0] )
-		{
-			break;
-		}
-		if ( !Q_stricmp( s, name ) )
-		{
-			return i;
-		}
-	}
-
-	ri->SV_SetConfigstring(start + i, name);
-	return i;
-}
-
 qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo);
 qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
 

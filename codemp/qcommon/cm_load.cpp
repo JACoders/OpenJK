@@ -1,8 +1,6 @@
 // cmodel.c -- model loading
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "cm_local.h"
+#include "qcommon/qfiles.h"
 
 #ifdef BSPC
 
@@ -72,7 +70,7 @@ int			NumSubBSP, TotalSubModels;
 CMod_LoadShaders
 =================
 */
-void CMod_LoadShaders( lump_t *l, clipMap_t	&cm )
+static void CMod_LoadShaders( lump_t *l, clipMap_t &cm )
 {
 	dshader_t	*in;
 	int			i, count;

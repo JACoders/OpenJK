@@ -23,7 +23,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "cg_lights.h"
 
 
 /*

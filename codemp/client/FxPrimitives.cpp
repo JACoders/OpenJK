@@ -1,7 +1,3 @@
-// this include must remain at the top of every CPP file
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "FxScheduler.h"

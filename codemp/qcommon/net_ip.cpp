@@ -1,5 +1,4 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 #ifdef _WIN32
 	#include <winsock.h>

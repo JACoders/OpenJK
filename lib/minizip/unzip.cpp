@@ -34,9 +34,13 @@ woven in by Terry Thorsen 1/2003.
   version without encryption capabilities).
  */
 
-
-#include "../qcommon/q_shared.h"
-#include "../qcommon/qcommon.h"
+#ifdef _JK2EXE
+#include "../code/qcommon/q_shared.h"
+#include "../code/qcommon/qcommon.h"
+#else
+#include "../codemp/qcommon/q_shared.h"
+#include "../codemp/qcommon/qcommon.h"
+#endif
 #include "unzip.h"
 
 #ifndef local

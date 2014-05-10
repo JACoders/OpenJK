@@ -1167,9 +1167,7 @@ void CL_InitRef( void ) {
 	RIT(Hunk_ClearToMark);
 	RIT(SG_Append);
 	RIT(SND_RegisterAudio_LevelLoadEnd);
-	RIT(SV_GetConfigstring);
 	//RIT(SV_PointContents);
-	RIT(SV_SetConfigstring);
 	RIT(SV_Trace);
 	RIT(S_RestartMusic);
 	RIT(Z_Free);
@@ -1301,15 +1299,22 @@ void CL_Init( void ) {
 #endif
 
 	// userinfo
+#ifdef JK2_MODE
+	Cvar_Get ("name", "Kyle", CVAR_USERINFO | CVAR_ARCHIVE );
+#else
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
+#endif
+
 #ifdef JK2_MODE
 	// this is required for savegame compatibility - not ever actually used
 	Cvar_Get ("snaps", "20", CVAR_USERINFO );
-#endif
-	
+	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_SAVEGAME );
+#else
 	Cvar_Get ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );
 	Cvar_Get ("snd", "jaden_fmle", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );//UI_SetSexandSoundForModel changes to match sounds.cfg for model
 	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_SAVEGAME | CVAR_NORESTART);
+#endif
 
 	//
 	// register our commands
@@ -1375,7 +1380,9 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("cinematic");	
 	Cmd_RemoveCommand ("ingamecinematic");
-	Cmd_RemoveCommand ("pause");
+	Cmd_RemoveCommand ("uimenu");
+	Cmd_RemoveCommand ("datapad");
+	Cmd_RemoveCommand ("endscreendissolve");
 
 	Cvar_Set( "cl_running", "0" );
 

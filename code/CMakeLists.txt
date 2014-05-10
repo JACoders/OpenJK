@@ -34,29 +34,28 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif()
 
 	# OpenAL (is optionally included for Windows)
-	if(UseInternalOpenAL)
-		# There's a libs/OpenAL32.lib
-		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-		find_library(OpenALLibrary NAMES OpenAL32 PATHS "${OpenJKLibDir}")
-		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
-		endif(NOT OpenALLibrary)
-		set(SPEngineLibraries ${SPEngineLibraries} ${OpenALLibrary})
-	else(UseInternalOpenAL)
-		find_package(OpenAL REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${OPENAL_LIBRARY})
-	endif(UseInternalOpenAL)
+	if(WIN32 AND NOT WIN64)
+		if(UseInternalOpenAL)
+			# There's a libs/OpenAL32.lib
+			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
+			find_library(OpenALLibrary NAMES OpenAL32 PATHS "${OpenJKLibDir}")
+			if(NOT OpenALLibrary)
+				message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
+			endif(NOT OpenALLibrary)
+			set(SPEngineLibraries ${SPEngineLibraries} ${OpenALLibrary})
+		else(UseInternalOpenAL)
+			find_package(OpenAL REQUIRED)
+			set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
+			set(SPEngineLibraries ${SPEngineLibraries} ${OPENAL_LIBRARY})
+		endif(UseInternalOpenAL)
 	
-	# EAX is Windows-Only (right?)
-	if(WIN32)
 		set(SPEngineEAXFiles
 			"${SPDir}/client/eax/eax.h"
 			"${SPDir}/client/eax/EaxMan.h"
 			)
 		source_group("eax" FILES ${SPEngineEAXFiles})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
-	endif(WIN32)
+	endif()
 
 	if(NOT WIN32)
 		find_package(SDL2 REQUIRED)
@@ -139,10 +138,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 		"${SPDir}/qcommon/strip.cpp"
 		"${SPDir}/qcommon/persistence.cpp"
-		"${SPDir}/qcommon/unzip.cpp"
-		"${SPDir}/qcommon/unzip.h"
-		"${OpenJKLibDir}/zlib/ioapi.c"
-		"${OpenJKLibDir}/zlib/ioapi.h"
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/qfiles.h"
@@ -154,6 +149,15 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
+
+	set(SPEngineMinizipFiles
+		"${OpenJKLibDir}/minizip/ioapi.c"
+		"${OpenJKLibDir}/minizip/ioapi.h"
+		"${OpenJKLibDir}/minizip/unzip.cpp"
+		"${OpenJKLibDir}/minizip/unzip.h"
+		)
+	source_group("minizip" FILES ${SPEngineMinizipFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
 
 
 	# Server files
@@ -313,12 +317,37 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif(WIN32)
 
 	if(UseInternalZlib)
-		# zlib.lib is included for windows
-		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
-		if(NOT ZlibLibrary)
-			message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
-		endif(NOT ZlibLibrary)
-		set(SPEngineLibraries ${SPEngineLibraries} ${ZlibLibrary})
+		set(SPEngineZlibFiles
+			"${OpenJKLibDir}/zlib/adler32.c"
+			"${OpenJKLibDir}/zlib/compress.c"
+			"${OpenJKLibDir}/zlib/crc32.c"
+			"${OpenJKLibDir}/zlib/deflate.c"
+			"${OpenJKLibDir}/zlib/gzclose.c"
+			"${OpenJKLibDir}/zlib/gzlib.c"
+			"${OpenJKLibDir}/zlib/gzread.c"
+			"${OpenJKLibDir}/zlib/gzwrite.c"
+			"${OpenJKLibDir}/zlib/infback.c"
+			"${OpenJKLibDir}/zlib/inffast.c"
+			"${OpenJKLibDir}/zlib/inflate.c"
+			"${OpenJKLibDir}/zlib/inftrees.c"
+			"${OpenJKLibDir}/zlib/trees.c"
+			"${OpenJKLibDir}/zlib/uncompr.c"
+			"${OpenJKLibDir}/zlib/zutil.c"
+			"${OpenJKLibDir}/zlib/crc32.h"
+			"${OpenJKLibDir}/zlib/deflate.h"
+			"${OpenJKLibDir}/zlib/gzguts.h"
+			"${OpenJKLibDir}/zlib/inffast.h"
+			"${OpenJKLibDir}/zlib/inffixed.h"
+			"${OpenJKLibDir}/zlib/inflate.h"
+			"${OpenJKLibDir}/zlib/inftrees.h"
+			"${OpenJKLibDir}/zlib/trees.h"
+			"${OpenJKLibDir}/zlib/zconf.h"
+			"${OpenJKLibDir}/zlib/zlib.h"
+			"${OpenJKLibDir}/zlib/zutil.h")
+		source_group("zlib" FILES ${SPEngineZlibFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})
+		
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} "${OpenJKLibDir}/zlib")
 	else(UseInternalZlib)
 		find_package(ZLIB REQUIRED)
 		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${ZLIB_INCLUDE_DIR})

@@ -5,15 +5,14 @@
  *
  *****************************************************************************/
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 #ifndef DEDICATED
 #ifndef FINAL_BUILD
 #include "client/client.h"
 #endif
 #endif
-#include "unzip.h"
+#include "minizip/unzip.h"
 
 // for rmdir
 #if defined (_MSC_VER)

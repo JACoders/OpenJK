@@ -20,7 +20,6 @@ This file is part of Jedi Academy.
 #include "FxScheduler.h"
 
 #include "../client/vmachine.h"
-#include "cg_lights.h"
 #include "g_local.h"
 
 #include "../qcommon/sstring.h"

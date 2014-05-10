@@ -207,7 +207,6 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/FxTemplate.cpp"
 	"${SPDir}/cgame/FxUtil.cpp"
 	"${SPDir}/cgame/cg_camera.h"
-	"${SPDir}/cgame/cg_lights.h"
 	"${SPDir}/cgame/animtable.h"
 	"${SPDir}/cgame/cg_headers.h"
 	"${SPDir}/cgame/cg_local.h"

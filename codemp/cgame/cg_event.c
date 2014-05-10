@@ -2268,7 +2268,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		{
 			if (es->eventParm)
 			{ //saber block
-				qboolean cullPass = qfalse;
 				int			blockFXID = cgs.effects.mSaberBlock;
 				qhandle_t	blockSound = trap->S_RegisterSound(va( "sound/weapons/saber/saberblock%d.wav", Q_irand(1, 9) ));
 				qboolean	noFlare = qfalse;
@@ -2317,29 +2316,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 						}
 					}
 				}
-				if (cg.mInRMG)
-				{
-					trace_t tr;
-					vec3_t vecSub;
 
-					VectorSubtract(cg.refdef.vieworg, es->origin, vecSub);
-
-					if (VectorLength(vecSub) < 5000)
-					{
-						CG_Trace(&tr, cg.refdef.vieworg, NULL, NULL, es->origin, ENTITYNUM_NONE, CONTENTS_TERRAIN|CONTENTS_SOLID);
-
-						if (tr.fraction == 1.0 || tr.entityNum < MAX_CLIENTS)
-						{
-							cullPass = qtrue;
-						}
-					}
-				}
-				else
-				{
-					cullPass = qtrue;
-				}
-
-				if (cullPass)
 				{
 					vec3_t fxDir;
 
@@ -2374,35 +2351,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_SABER_CLASHFLARE:
 		DEBUGNAME("EV_SABER_CLASHFLARE");
 		{
-			qboolean cullPass = qfalse;
-
-			if (cg.mInRMG)
-			{
-				trace_t tr;
-				vec3_t vecSub;
-
-				VectorSubtract(cg.refdef.vieworg, es->origin, vecSub);
-
-				if (VectorLength(vecSub) < 5000)
-				{
-					CG_Trace(&tr, cg.refdef.vieworg, NULL, NULL, es->origin, ENTITYNUM_NONE, CONTENTS_TERRAIN|CONTENTS_SOLID);
-
-					if (tr.fraction == 1.0 || tr.entityNum < MAX_CLIENTS)
-					{
-						cullPass = qtrue;
-					}
-				}
-			}
-			else
-			{
-				cullPass = qtrue;
-			}
-
-			if (cullPass)
-			{
-				cg_saberFlashTime = cg.time-50;
-				VectorCopy( es->origin, cg_saberFlashPos );
-			}
+			cg_saberFlashTime = cg.time-50;
+			VectorCopy( es->origin, cg_saberFlashPos );
 			trap->S_StartSound ( es->origin, -1, CHAN_WEAPON, trap->S_RegisterSound( va("sound/weapons/saber/saberhitwall%i", Q_irand(1, 3)) ) );
 		}
 		break;

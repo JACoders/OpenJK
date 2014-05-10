@@ -1,4 +1,4 @@
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 cvar_t *cl_shownet;
 

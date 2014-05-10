@@ -841,8 +841,23 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 
 						S_LoadSound_Finalize(&info,sfx,pbUnpackBuffer);
 
+#ifdef Q3_BIG_ENDIAN
+						// the MP3 decoder returns the samples in the correct endianness, but ResampleSfx byteswaps them,
+						// so we have to swap them again... 
+						sfx->fVolRange	= 0;
+						
+						for (int i = 0; i < sfx->iSoundLengthInSamples; i++)
+						{
+							sfx->pSoundData[i] = LittleShort(sfx->pSoundData[i]);
+							if (sfx->fVolRange < (abs(sfx->pSoundData[i]) >> 8))
+							{
+								sfx->fVolRange = abs(sfx->pSoundData[i]) >> 8;
+							}
+						}
+#endif
+
 						// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 						if (s_UseOpenAL)
 						{
 							if (strstr(sfx->sSoundName, "chars"))
@@ -915,7 +930,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 		ResampleSfx( sfx, info.rate, info.width, data + info.dataofs );
 
 		// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))

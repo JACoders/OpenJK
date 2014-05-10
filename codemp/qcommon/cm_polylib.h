@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qcommon/q_shared.h"
+
 // this is only used for visualization tools in cm_ debug functions
 
 typedef struct winding_s {

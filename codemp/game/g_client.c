@@ -1956,7 +1956,7 @@ static userinfoValidate_t userinfoFields[] = {
 	UIF( char_color_red,	1, 1 ),
 	UIF( char_color_green,	1, 1 ),
 	UIF( char_color_blue,	1, 1 ),
-	UIF( teamtask,			1, 1 ),
+	UIF( teamtask,			0, 1 ), // optional
 	UIF( password,			0, 1 ), // optional
 	UIF( teamoverlay,		0, 1 ), // only registered in cgame, not sent when connecting
 };

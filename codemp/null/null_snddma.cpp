@@ -1,8 +1,7 @@
-
 // snddma_null.c
 // all other sound mixing is portable
 
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 qboolean gbInsideLoadSound = qfalse; // important to default to this!!!
 

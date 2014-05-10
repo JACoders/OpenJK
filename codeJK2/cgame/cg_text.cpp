@@ -184,7 +184,7 @@ void CG_CaptionTextStop(void)
 //
 // returns 0 if failed, else strlen...
 //
-static int cg_SP_GetStringTextStringWithRetry( LPCSTR psReference, char *psDest, int iSizeofDest)
+static int cg_SP_GetStringTextStringWithRetry( const char *psReference, char *psDest, int iSizeofDest )
 {
 	int iReturn;
 

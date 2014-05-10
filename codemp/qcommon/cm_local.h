@@ -1,6 +1,8 @@
 #pragma once
 
 #include "cm_polylib.h"
+#include "cm_public.h"
+#include "qcommon/qcommon.h"
 
 #define	MAX_SUBMODELS			512
 #define	BOX_MODEL_HANDLE		(MAX_SUBMODELS-1)
@@ -183,9 +185,6 @@ typedef struct leafList_s {
 	int		lastLeaf;		// for overflows where each leaf can't be stored individually
 	void	(*storeLeafs)( struct leafList_s *ll, int nodenum );
 } leafList_t;
-
-
-bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds); //rwwRMG - added
 
 void CM_StoreLeafs( leafList_t *ll, int nodenum );
 void CM_StoreBrushes( leafList_t *ll, int nodenum );

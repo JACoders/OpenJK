@@ -861,15 +861,19 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		soundpath[i] = 0;
 
 		trap->FS_Close(f);
-	}
 
-	if (isFemale)
-	{
-		ci->gender = GENDER_FEMALE;
+		if (isFemale)
+		{
+			ci->gender = GENDER_FEMALE;
+		}
+		else
+		{
+			ci->gender = GENDER_MALE;
+		}
 	}
 	else
 	{
-		ci->gender = GENDER_MALE;
+		isFemale = ci->gender == GENDER_FEMALE;
 	}
 
 	trap->S_Shutup(qtrue);

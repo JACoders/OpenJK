@@ -1,7 +1,4 @@
 // win_input.c -- win32 mouse and joystick code
-// 02/21/97 JCB Added extended DirectInput code to support external controllers.
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
 
 #include "client/client.h"
 #include "win_local.h"
@@ -322,8 +319,8 @@ DEFINE_GUIDX(GUID_ZAxis,   0xA36D02E2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x5
 #define DINPUT_BUFFERSIZE           16
 #define iDirectInputCreate(a,b,c,d)	pDirectInputCreate(a,b,c,d)
 
-HRESULT (WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion,
-	LPDIRECTINPUT * lplpDirectInput, LPUNKNOWN punkOuter);
+typedef HRESULT (WINAPI *DirectInputCreateFn)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUT * lplpDirectInput, LPUNKNOWN punkOuter);
+DirectInputCreateFn pDirectInputCreate;
 
 static HINSTANCE hInstDI;
 
@@ -393,8 +390,7 @@ qboolean IN_InitDIMouse( void ) {
 	}
 
 	if (!pDirectInputCreate) {
-		pDirectInputCreate = (long (__stdcall *)(struct HINSTANCE__ *,unsigned long,struct IDirectInputA ** ,struct IUnknown *))
-			GetProcAddress(hInstDI,"DirectInputCreateA");
+		pDirectInputCreate = (DirectInputCreateFn)GetProcAddress(hInstDI,"DirectInputCreateA");
 
 		if (!pDirectInputCreate) {
 			Com_Printf ("Couldn't get DI proc addr\n");
@@ -906,7 +902,6 @@ void IN_Frame (void) {
 
 	// post events to the system que
 	IN_MouseMove();
-
 }
 
 
@@ -990,7 +985,6 @@ qboolean IN_LoadXInput ( void )
 		return qfalse;
 	}
 
-	// MEGA HACK:
 	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
 	// of the XInputGetState function, with one key difference: XInputGetState does
 	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
@@ -1465,21 +1459,40 @@ void IN_DoXInput( void )
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, dY, 0, NULL);
 	}
 
-	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
-	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
-	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
-	CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
-	CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
-	CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
-	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
-	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
-	CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
-	CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
-	CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
-	CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
-	CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
-	CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
-	CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
+	if ( (Key_GetCatcher() & KEYCATCH_UI) ) {
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_CURSOR_UP );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_CURSOR_DOWN );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_CURSOR_LEFT );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_CURSOR_RIGHT );
+		CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+		CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+		CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+		CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+		CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+		CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+		CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+		CheckButtonStatus( XINPUT_GAMEPAD_A, A_ENTER );
+		CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+		CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+		CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
+	}
+	else {
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_UP, A_JOY0 );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_DOWN, A_JOY1 );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_LEFT, A_JOY2 );
+		CheckButtonStatus( XINPUT_GAMEPAD_DPAD_RIGHT, A_JOY3 );
+		CheckButtonStatus( XINPUT_GAMEPAD_START, A_JOY4 );
+		CheckButtonStatus( XINPUT_GAMEPAD_BACK, A_JOY5 );
+		CheckButtonStatus( XINPUT_GAMEPAD_LEFT_THUMB, A_JOY6 );
+		CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_THUMB, A_JOY7 );
+		CheckButtonStatus( XINPUT_GAMEPAD_LEFT_SHOULDER, A_JOY8 );
+		CheckButtonStatus( XINPUT_GAMEPAD_RIGHT_SHOULDER, A_JOY9 );
+		CheckButtonStatus( X360_GUIDE_BUTTON, A_JOY10 );
+		CheckButtonStatus( XINPUT_GAMEPAD_A, A_JOY11 );
+		CheckButtonStatus( XINPUT_GAMEPAD_B, A_JOY12 );
+		CheckButtonStatus( XINPUT_GAMEPAD_X, A_JOY13 );
+		CheckButtonStatus( XINPUT_GAMEPAD_Y, A_JOY14 );
+	}
 
 	// extra magic required for the triggers
 	if( xiState.Gamepad.bLeftTrigger && !(dwLastXIButtonState & X360_LEFT_TRIGGER_MASK) )

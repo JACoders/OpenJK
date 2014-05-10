@@ -280,19 +280,6 @@ static	void R_LoadVisibility( lump_t *l, world_t &worldData ) {
 
 //===============================================================================
 
-qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
-{
-	qhandle_t	shader;
-
-	if ( (shaderNum < 0) || (shaderNum >= worldData.numShaders) )
-	{
-		ri->Printf( PRINT_ALL, "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
-		return(0);
-	}
-	shader = RE_RegisterShader(worldData.shaders[ shaderNum ].shader);
-	return(shader);
-}
-
 /*
 ===============
 ShaderForShaderNum
@@ -1840,6 +1827,9 @@ R_LoadLightGridArray
 */
 void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 	world_t	*w;
+#ifdef Q3_BIG_ENDIAN
+	int		i;
+#endif
 
 	w = &worldData;
 
@@ -1853,6 +1843,11 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 
 	w->lightGridArray = (unsigned short *)Hunk_Alloc( l->filelen, h_low );
 	memcpy( w->lightGridArray, (void *)(fileBase + l->fileofs), l->filelen );
+#ifdef Q3_BIG_ENDIAN
+	for ( i = 0 ; i < w->numGridArrayElements ; i++ ) {
+		w->lightGridArray[i] = LittleShort(w->lightGridArray[i]);
+	}
+#endif
 }
 
 /*

@@ -1,9 +1,4 @@
-// leave this as first line for PCH reasons...
-//
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
- #include "client/client.h"	//FIXME!! EVIL - just include the definitions needed
+#include "client/client.h"	//FIXME!! EVIL - just include the definitions needed
 #include "tr_local.h"
 #include "qcommon/matcomp.h"
 #include "qcommon/qcommon.h"

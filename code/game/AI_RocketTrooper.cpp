@@ -66,7 +66,6 @@ void RT_FireDecide( void )
 	qboolean enemyCS = qfalse;
 	qboolean enemyInFOV = qfalse;
 	//qboolean move = qtrue;
-	qboolean faceEnemy = qfalse;
 	qboolean shoot = qfalse;
 	qboolean hitAlly = qfalse;
 	vec3_t	impactPos;
@@ -164,21 +163,15 @@ void RT_FireDecide( void )
 		else if ( gi.inPVS( NPC->enemy->currentOrigin, NPC->currentOrigin ) )
 		{
 			NPCInfo->enemyLastSeenTime = level.time;
-			faceEnemy = qtrue;
 			//NPC_AimAdjust( -1 );//adjust aim worse longer we cannot see enemy
 		}
 
 		if ( NPC->client->ps.weapon == WP_NONE )
 		{
-			faceEnemy = qfalse;
 			shoot = qfalse;
 		}
 		else
 		{
-			if ( enemyLOS )
-			{//FIXME: no need to face enemy if we're moving to some other goal and he's too far away to shoot?
-				faceEnemy = qtrue;
-			}
 			if ( enemyCS )
 			{
 				shoot = qtrue;
@@ -293,7 +286,6 @@ void RT_FireDecide( void )
 							NPCInfo->desiredPitch	= angles[PITCH];
 
 							shoot = qtrue;
-							faceEnemy = qfalse;
 						}
 					}
 				}

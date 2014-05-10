@@ -105,7 +105,7 @@ and whenever the server updates any serverinfo flagged cvars
 ================
 */
 void CG_ParseServerinfo( void ) {
-	const char *info = NULL, *tinfo = NULL;
+	const char *info = NULL;
 	char *mapname;
 	int i, value;
 
@@ -186,32 +186,6 @@ void CG_ParseServerinfo( void ) {
 	//Set the siege teams based on what the server has for overrides.
 	trap->Cvar_Set("cg_siegeTeam1", Info_ValueForKey(info, "g_siegeTeam1"));
 	trap->Cvar_Set("cg_siegeTeam2", Info_ValueForKey(info, "g_siegeTeam2"));
-
-	tinfo = CG_ConfigString( CS_TERRAINS + 1 );
-	if ( !tinfo || !*tinfo )
-	{
-		cg.mInRMG = qfalse;
-	}
-	else
-	{
-		int weather = 0;
-
-		cg.mInRMG = qtrue;
-		trap->Cvar_Set("RMG", "1");
-
-		weather = atoi( Info_ValueForKey( info, "RMG_weather" ) );
-
-		trap->Cvar_Set("RMG_weather", va("%i", weather));
-
-		if (weather == 1 || weather == 2)
-		{
-			cg.mRMGWeather = qtrue;
-		}
-		else
-		{
-			cg.mRMGWeather = qfalse;
-		}
-	}
 
 	Q_strncpyz( cgs.voteString, CG_ConfigString( CS_VOTE_STRING ), sizeof( cgs.voteString ) );
 

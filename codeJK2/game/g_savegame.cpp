@@ -558,7 +558,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 
 
 // copy of function in sv_savegame
-static LPCSTR SG_GetChidText(unsigned int chid)
+static const char *SG_GetChidText(unsigned int chid)
 {
 	static char	chidtext[5];
 

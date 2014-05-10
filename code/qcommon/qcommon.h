@@ -677,10 +677,6 @@ void Com_Shutdown( void );
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
 
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
-
 /*
 ==============================================================
 

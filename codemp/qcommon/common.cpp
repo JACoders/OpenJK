@@ -1,10 +1,7 @@
 // common.c -- misc functions used in client and server
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-#include "GenericParser2.h"
 #include "stringed_ingame.h"
+#include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
 
@@ -46,7 +43,7 @@ cvar_t	*com_unfocused;
 cvar_t	*com_minimized;
 cvar_t  *com_homepath;
 
-static cvar_t *com_affinity;
+cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -1021,10 +1018,6 @@ static void Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
-#ifdef MEM_DEBUG
-	void SH_Register(void);
-#endif
-
 /*
 ==================
 Com_ExecuteCfg
@@ -1125,37 +1118,6 @@ static void Com_CatchError ( int code )
 		FS_PureServerSetLoadedPaks( "", "" );
 		com_errorEntered = qfalse;
 	}
-}
-
-#ifdef _WIN32
-static const char *GetErrorString( DWORD error ) {
-	static char buf[MAX_STRING_CHARS];
-	buf[0] = '\0';
-
-	if ( error ) {
-		LPVOID lpMsgBuf;
-		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
-		if ( bufLen ) {
-			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
-			LocalFree( lpMsgBuf );
-		}
-	}
-	return buf;
-}
-#endif
-
-// based on Smod code
-static void Com_SetProcessorAffinity( void ) {
-#ifdef _WIN32
-	DWORD processMask;
-	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
-		processMask = 1; // set to first core only
-
-	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
-		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
-#endif
 }
 
 /*
@@ -1298,7 +1260,7 @@ void Com_Init( char *commandLine ) {
 
 		Sys_Init();
 
-		Com_SetProcessorAffinity();
+		Sys_SetProcessorAffinity();
 
 		// Pick a random port value
 		Com_RandomBytes( (byte*)&qport, sizeof(int) );
@@ -1339,10 +1301,6 @@ void Com_Init( char *commandLine ) {
 
 		// make sure single player is off by default
 		Cvar_Set("ui_singlePlayerActive", "0");
-
-#ifdef MEM_DEBUG
-		SH_Register();
-#endif
 
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
@@ -1978,75 +1936,6 @@ void Field_AutoComplete( field_t *field ) {
 	completionField = field;
 
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
-}
-
-//rwwRMG: Inserted:
-/*
-============
-ParseTextFile
-============
-*/
-
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-
-	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)
-	{
-		return false;
-	}
-
-	buf = new char [length + 1];
-	FS_Read( buf, length, f );
-	buf[length] = 0;
-
-	bufParse = buf;
-	parser.Parse(&bufParse, cleanFirst);
-	delete[] buf;
-
-	FS_FCloseFile( f );
-
-	return true;
-}
-
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser)
-{
-	parser.Clean();
-}
-
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-	CGenericParser2 *parse;
-
-	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)
-	{
-		return 0;
-	}
-
-	buf = new char [length + 1];
-	FS_Read( buf, length, f );
-	FS_FCloseFile( f );
-	buf[length] = 0;
-
-	bufParse = buf;
-
-	parse = new CGenericParser2;
-	if (!parse->Parse(&bufParse, cleanFirst, writeable))
-	{
-		delete parse;
-		parse = 0;
-	}
-
-	delete[] buf;
-
-	return parse;
 }
 
 /*
