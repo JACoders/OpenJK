@@ -66,8 +66,6 @@ varying vec3   var_ViewDir;
   #endif
 #endif
 
-varying vec3 var_N;
-
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 varying vec4      var_LightDir;
 #endif
@@ -291,23 +289,20 @@ void main()
 #endif
 
 	vec4 diffuse = texture2D(u_DiffuseMap, texCoords);
-#if defined(USE_GAMMA2_TEXTURES)
-	diffuse.rgb *= diffuse.rgb;
-#endif
-
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-	ambientColor = vec3 (0.0);
-	attenuation = 1.0;
-
   #if defined(USE_LIGHTMAP)
 	lightColor	= lightmapColor.rgb * var_Color.rgb;
+	ambientColor = vec3 (0.0);
+	attenuation = 1.0;
   #elif defined(USE_LIGHT_VECTOR)
 	lightColor	= u_DirectedLight * var_Color.rgb;
 	ambientColor = u_AmbientLight * var_Color.rgb;
 	attenuation = CalcLightAttenuation(float(var_LightDir.w > 0.0), var_LightDir.w / sqrLightDist);
   #elif defined(USE_LIGHT_VERTEX)
 	lightColor	= var_Color.rgb;
+	ambientColor = vec3 (0.0);
+	attenuation = 1.0;
   #endif
 
   #if defined(USE_NORMALMAP)
@@ -365,9 +360,6 @@ void main()
 
   #if defined(USE_SPECULARMAP)
 	vec4 specular = texture2D(u_SpecularMap, texCoords);
-    #if defined(USE_GAMMA2_TEXTURES)
-	specular.rgb *= specular.rgb;
-    #endif
   #else
 	vec4 specular = vec4(1.0);
   #endif
@@ -481,7 +473,9 @@ void main()
   #if defined(USE_LIGHTMAP) 
 	lightColor *= lightmapColor.rgb;
   #endif
+
+    gl_FragColor.rgb = diffuse.rgb * lightColor;
 #endif
 	
-	gl_FragColor = vec4 (diffuse.rgb * lightColor, diffuse.a * var_Color.a);
+	gl_FragColor.a = diffuse.a * var_Color.a;
 }
