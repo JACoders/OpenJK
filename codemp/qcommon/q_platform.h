@@ -202,6 +202,8 @@
 #endif
 
 // endianness
+void CopyShortSwap( void *dest, void *src );
+void CopyLongSwap( void *dest, void *src );
 short ShortSwap( short l );
 int LongSwap( int l );
 float FloatSwap( const float *f );
@@ -209,6 +211,8 @@ float FloatSwap( const float *f );
 #if defined(Q3_BIG_ENDIAN) && defined(Q3_LITTLE_ENDIAN)
 	#error "Endianness defined as both big and little"
 #elif defined(Q3_BIG_ENDIAN)
+	#define CopyLittleShort( dest, src )	CopyShortSwap( dest, src )
+	#define CopyLittleLong( dest, src )		CopyLongSwap( dest, src )
 	#define LittleShort( x )				ShortSwap( x )
 	#define LittleLong( x )					LongSwap( x )
 	#define LittleFloat( x )				FloatSwap( &x )
@@ -216,6 +220,8 @@ float FloatSwap( const float *f );
 	#define BigLong
 	#define BigFloat
 #elif defined( Q3_LITTLE_ENDIAN )
+	#define CopyLittleShort( dest, src )	Com_Memcpy(dest, src, 2)
+	#define CopyLittleLong( dest, src )		Com_Memcpy(dest, src, 4)
 	#define LittleShort
 	#define LittleLong
 	#define LittleFloat
