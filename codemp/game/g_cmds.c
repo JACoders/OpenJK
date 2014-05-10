@@ -7440,7 +7440,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7    Has all skills, but no unique features\n^31 - Force User\n^7    Has force powers, saber and melee. Saber does more damage. Force powers use less force\n^32 - Bounty Hunter\n^7    Has guns with more damage. Gets more credits in battles\n^33 - Armored Soldier\n^7    Deflects some gun shots. Can use guns and some holdable items. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7    Has melee and some force powers. Melee does more damage and destroy breakable objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7    Uses some guns. Has a lot of gun damage. Cloak Item does not decloak by electric attacks, and also takes less electric damage\n^36 - Duelist\n^7   Has some force powers and has the highest saber damage. Melee does more damage\n^2Use ^3/rpg_class <class number> ^2to change your class\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7    Has all skills, but no unique features\n^31 - Force User\n^7    Has force powers, saber and melee. Saber does more damage. Force powers use less force\n^32 - Bounty Hunter\n^7    Has guns with more damage. Gets more credits in battles\n^33 - Armored Soldier\n^7    Deflects some gun shots. Can use guns and some holdable items. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7    Has melee and some force powers. Melee does more damage and destroy breakable objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7    Uses some guns. Has a lot of gun damage. Cloak Item does not decloak by electric attacks, and also takes less electric damage\n^36 - Duelist\n^7   Has some force powers and has the highest saber damage. Melee does more damage\n^2Use ^3/rpgclass <class number> ^2to change your class\n\"" );
 			}
 			else if (Q_stricmp( arg1, "stuff" ) == 0)
 			{
@@ -8680,6 +8680,1055 @@ void Cmd_CreditGive_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_QuestAnswer_f
+==================
+*/
+void Cmd_QuestAnswer_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		char arg1[MAX_STRING_CHARS];
+
+		if (ent->client->pers.universe_quest_progress != 5 || ent->client->pers.universe_quest_messages != 101)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You dont need to answer the mayor name now.\n\"" );
+			return;
+		}
+
+		if (level.quest_map != 24)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"This is not the right map.\n\"" );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+
+		if (Q_stricmp( arg1, "Samir" ) == 0 || Q_stricmp( arg1, "samir" ) == 0)
+		{
+			ent->client->pers.universe_quest_messages = 102;
+		}
+		else
+		{
+			ent->client->pers.universe_quest_messages = 103;
+		}
+	}
+}
+
+/*
+==================
+Cmd_Answer_f
+==================
+*/
+void Cmd_Answer_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		char arg1[MAX_STRING_CHARS];
+
+		if (ent->client->pers.eternity_quest_progress >= (NUMBER_OF_ETERNITY_QUEST_OBJECTIVES - 1))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You dont need to answer riddles now.\n\"" );
+			return;
+		}
+
+		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You cant answer riddles at Spectator mode.\n\"" );
+			return;
+		}
+
+		if (level.quest_map != 10)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are not in the right map.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.can_play_quest == 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"It is not your turn to answer riddles.\n\"" );
+			return;
+		}
+
+		if (ent->client->pers.eternity_quest_timer == 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must find the location of the riddle in this map.\n\"" );
+			return;
+		}
+
+		if (trap->Argc() != 2)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Use ^3/answer <word> ^7to answer the riddle.\n\"" );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+
+		if (ent->client->pers.eternity_quest_progress == 0 && Q_stricmp( arg1, "key" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 1;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Earth ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 1 && Q_stricmp( arg1, "clock" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 2;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Fire ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 2 && Q_stricmp( arg1, "sword" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = 0;
+			ent->client->pers.eternity_quest_progress = 3;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Darkness ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 3 && Q_stricmp( arg1, "sun" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 4;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^4Riddle of Water ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 4 && Q_stricmp( arg1, "fire" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 5;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^7Riddle of Wind ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 5 && Q_stricmp( arg1, "water" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = 0;
+			ent->client->pers.eternity_quest_progress = 6;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Light ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 6 && Q_stricmp( arg1, "time" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 7;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^6Riddle of Agility ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 7 && Q_stricmp( arg1, "star" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = level.time + 5000;
+			ent->client->pers.eternity_quest_progress = 8;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^2Riddle of Forest ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 8 && Q_stricmp( arg1, "nature" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = 0;
+			ent->client->pers.eternity_quest_progress = 9;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Intelligence ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 9 && Q_stricmp( arg1, "love" ) == 0)
+		{
+			ent->client->pers.eternity_quest_timer = 0;
+			ent->client->pers.eternity_quest_progress = 10;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Eternity ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else
+		{
+			trap->SendServerCommand( -1, va("chat \"Thats not the right answer, %s^7...\n\"",ent->client->pers.netname) );
+		}
+	}
+	else if (ent->client->sess.amrpgmode == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not in RPG Mode.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_AllyList_f
+==================
+*/
+void Cmd_AllyList_f( gentity_t *ent ) {
+	char message[1024];
+
+	strcpy(message,"");
+
+	if (ent->client->sess.ally1 != -1)	
+	{
+		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally1].client->pers.netname));
+	}
+	if (ent->client->sess.ally2 != -1)	
+	{
+		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally2].client->pers.netname));
+	}
+	if (ent->client->sess.ally3 != -1)	
+	{
+		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally3].client->pers.netname));
+	}
+
+	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", message) );
+}
+
+/*
+==================
+Cmd_AllyAdd_f
+==================
+*/
+void Cmd_AllyAdd_f( gentity_t *ent ) {
+	if (trap->Argc() == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Use ^3/allyadd <player name or id> ^7to add an ally.\n\"") );
+	}
+	else
+	{
+		char arg1[MAX_STRING_CHARS];
+		int client_id = -1;
+
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You cannot add allies during a boss battle.\n\"") );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+		client_id = zyk_get_client( arg1 ); 
+
+		if (client_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+			return;
+		}
+
+		if (client_id == (ent-g_entities))
+		{ // zyk: player cant add himself as ally
+			trap->SendServerCommand( ent-g_entities, va("print \"You cannot add yourself as ally\n\"") );
+			return; 
+		}
+
+		if (ent->client->sess.ally1 == client_id || ent->client->sess.ally2 == client_id || ent->client->sess.ally3 == client_id)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You already have this ally.\n\"") );
+			return;
+		}
+
+		// zyk: add this player as an ally
+		if (ent->client->sess.ally1 == -1)
+		{
+			ent->client->sess.ally1 = client_id;
+		}
+		else if (ent->client->sess.ally2 == -1)
+		{
+			ent->client->sess.ally2 = client_id;
+		}
+		else if (ent->client->sess.ally3 == -1)
+		{ 
+			ent->client->sess.ally3 = client_id;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You reached the max number of allies.\n\"") );
+			return;
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Added ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		trap->SendServerCommand( client_id, va("print \"%s^7 added you as ally\n\"", ent->client->pers.netname) );
+	}
+}
+
+/*
+==================
+Cmd_AllyRemove_f
+==================
+*/
+void Cmd_AllyRemove_f( gentity_t *ent ) {
+	if (trap->Argc() == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Use ^3/allyremove <player name or id> ^7to remove an ally.\n\"") );
+	}
+	else
+	{
+		char arg1[MAX_STRING_CHARS];
+		int client_id = -1;
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+		client_id = zyk_get_client( arg1 ); 
+
+		if (client_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+			return;
+		}
+
+		// zyk: removes this ally
+		if (ent->client->sess.ally1 == client_id)
+		{
+			ent->client->sess.ally1 = -1;
+		}
+		else if (ent->client->sess.ally2 == client_id)
+		{
+			ent->client->sess.ally2 = -1;
+		}
+		else if (ent->client->sess.ally3 == client_id)
+		{ 
+			ent->client->sess.ally3 = -1;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You don't have this ally!\n\"") );
+			return;
+		}
+		trap->SendServerCommand( ent-g_entities, va("print \"Removed ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		trap->SendServerCommand( client_id, va("print \"%s^7 removed you as ally\n\"", ent->client->pers.netname) );
+	}
+}
+
+/*
+==================
+Cmd_Settings_f
+==================
+*/
+void Cmd_Settings_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		if (trap->Argc() == 1)
+		{
+			char message[1024];
+			strcpy(message,"");
+
+			if (ent->client->pers.player_settings & (1 << 0))
+			{
+				sprintf(message,"\n^3 0 - RPG quests - ^1OFF");
+			}
+			else
+			{
+				sprintf(message,"\n^3 0 - RPG quests - ^2ON");
+			}
+
+			if (ent->client->pers.player_settings & (1 << 1))
+			{
+				sprintf(message,"%s\n^3 1 - Light Power - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 1 - Light Power - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 2))
+			{
+				sprintf(message,"%s\n^3 2 - Dark Power - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 2 - Dark Power - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 3))
+			{
+				sprintf(message,"%s\n^3 3 - Eternity Power - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 3 - Eternity Power - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 4))
+			{
+				sprintf(message,"%s\n^3 4 - Universe Power - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 4 - Universe Power - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 5))
+			{
+				sprintf(message,"%s\n^3 5 - Ultimate Power - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 5 - Ultimate Power - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 6))
+			{
+				sprintf(message,"%s\n^3 6 - Allow Force Powers from allies - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 6 - Allow Force Powers from allies - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 7))
+			{
+				sprintf(message,"%s\n^3 7 - Use Movers with Stun Baton - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 7 - Use Movers with Stun Baton - ^2ON", message);
+			}
+
+			// zyk: Saber Style flags
+			if (ent->client->pers.player_settings & (1 << 26))
+				sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^3Yellow", message);
+			else if (ent->client->pers.player_settings & (1 << 27))
+				sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^1Red", message);
+			else if (ent->client->pers.player_settings & (1 << 28))
+				sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^1Desann", message);
+			else if (ent->client->pers.player_settings & (1 << 29))
+				sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^5Tavion", message);
+			else
+				sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^5Blue", message);
+
+			if (ent->client->pers.player_settings & (1 << 9))
+			{
+				sprintf(message,"%s\n^3 9 - RPG Starting Dual Sabers Style - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^3 9 - RPG Starting Dual Sabers Style - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 10))
+			{
+				sprintf(message,"%s\n^310 - RPG Starting Staff Style - ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^310 - RPG Starting Staff Style - ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 11))
+			{
+				sprintf(message,"%s\n^311 - Saber Starts ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^311 - Saber Starts ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 12))
+			{
+				sprintf(message,"%s\n^312 - Jetpack ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^312 - Jetpack ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 13))
+			{
+				sprintf(message,"%s\n^313 - Admin Protect ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^313 - Admin Protect ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 14))
+			{
+				sprintf(message,"%s\n^314 - Mind Control ^1OFF", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^314 - Mind Control ^2ON", message);
+			}
+
+			if (ent->client->pers.player_settings & (1 << 15))
+			{
+				sprintf(message,"%s\n^315 - Difficulty ^1Hard", message);
+			}
+			else
+			{
+				sprintf(message,"%s\n^315 - Difficulty ^2Normal", message);
+			}
+
+			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
+		}
+		else
+		{
+			char arg1[MAX_STRING_CHARS];
+			char new_status[32];
+			int value = 0;
+
+			trap->Argv(1, arg1, sizeof( arg1 ));
+			value = atoi(arg1);
+
+			if (value < 0 || value > 15)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Invalid settings value.\n\"" );
+				return;
+			}
+
+			if (value == 0 && ent->client->pers.player_settings & (1 << value) && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+			{ // zyk: player can only activate quests again in Spectator Mode
+				trap->SendServerCommand( ent-g_entities, "print \"You can only activate RPG quests in Spectator Mode.\n\"" );
+				return;
+			}
+
+			if (value != 8 && value != 15)
+			{
+				if (ent->client->pers.player_settings & (1 << value))
+				{
+					ent->client->pers.player_settings &= ~(1 << value);
+					strcpy(new_status,"^2ON^7");
+				}
+				else
+				{
+					ent->client->pers.player_settings |= (1 << value);
+					strcpy(new_status,"^1OFF^7");
+				}
+			}
+			else if (value == 15)
+			{
+				if (ent->client->pers.player_settings & (1 << value))
+				{
+					ent->client->pers.player_settings &= ~(1 << value);
+					strcpy(new_status,"^2Normal^7");
+				}
+				else
+				{
+					ent->client->pers.player_settings |= (1 << value);
+					strcpy(new_status,"^1Hard^7");
+				}
+			}
+			else
+			{ // zyk: starting saber style has its own handling code
+				if (ent->client->pers.player_settings & (1 << 26))
+				{
+					ent->client->pers.player_settings &= ~(1 << 26);
+					ent->client->pers.player_settings |= (1 << 27);
+					strcpy(new_status,"^1Red^7");
+				}
+				else if (ent->client->pers.player_settings & (1 << 27))
+				{
+					ent->client->pers.player_settings &= ~(1 << 27);
+					ent->client->pers.player_settings |= (1 << 28);
+					strcpy(new_status,"^1Desann^7");
+				}
+				else if (ent->client->pers.player_settings & (1 << 28))
+				{
+					ent->client->pers.player_settings &= ~(1 << 28);
+					ent->client->pers.player_settings |= (1 << 29);
+					strcpy(new_status,"^5Tavion");
+				}
+				else if (ent->client->pers.player_settings & (1 << 29))
+				{
+					ent->client->pers.player_settings &= ~(1 << 29);
+					strcpy(new_status,"^5Blue^7");
+				}
+				else
+				{
+					ent->client->pers.player_settings |= (1 << 26);
+					strcpy(new_status,"^3Yellow^7");
+				}
+			}
+
+			save_account(ent);	
+
+			if (value == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Quests %s\n\"", new_status) );
+			}
+			else if (value == 1)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Light Power %s\n\"", new_status) );
+			}
+			else if (value == 2)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Dark Power %s\n\"", new_status) );
+			}
+			else if (value == 3)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Eternity Power %s\n\"", new_status) );
+			}
+			else if (value == 4)
+			{
+				set_max_health(ent);
+				set_max_shield(ent);
+				trap->SendServerCommand( ent-g_entities, va("print \"Universe Power %s\n\"", new_status) );
+			}
+			else if (value == 5)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Ultimate Power %s\n\"", new_status) );
+			}
+			else if (value == 6)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Allow Force Powers from allies %s\n\"", new_status) );
+			}
+			else if (value == 7)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Use Movers with Stun Baton %s\n\"", new_status) );
+			}
+			else if (value == 8)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Single Saber Style %s\n\"", new_status) );
+			}
+			else if (value == 9)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Dual Sabers Style %s\n\"", new_status) );
+			}
+			else if (value == 10)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Staff Style %s\n\"", new_status) );
+			}
+			else if (value == 11)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Saber Starts %s\n\"", new_status) );
+			}
+			else if (value == 12)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Jetpack %s\n\"", new_status) );
+			}
+			else if (value == 13)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Admin Protect %s\n\"", new_status) );
+			}
+			else if (value == 14)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Mind Control %s\n\"", new_status) );
+			}
+			else if (value == 15)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Difficulty %s\n\"", new_status) );
+			}
+			return;
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_RpgClass_f
+==================
+*/
+void Cmd_RpgClass_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		char arg1[MAX_STRING_CHARS];
+		int value = 0;
+		int i = 0;
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to change your RPG class.\n\"" );
+			return;
+		}
+
+		if (trap->Argc() == 1)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Look at ^3/list classes ^7to see the class number, then ^2/rpgclass <class number>^7\n\"" );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+		value = atoi(arg1);
+
+		ent->client->pers.rpg_class = value;
+
+		// zyk: resetting skills that are not allowed in this class
+		if (ent->client->pers.rpg_class == 1)
+		{ // zyk: Force User
+			for (i = 0; i < 7; i++)
+			{
+				while (ent->client->pers.ammo_levels[i] > 0)
+				{
+					ent->client->pers.ammo_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 10; i++)
+			{
+				while (ent->client->pers.weapons_levels[i] > 0)
+				{
+					ent->client->pers.weapons_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 8; i++)
+			{
+				while (ent->client->pers.holdable_items_levels[i] > 0)
+				{
+					ent->client->pers.holdable_items_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			while (ent->client->pers.jetpack_level > 0)
+			{
+				ent->client->pers.jetpack_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Force User.\n\"" );
+		}
+		else if (ent->client->pers.rpg_class == 2)
+		{ // zyk: Bounty Hunter
+			for (i = 0; i < 18; i++)
+			{
+				if (i != 4)
+				{
+					while (ent->client->pers.force_powers_levels[i] > 0)
+					{
+						ent->client->pers.force_powers_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			while (ent->client->pers.playerhealth > 0)
+			{
+				ent->client->pers.playerhealth--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.shield > 0)
+			{
+				ent->client->pers.shield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.teamshield > 0)
+			{
+				ent->client->pers.teamshield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.max_force_power_level > 0)
+			{
+				ent->client->pers.max_force_power_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Bounty Hunter.\n\"" );
+		}
+		else if (ent->client->pers.rpg_class == 3)
+		{ // zyk: Armored Soldier
+			for (i = 0; i < 18; i++)
+			{
+				if (i != 4)
+				{
+					while (ent->client->pers.force_powers_levels[i] > 0)
+					{
+						ent->client->pers.force_powers_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 8; i++)
+			{
+				if (i != 0 && i != 1 && i != 3 && i != 4)
+				{
+					while (ent->client->pers.holdable_items_levels[i] > 0)
+					{
+						ent->client->pers.holdable_items_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			while (ent->client->pers.playerhealth > 0)
+			{
+				ent->client->pers.playerhealth--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.shield > 0)
+			{
+				ent->client->pers.shield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.teamshield > 0)
+			{
+				ent->client->pers.teamshield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.max_force_power_level > 0)
+			{
+				ent->client->pers.max_force_power_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now an Armored Soldier.\n\"" );
+		}
+		else if (ent->client->pers.rpg_class == 4)
+		{ // zyk: Monk
+			for (i = 0; i < 18; i++)
+			{
+				if (i != 0 && i != 1 && i != 2 && i != 4 && i != 9 && i != 11 && i != 12 && i != 14 && i != 15 && i != 17)
+				{
+					while (ent->client->pers.force_powers_levels[i] > 0)
+					{
+						ent->client->pers.force_powers_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 7; i++)
+			{
+				while (ent->client->pers.ammo_levels[i] > 0)
+				{
+					ent->client->pers.ammo_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 10; i++)
+			{
+				while (ent->client->pers.weapons_levels[i] > 0)
+				{
+					ent->client->pers.weapons_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 8; i++)
+			{
+				while (ent->client->pers.holdable_items_levels[i] > 0)
+				{
+					ent->client->pers.holdable_items_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			while (ent->client->pers.jetpack_level > 0)
+			{
+				ent->client->pers.jetpack_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Monk.\n\"" );
+		}
+		else if (ent->client->pers.rpg_class == 5)
+		{ // zyk: Stealth Attacker
+			for (i = 0; i < 18; i++)
+			{
+				if (i != 4)
+				{
+					while (ent->client->pers.force_powers_levels[i] > 0)
+					{
+						ent->client->pers.force_powers_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 7; i++)
+			{
+				if (i != 1 && i != 2 && i != 5 && i != 6)
+				{
+					while (ent->client->pers.ammo_levels[i] > 0)
+					{
+						ent->client->pers.ammo_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 10; i++)
+			{
+				if (i != 2 && i != 4 && i != 5 && i != 8)
+				{
+					while (ent->client->pers.weapons_levels[i] > 0)
+					{
+						ent->client->pers.weapons_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 8; i++)
+			{
+				if (i != 0 && i != 7)
+				{
+					while (ent->client->pers.holdable_items_levels[i] > 0)
+					{
+						ent->client->pers.holdable_items_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			while (ent->client->pers.playerhealth > 0)
+			{
+				ent->client->pers.playerhealth--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.shield > 0)
+			{
+				ent->client->pers.shield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.teamshield > 0)
+			{
+				ent->client->pers.teamshield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.max_force_power_level > 0)
+			{
+				ent->client->pers.max_force_power_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Stealth Attacker.\n\"" );
+		}
+		else if (ent->client->pers.rpg_class == 6)
+		{ // zyk: Duelist
+			for (i = 0; i < 18; i++)
+			{
+				if (i != 0 && i != 1 && i != 2 && i != 3 && i != 4 && i != 5 && i != 6 && i != 7 && i != 8 && i != 9 && i != 10 && i != 13 && i != 14)
+				{
+					while (ent->client->pers.force_powers_levels[i] > 0)
+					{
+						ent->client->pers.force_powers_levels[i]--;
+						ent->client->pers.skillpoints++;
+					}
+				}
+			}
+
+			for (i = 0; i < 7; i++)
+			{
+				while (ent->client->pers.ammo_levels[i] > 0)
+				{
+					ent->client->pers.ammo_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 10; i++)
+			{
+				while (ent->client->pers.weapons_levels[i] > 0)
+				{
+					ent->client->pers.weapons_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			for (i = 0; i < 8; i++)
+			{
+				while (ent->client->pers.holdable_items_levels[i] > 0)
+				{
+					ent->client->pers.holdable_items_levels[i]--;
+					ent->client->pers.skillpoints++;
+				}
+			}
+
+			while (ent->client->pers.jetpack_level > 0)
+			{
+				ent->client->pers.jetpack_level--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.teamshield > 0)
+			{
+				ent->client->pers.teamshield--;
+				ent->client->pers.skillpoints++;
+			}
+
+			while (ent->client->pers.mind_control > 0)
+			{
+				ent->client->pers.mind_control--;
+				ent->client->pers.skillpoints++;
+			}
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Duelist.\n\"" );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are now a Free Warrior.\n\"" );
+		}
+
+		save_account(ent);
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not in RPG Mode.\n\"" );
+		return;
+	}
+}
+
+/*
+==================
 Cmd_RaceMode_f
 ==================
 */
@@ -8882,6 +9931,10 @@ int cmdcmp( const void *a, const void *b ) {
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
 	{ "addbot",				Cmd_AddBot_f,				0 },
+	{ "allyadd",			Cmd_AllyAdd_f,				CMD_NOINTERMISSION },
+	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
+	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },
+	{ "answer",				Cmd_Answer_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "buy",				Cmd_Buy_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callseller",			Cmd_CallSeller_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
@@ -8915,12 +9968,15 @@ command_t commands[] = {
 	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
+	{ "questanswer",		Cmd_QuestAnswer_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_NOINTERMISSION },
+	{ "rpgclass",			Cmd_RpgClass_f,				CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "score",				Cmd_Score_f,				0 },
 	{ "sell",				Cmd_Sell_f,					CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "settings",			Cmd_Settings_f,				CMD_NOINTERMISSION },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
 	{ "stuff",				Cmd_Stuff_f,					CMD_ALIVE|CMD_NOINTERMISSION },
