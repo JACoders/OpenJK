@@ -9,6 +9,8 @@
 #include "snd_mp3.h"
 #include "snd_music.h"
 #include "client.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 qboolean s_shutUp = qfalse;
 
@@ -142,7 +144,6 @@ int			s_numSfx;
 #define		LOOP_HASH		128
 static	sfx_t		*sfxHash[LOOP_HASH];
 
-
 cvar_t		*s_volume;
 cvar_t		*s_volumeVoice;
 cvar_t		*s_testsound;
@@ -185,12 +186,15 @@ typedef struct
 int			numLoopSounds;
 loopSound_t	loopSounds[MAX_LOOP_SOUNDS];
 
-
 int			s_rawend;
 portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 vec3_t		s_entityPosition[MAX_GENTITIES];
 int			s_entityWavVol[MAX_GENTITIES];
 int			s_entityWavVol_back[MAX_GENTITIES];
+
+int			s_numChannels;			// Number of AL Sources == Num of Channels
+
+#ifdef USE_OPENAL
 
 /**************************************************************************************************\
 *
@@ -208,14 +212,11 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 
 int			s_UseOpenAL	= 0;	// Determines if using Open AL or the default software mixer
 
-#ifdef USE_OPENAL
 ALfloat		listener_pos[3];		// Listener Position
 ALfloat		listener_ori[6];		// Listener Orientation
-#endif
-int			s_numChannels;			// Number of AL Sources == Num of Channels
+
 short		s_rawdata[MAX_RAW_SAMPLES*2];	// Used for Raw Samples (Music etc...)
 
-#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel);
 int  S_MP3PreProcessLipSync(channel_t *ch, short *data);
 void UpdateSingleShotSounds();
@@ -381,7 +382,7 @@ void S_SoundInfo_f(void) {
 			Com_Printf("%5d samplebits\n", dma.samplebits);
 			Com_Printf("%5d submission_chunk\n", dma.submission_chunk);
 			Com_Printf("%5d speed\n", dma.speed);
-			Com_Printf("0x%x dma buffer\n", dma.buffer);
+			Com_Printf( "0x%" PRIxPTR " dma buffer\n", dma.buffer );
 #ifdef USE_OPENAL
 		}
 #endif
@@ -463,14 +464,10 @@ void S_Init( void ) {
 	Cmd_AddCommand("mp3_calcvols", S_MP3_CalcVols_f);
 	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
 
+#ifdef USE_OPENAL
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
-#ifdef USE_OPENAL
 	s_UseOpenAL = !!(cv->integer);
-#else
-	s_UseOpenAL = 0;
-#endif
 
-#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -715,8 +712,6 @@ void S_Shutdown( void )
 	AS_Free();
 }
 
-
-
 /*
 	Mutes / Unmutes all OpenAL sound
 */
@@ -739,10 +734,6 @@ void S_AL_MuteAllSounds(qboolean bMute)
      }
 }
 #endif
-
-
-
-
 
 // =======================================================================
 // Load a sound
@@ -784,10 +775,10 @@ sfx_t *S_FindName( const char *name ) {
 	sfx_t	*sfx;
 
 	if (!name) {
-		Com_Error (ERR_FATAL, "S_FindName: NULL\n");
+		Com_Error (ERR_FATAL, "S_FindName: NULL");
 	}
 	if (!name[0]) {
-		Com_Error (ERR_FATAL, "S_FindName: empty name\n");
+		Com_Error (ERR_FATAL, "S_FindName: empty name");
 	}
 
 	if (strlen(name) >= MAX_QPATH) {
@@ -876,7 +867,6 @@ void S_DefaultSound( sfx_t *sfx ) {
 	}
 }
 
-
 /*
 ===================
 S_DisableSounds
@@ -899,7 +889,6 @@ S_BeginRegistration
 */
 void S_BeginRegistration( void )
 {
-
 	s_soundMuted = qfalse;		// we can play again
 
 #ifdef USE_OPENAL
@@ -932,11 +921,9 @@ void S_BeginRegistration( void )
 	}
 }
 
-
+#ifdef USE_OPENAL
 void EALFileInit(const char *level)
 {
-
-#ifdef USE_OPENAL
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
 	{
@@ -977,10 +964,8 @@ void EALFileInit(const char *level)
 			}
 		}
 	}
-#endif
 }
-
-
+#endif
 
 /*
 ==================
@@ -1035,8 +1020,6 @@ sfxHandle_t	S_RegisterSound( const char *name)
 			Com_Printf( S_COLOR_YELLOW "WARNING: could not find %s - using default\n", sfx->sSoundName );
 		}
 #endif
-
-
 		return 0;
 	}
 
@@ -1055,12 +1038,12 @@ void S_memoryLoad(sfx_t	*sfx)
 	sfx->bInMemory = qtrue;
 }
 
-
-
 //=============================================================================
 static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 {
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		if ( chan1 == chan2 )
 		{
@@ -1075,7 +1058,6 @@ static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 
 	return qfalse;
 }
-
 
 /*
 =================
@@ -1151,17 +1133,15 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 	return firstToDie;
 }
 
-
-
 /*
 	For use with Open AL
 
 	Allows more than one sound of the same type to emanate from the same entity - sounds much better
 	on hardware this way esp. rapid fire modes of weapons!
 */
+#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 {
-#ifdef USE_OPENAL
     int			ch_idx;
 	channel_t	*ch, *ch_firstToDie;
 	bool	foundChan = false;
@@ -1331,11 +1311,8 @@ channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 	ch_firstToDie->bStreaming = false;
 
     return ch_firstToDie;
-#else
-    return NULL;
-#endif
 }
-
+#endif
 
 /*
 =================
@@ -1423,7 +1400,6 @@ void S_SpatializeOrigin (const vec3_t origin, float master_vol, int *left_vol, i
 		*left_vol = 0;
 	}
 }
-
 
 // =======================================================================
 // Start a sound effect
@@ -1735,7 +1711,9 @@ void S_ClearSoundBuffer( void ) {
 #endif
 	s_rawend = 0;
 
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		if (dma.samplebits == 8)
 			clear = 0x80;
@@ -2774,7 +2752,9 @@ void S_Update( void ) {
 	}
 
 	// The Open AL code, handles background music in the S_UpdateRawSamples function
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		// add raw data from streamed samples
 		S_UpdateBackgroundTrack();
@@ -5323,7 +5303,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	return bAtLeastOneSoundDropped;
 }
 
-
+#ifdef USE_OPENAL
 /****************************************************************************************************\
 *
 *	EAX Related
@@ -5335,7 +5315,6 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
-#ifdef USE_OPENAL
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5445,7 +5424,6 @@ void InitEAXManager()
 	s_bEAX = false;
 
 	return;
-#endif
 }
 
 /*
@@ -5453,7 +5431,6 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
-#ifdef USE_OPENAL
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5468,16 +5445,13 @@ void ReleaseEAXManager()
 		FreeLibrary(s_hEAXManInst);
 		s_hEAXManInst = NULL;
 	}
-#endif
 }
-
 
 /*
 	Try to load the given .eal file
 */
 bool LoadEALFile(char *szEALFilename)
 {
-#ifdef USE_OPENAL
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5750,8 +5724,6 @@ bool LoadEALFile(char *szEALFilename)
 		return true;
 	}
 
-
-#endif
 	Com_DPrintf( S_COLOR_YELLOW "Failed to load %s\n", szEALFilename);
 	return false;
 }
@@ -5761,7 +5733,6 @@ bool LoadEALFile(char *szEALFilename)
 */
 void UnloadEALFile()
 {
-#ifdef USE_OPENAL
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5777,7 +5748,6 @@ void UnloadEALFile()
 	}
 
 	return;
-#endif
 }
 
 /*
@@ -5785,7 +5755,6 @@ void UnloadEALFile()
 */
 void UpdateEAXListener()
 {
-#ifdef USE_OPENAL
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -6233,7 +6202,6 @@ void UpdateEAXListener()
 	}
 
 	return;
-#endif
 }
 
 /*
@@ -6241,7 +6209,6 @@ void UpdateEAXListener()
 */
 void UpdateEAXBuffer(channel_t *ch)
 {
-#ifdef USE_OPENAL
 	HRESULT hr;
 	EMPOINT EMSourcePoint;
 	EMPOINT EMVirtualSourcePoint;
@@ -6374,18 +6341,10 @@ void UpdateEAXBuffer(channel_t *ch)
 	}
 
 	return;
-#endif
 }
-
-#ifndef USE_OPENAL
-typedef struct _EMPOINT {
-  float fX;
-  float fY;
-  float fZ;
-} EMPOINT;
-#endif
 
 float CalcDistance(EMPOINT A, EMPOINT B)
 {
 	return (float)sqrt(sqr(A.fX - B.fX)+sqr(A.fY - B.fY) + sqr(A.fZ - B.fZ));
 }
+#endif
