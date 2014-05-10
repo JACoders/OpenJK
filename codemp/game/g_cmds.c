@@ -7428,11 +7428,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "bounty" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Bounty Quest\n^7Use ^3/bounty_quest ^7so the server chooses a player to be the target. If the target defeats a RPG player, he receives 200 bonus credits. If a bounty hunter kills the target, he receives bonus credits based in the target player level.\n\n\"") );
+				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Bounty Quest\n^7Use ^3/bountyquest ^7so the server chooses a player to be the target. If the target defeats a RPG player, he receives 200 bonus credits. If a bounty hunter kills the target, he receives bonus credits based in the target player level.\n\n\"") );
 			}
 			else if (Q_stricmp( arg1, "guardian" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Guardian Quest\n^7Use ^3/guardian_quest ^7so the server spawns the map guardian somewhere. If the player defeats it, he gets 5 experience points (Level Up Score) and 1000 credits.\n\n\"") );
+				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Guardian Quest\n^7Use ^3/guardianquest ^7so the server spawns the map guardian somewhere. If the player defeats it, he gets 5 experience points (Level Up Score) and 1000 credits.\n\n\"") );
 			}
 			else if (Q_stricmp( arg1, "commands" ) == 0)
 			{
@@ -9729,6 +9729,287 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_GuardianQuest_f
+==================
+*/
+void Cmd_GuardianQuest_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		if (level.guardian_quest == 0)
+		{
+			int j = 0;
+			gentity_t *this_ent = NULL;
+
+			// zyk: player cant spawn if someone is fighting a guardian
+			for (j = 0; j < level.maxclients; j++)
+			{
+				this_ent = &g_entities[j];
+				if (this_ent && this_ent->client && this_ent->client->sess.amrpgmode == 2 && this_ent->client->pers.guardian_mode > 0)
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"You can't start this quest while a player is fighting a guardian.\n\"" );
+					return;
+				}
+			}
+
+			level.guardian_quest_timer = level.time + 5000;
+			level.guardian_quest = 1;
+			trap->SendServerCommand( -1, va("print \"Guardian Quest activated.\n\"") );
+		}
+		else
+		{
+			trap->SendServerCommand( -1, va("print \"Guardian Quest is already active.\n\"") );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You are not in RPG mode.\n\"") );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_BountyQuest_f
+==================
+*/
+void Cmd_BountyQuest_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		gentity_t *this_ent = NULL;
+
+		// zyk: reached MAX_CLIENTS, reset it to 0
+		if (level.bounty_quest_target_id == level.maxclients)
+			level.bounty_quest_target_id = 0;
+
+		if (level.bounty_quest_choose_target == qtrue)
+		{ // zyk: no one is the target, so choose one player to be the target
+			while (level.bounty_quest_target_id < level.maxclients)
+			{
+				this_ent = &g_entities[level.bounty_quest_target_id];
+
+				if (this_ent && this_ent->client && this_ent->client->sess.amrpgmode == 2 && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+				{
+					level.bounty_quest_choose_target = qfalse;
+					trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7A reward of ^3%d ^7credits will be given to who kills %s^7\n\"", (this_ent->client->pers.level*15), this_ent->client->pers.netname) );
+					return;
+				}
+
+				level.bounty_quest_target_id++;
+			}
+			trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7No one was chosen as the target\n\"") );
+		}
+		else
+		{ // zyk: there is already a target player
+			this_ent = &g_entities[level.bounty_quest_target_id];
+			if (this_ent && this_ent->client)
+				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s ^7is already the target\n\"", this_ent->client->pers.netname) );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You are not in RPG mode.\n\"") );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_PlayerMode_f
+==================
+*/
+void Cmd_PlayerMode_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to change mode.\n\"" );
+			return;
+		}
+
+		load_account(ent, qtrue);
+		save_account(ent);
+
+		if (ent->client->sess.amrpgmode == 1)
+			trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2Admin-Only mode^7.\n\"" );
+		else
+			trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2RPG mode^7.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_News_f
+==================
+*/
+void Cmd_News_f( gentity_t *ent ) {
+	int page = 1; // zyk: page the user wants to see
+	char arg1[MAX_STRING_CHARS];
+	char file_content[MAX_STRING_CHARS];
+	char content[512];
+	int i = 0;
+	int results_per_page = 8; // zyk: number of results per page
+	FILE *news_file;
+	strcpy(file_content,"");
+	strcpy(content,"");
+
+	if ( trap->Argc() < 2 )
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Use ^3/news <page number> ^7to see the results of this page\n\"" );
+		return;
+	}
+
+	trap->Argv(1, arg1, sizeof( arg1 ));
+	page = atoi(arg1);
+
+	if (page == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid page number\n\"" );
+		return;
+	}
+
+	news_file = fopen("news.txt","r");
+	if (news_file != NULL)
+	{
+		while(i < (results_per_page * (page-1)))
+		{ // zyk: reads the file until it reaches the position corresponding to the page number
+			fgets(content,sizeof(content),news_file);
+			i++;
+		}
+
+		while(i < (results_per_page * page) && fgets(content,sizeof(content),news_file) != NULL)
+		{ // zyk: fgets returns NULL at EOF
+			strcpy(file_content,va("%s%s",file_content,content));
+			i++;
+		}
+
+		fclose(news_file);
+		trap->SendServerCommand(ent-g_entities, va("print \"\n%s\n\"",file_content));
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"The news file does not exist\n\"" );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_NpcList_f
+==================
+*/
+void Cmd_NpcList_f( gentity_t *ent ) {
+	int page = 1; // zyk: page the user wants to see
+	char arg1[MAX_STRING_CHARS];
+	char file_content[MAX_STRING_CHARS];
+	char content[512];
+	int i = 0;
+	int results_per_page = 9; // zyk: number of results per page
+	FILE *npc_list_file;
+	strcpy(file_content,"");
+	strcpy(content,"");
+
+	if ( trap->Argc() < 2 )
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Use ^3/npclist <page number> ^7to see the results of this page\n\"" );
+		return;
+	}
+
+	trap->Argv(1, arg1, sizeof( arg1 ));
+	page = atoi(arg1);
+
+	if (page == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid page number\n\"" );
+		return;
+	}
+
+	npc_list_file = fopen("npclist.txt","r");
+	if (npc_list_file != NULL)
+	{
+		while(i < (results_per_page * (page-1)))
+		{ // zyk: reads the file until it reaches the position corresponding to the page number
+			fgets(content,sizeof(content),npc_list_file);
+			i++;
+		}
+
+		while(i < (results_per_page * page) && fgets(content,sizeof(content),npc_list_file) != NULL)
+		{ // zyk: fgets returns NULL at EOF
+			strcpy(file_content,va("%s%s",file_content,content));
+			i++;
+		}
+
+		fclose(npc_list_file);
+		trap->SendServerCommand(ent-g_entities, va("print \"\n%s\n\"",file_content));
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"The npclist file does not exist\n\"" );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_VehicleList_f
+==================
+*/
+void Cmd_VehicleList_f( gentity_t *ent ) {
+	int page = 1; // zyk: page the user wants to see
+	char arg1[MAX_STRING_CHARS];
+	char file_content[MAX_STRING_CHARS];
+	char content[512];
+	int i = 0;
+	int results_per_page = 9; // zyk: number of results per page
+	FILE *vehicle_list_file;
+	strcpy(file_content,"");
+	strcpy(content,"");
+
+	if ( trap->Argc() < 2 )
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Use ^3/vehiclelist <page number> ^7to see the results of this page\n\"" );
+		return;
+	}
+
+	trap->Argv(1, arg1, sizeof( arg1 ));
+	page = atoi(arg1);
+
+	if (page == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid page number\n\"" );
+		return;
+	}
+
+	vehicle_list_file = fopen("vehiclelist.txt","r");
+	if (vehicle_list_file != NULL)
+	{
+		while(i < (results_per_page * (page-1)))
+		{ // zyk: reads the file until it reaches the position corresponding to the page number
+			fgets(content,sizeof(content),vehicle_list_file);
+			i++;
+		}
+
+		while(i < (results_per_page * page) && fgets(content,sizeof(content),vehicle_list_file) != NULL)
+		{ // zyk: fgets returns NULL at EOF
+			strcpy(file_content,va("%s%s",file_content,content));
+			i++;
+		}
+
+		fclose(vehicle_list_file);
+		trap->SendServerCommand(ent-g_entities, va("print \"\n%s\n\"",file_content));
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"The vehiclelist file does not exist\n\"" );
+		return;
+	}
+}
+
+/*
+==================
 Cmd_RaceMode_f
 ==================
 */
@@ -9935,6 +10216,7 @@ command_t commands[] = {
 	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
 	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },
 	{ "answer",				Cmd_Answer_f,				CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "bountyquest",		Cmd_BountyQuest_f,			CMD_NOINTERMISSION },
 	{ "buy",				Cmd_Buy_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callseller",			Cmd_CallSeller_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
@@ -9956,18 +10238,22 @@ command_t commands[] = {
 	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "guardianquest",		Cmd_GuardianQuest_f,		CMD_NOINTERMISSION },
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "list",				Cmd_ListAccount_f,			CMD_NOINTERMISSION },
 	{ "login",				Cmd_LoginAccount_f,			CMD_NOINTERMISSION },
-	{ "logout",				Cmd_LogoutAccount_f,			CMD_NOINTERMISSION },
+	{ "logout",				Cmd_LogoutAccount_f,		CMD_NOINTERMISSION },
 	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
-	{ "new",				Cmd_NewAccount_f,				CMD_NOINTERMISSION },
+	{ "new",				Cmd_NewAccount_f,			CMD_NOINTERMISSION },
+	{ "news",				Cmd_News_f,					CMD_NOINTERMISSION },
 	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
+	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
+	{ "playermode",			Cmd_PlayerMode_f,			CMD_NOINTERMISSION },
 	{ "questanswer",		Cmd_QuestAnswer_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_NOINTERMISSION },
@@ -9987,6 +10273,7 @@ command_t commands[] = {
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "up",					Cmd_UpSkill_f,				CMD_NOINTERMISSION },
+	{ "vehiclelist",		Cmd_VehicleList_f,			CMD_NOINTERMISSION },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
