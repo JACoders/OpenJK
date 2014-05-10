@@ -4970,19 +4970,6 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.saberAnimLevel = FORCE_LEVEL_1;
 	}
 
-	if (level.gametype != GT_SIEGE)
-	{
-		if (!(self->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
-		{
-			self->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
-		}
-
-		if (self->client->ps.fd.forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_1)
-		{
-			self->client->ps.fd.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_1;
-		}
-	}
-
 	if (self->client->ps.fd.forcePowerSelected < 0 || self->client->ps.fd.forcePowerSelected >= NUM_FORCE_POWERS)
 	{ //bad
 		self->client->ps.fd.forcePowerSelected = 0;

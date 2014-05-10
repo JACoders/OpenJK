@@ -7436,7 +7436,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "commands" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\n^2RPG Mode commands\n\n^3/new [login] [password]: ^7creates a new account.\n^3/login [login] [password]: ^7loads the account.\n^3/playermode: ^7switches between ^2Admin-Only Mode ^7and ^2RPG Mode^7.\n^3/up [skill number]: ^7upgrades a skill.\n^3/down [skill number]: ^7downgrades a skill.\n^3/resetaccount: ^7resets quests or the entire RPG Mode of a player.\n^3/adminlist: ^7lists admin commands.\n^3/adminup [player id or name] [command number]: ^7gives the player an admin command.\n^3/admindown [player id or name] [command number]: ^7removes an admin command from a player.\n^3/settings: ^7turn on or off player settings.\n^3/call_seller: ^7calls the jawa seller.\n^3/creditgive [player id or name] [amount]: ^7gives credits to a player.\n^3/changepassword <new_password>: ^7changes the account password.\n^3/entity_system: ^7shows Entity System commands.\n^3/logout: ^7logs out the account.\n\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"\n^2RPG Mode commands\n\n^3/new [login] [password]: ^7creates a new account.\n^3/login [login] [password]: ^7loads the account.\n^3/playermode: ^7switches between ^2Admin-Only Mode ^7and ^2RPG Mode^7.\n^3/up [skill number]: ^7upgrades a skill.\n^3/down [skill number]: ^7downgrades a skill.\n^3/resetaccount: ^7resets quests or the entire RPG Mode of a player.\n^3/adminlist: ^7lists admin commands.\n^3/adminup [player id or name] [command number]: ^7gives the player an admin command.\n^3/admindown [player id or name] [command number]: ^7removes an admin command from a player.\n^3/settings: ^7turn on or off player settings.\n^3/callseller: ^7calls the jawa seller.\n^3/creditgive [player id or name] [amount]: ^7gives credits to a player.\n^3/changepassword <new_password>: ^7changes the account password.\n^3/entitysystem: ^7shows Entity System commands.\n^3/logout: ^7logs out the account.\n\n\"" );
 			}
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
@@ -10190,6 +10190,286 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_EntAdd_f
+==================
+*/
+void Cmd_EntAdd_f( gentity_t *ent ) {
+	gentity_t *new_ent = NULL;
+	qboolean worked = qfalse;
+	int number_of_args = trap->Argc();
+	char arg1[MAX_STRING_CHARS];
+	char arg2[MAX_STRING_CHARS];
+	char arg3[MAX_STRING_CHARS];
+
+	if ( number_of_args < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify at least the entity class. Ex: ^3/entadd info_player_deathmatch^7, which spawns a spawn point in the map\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	// zyk: spawns the new entity
+	new_ent = G_Spawn();
+
+	if (new_ent)
+	{
+		// zyk_set_entity_field(new_ent,"classname",G_NewString(arg1));
+
+		if (number_of_args > 2)
+		{
+			trap->Argv( 2, arg2, sizeof( arg2 ) );
+			// zyk_set_entity_field(new_ent,"spawnflags",G_NewString(arg2));
+		}
+		if (number_of_args > 3)
+		{
+			trap->Argv( 3, arg3, sizeof( arg3 ) );
+			if ((Q_stricmp (arg1, "fx_runner") == 0))
+				new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
+			//else
+				//zyk_set_entity_field(new_ent,"model",G_NewString(arg3));
+		}
+
+		//zyk_spawn_entity(new_ent);
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Entity %d spawned\n\"", new_ent->s.number) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Error in entity spawn\n\"") );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_EntEdit_f
+==================
+*/
+void Cmd_EntEdit_f( gentity_t *ent ) {
+	gentity_t *this_ent = NULL;
+	qboolean worked = qfalse;
+	int number_of_args = trap->Argc();
+	int entity_id = -1;
+	char arg1[MAX_STRING_CHARS];
+	char arg2[MAX_STRING_CHARS];
+	char arg3[MAX_STRING_CHARS];
+	char arg4[MAX_STRING_CHARS];
+	char arg5[MAX_STRING_CHARS];
+
+	if ( number_of_args < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify at least the entity ID.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	entity_id = atoi(arg1);
+
+	if (entity_id < 0 || entity_id >= level.num_entities)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Invalid Entity ID.\n\"") );
+		return;
+	}
+
+	this_ent = &g_entities[entity_id];
+
+	if (number_of_args == 2)
+	{
+		// zyk: players have their origin and yaw set in ps struct
+		if (entity_id < MAX_CLIENTS)
+			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3spawnflags: ^7%d\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z yaw): ^7%d %d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->spawnflags,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->client->ps.origin[0],(int)this_ent->client->ps.origin[1],(int)this_ent->client->ps.origin[2],(int)this_ent->client->ps.viewangles[1],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]) );
+		else
+			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3spawnflags: ^7%d\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z yaw): ^7%d %d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->spawnflags,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[1],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]) );
+	}
+	else
+	{
+		if ( number_of_args == 3)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You must specify an attribute and the value for it. Ex: /entedit 150 targetname test.\n\"") );
+			return;
+		}
+
+		trap->Argv( 2, arg2, sizeof( arg2 ) );
+		trap->Argv( 3, arg3, sizeof( arg3 ) );
+
+		if (Q_stricmp (this_ent->classname, "fx_runner") == 0 && Q_stricmp (arg2, "fxFile") == 0)
+		{ // yk: to change the fxFile, we must change the modelIndex
+			this_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
+		}
+		else
+		{
+			if (Q_stricmp (arg2, "origin") == 0 || Q_stricmp (arg2, "angles") == 0 || Q_stricmp (arg2, "mins") == 0 || Q_stricmp (arg2, "maxs") == 0)
+			{
+				if ( number_of_args < 6)
+				{
+					trap->SendServerCommand( ent-g_entities, va("print \"You must specify the x, y and z axis for this attribute. Ex: 0 0 0.\n\"") );
+					return;
+				}
+
+				trap->Argv( 4, arg4, sizeof( arg4 ) );
+				trap->Argv( 5, arg5, sizeof( arg5 ) );
+
+				strcpy(arg3,va("%s %s %s",arg3,arg4,arg5));
+			}
+
+			// zyk_set_entity_field(this_ent,G_NewString(arg2),G_NewString(arg3));
+		}
+
+		// zyk_spawn_entity(this_ent);
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Entity %d edited\n\"", this_ent->s.number) );
+	}
+}
+
+/*
+==================
+Cmd_EntNear_f
+==================
+*/
+void Cmd_EntNear_f( gentity_t *ent ) {
+	int i = 0;
+	char message[1024];
+	gentity_t *this_ent = NULL;
+
+	strcpy(message,"");
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		this_ent = &g_entities[i];
+		if ((int)Distance(ent->client->ps.origin, this_ent->s.origin) < 200)
+		{
+			strcpy(message,va("%s\n%d - %s",message,this_ent->s.number,this_ent->classname));
+		}
+	}
+
+	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"",message) );
+}
+
+/*
+==================
+Cmd_EntList_f
+==================
+*/
+void Cmd_EntList_f( gentity_t *ent ) {
+	int i = 0;
+	int page_number = 0;
+	gentity_t *target_ent;
+	char arg1[MAX_STRING_CHARS];
+	char message[1024];
+
+	strcpy(message,"");
+
+	if ( trap->Argc() < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a page number greater than 0. Example: ^3/entlist 1^7.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	page_number = atoi(arg1);
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		if (i >= ((page_number - 1) * 10) && i < (page_number * 10))
+		{ // zyk: this command lists 10 entities per page
+			target_ent = &g_entities[i];
+			sprintf(message,"%s\n%d - %s - %s - %s",message,(target_ent-g_entities),target_ent->classname,target_ent->targetname,target_ent->target);
+		}
+	}
+
+	trap->SendServerCommand( ent-g_entities, va("print \"^3\nID - classname - targetname - target\n^7%s\n\n\"",message) );
+}
+
+/*
+==================
+Cmd_EntRemove_f
+==================
+*/
+void Cmd_EntRemove_f( gentity_t *ent ) {
+	int i = 0;
+	int entity_id = -1;
+	int entity_id2 = -1;
+	gentity_t *target_ent;
+	char   arg1[MAX_STRING_CHARS];
+	char   arg2[MAX_STRING_CHARS];
+
+	if ( trap->Argc() < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify an entity id.\n\"") );
+		return;
+	}
+
+	if (trap->Argc() == 2)
+	{
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+		entity_id = atoi(arg1);
+
+		if (entity_id >= 0 && entity_id < MAX_CLIENTS)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Entity ID %d is a player slot and cannot be removed.\n\"",entity_id) );
+			return;
+		}
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			target_ent = &g_entities[i];
+			if ((target_ent-g_entities) == entity_id)
+			{
+				G_FreeEntity( target_ent );
+				trap->SendServerCommand( ent-g_entities, va("print \"Entity %d removed.\n\"",i) );
+				return;
+			}
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Entity %d not found.\n\"",entity_id) );
+	}
+	else
+	{
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+		entity_id = atoi(arg1);
+
+		if (entity_id >= 0 && entity_id < MAX_CLIENTS)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Entity 1 ID %d is a player slot and cannot be removed.\n\"",entity_id) );
+			return;
+		}
+
+		trap->Argv( 2, arg2, sizeof( arg2 ) );
+		entity_id2 = atoi(arg2);
+
+		if (entity_id2 >= 0 && entity_id2 < MAX_CLIENTS)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Entity 2 ID %d is a player slot and cannot be removed.\n\"",entity_id) );
+			return;
+		}
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			target_ent = &g_entities[i];
+			if ((target_ent-g_entities) >= entity_id && (target_ent-g_entities) <= entity_id2)
+			{
+				if (Q_stricmp( target_ent->classname, "info_player_deathmatch") != 0)
+					G_FreeEntity( target_ent );
+			}
+		}
+
+		trap->SendServerCommand( ent-g_entities, "print \"Entities removed.\n\"" );
+		return;
+	}
+}
+
+/*
+==================
+Cmd_EntitySystem_f
+==================
+*/
+void Cmd_EntitySystem_f( gentity_t *ent ) {
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entremove <entity id>: ^7removes the entity from the map\n\n\"") );
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -10230,6 +10510,12 @@ command_t commands[] = {
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "down",				Cmd_DownSkill_f,			CMD_NOINTERMISSION },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
+	{ "entadd",				Cmd_EntAdd_f,				CMD_NOINTERMISSION },
+	{ "entedit",			Cmd_EntEdit_f,				CMD_NOINTERMISSION },
+	{ "entitysystem",		Cmd_EntitySystem_f,			CMD_NOINTERMISSION },
+	{ "entlist",			Cmd_EntList_f,				CMD_NOINTERMISSION },
+	{ "entnear",			Cmd_EntNear_f,				CMD_NOINTERMISSION },
+	{ "entremove",			Cmd_EntRemove_f,			CMD_NOINTERMISSION },
 	{ "follow",				Cmd_Follow_f,				CMD_NOINTERMISSION },
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
