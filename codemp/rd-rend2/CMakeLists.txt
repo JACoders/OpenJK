@@ -75,7 +75,6 @@ set(MPRend2RdCommonFiles
 	"${MPDir}/rd-common/tr_font.cpp"
 	"${MPDir}/rd-common/tr_font.h"
 	"${MPDir}/rd-common/tr_image_load.cpp"
-	"${MPDir}/rd-common/tr_image_manipulation.cpp"
 	"${MPDir}/rd-common/tr_image_jpg.cpp"
 	"${MPDir}/rd-common/tr_image_tga.cpp"
 	"${MPDir}/rd-common/tr_image_png.cpp"
@@ -123,13 +122,37 @@ else(UseInternalPNG)
 endif(UseInternalPNG)
 
 if(UseInternalZlib)
-	# zlib.lib is included for windows
-	find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
-	if(NOT ZlibLibrary)
-		message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
-	endif(NOT ZlibLibrary)
+	set(MPRend2ZLibFiles
+		"${OpenJKLibDir}/zlib/adler32.c"
+		"${OpenJKLibDir}/zlib/compress.c"
+		"${OpenJKLibDir}/zlib/crc32.c"
+		"${OpenJKLibDir}/zlib/deflate.c"
+		"${OpenJKLibDir}/zlib/gzclose.c"
+		"${OpenJKLibDir}/zlib/gzlib.c"
+		"${OpenJKLibDir}/zlib/gzread.c"
+		"${OpenJKLibDir}/zlib/gzwrite.c"
+		"${OpenJKLibDir}/zlib/infback.c"
+		"${OpenJKLibDir}/zlib/inffast.c"
+		"${OpenJKLibDir}/zlib/inflate.c"
+		"${OpenJKLibDir}/zlib/inftrees.c"
+		"${OpenJKLibDir}/zlib/trees.c"
+		"${OpenJKLibDir}/zlib/uncompr.c"
+		"${OpenJKLibDir}/zlib/zutil.c"
+		"${OpenJKLibDir}/zlib/crc32.h"
+		"${OpenJKLibDir}/zlib/deflate.h"
+		"${OpenJKLibDir}/zlib/gzguts.h"
+		"${OpenJKLibDir}/zlib/inffast.h"
+		"${OpenJKLibDir}/zlib/inffixed.h"
+		"${OpenJKLibDir}/zlib/inflate.h"
+		"${OpenJKLibDir}/zlib/inftrees.h"
+		"${OpenJKLibDir}/zlib/trees.h"
+		"${OpenJKLibDir}/zlib/zconf.h"
+		"${OpenJKLibDir}/zlib/zlib.h"
+		"${OpenJKLibDir}/zlib/zutil.h")
+	source_group("zlib" FILES ${MPRend2ZLibFiles})
+	set(MPRend2Files ${MPRend2Files} ${MPRend2ZLibFiles})
+	
 	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} "${OpenJKLibDir}/zlib")
-	set(MPRend2Libraries ${MPRend2Libraries} ${ZlibLibrary})
 else(UseInternalZlib)
 	find_package(ZLIB REQUIRED)
 	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${ZLIB_INCLUDE_DIR})
