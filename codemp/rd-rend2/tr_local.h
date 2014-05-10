@@ -3132,6 +3132,8 @@ typedef std::unordered_map<std::string, FileHash_t> loadedMap_t;
 class CCacheManager
 {
 public:
+	virtual ~CCacheManager() {}
+	
 	qhandle_t			SearchLoaded( const char *fileName );
 	void				InsertLoaded( const char *fileName, qhandle_t handle );
 
