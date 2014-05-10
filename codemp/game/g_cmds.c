@@ -8427,6 +8427,259 @@ void Cmd_Sell_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_ChangePassword_f
+==================
+*/
+void Cmd_ChangePassword_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		int i = 0;
+		char new_content[1024];
+		char content[1024];
+		char login[64];
+		char arg1[1024];
+		FILE *account_file;
+		FILE *new_account_file;
+		strcpy(login,"");
+		strcpy(content,"");
+		strcpy(new_content,"");
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to change password.\n\"" );
+			return;
+		}
+
+		if (trap->Argc() != 2)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Use ^3changepassword <new_password> ^7to change it.\n\"" );
+			return;
+		}
+
+		// zyk: gets the player login
+		for (i = 0; i < strlen(ent->client->sess.filename); i++)
+		{
+			if (ent->client->sess.filename[i] == '_' && ent->client->sess.filename[i+1] == 'S' && ent->client->sess.filename[i+2] == '_')
+				break;
+			else
+				sprintf(login,"%s%c",login,ent->client->sess.filename[i]);
+		}
+
+		// zyk: gets the new password
+		trap->Argv(1, arg1, sizeof( arg1 ));
+
+		if (strlen(arg1) > 30)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"The password must have a maximum of 30 characters.\n\"" );
+			return;
+		}
+
+		account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
+
+		// zyk: reads the account file to save it in a new file
+		for (i = 0; i < NUMBER_OF_LINES; i++)
+		{
+			fscanf(account_file,"%s",content);
+			sprintf(new_content,"%s%s\n",new_content,content);
+		}
+
+		fclose(account_file);
+
+		new_account_file = fopen(va("accounts/%s_S_%s.txt",login,arg1),"w");
+		fprintf(new_account_file,"%s",new_content);
+		fclose(new_account_file);
+
+		remove(va("accounts/%s.txt",ent->client->sess.filename));
+
+		strcpy(ent->client->sess.filename,va("%s_S_%s",login,arg1));
+
+		trap->SendServerCommand( ent-g_entities, "print \"Your password was changed successfully.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_ResetAccount_f
+==================
+*/
+void Cmd_ResetAccount_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		char arg1[MAX_STRING_CHARS];
+			
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to reset account.\n\"" );
+			return;
+		}
+		else if (trap->Argc() == 1)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"^2Choose one of the options below\n\n^3/resetaccount rpg: ^7resets your entire account except admin commands.\n^3/resetaccount quests: ^7resets your RPG quests.\n\"" );
+			return;
+		}
+
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+		if (Q_stricmp( arg1, "rpg") == 0)
+		{
+			int i = 0;
+
+			for (i = 0; i < 18; i++)
+				ent->client->pers.force_powers_levels[i] = 0;
+
+			for (i = 0; i < 10; i++)
+				ent->client->pers.weapons_levels[i] = 0;
+
+			for (i = 0; i < 7; i++)
+				ent->client->pers.ammo_levels[i] = 0;
+
+			for (i = 0; i < 8; i++)
+				ent->client->pers.holdable_items_levels[i] = 0;
+
+			ent->client->pers.starting_shield_level = 0;
+			ent->client->pers.max_rpg_shield = 0;
+			ent->client->pers.jetpack_level = 0;
+			ent->client->pers.playerhealth = 0;
+			ent->client->pers.shield = 0;
+			ent->client->pers.teamshield = 0;
+			ent->client->pers.grapple_hook = 0;
+			ent->client->pers.stun_baton_level = 0;
+			ent->client->pers.mind_control = 0;
+			ent->client->pers.melee_level = 0;
+			ent->client->pers.health_strength = 0;
+			ent->client->pers.shield_strength = 0;
+			ent->client->pers.secrets_found = 0;
+			ent->client->pers.max_force_power_level = 0;
+			ent->client->pers.improvements_level = 0;
+
+			ent->client->pers.defeated_guardians = 0;
+			ent->client->pers.hunter_quest_progress = 0;
+			ent->client->pers.eternity_quest_progress = 0;
+			ent->client->pers.universe_quest_progress = 0;
+			ent->client->pers.universe_quest_counter = 0;
+			ent->client->pers.player_settings = 0;
+
+			ent->client->pers.level = 1;
+			ent->client->pers.level_up_score = 0;
+			ent->client->pers.skillpoints = 1;
+
+			ent->client->pers.credits = 0;
+
+			save_account(ent);
+
+			trap->SendServerCommand( ent-g_entities, "print \"You are back to level 1 again.\n\"" );
+		}
+		else if (Q_stricmp( arg1, "quests") == 0)
+		{
+			ent->client->pers.defeated_guardians = 0;
+			ent->client->pers.hunter_quest_progress = 0;
+			ent->client->pers.eternity_quest_progress = 0;
+			ent->client->pers.universe_quest_progress = 0;
+			ent->client->pers.universe_quest_counter = 0;
+
+			save_account(ent);
+
+			trap->SendServerCommand( ent-g_entities, "print \"Your quests are reset.\n\"" );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid option.\n\"" );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+// ztk: gets the client id from a string which contains the player name
+int zyk_get_client(char *arg)
+{
+	int i = 0;
+	gentity_t *this_ent = NULL;
+
+	for (i = 0; i < level.maxclients; i++)
+	{
+		this_ent = &g_entities[i];
+		if (this_ent && this_ent->client && Q_stricmp(arg, this_ent->client->pers.netname) == 0)
+		{
+			return this_ent->s.number;
+		}
+	}
+	return -1;
+}
+
+/*
+==================
+Cmd_CreditGive_f
+==================
+*/
+void Cmd_CreditGive_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		char arg1[MAX_STRING_CHARS];
+		char arg2[MAX_STRING_CHARS];
+		int client_id = 0, value = 0;
+
+		if (trap->Argc() == 1)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must specify a player.\n\"" );
+			return;
+		}
+
+		if (trap->Argc() == 2)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You must specify the amount of credits.\n\"" );
+			return;
+		}
+
+		trap->Argv( 1,  arg1, sizeof( arg1 ) );
+		trap->Argv( 2,  arg2, sizeof( arg2 ) );
+
+		client_id = zyk_get_client( arg1 ); 
+		value = atoi(arg2);
+
+		if (client_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+			return;
+		}
+
+		if (g_entities[client_id].client->sess.amrpgmode < 2)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"The player is not in RPG Mode\n\"") );
+			return;
+		}
+
+		if ((ent->client->pers.credits - value) < 0)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You don't have this amount of credits\n\"") );
+			return;
+		}
+
+		add_credits(&g_entities[client_id], value);
+		save_account(&g_entities[client_id]);
+
+		remove_credits(ent, value);
+		save_account(ent);
+
+		trap->SendServerCommand( client_id, va("chat \"^3Credit System: ^7You got %d credits from %s\n\"", value, ent->client->pers.netname) );
+
+		trap->SendServerCommand( ent-g_entities, "print \"Done.\n\"" );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not in RPG Mode.\n\"" );
+		return;
+	}
+}
+
+/*
+==================
 Cmd_RaceMode_f
 ==================
 */
@@ -8633,6 +8886,8 @@ command_t commands[] = {
 	{ "callseller",			Cmd_CallSeller_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
+	{ "changepassword",		Cmd_ChangePassword_f,		CMD_NOINTERMISSION },
+	{ "creditgive",			Cmd_CreditGive_f,			CMD_NOINTERMISSION },
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Forward",	Cmd_BotMoveForward_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
@@ -8661,6 +8916,7 @@ command_t commands[] = {
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "score",				Cmd_Score_f,				0 },
