@@ -2586,6 +2586,8 @@ and on transition between teams, but doesn't happen on respawns
 extern qboolean	gSiegeRoundBegun;
 extern qboolean	gSiegeRoundEnded;
 extern qboolean g_dontPenalizeTeam; //g_cmds.c
+extern void load_account(gentity_t *ent, qboolean change_mode);
+extern void initialize_rpg_skills(gentity_t *ent);
 void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin);
 void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	gentity_t	*ent;
@@ -2650,6 +2652,30 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	//assign the pointer for bg entity access
 	ent->playerState = &ent->client->ps;
+
+	// zyk: initializing attributes used in RPG mode
+	client->pers.guardian_mode = 0;
+	client->pers.being_mind_controlled = -1;
+	client->pers.mind_control = 0;
+	client->pers.mind_controlled1_id = -1;
+	client->pers.guardian_invoked_by_id = -1;
+
+	client->pers.skill_counter = 0;
+
+	// zyk: initializing player_statuses value
+	client->pers.player_statuses = 0;
+
+	// zyk: setting player flags to reload his account if he is logged in
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		// zyk: if the target goes to spec or something, then the server must choose another target
+		if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == (ent-g_entities))
+			level.bounty_quest_choose_target = qtrue;
+
+		// zyk: load account again
+		load_account(ent, qfalse);
+		initialize_rpg_skills(ent);
+	}
 
 	client->pers.connected = CON_CONNECTED;
 	client->pers.enterTime = level.time;

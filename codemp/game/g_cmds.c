@@ -3920,387 +3920,390 @@ void rpg_score(gentity_t *ent)
 // zyk: initialize RPG skills of this player
 void initialize_rpg_skills(gentity_t *ent)
 {
-	// zyk: loading Jump value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && ent->client->pers.force_powers_levels[0] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
-	if (ent->client->pers.force_powers_levels[0] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
-	ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
-
-	// zyk: loading Push value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)) && ent->client->pers.force_powers_levels[1] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
-	if (ent->client->pers.force_powers_levels[1] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PUSH);
-	ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
-
-	// zyk: loading Pull value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)) && ent->client->pers.force_powers_levels[2] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
-	if (ent->client->pers.force_powers_levels[2] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
-	ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
-
-	// zyk: loading Speed value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)) && ent->client->pers.force_powers_levels[3] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
-	if (ent->client->pers.force_powers_levels[3] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
-	ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
-
-	// zyk: loading Sense value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.force_powers_levels[4] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-	if (ent->client->pers.force_powers_levels[4] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-	ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
-
-	// zyk: loading Saber Offense value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.force_powers_levels[5] > 0)
+	if (ent->client->sess.amrpgmode == 2)
 	{
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
-	}
-	if (ent->client->pers.force_powers_levels[5] == 0)
-	{
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
-		ent->client->ps.weapon = WP_MELEE;
-	}
-	ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+		// zyk: loading Jump value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && ent->client->pers.force_powers_levels[0] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
+		if (ent->client->pers.force_powers_levels[0] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
+		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
 
-	// zyk: loading the saber style based in the player settings
-	if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
-	{ // zyk: Duals
-		ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_DUAL;
+		// zyk: loading Push value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)) && ent->client->pers.force_powers_levels[1] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
+		if (ent->client->pers.force_powers_levels[1] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PUSH);
+		ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+
+		// zyk: loading Pull value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)) && ent->client->pers.force_powers_levels[2] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
+		if (ent->client->pers.force_powers_levels[2] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
+		ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+
+		// zyk: loading Speed value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)) && ent->client->pers.force_powers_levels[3] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
+		if (ent->client->pers.force_powers_levels[3] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
+		ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+
+		// zyk: loading Sense value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.force_powers_levels[4] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+		if (ent->client->pers.force_powers_levels[4] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+		ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+
+		// zyk: loading Saber Offense value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.force_powers_levels[5] > 0)
+		{
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+		}
+		if (ent->client->pers.force_powers_levels[5] == 0)
+		{
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
+			ent->client->ps.weapon = WP_MELEE;
+		}
+		ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+
+		// zyk: loading the saber style based in the player settings
+		if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
+		{ // zyk: Duals
+			ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_DUAL;
 				
-		if (ent->client->pers.player_settings & (1 << 9) && ent->client->pers.force_powers_levels[5] >= 1)
-		{
-			ent->client->ps.saberHolstered = 1;
+			if (ent->client->pers.player_settings & (1 << 9) && ent->client->pers.force_powers_levels[5] >= 1)
+			{
+				ent->client->ps.saberHolstered = 1;
+			}
 		}
-	}
-	else if (ent->client->saber[0].saberFlags&SFL_TWO_HANDED)
-	{ // zyk: Staff
-		ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_STAFF;
+		else if (ent->client->saber[0].saberFlags&SFL_TWO_HANDED)
+		{ // zyk: Staff
+			ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_STAFF;
 
-		if (ent->client->pers.player_settings & (1 << 10) && ent->client->pers.force_powers_levels[5] >= 1)
-		{
-			ent->client->ps.saberHolstered = 1;
+			if (ent->client->pers.player_settings & (1 << 10) && ent->client->pers.force_powers_levels[5] >= 1)
+			{
+				ent->client->ps.saberHolstered = 1;
+			}
 		}
-	}
-	else
-	{ // zyk: Single Saber
-		ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
+		else
+		{ // zyk: Single Saber
+			ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
 
-		if (ent->client->pers.player_settings & (1 << 26) && ent->client->pers.force_powers_levels[5] >= 2)
-		{
-			// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
-			// ent->client->saberCycleQueue = ent->client->ps.fd.saberAnimLevel;
-			ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
+			if (ent->client->pers.player_settings & (1 << 26) && ent->client->pers.force_powers_levels[5] >= 2)
+			{
+				// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
+				// ent->client->saberCycleQueue = ent->client->ps.fd.saberAnimLevel;
+				ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
+			}
+			else if (ent->client->pers.player_settings & (1 << 27) && ent->client->pers.force_powers_levels[5] >= 3)
+			{
+				ent->client->ps.fd.saberAnimLevel = SS_STRONG;
+			}
+			else if (ent->client->pers.player_settings & (1 << 28) && ent->client->pers.force_powers_levels[5] >= 4)
+			{
+				ent->client->ps.fd.saberAnimLevel = SS_DESANN;
+			}
+			else if (ent->client->pers.player_settings & (1 << 29) && ent->client->pers.force_powers_levels[5] == 5)
+			{
+				ent->client->ps.fd.saberAnimLevel = SS_TAVION;
+			}
+			else if (ent->client->pers.force_powers_levels[5] >= 1)
+			{
+				ent->client->ps.fd.saberAnimLevel = SS_FAST;
+			}
 		}
-		else if (ent->client->pers.player_settings & (1 << 27) && ent->client->pers.force_powers_levels[5] >= 3)
+
+		// zyk: loading the holster state of the saber based in the player settings
+		if (ent->client->pers.player_settings & (1 << 11))
 		{
-			ent->client->ps.fd.saberAnimLevel = SS_STRONG;
+			ent->client->ps.saberHolstered = 2;
 		}
-		else if (ent->client->pers.player_settings & (1 << 28) && ent->client->pers.force_powers_levels[5] >= 4)
+
+		// zyk: loading Saber Defense value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.force_powers_levels[6] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+		if (ent->client->pers.force_powers_levels[6] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
+		ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+
+		// zyk: loading Saber Throw value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)) && ent->client->pers.force_powers_levels[7] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
+		if (ent->client->pers.force_powers_levels[7] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
+		ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+
+		// zyk: loading Absorb value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)) && ent->client->pers.force_powers_levels[8] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
+		if (ent->client->pers.force_powers_levels[8] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
+
+		if (ent->client->pers.force_powers_levels[8] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+		else
+			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
+
+		// zyk: loading Heal value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)) && ent->client->pers.force_powers_levels[9] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
+		if (ent->client->pers.force_powers_levels[9] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
+		ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+
+		// zyk: loading Protect value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)) && ent->client->pers.force_powers_levels[10] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
+		if (ent->client->pers.force_powers_levels[10] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
+		ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+
+		// zyk: loading Mind Trick value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && ent->client->pers.force_powers_levels[11] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
+		if (ent->client->pers.force_powers_levels[11] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
+		ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+
+		// zyk: loading Team Heal value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)) && ent->client->pers.force_powers_levels[12] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
+		if (ent->client->pers.force_powers_levels[12] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
+		ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+
+		// zyk: loading Lightning value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)) && ent->client->pers.force_powers_levels[13] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
+		if (ent->client->pers.force_powers_levels[13] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
+		ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+
+		// zyk: loading Grip value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && ent->client->pers.force_powers_levels[14] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
+		if (ent->client->pers.force_powers_levels[14] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
+		ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+
+		// zyk: loading Drain value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && ent->client->pers.force_powers_levels[15] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
+		if (ent->client->pers.force_powers_levels[15] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
+		ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+
+		// zyk: loading Rage value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)) && ent->client->pers.force_powers_levels[16] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
+		if (ent->client->pers.force_powers_levels[16] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
+
+		if (ent->client->pers.force_powers_levels[16] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+		else
+			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
+
+		// zyk: loading Team Energize value
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)) && ent->client->pers.force_powers_levels[17] > 0)
+			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
+		if (ent->client->pers.force_powers_levels[17] == 0)
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
+		ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+
+		// zyk: loading Melee
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_MELEE)))
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+
+		// zyk: player starts with jetpack if he has the skill and it is enabled in settings
+		if (ent->client->pers.jetpack_level > 0 && !(ent->client->pers.player_settings & (1 << 12)))
 		{
-			ent->client->ps.fd.saberAnimLevel = SS_DESANN;
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 		}
-		else if (ent->client->pers.player_settings & (1 << 29) && ent->client->pers.force_powers_levels[5] == 5)
+		else
 		{
-			ent->client->ps.fd.saberAnimLevel = SS_TAVION;
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+			if (ent->client->jetPackOn)
+			{
+				Jetpack_Off(ent);
+			}
 		}
-		else if (ent->client->pers.force_powers_levels[5] >= 1)
+
+		ent->client->pers.sense_health_timer = 0;
+
+		ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
+		ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
+		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
+
+		// zyk: resetting quest_skill_timer to 0 on account loading
+		ent->client->pers.quest_skill_timer = 0;
+
+		if (ent->client->pers.rpg_class == 3)
+		{ // zyk: setting the shot deflect of the Armored Soldier
+			ent->flags |= FL_SHIELDED;
+		}
+		else
 		{
-			ent->client->ps.fd.saberAnimLevel = SS_FAST;
+			ent->flags &= ~FL_SHIELDED;
 		}
-	}
 
-	// zyk: loading the holster state of the saber based in the player settings
-	if (ent->client->pers.player_settings & (1 << 11))
-	{
-		ent->client->ps.saberHolstered = 2;
-	}
+		// zyk: setting rpg control attributes
+		ent->client->pers.print_products_timer = 0;
 
-	// zyk: loading Saber Defense value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.force_powers_levels[6] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
-	if (ent->client->pers.force_powers_levels[6] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
-	ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+		ent->client->pers.credits_modifier = 0;
+		ent->client->pers.score_modifier = 0;
 
-	// zyk: loading Saber Throw value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)) && ent->client->pers.force_powers_levels[7] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
-	if (ent->client->pers.force_powers_levels[7] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
-	ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+		// zyk: setting default value of can_play_quest
+		ent->client->pers.can_play_quest = 0;
 
-	// zyk: loading Absorb value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)) && ent->client->pers.force_powers_levels[8] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
-	if (ent->client->pers.force_powers_levels[8] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
+		ent->client->pers.guardian_mode = 0;
+		ent->client->pers.guardian_timer = 0;
+		ent->client->pers.guardian_invoked_by_id = -1;
 
-	if (ent->client->pers.force_powers_levels[8] < 4)
-		ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
-	else
-		ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
+		ent->client->pers.eternity_quest_timer = 0;
 
-	// zyk: loading Heal value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)) && ent->client->pers.force_powers_levels[9] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
-	if (ent->client->pers.force_powers_levels[9] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
-	ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+		ent->client->pers.universe_quest_artifact_holder_id = -1;
+		ent->client->pers.universe_quest_messages = 0;
+		ent->client->pers.universe_quest_timer = 0;
 
-	// zyk: loading Protect value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)) && ent->client->pers.force_powers_levels[10] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
-	if (ent->client->pers.force_powers_levels[10] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
-	ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+		ent->client->pers.light_quest_timer = 0;
+		ent->client->pers.light_quest_messages = 0;
 
-	// zyk: loading Mind Trick value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && ent->client->pers.force_powers_levels[11] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
-	if (ent->client->pers.force_powers_levels[11] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
-	ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+		ent->client->pers.hunter_quest_timer = 0;
+		ent->client->pers.hunter_quest_messages = 0;
 
-	// zyk: loading Team Heal value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)) && ent->client->pers.force_powers_levels[12] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
-	if (ent->client->pers.force_powers_levels[12] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
-	ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+		// zyk: loading initial RPG weapons
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_STUN_BATON)) && ent->client->pers.stun_baton_level > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_STUN_BATON);
+		if (ent->client->pers.stun_baton_level == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_STUN_BATON);
 
-	// zyk: loading Lightning value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)) && ent->client->pers.force_powers_levels[13] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
-	if (ent->client->pers.force_powers_levels[13] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
-	ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)) && ent->client->pers.weapons_levels[0] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
+		if (ent->client->pers.weapons_levels[0] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_PISTOL);
 
-	// zyk: loading Grip value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && ent->client->pers.force_powers_levels[14] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
-	if (ent->client->pers.force_powers_levels[14] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
-	ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)) && ent->client->pers.weapons_levels[1] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BLASTER);
+		if (ent->client->pers.weapons_levels[1] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BLASTER);
 
-	// zyk: loading Drain value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && ent->client->pers.force_powers_levels[15] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
-	if (ent->client->pers.force_powers_levels[15] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
-	ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DISRUPTOR)) && ent->client->pers.weapons_levels[2] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR);
+		if (ent->client->pers.weapons_levels[2] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DISRUPTOR);
 
-	// zyk: loading Rage value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)) && ent->client->pers.force_powers_levels[16] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
-	if (ent->client->pers.force_powers_levels[16] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BOWCASTER)) && ent->client->pers.weapons_levels[3] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BOWCASTER);
+		if (ent->client->pers.weapons_levels[3] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BOWCASTER);
 
-	if (ent->client->pers.force_powers_levels[16] < 4)
-		ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
-	else
-		ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_REPEATER)) && ent->client->pers.weapons_levels[4] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_REPEATER);
+		if (ent->client->pers.weapons_levels[4] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_REPEATER);
 
-	// zyk: loading Team Energize value
-	if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)) && ent->client->pers.force_powers_levels[17] > 0)
-		ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
-	if (ent->client->pers.force_powers_levels[17] == 0)
-		ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
-	ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)) && ent->client->pers.weapons_levels[5] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DEMP2);
+		if (ent->client->pers.weapons_levels[5] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DEMP2);
 
-	// zyk: loading Melee
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_MELEE)))
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_FLECHETTE)) && ent->client->pers.weapons_levels[6] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_FLECHETTE);
+		if (ent->client->pers.weapons_levels[6] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_FLECHETTE);
 
-	// zyk: player starts with jetpack if he has the skill and it is enabled in settings
-	if (ent->client->pers.jetpack_level > 0 && !(ent->client->pers.player_settings & (1 << 12)))
-	{
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-	}
-	else
-	{
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
-		if (ent->client->jetPackOn)
-		{
-			Jetpack_Off(ent);
-		}
-	}
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_ROCKET_LAUNCHER)) && ent->client->pers.weapons_levels[7] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
+		if (ent->client->pers.weapons_levels[7] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
 
-	ent->client->pers.sense_health_timer = 0;
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_CONCUSSION)) && ent->client->pers.weapons_levels[8] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_CONCUSSION);
+		if (ent->client->pers.weapons_levels[8] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_CONCUSSION);
 
-	ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
-	ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
-	ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)) && ent->client->pers.weapons_levels[9] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_OLD);
+		if (ent->client->pers.weapons_levels[9] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_OLD);
 
-	// zyk: resetting quest_skill_timer to 0 on account loading
-	ent->client->pers.quest_skill_timer = 0;
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_THERMAL)) && ent->client->pers.ammo_levels[4] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
+		if (ent->client->pers.ammo_levels[4] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_THERMAL);
 
-	if (ent->client->pers.rpg_class == 3)
-	{ // zyk: setting the shot deflect of the Armored Soldier
-		ent->flags |= FL_SHIELDED;
-	}
-	else
-	{
-		ent->flags &= ~FL_SHIELDED;
-	}
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_TRIP_MINE)) && ent->client->pers.ammo_levels[5] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
+		if (ent->client->pers.ammo_levels[5] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_TRIP_MINE);
 
-	// zyk: setting rpg control attributes
-	ent->client->pers.print_products_timer = 0;
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DET_PACK)) && ent->client->pers.ammo_levels[6] > 0)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
+		if (ent->client->pers.ammo_levels[6] == 0)
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DET_PACK);
 
-	ent->client->pers.credits_modifier = 0;
-	ent->client->pers.score_modifier = 0;
-
-	// zyk: setting default value of can_play_quest
-	ent->client->pers.can_play_quest = 0;
-
-	ent->client->pers.guardian_mode = 0;
-	ent->client->pers.guardian_timer = 0;
-	ent->client->pers.guardian_invoked_by_id = -1;
-
-	ent->client->pers.eternity_quest_timer = 0;
-
-	ent->client->pers.universe_quest_artifact_holder_id = -1;
-	ent->client->pers.universe_quest_messages = 0;
-	ent->client->pers.universe_quest_timer = 0;
-
-	ent->client->pers.light_quest_timer = 0;
-	ent->client->pers.light_quest_messages = 0;
-
-	ent->client->pers.hunter_quest_timer = 0;
-	ent->client->pers.hunter_quest_messages = 0;
-
-	// zyk: loading initial RPG weapons
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_STUN_BATON)) && ent->client->pers.stun_baton_level > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_STUN_BATON);
-	if (ent->client->pers.stun_baton_level == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_STUN_BATON);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)) && ent->client->pers.weapons_levels[0] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
-	if (ent->client->pers.weapons_levels[0] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_PISTOL);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)) && ent->client->pers.weapons_levels[1] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BLASTER);
-	if (ent->client->pers.weapons_levels[1] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BLASTER);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DISRUPTOR)) && ent->client->pers.weapons_levels[2] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR);
-	if (ent->client->pers.weapons_levels[2] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DISRUPTOR);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BOWCASTER)) && ent->client->pers.weapons_levels[3] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BOWCASTER);
-	if (ent->client->pers.weapons_levels[3] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BOWCASTER);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_REPEATER)) && ent->client->pers.weapons_levels[4] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_REPEATER);
-	if (ent->client->pers.weapons_levels[4] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_REPEATER);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)) && ent->client->pers.weapons_levels[5] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DEMP2);
-	if (ent->client->pers.weapons_levels[5] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DEMP2);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_FLECHETTE)) && ent->client->pers.weapons_levels[6] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_FLECHETTE);
-	if (ent->client->pers.weapons_levels[6] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_FLECHETTE);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_ROCKET_LAUNCHER)) && ent->client->pers.weapons_levels[7] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
-	if (ent->client->pers.weapons_levels[7] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_CONCUSSION)) && ent->client->pers.weapons_levels[8] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_CONCUSSION);
-	if (ent->client->pers.weapons_levels[8] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_CONCUSSION);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)) && ent->client->pers.weapons_levels[9] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_OLD);
-	if (ent->client->pers.weapons_levels[9] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_OLD);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_THERMAL)) && ent->client->pers.ammo_levels[4] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
-	if (ent->client->pers.ammo_levels[4] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_THERMAL);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_TRIP_MINE)) && ent->client->pers.ammo_levels[5] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
-	if (ent->client->pers.ammo_levels[5] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_TRIP_MINE);
-
-	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DET_PACK)) && ent->client->pers.ammo_levels[6] > 0)
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
-	if (ent->client->pers.ammo_levels[6] == 0)
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DET_PACK);
-
-	// zyk: loading initial RPG ammo at spawn
-	ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[0]);
-	ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[1]);
-	ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[2]);
-	ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(30/3.0) * ent->client->pers.ammo_levels[3]);
-	ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(15/3.0) * ent->client->pers.ammo_levels[4]);
-	ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(12/3.0) * ent->client->pers.ammo_levels[5]);
-	ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(9/3.0) * ent->client->pers.ammo_levels[6]);
+		// zyk: loading initial RPG ammo at spawn
+		ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[0]);
+		ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[1]);
+		ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[2]);
+		ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(30/3.0) * ent->client->pers.ammo_levels[3]);
+		ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(15/3.0) * ent->client->pers.ammo_levels[4]);
+		ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(12/3.0) * ent->client->pers.ammo_levels[5]);
+		ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(9/3.0) * ent->client->pers.ammo_levels[6]);
 		
-	if (ent->client->pers.rpg_class == 2)
-	{ // zyk: modifying max ammo if the player is a Bounty Hunter
-		ent->client->ps.ammo[AMMO_BLASTER] += ent->client->ps.ammo[AMMO_BLASTER]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_POWERCELL] += ent->client->ps.ammo[AMMO_POWERCELL]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_METAL_BOLTS] += ent->client->ps.ammo[AMMO_METAL_BOLTS]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_ROCKETS] += ent->client->ps.ammo[AMMO_ROCKETS]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_THERMAL] += ent->client->ps.ammo[AMMO_THERMAL]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_TRIPMINE] += ent->client->ps.ammo[AMMO_TRIPMINE]/6 * ent->client->pers.improvements_level;
-		ent->client->ps.ammo[AMMO_DETPACK] += ent->client->ps.ammo[AMMO_DETPACK]/6 * ent->client->pers.improvements_level;
+		if (ent->client->pers.rpg_class == 2)
+		{ // zyk: modifying max ammo if the player is a Bounty Hunter
+			ent->client->ps.ammo[AMMO_BLASTER] += ent->client->ps.ammo[AMMO_BLASTER]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_POWERCELL] += ent->client->ps.ammo[AMMO_POWERCELL]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_METAL_BOLTS] += ent->client->ps.ammo[AMMO_METAL_BOLTS]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_ROCKETS] += ent->client->ps.ammo[AMMO_ROCKETS]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_THERMAL] += ent->client->ps.ammo[AMMO_THERMAL]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_TRIPMINE] += ent->client->ps.ammo[AMMO_TRIPMINE]/6 * ent->client->pers.improvements_level;
+			ent->client->ps.ammo[AMMO_DETPACK] += ent->client->ps.ammo[AMMO_DETPACK]/6 * ent->client->pers.improvements_level;
+		}
+
+		// zyk: reseting initial holdable items of the player
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_SEEKER) & ~(1 << HI_BINOCULARS) & ~(1 << HI_SENTRY_GUN) & ~(1 << HI_EWEB) & ~(1 << HI_CLOAK) & ~(1 << HI_SHIELD) & ~(1 << HI_MEDPAC) & ~(1 << HI_MEDPAC_BIG);
+
+		if (ent->client->pers.holdable_items_levels[0] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_BINOCULARS);
+
+		if (ent->client->pers.holdable_items_levels[1] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC);
+
+		if (ent->client->pers.holdable_items_levels[2] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+
+		if (ent->client->pers.holdable_items_levels[3] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SEEKER);
+
+		if (ent->client->pers.holdable_items_levels[4] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_EWEB);
+
+		if (ent->client->pers.holdable_items_levels[5] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC_BIG);
+
+		if (ent->client->pers.holdable_items_levels[6] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SHIELD);
+
+		if (ent->client->pers.holdable_items_levels[7] > 0)
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_CLOAK);
+
+		// zyk: loading initial health of the player
+		set_max_health(ent);
+		ent->health = ent->client->pers.max_rpg_health;
+		ent->client->ps.stats[STAT_HEALTH] = ent->health;
+
+		// zyk: loading initial shield of the player
+		set_max_shield(ent);
+		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 	}
-
-	// zyk: reseting initial holdable items of the player
-	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_SEEKER) & ~(1 << HI_BINOCULARS) & ~(1 << HI_SENTRY_GUN) & ~(1 << HI_EWEB) & ~(1 << HI_CLOAK) & ~(1 << HI_SHIELD) & ~(1 << HI_MEDPAC) & ~(1 << HI_MEDPAC_BIG);
-
-	if (ent->client->pers.holdable_items_levels[0] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_BINOCULARS);
-
-	if (ent->client->pers.holdable_items_levels[1] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC);
-
-	if (ent->client->pers.holdable_items_levels[2] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
-
-	if (ent->client->pers.holdable_items_levels[3] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SEEKER);
-
-	if (ent->client->pers.holdable_items_levels[4] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_EWEB);
-
-	if (ent->client->pers.holdable_items_levels[5] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC_BIG);
-
-	if (ent->client->pers.holdable_items_levels[6] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SHIELD);
-
-	if (ent->client->pers.holdable_items_levels[7] > 0)
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_CLOAK);
-
-	// zyk: loading initial health of the player
-	set_max_health(ent);
-	ent->health = ent->client->pers.max_rpg_health;
-	ent->client->ps.stats[STAT_HEALTH] = ent->health;
-
-	// zyk: loading initial shield of the player
-	set_max_shield(ent);
-	ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 }
 
 /*
@@ -4499,16 +4502,45 @@ qboolean dark_quest_collected_notes(gentity_t *ent)
 	}
 }
 
-// zyk: loads the datapad md3 model for the Dark Quest notes
-void load_note_model(gentity_t *ent,int x,int y,int z)
-{
+extern void zyk_set_entity_field(gentity_t *ent, char *key, char *value);
+extern void zyk_spawn_entity(gentity_t *ent);
 
+// zyk: loads the datapad md3 model for the Dark Quest notes
+void load_note_model(int x,int y,int z)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent,"classname","noclass");
+	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+	zyk_set_entity_field(new_ent,"angles","0 90 0");
+	zyk_set_entity_field(new_ent,"model","models/items/datapad.md3");
+
+	zyk_spawn_entity(new_ent);
+
+	level.quest_note_id = new_ent->s.number;
 }
 
 // zyk: loads the crystal md3 model for the Universe Quest crystals
 gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number)
 {
-	return NULL;
+	gentity_t *ent = G_Spawn();
+
+	zyk_set_entity_field(ent,"classname","noclass");
+	zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
+	zyk_set_entity_field(ent,"angles",va("0 %d 0",yaw));
+
+	if (crystal_number == 0)
+		zyk_set_entity_field(ent,"model","models/map_objects/mp/crystal_blue.md3");
+	else if (crystal_number == 1)
+		zyk_set_entity_field(ent,"model","models/map_objects/mp/crystal_red.md3");
+	else
+		zyk_set_entity_field(ent,"model","models/map_objects/mp/crystal_green.md3");
+
+	zyk_spawn_entity(ent);
+
+	level.quest_model_id = ent->s.number;
+
+	return ent;
 }
 
 // zyk: load an effect used in quests
@@ -4516,13 +4548,13 @@ gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile)
 {
 	gentity_t *ent = G_Spawn();
 
-	//zyk_set_entity_field(ent,"classname","fx_runner");
-	//zyk_set_entity_field(ent,"spawnflags",va("%d",spawnflags));
-	//zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
+	zyk_set_entity_field(ent,"classname","fx_runner");
+	zyk_set_entity_field(ent,"spawnflags",va("%d",spawnflags));
+	zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
 
 	ent->s.modelindex = G_EffectIndex( fxFile );
 
-	//zyk_spawn_entity(ent);
+	zyk_spawn_entity(ent);
 
 	level.quest_effect_id = ent->s.number;
 
@@ -4536,6 +4568,26 @@ void clean_note_model()
 	{
 		G_FreeEntity(&g_entities[level.quest_note_id]);
 		level.quest_note_id = -1;
+	}
+}
+
+// zyk: cleans the crystal model if player gets it
+void clean_crystal_model()
+{
+	if (level.quest_model_id != -1)
+	{
+		G_FreeEntity(&g_entities[level.quest_model_id]);
+		level.quest_model_id = -1;
+	}
+}
+
+// zyk: cleans the effect if player reaches it
+void clean_effect()
+{
+	if (level.quest_effect_id != -1)
+	{
+		G_FreeEntity(&g_entities[level.quest_effect_id]);
+		level.quest_effect_id = -1;
 	}
 }
 
@@ -10215,23 +10267,23 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 
 	if (new_ent)
 	{
-		// zyk_set_entity_field(new_ent,"classname",G_NewString(arg1));
+		zyk_set_entity_field(new_ent,"classname",G_NewString(arg1));
 
 		if (number_of_args > 2)
 		{
 			trap->Argv( 2, arg2, sizeof( arg2 ) );
-			// zyk_set_entity_field(new_ent,"spawnflags",G_NewString(arg2));
+			zyk_set_entity_field(new_ent,"spawnflags",G_NewString(arg2));
 		}
 		if (number_of_args > 3)
 		{
 			trap->Argv( 3, arg3, sizeof( arg3 ) );
 			if ((Q_stricmp (arg1, "fx_runner") == 0))
 				new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
-			//else
-				//zyk_set_entity_field(new_ent,"model",G_NewString(arg3));
+			else
+				zyk_set_entity_field(new_ent,"model",G_NewString(arg3));
 		}
 
-		//zyk_spawn_entity(new_ent);
+		zyk_spawn_entity(new_ent);
 
 		trap->SendServerCommand( ent-g_entities, va("print \"Entity %d spawned\n\"", new_ent->s.number) );
 	}
@@ -10314,10 +10366,10 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 				strcpy(arg3,va("%s %s %s",arg3,arg4,arg5));
 			}
 
-			// zyk_set_entity_field(this_ent,G_NewString(arg2),G_NewString(arg3));
+			zyk_set_entity_field(this_ent,G_NewString(arg2),G_NewString(arg3));
 		}
 
-		// zyk_spawn_entity(this_ent);
+		zyk_spawn_entity(this_ent);
 
 		trap->SendServerCommand( ent-g_entities, va("print \"Entity %d edited\n\"", this_ent->s.number) );
 	}

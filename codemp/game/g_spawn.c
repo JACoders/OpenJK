@@ -135,6 +135,8 @@ field_t fields[] = {
 	{ "lostenemyscript",		FOFS( behaviorSet[BSET_LOSTENEMY] ),	F_STRING },//name of script to run
 	{ "message",				FOFS( message ),						F_STRING },
 	{ "mindtrickscript",		FOFS( behaviorSet[BSET_MINDTRICK] ),	F_STRING },//name of script to run
+	{ "maxs",					FOFS( r.maxs ),							F_VECTOR }, // zyk: added this field
+	{ "mins",					FOFS( r.mins ),							F_VECTOR }, // zyk: added this field
 	{ "model",					FOFS( model ),							F_STRING },
 	{ "model2",					FOFS( model2 ),							F_STRING },
 	{ "npc_target",				FOFS( NPC_target ),						F_STRING },
@@ -955,6 +957,38 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 			}
 		}
 	}
+
+	// move editor origin to pos
+	VectorCopy( ent->s.origin, ent->s.pos.trBase );
+	VectorCopy( ent->s.origin, ent->r.currentOrigin );
+
+	// if we didn't get a classname, don't bother spawning anything
+	if ( !G_CallSpawn( ent ) ) {
+		G_FreeEntity( ent );
+	}
+
+	//Tag on the ICARUS scripting information only to valid recipients
+	if ( trap->ICARUS_ValidEnt( (sharedEntity_t *)ent ) )
+	{
+		trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
+
+		if ( ent->classname && ent->classname[0] )
+		{
+			if ( Q_strncmp( "NPC_", ent->classname, 4 ) != 0 )
+			{//Not an NPC_spawner (rww - probably don't even care for MP, but whatever)
+				G_ActivateBehavior( ent, BSET_SPAWN );
+			}
+		}
+	}
+}
+
+// zyk: set an entity field with a value
+void zyk_set_entity_field(gentity_t *ent, char *key, char *value) {
+	G_ParseField(key, value, ent);
+}
+
+// zyk: spawns the entity
+void zyk_spawn_entity(gentity_t *ent) {
 
 	// move editor origin to pos
 	VectorCopy( ent->s.origin, ent->s.pos.trBase );
