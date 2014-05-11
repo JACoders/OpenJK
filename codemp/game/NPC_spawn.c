@@ -4011,6 +4011,7 @@ void NPC_Spawn_f( gentity_t *ent )
 {
 	char	npc_type[1024];
 	char	targetname[1024];
+	int i = 0;
 	qboolean	isVehicle = qfalse;
 
 	trap->Argv(2, npc_type, 1024);
@@ -4024,6 +4025,89 @@ void NPC_Spawn_f( gentity_t *ent )
 	{
 		trap->Argv(3, targetname, 1024);
 	}
+
+	// zyk: guardian npcs cant be spawned by players, quest npcs also cant be spawned
+
+	for (i = 0; i < NUMBER_OF_GUARDIANS; i++)
+	{
+		if (Q_stricmp(va("guardian_boss_%d", (i+1)), npc_type) == 0)
+			return;
+	}
+
+	if (Q_stricmp("guardian_of_darkness", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("guardian_of_eternity", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_reborn", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_reborn_blue", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_reborn_red", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_reborn_boss", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_super_soldier", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_jawa", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_sand_raider_green", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_sand_raider_brown", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_sand_raider_blue", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_sand_raider_red", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_protocol_imp", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("sage_of_light", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("sage_of_darkness", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("sage_of_eternity", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("sage_of_universe", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("quest_ragnos", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("master_of_evil", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("guardian_of_universe", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("guardian_of_time", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("guardian_of_chaos", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("jawa_seller", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("map_guardian", npc_type) == 0)
+		return;
+
+	if (Q_stricmp("map_guardian_support", npc_type) == 0)
+		return;
 
 	NPC_SpawnType( ent, npc_type, targetname, isVehicle );
 }
@@ -4097,6 +4181,145 @@ void NPC_Kill_f( void )
 		if (!player->inuse) {
 			continue;
 		}
+
+		if (player && player->NPC && player->client)
+		{
+			int i = 0; // zyk: used to test the guardian npcs
+			int found = 0; // zyk: will be set to 1 when found a guardian npc
+			for (i = 1; i <= NUMBER_OF_GUARDIANS; i++)
+			{
+				if (Q_stricmp( player->NPC_type, va("guardian_boss_%d",i) ) == 0)
+				{
+					found = 1;
+				}
+			}
+
+			if (Q_stricmp( player->NPC_type, "guardian_of_darkness" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "guardian_of_eternity" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_reborn" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_sand_raider_green" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_sand_raider_brown" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_sand_raider_blue" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_sand_raider_red" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_reborn_blue" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_reborn_red" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_reborn_boss" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_super_soldier" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_jawa" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_protocol_imp" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "sage_of_light" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "sage_of_darkness" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "sage_of_eternity" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "sage_of_universe" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "quest_ragnos" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "master_of_evil" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "guardian_of_universe" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "guardian_of_time" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "guardian_of_chaos" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "map_guardian" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (Q_stricmp( player->NPC_type, "map_guardian_support" ) == 0)
+			{
+				found = 1;
+			}
+
+			if (found == 1)
+			{ // zyk: if this npc is a guardian or quest npc, do not kill it
+				continue;
+			}
+		}
+
 		if ( killNonSF )
 		{
 			if ( player )
@@ -4136,15 +4359,18 @@ void NPC_Kill_f( void )
 					}
 				}
 			}
-			else if( (player->targetname && Q_stricmp( name, player->targetname ) == 0)
+			else if( (player->NPC_type && Q_stricmp( name, player->NPC_type ) == 0) // zyk: now it will use NPC_type instead of targetname
 				|| Q_stricmp( name, "all" ) == 0 )
 			{
-				Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
-				player->health = 0;
-				player->client->ps.stats[STAT_HEALTH] = 0;
-				if (player->die)
-				{
-					player->die(player, player, player, 100, MOD_UNKNOWN);
+				if (!(player->m_pVehicle && player->m_pVehicle->m_pPilot))
+				{ // zyk: do not kill vehicles that have pilots
+					Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+					player->health = 0;
+					player->client->ps.stats[STAT_HEALTH] = 0;
+					if (player->die)
+					{
+						player->die(player, player, player, 100, MOD_UNKNOWN);
+					}
 				}
 			}
 		}
@@ -4173,6 +4399,12 @@ qboolean	showBBoxes = qfalse;
 void Cmd_NPC_f( gentity_t *ent )
 {
 	char	cmd[1024];
+
+	if (ent->client->sess.amrpgmode == 0 || !(ent->client->pers.bitvalue & (1 << 0)))
+	{ // zyk: npc admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
 
 	trap->Argv( 1, cmd, 1024 );
 

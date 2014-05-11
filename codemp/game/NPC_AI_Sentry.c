@@ -173,29 +173,36 @@ void Sentry_Fire (void)
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle, forward );
 
-	missile = CreateMissile( muzzle, forward, 1600, 10000, NPCS.NPC, qfalse );
-
-	missile->classname = "bryar_proj";
-	missile->s.weapon = WP_BRYAR_PISTOL;
-
-	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-	missile->methodOfDeath = MOD_BRYAR_PISTOL;
-	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-	NPCS.NPCInfo->burstCount++;
-	NPCS.NPC->attackDebounceTime = level.time + 50;
-	missile->damage = 5;
-
-	// now scale for difficulty
-	if ( g_npcspskill.integer == 0 )
+	// zyk: added this condition for guardian of wind
+	if (NPCS.NPC->client->pers.guardian_mode == 7)
 	{
-		NPCS.NPC->attackDebounceTime += 200;
-		missile->damage = 1;
+		missile = CreateMissile( muzzle, forward, 5000, 10000, NPCS.NPC, qfalse );
+
+		missile->classname = "bryar_proj";
+		missile->s.weapon = WP_BRYAR_PISTOL;
+
+		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+		missile->methodOfDeath = MOD_BRYAR_PISTOL;
+		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+		NPCS.NPCInfo->burstCount++;
+		NPCS.NPC->attackDebounceTime = level.time + 150;
+		missile->damage = 90;
 	}
-	else if ( g_npcspskill.integer == 1 )
+	else
 	{
-		NPCS.NPC->attackDebounceTime += 100;
-		missile->damage = 3;
+		missile = CreateMissile( muzzle, forward, 3000, 10000, NPCS.NPC, qfalse ); // zyk: changed velocity. Default 1600
+
+		missile->classname = "bryar_proj";
+		missile->s.weapon = WP_BRYAR_PISTOL;
+
+		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+		missile->methodOfDeath = MOD_BRYAR_PISTOL;
+		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+		NPCS.NPCInfo->burstCount++;
+		NPCS.NPC->attackDebounceTime = level.time + 150; // zyk: default 50
+		missile->damage = 30; // zyk: default 5
 	}
 }
 

@@ -82,6 +82,10 @@ qboolean Wampa_CheckRoar( gentity_t *self )
 		self->wait = level.time + Q_irand( 5000, 20000 );
 		NPC_SetAnim( self, SETANIM_BOTH, Q_irand(BOTH_GESTURE1,BOTH_GESTURE2), (SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD) );
 		TIMER_Set( self, "rageTime", self->client->ps.legsTimer );
+
+		if (self->client->pers.guardian_mode == 1) // zyk: executes sound of howler if this npc is the guardian of water
+			G_Sound( self, CHAN_VOICE, G_SoundIndex( va("sound/chars/howler/howl.mp3") ) );
+
 		return qtrue;
 	}
 	return qfalse;
@@ -182,6 +186,10 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 	int			i;
 	vec3_t		boltOrg;
 	int			damage = (backhand)?Q_irand(10,15):Q_irand(20,30);
+
+	// zyk: Guardian of Water damage
+	if (NPCS.NPC->client->pers.guardian_mode == 1)
+		damage *= 3;
 
 	numEnts = NPC_GetEntsNearBolt( radiusEntNums, radius, boltIndex, boltOrg );
 
@@ -537,7 +545,10 @@ void NPC_BSWampa_Default( void )
 		{
 			if ( TIMER_Done(NPCS.NPC,"angrynoise") )
 			{
-				G_Sound( NPCS.NPC, CHAN_VOICE, G_SoundIndex( va("sound/chars/wampa/misc/anger%d.wav", Q_irand(1, 2)) ) );
+				if (NPCS.NPC->client->pers.guardian_mode == 1) // zyk: sound of howler if this npc is the guardian of water
+					G_Sound( NPCS.NPC, CHAN_VOICE, G_SoundIndex( va("sound/chars/howler/howl_talk%d.mp3", Q_irand(1, 5)) ) );
+				else
+					G_Sound( NPCS.NPC, CHAN_VOICE, G_SoundIndex( va("sound/chars/wampa/misc/anger%d.wav", Q_irand(1, 2)) ) );
 
 				TIMER_Set( NPCS.NPC, "angrynoise", Q_irand( 5000, 10000 ) );
 			}
@@ -600,7 +611,10 @@ void NPC_BSWampa_Default( void )
 	{
 		if ( TIMER_Done(NPCS.NPC,"idlenoise") )
 		{
-			G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/wampa/misc/anger3.wav" ) );
+			if (NPCS.NPC->client->pers.guardian_mode == 1) // zyk: sound of howler if this is the guardian of water
+				G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( va("sound/chars/howler/idle_hiss%d.mp3", Q_irand(1, 2)) ) );
+			else
+				G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/wampa/misc/anger3.wav" ) );
 
 			TIMER_Set( NPCS.NPC, "idlenoise", Q_irand( 2000, 4000 ) );
 		}

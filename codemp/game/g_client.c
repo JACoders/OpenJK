@@ -3326,6 +3326,9 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.duelIndex = ENTITYNUM_NONE;
 
 	//spawn with 100
+	// zyk: now we use this attribute as the real fuel and then scale and set it to the jetpackFuel above
+	client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
+
 	client->ps.jetpackFuel = 100;
 	client->ps.cloakFuel = 100;
 
@@ -3763,7 +3766,7 @@ void ClientSpawn(gentity_t *ent) {
 	ent->client->pers.ultimate_power_timer = 0;
 	ent->client->pers.ultimate_power_target_timer = 0;
 
-	// zyk: if player is already logged at spawn, load his account again to get his settings back
+	// zyk: if player is logged at spawn, load his skills
 	if (ent->client->sess.amrpgmode == 2)
 	{
 		clean_guardians(ent);
@@ -4045,6 +4048,65 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
+
+	// zyk: if player was fighting a guardian, allow other players to fight the guardian now
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{
+		clean_guardians(ent);
+		ent->client->pers.guardian_mode = 0;
+	}
+
+	ent->client->pers.universe_quest_objective_control = -1;
+
+	// zyk: if this player is being mind controlled, stops mind control on him
+	if (ent->client->pers.being_mind_controlled != -1)
+	{
+		gentity_t *mind_controller = &g_entities[ent->client->pers.being_mind_controlled];
+
+		if (mind_controller->client->pers.mind_controlled1_id == (ent-g_entities))
+		{
+			mind_controller->client->pers.mind_controlled1_id = -1;
+		}
+
+		ent->client->pers.being_mind_controlled = -1;
+	}
+	
+	// zyk: logout player from account
+	ent->client->sess.amrpgmode = 0;
+
+	// zyk: cleaning the ally ids
+	ent->client->sess.ally1 = -1;
+	ent->client->sess.ally2 = -1;
+	ent->client->sess.ally3 = -1;
+
+	// zyk: cleaning ally ids of other players who have this player as ally
+	for (i = 0; i < MAX_CLIENTS; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+		if (player_ent && player_ent->client)
+		{
+			if (player_ent->client->sess.ally1 == ent->s.number)
+				player_ent->client->sess.ally1 = -1;
+			else if (player_ent->client->sess.ally2 == ent->s.number)
+				player_ent->client->sess.ally2 = -1;
+			else if (player_ent->client->sess.ally3 == ent->s.number)
+				player_ent->client->sess.ally3 = -1;
+		}
+	}
+
+	// zyk: if this was the target player, sets qtrue to choose another target
+	if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == (ent-g_entities))
+		level.bounty_quest_choose_target = qtrue;
+
+	ent->client->pers.race_position = 0;
+
+	// zyk: if this player was playing a quest, find a new one to play quests in this map
+	if (ent->client->pers.can_play_quest == 1)
+	{
+		quest_get_new_player(ent);
+	}
+	ent->client->pers.bitvalue = 0;
+	ent->client->pers.player_statuses = 0;
 
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation

@@ -422,6 +422,12 @@ argv(0) noclip
 void Cmd_Noclip_f( gentity_t *ent ) {
 	char *msg = NULL;
 
+	if (ent->client->sess.amrpgmode == 0 || !(ent->client->pers.bitvalue & (1 << 1)))
+	{ // zyk: noclip admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
 		msg = "noclip OFF";

@@ -2177,6 +2177,7 @@ void ClientThink_real( gentity_t *ent ) {
 				client->ps.pm_type = PM_JETPACK;
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
+				client->ps.fd.forcePowersActive &= ~(1 << FP_LEVITATION); // zyk: stop jumping if using jetpack
 			}
 			else
 			{
@@ -2414,21 +2415,30 @@ void ClientThink_real( gentity_t *ent ) {
 		(!ent->NPC || ent->s.NPC_class != CLASS_VEHICLE)) //if riding a vehicle it will manage our speed and such
 	{
 		// set speed
-		client->ps.speed = g_speed.value;
-
-		//Check for a siege class speed multiplier
-		if (level.gametype == GT_SIEGE &&
-			client->siegeClass != -1)
+		// set speed
+		if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4)
+		{ // zyk: each Improvements level increases the Monk speed
+			client->ps.speed = 250.0 * (client->pers.improvements_level * 0.4 + 1);
+			client->ps.basespeed = client->ps.speed;
+		}
+		else
 		{
-			client->ps.speed *= bgSiegeClasses[client->siegeClass].speed;
-		}
+			client->ps.speed = g_speed.value;
 
-		if (client->bodyGrabIndex != ENTITYNUM_NONE)
-		{ //can't go nearly as fast when dragging a body around
-			client->ps.speed *= 0.2f;
-		}
+			//Check for a siege class speed multiplier
+			if (level.gametype == GT_SIEGE &&
+				client->siegeClass != -1)
+			{
+				client->ps.speed *= bgSiegeClasses[client->siegeClass].speed;
+			}
 
-		client->ps.basespeed = client->ps.speed;
+			if (client->bodyGrabIndex != ENTITYNUM_NONE)
+			{ //can't go nearly as fast when dragging a body around
+				client->ps.speed *= 0.2f;
+			}
+
+			client->ps.basespeed = client->ps.speed;
+		}
 	}
 
 	if ( !ent->NPC || !(ent->NPC->aiFlags&NPCAI_CUSTOM_GRAVITY) )
@@ -3403,6 +3413,27 @@ void ClientThink_real( gentity_t *ent ) {
 		client->fireHeld = qfalse;		// for grapple
 	}
 
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		if (ent->client->pers.holdable_items_levels[7] == 2 && 
+			pmove.cmd.generic_cmd && 
+			pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
+			ent->client->pers.vehicle_cloak_timer < level.time &&
+			ent->client->ps.m_iVehicleNum
+			)
+		{ // zyk: RPG Mode Cloak Item 2/2 can cloak vehicles
+			if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
+			{
+				Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+			}
+			else
+			{
+				Jedi_Decloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+			}
+			ent->client->pers.vehicle_cloak_timer = level.time + 1000;
+		}
+	}
+
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
 
@@ -3621,6 +3652,15 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 	// phone jack if they don't get any for a while
 	ent->client->lastCmdTime = level.time;
 
+	if (!ent->NPC)
+	{ // zyk: applying mind control action if this player is controlling another player or a npc
+		if (ent->client->pers.mind_controlled1_id != -1)
+		{
+			g_entities[ent->client->pers.mind_controlled1_id].client->pers.cmd = ent->client->pers.cmd;
+			ClientThink_real(&g_entities[ent->client->pers.mind_controlled1_id]);
+		}
+	}
+
 	if (ucmd)
 	{
 		ent->client->pers.cmd = *ucmd;
@@ -3653,11 +3693,13 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 	}
 */
 	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
-		ClientThink_real( ent );
+		// zyk: player or npc who is not being mind controlled can think
+		if (ent->client->pers.being_mind_controlled == -1)
+			ClientThink_real( ent );
 	}
 	// vehicles are clients and when running synchronous they still need to think here
 	// so special case them.
-	else if ( clientNum >= MAX_CLIENTS ) {
+	else if ( g_entities[clientNum].s.NPC_class == CLASS_VEHICLE ) { // zyk: changed vehicle condition from clientNum >= MAX_CLIENTS
 		ClientThink_real( ent );
 	}
 

@@ -1571,6 +1571,9 @@ Try and use an entity in the world, directly ahead of us
 
 extern void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace );
 extern qboolean gSiegeRoundBegun;
+extern void quest_get_new_player(gentity_t *ent);
+extern void save_account(gentity_t *ent);
+extern void got_all_amulets(gentity_t *ent);
 static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
 static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
 void TryUse( gentity_t *ent )
@@ -1710,6 +1713,248 @@ void TryUse( gentity_t *ent )
 		trap->SendServerCommand( ent-g_entities, va("chat \"^3Jawa Seller: ^7%s^7, use the ^3/stuff ^7command to see stuff to buy or sell! :)\"", ent->client->pers.netname));
 		ent->client->pers.print_products_timer = level.time + 1000;
 		return;
+	}
+	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.can_play_quest == 1)
+	{
+		if (target && target->client && target->NPC && ent->client->pers.universe_quest_progress == 13)
+		{ // zyk: player makes him choice near the end of the Universe Quest
+			if (ent->client->pers.universe_quest_messages < 28)
+				return;
+			else
+				ent->client->pers.universe_quest_objective_control = target->s.number;
+		}
+		else if (target && target->client && target->NPC && Q_stricmp( target->NPC_type, "guardian_of_universe" ) == 0 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 8 && level.quest_map == 12 && ent->client->pers.universe_quest_messages == 4)
+		{
+			ent->client->pers.universe_quest_messages = 5;
+			return;
+		}
+		else if (target && target->client && target->NPC && Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 8 && level.quest_map == 1 && ent->client->pers.universe_quest_messages == 4)
+		{
+			ent->client->pers.universe_quest_messages = 5;
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 0 && ent->client->pers.universe_quest_messages == 4 && level.quest_map == 9)
+		{ // zyk: First Universe Quest objective. If touched one of the sages, set the universe_quest_messages to 5 to continue the quest
+			ent->client->pers.universe_quest_messages = 5;
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 1 && ent->client->pers.universe_quest_messages == 3 && ent->client->pers.universe_quest_objective_control == 2)
+		{ // zyk: Second Universe Quest objective. If touched one of the sages, set the universe_quest_messages to 4 to continue the quest
+			ent->client->pers.universe_quest_messages = 4;
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 2 && level.quest_map == 1 && ent->client->pers.universe_quest_objective_control == 3)
+		{ // zyk: Third objective of Universe Quest
+			if (target->client->pers.universe_quest_objective_control == 0)
+			{ // zyk: Sage of Light
+				if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+				{
+					ent->client->pers.universe_quest_messages = 4;
+				}
+				else if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.universe_quest_counter & (1 << 0)))
+				{
+					ent->client->pers.universe_quest_messages = 5;
+				}
+				else
+				{
+					ent->client->pers.universe_quest_messages = 6;
+				}
+			}
+			else if (target->client->pers.universe_quest_objective_control == 1)
+			{ // zyk: Sage of Eternity
+				if (ent->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+				{
+					ent->client->pers.universe_quest_messages = 7;
+				}
+				else if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.universe_quest_counter & (1 << 1)))
+				{
+					ent->client->pers.universe_quest_messages = 8;
+				}
+				else
+				{
+					ent->client->pers.universe_quest_messages = 9;
+				}
+			}
+			else if (target->client->pers.universe_quest_objective_control == 2)
+			{ // zyk: Sage of Darkness
+				if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES)
+				{
+					ent->client->pers.universe_quest_messages = 10;
+				}
+				else if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.universe_quest_counter & (1 << 2)))
+				{
+					ent->client->pers.universe_quest_messages = 11;
+				}
+				else
+				{
+					ent->client->pers.universe_quest_messages = 12;
+				}
+			}
+			ent->client->pers.universe_quest_timer = level.time + 500; // zyk: set level.time so messages dont take too much to appear
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 2 && level.quest_map == 1)
+		{
+			trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7We will talk to you later. Please leave now, we must meditate.\"");
+			quest_get_new_player(ent);
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 4 && ent->client->pers.universe_quest_objective_control == 5)
+		{ // zyk: player found the Sage of Universe
+			ent->client->pers.universe_quest_messages = 8;
+			ent->client->pers.universe_quest_timer = level.time + 500;
+			return;
+		}
+		else if (target && target->client && target->NPC && Q_stricmp( target->NPC_type, "quest_jawa" ) == 0)
+		{
+			if (target->client->pers.universe_quest_objective_control == -10 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_messages >= 40)
+			{
+				if (ent->client->pers.universe_quest_messages == 65 && ent->client->pers.universe_quest_objective_control == 0 && !(ent->client->pers.universe_quest_counter & (1 << 2)))
+				{ // zyk: killed all raiders
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You must be indeed the hero of the legend that the sages told about! Here, accept the Amulet of Eternity as a reward.\"");
+					ent->client->pers.universe_quest_messages = 40;
+					ent->client->pers.universe_quest_counter |= (1 << 2);
+
+					save_account(ent);
+					got_all_amulets(ent);
+				}
+				else if (!(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_objective_control == -6)
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7The sand raiders are coming! Defeat them and I give you the Amulet of Eternity!\""); // eternity
+					ent->client->pers.universe_quest_objective_control = 4; // zyk: player must kill 4 sand raiders
+					ent->client->pers.universe_quest_messages = 60;
+				}
+				else if (!(ent->client->pers.universe_quest_counter & (1 << 2)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Please defeat the sand raiders to save our city!\"");
+				}
+				else
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Thank you for everything you have done for us, brave hero!\"");
+			}
+			else if (target->client->pers.universe_quest_objective_control == -20)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hi, mister! Welcome to our city! ^^\"");
+			else if (target->client->pers.universe_quest_objective_control == -30)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Leave me alone!\"");
+			else if (target->client->pers.universe_quest_objective_control == -40)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I cant talk now, sorry!\"");
+			else if (target->client->pers.universe_quest_objective_control == -50)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Later, buddy.\"");
+			else if (target->client->pers.universe_quest_objective_control == -60)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7What are you doing here?\"");
+			else if (target->client->pers.universe_quest_objective_control == -70)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Light? Never heard of it.\"");
+			else if (target->client->pers.universe_quest_objective_control == -80)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Maybe the mayor of the city can help you.\"");
+			else if (target->client->pers.universe_quest_objective_control == -90)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7What the hell do you want from me? :/\"");
+			else if (target->client->pers.universe_quest_objective_control == -100)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hello, man :)\"");
+			else if (target->client->pers.universe_quest_objective_control == -110)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7A bothering man you are... :|\"");
+			else if (target->client->pers.universe_quest_objective_control == -120)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Get out of here! >:/\"");
+			else if (target->client->pers.universe_quest_objective_control == -130)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Sorry, maybe some other time.\"");
+			else if (target->client->pers.universe_quest_objective_control == -140)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hello, please feel free to explore our city :)\"");
+			else if (target->client->pers.universe_quest_objective_control == -150)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You can get some ammo in some places in the city\"");
+			else if (target->client->pers.universe_quest_objective_control == -160)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Wanna trade?\"");
+			else if (target->client->pers.universe_quest_objective_control == -170)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Welcome.\"");
+			else if (target->client->pers.universe_quest_objective_control == -180)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Who the hell you think you are to talk to me! Scram!\"");
+			else if (target->client->pers.universe_quest_objective_control == -190)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Can we please talk later? :)\"");
+			else if (target->client->pers.universe_quest_objective_control == -200)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I dont have time now\"");
+			else if (target->client->pers.universe_quest_objective_control == -210 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_messages >= 40 && ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_objective_control == -6)
+			{
+				if (ent->client->pers.universe_quest_messages == 102 && !(ent->client->pers.universe_quest_counter & (1 << 0)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amazing! You found out his name! Now I will give you the Amulet of Light!\"");
+					ent->client->pers.universe_quest_messages = 40;
+					ent->client->pers.universe_quest_counter |= (1 << 0);
+
+					save_account(ent);
+					got_all_amulets(ent);
+				}
+				else if (ent->client->pers.universe_quest_messages == 103 && !(ent->client->pers.universe_quest_counter & (1 << 0)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hehehe! Try again mister, the sages told me the true hero would succeed!\"");
+					ent->client->pers.universe_quest_messages = 40;
+				}
+				else if (!(ent->client->pers.universe_quest_counter & (1 << 0)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Tell me the name of the mayor and I give you the Amulet of Light! (use ^3/questanswer <name>^7 and talk again to the citizen)\""); // light
+					ent->client->pers.universe_quest_messages = 101;
+				}
+				else
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I knew it! You are the legendary hero! ^^\"");
+			}
+			else if (target->client->pers.universe_quest_objective_control == -220)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I dont want to talk. Kindly leave.\"");
+			else if (target->client->pers.universe_quest_objective_control == -230)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Oh man, I cant talk to you now.\"");
+			else if (target->client->pers.universe_quest_objective_control == -240)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Can you please get away from my sight? :|\"");
+			else if (target->client->pers.universe_quest_objective_control == -250)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Beware, some people here dont have too much sense of humor. :p\"");
+			else if (target->client->pers.universe_quest_objective_control == -260)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Who are you? Please leave me alone! :o\"");
+			else if (target->client->pers.universe_quest_objective_control == -270)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Need some help? Well...I cant help. Sorry.\"");
+			else if (target->client->pers.universe_quest_objective_control == -280)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Darkness! Ask the mayor, maybe he can help.\"");
+			else if (target->client->pers.universe_quest_objective_control == -290)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hey!\"");
+			else if (target->client->pers.universe_quest_objective_control == -300)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I must watch the city from here to maintain security.\"");
+			else if (target->client->pers.universe_quest_objective_control == -310 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_messages >= 40 && ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_objective_control == -6)
+			{
+				if (ent->client->pers.universe_quest_messages != 51 && !(ent->client->pers.universe_quest_counter & (1 << 1)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Please help me, my droid has become dangerous! Destroy it and I give you the Amulet of Darkness.\""); // darkness
+					ent->client->pers.universe_quest_messages = 50;
+				}
+				else if (!(ent->client->pers.universe_quest_counter & (1 << 1)))
+				{
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Thank you! Now receive the Amulet of Darkness from me, hero!\"");
+					ent->client->pers.universe_quest_messages = 40;
+					ent->client->pers.universe_quest_counter |= (1 << 1);
+
+					save_account(ent);
+					got_all_amulets(ent);
+				}
+				else
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You must be the legendary hero the sages told me about! :D\"");
+			}
+			else if (target->client->pers.universe_quest_objective_control == -320)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Im so happy today. :D\"");
+			else if (target->client->pers.universe_quest_objective_control == -330)
+				trap->SendServerCommand( -1, "chat \"^3Samir: ^7I am Samir, the mayor of the city. Nice to meet you. Amulets ... I dont know anything about it, sorry.\"");
+			else if (target->client->pers.universe_quest_objective_control == -340)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Eternity? What do you think I am, a jewel keeper?\"");
+			else if (target->client->pers.universe_quest_objective_control == -360)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulets? What do you think I am? A rich guy? Jewelry is too expensive!\"");
+			else if (target->client->pers.universe_quest_objective_control == -370)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I heard that the guy in the Millenium Falcon area is having some problems with his droid.\"");
+			else if (target->client->pers.universe_quest_objective_control == -380)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Welcome. Please come often to our city, friend!\"");
+			else if (target->client->pers.universe_quest_objective_control == -390)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Bye, i have some things to do now.\"");
+			else if (target->client->pers.universe_quest_objective_control == -400)
+				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hi.\"");
+
+			return;
+		}
+		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control == -205 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_objective_control == -6 && ent->client->pers.universe_quest_messages == 204)
+		{ // zyk: player talks to a sage in mp/siege_desert
+			ent->client->pers.universe_quest_timer = level.time + 500;
+			ent->client->pers.universe_quest_messages = 205;
+			return;
+		}
 	}
 
 #if 0 //ye olde method
