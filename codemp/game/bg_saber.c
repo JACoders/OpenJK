@@ -3212,7 +3212,7 @@ void PM_WeaponLightsaber(void)
 	}
 
 weapChecks:
-	if (pm->ps->saberEntityNum)
+	// if (pm->ps->saberEntityNum) // zyk: now it is possible to change weapon if saber drops
 	{ //only check if we have our saber with us
 		// check for weapon change
 		// can't change if weapon is firing, but can change again if lowering or raising

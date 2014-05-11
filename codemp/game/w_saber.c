@@ -102,6 +102,7 @@ qboolean G_CanBeEnemy( gentity_t *self, gentity_t *enemy )
 //This function gets the attack power which is used to decide broken parries,
 //knockaways, and numerous other things. It is not directly related to the
 //actual amount of damage done, however. -rww
+extern void rpg_skill_counter(gentity_t *ent, int amount);
 static QINLINE int G_SaberAttackPower(gentity_t *ent, qboolean attacking)
 {
 	int baseLevel;
@@ -122,6 +123,9 @@ static QINLINE int G_SaberAttackPower(gentity_t *ent, qboolean attacking)
 	if (attacking)
 	{ //the attacker gets a boost to help penetrate defense.
 		//General boost up so the individual levels make a bigger difference.
+		// zyk: saber counter
+		rpg_skill_counter(ent,1);
+
 		baseLevel *= 2;
 
 		baseLevel++;
@@ -4179,6 +4183,9 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 							{ //staff kata
 								dmg = G_GetAttackDamage(self, 60, 70, 0.5f);
 							}
+
+							// zyk: katas increase skill_counter
+							rpg_skill_counter(self,1);
 						}
 						else
 						{
@@ -4738,12 +4745,14 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qfalse;
 		}
 
+		/* zyk: now npcs on same team can hit the saber too, we can change this behavior using the g_friendlySaber cvar
 		if ((self->s.eType == ET_NPC || otherOwner->s.eType == ET_NPC) && //just make sure one of us is an npc
 			self->client->playerTeam == otherOwner->client->playerTeam &&
 			level.gametype != GT_SIEGE)
 		{ //don't hit your teammate's sabers if you are an NPC. It can be rather annoying.
 			return qfalse;
 		}
+		*/
 
 		if (otherOwner->client->ps.duelInProgress &&
 			otherOwner->client->ps.duelIndex != self->s.number)
@@ -6298,7 +6307,7 @@ void MakeDeadSaber(gentity_t *ent)
 	trap->LinkEntity((sharedEntity_t *)saberent);
 }
 
-#define MAX_LEAVE_TIME 20000
+#define MAX_LEAVE_TIME 600000 // zyk: max time the saber can be knocked down. Changed from 20000 to 600000
 
 void saberReactivate(gentity_t *saberent, gentity_t *saberOwner);
 void saberBackToOwner(gentity_t *saberent);
@@ -6396,7 +6405,7 @@ void DownedSaberThink(gentity_t *saberent)
 		return;
 	}
 
-	if (saberOwn->client->saberKnockedTime < level.time && (saberOwn->client->pers.cmd.buttons & BUTTON_ATTACK))
+	if (saberOwn->client->saberKnockedTime < level.time && (saberOwn->client->pers.cmd.buttons & BUTTON_ATTACK) && saberOwn->client->ps.weapon == WP_SABER) // zyk: saber now will come back if weapon chosen is WP_SABER
 	{ //He wants us back
 		pullBack = qtrue;
 	}
@@ -7625,7 +7634,8 @@ static void G_KickSomeMofos(gentity_t *ent)
 	float elapsedTime = (float)(animLength-ent->client->ps.legsTimer);
 	float remainingTime = (animLength-elapsedTime);
 	float kickDist = (ent->r.maxs[0]*1.5f)+STAFF_KICK_RANGE+8.0f;//fudge factor of 8
-	int	  kickDamage = Q_irand(10, 15);//Q_irand( 3, 8 ); //since it can only hit a guy once now
+	// int	  kickDamage = Q_irand(10, 15);//Q_irand( 3, 8 ); //since it can only hit a guy once now
+	int	  kickDamage = Q_irand(25, 30); // zyk: increased kick damage
 	int	  kickPush = flrand( 50.0f, 100.0f );
 	qboolean doKick = qfalse;
 	renderInfo_t *ri = &ent->client->renderInfo;
@@ -7633,6 +7643,12 @@ static void G_KickSomeMofos(gentity_t *ent)
 	VectorSet(kickDir, 0.0f, 0.0f, 0.0f);
 	VectorSet(kickEnd, 0.0f, 0.0f, 0.0f);
 	VectorSet(fwdAngs, 0.0f, ent->client->ps.viewangles[YAW], 0.0f);
+
+	// zyk: Monk class in RPG Mode causes more kick damage
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 4)
+	{
+		kickDamage = kickDamage * 2;
+	}
 
 	//HMM... or maybe trace from origin to footRBolt/footLBolt?  Which one?  G2 trace?  Will do hitLoc, if so...
 	if ( ent->client->ps.torsoAnim == BOTH_A7_HILT )
@@ -7929,6 +7945,9 @@ static void G_KickSomeMofos(gentity_t *ent)
 	{
 //		G_KickTrace( ent, kickDir, kickDist, kickEnd, kickDamage, kickPush );
 		G_KickTrace( ent, kickDir, kickDist, NULL, kickDamage, kickPush );
+
+		// zyk: melee kick counter
+		rpg_skill_counter(ent,8);
 	}
 }
 
@@ -7956,6 +7975,9 @@ static void G_GrabSomeMofos(gentity_t *self)
 	{ //no good
 		return;
 	}
+
+	// zyk: melee grab increases skill_counter
+	rpg_skill_counter(self,2);
 
     VectorSet(flatAng, 0.0f, self->client->ps.viewangles[1], 0.0f);
 	trap->G2API_GetBoltMatrix(self->ghoul2, 0, ri->handRBolt, &boltMatrix, flatAng, self->client->ps.origin,

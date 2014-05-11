@@ -733,7 +733,7 @@ Instant shield pickup, restores 100
 /* pickup *///	"Shield Large",
 		100,
 		IT_ARMOR,
-		2, //special for shield - max on pickup is maxhealth*tag, thus large shield goes up to 200 shield
+		1, //special for shield - max on pickup is maxhealth*tag, thus large shield goes up to 200 shield // zyk: changed from 2 to 1
 /* precache */ "",
 /* sounds */ "",
 		""					// description
