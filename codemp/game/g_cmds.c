@@ -3917,6 +3917,20 @@ void rpg_score(gentity_t *ent)
 	}
 }
 
+// zyk: increases the RPG skill counter by this amount
+void rpg_skill_counter(gentity_t *ent, int amount)
+{
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2)
+	{ // zyk: now RPG mode increases level up score after a certain amount of attacks
+		ent->client->pers.skill_counter += amount;
+		if (ent->client->pers.skill_counter >= MAX_SKILL_COUNTER)
+		{
+			ent->client->pers.skill_counter = 0;
+			rpg_score(ent);
+		}
+	}
+}
+
 // zyk: initialize RPG skills of this player
 void initialize_rpg_skills(gentity_t *ent)
 {
