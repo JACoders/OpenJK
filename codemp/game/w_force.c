@@ -418,13 +418,24 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 
 	ent->client->ps.fd.forceDeactivateAll = 0;
 
-	ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
+	// zyk: set max force power for non-rpg mode users
+	if (ent->client->sess.amrpgmode < 2)
+		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
+
 	ent->client->ps.fd.forcePowerRegenDebounceTime = level.time;
 	ent->client->ps.fd.forceGripEntityNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceMindtrickTargetIndex = 0;
 	ent->client->ps.fd.forceMindtrickTargetIndex2 = 0;
 	ent->client->ps.fd.forceMindtrickTargetIndex3 = 0;
 	ent->client->ps.fd.forceMindtrickTargetIndex4 = 0;
+
+	// zyk: remove mind control from these players or npcs
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.mind_control > 0 && ent->client->pers.mind_controlled1_id != -1)
+	{
+		gentity_t *tricked_entity = &g_entities[ent->client->pers.mind_controlled1_id];
+		ent->client->pers.mind_controlled1_id = -1;
+		tricked_entity->client->pers.being_mind_controlled = -1;
+	}
 
 	ent->client->ps.holocronBits = 0;
 
@@ -543,6 +554,11 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 
 	if (forcePower == FP_GRIP)
 	{
+		if (other && other->client && (attacker->client->sess.ally1 == (other-g_entities) || attacker->client->sess.ally2 == (other-g_entities) || attacker->client->sess.ally3 == (other-g_entities)))
+		{ // zyk: allies cant be gripped
+			return 0;
+		}
+
 		if (other && other->client &&
 			(other->client->ps.fd.forcePowersActive & (1<<FP_ABSORB)))
 		{ //don't allow gripping to begin with if they are absorbing
@@ -573,6 +589,8 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		}
 	}
 
+	// zyk: now force powers can be used on vehicles, so changed from 0 to 1
+	/*
 	if (other && other->client && other->s.eType == ET_NPC &&
 		other->s.NPC_class == CLASS_VEHICLE)
 	{ //can't use the force on vehicles.. except lightning
@@ -585,6 +603,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 			return 0;
 		}
 	}
+	*/
 
 	if (other && other->client && other->s.eType == ET_NPC &&
 		level.gametype == GT_SIEGE)
@@ -599,6 +618,14 @@ qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int 
 {
 	int	drain = overrideAmt ? overrideAmt :
 				forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower];
+
+	if (forcePower == FP_HEAL) // zyk: added the HEAL condition to keep balance
+	{
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
+			drain = ((zyk_max_force_power.integer/2) - (zyk_max_force_power.integer/20));
+		else
+			drain = (zyk_max_force_power.integer/2);
+	}
 
 	if (self->client->ps.fd.forcePowersActive & (1 << forcePower))
 	{ //we're probably going to deactivate it..
@@ -807,11 +834,18 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 	{
 		addTot = 1;
 	}
-	attacked->client->ps.fd.forcePower += addTot;
-	if (attacked->client->ps.fd.forcePower > attacked->client->ps.fd.forcePowerMax)
-	{
-		attacked->client->ps.fd.forcePower = attacked->client->ps.fd.forcePowerMax;
+
+	if (attacked->client->sess.amrpgmode == 2 && attacked->client->pers.force_powers_levels[8] == 4)
+	{ // zyk: Absorb 4/4 in RPG Mode absorbs more force
+		addTot = addTot + (zyk_max_force_power.integer/10);
 	}
+
+	attacked->client->ps.fd.forcePower += addTot;
+
+	if (attacked->client->sess.amrpgmode == 2 && attacked->client->ps.fd.forcePower > attacked->client->pers.max_force_power)
+		attacked->client->ps.fd.forcePower = attacked->client->pers.max_force_power;
+	else if (attacked->client->sess.amrpgmode < 2 && attacked->client->ps.fd.forcePower > zyk_max_force_power.integer)
+		attacked->client->ps.fd.forcePower = zyk_max_force_power.integer;
 
 	//play sound indicating that attack was absorbed
 	if (attacked->client->forcePowerSoundDebounce < level.time)
@@ -847,6 +881,7 @@ void WP_ForcePowerRegenerate( gentity_t *self, int overrideAmt )
 	}
 }
 
+extern void rpg_skill_counter(gentity_t *ent, int amount);
 void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int overrideAmt )
 { //activate the given force power
 	int	duration = 0;
@@ -894,6 +929,10 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 		else if (self->client->ps.fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_3)
 		{
 			duration = 20000;
+		}
+		else if (self->client->ps.fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_4)
+		{ // zyk: added speed level 4
+			duration = 25000;
 		}
 		else //shouldn't get here
 		{
@@ -1052,12 +1091,21 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 
 	self->client->ps.fd.forcePowerDebounce[forcePower] = 0;
 
+	// zyk: force skill counter
+	rpg_skill_counter(self,100);
+
 	if ((int)forcePower == FP_SPEED && overrideAmt)
 	{
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
+			overrideAmt = forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower]/2;
+
 		BG_ForcePowerDrain( &self->client->ps, forcePower, overrideAmt*0.025 );
 	}
 	else if ((int)forcePower != FP_GRIP && (int)forcePower != FP_DRAIN)
 	{ //grip and drain drain as damage is done
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
+			overrideAmt = forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower]/2;
+
 		BG_ForcePowerDrain( &self->client->ps, forcePower, overrideAmt );
 	}
 }
@@ -1076,6 +1124,18 @@ void ForceHeal( gentity_t *self )
 
 	if ( self->health >= self->client->ps.stats[STAT_MAX_HEALTH])
 	{
+		// zyk: Shield Heal skill. Done when player has full HP
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.shield > 0 && self->client->ps.fd.forcePower >= zyk_max_force_power.integer/2 && self->client->ps.stats[STAT_ARMOR] < self->client->pers.max_rpg_shield)
+		{
+			self->client->ps.stats[STAT_ARMOR] += 4 * self->client->pers.shield;
+
+			if (self->client->ps.stats[STAT_ARMOR] > self->client->pers.max_rpg_shield)
+				self->client->ps.stats[STAT_ARMOR] = self->client->pers.max_rpg_shield;
+
+			self->client->ps.fd.forcePower -= zyk_max_force_power.integer/2;
+
+			G_Sound(self, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
+		}
 		return;
 	}
 
@@ -1087,7 +1147,7 @@ void ForceHeal( gentity_t *self )
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
 		}
-		BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
+		// zyk: commented this line BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
 	}
 	else if (self->client->ps.fd.forcePowerLevel[FP_HEAL] == FORCE_LEVEL_2)
 	{
@@ -1097,7 +1157,7 @@ void ForceHeal( gentity_t *self )
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
 		}
-		BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
+		// zyk: commented this line BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
 	}
 	else
 	{
@@ -1107,7 +1167,7 @@ void ForceHeal( gentity_t *self )
 		{
 			self->health = self->client->ps.stats[STAT_MAX_HEALTH];
 		}
-		BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
+		// zyk: commented this line BG_ForcePowerDrain( &self->client->ps, FP_HEAL, 0 );
 	}
 	/*
 	else
@@ -1116,6 +1176,9 @@ void ForceHeal( gentity_t *self )
 	}
 	*/
 	//NOTE: Decided to make all levels instant.
+
+	// zyk: now heal force power requires force based on the force power max cvar
+	self->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
 	G_Sound( self, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
 }
@@ -1180,13 +1243,28 @@ void ForceTeamHeal( gentity_t *self )
 		radius *= 2;
 	}
 
-	while (i < MAX_CLIENTS)
+	// while (i < MAX_CLIENTS)  // zyk: now the condition will be the level.num_entities
+	while (i < level.num_entities)
 	{
+		int max_shield = 0;
+
 		ent = &g_entities[i];
 
-		if (ent && ent->client && self != ent && OnSameTeam(self, ent) && ent->client->ps.stats[STAT_HEALTH] < ent->client->ps.stats[STAT_MAX_HEALTH] && ent->client->ps.stats[STAT_HEALTH] > 0 && ForcePowerUsableOn(self, ent, FP_TEAM_HEAL) &&
-			trap->InPVS(self->client->ps.origin, ent->client->ps.origin))
-		{
+		if (ent && ent->client)
+			max_shield = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2)
+			max_shield = ent->client->pers.max_rpg_shield;
+
+		if (ent && ent->client && self != ent && 
+			(!ent->NPC || (ent->client->playerTeam != NPCTEAM_ENEMY && ent->client->pers.guardian_invoked_by_id == -1 && ent->s.NPC_class != CLASS_VEHICLE)) && 
+			 (ent->client->ps.stats[STAT_HEALTH] < ent->client->ps.stats[STAT_MAX_HEALTH] || 
+			 (self->client->sess.amrpgmode == 2 && self->client->pers.teamshield > 0 && 
+			 !ent->NPC && ent->client->ps.stats[STAT_HEALTH] >= ent->client->ps.stats[STAT_MAX_HEALTH] && 
+			 ((ent->client->sess.amrpgmode < 2 && ent->client->ps.stats[STAT_ARMOR] < 100) || (ent->client->sess.amrpgmode == 2 && 
+			 ent->client->ps.stats[STAT_ARMOR] < max_shield)))) && ent->client->ps.stats[STAT_HEALTH] > 0 && ForcePowerUsableOn(self, ent, FP_TEAM_HEAL) &&
+		 	trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && (g_gametype.integer == GT_FFA || OnSameTeam(self, ent)))
+		{ // zyk: Team Heal now can be used in FFA and in npcs. It will not heal enemy npcs
 			VectorSubtract(self->client->ps.origin, ent->client->ps.origin, a);
 
 			if (VectorLength(a) <= radius)
@@ -1225,6 +1303,21 @@ void ForceTeamHeal( gentity_t *self )
 		if (g_entities[pl[i]].client->ps.stats[STAT_HEALTH] > 0 &&
 			g_entities[pl[i]].health > 0)
 		{
+			int max_shield = g_entities[pl[i]].client->ps.stats[STAT_MAX_HEALTH];
+			if (g_entities[pl[i]].client->sess.amrpgmode == 2)
+				max_shield = g_entities[pl[i]].client->pers.max_rpg_shield;
+
+			// zyk: Team Shield Heal skill of RPG Mode
+			if (self->client->sess.amrpgmode == 2 && self->client->pers.teamshield > 0 && !g_entities[pl[i]].NPC && g_entities[pl[i]].client->ps.stats[STAT_HEALTH] >= g_entities[pl[i]].client->ps.stats[STAT_MAX_HEALTH] && g_entities[pl[i]].client->ps.stats[STAT_ARMOR] < max_shield)
+			{ // zyk: can only be used on players with full health already
+				g_entities[pl[i]].client->ps.stats[STAT_ARMOR] += 3 * self->client->pers.teamshield;
+
+				if (g_entities[pl[i]].client->ps.stats[STAT_ARMOR] > max_shield)
+					g_entities[pl[i]].client->ps.stats[STAT_ARMOR] = max_shield;
+
+				G_Sound(&g_entities[pl[i]], CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
+			}
+
 			g_entities[pl[i]].client->ps.stats[STAT_HEALTH] += healthadd;
 			if (g_entities[pl[i]].client->ps.stats[STAT_HEALTH] > g_entities[pl[i]].client->ps.stats[STAT_MAX_HEALTH])
 			{
@@ -1260,6 +1353,8 @@ void ForceTeamForceReplenish( gentity_t *self )
 	int pl[MAX_CLIENTS];
 	int poweradd = 0;
 	gentity_t *te = NULL;
+	int max_blasterpack_ammo = 0;
+	int max_powercell_ammo = 0;
 
 	if ( self->health <= 0 )
 	{
@@ -1285,12 +1380,32 @@ void ForceTeamForceReplenish( gentity_t *self )
 		radius *= 2;
 	}
 
-	while (i < MAX_CLIENTS)
+	// while (i < MAX_CLIENTS)  // zyk: now the condition will be the level.num_entities
+	while (i < level.num_entities)
 	{
 		ent = &g_entities[i];
 
-		if (ent && ent->client && self != ent && OnSameTeam(self, ent) && ent->client->ps.fd.forcePower < 100 && ForcePowerUsableOn(self, ent, FP_TEAM_FORCE) &&
-			trap->InPVS(self->client->ps.origin, ent->client->ps.origin))
+		// zyk: Bounty Hunter class has more max ammo
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
+		{
+			max_blasterpack_ammo = zyk_max_blaster_pack_ammo.integer + zyk_max_blaster_pack_ammo.integer/6 * ent->client->pers.improvements_level;
+			max_powercell_ammo = zyk_max_power_cell_ammo.integer + zyk_max_power_cell_ammo.integer/6 * ent->client->pers.improvements_level;
+		}
+		else
+		{
+			max_blasterpack_ammo = zyk_max_blaster_pack_ammo.integer;
+			max_powercell_ammo = zyk_max_power_cell_ammo.integer;
+		}
+
+		// zyk: created new condition so we can use Team Energize in FFA. Also added improvements_level condition to restore ammo of the target
+		if (ent && ent->client && self != ent && 
+			(ent->client->ps.fd.forcePower < ent->client->ps.fd.forcePowerMax || 
+			 (self->client->sess.amrpgmode == 2 && self->client->pers.improvements_level > 0 && !ent->NPC && 
+			  (ent->client->ps.ammo[AMMO_BLASTER] < max_blasterpack_ammo || ent->client->ps.ammo[AMMO_POWERCELL] < max_powercell_ammo)
+			 )
+			) && 
+			ForcePowerUsableOn(self, ent, FP_TEAM_FORCE) &&
+			trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && (g_gametype.integer == GT_FFA || OnSameTeam(self, ent)))
 		{
 			VectorSubtract(self->client->ps.origin, ent->client->ps.origin, a);
 
@@ -1329,10 +1444,21 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 	while (i < numpl)
 	{
-		g_entities[pl[i]].client->ps.fd.forcePower += poweradd;
-		if (g_entities[pl[i]].client->ps.fd.forcePower > g_entities[pl[i]].client->ps.fd.forcePowerMax)
+		// zyk: Team Energize now can recover ammo if the player has full force and improvements skill
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.improvements_level > 0 && !g_entities[pl[i]].NPC && g_entities[pl[i]].client->ps.fd.forcePower == g_entities[pl[i]].client->ps.fd.forcePowerMax)
 		{
-			g_entities[pl[i]].client->ps.fd.forcePower = g_entities[pl[i]].client->ps.fd.forcePowerMax;
+			Add_Ammo(&g_entities[pl[i]], AMMO_BLASTER, (self->client->pers.improvements_level * 10));
+			Add_Ammo(&g_entities[pl[i]], AMMO_POWERCELL, (self->client->pers.improvements_level * 10));
+			G_Sound(&g_entities[pl[i]], CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+		}
+		else
+		{
+			g_entities[pl[i]].client->ps.fd.forcePower += poweradd;
+
+			if (g_entities[pl[i]].client->sess.amrpgmode == 2 && g_entities[pl[i]].client->ps.fd.forcePower > g_entities[pl[i]].client->pers.max_force_power)
+				g_entities[pl[i]].client->ps.fd.forcePower = g_entities[pl[i]].client->pers.max_force_power;
+			else if (g_entities[pl[i]].client->sess.amrpgmode < 2 && g_entities[pl[i]].client->ps.fd.forcePower > zyk_max_force_power.integer) // zyk: now it must be the cvar, because this cvar is the max force
+				g_entities[pl[i]].client->ps.fd.forcePower = zyk_max_force_power.integer;
 		}
 
 		//At this point we know we got one, so add him into the collective event client bitflag
@@ -1504,6 +1630,7 @@ void ForceProtect( gentity_t *self )
 	}
 
 	// Make sure to turn off Force Rage and Force Absorb.
+	/* zyk: now it will be possible to use more than one force power at a time!
 	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
 	{
 		WP_ForcePowerStop( self, FP_RAGE );
@@ -1512,6 +1639,7 @@ void ForceProtect( gentity_t *self )
 	{
 		WP_ForcePowerStop( self, FP_ABSORB );
 	}
+	*/
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1540,6 +1668,7 @@ void ForceAbsorb( gentity_t *self )
 	}
 
 	// Make sure to turn off Force Rage and Force Protection.
+	/* zyk: now it will be possible to use more than one force power at a time!
 	if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
 	{
 		WP_ForcePowerStop( self, FP_RAGE );
@@ -1548,6 +1677,7 @@ void ForceAbsorb( gentity_t *self )
 	{
 		WP_ForcePowerStop( self, FP_PROTECT );
 	}
+	*/
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1586,6 +1716,7 @@ void ForceRage( gentity_t *self )
 	}
 
 	// Make sure to turn off Force Protection and Force Absorb.
+	/* zyk: now it will be possible to use more than one force power at a time!
 	if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
 	{
 		WP_ForcePowerStop( self, FP_PROTECT );
@@ -1594,6 +1725,7 @@ void ForceRage( gentity_t *self )
 	{
 		WP_ForcePowerStop( self, FP_ABSORB );
 	}
+	*/
 
 	self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 
@@ -1638,7 +1770,7 @@ void ForceLightning( gentity_t *self )
 
 	G_Sound( self, CHAN_BODY, G_SoundIndex("sound/weapons/force/lightning") );
 
-	WP_ForcePowerStart( self, FP_LIGHTNING, 500 );
+	WP_ForcePowerStart( self, FP_LIGHTNING, 2000 ); // zyk: changed lightning duration from 500 to 2000
 }
 
 void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t impactPoint )
@@ -1661,10 +1793,12 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			if (traceEnt->client->noLightningTime >= level.time)
 			{ //give them power and don't hurt them.
 				traceEnt->client->ps.fd.forcePower++;
-				if (traceEnt->client->ps.fd.forcePower > traceEnt->client->ps.fd.forcePowerMax)
-				{
-					traceEnt->client->ps.fd.forcePower = traceEnt->client->ps.fd.forcePowerMax;
-				}
+				// zyk: changed the code below so we can use the cvar cm_FORCE_POWER_MAX instead of hardcoded 100 force power max
+				if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->ps.fd.forcePower > traceEnt->client->pers.max_force_power)
+					traceEnt->client->ps.fd.forcePower = traceEnt->client->pers.max_force_power;
+				else if (traceEnt->client->sess.amrpgmode < 2 && traceEnt->client->ps.fd.forcePower > zyk_max_force_power.integer)
+					traceEnt->client->ps.fd.forcePower = zyk_max_force_power.integer;
+
 				return;
 			}
 			if (ForcePowerUsableOn(self, traceEnt, FP_LIGHTNING))
@@ -1707,7 +1841,16 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 				if (dmg)
 				{
 					//rww - Shields can now absorb lightning too.
-					G_Damage( traceEnt, self, self, dir, impactPoint, dmg, 0, MOD_FORCE_DARK );
+					if (traceEnt && traceEnt->client && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 5)
+					{ // zyk: Stealth Attacker absorbs electric damage
+						if (!(traceEnt->client->pers.secrets_found & (1 << 7)))
+						{ // zyk: only takes damage if he does not have the upgrade
+							dmg = (int)ceil(dmg * (1 - (0.25 * traceEnt->client->pers.improvements_level)));
+							G_Damage( traceEnt, self, self, dir, impactPoint, dmg, 0, MOD_FORCE_DARK );
+						}
+					}
+					else
+						G_Damage( traceEnt, self, self, dir, impactPoint, dmg, 0, MOD_FORCE_DARK );
 				}
 				if ( traceEnt->client )
 				{
@@ -1722,8 +1865,11 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					}
 					if ( traceEnt->client->ps.powerups[PW_CLOAKED] )
 					{//disable cloak temporarily
-						Jedi_Decloak( traceEnt );
-						traceEnt->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
+						if (traceEnt->client->sess.amrpgmode < 2 || traceEnt->client->pers.rpg_class != 5)
+						{ // zyk: Stealth Attacker cloak does not decloak by lightning attack
+							Jedi_Decloak( traceEnt );
+							traceEnt->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
+						}
 					}
 				}
 			}
@@ -1944,6 +2090,11 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					}
 				}
 				//G_Damage( traceEnt, self, self, dir, impactPoint, dmg, 0, MOD_FORCE_DARK );
+
+				if (self->client->sess.amrpgmode == 2 && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == traceEnt->s.number || self->client->sess.ally2 == traceEnt->s.number || self->client->sess.ally3 == traceEnt->s.number))
+				{ // zyk: allies wont be drained if they dont allow it
+					dmg = 0;
+				}
 
 				if (dmg)
 				{
@@ -2388,6 +2539,17 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 
 	traceEnt = &g_entities[tr->entityNum];
 
+	if (traceEnt && traceEnt->client && traceEnt->NPC)
+	{
+		// zyk: cant use Mind trick on guardians of RPG Mode
+		if (traceEnt->client->pers.guardian_invoked_by_id != -1)
+		{
+			return qfalse;
+		}
+	}
+
+	return qtrue; // zyk: now always returns here
+
 	if( traceEnt->NPC
 		&& traceEnt->NPC->scriptFlags & SCF_NO_FORCE )
 	{
@@ -2604,11 +2766,13 @@ void ForceTelepathy(gentity_t *self)
 
 	if ( ForceTelepathyCheckDirectNPCTarget( self, &tr, &tookPower ) )
 	{//hit an NPC directly
+		/* zyk: no longer executes this
 		self->client->ps.forceAllowDeactivateTime = level.time + 1500;
 		G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/weapons/force/distract.wav") );
 		self->client->ps.forceHandExtend = HANDEXTEND_FORCEPUSH;
 		self->client->ps.forceHandExtendTime = level.time + 1000;
 		return;
+		*/
 	}
 
 	if (self->client->ps.fd.forcePowerLevel[FP_TELEPATHY] == FORCE_LEVEL_2)
@@ -2633,14 +2797,49 @@ void ForceTelepathy(gentity_t *self)
 
 	if (self->client->ps.fd.forcePowerLevel[FP_TELEPATHY] == FORCE_LEVEL_1)
 	{
-		if (tr.fraction != 1.0 &&
+		if ((tr.fraction != 1.0 &&
 			tr.entityNum != ENTITYNUM_NONE &&
 			g_entities[tr.entityNum].inuse &&
 			g_entities[tr.entityNum].client &&
 			g_entities[tr.entityNum].client->pers.connected &&
-			g_entities[tr.entityNum].client->sess.sessionTeam != TEAM_SPECTATOR)
+			g_entities[tr.entityNum].client->sess.sessionTeam != TEAM_SPECTATOR) || 
+			(g_entities[tr.entityNum].client && g_entities[tr.entityNum].NPC))
 		{
-			WP_AddAsMindtricked(&self->client->ps.fd, tr.entityNum);
+			gentity_t *tricked_entity;
+
+			tricked_entity = &g_entities[tr.entityNum];
+
+			// zyk: cant use Mind trick on guardians of RPG Mode
+			if (tricked_entity && tricked_entity->client && tricked_entity->client->pers.guardian_invoked_by_id != -1)
+			{
+				return;
+			}
+
+			if (!tricked_entity->NPC) // zyk: NPCs wont have the glowing head effect of mind trick because of how the game handles the tricked entities
+				WP_AddAsMindtricked(&self->client->ps.fd, tr.entityNum);
+
+			// zyk: mind control this player, if he is not being mind controlled by someone else
+			if (self->client->sess.amrpgmode == 2 && !(self->client->pers.player_settings & (1 << 14)) && self->client->pers.mind_control > 0 && (tricked_entity->NPC || (tricked_entity->client->sess.sessionTeam != TEAM_SPECTATOR && tricked_entity->inuse == qtrue)) && tricked_entity->s.NPC_class != CLASS_VEHICLE && tricked_entity->client->pers.being_mind_controlled == -1 && self->client->pers.being_mind_controlled == -1 && self->client->pers.force_powers_levels[11] > tricked_entity->client->ps.fd.forcePowerLevel[FP_SEE] && tricked_entity->health > 0)
+			{
+				int can_use_mind_control = 1;
+
+				if (tricked_entity->client->sess.amrpgmode == 2 && tricked_entity->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == tricked_entity->s.number || self->client->sess.ally2 == tricked_entity->s.number || self->client->sess.ally3 == tricked_entity->s.number))
+				{ // zyk: cant use mind control on allies that dont allow it
+					can_use_mind_control = 0;
+				}
+
+				if (can_use_mind_control == 1)
+				{
+					if (self->client->pers.mind_controlled1_id == -1)
+					{
+						self->client->pers.mind_controlled1_id = tricked_entity-g_entities;
+						tricked_entity->client->pers.being_mind_controlled = self-g_entities;
+
+						trap->SendServerCommand( tricked_entity-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
+					}
+				}
+			}
+
 			if ( !tookPower )
 			{
 				WP_ForcePowerStart( self, FP_TELEPATHY, 0 );
@@ -2708,7 +2907,37 @@ void ForceTelepathy(gentity_t *self)
 			if (ent && ent != self && ent->client)
 			{
 				gotatleastone = qtrue;
-				WP_AddAsMindtricked(&self->client->ps.fd, ent->s.number);
+
+				// zyk: cant use Mind trick on guardians of RPG Mode
+				if (ent && ent->client && ent->client->pers.guardian_invoked_by_id != -1)
+				{
+					return;
+				}
+
+				if (!ent->NPC) // zyk: NPCs wont have the glowing head effect of mind trick because of how the game handles the tricked entities
+					WP_AddAsMindtricked(&self->client->ps.fd, ent->s.number);
+
+				// zyk: mind control this player, if he is not being mind controlled by someone else
+				if (self->client->sess.amrpgmode == 2 && !(self->client->pers.player_settings & (1 << 14)) && self->client->pers.mind_control > 0 && (ent->NPC || (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->inuse == qtrue)) && ent->s.NPC_class != CLASS_VEHICLE && ent->client->pers.being_mind_controlled == -1 && self->client->pers.being_mind_controlled == -1 && self->client->pers.force_powers_levels[11] > ent->client->ps.fd.forcePowerLevel[FP_SEE] && ent->health > 0)
+				{
+					int can_use_mind_control = 1;
+
+					if (ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == ent->s.number || self->client->sess.ally2 == ent->s.number || self->client->sess.ally3 == ent->s.number))
+					{ // zyk: cant use mind control on allies that dont allow it
+						can_use_mind_control = 0;
+					}
+
+					if (can_use_mind_control == 1)
+					{
+						if (self->client->pers.mind_controlled1_id == -1)
+						{
+							self->client->pers.mind_controlled1_id = ent-g_entities;
+							ent->client->pers.being_mind_controlled = self-g_entities;
+
+							trap->SendServerCommand( ent-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
+						}
+					}
+				}
 			}
 			e++;
 		}
@@ -3179,6 +3408,13 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		}
 		if ( !(ent->inuse) )
 			continue;
+
+		if (self->client->sess.amrpgmode == 2 && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6))
+		{ // zyk: cannot push or pull allies if they dont allow it
+			if (self->client->sess.ally1 == ent->s.number || self->client->sess.ally2 == ent->s.number || self->client->sess.ally3 == ent->s.number)
+				continue;
+		}
+
 		if ( ent->s.eType != ET_MISSILE )
 		{
 			if ( ent->s.eType != ET_ITEM )
@@ -3434,6 +3670,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							randfact = 10;
 						}
 
+						// zyk: Stealth Attacker Upgrade protects from losing weapon to force pull
+						if (push_list[x]->client->sess.amrpgmode == 2 && push_list[x]->client->pers.rpg_class == 5 && push_list[x]->client->pers.secrets_found & (1 << 7))
+						{
+							canPullWeapon = qfalse;
+						}
+
 						if (!OnSameTeam(self, push_list[x]) && Q_irand(1, 10) <= randfact && canPullWeapon)
 						{
 							vec3_t uorg, vecnorm;
@@ -3657,6 +3899,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 {
 	int wasActive = self->client->ps.fd.forcePowersActive;
+	gentity_t *tricked_entity; // zyk: used to stop mind control
 
 	self->client->ps.fd.forcePowersActive &= ~( 1 << forcePower );
 
@@ -3679,6 +3922,14 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 	case FP_PULL:
 		break;
 	case FP_TELEPATHY:
+		// zyk: remove mind control from these players or npcs
+		if (self->client->pers.mind_control > 0 && self->client->pers.mind_controlled1_id != -1)
+		{
+			tricked_entity = &g_entities[self->client->pers.mind_controlled1_id];
+			self->client->pers.mind_controlled1_id = -1;
+			tricked_entity->client->pers.being_mind_controlled = -1;
+		}
+
 		if (wasActive & (1 << FP_TELEPATHY))
 		{
 			G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/weapons/force/distractstop.wav") );
@@ -4066,23 +4317,28 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 {
 	int i = 0;
 
-	while (i < MAX_CLIENTS)
+	// zyk: changed condition from MAX_CLIENTS to level.num_entities
+	while (i < level.num_entities)
 	{
-		if (G_IsMindTricked(&self->client->ps.fd, i))
-		{
-			gentity_t *ent = &g_entities[i];
-
+		gentity_t *ent = &g_entities[i];
+		if (G_IsMindTricked(&self->client->ps.fd, i) || (ent && ent->NPC))
+		{ // zyk: added the NPC condition
 			if ( !ent || !ent->client || !ent->inuse || ent->health < 1 ||
 				(ent->client->ps.fd.forcePowersActive & (1 << FP_SEE)) )
 			{
-				RemoveTrickedEnt(&self->client->ps.fd, i);
+				if (ent && !ent->NPC) // zyk: remove tricked entity only for players
+					RemoveTrickedEnt(&self->client->ps.fd, i);
 			}
 			else if ((level.time - self->client->dangerTime) < g_TimeSinceLastFrame*4)
 			{ //Untrick this entity if the tricker (self) fires while in his fov
 				if (trap->InPVS(ent->client->ps.origin, self->client->ps.origin) &&
 					OrgVisible(ent->client->ps.origin, self->client->ps.origin, ent->s.number))
 				{
-					RemoveTrickedEnt(&self->client->ps.fd, i);
+					if (self->client->pers.mind_control < 1)
+					{ // zyk: if player has mind control this power wont stop if the player attacks
+						if (ent && !ent->NPC) // zyk: remove tricked entity only for players
+							RemoveTrickedEnt(&self->client->ps.fd, i);
+					}
 				}
 			}
 			else if (BG_HasYsalamiri(level.gametype, &ent->client->ps))
@@ -4097,8 +4353,8 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 	if (!self->client->ps.fd.forceMindtrickTargetIndex &&
 		!self->client->ps.fd.forceMindtrickTargetIndex2 &&
 		!self->client->ps.fd.forceMindtrickTargetIndex3 &&
-		!self->client->ps.fd.forceMindtrickTargetIndex4)
-	{ //everyone who we had tricked is no longer tricked, so stop the power
+		!self->client->ps.fd.forceMindtrickTargetIndex4 && self->client->pers.mind_controlled1_id == -1)
+	{ //everyone who we had tricked is no longer tricked, so stop the power. zyk: added the mind control conditions
 		WP_ForcePowerStop(self, FP_TELEPATHY);
 	}
 	else if (self->client->ps.powerups[PW_REDFLAG] ||
@@ -4213,7 +4469,9 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		{
 			int addTime = 400;
 
-			self->health -= 2;
+			// zyk: added this condition because of Rage 4/4 in RPG Mode, which dont damage the player
+			if (self->client->sess.amrpgmode < 2 || self->client->pers.force_powers_levels[16] < 4)
+				self->health -= 2;
 
 			if (self->client->ps.fd.forcePowerLevel[FP_RAGE] == FORCE_LEVEL_1)
 			{
@@ -4518,21 +4776,24 @@ void FindGenericEnemyIndex(gentity_t *self)
 	float blen = 99999999.9f;
 	vec3_t a;
 
-	while (i < MAX_CLIENTS)
-	{
+	while (i < level.num_entities)
+	{ // zyk: changed from MAX_CLIENTS to level.num_entities so seeker drone can attack npcs
 		ent = &g_entities[i];
 
 		if (ent && ent->client && ent->s.number != self->s.number && ent->health > 0 && !OnSameTeam(self, ent) && ent->client->ps.pm_type != PM_INTERMISSION && ent->client->ps.pm_type != PM_SPECTATOR)
 		{
-			VectorSubtract(ent->client->ps.origin, self->client->ps.origin, a);
-			tlen = VectorLength(a);
+			if (self->client->sess.ally1 != ent->s.number && self->client->sess.ally2 != ent->s.number && self->client->sess.ally3 != ent->s.number)
+			{ // zyk: allies cant be attacked by seeker drone
+				VectorSubtract(ent->client->ps.origin, self->client->ps.origin, a);
+				tlen = VectorLength(a);
 
-			if (tlen < blen &&
-				InFront(ent->client->ps.origin, self->client->ps.origin, self->client->ps.viewangles, 0.8f ) &&
-				OrgVisible(self->client->ps.origin, ent->client->ps.origin, self->s.number))
-			{
-				blen = tlen;
-				besten = ent;
+				if (tlen < blen &&
+					InFront(ent->client->ps.origin, self->client->ps.origin, self->client->ps.viewangles, 0.8f ) &&
+					OrgVisible(self->client->ps.origin, ent->client->ps.origin, self->s.number))
+				{
+					blen = tlen;
+					besten = ent;
+				}
 			}
 		}
 
@@ -4697,7 +4958,13 @@ void SeekerDroneUpdate(gentity_t *self)
 				VectorSubtract(en->client->ps.origin, org, endir);
 				VectorNormalize(endir);
 
-				WP_FireGenericBlasterMissile(self, org, endir, 0, 15, 2000, MOD_BLASTER);
+				// zyk: changed shot speed from 2000 to 4000
+				// zyk: changed damage when a Bounty Hunter uses the seeker drone
+				if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2)
+					WP_FireGenericBlasterMissile(self, org, endir, qfalse, 10 * (self->client->pers.improvements_level + 1), 4000, MOD_BLASTER);
+				else
+					WP_FireGenericBlasterMissile(self, org, endir, 0, 15, 4000, MOD_BLASTER);
+
 				G_SoundAtLoc( org, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/fire.wav") );
 
 				self->client->ps.droneFireTime = level.time + Q_irand(400, 700);
@@ -5144,7 +5411,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 
 	i = 0;
 
-	if (self->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] || self->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK])
+	// zyk: added the rpg mode condition, because RPG Mode players cant get power ups
+	if (self->client->sess.amrpgmode < 2 && self->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] || self->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK])
 	{ //enlightenment
 		if (!self->client->ps.fd.forceUsingAdded)
 		{
@@ -5197,6 +5465,14 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.forceMindtrickTargetIndex2 = 0;
 		self->client->ps.fd.forceMindtrickTargetIndex3 = 0;
 		self->client->ps.fd.forceMindtrickTargetIndex4 = 0;
+
+		// zyk: remove mind control from these players or npcs
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.mind_control > 0 && self->client->pers.mind_controlled1_id != -1)
+		{
+			gentity_t *tricked_entity = &g_entities[self->client->pers.mind_controlled1_id];
+			self->client->pers.mind_controlled1_id = -1;
+			tricked_entity->client->pers.being_mind_controlled = -1;
+		}
 	}
 
 	if (self->health < 1)
@@ -5356,6 +5632,77 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 				self->client->ps.fd.forcePowerDuration[i] = 0;
 			}
+			// zyk: using Sense Health skill of RPG Mode
+			else if (i == FP_SEE && self->client->sess.amrpgmode == 2 && self->client->pers.playerhealth > 0 && self->client->ps.hasLookTarget && self->client->ps.fd.forcePowersActive & ( 1 << FP_SEE ) && self->client->pers.sense_health_timer < level.time)
+			{
+				int client_id = self->client->ps.lookTarget; // zyk: if you are looking at someone (player or npc), this will be the client_id
+				if (g_entities[client_id].NPC) // zyk: if the entity is an NPC, then we dont show the shields, because NPCs dont have shields
+				{
+					int client_health = g_entities[client_id].health; // zyk: npcs use this attribute as health
+					char *client_name = g_entities[client_id].NPC_type;
+					if (self->client->pers.playerhealth == 1)
+					{
+						trap->SendServerCommand( self-g_entities, va("cp \"^1%d\n\"", client_health) );
+					}
+					else if (self->client->pers.playerhealth == 2)
+					{
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^20\n\"", client_name, client_health) );
+					}
+					else if (self->client->pers.playerhealth == 3)
+					{
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^1%d\nShield: ^20^3/^20\n^7Force: ^5%d^3/^5%d\n^7Type: NPC\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax) );
+					}
+				}
+				else if (g_entities[client_id].client)
+				{
+					int client_health = g_entities[client_id].client->ps.stats[STAT_HEALTH];
+					int client_armor = g_entities[client_id].client->ps.stats[STAT_ARMOR];
+					int client_max_armor = g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH];
+					char *client_name = g_entities[client_id].client->pers.netname;
+					char player_type[32];
+
+					strcpy(player_type,"Normal Player");
+
+					if (self->client->pers.playerhealth == 1)
+					{
+						trap->SendServerCommand( self-g_entities, va("cp \"^1%d\n\"", client_health) );
+					}
+					else if (self->client->pers.playerhealth == 2)
+					{
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^2%d\n\"", client_name, client_health, client_armor) );
+					}
+					else if (self->client->pers.playerhealth == 3)
+					{
+						if (g_entities[client_id].client->sess.amrpgmode == 0)
+							strcpy(player_type,"Normal Player");
+						else if (g_entities[client_id].client->sess.amrpgmode == 1)
+							strcpy(player_type,"Admin-Only Player");
+						else if (g_entities[client_id].client->sess.amrpgmode == 2)
+						{
+							if (g_entities[client_id].client->pers.rpg_class == 0)
+								strcpy(player_type,"Free Warrior");
+							else if (g_entities[client_id].client->pers.rpg_class == 1)
+								strcpy(player_type,"Force User");
+							else if (g_entities[client_id].client->pers.rpg_class == 2)
+								strcpy(player_type,"Bounty Hunter");
+							else if (g_entities[client_id].client->pers.rpg_class == 3)
+								strcpy(player_type,"Armored Soldier");
+							else if (g_entities[client_id].client->pers.rpg_class == 4)
+								strcpy(player_type,"Monk");
+							else if (g_entities[client_id].client->pers.rpg_class == 5)
+								strcpy(player_type,"Stealth Attacker");
+							else if (g_entities[client_id].client->pers.rpg_class == 6)
+								strcpy(player_type,"Duelist");
+
+							// zyk: calculating the max armor of this player
+							client_max_armor = g_entities[client_id].client->pers.max_rpg_shield;
+						}
+
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^1%d\nShield: ^2%d^3/^2%d\n^7Force: ^5%d^3/^5%d\n^7Type: %s\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], client_armor, client_max_armor, g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax, player_type) );
+					}
+				}
+				self->client->pers.sense_health_timer = level.time + 5000; // zyk: show health each 5 seconds
+			}
 		}
 		if ( (self->client->ps.fd.forcePowersActive&( 1 << i )) )
 		{
@@ -5415,7 +5762,13 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
 				}
 				else
-					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
+				{
+					// zyk: Force User and Duelist classes in RPG Mode regens force faster
+					if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
+						self->client->ps.fd.forcePowerRegenDebounceTime = level.time + (g_forceRegenTime.integer/(self->client->pers.improvements_level + 1)) + (g_forceRegenTime.integer/10);
+					else
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
+				}
 			}
 		}
 	}
