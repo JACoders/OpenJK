@@ -18,13 +18,13 @@
 */
 
 
-#define	RESPAWN_ARMOR		20
+#define	RESPAWN_ARMOR		60 // zyk: default 20
 #define	RESPAWN_TEAM_WEAPON	30
-#define	RESPAWN_HEALTH		30
-#define	RESPAWN_AMMO		40
+#define	RESPAWN_HEALTH		60 // zyk: default 30
+#define	RESPAWN_AMMO		60 // zyk: default 40
 #define	RESPAWN_HOLDABLE	60
-#define	RESPAWN_MEGAHEALTH	120
-#define	RESPAWN_POWERUP		120
+#define	RESPAWN_MEGAHEALTH	90 // zyk: default 120
+#define	RESPAWN_POWERUP		90 // zyk: default 120
 
 // Item Spawn flags
 #define ITMSF_SUSPEND		1
@@ -88,8 +88,8 @@ int adjustRespawnTime(float preRespawnTime, int itemType, int itemTag)
 }
 
 
-#define SHIELD_HEALTH				250
-#define SHIELD_HEALTH_DEC			10		// 25 seconds
+#define SHIELD_HEALTH				5000     // zyk: force field shield health changed from 250 to 5000
+#define SHIELD_HEALTH_DEC			1		// 25 seconds zyk: changed from 10 to 1	
 #define MAX_SHIELD_HEIGHT			254
 #define MAX_SHIELD_HALFWIDTH		255
 #define SHIELD_HALFTHICKNESS		4
@@ -246,6 +246,10 @@ void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 		{
 			ShieldGoNotSolid(self);
 		}
+		else if (self->parent && self->parent->client && (self->parent->client->sess.ally1 == other->s.number || self->parent->client->sess.ally2 == other->s.number || self->parent->client->sess.ally3 == other->s.number))
+		{ // zyk: allies can pass through the force field
+			ShieldGoNotSolid(self);
+		}
 	}
 }
 
@@ -336,7 +340,15 @@ void CreateShield(gentity_t *ent)
 	}
 	else
 	{
-		ent->health = ceil((float)(SHIELD_HEALTH*1));
+	// zyk: Force Field 2/2 in RPG Mode has double health
+		if (ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.holdable_items_levels[6] == 2)
+		{
+			ent->health = SHIELD_HEALTH * 2;
+		}
+		else
+		{
+			ent->health = SHIELD_HEALTH;
+		}
 	}
 
 	ent->s.time = ent->health;//???
@@ -538,7 +550,12 @@ void pas_fire( gentity_t *ent )
 	myOrg[1] += fwd[1]*16;
 	myOrg[2] += fwd[2]*16;
 
-	WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, 10, 2300, MOD_SENTRY, ent );
+	// zyk: changed sentry gun shotspeed from 2300 to 2800
+	// zyk: Bounty Hunter sentry gun can have more damage
+	if (ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.rpg_class == 2)
+		WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, (5 * (ent->parent->client->pers.improvements_level + 1)), 2800, MOD_SENTRY, ent );
+	else
+		WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, 10, 2800, MOD_SENTRY, ent );
 
 	G_RunObject(ent);
 }
@@ -599,6 +616,12 @@ static qboolean pas_find_enemies( gentity_t *self )
 		if (target->s.eType == ET_NPC &&
 			target->s.NPC_class == CLASS_VEHICLE)
 		{ //don't get mad at vehicles, silly.
+			continue;
+		}
+
+		// zyk: dont attack allies
+		if (self->parent && (self->parent->client->sess.ally1 == target->s.number || self->parent->client->sess.ally2 == target->s.number || self->parent->client->sess.ally3 == target->s.number))
+		{
 			continue;
 		}
 
@@ -697,7 +720,7 @@ void pas_adjust_enemy( gentity_t *ent )
 }
 
 #define TURRET_DEATH_DELAY 2000
-#define TURRET_LIFETIME 60000
+#define TURRET_LIFETIME 600000 // zyk: this is the time that the Assault Sentry is alive before running out. Changed from 60000 to 600000
 
 void turret_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
 
@@ -987,7 +1010,7 @@ void turret_free(gentity_t *self)
 	G_FreeEntity( self );
 }
 
-#define TURRET_AMMO_COUNT 40
+#define TURRET_AMMO_COUNT 500 // zyk: amount of ammo in the assault sentry. Changed from 40 to 500
 
 //---------------------------------
 void SP_PAS( gentity_t *base )
@@ -1033,6 +1056,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	vec3_t yawonly;
 	vec3_t mins, maxs;
 	gentity_t *sentry;
+	int sentry_guns_iterator = 0; // zyk: Bounty Hunter Upgrade allows placing more sentry guns
 
 	if (!ent || !ent->client)
 	{
@@ -1106,6 +1130,29 @@ void ItemUse_Sentry( gentity_t *ent )
 	}
 
 	SP_PAS( sentry );
+
+	// zyk: Bounty Hunter sentry gun has more HP and with the Upgrade, player can place more sentry guns
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
+	{
+		sentry->health = 100 * (ent->client->pers.improvements_level + 2);
+
+		// zyk: validating quantity of sentry guns that the Bounty Hunter allows to spawn
+		if (ent->client->pers.secrets_found & (1 << 1))
+		{
+			gentity_t *this_ent = NULL;
+			int number_of_spawned_sentry_guns = 0;
+			for (sentry_guns_iterator = MAX_CLIENTS; sentry_guns_iterator < level.num_entities; sentry_guns_iterator++)
+			{
+				this_ent = &g_entities[sentry_guns_iterator];
+
+				if (this_ent && Q_stricmp(this_ent->classname, "sentryGun" ) == 0 && this_ent->s.owner == ent->s.number)
+					number_of_spawned_sentry_guns++;
+			}
+
+			if (number_of_spawned_sentry_guns < 5)
+				ent->client->ps.fd.sentryDeployed = qfalse;
+		}
+	}
 }
 
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
@@ -1135,8 +1182,12 @@ void ItemUse_Seeker(gentity_t *ent)
 	else
 	{
 		ent->client->ps.eFlags |= EF_SEEKERDRONE;
-		ent->client->ps.droneExistTime = level.time + 30000;
-		ent->client->ps.droneFireTime = level.time + 1500;
+		// zyk: Bounty Hunter Upgrade increases seeker drone lifetime
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			ent->client->ps.droneExistTime = level.time + 90000;
+		else
+			ent->client->ps.droneExistTime = level.time + 60000; // zyk: the seeker drone lifetime, changed from 30000 to 60000
+		ent->client->ps.droneFireTime = level.time + 500;   // zyk: fire time of seeker drone changed from 1500 to 500
 	}
 }
 
@@ -1169,12 +1220,20 @@ static void MedPackGive(gentity_t *ent, int amount)
 
 void ItemUse_MedPack_Big(gentity_t *ent)
 {
-	MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT);
+	// zyk: RPG Mode Big Bacta 2/2. Recover 150 HP
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.holdable_items_levels[5] == 2)
+		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT * 3);
+	else
+		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT);
 }
 
 void ItemUse_MedPack(gentity_t *ent)
 {
-	MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
+	// zyk: RPG Mode Bacta Canister 2/2. Recover 75 HP
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.holdable_items_levels[1] == 2)
+		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT * 3);
+	else
+		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
 }
 
 #define JETPACK_TOGGLE_TIME			1000
@@ -1232,7 +1291,8 @@ void ItemUse_Jetpack( gentity_t *ent )
 	}
 
 	if (!ent->client->jetPackOn &&
-		ent->client->ps.jetpackFuel < 5)
+		// ent->client->ps.jetpackFuel < 5
+		ent->client->pers.jetpack_fuel < JETPACK_SCALE)
 	{ //too low on fuel to start it up
 		return;
 	}
@@ -1269,11 +1329,13 @@ void ItemUse_UseCloak( gentity_t *ent )
 		return;
 	}
 
+	/* zyk: now cloak item doesnt use fuel anymore
 	if (!ent->client->ps.powerups[PW_CLOAKED] &&
 		ent->client->ps.cloakFuel < 5)
 	{ //too low on fuel to start it up
 		return;
 	}
+	*/
 
 	if ( ent->client->ps.powerups[PW_CLOAKED] )
 	{//decloak
@@ -1656,7 +1718,12 @@ void EWebFire(gentity_t *owner, gentity_t *eweb)
 	missile->classname = "generic_proj";
 	missile->s.weapon = WP_TURRET;
 
-	missile->damage = EWEB_MISSILE_DAMAGE;
+	// zyk: Bounty Hunter EWeb has more damage
+	if (owner && owner->client && owner->client->sess.amrpgmode == 2 && owner->client->pers.rpg_class == 2)
+		missile->damage = (EWEB_MISSILE_DAMAGE/2) * (owner->client->pers.improvements_level + 1);
+	else
+		missile->damage = EWEB_MISSILE_DAMAGE;
+
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_TURBLAST;
 	missile->clipmask = (MASK_SHOT|CONTENTS_LIGHTSABER);
@@ -1867,6 +1934,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 {
 	const char *modelName = "models/map_objects/hoth/eweb_model.glm";
 	int failSound = G_SoundIndex("sound/interface/shieldcon_empty");
+	int eweb_health = EWEB_HEALTH;
 	gentity_t *ent;
 	trace_t tr;
 	vec3_t fAng, fwd, pos, downPos, s;
@@ -1925,13 +1993,19 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 
 	ent->takedamage = qtrue;
 
+	// zyk: Bounty Hunter EWeb has more health
+	if (spawner->client->sess.amrpgmode == 2 && spawner->client->pers.rpg_class == 2)
+	{
+		eweb_health = eweb_health * (spawner->client->pers.improvements_level + 1);
+	}
+
 	if (spawner->client->ewebHealth <= 0)
 	{ //refresh the owner's e-web health if its last e-web did not exist or was killed
-		spawner->client->ewebHealth = EWEB_HEALTH;
+		spawner->client->ewebHealth = eweb_health;
 	}
 
 	//resume health of last deployment
-	ent->maxHealth = EWEB_HEALTH;
+	ent->maxHealth = eweb_health;
 	ent->health = spawner->client->ewebHealth;
 	G_ScaleNetHealth(ent);
 
@@ -2124,6 +2198,7 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 void Add_Ammo (gentity_t *ent, int weapon, int count)
 {
+	/* zyk: new code for this function
 	int max = ammoData[weapon].max;
 
 	if (ent->client->ps.eFlags & EF_DOUBLE_AMMO)
@@ -2138,6 +2213,70 @@ void Add_Ammo (gentity_t *ent, int weapon, int count)
 		{
 			ent->client->ps.ammo[weapon] = max;
 		}
+	}
+	*/
+
+	int max_blasterpack_ammo = zyk_max_blaster_pack_ammo.integer;
+	int max_powercell_ammo = zyk_max_power_cell_ammo.integer;
+	int max_metalbolt_ammo = zyk_max_metal_bolt_ammo.integer;
+	int max_rocket_ammo = zyk_max_rocket_ammo.integer;
+	int max_thermal_ammo = zyk_max_thermal_ammo.integer;
+	int max_tripmine_ammo = zyk_max_tripmine_ammo.integer;
+	int max_detpack_ammo = zyk_max_detpack_ammo.integer;
+
+	// zyk: Bounty Hunter class has more max ammo
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
+	{
+		max_blasterpack_ammo += max_blasterpack_ammo/6 * ent->client->pers.improvements_level;
+		max_powercell_ammo += max_powercell_ammo/6 * ent->client->pers.improvements_level;
+		max_metalbolt_ammo += max_metalbolt_ammo/6 * ent->client->pers.improvements_level;
+		max_rocket_ammo += max_rocket_ammo/6 * ent->client->pers.improvements_level;
+		max_thermal_ammo += max_thermal_ammo/6 * ent->client->pers.improvements_level;
+		max_tripmine_ammo += max_tripmine_ammo/6 * ent->client->pers.improvements_level;
+		max_detpack_ammo += max_detpack_ammo/6 * ent->client->pers.improvements_level;
+	}
+
+	if (weapon == AMMO_BLASTER){
+		if (max_blasterpack_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_blasterpack_ammo)
+			ent->client->ps.ammo[weapon] = max_blasterpack_ammo;
+	}
+	else if (weapon == AMMO_POWERCELL){
+		if (max_powercell_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_powercell_ammo)
+			ent->client->ps.ammo[weapon] = max_powercell_ammo;
+	}
+	else if (weapon == AMMO_METAL_BOLTS){
+		if (max_metalbolt_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_metalbolt_ammo)
+			ent->client->ps.ammo[weapon] = max_metalbolt_ammo;
+	}
+	else if (weapon == AMMO_ROCKETS){
+		if (max_rocket_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_rocket_ammo)
+			ent->client->ps.ammo[weapon] = max_rocket_ammo;
+	}
+	else if (weapon == AMMO_THERMAL){
+		if (max_thermal_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_thermal_ammo)
+			ent->client->ps.ammo[weapon] = max_thermal_ammo;
+	}
+	else if (weapon == AMMO_TRIPMINE){
+		if (max_tripmine_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_tripmine_ammo)
+			ent->client->ps.ammo[weapon] = max_tripmine_ammo;
+	}
+	else if (weapon == AMMO_DETPACK){
+		if (max_detpack_ammo - ent->client->ps.ammo[weapon] > count)
+			ent->client->ps.ammo[weapon] += count;
+		else if (ent->client->ps.ammo[weapon] < max_detpack_ammo)
+			ent->client->ps.ammo[weapon] = max_detpack_ammo;
 	}
 }
 
@@ -2182,7 +2321,7 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 	}
 	else
 	{
-		Add_Ammo (other, ent->item->giTag, quantity);
+		Add_Ammo (other, ent->item->giTag, (int)ceil(quantity*0.5)); // zyk: changed from quantity to half of quantity
 	}
 
 	return adjustRespawnTime(RESPAWN_AMMO, ent->item->giType, ent->item->giTag);
@@ -2232,7 +2371,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 	other->client->ps.stats[STAT_WEAPONS] |= ( 1 << ent->item->giTag );
 
 	//Add_Ammo( other, ent->item->giTag, quantity );
-	Add_Ammo( other, weaponData[ent->item->giTag].ammoIndex, quantity );
+	Add_Ammo( other, weaponData[ent->item->giTag].ammoIndex, (int)ceil(quantity*0.5) ); // zyk: decreased amount of ammo from weapon by half
 
 	G_LogWeaponPickup(other->s.number, ent->item->giTag);
 
@@ -2283,6 +2422,7 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 
 int Pickup_Armor( gentity_t *ent, gentity_t *other )
 {
+	/* zyk: new code added
 	other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
 	if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag )
 	{
@@ -2290,6 +2430,28 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other )
 	}
 
 	return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
+	*/
+
+	if (other->client->sess.amrpgmode == 2 && other->client->ps.stats[STAT_ARMOR] < other->client->pers.max_rpg_shield)
+	{ // zyk: RPG Mode has the Max Shield skill that doesnt allow someone to heal shields above this value
+		other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
+
+		return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
+	}
+	else if (other->client->sess.amrpgmode < 2 && other->client->ps.stats[STAT_ARMOR] < (other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag))
+	{ // zyk: player who is not in RPG Mode
+		other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
+		if ( other->client->ps.stats[STAT_ARMOR] > other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag ) 
+		{
+			other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag;
+		}
+
+		return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
+	}
+	else
+	{
+		return adjustRespawnTime(1, ent->item->giType, ent->item->giTag);
+	}
 }
 
 //======================================================================
@@ -2406,6 +2568,27 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		return;
 	if (other->health < 1)
 		return;		// dead people can't pickup
+
+	// zyk: Some RPG classes cant pickup some items
+	if (other->client->sess.amrpgmode == 2)
+	{
+		if (other->client->pers.rpg_class == 1 && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO || ent->item->giType == IT_HOLDABLE))
+		{
+			return;
+		}
+		else if (other->client->pers.rpg_class == 3 && ent->item->giType == IT_HOLDABLE && ent->item->giTag == HI_CLOAK)
+		{
+			return;
+		}
+		else if (other->client->pers.rpg_class == 4 && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO || ent->item->giType == IT_HOLDABLE))
+		{
+			return;
+		}
+		else if (other->client->pers.rpg_class == 6 && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO || ent->item->giType == IT_HOLDABLE))
+		{
+			return;
+		}
+	}
 
 	if (ent->item->giType == IT_POWERUP &&
 		(ent->item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || ent->item->giTag == PW_FORCE_ENLIGHTENED_DARK))
@@ -2713,7 +2896,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 		}
 	} else { // auto-remove after 30 seconds
 		dropped->think = G_FreeEntity;
-		dropped->nextthink = level.time + 30000;
+		dropped->nextthink = level.time + 600000;  // zyk: changed the timeout of the item to 10 minutes
 	}
 
 	dropped->flags = FL_DROPPED_ITEM;

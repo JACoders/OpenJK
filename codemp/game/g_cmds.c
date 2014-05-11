@@ -4269,13 +4269,13 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DET_PACK);
 
 		// zyk: loading initial RPG ammo at spawn
-		ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[0]);
-		ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[1]);
-		ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(300/3.0) * ent->client->pers.ammo_levels[2]);
-		ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(30/3.0) * ent->client->pers.ammo_levels[3]);
-		ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(15/3.0) * ent->client->pers.ammo_levels[4]);
-		ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(12/3.0) * ent->client->pers.ammo_levels[5]);
-		ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(9/3.0) * ent->client->pers.ammo_levels[6]);
+		ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(zyk_max_blaster_pack_ammo.value/3.0) * ent->client->pers.ammo_levels[0]);
+		ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(zyk_max_power_cell_ammo.value/3.0) * ent->client->pers.ammo_levels[1]);
+		ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(zyk_max_metal_bolt_ammo.value/3.0) * ent->client->pers.ammo_levels[2]);
+		ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(zyk_max_rocket_ammo.value/3.0) * ent->client->pers.ammo_levels[3]);
+		ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(zyk_max_thermal_ammo.value/3.0) * ent->client->pers.ammo_levels[4]);
+		ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(zyk_max_tripmine_ammo.value/3.0) * ent->client->pers.ammo_levels[5]);
+		ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(zyk_max_detpack_ammo.value/3.0) * ent->client->pers.ammo_levels[6]);
 		
 		if (ent->client->pers.rpg_class == 2)
 		{ // zyk: modifying max ammo if the player is a Bounty Hunter
@@ -7655,13 +7655,13 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 39)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Mind Control: ^7allows you to control every action of a player or npc. To use it, when near a player or npc, use Mind Trick force power, if you have Mind Control\n\"") );
 					if (i == 40)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pack: ^7used as ammo for Blaster Pistol, Bryar Pistol and E11 Blaster Rifle. You can carry up to %d ammo\n\"",50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pack: ^7used as ammo for Blaster Pistol, Bryar Pistol and E11 Blaster Rifle. You can carry up to %d ammo\n\"",zyk_max_blaster_pack_ammo.integer) );
 					if (i == 41)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Power Cell: ^7used as ammo for Disruptor, Bowcaster and DEMP2. You can carry up to %d ammo\n\"",50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Power Cell: ^7used as ammo for Disruptor, Bowcaster and DEMP2. You can carry up to %d ammo\n\"",zyk_max_power_cell_ammo.integer) );
 					if (i == 42)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Metallic Bolt: ^7used as ammo for Repeater, Flechette and Concussion Rifle. You can carry up to %d ammo\n\"",50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Metallic Bolt: ^7used as ammo for Repeater, Flechette and Concussion Rifle. You can carry up to %d ammo\n\"",zyk_max_metal_bolt_ammo.integer) );
 					if (i == 43)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Rockets: ^7used as ammo for Rocket Launcher. You can carry up to %d ammo\n\"",50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Rockets: ^7used as ammo for Rocket Launcher. You can carry up to %d ammo\n\"",zyk_max_rocket_ammo.integer) );
 					if (i == 44)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Thermal Detonator: ^7the famous detonator used by Leia in Ep 6 at the Jabba Palace. Normal fire throws it, which explodes after some seconds. Alt fire throws it and it explodes as soon as it touches something. Normal fire causes %d damage and alt fire causes %d damage\n\"", 50, 50) );
 					if (i == 45)
