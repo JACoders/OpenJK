@@ -10514,6 +10514,198 @@ void Cmd_EntRemove_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_AdminList_f
+==================
+*/
+void Cmd_AdminList_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		char message[1024];
+		char message_content[4][150];
+		int i = 0;
+		strcpy(message,"");
+		while (i < 3)
+		{
+			strcpy(message_content[i],"");
+			i++;
+		}
+		message_content[4][0] = '\0';
+
+		if ((ent->client->pers.bitvalue & (1 << 0))) 
+		{
+			strcpy(message_content[0],va("^3 %d ^7- NPC: ^2yes\n",0));
+		}
+		else
+		{
+			strcpy(message_content[0],va("^3 %d ^7- NPC: ^1no\n",0));
+		}
+
+		if ((ent->client->pers.bitvalue & (1 << 1))) 
+		{
+			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^2yes\n",1));
+		}
+		else
+		{
+			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^1no\n",1));
+		}
+
+		if ((ent->client->pers.bitvalue & (1 << 2))) 
+		{
+			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^2yes\n",2));
+		}
+		else
+		{
+			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^1no\n",2));
+		}
+
+		for (i = 0; i < 3; i++)
+		{
+			sprintf(message,"%s%s",message,message_content[i]);
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_AdminUp_f
+==================
+*/
+void Cmd_AdminUp_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		if (ent->client->pers.bitvalue & (1 << 2))
+		{
+			char	arg1[MAX_STRING_CHARS];
+			char	arg2[MAX_STRING_CHARS];
+			int client_id = -1;
+			int i = 0;
+			int bitvaluecommand = 0;
+
+			if ( trap->Argc() != 3 )
+			{ 
+				trap->SendServerCommand( ent-g_entities, "print \"You must write the player name and the admin command number.\n\"" ); 
+				return; 
+			}
+			trap->Argv( 1,  arg1, sizeof( arg1 ) );
+			trap->Argv( 2,  arg2, sizeof( arg2 ) );
+			client_id = zyk_get_client( arg1 );
+
+			if (client_id == -1)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+				return;
+			}
+
+			if (g_entities[client_id].client->sess.amrpgmode == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Player is not logged in\n\"") );
+				return;
+			}
+			if (Q_stricmp (arg2, "all") == 0)
+			{ // zyk: if player wrote all, give all commands to the target player
+				for (i = 0; i < 3; i++)
+					g_entities[client_id].client->pers.bitvalue |= (1 << i);
+			}
+			else
+			{
+				bitvaluecommand = atoi(arg2);
+				if (bitvaluecommand < 0 || bitvaluecommand >= 3)
+				{
+					trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
+					return; 
+				}
+				g_entities[client_id].client->pers.bitvalue |= (1 << bitvaluecommand);
+			}
+
+			save_account(&g_entities[client_id]);
+
+			trap->SendServerCommand( ent-g_entities, "print \"Admin commands upgraded successfully.\n\"" );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You can't use this command.\n\"" );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_AdminDown_f
+==================
+*/
+void Cmd_AdminDown_f( gentity_t *ent ) {
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		if (ent->client->pers.bitvalue & (1 << 2))
+		{
+			char	arg1[MAX_STRING_CHARS];
+			char	arg2[MAX_STRING_CHARS];
+			int client_id = -1;
+			int bitvaluecommand = 0;
+
+			if ( trap->Argc() != 3 )
+			{ 
+				trap->SendServerCommand( ent-g_entities, "print \"You must write a player name and the admin command number.\n\"" ); 
+				return; 
+			}
+			trap->Argv( 1,  arg1, sizeof( arg1 ) );
+			trap->Argv( 2,  arg2, sizeof( arg2 ) );
+			client_id = zyk_get_client( arg1 ); 
+				
+			if (client_id == -1)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+				return;
+			}
+
+			if (g_entities[client_id].client->sess.amrpgmode == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Player is not logged in\n\"") );
+				return;
+			}
+
+			if (Q_stricmp (arg2, "all") == 0)
+			{ // zyk: if player wrote all, take away all admin commands from target player
+				g_entities[client_id].client->pers.bitvalue = 0;
+			}
+			else
+			{
+				bitvaluecommand = atoi(arg2);
+				if (bitvaluecommand < 0 || bitvaluecommand >= 3)
+				{
+					trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
+					return; 
+				}
+				g_entities[client_id].client->pers.bitvalue &= ~(1 << bitvaluecommand);
+			}
+
+			save_account(&g_entities[client_id]);
+
+			trap->SendServerCommand( ent-g_entities, "print \"Admin commands upgraded successfully.\n\"" );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You can't use this command.\n\"" );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+	}
+}
+
+/*
+==================
 Cmd_EntitySystem_f
 ==================
 */
@@ -10544,6 +10736,9 @@ int cmdcmp( const void *a, const void *b ) {
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
 	{ "addbot",				Cmd_AddBot_f,				0 },
+	{ "admindown",			Cmd_AdminDown_f,			CMD_NOINTERMISSION },
+	{ "adminlist",			Cmd_AdminList_f,			CMD_NOINTERMISSION },
+	{ "adminup",			Cmd_AdminUp_f,				CMD_NOINTERMISSION },
 	{ "allyadd",			Cmd_AllyAdd_f,				CMD_NOINTERMISSION },
 	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
 	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },
@@ -10587,9 +10782,9 @@ command_t commands[] = {
 	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
 	{ "new",				Cmd_NewAccount_f,			CMD_NOINTERMISSION },
 	{ "news",				Cmd_News_f,					CMD_NOINTERMISSION },
-	{ "noclip",				Cmd_Noclip_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "npc",				Cmd_NPC_f,					CMD_CHEAT|CMD_ALIVE },
+	{ "npc",				Cmd_NPC_f,					CMD_ALIVE },
 	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_NOINTERMISSION },
 	{ "questanswer",		Cmd_QuestAnswer_f,			CMD_ALIVE|CMD_NOINTERMISSION },

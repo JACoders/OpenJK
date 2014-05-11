@@ -424,6 +424,47 @@ void	Svcmd_ForceTeam_f( void ) {
 	SetTeam( &g_entities[cl - level.clients], str );
 }
 
+/*
+===================
+Svcmd_GiveAdmin
+
+giveadmin <player>
+===================
+*/
+extern int zyk_get_client(char *arg);
+extern void save_account(gentity_t *ent);
+void Svcmd_GiveAdmin_f ( void )
+{
+	int client_id = -1; 
+    char   arg1[MAX_STRING_CHARS];
+
+	if (trap->Argc() != 2) 
+    {
+		trap->Print( "Usage: giveadmin <player>\n");
+		return;
+    }
+
+	trap->Argv( 1,  arg1, sizeof( arg1 ) );
+
+	client_id = zyk_get_client( arg1 ); 
+	if (client_id == -1)
+	{
+		trap->Print("Player not found\n");
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode > 0)
+	{
+		g_entities[client_id].client->pers.bitvalue |= (1 << 2);
+		save_account(&g_entities[client_id]);
+		trap->Print("GiveAdmin saved successfully.\n");
+	}
+	else
+	{
+		trap->Print("Player is not logged in.\n");
+	}
+}
+
 char *ConcatArgs( int start );
 void Svcmd_Say_f( void ) {
 	char *p = NULL;
@@ -470,6 +511,7 @@ svcmd_t svcmds[] = {
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
+	{ "giveadmin",					Svcmd_GiveAdmin_f,					qfalse },
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "say",						Svcmd_Say_f,						qtrue },
