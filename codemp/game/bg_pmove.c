@@ -150,6 +150,48 @@ int forcePowerNeeded[NUM_FORCE_POWER_LEVELS][NUM_FORCE_POWERS] =
 		0,//FP_SABER_DEFENSE,
 		20//FP_SABERTHROW,
 		//NUM_FORCE_POWERS
+	},
+	{ // zyk: level 4
+		999,//FP_HEAL,//instant
+		10,//FP_LEVITATION,//hold/duration
+		50,//FP_SPEED,//duration
+		999,//FP_PUSH,//hold/duration
+		999,//FP_PULL,//hold/duration
+		999,//FP_TELEPATHY,//instant
+		999,//FP_GRIP,//hold/duration
+		999,//FP_LIGHTNING,//hold/duration
+		999,//FP_RAGE,//duration
+		999,//FP_PROTECT,//duration
+		999,//FP_ABSORB,//duration
+		999,//FP_TEAM_HEAL,//instant
+		999,//FP_TEAM_FORCE,//instant
+		999,//FP_DRAIN,//hold/duration
+		999,//FP_SEE,//duration
+		999,//FP_SABER_OFFENSE,
+		999,//FP_SABER_DEFENSE,
+		999//FP_SABERTHROW,
+		//NUM_FORCE_POWERS
+	},
+	{ // zyk: level 5
+		999,//FP_HEAL,//instant
+		10,//FP_LEVITATION,//hold/duration
+		999,//FP_SPEED,//duration
+		999,//FP_PUSH,//hold/duration
+		999,//FP_PULL,//hold/duration
+		999,//FP_TELEPATHY,//instant
+		999,//FP_GRIP,//hold/duration
+		999,//FP_LIGHTNING,//hold/duration
+		999,//FP_RAGE,//duration
+		999,//FP_PROTECT,//duration
+		999,//FP_ABSORB,//duration
+		999,//FP_TEAM_HEAL,//instant
+		999,//FP_TEAM_FORCE,//instant
+		999,//FP_DRAIN,//hold/duration
+		999,//FP_SEE,//duration
+		999,//FP_SABER_OFFENSE,
+		999,//FP_SABER_DEFENSE,
+		999//FP_SABERTHROW,
+		//NUM_FORCE_POWERS
 	}
 };
 
@@ -158,7 +200,9 @@ float forceJumpHeight[NUM_FORCE_POWER_LEVELS] =
 	32,//normal jump (+stepheight+crouchdiff = 66)
 	96,//(+stepheight+crouchdiff = 130)
 	192,//(+stepheight+crouchdiff = 226)
-	384//(+stepheight+crouchdiff = 418)
+	384,//(+stepheight+crouchdiff = 418)
+	928, // zyk: added jump level 4, used in RPG mode
+	5120 // zyk: added jump level 5, used in RPG mode
 };
 
 float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
@@ -166,7 +210,9 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	JUMP_VELOCITY,//normal jump
 	420,
 	590,
-	840
+	840,
+	880, // zyk: added jump level 4, used in RPG mode
+	896 // zyk: added jump level 5, used in RPG mode
 };
 
 //rww - Get a pointer to the bgEntity by the index
@@ -1718,7 +1764,9 @@ float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] =
 	66,//normal jump (32+stepheight(18)+crouchdiff(24) = 74)
 	130,//(96+stepheight(18)+crouchdiff(24) = 138)
 	226,//(192+stepheight(18)+crouchdiff(24) = 234)
-	418//(384+stepheight(18)+crouchdiff(24) = 426)
+	418,//(384+stepheight(18)+crouchdiff(24) = 426)
+	970, // zyk: added jump level 4, used in RPG mode
+	5162 // zyk: added jump level 5, used in RPG mode
 };
 
 void PM_GrabWallForJump( int anim )
@@ -3562,7 +3610,7 @@ static int PM_TryRoll( void )
 		}
 	}
 
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
+	if (// (pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) || // zyk: commented these conditions so player can roll holding other weapons
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
@@ -8372,7 +8420,19 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 
 	if (ps->fd.forcePowersActive & (1 << FP_SPEED))
 	{
-		ps->speed *= 1.7f;
+		// zyk: creating condition for force speed level 
+		if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_1){
+			ps->speed *= 1.5f; // zyk: changed speed value  // zyk: changed speed value from 1.7 to something depending on the level
+		}
+		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_2){
+			ps->speed *= 2.4f; // zyk: changed speed value	// zyk: changed speed value
+		}
+		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_3){
+			ps->speed *= 3.3f; // zyk: changed speed value	// zyk: changed speed value
+		}
+		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_4){
+			ps->speed *= 4.2f; // zyk: changed speed value	// zyk: changed speed value
+		}
 	}
 	else if (ps->fd.forcePowersActive & (1 << FP_RAGE))
 	{
@@ -10745,7 +10805,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->velocity[1] += Q_irand(-100, 100);
 		}
 
-		if (pm->cmd.upmove > 0 && pm->ps->velocity[2] < 256)
+		if (pm->cmd.upmove > 0 && pm->ps->velocity[2] < 512) // zyk: changed from 256 to 512
 		{ //cap upward velocity off at 256. Seems reasonable.
 			float addIn = 12.0f;
 
@@ -10766,10 +10826,12 @@ void PmoveSingle (pmove_t *pmove) {
 				}
 			}
 */
+			/* // zyk: jetpack now does not have limit to fly up
 			if (pm->ps->velocity[2] > 0)
 			{
 				addIn = 12.0f - (gDist / 64.0f);
 			}
+			*/
 
 			if (addIn > 0.0f)
 			{
@@ -10782,7 +10844,7 @@ void PmoveSingle (pmove_t *pmove) {
 		{
 			pm->ps->eFlags &= ~EF_JETPACK_FLAMING; //idling
 
-			if (pm->ps->velocity[2] < 256)
+			if (pm->ps->velocity[2] < 512) // zyk: changed from 256 to 512
 			{
 				if (pm->ps->velocity[2] < -100)
 				{

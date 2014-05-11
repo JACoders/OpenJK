@@ -4729,7 +4729,7 @@ void choose_new_player(gentity_t *next_player)
 		else if (level.quest_map == 1 && next_player->client->pers.universe_quest_progress == 3)
 		{
 			if (level.quest_note_id == -1)
-				load_note_model(next_player,2780,3966,1411);
+				load_note_model(2780,3966,1411);
 
 			next_player->client->pers.universe_quest_objective_control = 4; // zyk: fourth Universe Quest objective
 		}
@@ -4759,39 +4759,39 @@ void choose_new_player(gentity_t *next_player)
 		{
 			if (level.quest_map == 1 && !(next_player->client->pers.hunter_quest_progress & (1 << 4)))
 			{
-				load_note_model(next_player,2375,4600,1810);
+				load_note_model(2375,4600,1810);
 			}
 			else if (level.quest_map == 2 && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
 			{
-				load_note_model(next_player,7500,-755,2);
+				load_note_model(7500,-755,2);
 			}
 			else if (level.quest_map == 3 && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
 			{
-				load_note_model(next_player,-765,4790,196);
+				load_note_model(-765,4790,196);
 			}
 			else if (level.quest_map == 4 && !(next_player->client->pers.hunter_quest_progress & (1 << 7)))
 			{
-				load_note_model(next_player,2400,2990,-2093);
+				load_note_model(2400,2990,-2093);
 			}
 			else if (level.quest_map == 5 && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
 			{
-				load_note_model(next_player,-500,-4690,928);
+				load_note_model(-500,-4690,928);
 			}
 			else if (level.quest_map == 6 && !(next_player->client->pers.hunter_quest_progress & (1 << 9)))
 			{
-				load_note_model(next_player,-9838,-1547,2);
+				load_note_model(-9838,-1547,2);
 			}
 			else if (level.quest_map == 7 && !(next_player->client->pers.hunter_quest_progress & (1 << 10)))
 			{
-				load_note_model(next_player,1905,1180,706);
+				load_note_model(1905,1180,706);
 			}
 			else if (level.quest_map == 18 && !(next_player->client->pers.hunter_quest_progress & (1 << 11)))
 			{
-				load_note_model(next_player,-1148,-1458,593);
+				load_note_model(-1148,-1458,593);
 			}
 			else if (level.quest_map == 9 && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))
 			{
-				load_note_model(next_player,14100,-1580,-3165);
+				load_note_model(14100,-1580,-3165);
 			}
 		}
 

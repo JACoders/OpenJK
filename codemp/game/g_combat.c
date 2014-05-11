@@ -4700,8 +4700,9 @@ vec3_t gPainPoint;
 extern void Jedi_Decloak( gentity_t *self );
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
-	int			take, asave, subamt = 0, knockback;
+	int			take, asave = 0, subamt = 0, knockback;
 	float		famt = 0, hamt = 0, shieldAbsorbed = 0;
+	int			check_shield = 1; // zyk: tests if damage can be absorbed by shields
 	qboolean	is_a_monk = qfalse; // zyk: will be qtrue if attacker is a RPG Mode Monk
 
 	if (!targ)
@@ -4982,7 +4983,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			mod != MOD_TELEFRAG &&
 			mod != MOD_TRIGGER_HURT)
 		{
-			if ( mod != MOD_MELEE || !G_HeavyMelee( attacker ) )
+			if ( mod != MOD_MELEE || (is_a_monk == qfalse && !G_HeavyMelee( attacker ) ))
 			{ //let classes with heavy melee ability damage heavy wpn dmg doors with fists
 				return;
 			}
@@ -5382,26 +5383,50 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		attacker->client->ps.persistant[PERS_ATTACKEE_ARMOR] = (targ->health<<8)|(client->ps.stats[STAT_ARMOR]);
 	}
 
-	// always give half damage if hurting self... but not in siege.  Heavy weapons need a counter.
-	// calculated after knockback, so rocket jumping works
-	if ( targ == attacker && !(dflags & DAMAGE_NO_SELF_PROTECTION)) {
-		if ( level.gametype == GT_SIEGE )
-		{
-			damage *= 1.5;
-		}
-		else
-		{
-			damage *= 0.5;
-		}
-	}
-
 	if ( damage < 1 ) {
 		damage = 1;
 	}
 	take = damage;
 
+	if (attacker && 
+		attacker->client && 
+		attacker->client->NPC_class != CLASS_RANCOR && // zyk: grip cant be absorbed by shields
+		(attacker->client->ps.fd.forcePowersActive & (1 << FP_GRIP))
+		) // zyk: grip cant be absorbed by shields
+		check_shield = 0;
+	
+	if (targ && targ->client && targ->client->NPC_class == CLASS_VEHICLE //ion-cannon has disabled this ship's shields, take damage on hull!
+		&& targ->m_pVehicle
+		&& targ->client->ps.electrifyTime > level.time)
+		check_shield = 0;
+
 	// save some from armor
-	asave = CheckArmor (targ, take, dflags);
+	// zyk: now the shield check is made here
+	if (check_shield == 1 && targ && targ->client && take > 0)  
+	{ // zyk: check shields if the damage is greater than 0
+		int scaled_damage = take;
+		float bounty_hunter_shield_resistance = 0.0;
+
+		if (targ->client->sess.amrpgmode == 2) // zyk: Shield Strength skill
+		{
+			// zyk: if player is Bounty Hunter and has the Bounty Hunter Upgrade, absorbs more damage
+			if (targ->client->pers.rpg_class == 2 && targ->client->pers.secrets_found & (1 << 1))
+				bounty_hunter_shield_resistance = 0.05;
+
+			scaled_damage = (int)ceil(take * (1.0 - bounty_hunter_shield_resistance - (0.1 * targ->client->pers.shield_strength)));
+		}
+
+		if (targ->client->ps.stats[STAT_ARMOR] >= scaled_damage)
+		{
+			targ->client->ps.stats[STAT_ARMOR] -= scaled_damage;
+			asave = take;
+		}
+		else
+		{ // zyk: calculates the amount of damage saved by the shields so the remaining damage will be done to health
+			asave = take * ((1.0 * targ->client->ps.stats[STAT_ARMOR])/scaled_damage);
+			targ->client->ps.stats[STAT_ARMOR] = 0;
+		}
+	}
 
 	if (asave)
 	{
@@ -5630,17 +5655,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 							client->NPC_class == CLASS_ATST )
 				{
 					// DEMP2 does way more damage to these guys.
-					take *= 5;
+					// zyk: Guardian of Wind takes less DEMP2 damage
+					if (client->pers.guardian_mode != 7)
+						take *= 4; // zyk: changed from 5 to 4
 				}
 				else
 				{
-					if (take > 0)
+					if (take > 1)
 					{
-						take /= 3;
-						if (take < 1)
-						{
-							take = 1;
-						}
+						take /= 2; // zyk: changed from 3 to 2
 					}
 				}
 			}
@@ -5693,79 +5716,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		targ->client->lasthurt_mod = mod;
 	}
 
-	if ( !(dflags & DAMAGE_NO_PROTECTION) )
-	{//protect overridden by no_protection
-		if (take && targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_PROTECT)))
-		{
-			if (targ->client->ps.fd.forcePower)
-			{
-				int maxtake = take;
-
-				//G_Sound(targ, CHAN_AUTO, protectHitSound);
-				if (targ->client->forcePowerSoundDebounce < level.time)
-				{
-					G_PreDefSound(targ->client->ps.origin, PDSOUND_PROTECTHIT);
-					targ->client->forcePowerSoundDebounce = level.time + 400;
-				}
-
-				if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_1)
-				{
-					famt = 1;
-					hamt = 0.40f;
-
-					if (maxtake > 100)
-					{
-						maxtake = 100;
-					}
-				}
-				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_2)
-				{
-					famt = 0.5f;
-					hamt = 0.60f;
-
-					if (maxtake > 200)
-					{
-						maxtake = 200;
-					}
-				}
-				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_3)
-				{
-					famt = 0.25f;
-					hamt = 0.80f;
-
-					if (maxtake > 400)
-					{
-						maxtake = 400;
-					}
-				}
-
-				if (!targ->client->ps.powerups[PW_FORCE_BOON])
-				{
-					targ->client->ps.fd.forcePower -= maxtake*famt;
-				}
-				else
-				{
-					targ->client->ps.fd.forcePower -= (maxtake*famt)/2;
-				}
-				subamt = (maxtake*hamt)+(take-maxtake);
-				if (targ->client->ps.fd.forcePower < 0)
-				{
-					subamt += targ->client->ps.fd.forcePower;
-					targ->client->ps.fd.forcePower = 0;
-				}
-				if (subamt)
-				{
-					take -= subamt;
-
-					if (take < 0)
-					{
-						take = 0;
-					}
-				}
-			}
-		}
-	}
-
 	if (shieldAbsorbed)
 	{
 		/*
@@ -5812,6 +5762,38 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// do the damage
 	if (take)
 	{
+		if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_PROTECT)))
+		{
+			if (targ->client->ps.fd.forcePower)
+			{
+				if (targ->client->forcePowerSoundDebounce < level.time)
+				{
+					G_PreDefSound(targ->client->ps.origin, PDSOUND_PROTECTHIT);
+					targ->client->forcePowerSoundDebounce = level.time + 400;
+				}
+
+				// zyk: changed Force Protect code
+				if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_1)
+				{
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.5);
+					take = (int)ceil(take*0.8);
+				}
+				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_2)
+				{
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.25);
+					take = (int)ceil(take*0.6);
+				}
+				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_3)
+				{
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.125);
+					take = (int)ceil(take*0.4);
+				}
+
+				if (targ->client->ps.fd.forcePower < 0)
+					targ->client->ps.fd.forcePower = 0;
+			}
+		}
+
 		if (targ->client && targ->s.number < MAX_CLIENTS &&
 			(mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
 		{ //uh.. shock them or something. what the hell, I don't know.
@@ -5829,13 +5811,29 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 
-		if ( !(dflags & DAMAGE_NO_PROTECTION) )
-		{//rage overridden by no_protection
-			if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))
-			{
-				take /= (targ->client->ps.fd.forcePowerLevel[FP_RAGE]+1);
-			}
+		if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))
+		{ // zyk: new Force Rage code
+			if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
+				take = (int)ceil(take*0.7);
+			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
+				take = (int)ceil(take*0.5);
+			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
+				take = (int)ceil(take*0.3);
 		}
+
+		if (!targ->NPC && targ->client && targ->client->sess.amrpgmode == 2)
+		{ // zyk: Health Strength skill decreases damage taken
+			float bonus_resistance = 0.0;
+
+			// zyk: if player is a Bounty Hunter and has the Bounty Hunter Upgrade, absorbs some damage taken
+			if (targ->client->pers.rpg_class == 2 && targ->client->pers.secrets_found & (1 << 1))
+				bonus_resistance = 0.05;
+			else if (targ->client->pers.rpg_class == 4) // zyk: Monk damage resistance
+				bonus_resistance = 0.02 * (targ->client->pers.improvements_level + 1);
+
+			take = (int)ceil(take * (1.0 - bonus_resistance - (0.1 * targ->client->pers.health_strength)));
+		}
+
 		targ->health = targ->health - take;
 
 		if ( (targ->flags&FL_UNDYING) )
@@ -5848,21 +5846,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		if ( targ->client ) {
 			targ->client->ps.stats[STAT_HEALTH] = targ->health;
-		}
-
-		if ( !(dflags & DAMAGE_NO_PROTECTION) )
-		{//rage overridden by no_protection
-			if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))
-			{
-				if (targ->health <= 0)
-				{
-					targ->health = 1;
-				}
-				if (targ->client->ps.stats[STAT_HEALTH] <= 0)
-				{
-					targ->client->ps.stats[STAT_HEALTH] = 1;
-				}
-			}
 		}
 
 		//We want to go ahead and set gPainHitLoc regardless of if we have a pain func,

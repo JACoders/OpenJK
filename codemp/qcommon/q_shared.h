@@ -471,11 +471,13 @@ typedef enum forcePowerLevels_e {
 	FORCE_LEVEL_1,
 	FORCE_LEVEL_2,
 	FORCE_LEVEL_3,
+	FORCE_LEVEL_4,
+	FORCE_LEVEL_5,
 	NUM_FORCE_POWER_LEVELS
 } forcePowerLevels_t;
 
-#define	FORCE_LEVEL_4 (FORCE_LEVEL_3+1)
-#define	FORCE_LEVEL_5 (FORCE_LEVEL_4+1)
+// #define	FORCE_LEVEL_4 (FORCE_LEVEL_3+1)
+// #define	FORCE_LEVEL_5 (FORCE_LEVEL_4+1)
 
 //rww - a C-ified structure version of the class which fires off callbacks and gives arguments to update ragdoll status.
 enum sharedERagPhase
