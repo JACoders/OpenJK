@@ -1860,7 +1860,6 @@ void S_ClearLoopingSounds( void )
 	}
 #endif
 	numLoopSounds = 0;
-
 }
 
 /*
@@ -3101,10 +3100,9 @@ void S_Update_(void) {
 #endif
 }
 
-
+#ifdef USE_OPENAL
 void UpdateSingleShotSounds()
 {
-#ifdef USE_OPENAL
 	int i, j, k;
 	ALint state;
 	ALint processed;
@@ -3264,15 +3262,10 @@ void UpdateSingleShotSounds()
 			}
 		}
 	}
-#endif
 }
-
-
-
 
 void UpdateLoopingSounds()
 {
-#ifdef USE_OPENAL
 	int i,j;
 	ALuint source;
 	channel_t *ch;
@@ -3448,16 +3441,10 @@ void UpdateLoopingSounds()
 				s_channels[source].bPlaying = true;
 		}
 	}
-#endif
 }
-
-
-
-
 
 void AL_UpdateRawSamples()
 {
-#ifdef USE_OPENAL
 	ALuint buffer;
 	ALint size;
 	ALint processed;
@@ -3573,9 +3560,8 @@ void AL_UpdateRawSamples()
 	if (alGetError() != AL_NO_ERROR)
 		Com_OPrintf("OAL Error : UpdateRawSamples\n");
 #endif
-#endif /* USE_OPENAL */
 }
-
+#endif
 
 int S_MP3PreProcessLipSync(channel_t *ch, short *data)
 {
@@ -3605,7 +3591,6 @@ int S_MP3PreProcessLipSync(channel_t *ch, short *data)
 
 	return sample;
 }
-
 
 void S_SetLipSyncs()
 {
@@ -3684,7 +3669,6 @@ void S_SetLipSyncs()
 		}
 	}
 }
-
 
 /*
 ===============================================================================
@@ -3799,7 +3783,6 @@ static void S_SetDynamicMusic_f(void)
 	DynamicMusicInfoPrint();
 }
 
-
 // this table needs to be in-sync with the typedef'd enum "SoundCompressionMethod_t"...	-ste
 //
 static const char *sSoundCompressionMethodStrings[ct_NUMBEROF] =
@@ -3851,8 +3834,6 @@ void S_SoundList_f( void ) {
 	{
 		Com_Printf("( additional (mutually exclusive) options available:\n'wavonly', 'ShouldBeMP3', '1'/'2'/'3' for %%d-variant capping )\n" );
 	}
-
-
 
 	total = 0;
 
@@ -3928,13 +3909,11 @@ void S_SoundList_f( void ) {
 	}
 	Com_Printf(" Slot   Smpls Type  In? Lev  Name\n");
 
-
 	Com_Printf ("Total resident samples: %i %s ( not mem usage, see 'meminfo' ).\n", total, bWavOnly?"(WAV only)":"");
 	Com_Printf ("%d out of %d sfx_t slots used\n", s_numSfx, MAX_SFX);
 	Com_Printf ("%.2fMB bytes used when counting sfx_t->pSoundData + MP3 headers (if any)\n", (float)iTotalBytes / 1024.0f / 1024.0f);
 	S_DisplayFreeMemory();
 }
-
 
 /*
 ===============================================================================
@@ -4047,7 +4026,6 @@ static byte *MP3MusicStream_ReadFromDisk(MusicInfo_t *pMusicInfo, int iReadOffse
 
 	return pMusicInfo->byMP3MusicStream_DiskBuffer + (iReadOffset - pMusicInfo->iMP3MusicStream_DiskWindowPos);
 }
-
 
 // does NOT set s_rawend!...
 //
@@ -4171,7 +4149,6 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 													qtrue	// bStereoDesired
 													);
 
-
 			if (psError == NULL)
 			{
 				// init sfx struct & setup the few fields I actually need...
@@ -4289,7 +4266,6 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 	return qtrue;
 }
 
-
 static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewState, qboolean bNewTrackStartsFullVolume )
 {
 	// copy old track into fader...
@@ -4312,7 +4288,6 @@ static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewStat
 	tMusic_Info[eNewState].iXFadeVolume			= bNewTrackStartsFullVolume ? 255 : 0;
 
 	eMusic_StateActual = eNewState;
-
 
 	if (s_debugdynamic->integer)
 	{
@@ -4343,7 +4318,6 @@ static void S_SetDynamicMusicState( MusicState_e eNewState )
 		}
 	}
 }
-
 
 static void S_HandleDynamicMusicStateChange( void )
 {
@@ -4495,8 +4469,6 @@ static void S_HandleDynamicMusicStateChange( void )
 		}
 	}
 }
-
-
 
 static char gsIntroMusic[MAX_QPATH]={0};
 static char gsLoopMusic [MAX_QPATH]={0};
@@ -4655,8 +4627,6 @@ void S_StopBackgroundTrack( void )
 
 	s_rawend = 0;
 }
-
-
 
 // qboolean return is true only if we're changing from a streamed intro to a dynamic loop...
 //
@@ -4831,7 +4801,6 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 	return qfalse;
 }
 
-
 // used to be just for dynamic, but now even non-dynamic music has to know whether it should be silent or not...
 //
 static const char *S_Music_GetRequestedState(void)
@@ -4849,7 +4818,6 @@ static const char *S_Music_GetRequestedState(void)
 
 	return NULL;
 }
-
 
 // scan the configstring to see if there's been a state-change requested...
 // (note that even if the state doesn't change it still gets here, so do a same-state check for applying)
@@ -5033,9 +5001,7 @@ static void S_UpdateBackgroundTrack( void )
 	}
 }
 
-
 cvar_t *s_soundpoolmegs = NULL;
-
 
 // currently passing in sfx as a param in case I want to do something with it later.
 //
@@ -5058,7 +5024,6 @@ byte *SND_malloc(int iSize, sfx_t *sfx)
 	return pData;
 }
 
-
 // called once-only in EXE lifetime...
 //
 void SND_setup()
@@ -5071,7 +5036,6 @@ void SND_setup()
 
 	Com_Printf("Sound memory manager started\n");
 }
-
 
 // ask how much mem an sfx has allocated...
 //
@@ -5174,7 +5138,6 @@ void SND_TouchSFX(sfx_t *sfx)
 	sfx->iLastLevelUsedOn	= re->RegisterMedia_GetLevel();
 }
 
-
 // currently this is only called during snd_shutdown or snd_restart
 //
 void S_FreeAllSFXMem(void)
@@ -5243,7 +5206,6 @@ int SND_FreeOldestSound(void)
 {
 	return SND_FreeOldestSound(NULL);	// I had to add a void-arg version of this because of link issues, sigh
 }
-
 
 // just before we drop into a level, ensure the audio pool is under whatever the maximum
 //	pool size is (but not by dropping out sounds used by the current level)...
