@@ -290,8 +290,6 @@ void CL_Disconnect_f (void);
 void CL_Vid_Restart_f( void );
 void CL_Snd_Restart_f (void);
 
-void CL_NextDemo( void );
-
 qboolean CL_CheckPaused(void);
 
 //
