@@ -896,7 +896,7 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 				//	trap->S_StartBackgroundTrack("sound/misc/menu_background.wav", NULL);
 				if (uiInfo.inGameLoad)
 					UI_LoadNonIngame();
-\
+
 				Menus_CloseAll();
 				Menus_ActivateByName("main");
 				trap->Cvar_VariableStringBuffer("com_errorMessage", buf, sizeof(buf));
