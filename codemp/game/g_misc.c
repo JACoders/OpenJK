@@ -2497,16 +2497,21 @@ void SP_fx_runner( gentity_t *ent )
 		VectorSet( ent->s.angles, -90, 0, 0 );
 	}
 
+	/* zyk: commented this. Entity system must allow the player to set it
 	if ( !fxFile || !fxFile[0] )
 	{
 		Com_Printf( S_COLOR_RED"ERROR: fx_runner %s at %s has no fxFile specified\n", ent->targetname, vtos(ent->s.origin) );
 		G_FreeEntity( ent );
 		return;
 	}
+	*/
 
 	// Try and associate an effect file, unfortunately we won't know if this worked or not
 	//	until the cgame trys to register it...
-	ent->s.modelindex = G_EffectIndex( fxFile );
+	if (fxFile && fxFile[0]) // zyk: added this condition
+		ent->s.modelindex = G_EffectIndex( fxFile );
+	else // zyk: now this message is shown here, but the entity is not removed
+		Com_Printf( S_COLOR_RED"ERROR: fx_runner %s at %s has no fxFile specified\n", ent->targetname, vtos(ent->s.origin) );
 
 	// important info transmitted
 	ent->s.eType = ET_FX;

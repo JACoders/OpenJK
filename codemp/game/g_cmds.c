@@ -4530,7 +4530,7 @@ void load_note_model(int x,int y,int z)
 {
 	gentity_t *new_ent = G_Spawn();
 
-	zyk_set_entity_field(new_ent,"classname","noclass");
+	zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
 	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 	zyk_set_entity_field(new_ent,"angles","0 90 0");
 	zyk_set_entity_field(new_ent,"model","models/items/datapad.md3");
@@ -10092,13 +10092,12 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 		int occupied_positions[MAX_CLIENTS]; // zyk: sets 1 to each race position already occupied by a player
 		gentity_t *this_ent = NULL;
 		vec3_t origin, yaw;
-		char zyk_info[1024];
-		char zyk_mapname[128];
+		char zyk_info[MAX_INFO_STRING] = {0};
+		char zyk_mapname[128] = {0};
 
 		// zyk: getting the map name
 		trap->GetServerinfo(zyk_info, sizeof(zyk_info));
-		strncpy(zyk_mapname, Info_ValueForKey( zyk_info, "mapname" ), sizeof(zyk_mapname)-1);
-		zyk_mapname[sizeof(zyk_mapname)-1] = '\0';
+		Q_strncpyz(zyk_mapname, Info_ValueForKey( zyk_info, "mapname" ), sizeof(zyk_mapname));
 
 		if (Q_stricmp(zyk_mapname, "t2_trip") == 0)
 		{
