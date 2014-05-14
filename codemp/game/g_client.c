@@ -3325,13 +3325,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	client->ps.duelIndex = ENTITYNUM_NONE;
 
-	//spawn with 100
-	// zyk: now we use this attribute as the real fuel and then scale and set it to the jetpackFuel above
-	client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
-
-	client->ps.jetpackFuel = 100;
-	client->ps.cloakFuel = 100;
-
 	client->pers = saved;
 	client->sess = savedSess;
 	client->ps.ping = savedPing;
@@ -3405,7 +3398,9 @@ void ClientSpawn(gentity_t *ent) {
 		wDisable = g_weaponDisable.integer;
 	}
 
-
+	//spawn with 100
+	client->ps.jetpackFuel = 100;
+	client->ps.cloakFuel = 100;
 
 	if ( level.gametype != GT_HOLOCRON
 		&& level.gametype != GT_JEDIMASTER
@@ -3766,15 +3761,19 @@ void ClientSpawn(gentity_t *ent) {
 	ent->client->pers.ultimate_power_timer = 0;
 	ent->client->pers.ultimate_power_target_timer = 0;
 
+	// zyk: now we use this attribute as the real fuel and then scale and set it to the jetpackFuel above
+	client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
+	client->jetPackToggleTime = level.time;
+
 	// zyk: if player is logged at spawn, load his skills
 	if (ent->client->sess.amrpgmode == 2)
 	{
 		clean_guardians(ent);
 
+		initialize_rpg_skills(ent);
+
 		// zyk: getting the player who can play a quest in this map
 		quest_get_new_player(ent);
-
-		initialize_rpg_skills(ent);
 	}
 
 	// the respawned flag will be cleared after the attack and jump keys come up

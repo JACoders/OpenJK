@@ -88,8 +88,8 @@ static vec3_t muzzle;
 // Personal Rocket Launcher
 //---------
 #define	ROCKET_VELOCITY				1100 // 900
-#define	ROCKET_DAMAGE				130 // 100
-#define	ROCKET_SPLASH_DAMAGE		130 // 100
+#define	ROCKET_DAMAGE				140 // 100
+#define	ROCKET_SPLASH_DAMAGE		140 // 100
 #define	ROCKET_SPLASH_RADIUS		160
 #define ROCKET_SIZE					3
 #define ROCKET_ALT_THINK_TIME		100
@@ -99,7 +99,7 @@ static vec3_t muzzle;
 //primary
 //man, this thing is too absurdly powerful. having to
 //slash the values way down from sp.
-#define	CONC_VELOCITY				2000 // 3000
+#define	CONC_VELOCITY				2200 // 3000
 #define	CONC_DAMAGE					140 // 75 //150
 #define	CONC_NPC_DAMAGE_EASY		40
 #define	CONC_NPC_DAMAGE_NORMAL		80
