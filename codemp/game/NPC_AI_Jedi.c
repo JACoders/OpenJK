@@ -1568,7 +1568,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 	{//we're way out of range
 		qboolean usedForce = qfalse;
 		if ( NPCS.NPCInfo->stats.aggression < Q_irand( 0, 20 )
-			&& NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.75f
+			&& NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.9f // zyk: changed from 0.75f to 0.9f
 			&& !Q_irand( 0, 2 ) )
 		{
 			if ( (NPCS.NPC->client->ps.fd.forcePowersKnown&(1<<FP_HEAL)) != 0
@@ -1578,6 +1578,13 @@ static void Jedi_CombatDistance( int enemy_dist )
 				ForceHeal( NPCS.NPC );
 				usedForce = qtrue;
 				//FIXME: check level of heal and know not to move or attack when healing
+			}
+			else if ( (NPCS.NPC->client->ps.fd.forcePowersKnown&(1<<FP_TELEPATHY)) != 0
+				&& (NPCS.NPC->client->ps.fd.forcePowersActive&(1<<FP_TELEPATHY)) == 0
+				&& Q_irand( 0, 1 ) )
+			{ // zyk: npcs can now use Mind Trick
+				ForceTelepathy( NPCS.NPC );
+				usedForce = qtrue;
 			}
 			else if ( (NPCS.NPC->client->ps.fd.forcePowersKnown&(1<<FP_PROTECT)) != 0
 				&& (NPCS.NPC->client->ps.fd.forcePowersActive&(1<<FP_PROTECT)) == 0
