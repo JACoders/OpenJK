@@ -2183,6 +2183,24 @@ void ClientThink_real( gentity_t *ent ) {
 			{
 				client->ps.pm_type = PM_NORMAL;
 			}
+
+			if (client->pers.ultimate_power_target == 3)
+			{ // zyk: player was hit by Time Power
+				if (ent->client->jetPackOn)
+				{
+					Jetpack_Off(ent);
+				}
+				client->ps.pm_type = PM_FREEZE;
+				if ( client->ps.saberHolstered < 2 )
+				{
+					Cmd_ToggleSaber_f(ent);
+				}
+			}
+			else if (client->pers.ultimate_power_target == -1)
+			{ // zyk: Time Power is over
+				client->pers.ultimate_power_target = 0;
+				client->ps.pm_type = PM_NORMAL;
+			}
 		}
 	}
 
