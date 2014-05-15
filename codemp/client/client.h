@@ -360,6 +360,8 @@ extern	cvar_t	*cl_sensitivity;
 extern	cvar_t	*cl_freelook;
 
 extern	cvar_t	*cl_mouseAccel;
+extern	cvar_t	*cl_mouseAccelOffset;
+extern	cvar_t	*cl_mouseAccelStyle;
 extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*m_pitchVeh;
