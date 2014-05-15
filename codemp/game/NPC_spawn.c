@@ -2319,6 +2319,19 @@ delay - after spawned or triggered, how many seconds to wait to spawn the NPC
 //CHARACTERS
 //=============================================================================================
 
+/*QUAKED NPC_Player (1 0 0) (-16 -16 -24) (16 16 32) x RIFLEMAN PHASER TRICORDER DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Player( gentity_t *self)
+{
+	self->NPC_type = "Player";
+
+	SP_NPC_spawner( self );
+}
+
 /*QUAKED NPC_Kyle (1 0 0) (-16 -16 -24) (16 16 32) x RIFLEMAN PHASER TRICORDER DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
 NOTSOLID - Starts not solid
@@ -2388,6 +2401,33 @@ SHY - Spawner is shy
 void SP_NPC_MonMothma( gentity_t *self)
 {
 	self->NPC_type = "MonMothma";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Rosh_Penin (1 0 0) (-16 -16 -24) (16 16 32) DARKSIDE NOFORCE x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+Good Rosh
+DARKSIDE - Evil Rosh
+NOFORCE - Can't jump, starts with no saber
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Rosh_Penin( gentity_t *self)
+{
+	if ( (self->spawnflags&1) )
+	{
+		self->NPC_type = "rosh_dark";
+	}
+	else if ( (self->spawnflags&2) )
+	{
+		self->NPC_type = "rosh_penin_noforce";
+	}
+	else
+	{
+		self->NPC_type = "rosh_penin";
+	}
 
 	SP_NPC_spawner( self );
 }
@@ -2762,6 +2802,55 @@ void SP_NPC_Reelo( gentity_t *self)
 	SP_NPC_spawner( self );
 }
 
+/*QUAKED NPC_Kothos(1 0 0) (-16 -16 -24) (16 16 40) VIL x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+VIL - spawns Vil Kothos instead of Dasariah (can anyone tell them apart anyway...?)
+
+Force only... will (eventually) be set up to re-inforce their leader (use SET_LEADER) by healing them, recharging them, keeping the player away, etc.
+
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Kothos( gentity_t *self )
+{
+	if ( (self->spawnflags&1) )
+	{
+		self->NPC_type = "VKothos";
+	}
+	else
+	{
+		self->NPC_type = "DKothos";
+	}
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Droid_Saber (1 0 0) (-12 -12 -24) (12 12 40) TRAINING x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Droid_Saber( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+		if ( (self->spawnflags&1) )
+		{
+			self->NPC_type = "saber_droid_training";
+		}
+		else
+		{
+			self->NPC_type = "saber_droid";
+		}
+	}
+
+	SP_NPC_spawner( self );
+}
+
 /*QUAKED NPC_Galak(1 0 0) (-16 -16 -24) (16 16 40) MECH x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 MECH - will be the armored Galak
 
@@ -2896,6 +2985,121 @@ void SP_NPC_Prisoner( gentity_t *self)
 			self->NPC_type = "Prisoner2";
 		}
 	}
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Merchant(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Merchant( gentity_t *self)
+{
+	self->NPC_type = "merchant";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Saboteur(1 0 0) (-16 -16 -24) (16 16 40) SNIPER PISTOL x x CLOAKED CINEMATIC NOTSOLID STARTINSOLID SHY
+Has a blaster rifle, can cloak and roll
+
+SNIPER - Has a sniper rifle, no acrobatics, but can dodge
+PISTOL - Just has a pistol, can roll
+COMMANDO - Has 2 pistols and can roll & dodge
+
+CLOAKED - Starts cloaked
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Saboteur( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+		if ( (self->spawnflags&1) )
+		{
+			self->NPC_type = "saboteursniper";
+		}
+		else if ( (self->spawnflags&2) )
+		{
+			self->NPC_type = "saboteurpistol";
+		}
+		else if ( (self->spawnflags&4) )
+		{
+			self->NPC_type = "saboteurcommando";
+		}
+		else
+		{
+			self->NPC_type = "saboteur";
+		}
+	}
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Human_Merc(1 0 0) (-16 -16 -24) (16 16 40) BOWCASTER REPEATER FLECHETTE CONCUSSION DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+100 health, blaster rifle
+
+BOWCASTER - Starts with a Bowcaster
+REPEATER - Starts with a Repeater
+FLECHETTE - Starts with a Flechette gun
+CONCUSSION - Starts with a Concussion Rifle
+
+If you want them to start with any other kind of weapon, make a spawnscript for them that sets their weapon.
+
+"message" - turns on his key surface.  This is the name of the key you get when you walk over his body.  This must match the "message" field of the func_security_panel you want this key to open.  Set to "goodie" to have him carrying a goodie key that player can use to operate doors with "GOODIE" spawnflag.  NOTE: this overrides all the weapon spawnflags
+
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Human_Merc( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+		if ( self->message )
+		{
+			self->NPC_type = "human_merc_key";
+		}
+		else if ( (self->spawnflags&1) )
+		{
+			self->NPC_type = "human_merc_bow";
+		}
+		else if ( (self->spawnflags&2) )
+		{
+			self->NPC_type = "human_merc_rep";
+		}
+		else if ( (self->spawnflags&4) )
+		{
+			self->NPC_type = "human_merc_flc";
+		}
+		else if ( (self->spawnflags&8) )
+		{
+			self->NPC_type = "human_merc_cnc";
+		}
+		else
+		{
+			self->NPC_type = "human_merc";
+		}
+	}
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Chewbacca(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Chewbacca( gentity_t *self )
+{
+	self->NPC_type = "Chewie";
 
 	SP_NPC_spawner( self );
 }
@@ -3542,6 +3746,29 @@ SHY - Spawner is shy
 void SP_NPC_Monster_Fish( gentity_t *self)
 {
 	self->NPC_type = "Fish";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Monster_Sand_Creature (1 0 0) (-24 -24 -24) (24 24 0) FAST x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+
+turfrange - if set, they will not go beyond this dist from their spawn position
+*/
+void SP_NPC_Monster_Sand_Creature( gentity_t *self)
+{
+	if ( (self->spawnflags&1) )
+	{
+		self->NPC_type = "sand_creature_fast";
+	}
+	else
+	{
+		self->NPC_type = "sand_creature";
+	}
 
 	SP_NPC_spawner( self );
 }

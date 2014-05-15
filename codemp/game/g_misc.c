@@ -430,6 +430,261 @@ void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor )
 	ent->s.apos.trTime = level.time;
 }
 
+extern void G_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkType );
+void misc_model_breakable_pain ( gentity_t *self, gentity_t *other, int damage )
+{
+	if ( self->health > 0 )
+	{
+		// still alive, react to the pain
+		if ( self->paintarget )
+		{
+			G_UseTargets2 (self, self->activator, self->paintarget);
+		}
+
+		// Don't do script if dead
+		G_ActivateBehavior( self, BSET_PAIN );
+	}
+}
+
+void G_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
+						float speed, int numChunks, material_t chunkType, int customChunk, float baseScale );
+
+void misc_model_breakable_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath) 
+{
+	int		numChunks;
+	float	size = 0, scale;
+	vec3_t	dir, up, dis;
+
+	if (self->die == NULL)	//i was probably already killed since my die func was removed
+	{
+#ifndef FINAL_BUILD
+		G_Printf(S_COLOR_YELLOW"Recursive misc_model_breakable_die.  Use targets probably pointing back at self.\n");
+#endif
+		return;	//this happens when you have a cyclic target chain!
+	}
+	//NOTE: Stop any scripts that are currently running (FLUSH)... ?
+	//Turn off animation
+
+	self->health = 0;
+	//Throw some chunks
+	AngleVectors( self->s.apos.trBase, dir, NULL, NULL );
+	VectorNormalize( dir );
+
+	numChunks = random() * 6 + 20;
+
+	VectorSubtract( self->r.absmax, self->r.absmin, dis );
+
+	// This formula really has no logical basis other than the fact that it seemed to be the closest to yielding the results that I wanted.
+	// Volume is length * width * height...then break that volume down based on how many chunks we have
+	scale = sqrt( sqrt( dis[0] * dis[1] * dis[2] )) * 1.75f;
+
+	if ( scale > 48 )
+	{
+		size = 2;
+	}
+	else if ( scale > 24 )
+	{
+		size = 1;
+	}
+
+	scale = scale / numChunks;
+
+	if ( self->radius > 0.0f )
+	{
+		// designer wants to scale number of chunks, helpful because the above scale code is far from perfect
+		//	I do this after the scale calculation because it seems that the chunk size generally seems to be very close, it's just the number of chunks is a bit weak
+		numChunks *= self->radius;
+	}
+
+	VectorAdd( self->r.absmax, self->r.absmin, dis );
+	VectorScale( dis, 0.5f, dis );
+
+	G_Chunks( self->s.number, dis, dir, self->r.absmin, self->r.absmax, 300, numChunks, self->material, self->s.modelGhoul2, scale );
+
+	self->pain = 0;
+	self->die  = 0;
+//	self->e_UseFunc  = useF_NULL;
+
+	self->takedamage = qfalse;
+
+	if ( !(self->spawnflags & 4) )
+	{//We don't want to stay solid
+		self->s.solid = 0;
+		self->r.contents = 0;
+		self->clipmask = 0;
+
+		trap->LinkEntity((sharedEntity_t *)self);
+	}
+
+	VectorSet(up, 0, 0, 1);
+
+	if(self->target)
+	{
+		G_UseTargets(self, attacker);
+	}
+
+	if(inflictor->client)
+	{
+		VectorSubtract( self->r.currentOrigin, inflictor->r.currentOrigin, dir );
+		VectorNormalize( dir );
+	}
+	else
+	{
+		VectorCopy(up, dir);
+	}
+
+	if ( !(self->spawnflags & 2048) ) // NO_EXPLOSION
+	{
+		// Ok, we are allowed to explode, so do it now!
+		if(self->splashDamage > 0 && self->splashRadius > 0)
+		{//explode
+			vec3_t org;
+			AddSightEvent( attacker, self->r.currentOrigin, 256, AEL_DISCOVERED, 100 );
+			AddSoundEvent( attacker, self->r.currentOrigin, 128, AEL_DISCOVERED, qfalse );//FIXME: am I on ground or not?
+			//FIXME: specify type of explosion?  (barrel, electrical, etc.)  Also, maybe just use the explosion effect below since it's
+			//				a bit better?
+			// up the origin a little for the damage check, because several models have their origin on the ground, so they don't alwasy do damage, not the optimal solution...
+			VectorCopy( self->r.currentOrigin, org );
+			if ( self->r.mins[2] > -4 )
+			{//origin is going to be below it or very very low in the model
+				//center the origin
+				org[2] = self->r.currentOrigin[2] + self->r.mins[2] + (self->r.maxs[2] - self->r.mins[2])/2.0f;
+			}
+			G_RadiusDamage( org, self, self->splashDamage, self->splashRadius, self, NULL, MOD_UNKNOWN );
+
+			G_MiscModelExplosion( self->r.absmin, self->r.absmax, size, self->material );
+			G_Sound( self, CHAN_AUTO, G_SoundIndex("sound/weapons/explosions/cargoexplode.wav") );
+			self->s.loopSound = 0;
+		}
+		else
+		{//just break
+			AddSightEvent( attacker, self->r.currentOrigin, 128, AEL_DISCOVERED, qfalse );
+			AddSoundEvent( attacker, self->r.currentOrigin, 64, AEL_SUSPICIOUS, qfalse );//FIXME: am I on ground or not?
+			// This is the default explosion
+			G_MiscModelExplosion( self->r.absmin, self->r.absmax, size, self->material );
+			G_Sound(self, CHAN_AUTO, G_SoundIndex("sound/weapons/explosions/cargoexplode.wav"));
+		}
+	}
+
+	self->think = 0;
+	self->nextthink = -1;
+
+	if(self->s.modelindex2 != -1 && !(self->spawnflags & 8))
+	{//FIXME: modelindex doesn't get set to -1 if the damage model doesn't exist
+		self->s.modelindex = self->s.modelindex2;
+		G_ActivateBehavior( self, BSET_DEATH );
+	}
+	else
+	{
+		G_FreeEntity( self );
+	}
+}
+
+
+void misc_model_throw_at_target4( gentity_t *self, gentity_t *activator )
+{
+	vec3_t	pushDir, kvel;
+	float	knockback = 200;
+	float	mass = self->mass;
+	gentity_t *target = G_Find( NULL, FOFS(targetname), self->target4 );
+	if ( !target )
+	{//nothing to throw ourselves at...
+		return;
+	}
+	VectorSubtract( target->r.currentOrigin, self->r.currentOrigin, pushDir );
+	knockback -= VectorNormalize( pushDir );
+	if ( knockback < 100 )
+	{
+		knockback = 100;
+	}
+	VectorCopy( self->r.currentOrigin, self->s.pos.trBase );
+	self->s.pos.trTime = level.time;								// move a bit on the very first frame
+	if ( self->s.pos.trType != TR_INTERPOLATE )
+	{//don't do this to rolling missiles
+		self->s.pos.trType = TR_GRAVITY;
+	}
+
+	if ( mass < 50 )
+	{//???
+		mass = 50;
+	}
+
+	if ( g_gravity.value > 0 )
+	{
+		VectorScale( pushDir, g_knockback.value * knockback / mass * 0.8, kvel );
+		kvel[2] = pushDir[2] * g_knockback.value * knockback / mass * 1.5;
+	}
+	else
+	{
+		VectorScale( pushDir, g_knockback.value * knockback / mass, kvel );
+	}
+
+	VectorAdd( self->s.pos.trDelta, kvel, self->s.pos.trDelta );
+	if ( g_gravity.value > 0 )
+	{
+		if ( self->s.pos.trDelta[2] < knockback )
+		{
+			self->s.pos.trDelta[2] = knockback;
+		}
+	}
+	//no trDuration?
+	if ( self->think != G_RunObject )
+	{//objects spin themselves?
+		//spin it
+		//FIXME: messing with roll ruins the rotational center???
+		self->s.apos.trTime = level.time;
+		self->s.apos.trType = TR_LINEAR;
+		VectorClear( self->s.apos.trDelta );
+		self->s.apos.trDelta[1] = Q_irand( -800, 800 );
+	}
+}
+
+void misc_model_use (gentity_t *self, gentity_t *other, gentity_t *activator)
+{
+	if ( self->target4 )
+	{//throw me at my target!
+		misc_model_throw_at_target4( self, activator );
+		return;
+	}
+
+	if ( self->health <= 0 && self->maxHealth > 0)
+	{//used while broken fired target3
+		G_UseTargets2( self, activator, self->target3 );
+		return;
+	}
+
+	// Become solid again.
+	if ( !self->count )
+	{
+		self->count = 1;
+		self->activator = activator;
+		self->r.svFlags &= ~SVF_NOCLIENT;
+		self->s.eFlags &= ~EF_NODRAW;
+	}
+
+	G_ActivateBehavior( self, BSET_USE );
+	//Don't explode if they've requested it to not
+	if ( self->spawnflags & 64 )
+	{//Usemodels toggling
+		if ( self->spawnflags & 32 )
+		{
+			if( self->s.modelindex == self->sound1to2 )
+			{
+				self->s.modelindex = self->sound2to1;
+			}
+			else
+			{
+				self->s.modelindex = self->sound1to2;
+			}
+		}
+
+		return;
+	}
+
+	self->die = misc_model_breakable_die;
+	misc_model_breakable_die( self, other, activator, self->health, MOD_UNKNOWN );
+}
+
 void misc_model_breakable_init( gentity_t *ent )
 {
 	if (!ent->model) {
@@ -448,9 +703,16 @@ void misc_model_breakable_init( gentity_t *ent )
 		ent->r.contents = CONTENTS_SHOTCLIP;
 	}
 
-	// TODO: fix using
+	ent->use = misc_model_use;
 
-	// TODO: fix health/dying funcs
+	if ( ent->health ) 
+	{
+		G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
+		ent->maxHealth = ent->health;
+		ent->takedamage = qtrue;
+		ent->pain = misc_model_breakable_pain;
+		ent->die = misc_model_breakable_die;
+	}
 }
 
 /*QUAKED misc_G2model (1 0 0) (-16 -16 -16) (16 16 16)

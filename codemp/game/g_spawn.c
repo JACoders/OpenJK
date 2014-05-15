@@ -337,23 +337,28 @@ void SP_misc_cubemap( gentity_t *ent );
 void SP_NPC_spawner( gentity_t *self );
 
 void SP_NPC_Vehicle( gentity_t *self);
-
+void SP_NPC_Player( gentity_t *self ); // zyk: added this function
 void SP_NPC_Kyle( gentity_t *self );
 void SP_NPC_Lando( gentity_t *self );
 void SP_NPC_Jan( gentity_t *self );
 void SP_NPC_Luke( gentity_t *self );
 void SP_NPC_MonMothma( gentity_t *self );
+void SP_NPC_Rosh_Penin( gentity_t *self ); // zyk: added this function
 void SP_NPC_Tavion( gentity_t *self );
 void SP_NPC_Tavion_New( gentity_t *self );
 void SP_NPC_Alora( gentity_t *self );
 void SP_NPC_Reelo( gentity_t *self );
 void SP_NPC_Galak( gentity_t *self );
 void SP_NPC_Desann( gentity_t *self );
+void SP_NPC_Kothos( gentity_t *self ); // zyk: added this function
+void SP_NPC_Chewbacca( gentity_t *self ); // zyk: added this function
 void SP_NPC_Bartender( gentity_t *self );
 void SP_NPC_MorganKatarn( gentity_t *self );
 void SP_NPC_Jedi( gentity_t *self );
 void SP_NPC_Prisoner( gentity_t *self );
+void SP_NPC_Merchant( gentity_t *self ); // zyk: added this function
 void SP_NPC_Rebel( gentity_t *self );
+void SP_NPC_Human_Merc( gentity_t *self ); // zyk: added this function
 void SP_NPC_Stormtrooper( gentity_t *self );
 void SP_NPC_StormtrooperOfficer( gentity_t *self );
 void SP_NPC_Snowtrooper( gentity_t *self);
@@ -372,6 +377,7 @@ void SP_NPC_ImpWorker( gentity_t *self );
 void SP_NPC_BespinCop( gentity_t *self );
 void SP_NPC_Reborn( gentity_t *self );
 void SP_NPC_ShadowTrooper( gentity_t *self );
+void SP_NPC_Saboteur( gentity_t *self ); // zyk: added this function
 void SP_NPC_Monster_Murjj( gentity_t *self );
 void SP_NPC_Monster_Swamp( gentity_t *self );
 void SP_NPC_Monster_Howler( gentity_t *self );
@@ -380,6 +386,7 @@ void SP_NPC_Monster_Glider( gentity_t *self );
 void SP_NPC_Monster_Flier2( gentity_t *self );
 void SP_NPC_Monster_Lizard( gentity_t *self );
 void SP_NPC_Monster_Fish( gentity_t *self );
+void SP_NPC_Monster_Sand_Creature( gentity_t *self ); // zyk: added this function
 void SP_NPC_Monster_Wampa( gentity_t *self );
 void SP_NPC_Monster_Rancor( gentity_t *self );
 void SP_NPC_MineMonster( gentity_t *self );
@@ -396,6 +403,7 @@ void SP_NPC_Droid_Mouse( gentity_t *self );
 void SP_NPC_Droid_R2D2( gentity_t *self );
 void SP_NPC_Droid_R5D2( gentity_t *self );
 void SP_NPC_Droid_Protocol( gentity_t *self );
+void SP_NPC_Droid_Saber( gentity_t *self); // zyk: added this function
 
 void SP_NPC_Reborn_New( gentity_t *self);
 void SP_NPC_Cultist( gentity_t *self );
@@ -565,6 +573,7 @@ spawn_t	spawns[] = {
 	{ "npc_alora",							SP_NPC_Alora },
 	{ "npc_bartender",						SP_NPC_Bartender },
 	{ "npc_bespincop",						SP_NPC_BespinCop },
+	{ "npc_chewbacca",						SP_NPC_Chewbacca }, // zyk: added this function
 	{ "npc_colombian_emplacedgunner",		SP_NPC_ShadowTrooper },
 	{ "npc_colombian_rebel",				SP_NPC_Reborn },
 	{ "npc_colombian_soldier",				SP_NPC_Reborn },
@@ -585,19 +594,23 @@ spawn_t	spawns[] = {
 	{ "npc_droid_r2d2",						SP_NPC_Droid_R2D2 },
 	{ "npc_droid_r5d2",						SP_NPC_Droid_R5D2 },
 	{ "npc_droid_remote",					SP_NPC_Droid_Remote },
+	{ "npc_droid_saber",					SP_NPC_Droid_Saber }, // zyk: added this function
 	{ "npc_droid_seeker",					SP_NPC_Droid_Seeker },
 	{ "npc_droid_sentry",					SP_NPC_Droid_Sentry },
 	{ "npc_galak",							SP_NPC_Galak },
 	{ "npc_gran",							SP_NPC_Gran },
+	{ "npc_human_merc",						SP_NPC_Human_Merc }, // zyk: added this function
 	{ "npc_imperial",						SP_NPC_Imperial },
 	{ "npc_impworker",						SP_NPC_ImpWorker },
 	{ "npc_jan",							SP_NPC_Jan },
 	{ "npc_jawa",							SP_NPC_Jawa },
 	{ "npc_jedi",							SP_NPC_Jedi },
+	{ "npc_kothos",							SP_NPC_Kothos }, // zyk: added this function
 	{ "npc_kyle",							SP_NPC_Kyle },
 	{ "npc_lando",							SP_NPC_Lando },
 	{ "npc_luke",							SP_NPC_Luke },
 	{ "npc_manuel_vergara_rmg",				SP_NPC_Desann },
+	{ "npc_merchant",						SP_NPC_Merchant }, // zyk: added this function
 	{ "npc_minemonster",					SP_NPC_MineMonster },
 	{ "npc_monmothma",						SP_NPC_MonMothma },
 	{ "npc_monster_claw",					SP_NPC_Monster_Claw },
@@ -608,16 +621,20 @@ spawn_t	spawns[] = {
 	{ "npc_monster_lizard",					SP_NPC_Monster_Lizard },
 	{ "npc_monster_murjj",					SP_NPC_Monster_Murjj },
 	{ "npc_monster_rancor",					SP_NPC_Monster_Rancor },
+	{ "npc_monster_sand_creature",			SP_NPC_Monster_Sand_Creature }, // zyk: added this function
 	{ "npc_monster_swamp",					SP_NPC_Monster_Swamp },
 	{ "npc_monster_wampa",					SP_NPC_Monster_Wampa },
 	{ "npc_morgankatarn",					SP_NPC_MorganKatarn },
 	{ "npc_noghri",							SP_NPC_Noghri },
+	{ "npc_player",							SP_NPC_Player }, // zyk: added this function
 	{ "npc_prisoner",						SP_NPC_Prisoner },
 	{ "npc_rebel",							SP_NPC_Rebel },
 	{ "npc_reborn",							SP_NPC_Reborn },
 	{ "npc_reborn_new",						SP_NPC_Reborn_New },
 	{ "npc_reelo",							SP_NPC_Reelo },
 	{ "npc_rodian",							SP_NPC_Rodian },
+	{ "npc_rosh_penin",						SP_NPC_Rosh_Penin }, // zyk: added this function
+	{ "npc_saboteur",						SP_NPC_Saboteur }, // zyk: added this function
 	{ "npc_shadowtrooper",					SP_NPC_ShadowTrooper },
 	{ "npc_snowtrooper",					SP_NPC_Snowtrooper },
 	{ "npc_spawner",						SP_NPC_spawner },
