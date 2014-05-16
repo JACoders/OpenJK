@@ -3104,6 +3104,159 @@ void SP_NPC_Chewbacca( gentity_t *self )
 	SP_NPC_spawner( self );
 }
 
+/*QUAKED NPC_Rax(1 0 0) (-16 -16 -24) (16 16 40) FUN x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+FUN - Makes him magically the funnest thing ever in any game ever made. (actually does nothing, it'll just be fun by the power of suggestion).
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Rax( gentity_t *self )
+{
+	self->NPC_type = "Rax";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Lannik_Racto(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Lannik_Racto( gentity_t *self )
+{
+	self->NPC_type = "lannik_racto";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Droid_Assassin (1 0 0) (-12 -12 -24) (12 12 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Droid_Assassin( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+		self->NPC_type = "assassin_droid";
+	}
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_RocketTrooper(1 0 0) (-16 -16 -24) (16 16 40) OFFICER SPOTLIGHT x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+200 health, flies, rockets
+
+OFFICER - starts flying, uses concussion rifle instead of rockets
+SPOTLIGHT - uses a shoulder-mounted spotlight
+
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_RocketTrooper( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+		if ( (self->spawnflags&1) )
+		{
+			self->NPC_type = "rockettrooper2Officer";
+		}
+		else
+		{
+			self->NPC_type = "rockettrooper2";
+		}
+	}
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_HazardTrooper(1 0 0) (-16 -16 -24) (16 16 40) OFFICER CONCUSSION x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+250 health, repeater
+
+OFFICER - 400 health, flechette
+CONCUSSION - 400 health, concussion rifle
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_HazardTrooper( gentity_t *self)
+{
+	if ( !self->NPC_type )
+	{
+
+
+		if ( (self->spawnflags&1) )
+		{
+			self->NPC_type = "hazardtrooperofficer";
+		}
+		else if ( (self->spawnflags&2) )
+		{
+			self->NPC_type = "hazardtrooperconcussion";
+		}
+		else
+		{
+			self->NPC_type = "hazardtrooper";
+		}
+	}
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_BobaFett(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_BobaFett( gentity_t *self )
+{
+	self->NPC_type = "Boba_Fett";
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Monster_Mutant_Rancor (1 0 0) (-60 -60 -24) (60 60 360) x FASTKILL x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+Bigger, meaner, nastier, Frencher.  Breath attack, pound attack.
+
+FASTKILL - Kills NPCs faster
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Monster_Mutant_Rancor( gentity_t *self)
+{
+	self->NPC_type = "mutant_rancor";
+
+	SP_NPC_spawner( self );
+}
+
+/*QUAKED NPC_Ragnos(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
+DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
+CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
+NOTSOLID - Starts not solid
+STARTINSOLID - Don't try to fix if spawn in solid
+SHY - Spawner is shy
+*/
+void SP_NPC_Ragnos( gentity_t *self )
+{
+	self->NPC_type = "Ragnos";
+
+	SP_NPC_spawner( self );
+}
+
 /*QUAKED NPC_Rebel(1 0 0) (-16 -16 -24) (16 16 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
 DROPTOFLOOR - NPC can be in air, but will spawn on the closest floor surface below it
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)

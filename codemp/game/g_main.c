@@ -826,6 +826,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				fix_sp_func_door(ent);
 			}
+			/*
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
@@ -838,6 +839,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				G_FreeEntity( ent );
 			}
+			*/
 		}
 		// zyk: spawning Rax Joris npc
 		Zyk_NPC_SpawnType("rax",3080,-3700,921,90);
@@ -866,6 +868,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "vjun3") == 0)
 	{
+		/*
 		int i = 0;
 		gentity_t *ent;
 
@@ -877,6 +880,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				G_FreeEntity( ent );
 			}
 		}
+		*/
 		zyk_create_info_player_deathmatch(-8272,-391,1433,179);
 		zyk_create_info_player_deathmatch(-8375,-722,1433,179);
 	}
