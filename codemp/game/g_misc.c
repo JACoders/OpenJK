@@ -331,7 +331,7 @@ Damage: default is none
 14 = MAT_CRATE2		(red multi-colored crate chunks)
 15 = MAT_WHITE_METAL (white angular chunks for Stu, NS_hideout )
 FIXME/TODO:
-set size better?
+set size better? - FIXED
 multiple damage models?
 custom explosion effect/sound?
 */
@@ -344,16 +344,11 @@ void SP_misc_model_breakable( gentity_t *ent )
 	G_SpawnInt( "material", "8", (int*)&ent->material );
 	G_SpawnFloat( "radius", "1", &ent->radius ); // used to scale chunk code if desired by a designer
 
-	misc_model_breakable_init( ent );
+	// zyk: now the size is set correctly
+	G_SpawnVector("mins", "0 0 0", ent->r.mins);
+	G_SpawnVector("maxs", "0 0 0", ent->r.maxs);
 
-	if ( !ent->r.mins[0] && !ent->r.mins[1] && !ent->r.mins[2] )
-	{
-		VectorSet (ent->r.mins, -16, -16, -16);
-	}
-	if ( !ent->r.maxs[0] && !ent->r.maxs[1] && !ent->r.maxs[2] )
-	{
-		VectorSet (ent->r.maxs, 16, 16, 16);
-	}
+	misc_model_breakable_init( ent );
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
@@ -371,6 +366,7 @@ void SP_misc_model_breakable( gentity_t *ent )
 	{//affected by gravity
 		G_SetAngles( ent, ent->s.angles );
 		G_SetOrigin( ent, ent->r.currentOrigin );
+		G_SpawnString( "throwtarget", NULL, &ent->target4 ); // used to throw itself at something // zyk: added this function call
 		misc_model_breakable_gravity_init( ent, qtrue );
 	}
 }
