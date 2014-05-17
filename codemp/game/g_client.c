@@ -2258,8 +2258,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	}
 	else
 	{
-		if (client->sess.amrpgmode == 2)
-			health = client->pers.max_rpg_health;
+		if (ent->client->sess.amrpgmode == 2)
+			health = ent->client->pers.max_rpg_health;
 		else
 			health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	}
@@ -3363,7 +3363,14 @@ void ClientSpawn(gentity_t *ent) {
 		client->pers.maxHealth = 100;
 	}
 	// clear entity values
-	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
+	if (ent->client->sess.amrpgmode < 2) // zyk: clearmax health if player is not in RPG
+		client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
+	else
+	{
+		client->pers.maxHealth = ent->client->pers.max_rpg_health;
+		client->ps.stats[STAT_MAX_HEALTH] = ent->client->pers.max_rpg_health;
+	}
+
 	client->ps.eFlags = flags;
 	client->mGameFlags = gameFlags;
 
