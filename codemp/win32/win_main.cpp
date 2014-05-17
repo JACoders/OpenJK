@@ -33,6 +33,8 @@ qboolean Sys_LowPhysicalMemory(void) {
 	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
+
+		stat.dwLength = sizeof (stat);
 		GlobalMemoryStatusEx (&stat);
 	}
 	if (sys_lowmem->integer)
