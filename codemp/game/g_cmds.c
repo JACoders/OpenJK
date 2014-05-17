@@ -3693,7 +3693,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 		}
 
 //JAPRO - Serverside - Fullforce Duels + Duel Messages - Start
-		if (challenged->client->ps.duelIndex == ent->s.number && challenged->client->ps.duelTime >= level.time && 
+		if (challenged->client->ps.duelIndex == ent->s.number && (challenged->client->ps.duelTime + 2000) >= level.time && 
 			(
 			((dueltypes[challenged->client->ps.clientNum] == dueltype) && (dueltype == 0 || dueltype == 1)) 
 			|| 

@@ -2657,7 +2657,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if ( firstTime )
+	if ( firstTime ) //loda fixme
 		Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
 
 	G_LogPrintf( "ClientConnect: %i [%s] (%s) \"%s^7\"\n", clientNum, tmpIP, guid, client->pers.netname );

@@ -3676,7 +3676,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				}
 			}
 //JAPRO - Serverside - Flag push/pull physics - Start
-			else if (g_allowFlagThrow.integer && push_list[x]->s.eType == ET_ITEM && push_list[x]->s.modelindex2 != 0)
+			else if (g_allowFlagThrow.integer && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && push_list[x]->s.modelindex2 != 0)
 			{
 				if ( pull )
 				{//pull the item
@@ -3698,7 +3698,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			}
 //JAPRO - Serverside - Flag push/pull physics - End
 //JAPRO - Serverside - Item push/pull physics - Start
-			else if ( g_pushPullItems.integer && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
+			else if ( g_pushPullItems.integer && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
 			{
 				push_list[x]->nextthink = level.time + 30000;
 				push_list[x]->think = ResetItem;//incase it falls off a cliff
