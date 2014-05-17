@@ -4998,7 +4998,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			mod == MOD_BRYAR_PISTOL_ALT ||
 			mod == MOD_MELEE)
 		{ //these don't damage bbrushes.. ever
-			if ( mod != MOD_MELEE || !G_HeavyMelee( attacker ) )
+			if ( mod != MOD_MELEE || (is_a_monk == qfalse && !G_HeavyMelee( attacker )) )
 			{ //let classes with heavy melee ability damage breakable brushes with fists
 				return;
 			}

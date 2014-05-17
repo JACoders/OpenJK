@@ -459,19 +459,34 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		!(ent->dflags&DAMAGE_HEAVY_WEAP_CLASS) )
 	{
 		vec3_t fwd;
+		gentity_t *this_npc = NULL;
+		int is_guardian_of_wind = 0;
 
-		if (other->client)
+		if (ent->r.ownerNum >= MAX_CLIENTS)
+			this_npc = &g_entities[ent->r.ownerNum];
+
+		// zyk: Guardian of Wind can hit anyone with his blaster shots
+		if (this_npc && this_npc->client && this_npc->client->pers.guardian_invoked_by_id != -1 && 
+			Q_stricmp(this_npc->NPC_type, "guardian_boss_7") == 0)
 		{
-			AngleVectors(other->client->ps.viewangles, fwd, NULL, NULL);
-		}
-		else
-		{
-			AngleVectors(other->r.currentAngles, fwd, NULL, NULL);
+			is_guardian_of_wind = 1;
 		}
 
-		G_DeflectMissile(other, ent, fwd);
-		G_MissileBounceEffect(ent, ent->r.currentOrigin, fwd);
-		return;
+		if (is_guardian_of_wind == 0)
+		{
+			if (other->client)
+			{
+				AngleVectors(other->client->ps.viewangles, fwd, NULL, NULL);
+			}
+			else
+			{
+				AngleVectors(other->r.currentAngles, fwd, NULL, NULL);
+			}
+
+			G_DeflectMissile(other, ent, fwd);
+			G_MissileBounceEffect(ent, ent->r.currentOrigin, fwd);
+			return;
+		}
 	}
 
 	if (other->takedamage && other->client &&
@@ -728,14 +743,11 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			}
 			else if ( other && other->client && other->client->ps.powerups[PW_CLOAKED] )
 			{
-				Jedi_Decloak( other );
-				if ( ent->methodOfDeath == MOD_DEMP2_ALT )
-				{//direct hit with alt disables cloak forever
-					//permanently disable the saboteur's cloak
-					other->client->cloakToggleTime = Q3_INFINITE;
-				}
-				else
-				{//temp disable
+				if (other->client->sess.amrpgmode < 2 || other->client->pers.rpg_class != 5)
+				{ // zyk: Stealth Attacker cloak does not decloak by DEMP2 attack
+					Jedi_Decloak( other );
+					// zyk: now always temp disable
+					//temp disable
 					other->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
 				}
 			}
