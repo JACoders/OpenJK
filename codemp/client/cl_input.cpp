@@ -1025,10 +1025,7 @@ CL_MouseMove
 */
 void CL_MouseMove( usercmd_t *cmd ) {
 	float	mx, my;
-	float	accelSensitivity;
-	float	rate;
 	const float	speed = static_cast<float>(frame_msec);
-	const float pitch = cl_bUseFighterPitch?m_pitchVeh->value:m_pitch->value;
 
 	// allow mouse smoothing
 	if ( m_filter->integer ) {
@@ -1043,75 +1040,134 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	cl.mouseDx[cl.mouseIndex] = 0;
 	cl.mouseDy[cl.mouseIndex] = 0;
 
-	rate = SQRTFAST( mx * mx + my * my ) / speed;
-	if ( cl_mYawOverride || cl_mPitchOverride )
-	{//FIXME: different people have different speed mouses,
-		if ( cl_mSensitivityOverride )
+	if ( mx == 0.0f && my == 0.0f )
+		return;
+
+	if ( cl_mouseAccel->value != 0.0f )
+	{
+		if ( cl_mouseAccelStyle->integer == 0 )
 		{
-			//this will fuck things up for them, need to clamp
-			//max input?
-			accelSensitivity = cl_mSensitivityOverride;
+			float accelSensitivity;
+			float rate;
+
+			rate = SQRTFAST( mx * mx + my * my ) / speed;
+
+			if ( cl_mYawOverride || cl_mPitchOverride )
+			{//FIXME: different people have different speed mouses,
+				if ( cl_mSensitivityOverride )
+				{
+					//this will fuck things up for them, need to clamp
+					//max input?
+					accelSensitivity = cl_mSensitivityOverride;
+				}
+				else
+				{
+					accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
+				}
+			}
+			else
+			{
+				accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
+			}
+			mx *= accelSensitivity;
+			my *= accelSensitivity;
+
+			if ( cl_showMouseRate->integer )
+				Com_Printf( "rate: %f, accelSensitivity: %f\n", rate, accelSensitivity );
 		}
 		else
 		{
-			accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
-			// scale by FOV
-			accelSensitivity *= cl.cgameSensitivity;
+			float rate[2];
+			float power[2];
+
+			// sensitivity remains pretty much unchanged at low speeds
+			// cl_mouseAccel is a power value to how the acceleration is shaped
+			// cl_mouseAccelOffset is the rate for which the acceleration will have doubled the non accelerated amplification
+			// NOTE: decouple the config cvars for independent acceleration setup along X and Y?
+
+			rate[0] = fabs( mx ) / speed;
+			rate[1] = fabs( my ) / speed;
+			power[0] = powf( rate[0] / cl_mouseAccelOffset->value, cl_mouseAccel->value );
+			power[1] = powf( rate[1] / cl_mouseAccelOffset->value, cl_mouseAccel->value );
+
+			if ( cl_mYawOverride || cl_mPitchOverride )
+			{//FIXME: different people have different speed mouses,
+				if ( cl_mSensitivityOverride )
+				{
+					//this will fuck things up for them, need to clamp
+					//max input?
+					mx = cl_mSensitivityOverride * (mx + ((mx < 0) ? -power[0] : power[0]) * cl_mouseAccelOffset->value);
+					my = cl_mSensitivityOverride * (my + ((my < 0) ? -power[1] : power[1]) * cl_mouseAccelOffset->value);
+				}
+				else
+				{
+					mx = cl_sensitivity->value * (mx + ((mx < 0) ? -power[0] : power[0]) * cl_mouseAccelOffset->value);
+					my = cl_sensitivity->value * (my + ((my < 0) ? -power[1] : power[1]) * cl_mouseAccelOffset->value);
+				}
+			}
+			else
+			{
+				mx = cl_sensitivity->value * (mx + ((mx < 0) ? -power[0] : power[0]) * cl_mouseAccelOffset->value);
+				my = cl_sensitivity->value * (my + ((my < 0) ? -power[1] : power[1]) * cl_mouseAccelOffset->value);
+			}
+
+			if ( cl_showMouseRate->integer )
+				Com_Printf( "ratex: %f, ratey: %f, powx: %f, powy: %f\n", rate[0], rate[1], power[0], power[1] );
 		}
 	}
 	else
 	{
-		accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
-		// scale by FOV
-		accelSensitivity *= cl.cgameSensitivity;
-	}
-
-	if ( rate && cl_showMouseRate->integer ) {
-		Com_Printf( "%f : %f\n", rate, accelSensitivity );
-	}
-
-	mx *= accelSensitivity;
-	my *= accelSensitivity;
-
-	if (!mx && !my) {
-		return;
-	}
-
-	// add mouse X/Y movement to cmd
-	if ( in_strafe.active ) {
-		cmd->rightmove = ClampChar( cmd->rightmove + m_side->value * mx );
-	} else {
-		if ( cl_mYawOverride )
-		{
-			cl.viewangles[YAW] -= cl_mYawOverride * mx;
+		if ( cl_mYawOverride || cl_mPitchOverride )
+		{//FIXME: different people have different speed mouses,
+			if ( cl_mSensitivityOverride )
+			{
+				//this will fuck things up for them, need to clamp
+				//max input?
+				mx *= cl_mSensitivityOverride;
+				my *= cl_mSensitivityOverride;
+			}
+			else
+			{
+				mx *= cl_sensitivity->value;
+				my *= cl_sensitivity->value;
+			}
 		}
 		else
 		{
-			cl.viewangles[YAW] -= m_yaw->value * mx;
+			mx *= cl_sensitivity->value;
+			my *= cl_sensitivity->value;
 		}
+	}
+
+	// ingame FOV
+	mx *= cl.cgameSensitivity;
+	my *= cl.cgameSensitivity;
+
+	// add mouse X/Y movement to cmd
+	if ( in_strafe.active )
+		cmd->rightmove = ClampChar( cmd->rightmove + m_side->value * mx );
+	else {
+		if ( cl_mYawOverride )
+			cl.viewangles[YAW] -= cl_mYawOverride * mx;
+		else
+			cl.viewangles[YAW] -= m_yaw->value * mx;
 	}
 
 	if ( (in_mlooking || cl_freelook->integer) && !in_strafe.active ) {
 		// VVFIXME - This is supposed to be a CVAR
 		const float cl_pitchSensitivity = 1.0f;
-		if ( cl_mPitchOverride )
-		{
+		const float pitch = cl_bUseFighterPitch ? m_pitchVeh->value : m_pitch->value;
+		if ( cl_mPitchOverride ) {
 			if ( pitch > 0 )
-			{
 				cl.viewangles[PITCH] += cl_mPitchOverride * my * cl_pitchSensitivity;
-			}
 			else
-			{
 				cl.viewangles[PITCH] -= cl_mPitchOverride * my * cl_pitchSensitivity;
-			}
 		}
 		else
-		{
 			cl.viewangles[PITCH] += pitch * my * cl_pitchSensitivity;
-		}
-	} else {
-		cmd->forwardmove = ClampChar( cmd->forwardmove - m_forward->value * my );
 	}
+	else
+		cmd->forwardmove = ClampChar( cmd->forwardmove - m_forward->value * my );
 }
 
 qboolean CL_NoUseableForce(void)

@@ -1242,7 +1242,6 @@ void CL_KeyDownEvent( int key, unsigned time )
 	{
 		SCR_StopCinematic(true);
 		return;
-//		Cvar_Set ("nextdemo","");
 //		key = A_ESCAPE;
 	}
 

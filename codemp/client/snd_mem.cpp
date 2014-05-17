@@ -6,9 +6,11 @@
 
 #include <string>
 
+#ifdef USE_OPENAL
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
 extern int s_UseOpenAL;
+#endif
 /*
 ===============================================================================
 
@@ -676,7 +678,6 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 	return qtrue;
 }
 
-
 // returns qtrue if this dir is allowed to keep loaded MP3s, else qfalse if they should be WAV'd instead...
 //
 // note that this is passed the original, un-language'd name
@@ -686,24 +687,15 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 //	they'd have noticed, but we therefore need to stop other levels using those. "sound/ambience" I can check for,
 //	but doors etc could be anything. Sigh...)
 //
+#define SOUND_CHARS_DIR "sound/chars/"
+#define SOUND_CHARS_DIR_LENGTH 12 // strlen( SOUND_CHARS_DIR )
 static qboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 {
-	static const char *psAllowedDirs[] =
-	{
-		"sound/chars/",
-//		"sound/chr_d/"	// no need for this now, or any other language, since we'll always compare against english
-	};
-
-	for (size_t i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
-	{
-		if (Q_stricmpn(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
-			return qtrue;	// found a dir that's allowed to keep MP3s
-	}
+	if ( Q_stricmpn( psFilename, SOUND_CHARS_DIR, SOUND_CHARS_DIR_LENGTH ) == 0 )
+		return qtrue;	// found a dir that's allowed to keep MP3s
 
 	return qfalse;
 }
-
-
 
 /*
 ==============
@@ -960,7 +952,7 @@ qboolean S_LoadSound( sfx_t *sfx )
 	return bReturn;
 }
 
-
+#ifdef USE_OPENAL
 /*
 	Precalculate the lipsync values for the whole sample
 */
@@ -1030,4 +1022,4 @@ void S_PreProcessLipSync(sfx_t *sfx)
 
 	sfx->lipSyncData[j] = sample;
 }
-
+#endif

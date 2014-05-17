@@ -2719,7 +2719,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	{
 		CG_PlayerAnimEvents( cent->localAnimIndex, sFileIndex, qfalse, cent->pe.legs.frame, curFrame, cent->currentState.number );
 	}
-	cent->pe.legs.oldFrame = cent->pe.torso.frame;
+	cent->pe.legs.oldFrame = cent->pe.legs.frame;
 	cent->pe.legs.frame = curFrame;
 
 	if (cent->noLumbar)
