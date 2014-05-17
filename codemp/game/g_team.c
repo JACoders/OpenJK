@@ -220,9 +220,11 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
+	/* zyk: now this function works in other gamemodes
 	if ( level.gametype < GT_TEAM ) {
 		return qfalse;
 	}
+	*/
 
 	if (ent1->s.eType == ET_NPC &&
 		ent1->s.NPC_class == CLASS_VEHICLE &&
@@ -251,11 +253,12 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
-	if (ent1->s.eType == ET_NPC && ent2->s.eType == ET_PLAYER)
+	// zyk: players and npcs can be in same team
+	if (ent1->s.eType == ET_NPC && ent2->s.eType == ET_PLAYER && ent1->client->playerTeam != NPCTEAM_PLAYER)
 	{
 		return qfalse;
 	}
-	else if (ent1->s.eType == ET_PLAYER && ent2->s.eType == ET_NPC)
+	else if (ent1->s.eType == ET_PLAYER && ent2->s.eType == ET_NPC && ent2->client->playerTeam != NPCTEAM_PLAYER)
 	{
 		return qfalse;
 	}

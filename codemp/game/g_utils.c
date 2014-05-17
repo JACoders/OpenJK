@@ -1574,6 +1574,7 @@ extern qboolean gSiegeRoundBegun;
 extern void quest_get_new_player(gentity_t *ent);
 extern void save_account(gentity_t *ent);
 extern void got_all_amulets(gentity_t *ent);
+extern void NPC_BSDefault( void );
 static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
 static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
 void TryUse( gentity_t *ent )
@@ -1954,6 +1955,20 @@ void TryUse( gentity_t *ent )
 			ent->client->pers.universe_quest_timer = level.time + 500;
 			ent->client->pers.universe_quest_messages = 205;
 			return;
+		}
+	}
+
+	if (target->NPC && target->client && target->s.NPC_class != CLASS_VEHICLE && OnSameTeam(ent,target))
+	{ // zyk: setting the npc leader so he follows the player
+		if (!target->client->leader)
+		{
+			target->client->leader = ent;
+			target->NPC->tempBehavior = BS_FOLLOW_LEADER;
+		}
+		else
+		{
+			target->client->leader = NULL;
+			target->NPC->tempBehavior = BS_STAND_GUARD;
 		}
 	}
 
