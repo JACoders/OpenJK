@@ -3349,6 +3349,8 @@ void set_max_health(gentity_t *ent)
 		ent->client->pers.max_rpg_health = 150 + (ent->client->pers.level * 2);
 	else
 		ent->client->pers.max_rpg_health = 100 + (ent->client->pers.level * 2);
+
+	ent->client->ps.stats[STAT_MAX_HEALTH] = ent->client->pers.max_rpg_health;
 }
 
 // zyk: sets the Max Shield a player can have in RPG Mode

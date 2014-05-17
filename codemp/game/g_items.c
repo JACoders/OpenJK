@@ -2436,6 +2436,11 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other )
 	{ // zyk: RPG Mode has the Max Shield skill that doesnt allow someone to heal shields above this value
 		other->client->ps.stats[STAT_ARMOR] += ent->item->quantity;
 
+		if ( other->client->ps.stats[STAT_ARMOR] > other->client->pers.max_rpg_shield ) 
+		{
+			other->client->ps.stats[STAT_ARMOR] = other->client->pers.max_rpg_shield;
+		}
+
 		return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
 	}
 	else if (other->client->sess.amrpgmode < 2 && other->client->ps.stats[STAT_ARMOR] < (other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag))
