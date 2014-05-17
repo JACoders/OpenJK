@@ -644,9 +644,6 @@ typedef struct clientPersistant_s {
 	// zyk: Race Mode. Sets the initial position of this racer which is calculated in racemode command. Default 0. If greater than 0, player joined a race
 	int race_position;
 
-	// zyk: used by quest powers that require a check every second
-	int quest_skill_timer;
-
 	// zyk: tests if this player can play a RPG Mode quest. Default 0. If 1, player can play a quest now
 	int can_play_quest;
 

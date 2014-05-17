@@ -4655,57 +4655,6 @@ void G_RunFrame( int levelTime ) {
 					Player_FireFlameThrower(ent);
 				}
 
-				// zyk: setting the max health of the player based on the max_rpg_health attribute
-				ent->client->ps.stats[STAT_MAX_HEALTH] = ent->client->pers.max_rpg_health;
-
-				if (ent->health > ent->client->ps.stats[STAT_MAX_HEALTH])
-					ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-
-				if (ent->client->ps.stats[STAT_ARMOR] > ent->client->pers.max_rpg_shield)
-					ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
-
-				if (ent->client->pers.quest_skill_timer < level.time)
-				{
-					if (ent->client->pers.rpg_class == 4 && ent->health > 0)
-					{ // zyk: Monk auto-healing ability
-						if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-							ent->health += 1;
-					}
-
-					if (ent->client->pers.rpg_class == 3 && ent->health > 0)
-					{ // zyk: Armored Soldier auto-shield-healing ability
-						if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-							ent->client->ps.stats[STAT_ARMOR] += 1;
-					}
-
-					if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && ent->health > 0)
-					{ // zyk: Light Power
-						// zyk: health regen
-						if (ent->health < ent->client->pers.max_rpg_health)
-							ent->health += 1;
-						else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-							ent->client->ps.stats[STAT_ARMOR] += 1;
-					}
-
-					/*
-					if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 0) && !(ent->client->pers.player_settings & (1 << 5)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
-					{ // zyk: Resurrection skill
-						if (ent->health < -3) // zyk: so the player doesnt take too long to resurrect
-							ent->health = -3;
-						else
-							ent->health += 1;
-
-						if (ent->health == 1) // zyk: reload his account to set all skills back
-						{
-							load_account(ent,qfalse);
-							initialize_rpg_skills(ent);
-						}
-					}
-					*/
-
-					ent->client->pers.quest_skill_timer = level.time + 1000;
-				}
-
 				if (level.quest_map > 0)
 				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now
 					if (level.quest_map == 1)

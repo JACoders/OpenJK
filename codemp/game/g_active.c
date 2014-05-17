@@ -797,6 +797,46 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	while ( client->timeResidual >= 1000 )
 	{
 		client->timeResidual -= 1000;
+
+		if (client->sess.amrpgmode == 2)
+		{
+			if (ent->client->pers.rpg_class == 4 && ent->health > 0)
+			{ // zyk: Monk auto-healing ability
+				if (ent->health < ent->client->pers.max_rpg_health)
+					ent->health += 1;
+			}
+
+			if (ent->client->pers.rpg_class == 3 && ent->health > 0)
+			{ // zyk: Armored Soldier auto-shield-healing ability
+				if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
+					ent->client->ps.stats[STAT_ARMOR] += 1;
+			}
+
+			if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && ent->health > 0)
+			{ // zyk: Light Power
+				// zyk: health regen
+				if (ent->health < ent->client->pers.max_rpg_health)
+					ent->health += 1;
+				else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
+					ent->client->ps.stats[STAT_ARMOR] += 1;
+			}
+
+			/*
+			if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 0) && !(ent->client->pers.player_settings & (1 << 5)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
+			{ // zyk: Resurrection skill
+				if (ent->health < -3) // zyk: so the player doesnt take too long to resurrect
+					ent->health = -3;
+				else
+					ent->health += 1;
+
+				if (ent->health == 1) // zyk: reload his account to set all skills back
+				{
+					load_account(ent,qfalse);
+					initialize_rpg_skills(ent);
+				}
+			}
+			*/
+		}
 	}
 }
 

@@ -4160,9 +4160,6 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
 
-		// zyk: resetting quest_skill_timer to 0 on account loading
-		ent->client->pers.quest_skill_timer = 0;
-
 		if (ent->client->pers.rpg_class == 3)
 		{ // zyk: setting the shot deflect of the Armored Soldier
 			ent->flags |= FL_SHIELDED;
