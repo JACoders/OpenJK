@@ -711,6 +711,130 @@ void misc_model_breakable_init( gentity_t *ent )
 	}
 }
 
+/*QUAKED misc_exploding_crate (1 0 0.25) (-24 -24 0) (24 24 64)
+model="models/map_objects/nar_shaddar/crate_xplode.md3"
+Basic exploding crate
+
+"health" - how much health the model has - default 40 (zero makes non-breakable)
+
+"splashRadius" - radius to do damage in - default 128
+"splashDamage" - amount of damage to do when it explodes - default 50
+
+"targetname" - auto-explodes
+"target" - what to use when it dies
+
+*/
+//------------------------------------------------------------
+void SP_misc_exploding_crate( gentity_t *ent )
+{
+	G_SpawnInt( "health", "40", &ent->health );
+	G_SpawnInt( "splashRadius", "128", &ent->splashRadius );
+	G_SpawnInt( "splashDamage", "50", &ent->splashDamage );
+
+	ent->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/crate_xplode.md3" );
+	G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
+	G_EffectIndex( "chunks/metalexplode" );
+	
+	VectorSet( ent->r.mins, -24, -24, 0 );
+	VectorSet( ent->r.maxs, 24, 24, 64 );
+
+	ent->r.contents = CONTENTS_SOLID|CONTENTS_OPAQUE|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP;//CONTENTS_SOLID;
+	ent->takedamage = qtrue;
+
+	G_SetOrigin( ent, ent->s.origin );
+	VectorCopy( ent->s.angles, ent->s.apos.trBase );
+	trap->LinkEntity((sharedEntity_t *)ent);
+
+	if ( ent->targetname )
+	{
+		ent->use = misc_model_use;
+	}
+
+	ent->material = MAT_CRATE1;
+	ent->die = misc_model_breakable_die;//ExplodeDeath;
+}
+
+/*QUAKED misc_gas_tank (1 0 0.25) (-4 -4 0) (4 4 40)
+model="models/map_objects/imp_mine/tank.md3"
+Basic exploding oxygen tank
+
+"health" - how much health the model has - default 20 (zero makes non-breakable)
+
+"splashRadius" - radius to do damage in - default 48
+"splashDamage" - amount of damage to do when it explodes - default 32
+
+"targetname" - auto-explodes
+"target" - what to use when it dies
+
+*/
+
+void gas_random_jet( gentity_t *self )
+{
+	vec3_t pt;
+
+	VectorCopy( self->r.currentOrigin, pt );
+	pt[2] += 50;
+
+	G_PlayEffect( G_EffectIndex("env/mini_gasjet"), pt, self->r.currentAngles );
+
+	self->nextthink = level.time + random() * 16000 + 12000; // do this rarely
+}
+
+//------------------------------------------------------------
+void GasBurst( gentity_t *self, gentity_t *attacker, int damage )
+{
+	vec3_t pt;
+
+	VectorCopy( self->r.currentOrigin, pt );
+	pt[2] += 46;
+
+	G_PlayEffect( G_EffectIndex("env/mini_flamejet"), pt, self->r.currentAngles );
+
+	// do some damage to anything that may be standing on top of it when it bursts into flame
+	pt[2] += 32;
+	G_RadiusDamage( pt, self, 32, 32, self, NULL, MOD_UNKNOWN );
+
+	//  only get one burst
+	self->pain = 0;
+}
+
+void SP_misc_gas_tank( gentity_t *ent )
+{
+	G_SpawnInt( "health", "20", &ent->health );
+	G_SpawnInt( "splashRadius", "48", &ent->splashRadius );
+	G_SpawnInt( "splashDamage", "32", &ent->splashDamage );
+
+	ent->s.modelindex = G_ModelIndex( "models/map_objects/imp_mine/tank.md3" );
+	G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");
+	G_EffectIndex( "chunks/metalexplode" );
+	G_EffectIndex( "env/mini_flamejet" );
+	G_EffectIndex( "env/mini_gasjet" );
+
+	VectorSet( ent->r.mins, -4, -4, 0 );
+	VectorSet( ent->r.maxs, 4, 4, 40 );
+
+	ent->r.contents = CONTENTS_SOLID;
+	ent->takedamage = qtrue;
+
+	G_SetOrigin( ent, ent->s.origin );
+	VectorCopy( ent->s.angles, ent->s.apos.trBase );
+	trap->LinkEntity ((sharedEntity_t *)ent);
+
+	ent->pain = GasBurst;
+
+	if ( ent->targetname )
+	{
+		ent->use = misc_model_use;
+	}
+
+	ent->material = MAT_METAL3;
+
+	ent->die = misc_model_breakable_die;
+
+	ent->think = gas_random_jet;
+	ent->nextthink = level.time + random() * 12000 + 6000; // do this rarely
+}
+
 /*QUAKED misc_G2model (1 0 0) (-16 -16 -16) (16 16 16)
 "model"		arbitrary .glm file to display
 */

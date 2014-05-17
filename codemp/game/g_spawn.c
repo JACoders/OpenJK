@@ -300,7 +300,9 @@ void SP_path_corner (gentity_t *self);
 void SP_misc_teleporter_dest (gentity_t *self);
 void SP_misc_model(gentity_t *ent);
 void SP_misc_model_static(gentity_t *ent);
+void SP_misc_exploding_crate( gentity_t *ent ); // zyk: added this function
 void SP_misc_model_breakable( gentity_t *ent ) ;
+void SP_misc_gas_tank( gentity_t *ent ); // zyk: added this function
 void SP_misc_G2model(gentity_t *ent);
 void SP_misc_portal_camera(gentity_t *ent);
 void SP_misc_portal_surface(gentity_t *ent);
@@ -557,7 +559,9 @@ spawn_t	spawns[] = {
 	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
 	{ "misc_bsp",							SP_misc_bsp },
 	{ "misc_cubemap",						SP_misc_cubemap },
+	{ "misc_exploding_crate",				SP_misc_exploding_crate}, // zyk: added this code
 	{ "misc_faller",						SP_misc_faller },
+	{ "misc_gas_tank",						SP_misc_gas_tank}, // zyk: added this code
 	{ "misc_G2model",						SP_misc_G2model },
 	{ "misc_holocron",						SP_misc_holocron },
 	{ "misc_maglock",						SP_misc_maglock },
