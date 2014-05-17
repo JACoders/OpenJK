@@ -500,6 +500,7 @@ NPC_WeaponsForTeam
 -------------------------
 */
 
+/* zyk: now always loads weapons from npc .cfg
 int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 {
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
@@ -741,6 +742,7 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 
 	return WP_NONE;
 }
+*/
 
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 
@@ -754,9 +756,10 @@ void NPC_SetWeapons( gentity_t *ent )
 {
 	int			bestWeap = WP_NONE;
 	int			curWeap;
-	int			weapons = NPC_WeaponsForTeam( (team_t)ent->client->playerTeam, ent->spawnflags, ent->NPC_type );
+	int			weapons = ent->client->ps.stats[STAT_WEAPONS];//NPC_WeaponsForTeam( (team_t)ent->client->playerTeam, ent->spawnflags, ent->NPC_type );
 
-	ent->client->ps.stats[STAT_WEAPONS] = 0;
+	// zyk: now it will use weapons set in npc .cfg
+	// ent->client->ps.stats[STAT_WEAPONS] = 0;
 	for ( curWeap = WP_SABER; curWeap < WP_NUM_WEAPONS; curWeap++ )
 	{
 		if ( (weapons & ( 1 << curWeap )) )

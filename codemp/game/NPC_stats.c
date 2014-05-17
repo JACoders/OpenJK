@@ -539,7 +539,9 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 #endif
 }
 
+/* zyk: no longer precache weapons
 extern int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type );
+
 void NPC_PrecacheWeapons( team_t playerTeam, int spawnflags, char *NPCtype )
 {
 	int weapons = NPC_WeaponsForTeam( playerTeam, spawnflags, NPCtype );
@@ -581,6 +583,7 @@ void NPC_PrecacheWeapons( team_t playerTeam, int spawnflags, char *NPCtype )
 	}
 #endif
 }
+*/
 
 /*
 void NPC_Precache ( char *NPCName )
@@ -858,7 +861,8 @@ void NPC_Precache ( gentity_t *spawner )
 	}
 
 	//precache this NPC's possible weapons
-	NPC_PrecacheWeapons( (team_t)playerTeam, spawner->spawnflags, spawner->NPC_type );
+	// zyk: no longer precahe weapons
+	//NPC_PrecacheWeapons( (team_t)playerTeam, spawner->spawnflags, spawner->NPC_type );
 
 //	CG_RegisterNPCCustomSounds( &ci );
 //	CG_RegisterNPCEffects( playerTeam );
