@@ -528,6 +528,10 @@ typedef struct clientPersistant_s {
 
 	int player_statuses;
 
+	// zyk: point marked in map so player can teleport to this point
+	vec3_t teleport_point;
+	vec3_t teleport_angles;
+
 	int	bitvalue; // zyk: player is considered as admin if bitvalue is > 0, because he has at least 1 admin command
 	
 	int level; // zyk: RPG mode level

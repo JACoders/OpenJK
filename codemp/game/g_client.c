@@ -2661,6 +2661,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client->pers.guardian_invoked_by_id = -1;
 
 	client->pers.skill_counter = 0;
+	VectorSet(client->pers.teleport_point,0,0,0);
+	VectorCopy(client->ps.viewangles,client->pers.teleport_angles);
 
 	// zyk: initializing player_statuses value
 	client->pers.player_statuses = 0;

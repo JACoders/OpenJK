@@ -8671,17 +8671,93 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 int zyk_get_client(char *arg)
 {
 	int i = 0;
+	int arg_num = atoi(arg);
 	gentity_t *this_ent = NULL;
 
-	for (i = 0; i < level.maxclients; i++)
-	{
-		this_ent = &g_entities[i];
-		if (this_ent && this_ent->client && Q_stricmp(arg, this_ent->client->pers.netname) == 0)
+	if (Q_stricmp(arg,"0") == 0 || (arg_num > 0 && arg_num < level.maxclients))
+	{ // zyk: argument is the client id. Search for the player who has this id
+		for (i = 0; i < level.maxclients; i++)
 		{
-			return this_ent->s.number;
+			this_ent = &g_entities[i];
+			if (this_ent && this_ent->client && arg_num == this_ent->s.number)
+			{
+				return this_ent->s.number;
+			}
+		}
+	}
+	else
+	{ // zyk: argument is part or full player netname
+		for (i = 0; i < level.maxclients; i++)
+		{
+			this_ent = &g_entities[i];
+			if (this_ent && this_ent->client && Q_stristr(this_ent->client->pers.netname,arg))
+			{
+				return this_ent->s.number;
+			}
 		}
 	}
 	return -1;
+}
+
+extern void zyk_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
+
+/*
+==================
+Cmd_Teleport_f
+==================
+*/
+void Cmd_Teleport_f( gentity_t *ent )
+{
+	if (ent->client->sess.amrpgmode > 0)
+	{
+		char arg1[MAX_STRING_CHARS];
+		int client_id = -1;
+
+		if (!(ent->client->pers.bitvalue & (1 << 3)))
+		{ // zyk: teleport admin command
+			trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+			return;
+		}
+
+		if (trap->Argc() == 1)
+		{
+			zyk_TeleportPlayer(ent,ent->client->pers.teleport_point,ent->client->pers.teleport_angles);
+		}
+		else
+		{
+			trap->Argv( 1,  arg1, sizeof( arg1 ) );
+
+			if (Q_stricmp(arg1, "point") == 0)
+			{
+				VectorCopy(ent->client->ps.origin,ent->client->pers.teleport_point);
+				VectorCopy(ent->client->ps.viewangles,ent->client->pers.teleport_angles);
+				trap->SendServerCommand( ent-g_entities, va("print \"Marked point %s with angles %s\n\"", vtos(ent->client->pers.teleport_point), vtos(ent->client->pers.teleport_angles)) );
+				return;
+			}
+			else
+			{
+				vec3_t target_origin;
+
+				client_id = zyk_get_client( arg1 );
+
+				if (client_id == -1)
+				{
+					trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+					return;
+				}
+
+				VectorCopy(g_entities[client_id].client->ps.origin,target_origin);
+				target_origin[2] = target_origin[2] + 120;
+
+				zyk_TeleportPlayer(ent,target_origin,g_entities[client_id].client->ps.viewangles);
+			}
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You are not logged in.\n\"" );
+		return;
+	}
 }
 
 /*
@@ -10539,15 +10615,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 	if (ent->client->sess.amrpgmode > 0)
 	{
 		char message[1024];
-		char message_content[4][150];
+		char message_content[5][150];
 		int i = 0;
 		strcpy(message,"");
-		while (i < 3)
+		while (i < 4)
 		{
 			strcpy(message_content[i],"");
 			i++;
 		}
-		message_content[4][0] = '\0';
+		message_content[5][0] = '\0';
 
 		if ((ent->client->pers.bitvalue & (1 << 0))) 
 		{
@@ -10576,7 +10652,16 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^1no\n",2));
 		}
 
-		for (i = 0; i < 3; i++)
+		if ((ent->client->pers.bitvalue & (1 << 3))) 
+		{
+			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^2yes\n",3));
+		}
+		else
+		{
+			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^1no\n",3));
+		}
+
+		for (i = 0; i < 4; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
@@ -10627,13 +10712,13 @@ void Cmd_AdminUp_f( gentity_t *ent ) {
 			}
 			if (Q_stricmp (arg2, "all") == 0)
 			{ // zyk: if player wrote all, give all commands to the target player
-				for (i = 0; i < 3; i++)
+				for (i = 0; i < 4; i++)
 					g_entities[client_id].client->pers.bitvalue |= (1 << i);
 			}
 			else
 			{
 				bitvaluecommand = atoi(arg2);
-				if (bitvaluecommand < 0 || bitvaluecommand >= 3)
+				if (bitvaluecommand < 0 || bitvaluecommand >= 4)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 					return; 
@@ -10699,7 +10784,7 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 			else
 			{
 				bitvaluecommand = atoi(arg2);
-				if (bitvaluecommand < 0 || bitvaluecommand >= 3)
+				if (bitvaluecommand < 0 || bitvaluecommand >= 4)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 					return; 
@@ -10816,10 +10901,11 @@ command_t commands[] = {
 	{ "settings",			Cmd_Settings_f,				CMD_NOINTERMISSION },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
-	{ "stuff",				Cmd_Stuff_f,					CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "stuff",				Cmd_Stuff_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
 	{ "teamvote",			Cmd_TeamVote_f,				CMD_NOINTERMISSION },
+	{ "teleport",			Cmd_Teleport_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "tell",				Cmd_Tell_f,					0 },
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
