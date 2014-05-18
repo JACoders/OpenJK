@@ -188,6 +188,15 @@ void Boba_Precache( void )
 
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
+void Boba_ChangeWeapon( int wp )
+{
+	if ( NPCS.NPC->s.weapon == wp )
+	{
+		return;
+	}
+	NPC_ChangeWeapon( wp );
+	G_AddEvent( NPCS.NPC, EV_GENERAL_SOUND, G_SoundIndex( "sound/weapons/change.wav" ));
+}
 
 void WP_ResistForcePush( gentity_t *self, gentity_t *pusher, qboolean noPenalty )
 {
@@ -487,6 +496,35 @@ void Boba_FireDecide( void )
 		return;
 	}
 
+	/*
+	if ( NPC->enemy->enemy != NPC && NPC->health == NPC->client->pers.maxHealth )
+	{
+		NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+		Boba_ChangeWeapon( WP_DISRUPTOR );
+	}
+	else */if ( NPCS.NPC->enemy->s.weapon == WP_SABER )
+	{
+		NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+		Boba_ChangeWeapon( WP_ROCKET_LAUNCHER );
+	}
+	else
+	{
+		if ( NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.5f )
+		{
+			NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+			Boba_ChangeWeapon( WP_BLASTER );
+			NPCS.NPCInfo->burstMin = 3;
+			NPCS.NPCInfo->burstMean = 12;
+			NPCS.NPCInfo->burstMax = 20;
+			NPCS.NPCInfo->burstSpacing = Q_irand( 300, 750 );//attack debounce
+		}
+		else
+		{
+			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+			Boba_ChangeWeapon( WP_BLASTER );
+		}
+	}
+
 	VectorClear( impactPos );
 	enemyDist = DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 
@@ -506,6 +544,29 @@ void Boba_FireDecide( void )
 		shoot = qfalse;
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
 		NPCS.ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);
+	}
+	else if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
+	{//enemy within 128
+		if ( (NPCS.NPC->client->ps.weapon == WP_FLECHETTE || NPCS.NPC->client->ps.weapon == WP_REPEATER) &&
+			(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
+		{//shooting an explosive, but enemy too close, switch to primary fire
+			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+			//FIXME: we can never go back to alt-fire this way since, after this, we don't know if we were initially supposed to use alt-fire or not...
+		}
+	}
+	else if ( enemyDist > 65536 )//256 squared
+	{
+		if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
+		{//sniping... should be assumed
+			if ( !(NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) )
+			{//use primary fire
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				//reset fire-timing variables
+				NPC_ChangeWeapon( WP_DISRUPTOR );
+				NPC_UpdateAngles( qtrue, qtrue );
+				return;
+			}
+		}
 	}
 
 	//can we see our target?
@@ -625,9 +686,6 @@ void Boba_FireDecide( void )
 								distThreshold = 65536/*256*256*/;
 							}
 							break;
-							// zyk: added sniper condition
-						case WP_DISRUPTOR:
-							distThreshold = 0;
 						default:
 							break;
 						}
@@ -658,16 +716,6 @@ void Boba_FireDecide( void )
 									distThreshold = 262144/*512*512*/;
 								}
 								break;
-							// zyk: added sniper distance
-							case WP_DISRUPTOR:
-								if ( NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE )
-								{
-									distThreshold = 8192*8192;
-								}
-								else
-								{
-									distThreshold = 256*256;
-								}
 							default:
 								break;
 							}
@@ -716,6 +764,15 @@ void Boba_FireDecide( void )
 				if( !(NPCS.NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 				{
 					WeaponThink( qtrue );
+				}
+				//NASTY
+				if ( NPCS.NPC->s.weapon == WP_ROCKET_LAUNCHER
+					&& (NPCS.ucmd.buttons&BUTTON_ATTACK)
+					&& !Q_irand( 0, 3 ) )
+				{//every now and then, shoot a homing rocket
+					NPCS.ucmd.buttons &= ~BUTTON_ATTACK;
+					NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
+					NPCS.NPC->client->ps.weaponTime = Q_irand( 500, 1500 );
 				}
 			}
 		}
@@ -3690,6 +3747,29 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 
 	CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_eyes );
 
+	if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT
+		&& TIMER_Done( NPCS.NPC, "flameTime" )
+		&& NPCS.NPC->s.weapon != WP_NONE
+		&& NPCS.NPC->s.weapon != WP_DISRUPTOR
+		&& (NPCS.NPC->s.weapon != WP_ROCKET_LAUNCHER||!(NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE))
+		&& NPCS.NPC->s.weapon != WP_THERMAL
+		&& NPCS.NPC->s.weapon != WP_TRIP_MINE
+		&& NPCS.NPC->s.weapon != WP_DET_PACK
+		&& NPCS.NPC->s.weapon != WP_STUN_BATON
+		/*&& NPC->s.weapon != WP_MELEE*/ )
+	{//boba leads his enemy
+		if ( NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.5f )
+		{//lead
+			float missileSpeed = WP_SpeedOfMissileForWeapon( NPCS.NPC->s.weapon, ((qboolean)(NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE)) );
+			if ( missileSpeed )
+			{
+				float eDist = Distance( eyes, enemy_eyes );
+				eDist /= missileSpeed;//How many seconds it will take to get to the enemy
+				VectorMA( enemy_eyes, eDist*flrand(0.95f,1.25f), NPCS.NPC->enemy->client->ps.velocity, enemy_eyes );
+			}
+		}
+	}
+
 	//Find the desired angles
 	if ( !NPCS.NPC->client->ps.saberInFlight
 		&& (NPCS.NPC->client->ps.legsAnim == BOTH_A2_STABBACK1
@@ -6208,6 +6288,16 @@ void NPC_BSJedi_Default( void )
 			NPCS.NPC->s.loopSound = G_SoundIndex( "sound/movers/objects/green_beam_lp2.wav" );//test/charm.wav" );
 		}
 
+		if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
+		{
+			if ( NPCS.NPC->enemy->enemy != NPCS.NPC && NPCS.NPC->health == NPCS.NPC->client->pers.maxHealth && DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin )>(800*800) )
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				Boba_ChangeWeapon( WP_DISRUPTOR );
+				NPC_BSSniper_Default();
+				return;
+			}
+		}
 		Jedi_Attack();
 		//if we have multiple-jedi combat, probably need to keep checking (at certain debounce intervals) for a better (closer, more active) enemy and switch if needbe...
 		if ( ((!NPCS.ucmd.buttons&&!NPCS.NPC->client->ps.fd.forcePowersActive)||(NPCS.NPC->enemy&&NPCS.NPC->enemy->health<=0)) && NPCS.NPCInfo->enemyCheckDebounceTime < level.time )

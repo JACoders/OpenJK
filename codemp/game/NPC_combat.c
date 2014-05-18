@@ -846,11 +846,33 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 
 void NPC_ChangeWeapon( int newWeapon )
 {
-	if (NPCS.NPC->client->ps.weapon != newWeapon)
+	/*
+	qboolean	changing = qfalse;
+	if ( newWeapon != NPC->client->ps.weapon )
 	{
-		G_AddEvent( NPCS.NPC, EV_GENERAL_SOUND, G_SoundIndex( "sound/weapons/change.wav" ));
-		ChangeWeapon(NPCS.NPC, newWeapon);
+		changing = qtrue;
 	}
+	if ( changing && NPC->weaponModel[0] > 9 )
+	{
+		trap->G2API_RemoveGhoul2Model( NPC->ghoul2, NPC->weaponModel[0] );
+	}
+	ChangeWeapon( NPC, newWeapon );
+	if ( changing && NPC->client->ps.weapon != WP_NONE )
+	{
+		if ( NPC->client->ps.weapon == WP_SABER )
+		{
+			G_CreateG2AttachedWeaponModel( NPC, NPC->client->ps.saber[0].model, NPC->handRBolt, 0 );
+			if ( NPC->client->ps.dualSabers )
+			{
+				G_CreateG2AttachedWeaponModel( NPC, NPC->client->ps.saber[1].model, NPC->handLBolt, 0 );
+			}
+		}
+		else
+		{
+			G_CreateG2AttachedWeaponModel( NPC, weaponData[NPC->client->ps.weapon].weaponMdl, NPC->handRBolt, 0 );
+		}
+	}*/
+	//rwwFIXMEFIXME: Change the same way as players, all this stuff is just crazy.
 }
 /*
 void NPC_ApplyWeaponFireDelay(void)
@@ -1016,7 +1038,7 @@ Added: hacks for Borg
 */
 void WeaponThink( qboolean inCombat )
 {
-	int i = 0, chosen_weapon = 0;
+
 	if ( NPCS.client->ps.weaponstate == WEAPON_RAISING || NPCS.client->ps.weaponstate == WEAPON_DROPPING )
 	{
 		NPCS.ucmd.weapon = NPCS.client->ps.weapon;
@@ -1032,47 +1054,52 @@ void WeaponThink( qboolean inCombat )
 		Add_Ammo (NPCS.NPC, NPCS.client->ps.weapon, 100);
 	}
 
-	// zyk: testing if we should use alt fire
-	if (NPCS.client->ps.weapon != WP_SABER)
-	{
-		if (!(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && Q_irand(0,99) < 7)
+	/*if ( NPC->playerTeam == TEAM_BORG )
+	{//HACK!!!
+		if(!(NPC->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_BORG_WEAPON )))
+			NPC->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BORG_WEAPON );
+
+		if ( client->ps.weapon != WP_BORG_WEAPON )
 		{
-			NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-		}
-		else if (Q_irand(0,99) < 7)
-		{
-			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+			NPC_ChangeWeapon( WP_BORG_WEAPON );
+			Add_Ammo (NPC, client->ps.weapon, 10);
+			NPCInfo->currentAmmo = client->ps.ammo[client->ps.weapon];
 		}
 	}
+	else */
 
-	// zyk: new code for npcs to change weapon
-	if (Q_irand(0,99) < 5)
-	{ // zyk: gets the next weapon of the npc
-		for (i = (NPCS.client->ps.weapon + 1); i < WP_NUM_WEAPONS; i++)
+	/*if ( NPC->client->playerTeam == TEAM_SCAVENGERS )
+	{//HACK!!!
+		if(!(NPC->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_BLASTER )))
+			NPC->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BLASTER );
+
+		if ( client->ps.weapon != WP_BLASTER )
+
 		{
-			if (NPCS.client->ps.stats[STAT_WEAPONS] & (1 << i))
-			{
-				chosen_weapon = i;
-				break;
-			}
+			NPC_ChangeWeapon( WP_BLASTER );
+			Add_Ammo (NPC, client->ps.weapon, 10);
+//			NPCInfo->currentAmmo = client->ps.ammo[client->ps.weapon];
+			NPCInfo->currentAmmo = client->ps.ammo[weaponData[client->ps.weapon].ammoIndex];	// checkme
+		}
+	}
+	else*/
+//MCG - End
+	{
+		// if the gun in our hands is out of ammo, we need to change
+		/*if ( client->ps.ammo[client->ps.weapon] == 0 )
+		{
+			NPCInfo->aiFlags |= NPCAI_CHECK_WEAPON;
 		}
 
-		if (chosen_weapon == 0)
-		{ // zyk: didnt find yet
-			for (i = 0; i < NPCS.client->ps.weapon; i++)
+		if ( NPCInfo->aiFlags & NPCAI_CHECK_WEAPON )
+		{
+			NPCInfo->aiFlags &= ~NPCAI_CHECK_WEAPON;
+			bestWeapon = ChooseBestWeapon();
+			if ( bestWeapon != client->ps.weapon )
 			{
-				if (NPCS.client->ps.stats[STAT_WEAPONS] & (1 << i))
-				{
-					chosen_weapon = i;
-					break;
-				}
+				NPC_ChangeWeapon( bestWeapon );
 			}
-		}
-
-		if (chosen_weapon != 0)
-		{ // zyk: got a new weapon
-			NPC_ChangeWeapon(chosen_weapon);
-		}
+		}*/
 	}
 
 	NPCS.ucmd.weapon = NPCS.client->ps.weapon;
