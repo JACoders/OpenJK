@@ -569,7 +569,8 @@ void Rancor_Attack( float distance, qboolean doCharge )
 					G_Dismember( NPCS.NPC->activator, NPCS.NPC, NPCS.NPC->activator->r.currentOrigin, G2_MODELPART_WAIST, 90, 0, NPCS.NPC->activator->client->ps.torsoAnim, qtrue);
 					//G_DoDismemberment( NPC->activator, NPC->enemy->r.currentOrigin, MOD_SABER, 1000, HL_WAIST, qtrue );
 					//KILL
-					G_Damage( NPCS.NPC->activator, NPCS.NPC, NPCS.NPC, vec3_origin, NPCS.NPC->activator->r.currentOrigin, NPCS.NPC->enemy->health+10, DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, MOD_MELEE );//, HL_NONE );
+					// zyk: increased from health+10 to health+2000 because of RPG players
+					G_Damage( NPCS.NPC->activator, NPCS.NPC, NPCS.NPC, vec3_origin, NPCS.NPC->activator->r.currentOrigin, NPCS.NPC->enemy->health+2000, DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, MOD_MELEE );//, HL_NONE );
 					NPCS.NPC->activator->client->ps.forceHandExtend = HANDEXTEND_NONE;
 					NPCS.NPC->activator->client->ps.forceHandExtendTime = 0;
 					NPC_SetAnim( NPCS.NPC->activator, SETANIM_BOTH, BOTH_SWIM_IDLE1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );

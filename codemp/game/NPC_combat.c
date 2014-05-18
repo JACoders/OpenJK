@@ -619,7 +619,8 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 
 	case WP_SABER:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		ent->NPC->burstSpacing = 0;//attackdebounce
+		// zyk: changed saber burstSpacing from 0 to 500 so npcs dont attack super fast
+		ent->NPC->burstSpacing = 500;//attackdebounce
 		break;
 
 	case WP_DISRUPTOR:
