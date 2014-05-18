@@ -1866,6 +1866,18 @@ static void CopyVert(const srfVert_t * in, srfVert_t * out)
 	}
 }
 
+struct packedVertex_t
+{
+	vec3_t position;
+	uint32_t normal;
+#ifdef USE_VERT_TANGENT_SPACE
+	uint32_t tangent;
+#endif
+	vec2_t texcoord;
+	vec2_t lightmapCoords[MAXLIGHTMAPS];
+	vec4_t colors[MAXLIGHTMAPS];
+	uint32_t lightDirection;
+};
 
 /*
 ===============
@@ -1877,7 +1889,7 @@ static void R_CreateWorldVBOs(void)
 	int             i, j, k;
 
 	int             numVerts;
-	srfVert_t      *verts;
+	packedVertex_t  *verts;
 
 	int             numIndexes;
 	glIndex_t      *indexes;
@@ -2006,7 +2018,7 @@ static void R_CreateWorldVBOs(void)
 		ri->Printf(PRINT_ALL, "...calculating world VBO %d ( %i verts %i tris )\n", k, numVerts, numIndexes / 3);
 
 		// create arrays
-		verts = (srfVert_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(srfVert_t)); 
+		verts = (packedVertex_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(packedVertex_t)); 
 		indexes = (glIndex_t *)ri->Hunk_AllocateTempMemory(numIndexes * sizeof(glIndex_t)); 
 
 		// set up indices and copy vertices
@@ -2032,21 +2044,53 @@ static void R_CreateWorldVBOs(void)
 
 			for(i = 0; i < bspSurf->numVerts; i++)
 			{
-				CopyVert(&bspSurf->verts[i], &verts[numVerts++]);
+				packedVertex_t& vert = verts[numVerts++];
+
+				VectorCopy (bspSurf->verts[i].xyz, vert.position);
+				vert.normal = R_VboPackNormal (bspSurf->verts[i].normal);
+#ifdef USE_VERT_TANGENT_SPACE
+				vert.tangent = R_VboPackTangent (bspSurf->verts[i].tangent);
+#endif
+				VectorCopy2 (bspSurf->verts[i].st, vert.texcoord);
+
+				for (int j = 0; j < MAXLIGHTMAPS; j++)
+				{
+					VectorCopy2 (bspSurf->verts[i].lightmap[j], vert.lightmapCoords[j]);
+				}
+
+				for (int j = 0; j < MAXLIGHTMAPS; j++)
+				{
+					VectorCopy4 (bspSurf->verts[i].vertexColors[j], vert.colors[j]);
+				}
+
+				vert.lightDirection = R_VboPackNormal (bspSurf->verts[i].lightdir);
 			}
 		}
 
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", k), numVerts, verts,
-									   ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD | ATTR_TANGENT |
-									   ATTR_NORMAL | ATTR_COLOR | ATTR_LIGHTDIRECTION, VBO_USAGE_STATIC);
-#else
-		vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", k), numVerts, verts,
-									   ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD |
-									   ATTR_NORMAL | ATTR_COLOR | ATTR_LIGHTDIRECTION, VBO_USAGE_STATIC);
-#endif
+		vbo = R_CreateVBO((byte *)verts, sizeof (packedVertex_t) * numVerts, VBO_USAGE_STATIC);
+		ibo = R_CreateIBO((byte *)indexes, numIndexes * sizeof (glIndex_t), VBO_USAGE_STATIC);
 
-		ibo = R_CreateIBO2(va("staticBspModel0_IBO %i", k), numIndexes, indexes, VBO_USAGE_STATIC);
+		// Setup the offsets and strides
+		vbo->ofs_xyz = offsetof (packedVertex_t, position);
+		vbo->ofs_normal = offsetof (packedVertex_t, normal);
+#ifdef USE_VERT_TANGENT_SPACE
+		vbo->ofs_tangent = offsetof (packedVertex_t, tangent);
+#endif
+		vbo->ofs_st = offsetof (packedVertex_t, texcoord);
+		vbo->ofs_lightmap = offsetof (packedVertex_t, lightmapCoords);
+		vbo->ofs_vertexcolor = offsetof (packedVertex_t, colors);
+		vbo->ofs_lightdir = offsetof (packedVertex_t, lightDirection);
+
+		const size_t packedVertexSize = sizeof (packedVertex_t);
+		vbo->stride_xyz = packedVertexSize;
+		vbo->stride_normal = packedVertexSize;
+#ifdef USE_VERT_TANGENT_SPACE
+		vbo->stride_tangent = packedVertexSize;
+#endif
+		vbo->stride_st = packedVertexSize;
+		vbo->stride_lightmap = packedVertexSize;
+		vbo->stride_vertexcolor = packedVertexSize;
+		vbo->stride_lightdir = packedVertexSize;
 
 		// point bsp surfaces to VBO
 		for (currSurf = firstSurf; currSurf < lastSurf; currSurf++)
@@ -3211,9 +3255,8 @@ void R_MergeLeafSurfaces(void)
 		}
 
 		// create ibo
-		ibo = tr.ibos[tr.numIBOs] = (IBO_t*)ri->Hunk_Alloc(sizeof(*ibo), h_low);
+		ibo = tr.ibos[tr.numIBOs++] = (IBO_t*)ri->Hunk_Alloc(sizeof(*ibo), h_low);
 		memset(ibo, 0, sizeof(*ibo));
-		Q_strncpyz(ibo->name, va("staticWorldMesh_IBO_mergedSurfs%i", tr.numIBOs++), sizeof(ibo->name));
 		numIboIndexes = 0;
 
 		// allocate indexes

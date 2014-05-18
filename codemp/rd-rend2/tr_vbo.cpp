@@ -91,35 +91,31 @@ void R_VboUnpackNormal(vec3_t v, uint32_t b)
 	}
 }
 
+static GLenum GetGLBufferUsage ( vboUsage_t usage )
+{
+	switch (usage)
+	{
+		case VBO_USAGE_STATIC:
+			return GL_STATIC_DRAW_ARB;
+
+		case VBO_USAGE_DYNAMIC:
+			return GL_DYNAMIC_DRAW_ARB;
+
+		default:
+			ri->Error (ERR_FATAL, "bad vboUsage_t given: %i", usage);
+			return GL_INVALID_OPERATION;
+	}
+}
+
 /*
 ============
 R_CreateVBO
 ============
 */
-VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize, vboUsage_t usage)
+VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 {
 	VBO_t          *vbo;
-	int				glUsage;
-
-	switch (usage)
-	{
-		case VBO_USAGE_STATIC:
-			glUsage = GL_STATIC_DRAW_ARB;
-			break;
-
-		case VBO_USAGE_DYNAMIC:
-			glUsage = GL_DYNAMIC_DRAW_ARB;
-			break;
-
-		default:
-			Com_Error(ERR_FATAL, "bad vboUsage_t given: %i", usage);
-			return NULL;
-	}
-
-	if(strlen(name) >= MAX_QPATH)
-	{
-		ri->Error(ERR_DROP, "R_CreateVBO: \"%s\" is too long", name);
-	}
+	int				glUsage = GetGLBufferUsage (usage);
 
 	if ( tr.numVBOs == MAX_VBOS ) {
 		ri->Error( ERR_DROP, "R_CreateVBO: MAX_VBOS hit");
@@ -131,8 +127,6 @@ VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize,
 	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
-
-	Q_strncpyz(vbo->name, name, sizeof(vbo->name));
 
 	vbo->vertexesSize = vertexesSize;
 
@@ -152,377 +146,13 @@ VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize,
 
 /*
 ============
-R_CreateVBO2
-============
-*/
-VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * verts, unsigned int stateBits, vboUsage_t usage)
-{
-	VBO_t          *vbo;
-	int             i;
-
-	byte           *data;
-	int             dataSize;
-	int             dataOfs;
-
-	int				glUsage;
-
-	switch (usage)
-	{
-		case VBO_USAGE_STATIC:
-			glUsage = GL_STATIC_DRAW_ARB;
-			break;
-
-		case VBO_USAGE_DYNAMIC:
-			glUsage = GL_DYNAMIC_DRAW_ARB;
-			break;
-
-		default:
-			Com_Error(ERR_FATAL, "bad vboUsage_t given: %i", usage);
-			return NULL;
-	}
-
-	if(!numVertexes)
-		return NULL;
-
-	if(strlen(name) >= MAX_QPATH)
-	{
-		ri->Error(ERR_DROP, "R_CreateVBO2: \"%s\" is too long", name);
-	}
-
-	if ( tr.numVBOs == MAX_VBOS ) {
-		ri->Error( ERR_DROP, "R_CreateVBO2: MAX_VBOS hit");
-	}
-
-	R_IssuePendingRenderCommands();
-
-	vbo = tr.vbos[tr.numVBOs] = (VBO_t *)ri->Hunk_Alloc(sizeof(*vbo), h_low);
-	tr.numVBOs++;
-
-	memset(vbo, 0, sizeof(*vbo));
-
-	Q_strncpyz(vbo->name, name, sizeof(vbo->name));
-
-	if (usage == VBO_USAGE_STATIC)
-	{
-		// since these vertex attributes are never altered, interleave them
-		vbo->ofs_xyz = 0;
-		dataSize = sizeof(verts[0].xyz);
-
-		if(stateBits & ATTR_NORMAL)
-		{
-			vbo->ofs_normal = dataSize;
-			dataSize += sizeof(uint32_t);
-		}
-
-#ifdef USE_VERT_TANGENT_SPACE
-		if(stateBits & ATTR_TANGENT)
-		{
-			vbo->ofs_tangent = dataSize;
-			dataSize += sizeof(uint32_t);
-		}
-#endif
-
-		if(stateBits & ATTR_TEXCOORD)
-		{
-			vbo->ofs_st = dataSize;
-			dataSize += sizeof(verts[0].st);
-		}
-
-		if(stateBits & ATTR_LIGHTCOORD)
-		{
-			vbo->ofs_lightmap = dataSize;
-			dataSize += sizeof(verts[0].lightmap);
-		}
-
-		if(stateBits & ATTR_COLOR)
-		{
-			vbo->ofs_vertexcolor = dataSize;
-			dataSize += sizeof(verts[0].vertexColors);
-		}
-
-		if(stateBits & ATTR_LIGHTDIRECTION)
-		{
-			vbo->ofs_lightdir = dataSize;
-			dataSize += sizeof(uint32_t);
-		}
-
-		vbo->stride_xyz         = dataSize;
-		vbo->stride_normal      = dataSize;
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo->stride_tangent     = dataSize;
-#endif
-		vbo->stride_st          = dataSize;
-		vbo->stride_lightmap    = dataSize;
-		vbo->stride_vertexcolor = dataSize;
-		vbo->stride_lightdir    = dataSize;
-
-		// create VBO
-		dataSize *= numVertexes;
-		data = (byte *)ri->Hunk_AllocateTempMemory(dataSize);
-		dataOfs = 0;
-
-		//ri->Printf(PRINT_ALL, "CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
-			//vbo->stride_xyz, vbo->stride_normal, vbo->stride_st, vbo->stride_lightmap, vbo->stride_vertexcolor);
-
-		for (i = 0; i < numVertexes; i++)
-		{
-			// xyz
-			memcpy(data + dataOfs, &verts[i].xyz, sizeof(verts[i].xyz));
-			dataOfs += sizeof(verts[i].xyz);
-
-			// normal
-			if(stateBits & ATTR_NORMAL)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackNormal(verts[i].normal);
-
-				dataOfs += sizeof(uint32_t);
-			}
-
-#ifdef USE_VERT_TANGENT_SPACE
-			// tangent
-			if(stateBits & ATTR_TANGENT)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackTangent(verts[i].tangent);
-
-				dataOfs += sizeof(uint32_t);
-			}
-#endif
-
-			// vertex texcoords
-			if(stateBits & ATTR_TEXCOORD)
-			{
-				memcpy(data + dataOfs, &verts[i].st, sizeof(verts[i].st));
-				dataOfs += sizeof(verts[i].st);
-			}
-
-			// feed vertex lightmap texcoords
-			if(stateBits & ATTR_LIGHTCOORD)
-			{
-				memcpy(data + dataOfs, &verts[i].lightmap, sizeof(verts[i].lightmap));
-				dataOfs += sizeof(verts[i].lightmap);
-			}
-
-			// feed vertex colors
-			if(stateBits & ATTR_COLOR)
-			{
-				memcpy(data + dataOfs, &verts[i].vertexColors, sizeof(verts[i].vertexColors));
-				dataOfs += sizeof(verts[i].vertexColors);
-			}
-
-			// feed vertex light directions
-			if(stateBits & ATTR_LIGHTDIRECTION)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackNormal(verts[i].lightdir);
-
-				dataOfs += sizeof(uint32_t);
-			}
-		}
-	}
-	else
-	{
-		// since these vertex attributes may be changed, put them in flat arrays
-		dataSize = sizeof(verts[0].xyz);
-
-		if(stateBits & ATTR_NORMAL)
-		{
-			dataSize += sizeof(uint32_t);
-		}
-
-#ifdef USE_VERT_TANGENT_SPACE
-		if(stateBits & ATTR_TANGENT)
-		{
-			dataSize += sizeof(uint32_t);
-		}
-#endif
-
-		if(stateBits & ATTR_TEXCOORD)
-		{
-			dataSize += sizeof(verts[0].st);
-		}
-
-		if(stateBits & ATTR_LIGHTCOORD)
-		{
-			dataSize += sizeof(verts[0].lightmap);
-		}
-
-		if(stateBits & ATTR_COLOR)
-		{
-			dataSize += sizeof(verts[0].vertexColors);
-		}
-
-		if(stateBits & ATTR_LIGHTDIRECTION)
-		{
-			dataSize += sizeof(uint32_t);
-		}
-
-		// create VBO
-		dataSize *= numVertexes;
-		data = (byte *)ri->Hunk_AllocateTempMemory(dataSize);
-		dataOfs = 0;
-
-		vbo->ofs_xyz            = 0;
-		vbo->ofs_normal         = 0;
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo->ofs_tangent        = 0;
-#endif
-		vbo->ofs_st             = 0;
-		vbo->ofs_lightmap       = 0;
-		vbo->ofs_vertexcolor    = 0;
-		vbo->ofs_lightdir       = 0;
-
-		vbo->stride_xyz         = sizeof(verts[0].xyz);
-		vbo->stride_normal      = sizeof(uint32_t);
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo->stride_tangent     = sizeof(uint32_t);
-#endif
-		vbo->stride_vertexcolor = sizeof(verts[0].vertexColors);
-		vbo->stride_st          = sizeof(verts[0].st);
-		vbo->stride_lightmap    = sizeof(verts[0].lightmap);
-		vbo->stride_lightdir    = sizeof(uint32_t);
-
-		//ri->Printf(PRINT_ALL, "2CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
-			//vbo->stride_xyz, vbo->stride_normal, vbo->stride_st, vbo->stride_lightmap, vbo->stride_vertexcolor);
-
-		// xyz
-		for (i = 0; i < numVertexes; i++)
-		{
-			memcpy(data + dataOfs, &verts[i].xyz, sizeof(verts[i].xyz));
-			dataOfs += sizeof(verts[i].xyz);
-		}
-
-		// normal
-		if(stateBits & ATTR_NORMAL)
-		{
-			vbo->ofs_normal = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackNormal(verts[i].normal);
-
-				dataOfs += sizeof(uint32_t);
-			}
-		}
-
-#ifdef USE_VERT_TANGENT_SPACE
-		// tangent
-		if(stateBits & ATTR_TANGENT)
-		{
-			vbo->ofs_tangent = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackTangent(verts[i].tangent);
-
-				dataOfs += sizeof(uint32_t);
-			}
-		}
-#endif
-
-		// vertex texcoords
-		if(stateBits & ATTR_TEXCOORD)
-		{
-			vbo->ofs_st = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				memcpy(data + dataOfs, &verts[i].st, sizeof(verts[i].st));
-				dataOfs += sizeof(verts[i].st);
-			}
-		}
-
-		// feed vertex lightmap texcoords
-		if(stateBits & ATTR_LIGHTCOORD)
-		{
-			vbo->ofs_lightmap = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				memcpy(data + dataOfs, &verts[i].lightmap, sizeof(verts[i].lightmap));
-				dataOfs += sizeof(verts[i].lightmap);
-			}
-		}
-
-		// feed vertex colors
-		if(stateBits & ATTR_COLOR)
-		{
-			vbo->ofs_vertexcolor = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				memcpy(data + dataOfs, &verts[i].vertexColors, sizeof(verts[i].vertexColors));
-				dataOfs += sizeof(verts[i].vertexColors);
-			}
-		}
-
-		// feed vertex lightdirs
-		if(stateBits & ATTR_LIGHTDIRECTION)
-		{
-			vbo->ofs_lightdir = dataOfs;
-			for (i = 0; i < numVertexes; i++)
-			{
-				uint32_t *p = (uint32_t *)(data + dataOfs);
-
-				*p = R_VboPackNormal(verts[i].lightdir);
-
-				dataOfs += sizeof(uint32_t);
-			}
-		}
-	}
-
-
-	vbo->vertexesSize = dataSize;
-
-	qglGenBuffersARB(1, &vbo->vertexesVBO);
-
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo->vertexesVBO);
-	qglBufferDataARB(GL_ARRAY_BUFFER_ARB, dataSize, data, glUsage);
-
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-
-	glState.currentVBO = NULL;
-
-	GL_CheckErrors();
-
-	ri->Hunk_FreeTempMemory(data);
-
-	return vbo;
-}
-
-
-/*
-============
 R_CreateIBO
 ============
 */
-IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, vboUsage_t usage)
+IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 {
 	IBO_t          *ibo;
-	int				glUsage;
-
-	switch (usage)
-	{
-		case VBO_USAGE_STATIC:
-			glUsage = GL_STATIC_DRAW_ARB;
-			break;
-
-		case VBO_USAGE_DYNAMIC:
-			glUsage = GL_DYNAMIC_DRAW_ARB;
-			break;
-
-		default:
-			Com_Error(ERR_FATAL, "bad vboUsage_t given: %i", usage);
-			return NULL;
-	}
-
-	if(strlen(name) >= MAX_QPATH)
-	{
-		ri->Error(ERR_DROP, "R_CreateIBO: \"%s\" is too long", name);
-	}
+	int				glUsage = GetGLBufferUsage (usage);
 
 	if ( tr.numIBOs == MAX_IBOS ) {
 		ri->Error( ERR_DROP, "R_CreateIBO: MAX_IBOS hit");
@@ -533,8 +163,6 @@ IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, v
 	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	tr.numIBOs++;
 
-	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
-
 	ibo->indexesSize = indexesSize;
 
 	qglGenBuffersARB(1, &ibo->indexesVBO);
@@ -547,81 +175,6 @@ IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, v
 	glState.currentIBO = NULL;
 
 	GL_CheckErrors();
-
-	return ibo;
-}
-
-/*
-============
-R_CreateIBO2
-============
-*/
-IBO_t          *R_CreateIBO2(const char *name, int numIndexes, glIndex_t * inIndexes, vboUsage_t usage)
-{
-	IBO_t          *ibo;
-	int             i;
-
-	glIndex_t       *indexes;
-	int             indexesSize;
-
-	int				glUsage;
-
-	switch (usage)
-	{
-		case VBO_USAGE_STATIC:
-			glUsage = GL_STATIC_DRAW_ARB;
-			break;
-
-		case VBO_USAGE_DYNAMIC:
-			glUsage = GL_DYNAMIC_DRAW_ARB;
-			break;
-
-		default:
-			Com_Error(ERR_FATAL, "bad vboUsage_t given: %i", usage);
-			return NULL;
-	}
-
-	if(!numIndexes)
-		return NULL;
-
-	if(strlen(name) >= MAX_QPATH)
-	{
-		ri->Error(ERR_DROP, "R_CreateIBO2: \"%s\" is too long", name);
-	}
-
-	if ( tr.numIBOs == MAX_IBOS ) {
-		ri->Error( ERR_DROP, "R_CreateIBO2: MAX_IBOS hit");
-	}
-
-	R_IssuePendingRenderCommands();
-
-	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
-	tr.numIBOs++;
-
-	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
-
-	indexesSize = numIndexes * sizeof(glIndex_t);
-	indexes = (glIndex_t *)ri->Hunk_AllocateTempMemory(indexesSize);
-
-	for(i = 0; i < numIndexes; i++)
-	{
-		indexes[i] = inIndexes[i];
-	}
-
-	ibo->indexesSize = indexesSize;
-
-	qglGenBuffersARB(1, &ibo->indexesVBO);
-
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, ibo->indexesVBO);
-	qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexesSize, indexes, glUsage);
-
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-
-	glState.currentIBO = NULL;
-
-	GL_CheckErrors();
-
-	ri->Hunk_FreeTempMemory(indexes);
 
 	return ibo;
 }
@@ -753,7 +306,7 @@ void R_InitVBOs(void)
 	dataSize += sizeof(tess.lightdir[0]);
 	dataSize *= SHADER_MAX_VERTEXES;
 
-	tess.vbo = R_CreateVBO("tessVertexArray_VBO", NULL, dataSize, VBO_USAGE_DYNAMIC);
+	tess.vbo = R_CreateVBO(NULL, dataSize, VBO_USAGE_DYNAMIC);
 
 	offset = 0;
 
@@ -782,7 +335,7 @@ void R_InitVBOs(void)
 
 	dataSize = sizeof(tess.indexes[0]) * SHADER_MAX_INDEXES;
 
-	tess.ibo = R_CreateIBO("tessVertexArray_IBO", NULL, dataSize, VBO_USAGE_DYNAMIC);
+	tess.ibo = R_CreateIBO(NULL, dataSize, VBO_USAGE_DYNAMIC);
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -848,36 +401,42 @@ void R_VBOList_f(void)
 	int             vertexesSize = 0;
 	int             indexesSize = 0;
 
-	ri->Printf(PRINT_ALL, " size          name\n");
-	ri->Printf(PRINT_ALL, "----------------------------------------------------------\n");
+	ri->Printf (PRINT_ALL, " vertex buffers\n");
+	ri->Printf (PRINT_ALL, "----------------\n\n");
+
+	ri->Printf(PRINT_ALL, " id   size (MB)\n");
+	ri->Printf(PRINT_ALL, "---------------\n");
 
 	for(i = 0; i < tr.numVBOs; i++)
 	{
 		vbo = tr.vbos[i];
 
-		ri->Printf(PRINT_ALL, "%d.%02d MB %s\n", vbo->vertexesSize / (1024 * 1024),
-				  (vbo->vertexesSize % (1024 * 1024)) * 100 / (1024 * 1024), vbo->name);
+		ri->Printf(PRINT_ALL, " %4i %4.2f\n", i, vbo->vertexesSize / (1024.0f * 1024.0f));
 
 		vertexesSize += vbo->vertexesSize;
 	}
+
+	ri->Printf(PRINT_ALL, " %d total buffers\n", tr.numVBOs);
+	ri->Printf(PRINT_ALL, " %.2f MB in total\n\n", vertexesSize / (1024.0f * 1024.0f));
+
+
+	ri->Printf (PRINT_ALL, " index buffers\n");
+	ri->Printf (PRINT_ALL, "---------------\n\n");
+
+	ri->Printf(PRINT_ALL, " id   size (MB)\n");
+	ri->Printf(PRINT_ALL, "---------------\n");
 
 	for(i = 0; i < tr.numIBOs; i++)
 	{
 		ibo = tr.ibos[i];
 
-		ri->Printf(PRINT_ALL, "%d.%02d MB %s\n", ibo->indexesSize / (1024 * 1024),
-				  (ibo->indexesSize % (1024 * 1024)) * 100 / (1024 * 1024), ibo->name);
+		ri->Printf(PRINT_ALL, " %4i %4.2f\n", i, ibo->indexesSize / (1024.0f * 1024.0f));
 
 		indexesSize += ibo->indexesSize;
 	}
 
-	ri->Printf(PRINT_ALL, " %i total VBOs\n", tr.numVBOs);
-	ri->Printf(PRINT_ALL, " %d.%02d MB total vertices memory\n", vertexesSize / (1024 * 1024),
-			  (vertexesSize % (1024 * 1024)) * 100 / (1024 * 1024));
-
-	ri->Printf(PRINT_ALL, " %i total IBOs\n", tr.numIBOs);
-	ri->Printf(PRINT_ALL, " %d.%02d MB total triangle indices memory\n", indexesSize / (1024 * 1024),
-			  (indexesSize % (1024 * 1024)) * 100 / (1024 * 1024));
+	ri->Printf(PRINT_ALL, " %d total buffers\n", tr.numIBOs);
+	ri->Printf(PRINT_ALL, " %.2f MB in total\n\n", indexesSize / (1024.0f * 1024.0f));
 }
 
 
@@ -892,7 +451,7 @@ Update the default VBO to replace the client side vertex arrays
 */
 void RB_UpdateVBOs(unsigned int attribBits)
 {
-//	GLimp_LogComment("--- RB_UpdateVBOs ---\n");					// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
+	GLimp_LogComment("--- RB_UpdateVBOs ---\n");
 
 	backEnd.pc.c_dynamicVboDraws++;
 
@@ -956,7 +515,6 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]),     tess.vertexColors);
 			qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_lightdir,    tess.numVertexes * sizeof(tess.lightdir[0]),         tess.lightdir);
 		}
-
 	}
 
 	// update the default IBO

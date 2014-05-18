@@ -4651,7 +4651,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			modelName = mdxm->name;
 		}
 
-		VBO_t *vbo = R_CreateVBO (va ("MDXM VBO LOD %d '%s'", l, modelName), data, dataSize, VBO_USAGE_STATIC);
+		VBO_t *vbo = R_CreateVBO (data, dataSize, VBO_USAGE_STATIC);
 
 		ri->Hunk_FreeTempMemory (data);
 		ri->Hunk_FreeTempMemory (tangentsf);
@@ -4702,7 +4702,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 		assert (index == (indices + numTriangles * 3));
 
-		IBO_t *ibo = R_CreateIBO2 (va ("MDXM IBO LOD %d '%s'", l, modelName), numTriangles * 3, indices, VBO_USAGE_STATIC);
+		IBO_t *ibo = R_CreateIBO ((byte *)indices, sizeof (glIndex_t) * numTriangles * 3, VBO_USAGE_STATIC);
 
 		ri->Hunk_FreeTempMemory (indices);
 
@@ -4716,7 +4716,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			vboMeshes[n].indexOffset = indexOffsets[n];
 			vboMeshes[n].minIndex = baseVertexes[n];
 			vboMeshes[n].maxIndex = baseVertexes[n + 1];
-			vboMeshes[n].numVertexes = surf->numVerts * 5;
+			vboMeshes[n].numVertexes = surf->numVerts;
 			vboMeshes[n].numIndexes = surf->numTriangles * 3;
 
 			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);

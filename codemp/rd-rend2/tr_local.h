@@ -387,8 +387,6 @@ typedef enum
 
 typedef struct VBO_s
 {
-	char            name[MAX_QPATH];
-
 	uint32_t        vertexesVBO;
 	int             vertexesSize;	// amount of memory data allocated for all vertices in bytes
 	uint32_t        ofs_xyz;
@@ -423,8 +421,6 @@ typedef struct VBO_s
 
 typedef struct IBO_s
 {
-	char            name[MAX_QPATH];
-
 	uint32_t        indexesVBO;
 	int             indexesSize;	// amount of memory data allocated for all triangles in bytes
 //  uint32_t        ofsIndexes;
@@ -2661,11 +2657,9 @@ uint32_t R_VboPackNormal(vec3_t v);
 void R_VboUnpackTangent(vec4_t v, uint32_t b);
 void R_VboUnpackNormal(vec3_t v, uint32_t b);
 
-VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize, vboUsage_t usage);
-VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vertexes, uint32_t stateBits, vboUsage_t usage);
+VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage);
 
-IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, vboUsage_t usage);
-IBO_t          *R_CreateIBO2(const char *name, int numIndexes, glIndex_t * inIndexes, vboUsage_t usage);
+IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage);
 
 void            R_BindVBO(VBO_t * vbo);
 void            R_BindNullVBO(void);
