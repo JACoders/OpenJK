@@ -2942,11 +2942,9 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 	}
 
-	if (!self->client->ps.fallingToDeath) {
-		if (self->s.eType != ET_NPC)
-		{
-			TossClientItems( self );
-		}
+	if (!self->client->ps.fallingToDeath) 
+	{ // zyk: now npcs also drop their weapons and powerups
+		TossClientItems( self );
 	}
 	else {
 		if ( self->client->ps.powerups[PW_NEUTRALFLAG] ) {		// only happens in One Flag CTF
