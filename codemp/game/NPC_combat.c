@@ -846,33 +846,12 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 
 void NPC_ChangeWeapon( int newWeapon )
 {
-	/*
-	qboolean	changing = qfalse;
-	if ( newWeapon != NPC->client->ps.weapon )
-	{
-		changing = qtrue;
+	// zyk: new code for the npc weapon change
+	ChangeWeapon(NPCS.NPC, newWeapon);
+	if (NPCS.NPC->client->ps.weapon != newWeapon)
+	{ 
+		G_AddEvent( NPCS.NPC, EV_GENERAL_SOUND, G_SoundIndex( "sound/weapons/change.wav" ));
 	}
-	if ( changing && NPC->weaponModel[0] > 9 )
-	{
-		trap->G2API_RemoveGhoul2Model( NPC->ghoul2, NPC->weaponModel[0] );
-	}
-	ChangeWeapon( NPC, newWeapon );
-	if ( changing && NPC->client->ps.weapon != WP_NONE )
-	{
-		if ( NPC->client->ps.weapon == WP_SABER )
-		{
-			G_CreateG2AttachedWeaponModel( NPC, NPC->client->ps.saber[0].model, NPC->handRBolt, 0 );
-			if ( NPC->client->ps.dualSabers )
-			{
-				G_CreateG2AttachedWeaponModel( NPC, NPC->client->ps.saber[1].model, NPC->handLBolt, 0 );
-			}
-		}
-		else
-		{
-			G_CreateG2AttachedWeaponModel( NPC, weaponData[NPC->client->ps.weapon].weaponMdl, NPC->handRBolt, 0 );
-		}
-	}*/
-	//rwwFIXMEFIXME: Change the same way as players, all this stuff is just crazy.
 }
 /*
 void NPC_ApplyWeaponFireDelay(void)

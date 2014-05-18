@@ -195,7 +195,6 @@ void Boba_ChangeWeapon( int wp )
 		return;
 	}
 	NPC_ChangeWeapon( wp );
-	G_AddEvent( NPCS.NPC, EV_GENERAL_SOUND, G_SoundIndex( "sound/weapons/change.wav" ));
 }
 
 void WP_ResistForcePush( gentity_t *self, gentity_t *pusher, qboolean noPenalty )
@@ -496,13 +495,7 @@ void Boba_FireDecide( void )
 		return;
 	}
 
-	/*
-	if ( NPC->enemy->enemy != NPC && NPC->health == NPC->client->pers.maxHealth )
-	{
-		NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-		Boba_ChangeWeapon( WP_DISRUPTOR );
-	}
-	else */if ( NPCS.NPC->enemy->s.weapon == WP_SABER )
+	if ( NPCS.NPC->enemy->s.weapon == WP_SABER )
 	{
 		NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
 		Boba_ChangeWeapon( WP_ROCKET_LAUNCHER );
