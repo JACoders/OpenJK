@@ -634,14 +634,14 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 	// Try base folder if mod is loaded but not found
 	if (gamedir[0] ) {
 		// Try basepath/base
-		fn = FS_BuildOSPath( basepath, "base", gamename );
+		fn = FS_BuildOSPath( basepath, OPENJKGAME, gamename );
 		retVal = LoadLibrary( fn );
 		if(retVal)
 			goto successful;
 
 		if( homepath[0] ) {
 			// Try homepath/base
-			fn = FS_BuildOSPath( homepath, "base", gamename );
+			fn = FS_BuildOSPath( homepath, OPENJKGAME, gamename );
 			retVal = LoadLibrary( fn );
 			if(retVal)
 				goto successful;
@@ -649,7 +649,7 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 
 		if( cdpath[0] ) {
 			// Try cdpath/fs_game
-			fn = FS_BuildOSPath( cdpath, "base", gamename );
+			fn = FS_BuildOSPath( cdpath, OPENJKGAME, gamename );
 			retVal = LoadLibrary( fn );
 			if(retVal)
 				goto successful;

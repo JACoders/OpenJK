@@ -223,7 +223,7 @@ void *Sys_GetGameAPI (void *parms)
 	if (!game_library) {
 		Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 		
-		fn = FS_BuildOSPath( basepath, BASEGAME, gamename);
+		fn = FS_BuildOSPath( basepath, OPENJKGAME, gamename );
 		game_library = Sys_LoadLibrary( fn );
 	}
 	
@@ -231,7 +231,7 @@ void *Sys_GetGameAPI (void *parms)
 		if ( homepath[0] ) {
 			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 			
-			fn = FS_BuildOSPath( homepath, BASEGAME, gamename);
+			fn = FS_BuildOSPath( homepath, OPENJKGAME, gamename );
 			game_library = Sys_LoadLibrary( fn );
 		}
 	}
@@ -241,7 +241,7 @@ void *Sys_GetGameAPI (void *parms)
 		if( apppath[0] ) {
 			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 			
-			fn = FS_BuildOSPath( apppath, BASEGAME, gamename );
+			fn = FS_BuildOSPath( apppath, OPENJKGAME, gamename );
 			game_library = Sys_LoadLibrary( fn );
 		}
 	}
@@ -251,7 +251,7 @@ void *Sys_GetGameAPI (void *parms)
 		if( cdpath[0] ) {
 			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 			
-			fn = FS_BuildOSPath( cdpath, BASEGAME, gamename );
+			fn = FS_BuildOSPath( cdpath, OPENJKGAME, gamename );
 			game_library = Sys_LoadLibrary( fn );
 		}
 	}
