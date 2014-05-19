@@ -97,7 +97,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 	}
 
-	if ( weaponInfo->weaponModel == NULL )
+	if ( weaponInfo->weaponModel == NULL_HANDLE )
 	{
 		CG_Error( "Couldn't find weapon model %s\n", weaponData[weaponNum].classname);
 		return;

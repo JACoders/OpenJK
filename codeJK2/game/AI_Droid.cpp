@@ -356,7 +356,7 @@ void NPC_Droid_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, ve
 
 		self->NPC->scriptFlags &= ~SCF_LOOK_FOR_ENEMIES;
 	}
-	else if ((self->client->NPC_class == CLASS_R2D2))
+	else if (self->client->NPC_class == CLASS_R2D2)
 	{
 
 		pain_chance = NPC_GetPainChance( self, damage );

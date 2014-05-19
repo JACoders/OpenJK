@@ -41,6 +41,8 @@ static void CacheChunkEffects( material_t material )
 {
 	switch( material )
 	{
+	default:
+		break;
 	case MAT_GLASS:
 		G_EffectIndex( "chunks/glassbreak" );
 		break;

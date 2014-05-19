@@ -233,7 +233,7 @@ stringID_table_t objectiveTable [] =
 	ENUM2STRING(DEMO_OBJ4),					//# DEMO 
 
 	//stringID_table_t Must end with a null entry
-	{"", NULL}
+	{"", 0}
 };
 
 stringID_table_t missionFailedTable [] =
@@ -250,7 +250,7 @@ stringID_table_t missionFailedTable [] =
 	ENUM2STRING(MISSIONFAILED_TOOMANYALLIESDIED),	//# TOO MANY ALLIES DIED
 
 	//stringID_table_t Must end with a null entry
-	{"", NULL}
+	{"", 0}
 };
 
 stringID_table_t statusTextTable [] =
@@ -267,7 +267,7 @@ stringID_table_t statusTextTable [] =
 	ENUM2STRING(STAT_WATCHYOURSTEP),				//# Watch your step
 	ENUM2STRING(STAT_JUDGEMENTMUCHDESIRED),			//# Your judgement leaves much to be desired
 	//stringID_table_t Must end with a null entry
-	{"", NULL}
+	{"", 0}
 };
 
 #endif// #ifndef G_OBJECTIVES_CPP
