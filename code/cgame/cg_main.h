@@ -17,7 +17,7 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 #ifndef _CG_MAIN_H
-#define _CH_MAIN_H
+#define _CG_MAIN_H
 
 #include "../qcommon/q_shared.h"
 
