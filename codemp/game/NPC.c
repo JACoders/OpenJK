@@ -713,6 +713,17 @@ void NPC_ApplyScriptFlags (void)
 
 	if ( (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && (NPCS.ucmd.buttons & BUTTON_ATTACK) )
 	{//Use altfire instead
+		// zyk: new code so snipers shoot their altfire properly
+		if (NPCS.NPC->client->ps.weapon != WP_DISRUPTOR || NPCS.NPC->client->ps.zoomMode == 0)
+			NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
+
+		if (NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && NPCS.NPC->client->ps.zoomMode != 0 && NPCS.NPCInfo->attackHold == 0)
+		{
+			NPCS.NPCInfo->attackHold = 2500;
+		}
+	}
+	else if (NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && !(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && NPCS.NPC->client->ps.zoomMode != 0)
+	{ // zyk: reset sniper zoomMode when swtching back to primary fire
 		NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 	}
 }

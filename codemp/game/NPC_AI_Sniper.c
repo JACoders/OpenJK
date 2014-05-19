@@ -534,7 +534,8 @@ void Sniper_FaceEnemy( void )
 					GetAnglesForDirection( muzzle, target, angles );
 					AngleVectors( angles, forward, right, up );
 
-					while ( hit && tryMissCount < 10 )
+					// zyk: changed from 10 to 5
+					while ( hit && tryMissCount < 5 )
 					{
 						tryMissCount++;
 						if ( !Q_irand( 0, 1 ) )
@@ -673,27 +674,23 @@ void NPC_BSSniper_Attack( void )
 	faceEnemy2 = qfalse;
 	shoot2 = qfalse;
 	enemyDist2 = DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
-	if ( enemyDist2 < 16384 )//128 squared
+
+	// zyk: changed from 128 to 256 squared
+	if ( enemyDist2 < 65536 )//128 squared
 	{//too close, so switch to primary fire
 		if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
 		{//sniping... should be assumed
 			if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 			{//use primary fire
-				trace_t	trace;
-				trap->Trace ( &trace, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->s.number, NPCS.NPC->enemy->clipmask, qfalse, 0, 0 );
-				if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPCS.NPC->s.number ) )
-				{//he can get right to me
-					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-					//reset fire-timing variables
-					NPC_ChangeWeapon( WP_DISRUPTOR );
-					NPC_UpdateAngles( qtrue, qtrue );
-					return;
-				}
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				//reset fire-timing variables
+				NPC_ChangeWeapon( WP_DISRUPTOR );
+				NPC_UpdateAngles( qtrue, qtrue );
+				return;
 			}
-			//FIXME: switch back if he gets far away again?
 		}
 	}
-	else if ( enemyDist2 > 65536 )//256 squared
+	else if ( enemyDist2 >= 65536 )//256 squared
 	{
 		if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
 		{//sniping... should be assumed

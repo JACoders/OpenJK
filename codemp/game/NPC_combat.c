@@ -611,16 +611,17 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
 		if ( ent->NPC->scriptFlags & SCF_ALT_FIRE )
 		{
+			// zyk: increased 500 in burstSpacing in each difficulty level
 			switch( g_npcspskill.integer )
 			{
 			case 0:
-				ent->NPC->burstSpacing = 2000;//attackdebounce
+				ent->NPC->burstSpacing = 2500;//attackdebounce
 				break;
 			case 1:
-				ent->NPC->burstSpacing = 1500;//attackdebounce
+				ent->NPC->burstSpacing = 2000;//attackdebounce
 				break;
 			case 2:
-				ent->NPC->burstSpacing = 1000;//attackdebounce
+				ent->NPC->burstSpacing = 1500;//attackdebounce
 				break;
 			}
 		}
