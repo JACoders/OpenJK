@@ -133,7 +133,7 @@ extern int PM_PickAnim( gentity_t *self, int minAnim, int maxAnim );
 extern void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf );
 
 #define	PHASER_RECHARGE_TIME	100
-extern int transitionMove[Q_NUM_QUADS][Q_NUM_QUADS];
+extern saberMoveName_t transitionMove[Q_NUM_QUADS][Q_NUM_QUADS];
 
 extern qboolean G_ControlledByPlayer( gentity_t *self );
 qboolean PM_ControlledByPlayer( void )
