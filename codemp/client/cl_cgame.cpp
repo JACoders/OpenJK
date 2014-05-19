@@ -487,9 +487,6 @@ void CL_ShutdownCGame( void ) {
 	cls.cgameStarted = qfalse;
 
 	CL_UnbindCGame();
-#ifdef _DONETPROFILE_
-	ClReadProf().ShowTotals();
-#endif
 }
 
 /*
@@ -549,9 +546,6 @@ void CL_InitCGame( void ) {
 
 	// clear anything that got printed
 	Con_ClearNotify ();
-#ifdef _DONETPROFILE_
-	ClReadProf().Reset();
-#endif
 }
 
 
@@ -690,8 +684,6 @@ void CL_FirstSnapshot( void ) {
 		Cbuf_AddText( cl_activeAction->string );
 		Cvar_Set( "activeAction", "" );
 	}
-
-	Sys_BeginProfiling();
 }
 
 /*

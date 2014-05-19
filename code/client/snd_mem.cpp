@@ -26,13 +26,13 @@ This file is part of Jedi Academy.
 #include "snd_local.h"
 #include "cl_mp3.h"
 
-#ifndef _WIN32
 #include <string>
-#endif
 
+#ifdef USE_OPENAL
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
 extern int s_UseOpenAL;
+#endif
 /*
 ===============================================================================
 
@@ -702,7 +702,6 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 	return qtrue;
 }
 
-
 // returns qtrue if this dir is allowed to keep loaded MP3s, else qfalse if they should be WAV'd instead...
 //
 // note that this is passed the original, un-language'd name
@@ -712,24 +711,15 @@ static qboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 //	they'd have noticed, but we therefore need to stop other levels using those. "sound/ambience" I can check for,
 //	but doors etc could be anything. Sigh...)
 //
-static qboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
+#define SOUND_CHARS_DIR "sound/chars/"
+#define SOUND_CHARS_DIR_LENGTH 12 // strlen( SOUND_CHARS_DIR )
+static qboolean S_LoadSound_DirIsAllowedToKeepMP3s( const char *psFilename )
 {
-	const char *psAllowedDirs[] = 
-	{
-		"sound/chars/",
-//		"sound/chr_d/"	// no need for this now, or any other language, since we'll always compare against english
-	};
-
-	for (size_t i=0; i< ARRAY_LEN(psAllowedDirs); i++)
-	{
-		if (Q_stricmpn(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
-			return qtrue;	// found a dir that's allowed to keep MP3s
-	}
+	if ( Q_stricmpn( psFilename, SOUND_CHARS_DIR, SOUND_CHARS_DIR_LENGTH ) == 0 )
+		return qtrue;	// found a dir that's allowed to keep MP3s
 
 	return qfalse;
 }
-
-
 
 /*
 ==============
@@ -798,7 +788,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 			{
 //				Com_DPrintf("(Keeping file \"%s\" as MP3)\n",sLoadName);
 
-#ifdef _WIN32
+#ifdef USE_OPENAL
 				if (s_UseOpenAL)
 				{
 					// Create space for lipsync data (4 lip sync values per streaming AL buffer)
@@ -841,8 +831,23 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 
 						S_LoadSound_Finalize(&info,sfx,pbUnpackBuffer);
 
+#ifdef Q3_BIG_ENDIAN
+						// the MP3 decoder returns the samples in the correct endianness, but ResampleSfx byteswaps them,
+						// so we have to swap them again... 
+						sfx->fVolRange	= 0;
+						
+						for (int i = 0; i < sfx->iSoundLengthInSamples; i++)
+						{
+							sfx->pSoundData[i] = LittleShort(sfx->pSoundData[i]);
+							if (sfx->fVolRange < (abs(sfx->pSoundData[i]) >> 8))
+							{
+								sfx->fVolRange = abs(sfx->pSoundData[i]) >> 8;
+							}
+						}
+#endif
+
 						// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 						if (s_UseOpenAL)
 						{
 							if (strstr(sfx->sSoundName, "chars"))
@@ -915,7 +920,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 		ResampleSfx( sfx, info.rate, info.width, data + info.dataofs );
 
 		// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
 			if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
@@ -970,7 +975,7 @@ qboolean S_LoadSound( sfx_t *sfx )
 	return bReturn;
 }
 
-
+#ifdef USE_OPENAL
 /*
 	Precalculate the lipsync values for the whole sample
 */
@@ -1040,4 +1045,4 @@ void S_PreProcessLipSync(sfx_t *sfx)
 			
 	sfx->lipSyncData[j] = sample;
 }
-
+#endif

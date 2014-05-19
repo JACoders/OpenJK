@@ -19,6 +19,8 @@ using namespace std;
 
 
 #define	LL(x) x=LittleLong(x)
+#define	LS(x) x=LittleShort(x)
+#define	LF(x) x=LittleFloat(x)
 
 static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *name, qboolean &bAlreadyCached );
 /*
@@ -660,11 +662,14 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 	int					version;
 	int					size;
 
-#if 0 //#ifndef _M_IX86
+#ifdef Q3_BIG_ENDIAN
 	int					j, k, i;
-	int					frameSize;
-	mdxaFrame_t			*cframe;
 	mdxaSkel_t			*boneInfo;
+	mdxaSkelOffsets_t	*offsets;
+	int					maxBoneIndex = 0;
+	mdxaCompQuatBone_t	*pCompBonePool;
+	unsigned short		*pwIn;
+	mdxaIndex_t			*pIndex;
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -707,9 +712,12 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 
 		LL(mdxa->ident);
 		LL(mdxa->version);
+		//LF(mdxa->fScale);
 		LL(mdxa->numFrames);
-		LL(mdxa->numBones);
 		LL(mdxa->ofsFrames);
+		LL(mdxa->numBones);
+		LL(mdxa->ofsCompBonePool);
+		LL(mdxa->ofsSkel);
 		LL(mdxa->ofsEnd);
 	}
 
@@ -722,44 +730,56 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
-#if 0 //#ifndef _M_IX86
-
-	//
-	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-	//
-
-	// swap all the skeletal info
-	boneInfo = (mdxaSkel_t *)( (byte *)mdxa + mdxa->ofsSkel);
-	for ( i = 0 ; i < mdxa->numBones ; i++)
-	{
-		LL(boneInfo->numChildren);
+#ifdef Q3_BIG_ENDIAN
+	// swap the bone info
+	offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
+ 	for ( i = 0; i < mdxa->numBones ; i++ )
+ 	{
+		LL(offsets->offsets[i]);
+ 		boneInfo = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[i]);
+		LL(boneInfo->flags);
 		LL(boneInfo->parent);
+		for ( j = 0; j < 3; j++ )
+		{
+			for ( k = 0; k < 4; k++)
+			{
+				LF(boneInfo->BasePoseMat.matrix[j][k]);
+				LF(boneInfo->BasePoseMatInv.matrix[j][k]);
+			}
+		}
+		LL(boneInfo->numChildren);
+
 		for (k=0; k<boneInfo->numChildren; k++)
 		{
 			LL(boneInfo->children[k]);
 		}
-
-		// get next bone
-		boneInfo += (int)( &((mdxaSkel_t *)0)->children[ boneInfo->numChildren ] );
 	}
 
-
-	// swap all the frames
-	frameSize = (int)( &((mdxaFrame_t *)0)->bones[ mdxa->numBones ] );
-	for ( i = 0 ; i < mdxa->numFrames ; i++)
+	// find the largest index, since the actual number of compressed bone pools is not stored anywhere
+	for ( i = 0 ; i < mdxa->numFrames ; i++ ) 
 	{
-		cframe = (mdxaFrame_t *) ( (byte *)mdxa + mdxa->ofsFrames + i * frameSize );
-   		cframe->radius = LittleFloat( cframe->radius );
-		for ( j = 0 ; j < 3 ; j++ )
+		for ( j = 0 ; j < mdxa->numBones ; j++ ) 
 		{
-			cframe->bounds[0][j] = LittleFloat( cframe->bounds[0][j] );
-			cframe->bounds[1][j] = LittleFloat( cframe->bounds[1][j] );
-    		cframe->localOrigin[j] = LittleFloat( cframe->localOrigin[j] );
+			k = (i * mdxa->numBones * 3) + (j * 3); // iOffsetToIndex
+			pIndex = (mdxaIndex_t *) ((byte*) mdxa + mdxa->ofsFrames + k);
+
+			// 3 byte ints, yeah...
+			int tmp = pIndex->iIndex & 0xFFFFFF00;
+			LL(tmp);
+			
+			if (maxBoneIndex < tmp)
+				maxBoneIndex = tmp;
 		}
-		for ( j = 0 ; j < mdxa->numBones * sizeof( mdxaBone_t ) / 2 ; j++ )
-		{
-			((short *)cframe->bones)[j] = LittleShort( ((short *)cframe->bones)[j] );
-		}
+	}
+
+	// swap the compressed bones
+	pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)mdxa + mdxa->ofsCompBonePool);
+	for ( i = 0 ; i <= maxBoneIndex ; i++ )
+	{
+		pwIn = (unsigned short *) pCompBonePool[i].Comp;
+
+		for ( k = 0 ; k < 7 ; k++ )
+			LS(pwIn[k]);
 	}
 #endif
 	return qtrue;
@@ -780,15 +800,16 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	//shader_t			*sh;
 	mdxmSurfHierarchy_t	*surfInfo;
 
-#if 0 //#ifndef _M_IX86
+#ifdef Q3_BIG_ENDIAN
 	int					k;
-	int					frameSize;
-	mdxmTag_t			*tag;
 	mdxmTriangle_t		*tri;
 	mdxmVertex_t		*v;
- 	mdxmFrame_t			*cframe;
 	int					*boneRef;
+	mdxmLODSurfOffset_t	*indexes;
+	mdxmVertexTexCoord_t	*pTexCoords;
+	mdxmHierarchyOffsets_t	*surfIndexes;
 #endif
+
 
 	pinmodel= (mdxmHeader_t *)buffer;
 	//
@@ -830,6 +851,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 
 		LL(mdxm->ident);
 		LL(mdxm->version);
+		LL(mdxm->numBones);
 		LL(mdxm->numLODs);
 		LL(mdxm->ofsLODs);
 		LL(mdxm->numSurfaces);
@@ -852,6 +874,9 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	}
 
 	surfInfo = (mdxmSurfHierarchy_t *)( (byte *)mdxm + mdxm->ofsSurfHierarchy);
+#ifdef Q3_BIG_ENDIAN
+	surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)mdxm + sizeof(mdxmHeader_t));
+#endif
  	for ( i = 0 ; i < mdxm->numSurfaces ; i++)
 	{
 		LL(surfInfo->numChildren);
@@ -871,6 +896,12 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 
 		RE_RegisterModels_StoreShaderRequest(mod_name, &surfInfo->shader[0], &surfInfo->shaderIndex);
 
+#ifdef Q3_BIG_ENDIAN
+		// swap the surface offset
+		LL(surfIndexes->offsets[i]);
+		assert(surfInfo == (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[i]));
+#endif
+
 		// find the next surface
 		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + (intptr_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surfInfo->numChildren ] ));
   	}
@@ -886,15 +917,15 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 		surf = (mdxmSurface_t *) ( (byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof(mdxmLODSurfOffset_t)) );
 		for ( i = 0 ; i < mdxm->numSurfaces ; i++)
 		{
-			LL(surf->numTriangles);
-			LL(surf->ofsTriangles);
+			LL(surf->thisSurfaceIndex);
+			LL(surf->ofsHeader);
 			LL(surf->numVerts);
 			LL(surf->ofsVerts);
-			LL(surf->ofsEnd);
-			LL(surf->ofsHeader);
+			LL(surf->numTriangles);
+			LL(surf->ofsTriangles);
 			LL(surf->numBoneReferences);
 			LL(surf->ofsBoneReferences);
-//			LL(surf->maxVertBoneWeights);
+			LL(surf->ofsEnd);
 
 			triCount += surf->numTriangles;
 
@@ -909,11 +940,11 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 			surf->ident = SF_MDX;
 
 			// register the shaders
-#if 0 //#ifndef _M_IX86
-//
-// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-//
-			// FIXME - is this correct?
+#ifdef Q3_BIG_ENDIAN
+			// swap the LOD offset
+			indexes = (mdxmLODSurfOffset_t *)((byte *)lod + sizeof(mdxmLOD_t));
+			LL(indexes->offsets[surf->thisSurfaceIndex]);
+
 			// do all the bone reference data
 			boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
 			for ( j = 0 ; j < surf->numBoneReferences ; j++ )
@@ -933,26 +964,24 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 
 			// swap all the vertexes
 			v = (mdxmVertex_t *) ( (byte *)surf + surf->ofsVerts );
+			pTexCoords = (mdxmVertexTexCoord_t *) &v[surf->numVerts];
+
 			for ( j = 0 ; j < surf->numVerts ; j++ )
 			{
-				v->normal[0] = LittleFloat( v->normal[0] );
-				v->normal[1] = LittleFloat( v->normal[1] );
-				v->normal[2] = LittleFloat( v->normal[2] );
+				LF(v->normal[0]);
+				LF(v->normal[1]);
+				LF(v->normal[2]);
 
-				v->texCoords[0] = LittleFloat( v->texCoords[0] );
-				v->texCoords[1] = LittleFloat( v->texCoords[1] );
+				LF(v->vertCoords[0]);
+				LF(v->vertCoords[1]);
+				LF(v->vertCoords[2]);
 
-				v->numWeights = LittleLong( v->numWeights );
-  			    v->offset[0] = LittleFloat( v->offset[0] );
-				v->offset[1] = LittleFloat( v->offset[1] );
-				v->offset[2] = LittleFloat( v->offset[2] );
+				LF(pTexCoords[j].texCoords[0]);
+				LF(pTexCoords[j].texCoords[1]);
 
-				for ( k = 0 ; k < /*v->numWeights*/surf->maxVertBoneWeights ; k++ )
-				{
-					v->weights[k].boneIndex = LittleLong( v->weights[k].boneIndex );
-					v->weights[k].boneWeight = LittleFloat( v->weights[k].boneWeight );
-				}
-				v = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surf->maxVertBoneWeights];
+				LL(v->uiNmWeightsAndBoneIndexes);
+
+				v++;
 			}
 #endif
 
@@ -1399,7 +1428,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	int					version;
 	int					size;
 
-#if 0 //#ifndef _M_IX86
+#ifdef Q3_BIG_ENDIAN
 	md3Frame_t			*frame;
 	md3Triangle_t		*tri;
 	md3St_t				*st;
@@ -1469,31 +1498,27 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		return qtrue;	// All done. Stop, go no further, do not pass Go...
 	}
 
-#if 0 //#ifndef _M_IX86
-	//
-	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-	//
-
+#ifdef Q3_BIG_ENDIAN
 	// swap all the frames
-    frame = (md3Frame_t *) ( (byte *)mod->md3[lod] + mod->md3[lod]->ofsFrames );
-    for ( i = 0 ; i < mod->md3[lod]->numFrames ; i++, frame++) {
-    	frame->radius = LittleFloat( frame->radius );
-        for ( j = 0 ; j < 3 ; j++ ) {
-            frame->bounds[0][j] = LittleFloat( frame->bounds[0][j] );
-            frame->bounds[1][j] = LittleFloat( frame->bounds[1][j] );
-	    	frame->localOrigin[j] = LittleFloat( frame->localOrigin[j] );
-        }
+	frame = (md3Frame_t *) ( (byte *)mod->md3[lod] + mod->md3[lod]->ofsFrames );
+	for ( i = 0 ; i < mod->md3[lod]->numFrames ; i++, frame++) {
+		LF(frame->radius);
+		for ( j = 0 ; j < 3 ; j++ ) {
+			LF(frame->bounds[0][j]);
+			LF(frame->bounds[1][j]);
+			LF(frame->localOrigin[j]);
+		}
 	}
 
 	// swap all the tags
-    tag = (md3Tag_t *) ( (byte *)mod->md3[lod] + mod->md3[lod]->ofsTags );
-    for ( i = 0 ; i < mod->md3[lod]->numTags * mod->md3[lod]->numFrames ; i++, tag++) {
-        for ( j = 0 ; j < 3 ; j++ ) {
-			tag->origin[j] = LittleFloat( tag->origin[j] );
-			tag->axis[0][j] = LittleFloat( tag->axis[0][j] );
-			tag->axis[1][j] = LittleFloat( tag->axis[1][j] );
-			tag->axis[2][j] = LittleFloat( tag->axis[2][j] );
-        }
+	tag = (md3Tag_t *) ( (byte *)mod->md3[lod] + mod->md3[lod]->ofsTags );
+	for ( i = 0 ; i < mod->md3[lod]->numTags * mod->md3[lod]->numFrames ; i++, tag++) {
+		for ( j = 0 ; j < 3 ; j++ ) {
+			LF(tag->origin[j]);
+			LF(tag->axis[0][j]);
+			LF(tag->axis[1][j]);
+			LF(tag->axis[2][j]);
+		}
 	}
 #endif
 
@@ -1547,11 +1572,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 			RE_RegisterModels_StoreShaderRequest(mod_name, &shader->name[0], &shader->shaderIndex);
         }
 
-#if 0 //#ifndef _M_IX86
-//
-// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-//
-
+#ifdef Q3_BIG_ENDIAN
 		// swap all the triangles
 		tri = (md3Triangle_t *) ( (byte *)surf + surf->ofsTriangles );
 		for ( j = 0 ; j < surf->numTriangles ; j++, tri++ ) {
@@ -1561,22 +1582,22 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		}
 
 		// swap all the ST
-        st = (md3St_t *) ( (byte *)surf + surf->ofsSt );
-        for ( j = 0 ; j < surf->numVerts ; j++, st++ ) {
-            st->st[0] = LittleFloat( st->st[0] );
-            st->st[1] = LittleFloat( st->st[1] );
-        }
+		st = (md3St_t *) ( (byte *)surf + surf->ofsSt );
+		for ( j = 0 ; j < surf->numVerts ; j++, st++ ) {
+			LF(st->st[0]);
+			LF(st->st[1]);
+		}
 
 		// swap all the XyzNormals
-        xyz = (md3XyzNormal_t *) ( (byte *)surf + surf->ofsXyzNormals );
-        for ( j = 0 ; j < surf->numVerts * surf->numFrames ; j++, xyz++ )
+		xyz = (md3XyzNormal_t *) ( (byte *)surf + surf->ofsXyzNormals );
+		for ( j = 0 ; j < surf->numVerts * surf->numFrames ; j++, xyz++ ) 
 		{
-            xyz->xyz[0] = LittleShort( xyz->xyz[0] );
-            xyz->xyz[1] = LittleShort( xyz->xyz[1] );
-            xyz->xyz[2] = LittleShort( xyz->xyz[2] );
+			LS(xyz->xyz[0]);
+			LS(xyz->xyz[1]);
+			LS(xyz->xyz[2]);
 
-            xyz->normal = LittleShort( xyz->normal );
-        }
+			LS(xyz->normal);
+		}
 #endif
 
 		// find the next surface

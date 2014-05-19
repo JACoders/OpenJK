@@ -760,6 +760,8 @@ extern	cvar_t	*com_optvehtrace;
 extern	cvar_t	*com_G2Report;
 #endif
 
+extern	cvar_t	*com_affinity;
+
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
 extern	cvar_t	*sv_paused;
@@ -870,10 +872,6 @@ void Com_TouchMemory( void );
 void Com_Init( char *commandLine );
 void Com_Frame( void );
 void Com_Shutdown( void );
-//rwwRMG: Inserted:
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
 
 
 /*
@@ -1068,11 +1066,10 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-void	Sys_BeginProfiling( void );
-void	Sys_EndProfiling( void );
-
 qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
+
+void Sys_SetProcessorAffinity( void );
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

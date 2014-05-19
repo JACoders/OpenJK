@@ -207,7 +207,6 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/FxTemplate.cpp"
 	"${SPDir}/cgame/FxUtil.cpp"
 	"${SPDir}/cgame/cg_camera.h"
-	"${SPDir}/cgame/cg_lights.h"
 	"${SPDir}/cgame/animtable.h"
 	"${SPDir}/cgame/cg_headers.h"
 	"${SPDir}/cgame/cg_local.h"
@@ -346,8 +345,10 @@ endif(NOT WIN32)
 
 if(WIN32)
 	install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+	install(TARGETS ${SPGame} RUNTIME DESTINATION "base")
 else(WIN32)
 	install(TARGETS ${SPGame} LIBRARY DESTINATION "OpenJK")
+	install(TARGETS ${SPGame} LIBRARY DESTINATION "base")
 endif(WIN32)
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")

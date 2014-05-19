@@ -33,6 +33,8 @@ qboolean Sys_LowPhysicalMemory(void) {
 	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
+
+		stat.dwLength = sizeof (stat);
 		GlobalMemoryStatusEx (&stat);
 	}
 	if (sys_lowmem->integer)
@@ -40,15 +42,6 @@ qboolean Sys_LowPhysicalMemory(void) {
 		return qtrue;
 	}
 	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
-}
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
 }
 
 /*
@@ -804,8 +797,8 @@ void Sys_Init( void ) {
 	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 
 	// save out a couple things in rom cvars for the renderer to access
-	Cvar_Get( "win_hinstance", va("%i", (int)g_wv.hInstance), CVAR_ROM );
-	Cvar_Get( "win_wndproc", va("%i", (int)MainWndProc), CVAR_ROM );
+	Cvar_Get( "win_hinstance", va("%p", g_wv.hInstance), CVAR_ROM );
+	Cvar_Get( "win_wndproc", va("%p", MainWndProc), CVAR_ROM );
 
 	Cvar_Set( "username", Sys_GetCurrentUser() );
 

@@ -1173,5 +1173,9 @@ void	cgi_UI_String_Init(void);
 
 void	SetWeaponSelectTime(void);
 
+void	CG_ClearLightStyles( void );
+void	CG_RunLightStyles( void );
+void	CG_SetLightstyle( int i );
+
 
 #endif	//__CG_LOCAL_H__

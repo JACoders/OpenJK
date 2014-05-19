@@ -1366,7 +1366,7 @@ void G2Time_ReportTimers(void);
 void Com_Frame( void ) {
 	try 
 	{
-		int		timeBeforeFirstEvents, timeBeforeServer, timeBeforeEvents, timeBeforeClient, timeAfter;
+		int		timeBeforeFirstEvents = 0, timeBeforeServer = 0, timeBeforeEvents = 0, timeBeforeClient = 0, timeAfter = 0;
 		int		msec, minMsec;
 		static int	lastTime = 0;
 
@@ -1862,72 +1862,3 @@ void Field_AutoComplete( field_t *field ) {
 
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
 }
-
-/*
-============
-ParseTextFile
-============
-*/
-
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-
-	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
-	{
-		return false;
-	}
-
-	buf = new char [length + 1];
-	FS_Read( buf, length, f );
-	buf[length] = 0;
-
-	bufParse = buf;
-	parser.Parse(&bufParse, cleanFirst);
-	delete[] buf;
-
-	FS_FCloseFile( f );
-
-	return true;
-}
-
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser)
-{
-	parser.Clean();
-}
-
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable)
-{
-	fileHandle_t	f;
-	int				length = 0;
-	char			*buf = 0, *bufParse = 0;
-	CGenericParser2 *parse;
-
-	length = FS_FOpenFileByMode( file, &f, FS_READ );
-	if (!f || !length)		
-	{
-		return 0;
-	}
-
-	buf = new char [length + 1];
-	FS_Read( buf, length, f );
-	FS_FCloseFile( f );
-	buf[length] = 0;
-
-	bufParse = buf;
-
-	parse = new CGenericParser2;
-	if (!parse->Parse(&bufParse, cleanFirst, writeable))
-	{
-		delete parse;
-		parse = 0;
-	}
-
-	delete[] buf;
-
-	return parse;
-}
-

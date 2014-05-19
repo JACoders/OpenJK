@@ -768,9 +768,6 @@ typedef struct cg_s {
 
 	qboolean	mapRestart;			// set on a map restart to set back the weapon
 
-	qboolean	mInRMG; //rwwRMG - added
-	qboolean	mRMGWeather; //rwwRMG - added
-
 	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
 
 	// prediction state

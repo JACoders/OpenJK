@@ -47,6 +47,8 @@ qboolean Sys_LowPhysicalMemory(void) {
 	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
+
+		stat.dwLength = sizeof (stat);
 		GlobalMemoryStatusEx (&stat);
 	}
 	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
@@ -172,17 +174,7 @@ char *Sys_ConsoleInput(void)
 	return NULL;
 }
 
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
-}
-
-void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
-{
+void Sys_ShowConsole( int visLevel, qboolean quitOnClose ) {
 }
 
 /*

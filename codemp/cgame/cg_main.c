@@ -1115,8 +1115,6 @@ static void CG_RegisterGraphics( void ) {
 	int			i;
 	int			breakPoint;
 	char		items[MAX_ITEMS+1];
-	const char	*terrainInfo;
-	int			terrainID;
 
 	static char		*sb_nums[11] = {
 		"gfx/2d/numbers/zero",
@@ -1528,23 +1526,6 @@ Ghoul2 Insert Start
 			}
 			breakPoint++;
 		}
-	}
-
-//	CG_LoadingString( "Creating terrain" );
-	for(i = 0; i < MAX_TERRAINS; i++)
-	{
-		terrainInfo = CG_ConfigString( CS_TERRAINS + i );
-		if ( !terrainInfo[0] )
-		{
-			break;
-		}
-
-		terrainID = trap->CM_RegisterTerrain(terrainInfo);
-
-		trap->RMG_Init(terrainID, terrainInfo);
-
-		// Send off the terrainInfo to the renderer
-		trap->RE_InitRendererTerrain( terrainInfo );
 	}
 
 	/*
@@ -2209,27 +2190,25 @@ static int CG_OwnerDrawWidth(int ownerDraw, float scale) {
 	  case CG_BLUE_NAME:
 			return CG_Text_Width(DEFAULT_BLUETEAM_NAME/*cg_blueTeamName.string*/, scale, FONT_MEDIUM);
 			break;
-
-
 	}
 	return 0;
 }
 
 static int CG_PlayCinematic(const char *name, float x, float y, float w, float h) {
-  return trap->CIN_PlayCinematic(name, x, y, w, h, CIN_loop);
+	return trap->CIN_PlayCinematic(name, x, y, w, h, CIN_loop);
 }
 
 static void CG_StopCinematic(int handle) {
-  trap->CIN_StopCinematic(handle);
+	trap->CIN_StopCinematic(handle);
 }
 
 static void CG_DrawCinematic(int handle, float x, float y, float w, float h) {
-  trap->CIN_SetExtents(handle, x, y, w, h);
-  trap->CIN_DrawCinematic(handle);
+	trap->CIN_SetExtents(handle, x, y, w, h);
+	trap->CIN_DrawCinematic(handle);
 }
 
 static void CG_RunCinematicFrame(int handle) {
-  trap->CIN_RunCinematic(handle);
+	trap->CIN_RunCinematic(handle);
 }
 
 /*

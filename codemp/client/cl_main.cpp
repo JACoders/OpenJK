@@ -23,6 +23,7 @@ cvar_t	*cl_debugMove;
 
 cvar_t	*cl_noprint;
 cvar_t	*cl_motd;
+cvar_t	*cl_motdServer[MAX_MASTER_SERVERS];
 
 cvar_t	*rcon_client_password;
 cvar_t	*rconAddress;
@@ -46,6 +47,8 @@ cvar_t	*cl_freelook;
 cvar_t	*cl_sensitivity;
 
 cvar_t	*cl_mouseAccel;
+cvar_t	*cl_mouseAccelOffset;
+cvar_t	*cl_mouseAccelStyle;
 cvar_t	*cl_showMouseRate;
 
 cvar_t	*m_pitchVeh;
@@ -831,19 +834,42 @@ CL_RequestMotd
 ===================
 */
 void CL_RequestMotd( void ) {
-	char		info[MAX_INFO_STRING];
+	netadr_t	to;
+	int			i;
+	char		command[MAX_STRING_CHARS], info[MAX_INFO_STRING];
+	char		*motdaddress;
 
 	if ( !cl_motd->integer ) {
 		return;
 	}
-	Com_Printf( "Resolving %s\n", UPDATE_SERVER_NAME );
-	if ( !NET_StringToAdr( UPDATE_SERVER_NAME, &cls.updateServer  ) ) {
-		Com_Printf( "Couldn't resolve address\n" );
+
+	if ( cl_motd->integer < 1 || cl_motd->integer > MAX_MASTER_SERVERS ) {
+		Com_Printf( "CL_RequestMotd: Invalid motd server num. Valid values are 1-%d or 0 to disable\n", MAX_MASTER_SERVERS );
 		return;
 	}
-	cls.updateServer.port = BigShort( PORT_UPDATE );
-	Com_Printf( "%s resolved to %s\n", UPDATE_SERVER_NAME,
-		NET_AdrToString( cls.updateServer ) );
+
+	Com_sprintf( command, sizeof(command), "cl_motdServer%d", cl_motd->integer );
+	motdaddress = Cvar_VariableString( command );
+
+	if ( !*motdaddress )
+	{
+		Com_Printf( "CL_RequestMotd: Error: No motd server address given.\n" );
+		return;
+	}
+
+	i = NET_StringToAdr( motdaddress, &to );
+
+	if ( !i )
+	{
+		Com_Printf( "CL_RequestMotd: Error: could not resolve address of motd server %s\n", motdaddress );
+		return;
+	}
+	to.type = NA_IP;
+	to.port = BigShort( PORT_UPDATE );
+
+	Com_Printf( "Requesting motd from update %s (%s)...\n", motdaddress, NET_AdrToString( to ) );
+
+	cls.updateServer = to;
 
 	info[0] = 0;
   // NOTE TTimo xoring against Com_Milliseconds, otherwise we may not have a true randomization
@@ -852,7 +878,6 @@ void CL_RequestMotd( void ) {
   // NOTE: the Com_Milliseconds xoring only affects the lower 16-bit word,
   //   but I decided it was enough randomization
 	Com_sprintf( cls.updateChallenge, sizeof( cls.updateChallenge ), "%i", ((rand() << 16) ^ rand()) ^ Com_Milliseconds());
-
 
 	Info_SetValueForKey( info, "challenge", cls.updateChallenge );
 	Info_SetValueForKey( info, "renderer", cls.glconfig.renderer_string );
@@ -867,7 +892,6 @@ void CL_RequestMotd( void ) {
 #endif
 	Info_SetValueForKey( info, "joystick", Cvar_VariableString("in_joystick") );
 	Info_SetValueForKey( info, "colorbits", va("%d",cls.glconfig.colorBits) );
-
 
 	NET_OutOfBandPrint( NS_CLIENT, cls.updateServer, "getmotd \"%s\"\n", info );
 }
@@ -2115,13 +2139,6 @@ void CL_Frame ( int msec ) {
 
 	cls.realtime += cls.frametime;
 
-#ifdef _DONETPROFILE_
-	if(cls.state==CA_ACTIVE)
-	{
-		ClReadProf().IncTime(cls.frametime);
-	}
-#endif
-
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
@@ -2301,10 +2318,6 @@ static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
 static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
 static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
 
-// for listen servers
-extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
-extern void SV_SetConfigstring( int index, const char *val );
-
 #define G2_VERT_SPACE_SERVER_SIZE 256
 IHeapAllocator *G2VertSpaceServer = NULL;
 CMiniHeap IHeapAllocator_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
@@ -2397,8 +2410,6 @@ void CL_InitRef( void ) {
 	ri.CM_PointLeafnum = CM_PointLeafnum;
 	ri.CM_PointContents = CM_PointContents;
 	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
-	ri.SV_GetConfigstring = SV_GetConfigstring;
-	ri.SV_SetConfigstring = SV_SetConfigstring;
 	ri.S_RestartMusic = S_RestartMusic;
 	ri.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
 	ri.CIN_RunCinematic = CIN_RunCinematic;
@@ -2616,7 +2627,11 @@ void CL_Init( void ) {
 	// register our variables
 	//
 	cl_noprint = Cvar_Get( "cl_noprint", "0", 0 );
-	cl_motd = Cvar_Get ("cl_motd", "1", 0);
+	cl_motd = Cvar_Get ("cl_motd", "1", CVAR_ARCHIVE );
+	cl_motdServer[0] = Cvar_Get( "cl_motdServer1", UPDATE_SERVER_NAME, 0 );
+	cl_motdServer[1] = Cvar_Get( "cl_motdServer2", JKHUB_UPDATE_SERVER_NAME, 0 );
+	for ( int index = 2; index < MAX_MASTER_SERVERS; index++ )
+		cl_motdServer[index] = Cvar_Get( va( "cl_motdServer%d", index + 1 ), "", CVAR_ARCHIVE );
 
 	cl_timeout = Cvar_Get ("cl_timeout", "200", 0);
 
@@ -2647,6 +2662,13 @@ void CL_Init( void ) {
 	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
 	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
 	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE );
+
+	// 0: legacy mouse acceleration
+	// 1: new implementation
+	cl_mouseAccelStyle = Cvar_Get( "cl_mouseAccelStyle", "0", CVAR_ARCHIVE );
+	// offset for the power function (for style 1, ignored otherwise)
+	// this should be set to the max rate value
+	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
@@ -2700,7 +2722,6 @@ void CL_Init( void ) {
 	Cvar_Get ("color1",  "4", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("color2", "4", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("teamtask", "0", CVAR_USERINFO );
 	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("password", "", CVAR_USERINFO);
 	Cvar_Get ("cg_predictItems", "1", CVAR_USERINFO | CVAR_ARCHIVE );

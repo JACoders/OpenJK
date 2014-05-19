@@ -9,10 +9,15 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <libgen.h>
+#include <sched.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
 #include "sys_local.h"
+
+#ifndef DEDICATED
+	#include <SDL.h>
+#endif
 
 #define	MAX_QUED_EVENTS		256
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
@@ -98,40 +103,6 @@ qboolean Sys_RandomBytes( byte *string, int len )
 }
 
 /*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_InitStreamThread( void ) {
-}
-
-void Sys_ShutdownStreamThread( void ) {
-}
-
-void Sys_BeginStreamedFile( fileHandle_t f, int readAhead ) {
-}
-
-void Sys_EndStreamedFile( fileHandle_t f ) {
-}
-
-int Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f ) {
-   return FS_Read( buffer, size * count, f );
-}
-
-void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
-   FS_Seek( f, offset, origin );
-}
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
-}
-
-/*
  ==================
  Sys_GetCurrentUser
  ==================
@@ -151,9 +122,22 @@ char *Sys_GetCurrentUser( void )
 Sys_GetClipboardData
 ==================
 */
-char *Sys_GetClipboardData(void)
-{
+char *Sys_GetClipboardData( void ) {
+#ifdef DEDICATED
 	return NULL;
+#else
+	if ( !SDL_HasClipboardText() )
+		return NULL;
+
+	char *cbText = SDL_GetClipboardText();
+	size_t len = strlen( cbText ) + 1;
+
+	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
+	Q_strncpyz( buf, cbText, len );
+
+	SDL_free( cbText );
+	return buf;
+#endif
 }
 
 #define MEM_THRESHOLD 96*1024*1024
@@ -490,8 +474,10 @@ char *Sys_Cwd( void )
 {
 	static char cwd[MAX_OSPATH];
 
-	getcwd( cwd, sizeof( cwd ) - 1 );
-	cwd[MAX_OSPATH-1] = 0;
+	if ( getcwd( cwd, sizeof( cwd ) - 1 ) == NULL )
+		cwd[0] = '\0';
+	else
+		cwd[MAX_OSPATH-1] = '\0';
 
 	return cwd;
 }
@@ -657,4 +643,29 @@ void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptr
 	ev->evValue2 = value2;
 	ev->evPtrLength = ptrLength;
 	ev->evPtr = ptr;
+}
+
+void Sys_SetProcessorAffinity( void ) {
+#if defined(__linux__)
+	uint32_t cores;
+
+	if ( sscanf( com_affinity->string, "%X", &cores ) != 1 )
+		cores = 1; // set to first core only
+
+	if ( !cores )
+		return;
+
+	const long numCores = sysconf( _SC_NPROCESSORS_ONLN );
+	cpu_set_t set;
+	CPU_ZERO( &set );
+	for ( int i = 0; i < numCores; i++ ) {
+		if ( cores & (1<<i) ) {
+			CPU_SET( i, &set );
+		}
+	}
+
+	sched_setaffinity( 0, sizeof( set ), &set );
+#elif defined(MACOS_X)
+	//TODO: Apple's APIs for this are weird but exist on a per-thread level. Good enough for us.
+#endif
 }

@@ -5,8 +5,12 @@
 #include "snd_public.h"
 #include "mp3code/mp3struct.h"
 
+#if defined(_WIN32) && !defined(WIN64)
+#define USE_OPENAL
+#endif
+
 // Open AL Specific
-#ifdef _WIN32
+#ifdef USE_OPENAL
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
 #include "eax/eax.h"
@@ -62,7 +66,7 @@ typedef struct sfx_s {
 	int				iLastLevelUsedOn;		// used for cacheing purposes
 
 	// Open AL
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	ALuint		Buffer;
 #endif
 	char		*lipSyncData;
@@ -83,7 +87,7 @@ typedef struct dma_s {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
-#ifdef _WIN32
+#ifdef USE_OPENAL
 typedef struct STREAMINGBUFFER_s {
 	ALuint	BufferID;
 	ALuint	Status;
@@ -129,7 +133,7 @@ typedef struct channel_s {
 //	bool	bAmbient;	// Signifies if this channel / source is playing a looping ambient sound
 	bool	bProcessed;	// Signifies if this channel / source has been processed
 	bool	bStreaming;	// Set to true if the data needs to be streamed (MP3 or dialogue)
-#ifdef _WIN32
+#ifdef USE_OPENAL
 	STREAMINGBUFFER	buffers[NUM_STREAMING_BUFFERS];	// AL Buffers for streaming
 	ALuint		alSource;		// Open AL Source
 #endif
@@ -184,9 +188,6 @@ extern	channel_t   s_channels[MAX_CHANNELS];
 extern	int		s_paintedtime;
 extern	int		s_rawend;
 extern	vec3_t	listener_origin;
-extern	vec3_t	listener_forward;
-extern	vec3_t	listener_right;
-extern	vec3_t	listener_up;
 extern	dma_t	dma;
 
 #define	MAX_RAW_SAMPLES	16384

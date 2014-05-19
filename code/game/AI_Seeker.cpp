@@ -256,7 +256,7 @@ void Seeker_Strafe( void )
 //------------------------------------
 void Seeker_Hunt( qboolean visible, qboolean advance )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	NPC_FaceEnemy( qtrue );
@@ -292,7 +292,7 @@ void Seeker_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = SEEKER_FORWARD_BASE_SPEED + SEEKER_FORWARD_MULTIPLIER * g_spskill->integer;

@@ -1853,27 +1853,6 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	Z_Free(pGhoul2Data);
 }
 
-int G2_FindConfigStringSpace(char *name, int start, int max)
-{
-	char	s[MAX_STRING_CHARS];
-	int  i=1;
-	for ( ; i<max ; i++ ) 
-	{
-		ri.SV_GetConfigstring( start + i, s, sizeof( s ) );
-		if ( !s[0] ) 
-		{
-			break;
-		}
-		if ( !Q_stricmp( s, name ) ) 
-		{
-			return i;
-		}
-	}
-
-	ri.SV_SetConfigstring(start + i, name);
-	return i;
-}
-
 void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 {
 	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly

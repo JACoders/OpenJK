@@ -384,7 +384,7 @@ Sentry_Hunt
 */
 void Sentry_Hunt( qboolean visible, qboolean advance )
 {
-	float	distance, speed;
+	float	speed;
 	vec3_t	forward;
 
 	//If we're not supposed to stand still, pursue the player
@@ -415,7 +415,7 @@ void Sentry_Hunt( qboolean visible, qboolean advance )
 	else
 	{
 		VectorSubtract( NPC->enemy->currentOrigin, NPC->currentOrigin, forward );
-		distance = VectorNormalize( forward );
+		/*distance = */VectorNormalize( forward );
 	}
 
 	speed = SENTRY_FORWARD_BASE_SPEED + SENTRY_FORWARD_MULTIPLIER * g_spskill->integer;

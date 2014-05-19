@@ -235,11 +235,8 @@ void SV_MasterHeartbeat( void ) {
 			if ( !strstr( ":", sv_master[i]->string ) ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
-			Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", sv_master[i]->string,
-				adr[i].ip[0], adr[i].ip[1], adr[i].ip[2], adr[i].ip[3],
-				BigShort( adr[i].port ) );
+			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
 		}
-
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
 		// this command should be changed if the server info / status format
@@ -570,7 +567,6 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
 	Info_SetValueForKey( infostring, "g_humanplayers", va("%i", humans) );
-	Info_SetValueForKey( infostring, "bots", va("%i", count-humans) );
 	Info_SetValueForKey( infostring, "sv_maxclients",
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
@@ -586,7 +582,7 @@ void SVC_Info( netadr_t from ) {
 	}
 	Info_SetValueForKey( infostring, "wdisable", va("%i", wDisable ) );
 	Info_SetValueForKey( infostring, "fdisable", va("%i", Cvar_VariableIntegerValue( "g_forcePowerDisable" ) ) );
-	Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
+	//Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
 	Info_SetValueForKey( infostring, "autodemo", va("%i", sv_autoDemo->integer ) );
 
 	if( sv_minPing->integer ) {

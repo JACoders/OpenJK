@@ -861,15 +861,19 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		soundpath[i] = 0;
 
 		trap->FS_Close(f);
-	}
 
-	if (isFemale)
-	{
-		ci->gender = GENDER_FEMALE;
+		if (isFemale)
+		{
+			ci->gender = GENDER_FEMALE;
+		}
+		else
+		{
+			ci->gender = GENDER_MALE;
+		}
 	}
 	else
 	{
-		ci->gender = GENDER_MALE;
+		isFemale = ci->gender == GENDER_FEMALE;
 	}
 
 	trap->S_Shutup(qtrue);
@@ -2715,7 +2719,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	{
 		CG_PlayerAnimEvents( cent->localAnimIndex, sFileIndex, qfalse, cent->pe.legs.frame, curFrame, cent->currentState.number );
 	}
-	cent->pe.legs.oldFrame = cent->pe.torso.frame;
+	cent->pe.legs.oldFrame = cent->pe.legs.frame;
 	cent->pe.legs.frame = curFrame;
 
 	if (cent->noLumbar)

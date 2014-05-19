@@ -130,18 +130,42 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedIncludeDirectories ${MPDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 
 	if(UseInternalZlib)
-		# OpenAL32.lib is included for windows
-		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
-		if(NOT ZlibLibrary)
-			message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
-		endif(NOT ZlibLibrary)
+		set(MPEngineAndDedZLibFiles
+			"${OpenJKLibDir}/zlib/adler32.c"
+			"${OpenJKLibDir}/zlib/compress.c"
+			"${OpenJKLibDir}/zlib/crc32.c"
+			"${OpenJKLibDir}/zlib/deflate.c"
+			"${OpenJKLibDir}/zlib/gzclose.c"
+			"${OpenJKLibDir}/zlib/gzlib.c"
+			"${OpenJKLibDir}/zlib/gzread.c"
+			"${OpenJKLibDir}/zlib/gzwrite.c"
+			"${OpenJKLibDir}/zlib/infback.c"
+			"${OpenJKLibDir}/zlib/inffast.c"
+			"${OpenJKLibDir}/zlib/inflate.c"
+			"${OpenJKLibDir}/zlib/inftrees.c"
+			"${OpenJKLibDir}/zlib/trees.c"
+			"${OpenJKLibDir}/zlib/uncompr.c"
+			"${OpenJKLibDir}/zlib/zutil.c"
+			"${OpenJKLibDir}/zlib/crc32.h"
+			"${OpenJKLibDir}/zlib/deflate.h"
+			"${OpenJKLibDir}/zlib/gzguts.h"
+			"${OpenJKLibDir}/zlib/inffast.h"
+			"${OpenJKLibDir}/zlib/inffixed.h"
+			"${OpenJKLibDir}/zlib/inflate.h"
+			"${OpenJKLibDir}/zlib/inftrees.h"
+			"${OpenJKLibDir}/zlib/trees.h"
+			"${OpenJKLibDir}/zlib/zconf.h"
+			"${OpenJKLibDir}/zlib/zlib.h"
+			"${OpenJKLibDir}/zlib/zutil.h")
+		source_group("zlib" FILES ${MPEngineAndDedZLibFiles})
+		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedZLibFiles})
+		
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZlibLibrary})
-	else(UseInternalZlib)
+	else()
 		find_package(ZLIB REQUIRED)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
+	endif()
 
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -282,12 +306,11 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
 
-	# TODO: replace the following with proper library? Update it?
 	set(MPEngineAndDedMinizipFiles
-		"${MPDir}/qcommon/unzip.cpp"
-		"${MPDir}/qcommon/unzip.h"
-		"${OpenJKLibDir}/zlib/ioapi.c"
-		"${OpenJKLibDir}/zlib/ioapi.h"
+		"${OpenJKLibDir}/minizip/ioapi.c"
+		"${OpenJKLibDir}/minizip/ioapi.h"
+		"${OpenJKLibDir}/minizip/unzip.cpp"
+		"${OpenJKLibDir}/minizip/unzip.h"
 		)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
@@ -327,20 +350,22 @@ if(BuildMPEngine)
 	endif()
 
 	# OpenAL (is optionally included for Windows)
-	if(UseInternalOpenAL)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
-		# There's a libs/OpenAL32.lib
-		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-		find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir})
-		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
-		endif(NOT OpenALLibrary)
-		set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
-	else(UseInternalOpenAL)
-		find_package(OpenAL REQUIRED)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
-		set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
-	endif(UseInternalOpenAL)
+	if (WIN32 AND NOT WIN64)
+		if(UseInternalOpenAL)
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
+			# There's a libs/OpenAL32.lib
+			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
+			find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir})
+			if(NOT OpenALLibrary)
+				message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
+			endif(NOT OpenALLibrary)
+			set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
+		else(UseInternalOpenAL)
+			find_package(OpenAL REQUIRED)
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
+			set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
+		endif(UseInternalOpenAL)
+	endif()
 
 	if(NOT WIN32)
 		find_package(SDL2 REQUIRED)

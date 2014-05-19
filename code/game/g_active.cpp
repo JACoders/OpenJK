@@ -669,11 +669,6 @@ void P_WorldEffects( gentity_t *ent ) {
 						//play the choking sound
 						G_SoundOnEnt( ent, CHAN_VOICE, va( "*choke%d.wav", Q_irand( 1, 3 ) ) );
 
-						int anim = BOTH_CHOKE3; //left-handed choke
-						if ( ent->client->ps.weapon == WP_NONE || ent->client->ps.weapon == WP_MELEE )
-						{
-							anim = BOTH_CHOKE1; //two-handed choke
-						}
 						//make them grasp their throat
 						NPC_SetAnim( ent, SETANIM_BOTH, BOTH_CHOKE1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 					}
@@ -835,25 +830,19 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 		//	float		minLockingSpeed = maxMoveSpeed * 0.75;
 
 			vec3_t		attackerMoveDir;
-			float		attackerMoveSpeed;
 
 			vec3_t		victimMoveDir;
-			float		victimMoveSpeed;
 			vec3_t		victimTowardAttacker;
-			float		victimTowardAttackerDistance;
 			vec3_t		victimRight;
 			float		victimRightAccuracy;
 
 			VectorCopy(attacker->client->ps.velocity,	attackerMoveDir);
 			VectorCopy(victim->client->ps.velocity,		victimMoveDir);
 
-			attackerMoveSpeed	= VectorNormalize(attackerMoveDir);
-			victimMoveSpeed		= VectorNormalize(victimMoveDir);
-
 			AngleVectors(victim->currentAngles, 0, victimRight, 0);
 
 			VectorSubtract(victim->currentOrigin, attacker->currentOrigin, victimTowardAttacker);
-			victimTowardAttackerDistance = VectorNormalize(victimTowardAttacker);
+			/*victimTowardAttackerDistance = */VectorNormalize(victimTowardAttacker);
 
 			victimRightAccuracy = DotProduct(victimTowardAttacker, victimRight);
 
@@ -1786,11 +1775,11 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 	int		event;
 	gclient_t *client;
 	//int		damage;
-	qboolean	fired;
+#ifndef FINAL_BUILD
+	qboolean	fired = qfalse;
+#endif
 
 	client = ent->client;
-
-	fired = qfalse;
 
 	for ( i = oldEventSequence ; i < client->ps.eventSequence ; i++ ) {
 		event = client->ps.events[ i & (MAX_PS_EVENTS-1) ];
@@ -1821,8 +1810,8 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			if ( fired ) {
 				gi.Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
 			}
-#endif
 			fired = qtrue;
+#endif
 			FireWeapon( ent, qfalse );
 			break;
 
@@ -1831,8 +1820,8 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			if ( fired ) {
 				gi.Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
 			}
-#endif
 			fired = qtrue;
+#endif
 			FireWeapon( ent, qtrue );
 			break;
 
