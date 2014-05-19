@@ -188,6 +188,8 @@ void Boba_Precache( void )
 
 extern void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
+
+/* zyk: now the weapon change will always be done by NPC_ChangeWeapon
 void Boba_ChangeWeapon( int wp )
 {
 	if ( NPCS.NPC->s.weapon == wp )
@@ -196,6 +198,7 @@ void Boba_ChangeWeapon( int wp )
 	}
 	NPC_ChangeWeapon( wp );
 }
+*/
 
 void WP_ResistForcePush( gentity_t *self, gentity_t *pusher, qboolean noPenalty )
 {
@@ -414,7 +417,8 @@ void Boba_FireFlameThrower( gentity_t *self )
 
 void Boba_StartFlameThrower( gentity_t *self )
 {
-	int	flameTime = 4000;//Q_irand( 1000, 3000 );
+	// zyk: changed from 4000 to 3000
+	int	flameTime = 3000;//Q_irand( 1000, 3000 );
 	mdxaBone_t	boltMatrix;
 	vec3_t		org, dir;
 
@@ -482,6 +486,7 @@ void Boba_FireDecide( void )
 	vec3_t	impactPos, enemyDir, shootDir;
 	float	enemyDist, dot;
 
+	/* zyk: removed this code
 	if ( NPCS.NPC->client->ps.groundEntityNum == ENTITYNUM_NONE
 		&& NPCS.NPC->client->ps.fd.forceJumpZStart
 		&& !BG_FlippingAnim( NPCS.NPC->client->ps.legsAnim )
@@ -489,23 +494,25 @@ void Boba_FireDecide( void )
 	{//take off
 		Boba_FlyStart( NPCS.NPC );
 	}
+	*/
 
 	if ( !NPCS.NPC->enemy )
 	{
 		return;
 	}
 
+	/* zyk: removed this code.
 	if ( NPCS.NPC->enemy->s.weapon == WP_SABER )
 	{
 		NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-		Boba_ChangeWeapon( WP_ROCKET_LAUNCHER );
+		NPC_ChangeWeapon( WP_ROCKET_LAUNCHER );
 	}
 	else
 	{
 		if ( NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.5f )
 		{
 			NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-			Boba_ChangeWeapon( WP_BLASTER );
+			NPC_ChangeWeapon( WP_BLASTER );
 			NPCS.NPCInfo->burstMin = 3;
 			NPCS.NPCInfo->burstMean = 12;
 			NPCS.NPCInfo->burstMax = 20;
@@ -514,9 +521,10 @@ void Boba_FireDecide( void )
 		else
 		{
 			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-			Boba_ChangeWeapon( WP_BLASTER );
+			NPC_ChangeWeapon( WP_BLASTER );
 		}
 	}
+	*/
 
 	VectorClear( impactPos );
 	enemyDist = DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
@@ -530,7 +538,8 @@ void Boba_FireDecide( void )
 		enemyInFOV = qtrue;
 	}
 
-	if ( (enemyDist < (128*128)&&enemyInFOV) || !TIMER_Done( NPCS.NPC, "flameTime" ) )
+	// zyk: changed from MIN_ROCKET_DIST_SQUARED to 4096
+	if ( (enemyDist < 4096 && enemyInFOV) || !TIMER_Done( NPCS.NPC, "flameTime" ) )
 	{//flamethrower
 		Boba_DoFlameThrower( NPCS.NPC );
 		enemyCS = qfalse;
@@ -538,28 +547,141 @@ void Boba_FireDecide( void )
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
 		NPCS.ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);
 	}
-	else if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
+	
+	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
-		if ( (NPCS.NPC->client->ps.weapon == WP_FLECHETTE || NPCS.NPC->client->ps.weapon == WP_REPEATER) &&
-			(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
-		{//shooting an explosive, but enemy too close, switch to primary fire
-			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-			//FIXME: we can never go back to alt-fire this way since, after this, we don't know if we were initially supposed to use alt-fire or not...
+		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
+		{ // zyk: enemy is close. Get some good weapon for close range
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_DEMP2 );
+			}
+			else if (HaveWeapon(WP_FLECHETTE))
+			{
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else if (HaveWeapon(WP_CONCUSSION))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_CONCUSSION );
+			}
+			else if (HaveWeapon(WP_REPEATER))
+			{
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_REPEATER );
+			}
+			else
+			{
+				int newWeapon = ChooseBestWeapon();
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon(newWeapon);
+			}
+			TIMER_Set( NPCS.NPC, "bobaChangeWeapon", Q_irand( 3000, 5000 ) );
 		}
 	}
-	else if ( enemyDist > 65536 )//256 squared
+	else if (enemyDist >= MIN_ROCKET_DIST_SQUARED && enemyDist <= 262144)
 	{
-		if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
-		{//sniping... should be assumed
-			if ( !(NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) )
-			{//use primary fire
+		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
+		{ // zyk: enemy is not near and not far
+			if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+			else
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-				//reset fire-timing variables
-				NPC_ChangeWeapon( WP_DISRUPTOR );
-				NPC_UpdateAngles( qtrue, qtrue );
-				return;
+
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				NPC_ChangeWeapon( WP_DEMP2 );
 			}
+			else if (HaveWeapon(WP_CONCUSSION))
+			{
+				NPC_ChangeWeapon( WP_CONCUSSION );
+			}
+			else if (HaveWeapon(WP_REPEATER))
+			{
+				NPC_ChangeWeapon( WP_REPEATER );
+			}
+			else if (HaveWeapon(WP_ROCKET_LAUNCHER))
+			{
+				NPC_ChangeWeapon( WP_ROCKET_LAUNCHER );
+			}
+			else
+			{
+				int newWeapon = ChooseBestWeapon();
+				NPC_ChangeWeapon(newWeapon);
+			}
+
+			TIMER_Set( NPCS.NPC, "bobaChangeWeapon", Q_irand( 3000, 7000 ) );
 		}
+	}
+	else if ( enemyDist > 262144 )//256 squared // zyk: changed from 256 to 512
+	{
+		// zyk: fixed this condition
+		// if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
+		// zyk: if he has disruptor, use it. Else, changes to some other weapon
+		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
+		{
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+
+				NPC_ChangeWeapon( WP_DEMP2 );
+			}
+			else if (HaveWeapon(WP_DISRUPTOR))
+			{
+				//reset fire-timing variables
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_DISRUPTOR );
+			}
+			else if (HaveWeapon(WP_FLECHETTE))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else 
+			{ // zyk: does not have disruptor, use another weapon
+				int newWeapon = ChooseBestWeapon();
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon(newWeapon);
+			}
+			TIMER_Set( NPCS.NPC, "bobaChangeWeapon", Q_irand( 5000, 10000 ) );
+		}
+	}
+
+	// zyk: this is when Boba tries to fly
+	if (TIMER_Done( NPCS.NPC, "bobaJetpackTime" ))
+	{
+		if (Boba_Flying(NPCS.NPC))
+		{
+			Boba_FlyStop( NPCS.NPC );
+		}
+		else
+		{
+			Boba_FlyStart( NPCS.NPC );
+		}
+
+		TIMER_Set( NPCS.NPC, "bobaJetpackTime", Q_irand( 5000, 15000 ) );
+	}
+
+	// zyk: if he is using sniper, sets the sniper AI
+	if (NPCS.client->ps.weapon == WP_DISRUPTOR)
+	{
+		NPC_UpdateAngles( qtrue, qtrue );
+		NPC_BSSniper_Default();
+		return;
 	}
 
 	//can we see our target?
@@ -3740,6 +3862,7 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 
 	CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_eyes );
 
+	/* zyk: this was not working properly
 	if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT
 		&& TIMER_Done( NPCS.NPC, "flameTime" )
 		&& NPCS.NPC->s.weapon != WP_NONE
@@ -3749,7 +3872,8 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 		&& NPCS.NPC->s.weapon != WP_TRIP_MINE
 		&& NPCS.NPC->s.weapon != WP_DET_PACK
 		&& NPCS.NPC->s.weapon != WP_STUN_BATON
-		/*&& NPC->s.weapon != WP_MELEE*/ )
+		//&& NPC->s.weapon != WP_MELEE 
+		)
 	{//boba leads his enemy
 		if ( NPCS.NPC->health < NPCS.NPC->client->pers.maxHealth*0.5f )
 		{//lead
@@ -3762,6 +3886,7 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 			}
 		}
 	}
+	*/
 
 	//Find the desired angles
 	if ( !NPCS.NPC->client->ps.saberInFlight
@@ -6280,17 +6405,21 @@ void NPC_BSJedi_Default( void )
 			//FIXME: precache me!
 			NPCS.NPC->s.loopSound = G_SoundIndex( "sound/movers/objects/green_beam_lp2.wav" );//test/charm.wav" );
 		}
-
+		
+		/* zyk: removed this code
 		if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
 		{
 			if ( NPCS.NPC->enemy->enemy != NPCS.NPC && NPCS.NPC->health == NPCS.NPC->client->pers.maxHealth && DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin )>(800*800) )
 			{
+				
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-				Boba_ChangeWeapon( WP_DISRUPTOR );
+				NPC_ChangeWeapon( WP_DISRUPTOR );
 				NPC_BSSniper_Default();
 				return;
 			}
 		}
+		*/
+
 		Jedi_Attack();
 		//if we have multiple-jedi combat, probably need to keep checking (at certain debounce intervals) for a better (closer, more active) enemy and switch if needbe...
 		if ( ((!NPCS.ucmd.buttons&&!NPCS.NPC->client->ps.fd.forcePowersActive)||(NPCS.NPC->enemy&&NPCS.NPC->enemy->health<=0)) && NPCS.NPCInfo->enemyCheckDebounceTime < level.time )
