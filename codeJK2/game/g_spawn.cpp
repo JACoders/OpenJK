@@ -137,9 +137,9 @@ qboolean G_SpawnAngleHack( const char *key, const char *defaultString, float *ou
 
 stringID_table_t flagTable [] =
 {
-	"noTED", EF_NO_TED,
+	{ "noTED", EF_NO_TED },
 	//stringID_table_t Must end with a null entry
-	"", NULL
+	{ "", 0 }
 };
 
 //

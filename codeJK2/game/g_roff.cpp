@@ -631,7 +631,7 @@ void G_SaveCachedRoffs()
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
 		len = strlen( roffs[i].fileName ) + 1;
 		gi.AppendToSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len) );
-		gi.AppendToSaveGame( INT_ID('R','S','T','R'), (void *)(*roffs[i].fileName), len );
+		gi.AppendToSaveGame( INT_ID('R','S','T','R'), (void *)(roffs[i].fileName), len );
 	}
 }
 

@@ -728,8 +728,8 @@ Precaches NPC skins, tgas and md3s.
 */
 void NPC_Precache ( gentity_t *spawner )
 {
-	clientInfo_t	ci={0};
-	renderInfo_t	ri={0};
+	clientInfo_t	ci={};
+	renderInfo_t	ri={};
 	team_t			playerTeam = TEAM_FREE;
 	const char	*token;
 	const char	*value;
@@ -1341,8 +1341,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				if ( surfOff[0] )
 				{
-					strncat( (char *)surfOff, ",", sizeof(surfOff) );
-					strncat( (char *)surfOff, value, sizeof(surfOff) );
+					Q_strcat( surfOff, sizeof( surfOff ), "," );
+					Q_strcat( surfOff, sizeof( surfOff ), value );
 				}
 				else
 				{
@@ -1360,8 +1360,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				if ( surfOn[0] )
 				{
-					strncat( (char *)surfOn, ",", sizeof(surfOn) );
-					strncat( (char *)surfOn, value, sizeof(surfOn) );
+					Q_strcat( surfOn, sizeof( surfOn ), "," );
+					Q_strcat( surfOn, sizeof( surfOn ), value );
 				}
 				else
 				{

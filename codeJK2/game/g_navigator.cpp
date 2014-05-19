@@ -569,7 +569,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 	gi.FS_FOpenFile( va( "maps/%s.nav", filename ), &file, FS_READ );
 
 	//See if we succeeded
-	if ( file == NULL )
+	if ( file == NULL_FILE )
 		return false;
 
 	//Check the header id
@@ -631,7 +631,7 @@ bool CNavigator::Save( const char *filename, int checksum )
 	//Attempt to load the file
 	gi.FS_FOpenFile( va( "maps/%s.nav", filename ), &file, FS_WRITE );
 
-	if ( file == NULL )
+	if ( file == NULL_FILE )
 		return false;
 
 	//Write out the header id

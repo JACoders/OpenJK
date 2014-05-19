@@ -228,72 +228,88 @@ saberMoveData_t	saberMoveData[LS_MOVE_MAX] = {//							NB:randomized
 };
 
 
-int transitionMove[Q_NUM_QUADS][Q_NUM_QUADS] = 
+saberMoveName_t transitionMove[Q_NUM_QUADS][Q_NUM_QUADS] =
 {
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_BR__R,//40
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__R_BR,//46
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__R_TR,
-	LS_T1__R_T_,
-	LS_T1__R_TL,
-	LS_T1__R__L,
-	LS_T1__R_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TR_BR,//52
-	LS_T1_TR__R,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TR_T_,
-	LS_T1_TR_TL,
-	LS_T1_TR__L,
-	LS_T1_TR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_T__BR,//58
-	LS_T1_T___R,
-	LS_T1_T__TR,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_T__TL,
-	LS_T1_T___L,
-	LS_T1_T__BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TL_BR,//64
-	LS_T1_TL__R,
-	LS_T1_TL_TR,
-	LS_T1_TL_T_,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TL__L,
-	LS_T1_TL_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__L_BR,//70
-	LS_T1__L__R,
-	LS_T1__L_TR,
-	LS_T1__L_T_,
-	LS_T1__L_TL,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__L_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//76
-	LS_T1_BL__R,
-	LS_T1_BL_TR,
-	LS_T1_BL_T_,
-	LS_T1_BL_TL,
-	LS_T1_BL__L,
-	LS_NONE,	//Can't transition to same pos!
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//NOTE: there are no transitions from bottom, so re-use the bottom right transitions
-	LS_T1_BR__R,
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE		//No transitions to bottom, and no anims start there, so shouldn't need any
+	{
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_BR__R,//40
+		LS_T1_BR_TR,
+		LS_T1_BR_T_,
+		LS_T1_BR_TL,
+		LS_T1_BR__L,
+		LS_T1_BR_BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1__R_BR,//46
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1__R_TR,
+		LS_T1__R_T_,
+		LS_T1__R_TL,
+		LS_T1__R__L,
+		LS_T1__R_BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_TR_BR,//52
+		LS_T1_TR__R,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_TR_T_,
+		LS_T1_TR_TL,
+		LS_T1_TR__L,
+		LS_T1_TR_BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_T__BR,//58
+		LS_T1_T___R,
+		LS_T1_T__TR,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_T__TL,
+		LS_T1_T___L,
+		LS_T1_T__BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_TL_BR,//64
+		LS_T1_TL__R,
+		LS_T1_TL_TR,
+		LS_T1_TL_T_,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1_TL__L,
+		LS_T1_TL_BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1__L_BR,//70
+		LS_T1__L__R,
+		LS_T1__L_TR,
+		LS_T1__L_T_,
+		LS_T1__L_TL,
+		LS_NONE,	//Can't transition to same pos!
+		LS_T1__L_BL,
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_BL_BR,//76
+		LS_T1_BL__R,
+		LS_T1_BL_TR,
+		LS_T1_BL_T_,
+		LS_T1_BL_TL,
+		LS_T1_BL__L,
+		LS_NONE,	//Can't transition to same pos!
+		LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
+	},
+	{
+		LS_T1_BL_BR,//NOTE: there are no transitions from bottom, so re-use the bottom right transitions
+		LS_T1_BR__R,
+		LS_T1_BR_TR,
+		LS_T1_BR_T_,
+		LS_T1_BR_TL,
+		LS_T1_BR__L,
+		LS_T1_BR_BL,
+		LS_NONE		//No transitions to bottom, and no anims start there, so shouldn't need any
+	}
 };
 
 void PM_VelocityForSaberMove( playerState_t *ps, vec3_t throwDir )
@@ -874,70 +890,86 @@ saberMoveName_t PM_AttackMoveForQuad( int quad )
 
 int saberMoveTransitionAngle[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
-	0,//Q_BR,Q_BR,
-	45,//Q_BR,Q_R,
-	90,//Q_BR,Q_TR,
-	135,//Q_BR,Q_T,
-	180,//Q_BR,Q_TL,
-	215,//Q_BR,Q_L,
-	270,//Q_BR,Q_BL,
-	45,//Q_BR,Q_B,
-	45,//Q_R,Q_BR,
-	0,//Q_R,Q_R,
-	45,//Q_R,Q_TR,
-	90,//Q_R,Q_T,
-	135,//Q_R,Q_TL,
-	180,//Q_R,Q_L,
-	215,//Q_R,Q_BL,
-	90,//Q_R,Q_B,
-	90,//Q_TR,Q_BR,
-	45,//Q_TR,Q_R,
-	0,//Q_TR,Q_TR,
-	45,//Q_TR,Q_T,
-	90,//Q_TR,Q_TL,
-	135,//Q_TR,Q_L,
-	180,//Q_TR,Q_BL,
-	135,//Q_TR,Q_B,
-	135,//Q_T,Q_BR,
-	90,//Q_T,Q_R,
-	45,//Q_T,Q_TR,
-	0,//Q_T,Q_T,
-	45,//Q_T,Q_TL,
-	90,//Q_T,Q_L,
-	135,//Q_T,Q_BL,
-	180,//Q_T,Q_B,
-	180,//Q_TL,Q_BR,
-	135,//Q_TL,Q_R,
-	90,//Q_TL,Q_TR,
-	45,//Q_TL,Q_T,
-	0,//Q_TL,Q_TL,
-	45,//Q_TL,Q_L,
-	90,//Q_TL,Q_BL,
-	135,//Q_TL,Q_B,
-	215,//Q_L,Q_BR,
-	180,//Q_L,Q_R,
-	135,//Q_L,Q_TR,
-	90,//Q_L,Q_T,
-	45,//Q_L,Q_TL,
-	0,//Q_L,Q_L,
-	45,//Q_L,Q_BL,
-	90,//Q_L,Q_B,
-	270,//Q_BL,Q_BR,
-	215,//Q_BL,Q_R,
-	180,//Q_BL,Q_TR,
-	135,//Q_BL,Q_T,
-	90,//Q_BL,Q_TL,
-	45,//Q_BL,Q_L,
-	0,//Q_BL,Q_BL,
-	45,//Q_BL,Q_B,
-	45,//Q_B,Q_BR,
-	90,//Q_B,Q_R,
-	135,//Q_B,Q_TR,
-	180,//Q_B,Q_T,
-	135,//Q_B,Q_TL,
-	90,//Q_B,Q_L,
-	45,//Q_B,Q_BL,
-	0//Q_B,Q_B,
+	{
+		0,//Q_BR,Q_BR,
+		45,//Q_BR,Q_R,
+		90,//Q_BR,Q_TR,
+		135,//Q_BR,Q_T,
+		180,//Q_BR,Q_TL,
+		215,//Q_BR,Q_L,
+		270,//Q_BR,Q_BL,
+		45,//Q_BR,Q_B,
+	},
+	{
+		45,//Q_R,Q_BR,
+		0,//Q_R,Q_R,
+		45,//Q_R,Q_TR,
+		90,//Q_R,Q_T,
+		135,//Q_R,Q_TL,
+		180,//Q_R,Q_L,
+		215,//Q_R,Q_BL,
+		90,//Q_R,Q_B,
+	},
+	{
+		90,//Q_TR,Q_BR,
+		45,//Q_TR,Q_R,
+		0,//Q_TR,Q_TR,
+		45,//Q_TR,Q_T,
+		90,//Q_TR,Q_TL,
+		135,//Q_TR,Q_L,
+		180,//Q_TR,Q_BL,
+		135,//Q_TR,Q_B,
+	},
+	{
+		135,//Q_T,Q_BR,
+		90,//Q_T,Q_R,
+		45,//Q_T,Q_TR,
+		0,//Q_T,Q_T,
+		45,//Q_T,Q_TL,
+		90,//Q_T,Q_L,
+		135,//Q_T,Q_BL,
+		180,//Q_T,Q_B,
+	},
+	{
+		180,//Q_TL,Q_BR,
+		135,//Q_TL,Q_R,
+		90,//Q_TL,Q_TR,
+		45,//Q_TL,Q_T,
+		0,//Q_TL,Q_TL,
+		45,//Q_TL,Q_L,
+		90,//Q_TL,Q_BL,
+		135,//Q_TL,Q_B,
+	},
+	{
+		215,//Q_L,Q_BR,
+		180,//Q_L,Q_R,
+		135,//Q_L,Q_TR,
+		90,//Q_L,Q_T,
+		45,//Q_L,Q_TL,
+		0,//Q_L,Q_L,
+		45,//Q_L,Q_BL,
+		90,//Q_L,Q_B,
+	},
+	{
+		270,//Q_BL,Q_BR,
+		215,//Q_BL,Q_R,
+		180,//Q_BL,Q_TR,
+		135,//Q_BL,Q_T,
+		90,//Q_BL,Q_TL,
+		45,//Q_BL,Q_L,
+		0,//Q_BL,Q_BL,
+		45,//Q_BL,Q_B,
+	},
+	{
+		45,//Q_B,Q_BR,
+		90,//Q_B,Q_R,
+		135,//Q_B,Q_TR,
+		180,//Q_B,Q_T,
+		135,//Q_B,Q_TL,
+		90,//Q_B,Q_L,
+		45,//Q_B,Q_BL,
+		0//Q_B,Q_B,
+	}
 };
 
 int PM_SaberAttackChainAngle( int move1, int move2 )
