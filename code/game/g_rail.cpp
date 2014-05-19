@@ -35,6 +35,7 @@ This file is part of Jedi Academy.
 // Externs & Fwd Decl.
 ////////////////////////////////////////////////////////////////////////////////////////
 extern void		G_SoundAtSpot( vec3_t org, int soundIndex, qboolean broadcast );
+extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 
 class	CRailTrack;
 class	CRailLane;
