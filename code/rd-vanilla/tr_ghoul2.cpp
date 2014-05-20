@@ -3611,6 +3611,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		LL(surfInfo->numChildren);
 		LL(surfInfo->parentIndex);
 
+#ifndef JK2_MODE
 		Q_strlwr(surfInfo->name);	//just in case
 		if ( !strcmp( &surfInfo->name[strlen(surfInfo->name)-4],"_off") )
 		{
@@ -3621,6 +3622,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			surfInfo->shader[0] = 0;	//kill the stupid [nomaterial] since carcass doesn't
 		}
+#endif
 
 		// do all the children indexs
 		for (j=0; j<surfInfo->numChildren; j++)
