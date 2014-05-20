@@ -718,7 +718,7 @@ void NPC_ApplyScriptFlags (void)
 			NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 
 		if (NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && NPCS.NPC->client->ps.zoomMode != 0 && NPCS.NPCInfo->attackHold == 0)
-		{
+		{ // zyk: snipers can use charged shot
 			NPCS.NPCInfo->attackHold = 2500;
 		}
 	}

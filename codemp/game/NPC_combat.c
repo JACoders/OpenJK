@@ -651,13 +651,13 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		else
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			NPCS.NPCInfo->burstMin = 5;
-			NPCS.NPCInfo->burstMean = 14;
-			NPCS.NPCInfo->burstMax = 20;
+			ent->NPC->burstMin = 5;
+			ent->NPC->burstMean = 14;
+			ent->NPC->burstMax = 20;
 			if ( g_npcspskill.integer == 0 )
-				ent->NPC->burstSpacing = 300;//attack debounce
-			else if ( g_npcspskill.integer == 1 )
 				ent->NPC->burstSpacing = 200;//attack debounce
+			else if ( g_npcspskill.integer == 1 )
+				ent->NPC->burstSpacing = 150;//attack debounce
 			else
 				ent->NPC->burstSpacing = 100;//attack debounce
 		}
@@ -736,15 +736,15 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		if ( ent->NPC->scriptFlags & SCF_ALT_FIRE )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
-			NPCS.NPCInfo->burstMin = 5;
-			NPCS.NPCInfo->burstMean = 14;
-			NPCS.NPCInfo->burstMax = 20;
+			ent->NPC->burstMin = 5;
+			ent->NPC->burstMean = 14;
+			ent->NPC->burstMax = 20;
 			if ( g_npcspskill.integer == 0 )
-				ent->NPC->burstSpacing = 1000;//attack debounce
-			else if ( g_npcspskill.integer == 1 )
 				ent->NPC->burstSpacing = 500;//attack debounce
+			else if ( g_npcspskill.integer == 1 )
+				ent->NPC->burstSpacing = 300;//attack debounce
 			else
-				ent->NPC->burstSpacing = 250;//attack debounce
+				ent->NPC->burstSpacing = 150;//attack debounce
 		}
 		else
 		{
