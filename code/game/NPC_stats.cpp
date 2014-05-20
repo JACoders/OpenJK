@@ -471,7 +471,7 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 
 		token = COM_Parse( text_p );
 		eventType = (animEventType_t)GetIDForString(animEventTypeTable, token);
-		if ( eventType == AEV_NONE || eventType == -1 )
+		if ( eventType == AEV_NONE || eventType == (animEventType_t)-1 )
 		{//Unrecognized ANIM EVENT TYPE
 			Com_Printf(S_COLOR_RED"ERROR: Unknown EVENT %s in animEvent file %s\n", token, aeb_filename );
 			continue;

@@ -26,7 +26,7 @@ This file is part of Jedi Knight 2.
 #include "../game/g_roff.h"
 
 bool		in_camera = false;
-camera_t	client_camera={0};
+camera_t	client_camera={};
 extern qboolean	player_locked;
 
 extern gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
@@ -1416,8 +1416,8 @@ static void CGCam_Roff( void )
 	}
 
 	// Yeah, um, I guess this just has to be negated?
-	ang[PITCH] =- ang[PITCH];
-	ang[ROLL]  =- ang[ROLL];
+	ang[PITCH] = -ang[PITCH];
+	ang[ROLL]  = -ang[ROLL];
 	// might need to to yaw as well.  need a test...
 
 #ifdef _DEBUG

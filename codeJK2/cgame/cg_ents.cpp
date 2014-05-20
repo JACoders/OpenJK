@@ -1060,7 +1060,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->alt_missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->alt_missileModel == NULL )
+		if ( weapon->alt_missileModel == NULL_HANDLE )
 			return;
 	}
 	else
@@ -1079,7 +1079,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->missileModel == NULL )
+		if ( weapon->missileModel == NULL_HANDLE )
 			return;
 	}
 
@@ -1313,16 +1313,12 @@ void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color )
 
 static vec2_t st[] = 
 {
-	0.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 1.0f,
-	0.0f, 1.0f
+	{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }
 };
 
 void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
 {
 	vec3_t	point[4], rot={0,0,0};
-	vec2_t	st[4];
 	int		vec[3];
 	int		axis, i;
 

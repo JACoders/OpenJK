@@ -129,6 +129,8 @@ void CG_FragmentBounceSound( localEntity_t *le, trace_t *trace )
 		case LEBS_METAL:
 			s = cgs.media.metalBounceSound[Q_irand(0,1)];// FIXME: make sure that this sound is registered properly...might still be rock bounce sound....
 			break;
+		default:
+			break;
 		}
 
 		if ( s )
