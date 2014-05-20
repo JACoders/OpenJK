@@ -6104,8 +6104,9 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 			{
 				ent->client->pers.force_powers_levels[5]--;
 				ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
-				if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
+				if (ent->client->saber[0].model[0] && !ent->client->saber[1].model[0])
 				{
+					ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->pers.force_powers_levels[5];
 					ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
 				}
 				if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] == 0)
