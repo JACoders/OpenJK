@@ -155,7 +155,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/rd-common/tr_font.cpp"
 		"${SPDir}/rd-common/tr_font.h"
 		"${SPDir}/rd-common/tr_image_load.cpp"
-		"${SPDir}/rd-common/tr_image_manipulation.cpp"
 		"${SPDir}/rd-common/tr_image_jpg.cpp"
 		"${SPDir}/rd-common/tr_image_tga.cpp"
 		"${SPDir}/rd-common/tr_image_png.cpp"
