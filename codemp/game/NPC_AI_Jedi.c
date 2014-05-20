@@ -115,6 +115,7 @@ void Jedi_ClearTimers( gentity_t *ent )
 	TIMER_Set( ent, "gripping", 0 );
 	TIMER_Set( ent, "draining", 0 );
 	TIMER_Set( ent, "noturn", 0 );
+	TIMER_Set( ent, "rebornChangeWeapon", Q_irand( 5000, 15000 ) );
 }
 
 void Jedi_PlayBlockedPushSound( gentity_t *self )
@@ -4396,6 +4397,126 @@ static void Jedi_CombatIdle( int enemy_dist )
 
 static qboolean Jedi_AttackDecide( int enemy_dist )
 {
+	// zyk: new code. NPCs with this AI can change weapons
+	if (NPCS.client->NPC_class != CLASS_BOBAFETT && TIMER_Done( NPCS.NPC, "rebornChangeWeapon" ))
+	{
+		if (NPCS.client->ps.weapon != WP_SABER)
+		{
+			NPC_ChangeWeapon( WP_SABER );
+
+			// zyk: activates his saber
+			WP_ActivateSaber(NPCS.NPC);
+		}
+		else if (!Q_irand(0,1)) // zyk: has a 50 per cent chance of getting a new weapon
+		{
+			if ( enemy_dist < 128 )
+			{//enemy within 128
+				 // zyk: enemy is close. Get some good weapon for close range
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				{ // zyk: use demp2 to try to disable enemy jetpack
+					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					else
+						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_DEMP2 );
+				}
+				else if (HaveWeapon(WP_FLECHETTE))
+				{
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_FLECHETTE );
+				}
+				else if (HaveWeapon(WP_CONCUSSION))
+				{
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_CONCUSSION );
+				}
+				else if (HaveWeapon(WP_REPEATER))
+				{
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_REPEATER );
+				}
+				else if (HaveWeapon(WP_BLASTER))
+				{
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_BLASTER );
+				}
+				else
+				{
+					int newWeapon = ChooseBestWeapon();
+					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					else
+						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon(newWeapon);
+				}
+			}
+			else if (enemy_dist >= 128 && enemy_dist <= 512)
+			{
+				// zyk: enemy is not near and not far
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				{ // zyk: use demp2 to try to disable enemy jetpack
+					NPC_ChangeWeapon( WP_DEMP2 );
+				}
+				else if (HaveWeapon(WP_CONCUSSION))
+				{
+					NPC_ChangeWeapon( WP_CONCUSSION );
+				}
+				else if (HaveWeapon(WP_REPEATER))
+				{
+					NPC_ChangeWeapon( WP_REPEATER );
+				}
+				else if (HaveWeapon(WP_ROCKET_LAUNCHER))
+				{
+					NPC_ChangeWeapon( WP_ROCKET_LAUNCHER );
+				}
+				else
+				{
+					int newWeapon = ChooseBestWeapon();
+					NPC_ChangeWeapon(newWeapon);
+				}
+			}
+			else if ( enemy_dist > 512 )
+			{
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				{ // zyk: use demp2 to try to disable enemy jetpack
+					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					else
+						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+
+					NPC_ChangeWeapon( WP_DEMP2 );
+				}
+				else if (HaveWeapon(WP_DISRUPTOR))
+				{
+					//reset fire-timing variables
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_DISRUPTOR );
+				}
+				else if (HaveWeapon(WP_FLECHETTE))
+				{
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon( WP_FLECHETTE );
+				}
+				else 
+				{ // zyk: does not have disruptor, use another weapon
+					int newWeapon = ChooseBestWeapon();
+					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+					else
+						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+					NPC_ChangeWeapon(newWeapon);
+				}
+			}
+		}
+
+		TIMER_Set( NPCS.NPC, "rebornChangeWeapon", Q_irand( 5000, 15000 ) );
+	}
+
 	// Begin fixed cultist_destroyer AI
 	if ( Jedi_CultistDestroyer( NPCS.NPC ) )
 	{ // destroyer

@@ -261,10 +261,15 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 	}
 	//==================
 //	if ( ent->client->ps.saber[0].type != SABER_NONE )
-	if (ent->client->ps.weapon == WP_SABER) //rwwFIXMEFIXME: is this going to work?
+	//if (ent->client->ps.weapon == WP_SABER) //rwwFIXMEFIXME: is this going to work?
+	if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER)) // zyk: new condition. Tests if npc has the saber
 	{//if I'm equipped with a saber, initialize it (them)
 	//	ent->client->ps.SaberDeactivate();
 	//	ent->client->ps.SetSaberLength( 0 );
+		// zyk: changes to saber
+		if (ent->client->ps.weapon != WP_SABER)
+			NPC_ChangeWeapon(WP_SABER);
+
 		WP_SaberInitBladeData( ent );
 		ent->client->ps.saberHolstered = 2;
 	//	G_CreateG2AttachedWeaponModel( ent, ent->client->ps.saber[0].model, ent->handRBolt, 0 );
