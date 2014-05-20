@@ -342,6 +342,8 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 			effect = "chunks/rockbreakmed";
 			break;
 		}
+	default:
+		break;
 	}
 
 	if ( !effect )
@@ -452,6 +454,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	case MAT_ROPE:
 //		cgi_S_StartSound( NULL, owner, CHAN_BODY, cgi_S_RegisterSound( "" ));  FIXME:  needs a sound
 		return;
+	default:
 		break;
 	}
 

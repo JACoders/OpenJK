@@ -4354,7 +4354,6 @@ void WP_SaberPull( gentity_t *self, gentity_t *saber )
 // Check if we are throwing it, launch it if needed, update position if needed.
 void WP_SaberThrow( gentity_t *self, usercmd_t *ucmd )
 {
-	static float	MAX_SABER_DIST = 400;
 	vec3_t			saberDiff;
 	trace_t			tr;
 	//static float	SABER_SPEED = 10;
