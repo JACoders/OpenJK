@@ -1058,12 +1058,6 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	return image;
 }
 
-//rwwRMG - added
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode )
-{
-	R_CreateImage(name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode);
-}
-
 /*
 ===============
 R_FindImageFile
