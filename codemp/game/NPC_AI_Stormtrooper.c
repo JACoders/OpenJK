@@ -2517,26 +2517,128 @@ void NPC_BSST_Attack( void )
 
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
-		if ( (NPCS.NPC->client->ps.weapon == WP_FLECHETTE || NPCS.NPC->client->ps.weapon == WP_REPEATER) &&
-			(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
-		{//shooting an explosive, but enemy too close, switch to primary fire
-			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-			//FIXME: we can never go back to alt-fire this way since, after this, we don't know if we were initially supposed to use alt-fire or not...
+		if (TIMER_Done( NPCS.NPC, "stormieChangeWeapon" ))
+		{ // zyk: enemy is close. Get some good weapon for close range
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_DEMP2 );
+			}
+			else if (HaveWeapon(WP_FLECHETTE))
+			{
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else if (HaveWeapon(WP_CONCUSSION))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_CONCUSSION );
+			}
+			else if (HaveWeapon(WP_REPEATER))
+			{
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_REPEATER );
+			}
+			else if (HaveWeapon(WP_BLASTER))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_BLASTER );
+			}
+			else
+			{
+				int newWeapon = ChooseBestWeapon();
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon(newWeapon);
+			}
+			TIMER_Set( NPCS.NPC, "stormieChangeWeapon", Q_irand( 3000, 5000 ) );
 		}
 	}
-	else if ( enemyDist > 65536 )//256 squared
+	else if (enemyDist >= MIN_ROCKET_DIST_SQUARED && enemyDist <= 262144)
 	{
-		if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
-		{//sniping... should be assumed
-			if ( !(NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) )
-			{//use primary fire
+		if (TIMER_Done( NPCS.NPC, "stormieChangeWeapon" ))
+		{ // zyk: enemy is not near and not far
+			if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+			else
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-				//reset fire-timing variables
-				NPC_ChangeWeapon( WP_DISRUPTOR );
-				NPC_UpdateAngles( qtrue, qtrue );
-				return;
+
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				NPC_ChangeWeapon( WP_DEMP2 );
 			}
+			else if (HaveWeapon(WP_CONCUSSION))
+			{
+				NPC_ChangeWeapon( WP_CONCUSSION );
+			}
+			else if (HaveWeapon(WP_REPEATER))
+			{
+				NPC_ChangeWeapon( WP_REPEATER );
+			}
+			else if (HaveWeapon(WP_ROCKET_LAUNCHER))
+			{
+				NPC_ChangeWeapon( WP_ROCKET_LAUNCHER );
+			}
+			else
+			{
+				int newWeapon = ChooseBestWeapon();
+				NPC_ChangeWeapon(newWeapon);
+			}
+
+			TIMER_Set( NPCS.NPC, "stormieChangeWeapon", Q_irand( 3000, 7000 ) );
 		}
+	}
+	else if ( enemyDist > 262144 )//256 squared // zyk: changed from 256 to 512
+	{
+		// zyk: fixed this condition
+		// if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR )
+		// zyk: if he has disruptor, use it. Else, changes to some other weapon
+		if (TIMER_Done( NPCS.NPC, "stormieChangeWeapon" ))
+		{
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			{ // zyk: use demp2 to try to disable enemy jetpack
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+
+				NPC_ChangeWeapon( WP_DEMP2 );
+			}
+			else if (HaveWeapon(WP_DISRUPTOR))
+			{
+				//reset fire-timing variables
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_DISRUPTOR );
+			}
+			else if (HaveWeapon(WP_FLECHETTE))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else 
+			{ // zyk: does not have disruptor, use another weapon
+				int newWeapon = ChooseBestWeapon();
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon(newWeapon);
+			}
+			TIMER_Set( NPCS.NPC, "stormieChangeWeapon", Q_irand( 5000, 10000 ) );
+		}
+	}
+
+	// zyk: if he is using sniper, sets the sniper AI
+	if (NPCS.client->ps.weapon == WP_DISRUPTOR)
+	{
+		NPC_UpdateAngles( qtrue, qtrue );
+		NPC_BSSniper_Default();
+		return;
 	}
 
 	//can we see our target?

@@ -575,6 +575,11 @@ void Boba_FireDecide( void )
 				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_REPEATER );
 			}
+			else if (HaveWeapon(WP_BLASTER))
+			{
+				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_BLASTER );
+			}
 			else
 			{
 				int newWeapon = ChooseBestWeapon();
