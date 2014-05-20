@@ -2424,6 +2424,7 @@ void NPC_BSST_Attack( void )
 {
 	vec3_t	enemyDir, shootDir;
 	float dot;
+	qboolean enemy_is_armored_soldier = qfalse;
 
 	//Don't do anything if we're hurt
 	if ( NPCS.NPC->painDebounceTime > level.time )
@@ -2515,6 +2516,10 @@ void NPC_BSST_Attack( void )
 		enemyInFOV = qtrue;
 	}
 
+	// zyk: Guardian of Intelligence enemy is an Armored Soldier. He is smarter at choosing weapons against this class
+	if (NPCS.NPC->client->pers.guardian_mode == 4 && NPCS.NPC->enemy->client->sess.amrpgmode == 2 && NPCS.NPC->enemy->client->pers.rpg_class == 3)
+		enemy_is_armored_soldier = qtrue;
+
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
 		if (TIMER_Done( NPCS.NPC, "stormieChangeWeapon" ))
@@ -2527,7 +2532,7 @@ void NPC_BSST_Attack( void )
 					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_DEMP2 );
 			}
-			else if (HaveWeapon(WP_FLECHETTE))
+			else if (HaveWeapon(WP_FLECHETTE) && enemy_is_armored_soldier == qfalse)
 			{
 				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_FLECHETTE );
@@ -2539,10 +2544,14 @@ void NPC_BSST_Attack( void )
 			}
 			else if (HaveWeapon(WP_REPEATER))
 			{
-				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				if (enemy_is_armored_soldier == qfalse)
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+
 				NPC_ChangeWeapon( WP_REPEATER );
 			}
-			else if (HaveWeapon(WP_BLASTER))
+			else if (HaveWeapon(WP_BLASTER) && enemy_is_armored_soldier == qfalse)
 			{
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_BLASTER );
@@ -2578,6 +2587,8 @@ void NPC_BSST_Attack( void )
 			}
 			else if (HaveWeapon(WP_REPEATER))
 			{
+				if (enemy_is_armored_soldier == qtrue)
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_REPEATER );
 			}
 			else if (HaveWeapon(WP_ROCKET_LAUNCHER))
@@ -2609,16 +2620,24 @@ void NPC_BSST_Attack( void )
 
 				NPC_ChangeWeapon( WP_DEMP2 );
 			}
-			else if (HaveWeapon(WP_DISRUPTOR))
+			else if (HaveWeapon(WP_DISRUPTOR) && enemy_is_armored_soldier == qfalse)
 			{
 				//reset fire-timing variables
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_DISRUPTOR );
 			}
-			else if (HaveWeapon(WP_FLECHETTE))
+			else if (HaveWeapon(WP_FLECHETTE) && enemy_is_armored_soldier == qfalse)
 			{
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else if (enemy_is_armored_soldier == qtrue)
+			{
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				else
+					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_CONCUSSION );
 			}
 			else 
 			{ // zyk: does not have disruptor, use another weapon
