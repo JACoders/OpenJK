@@ -1911,6 +1911,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		// parse the shader name
 		token = CommaParse( &text_p );
 
+#ifndef JK2_MODE
 		if ( !strcmp( &surfName[strlen(surfName)-4], "_off") )
 		{
 			if ( !strcmp( token ,"*off" ) )
@@ -1919,6 +1920,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
+#endif
 		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
 			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
