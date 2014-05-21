@@ -367,19 +367,19 @@ ammoData_t ammoData[AMMO_MAX] =
 	},
 	{	// AMMO_BLASTER
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		300				//	int		max;		// Max amount player can hold of ammo
+		900				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_POWERCELL
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		300				//	int		max;		// Max amount player can hold of ammo
+		900				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_METAL_BOLTS
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		300				//	int		max;		// Max amount player can hold of ammo
+		900				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_ROCKETS
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		25				//	int		max;		// Max amount player can hold of ammo
+		90				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_EMPLACED
 //		"",				//	char	icon[32];	// Name of ammo icon file
@@ -387,15 +387,15 @@ ammoData_t ammoData[AMMO_MAX] =
 	},
 	{	// AMMO_THERMAL
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		10				//	int		max;		// Max amount player can hold of ammo
+		27				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_TRIPMINE
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		10				//	int		max;		// Max amount player can hold of ammo
+		22				//	int		max;		// Max amount player can hold of ammo
 	},
 	{	// AMMO_DETPACK
 //		"",				//	char	icon[32];	// Name of ammo icon file
-		10				//	int		max;		// Max amount player can hold of ammo
+		18				//	int		max;		// Max amount player can hold of ammo
 	}
 };
 
