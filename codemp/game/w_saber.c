@@ -5838,7 +5838,12 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 	float veclen;
 	gentity_t *te;
 
-	if (saberOwner && saberOwner->client && saberOwner->client->ps.saberAttackWound > level.time)
+	if (!saberOwner || !saberOwner->client)
+	{
+		return qfalse;
+	}
+
+	if (saberOwner->client->ps.saberAttackWound > level.time)
 	{
 		return qfalse;
 	}
