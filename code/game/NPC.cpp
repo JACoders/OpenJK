@@ -1919,8 +1919,6 @@ extern bool Pilot_MasterUpdate();
 
 void NPC_RunBehavior( int team, int bState )
 {
-	qboolean dontSetAim = qfalse;
-
 	//
 	if ( bState == BS_CINEMATIC )
 	{
@@ -1953,7 +1951,6 @@ void NPC_RunBehavior( int team, int bState )
 	else if ( Jedi_CultistDestroyer( NPC ) )
 	{
 		NPC_BSJedi_Default();
-		dontSetAim = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_SABER_DROID )
 	{//saber droid
@@ -1962,12 +1959,10 @@ void NPC_RunBehavior( int team, int bState )
 	else if ( NPC->client->ps.weapon == WP_SABER )
 	{//jedi
 		NPC_BehaviorSet_Jedi( bState );
-		dontSetAim = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_REBORN && NPC->client->ps.weapon == WP_MELEE )
 	{//force-only reborn
 		NPC_BehaviorSet_Jedi( bState );
-		dontSetAim = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_BOBAFETT )
 	{
@@ -1990,7 +1985,6 @@ void NPC_RunBehavior( int team, int bState )
 				}
 			}
 		}
-		dontSetAim = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 	{//bounty hunter
@@ -2003,7 +1997,6 @@ void NPC_RunBehavior( int team, int bState )
 			NPC_BehaviorSet_Stormtrooper( bState );
 		}
 		G_CheckCharmed( NPC );
-		dontSetAim = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_RANCOR )
 	{
@@ -2199,7 +2192,6 @@ void NPC_RunBehavior( int team, int bState )
 					NPC_BehaviorSet_Default( bState );
 				}
 				G_CheckCharmed( NPC );
-				dontSetAim = qtrue;
 			}
 			break;
 		}
