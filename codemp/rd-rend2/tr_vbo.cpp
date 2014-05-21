@@ -112,7 +112,7 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 R_CreateVBO
 ============
 */
-VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
+VBO_t *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 {
 	VBO_t          *vbo;
 	int				glUsage = GetGLBufferUsage (usage);
@@ -149,7 +149,7 @@ VBO_t          *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 R_CreateIBO
 ============
 */
-IBO_t          *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
+IBO_t *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 {
 	IBO_t          *ibo;
 	int				glUsage = GetGLBufferUsage (usage);
@@ -207,6 +207,8 @@ void R_BindVBO(VBO_t * vbo)
 		glState.vertexAttribsInterpolation = 0;
 		glState.vertexAttribsOldFrame = 0;
 		glState.vertexAttribsNewFrame = 0;
+		glState.vertexAttribsTexCoordOffset[0] = 0;
+		glState.vertexAttribsTexCoordOffset[1] = 1;
 		glState.vertexAnimation = qfalse;
 		glState.skeletalAnimation = qfalse;
 
@@ -316,9 +318,7 @@ void R_InitVBOs(void)
 	tess.vbo->ofs_tangent     = offset; offset += sizeof(tess.tangent[0])          * SHADER_MAX_VERTEXES;
 #endif
 	// these next two are actually interleaved
-	tess.vbo->ofs_st          = offset; 
-	tess.vbo->ofs_lightmap    = offset + sizeof(tess.texCoords[0][0]);
-	                                    offset += sizeof(tess.texCoords[0][0]) * 2 * SHADER_MAX_VERTEXES;
+	tess.vbo->ofs_st          = offset; offset += sizeof(tess.texCoords[0][0]) * 2 * SHADER_MAX_VERTEXES;
 
 	tess.vbo->ofs_vertexcolor = offset; offset += sizeof(tess.vertexColors[0])     * SHADER_MAX_VERTEXES;
 	tess.vbo->ofs_lightdir    = offset;
@@ -330,7 +330,6 @@ void R_InitVBOs(void)
 #endif
 	tess.vbo->stride_vertexcolor = sizeof(tess.vertexColors[0]);
 	tess.vbo->stride_st          = sizeof(tess.texCoords[0][0]) * 2;
-	tess.vbo->stride_lightmap    = sizeof(tess.texCoords[0][0]) * 2;
 	tess.vbo->stride_lightdir    = sizeof(tess.lightdir[0]);
 
 	dataSize = sizeof(tess.indexes[0]) * SHADER_MAX_INDEXES;
@@ -471,7 +470,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_xyz,         tess.numVertexes * sizeof(tess.xyz[0]),              tess.xyz);
 			}
 
-			if(attribBits & ATTR_TEXCOORD || attribBits & ATTR_LIGHTCOORD)
+			if(attribBits & ATTR_TEXCOORD0 || attribBits & ATTR_TEXCOORD1)
 			{
 				// these are interleaved, so we update both if either need it
 				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_st, tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2);

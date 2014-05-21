@@ -1873,8 +1873,7 @@ struct packedVertex_t
 #ifdef USE_VERT_TANGENT_SPACE
 	uint32_t tangent;
 #endif
-	vec2_t texcoord;
-	vec2_t lightmapCoords[MAXLIGHTMAPS];
+	vec2_t texcoords[1 + MAXLIGHTMAPS];
 	vec4_t colors[MAXLIGHTMAPS];
 	uint32_t lightDirection;
 };
@@ -2051,11 +2050,11 @@ static void R_CreateWorldVBOs(void)
 #ifdef USE_VERT_TANGENT_SPACE
 				vert.tangent = R_VboPackTangent (bspSurf->verts[i].tangent);
 #endif
-				VectorCopy2 (bspSurf->verts[i].st, vert.texcoord);
+				VectorCopy2 (bspSurf->verts[i].st, vert.texcoords[0]);
 
 				for (int j = 0; j < MAXLIGHTMAPS; j++)
 				{
-					VectorCopy2 (bspSurf->verts[i].lightmap[j], vert.lightmapCoords[j]);
+					VectorCopy2 (bspSurf->verts[i].lightmap[j], vert.texcoords[1 + j]);
 				}
 
 				for (int j = 0; j < MAXLIGHTMAPS; j++)
@@ -2076,8 +2075,7 @@ static void R_CreateWorldVBOs(void)
 #ifdef USE_VERT_TANGENT_SPACE
 		vbo->ofs_tangent = offsetof (packedVertex_t, tangent);
 #endif
-		vbo->ofs_st = offsetof (packedVertex_t, texcoord);
-		vbo->ofs_lightmap = offsetof (packedVertex_t, lightmapCoords);
+		vbo->ofs_st = offsetof (packedVertex_t, texcoords);
 		vbo->ofs_vertexcolor = offsetof (packedVertex_t, colors);
 		vbo->ofs_lightdir = offsetof (packedVertex_t, lightDirection);
 
@@ -2088,7 +2086,6 @@ static void R_CreateWorldVBOs(void)
 		vbo->stride_tangent = packedVertexSize;
 #endif
 		vbo->stride_st = packedVertexSize;
-		vbo->stride_lightmap = packedVertexSize;
 		vbo->stride_vertexcolor = packedVertexSize;
 		vbo->stride_lightdir = packedVertexSize;
 

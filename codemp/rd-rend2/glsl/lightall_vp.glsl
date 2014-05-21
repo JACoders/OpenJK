@@ -102,7 +102,7 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 {
 	vec2 tex = attr_TexCoord0.st;
 
-	if (TCGen == TCGEN_LIGHTMAP)
+	if (TCGen >= TCGEN_LIGHTMAP && TCGen <= TCGEN_LIGHTMAP3)
 	{
 		tex = attr_TexCoord1.st;
 	}

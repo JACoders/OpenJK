@@ -253,7 +253,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	//       va("#ifndef r_NormalScale\n#define r_NormalScale %f\n#endif\n", r_normalScale->value));
 
 
-	Q_strcat(dest, size, "#ifndef M_PI\n#define M_PI 3.14159265358979323846f\n#endif\n");
+	Q_strcat(dest, size, "#ifndef M_PI\n#define M_PI 3.14159265358979323846\n#endif\n");
 
 	//Q_strcat(dest, size, va("#ifndef MAX_SHADOWMAPS\n#define MAX_SHADOWMAPS %i\n#endif\n", MAX_SHADOWMAPS));
 
@@ -535,17 +535,11 @@ static bool GLSL_EndLoadGPUShader (shaderProgram_t *program)
 	if(attribs & ATTR_POSITION)
 		qglBindAttribLocationARB(program->program, ATTR_INDEX_POSITION, "attr_Position");
 
-	if(attribs & ATTR_TEXCOORD)
+	if(attribs & ATTR_TEXCOORD0)
 		qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD0, "attr_TexCoord0");
 
-	if(attribs & ATTR_LIGHTCOORD)
+	if(attribs & ATTR_TEXCOORD1)
 		qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD1, "attr_TexCoord1");
-
-//  if(attribs & ATTR_TEXCOORD2)
-//      qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD2, "attr_TexCoord2");
-
-//  if(attribs & ATTR_TEXCOORD3)
-//      qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD3, "attr_TexCoord3");
 
 #ifdef USE_VERT_TANGENT_SPACE
 	if(attribs & ATTR_TANGENT)
@@ -945,7 +939,7 @@ int GLSL_BeginLoadGPUShaders(void)
 			continue;
 		}
 
-		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_NORMAL | ATTR_COLOR;
+		attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
 		if (i & GENERICDEF_USE_DEFORM_VERTEXES)
@@ -978,7 +972,7 @@ int GLSL_BeginLoadGPUShaders(void)
 		if (i & GENERICDEF_USE_LIGHTMAP)
 		{
 			Q_strcat(extradefines, 1024, "#define USE_LIGHTMAP\n");
-			attribs |= ATTR_LIGHTCOORD;
+			attribs |= ATTR_TEXCOORD1;
 		}
 
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
@@ -991,7 +985,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 
 	if (!GLSL_BeginLoadGPUShader(&tr.textureColorShader, "texturecolor", attribs, qtrue, NULL, qfalse, fallbackShader_texturecolor_vp, fallbackShader_texturecolor_fp))
 	{
@@ -1005,7 +999,7 @@ int GLSL_BeginLoadGPUShaders(void)
 			continue;
 		}
 
-		attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD;
+		attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0;
 		extradefines[0] = '\0';
 
 		if (i & FOGDEF_USE_DEFORM_VERTEXES)
@@ -1026,7 +1020,7 @@ int GLSL_BeginLoadGPUShaders(void)
 
 	for (i = 0; i < DLIGHTDEF_COUNT; i++)
 	{
-		attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD;
+		attribs = ATTR_POSITION | ATTR_NORMAL | ATTR_TEXCOORD0;
 		extradefines[0] = '\0';
 
 		if (i & DLIGHTDEF_USE_DEFORM_VERTEXES)
@@ -1052,7 +1046,7 @@ int GLSL_BeginLoadGPUShaders(void)
 			continue;
 		}
 
-		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_COLOR | ATTR_NORMAL;
+		attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_COLOR | ATTR_NORMAL;
 
 		extradefines[0] = '\0';
 
@@ -1084,7 +1078,7 @@ int GLSL_BeginLoadGPUShaders(void)
 					Q_strcat(extradefines, 1024, "#define USE_LIGHTMAP\n");
 					if (r_deluxeMapping->integer && !fastLight)
 						Q_strcat(extradefines, 1024, "#define USE_DELUXEMAP\n");
-					attribs |= ATTR_LIGHTCOORD | ATTR_LIGHTDIRECTION;
+					attribs |= ATTR_TEXCOORD1 | ATTR_LIGHTDIRECTION;
 					break;
 				case LIGHTDEF_USE_LIGHT_VECTOR:
 					Q_strcat(extradefines, 1024, "#define USE_LIGHT_VECTOR\n");
@@ -1170,7 +1164,7 @@ int GLSL_BeginLoadGPUShaders(void)
 		}
 	}
 	
-	attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD0;
 
 	extradefines[0] = '\0';
 
@@ -1190,7 +1184,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_BeginLoadGPUShader(&tr.down4xShader, "down4x", attribs, qtrue, extradefines, qtrue, fallbackShader_down4x_vp, fallbackShader_down4x_fp))
@@ -1199,7 +1193,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_BeginLoadGPUShader(&tr.bokehShader, "bokeh", attribs, qtrue, extradefines, qtrue, fallbackShader_bokeh_vp, fallbackShader_bokeh_fp))
@@ -1208,7 +1202,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_BeginLoadGPUShader(&tr.tonemapShader, "tonemap", attribs, qtrue, extradefines, qtrue, fallbackShader_tonemap_vp, fallbackShader_tonemap_fp))
@@ -1219,7 +1213,7 @@ int GLSL_BeginLoadGPUShaders(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		attribs = ATTR_POSITION | ATTR_TEXCOORD;
+		attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 		extradefines[0] = '\0';
 
 		if (!i)
@@ -1232,7 +1226,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (r_shadowFilter->integer >= 1)
@@ -1253,7 +1247,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_BeginLoadGPUShader(&tr.ssaoShader, "ssao", attribs, qtrue, extradefines, qtrue, fallbackShader_ssao_vp, fallbackShader_ssao_fp))
@@ -1264,7 +1258,7 @@ int GLSL_BeginLoadGPUShaders(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		attribs = ATTR_POSITION | ATTR_TEXCOORD;
+		attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 		extradefines[0] = '\0';
 
 		if (i & 1)
@@ -1280,7 +1274,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 #if 0
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_InitGPUShader(&tr.testcubeShader, "testcube", attribs, qtrue, extradefines, qtrue, NULL, NULL))
@@ -1585,7 +1579,7 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	}
 
 #if 0
-	attribs = ATTR_POSITION | ATTR_TEXCOORD;
+	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
 
 	if (!GLSL_InitGPUShader(&tr.testcubeShader, "testcube", attribs, qtrue, extradefines, qtrue, NULL, NULL))
@@ -1731,9 +1725,9 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 		}
 	}
 
-	if(diff & ATTR_TEXCOORD)
+	if(diff & ATTR_TEXCOORD0)
 	{
-		if(stateBits & ATTR_TEXCOORD)
+		if(stateBits & ATTR_TEXCOORD0)
 		{
 			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_TEXCOORD )\n");
 			qglEnableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD0);
@@ -1745,9 +1739,9 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 		}
 	}
 
-	if(diff & ATTR_LIGHTCOORD)
+	if(diff & ATTR_TEXCOORD1)
 	{
-		if(stateBits & ATTR_LIGHTCOORD)
+		if(stateBits & ATTR_TEXCOORD1)
 		{
 			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_LIGHTCOORD )\n");
 			qglEnableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD1);
@@ -1892,6 +1886,25 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	glState.vertexAttribsState = stateBits;
 }
 
+void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
+{
+	VBO_t *vbo = glState.currentVBO;
+
+	if ( attribBits & ATTR_TEXCOORD0 )
+	{
+		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TEXCOORD )\n");
+
+		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+	}
+
+	if ( attribBits & ATTR_TEXCOORD1 )
+	{
+		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_LIGHTCOORD )\n");
+
+		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+	}
+}
+
 void GLSL_VertexAttribPointers(uint32_t attribBits)
 {
 	qboolean animated;
@@ -1923,20 +1936,20 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 		glState.vertexAttribPointersSet |= ATTR_POSITION;
 	}
 
-	if((attribBits & ATTR_TEXCOORD) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD))
+	if((attribBits & ATTR_TEXCOORD0) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD0))
 	{
 		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st));
-		glState.vertexAttribPointersSet |= ATTR_TEXCOORD;
+		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+		glState.vertexAttribPointersSet |= ATTR_TEXCOORD0;
 	}
 
-	if((attribBits & ATTR_LIGHTCOORD) && !(glState.vertexAttribPointersSet & ATTR_LIGHTCOORD))
+	if((attribBits & ATTR_TEXCOORD1) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD1))
 	{
 		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_LIGHTCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_lightmap, BUFFER_OFFSET(vbo->ofs_lightmap));
-		glState.vertexAttribPointersSet |= ATTR_LIGHTCOORD;
+		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+		glState.vertexAttribPointersSet |= ATTR_TEXCOORD1;
 	}
 
 	if((attribBits & ATTR_NORMAL) && (!(glState.vertexAttribPointersSet & ATTR_NORMAL) || animated))

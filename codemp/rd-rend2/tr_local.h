@@ -392,7 +392,6 @@ typedef struct VBO_s
 	uint32_t        ofs_xyz;
 	uint32_t        ofs_normal;
 	uint32_t        ofs_st;
-	uint32_t        ofs_lightmap;
 	uint32_t        ofs_vertexcolor;
 	uint32_t        ofs_lightdir;
 #ifdef USE_VERT_TANGENT_SPACE
@@ -404,7 +403,6 @@ typedef struct VBO_s
 	uint32_t        stride_xyz;
 	uint32_t        stride_normal;
 	uint32_t        stride_st;
-	uint32_t        stride_lightmap;
 	uint32_t        stride_vertexcolor;
 	uint32_t        stride_lightdir;
 #ifdef USE_VERT_TANGENT_SPACE
@@ -415,8 +413,6 @@ typedef struct VBO_s
 
 	uint32_t        size_xyz;
 	uint32_t        size_normal;
-
-	int             attribs;
 } VBO_t;
 
 typedef struct IBO_s
@@ -920,8 +916,8 @@ enum
 enum
 {
 	ATTR_POSITION =       0x0001,
-	ATTR_TEXCOORD =       0x0002,
-	ATTR_LIGHTCOORD =     0x0004,
+	ATTR_TEXCOORD0 =       0x0002,
+	ATTR_TEXCOORD1 =     0x0004,
 	ATTR_TANGENT =        0x0008,
 	ATTR_NORMAL =         0x0010,
 	ATTR_COLOR =          0x0020,
@@ -937,8 +933,8 @@ enum
 
 	ATTR_DEFAULT = ATTR_POSITION,
 	ATTR_BITS =	ATTR_POSITION |
-				ATTR_TEXCOORD |
-				ATTR_LIGHTCOORD |
+				ATTR_TEXCOORD0 |
+				ATTR_TEXCOORD1 |
 				ATTR_TANGENT |
 				ATTR_NORMAL |
 				ATTR_COLOR |
@@ -1818,6 +1814,7 @@ typedef struct glstate_s {
 	uint32_t        vertexAttribsNewFrame;
 	uint32_t        vertexAttribsOldFrame;
 	float           vertexAttribsInterpolation;
+	int				vertexAttribsTexCoordOffset[2];
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
 	matrix_t       *boneMatrices;
@@ -2686,6 +2683,7 @@ int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits);
+void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits );
 void GLSL_VertexAttribPointers(uint32_t attribBits);
 void GLSL_BindProgram(shaderProgram_t * program);
 void GLSL_BindNullProgram(void);

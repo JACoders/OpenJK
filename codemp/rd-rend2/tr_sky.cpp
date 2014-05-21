@@ -420,12 +420,12 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	tess.maxIndex = tess.numVertexes;
 
 	// FIXME: A lot of this can probably be removed for speed, and refactored into a more convenient function
-	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD);
+	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD0);
 /*
 	{
 		shaderProgram_t *sp = &tr.textureColorShader;
 
-		GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD);
+		GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD0);
 		GLSL_BindProgram(sp);
 		
 		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
@@ -441,7 +441,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 		shaderProgram_t *sp = &tr.lightallShader[0];
 		vec4_t vector;
 
-		GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD);
+		GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD0);
 		GLSL_BindProgram(sp);
 		
 		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);

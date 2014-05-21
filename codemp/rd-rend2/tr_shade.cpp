@@ -1119,6 +1119,79 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
+static void UpdateTexCoords ( const shaderStage_t *stage )
+{
+	uint32_t updateAttribs = 0;
+	if ( stage->bundle[0].image[0] != NULL )
+	{
+		switch (stage->bundle[0].tcGen)
+		{
+			case TCGEN_LIGHTMAP:
+			case TCGEN_LIGHTMAP1:
+			case TCGEN_LIGHTMAP2:
+			case TCGEN_LIGHTMAP3:
+			{
+				int newLightmapIndex = stage->bundle[0].tcGen - TCGEN_LIGHTMAP + 1;
+				if (newLightmapIndex != glState.vertexAttribsTexCoordOffset[0])
+				{
+					glState.vertexAttribsTexCoordOffset[0] = newLightmapIndex;
+					updateAttribs |= ATTR_TEXCOORD0;
+				}
+
+				break;
+			}
+
+			case TCGEN_TEXTURE:
+				if (glState.vertexAttribsTexCoordOffset[0] != 0)
+				{
+					glState.vertexAttribsTexCoordOffset[0] = 0;
+					updateAttribs |= ATTR_TEXCOORD0;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if ( stage->bundle[TB_LIGHTMAP].image[0] != NULL )
+	{
+		switch (stage->bundle[TB_LIGHTMAP].tcGen)
+		{
+			case TCGEN_LIGHTMAP:
+			case TCGEN_LIGHTMAP1:
+			case TCGEN_LIGHTMAP2:
+			case TCGEN_LIGHTMAP3:
+			{
+				int newLightmapIndex = stage->bundle[TB_LIGHTMAP].tcGen - TCGEN_LIGHTMAP + 1;
+				if (newLightmapIndex != glState.vertexAttribsTexCoordOffset[1])
+				{
+					glState.vertexAttribsTexCoordOffset[1] = newLightmapIndex;
+					updateAttribs |= ATTR_TEXCOORD1;
+				}
+
+				break;
+			}
+
+			case TCGEN_TEXTURE:
+				if (glState.vertexAttribsTexCoordOffset[1] != 0)
+				{
+					glState.vertexAttribsTexCoordOffset[1] = 0;
+					updateAttribs |= ATTR_TEXCOORD1;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	if ( updateAttribs != 0 )
+	{
+		GLSL_UpdateTexCoordVertexAttribPointers (updateAttribs);
+	}
+}
+
 static void RB_IterateStagesGeneric( shaderCommands_t *input )
 {
 	int stage;
@@ -1301,6 +1374,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				}
 			}
 		}
+
+		UpdateTexCoords (pStage);
 
 		GL_State( stateBits );
 

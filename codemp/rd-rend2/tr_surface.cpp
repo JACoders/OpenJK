@@ -200,9 +200,9 @@ void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4])
 	tess.minIndex = 0;
 	tess.maxIndex = 3;
 
-	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD);
+	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD0);
 
-	GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD);
+	GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD0);
 
 	R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
 
@@ -411,7 +411,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	}
 #endif
 
-	if ( tess.shader->vertexAttribs & ATTR_TEXCOORD )
+	if ( tess.shader->vertexAttribs & ATTR_TEXCOORD0 )
 	{
 		dv = verts;
 		texCoords = tess.texCoords[ tess.numVertexes ][0];
@@ -419,7 +419,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 			VectorCopy2(dv->st, texCoords);
 	}
 
-	if ( tess.shader->vertexAttribs & ATTR_LIGHTCOORD )
+	if ( tess.shader->vertexAttribs & ATTR_TEXCOORD1 )
 	{
 		dv = verts;
 		lightCoords = tess.texCoords[ tess.numVertexes ][1];
@@ -1863,13 +1863,13 @@ static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
 					*tangent++ = R_VboPackTangent(dv->tangent);
 				}
 #endif
-				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD )
+				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD0 )
 				{
 					VectorCopy2(dv->st, texCoords);
 					texCoords += 4;
 				}
 
-				if ( tess.shader->vertexAttribs & ATTR_LIGHTCOORD )
+				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD1 )
 				{
 					VectorCopy2(dv->lightmap[0], lightCoords);
 					lightCoords += 4;
