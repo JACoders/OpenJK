@@ -471,7 +471,7 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 
 		token = COM_Parse( text_p );
 		eventType = (animEventType_t)GetIDForString(animEventTypeTable, token);
-		if ( eventType == AEV_NONE || eventType == -1 )
+		if ( eventType == AEV_NONE || eventType == (animEventType_t)-1 )
 		{//Unrecognized ANIM EVENT TYPE
 			Com_Printf(S_COLOR_RED"ERROR: Unknown EVENT %s in animEvent file %s\n", token, aeb_filename );
 			continue;
@@ -2557,8 +2557,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					Q_strcat( surfOff, sizeof(surfOff), "," );
 					Q_strcat( surfOff, sizeof(surfOff), value );
-					//strncat( (char *)surfOff, ",", sizeof(surfOff) );
-					//strncat( (char *)surfOff, value, sizeof(surfOff) );
 				}
 				else
 				{
@@ -2578,8 +2576,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					Q_strcat( surfOn, sizeof(surfOn), "," );
 					Q_strcat( surfOn, sizeof(surfOn), value );
-					//strncat( (char *)surfOn, ",", sizeof(surfOn) );
-					//strncat( (char *)surfOn, value, sizeof(surfOn) );
 				}
 				else
 				{

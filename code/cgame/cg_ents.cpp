@@ -1413,10 +1413,14 @@ void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color )
 					0, -1, -1 );*/
 }
 
+static vec2_t st[] =
+{
+	{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }
+};
+
 void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
 {
 	vec3_t	point[4], rot={0,0,0};
-	vec2_t	st[4];
 	int		vec[3];
 	int		axis, i;
 

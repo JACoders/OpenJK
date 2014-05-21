@@ -4213,7 +4213,7 @@ void NPC_Kill_f( void )
 		{
 			killTeam = (team_t)GetIDForString( TeamTable, name );
 
-			if ( killTeam == -1 )
+			if ( killTeam == (team_t)-1 )
 			{
 				gi.Printf( S_COLOR_RED"NPC_Kill Error: team '%s' not recognized\n", name );
 				gi.Printf( S_COLOR_RED"Valid team names are:\n");

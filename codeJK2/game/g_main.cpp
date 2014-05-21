@@ -397,6 +397,8 @@ static void G_DynamicMusicUpdate( void )
 				case AEL_MINOR:
 					//distraction = qtrue;
 					break;
+				default:
+					break;
 				}
 			}
 		}

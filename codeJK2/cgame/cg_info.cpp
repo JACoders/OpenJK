@@ -105,7 +105,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 		char holdText2[2];
 		pixelLen = 0;
 		charLen = 0;
-		holdText2[1] = NULL;
+		holdText2[1] = '\0';
 		strBegin = str;
 
 		while( *str ) 
@@ -131,7 +131,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 				}
 
 				Q_strncpyz( holdText, strBegin, charLen);
-				holdText[charLen] = NULL;
+				holdText[charLen] = '\0';
 				strBegin = str;
 				pixelLen = 0;
 				charLen = 1;
@@ -141,7 +141,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 				CG_DrawProportionalString(108, y, holdText, CG_SMALLFONT, colorTable[color] );
 				++missionYcnt;
 			} 
-			else if (*(str+1) == NULL)
+			else if (*(str+1) == '\0')
 			{
 				++charLen;
 

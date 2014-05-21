@@ -1324,7 +1324,7 @@ qboolean	ConsoleCommand( void ) {
 			team_t	team;
 
 			team = (team_t)GetIDForString( TeamTable, cmd2 );
-			if ( team == -1 )
+			if ( team == (team_t)-1 )
 			{
 				gi.Printf( S_COLOR_RED"'playerteam' unrecognized team name %s!\n", cmd2 );
 				gi.Printf( S_COLOR_RED"Valid team names are:\n");

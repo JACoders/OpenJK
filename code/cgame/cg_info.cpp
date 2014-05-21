@@ -439,7 +439,6 @@ int CG_WeaponCheck( int weaponIndex );
 // For printing load screen icons
 const int	MAXLOADICONSPERROW = 8;		// Max icons displayed per row
 const int	MAXLOADWEAPONS = 16;
-const int	MAXLOADFORCEPOWERS = 12;	
 const int	MAXLOAD_FORCEICONSIZE = 40;	// Size of force power icons
 const int	MAXLOAD_FORCEICONPAD = 12;	// Padding space between icons
 

@@ -71,6 +71,7 @@ This file is part of Jedi Academy.
 #endif
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 

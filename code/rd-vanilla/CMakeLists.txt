@@ -155,7 +155,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/rd-common/tr_font.cpp"
 		"${SPDir}/rd-common/tr_font.h"
 		"${SPDir}/rd-common/tr_image_load.cpp"
-		"${SPDir}/rd-common/tr_image_manipulation.cpp"
 		"${SPDir}/rd-common/tr_image_jpg.cpp"
 		"${SPDir}/rd-common/tr_image_tga.cpp"
 		"${SPDir}/rd-common/tr_image_png.cpp"
@@ -203,11 +202,11 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		if(WIN32)
 			install(TARGETS ${ProjectName} RUNTIME DESTINATION ".")
 		else(WIN32)
-			if(MakeApplicationBundles AND BuildSPEngine)
+			if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
 				install(TARGETS ${ProjectName} LIBRARY DESTINATION "${EngineName}.app/Contents/MacOS/")
-			else(MakeApplicationBundles AND BuildSPEngine)
+			else(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
 				install(TARGETS ${ProjectName} LIBRARY DESTINATION ".")
-			endif(MakeApplicationBundles AND BuildSPEngine)
+			endif(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
 		endif(WIN32)
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPRDVanillaDefines};${ReleaseDefines}")
