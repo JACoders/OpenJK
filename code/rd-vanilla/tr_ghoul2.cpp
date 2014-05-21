@@ -3617,12 +3617,12 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		{
 			surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name
 		}
+#endif
 
 		if ( surfInfo->shader[0] == '[' )
 		{
 			surfInfo->shader[0] = 0;	//kill the stupid [nomaterial] since carcass doesn't
 		}
-#endif
 
 		// do all the children indexs
 		for (j=0; j<surfInfo->numChildren; j++)
