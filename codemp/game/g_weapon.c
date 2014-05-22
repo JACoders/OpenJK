@@ -1215,8 +1215,16 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire )
 	else
 	{
 		// add some slop to the alt-fire direction
-		angs[PITCH] += crandom() * REPEATER_SPREAD;
-		angs[YAW]	+= crandom() * REPEATER_SPREAD;
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[4] == 2)
+		{ // zyk: Repeater 2/2 in RPG Mode is more accurate
+			angs[PITCH] += crandom() * (REPEATER_SPREAD/2);
+			angs[YAW]	+= crandom() * (REPEATER_SPREAD/2);
+		}
+		else
+		{
+			angs[PITCH] += crandom() * REPEATER_SPREAD;
+			angs[YAW]	+= crandom() * REPEATER_SPREAD;
+		}
 
 		AngleVectors( angs, dir, NULL, NULL );
 
