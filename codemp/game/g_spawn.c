@@ -314,6 +314,8 @@ void SP_misc_skyportal_orient (gentity_t *ent);
 void SP_misc_skyportal (gentity_t *ent);
 
 void SP_misc_ammo_floor_unit(gentity_t *ent);
+void SP_misc_model_gun_rack( gentity_t *ent ); // zyk: added this function
+void SP_misc_model_ammo_rack( gentity_t *ent ); // zyk: added this function
 void SP_misc_shield_floor_unit( gentity_t *ent );
 void SP_misc_model_shield_power_converter( gentity_t *ent );
 void SP_misc_model_ammo_power_converter( gentity_t *ent );
@@ -567,7 +569,9 @@ spawn_t	spawns[] = {
 	{ "misc_maglock",						SP_misc_maglock },
 	{ "misc_model",							SP_misc_model },
 	{ "misc_model_ammo_power_converter",	SP_misc_model_ammo_power_converter },
+	{ "misc_model_ammo_rack",				SP_misc_model_ammo_rack}, // zyk: added this code
 	{ "misc_model_breakable",				SP_misc_model_breakable },
+	{ "misc_model_gun_rack",				SP_misc_model_gun_rack}, // zyk: added this code
 	{ "misc_model_health_power_converter",	SP_misc_model_health_power_converter },
 	{ "misc_model_shield_power_converter",	SP_misc_model_shield_power_converter },
 	{ "misc_model_static",					SP_misc_model_static },
