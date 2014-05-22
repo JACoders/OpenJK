@@ -563,8 +563,8 @@ spawn_t	spawns[] = {
 	{ "misc_cubemap",						SP_misc_cubemap },
 	{ "misc_exploding_crate",				SP_misc_exploding_crate}, // zyk: added this code
 	{ "misc_faller",						SP_misc_faller },
-	{ "misc_gas_tank",						SP_misc_gas_tank}, // zyk: added this code
 	{ "misc_G2model",						SP_misc_G2model },
+	{ "misc_gas_tank",						SP_misc_gas_tank}, // zyk: added this code
 	{ "misc_holocron",						SP_misc_holocron },
 	{ "misc_maglock",						SP_misc_maglock },
 	{ "misc_model",							SP_misc_model },
