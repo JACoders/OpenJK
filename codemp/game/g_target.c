@@ -562,28 +562,34 @@ Closest target_location in sight used for the location, if none
 in site, closest in distance
 */
 void SP_target_location( gentity_t *self ) {
-	static qboolean didwarn = qfalse;
-	if ( !self->message ) {
-		trap->Print( "target_location with no message at %s\n", vtos( self->s.origin ) );
-		G_FreeEntity(self);
+	if ( self->targetname && self->targetname[0] ) {
+		SP_target_position( self );
 		return;
 	}
-
-	if ( level.locations.num >= MAX_LOCATIONS ) {
-		if ( !didwarn ) {
-			trap->Print( "Maximum target_locations hit (%d)\n", MAX_LOCATIONS );
-			didwarn = qtrue;
+	else {
+		static qboolean didwarn = qfalse;
+		if ( !self->message ) {
+			trap->Print( "target_location with no message at %s\n", vtos( self->s.origin ) );
+			G_FreeEntity( self );
+			return;
 		}
-		return;
+
+		if ( level.locations.num >= MAX_LOCATIONS ) {
+			if ( !didwarn ) {
+				trap->Print( "Maximum target_locations hit (%d)\n", MAX_LOCATIONS );
+				didwarn = qtrue;
+			}
+			return;
+		}
+
+		VectorCopy( self->s.origin, level.locations.data[level.locations.num].origin );
+		Q_strncpyz( level.locations.data[level.locations.num].message, self->message, sizeof( level.locations.data[level.locations.num].message ) );
+		level.locations.data[level.locations.num].count = Com_Clampi( 0, 7, self->count );
+
+		level.locations.num++;
+
+		G_FreeEntity( self );
 	}
-
-	VectorCopy( self->s.origin, level.locations.data[level.locations.num].origin );
-	Q_strncpyz( level.locations.data[level.locations.num].message, self->message, sizeof( level.locations.data[level.locations.num].message ) );
-	level.locations.data[level.locations.num].count = Com_Clampi( 0, 7, self->count );
-
-	level.locations.num++;
-
-	G_FreeEntity( self );
 }
 
 /*QUAKED target_counter (1.0 0 0) (-4 -4 -4) (4 4 4) x x x x x x x INACTIVE
