@@ -279,7 +279,7 @@ G_LoadArenas
 ===============
 */
 
-#define MAX_MAPS 256
+#define MAX_MAPS 512 // zyk: changed from 256 to 512
 #define MAPSBUFSIZE (MAX_MAPS * 64)
 
 void G_LoadArenas( void ) {
