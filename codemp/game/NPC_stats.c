@@ -227,7 +227,7 @@ extern qboolean BG_ParseLiteral( const char **data, const char *string );
 //
 // NPC parameters file : scripts/NPCs.cfg
 //
-#define MAX_NPC_DATA_SIZE 0x40000
+#define MAX_NPC_DATA_SIZE 0x80000 // zyk: changed from 0x40000 to 0x80000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 /*
@@ -3243,7 +3243,10 @@ void NPC_LoadParms( void )
 	int			len, totallen, npcExtFNLen, fileCnt, i;
 //	const char	*filename = "ext_data/NPC2.cfg";
 	char		/**buffer,*/ *holdChar, *marker;
-	char		npcExtensionListBuf[2048];			//	The list of file names read in
+
+	// zyk: changed from 2048 to 8192
+	char		npcExtensionListBuf[8192];			//	The list of file names read in
+
 	fileHandle_t f;
 	len = 0;
 
