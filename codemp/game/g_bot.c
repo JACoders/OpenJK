@@ -167,6 +167,10 @@ qboolean G_DoesMapSupportGametype(const char *mapname, int gametype)
 		return qfalse;
 	}
 
+	// zyk: FFA now allows voting for maps supported by other gametypes
+	if (gametype == GT_FFA)
+		return qtrue;
+
 	for( n = 0; n < level.arenas.num; n++ )
 	{
 		type = Info_ValueForKey( level.arenas.infos[n], "map" );
