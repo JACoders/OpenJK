@@ -6369,8 +6369,6 @@ void Item_TextField_Paint(itemDef_t *item)
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
 	} 
 
-	parent = (menuDef_t*)item->parent;
-
 	if (item->window.flags & WINDOW_HASFOCUS) 
 	{
 		lowLight[0] = 0.8 * parent->focusColor[0]; 
