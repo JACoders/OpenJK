@@ -1002,15 +1002,12 @@ DLL glue, but highly reusuable DLL glue at that
 ============
 */
 
-#ifdef JK2_MODE
-extern cStringsSingle *JK2SP_GetString(const char *Reference);
-#endif
 const char *String_GetStringValue( const char *reference )
 {
 #ifndef JK2_MODE
 	return SE_GetString(reference);
 #else
-	return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
+	return JK2SP_GetStringTextString(reference);
 #endif
 }
 
