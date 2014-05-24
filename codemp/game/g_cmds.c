@@ -10135,6 +10135,12 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
 
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
 	if ( number_of_args < 2)
 	{
 		trap->SendServerCommand( ent-g_entities, va("print \"You must specify at least the entity class. Ex: ^3/entadd info_player_deathmatch^7, which spawns a spawn point in the map\n\"") );
@@ -10190,6 +10196,12 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 	char arg3[MAX_STRING_CHARS];
 	char arg4[MAX_STRING_CHARS];
 	char arg5[MAX_STRING_CHARS];
+
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
 
 	if ( number_of_args < 2)
 	{
@@ -10266,6 +10278,12 @@ void Cmd_EntNear_f( gentity_t *ent ) {
 	char message[1024];
 	gentity_t *this_ent = NULL;
 
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
 	strcpy(message,"");
 
 	for (i = 0; i < level.num_entities; i++)
@@ -10293,6 +10311,12 @@ void Cmd_EntList_f( gentity_t *ent ) {
 	char message[1024];
 
 	strcpy(message,"");
+
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
 
 	if ( trap->Argc() < 2)
 	{
@@ -10327,6 +10351,12 @@ void Cmd_EntRemove_f( gentity_t *ent ) {
 	gentity_t *target_ent;
 	char   arg1[MAX_STRING_CHARS];
 	char   arg2[MAX_STRING_CHARS];
+
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
 
 	if ( trap->Argc() < 2)
 	{
@@ -10400,15 +10430,15 @@ Cmd_AdminList_f
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
 	char message[1024];
-	char message_content[6][150];
+	char message_content[7][150];
 	int i = 0;
 	strcpy(message,"");
-	while (i < 5)
+	while (i < 6)
 	{
 		strcpy(message_content[i],"");
 		i++;
 	}
-	message_content[6][0] = '\0';
+	message_content[7][0] = '\0';
 
 	if ((ent->client->pers.bitvalue & (1 << 0))) 
 	{
@@ -10455,7 +10485,16 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^1no\n",4));
 	}
 
-	for (i = 0; i < 5; i++)
+	if ((ent->client->pers.bitvalue & (1 << 5))) 
+	{
+		strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^2yes\n",5));
+	}
+	else
+	{
+		strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^1no\n",5));
+	}
+
+	for (i = 0; i < 6; i++)
 	{
 		sprintf(message,"%s%s",message,message_content[i]);
 	}
@@ -10499,13 +10538,13 @@ void Cmd_AdminUp_f( gentity_t *ent ) {
 		}
 		if (Q_stricmp (arg2, "all") == 0)
 		{ // zyk: if player wrote all, give all commands to the target player
-			for (i = 0; i < 5; i++)
+			for (i = 0; i < 6; i++)
 				g_entities[client_id].client->pers.bitvalue |= (1 << i);
 		}
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 5)
+			if (bitvaluecommand < 0 || bitvaluecommand >= 6)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -10564,7 +10603,7 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 5)
+			if (bitvaluecommand < 0 || bitvaluecommand >= 6)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -10588,6 +10627,12 @@ Cmd_EntitySystem_f
 ==================
 */
 void Cmd_EntitySystem_f( gentity_t *ent ) {
+	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
 	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entremove <entity id>: ^7removes the entity from the map\n\n\"") );
 }
 
