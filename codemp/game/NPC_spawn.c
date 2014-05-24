@@ -4787,11 +4787,24 @@ qboolean	showBBoxes = qfalse;
 void Cmd_NPC_f( gentity_t *ent )
 {
 	char	cmd[1024];
+	int player_it = 0;
+	gentity_t *this_ent = NULL;
 
-	if (ent->client->sess.amrpgmode == 0 || !(ent->client->pers.bitvalue & (1 << 0)))
+	if (!(ent->client->pers.bitvalue & (1 << 0)))
 	{ // zyk: npc admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
+	}
+
+	for (player_it = 0; player_it < level.maxclients; player_it++)
+	{ // zyk: cant spawn guardians if a player is in a guardian battle
+		this_ent = &g_entities[player_it];
+
+		if (this_ent && this_ent->client && this_ent->client->sess.amrpgmode == 2 && this_ent->client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Cannot spawn npcs while someone is in a guardian battle.\n\"" );
+			return;
+		}
 	}
 
 	trap->Argv( 1, cmd, 1024 );
