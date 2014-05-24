@@ -3501,10 +3501,11 @@ void ClientSpawn(gentity_t *ent) {
 			{
 				client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_SABER );	//these are precached in g_items, ClearRegisteredItems()
 			}
-			else
-			{ //if you don't have saber attack rank then you don't get a saber
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
-			}
+			//else
+			//{ //if you don't have saber attack rank then you don't get a saber
+				// zyk: now player will always have melee
+			client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+			//}
 		}
 
 		if (level.gametype != GT_SIEGE)
