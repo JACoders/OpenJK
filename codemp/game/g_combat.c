@@ -4838,7 +4838,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		// zyk: guardians remove cloak of the player when hit by him
 		if (attacker->client->ps.powerups[PW_CLOAKED])
+		{
 			Jedi_Decloak(attacker);
+			attacker->client->cloakToggleTime = level.time + Q_irand( 5000, 10000 );
+		}
 
 		// zyk: Guardian of Resistance takes less damage after using Ultra Resistance
 		if (targ->client->pers.guardian_mode == 11 && targ->client->pers.hunter_quest_messages == 1)
