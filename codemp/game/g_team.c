@@ -262,8 +262,17 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 	{
 		return qfalse;
 	}
+	else if (ent1->s.eType == ET_NPC && ent2->s.eType == ET_PLAYER && ent1->client->playerTeam == NPCTEAM_PLAYER)
+	{
+		return qtrue;
+	}
+	else if (ent1->s.eType == ET_PLAYER && ent2->s.eType == ET_NPC && ent2->client->playerTeam == NPCTEAM_PLAYER)
+	{
+		return qtrue;
+	}
 
-	if ( ent1->client->sess.sessionTeam == ent2->client->sess.sessionTeam ) {
+	// zyk: players in FFA are not in same team
+	if ( level.gametype != GT_FFA && ent1->client->sess.sessionTeam == ent2->client->sess.sessionTeam ) {
 		return qtrue;
 	}
 
