@@ -99,7 +99,7 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 			return GL_STATIC_DRAW_ARB;
 
 		case VBO_USAGE_DYNAMIC:
-			return GL_DYNAMIC_DRAW_ARB;
+			return GL_STREAM_DRAW_ARB;
 
 		default:
 			ri->Error (ERR_FATAL, "bad vboUsage_t given: %i", usage);
@@ -462,7 +462,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		R_BindVBO(tess.vbo);
 
 		// orphan old buffer so we don't stall on it
-		qglBufferDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->vertexesSize, NULL, GL_DYNAMIC_DRAW_ARB);
+		qglBufferDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->vertexesSize, NULL, GL_STREAM_DRAW_ARB);
 
 		if(attribBits & ATTR_BITS)
 		{
@@ -524,7 +524,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		R_BindIBO(tess.ibo);
 
 		// orphan old buffer so we don't stall on it
-		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, tess.ibo->indexesSize, NULL, GL_DYNAMIC_DRAW_ARB);
+		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, tess.ibo->indexesSize, NULL, GL_STREAM_DRAW_ARB);
 
 		qglBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, tess.numIndexes * sizeof(tess.indexes[0]), tess.indexes);
 	}
