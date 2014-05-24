@@ -5554,7 +5554,7 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		if (self->s.eType == ET_PLAYER &&
 			ent->client &&
 			(ent->s.eType == ET_NPC || ent->s.eType == ET_PLAYER) &&
-			!OnSameTeam(ent, self) &&
+			// !OnSameTeam(ent, self) && // zyk: now its possible to look at players or npcs in the same team
 			ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
 			!(ent->client->ps.pm_flags & PMF_FOLLOW) &&
 			(ent->s.eType != ET_NPC || ent->s.NPC_class != CLASS_VEHICLE) && //don't look at vehicle NPCs
