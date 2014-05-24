@@ -1890,6 +1890,7 @@ typedef struct {
 
 	int     c_staticVboDraws;
 	int     c_dynamicVboDraws;
+	int		c_dynamicVboTotalSize;
 
 	int     c_multidraws;
 	int     c_multidrawsMerged;

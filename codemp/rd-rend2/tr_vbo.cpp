@@ -457,6 +457,8 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	// update the default VBO
 	if(tess.numVertexes > 0 && tess.numVertexes <= SHADER_MAX_VERTEXES)
 	{
+		backEnd.pc.c_dynamicVboTotalSize += tess.numVertexes * (tess.vbo->vertexesSize / SHADER_MAX_VERTEXES);
+
 		R_BindVBO(tess.vbo);
 
 		// orphan old buffer so we don't stall on it
