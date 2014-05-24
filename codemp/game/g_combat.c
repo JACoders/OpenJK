@@ -4738,11 +4738,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (attacker && attacker->client && mod == MOD_SABER && attacker->client->ps.fd.saberAnimLevel == SS_DESANN)
-	{ // zyk: lowering damage a bit of desann style attack, because its too strong
-		damage = (int)ceil(damage*0.82);
-	}
-
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_MELEE)
 	{ // zyk: setting melee damage in RPG Mode
 		if (attacker->client->pers.melee_level == 0)
