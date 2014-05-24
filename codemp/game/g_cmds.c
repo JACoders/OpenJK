@@ -3198,6 +3198,9 @@ extern void DismembermentByNum(gentity_t *self, int num);
 extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
 #endif
 
+extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
+extern void healing_water(gentity_t *ent, int heal_amount);
+extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3237,6 +3240,163 @@ qboolean TryGrapple(gentity_t *ent)
 			ent->client->ps.legsTimer = ent->client->ps.torsoTimer;
 		}
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
+
+		// zyk: Ultimate Power
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+		{
+			if (ent->client->pers.universe_quest_counter & (1 << 0))
+			{ // zyk: Sleeping Flowers
+				sleeping_flowers(ent,4000,500);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.universe_quest_counter & (1 << 1))
+			{ // zyk: uses Elemental Power
+				if (ent->client->pers.ultimate_power_user == 0)
+				{ // zyk: Healing Water
+					healing_water(ent,100);
+					ent->client->pers.ultimate_power_user = 1;
+					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.ultimate_power_user == 1)
+				{
+					ent->client->pers.flame_thrower = level.time + 5000;
+					ent->client->pers.ultimate_power_user = 2;
+					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.ultimate_power_user == 2)
+				{
+					earthquake(ent,2000,700,500);
+					ent->client->pers.ultimate_power_user = 3;
+					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.ultimate_power_user == 3)
+				{
+					int i = 0;
+
+					for ( i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (ent->s.number != i && player_ent && player_ent->client)
+						{
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (distance < 1000)
+							{
+								int found = 0;
+
+								// zyk: allies will not be hit by this power
+								if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+								{
+									found = 1;
+								}
+
+								if (found == 0)
+								{
+									player_ent->client->pers.ultimate_power_user = ent->s.number;
+									player_ent->client->pers.ultimate_power_target = 10;
+									player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
+							
+									if (i < level.maxclients)
+										G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+								}
+							}
+						}
+					}
+
+					ent->client->pers.ultimate_power_user = 0;
+					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
+				}
+
+				ent->client->pers.ultimate_power_timer = level.time + 15000;
+			}
+			else if (ent->client->pers.universe_quest_counter & (1 << 2))
+			{ // zyk: uses Chaos Power
+				int i = 0;
+
+				for (i = 0; i < level.num_entities; i++)
+				{
+					gentity_t *player_ent = &g_entities[i];
+					
+					if (ent->s.number != i && player_ent && player_ent->client && !player_ent->client->ps.duelInProgress)
+					{
+						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+						if (distance < 500)
+						{
+							int found = 0;
+
+							// zyk: allies will not be hit by this power
+							if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+							{
+								found = 1;
+							}
+
+							if (found == 0)
+							{
+								player_ent->client->pers.ultimate_power_target = 4;
+								player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+
+								if (player_ent->client->jetPackOn)
+								{
+									Jetpack_Off(player_ent);
+								}
+
+								// zyk: First Chaos Power hit
+								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								player_ent->client->ps.forceHandExtendTime = level.time + 5000;
+								player_ent->client->ps.velocity[2] += 150;
+								player_ent->client->ps.forceDodgeAnim = 0;
+								player_ent->client->ps.quickerGetup = qtrue;
+								player_ent->client->ps.electrifyTime = level.time + 5000;
+
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,100,0,MOD_UNKNOWN);
+							}
+						}
+					}
+				}
+
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
+
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+			}
+			else if (ent->client->pers.universe_quest_counter & (1 << 3))
+			{ // zyk: uses Time Power
+				int i = 0;
+
+				for (i = 0; i < level.num_entities; i++)
+				{
+					gentity_t *player_ent = &g_entities[i];
+					
+					if (ent->s.number != i && player_ent && player_ent->client)
+					{
+						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+						if (distance < 500)
+						{
+							int found = 0;
+
+							// zyk: allies will not be hit by this power
+							if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+							{
+								found = 1;
+							}
+
+							if (found == 0)
+							{
+								player_ent->client->pers.ultimate_power_target = 3;
+								player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
+							}
+						}
+					}
+				}
+
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
+
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+			}
+		}
+
 		return qtrue;
 	}
 
