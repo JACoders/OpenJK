@@ -1710,10 +1710,13 @@ qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t
 		return qfalse;
 	}
 
+	// zyk: now it is possible to use force powers while riding a vehicle
+	/*
 	if (ps->m_iVehicleNum)
 	{ //can't use powers while riding a vehicle (this may change, I don't know)
 		return qfalse;
 	}
+	*/
 
 	if (ps->duelInProgress)
 	{
