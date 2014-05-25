@@ -2656,7 +2656,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// zyk: initializing attributes used in RPG mode
 	client->pers.guardian_mode = 0;
 	client->pers.being_mind_controlled = -1;
-	client->pers.mind_control = 0;
 	client->pers.mind_controlled1_id = -1;
 	client->pers.guardian_invoked_by_id = -1;
 
@@ -3756,7 +3755,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	// zyk: initializing mind control attributes on spawn time
 	ent->client->pers.being_mind_controlled = -1;
-	ent->client->pers.mind_control = 0;
 	ent->client->pers.mind_controlled1_id = -1;
 
 	// zyk: loading default value of race_position
