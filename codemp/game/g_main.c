@@ -5214,17 +5214,16 @@ void G_RunFrame( int levelTime ) {
 						if (ent->client->pers.universe_quest_progress == 0 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_objective_control != -1)
 						{ // zyk: first objective of Universe Quest
 							gentity_t *npc_ent = NULL;
+
 							if (ent->client->pers.universe_quest_messages == 0)
 							{
-								int ent_iterator = 0;
+								int npcs_it = 0;
 								gentity_t *this_ent = NULL;
 
-								// zyk: cleaning entities, except the spawn points. This will prevent server from crashing in this mission
-								for (ent_iterator = level.maxclients; ent_iterator < level.num_entities; ent_iterator++)
+								for (npcs_it = 0; npcs_it < level.num_entities; npcs_it++)
 								{
-									this_ent = &g_entities[ent_iterator];
-
-									if (this_ent && this_ent->s.number != level.quest_note_id && Q_stricmp( this_ent->classname, "info_player_deathmatch" ) != 0)
+									this_ent = &g_entities[npcs_it];
+									if (Q_stricmp(this_ent->classname,"NPC_Tavion_New") == 0 && Q_stricmp(this_ent->targetname,"squad3") == 0)
 										G_FreeEntity(this_ent);
 								}
 
@@ -5255,9 +5254,9 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Hero... please help us!\"");
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								if (ent->client->pers.universe_quest_objective_control > 15)
+								if (ent->client->pers.universe_quest_objective_control > 12)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn",14027,-673,-3134,-90);
-								else if (ent->client->pers.universe_quest_objective_control > 9)
+								else if (ent->client->pers.universe_quest_objective_control > 6)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",14190,-673,-3134,-90);
 								else if (ent->client->pers.universe_quest_objective_control > 1)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",14111,-673,-3134,-90);
