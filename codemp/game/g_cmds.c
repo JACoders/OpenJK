@@ -5197,7 +5197,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 16 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 38 && upgrade_value <= 54)))
+	if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 17 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 38 && upgrade_value <= 54)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Duelist class doesn't allow this skill.\n\"" );
 		return;
@@ -7146,7 +7146,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[5],"%s^115 - Grip: %d/3\n",message_content[5],ent->client->pers.force_powers_levels[14]);
 
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
+				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
 					sprintf(message_content[6],"%s^016 - Drain: %d/3\n",message_content[6],ent->client->pers.force_powers_levels[15]);
 				else
 					sprintf(message_content[6],"%s^116 - Drain: %d/3\n",message_content[6],ent->client->pers.force_powers_levels[15]);
@@ -9852,7 +9852,7 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	{ // zyk: Duelist
 		for (i = 0; i < 18; i++)
 		{
-			if (i != 0 && i != 1 && i != 2 && i != 3 && i != 4 && i != 5 && i != 6 && i != 7 && i != 8 && i != 9 && i != 10 && i != 13 && i != 14)
+			if (i > 10 && i != 13 && i != 14 && i != 15)
 			{
 				while (ent->client->pers.force_powers_levels[i] > 0)
 				{
