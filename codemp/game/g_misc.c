@@ -3137,6 +3137,11 @@ void GunRackAddItem( gitem_t *gun, vec3_t org, vec3_t angs, float ffwd, float fr
 
 		G_SetAngles( it_ent, it_ent->s.angles );
 		G_SetOrigin( it_ent, it_ent->s.origin );
+
+		// zyk: add dropped weapon flag if it is a weapon
+		if (gun->giType == IT_WEAPON)
+			it_ent->s.eFlags |= EF_DROPPEDWEAPON;
+
 		trap->LinkEntity( (sharedEntity_t *)it_ent );
 	}
 }
