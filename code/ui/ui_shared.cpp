@@ -7333,8 +7333,8 @@ void Item_YesNo_Paint(itemDef_t *item)
 	}
 
 #ifdef JK2_MODE
-	const char *psYes = ui.SP_GetStringTextString( "MENUS_YES" );;
-	const char *psNo = ui.SP_GetStringTextString( "MENUS_NO" );
+	const char *psYes = ui.SP_GetStringTextString( "MENUS0_YES" );
+	const char *psNo = ui.SP_GetStringTextString( "MENUS0_NO" );
 #else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
