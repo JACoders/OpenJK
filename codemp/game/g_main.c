@@ -3672,7 +3672,7 @@ void zyk_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	}
 }
 
-// zyk: function to kill npcs with the name as parameter. It uses G_FreeEntity to prevent some bugs in quests because of player_die function call
+// zyk: function to kill npcs with the name as parameter
 void zyk_NPC_Kill_f( char *name )
 {
 	int	n = 0;
@@ -3685,7 +3685,12 @@ void zyk_NPC_Kill_f( char *name )
 		{
 			if( (Q_stricmp( name, player->NPC_type ) == 0) || Q_stricmp( name, "all" ) == 0)
 			{
-				G_FreeEntity(player);
+				player->health = 0;
+				player->client->ps.stats[STAT_HEALTH] = 0;
+				if (player->die)
+				{
+					player->die(player, player, player, 100, MOD_UNKNOWN);
+				}
 			}
 		}
 	}
