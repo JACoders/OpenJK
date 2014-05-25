@@ -3949,14 +3949,14 @@ void ultimate_power_events(gentity_t *ent)
 		}
 		else if (ent->client->pers.ultimate_power_target == 4 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
 		{ // zyk: Second Chaos Power hit
-			G_Damage(ent,NULL,NULL,NULL,NULL,100,0,MOD_UNKNOWN);
+			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,100,0,MOD_UNKNOWN);
 
 			ent->client->pers.ultimate_power_target = 5;
 			ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 		}
 		else if (ent->client->pers.ultimate_power_target == 5 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
 		{ // zyk: Third Chaos Power hit
-			G_Damage(ent,NULL,NULL,NULL,NULL,100,0,MOD_UNKNOWN);
+			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,100,0,MOD_UNKNOWN);
 
 			ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 			ent->client->ps.forceHandExtendTime = level.time + 3000;

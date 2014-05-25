@@ -3335,6 +3335,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 							if (found == 0)
 							{
+								player_ent->client->pers.ultimate_power_user = ent->s.number;
 								player_ent->client->pers.ultimate_power_target = 4;
 								player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 
@@ -3351,7 +3352,7 @@ qboolean TryGrapple(gentity_t *ent)
 								player_ent->client->ps.quickerGetup = qtrue;
 								player_ent->client->ps.electrifyTime = level.time + 5000;
 
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,100,0,MOD_UNKNOWN);
+								G_Damage(player_ent,ent,ent,NULL,NULL,100,0,MOD_UNKNOWN);
 							}
 						}
 					}

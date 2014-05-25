@@ -4827,7 +4827,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
 	{ // zyk: targ is a RPG mode boss
 		// zyk: chaos power and map entities cannot hit the boss
-		if (mod == MOD_UNKNOWN || !attacker || !attacker->client)
+		if (!attacker || !attacker->client)
 			return;
 
 		if (targ->client->pers.guardian_invoked_by_id != (attacker-g_entities))
