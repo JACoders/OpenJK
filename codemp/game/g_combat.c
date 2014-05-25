@@ -2942,7 +2942,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 	}
 
-	if (!self->client->ps.fallingToDeath) 
+	if (!self->client->ps.fallingToDeath && (!self->NPC || self->client->NPC_class != CLASS_VEHICLE)) 
 	{ // zyk: now npcs also drop their weapons and powerups
 		TossClientItems( self );
 	}
