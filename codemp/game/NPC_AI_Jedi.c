@@ -1002,7 +1002,8 @@ static void Jedi_AggressionErosion( int amt )
 
 	if ( NPCS.NPCInfo->stats.aggression < 4 || (NPCS.NPCInfo->stats.aggression < 6&&NPCS.NPC->client->NPC_class == CLASS_DESANN))
 	{//turn off the saber
-		WP_DeactivateSaber( NPCS.NPC, qfalse );
+		if (NPCS.client->ps.weapon == WP_SABER) // zyk: turn off saber if this npc is using the saber
+			WP_DeactivateSaber( NPCS.NPC, qfalse );
 	}
 }
 
@@ -4514,6 +4515,13 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 		}
 
 		TIMER_Set( NPCS.NPC, "rebornChangeWeapon", Q_irand( 5000, 15000 ) );
+
+		if (NPCS.client->ps.weapon == WP_DISRUPTOR)
+		{ // zyk: uses sniper AI this moment
+			NPC_UpdateAngles( qtrue, qtrue );
+			NPC_BSSniper_Default();
+			return qfalse;
+		}
 	}
 
 	// Begin fixed cultist_destroyer AI

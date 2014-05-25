@@ -224,7 +224,7 @@ void NPC_BSSniper_Patrol( void )
 						{//an enemy
 							G_SetEnemy( NPCS.NPC, level.alertEvents[alertEvent].owner );
 							//NPCInfo->enemyLastSeenTime = level.time;
-							TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( (6-NPCS.NPCInfo->stats.aim)*100, (6-NPCS.NPCInfo->stats.aim)*500 ) );
+							TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( (6-NPCS.NPCInfo->stats.aim)*100, (6-NPCS.NPCInfo->stats.aim)*200 ) ); // zyk: changed from 500 to 200
 						}
 					}
 					else
@@ -366,7 +366,7 @@ static void Sniper_CheckMoveState( void )
 			//don't attack right away
 			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( (6-NPCS.NPCInfo->stats.aim)*50, (6-NPCS.NPCInfo->stats.aim)*100 ) );	//FIXME: Slant for difficulty levels, too?
 			//don't do something else just yet
-			TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 1000, 4000 ) );
+			TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 1000, 2000 ) ); // zyk: lowered from 4000 to 2000
 			//stop fleeing
 			if ( NPCS.NPCInfo->squadState == SQUAD_RETREAT )
 			{
@@ -377,7 +377,7 @@ static void Sniper_CheckMoveState( void )
 		}
 
 		//keep going, hold of roamTimer until we get there
-		TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 4000, 8000 ) );
+		TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 2000, 4000 ) ); // zyk: 4000 to 2000, 8000 to 4000
 	}
 }
 
@@ -410,7 +410,7 @@ static void Sniper_ResolveBlockedShot( void )
 					NPC_SetCombatPoint( cp );
 					NPC_SetMoveGoal( NPCS.NPC, level.combatPoints[cp].origin, 8, qtrue, cp, NULL );
 					TIMER_Set( NPCS.NPC, "duck", -1 );
-					TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 1000, 3000 ) );
+					TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 1500 ) ); // zyk: 1000 to 500, 3000 to 1500
 					return;
 				}
 			}
@@ -534,8 +534,8 @@ void Sniper_FaceEnemy( void )
 					GetAnglesForDirection( muzzle, target, angles );
 					AngleVectors( angles, forward, right, up );
 
-					// zyk: changed from 10 to 5
-					while ( hit && tryMissCount < 5 )
+					// zyk: changed from 10 to (5-NPCS.NPCInfo->stats.aim)
+					while ( hit && tryMissCount < (5-NPCS.NPCInfo->stats.aim) )
 					{
 						tryMissCount++;
 						if ( !Q_irand( 0, 1 ) )
@@ -543,22 +543,22 @@ void Sniper_FaceEnemy( void )
 							aimError = qtrue;
 							if ( !Q_irand( 0, 1 ) )
 							{
-								VectorMA( target, NPCS.NPC->enemy->r.maxs[2]*flrand(1.5, 4), right, target );
+								VectorMA( target, NPCS.NPC->enemy->r.maxs[2]*flrand(1.5, 2), right, target ); // zyk: decreased random value from 4 to 2 so sniper dont miss too much
 							}
 							else
 							{
-								VectorMA( target, NPCS.NPC->enemy->r.mins[2]*flrand(1.5, 4), right, target );
+								VectorMA( target, NPCS.NPC->enemy->r.mins[2]*flrand(1.5, 2), right, target ); // zyk: decreased random value from 4 to 2 so sniper dont miss too much
 							}
 						}
 						if ( !aimError || !Q_irand( 0, 1 ) )
 						{
 							if ( !Q_irand( 0, 1 ) )
 							{
-								VectorMA( target, NPCS.NPC->enemy->r.maxs[2]*flrand(1.5, 4), up, target );
+								VectorMA( target, NPCS.NPC->enemy->r.maxs[2]*flrand(1.5, 2), up, target ); // zyk: decreased random value from 4 to 2 so sniper dont miss too much
 							}
 							else
 							{
-								VectorMA( target, NPCS.NPC->enemy->r.mins[2]*flrand(1.5, 4), up, target );
+								VectorMA( target, NPCS.NPC->enemy->r.mins[2]*flrand(1.5, 2), up, target ); // zyk: decreased random value from 4 to 2 so sniper dont miss too much
 							}
 						}
 						trap->Trace( &trace, muzzle, vec3_origin, vec3_origin, target, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
@@ -578,7 +578,7 @@ void Sniper_FaceEnemy( void )
 			else
 			{//based on distance, aim value, difficulty and enemy movement, miss
 				//FIXME: incorporate distance as a factor?
-				int missFactor = 8-(NPCS.NPCInfo->stats.aim+g_npcspskill.integer) * 3;
+				int missFactor = 5-(NPCS.NPCInfo->stats.aim+g_npcspskill.integer); //* 3; // zyk: changed from 8 to 5. Removed the 3 factor
 				if ( missFactor > ENEMY_POS_LAG_STEPS )
 				{
 					missFactor = ENEMY_POS_LAG_STEPS;
@@ -632,11 +632,11 @@ NPC_BSSniper_Attack
 
 void Sniper_StartHide( void )
 {
-	int duckTime = Q_irand( 2000, 5000 );
+	int duckTime = Q_irand( 1500, 2500 ); // zyk: changed from 2000 to 1500 and from 5000 to 2500
 
 	TIMER_Set( NPCS.NPC, "duck", duckTime );
 	TIMER_Set( NPCS.NPC, "watch", 500 );
-	TIMER_Set( NPCS.NPC, "attackDelay", duckTime + Q_irand( 500, 2000 ) );
+	TIMER_Set( NPCS.NPC, "attackDelay", duckTime + Q_irand( 500, 1500 ) ); // zyk: changed from 2000 to 1500
 }
 
 void NPC_BSSniper_Attack( void )
