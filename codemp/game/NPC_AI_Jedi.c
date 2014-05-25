@@ -1585,6 +1585,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			&& !(NPCS.NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 			&& !(NPCS.NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 		{//hold it out there
+			NPCS.ucmd.buttons &= ~BUTTON_ATTACK; // zyk: saber user npcs wont use katas
 			NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 			//FIXME: time limit?
 		}
@@ -1593,6 +1594,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 	{
 		if ( enemy_dist <= 64 )
 		{//he's getting too close
+			NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK; // zyk: saber user npcs wont use katas
 			NPCS.ucmd.buttons |= BUTTON_ATTACK;
 			if ( !NPCS.NPC->client->ps.saberInFlight )
 			{
@@ -1771,6 +1773,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 				&& !(NPCS.NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 				&& !(NPCS.NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 			{//throw saber
+				NPCS.ucmd.buttons &= ~BUTTON_ATTACK; // zyk: saber user npcs wont use katas
 				NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 			}
 		}
@@ -1840,6 +1843,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						TIMER_Set( NPCS.NPC, "duck", enemy_dist*3 );
 						if ( Q_irand( 0, 1 ) )
 						{
+							NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK; // zyk: saber user npcs wont use katas
 							NPCS.ucmd.buttons |= BUTTON_ATTACK;
 						}
 					}
@@ -1886,6 +1890,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							&& !(NPCS.NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 							&& !(NPCS.NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 						{//throw saber
+							NPCS.ucmd.buttons &= ~BUTTON_ATTACK; // zyk: saber user npcs wont use katas
 							NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 						}
 					}
@@ -1896,6 +1901,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						&& !(NPCS.NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 						&& !(NPCS.NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 					{//throw saber
+						NPCS.ucmd.buttons &= ~BUTTON_ATTACK; // zy: saber user npcs wont use katas
 						NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 					}
 				}
@@ -4402,6 +4408,8 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 	{
 		if (NPCS.client->ps.weapon != WP_SABER)
 		{
+			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+
 			NPC_ChangeWeapon( WP_SABER );
 
 			// zyk: activates his saber
@@ -4445,7 +4453,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 					int newWeapon = ChooseBestWeapon();
 					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-					else
+					else if (newWeapon != WP_SABER)
 						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 					NPC_ChangeWeapon(newWeapon);
 				}
@@ -4507,7 +4515,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 					int newWeapon = ChooseBestWeapon();
 					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-					else
+					else if (newWeapon != WP_SABER)
 						NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 					NPC_ChangeWeapon(newWeapon);
 				}
@@ -5977,6 +5985,7 @@ void NPC_BSJedi_FollowLeader( void )
 					//		way back to us and we could lose it again.
 					NPCS.NPC->client->ps.saberBlocked = BLOCKED_NONE;
 					NPCS.NPCInfo->goalEntity = &g_entities[NPCS.NPC->client->ps.saberEntityNum];
+					NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK; // zyk: saber user npcs wont use katas
 					NPCS.ucmd.buttons |= BUTTON_ATTACK;
 					if ( NPCS.NPC->enemy && NPCS.NPC->enemy->health > 0 )
 					{//get our saber back NOW!
@@ -6104,6 +6113,7 @@ static void Jedi_Attack( void )
 		//	}
 			if ( flrand( -4.0f, chance ) >= 0.0f )
 			{
+				NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK; // zyk: saber user npcs wont use katas
 				NPCS.ucmd.buttons |= BUTTON_ATTACK;
 			}
 			//rwwFIXMEFIXME: support for PMF_ATTACK_HELD
@@ -6125,6 +6135,7 @@ static void Jedi_Attack( void )
 				{
 					NPCS.NPC->client->ps.saberBlocked = BLOCKED_NONE;
 					NPCS.NPCInfo->goalEntity = &g_entities[NPCS.NPC->client->saberStoredIndex];
+					NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK; // zyk: saber user npcs wont use katas
 					NPCS.ucmd.buttons |= BUTTON_ATTACK;
 					if ( NPCS.NPC->enemy && NPCS.NPC->enemy->health > 0 )
 					{//get our saber back NOW!
