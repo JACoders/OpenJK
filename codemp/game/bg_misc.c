@@ -2088,12 +2088,16 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{
 			return qfalse;
 		}
+		/* zyk: weapons can be picked up now
 		if (!(ent->eFlags & EF_DROPPEDWEAPON) && (ps->stats[STAT_WEAPONS] & (1 << item->giTag)) &&
 			item->giTag != WP_THERMAL && item->giTag != WP_TRIP_MINE && item->giTag != WP_DET_PACK)
 		{ //weaponstay stuff.. if this isn't dropped, and you already have it, you don't get it.
 			return qfalse;
 		}
-		if (item->giTag == WP_THERMAL || item->giTag == WP_TRIP_MINE || item->giTag == WP_DET_PACK)
+		*/
+		// zyk: weapons now only test for max ammo
+		// if (item->giTag == WP_THERMAL || item->giTag == WP_TRIP_MINE || item->giTag == WP_DET_PACK)
+		if (ps->stats[STAT_WEAPONS] & (1 << item->giTag))
 		{ //check to see if full on ammo for this, if so, then..
 			int ammoIndex = weaponData[item->giTag].ammoIndex;
 			if (ps->ammo[ammoIndex] >= ammoData[ammoIndex].max)
