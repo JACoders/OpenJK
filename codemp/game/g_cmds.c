@@ -428,6 +428,12 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot noclip while in a guardian battle.\n\"" );
+		return;
+	}
+
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
 		msg = "noclip OFF";
@@ -8799,7 +8805,8 @@ Cmd_Teleport_f
 void Cmd_Teleport_f( gentity_t *ent )
 {
 	char arg1[MAX_STRING_CHARS];
-	int client_id = -1;
+	char arg2[MAX_STRING_CHARS];
+	char arg3[MAX_STRING_CHARS];
 
 	if (!(ent->client->pers.bitvalue & (1 << 3)))
 	{ // zyk: teleport admin command
@@ -8807,12 +8814,20 @@ void Cmd_Teleport_f( gentity_t *ent )
 		return;
 	}
 
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot teleport while in a guardian battle.\n\"" );
+		return;
+	}
+
 	if (trap->Argc() == 1)
 	{
 		zyk_TeleportPlayer(ent,ent->client->pers.teleport_point,ent->client->pers.teleport_angles);
 	}
-	else
+	else if (trap->Argc() == 2)
 	{
+		int client_id = -1;
+
 		trap->Argv( 1,  arg1, sizeof( arg1 ) );
 
 		if (Q_stricmp(arg1, "point") == 0)
@@ -8840,11 +8855,85 @@ void Cmd_Teleport_f( gentity_t *ent )
 				return;
 			}
 
+			if (g_entities[client_id].client->sess.amrpgmode == 2 && g_entities[client_id].client->pers.guardian_mode > 0)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Cannot teleport to a player in a guardian battle.\n\"" );
+				return;
+			}
+
 			VectorCopy(g_entities[client_id].client->ps.origin,target_origin);
 			target_origin[2] = target_origin[2] + 120;
 
 			zyk_TeleportPlayer(ent,target_origin,g_entities[client_id].client->ps.viewangles);
 		}
+	}
+	else if (trap->Argc() == 3)
+	{
+		// zyk: teleporting a player to another
+		int client1_id;
+		int client2_id;
+
+		vec3_t target_origin;
+
+		trap->Argv( 1,  arg1, sizeof( arg1 ) );
+		trap->Argv( 2,  arg2, sizeof( arg2 ) );
+
+		client1_id = zyk_get_client( arg1 );
+		client2_id = zyk_get_client( arg2 );
+
+		if (client1_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+			return;
+		}
+
+		if (g_entities[client1_id].client->sess.amrpgmode > 0 && g_entities[client1_id].client->pers.bitvalue & (1 << 4) && !(g_entities[client1_id].client->pers.player_settings & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
+			return;
+		}
+
+		if (g_entities[client1_id].client->sess.amrpgmode == 2 && g_entities[client1_id].client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Cannot teleport to a player in a guardian battle.\n\"" );
+			return;
+		}
+
+		if (client2_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+			return;
+		}
+
+		if (g_entities[client2_id].client->sess.amrpgmode > 0 && g_entities[client2_id].client->pers.bitvalue & (1 << 4) && !(g_entities[client2_id].client->pers.player_settings & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
+			return;
+		}
+
+		if (g_entities[client2_id].client->sess.amrpgmode == 2 && g_entities[client2_id].client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Cannot teleport to a player in a guardian battle.\n\"" );
+			return;
+		}
+
+		VectorCopy(g_entities[client2_id].client->ps.origin,target_origin);
+		target_origin[2] = target_origin[2] + 120;
+
+		zyk_TeleportPlayer(&g_entities[client1_id],target_origin,g_entities[client2_id].client->ps.viewangles);
+	}
+	else if (trap->Argc() == 4)
+	{
+		// zyk: teleporting to coordinates
+		vec3_t target_origin;
+
+		trap->Argv( 1,  arg1, sizeof( arg1 ) );
+		trap->Argv( 2,  arg2, sizeof( arg2 ) );
+		trap->Argv( 3,  arg3, sizeof( arg3 ) );
+
+		VectorSet(target_origin,atoi(arg1),atoi(arg2),atoi(arg3));
+
+		zyk_TeleportPlayer(ent,target_origin,ent->client->ps.viewangles);
 	}
 }
 
@@ -10700,7 +10789,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == 3)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/teleport point ^7to mark a spot in map, then use ^3/teleport ^7to go there. Use ^3/teleport <player name or ID> to teleport to a player\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nThis command can be ^3/teleport^7 or ^3/tele^7. Use ^3/teleport point ^7to mark a spot in map, then use ^3/teleport ^7to go there. Use ^3/teleport <player name or ID> ^7to teleport to a player. Use ^3/teleport <player name or ID> <player name or ID> ^7to teleport a player to another. Use ^3/teleport <x> <y> <z> ^7to teleport to coordinates\n\n\"" );
 		}
 		else if (command_number == 4)
 		{
@@ -10938,6 +11027,7 @@ command_t commands[] = {
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
 	{ "teamvote",			Cmd_TeamVote_f,				CMD_NOINTERMISSION },
+	{ "tele",				Cmd_Teleport_f,				CMD_LOGGEDIN|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "teleport",			Cmd_Teleport_f,				CMD_LOGGEDIN|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "tell",				Cmd_Tell_f,					0 },
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
