@@ -579,6 +579,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		}
 	}
 
+	/* zyk: now it is possible to use Push or Pull at knocked down clients
 	if (other && other->client &&
 		(forcePower == FP_PUSH ||
 		forcePower == FP_PULL))
@@ -588,6 +589,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 			return 0;
 		}
 	}
+	*/
 
 	// zyk: now force powers can be used on vehicles, so changed from 0 to 1
 	/*
@@ -3402,10 +3404,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			continue;
 		if (ent == self)
 			continue;
+
+		/* zyk: now it is possible to use force push or pull in target clients which are in the same team
 		if (ent->client && OnSameTeam(ent, self))
 		{
 			continue;
 		}
+		*/
+
 		if ( !(ent->inuse) )
 			continue;
 
