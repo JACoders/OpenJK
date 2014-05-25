@@ -886,15 +886,6 @@ void Boba_FireDecide( void )
 				{
 					WeaponThink( qtrue );
 				}
-				//NASTY
-				if ( NPCS.NPC->s.weapon == WP_ROCKET_LAUNCHER
-					&& (NPCS.ucmd.buttons&BUTTON_ATTACK)
-					&& !Q_irand( 0, 3 ) )
-				{//every now and then, shoot a homing rocket
-					NPCS.ucmd.buttons &= ~BUTTON_ATTACK;
-					NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
-					NPCS.NPC->client->ps.weaponTime = Q_irand( 500, 1500 );
-				}
 			}
 		}
 	}
@@ -6542,20 +6533,6 @@ void NPC_BSJedi_Default( void )
 			//FIXME: precache me!
 			NPCS.NPC->s.loopSound = G_SoundIndex( "sound/movers/objects/green_beam_lp2.wav" );//test/charm.wav" );
 		}
-		
-		/* zyk: removed this code
-		if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
-		{
-			if ( NPCS.NPC->enemy->enemy != NPCS.NPC && NPCS.NPC->health == NPCS.NPC->client->pers.maxHealth && DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin )>(800*800) )
-			{
-				
-				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-				NPC_ChangeWeapon( WP_DISRUPTOR );
-				NPC_BSSniper_Default();
-				return;
-			}
-		}
-		*/
 
 		Jedi_Attack();
 		//if we have multiple-jedi combat, probably need to keep checking (at certain debounce intervals) for a better (closer, more active) enemy and switch if needbe...
