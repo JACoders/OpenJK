@@ -6303,12 +6303,18 @@ int PM_ItemUsable(playerState_t *ps, int forcedUse)
 	vec3_t trtest;
 	trace_t tr;
 
-	if (ps->m_iVehicleNum)
+	// zyk: moved this condition here so we can test if we can use cloak in vehicles
+	if (!forcedUse)
+	{
+		forcedUse = bg_itemlist[ps->stats[STAT_HOLDABLE_ITEM]].giTag;
+	}
+
+	if (ps->m_iVehicleNum && forcedUse != HI_CLOAK) // zyk: players can use cloak item in vehicles
 	{
 		return 0;
 	}
 
-	if (ps->pm_flags & PMF_USE_ITEM_HELD)
+	if (ps->pm_flags & PMF_USE_ITEM_HELD && forcedUse != HI_CLOAK) // zyk: players can use cloak item in vehicles
 	{ //force to let go first
 		return 0;
 	}
@@ -6316,11 +6322,6 @@ int PM_ItemUsable(playerState_t *ps, int forcedUse)
 	if (ps->duelInProgress)
 	{ //not allowed to use holdables while in a private duel.
 		return 0;
-	}
-
-	if (!forcedUse)
-	{
-		forcedUse = bg_itemlist[ps->stats[STAT_HOLDABLE_ITEM]].giTag;
 	}
 
 	if (!BG_IsItemSelectable(ps, forcedUse))
@@ -6427,10 +6428,13 @@ int PM_ItemUsable(playerState_t *ps, int forcedUse)
 //cheesy vehicle weapon hackery
 qboolean PM_CanSetWeaponAnims(void)
 {
+	// zyk: maybe this sets weapon holding anims on vehicle. Now it is possible
+	/*
     if (pm->ps->m_iVehicleNum)
 	{
-		return qfalse;
+		return qfalse; 
 	}
+	*/
 
 	return qtrue;
 }
@@ -6542,6 +6546,256 @@ backAgain:
 					}
 				}
 				break;
+// zyk: adding new weapons anims when riding vehicles
+
+			case WP_STUN_BATON:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_BRYAR_PISTOL:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_DISRUPTOR:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_BOWCASTER:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_REPEATER:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_FLECHETTE:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_ROCKET_LAUNCHER:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_CONCUSSION:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_DEMP2:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_THERMAL:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_TRIP_MINE:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_DET_PACK:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+			case WP_BRYAR_OLD:
+				// Override the shoot anim.
+				if ( pm->ps->torsoAnim == BOTH_ATTACK3 )
+				{
+					if ( pm->cmd.rightmove > 0 )			//right side attack
+					{
+						Anim = BOTH_VS_ATR_G;
+					}
+					else if ( pm->cmd.rightmove < 0 )	//left side
+					{
+						Anim = BOTH_VS_ATL_G;
+					}
+					else	//frontal
+					{
+						Anim = BOTH_VS_ATF_G;
+					}
+				}
+				break;
+
+// zyk: end of adding new weapons anims when riding vehicles
 
 			default:
 				Anim = BOTH_VS_IDLE;
@@ -7098,11 +7352,14 @@ static void PM_Weapon( void )
 
 		if ( ! ( pm->ps->pm_flags & PMF_USE_ITEM_HELD ) ) {
 
+			 // zyk: now players can use holdable items in vehicles
+			/*
 			if (pm_entSelf->s.NPC_class!=CLASS_VEHICLE
 				&& pm->ps->m_iVehicleNum)
 			{//riding a vehicle, can't use holdable items, this button operates as the weapon link/unlink toggle
 				return;
 			}
+			*/
 
 			if (!pm->ps->stats[STAT_HOLDABLE_ITEM])
 			{
@@ -9790,6 +10047,21 @@ qboolean PM_WeaponOkOnVehicle( int weapon )
 	case WP_MELEE:
 	case WP_SABER:
 	case WP_BLASTER:
+	// zyk: adding new ok weapons to use while in a vehicle
+	case WP_STUN_BATON:
+	case WP_BRYAR_PISTOL:
+	case WP_DISRUPTOR:
+	case WP_BOWCASTER:
+	case WP_REPEATER:
+	case WP_DEMP2:
+	case WP_FLECHETTE:
+	case WP_ROCKET_LAUNCHER:
+	case WP_THERMAL:
+	case WP_TRIP_MINE:
+	case WP_DET_PACK:
+	case WP_CONCUSSION:
+	case WP_BRYAR_OLD:
+	// zyk: end adding new ok weapons to use while in a vehicle
 	//case WP_THERMAL:
 		return qtrue;
 		break;
