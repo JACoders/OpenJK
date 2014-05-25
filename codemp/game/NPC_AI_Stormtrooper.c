@@ -525,7 +525,7 @@ qboolean NPC_CheckEnemyStealth( gentity_t *target )
 	{
 		G_SetEnemy( NPCS.NPC, target );
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
-		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 2500 ) );
+		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 1500 ) ); // zyk: lowered attack delay from 2500 to 1500
 		return qtrue;
 	}
 
@@ -600,7 +600,7 @@ qboolean NPC_CheckEnemyStealth( gentity_t *target )
 		if ( dist_rating < DISTANCE_THRESHOLD )
 		{
 			G_SetEnemy( NPCS.NPC, target );
-			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 2500 ) );
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 1500 ) ); // zyk: lowered attackdelay from 2500 to 1500
 			return qtrue;
 		}
 
@@ -689,7 +689,7 @@ qboolean NPC_CheckEnemyStealth( gentity_t *target )
 		{
 			G_SetEnemy( NPCS.NPC, target );
 			NPCS.NPCInfo->enemyLastSeenTime = level.time;
-			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 2500 ) );
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 1500 ) ); // zyk: lowered attackdelay from 2500 to 1500
 			return qtrue;
 		}
 
@@ -710,7 +710,7 @@ qboolean NPC_CheckEnemyStealth( gentity_t *target )
 			{
 				if ( NPCS.NPCInfo->rank < RANK_LT && !Q_irand( 0, 2 ) )
 				{
-					int	interrogateTime = Q_irand( 2000, 4000 );
+					int	interrogateTime = Q_irand( 2000, 2500 ); // zyk: lowered 4000 to 2500
 					ST_Speech( NPCS.NPC, SPEECH_SUSPICIOUS, 0 );
 					TIMER_Set( NPCS.NPC, "interrogating", interrogateTime );
 					G_SetEnemy( NPCS.NPC, target );
@@ -794,10 +794,10 @@ static qboolean NPC_ST_InvestigateEvent( int eventID, qboolean extraSuspicious )
 			//ST_Speech( NPC, SPEECH_CHARGE, 0 );
 			G_SetEnemy( NPCS.NPC, level.alertEvents[eventID].owner );
 			NPCS.NPCInfo->enemyLastSeenTime = level.time;
-			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 2500 ) );
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 1500 ) ); // zyk: changed from 2500 to 1500
 			if ( level.alertEvents[eventID].type == AET_SOUND )
 			{//heard him, didn't see him, stick for a bit
-				TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 500, 2500 ) );
+				TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 500, 1500 ) ); // zyk: changed from 2500 to 1500
 			}
 			return qtrue;
 		}
@@ -2831,7 +2831,7 @@ void NPC_BSST_Attack( void )
 			}
 			else
 			{//delay our next attempt
-				TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 3000, 5000 ) );
+				TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 2000, 3000 ) ); // zyk: lowered from 3000 to 5000, to 2000 to 3000
 			}
 		}
 	}
@@ -2842,17 +2842,6 @@ void NPC_BSST_Attack( void )
 			if( !(NPCS.NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
 				WeaponThink( qtrue );
-			}
-			//NASTY
-			if ( NPCS.NPC->s.weapon == WP_ROCKET_LAUNCHER
-				&& (NPCS.ucmd.buttons&BUTTON_ATTACK)
-				&& !move
-				&& g_npcspskill.integer > 1
-				&& !Q_irand( 0, 3 ) )
-			{//every now and then, shoot a homing rocket
-				NPCS.ucmd.buttons &= ~BUTTON_ATTACK;
-				NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
-				NPCS.NPC->client->ps.weaponTime = Q_irand( 1000, 2500 );
 			}
 		}
 	}
