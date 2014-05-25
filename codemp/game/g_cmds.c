@@ -7753,7 +7753,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 18)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Team Energize: ^7restores some force power to players near you. If Improvements skill is at least at level 1, regens blaster pack and power cell ammo of the target players\n\"" );
 					if (i == 19)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Stun Baton: ^7attacks someone with a small electric charge. Level 2 causes double damage and knocks down the enemy (does not work for Force User or Monk). Level 3 causes triple damage and fires the flame thrower when using alternate fire (does not work for Force User or Monk). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Stun Baton: ^7attacks someone with a small electric charge. Level 2 causes double damage and knocks down the enemy (does not work for Force User or Monk). Level 3 causes triple damage, decloaks enemies and fires the flame thrower when using alternate fire (does not work for Force User or Monk). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects\n\"" );
 					if (i == 20)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pistol: ^7the popular Star Wars pistol used by Han Solo, Leia and other people in the movies. Normal fire is a single laser shot, alternate fire allows you to fire a powerful charged shot. The pistol laser causes %d damage. The charged shot causes a lot more damage depending on how much it was charged. At level 2 causes 25 per cent more damage\n\"", 50));
 					if (i == 21)
