@@ -9525,6 +9525,19 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 12)
 		{
+			// zyk: player starts with jetpack if it is enabled in player settings
+			if (!(ent->client->pers.player_settings & (1 << 12)))
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			}
+			else
+			{
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+				if (ent->client->jetPackOn)
+				{
+					Jetpack_Off(ent);
+				}
+			}
 			trap->SendServerCommand( ent-g_entities, va("print \"Jetpack %s\n\"", new_status) );
 		}
 		else if (value == 13)
