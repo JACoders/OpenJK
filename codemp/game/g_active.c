@@ -1700,6 +1700,7 @@ typedef enum tauntTypes_e
 
 void G_SetTauntAnim( gentity_t *ent, int taunt )
 {
+	/* zyk: now taunts are allowed while moving and in all gametypes
 	if (ent->client->pers.cmd.upmove ||
 		ent->client->pers.cmd.forwardmove ||
 		ent->client->pers.cmd.rightmove)
@@ -1713,6 +1714,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			return;
 		}
 	}
+	*/
 
 	// fix: rocket lock bug
 	BG_ClearRocketLock(&ent->client->ps);
