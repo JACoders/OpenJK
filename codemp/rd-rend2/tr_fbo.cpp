@@ -38,9 +38,10 @@ qboolean R_CheckFBO(const FBO_t * fbo)
 
 	code = qglCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 
+	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
+
 	if(code == GL_FRAMEBUFFER_COMPLETE_EXT)
 	{
-		qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
 		return qtrue;
 	}
 
@@ -90,8 +91,6 @@ qboolean R_CheckFBO(const FBO_t * fbo)
 			//assert(0);
 			break;
 	}
-
-	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, id);
 
 	return qfalse;
 }
@@ -302,6 +301,35 @@ void FBO_AttachTextureImage(image_t *img, int index)
 	glState.currentFBO->colorImage[index] = img;
 }
 
+static void FBO_SetupDrawBuffers()
+{
+	if (!glState.currentFBO)
+	{
+		ri->Printf(PRINT_WARNING, "FBO: attempted to attach a texture image with no FBO bound!\n");
+		return;
+	}
+
+	FBO_t *currentFBO = glState.currentFBO;
+	int numBuffers = 0;
+	GLenum bufs[8];
+
+	while ( currentFBO->colorBuffers[numBuffers++] != 0 );
+
+	if ( numBuffers == 0 )
+	{
+		qglDrawBuffer (GL_NONE);
+	}
+	else
+	{
+		for ( int i = 0; i < numBuffers; i++ )
+		{
+			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
+		}
+
+		qglDrawBuffersARB (numBuffers, bufs);
+	}
+}
+
 /*
 ============
 FBO_Bind
@@ -414,6 +442,8 @@ void FBO_Init(void)
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, multisample);
 		FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24_ARB, 0, multisample);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.renderFbo);
 
 
@@ -425,6 +455,8 @@ void FBO_Init(void)
 
 		//FBO_CreateBuffer(tr.msaaResolveFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.msaaResolveFbo);
 	}
@@ -438,6 +470,8 @@ void FBO_Init(void)
 
 		//FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderFbo);
 	}
@@ -461,6 +495,8 @@ void FBO_Init(void)
 
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.sunRaysFbo);
 	}
 
@@ -478,6 +514,8 @@ void FBO_Init(void)
 
 			FBO_CreateBuffer(tr.pshadowFbos[i], GL_DEPTH_COMPONENT24_ARB, 0, 0);
 			//R_AttachFBOTextureDepth(tr.textureDepthImage->texnum);
+
+			FBO_SetupDrawBuffers();
 
 			R_CheckFBO(tr.pshadowFbos[i]);
 		}
@@ -499,6 +537,8 @@ void FBO_Init(void)
 			//FBO_CreateBuffer(tr.sunShadowFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 			R_AttachFBOTextureDepth(tr.sunShadowDepthImage[i]->texnum);
 
+			FBO_SetupDrawBuffers();
+
 			R_CheckFBO(tr.sunShadowFbo[i]);
 		}
 
@@ -506,6 +546,8 @@ void FBO_Init(void)
 		FBO_Bind(tr.screenShadowFbo);
 		
 		FBO_AttachTextureImage(tr.screenShadowImage, 0);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.screenShadowFbo);
 	}
@@ -518,6 +560,8 @@ void FBO_Init(void)
 		//FBO_CreateBuffer(tr.textureScratchFbo[i], GL_RGBA8, 0, 0);
 		FBO_AttachTextureImage(tr.textureScratchImage[i], 0);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.textureScratchFbo[i]);
 	}
 
@@ -528,6 +572,8 @@ void FBO_Init(void)
 		//FBO_CreateBuffer(tr.calcLevelsFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.calcLevelsImage, 0);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.calcLevelsFbo);
 	}
 
@@ -537,6 +583,8 @@ void FBO_Init(void)
 
 		//FBO_CreateBuffer(tr.targetLevelsFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.targetLevelsImage, 0);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.targetLevelsFbo);
 	}
@@ -549,6 +597,8 @@ void FBO_Init(void)
 		//FBO_CreateBuffer(tr.quarterFbo[i], hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.quarterImage[i], 0);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.quarterFbo[i]);
 	}
 
@@ -559,12 +609,16 @@ void FBO_Init(void)
 
 		FBO_AttachTextureImage(tr.hdrDepthImage, 0);
 
+		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.hdrDepthFbo);
 
 		tr.screenSsaoFbo = FBO_Create("_screenssao", tr.screenSsaoImage->width, tr.screenSsaoImage->height);
 		FBO_Bind(tr.screenSsaoFbo);
 		
 		FBO_AttachTextureImage(tr.screenSsaoImage, 0);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.screenSsaoFbo);
 	}
@@ -579,6 +633,8 @@ void FBO_Init(void)
 		glState.currentFBO->colorImage[0] = tr.renderCubeImage;
 
 		FBO_CreateBuffer(tr.renderCubeFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
+
+		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderCubeFbo);
 	}
