@@ -3722,9 +3722,6 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		number_of_allies++;
 	}
 
-	if (ent->client->pers.guardian_mode == 0 && guardian_mode != 14)
-		zyk_NPC_Kill_f("all");
-
 	ent->client->pers.guardian_mode = guardian_mode;
 
 	player_origin[0] = x;
@@ -3758,6 +3755,9 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	}
 
 	clean_effect();
+
+	if (guardian_mode != 14)
+		zyk_NPC_Kill_f("all");
 }
 
 // zyk: Healing Water
