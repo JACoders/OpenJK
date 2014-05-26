@@ -5404,8 +5404,13 @@ static bind_t g_bindings[] =
 	{"weapnext", 		']',				-1,		-1,		-1},
 	{"+use",			A_SPACE,			-1,		-1,		-1},
 	{"datapad",			A_TAB,				-1,		-1,		-1},
+#ifdef JK2_MODE
+	{"save quik*",		A_F9,				-1,		-1,		-1},
+	{"load quik",		-1,					-1,		-1,		-1},
+#else
 	{"save quick",		A_F9,				-1,		-1,		-1},
 	{"load quick",		-1,					-1,		-1,		-1},
+#endif
 	{"load auto",		-1,					-1,		-1,		-1},
 	{"cg_thirdperson !",'p',				-1,		-1,		-1},
 	{"exitview",		-1,					-1,		-1,		-1},
@@ -7333,8 +7338,8 @@ void Item_YesNo_Paint(itemDef_t *item)
 	}
 
 #ifdef JK2_MODE
-	const char *psYes = ui.SP_GetStringTextString( "MENUS_YES" );;
-	const char *psNo = ui.SP_GetStringTextString( "MENUS_NO" );
+	const char *psYes = ui.SP_GetStringTextString( "MENUS0_YES" );
+	const char *psNo = ui.SP_GetStringTextString( "MENUS0_NO" );
 #else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
