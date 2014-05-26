@@ -2140,6 +2140,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	char			arg1[MAX_CVAR_VALUE_STRING] = {0};
 	char			arg2[MAX_CVAR_VALUE_STRING] = {0};
 	voteString_t	*vote = NULL;
+	int player_it = 0;
+	gentity_t *player_ent = NULL;
 
 	// not allowed to vote at all
 	if ( !g_allowVote.integer ) {
@@ -2157,6 +2159,16 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	else if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
 		return;
+	}
+
+	for (player_it = 0; player_it < level.maxclients; player_it++)
+	{
+		player_ent = &g_entities[player_it];
+		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You cannot vote while someone is in a guardian battle\n\"");
+			return;
+		}
 	}
 
 	// make sure it is a valid command to vote on
