@@ -4365,7 +4365,8 @@ static void Jedi_CombatIdle( int enemy_dist )
 					&& !Q_irand( 0, 5 ) )
 				{//taunt even more, turn off the saber
 					//FIXME: don't do this if health low?
-					WP_DeactivateSaber( NPCS.NPC, qfalse );
+					if (NPCS.client->ps.weapon == WP_SABER) // zyk: turn off saber if this npc is using the saber
+						WP_DeactivateSaber( NPCS.NPC, qfalse );
 					//Don't attack for a bit
 					NPCS.NPCInfo->stats.aggression = 3;
 					//FIXME: maybe start strafing?
@@ -4393,13 +4394,14 @@ static void Jedi_CombatIdle( int enemy_dist )
 	}
 }
 
+extern void NPC_BSST_Default( void );
 static qboolean Jedi_AttackDecide( int enemy_dist )
 {
 	// zyk: new code. NPCs with this AI can change weapons
 	if (NPCS.client->NPC_class != CLASS_BOBAFETT && TIMER_Done( NPCS.NPC, "rebornChangeWeapon" ))
 	{
-		if (NPCS.client->ps.weapon != WP_SABER)
-		{
+		if (NPCS.client->ps.weapon != WP_SABER && NPCS.NPC->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		{ // zyk: gets saber if he has it
 			NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
 
 			NPC_ChangeWeapon( WP_SABER );
@@ -4407,7 +4409,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			// zyk: activates his saber
 			WP_ActivateSaber(NPCS.NPC);
 		}
-		else if (!Q_irand(0,1)) // zyk: has a 50 per cent chance of getting a new weapon
+		else
 		{
 			if ( enemy_dist < 128 )
 			{//enemy within 128
@@ -4478,6 +4480,8 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 				{
 					int newWeapon = ChooseBestWeapon();
 					NPC_ChangeWeapon(newWeapon);
+					if (newWeapon == WP_SABER)
+						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
 				}
 			}
 			else if ( enemy_dist > 512 )
@@ -4514,14 +4518,20 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			}
 		}
 
-		TIMER_Set( NPCS.NPC, "rebornChangeWeapon", Q_irand( 5000, 15000 ) );
+		TIMER_Set( NPCS.NPC, "rebornChangeWeapon", Q_irand( 7000, 16000 ) );
+	}
 
-		if (NPCS.client->ps.weapon == WP_DISRUPTOR)
-		{ // zyk: uses sniper AI this moment
-			NPC_UpdateAngles( qtrue, qtrue );
-			NPC_BSSniper_Default();
-			return qfalse;
-		}
+	if (NPCS.client->ps.weapon == WP_DISRUPTOR)
+	{ // zyk: uses sniper AI this moment
+		NPC_UpdateAngles( qtrue, qtrue );
+		NPC_BSSniper_Default();
+		return qfalse;
+	}
+	else if (NPCS.client->ps.weapon != WP_SABER && NPCS.client->ps.weapon != WP_MELEE)
+	{
+		NPC_UpdateAngles( qtrue, qtrue );
+		NPC_BSST_Default();
+		return qfalse;
 	}
 
 	// Begin fixed cultist_destroyer AI
