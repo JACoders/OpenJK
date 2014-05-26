@@ -863,7 +863,7 @@ bool cStringPackage::Load(char *FileName )
 
 	Load(buffer, Size );
 
-	delete buffer;
+	delete[] buffer;
 
 	return true;
 }
