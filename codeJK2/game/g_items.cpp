@@ -935,7 +935,10 @@ ClearRegisteredItems
 ==============
 */
 void ClearRegisteredItems( void ) {
-	memset( itemRegistered, '0', bg_numItems );
+	for ( int i = 0; i < bg_numItems; i++ )
+	{
+		itemRegistered[i] = '0';
+	}
 	itemRegistered[ bg_numItems ] = 0;
 
 	RegisterItem( FindItemForWeapon( WP_BRYAR_PISTOL ) );	//these are given in g_client, ClientSpawn(), but MUST be registered HERE, BEFORE cgame starts.
