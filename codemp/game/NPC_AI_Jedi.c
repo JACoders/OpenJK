@@ -4530,8 +4530,8 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 	else if (NPCS.client->ps.weapon != WP_SABER && NPCS.client->ps.weapon != WP_MELEE)
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
-		NPC_BSST_Default();
-		return qfalse;
+		WeaponThink( qtrue );
+		return qtrue;
 	}
 
 	// Begin fixed cultist_destroyer AI
