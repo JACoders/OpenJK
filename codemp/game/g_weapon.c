@@ -2467,9 +2467,9 @@ void proxMineThink(gentity_t *ent)
 	{ //eh, just check for clients, don't care about anyone else...
 		cl = &g_entities[i];
 
-		if (cl->inuse && cl->client && cl->client->pers.connected == CON_CONNECTED &&
+		if (cl->inuse && cl->client && (cl->NPC || (cl->client->pers.connected == CON_CONNECTED &&
 			owner != cl && cl->client->sess.sessionTeam != TEAM_SPECTATOR &&
-			cl->client->tempSpectate < level.time && cl->health > 0)
+			cl->client->tempSpectate < level.time)) && cl->health > 0)
 		{
 			if (!OnSameTeam(owner, cl) || g_friendlyFire.integer)
 			{ //not on the same team, or friendly fire is enabled
@@ -2846,7 +2846,7 @@ void charge_stick (gentity_t *self, gentity_t *other, trace_t *trace)
 	if ( self->think == G_RunObject ) {
 		self->touch = 0;
 		self->think = DetPackBlow;
-		self->nextthink = level.time + 30000;
+		self->nextthink = level.time + 600000; // zyk:changed from 30000 to 600000
 	}
 
 	VectorClear(self->s.apos.trDelta);
@@ -2938,8 +2938,8 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	bolt->parent = self;
 	bolt->r.ownerNum = self->s.number;
-	bolt->damage = 320; // zyk: default 100
-	bolt->splashDamage = 320; // zyk: default 200
+	bolt->damage = 300; // zyk: default 100
+	bolt->splashDamage = 300; // zyk: default 200
 	bolt->splashRadius = 200;
 	bolt->methodOfDeath = MOD_DET_PACK_SPLASH;
 	bolt->splashMethodOfDeath = MOD_DET_PACK_SPLASH;
