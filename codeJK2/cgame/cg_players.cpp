@@ -1149,7 +1149,7 @@ void CG_PlayerAnimSounds( int animFileIndex, qboolean torso, int oldFrame, int f
 			if ( cg_reliableAnimSounds.integer > 1 )
 			{//more precise, slower
 				oldAnim = PM_LegsAnimForFrame( &g_entities[entNum], oldFrame );
-				anim = PM_TorsoAnimForFrame( &g_entities[entNum], frame );
+				anim = PM_LegsAnimForFrame( &g_entities[entNum], frame );
 			}
 			else
 			{//less precise, but faster

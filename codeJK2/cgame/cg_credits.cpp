@@ -187,8 +187,7 @@ static const char *GetSubString(string &strResult)
 	if (!strlen(strResult.c_str()))
 		return NULL;
 	
-	strncpy(sTemp,strResult.c_str(),sizeof(sTemp)-1);
-	sTemp[sizeof(sTemp)-1]='\0';
+	Q_strncpyz(sTemp,strResult.c_str(),sizeof(sTemp));
 
 	char *psSemiColon = strchr(sTemp,';');
 	if (  psSemiColon)
@@ -222,7 +221,7 @@ static int SortBySurname(const void *elem1, const void *elem2)
 	if (isspace(*psSurName1)) psSurName1++;
 	if (isspace(*psSurName2)) psSurName2++;
 		
-	return stricmp(psSurName1, psSurName2);
+	return Q_stricmp(psSurName1, psSurName2);
 }
 
 
@@ -308,7 +307,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 				{
 					// yep...
 					//
-					if (!stricmp(sLine, "(#CARD)"))
+					if (!Q_stricmp(sLine, "(#CARD)"))
 					{
 						if (!bCardsFinished)
 						{
@@ -324,21 +323,21 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color )
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#TITLE)"))
+					if (!Q_stricmp(sLine, "(#TITLE)"))
 					{
 						eMode = eTitle;
 						bCardsFinished = qtrue;
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#LINE)"))
+					if (!Q_stricmp(sLine, "(#LINE)"))
 					{
 						eMode = eLine;
 						bCardsFinished = qtrue;
 						break;
 					}
 					else
-					if (!stricmp(sLine, "(#DOTENTRY)"))
+					if (!Q_stricmp(sLine, "(#DOTENTRY)"))
 					{
 						eMode = eDotEntry;
 						bCardsFinished = qtrue;
@@ -555,7 +554,7 @@ qboolean CG_Credits_Draw( void )
 			//
 			iYpos += iFontHeight*2;	// skip blank line then move to main pos
 			//
-			for (int i=0; i<CreditCard.vstrText.size(); i++)
+			for (size_t i=0; i<CreditCard.vstrText.size(); i++)
 			{
 				StringAndSize_t &StringAndSize = CreditCard.vstrText[i];
 				iWidth = StringAndSize.GetPixelLength();
@@ -628,7 +627,7 @@ qboolean CG_Credits_Draw( void )
 
 						// now print any dotted members...
 						//
-						for (int i=0; i<CreditLine.vstrText.size(); i++)
+						for (size_t i=0; i<CreditLine.vstrText.size(); i++)
 						{
 							StringAndSize_t &StringAndSize = CreditLine.vstrText[i];
 							iWidth = StringAndSize.GetPixelLength();
