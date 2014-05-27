@@ -2265,7 +2265,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	}
 
 	client->pers.maxHealth = health;
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
+	if (ent->client->sess.amrpgmode < 2 && (client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth) )
 		client->pers.maxHealth = 100;
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
@@ -3360,7 +3360,7 @@ void ClientSpawn(gentity_t *ent) {
 		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
+	if (ent->client->sess.amrpgmode < 2 && (client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth) ) {
 		client->pers.maxHealth = 100;
 	}
 	// clear entity values
@@ -3718,14 +3718,6 @@ void ClientSpawn(gentity_t *ent) {
 			ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] = 100;
 		}
 	}
-	else if (client->ps.stats[STAT_MAX_HEALTH] <= 100)
-	{
-		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] * 1.25;
-	}
-	else if (client->ps.stats[STAT_MAX_HEALTH] < 125)
-	{
-		ent->health = client->ps.stats[STAT_HEALTH] = 125;
-	}
 	else
 	{
 		ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH];
@@ -3744,7 +3736,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		client->ps.stats[STAT_ARMOR] = client->ps.stats[STAT_MAX_HEALTH] * 0.25;
+		client->ps.stats[STAT_ARMOR] = client->ps.stats[STAT_MAX_HEALTH];
 	}
 
 	G_SetOrigin( ent, spawn_origin );
