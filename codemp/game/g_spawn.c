@@ -98,7 +98,7 @@ typedef enum {
 
 typedef struct field_s {
 	const char	*name;
-	int		ofs;
+	size_t		ofs;
 	fieldtype_t	type;
 } field_t;
 
