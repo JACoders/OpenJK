@@ -232,11 +232,10 @@ qboolean CROFFSystem::InitROFF2( unsigned char *data, CROFF *obj )
 
 		if (obj->mNumNoteTracks)
 		{
-			int		size;
+			size_t	size = 0;
 			char	*ptr, *start;
 
 			ptr = start = (char *)&roff_data[i];
-			size = 0;
 
 			for(i=0;i<obj->mNumNoteTracks;i++)
 			{
