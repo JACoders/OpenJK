@@ -149,7 +149,7 @@ typedef enum {
 typedef struct
 {
 	const char	*name;
-	int		ofs;
+	size_t		ofs;
 	vehFieldType_t	type;
 } vehField_t;
 
