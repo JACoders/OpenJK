@@ -631,8 +631,9 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 #ifdef JK2_MODE
 		// FIXME
 		return NULL;
-#endif
+#else
 		return SE_GetLanguageName( index );
+#endif
 	} 
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
