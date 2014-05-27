@@ -4723,7 +4723,7 @@ gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number)
 {
 	gentity_t *ent = G_Spawn();
 
-	zyk_set_entity_field(ent,"classname","noclass");
+	zyk_set_entity_field(ent,"classname","misc_model_breakable");
 	zyk_set_entity_field(ent,"origin",va("%d %d %d",x,y,z));
 	zyk_set_entity_field(ent,"angles",va("0 %d 0",yaw));
 
