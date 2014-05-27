@@ -209,7 +209,7 @@ namespace	mem
 
 namespace str
 {
-	inline int		len(const char *src)
+	inline size_t		len(const char *src)
 	{
 		return strlen(src);
 	}
@@ -219,7 +219,7 @@ namespace str
 		strcpy(dest,src);
 	}
 
-	inline void	ncpy(char *dest,const char *src,int destBufferLen)
+	inline void	ncpy(char *dest,const char *src,size_t destBufferLen)
 	{
 		strncpy(dest,src,destBufferLen);
 	}
@@ -229,7 +229,7 @@ namespace str
 		strcat(dest,src);
 	}
 
-	inline void	ncat(char *dest,const char *src,int destBufferLen)
+	inline void	ncat(char *dest,const char *src,size_t destBufferLen)
 	{
 		ncpy(dest+len(dest),src,destBufferLen-len(dest));
 	}

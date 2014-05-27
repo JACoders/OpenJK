@@ -9173,7 +9173,7 @@ void Q3_DebugPrint( int level, const char *format, ... )
 				buffer = (char *) text;
 				buffer += 5;
 
-				if ( ( entNum < 0 ) || ( entNum > MAX_GENTITIES ) )
+				if ( ( entNum < 0 ) || ( entNum >= MAX_GENTITIES ) )
 					entNum = 0;
 
 				Com_Printf ( S_COLOR_BLUE"DEBUG: %s(%d): %s\n", g_entities[entNum].script_targetname, entNum, buffer );
