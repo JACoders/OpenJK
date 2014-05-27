@@ -566,7 +566,7 @@ qboolean NAVNEW_TestNodeConnectionBlocked( int wp1, int wp2, gentity_t *ignoreEn
 	else
 	{
 		VectorCopy( playerMins, mins );
-		VectorCopy( playerMaxs, mins );
+		VectorCopy( playerMaxs, maxs );
 		ignoreEntNum = ENTITYNUM_NONE;
 	}
 	mins[2] += STEPSIZE;
