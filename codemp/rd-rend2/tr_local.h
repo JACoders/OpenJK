@@ -680,6 +680,8 @@ typedef enum
 
 typedef struct {
 	qboolean		active;
+	qboolean		isDetail;
+	qboolean		glow;
 	
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
@@ -695,7 +697,6 @@ typedef struct {
 
 	acff_t			adjustColorsForFog;
 
-	qboolean		isDetail;
 	int				lightmapStyle;
 
 	stageType_t     type;
@@ -956,8 +957,9 @@ enum
 	GENERICDEF_USE_RGBAGEN          = 0x0010,
 	GENERICDEF_USE_LIGHTMAP         = 0x0020,
 	GENERICDEF_USE_SKELETAL_ANIMATION = 0x0040,
-	GENERICDEF_ALL                  = 0x007F,
-	GENERICDEF_COUNT                = 0x0080,
+	GENERICDEF_USE_GLOW_BUFFER      = 0x0080,
+	GENERICDEF_ALL                  = 0x00FF,
+	GENERICDEF_COUNT                = 0x0100,
 };
 
 enum
@@ -988,8 +990,9 @@ enum
 	LIGHTDEF_USE_SHADOWMAP       = 0x0020,
 	LIGHTDEF_USE_VERTEX_ANIMATION= 0x0040,
 	LIGHTDEF_USE_SKELETAL_ANIMATION = 0x0080,
-	LIGHTDEF_ALL                 = 0x00FF,
-	LIGHTDEF_COUNT               = 0x0100
+	LIGHTDEF_USE_GLOW_BUFFER     = 0x0100,
+	LIGHTDEF_ALL                 = 0x01FF,
+	LIGHTDEF_COUNT               = 0x0200
 };
 
 enum
@@ -1975,6 +1978,7 @@ typedef struct trGlobals_s {
 	
 
 	image_t					*renderImage;
+	image_t					*glowImage;
 	image_t					*sunRaysImage;
 	image_t					*renderDepthImage;
 	image_t					*pshadowMaps[MAX_DRAWN_PSHADOWS];
@@ -2303,6 +2307,14 @@ extern	cvar_t	*r_debugSort;
 extern	cvar_t	*r_printShaders;
 
 extern cvar_t	*r_marksOnTriangleMeshes;
+
+extern cvar_t	*r_dynamicGlow;
+extern cvar_t	*r_dynamicGlowPasses;
+extern cvar_t	*r_dynamicGlowDelta;
+extern cvar_t	*r_dynamicGlowIntensity;
+extern cvar_t	*r_dynamicGlowSoft;
+extern cvar_t	*r_dynamicGlowWidth;
+extern cvar_t	*r_dynamicGlowHeight;
 
 //====================================================================
 

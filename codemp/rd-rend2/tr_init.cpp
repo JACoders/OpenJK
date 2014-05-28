@@ -223,9 +223,6 @@ cvar_t	*r_debugSort;
 cvar_t	*r_printShaders;
 cvar_t	*r_saveFontData;
 
-/*
-Ghoul2 Insert Start
-*/
 #ifdef _DEBUG
 cvar_t	*r_noPrecacheGLA;
 #endif
@@ -253,10 +250,6 @@ cvar_t	*broadsword_effcorr=0;
 cvar_t	*broadsword_ragtobase=0;
 cvar_t	*broadsword_dircap=0;
 
-/*
-Ghoul2 Insert End
-*/
-
 cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aviMotionJpegQuality;
@@ -267,6 +260,13 @@ int		max_polys;
 cvar_t	*r_maxpolyverts;
 int		max_polyverts;
 
+cvar_t	*r_dynamicGlow;
+cvar_t	*r_dynamicGlowPasses;
+cvar_t	*r_dynamicGlowDelta;
+cvar_t	*r_dynamicGlowIntensity;
+cvar_t	*r_dynamicGlowSoft;
+cvar_t	*r_dynamicGlowWidth;
+cvar_t	*r_dynamicGlowHeight;
 
 extern void	RB_SetGL2D (void);
 void R_Splash()
@@ -1056,7 +1056,7 @@ void R_PrintLongString(const char *string) {
 GfxInfo_f
 ================
 */
-void GfxInfo_f( void ) 
+static void GfxInfo_f( void ) 
 {
 	const char *enablestrings[] =
 	{
@@ -1113,6 +1113,8 @@ void GfxInfo_f( void )
 	if ( r_finish->integer ) {
 		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );
 	}
+
+	ri->Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_dynamicGlow->integer != 0] );
 }
 
 /*
@@ -1199,6 +1201,14 @@ void R_Register( void )
 	r_arb_seamless_cube_map = ri->Cvar_Get( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_vertex_type_2_10_10_10_rev = ri->Cvar_Get( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
+
+	r_dynamicGlow						= ri->Cvar_Get( "r_dynamicGlow",			"0",		CVAR_ARCHIVE );
+	r_dynamicGlowPasses					= ri->Cvar_Get( "r_dynamicGlowPasses",		"5",		CVAR_ARCHIVE );
+	r_dynamicGlowDelta					= ri->Cvar_Get( "r_dynamicGlowDelta",		"0.8f",		CVAR_ARCHIVE );
+	r_dynamicGlowIntensity				= ri->Cvar_Get( "r_dynamicGlowIntensity",	"1.13f",	CVAR_ARCHIVE );
+	r_dynamicGlowSoft					= ri->Cvar_Get( "r_dynamicGlowSoft",		"1",		CVAR_ARCHIVE );
+	r_dynamicGlowWidth					= ri->Cvar_Get( "r_dynamicGlowWidth",		"320",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_dynamicGlowHeight					= ri->Cvar_Get( "r_dynamicGlowHeight",		"240",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	r_picmip = ri->Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );

@@ -224,7 +224,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	// HACK: abuse the GLSL preprocessor to turn GLSL 1.20 shaders into 1.30 ones
 	if(glRefConfig.glslMajorVersion > 1 || (glRefConfig.glslMajorVersion == 1 && glRefConfig.glslMinorVersion >= 30))
 	{
-		Q_strcat(dest, size, "#version 130\n");
+		Q_strcat(dest, size, "#version 330 core\n");
 
 		if(shaderType == GL_VERTEX_SHADER_ARB)
 		{
@@ -235,7 +235,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 		{
 			Q_strcat(dest, size, "#define varying in\n");
 
-			Q_strcat(dest, size, "out vec4 out_Color;\n");
+			Q_strcat(dest, size, "layout(location = 0) out vec4 out_Color;\n");
 			Q_strcat(dest, size, "#define gl_FragColor out_Color\n");
 		}
 	}
@@ -975,6 +975,9 @@ int GLSL_BeginLoadGPUShaders(void)
 			attribs |= ATTR_TEXCOORD1;
 		}
 
+		if (i & GENERICDEF_USE_GLOW_BUFFER)
+			Q_strcat(extradefines, 1024, "#define USE_GLOW_BUFFER\n");
+
 		if (r_hdr->integer && !glRefConfig.floatLightmap)
 			Q_strcat(extradefines, 1024, "#define RGBM_LIGHTMAP\n");
 
@@ -1157,6 +1160,9 @@ int GLSL_BeginLoadGPUShaders(void)
 			}
 #endif
 		}
+
+		if (i & LIGHTDEF_USE_GLOW_BUFFER)
+			Q_strcat(extradefines, 1024, "#define USE_GLOW_BUFFER\n");
 
 		if (!GLSL_BeginLoadGPUShader(&tr.lightallShader[i], "lightall", attribs, qtrue, extradefines, qtrue, fallbackShader_lightall_vp, fallbackShader_lightall_fp))
 		{

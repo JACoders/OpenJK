@@ -74,6 +74,7 @@ varying vec4      var_LightDir;
 varying vec4      var_PrimaryLightDir;
 #endif
 
+layout(location = 1) out vec4 out_Glow;
 
 #define EPSILON 0.00000001
 
@@ -478,4 +479,10 @@ void main()
 #endif
 	
 	gl_FragColor.a = diffuse.a * var_Color.a;
+
+#if defined(USE_GLOW_BUFFER)
+	out_Glow = gl_FragColor;
+#else
+	out_Glow = vec4(0.0);
+#endif
 }

@@ -299,6 +299,7 @@ void FBO_AttachTextureImage(image_t *img, int index)
 
 	R_AttachFBOTexture2D(GL_TEXTURE_2D, img->texnum, index);
 	glState.currentFBO->colorImage[index] = img;
+	glState.currentFBO->colorBuffers[index] = img->texnum;
 }
 
 static void FBO_SetupDrawBuffers()
@@ -313,7 +314,10 @@ static void FBO_SetupDrawBuffers()
 	int numBuffers = 0;
 	GLenum bufs[8];
 
-	while ( currentFBO->colorBuffers[numBuffers++] != 0 );
+	while ( currentFBO->colorBuffers[numBuffers] != 0 )
+	{
+		numBuffers++;
+	}
 
 	if ( numBuffers == 0 )
 	{
@@ -323,7 +327,7 @@ static void FBO_SetupDrawBuffers()
 	{
 		for ( int i = 0; i < numBuffers; i++ )
 		{
-			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
+			bufs[i] = GL_COLOR_ATTACHMENT0_EXT + i;
 		}
 
 		qglDrawBuffersARB (numBuffers, bufs);
@@ -460,13 +464,16 @@ void FBO_Init(void)
 
 		R_CheckFBO(tr.msaaResolveFbo);
 	}
-	else if (r_hdr->integer)
+	else
 	{
 		tr.renderFbo = FBO_Create("_render", tr.renderDepthImage->width, tr.renderDepthImage->height);
 		FBO_Bind(tr.renderFbo);
 
 		//FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.renderImage, 0);
+
+		if (r_dynamicGlow->integer)
+			FBO_AttachTextureImage(tr.glowImage, 1);
 
 		//FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);

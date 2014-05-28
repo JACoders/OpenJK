@@ -493,6 +493,7 @@ void RB_BeginDrawingView (void) {
 	{
 		clearBits |= GL_STENCIL_BUFFER_BIT;
 	}
+
 	if ( r_fastsky->integer && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) )
 	{
 		clearBits |= GL_COLOR_BUFFER_BIT;	// FIXME: only if sky shaders have been used
@@ -1932,6 +1933,14 @@ const void *RB_PostProcess(const void *data)
 		}
 	}
 #endif
+
+// Debug output for dynamic glow
+		if (r_dynamicGlow->integer == 2)
+		{
+			vec2_t invert = {1.0f, -1.0f};
+			FBO_BlitFromTexture (tr.glowImage, NULL, invert, tr.screenShadowFbo, NULL, &tr.textureColorShader, NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+			FBO_FastBlit (tr.screenShadowFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		}
 
 	backEnd.framePostProcessed = qtrue;
 

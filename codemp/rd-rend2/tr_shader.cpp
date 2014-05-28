@@ -1431,7 +1431,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		// If this stage has glow...	GLOWXXX
 		else if ( Q_stricmp( token, "glow" ) == 0 )
 		{
-			//stage->glow = true;
+			stage->glow = qtrue;
 
 			continue;
 		}
@@ -2621,6 +2621,9 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 		defs |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
 	}
 
+	if (diffuse->glow)
+		defs |= LIGHTDEF_USE_GLOW_BUFFER;
+
 	//ri->Printf(PRINT_ALL, ".\n");
 
 	diffuse->glslShaderGroup = tr.lightallShader;
@@ -2791,6 +2794,9 @@ static qboolean CollapseStagesToGLSL(void)
 				shaderStage_t *pStage2 = &stages[j];
 
 				if (!pStage2->active)
+					continue;
+
+				if (pStage2->glow)
 					continue;
 
 				switch(pStage2->type)
