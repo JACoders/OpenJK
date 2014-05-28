@@ -751,7 +751,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{ // zyk: big front door at Lannik Racto building
 				G_FreeEntity( ent );
 			}
-			/*
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
@@ -764,7 +763,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				G_FreeEntity( ent );
 			}
-			*/
 		}
 		// zyk: spawning Lannik Racto npc
 		Zyk_NPC_SpawnType("lannik_racto",1950,1500,729,90);
@@ -826,7 +824,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				fix_sp_func_door(ent);
 			}
-			/*
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
@@ -839,7 +836,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				G_FreeEntity( ent );
 			}
-			*/
 		}
 		// zyk: spawning Rax Joris npc
 		Zyk_NPC_SpawnType("rax",3080,-3700,921,90);
@@ -922,12 +918,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				fix_sp_func_door(ent);
 			}
-			/*
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
 			}
-			*/
 		}
 		zyk_create_info_player_deathmatch(968,111,25,-90);
 		zyk_create_info_player_deathmatch(624,563,25,-90);

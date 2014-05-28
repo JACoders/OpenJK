@@ -340,15 +340,87 @@ void misc_model_breakable_init( gentity_t *ent );
 
 void SP_misc_model_breakable( gentity_t *ent )
 {
-	float grav;
+	char	damageModel[MAX_QPATH];
+	char	chunkModel[MAX_QPATH];
+	char	useModel[MAX_QPATH];
+	int		len;
+	float grav = 0;
+	qboolean bHasScale = qfalse;
+	
+	// Chris F. requested default for misc_model_breakable to be NONE...so don't arbitrarily change this.
 	G_SpawnInt( "material", "8", (int*)&ent->material );
 	G_SpawnFloat( "radius", "1", &ent->radius ); // used to scale chunk code if desired by a designer
+	bHasScale = G_SpawnVector("modelscale_vec", "0 0 0", ent->modelScale);
 
 	// zyk: now the size is set correctly
-	G_SpawnVector("mins", "0 0 0", ent->r.mins);
-	G_SpawnVector("maxs", "0 0 0", ent->r.maxs);
+	G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
+	G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
+
+	if (!bHasScale)
+	{
+		float temp;
+		G_SpawnFloat( "modelscale", "0", &temp);
+		if (temp != 0.0f)
+		{
+			ent->modelScale[ 0 ] = ent->modelScale[ 1 ] = ent->modelScale[ 2 ] = temp;
+			bHasScale = qtrue;
+		}
+	}
 
 	misc_model_breakable_init( ent );
+
+	len = strlen( ent->model ) - 4;
+	assert(ent->model[len]=='.');//we're expecting ".md3"
+	strncpy( damageModel, ent->model, sizeof(damageModel) );
+	damageModel[len] = 0;	//chop extension
+	strncpy( chunkModel, damageModel, sizeof(chunkModel));
+	strncpy( useModel, damageModel, sizeof(useModel));
+	
+	if (ent->takedamage) {
+		//Dead/damaged model
+		if( !(ent->spawnflags & 8) ) {	//no dmodel
+			strcat( damageModel, "_d1.md3" );
+			ent->s.modelindex2 = G_ModelIndex( damageModel );
+		}
+		
+		//Chunk model
+		strcat( chunkModel, "_c1.md3" );
+		ent->s.modelGhoul2 = G_ModelIndex( chunkModel );
+	}
+
+	//Use model
+	if( ent->spawnflags & 32 ) {	//has umodel
+		strcat( useModel, "_u1.md3" );
+		ent->sound1to2 = G_ModelIndex( useModel );
+	}
+
+	// Scale up the tie-bomber bbox a little.
+	if ( ent->model && Q_stricmp( "models/map_objects/ships/tie_bomber.md3", ent->model ) == 0 )
+	{
+		VectorSet (ent->r.mins, -80, -80, -80);
+		VectorSet (ent->r.maxs, 80, 80, 80); 
+
+		//ent->s.modelScale[ 0 ] = ent->s.modelScale[ 1 ] = ent->s.modelScale[ 2 ] *= 2.0f;
+		//bHasScale = qtrue;
+	}
+
+	if (bHasScale)
+	{
+		float oldMins2 = 0;
+		//scale the x axis of the bbox up.
+		ent->r.maxs[0] *= ent->modelScale[0];//*scaleFactor;
+		ent->r.mins[0] *= ent->modelScale[0];//*scaleFactor;
+		
+		//scale the y axis of the bbox up.
+		ent->r.maxs[1] *= ent->modelScale[1];//*scaleFactor;
+		ent->r.mins[1] *= ent->modelScale[1];//*scaleFactor;
+		
+		//scale the z axis of the bbox up and adjust origin accordingly
+		ent->r.maxs[2] *= ent->modelScale[2];
+		oldMins2 = ent->r.mins[2];
+		ent->r.mins[2] *= ent->modelScale[2];
+		ent->s.origin[2] += (oldMins2-ent->r.mins[2]);
+	}
 
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
@@ -358,16 +430,27 @@ void SP_misc_model_breakable( gentity_t *ent )
 	{//Can be used by the player's BUTTON_USE
 		ent->r.svFlags |= SVF_PLAYER_USABLE;
 	}
-
-	ent->s.teamowner = 0;
+	
+	ent->team = NULL;
 
 	G_SpawnFloat( "gravity", "0", &grav );
 	if ( grav )
 	{//affected by gravity
 		G_SetAngles( ent, ent->s.angles );
 		G_SetOrigin( ent, ent->r.currentOrigin );
-		G_SpawnString( "throwtarget", NULL, &ent->target4 ); // used to throw itself at something // zyk: added this function call
+		G_SpawnString( "throwtarget", NULL, &ent->target4 ); // used to throw itself at something
 		misc_model_breakable_gravity_init( ent, qtrue );
+	}
+
+	// Start off.
+	if ( ent->spawnflags & 4096 )
+	{
+		ent->s.solid = 0;
+		ent->r.contents = 0;
+		ent->clipmask = 0;
+		ent->r.svFlags |= SVF_NOCLIENT;
+		ent->s.eFlags |= EF_NODRAW;
+		ent->count = 0;
 	}
 }
 
