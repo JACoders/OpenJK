@@ -5095,6 +5095,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		knockback = knockback * 0.2;
 	}
 
+	// zyk: these npcs will not have knockback
+	if (targ && targ->client && targ->NPC && (targ->client->pers.guardian_mode == 2 || targ->client->pers.guardian_mode == 3 || targ->client->pers.guardian_mode == 7 || targ->client->pers.guardian_mode == 11))
+		knockback = 0;
+
 	// figure momentum add, even if the damage won't be taken
 	if ( knockback && targ->client ) {
 		vec3_t	kvel;
