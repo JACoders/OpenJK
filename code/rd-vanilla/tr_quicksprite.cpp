@@ -110,8 +110,12 @@ void CQuickSpriteSystem::Flush(void)
 	backEnd.pc.c_indexes += mNextVert;
 	backEnd.pc.c_totalIndexes += mNextVert;
 
+#ifdef JK2_MODE
+	if (mUseFog)
+#else
 	//only for software fog pass (global soft/volumetric) -rww
 	if (mUseFog && (r_drawfog->integer != 2 || mFogIndex != tr.world->globalFog))
+#endif
 	{
 		fog_t *fog = tr.world->fogs + mFogIndex;
 
