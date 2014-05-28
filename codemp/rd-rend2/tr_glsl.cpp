@@ -2096,5 +2096,10 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 		shaderAttribs |= GENERICDEF_USE_TCGEN_AND_TCMOD;
 	}
 
+	if (pStage->glow)
+	{
+		shaderAttribs |= GENERICDEF_USE_GLOW_BUFFER;
+	}
+
 	return &tr.genericShader[shaderAttribs];
 }
