@@ -1304,6 +1304,8 @@ extern PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB;
 extern PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB;
 extern PFNGLISPROGRAMARBPROC qglIsProgramARB;
 
+extern PFNGLCLEARBUFFERFVPROC qglClearBufferfv;
+
 
 /*
 ** extension constants

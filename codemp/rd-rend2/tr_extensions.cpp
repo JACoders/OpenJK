@@ -181,6 +181,9 @@ void (APIENTRY * qglRenderbufferStorageMultisampleEXT)(GLenum target, GLsizei sa
 // GL_ARB_draw_buffers
 void (APIENTRY * qglDrawBuffersARB)(GLsizei n, const GLenum *bufs);
 
+// OpenGL 3.0
+PFNGLCLEARBUFFERFVPROC qglClearBufferfv;
+
 static qboolean GLimp_HaveExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
@@ -730,4 +733,6 @@ void GLimp_InitExtraExtensions()
 
 	// use float lightmaps?
 	glRefConfig.floatLightmap = (qboolean)(glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer && r_hdr->integer);
+
+	qglClearBufferfv = (PFNGLCLEARBUFFERFVPROC)GL_GetProcAddress ("glClearBufferfv");
 }
