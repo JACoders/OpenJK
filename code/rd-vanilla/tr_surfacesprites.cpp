@@ -1439,6 +1439,7 @@ extern void R_InvertMatrix(float *sourcemat, float *destmat);
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input) 
 {
 	uint32_t	glbits=stage->stateBits;
+	int fogging;
 	
 	R_SurfaceSpriteFrameUpdate();
 
@@ -1465,6 +1466,24 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 	{
 		SSAdditiveTransparency=qfalse;
 	}
+	
+#ifdef JK2_MODE
+	if (SSAdditiveTransparency && SSUsingFog && r_drawfog->value == 2 &&
+		tr.world &&
+		(tess.fogNum == tr.world->globalFog || tess.fogNum == tr.world->numfogs))
+	{
+		fogging = qglIsEnabled(GL_FOG);
+		
+		if (fogging)
+		{
+			qglDisable(GL_FOG);
+		}
+	}
+	else
+	{
+		fogging = 0;
+	}
+#endif
 
 
 	//Check if this is a new entity transformation (incl. world entity), and update the appropriate vectors if so.
@@ -1504,6 +1523,13 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input)
 	}
 
 	SQuickSprite.EndGroup();
+	
+#ifdef JK2_MODE
+	if (fogging)
+	{
+		qglEnable(GL_FOG);
+	}
+#endif
 
 	sssurfaces++;
 }
