@@ -663,10 +663,10 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
-
-			Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
+
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
 
 		return true;
 	}
