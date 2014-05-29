@@ -234,7 +234,7 @@ typedef struct sharedEntity_s {
 	int				next_roff_time; //rww - npc's need to know when they're getting roff'd
 } sharedEntity_t;
 
-#ifdef __cplusplus
+#if !defined(_GAME) && defined(__cplusplus)
 class CSequencer;
 class CTaskManager;
 
