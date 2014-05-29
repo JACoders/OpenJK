@@ -41,22 +41,8 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = atoi( Info_ValueForKey( info, "timelimit" ) );
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
-	// FIXME: Some sort of fucked up mangling of the string going on..this needs to be addressed ASAP --eez
-	if(!strncmp(mapname, "maps/", 5))
-	{
-		Q_strncpyz( cgs.mapname, mapname, sizeof( cgs.mapname ) );
-	}
-	else if(!strncmp(mapname, "aps/", 5))
-	{
-		// u_u
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "m%s", mapname );
-	}
-	else
-	{
-		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	}
 	const char *p = strrchr(mapname,'/');
-	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName) );
+	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
@@ -70,7 +56,7 @@ void CG_ParseServerinfo( void ) {
 	{
 		// failed to load SP file, maybe it's one of the ones they renamed?...
 		//
-		if (!stricmp(cgs.stripLevelName[0],"YAVIN_FINAL") || !stricmp(cgs.stripLevelName[0],"YAVIN_SWAMP"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN_FINAL") || !Q_stricmp(cgs.stripLevelName[0],"YAVIN_SWAMP"))
 		{
 			Q_strncpyz( cgs.stripLevelName[0], "YAVIN_CANYON", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
@@ -79,7 +65,7 @@ void CG_ParseServerinfo( void ) {
 				//
 			}
 		}
-		else if (!stricmp(cgs.stripLevelName[0],"YAVIN_TRIAL"))
+		else if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN_TRIAL"))
 		{
 			Q_strncpyz( cgs.stripLevelName[0], "YAVIN_TEMPLE", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
@@ -88,7 +74,7 @@ void CG_ParseServerinfo( void ) {
 				//
 			}
 		}
-		else if (!stricmp(cgs.stripLevelName[0],"VALLEY"))
+		else if (!Q_stricmp(cgs.stripLevelName[0],"VALLEY"))
 		{
 			Q_strncpyz( cgs.stripLevelName[0], "ARTUS_TOPSIDE", sizeof(cgs.stripLevelName[0]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[0], qfalse))
@@ -102,8 +88,8 @@ void CG_ParseServerinfo( void ) {
 	{
 		// additional SP files needed for some levels...
 		//
-		if (!stricmp(cgs.stripLevelName[0],"KEJIM_BASE") ||
-			!stricmp(cgs.stripLevelName[0],"KEJIM_POST")
+		if (!Q_stricmp(cgs.stripLevelName[0],"KEJIM_BASE") ||
+			!Q_stricmp(cgs.stripLevelName[0],"KEJIM_POST")
 			)
 		{
 			Q_strncpyz( cgs.stripLevelName[1], "ARTUS_MINE", sizeof(cgs.stripLevelName[1]) );
@@ -113,8 +99,8 @@ void CG_ParseServerinfo( void ) {
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"DOOM_DETENTION") ||
-			!stricmp(cgs.stripLevelName[0],"DOOM_SHIELDS")
+		if (!Q_stricmp(cgs.stripLevelName[0],"DOOM_DETENTION") ||
+			!Q_stricmp(cgs.stripLevelName[0],"DOOM_SHIELDS")
 			)
 		{
 			Q_strncpyz( cgs.stripLevelName[1], "DOOM_COMM", sizeof(cgs.stripLevelName[1]) );
@@ -124,7 +110,7 @@ void CG_ParseServerinfo( void ) {
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"DOOM_COMM"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"DOOM_COMM"))
 		{
 			Q_strncpyz( cgs.stripLevelName[1], "CAIRN_BAY", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
@@ -133,7 +119,7 @@ void CG_ParseServerinfo( void ) {
 				//
 			}
 		}
-		if (!stricmp(cgs.stripLevelName[0],"NS_STARPAD"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"NS_STARPAD"))
 		{
 			Q_strncpyz( cgs.stripLevelName[1], "ARTUS_TOPSIDE", sizeof(cgs.stripLevelName[1]) );	// for dream sequence...
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
@@ -149,7 +135,7 @@ void CG_ParseServerinfo( void ) {
 				//
 			} 
 		}
-		if (!stricmp(cgs.stripLevelName[0],"BESPIN_PLATFORM"))
+		if (!Q_stricmp(cgs.stripLevelName[0],"BESPIN_PLATFORM"))
 		{
 			Q_strncpyz( cgs.stripLevelName[1], "BESPIN_UNDERCITY", sizeof(cgs.stripLevelName[1]) );
 			if (!cgi_SP_Register(cgs.stripLevelName[1], qfalse))
@@ -158,7 +144,6 @@ void CG_ParseServerinfo( void ) {
 				//
 			} 
 		}
-
 	}
 }
 
