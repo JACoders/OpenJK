@@ -45,7 +45,7 @@ void CG_ParseServerinfo( void ) {
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	const char *p = strrchr(mapname,'/');
-	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
+	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
@@ -63,7 +63,7 @@ void CG_ParseServerinfo( void ) {
 	// JKA...
 	if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN1B"))
 	{
-		strcpy( cgs.stripLevelName[1], "YAVIN1");
+		Q_strncpyz( cgs.stripLevelName[1], "YAVIN1", sizeof(cgs.stripLevelName[1]));
 	}
 
 /*	// JK2...
