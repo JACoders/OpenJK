@@ -683,11 +683,11 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value, C
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i], icarus ) == false )
 				return false;
-
-			sprintf( (char *) tempBuffer, "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
-		
+
+		sprintf( (char *) tempBuffer, "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
+
 		return true;
 	}
 	else if ( ( bm->GetID() == CIcarus::TK_STRING ) || ( bm->GetID() == CIcarus::TK_IDENTIFIER ) )
