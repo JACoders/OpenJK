@@ -4265,6 +4265,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qtrue;//true cause even though we didn't get a hit, we don't want to do those extra traces because the debounce time says not to.
 		}
 		trMask &= ~CONTENTS_LIGHTSABER;
+		/* zyk: changed this. Now saber will always do saber touch damage
 		if ( d_saberSPStyleDamage.integer )
 		{
 			if ( BG_SaberInReturn( self->client->ps.saberMove ) )
@@ -4287,6 +4288,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		{
 			dmg = SABER_NONATTACK_DAMAGE;
 		}
+		*/
+		dmg = SABER_NONATTACK_DAMAGE; // zyk: added this line so saber does touch damage
 		idleDamage = qtrue;
 	}
 	else
