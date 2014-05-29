@@ -10399,6 +10399,25 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Jetpack_f
+==================
+*/
+void Cmd_Jetpack_f( gentity_t *ent ) {
+	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && 
+		(ent->client->sess.amrpgmode < 2 || ent->client->pers.jetpack_level > 0))
+	{ // zyk: gets jetpack if player does not have it. RPG players need jetpack skill to get it
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+	}
+	else
+	{
+		if (ent->client->jetPackOn)
+			Jetpack_Off(ent);
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+	}
+}
+
+/*
+==================
 Cmd_EntAdd_f
 ==================
 */
@@ -11009,6 +11028,7 @@ command_t commands[] = {
 	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "guardianquest",		Cmd_GuardianQuest_f,		CMD_RPG|CMD_NOINTERMISSION },
+	{ "jetpack",			Cmd_Jetpack_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 //	{ "kylesmash",			TryGrapple,					0 },
