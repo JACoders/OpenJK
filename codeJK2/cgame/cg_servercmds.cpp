@@ -282,8 +282,9 @@ static void CG_ServerCommand( void ) {
 	// Cinematic text
 	if ( !strcmp( cmd, "ct" ) ) 
 	{
-		
-		CG_CaptionText( CG_Argv(1), cgs.sound_precache[atoi(CG_Argv(2))] );
+		sfxHandle_t sound = (sfxHandle_t)atoi( CG_Argv( 2 ) );
+
+		CG_CaptionText( CG_Argv( 1 ), sound >= 0 && sound < MAX_SOUNDS ? cgs.sound_precache[sound] : NULL_SOUND );
 		return;
 	}
 
