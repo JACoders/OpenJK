@@ -10399,6 +10399,96 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Drop_f
+==================
+*/
+extern qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t velocity);
+void Cmd_Drop_f( gentity_t *ent ) {
+	vec3_t vel;
+	gitem_t *item;
+	gentity_t *launched;
+	int weapon = ent->s.weapon;
+	vec3_t uorg, vecnorm, thispush_org;
+
+	if (weapon == WP_NONE || weapon == WP_MELEE || weapon == WP_EMPLACED_GUN || weapon == WP_TURRET)
+	{ //can't have this
+		return;
+	}
+
+	VectorCopy(ent->client->ps.origin, thispush_org);
+
+	VectorCopy(ent->client->ps.origin, uorg);
+	uorg[2] += 64;
+
+	VectorSubtract(uorg, thispush_org, vecnorm);
+	VectorNormalize(vecnorm);
+
+	if (weapon == WP_SABER)
+	{
+		vel[0] = vecnorm[0]*100;
+		vel[1] = vecnorm[1]*100;
+		vel[2] = vecnorm[2]*100;
+		saberKnockOutOfHand(&g_entities[ent->client->ps.saberEntityNum],ent,vel);
+		return;
+	}
+
+	// find the item type for this weapon
+	item = BG_FindItemForWeapon( weapon );
+
+	vel[0] = vecnorm[0]*500;
+	vel[1] = vecnorm[1]*500;
+	vel[2] = vecnorm[2]*500;
+
+	launched = LaunchItem(item, ent->client->ps.origin, vel);
+
+	launched->s.generic1 = ent->s.number;
+	launched->s.powerups = level.time + 1500;
+
+	launched->count = bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity;
+
+	ent->client->ps.ammo[weaponData[weapon].ammoIndex] -= (int)ceil(bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity * 0.5);
+
+	if (ent->client->ps.ammo[weaponData[weapon].ammoIndex] < 0)
+	{
+		launched->count -= (-ent->client->ps.ammo[weaponData[weapon].ammoIndex]);
+		ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 0;
+	}
+
+	if ((ent->client->ps.ammo[weaponData[weapon].ammoIndex] < 1 && weapon != WP_DET_PACK) ||
+		(weapon != WP_THERMAL && weapon != WP_DET_PACK && weapon != WP_TRIP_MINE))
+	{
+		int i = 0;
+		int weap = -1;
+
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << weapon);
+
+		while (i < WP_NUM_WEAPONS)
+		{
+			if ((ent->client->ps.stats[STAT_WEAPONS] & (1 << i)) && i != WP_NONE)
+			{ //this one's good
+				weap = i;
+				break;
+			}
+			i++;
+		}
+
+		if (weap != -1)
+		{
+			ent->s.weapon = weap;
+			ent->client->ps.weapon = weap;
+		}
+		else
+		{
+			ent->s.weapon = 0;
+			ent->client->ps.weapon = 0;
+		}
+
+		G_AddEvent(ent, EV_NOAMMO, weapon);
+	}
+}
+
+/*
+==================
 Cmd_Jetpack_f
 ==================
 */
@@ -11012,6 +11102,7 @@ command_t commands[] = {
 	{ "debugBMove_Right",	Cmd_BotMoveRight_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "down",				Cmd_DownSkill_f,			CMD_RPG|CMD_NOINTERMISSION },
+	{ "drop",				Cmd_Drop_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "entadd",				Cmd_EntAdd_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entedit",			Cmd_EntEdit_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
