@@ -825,7 +825,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "saveControls") == 0) 
 		{
-			Controls_SetConfig(qtrue);
+			Controls_SetConfig();
 		} 
 		else if (Q_stricmp(name, "loadControls") == 0) 
 		{
@@ -6179,6 +6179,7 @@ UI_ResetDefaults
 void UI_ResetDefaults( void )
 {
 	ui.Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+	Controls_SetDefaults();
 	ui.Cmd_ExecuteText( EXEC_APPEND, "exec default.cfg\n");
 	ui.Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
 }
