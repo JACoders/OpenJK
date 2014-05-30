@@ -4798,7 +4798,6 @@ static const char *g_bindCommands[] = {
 	"+button2",
 	"+force_drain",
 	"+force_grip",
-	"+force_jump",
 	"+force_lightning",
 	"+forward",
 	"+left",
@@ -4827,6 +4826,7 @@ static const char *g_bindCommands[] = {
 	"force_forcepowerother",
 	"force_heal",
 	"force_healother",
+	"force_protect",
 	"force_pull",
 	"force_rage",
 	"force_seeing",
@@ -4850,6 +4850,7 @@ static const char *g_bindCommands[] = {
 	"use_seeker",
 	"use_sentry",
 	"voicechat",
+	"weapnext",
 	"weapon 1",
 	"weapon 10",
 	"weapon 11",
@@ -4863,6 +4864,8 @@ static const char *g_bindCommands[] = {
 	"weapon 7",
 	"weapon 8",
 	"weapon 9",
+	"weapprev",
+	"zoom"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)
