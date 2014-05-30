@@ -791,6 +791,18 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				G_FreeEntity( ent );
 			}
+			else if (Q_stricmp( ent->targetname, "endJaden") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			else if (Q_stricmp( ent->targetname, "endJaden2") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			else if (Q_stricmp( ent->targetname, "endswoop") == 0)
+			{
+				G_FreeEntity( ent );
+			}
 			else if (Q_stricmp( ent->classname, "func_door") == 0 && i > 200)
 			{ // zyk: door after the teleports of the race mode
 				G_FreeEntity( ent );
