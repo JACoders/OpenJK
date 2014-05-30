@@ -7578,7 +7578,7 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
 		x = item->window.rect.x;
 	}
 
-	if (editDef == NULL && item->cvar) 
+	if (!editDef || !item->cvar) 
 	{
 		return x;
 	}
