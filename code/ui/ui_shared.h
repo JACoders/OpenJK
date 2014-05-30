@@ -469,7 +469,8 @@ typedef struct
 menuDef_t	*Menu_GetFocused(void);
 
 void		Controls_GetConfig( void );
-void		Controls_SetConfig(qboolean restart);
+void		Controls_SetConfig( void );
+void		Controls_SetDefaults( void );
 qboolean	Display_KeyBindPending(void);
 qboolean	Display_MouseMove(void *p, int x, int y);
 int			Display_VisibleMenuCount(void);
