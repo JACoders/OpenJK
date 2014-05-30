@@ -785,6 +785,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 	}
 	if ( len >= sizeof( text ) - 1 ) 
 	{
+		cgi_FS_FCloseFile( f );
 		CG_Printf( "File %s too long\n", sfilename );
 		return;
 	}
