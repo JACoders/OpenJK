@@ -171,16 +171,6 @@ qboolean Sys_LowPhysicalMemory()
 	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
 }
 
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
-}
-
 /*
 =============
 Sys_Error

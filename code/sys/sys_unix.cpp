@@ -12,6 +12,8 @@
 #include "../qcommon/qcommon.h"
 #include "sys_local.h"
 
+#include <SDL.h>
+
 #define	MAX_QUED_EVENTS		256
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
@@ -61,49 +63,23 @@ void Sys_SetEnv(const char *name, const char *value)
 		unsetenv(name);
 }
 
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_InitStreamThread( void ) {
-}
-
-void Sys_ShutdownStreamThread( void ) {
-}
-
-void Sys_BeginStreamedFile( fileHandle_t f, int readAhead ) {
-}
-
-void Sys_EndStreamedFile( fileHandle_t f ) {
-}
-
-int Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f ) {
-   return FS_Read( buffer, size * count, f );
-}
-
-void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
-   FS_Seek( f, offset, origin );
-}
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
-}
-
 /*
 ==================
 Sys_GetClipboardData
 ==================
 */
-char *Sys_GetClipboardData(void)
-{
-	return NULL;
+char *Sys_GetClipboardData(void) {
+	if ( !SDL_HasClipboardText() )
+		return NULL;
+
+	char *cbText = SDL_GetClipboardText();
+	size_t len = strlen( cbText ) + 1;
+
+	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD, qfalse );
+	Q_strncpyz( buf, cbText, len );
+
+	SDL_free( cbText );
+	return buf;
 }
 
 /*
