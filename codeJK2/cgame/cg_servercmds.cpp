@@ -41,6 +41,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = atoi( Info_ValueForKey( info, "timelimit" ) );
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
+	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	const char *p = strrchr(mapname,'/');
 	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
