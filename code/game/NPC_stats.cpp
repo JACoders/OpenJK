@@ -811,6 +811,7 @@ void G_ParseAnimationEvtFile(int glaIndex, const char* eventsDirectory, int file
 	}
 	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
+		cgi_FS_FCloseFile( f );
 		CG_Printf( "File %s too long\n", eventsPath );
 		return;
 	}
