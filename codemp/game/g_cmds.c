@@ -2073,6 +2073,19 @@ void Cmd_MapList_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
 }
 
+qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+	// zyk: did not put message
+	if ( numArgs < 3 ) {
+		return qfalse;
+	}
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, arg2 );
+	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "poll %s", arg2 );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+
+	return qtrue;
+}
+
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
 	fileHandle_t fp = NULL_FILE;
@@ -2192,6 +2205,7 @@ static voteString_t validVoteStrings[] = {
 	{	"map",					NULL,				G_VoteMap,				0,		GTB_ALL,								qtrue,			"<name>" },
 	{	"map_restart",			"restart",			G_VoteMapRestart,		0,		GTB_ALL,								qtrue,			"<optional delay>" },
 	{	"nextmap",				NULL,				G_VoteNextmap,			0,		GTB_ALL,								qtrue,			NULL },
+	{	"poll",					NULL,				G_VotePoll,				0,		GTB_ALL,								qtrue,			"<message>" },
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
