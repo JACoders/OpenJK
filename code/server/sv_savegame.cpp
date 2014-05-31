@@ -1092,6 +1092,10 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	int iPrevTestSave = sv_testsave->integer;
 	sv_testsave->integer = 0;
 
+#ifdef JK2_MODE
+	Cvar_Set( "cg_missionstatusscreen", "0" );//reset if loading a game
+#endif
+
 	if (!SG_Open( psPathlessBaseName ))
 	{
 		Com_Printf (GetString_FailedToOpenSaveGame(psPathlessBaseName, qtrue));//S_COLOR_RED "Failed to open savegame \"%s\"\n", psPathlessBaseName);
