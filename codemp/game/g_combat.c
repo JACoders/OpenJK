@@ -4696,6 +4696,7 @@ int gPainHitLoc = -1;
 vec3_t gPainPoint;
 
 extern void Jedi_Decloak( gentity_t *self );
+extern void Boba_FlyStop( gentity_t *self );
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
 	int			take, asave = 0, subamt = 0, knockback;
@@ -5641,6 +5642,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				{ //disable jetpack temporarily
 					Jetpack_Off(targ);
 					client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
+				}
+
+				if (client->NPC_class == CLASS_BOBAFETT)
+				{ // zyk: DEMP2 also disables npc jetpack
+					Boba_FlyStop(targ);
 				}
 
 				if ( client->NPC_class == CLASS_PROTOCOL || client->NPC_class == CLASS_SEEKER ||
