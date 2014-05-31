@@ -434,6 +434,12 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		return;
 	}
 
+	// zyk: deactivating saber
+	if ( ent->client->ps.saberHolstered < 2 )
+	{
+		Cmd_ToggleSaber_f(ent);
+	}
+
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
 		msg = "noclip OFF";
@@ -2719,6 +2725,12 @@ void Cmd_ToggleSaber_f(gentity_t *ent)
 	}
 
 	if (ent->client->ps.saberLockTime >= level.time)
+	{
+		return;
+	}
+
+	// zyk: noclip does not allow toggle saber
+	if ( ent->client->noclip == qtrue )
 	{
 		return;
 	}

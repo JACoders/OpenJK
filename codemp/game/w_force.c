@@ -699,6 +699,12 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 		return qfalse;
 	}
 
+	// zyk: noclip players cannot use force
+	if (self->client->noclip == qtrue)
+	{
+		return qfalse;
+	}
+
 	if ( (self->client->ps.fd.forcePowersActive & ( 1 << forcePower )) )
 	{//already using this power
 		if (forcePower != FP_LEVITATION)
