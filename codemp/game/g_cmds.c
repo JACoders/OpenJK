@@ -1719,6 +1719,32 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 	G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
 }
 
+// zyk: rmeoves color codes from string like ^1, ^2, ^3 etc
+char *zyk_remove_color_chars(char *arg)
+{
+	char new_string[1024] = {0};
+	int i = 0, len = 0;
+
+	len = strlen(arg);
+
+	while( i < len)
+	{
+		if (i < (len-1) && arg[i] == '^' && 
+			(arg[i+1] == '0' || arg[i+1] == '1' || arg[i+1] == '2' || arg[i+1] == '3' || 
+			arg[i+1] == '4' || arg[i+1] == '5' || arg[i+1] == '6' || arg[i+1] == '7'))
+		{
+			i += 2;
+		}
+		else
+		{
+			strcpy(new_string,va("%s%c",new_string,arg[i]));
+			i++;
+		}
+	}
+
+	return G_NewString(new_string);
+}
+
 // zyk: gets the client id from a string which contains the player name
 int zyk_get_client(char *arg)
 {
@@ -1731,7 +1757,7 @@ int zyk_get_client(char *arg)
 		for (i = 0; i < level.maxclients; i++)
 		{
 			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && arg_num == this_ent->s.number)
+			if (this_ent && this_ent->client && this_ent->client->pers.connected == CON_CONNECTED && arg_num == this_ent->s.number)
 			{
 				return this_ent->s.number;
 			}
@@ -1742,7 +1768,7 @@ int zyk_get_client(char *arg)
 		for (i = 0; i < level.maxclients; i++)
 		{
 			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && Q_stristr(this_ent->client->pers.netname,arg))
+			if (this_ent && this_ent->client && this_ent->client->pers.connected == CON_CONNECTED && Q_stristr(zyk_remove_color_chars(this_ent->client->pers.netname),zyk_remove_color_chars(arg)))
 			{
 				return this_ent->s.number;
 			}
