@@ -282,6 +282,9 @@ static void SV_Map_f( void )
 		// then cheats will be allowed
 		Cvar_Set( "helpUsObi", cheat ? "1" : "0" );
 	}
+#ifdef JK2_MODE
+	Cvar_Set( "cg_missionstatusscreen", "0" );
+#endif
 }
 
 /*
