@@ -1719,6 +1719,38 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 	G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
 }
 
+// zyk: gets the client id from a string which contains the player name
+int zyk_get_client(char *arg)
+{
+	int i = 0;
+	int arg_num = atoi(arg);
+	gentity_t *this_ent = NULL;
+
+	if (Q_stricmp(arg,"0") == 0 || (arg_num > 0 && arg_num < level.maxclients))
+	{ // zyk: argument is the client id. Search for the player who has this id
+		for (i = 0; i < level.maxclients; i++)
+		{
+			this_ent = &g_entities[i];
+			if (this_ent && this_ent->client && arg_num == this_ent->s.number)
+			{
+				return this_ent->s.number;
+			}
+		}
+	}
+	else
+	{ // zyk: argument is part or full player netname
+		for (i = 0; i < level.maxclients; i++)
+		{
+			this_ent = &g_entities[i];
+			if (this_ent && this_ent->client && Q_stristr(this_ent->client->pers.netname,arg))
+			{
+				return this_ent->s.number;
+			}
+		}
+	}
+	return -1;
+}
+
 /*
 ==================
 Cmd_Tell_f
@@ -1731,20 +1763,17 @@ static void Cmd_Tell_f( gentity_t *ent ) {
 	char		arg[MAX_TOKEN_CHARS];
 
 	if ( trap->Argc () < 3 ) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: tell <player id> <message>\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: tell <player id or name> <message>\n\"" );
 		return;
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	targetNum = ClientNumberFromString( ent, arg, qfalse );
+	targetNum = zyk_get_client( arg ); // zyk: changed this. Now it will use new function
 	if ( targetNum == -1 ) {
 		return;
 	}
 
 	target = &g_entities[targetNum];
-	if ( !target->inuse || !target->client ) {
-		return;
-	}
 
 	p = ConcatArgs( 2 );
 
@@ -8785,38 +8814,6 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid option.\n\"" );
 	}
-}
-
-// ztk: gets the client id from a string which contains the player name
-int zyk_get_client(char *arg)
-{
-	int i = 0;
-	int arg_num = atoi(arg);
-	gentity_t *this_ent = NULL;
-
-	if (Q_stricmp(arg,"0") == 0 || (arg_num > 0 && arg_num < level.maxclients))
-	{ // zyk: argument is the client id. Search for the player who has this id
-		for (i = 0; i < level.maxclients; i++)
-		{
-			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && arg_num == this_ent->s.number)
-			{
-				return this_ent->s.number;
-			}
-		}
-	}
-	else
-	{ // zyk: argument is part or full player netname
-		for (i = 0; i < level.maxclients; i++)
-		{
-			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && Q_stristr(this_ent->client->pers.netname,arg))
-			{
-				return this_ent->s.number;
-			}
-		}
-	}
-	return -1;
 }
 
 extern void zyk_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
