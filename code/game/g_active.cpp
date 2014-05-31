@@ -4901,9 +4901,7 @@ extern cvar_t	*g_skippingcin;
 			}
 			if ( ent->client->ps.pm_type == PM_DEAD && cg.missionStatusDeadTime < level.time )
 			{//mission status screen is up because player is dead, stop all scripts
-				if (Q_stricmpn(level.mapname,"_holo",5)) {
-					stop_icarus = qtrue;
-				}
+				stop_icarus = qtrue;
 			}
 		}
 
