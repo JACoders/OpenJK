@@ -398,13 +398,13 @@ void CG_DrawInformation( void ) {
 	const qhandle_t	levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
-	if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
+	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
 	{
 		// keep whatever's in the screen buffer so far (either the last ingame rendered-image (eg for maptransition)
 		//	or the screenshot built-in to a loaded save game...
 		//
 		cgi_R_DrawScreenShot( 0, 480, 640, -480 );
-	} else {
+	} else*/ {
 		// put up the pre-defined levelshot for this map...
 		//
 		cgi_R_SetColor( NULL );
