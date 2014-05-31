@@ -2431,9 +2431,7 @@ static void Q3_SetHealth( int entID, int data )
 			//delay respawn for 2 seconds
 			ent->client->respawnTime = level.time + 2000;
 			//stop all scripts
-			if (Q_stricmpn(level.mapname,"_holo",5)) {
-				stop_icarus = qtrue;
-			}
+			stop_icarus = qtrue;
 			//make the team killable
 			//G_MakeTeamVulnerable();
 		}
