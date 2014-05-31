@@ -535,7 +535,7 @@ int ICARUS_Instance::LoadSequencers( void )
 	int			numSequencers;
 
 	//Get the number of sequencers to load
-	m_interface->I_ReadSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( &numSequencers ), NULL );
+	m_interface->I_ReadSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ), NULL );
 	
 	//Load all sequencers
 	for ( int i = 0; i < numSequencers; i++ )
