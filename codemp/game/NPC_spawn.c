@@ -916,7 +916,7 @@ void NPC_Begin (gentity_t *ent)
 	}
 	else if ( ent->NPC->stats.health )	// Was health supplied in NPC.cfg?
 	{
-
+		/* zyk: npcs now will always use original health
 		if ( ent->client->NPC_class != CLASS_REBORN
 			&& ent->client->NPC_class != CLASS_SHADOWTROOPER
 			//&& ent->client->NPC_class != CLASS_TAVION
@@ -925,6 +925,7 @@ void NPC_Begin (gentity_t *ent)
 		{// up everyone except jedi
 			ent->NPC->stats.health += ent->NPC->stats.health/4 * g_npcspskill.integer; // 100% on easy, 125% on medium, 150% on hard
 		}
+		*/
 
 		client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH] = ent->NPC->stats.health;
 	}
