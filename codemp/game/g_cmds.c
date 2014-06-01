@@ -3860,7 +3860,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			// zyk: loading grapple hook value
 			fscanf(account_file,"%s",content);
 			value = atoi(content);
-			ent->client->pers.grapple_hook = value;
+			ent->client->pers.drain_shield = value;
 
 			// zyk: loading jetpack value
 			fscanf(account_file,"%s",content);
@@ -4076,7 +4076,7 @@ void save_account(gentity_t *ent)
 			,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
 			,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.stun_baton_level,client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
 			,client->pers.weapons_levels[4],client->pers.weapons_levels[5],client->pers.weapons_levels[6],client->pers.weapons_levels[7],client->pers.weapons_levels[8],client->pers.weapons_levels[9],client->pers.melee_level,client->pers.starting_shield_level,client->pers.shield_strength
-			,client->pers.health_strength,client->pers.grapple_hook,client->pers.jetpack_level,client->pers.playerhealth,client->pers.shield,client->pers.teamshield,client->pers.mind_control,client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
+			,client->pers.health_strength,client->pers.drain_shield,client->pers.jetpack_level,client->pers.playerhealth,client->pers.shield,client->pers.teamshield,client->pers.mind_control,client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
 			,client->pers.ammo_levels[3],client->pers.ammo_levels[4],client->pers.ammo_levels[5],client->pers.ammo_levels[6],client->pers.holdable_items_levels[0],client->pers.holdable_items_levels[1],client->pers.holdable_items_levels[2],client->pers.holdable_items_levels[3]
 			,client->pers.holdable_items_levels[4],client->pers.holdable_items_levels[5],client->pers.holdable_items_levels[6],client->pers.holdable_items_levels[7],client->pers.max_force_power_level,client->pers.improvements_level,client->pers.defeated_guardians,client->pers.hunter_quest_progress
 			,client->pers.eternity_quest_progress,client->pers.secrets_found,client->pers.universe_quest_progress,client->pers.universe_quest_counter,client->pers.credits,client->pers.rpg_class);
@@ -5273,13 +5273,13 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->pers.rpg_class == 2 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 55))
+	if (ent->client->pers.rpg_class == 2 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 55))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Bounty Hunter class doesn't allow this skill.\n\"" );
 		return;
 	}
 
-	if (ent->client->pers.rpg_class == 3 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 49 || (upgrade_value >= 52 && upgrade_value <= 55)))
+	if (ent->client->pers.rpg_class == 3 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 49 || (upgrade_value >= 52 && upgrade_value <= 55)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Armored Soldier class doesn't allow this skill.\n\"" );
 		return;
@@ -5291,7 +5291,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->pers.rpg_class == 5 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 21) || upgrade_value == 23 || (upgrade_value >= 26 && upgrade_value <= 27) || upgrade_value == 29 || (upgrade_value >= 36 && upgrade_value <= 40) || (upgrade_value >= 43 && upgrade_value <= 44) || (upgrade_value >= 48 && upgrade_value <= 53) || upgrade_value == 55))
+	if (ent->client->pers.rpg_class == 5 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 21) || upgrade_value == 23 || (upgrade_value >= 26 && upgrade_value <= 27) || upgrade_value == 29 || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 40) || (upgrade_value >= 43 && upgrade_value <= 44) || (upgrade_value >= 48 && upgrade_value <= 53) || upgrade_value == 55))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Stealth Attacker class doesn't allow this skill.\n\"" );
 		return;
@@ -5901,14 +5901,14 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 34)
 	{
-		if (ent->client->pers.grapple_hook < 1)
+		if (ent->client->pers.drain_shield < 1)
 		{
-			ent->client->pers.grapple_hook++;
+			ent->client->pers.drain_shield++;
 			ent->client->pers.skillpoints--;
 		}
 		else
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Grapple Hook ^7skill.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain Shield ^7skill.\n\"" );
 			return;
 		}
 	}
@@ -6784,14 +6784,14 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 
 	if (downgrade_value == 34)
 	{
-		if (ent->client->pers.grapple_hook > 0)
+		if (ent->client->pers.drain_shield > 0)
 		{
-			ent->client->pers.grapple_hook--;
+			ent->client->pers.drain_shield--;
 			ent->client->pers.skillpoints++;
 		}
 		else
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Grapple Hook ^7skill.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Drain Shield ^7skill.\n\"" );
 			return;
 		}
 	}
@@ -7339,7 +7339,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 
 				sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.health_strength);
 
-				sprintf(message_content[3],"^334 - Grapple Hook: %d/1     ", ent->client->pers.grapple_hook);
+				sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.drain_shield);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6)
 					sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.jetpack_level);
@@ -8811,7 +8811,7 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		ent->client->pers.playerhealth = 0;
 		ent->client->pers.shield = 0;
 		ent->client->pers.teamshield = 0;
-		ent->client->pers.grapple_hook = 0;
+		ent->client->pers.drain_shield = 0;
 		ent->client->pers.stun_baton_level = 0;
 		ent->client->pers.mind_control = 0;
 		ent->client->pers.melee_level = 0;

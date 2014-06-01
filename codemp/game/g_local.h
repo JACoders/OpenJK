@@ -594,8 +594,8 @@ typedef struct clientPersistant_s {
 	int shield; // zyk: shield heal level. Used in RPG mode
 	int teamshield; // zyk: teamshield heal level. Used in RPG mode
 
-	int grapple_hook; // zyk: grapple hook level. Used in RPG mode
-	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect, if in level 3, causes triple damage and fires the flame thrower with alternate fire
+	int drain_shield; // zyk: drain shield level. Used in RPG mode
+	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect, if in level 3, deactivates cloak, causes triple damage and fires the flame thrower with alternate fire
 	
 	int flame_thrower; // zyk: used by stun baton level 3 skill. Its the flame thrower timer
 
