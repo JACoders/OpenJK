@@ -799,7 +799,7 @@ R_LoadMD3
 */
 static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modName)
 {
-	int             f, i, j, k;
+	int             f, i, j;
 
 	md3Header_t    *md3Model;
 	md3Frame_t     *md3Frame;
@@ -1033,70 +1033,54 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 #ifdef USE_VERT_TANGENT_SPACE
 		// calc tangent spaces
 		{
-			// Valgrind complaints: Conditional jump or move depends on uninitialised value(s)
-			// So lets Initialize them.
-			const float    *v0 = NULL, *v1 = NULL, *v2 = NULL;
-			const float    *t0 = NULL, *t1 = NULL, *t2 = NULL;
-			vec3_t          tangent = { 0, 0, 0 };
-			vec3_t          bitangent = { 0, 0, 0 };
-			vec3_t          normal = { 0, 0, 0 };
-
 			for(j = 0, v = surf->verts; j < (surf->numVerts * mdvModel->numFrames); j++, v++)
 			{
 				VectorClear(v->tangent);
 				VectorClear(v->bitangent);
-				if (r_recalcMD3Normals->integer)
-					VectorClear(v->normal);
 			}
 
 			for(f = 0; f < mdvModel->numFrames; f++)
 			{
 				for(j = 0, tri = surf->indexes; j < surf->numIndexes; j += 3, tri += 3)
 				{
-					v0 = surf->verts[surf->numVerts * f + tri[0]].xyz;
-					v1 = surf->verts[surf->numVerts * f + tri[1]].xyz;
-					v2 = surf->verts[surf->numVerts * f + tri[2]].xyz;
+					vec3_t sdir, tdir;
+					const float *v0, *v1, *v2, *t0, *t1, *t2;
+					glIndex_t index0, index1, index2;
+
+					index0 = surf->numVerts * f + tri[0];
+					index1 = surf->numVerts * f + tri[1];
+					index2 = surf->numVerts * f + tri[2];
+
+					v0 = surf->verts[index0].xyz;
+					v1 = surf->verts[index1].xyz;
+					v2 = surf->verts[index2].xyz;
 
 					t0 = surf->st[tri[0]].st;
 					t1 = surf->st[tri[1]].st;
 					t2 = surf->st[tri[2]].st;
 
-					if (!r_recalcMD3Normals->integer)
-						VectorCopy(v->normal, normal);
-					else
-						VectorClear(normal);
+					R_CalcTexDirs(sdir, tdir, v0, v1, v2, t0, t1, t2);
 
-					#if 1
-					R_CalcTangentSpace(tangent, bitangent, normal, v0, v1, v2, t0, t1, t2);
-					#else
-					R_CalcNormalForTriangle(normal, v0, v1, v2);
-					R_CalcTangentsForTriangle(tangent, bitangent, v0, v1, v2, t0, t1, t2);
-					#endif
-
-					for(k = 0; k < 3; k++)
-					{
-						float          *v;
-
-						v = surf->verts[surf->numVerts * f + tri[k]].tangent;
-						VectorAdd(v, tangent, v);
-
-						v = surf->verts[surf->numVerts * f + tri[k]].bitangent;
-						VectorAdd(v, bitangent, v);
-
-						if (r_recalcMD3Normals->integer)
-						{
-							v = surf->verts[surf->numVerts * f + tri[k]].normal;
-							VectorAdd(v, normal, v);
-						}
-					}
+					VectorAdd(sdir, surf->verts[index0].tangent,   surf->verts[index0].tangent);
+					VectorAdd(sdir, surf->verts[index1].tangent,   surf->verts[index1].tangent);
+					VectorAdd(sdir, surf->verts[index2].tangent,   surf->verts[index2].tangent);
+					VectorAdd(tdir, surf->verts[index0].bitangent, surf->verts[index0].bitangent);
+					VectorAdd(tdir, surf->verts[index1].bitangent, surf->verts[index1].bitangent);
+					VectorAdd(tdir, surf->verts[index2].bitangent, surf->verts[index2].bitangent);
 				}
 			}
 
 			for(j = 0, v = surf->verts; j < (surf->numVerts * mdvModel->numFrames); j++, v++)
 			{
-				VectorNormalize(v->tangent);
-				VectorNormalize(v->bitangent);
-				VectorNormalize(v->normal);
+				vec3_t sdir, tdir;
+
+				VectorCopy(v->tangent,   sdir);
+				VectorCopy(v->bitangent, tdir);
+
+				VectorNormalize(sdir);
+				VectorNormalize(tdir);
+
+				R_CalcTbnFromNormalAndTexDirs(v->tangent, v->bitangent, v->normal, sdir, tdir);
 			}
 		}
 #endif

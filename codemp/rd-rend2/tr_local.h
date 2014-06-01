@@ -167,7 +167,6 @@ extern cvar_t  *r_specularMapping;
 extern cvar_t  *r_deluxeMapping;
 extern cvar_t  *r_parallaxMapping;
 extern cvar_t  *r_normalAmbient;
-extern cvar_t  *r_recalcMD3Normals;
 extern cvar_t  *r_mergeLightmaps;
 extern cvar_t  *r_dlightMode;
 extern cvar_t  *r_pshadowDist;
@@ -2345,8 +2344,9 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
 
-void R_CalcTangentSpace(vec3_t tangent, vec3_t bitangent, vec3_t normal,
-                        const vec3_t v0, const vec3_t v1, const vec3_t v2, const vec2_t t0, const vec2_t t1, const vec2_t t2);
+void R_CalcTexDirs(vec3_t sdir, vec3_t tdir, const vec3_t v1, const vec3_t v2,
+					const vec3_t v3, const vec2_t w1, const vec2_t w2, const vec2_t w3);
+void R_CalcTbnFromNormalAndTexDirs(vec3_t tangent, vec3_t bitangent, vec3_t normal, vec3_t sdir, vec3_t tdir);
 qboolean R_CalcTangentVectors(srfVert_t * dv[3]);
 
 #define	CULL_IN		0		// completely unclipped
