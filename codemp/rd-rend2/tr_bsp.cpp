@@ -1900,7 +1900,7 @@ static void R_CreateWorldVBOs(void)
 	VBO_t *vbo;
 	IBO_t *ibo;
 
-	int maxVboSize = 4 * 1024 * 1024;
+	int maxVboSize = 16 * 1024 * 1024;
 	int maxIboSize = 4 * 1024 * 1024;
 
 	int             startTime, endTime;
