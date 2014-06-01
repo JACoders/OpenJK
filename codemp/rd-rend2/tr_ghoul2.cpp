@@ -4583,6 +4583,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			for ( int k = 0; k < surf->numTriangles; k++ )
 			{
 				int index[3];
+				vec3_t sdir, tdir;
 				float *v0, *v1, *v2;
 				float *uv0, *uv1, *uv2;
 				vec3_t normal = { 0.0f, 0.0f, 0.0f };
@@ -4606,16 +4607,16 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				VectorAdd (normal, v[index[2]].normal, normal);
 				VectorNormalize (normal);
 
-				R_CalcTangentSpace (tangent, bitangent, normal, v0, v1, v2, uv0, uv1, uv2);
+				R_CalcTexDirs (sdir, tdir, v0, v1, v2, uv0, uv1, uv2);
 
 				for ( int i = 0; i < 3; i++ )
 				{
 					VectorAdd (tangentsf[baseVertexes[n] + index[i]],
-						tangent,
+						sdir,
 						tangentsf[baseVertexes[n] + index[i]]);
 
 					VectorAdd (bitangentsf[baseVertexes[n] + index[i]],
-						bitangent,
+						tdir,
 						bitangentsf[baseVertexes[n] + index[i]]);
 				}
 			}
@@ -4623,13 +4624,20 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			// Finally add it to the vertex buffer data
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
+				vec3_t sdir, tdir;
+
 				vec3_t& tangent = tangentsf[baseVertexes[n] + k];
 				vec3_t& bitangent = bitangentsf[baseVertexes[n] + k];
 				vec3_t NxT;
 				vec4_t T;
 
-				VectorNormalize (tangent);
-				VectorNormalize (bitangent);
+				VectorCopy (tangent, sdir);
+				VectorCopy (bitangent, tdir);
+
+				VectorNormalize (sdir);
+				VectorNormalize (tdir);
+
+				R_CalcTbnFromNormalAndTexDirs(tangent, bitangent, v[k].normal, sdir, tdir);
 
 				CrossProduct (v[k].normal, tangent, NxT);
 				VectorCopy (tangent, T);
