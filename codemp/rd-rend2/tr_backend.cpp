@@ -1862,6 +1862,32 @@ const void *RB_PostProcess(const void *data)
 		FBO_Blit(tr.screenSsaoFbo, srcBox, NULL, srcFbo, dstBox, NULL, NULL, GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ZERO);
 	}
 
+	if (r_dynamicGlow->integer)
+	{
+		// Downscale 8x
+		FBO_BlitFromTexture (tr.glowImage, NULL, NULL, tr.glowFboScaled[0], NULL, &tr.textureColorShader, NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+		FBO_FastBlit (tr.glowFboScaled[0], NULL, tr.glowFboScaled[1], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		FBO_FastBlit (tr.glowFboScaled[1], NULL, tr.glowFboScaled[2], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		// Blur a few times
+		float spread = 1.0f;
+		for ( int i = 0, numPasses = r_dynamicGlowPasses->integer; i < numPasses; i++ )
+		{
+			RB_GaussianBlur (tr.glowFboScaled[2], tr.glowFboScaled[3], tr.glowFboScaled[2], spread);
+
+			spread += r_dynamicGlowDelta->value * 0.25f;
+		}
+
+		// Upscale 4x
+		qglScissor (0, 0, tr.glowFboScaled[1]->width, tr.glowFboScaled[1]->height);
+		FBO_FastBlit (tr.glowFboScaled[2], NULL, tr.glowFboScaled[1], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		qglScissor (0, 0, tr.glowFboScaled[0]->width, tr.glowFboScaled[0]->height);
+		FBO_FastBlit (tr.glowFboScaled[1], NULL, tr.glowFboScaled[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		// Restore scissor rect
+		qglScissor (0, 0, glConfig.vidWidth, glConfig.vidHeight);
+	}
 	srcBox[0] = backEnd.viewParms.viewportX;
 	srcBox[1] = backEnd.viewParms.viewportY;
 	srcBox[2] = backEnd.viewParms.viewportWidth;
@@ -1896,8 +1922,6 @@ const void *RB_PostProcess(const void *data)
 
 	if (1)
 		RB_BokehBlur(NULL, srcBox, NULL, dstBox, backEnd.refdef.blurFactor);
-	else
-		RB_GaussianBlur(backEnd.refdef.blurFactor);
 
 	if (0 && r_sunlightMode->integer)
 	{
@@ -1941,11 +1965,29 @@ const void *RB_PostProcess(const void *data)
 	}
 #endif
 
-	// Debug output for dynamic glow
-	if (r_dynamicGlow->integer == 2)
+	if (r_dynamicGlow->integer != 0)
 	{
-		FBO_BlitFromTexture (tr.glowImage, NULL, NULL, tr.screenShadowFbo, NULL, &tr.textureColorShader, NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
-		FBO_FastBlit (tr.screenShadowFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		// Composite the glow/bloom texture
+		int blendFunc = 0;
+		vec4_t color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		if ( r_dynamicGlow->integer == 2 )
+		{
+			// Debug output
+			blendFunc = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO;
+		}
+		else if ( r_dynamicGlowSoft->integer )
+		{
+			blendFunc = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE_MINUS_SRC_COLOR;
+			color[0] = color[1] = color[2] = r_dynamicGlowIntensity->value;
+		}
+		else
+		{
+			blendFunc = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE;
+			color[0] = color[1] = color[2] = r_dynamicGlowIntensity->value;
+		}
+
+		FBO_BlitFromTexture (tr.glowFboScaled[0]->colorImage[0], NULL, NULL, NULL, NULL, NULL, color, blendFunc);
 	}
 
 	backEnd.framePostProcessed = qtrue;

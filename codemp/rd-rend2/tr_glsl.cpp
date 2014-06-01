@@ -52,6 +52,8 @@ extern const char *fallbackShader_texturecolor_vp;
 extern const char *fallbackShader_texturecolor_fp;
 extern const char *fallbackShader_tonemap_vp;
 extern const char *fallbackShader_tonemap_fp;
+extern const char *fallbackShader_gaussian_blur_vp;
+extern const char *fallbackShader_gaussian_blur_fp;
 
 typedef struct uniformInfo_s
 {
@@ -1299,6 +1301,23 @@ int GLSL_BeginLoadGPUShaders(void)
 	numEtcShaders++;
 #endif
 
+	attribs = 0;
+	extradefines[0] = '\0';
+	Q_strcat (extradefines, sizeof (extradefines), "#define BLUR_X");
+
+	if (!GLSL_BeginLoadGPUShader(&tr.gaussianBlurShader[0], "gaussian_blur", attribs, qtrue, extradefines, qtrue, fallbackShader_gaussian_blur_vp, fallbackShader_gaussian_blur_fp))
+	{
+		ri->Error(ERR_FATAL, "Could not load gaussian_blur (X-direction) shader!");
+	}
+
+	attribs = 0;
+	extradefines[0] = '\0';
+
+	if (!GLSL_BeginLoadGPUShader(&tr.gaussianBlurShader[1], "gaussian_blur", attribs, qtrue, extradefines, qtrue, fallbackShader_gaussian_blur_vp, fallbackShader_gaussian_blur_fp))
+	{
+		ri->Error(ERR_FATAL, "Could not load gaussian_blur (Y-direction) shader!");
+	}
+
 	return startTime;
 }
 
@@ -1579,6 +1598,22 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.depthBlurShader[i]);
+#endif
+
+		numEtcShaders++;
+	}
+
+	for (i = 0; i < 2; i++)
+	{
+		if (!GLSL_EndLoadGPUShader(&tr.gaussianBlurShader[i]))
+		{
+			ri->Error(ERR_FATAL, "Could not load gaussian blur shader!");
+		}
+
+		GLSL_InitUniforms(&tr.gaussianBlurShader[i]);
+
+#if defined(_DEBUG)
+		GLSL_FinishGPUShader(&tr.gaussianBlurShader[i]);
 #endif
 
 		numEtcShaders++;

@@ -471,53 +471,24 @@ static void RB_BlurAxis(FBO_t *srcFbo, FBO_t *dstFbo, float strength, qboolean h
 	}
 }
 
-static void RB_HBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength)
+void RB_HBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength)
 {
 	RB_BlurAxis(srcFbo, dstFbo, strength, qtrue);
 }
 
-static void RB_VBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength)
+void RB_VBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength)
 {
 	RB_BlurAxis(srcFbo, dstFbo, strength, qfalse);
 }
 
-void RB_GaussianBlur(float blur)
+void RB_GaussianBlur(FBO_t *srcFbo, FBO_t *intermediateFbo, FBO_t *dstFbo, float spread)
 {
-	//float mul = 1.f;
-	float factor = Com_Clamp(0.f, 1.f, blur);
+	// Blur X
+	vec2_t scale;
+	VectorSet2 (scale, spread, spread);
 
-	if (factor <= 0.f)
-		return;
+	FBO_Blit (srcFbo, NULL, scale, intermediateFbo, NULL, &tr.gaussianBlurShader[0], NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
-	{
-		vec4i_t srcBox, dstBox;
-		vec4_t color;
-		vec2_t texScale;
-
-		texScale[0] = 
-		texScale[1] = 1.0f;
-
-		VectorSet4(color, 1, 1, 1, 1);
-
-		// first, downsample the framebuffer
-		FBO_FastBlit(NULL, NULL, tr.quarterFbo[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		FBO_FastBlit(tr.quarterFbo[0], NULL, tr.textureScratchFbo[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		// set the alpha channel
-		VectorSet4(srcBox, 0, 0, tr.whiteImage->width, tr.whiteImage->height);
-		VectorSet4(dstBox, 0, 0, tr.textureScratchFbo[0]->width, tr.textureScratchFbo[0]->height);
-		qglColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-		FBO_BlitFromTexture(tr.whiteImage, srcBox, texScale, tr.textureScratchFbo[0], dstBox, &tr.textureColorShader, color, GLS_DEPTHTEST_DISABLE);
-		qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-		// blur the tiny buffer horizontally and vertically
-		RB_HBlur(tr.textureScratchFbo[0], tr.textureScratchFbo[1], factor);
-		RB_VBlur(tr.textureScratchFbo[1], tr.textureScratchFbo[0], factor);
-
-		// finally, merge back to framebuffer
-		VectorSet4(srcBox, 0, 0, tr.textureScratchFbo[0]->width, tr.textureScratchFbo[0]->height);
-		VectorSet4(dstBox, 0, 0, glConfig.vidWidth,              glConfig.vidHeight);
-		color[3] = factor;
-		FBO_Blit(tr.textureScratchFbo[0], srcBox, texScale, NULL, dstBox, &tr.textureColorShader, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-	}
+	// Blur Y
+	FBO_Blit (intermediateFbo, NULL, scale, dstFbo, NULL, &tr.gaussianBlurShader[1], NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 }

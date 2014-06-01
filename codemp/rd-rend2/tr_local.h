@@ -1979,6 +1979,7 @@ typedef struct trGlobals_s {
 
 	image_t					*renderImage;
 	image_t					*glowImage;
+	image_t					*glowImageScaled[4];
 	image_t					*sunRaysImage;
 	image_t					*renderDepthImage;
 	image_t					*pshadowMaps[MAX_DRAWN_PSHADOWS];
@@ -1996,6 +1997,7 @@ typedef struct trGlobals_s {
 	image_t					*textureDepthImage;
 
 	FBO_t					*renderFbo;
+	FBO_t					*glowFboScaled[4];
 	FBO_t					*msaaResolveFbo;
 	FBO_t					*sunRaysFbo;
 	FBO_t					*depthFbo;
@@ -2055,6 +2057,8 @@ typedef struct trGlobals_s {
 	shaderProgram_t ssaoShader;
 	shaderProgram_t depthBlurShader[2];
 	shaderProgram_t testcubeShader;
+	shaderProgram_t gaussianBlurShader[2];
+	shaderProgram_t glowCompositeShader;
 
 
 	// -----------------------------------------

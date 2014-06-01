@@ -450,7 +450,6 @@ void FBO_Init(void)
 
 		R_CheckFBO(tr.renderFbo);
 
-
 		tr.msaaResolveFbo = FBO_Create("_msaaResolve", tr.renderDepthImage->width, tr.renderDepthImage->height);
 		FBO_Bind(tr.msaaResolveFbo);
 
@@ -471,9 +470,7 @@ void FBO_Init(void)
 
 		//FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.renderImage, 0);
-
-		if (r_dynamicGlow->integer)
-			FBO_AttachTextureImage(tr.glowImage, 1);
+		FBO_AttachTextureImage(tr.glowImage, 1);
 
 		//FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
@@ -491,6 +488,22 @@ void FBO_Init(void)
 		qglClearColor( 1, 0, 0.5, 1 );
 		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		FBO_Bind(NULL);
+	}
+
+	// glow buffers
+	{
+		for ( int i = 0; i < ARRAY_LEN(tr.glowImageScaled); i++ )
+		{
+			tr.glowFboScaled[i] = FBO_Create (va ("*glowScaled%d", i), tr.glowImageScaled[i]->width, tr.glowImageScaled[i]->height);
+
+			FBO_Bind (tr.glowFboScaled[i]);
+
+			FBO_AttachTextureImage (tr.glowImageScaled[i], 0);
+
+			FBO_SetupDrawBuffers();
+
+			R_CheckFBO (tr.glowFboScaled[i]);
+		}
 	}
 
 	if (r_drawSunRays->integer)
