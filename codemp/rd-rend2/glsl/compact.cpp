@@ -20,7 +20,7 @@ bool should_be_escaped ( char c )
 
 std::string& escape_string ( std::string& s )
 {
-	int escapable_characters = std::count_if (s.begin(), s.end(), should_be_escaped);
+	std::string::difference_type escapable_characters = std::count_if( s.begin(), s.end(), should_be_escaped );
 	if ( escapable_characters == 0 )
 	{
 		return s;
