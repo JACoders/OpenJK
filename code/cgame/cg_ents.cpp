@@ -2251,8 +2251,6 @@ static void CG_Clouds( centity_t *cent )
 {
 	refEntity_t		ent;
 
-	s1 = &cent->currentState;
-
 	// create the render entity
 	memset( &ent, 0, sizeof( ent ));
 
