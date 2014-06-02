@@ -1682,10 +1682,17 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		switch( uiLetter )
 		{
 		case '^':
-			colour = ColorIndex(*psText++);
-			if (!gbInShadow)
+			if (*psText >= '0' &&
+				*psText <= '9')
 			{
-				RE_SetColor( g_color_table[colour] );
+				colour = ColorIndex(*psText++);
+				if (!gbInShadow)
+				{
+					vec4_t color;
+					Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+					color[3] = rgba[3];
+					RE_SetColor( color );
+				}
 			}
 			break;
 		case 10:						//linefeed
@@ -1870,7 +1877,10 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					colour = ColorIndex(*psText++);
 					if (!gbInShadow)
 					{
-						RE_SetColor( g_color_table[colour] );
+						vec4_t color;
+						Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+						color[3] = rgba[3];
+						RE_SetColor( color );
 					}
 					break;
 				}
