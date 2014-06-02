@@ -1826,7 +1826,6 @@ Ghoul2 Insert Start
 void		Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in);
 extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
 extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
 void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 /*
 Ghoul2 Insert End

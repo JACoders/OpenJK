@@ -2449,6 +2449,7 @@ static void G2_RagDoll(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *
 #define _DEBUG_BONE_NAMES
 #endif
 
+#ifdef _DEBUG_BONE_NAMES
 static inline char *G2_Get_Bone_Name(CGhoul2Info *ghlInfo, boneInfo_v &blist, int boneNum)
 {
 	mdxaSkel_t			*skel;
@@ -2474,6 +2475,7 @@ static inline char *G2_Get_Bone_Name(CGhoul2Info *ghlInfo, boneInfo_v &blist, in
 	// didn't find it
 	return "BONE_NOT_FOUND";
 }
+#endif
 
 char *G2_GetBoneNameFromSkel(CGhoul2Info &ghoul2, int boneNum);
 
