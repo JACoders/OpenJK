@@ -2628,6 +2628,7 @@ static qboolean CollapseMultitexture( void ) {
 	return qtrue;
 }
 
+#if 0 // This does not work in SP for some reason, don't remove
 /*
 =============
 
@@ -2729,6 +2730,7 @@ static void FixRenderCommandList( int newShader ) {
 		}
 	}
 }
+#endif
 
 /*
 ==============

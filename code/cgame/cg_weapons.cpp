@@ -1774,7 +1774,7 @@ void CG_DrawWeaponSelect( void )
 	int		holdX,x,y,x2,y2,w2,h2,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
-	int		height;
+	//int		height;
 	vec4_t	calcColor;
 	vec4_t	textColor = { .875f, .718f, .121f, 1.0f };
 	int		yOffset = 0;
@@ -1869,7 +1869,7 @@ void CG_DrawWeaponSelect( void )
 	cgi_R_SetColor( calcColor);					
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	drewConc = qfalse;
 
 	for (iconCnt=1;iconCnt<(sideLeftIconCnt+1);i--)
@@ -1936,7 +1936,7 @@ void CG_DrawWeaponSelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	cgi_R_SetColor(NULL);
 	if (weaponData[cg.weaponSelect].weaponIcon[0])
 	{
@@ -1971,7 +1971,7 @@ void CG_DrawWeaponSelect( void )
 	// Work forwards from current icon
 	cgi_R_SetColor( calcColor);					
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	drewConc = qfalse;
 	for (iconCnt=1;iconCnt<(sideRightIconCnt+1);i++)
 	{
@@ -2080,7 +2080,7 @@ qboolean CG_WeaponSelectable( int i, int original, qboolean dpMode )
 
 	//FIXME: this doesn't work below, can still cycle too fast!
 	if ( original == WP_SABER && cg.weaponSelectTime + 500 > cg.time )
-	{//when sqitch to lightsaber, have to stay there for at least half a second!
+	{//when switch to lightsaber, have to stay there for at least half a second!
 		return qfalse;
 	}
 
@@ -2738,7 +2738,7 @@ Caused by an EV_FIRE_WEAPON event
 void CG_FireWeapon( centity_t *cent, qboolean alt_fire ) 
 {
 	entityState_t *ent;
-	weaponInfo_t	*weap;
+	//weaponInfo_t	*weap;
 
 	ent = &cent->currentState;
 	if ( ent->weapon == WP_NONE ) {
@@ -2759,7 +2759,7 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 		}
 	}
 
-	weap = &cg_weapons[ ent->weapon ];
+	//weap = &cg_weapons[ ent->weapon ];
 
 	// mark the entity as muzzle flashing, so when it is added it will
 	// append the flash to the weapon model

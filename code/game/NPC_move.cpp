@@ -28,8 +28,6 @@ This file is part of Jedi Academy.
 extern qboolean NPC_ClearPathToGoal( vec3_t dir, gentity_t *goal );
 extern qboolean NAV_MoveDirSafe( gentity_t *self, usercmd_t *cmd, float distScale = 1.0f );
 
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color );
-
 qboolean G_BoundsOverlap(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 extern int GetTime ( int lastTime );
 

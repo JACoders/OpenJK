@@ -1764,6 +1764,7 @@ static void ComputeTexCoords( shaderStage_t *pStage ) {
 /*
 ** RB_IterateStagesGeneric
 */
+#ifndef JK2_MODE
 static vec4_t	GLFogOverrideColors[GLFOGOVERRIDE_MAX] =
 {
 	{ 0.0, 0.0, 0.0, 1.0 },	// GLFOGOVERRIDE_NONE
@@ -1772,6 +1773,7 @@ static vec4_t	GLFogOverrideColors[GLFOGOVERRIDE_MAX] =
 };
 
 static const float logtestExp2 = (sqrt( -log( 1.0 / 255.0 ) ));
+#endif
 extern bool tr_stencilled; //tr_backend.cpp
 static void RB_IterateStagesGeneric( shaderCommands_t *input )
 {
