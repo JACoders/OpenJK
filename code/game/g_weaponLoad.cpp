@@ -992,7 +992,6 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 	const char	*token;
 	size_t	i;
 
-
 	while (holdBuf)
 	{
 		token = COM_ParseExt( holdBuf, qtrue );
@@ -1249,7 +1248,7 @@ void WPN_FuncName(const char **holdBuf)
 	{
 		return;
 	}
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 
 	len++;
 	if (len > 64)
@@ -1279,7 +1278,7 @@ void WPN_AltFuncName(const char **holdBuf)
 		return;
 	}
 
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 	len++;
 	if (len > 64)
 	{
@@ -1306,7 +1305,7 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	int len = strlen(tokenStr);
+	size_t len = strlen( tokenStr );
 
 	len++;
 	if (len > 64)
@@ -1328,7 +1327,7 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 	{
 		return;
 	}
-	int len = strlen(tokenStr);
+	size_t len = strlen( tokenStr );
 
 	len++;
 	if (len > 64)

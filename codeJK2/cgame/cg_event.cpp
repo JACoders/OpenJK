@@ -584,9 +584,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			int disintPW = es->eventParm;
 			int disintEffect = 0;
 			int disintLength = 0;
-			qhandle_t disintSound1 = NULL;
-			qhandle_t disintSound2 = NULL;
-			qhandle_t disintSound3 = NULL;
+			qhandle_t disintSound1 = NULL_HANDLE;
+			qhandle_t disintSound2 = NULL_HANDLE;
+			qhandle_t disintSound3 = NULL_HANDLE;
 
 			switch( disintPW )
 			{

@@ -52,7 +52,9 @@ typedef enum
 //
 Language_e GetLanguageEnum()
 {
+#ifndef JK2_MODE
 	static int			iSE_Language_ModificationCount = -1234;	// any old silly value that won't match the cvar mod count
+#endif
 	static Language_e	eLanguage = eWestern;
 
 	// only re-strcmp() when language string has changed from what we knew it as...

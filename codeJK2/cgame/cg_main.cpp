@@ -2723,7 +2723,7 @@ void CG_DrawInventorySelect( void )
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
 	int				holdX,x,y,pad;
-	int				height;
+	//int				height;
 //	int				tag;
 	float			addX;
 	vec4_t			textColor = { .312f, .75f, .621f, 1.0f };
@@ -2808,7 +2808,7 @@ void CG_DrawInventorySelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
@@ -2839,7 +2839,7 @@ void CG_DrawInventorySelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	if (inv_icons[cg.inventorySelect])
 	{
 		cgi_R_SetColor(NULL);
@@ -2885,7 +2885,7 @@ void CG_DrawInventorySelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
@@ -2942,7 +2942,7 @@ void CG_DrawDataPadInventorySelect( void )
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
 	int				holdX,x,y,pad;
-	int				height;
+	//int				height;
 	float			addX;
 	char			text[1024]={0};
 	vec4_t			textColor = { .312f, .75f, .621f, 1.0f };
@@ -3007,7 +3007,7 @@ void CG_DrawDataPadInventorySelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
@@ -3038,7 +3038,7 @@ void CG_DrawDataPadInventorySelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	if (inv_icons[cg.DataPadInventorySelect])
 	{
 		cgi_R_SetColor(NULL);
@@ -3070,7 +3070,7 @@ void CG_DrawDataPadInventorySelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
@@ -3107,7 +3107,7 @@ void CG_DrawDataPadInventorySelect( void )
 	{
 		cgi_SP_GetStringTextString( va("INGAME_%s",inventoryDesc[cg.DataPadInventorySelect]), text, sizeof(text) );
 
-		if (text)
+		if (text[0])
 		{
 			CG_DisplayBoxedText(70,50,500,300,text,
 														cgs.media.qhFontSmall,
@@ -3305,7 +3305,7 @@ void CG_DrawForceSelect( void )
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,pad,length;
+	int		holdX,x,y,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	char	text[1024]={0};
@@ -3377,10 +3377,6 @@ void CG_DrawForceSelect( void )
 	x = 320;
 	y = 425;
 
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
-	
 	i = cg.forcepowerSelect - 1;
 	if (i < 0)
 	{
@@ -3617,7 +3613,7 @@ void CG_DrawDataPadForceSelect( void )
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,pad,length;
+	int		holdX,x,y,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	char	text[1024]={0};
@@ -3672,10 +3668,6 @@ void CG_DrawDataPadForceSelect( void )
 
 	x = 320;
 	y = 310;
-
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
 	
 	i = cg.DataPadforcepowerSelect - 1;
 	if (i < 0)
@@ -3791,7 +3783,7 @@ void CG_DrawDataPadForceSelect( void )
 		cgi_SP_GetStringTextString( va("INGAME_%s",forcepowerLvl3Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
 
-	if (text)
+	if (text[0])
 	{
 
 		CG_DisplayBoxedText(70,50,500,300,va("%s%s",text,text2),

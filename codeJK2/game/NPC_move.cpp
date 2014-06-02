@@ -32,8 +32,6 @@ This file is part of Jedi Knight 2.
 
 extern	cvar_t		*d_altRoutes;
 
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color );
-
 qboolean G_BoundsOverlap(const vec3_t mins1, const vec3_t maxs1, const vec3_t mins2, const vec3_t maxs2);
 int NAV_Steer( gentity_t *self, vec3_t dir, float distance );
 extern int GetTime ( int lastTime );

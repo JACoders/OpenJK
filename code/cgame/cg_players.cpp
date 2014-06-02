@@ -895,13 +895,10 @@ CG_PlayerAnimation
 static void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBackLerp,
 						int *torsoOld, int *torso, float *torsoBackLerp ) {
 	clientInfo_t	*ci;
-	int				clientNum;
 	int				legsAnim;
 	int				legsTurnAnim = -1;
 	qboolean		newLegsFrame = qfalse;
 	qboolean		newTorsoFrame = qfalse;
-
-	clientNum = cent->currentState.clientNum;
 
 	ci = &cent->gent->client->clientInfo;
 	//Changed this from cent->currentState.legsAnim to cent->gent->client->ps.legsAnim because it was screwing up our timers when we've just changed anims while turning
@@ -6835,7 +6832,6 @@ void CG_Player( centity_t *cent ) {
 	clientInfo_t	*ci;
 	qboolean		shadow, staticScale = qfalse;
 	float			shadowPlane;
-	entityState_t	*ent;
 	const weaponData_t  *wData = NULL;
 
 	if ( cent->currentState.eFlags & EF_NODRAW ) 
@@ -6861,8 +6857,6 @@ void CG_Player( centity_t *cent ) {
 	}
 
 	calcedMp = qfalse;
-	ent = &cent->currentState;
-
 
 	//Get the player's light level for stealth calculations
 	CG_GetPlayerLightLevel( cent );
