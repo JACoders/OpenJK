@@ -921,6 +921,23 @@ void CL_StartSound( void ) {
 }
 
 /*
+============
+CL_InitRenderer
+============
+*/
+void CL_InitRenderer( void ) {
+	// this sets up the renderer and calls R_Init
+	re.BeginRegistration( &cls.glconfig );
+
+	// load character sets
+	cls.charSetShader = re.RegisterShaderNoMip("gfx/2d/charsgrid_med");
+	cls.whiteShader = re.RegisterShader( "white" );
+	cls.consoleShader = re.RegisterShader( "console" );
+	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
+	g_consoleField.widthInChars = g_console_field_width;
+}
+
+/*
 ============================
 CL_StartHunkUsers
 
@@ -935,14 +952,7 @@ void CL_StartHunkUsers( void ) {
 
 	if ( !cls.rendererStarted ) {
 		cls.rendererStarted = qtrue;
-		re.BeginRegistration( &cls.glconfig );
-
-		// load character sets
-		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
-		cls.whiteShader = re.RegisterShader( "white" );
-		cls.consoleShader = re.RegisterShader( "console" );
-		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
-		g_consoleField.widthInChars = g_console_field_width;
+		CL_InitRenderer();
 	}
 
 	if ( !cls.soundStarted ) {
@@ -1332,7 +1342,7 @@ void CL_Shutdown( void ) {
 	Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
-		printf ("recursive shutdown\n");
+		Com_Printf( "WARNING: Recursive shutdown\n" );
 		return;
 	}
 	recursive = qtrue;

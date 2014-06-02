@@ -785,6 +785,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 	}
 	if ( len >= sizeof( text ) - 1 ) 
 	{
+		cgi_FS_FCloseFile( f );
 		CG_Printf( "File %s too long\n", sfilename );
 		return;
 	}
@@ -1149,7 +1150,7 @@ void CG_PlayerAnimSounds( int animFileIndex, qboolean torso, int oldFrame, int f
 			if ( cg_reliableAnimSounds.integer > 1 )
 			{//more precise, slower
 				oldAnim = PM_LegsAnimForFrame( &g_entities[entNum], oldFrame );
-				anim = PM_TorsoAnimForFrame( &g_entities[entNum], frame );
+				anim = PM_LegsAnimForFrame( &g_entities[entNum], frame );
 			}
 			else
 			{//less precise, but faster

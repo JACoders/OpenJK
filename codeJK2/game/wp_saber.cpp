@@ -2522,7 +2522,10 @@ void WP_SaberDamageTrace( gentity_t *ent )
 	qboolean	hit_wall = qfalse;
 	qboolean	brokenParry = qfalse;
 
-	memset( victimEntityNum, ENTITYNUM_NONE, sizeof( victimEntityNum ) );
+	for ( int ven = 0; ven < MAX_SABER_VICTIMS; ven++ )
+	{
+		victimEntityNum[ven] = ENTITYNUM_NONE;
+	}
 	memset( totalDmg, 0, sizeof( totalDmg) );
 	memset( dmgDir, 0, sizeof( dmgDir ) );
 	memset( dmgSpot, 0, sizeof( dmgSpot ) );

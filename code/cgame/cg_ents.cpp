@@ -1134,7 +1134,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->alt_missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->alt_missileModel == 0 )
+		if ( weapon->alt_missileModel == NULL_HANDLE )
 			return;
 	}
 	else
@@ -1153,7 +1153,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->missileModel == 0 )
+		if ( weapon->missileModel == NULL_HANDLE )
 			return;
 	}
 
@@ -1180,9 +1180,8 @@ Ghoul2 Insert End
 		ent.hModel = weapon->missileModel;
 
 	// spin as it moves
-	if ( s1->apos.trType != TR_INTERPOLATE)
+	if ( s1->apos.trType != TR_INTERPOLATE )
 	{
-
 		// convert direction of travel into axis
 		if ( VectorNormalize2( s1->pos.trDelta, ent.axis[0] ) == 0 ) {
 			ent.axis[0][2] = 1;

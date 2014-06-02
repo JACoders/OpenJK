@@ -118,36 +118,3 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 		}
 	}
 }
-
-void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
-{
-	char work[MAX_QPATH] = {0};
-	*pic = NULL;
-	*width = 0;
-	*height = 0;
-
-	const ImageLoaderMap *imageLoader = FindImageLoader( "jpg" );
-	if ( imageLoader != NULL )
-	{
-		COM_DefaultExtension( work, sizeof( work ), ".jpg" );
-		imageLoader->loader( work, pic, width, height );
-		if ( *pic )
-		{
-			return;
-		}
-	}
-
-	imageLoader = FindImageLoader( "tga" );
-	if ( imageLoader != NULL )
-	{
-		COM_DefaultExtension( work, sizeof( work ), ".tga" );
-		imageLoader->loader( work, pic, width, height );
-		if ( *pic )
-		{
-			return;
-		}
-	}
-
-	// Dataimage loading failed
-	ri.Printf(PRINT_WARNING, "Couldn't read %s -- dataimage load failed\n", name);
-}

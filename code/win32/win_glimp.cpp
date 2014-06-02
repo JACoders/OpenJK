@@ -1652,10 +1652,10 @@ void GLimp_Init( void )
 
 	// save off hInstance and wndproc
 	cv = ri.Cvar_Get( "win_hinstance", "", 0 );
-	sscanf( cv->string, "%p", (int *)&tr.wv->hInstance );
+	sscanf( cv->string, "%p", (uintptr_t *)&tr.wv->hInstance );
 
 	cv = ri.Cvar_Get( "win_wndproc", "", 0 );
-	sscanf( cv->string, "%p", (int *)&glw_state.wndproc );
+	sscanf( cv->string, "%p", (uintptr_t *)&glw_state.wndproc );
 
 	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 
@@ -1684,7 +1684,7 @@ void GLimp_Init( void )
 	//
 	// chipset specific configuration
 	//
-	strcpy( buf, glConfig.renderer_string );
+	Q_strncpyz( buf, glConfig.renderer_string, sizeof(buf) );
 	strlwr( buf );
 
 	//

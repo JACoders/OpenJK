@@ -631,8 +631,9 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 #ifdef JK2_MODE
 		// FIXME
 		return NULL;
-#endif
+#else
 		return SE_GetLanguageName( index );
+#endif
 	} 
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
@@ -824,7 +825,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "saveControls") == 0) 
 		{
-			Controls_SetConfig(qtrue);
+			Controls_SetConfig();
 		} 
 		else if (Q_stricmp(name, "loadControls") == 0) 
 		{
@@ -6178,6 +6179,7 @@ UI_ResetDefaults
 void UI_ResetDefaults( void )
 {
 	ui.Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+	Controls_SetDefaults();
 	ui.Cmd_ExecuteText( EXEC_APPEND, "exec default.cfg\n");
 	ui.Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
 }

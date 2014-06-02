@@ -664,7 +664,9 @@ static void ProjectDlightTexture2( void ) {
 	glIndex_t	hitIndexes[SHADER_MAX_INDEXES];
 	int		numIndexes;
 	float	radius;
+#ifndef JK2_MODE
 	int		fogging;
+#endif
 	shaderStage_t *dStage;
 	vec3_t	posa;
 	vec3_t	posb;
@@ -854,6 +856,7 @@ static void ProjectDlightTexture2( void ) {
 		if ( !numIndexes ) {
 			continue;
 		}
+#ifndef JK2_MODE
 		//don't have fog enabled when we redraw with alpha test, or it will double over
 		//and screw the tri up -rww
 		if (r_drawfog->value == 2 && 
@@ -871,6 +874,7 @@ static void ProjectDlightTexture2( void ) {
 		{
 			fogging = 0;
 		}
+#endif
 
 		if (!needResetVerts)
 		{
@@ -954,10 +958,12 @@ static void ProjectDlightTexture2( void ) {
 			R_DrawElements( numIndexes, hitIndexes );
 		}
 
+#ifndef JK2_MODE
 		if (fogging)
 		{
 			qglEnable(GL_FOG);
 		}
+#endif
 
 		backEnd.pc.c_totalIndexes += numIndexes;
 		backEnd.pc.c_dlightIndexes += numIndexes;
@@ -984,7 +990,9 @@ static void ProjectDlightTexture( void ) {
 	int		numIndexes;
 	float	scale;
 	float	radius;
+#ifndef JK2_MODE
 	int		fogging;
+#endif
 	vec3_t	floatColor;
 	shaderStage_t *dStage;
 
@@ -1205,6 +1213,7 @@ static void ProjectDlightTexture( void ) {
 			continue;
 		}
 
+#ifndef JK2_MODE
 		//don't have fog enabled when we redraw with alpha test, or it will double over
 		//and screw the tri up -rww
 		if (r_drawfog->value == 2 && 
@@ -1222,6 +1231,7 @@ static void ProjectDlightTexture( void ) {
 		{
 			fogging = 0;
 		}
+#endif
 
 
 		dStage = NULL;
@@ -1294,10 +1304,12 @@ static void ProjectDlightTexture( void ) {
 			R_DrawElements( numIndexes, hitIndexes );
 		}
 
+#ifndef JK2_MODE
 		if (fogging)
 		{
 			qglEnable(GL_FOG);
 		}
+#endif
 
 		backEnd.pc.c_totalIndexes += numIndexes;
 		backEnd.pc.c_dlightIndexes += numIndexes;
@@ -1764,6 +1776,7 @@ extern bool tr_stencilled; //tr_backend.cpp
 static void RB_IterateStagesGeneric( shaderCommands_t *input )
 {
 	int stage;
+#ifndef JK2_MODE
 	bool	UseGLFog = false;
 	bool	FogColorChange = false;
 	fog_t	*fog = NULL;
@@ -1825,6 +1838,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		qglEnable(GL_FOG);
 		UseGLFog = true;
 	}
+#endif
 
 	for ( stage = 0; stage < input->shader->numUnfoggedPasses; stage++ )
 	{
@@ -1887,6 +1901,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			continue;
 		}
 
+#ifndef JK2_MODE
 		if (UseGLFog)
 		{
 			if (pStage->mGLFogColorOverride)
@@ -1900,6 +1915,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				qglFogfv(GL_FOG_COLOR, fog->parms.color);
 			}
 		}
+#endif
 
 		if (!input->fading)
 		{ //this means ignore this, while we do a fade-out
@@ -1990,10 +2006,12 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			}
 		}
 	}
+#ifndef JK2_MODE
 	if (FogColorChange)
 	{
 		qglFogfv(GL_FOG_COLOR, fog->parms.color);
 	}
+#endif
 }
 
 /*
@@ -2096,7 +2114,11 @@ void RB_StageIteratorGeneric( void )
 	//
 	// now do fog
 	//
+#ifdef JK2_MODE
+	if (tess.fogNum && tess.shader->fogPass && r_drawfog->value)
+#else
 	if (tr.world && (tess.fogNum != tr.world->globalFog || r_drawfog->value != 2) && r_drawfog->value && tess.fogNum && tess.shader->fogPass)
+#endif
 	{
 		RB_FogPass();
 	}
@@ -2130,6 +2152,7 @@ void RB_StageIteratorGeneric( void )
 		}
 	}
 
+#ifndef JK2_MODE
 	//don't disable the hardware fog til after we do surface sprites
 	if (r_drawfog->value == 2 && 
 		tess.fogNum && tess.shader->fogPass &&
@@ -2137,6 +2160,7 @@ void RB_StageIteratorGeneric( void )
 	{
 		qglDisable(GL_FOG);
 	}
+#endif
 }
 
 
@@ -2201,7 +2225,11 @@ void RB_EndSurface( void ) {
 		backEnd.pc.c_vertexes += tess.numVertexes;
 		backEnd.pc.c_indexes += tess.numIndexes;
 		backEnd.pc.c_totalIndexes += tess.numIndexes * tess.numPasses;
+#ifdef JK2_MODE
+		if (tess.fogNum && tess.shader->fogPass && r_drawfog->value)
+#else
 		if (tess.fogNum && tess.shader->fogPass && r_drawfog->value == 1)
+#endif
 		{	// Fogging adds an additional pass
 			backEnd.pc.c_totalIndexes += tess.numIndexes;
 		}
