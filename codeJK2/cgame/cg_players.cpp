@@ -2876,8 +2876,6 @@ void CG_PlayerPowerups( centity_t *cent )
 	}*/
 }
 
-/*
-
 #define	SHADOW_DISTANCE		128
 static qboolean _PlayerShadow( const vec3_t origin, const float orientation, float *const shadowPlane, const float radius ) {
 	vec3_t		end, mins = {-7, -7, 0}, maxs = {7, 7, 2};
