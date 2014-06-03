@@ -181,7 +181,6 @@ void SV_Startup( void ) {
 }
 
 qboolean CM_SameMap(const char *server);
-qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
 /*
@@ -221,10 +220,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	if (!CM_SameMap(server))
 	{ //rww - only clear if not loading the same map
-		CM_ClearMap();
-	}
-	else if (CM_HasTerrain())
-	{ //always clear when going between maps with terrain
 		CM_ClearMap();
 	}
 
@@ -329,7 +324,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 		// clear all time counters, because we have reset sv.time
 		svs.clients[i].lastPacketTime = 0;
 		svs.clients[i].lastConnectTime = 0;
-		svs.clients[i].nextSnapshotTime = 0;
 
 		// send the new gamestate to all connected clients
 		if (svs.clients[i].state >= CS_CONNECTED) {
@@ -430,21 +424,15 @@ to totally exit after returning from this function.
 ==================
 */
 void SV_FinalMessage( const char *message ) {
-	int			i, j;
-	client_t	*cl;
+	client_t *cl = svs.clients;
 	
 	SV_SendServerCommand( NULL, "print \"%s\"", message );
 	SV_SendServerCommand( NULL, "disconnect" );
 
 	// send it twice, ignoring rate
-	for ( j = 0 ; j < 2 ; j++ ) {
-		for (i=0, cl = svs.clients ; i < 1 ; i++, cl++) {
-			if (cl->state >= CS_CONNECTED) {
-				// force a snapshot to be sent
-				cl->nextSnapshotTime = -1;
-				SV_SendClientSnapshot( cl );
-			}
-		}
+	if ( cl->state >= CS_CONNECTED ) {
+		SV_SendClientSnapshot( cl );
+		SV_SendClientSnapshot( cl );
 	}
 }
 

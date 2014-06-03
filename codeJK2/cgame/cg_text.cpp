@@ -184,7 +184,7 @@ void CG_CaptionTextStop(void)
 //
 // returns 0 if failed, else strlen...
 //
-static int cg_SP_GetStringTextStringWithRetry( LPCSTR psReference, char *psDest, int iSizeofDest)
+static int cg_SP_GetStringTextStringWithRetry( const char *psReference, char *psDest, int iSizeofDest )
 {
 	int iReturn;
 
@@ -596,7 +596,6 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 #define SCROLL_LPM (1/50.0) // 1 line per 50 ms
 void CG_DrawScrollText(void)
 {		
-	char	*start;
 	int		i;
 	int		x,y;	
 	const int fontHeight = (int) (1.5f * (float) cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f));	// taiwanese & japanese need 1.5 fontheight spacing
@@ -633,8 +632,6 @@ void CG_DrawScrollText(void)
 		{
 			break;
 		}
-
-		start = cg.printText[i];
 
 //		w = cgi_R_Font_StrLenPixels(cg.printText[i], cgs.media.qhFontMedium, 1.0f);	
 //		if (w)

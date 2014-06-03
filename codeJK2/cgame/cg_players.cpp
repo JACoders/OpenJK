@@ -785,6 +785,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 	}
 	if ( len >= sizeof( text ) - 1 ) 
 	{
+		cgi_FS_FCloseFile( f );
 		CG_Printf( "File %s too long\n", sfilename );
 		return;
 	}
@@ -1018,13 +1019,10 @@ CG_PlayerAnimation
 void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBackLerp,
 						int *torsoOld, int *torso, float *torsoBackLerp ) {
 	clientInfo_t	*ci;
-	int				clientNum;
 	int				legsAnim;
 	int				legsTurnAnim = -1;
 	qboolean		newLegsFrame = qfalse;
 	qboolean		newTorsoFrame = qfalse;
-
-	clientNum = cent->currentState.clientNum;
 
 	if ( cg_noPlayerAnims.integer ) {
 		*legsOld = *legs = *torsoOld = *torso = 0;
@@ -1149,7 +1147,7 @@ void CG_PlayerAnimSounds( int animFileIndex, qboolean torso, int oldFrame, int f
 			if ( cg_reliableAnimSounds.integer > 1 )
 			{//more precise, slower
 				oldAnim = PM_LegsAnimForFrame( &g_entities[entNum], oldFrame );
-				anim = PM_TorsoAnimForFrame( &g_entities[entNum], frame );
+				anim = PM_LegsAnimForFrame( &g_entities[entNum], frame );
 			}
 			else
 			{//less precise, but faster
@@ -2878,33 +2876,6 @@ void CG_PlayerPowerups( centity_t *cent )
 	}*/
 }
 
-/*
-
-/*
-===============
-CG_GetTeamFromUserinfo
-
-Return team value based on client userinfo
-===============
-*/
-int CG_GetTeamFromUserinfo( int clientNum ) {
-	const char *info, *teamString;
-
-	info = CG_ConfigString( CS_PLAYERS + clientNum );
-	teamString = Info_ValueForKey( info, "t" );
-
-	/*if ( !strcmp( teamString, "s" ) )
-		return TEAM_SPECTATOR;
-
-	if ( !strcmp( teamString, "r" ) ) 
-		return TEAM_RED;
-
-	if ( !strcmp( teamString, "b" ) )
-		return TEAM_BLUE;*/
-
-	return TEAM_FREE;
-}
-
 #define	SHADOW_DISTANCE		128
 static qboolean _PlayerShadow( const vec3_t origin, const float orientation, float *const shadowPlane, const float radius ) {
 	vec3_t		end, mins = {-7, -7, 0}, maxs = {7, 7, 2};
@@ -4450,7 +4421,7 @@ void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, ve
 void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles)
 {
 	vec3_t	org_, end,//org_future, 
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};//, axis_future[3]={{0,0,0}, {0,0,0}, {0,0,0}};	// shut the compiler up
 	trace_t	trace;
 	float	length;
 
@@ -4828,7 +4799,6 @@ void CG_Player( centity_t *cent ) {
 	clientInfo_t	*ci;
 	qboolean		shadow, staticScale = qfalse;
 	float			shadowPlane;
-	entityState_t	*ent;
 	const weaponData_t  *wData = NULL;
 
 	calcedMp = qfalse;
@@ -4837,8 +4807,6 @@ void CG_Player( centity_t *cent ) {
 	{
 		return;
 	}
-
-	ent = &cent->currentState;
 
 	//FIXME: make sure this thing has a gent and client
 	if(!cent->gent)

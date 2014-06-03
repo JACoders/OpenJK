@@ -636,8 +636,9 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 #ifdef JK2_MODE
 		// FIXME
 		return NULL;
-#endif
+#else
 		return SE_GetLanguageName( index );
+#endif
 	} 
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
 	{
@@ -829,7 +830,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "saveControls") == 0) 
 		{
-			Controls_SetConfig(qtrue);
+			Controls_SetConfig();
 		} 
 		else if (Q_stricmp(name, "loadControls") == 0) 
 		{
@@ -3349,25 +3350,6 @@ static void UI_Update(const char *name)
 	{
 		Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
  	} 
-	else if (Q_stricmp(name, "ui_setRate") == 0) 
-	{
-		float rate = trap_Cvar_VariableValue("rate");
-		if (rate >= 5000) 
-		{
-			Cvar_Set("cl_maxpackets", "30");
-			Cvar_Set("cl_packetdup", "1");
-		} 
-		else if (rate >= 4000) 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "2");		// favor less prediction errors when there's packet loss
-		} 
-		else 
-		{
-			Cvar_Set("cl_maxpackets", "15");
-			Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
-		}
-	} 
 	else if (Q_stricmp(name, "ui_GetName") == 0) 
 	{
 		Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));
@@ -6635,6 +6617,7 @@ UI_ResetDefaults
 void UI_ResetDefaults( void )
 {
 	ui.Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+	Controls_SetDefaults();
 	ui.Cmd_ExecuteText( EXEC_APPEND, "exec default.cfg\n");
 	ui.Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
 }

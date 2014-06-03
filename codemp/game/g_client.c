@@ -1165,7 +1165,7 @@ void MaintainBodyQueue(gentity_t *ent)
 	qboolean doRCG = qfalse;
 
 	assert(ent && ent->client);
-	if (ent->client->tempSpectate > level.time ||
+	if (ent->client->tempSpectate >= level.time ||
 		(ent->client->ps.eFlags2 & EF2_SHIP_DEATH))
 	{
 		ent->client->noCorpse = qtrue;
@@ -1219,7 +1219,7 @@ void ClientRespawn( gentity_t *ent ) {
 	{
 		if (g_siegeRespawn.integer)
 		{
-			if (ent->client->tempSpectate <= level.time)
+			if (ent->client->tempSpectate < level.time)
 			{
 				int minDel = g_siegeRespawn.integer* 2000;
 				if (minDel < 20000)
@@ -1956,7 +1956,7 @@ static userinfoValidate_t userinfoFields[] = {
 	UIF( char_color_red,	1, 1 ),
 	UIF( char_color_green,	1, 1 ),
 	UIF( char_color_blue,	1, 1 ),
-	UIF( teamtask,			1, 1 ),
+	UIF( teamtask,			0, 1 ), // optional
 	UIF( password,			0, 1 ), // optional
 	UIF( teamoverlay,		0, 1 ), // only registered in cgame, not sent when connecting
 };

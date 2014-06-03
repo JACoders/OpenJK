@@ -191,8 +191,7 @@ static const char *GetSubString(string &strResult)
 	if (!strlen(strResult.c_str()))
 		return NULL;
 	
-	strncpy(sTemp,strResult.c_str(),sizeof(sTemp)-1);
-	sTemp[sizeof(sTemp)-1]='\0';
+	Q_strncpyz(sTemp,strResult.c_str(),sizeof(sTemp));
 
 	char *psSemiColon = strchr(sTemp,';');
 	if (  psSemiColon)

@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // snd_mix.c -- portable code to mix sounds for snd_dma.c
 
 // leave this as first line for PCH reasons...
@@ -159,7 +156,11 @@ void S_TransferStereo16 (unsigned long *pbuf, int endtime)
 		ls_paintedtime += (snd_linear_count>>1);
 
 		if( CL_VideoRecording( ) )
-			CL_WriteAVIAudioFrame( (byte *)snd_out, snd_linear_count << 1 );
+		{
+			if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
+				CL_WriteAVIAudioFrame( (byte *)snd_out, snd_linear_count << 1 );
+			}
+		}
 	}
 }
 

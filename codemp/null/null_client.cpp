@@ -1,4 +1,4 @@
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 cvar_t *cl_shownet;
 
@@ -59,6 +59,6 @@ void CL_FlushMemory( void ) {
 void CL_StartHunkUsers( void ) {
 }
 
-qboolean CL_ConnectedToServer( void ) {
+qboolean CL_ConnectedToRemoteServer( void ) {
 	return qfalse;
 }

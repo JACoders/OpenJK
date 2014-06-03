@@ -19,54 +19,34 @@ This file is part of Jedi Academy.
 class timing_c
 {
 private:
-	__int64	start;
-	__int64	end;
+	uint64_t start;
+	uint64_t end;
 
 	int		reset;
 public:
 	timing_c(void)
 	{
 	}
+
 	void Start()
 	{
-		const __int64 *s = &start;
-
-		__asm
-		{
-			push eax
-			push ebx
-			push edx
-
-			rdtsc
-			mov ebx, s
-			mov	[ebx], eax
-			mov [ebx + 4], edx
-
-			pop edx
-			pop ebx
-			pop eax
-		}
+#ifdef _WIN32
+		start = __rdtsc();
+#else
+		start = 0;
+#endif
 	}
+
 	int End()
 	{
-		const __int64 *e = &end;
-		__int64	time;
+		int time;
 
-		__asm
-		{
-			push eax
-			push ebx
-			push edx
+#ifdef _WIN32
+		end = __rdtsc();
+#else
+		end = 0;
+#endif
 
-			rdtsc
-			mov ebx, e
-			mov	[ebx], eax
-			mov [ebx + 4], edx
-
-			pop edx
-			pop ebx
-			pop eax
-		}
 		time = end - start;
 		if (time < 0)
 		{

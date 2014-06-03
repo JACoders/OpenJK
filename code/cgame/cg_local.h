@@ -788,7 +788,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position );
 vec3_t *CG_SetEntitySoundPosition( centity_t *cent );
 void CG_AddPacketEntities( qboolean isPortal );
 void CG_Beam( centity_t *cent, int color );
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color );
 void CG_AdjustPositionForMover( const vec3_t in, int moverNum, int atTime, vec3_t out );
 
 void CG_PositionEntityOnTag( refEntity_t *entity, const refEntity_t *parent, 
@@ -1219,5 +1218,9 @@ void CG_PlayEffectOnEnt( const char *fxName, const int clientNum, vec3_t origin,
 void CG_PlayEffectIDOnEnt( const int fxID, const int clientNum, vec3_t origin, const vec3_t fwd );
 void CG_PlayEffect( const char *fxName, vec3_t origin, const vec3_t fwd );
 void CG_PlayEffectID( const int fxID, vec3_t origin, const vec3_t fwd );
+
+void	CG_ClearLightStyles( void );
+void	CG_RunLightStyles( void );
+void	CG_SetLightstyle( int i );
 
 #endif	//__CG_LOCAL_H__

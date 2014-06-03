@@ -163,7 +163,7 @@ typedef void (APIENTRY *PFNGLGETCOMBINERINPUTPARAMETERIVNV) (GLenum stage,GLenum
 typedef void (APIENTRY *PFNGLGETCOMBINEROUTPUTPARAMETERFVNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 typedef void (APIENTRY *PFNGLGETCOMBINEROUTPUTPARAMETERIVNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 typedef void (APIENTRY *PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV) (GLenum variable,GLenum pname,GLfloat *params);
-typedef void (APIENTRY *PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV) (GLenum variable,GLenum pname,GLfloat *params);
+typedef void (APIENTRY *PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV) (GLenum variable,GLenum pname,GLint *params);
 /***********************************************************************************************************/
 
 // Declare Register Combiners function pointers.
@@ -342,13 +342,6 @@ extern	void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 
 extern	void ( APIENTRY * qglLockArraysEXT) (GLint, GLint);
 extern	void ( APIENTRY * qglUnlockArraysEXT) (void);
-
-extern	void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-extern	void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
-
-//3d textures -rww
-extern	void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-extern	void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
 
 //===========================================================================
 

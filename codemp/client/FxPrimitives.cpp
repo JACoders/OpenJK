@@ -1,7 +1,3 @@
-// this include must remain at the top of every CPP file
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "FxScheduler.h"
@@ -209,116 +205,88 @@ bool CParticle::UpdateOrigin(void)
 	// Only perform physics if this object is tagged to do so
 	if ( (mFlags & FX_APPLY_PHYSICS) && !(mFlags & FX_PLAYER_VIEW) )
 	{
-		bool solid;
+		trace_t	trace;
+		float	dot;
 
-		if ( mFlags & FX_EXPENSIVE_PHYSICS )
+		if ( mFlags & FX_USE_BBOX )
 		{
-			solid = true; // by setting this to true, we force a real trace to happen
+			if (mFlags & FX_GHOUL2_TRACE)
+			{
+				theFxHelper.G2Trace( trace, mOrigin1, mMin, mMax, new_origin, -1, MASK_SOLID );
+			}
+			else
+			{
+				theFxHelper.Trace( trace, mOrigin1, mMin, mMax, new_origin, -1, MASK_SOLID );
+			}
 		}
 		else
 		{
-			// if this returns solid, we need to do a trace
-			if (!com_RMG || com_RMG->integer)
-			{	// don't do this call for RMG maps
-				TCGPointContents	*data = (TCGPointContents *)cl.mSharedMemory;
-
-				VectorCopy(new_origin, data->mPoint);
-				data->mPassEntityNum = ENTITYNUM_WORLD;
-
-				// if this returns solid, we need to do a trace
-				solid = !!(CGVM_PointContents() & MASK_SOLID);
+			if (mFlags & FX_GHOUL2_TRACE)
+			{
+				theFxHelper.G2Trace( trace, mOrigin1, NULL, NULL, new_origin, -1, MASK_PLAYERSOLID );
 			}
 			else
 			{
-				solid = false;
+				theFxHelper.Trace( trace, mOrigin1, NULL, NULL, new_origin, -1, MASK_SOLID );
 			}
 		}
 
-		if ( solid )
+		// Hit something
+		if (trace.startsolid || trace.allsolid)
 		{
-			trace_t	trace;
-			float	dot;
+			VectorClear( mVel );
+			VectorClear( mAccel );
 
-			if ( mFlags & FX_USE_BBOX )
+			if ((mFlags & FX_GHOUL2_TRACE) && (mFlags & FX_IMPACT_RUNS_FX))
 			{
-				if (mFlags & FX_GHOUL2_TRACE)
-				{
-					theFxHelper.G2Trace( trace, mOrigin1, mMin, mMax, new_origin, -1, MASK_SOLID );
-				}
-				else
-				{
-					theFxHelper.Trace( trace, mOrigin1, mMin, mMax, new_origin, -1, MASK_SOLID );
-				}
-			}
-			else
-			{
-				if (mFlags & FX_GHOUL2_TRACE)
-				{
-					theFxHelper.G2Trace( trace, mOrigin1, NULL, NULL, new_origin, -1, MASK_PLAYERSOLID );
-				}
-				else
-				{
-					theFxHelper.Trace( trace, mOrigin1, NULL, NULL, new_origin, -1, MASK_SOLID );
-				}
+				static vec3_t bsNormal = {0, 1, 0};
+
+				theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, bsNormal );
 			}
 
-			// Hit something
-			if (trace.startsolid || trace.allsolid)
+			mFlags &= ~(FX_APPLY_PHYSICS | FX_IMPACT_RUNS_FX);
+
+			return true;
+		}
+		else if ( trace.fraction < 1.0f )//&& !trace.startsolid && !trace.allsolid )
+		{
+			if ( mFlags & FX_IMPACT_RUNS_FX && !(trace.surfaceFlags & SURF_NOIMPACT ))
+			{
+				theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, trace.plane.normal );
+			}
+
+			// may need to interact with the material type we hit
+			theFxScheduler.MaterialImpact(&trace, (CEffect*)this);
+
+			if ( mFlags & FX_KILL_ON_IMPACT	)
+			{
+				// time to die
+				return false;
+			}
+
+			VectorMA( mVel, theFxHelper.mRealTime * trace.fraction, mAccel, mVel );
+
+			dot = DotProduct( mVel, trace.plane.normal );
+
+			VectorMA( mVel, -2.0f * dot, trace.plane.normal, mVel );
+
+			VectorScale( mVel, mElasticity, mVel );
+			mElasticity *= 0.5f;
+
+			// If the velocity is too low, make it stop moving, rotating, and turn off physics to avoid
+			//	doing expensive operations when they aren't needed
+			//if ( trace.plane.normal[2] > 0.33f && mVel[2] < 10.0f )
+			if (VectorLengthSquared(mVel) < 100.0f)
 			{
 				VectorClear( mVel );
 				VectorClear( mAccel );
 
-				if ((mFlags & FX_GHOUL2_TRACE) && (mFlags & FX_IMPACT_RUNS_FX))
-				{
-					static vec3_t bsNormal = {0, 1, 0};
-
-					theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, bsNormal );
-				}
-
 				mFlags &= ~(FX_APPLY_PHYSICS | FX_IMPACT_RUNS_FX);
-
-				return true;
 			}
-			else if ( trace.fraction < 1.0f )//&& !trace.startsolid && !trace.allsolid )
-			{
-				if ( mFlags & FX_IMPACT_RUNS_FX && !(trace.surfaceFlags & SURF_NOIMPACT ))
-				{
-					theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, trace.plane.normal );
-				}
 
-				// may need to interact with the material type we hit
-				theFxScheduler.MaterialImpact(&trace, (CEffect*)this);
-
-				if ( mFlags & FX_KILL_ON_IMPACT	)
-				{
-					// time to die
-					return false;
-				}
-
-				VectorMA( mVel, theFxHelper.mRealTime * trace.fraction, mAccel, mVel );
-
-				dot = DotProduct( mVel, trace.plane.normal );
-
-				VectorMA( mVel, -2.0f * dot, trace.plane.normal, mVel );
-
-				VectorScale( mVel, mElasticity, mVel );
-				mElasticity *= 0.5f;
-
-				// If the velocity is too low, make it stop moving, rotating, and turn off physics to avoid
-				//	doing expensive operations when they aren't needed
-				//if ( trace.plane.normal[2] > 0.33f && mVel[2] < 10.0f )
-				if (VectorLengthSquared(mVel) < 100.0f)
-				{
-					VectorClear( mVel );
-					VectorClear( mAccel );
-
-					mFlags &= ~(FX_APPLY_PHYSICS | FX_IMPACT_RUNS_FX);
-				}
-
-				// Set the origin to the exact impact point
-				VectorMA( trace.endpos, 1.0f, trace.plane.normal, mOrigin1 );
-				return true;
-			}
+			// Set the origin to the exact impact point
+			VectorMA( trace.endpos, 1.0f, trace.plane.normal, mOrigin1 );
+			return true;
 		}
 	}
 

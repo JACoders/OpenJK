@@ -1,8 +1,5 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "RoffSystem.h"
-//#include "client/client.h"
+
 #ifndef DEDICATED
 #include "client/cl_cgameapi.h"
 #endif
@@ -107,17 +104,17 @@ qboolean CROFFSystem::IsROFF( unsigned char *data )
 		return qfalse;
 	}
 
-	if (hdr->mVersion != ROFF_VERSION && hdr->mVersion != ROFF_NEW_VERSION)
+	if (LittleLong(hdr->mVersion) != ROFF_VERSION && LittleLong(hdr->mVersion) != ROFF_NEW_VERSION)
 	{	// bad version
 		return qfalse;
 	}
 
-	if (hdr->mVersion == ROFF_VERSION && hdr->mCount <= 0.0)
+	if (LittleLong(hdr->mVersion) == ROFF_VERSION && LittleFloat(hdr->mCount) <= 0.0)
 	{	// bad count
 		return qfalse;
 	}
 
-	if (hdr->mVersion == ROFF_NEW_VERSION && hdr2->mCount <= 0)
+	if (LittleLong(hdr->mVersion) == ROFF_NEW_VERSION && LittleLong(hdr2->mCount) <= 0)
 	{	// bad count
 		return qfalse;
 	}
@@ -142,13 +139,13 @@ qboolean CROFFSystem::InitROFF( unsigned char *data, CROFF *obj )
 
 	TROFFHeader *hdr = (TROFFHeader *)data;
 
-	if (hdr->mVersion == ROFF_NEW_VERSION)
+	if (LittleLong(hdr->mVersion) == ROFF_NEW_VERSION)
 	{
 		return InitROFF2(data, obj);
 	}
 
-	obj->mROFFEntries		= hdr->mCount;
-	obj->mMoveRotateList	= new TROFF2Entry[((int)hdr->mCount)];
+	obj->mROFFEntries		= LittleLong(hdr->mCount);
+	obj->mMoveRotateList	= new TROFF2Entry[((int)LittleFloat(hdr->mCount))];
 	obj->mFrameTime			= 1000 / ROFF_SAMPLE_RATE;		// default 10 hz
 	obj->mLerp				= ROFF_SAMPLE_RATE;
 	obj->mNumNoteTracks		= 0;
@@ -159,10 +156,19 @@ qboolean CROFFSystem::InitROFF( unsigned char *data, CROFF *obj )
 		TROFFEntry *roff_data = ( TROFFEntry *)&hdr[1];
 
 		// Copy all of the goods into our ROFF cache
-		for ( i = 0; i < hdr->mCount; i++ )
+		for ( i = 0; i < LittleLong(hdr->mCount); i++ )
 		{
+#ifdef Q3_BIG_ENDIAN
+			obj->mMoveRotateList[i].mOriginOffset[0] = LittleFloat(roff_data[i].mOriginOffset[0]);
+			obj->mMoveRotateList[i].mOriginOffset[1] = LittleFloat(roff_data[i].mOriginOffset[1]);
+			obj->mMoveRotateList[i].mOriginOffset[2] = LittleFloat(roff_data[i].mOriginOffset[2]);
+			obj->mMoveRotateList[i].mRotateOffset[0] = LittleFloat(roff_data[i].mRotateOffset[0]);
+			obj->mMoveRotateList[i].mRotateOffset[1] = LittleFloat(roff_data[i].mRotateOffset[1]);
+			obj->mMoveRotateList[i].mRotateOffset[2] = LittleFloat(roff_data[i].mRotateOffset[2]);
+#else
 			VectorCopy( roff_data[i].mOriginOffset, obj->mMoveRotateList[i].mOriginOffset );
 			VectorCopy( roff_data[i].mRotateOffset, obj->mMoveRotateList[i].mRotateOffset );
+#endif
 			obj->mMoveRotateList[i].mStartNote = -1;
 			obj->mMoveRotateList[i].mNumNotes = 0;
 		}
@@ -194,34 +200,42 @@ qboolean CROFFSystem::InitROFF2( unsigned char *data, CROFF *obj )
 
 	TROFF2Header *hdr = (TROFF2Header *)data;
 
-	obj->mROFFEntries		= hdr->mCount;
-	obj->mMoveRotateList	= new TROFF2Entry[(hdr->mCount)];
-	obj->mFrameTime			= hdr->mFrameRate;
-	obj->mLerp				= 1000 / hdr->mFrameRate;
-	obj->mNumNoteTracks		= hdr->mNumNotes;
+	obj->mROFFEntries		= LittleLong(hdr->mCount);
+	obj->mMoveRotateList	= new TROFF2Entry[LittleLong(hdr->mCount)];
+	obj->mFrameTime			= LittleLong(hdr->mFrameRate);
+	obj->mLerp				= 1000 / LittleLong(hdr->mFrameRate);
+	obj->mNumNoteTracks		= LittleLong(hdr->mNumNotes);
 
 	if ( obj->mMoveRotateList != 0 )
 	{ // Step past the header to get to the goods
 		TROFF2Entry *roff_data = ( TROFF2Entry *)&hdr[1];
 
 		// Copy all of the goods into our ROFF cache
-		for ( i = 0; i < hdr->mCount; i++ )
+		for ( i = 0; i < LittleLong(hdr->mCount); i++ )
 		{
+#ifdef Q3_BIG_ENDIAN
+			obj->mMoveRotateList[i].mOriginOffset[0] = LittleFloat(roff_data[i].mOriginOffset[0]);
+			obj->mMoveRotateList[i].mOriginOffset[1] = LittleFloat(roff_data[i].mOriginOffset[1]);
+			obj->mMoveRotateList[i].mOriginOffset[2] = LittleFloat(roff_data[i].mOriginOffset[2]);
+			obj->mMoveRotateList[i].mRotateOffset[0] = LittleFloat(roff_data[i].mRotateOffset[0]);
+			obj->mMoveRotateList[i].mRotateOffset[1] = LittleFloat(roff_data[i].mRotateOffset[1]);
+			obj->mMoveRotateList[i].mRotateOffset[2] = LittleFloat(roff_data[i].mRotateOffset[2]);
+#else
 			VectorCopy( roff_data[i].mOriginOffset, obj->mMoveRotateList[i].mOriginOffset );
 			VectorCopy( roff_data[i].mRotateOffset, obj->mMoveRotateList[i].mRotateOffset );
-			obj->mMoveRotateList[i].mStartNote = roff_data[i].mStartNote;
-			obj->mMoveRotateList[i].mNumNotes = roff_data[i].mNumNotes;
+#endif
+			obj->mMoveRotateList[i].mStartNote = LittleLong(roff_data[i].mStartNote);
+			obj->mMoveRotateList[i].mNumNotes = LittleLong(roff_data[i].mNumNotes);
 		}
 
 		FixBadAngles(obj);
 
 		if (obj->mNumNoteTracks)
 		{
-			int		size;
+			size_t	size = 0;
 			char	*ptr, *start;
 
 			ptr = start = (char *)&roff_data[i];
-			size = 0;
 
 			for(i=0;i<obj->mNumNoteTracks;i++)
 			{

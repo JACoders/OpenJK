@@ -120,7 +120,7 @@ ReadMember
 int CBlockMember::ReadMember( char **stream, long *streamPos, CIcarus* icarus )
 {
 	IGameInterface* game = icarus->GetGame();
-	m_id = *(int *) (*stream + *streamPos);
+	m_id = LittleLong(*(int *) (*stream + *streamPos));
 	*streamPos += sizeof( int );
 
 	if ( m_id == CIcarus::ID_RANDOM )
@@ -133,10 +133,15 @@ int CBlockMember::ReadMember( char **stream, long *streamPos, CIcarus* icarus )
 	}
 	else
 	{
-		m_size = *(int *) (*stream + *streamPos);
+		m_size = LittleLong(*(int *) (*stream + *streamPos));
 		*streamPos += sizeof( int );
 		m_data = game->Malloc( m_size );
 		memcpy( m_data, (*stream + *streamPos), m_size );
+#ifdef Q3_BIG_ENDIAN
+		// only TK_INT, TK_VECTOR and TK_FLOAT has to be swapped, but just in case
+		if (m_size == 4 && m_id != CIcarus::TK_STRING && m_id != CIcarus::TK_IDENTIFIER && m_id != CIcarus::TK_CHAR)
+			*(int *)m_data = LittleLong(*(int *)m_data);
+#endif
 	}
 	*streamPos += m_size;
 	
@@ -426,23 +431,9 @@ Create
 
 int CBlockStream::Create( char *filename )
 {	
-	// strip extension
-	int		extensionloc = strlen(filename);
-	while ( (filename[extensionloc] != '.') && (extensionloc >= 0) )
-	{
-		extensionloc--;
-	}
-	if ( extensionloc < 0 )
-	{
-		strcpy(m_fileName, filename);
-	}
-	else
-	{
-		strncpy(m_fileName, filename, extensionloc);
-		m_fileName[extensionloc] = '\0';
-	}
-	// add extension
-	strcat((char *) m_fileName, s_IBI_EXT);
+	//Strip the extension and add the BLOCK_EXT extension
+	COM_StripExtension( filename, m_fileName, sizeof(m_fileName) );
+	COM_DefaultExtension( m_fileName, sizeof(m_fileName), s_IBI_EXT );
 
 	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
@@ -531,10 +522,10 @@ int CBlockStream::ReadBlock( CBlock *get, CIcarus* icarus )
 	if (!BlockAvailable())
 		return false;
 
-	b_id		= *(int *) (m_stream + m_streamPos);
+	b_id		= LittleLong(*(int *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( b_id );
 
-	numMembers	= *(int *) (m_stream + m_streamPos);
+	numMembers	= LittleLong(*(int *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( numMembers );
 
 	flags		= *(unsigned char*) (m_stream + m_streamPos);
@@ -578,7 +569,7 @@ int CBlockStream::Open( char *buffer, long size )
 		id_header[i] = *(m_stream + m_streamPos++);
 	}
 
-	version = *(float *) (m_stream + m_streamPos);
+	version = LittleFloat(*(float *) (m_stream + m_streamPos));
 	m_streamPos += sizeof( version );
 
 	//Check for valid header

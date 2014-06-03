@@ -34,9 +34,13 @@ woven in by Terry Thorsen 1/2003.
   version without encryption capabilities).
  */
 
-
-#include "q_shared.h"
-#include "qcommon.h"
+#ifdef _JK2EXE
+#include "../code/qcommon/q_shared.h"
+#include "../code/qcommon/qcommon.h"
+#else
+#include "../codemp/qcommon/q_shared.h"
+#include "../codemp/qcommon/qcommon.h"
+#endif
 #include "unzip.h"
 
 #ifndef local
@@ -61,7 +65,7 @@ woven in by Terry Thorsen 1/2003.
 #endif
 
 #ifndef ALLOC
-# define ALLOC(size) (Z_Malloc(size + 1, TAG_FILESYS, qfalse))
+# define ALLOC(size) (Z_Malloc(size + 1, TAG_MINIZIP, qfalse))
 #endif
 #ifndef TRYFREE
 # define TRYFREE(p) {if (p) Z_Free(p);}

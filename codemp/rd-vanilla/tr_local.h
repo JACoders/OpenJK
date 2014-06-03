@@ -2,6 +2,7 @@
 
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
+#include "rd-common/tr_common.h"
 
 #ifdef _WIN32
 	#include "qgl.h"
@@ -570,7 +571,6 @@ typedef enum {
 	SF_GRID,
 	SF_TRIANGLES,
 	SF_POLY,
-	SF_TERRAIN, //rwwRMG - added
 	SF_MD3,
 /*
 Ghoul2 Insert Start
@@ -624,12 +624,6 @@ typedef struct srfFlare_s {
 #define	VERTEX_COLOR		(5+(MAXLIGHTMAPS*2))
 
 #define	VERTEX_FINAL_COLOR	(5+(MAXLIGHTMAPS*3))
-
-typedef struct srfTerrain_s
-{
-	surfaceType_t			surfaceType;
-	class CTRLandScape		*landscape;
-} srfTerrain_t;
 
 typedef struct srfGridMesh_s {
 	surfaceType_t	surfaceType;
@@ -695,20 +689,6 @@ typedef struct srfTriangles_s {
 
 
 extern	void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])(void *);
-
-/*
-==============================================================================
-
-TERRAIN DATA
-
-==============================================================================
-*/
-
-void RE_InitRendererTerrain( const char *info );
-void RB_SurfaceTerrain( surfaceInfo_t *surface );
-void R_TerrainInit (void);
-void R_TerrainShutdown(void);
-
 
 /*
 ==============================================================================
@@ -1054,15 +1034,19 @@ typedef struct trGlobals_s {
 	float					fogTable[FOG_TABLE_SIZE];
 
 	float					rangedFog;
-	float					distanceCull, distanceCullSquared; //rwwRMG - added
-
-	srfTerrain_t			landScape; //rwwRMG - added
+	float					distanceCull;
 
 #ifdef _WIN32
 	WinVars_t *wv;
 #endif
 } trGlobals_t;
 
+struct glconfigExt_t
+{
+	glconfig_t *glConfig;
+
+	const char *originalExtensionString;
+};
 
 int		 R_Images_StartIteration(void);
 image_t *R_Images_GetNextIteration(void);
@@ -1074,6 +1058,7 @@ void	 R_Images_DeleteImage(image_t *pImage);
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
+extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 
 
@@ -1390,9 +1375,6 @@ shader_t *R_FindShaderByName( const char *name );
 void		R_InitShaders(qboolean server);
 void		R_ShaderList_f( void );
 void    R_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
-//rwwRMG: Added:
-qhandle_t	R_GetShaderByNum(int index, world_t &worldData);
-qhandle_t	R_CreateBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites );
 
 
 /*
@@ -1864,7 +1846,6 @@ Ghoul2 Insert Start
 void		Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in);
 extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
 extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
 void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 /*
 Ghoul2 Insert End

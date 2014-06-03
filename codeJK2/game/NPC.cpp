@@ -916,7 +916,6 @@ vec3_t NPCDEBUG_BLUE = {0.0, 0.0, 1.0};
 vec3_t NPCDEBUG_LIGHT_BLUE = {0.3f, 0.7f, 1.0};
 extern void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha );
 extern void CG_Line( vec3_t start, vec3_t end, vec3_t color, float alpha );
-extern void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color );
 
 void NPC_ShowDebugInfo (void)
 {

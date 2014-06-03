@@ -459,7 +459,7 @@ static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int u
 
 	// save out any associated strings..
 	//
-	for (auto it = strList->begin(); it != strList->end(); ++it)
+	for (list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
 	{
 		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void*)it->c_str(), it->length()+1);
 	}
@@ -558,7 +558,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 
 
 // copy of function in sv_savegame
-static LPCSTR SG_GetChidText(unsigned int chid)
+static const char *SG_GetChidText(unsigned int chid)
 {
 	static char	chidtext[5];
 

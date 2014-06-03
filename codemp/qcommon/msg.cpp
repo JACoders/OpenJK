@@ -1,17 +1,8 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-#ifdef _DONETPROFILE_
-#include "INetProfile.h"
-#endif
-
 // rjr: this is only used when cl_shownet is turned on and the server and client are in the same session
 #include "game/g_public.h"
 #include "server/server.h"
 
 extern	cvar_t	*cl_shownet;
-
-
 
 //#define _NEWHUFFTABLE_		// Build "c:\\netchan.bin"
 //#define _USINGNEWHUFFTABLE_		// Build a new frequency table to cut and paste.
@@ -727,12 +718,20 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 		to->angles[1] = MSG_ReadDeltaKey( msg, key, from->angles[1], 16);
 		to->angles[2] = MSG_ReadDeltaKey( msg, key, from->angles[2], 16);
 		to->forwardmove = MSG_ReadDeltaKey( msg, key, from->forwardmove, 8);
+		if( to->forwardmove == -128 )
+			to->forwardmove = -127;
 		to->rightmove = MSG_ReadDeltaKey( msg, key, from->rightmove, 8);
+			if( to->rightmove == -128 )
+			to->rightmove = -127;
 		to->upmove = MSG_ReadDeltaKey( msg, key, from->upmove, 8);
+		if( to->upmove == -128 )
+			to->upmove = -127;
 		to->buttons = MSG_ReadDeltaKey( msg, key, from->buttons, 16);
 		to->weapon = MSG_ReadDeltaKey( msg, key, from->weapon, 8);
 
 		to->forcesel = MSG_ReadDeltaKey( msg, key, from->forcesel, 8);
+		if( sv_blockJumpSelect->integer && to->forcesel == 1 ) // FP_LEVIATHAN
+			to->forcesel = 0xFF; // (byte)-1
 		to->invensel = MSG_ReadDeltaKey( msg, key, from->invensel, 8);
 
 		to->generic_cmd = MSG_ReadDeltaKey( msg, key, from->generic_cmd, 8);
@@ -1162,17 +1161,10 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 
 	to->number = number;
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-#endif
-
 	for ( i = 0, field = entityStateFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
 
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( ! MSG_ReadBits( msg, 1 ) ) {
 			// no change
 			*toF = *fromF;
@@ -1211,10 +1203,6 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField(field->name,endBytes-startBytes);
-#endif
 	}
 	for ( i = lc, field = &entityStateFields[lc] ; i < numFields ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -2348,10 +2336,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 
 	lc = MSG_ReadByte(msg);
 
-#ifdef _DONETPROFILE_
-	int startBytes,endBytes;
-#endif
-
 	for ( i = 0, field = PSFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
@@ -2366,9 +2350,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		}
 #endif
 
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( ! MSG_ReadBits( msg, 1 ) ) {
 			// no change
 			*toF = *fromF;
@@ -2399,10 +2380,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField(field->name,endBytes-startBytes);
-#endif
 	}
 	for ( i=lc,field = &PSFields[lc];i<numFields; i++, field++) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -2412,9 +2389,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 	}
 
 	// read the arrays
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 	if (MSG_ReadBits( msg, 1 ) ) {
 		// parse stats
 		if ( MSG_ReadBits( msg, 1 ) ) {
@@ -2434,15 +2408,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_STATS",endBytes-startBytes);
-#endif
 
 		// parse persistant stats
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_PERSISTANT");
 			bits = MSG_ReadBits (msg, MAX_PERSISTANT);
@@ -2452,15 +2419,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_PERSISTANT",endBytes-startBytes);
-#endif
 
 		// parse ammo
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_AMMO");
 			bits = MSG_ReadBits (msg, MAX_AMMO_TRANSMIT);
@@ -2470,15 +2430,8 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 				}
 			}
 		}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_AMMO",endBytes-startBytes);
-#endif
 
 		// parse powerups
-#ifdef _DONETPROFILE_
-		startBytes=msg->readcount;
-#endif
 		if ( MSG_ReadBits( msg, 1 ) ) {
 			LOG("PS_POWERUPS");
 			bits = MSG_ReadBits (msg, MAX_POWERUPS);
@@ -2489,10 +2442,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 			}
 		}
 	}
-#ifdef _DONETPROFILE_
-		endBytes=msg->readcount;
-		ClReadProf().AddField("PS_POWERUPS",endBytes-startBytes);
-#endif
 
 	if ( print ) {
 		if ( msg->bit == 0 ) {

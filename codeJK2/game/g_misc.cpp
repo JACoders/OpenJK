@@ -1432,7 +1432,7 @@ void touch_ammo_crystal_tigger( gentity_t *self, gentity_t *other, trace_t *trac
 		return;
 
 	// Only player can pick it up
-	if ( !other->s.number == 0 )
+	if ( other->s.number != 0 )
 	{
 		return;
 	}
@@ -2780,4 +2780,9 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	//make it able to take damage and die when you're not in it...
 	//do an explosion and play the death anim, remove use func.
 	ent->e_DieFunc = dieF_misc_atst_die;
+}
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
 }

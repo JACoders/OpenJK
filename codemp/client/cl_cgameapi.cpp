@@ -1,10 +1,8 @@
 // cl_cgameapi.cpp  -- client system interaction with client game
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/cm_public.h"
 #include "qcommon/RoffSystem.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/timing.h"
-#include "RMG/RM_Headers.h"
 #include "client.h"
 #include "cl_uiapi.h"
 #include "botlib/botlib.h"
@@ -27,12 +25,9 @@ void CGVM_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 		VM_Call( cgvm, CG_INIT, serverMessageNum, serverCommandSequence, clientNum );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->Init( serverMessageNum, serverCommandSequence, clientNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_Shutdown( void ) {
@@ -40,25 +35,18 @@ void CGVM_Shutdown( void ) {
 		VM_Call( cgvm, CG_SHUTDOWN );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->Shutdown();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 qboolean CGVM_ConsoleCommand( void ) {
 	if ( cgvm->isLegacy ) {
 		return (qboolean)VM_Call( cgvm, CG_CONSOLE_COMMAND );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	qboolean r = cge->ConsoleCommand();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->ConsoleCommand();
 }
 
 void CGVM_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
@@ -66,38 +54,27 @@ void CGVM_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean de
 		VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, serverTime, stereoView, demoPlayback );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->DrawActiveFrame( serverTime, stereoView, demoPlayback );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int CGVM_CrosshairPlayer( void ) {
 	if ( cgvm->isLegacy ) {
 		return VM_Call( cgvm, CG_CROSSHAIR_PLAYER );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	int r = cge->CrosshairPlayer();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->CrosshairPlayer();
 }
 
 int CGVM_LastAttacker( void ) {
 	if ( cgvm->isLegacy ) {
 		return VM_Call( cgvm, CG_LAST_ATTACKER );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	int r = cge->LastAttacker();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->LastAttacker();
 }
 
 void CGVM_KeyEvent( int key, qboolean down ) {
@@ -105,12 +82,9 @@ void CGVM_KeyEvent( int key, qboolean down ) {
 		VM_Call( cgvm, CG_KEY_EVENT, key, down );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->KeyEvent( key, down );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_MouseEvent( int x, int y ) {
@@ -118,12 +92,9 @@ void CGVM_MouseEvent( int x, int y ) {
 		VM_Call( cgvm, CG_MOUSE_EVENT, x, y );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->MouseEvent( x, y );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_EventHandling( int type ) {
@@ -131,25 +102,18 @@ void CGVM_EventHandling( int type ) {
 		VM_Call( cgvm, CG_EVENT_HANDLING, type );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->EventHandling( type );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int CGVM_PointContents( void ) {
 	if ( cgvm->isLegacy ) {
 		return VM_Call( cgvm, CG_POINT_CONTENTS );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	int r = cge->PointContents();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->PointContents();
 }
 
 void CGVM_GetLerpOrigin( void ) {
@@ -157,12 +121,9 @@ void CGVM_GetLerpOrigin( void ) {
 		VM_Call( cgvm, CG_GET_LERP_ORIGIN );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->GetLerpOrigin();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_GetLerpData( void ) {
@@ -170,12 +131,9 @@ void CGVM_GetLerpData( void ) {
 		VM_Call( cgvm, CG_GET_LERP_DATA );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->GetLerpData();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_Trace( void ) {
@@ -183,12 +141,9 @@ void CGVM_Trace( void ) {
 		VM_Call( cgvm, CG_TRACE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->Trace();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_G2Trace( void ) {
@@ -196,12 +151,9 @@ void CGVM_G2Trace( void ) {
 		VM_Call( cgvm, CG_G2TRACE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->G2Trace();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_G2Mark( void ) {
@@ -209,51 +161,36 @@ void CGVM_G2Mark( void ) {
 		VM_Call( cgvm, CG_G2MARK );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->G2Mark();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int CGVM_RagCallback( int callType ) {
 	if ( cgvm->isLegacy ) {
 		return VM_Call( cgvm, CG_RAG_CALLBACK, callType );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	int r = cge->RagCallback( callType );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->RagCallback( callType );
 }
 
 qboolean CGVM_IncomingConsoleCommand( void ) {
 	if ( cgvm->isLegacy ) {
 		return (qboolean)VM_Call( cgvm, CG_INCOMING_CONSOLE_COMMAND );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	qboolean r = cge->IncomingConsoleCommand();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->IncomingConsoleCommand();
 }
 
 qboolean CGVM_NoUseableForce( void ) {
 	if ( cgvm->isLegacy ) {
 		return (qboolean)VM_Call( cgvm, CG_GET_USEABLE_FORCE );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	qboolean r = cge->NoUseableForce();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->NoUseableForce();
 }
 
 void CGVM_GetOrigin( int entID, vec3_t out ) {
@@ -261,12 +198,9 @@ void CGVM_GetOrigin( int entID, vec3_t out ) {
 		VM_Call( cgvm, CG_GET_ORIGIN, entID, out );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->GetOrigin( entID, out );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_GetAngles( int entID, vec3_t out ) {
@@ -274,38 +208,27 @@ void CGVM_GetAngles( int entID, vec3_t out ) {
 		VM_Call( cgvm, CG_GET_ANGLES, entID, out );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->GetAngles( entID, out );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 trajectory_t *CGVM_GetOriginTrajectory( int entID ) {
 	if ( cgvm->isLegacy ) {
 		return (trajectory_t *)VM_Call( cgvm, CG_GET_ORIGIN_TRAJECTORY, entID );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	trajectory_t *r = cge->GetOriginTrajectory( entID );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->GetOriginTrajectory( entID );
 }
 
 trajectory_t *CGVM_GetAngleTrajectory( int entID ) {
 	if ( cgvm->isLegacy ) {
 		return (trajectory_t *)VM_Call( cgvm, CG_GET_ANGLE_TRAJECTORY, entID );
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
-	trajectory_t *r = cge->GetAngleTrajectory( entID );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return cge->GetAngleTrajectory( entID );
 }
 
 void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
@@ -313,12 +236,9 @@ void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 		VM_Call( cgvm, CG_ROFF_NOTETRACK_CALLBACK, entID, notetrack );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->ROFF_NotetrackCallback( entID, notetrack );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_MapChange( void ) {
@@ -326,12 +246,9 @@ void CGVM_MapChange( void ) {
 		VM_Call( cgvm, CG_MAP_CHANGE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->MapChange();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_AutomapInput( void ) {
@@ -339,12 +256,9 @@ void CGVM_AutomapInput( void ) {
 		VM_Call( cgvm, CG_AUTOMAP_INPUT );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->AutomapInput();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_MiscEnt( void ) {
@@ -352,12 +266,9 @@ void CGVM_MiscEnt( void ) {
 		VM_Call( cgvm, CG_MISC_ENT );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->MiscEnt();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void CGVM_CameraShake( void ) {
@@ -365,12 +276,9 @@ void CGVM_CameraShake( void ) {
 		VM_Call( cgvm, CG_FX_CAMERASHAKE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = cgvm;
+	VMSwap v( cgvm );
 
 	cge->CameraShake();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 
@@ -378,12 +286,6 @@ void CGVM_CameraShake( void ) {
 // cgame syscalls
 //	only used by legacy mods!
 //
-
-static int FloatAsInt( float f ) {
-	byteAlias_t fi;
-	fi.f = f;
-	return fi.i;
-}
 
 extern int CL_GetValueForHidden( const char *s ); //cl_parse.cpp
 extern qboolean cl_bUseFighterPitch; //cl_input.cpp
@@ -422,7 +324,7 @@ static void CL_AddReliableCommand2( const char *cmd ) {
 }
 
 static int CL_CM_RegisterTerrain( const char *config ) {
-	return CM_RegisterTerrain( config, false )->GetTerrainId();
+	return 0;
 }
 
 extern int s_entityWavVol[MAX_GENTITIES];
@@ -516,20 +418,7 @@ static int CL_PrecisionTimerEnd( void *p ) {
 	return r; //return the result
 }
 
-static void CL_RMG_Init( int terrainID, const char *terrainInfo ) {
-	if ( !com_sv_running->integer ) {
-		if ( !TheRandomMissionManager )
-			TheRandomMissionManager = new CRMManager;
-		TheRandomMissionManager->SetLandScape( cmg.landScape );
-		if ( TheRandomMissionManager->LoadMission( qfalse ) ) {
-			if ( !TheRandomMissionManager->SpawnMission( qfalse ) )
-				Com_Error( ERR_DROP, "Error spawning mission for terrain" );
-		}
-		cmg.landScape->UpdatePatches();
-	}
-	RM_CreateRandomModels( terrainID, terrainInfo );
-//	TheRandomMissionManager->CreateMap();
-}
+static void CL_RMG_Init( int /* terrainID */, const char * /* terrainInfo */ ) { }
 
 static qboolean CGFX_PlayBoltedEffectID( int id, vec3_t org, void *ghoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
@@ -1704,14 +1593,12 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CM_REGISTER_TERRAIN:
-		return CL_CM_RegisterTerrain( (const char *)VMA(1) );
+		return 0;
 
 	case CG_RMG_INIT:
-		CL_RMG_Init( args[1], (const char *)VMA(2) );
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		re->InitRendererTerrain((const char *)VMA(1));
 		return 0;
 
 	case CG_R_WEATHER_CONTENTS_OVERRIDE:
@@ -1732,6 +1619,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	}
 	return 0;
 }
+
+// Stub function for old RMG system.
+static void RE_InitRendererTerrain ( const char * /*info*/ ) {}
 
 void CL_BindCGame( void ) {
 	static cgameImport_t cgi;
@@ -1841,7 +1731,7 @@ void CL_BindCGame( void ) {
 		cgi.R_SetRangedFog						= re->SetRangedFog;
 		cgi.R_SetRefractionProperties			= re->SetRefractionProperties;
 		cgi.R_WorldEffectCommand				= re->WorldEffectCommand;
-		cgi.RE_InitRendererTerrain				= re->InitRendererTerrain;
+		cgi.RE_InitRendererTerrain				= RE_InitRendererTerrain;
 		cgi.WE_AddWeatherZone					= re->AddWeatherZone;
 		cgi.GetCurrentSnapshotNumber			= CL_GetCurrentSnapshotNumber;
 		cgi.GetCurrentCmdNumber					= CL_GetCurrentCmdNumber;

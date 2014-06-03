@@ -55,7 +55,7 @@ public:
 	void SetReturn ( CSequence *sequence );
 
 	int GetNumCommands( void )	const	{	return m_numCommands;	}
-	int GetNumChildren( void )	const	{	return m_children.size();	}
+	int GetNumChildren( void )	const	{	return (int)m_children.size();	}
 
 	CSequence *GetChildByIndex( int id );
 	bool HasChild( CSequence *sequence );

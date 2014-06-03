@@ -1,10 +1,6 @@
 // cmodel.c -- model loading
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "cm_local.h"
-#include "cm_landscape.h" //rwwRMG - include
-#include "RMG/RM_Headers.h" //rwwRMG - include
+#include "qcommon/qfiles.h"
 
 #ifdef BSPC
 
@@ -74,7 +70,7 @@ int			NumSubBSP, TotalSubModels;
 CMod_LoadShaders
 =================
 */
-void CMod_LoadShaders( lump_t *l, clipMap_t	&cm )
+static void CMod_LoadShaders( lump_t *l, clipMap_t &cm )
 {
 	dshader_t	*in;
 	int			i, count;
@@ -252,10 +248,6 @@ void CMod_LoadBrushes( lump_t *l, clipMap_t	&cm ) {
 			Com_Error( ERR_DROP, "CMod_LoadBrushes: bad shaderNum: %i", out->shaderNum );
 		}
 		out->contents = cm.shaders[out->shaderNum].contentFlags;
-
-		// Landscapes are set up afterwards in the entity spawning
-		//out->landscape = NULL;	//the memory was cleared already by hunk_alloc
-		//out->checkcount=0;
 
 		CM_BoundBrush( out );
 	}
@@ -712,13 +704,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	if (&cm == &cmg)
 	{
 		// Load in the shader text - return instantly if already loaded
-#if !defined(BSPC)
-		CM_LoadShaderText(qfalse);
-#endif
 		CM_InitBoxHull ();
-#if !defined(BSPC)
-		CM_SetupShaderProperties();
-#endif
 	}
 
 #ifndef BSPC	// I hope we can lose this crap soon
@@ -774,23 +760,6 @@ CM_ClearMap
 void CM_ClearMap( void )
 {
 	int		i;
-
-#if !defined(BSPC)
-	CM_ShutdownShaderProperties();
-//	MAT_Shutdown();
-#endif
-
-	if (TheRandomMissionManager)
-	{
-		delete TheRandomMissionManager;
-		TheRandomMissionManager = 0;
-	}
-
-	if (cmg.landScape)
-	{
-		delete cmg.landScape;
-		cmg.landScape = NULL;
-	}
 
 	Com_Memset( &cmg, 0, sizeof( cmg ) );
 	CM_ClearLevelPatches();
@@ -1002,61 +971,6 @@ void CM_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs ) {
 	VectorCopy( cmod->mins, mins );
 	VectorCopy( cmod->maxs, maxs );
 }
-
-/*
-===================
-CM_RegisterTerrain
-
-Allows physics to examine the terrain data.
-===================
-*/
-#if !defined(BSPC)
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server)
-{
-	CCMLandScape	*ls;
-
-	if(cmg.landScape)
-	{
-		// Already spawned so just return
-		ls = cmg.landScape;
-		ls->IncreaseRefCount();
-		return(ls);
-	}
-	// Doesn't exist so create and link in
-	ls = CM_InitTerrain(config, 0, server);
-
-	// Increment for the next instance
-	if (cmg.landScape)
-	{
-		Com_Error(ERR_DROP, "You cannot have more than one terrain brush.\n");
-	}
-	cmg.landScape = ls;
-	return(ls);
-}
-
-/*
-===================
-CM_ShutdownTerrain
-===================
-*/
-
-void CM_ShutdownTerrain( thandle_t terrainId)
-{
-	CCMLandScape	*landscape;
-
-	landscape = cmg.landScape;
-
-	if (landscape)
-	{
-		landscape->DecreaseRefCount();
-		if(landscape->GetRefCount() <= 0)
-		{
-			delete landscape;
-			cmg.landScape = NULL;
-		}
-	}
-}
-#endif
 
 int CM_LoadSubBSP(const char *name, qboolean clientload)
 {

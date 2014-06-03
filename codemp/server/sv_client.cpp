@@ -1,11 +1,7 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
-#include "RMG/RM_Headers.h"
 #include "zlib/zlib.h"
 #include "server/sv_gameapi.h"
 
@@ -460,24 +456,6 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	}
 }
 
-void SV_WriteRMGAutomapSymbols ( msg_t* msg )
-{
-	int count = TheRandomMissionManager->GetAutomapSymbolCount ( );
-	int i;
-
-	MSG_WriteShort ( msg, count );
-
-	for ( i = 0; i < count; i ++ )
-	{
-		rmAutomapSymbol_t* symbol = TheRandomMissionManager->GetAutomapSymbol ( i );
-
-		MSG_WriteByte ( msg, symbol->mType );
-		MSG_WriteByte ( msg, symbol->mSide );
-		MSG_WriteLong ( msg, (long)symbol->mOrigin[0] );
-		MSG_WriteLong ( msg, (long)symbol->mOrigin[1] );
-	}
-}
-
 void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg ) {
 	int			start;
 	entityState_t	*base, nullstate;
@@ -523,53 +501,8 @@ void SV_CreateClientGameStateMessage( client_t *client, msg_t *msg ) {
 	// write the checksum feed
 	MSG_WriteLong( msg, sv.checksumFeed);
 
-	//rwwRMG - send info for the terrain
-	if ( TheRandomMissionManager )
-	{
-		z_stream zdata;
-
-		// Send the height map
-		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_BEST_COMPRESSION );
-
-		unsigned char heightmap[15000];
-		zdata.next_out = (unsigned char*)heightmap;
-		zdata.avail_out = 15000;
-		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetHeightMap();
-		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
-
-		MSG_WriteShort ( msg, (unsigned short)zdata.total_out );
-		MSG_WriteBits ( msg, 1, 1 );
-		MSG_WriteData ( msg, heightmap, zdata.total_out);
-
-		deflateEnd(&zdata);
-
-		// Send the flatten map
-		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_BEST_COMPRESSION );
-
-		zdata.next_out = (unsigned char*)heightmap;
-		zdata.avail_out = 15000;
-		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetFlattenMap();
-		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
-
-		MSG_WriteShort ( msg, (unsigned short)zdata.total_out );
-		MSG_WriteBits ( msg, 1, 1 );
-		MSG_WriteData ( msg, heightmap, zdata.total_out);
-
-		deflateEnd(&zdata);
-
-		// Seed is needed for misc ents and noise
-		MSG_WriteLong ( msg, TheRandomMissionManager->GetLandScape()->get_rand_seed ( ) );
-
-		SV_WriteRMGAutomapSymbols ( msg );
-	}
-	else
-	{
-		MSG_WriteShort ( msg, 0 );
-	}
+	// For old RMG system.
+	MSG_WriteShort ( msg, 0 );
 }
 
 /*
@@ -677,7 +610,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 		memset(&client->lastUsercmd, '\0', sizeof(client->lastUsercmd));
 
 	// call the game begin function
-	GVM_ClientBegin( client - svs.clients, qfalse );
+	GVM_ClientBegin( client - svs.clients );
 
 	SV_BeginAutoRecordDemos();
 }

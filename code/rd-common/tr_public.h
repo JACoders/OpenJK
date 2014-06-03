@@ -25,14 +25,12 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-// suck it
-#include "../qcommon/cm_landscape.h"
 #ifdef _WIN32
 // down
 #include "../win32/win_local.h"
 #endif
 
-#define	REF_API_VERSION		11
+#define	REF_API_VERSION		13
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -84,10 +82,6 @@ typedef struct {
 
 	void				(*CM_DrawDebugSurface)				( void (*drawPoly)( int color, int numPoints, float *points ) );
 	bool				(*CM_CullWorldBox)					( const cplane_t *frustrum, const vec3pair_t bounds );
-	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ),
-															void *userdata );
-	CCMLandScape *		(*CM_RegisterTerrain)				( const char *config, bool server );
-	void				(*CM_ShutdownTerrain)				( thandle_t terrainId );
 	byte*				(*CM_ClusterPVS)					( int cluster );
 	int					(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
 	void				(*S_RestartMusic)					( void );
@@ -97,9 +91,6 @@ typedef struct {
 	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
-
-	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	void				(*SV_SetConfigstring)				( int index, const char *value );
 
 #ifdef _WIN32
 	WinVars_t *			(*GetWinVars)						( void ); //g_wv
@@ -125,7 +116,6 @@ typedef struct {
 
 	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
-	void				(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer	// NOT IN MP
 	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );	// NOT IN MP
 
 	qboolean			(*CL_IsRunningInGameCinematic)		( void );
@@ -252,21 +242,12 @@ typedef struct {
 	unsigned int (*AnyLanguage_ReadCharFromString2)( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */);
 
 	// Misc
-	void	(*R_Resample)(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-	void	(*R_LoadDataImage)(const char *name, byte **pic, int *width, int *height);
-	void	(*R_InvertImage)(byte *data, int width, int height, int depth);
-	int		(*SavePNG)( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 	void		(*SaveJPG)( const char * filename, int quality, int image_width, int image_height, byte *image_buffer, int padding );
 	void	(*R_InitWorldEffects)(void);
-	void	(*R_CreateAutomapImage)( const char *name, const byte *pic, int width, int height,
-		qboolean mipmap, qboolean allowPicmip, qboolean allowTC, qboolean glWrapClampMode );
 	void	(*R_ClearStuffToStopGhoul2CrashingThings)(void);
 	qboolean (*R_inPVS)(vec3_t p1, vec3_t p2);
 
 	void	(*SVModelInit)(void);
-
-	// RMG
-	void	(*InitRendererTerrain)( const char *info );
 
 	// Distortion effects
 	float*		(*tr_distortionAlpha)( void );

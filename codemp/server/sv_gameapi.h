@@ -3,7 +3,7 @@
 void		GVM_InitGame						( int levelTime, int randomSeed, int restart );
 void		GVM_ShutdownGame					( int restart );
 char *		GVM_ClientConnect					( int clientNum, qboolean firstTime, qboolean isBot );
-void		GVM_ClientBegin						( int clientNum, qboolean allowTeamReset );
+void		GVM_ClientBegin						( int clientNum );
 qboolean	GVM_ClientUserinfoChanged			( int clientNum );
 void		GVM_ClientDisconnect				( int clientNum );
 void		GVM_ClientCommand					( int clientNum );

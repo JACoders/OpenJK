@@ -26,7 +26,7 @@ This file is part of Jedi Knight 2.
 #include "../game/g_roff.h"
 
 bool		in_camera = false;
-camera_t	client_camera={0};
+camera_t	client_camera={};
 extern qboolean	player_locked;
 
 extern gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
@@ -432,8 +432,6 @@ CGCam_Follow
 
 void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 {
-	int len;
-
 	//Clear any previous
 	CGCam_FollowDisable();
 
@@ -456,10 +454,8 @@ void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 	client_camera.info_state |= CAMERA_FOLLOWING;
 	client_camera.info_state &= ~CAMERA_PANNING;
 
-	len = strlen(cameraGroup);
-	strncpy( client_camera.cameraGroup, cameraGroup, sizeof(client_camera.cameraGroup) );
 	//NULL terminate last char in case they type a name too long
-	client_camera.cameraGroup[len] = 0;
+	Q_strncpyz( client_camera.cameraGroup, cameraGroup, sizeof( client_camera.cameraGroup ) );
 
 	if ( speed )
 	{
@@ -663,7 +659,7 @@ void CGCam_FollowUpdate ( void )
 	int			num_subjects = 0, i;
 	qboolean	focused = qfalse;
 	
-	if ( client_camera.cameraGroup && client_camera.cameraGroup[0] )
+	if ( client_camera.cameraGroup[0] )
 	{
 		//Stay centered in my cameraGroup, if I have one
 		while( NULL != (from = G_Find(from, FOFS(cameraGroup), client_camera.cameraGroup)))
@@ -688,7 +684,7 @@ void CGCam_FollowUpdate ( void )
 			}
 
 			focused = qfalse;
-			if ( from->client && client_camera.cameraGroupTag && client_camera.cameraGroupTag[0] && fromCent->gent->ghoul2.size() )
+			if ( from->client && client_camera.cameraGroupTag[0] && fromCent->gent->ghoul2.size() )
 			{
 				int newBolt = gi.G2API_AddBolt( &fromCent->gent->ghoul2[from->playerModel], client_camera.cameraGroupTag );
 				if ( newBolt != -1 )
@@ -880,7 +876,7 @@ void CGCam_TrackUpdate ( void )
 {
 	vec3_t		goalVec, curVec, trackPos, vec;
 	float		goalDist, dist;
-	qboolean	slowDown = qfalse;
+	//qboolean	slowDown = qfalse;
 
 	if ( client_camera.nextTrackEntUpdateTime <= cg.time )
 	{
@@ -982,11 +978,11 @@ void CGCam_TrackUpdate ( void )
 	VectorScale( client_camera.moveDir, (100.0f - cg.frametime)/100.0f, curVec );
 	VectorAdd( goalVec, curVec, client_camera.moveDir );
 	VectorNormalize( client_camera.moveDir );
-	if(slowDown)
+	/*if(slowDown)
 	{
 		VectorMA( client_camera.origin, client_camera.speed * goalDist/100.0f * cg.frametime/100.0f, client_camera.moveDir, trackPos );
 	}
-	else
+	else*/
 	{
 		VectorMA( client_camera.origin, client_camera.speed * cg.frametime/100.0f , client_camera.moveDir, trackPos );
 	}
@@ -1351,7 +1347,7 @@ void CGCam_StartRoff( char *roff )
 
 	client_camera.info_state |= CAMERA_ROFFING;
 
-	strncpy(client_camera.sRoff,roff,sizeof(client_camera.sRoff));
+	Q_strncpyz(client_camera.sRoff,roff,sizeof(client_camera.sRoff));
 	client_camera.roff_frame = 0;
 	client_camera.next_roff_time = cg.time;	// I can work right away
 }
@@ -1416,8 +1412,8 @@ static void CGCam_Roff( void )
 	}
 
 	// Yeah, um, I guess this just has to be negated?
-	ang[PITCH] =- ang[PITCH];
-	ang[ROLL]  =- ang[ROLL];
+	ang[PITCH] = -ang[PITCH];
+	ang[ROLL]  = -ang[ROLL];
 	// might need to to yaw as well.  need a test...
 
 #ifdef _DEBUG

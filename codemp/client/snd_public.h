@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qcommon/qcommon.h"
+
 void S_Init( void );
 void S_Shutdown( void );
 

@@ -2,26 +2,28 @@
 
 // snd_local.h -- private sound definations
 
-#define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
-
 #include "snd_public.h"
 #include "mp3code/mp3struct.h"
 
+#if defined(_WIN32) && !defined(WIN64)
+#define USE_OPENAL
+#endif
+
 // Open AL Specific
-#ifdef _WIN32
+#ifdef USE_OPENAL
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
-#include "eax\eax.h"
-#include "eax\eaxman.h"
-#elif defined MACOS_X
+#include "eax/eax.h"
+#include "eax/eaxman.h"
+/*#elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
-#include <AL/alc.h>
+#include <AL/alc.h>*/
 #endif
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
-void S_AL_MuteAllSounds(sboolean bMute);
+void S_AL_MuteAllSounds(qboolean bMute);
 
 
 //from SND_AMBIENT
@@ -53,8 +55,8 @@ typedef enum
 
 typedef struct sfx_s {
 	short			*pSoundData;
-	sboolean		bDefaultSound;			// couldn't be loaded, so use buzz
-	sboolean		bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
+	qboolean		bDefaultSound;			// couldn't be loaded, so use buzz
+	qboolean		bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
 	SoundCompressionMethod_t eSoundCompressionMethod;
 	MP3STREAM		*pMP3StreamHeader;		// NULL ptr unless this sfx_t is an MP3. Use Z_Malloc and Z_Free
 	int 			iSoundLengthInSamples;	// length in samples, always kept as 16bit now so this is #shorts (watch for stereo later for music?)
@@ -64,7 +66,9 @@ typedef struct sfx_s {
 	int				iLastLevelUsedOn;		// used for cacheing purposes
 
 	// Open AL
+#ifdef USE_OPENAL
 	ALuint		Buffer;
+#endif
 	char		*lipSyncData;
 
 	struct sfx_s	*next;					// only used because of hash table when registering
@@ -83,11 +87,13 @@ typedef struct dma_s {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
+#ifdef USE_OPENAL
 typedef struct STREAMINGBUFFER_s {
 	ALuint	BufferID;
 	ALuint	Status;
 	char	*Data;
 } STREAMINGBUFFER;
+#endif
 
 #define NUM_STREAMING_BUFFERS	4
 #define STREAMING_BUFFER_SIZE	4608		// 4 decoded MP3 frames
@@ -98,7 +104,7 @@ typedef struct STREAMINGBUFFER_s {
 
 typedef struct channel_s {
 // back-indented fields new in TA codebase, will re-format when MP3 code finished -ste
-// note: field missing in TA: sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
+// note: field missing in TA: qboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 //
 	unsigned int startSample;	// START_SAMPLE_IMMEDIATE = set immediately on next mix
 	int			entnum;			// to allow overriding a specific sound
@@ -110,9 +116,9 @@ typedef struct channel_s {
 
 	vec3_t		origin;			// only use if fixed_origin is set
 
-	sboolean	fixed_origin;	// use origin instead of fetching entnum's origin
+	qboolean	fixed_origin;	// use origin instead of fetching entnum's origin
 	sfx_t		*thesfx;		// sfx structure
-	sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
+	qboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 	//
 	MP3STREAM	MP3StreamHeader;
 	byte		MP3SlidingDecodeBuffer[50000/*12000*/];	// typical back-request = -3072, so roughly double is 6000 (safety), then doubled again so the 6K pos is in the middle of the buffer)
@@ -127,8 +133,10 @@ typedef struct channel_s {
 //	bool	bAmbient;	// Signifies if this channel / source is playing a looping ambient sound
 	bool	bProcessed;	// Signifies if this channel / source has been processed
 	bool	bStreaming;	// Set to true if the data needs to be streamed (MP3 or dialogue)
+#ifdef USE_OPENAL
 	STREAMINGBUFFER	buffers[NUM_STREAMING_BUFFERS];	// AL Buffers for streaming
 	ALuint		alSource;		// Open AL Source
+#endif
 	bool		bPlaying;		// Set to true when a sound is playing on this channel / source
 	int			iStartTime;		// Time playback of Source begins
 	int			lSlotID;		// ID of Slot rendering Source's environment (enables a send to this FXSlot)
@@ -180,9 +188,6 @@ extern	channel_t   s_channels[MAX_CHANNELS];
 extern	int		s_paintedtime;
 extern	int		s_rawend;
 extern	vec3_t	listener_origin;
-extern	vec3_t	listener_forward;
-extern	vec3_t	listener_right;
-extern	vec3_t	listener_up;
 extern	dma_t	dma;
 
 #define	MAX_RAW_SAMPLES	16384
@@ -204,7 +209,7 @@ extern cvar_t	*s_doppler;
 
 wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength);
 
-sboolean S_LoadSound( sfx_t *sfx );
+qboolean S_LoadSound( sfx_t *sfx );
 
 
 void S_PaintChannels(int endtime);

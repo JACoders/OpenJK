@@ -160,6 +160,8 @@ qboolean Sys_LowPhysicalMemory()
 	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatus() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
+
+		stat.dwLength = sizeof (stat);
 		GlobalMemoryStatusEx (&stat);
 	}
 	if (sys_lowmem->integer)
@@ -167,16 +169,6 @@ qboolean Sys_LowPhysicalMemory()
 		return qtrue;
 	}
 	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
-}
-
-
-/*
-==================
-Sys_BeginProfiling
-==================
-*/
-void Sys_BeginProfiling( void ) {
-	// this is just used on the mac build
 }
 
 /*
@@ -632,14 +624,14 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 	// Try base folder if mod is loaded but not found
 	if (gamedir[0] ) {
 		// Try basepath/base
-		fn = FS_BuildOSPath( basepath, "base", gamename );
+		fn = FS_BuildOSPath( basepath, OPENJKGAME, gamename );
 		retVal = LoadLibrary( fn );
 		if(retVal)
 			goto successful;
 
 		if( homepath[0] ) {
 			// Try homepath/base
-			fn = FS_BuildOSPath( homepath, "base", gamename );
+			fn = FS_BuildOSPath( homepath, OPENJKGAME, gamename );
 			retVal = LoadLibrary( fn );
 			if(retVal)
 				goto successful;
@@ -647,7 +639,7 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 
 		if( cdpath[0] ) {
 			// Try cdpath/fs_game
-			fn = FS_BuildOSPath( cdpath, "base", gamename );
+			fn = FS_BuildOSPath( cdpath, OPENJKGAME, gamename );
 			retVal = LoadLibrary( fn );
 			if(retVal)
 				goto successful;
@@ -890,19 +882,12 @@ are initialized
 #define OSR2_BUILD_NUMBER 1111
 #define WIN98_BUILD_NUMBER 1998
 
-#if MEM_DEBUG
-void SH_Register(void);
-#endif
-
 void Sys_Init( void ) {
 	// make sure the timer is high precision, otherwise
 	// NT gets 18ms resolution
 	timeBeginPeriod( 1 );
 
 	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-#if MEM_DEBUG
-	SH_Register();
-#endif
 
 	g_wv.osversion.dwOSVersionInfoSize = sizeof( g_wv.osversion );
 
@@ -917,8 +902,8 @@ void Sys_Init( void ) {
 	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
 
 	// save out a couple things in rom cvars for the renderer to access
-	Cvar_Get( "win_hinstance", va("%i", (int)g_wv.hInstance), CVAR_ROM );
-	Cvar_Get( "win_wndproc", va("%i", (int)MainWndProc), CVAR_ROM );
+	Cvar_Get( "win_hinstance", va("%p", g_wv.hInstance), CVAR_ROM );
+	Cvar_Get( "win_wndproc", va("%p", MainWndProc), CVAR_ROM );
 
 	Cvar_Set( "username", Sys_GetCurrentUser() );
 

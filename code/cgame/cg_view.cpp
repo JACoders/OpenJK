@@ -24,7 +24,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "cg_lights.h"
 #include "../game/wp_saber.h"
 #include "../game/g_vehicles.h"
 

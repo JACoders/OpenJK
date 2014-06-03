@@ -26,18 +26,22 @@ This file is part of Jedi Academy.
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"
 
+#if defined(_WIN32) && !defined(WIN64)
+#define USE_OPENAL
+#endif
+
 // Open AL Specific
-#ifdef _WIN32
+#ifdef USE_OPENAL
 #include "openal\al.h"
 #include "openal\alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
-#elif defined MACOS_X
+/*#elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
-#include <AL/alc.h>
+#include <AL/alc.h>*/
 #endif
 
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
@@ -84,7 +88,9 @@ typedef struct sfx_s {
 	float			fVolRange;				// used to set the highest volume this sample has at load time - used for lipsynching
 
 	// Open AL
+#ifdef USE_OPENAL
 	ALuint		Buffer;
+#endif
 	char		*lipSyncData;
 
 	struct sfx_s	*next;					// only used because of hash table when registering
@@ -103,12 +109,14 @@ typedef struct {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
+#ifdef USE_OPENAL
 typedef struct
 {
 	ALuint	BufferID;
 	ALuint	Status;
 	char	*Data;
 } STREAMINGBUFFER;
+#endif
 
 #define NUM_STREAMING_BUFFERS	4
 #define STREAMING_BUFFER_SIZE	4608		// 4 decoded MP3 frames
@@ -147,8 +155,10 @@ typedef struct
 //	bool	bAmbient;	// Signifies if this channel / source is playing a looping ambient sound
 	bool	bProcessed;	// Signifies if this channel / source has been processed
 	bool	bStreaming;	// Set to true if the data needs to be streamed (MP3 or dialogue)
+#ifdef USE_OPENAL
 	STREAMINGBUFFER	buffers[NUM_STREAMING_BUFFERS];	// AL Buffers for streaming
 	ALuint		alSource;		// Open AL Source
+#endif
 	bool		bPlaying;		// Set to true when a sound is playing on this channel / source
 	int			iStartTime;		// Time playback of Source begins
 	int			lSlotID;		// ID of Slot rendering Source's environment (enables a send to this FXSlot)
@@ -200,9 +210,6 @@ extern	channel_t   s_channels[MAX_CHANNELS];
 extern	int		s_paintedtime;
 extern	int		s_rawend;
 extern	vec3_t	listener_origin;
-extern	vec3_t	listener_forward;
-extern	vec3_t	listener_right;
-extern	vec3_t	listener_up;
 extern	dma_t	dma;
 
 #define	MAX_RAW_SAMPLES	16384

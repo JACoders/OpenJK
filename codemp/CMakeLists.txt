@@ -130,18 +130,42 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedIncludeDirectories ${MPDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 
 	if(UseInternalZlib)
-		# OpenAL32.lib is included for windows
-		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
-		if(NOT ZlibLibrary)
-			message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
-		endif(NOT ZlibLibrary)
+		set(MPEngineAndDedZLibFiles
+			"${OpenJKLibDir}/zlib/adler32.c"
+			"${OpenJKLibDir}/zlib/compress.c"
+			"${OpenJKLibDir}/zlib/crc32.c"
+			"${OpenJKLibDir}/zlib/deflate.c"
+			"${OpenJKLibDir}/zlib/gzclose.c"
+			"${OpenJKLibDir}/zlib/gzlib.c"
+			"${OpenJKLibDir}/zlib/gzread.c"
+			"${OpenJKLibDir}/zlib/gzwrite.c"
+			"${OpenJKLibDir}/zlib/infback.c"
+			"${OpenJKLibDir}/zlib/inffast.c"
+			"${OpenJKLibDir}/zlib/inflate.c"
+			"${OpenJKLibDir}/zlib/inftrees.c"
+			"${OpenJKLibDir}/zlib/trees.c"
+			"${OpenJKLibDir}/zlib/uncompr.c"
+			"${OpenJKLibDir}/zlib/zutil.c"
+			"${OpenJKLibDir}/zlib/crc32.h"
+			"${OpenJKLibDir}/zlib/deflate.h"
+			"${OpenJKLibDir}/zlib/gzguts.h"
+			"${OpenJKLibDir}/zlib/inffast.h"
+			"${OpenJKLibDir}/zlib/inffixed.h"
+			"${OpenJKLibDir}/zlib/inflate.h"
+			"${OpenJKLibDir}/zlib/inftrees.h"
+			"${OpenJKLibDir}/zlib/trees.h"
+			"${OpenJKLibDir}/zlib/zconf.h"
+			"${OpenJKLibDir}/zlib/zlib.h"
+			"${OpenJKLibDir}/zlib/zutil.h")
+		source_group("zlib" FILES ${MPEngineAndDedZLibFiles})
+		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedZLibFiles})
+		
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZlibLibrary})
-	else(UseInternalZlib)
+	else()
 		find_package(ZLIB REQUIRED)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
+	endif()
 
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -171,10 +195,6 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
 		"${MPDir}/qcommon/q_platform.h"
-		"${MPDir}/qcommon/chash.h"
-		"${MPDir}/qcommon/cm_draw.cpp"
-		"${MPDir}/qcommon/cm_draw.h"
-		"${MPDir}/qcommon/cm_landscape.h"
 		"${MPDir}/qcommon/cm_load.cpp"
 		"${MPDir}/qcommon/cm_local.h"
 		"${MPDir}/qcommon/cm_patch.cpp"
@@ -182,11 +202,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_polylib.cpp"
 		"${MPDir}/qcommon/cm_polylib.h"
 		"${MPDir}/qcommon/cm_public.h"
-		"${MPDir}/qcommon/cm_randomterrain.cpp"
-		"${MPDir}/qcommon/cm_randomterrain.h"
-		"${MPDir}/qcommon/cm_shader.cpp"
-		"${MPDir}/qcommon/cm_terrain.cpp"
-		"${MPDir}/qcommon/cm_terrainmap.h"
 		"${MPDir}/qcommon/cm_test.cpp"
 		"${MPDir}/qcommon/cm_trace.cpp"
 		"${MPDir}/qcommon/cmd.cpp"
@@ -265,36 +280,6 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("icarus" FILES ${MPEngineAndDedIcarusFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedIcarusFiles})
 
-	set(MPEngineAndDedRmgFiles
-		"${MPDir}/RMG/RM_Area.cpp"
-		"${MPDir}/RMG/RM_Area.h"
-		"${MPDir}/RMG/RM_Headers.h"
-		"${MPDir}/RMG/RM_Instance.cpp"
-		"${MPDir}/RMG/RM_Instance.h"
-		"${MPDir}/RMG/RM_Instance_BSP.cpp"
-		"${MPDir}/RMG/RM_Instance_BSP.h"
-		"${MPDir}/RMG/RM_Instance_Group.cpp"
-		"${MPDir}/RMG/RM_Instance_Group.h"
-		"${MPDir}/RMG/RM_Instance_Random.cpp"
-		"${MPDir}/RMG/RM_Instance_Random.h"
-		"${MPDir}/RMG/RM_Instance_Void.cpp"
-		"${MPDir}/RMG/RM_Instance_Void.h"
-		"${MPDir}/RMG/RM_InstanceFile.cpp"
-		"${MPDir}/RMG/RM_InstanceFile.h"
-		"${MPDir}/RMG/RM_Manager.cpp"
-		"${MPDir}/RMG/RM_Manager.h"
-		"${MPDir}/RMG/RM_Mission.cpp"
-		"${MPDir}/RMG/RM_Mission.h"
-		"${MPDir}/RMG/RM_Objective.cpp"
-		"${MPDir}/RMG/RM_Objective.h"
-		"${MPDir}/RMG/RM_Path.cpp"
-		"${MPDir}/RMG/RM_Path.h"
-		"${MPDir}/RMG/RM_Terrain.cpp"
-		"${MPDir}/RMG/RM_Terrain.h"
-		)
-	source_group("rmg" FILES ${MPEngineAndDedRmgFiles})
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedRmgFiles})
-
 	set(MPEngineAndDedServerFiles
 		"${MPDir}/server/NPCNav/navigator.cpp"
 		"${MPDir}/server/NPCNav/navigator.h"
@@ -309,6 +294,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/server/sv_snapshot.cpp"
 		"${MPDir}/server/sv_world.cpp"
 		"${MPDir}/server/sv_gameapi.cpp"
+		"${MPDir}/server/sv_gameapi.h"
 		)
 	source_group("server" FILES ${MPEngineAndDedServerFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedServerFiles})
@@ -320,12 +306,11 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
 
-	# TODO: replace the following with proper library? Update it?
 	set(MPEngineAndDedMinizipFiles
-		"${MPDir}/qcommon/unzip.cpp"
-		"${MPDir}/qcommon/unzip.h"
-		"${OpenJKLibDir}/zlib/ioapi.c"
-		"${OpenJKLibDir}/zlib/ioapi.h"
+		"${OpenJKLibDir}/minizip/ioapi.c"
+		"${OpenJKLibDir}/minizip/ioapi.h"
+		"${OpenJKLibDir}/minizip/unzip.cpp"
+		"${OpenJKLibDir}/minizip/unzip.h"
 		)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
@@ -357,27 +342,30 @@ if(BuildMPEngine)
 
 	#    Dependencies
 
-	# OpenGL
-	# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-	find_package(OpenGL REQUIRED)
-	set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
+	if (NOT WIN32)
+		# OpenGL
+		find_package(OpenGL REQUIRED)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+		set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
+	endif()
 
 	# OpenAL (is optionally included for Windows)
-	if(UseInternalOpenAL)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
-		# There's a libs/OpenAL32.lib
-		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-		find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir})
-		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
-		endif(NOT OpenALLibrary)
-		set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
-	else(UseInternalOpenAL)
-		find_package(OpenAL REQUIRED)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
-		set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
-	endif(UseInternalOpenAL)
+	if (WIN32 AND NOT WIN64)
+		if(UseInternalOpenAL)
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
+			# There's a libs/OpenAL32.lib
+			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
+			find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir})
+			if(NOT OpenALLibrary)
+				message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
+			endif(NOT OpenALLibrary)
+			set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
+		else(UseInternalOpenAL)
+			find_package(OpenAL REQUIRED)
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
+			set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
+		endif(UseInternalOpenAL)
+	endif()
 
 	if(NOT WIN32)
 		find_package(SDL2 REQUIRED)
@@ -439,18 +427,6 @@ if(BuildMPEngine)
 		)
 	source_group("client" FILES ${MPEngineClientFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineClientFiles})
-
-	set(MPEngineCommonFiles
-		"${MPDir}/qcommon/cm_terrainmap.cpp"
-		"${MPDir}/qcommon/CNetProfile.cpp"
-		"${MPDir}/qcommon/exe_headers.cpp"
-		"${MPDir}/qcommon/exe_headers.h"
-		"${MPDir}/qcommon/hstring.cpp"
-		"${MPDir}/qcommon/hstring.h"
-		"${MPDir}/qcommon/INetProfile.h"
-		)
-	source_group("common" FILES ${MPEngineCommonFiles})
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineCommonFiles})
 
 	set(MPEngineRatlFiles
 		"${MPDir}/Ratl/bits_vs.h"
@@ -533,9 +509,13 @@ if(BuildMPEngine)
 	# todo: windows resources
 
 	if(MakeApplicationBundles)
+		set(MACOSX_BUNDLE_BUNDLE_NAME ${MPEngine})
+		set(MACOSX_BUNDLE_DISPLAY_NAME ${MPEngine})
 		set(MACOSX_BUNDLE_ICON_FILE OpenJK.icns)
 		set_source_files_properties(${MPDir}/macosx/OpenJK.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 		set(MPEngineFiles ${MPEngineFiles} ${MPDir}/macosx/OpenJK.icns)
+		set_source_files_properties(${MPDir}/macosx/English.lproj/InfoPlist.strings PROPERTIES MACOSX_PACKAGE_LOCATION Resources/English.lproj)
+		set(MPEngineFiles ${MPEngineFiles} ${MPDir}/macosx/English.lproj/InfoPlist.strings)
 	endif(MakeApplicationBundles)
 
 	if(WIN32)
@@ -543,6 +523,7 @@ if(BuildMPEngine)
 	else(WIN32)
 		if(MakeApplicationBundles)
 			add_executable(${MPEngine} MACOSX_BUNDLE ${MPEngineFiles})
+			set_target_properties(${MPEngine} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${MPDir}/macosx/OpenJKInfo.plist")
 		else(MakeApplicationBundles)
 			add_executable(${MPEngine} ${MPEngineFiles})
 		endif(MakeApplicationBundles)
@@ -575,8 +556,6 @@ if(BuildMPDed)
 	set(MPDedicatedRendererFiles
 		"${MPDir}/ghoul2/G2_gore.cpp"
 		"${MPDir}/rd-common/mdx_format.h"
-		"${MPDir}/rd-common/tr_image_manipulation.cpp"
-		"${MPDir}/rd-common/tr_image_png.cpp"
 		"${MPDir}/rd-common/tr_public.h"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
@@ -594,32 +573,6 @@ if(BuildMPDed)
 		"${MPDir}/rd-dedicated/tr_skin.cpp")
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
-
-	if(UseInternalPNG)
-		set(MPDedLibPngFiles
-			"${OpenJKLibDir}/libpng/png.c"
-			"${OpenJKLibDir}/libpng/pngerror.c"
-			"${OpenJKLibDir}/libpng/pngget.c"
-			"${OpenJKLibDir}/libpng/pngmem.c"
-			"${OpenJKLibDir}/libpng/pngpread.c"
-			"${OpenJKLibDir}/libpng/pngread.c"
-			"${OpenJKLibDir}/libpng/pngrio.c"
-			"${OpenJKLibDir}/libpng/pngrtran.c"
-			"${OpenJKLibDir}/libpng/pngrutil.c"
-			"${OpenJKLibDir}/libpng/pngset.c"
-			"${OpenJKLibDir}/libpng/pngtrans.c"
-			"${OpenJKLibDir}/libpng/pngwio.c"
-			"${OpenJKLibDir}/libpng/pngwrite.c"
-			"${OpenJKLibDir}/libpng/pngwtran.c"
-			"${OpenJKLibDir}/libpng/pngwutil.c")
-		source_group("libpng" FILES ${MPDedLibPngFiles})
-		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} "${OpenJKLibDir}/libpng")
-		set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
-	else(UseInternalPNG)
-		find_package(PNG REQUIRED)
-		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} ${PNG_INCLUDE_DIR})
-		set(MPDedLibraries ${MPDedLibraries} ${PNG_LIBRARIES})
-	endif(UseInternalPNG)
 
 	set(MPDedNullFiles
 		"${MPDir}/null/null_client.cpp"

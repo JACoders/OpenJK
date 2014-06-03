@@ -6,8 +6,6 @@
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/RoffSystem.h"
 #include "ghoul2/ghoul2_shared.h"
-#include "RMG/RM_Headers.h"
-#include "qcommon/cm_local.h"
 #include "qcommon/cm_public.h"
 #include "icarus/GameInterface.h"
 #include "qcommon/timing.h"
@@ -28,12 +26,9 @@ void GVM_InitGame( int levelTime, int randomSeed, int restart ) {
 		VM_Call( gvm, GAME_INIT, levelTime, randomSeed, restart );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->InitGame( levelTime, randomSeed, restart );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ShutdownGame( int restart ) {
@@ -41,49 +36,35 @@ void GVM_ShutdownGame( int restart ) {
 		VM_Call( gvm, GAME_SHUTDOWN, restart );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ShutdownGame( restart );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if ( gvm->isLegacy )
 		return (char *)VM_Call( gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	char *r = ge->ClientConnect( clientNum, firstTime, isBot );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ClientConnect( clientNum, firstTime, isBot );
 }
 
-void GVM_ClientBegin( int clientNum, qboolean allowTeamReset ) {
+void GVM_ClientBegin( int clientNum ) {
 	if ( gvm->isLegacy ) {
-		VM_Call( gvm, GAME_CLIENT_BEGIN, clientNum, allowTeamReset );
+		VM_Call( gvm, GAME_CLIENT_BEGIN, clientNum );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	ge->ClientBegin( clientNum, allowTeamReset );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
+	ge->ClientBegin( clientNum, qtrue );
 }
 
 qboolean GVM_ClientUserinfoChanged( int clientNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_CLIENT_USERINFO_CHANGED, clientNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->ClientUserinfoChanged( clientNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ClientUserinfoChanged( clientNum );
 }
 
 void GVM_ClientDisconnect( int clientNum ) {
@@ -91,12 +72,9 @@ void GVM_ClientDisconnect( int clientNum ) {
 		VM_Call( gvm, GAME_CLIENT_DISCONNECT, clientNum );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ClientDisconnect( clientNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ClientCommand( int clientNum ) {
@@ -104,12 +82,9 @@ void GVM_ClientCommand( int clientNum ) {
 		VM_Call( gvm, GAME_CLIENT_COMMAND, clientNum );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ClientCommand( clientNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
@@ -117,12 +92,9 @@ void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
 		VM_Call( gvm, GAME_CLIENT_THINK, clientNum, ucmd );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ClientThink( clientNum, ucmd );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_RunFrame( int levelTime ) {
@@ -130,36 +102,25 @@ void GVM_RunFrame( int levelTime ) {
 		VM_Call( gvm, GAME_RUN_FRAME, levelTime );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->RunFrame( levelTime );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 qboolean GVM_ConsoleCommand( void ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_CONSOLE_COMMAND );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->ConsoleCommand();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ConsoleCommand();
 }
 
 int GVM_BotAIStartFrame( int time ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, BOTAI_START_FRAME, time );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->BotAIStartFrame( time );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->BotAIStartFrame( time );
 }
 
 void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
@@ -167,12 +128,9 @@ void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 		VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, entID, notetrack );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ROFF_NotetrackCallback( entID, notetrack );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_SpawnRMGEntity( void ) {
@@ -180,36 +138,25 @@ void GVM_SpawnRMGEntity( void ) {
 		VM_Call( gvm, GAME_SPAWN_RMG_ENTITY );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->SpawnRMGEntity();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int GVM_ICARUS_PlaySound( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_PLAYSOUND );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_PlaySound();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_PlaySound();
 }
 
 qboolean GVM_ICARUS_Set( void ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_ICARUS_SET );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->ICARUS_Set();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_Set();
 }
 
 void GVM_ICARUS_Lerp2Pos( void ) {
@@ -217,12 +164,9 @@ void GVM_ICARUS_Lerp2Pos( void ) {
 		VM_Call( gvm, GAME_ICARUS_LERP2POS );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Lerp2Pos();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Lerp2Origin( void ) {
@@ -230,12 +174,9 @@ void GVM_ICARUS_Lerp2Origin( void ) {
 		VM_Call( gvm, GAME_ICARUS_LERP2ORIGIN );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Lerp2Origin();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Lerp2Angles( void ) {
@@ -243,24 +184,17 @@ void GVM_ICARUS_Lerp2Angles( void ) {
 		VM_Call( gvm, GAME_ICARUS_LERP2ANGLES );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Lerp2Angles();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int GVM_ICARUS_GetTag( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_GETTAG );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_GetTag();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_GetTag();
 }
 
 void GVM_ICARUS_Lerp2Start( void ) {
@@ -268,12 +202,9 @@ void GVM_ICARUS_Lerp2Start( void ) {
 		VM_Call( gvm, GAME_ICARUS_LERP2START );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Lerp2Start();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Lerp2End( void ) {
@@ -281,12 +212,9 @@ void GVM_ICARUS_Lerp2End( void ) {
 		VM_Call( gvm, GAME_ICARUS_LERP2END );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Lerp2End();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Use( void ) {
@@ -294,12 +222,9 @@ void GVM_ICARUS_Use( void ) {
 		VM_Call( gvm, GAME_ICARUS_USE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Use();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Kill( void ) {
@@ -307,12 +232,9 @@ void GVM_ICARUS_Kill( void ) {
 		VM_Call( gvm, GAME_ICARUS_KILL );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Kill();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Remove( void ) {
@@ -320,12 +242,9 @@ void GVM_ICARUS_Remove( void ) {
 		VM_Call( gvm, GAME_ICARUS_REMOVE );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Remove();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 void GVM_ICARUS_Play( void ) {
@@ -333,48 +252,33 @@ void GVM_ICARUS_Play( void ) {
 		VM_Call( gvm, GAME_ICARUS_PLAY );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_Play();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int GVM_ICARUS_GetFloat( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_GETFLOAT );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_GetFloat();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_GetFloat();
 }
 
 int GVM_ICARUS_GetVector( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_GETVECTOR );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_GetVector();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_GetVector();
 }
 
 int GVM_ICARUS_GetString( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_GETSTRING );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_GetString();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_GetString();
 }
 
 void GVM_ICARUS_SoundIndex( void ) {
@@ -382,120 +286,81 @@ void GVM_ICARUS_SoundIndex( void ) {
 		VM_Call( gvm, GAME_ICARUS_SOUNDINDEX );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->ICARUS_SoundIndex();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int GVM_ICARUS_GetSetIDForString( void ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_ICARUS_GETSETIDFORSTRING );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->ICARUS_GetSetIDForString();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->ICARUS_GetSetIDForString();
 }
 
 qboolean GVM_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEnt ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARPATHTOPOINT, entID, pmins, pmaxs, point, clipmask, okToHitEnt );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_ClearPathToPoint( entID, pmins, pmaxs, point, clipmask, okToHitEnt );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_ClearPathToPoint( entID, pmins, pmaxs, point, clipmask, okToHitEnt );
 }
 
 qboolean GVM_NPC_ClearLOS2( int entID, const vec3_t end ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARLOS, entID, end );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NPC_ClearLOS2( entID, end );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NPC_ClearLOS2( entID, end );
 }
 
 int GVM_NAVNEW_ClearPathBetweenPoints( vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_NAV_CLEARPATHBETWEENPOINTS, start, end, mins, maxs, ignore, clipmask );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->NAVNEW_ClearPathBetweenPoints( start, end, mins, maxs, ignore, clipmask );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAVNEW_ClearPathBetweenPoints( start, end, mins, maxs, ignore, clipmask );
 }
 
 qboolean GVM_NAV_CheckNodeFailedForEnt( int entID, int nodeNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_CHECKNODEFAILEDFORENT, entID, nodeNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_CheckNodeFailedForEnt( entID, nodeNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_CheckNodeFailedForEnt( entID, nodeNum );
 }
 
 qboolean GVM_NAV_EntIsUnlockedDoor( int entityNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISUNLOCKEDDOOR, entityNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_EntIsUnlockedDoor( entityNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_EntIsUnlockedDoor( entityNum );
 }
 
 qboolean GVM_NAV_EntIsDoor( int entityNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISDOOR, entityNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_EntIsDoor( entityNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_EntIsDoor( entityNum );
 }
 
 qboolean GVM_NAV_EntIsBreakable( int entityNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISBREAKABLE, entityNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_EntIsBreakable( entityNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_EntIsBreakable( entityNum );
 }
 
 qboolean GVM_NAV_EntIsRemovableUsable( int entNum ) {
 	if ( gvm->isLegacy )
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISREMOVABLEUSABLE, entNum );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	qboolean r = ge->NAV_EntIsRemovableUsable( entNum );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->NAV_EntIsRemovableUsable( entNum );
 }
 
 void GVM_NAV_FindCombatPointWaypoints( void ) {
@@ -503,36 +368,23 @@ void GVM_NAV_FindCombatPointWaypoints( void ) {
 		VM_Call( gvm, GAME_NAV_FINDCOMBATPOINTWAYPOINTS );
 		return;
 	}
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
 	ge->NAV_FindCombatPointWaypoints();
-	if ( oldVM != NULL )
-		currentVM = oldVM;
 }
 
 int GVM_BG_GetItemIndexByTag( int tag, int type ) {
 	if ( gvm->isLegacy )
 		return VM_Call( gvm, GAME_GETITEMINDEXBYTAG, tag, type );
-	vm_t *oldVM = currentVM;
-	currentVM = gvm;
+	VMSwap v( gvm );
 
-	int r = ge->BG_GetItemIndexByTag( tag, type );
-	if ( oldVM != NULL )
-		currentVM = oldVM;
-	return r;
+	return ge->BG_GetItemIndexByTag( tag, type );
 }
 
 //
 // game syscalls
 //	only used by legacy mods!
 //
-
-static int FloatAsInt( float f ) {
-	byteAlias_t fi;
-	fi.f = f;
-	return fi.i;
-}
 
 // legacy syscall
 
@@ -622,15 +474,7 @@ static void SV_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 		VectorCopy (mins, ent->r.mins);
 		VectorCopy (maxs, ent->r.maxs);
 		ent->r.bmodel = qtrue;
-
-		if (com_RMG && com_RMG->integer)
-		{
-			ent->r.contents = CM_ModelContents( h, sv.mLocalSubBSPIndex );
-		}
-		else
-		{
-			ent->r.contents = CM_ModelContents( h, -1 );
-		}
+		ent->r.contents = CM_ModelContents( h, -1 );
 	}
 	else if (name[0] == '#')
 	{
@@ -1588,21 +1432,10 @@ static qhandle_t SV_RE_RegisterSkin( const char *name ) {
 }
 
 static int SV_CM_RegisterTerrain( const char *config ) {
-	return CM_RegisterTerrain( config, true )->GetTerrainId();
+	return 0;
 }
 
-static void SV_RMG_Init( void ) {
-	if ( com_RMG && com_RMG->integer ) {
-		if ( !TheRandomMissionManager )
-			TheRandomMissionManager = new CRMManager;
-
-		TheRandomMissionManager->SetLandScape( cmg.landScape );
-
-		if ( TheRandomMissionManager->LoadMission( qtrue ) )
-			TheRandomMissionManager->SpawnMission( qtrue );
-	//	cmg.landScape->UpdatePatches();
-	}
-}
+static void SV_RMG_Init( void ) { }
 
 static void SV_G2API_ListModelSurfaces( void *ghlInfo ) {
 	re->G2API_ListSurfaces( (CGhoul2Info *)ghlInfo );
@@ -2988,11 +2821,10 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case G_RMG_INIT:
-		SV_RMG_Init();
 		return 0;
 
 	case G_CM_REGISTER_TERRAIN:
-		return CM_RegisterTerrain((const char *)VMA(1), true)->GetTerrainId();
+		return 0;
 
 	case G_BOT_UPDATEWAYPOINTS:
 		SV_BotWaypointReception(args[1], (wpobject_t **)VMA(2));

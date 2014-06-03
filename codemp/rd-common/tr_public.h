@@ -6,7 +6,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 3
+#define	REF_API_VERSION 5
 
 //
 // these are the functions exported by the refresh module
@@ -107,7 +107,6 @@ typedef struct refexport_s {
 	qboolean			(*InitializeWireframeAutomap)			( void );
 	void				(*AddWeatherZone)						( vec3_t mins, vec3_t maxs );
 	void				(*WorldEffectCommand)					( const char *command );
-	void				(*InitRendererTerrain)					( const char *info );
 	void				(*RegisterMedia_LevelLoadBegin)			( const char *psMapName, ForceReload_e eForceReload );
 	void				(*RegisterMedia_LevelLoadEnd)			( void );
 	int					(*RegisterMedia_GetLevel)				( void );
@@ -217,14 +216,6 @@ typedef struct refexport_s {
 	void				(*G2API_AddSkinGore)					( CGhoul2Info_v &ghoul2, SSkinGoreData &gore );
 	void				(*G2API_ClearSkinGore)					( CGhoul2Info_v &ghoul2 );
 	#endif // _SOF2
-
-	// RMG / Terrain stuff
-	void				(*LoadDataImage)						( const char *name, byte **pic, int *width, int *height );
-	void				(*InvertImage)							( byte *data, int width, int height, int depth );
-	void				(*Resample)								( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components );
-	void				(*LoadImageJA)							( const char *name, byte **pic, int *width, int *height );
-	void				(*CreateAutomapImage)					( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-	int					(*SavePNG)								( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 } refexport_t;
 
 //
@@ -280,9 +271,6 @@ typedef struct refimport_s {
 	void			(*CM_BoxTrace)						( trace_t *results, const vec3_t start, const vec3_t end, const vec3_t mins, const vec3_t maxs, clipHandle_t model, int brushmask, int capsule );
 	void			(*CM_DrawDebugSurface)				( void (*drawPoly)(int color, int numPoints, float *points) );
 	bool			(*CM_CullWorldBox)					( const cplane_t *frustum, const vec3pair_t bounds );
-	void			(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ), void *userdata );
-	CCMLandScape *	(*CM_RegisterTerrain)				( const char *config, bool server );
-	void			(*CM_ShutdownTerrain)				( thandle_t terrainId );
 	byte *			(*CM_ClusterPVS)					( int cluster );
 	int				(*CM_LeafArea)						( int leafnum );
 	int				(*CM_LeafCluster)					( int leafnum );
@@ -304,10 +292,6 @@ typedef struct refimport_s {
 	vm_t *			(*GetCurrentVM)						( void );
 	qboolean		(*CGVMLoaded)						( void );
 	int				(*CGVM_RagCallback)					( int callType );
-
-	// server only stuff
-	void			(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	void			(*SV_SetConfigstring)				( int index, const char *val );
 
 	// ugly win32 backend
 	void *			(*GetWinVars)						( void ); //g_wv

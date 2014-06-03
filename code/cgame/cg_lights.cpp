@@ -19,9 +19,11 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-#if !defined(CG_LIGHTS_H_INC)
-	#include "cg_lights.h"
-#endif
+typedef struct clightstyle_s {
+	int				length;
+	color4ub_t		value;
+	color4ub_t		map[MAX_QPATH];
+} clightstyle_t;
 
 static	clightstyle_t	cl_lightstyle[MAX_LIGHT_STYLES];
 static	int				lastofs;

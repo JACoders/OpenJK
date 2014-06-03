@@ -662,126 +662,7 @@ densityMap - how dense the client models are packed
 */
 void SP_terrain(gentity_t *ent) 
 {
-	char				temp[MAX_INFO_STRING];
-	char				final[MAX_QPATH];
-//	char				seed[MAX_QPATH];
-//	char				missionType[MAX_QPATH];
-//	char				soundSet[MAX_QPATH];
-	int					shaderNum, i;
-	char				*value;
-	int					terrainID;
-
-	//k, found a terrain, just set rmg to 1.
-	//This should always get set before RE_LoadWorldMap and all that is
-	//called which is all that matters.
-	//gi.cvar_set("RMG", "1");
-
-	VectorClear (ent->s.angles);
-	gi.SetBrushModel( ent, ent->model );
-
-	// Get the shader from the top of the brush
-//	shaderNum = gi.CM_GetShaderNum(s.modelindex);
-	shaderNum = 0;
-
-	//rww - Why not do this all the time? Not like terrain entities are used when you don't want them to be terrain.
-/*	if (g_RMG->integer)
-	{
-		gi.Cvar_VariableStringBuffer("RMG_seed", seed, MAX_QPATH);
-		gi.Cvar_VariableStringBuffer("RMG_mission", missionType, MAX_QPATH);
-
-	//	gi.Cvar_VariableStringBuffer("RMG_soundset", soundSet, MAX_QPATH);
-	//	gi.SetConfigstring(CS_AMBIENT_SOUNDSETS, soundSet );
-	}
-*/
-	// Arbitrary (but sane) limits to the number of terxels
-//	if((mTerxels < MIN_TERXELS) || (mTerxels > MAX_TERXELS))
-	{
-//		Com_printf("G_Terrain: terxels out of range - defaulting to 4\n");
-//		mTerxels = 4;
-	}
-
-	// Get info required for the common init
-	temp[0] = 0;
-	G_SpawnString("heightmap", "", &value);
-	Info_SetValueForKey(temp, "heightMap", value);
-
-	G_SpawnString("numpatches", "400", &value);
-	Info_SetValueForKey(temp, "numPatches", va("%d", atoi(value)));
-
-	G_SpawnString("terxels", "4", &value);
-	Info_SetValueForKey(temp, "terxels", va("%d", atoi(value)));
-
-	//Info_SetValueForKey(temp, "seed", seed);
-	Info_SetValueForKey(temp, "minx", va("%f", ent->mins[0]));
-	Info_SetValueForKey(temp, "miny", va("%f", ent->mins[1]));
-	Info_SetValueForKey(temp, "minz", va("%f", ent->mins[2]));
-	Info_SetValueForKey(temp, "maxx", va("%f", ent->maxs[0]));
-	Info_SetValueForKey(temp, "maxy", va("%f", ent->maxs[1]));
-	Info_SetValueForKey(temp, "maxz", va("%f", ent->maxs[2]));
-
-	Info_SetValueForKey(temp, "modelIndex", va("%d", ent->s.modelindex));
-
-	G_SpawnString("terraindef", "grassyhills", &value);
-	Info_SetValueForKey(temp, "terrainDef", value);
-
-	G_SpawnString("instancedef", "", &value);
-	Info_SetValueForKey(temp, "instanceDef", value);
-
-	G_SpawnString("miscentdef", "", &value);
-	Info_SetValueForKey(temp, "miscentDef", value);
-
-	//Info_SetValueForKey(temp, "missionType", missionType);
-	
-	for(i = 0; i < MAX_INSTANCE_TYPES; i++)
-	{
-		gi.Cvar_VariableStringBuffer(va("RMG_instance%d", i), final, MAX_QPATH);
-		if(strlen(final))
-		{
-			Info_SetValueForKey(temp, va("inst%d", i), final);
-		}
-	}
-
-	// Set additional data required on the client only
-	G_SpawnString("densitymap", "", &value);
-	Info_SetValueForKey(temp, "densityMap", value);
-
-	Info_SetValueForKey(temp, "shader", va("%d", shaderNum));
-	G_SpawnString("texturescale", "0.005", &value);
-	Info_SetValueForKey(temp, "texturescale", va("%f", atof(value)));
-
-	// Initialise the common aspects of the terrain
-	terrainID = gi.CM_RegisterTerrain(temp);
-//	SetCommon(common);
-
-	Info_SetValueForKey(temp, "terrainId", va("%d", terrainID));
-
-	// Let the entity know if it is random generated or not
-//	SetIsRandom(common->GetIsRandom());
-
-	// Let the game remember everything
-//	level.landScapes[terrainID] = ent;
-	//rww - I'm not doing this. Because it didn't even appear to be used. Is it?
-
-	// Send all the data down to the client
-	gi.SetConfigstring(CS_TERRAINS + terrainID, temp);
-
-	// Make sure the contents are properly set
-	ent->contents = CONTENTS_TERRAIN;
-	ent->svFlags = SVF_NOCLIENT;
-	ent->s.eFlags = EF_PERMANENT;
-	ent->s.eType = ET_TERRAIN;
-
-	// Hook into the world so physics will work
-	gi.linkentity(ent);
-
-	// If running RMG then initialize the terrain and handle team skins
-	//rww - Why not do this all the time? Not like terrain entities are used when you don't want them to be terrain.
-/* not using RMG
-	if ( g_RMG->integer ) 
-	{
-		gi.RMG_Init(terrainID);
-	}
-*/
+	G_FreeEntity( ent );
 }
 
 //rww - Called by skyportal entities. This will check through entities and flag them
@@ -1712,7 +1593,7 @@ void touch_ammo_crystal_tigger( gentity_t *self, gentity_t *other, trace_t *trac
 		return;
 
 	// Only player can pick it up
-	if ( !other->s.number == 0 )
+	if ( other->s.number != 0 )
 	{
 		return;
 	}
@@ -3266,4 +3147,9 @@ void SP_misc_weather_zone( gentity_t *ent )
 
 //	gi.WE_AddWeatherZone(ent->mins, ent->maxs);
 	G_FreeEntity(ent);
+}
+
+void SP_misc_cubemap( gentity_t *ent )
+{
+	G_FreeEntity( ent );
 }

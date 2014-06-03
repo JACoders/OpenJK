@@ -1,5 +1,4 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 #ifdef _WIN32
 	#include <winsock.h>
@@ -997,7 +996,7 @@ void NET_Sleep( int msec ) {
 	if ( !com_dedicated->integer )
 		return; // we're not a server, just run full speed
 
-	if ( ip_socket == -1 )
+	if ( ip_socket == INVALID_SOCKET )
 		return;
 
 	FD_ZERO(&fdset);

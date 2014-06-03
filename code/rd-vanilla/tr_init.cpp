@@ -35,9 +35,6 @@ glstate_t	glState;
 
 static void GfxInfo_f( void );
 
-void R_TerrainInit(void);
-void R_TerrainShutdown(void);
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
@@ -102,10 +99,6 @@ cvar_t	*r_DynamicGlowIntensity;
 cvar_t	*r_DynamicGlowSoft;
 cvar_t	*r_DynamicGlowWidth;
 cvar_t	*r_DynamicGlowHeight;
-
-// Point sprite support.
-cvar_t	*r_ext_point_parameters;
-cvar_t	*r_ext_nv_point_sprite;
 
 cvar_t	*r_ignoreGLErrors;
 cvar_t	*r_logFile;
@@ -221,14 +214,7 @@ void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 
 void ( APIENTRY * qglLockArraysEXT)( GLint, GLint);
 void ( APIENTRY * qglUnlockArraysEXT) ( void );
-
-void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
 #endif
-
-// Added 10/23/02 by Aurelio Reis.
-void ( APIENTRY * qglPointParameteriNV)( GLenum, GLint);
-void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
 
 #ifdef _WIN32	// GLOWXXX
 // Declare Register Combiners function pointers.
@@ -1173,10 +1159,6 @@ void R_Register( void )
 	r_DynamicGlowWidth = ri.Cvar_Get( "r_DynamicGlowWidth", "320", CVAR_ARCHIVE | CVAR_LATCH );
 	r_DynamicGlowHeight = ri.Cvar_Get( "r_DynamicGlowHeight", "240", CVAR_ARCHIVE | CVAR_LATCH );
 
-	// Register point sprite stuff here.
-	r_ext_point_parameters = ri.Cvar_Get( "r_ext_point_parameters", "1", CVAR_ARCHIVE );
-	r_ext_nv_point_sprite = ri.Cvar_Get( "r_ext_nv_point_sprite", "1", CVAR_ARCHIVE );
-
 	r_picmip = ri.Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_colorMipLevels = ri.Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
@@ -1260,7 +1242,11 @@ void R_Register( void )
 
 	r_nocurves = ri.Cvar_Get ("r_nocurves", "0", CVAR_CHEAT );
 	r_drawworld = ri.Cvar_Get ("r_drawworld", "1", CVAR_CHEAT );
+#ifdef JK2_MODE
+	r_drawfog = ri.Cvar_Get ("r_drawfog", "1", CVAR_CHEAT );
+#else
 	r_drawfog = ri.Cvar_Get ("r_drawfog", "2", CVAR_CHEAT );
+#endif
 	r_lightmap = ri.Cvar_Get ("r_lightmap", "0", CVAR_CHEAT );
 	r_portalOnly = ri.Cvar_Get ("r_portalOnly", "0", CVAR_CHEAT );
 
@@ -1450,7 +1436,6 @@ void R_Init( void ) {
 	R_InitImages();
 	R_InitShaders();
 	R_InitSkins();
-	R_TerrainInit();
 	R_ModelInit();
 	R_InitWorldEffects();
 	R_InitFonts();
@@ -1497,7 +1482,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	ri.Cmd_RemoveCommand ("minimize");
 
 	R_ShutdownWorldEffects();
-	R_TerrainShutdown();
 	R_ShutdownFonts();
 
 	if ( tr.registered ) {
@@ -1638,17 +1622,16 @@ void RE_SetRangedFog( float dist )
 	}
 }
 
-bool inServer = false;
+//bool inServer = false;
 void RE_SVModelInit( void )
 {
-	//ri.CM_ShaderTableCleanup();
 	tr.numModels = 0;
 	tr.numShaders = 0;
 	tr.numSkins = 0;
 	R_InitImages();
-	inServer = true;
+	//inServer = true;
 	R_InitShaders();
-	inServer = false;
+	//inServer = false;
 	R_ModelInit();
 }
 
@@ -1658,15 +1641,9 @@ GetRefAPI
 
 @@@@@@@@@@@@@@@@@@@@@
 */
-extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
 extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height );
-extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_WorldEffectCommand(const char *command);
 extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
-extern void RE_InitRendererTerrain( const char *info );
 extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 extern void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params);
 extern qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale);
@@ -1779,17 +1756,10 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString_JK2;
 #endif
 
-	re.R_Resample = R_Resample;
-	re.R_LoadDataImage = R_LoadDataImage;
-	re.R_InvertImage = R_InvertImage;
-	re.SavePNG = RE_SavePNG;
 	re.SaveJPG = RE_SaveJPG;
 	re.R_InitWorldEffects = R_InitWorldEffects;
-	re.R_CreateAutomapImage = R_CreateAutomapImage;
 	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;
 	re.R_inPVS = R_inPVS;
-
-	REX(InitRendererTerrain);
 
 	re.tr_distortionAlpha = get_tr_distortionAlpha;
 	re.tr_distortionStretch = get_tr_distortionStretch;

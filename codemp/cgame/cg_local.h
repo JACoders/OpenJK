@@ -194,7 +194,7 @@ typedef struct clientInfo_s {
 
 	int				duelTeam;
 
-	int				botSkill;		// 0 = not bot, 1-5 = bot
+	int				botSkill;		// -1 = not bot, 0-5 = bot
 
 	int				frame;
 
@@ -767,9 +767,6 @@ typedef struct cg_s {
 	int			fraglimitWarnings;
 
 	qboolean	mapRestart;			// set on a map restart to set back the weapon
-
-	qboolean	mInRMG; //rwwRMG - added
-	qboolean	mRMGWeather; //rwwRMG - added
 
 	qboolean	renderingThirdPerson;		// during deaths, chasecams, etc
 

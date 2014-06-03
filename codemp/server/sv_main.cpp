@@ -1,12 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
 
-//rww - RAGDOLL_BEGIN
 #include "ghoul2/ghoul2_shared.h"
-//rww - RAGDOLL_END
-
 #include "sv_gameapi.h"
 
 serverStatic_t	svs;				// persistant server info
@@ -44,6 +38,7 @@ cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
 cvar_t	*sv_autoDemo;
 cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
+cvar_t	*sv_blockJumpSelect;
 
 /*
 =============================================================================
@@ -240,11 +235,8 @@ void SV_MasterHeartbeat( void ) {
 			if ( !strstr( ":", sv_master[i]->string ) ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
-			Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", sv_master[i]->string,
-				adr[i].ip[0], adr[i].ip[1], adr[i].ip[2], adr[i].ip[3],
-				BigShort( adr[i].port ) );
+			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
 		}
-
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
 		// this command should be changed if the server info / status format
@@ -574,7 +566,7 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
-	Info_SetValueForKey(infostring, "g_humanplayers", va("%i", humans));
+	Info_SetValueForKey( infostring, "g_humanplayers", va("%i", humans) );
 	Info_SetValueForKey( infostring, "sv_maxclients",
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
@@ -590,7 +582,7 @@ void SVC_Info( netadr_t from ) {
 	}
 	Info_SetValueForKey( infostring, "wdisable", va("%i", wDisable ) );
 	Info_SetValueForKey( infostring, "fdisable", va("%i", Cvar_VariableIntegerValue( "g_forcePowerDisable" ) ) );
-	Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
+	//Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
 	Info_SetValueForKey( infostring, "autodemo", va("%i", sv_autoDemo->integer ) );
 
 	if( sv_minPing->integer ) {
@@ -987,8 +979,12 @@ void SV_CheckCvars( void ) {
 		lastModSnapsMax = sv_snapsMax->modificationCount;
 
 		for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
-			int val = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-			cl->snapshotMsec = 1000/val;
+			int val = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+			if ( val != cl->snapshotMsec ) {
+				// Reset last sent snapshot so we avoid desync between server frame time and snapshot send time
+				cl->nextSnapshotTime = -1;
+				cl->snapshotMsec = val;
+			}
 		}
 	}
 }

@@ -219,14 +219,6 @@ typedef struct clientConnection_s {
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
-
-	//rwwRMG - added:
-	int					rmgSeed;
-	int					rmgHeightMapSize;
-	unsigned char		rmgHeightMap[MAX_HEIGHTMAP_SIZE];
-	unsigned char		rmgFlattenMap[MAX_HEIGHTMAP_SIZE];
-	rmAutomapSymbol_t	rmgAutomapSymbols[MAX_AUTOMAP_SYMBOLS];
-	int					rmgAutomapSymbolCount;
 } clientConnection_t;
 
 extern	clientConnection_t clc;
@@ -264,6 +256,7 @@ typedef struct serverInfo_s {
 	int			trueJedi;
 	int			weaponDisable;
 	int			forceDisable;
+	int			humans, bots;
 } serverInfo_t;
 
 typedef struct clientStatic_s {
@@ -367,6 +360,8 @@ extern	cvar_t	*cl_sensitivity;
 extern	cvar_t	*cl_freelook;
 
 extern	cvar_t	*cl_mouseAccel;
+extern	cvar_t	*cl_mouseAccelOffset;
+extern	cvar_t	*cl_mouseAccelStyle;
 extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*m_pitchVeh;
@@ -379,6 +374,9 @@ extern	cvar_t	*m_filter;
 extern	cvar_t	*cl_timedemo;
 extern	cvar_t	*cl_aviFrameRate;
 extern	cvar_t	*cl_aviMotionJpeg;
+extern	cvar_t	*cl_avi2GBLimit;
+
+extern	cvar_t	*cl_forceavidemo;
 
 extern	cvar_t	*cl_activeAction;
 

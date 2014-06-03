@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qcommon/q_shared.h"
+
 // Filename:-	stringed_ingame.h
 //
 

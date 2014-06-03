@@ -344,12 +344,10 @@ public:
 
 #ifdef RENDERER
 IGhoul2InfoArray &TheGhoul2InfoArray();
-#else
-#ifdef _JK2EXE
+#elif _JK2EXE
 IGhoul2InfoArray &_TheGhoul2InfoArray();
 #else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
-#endif
 #endif
 
 class CGhoul2Info_v
@@ -360,12 +358,10 @@ class CGhoul2Info_v
 	{
 #ifdef RENDERER
 		return TheGhoul2InfoArray();
-#else
-#ifdef _JK2EXE
+#elif _JK2EXE
 		return _TheGhoul2InfoArray();
 #else
 		return TheGameGhoul2InfoArray();
-#endif
 #endif
 	}
 

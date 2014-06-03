@@ -682,11 +682,11 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
-
-			Com_sprintf( tempBuffer, sizeof( tempBuffer ), "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
-		
+
+		Com_sprintf( tempBuffer, sizeof( tempBuffer ), "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
+
 		return true;
 	}
 	else if ( ( bm->GetID() == TK_STRING ) || ( bm->GetID() == TK_IDENTIFIER ) )
@@ -1770,7 +1770,7 @@ void CTaskManager::Save( void )
 		name = ((*tmi).first).c_str();
 		
 		//Make sure this is a valid string
-		assert( ( name != NULL ) && ( name[0] != NULL ) );
+		assert( ( name != NULL ) && ( name[0] != '\0' ) );
 
 		int length = strlen( name ) + 1;
 

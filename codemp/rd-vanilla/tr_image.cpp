@@ -556,7 +556,6 @@ Upload32
 
 ===============
 */
-extern qboolean charSet;
 static void Upload32( unsigned *data,
 						 GLenum format,
 						 qboolean mipmap,
@@ -761,10 +760,14 @@ done:
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	GL_SelectTexture( 1 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
-	GL_SelectTexture( 0 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
+	if ( qglActiveTextureARB ) {
+		GL_SelectTexture( 1 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+		GL_SelectTexture( 0 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	} else {
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	}
 }
 
 
@@ -1053,12 +1056,6 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	}
 
 	return image;
-}
-
-//rwwRMG - added
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode )
-{
-	R_CreateImage(name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode);
 }
 
 /*

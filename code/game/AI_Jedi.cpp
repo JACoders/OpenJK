@@ -2948,7 +2948,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	float zdiff;
 	int	  duckChance = 0;
 	int	  dodgeAnim = -1;
-	qboolean	saberBusy = qfalse, evaded = qfalse;
+	qboolean	saberBusy = qfalse;
 	evasionType_t	evasionType = EVASION_NONE;
 
 	if ( !self || !self->client )
@@ -3095,7 +3095,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						TIMER_Start( self, "strafeLeft", Q_irand( 500, 1500 ) );
 						TIMER_Set( self, "strafeRight", 0 );
 						evasionType = EVASION_DUCK;
-						evaded = qtrue;
 					}
 					else if ( Q_irand( 0, 1 ) )
 					{
@@ -3116,7 +3115,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						{
 							TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 							evasionType = EVASION_DUCK_PARRY;
-							evaded = qtrue;
 							if ( d_JediAI->integer )
 							{
 								gi.Printf( "duck " );
@@ -3145,7 +3143,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						TIMER_Start( self, "strafeRight", Q_irand( 500, 1500 ) );
 						TIMER_Set( self, "strafeLeft", 0 );
 						evasionType = EVASION_DUCK;
-						evaded = qtrue;
 					}
 					else if ( Q_irand( 0, 1 ) )
 					{
@@ -3166,7 +3163,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						{
 							TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 							evasionType = EVASION_DUCK_PARRY;
-							evaded = qtrue;
 							if ( d_JediAI->integer )
 							{
 								gi.Printf( "duck " );
@@ -3196,7 +3192,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					gi.Printf( "TOP block\n" );
 				}
 			}
-			evaded = qtrue;
 		}
 		else
 		{
@@ -3205,7 +3200,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 				//duckChance = 2;
 				TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 				evasionType = EVASION_DUCK;
-				evaded = qtrue;
 				if ( d_JediAI->integer )
 				{
 					gi.Printf( "duck " );
@@ -3224,7 +3218,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 				//duckChance = 2;
 				TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 				evasionType = EVASION_DUCK;
-				evaded = qtrue;
 				if ( d_JediAI->integer )
 				{
 					gi.Printf( "duck " );
@@ -3314,7 +3307,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					gi.Printf( "mid-TOP block\n" );
 				}
 			}
-			evaded = qtrue;
 		}
 	}
 	else
@@ -3325,7 +3317,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 			{//already in air, duck to pull up legs
 				TIMER_Start( self, "duck", Q_irand( 500, 1500 ) );
 				evasionType = EVASION_DUCK;
-				evaded = qtrue;
 				if ( d_JediAI->integer )
 				{
 					gi.Printf( "legs up\n" );
@@ -3351,7 +3342,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 							gi.Printf( "LL block\n" );
 						}
 					}
-					evaded = qtrue;
 				}
 			}
 			else 
@@ -3368,7 +3358,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 					{
 						self->client->ps.forceJumpCharge = 320;//FIXME: calc this intelligently
 						evasionType = EVASION_FJUMP;
-						evaded = qtrue;
 						if ( d_JediAI->integer )
 						{
 							gi.Printf( "force jump + " );
@@ -3413,7 +3402,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 							}
 						}
 						evasionType = EVASION_JUMP;
-						evaded = qtrue;
 						if ( d_JediAI->integer )
 						{
 							gi.Printf( "jump + " );
@@ -3466,7 +3454,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 								}
 								cmd->upmove = 0;
 								saberBusy = qtrue;
-								evaded = qtrue;
 							}
 						}
 					}
@@ -3478,7 +3465,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						G_StartMatrixEffect( self );
 					}
 					saberBusy = qtrue;
-					evaded = qtrue;
 				}
 				else if ( incoming || !saberBusy )
 				{
@@ -3515,7 +3501,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 							gi.Printf( "LL block\n" );
 						}
 					}
-					evaded = qtrue;
 				}
 			}
 		}
@@ -3585,7 +3570,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						}
 					}
 				}
-				evaded = qtrue;
 			}
 		}
 	}

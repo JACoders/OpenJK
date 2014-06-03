@@ -20,11 +20,7 @@ This file is part of Jedi Academy.
 // leave this as first line for PCH reasons...
 //
 #include "../server/exe_headers.h"
-
-
 #include "tr_local.h"
-
-
 
 /*
 =============
@@ -38,12 +34,18 @@ Used for cinematics.
 // param 'bDirty' should be true 99% of the time
 void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int iClient, qboolean bDirty ) 
 {
+	if ( !tr.registered ) {
+		return;
+	}
+
 	R_SyncRenderThread();
 
-//===========
-	// Q3Final added this:
+	if ( tess.numIndexes ) {
+		RB_EndSurface();
+	}
+
 	// we definately want to sync every frame for the cinematics
-	//qglFinish();
+	qglFinish();
 
 #ifdef TIMEBIND
 	int start, end;
@@ -74,8 +76,8 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
 
 #ifdef TIMEBIND
 		if ( r_ignore->integer ) 
@@ -145,8 +147,8 @@ void RE_UploadCinematic (int cols, int rows, const byte *data, int client, qbool
 
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
 	} else {
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing

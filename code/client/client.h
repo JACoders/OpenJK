@@ -246,7 +246,6 @@ extern	cvar_t	*cl_nodelta;
 extern	cvar_t	*cl_debugMove;
 extern	cvar_t	*cl_noprint;
 extern	cvar_t	*cl_timegraph;
-extern	cvar_t	*cl_maxpackets;
 extern	cvar_t	*cl_packetdup;
 extern	cvar_t	*cl_shownet;
 extern	cvar_t	*cl_timeNudge;
@@ -290,8 +289,6 @@ void CL_AddReliableCommand( const char *cmd );
 void CL_Disconnect_f (void);
 void CL_Vid_Restart_f( void );
 void CL_Snd_Restart_f (void);
-
-void CL_NextDemo( void );
 
 qboolean CL_CheckPaused(void);
 

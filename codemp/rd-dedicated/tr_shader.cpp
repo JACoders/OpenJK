@@ -1,9 +1,6 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+// tr_shader.c -- this file deals with the parsing and definition of shaders
 
 #include "tr_local.h"
-
-// tr_shader.c -- this file deals with the parsing and definition of shaders
 
 #define USE_NEW_SHADER_HASH
 
@@ -331,75 +328,6 @@ const byte stylesDefault[MAXLIGHTMAPS] =
 	LS_LSNONE,
 	LS_LSNONE
 };
-
-/*
-Ghoul2 Insert Start
-*/
-
-/*
-===============
-R_CreateExtendedName
-
-  Creates a unique shader name taking into account lightstyles
-===============
-*/
-//rwwRMG - added
-void R_CreateExtendedName(char *extendedName, int extendedNameSize, const char *name, const int *lightmapIndex, const byte *styles)
-{
-	int		i;
-
-	// Set the basename
-	COM_StripExtension( name, extendedName, extendedNameSize );
-
-	// Add in lightmaps
-	if(lightmapIndex && styles)
-	{
-		if(lightmapIndex == lightmapsNone)
-		{
-			strcat(extendedName, "_nolightmap");
-		}
-		else if(lightmapIndex == lightmaps2d)
-		{
-			strcat(extendedName, "_2d");
-		}
-		else if(lightmapIndex == lightmapsVertex)
-		{
-			strcat(extendedName, "_vertex");
-		}
-		else if(lightmapIndex == lightmapsFullBright)
-		{
-			strcat(extendedName, "_fullbright");
-		}
-		else
-		{
-			for(i = 0; (i < 4) && (styles[i] != 255); i++)
-			{
-				switch(lightmapIndex[i])
-				{
-				case LIGHTMAP_NONE:
-					strcat(extendedName, va("_style(%d,none)", styles[i]));
-					break;
-				case LIGHTMAP_2D:
-					strcat(extendedName, va("_style(%d,2d)", styles[i]));
-					break;
-				case LIGHTMAP_BY_VERTEX:
-					strcat(extendedName, va("_style(%d,vert)", styles[i]));
-					break;
-				case LIGHTMAP_WHITEIMAGE:
-					strcat(extendedName, va("_style(%d,fb)", styles[i]));
-					break;
-				default:
-					strcat(extendedName, va("_style(%d,%d)", styles[i], lightmapIndex[i]));
-					break;
-				}
-			}
-		}
-	}
-}
-
-/*
-Ghoul2 Insert End
-*/
 
 static void ClearGlobalShader(void)
 {
@@ -1869,8 +1797,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseTexMod( buffer, stage );
@@ -1906,8 +1834,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSprites( buffer, stage );
@@ -1938,8 +1866,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSpritesOptional( param, buffer, stage );
@@ -2983,7 +2911,7 @@ static shader_t *FinishShader( void ) {
 	// set appropriate stage information
 	//
 	stageIndex = 0; //rwwRMG - needed for AGEN_BLEND
-	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ ) {
+	for ( stage = 0; stage < MAX_SHADER_STAGES; ) {
 		shaderStage_t *pStage = &stages[stage];
 
 		if ( !pStage->active ) {
@@ -2994,6 +2922,7 @@ static shader_t *FinishShader( void ) {
 		if ( !pStage->bundle[0].image ) {
 			Com_Printf (S_COLOR_YELLOW  "Shader %s has a stage with no image\n", shader.name );
 			pStage->active = qfalse;
+			stage++;
 			continue;
 		}
 
@@ -3001,13 +2930,22 @@ static shader_t *FinishShader( void ) {
 		// ditch this stage if it's detail and detail textures are disabled
 		//
 		if ( pStage->isDetail && !r_detailTextures->integer ) {
-			if ( stage < ( MAX_SHADER_STAGES - 1 ) ) {
-				memmove( pStage, pStage + 1, sizeof( *pStage ) * ( MAX_SHADER_STAGES - stage - 1 ) );
+			int index;
 
-				// rww - 9-13-01 [1-26-01-sof2]
-				memset(  pStage + ( MAX_SHADER_STAGES - stage - 1 ), 0, sizeof( *pStage ) );	//clear the last one moved down
-				stage--;	//look at this stage next time around
+			for ( index = stage + 1; index<MAX_SHADER_STAGES; index++ ) {
+				if ( !stages[index].active )
+					break;
 			}
+
+			if ( index < MAX_SHADER_STAGES )
+				memmove( pStage, pStage + 1, sizeof( *pStage ) * (index - stage) );
+			else {
+				if ( stage + 1 < MAX_SHADER_STAGES )
+					memmove( pStage, pStage + 1, sizeof( *pStage ) * (index - stage - 1) );
+
+				Com_Memset( &stages[index - 1], 0, sizeof( *stages ) );
+			}
+
 			continue;
 		}
 
@@ -3152,6 +3090,7 @@ static shader_t *FinishShader( void ) {
 		//rww - end hw fog
 
 		stageIndex++; //rwwRMG - needed for AGEN_BLEND
+		stage++;
 	}
 
 	// there are times when you will need to manually apply a sort to

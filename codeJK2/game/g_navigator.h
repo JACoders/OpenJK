@@ -191,7 +191,7 @@ public:
 	int GetNodeEdge( int nodeID, int edge );
 	float GetNodeLeadDistance( int nodeID );
 
-	int GetNumNodes( void )		const	{	return m_nodes.size();		}
+	int GetNumNodes( void )		const	{	return (int)m_nodes.size();		}
 	
 	bool Connected( int startID, int endID );
 

@@ -452,75 +452,6 @@ const byte stylesDefault[MAXLIGHTMAPS] =
 	LS_LSNONE
 };
 
-/*
-Ghoul2 Insert Start
-*/
-
-/*
-===============
-R_CreateExtendedName
-
-  Creates a unique shader name taking into account lightstyles
-===============
-*/
-//rwwRMG - added
-void R_CreateExtendedName(char *extendedName, int extendedNameSize, const char *name, const int *lightmapIndex, const byte *styles)
-{
-	int		i;
-
-	// Set the basename
-	COM_StripExtension( name, extendedName, extendedNameSize );
-
-	// Add in lightmaps
-	if(lightmapIndex && styles)
-	{
-		if(lightmapIndex == lightmapsNone)
-		{
-			strcat(extendedName, "_nolightmap");
-		}
-		else if(lightmapIndex == lightmaps2d)
-		{
-			strcat(extendedName, "_2d");
-		}
-		else if(lightmapIndex == lightmapsVertex)
-		{
-			strcat(extendedName, "_vertex");
-		}
-		else if(lightmapIndex == lightmapsFullBright)
-		{
-			strcat(extendedName, "_fullbright");
-		}
-		else
-		{
-			for(i = 0; (i < 4) && (styles[i] != 255); i++)
-			{
-				switch(lightmapIndex[i])
-				{
-				case LIGHTMAP_NONE:
-					strcat(extendedName, va("_style(%d,none)", styles[i]));
-					break;
-				case LIGHTMAP_2D:
-					strcat(extendedName, va("_style(%d,2d)", styles[i]));
-					break;
-				case LIGHTMAP_BY_VERTEX:
-					strcat(extendedName, va("_style(%d,vert)", styles[i]));
-					break;
-				case LIGHTMAP_WHITEIMAGE:
-					strcat(extendedName, va("_style(%d,fb)", styles[i]));
-					break;
-				default:
-					strcat(extendedName, va("_style(%d,%d)", styles[i], lightmapIndex[i]));
-					break;
-				}
-			}
-		}
-	}
-}
-
-/*
-Ghoul2 Insert End
-*/
-
 static void ClearGlobalShader(void)
 {
 	int	i;
@@ -2002,8 +1933,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseTexMod( buffer, stage );
@@ -2039,8 +1970,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSprites( buffer, stage );
@@ -2071,8 +2002,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = Shader_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSpritesOptional( param, buffer, stage );
@@ -4447,147 +4378,6 @@ static void ScanAndLoadShaderFiles( const char *path )
 	return;
 }
 #endif
-
-/*
-====================
-R_CreateBlendedShader
-
-  This takes 4 shaders (one per corner of a quad) and creates a blended shader the fades the textures over
-  eg.
-  if [A][A]
-     [B][B]
-  then the shader would be texture A at the top fading to texture B at the bottom
-
-  This is highly biased towards terrain shaders ie vertex lit surfaces
-====================
-*/
-//rwwRMG: Added:
-
-static void R_CopyStage(shaderStage_t *orig, shaderStage_t *stage)
-{
-	// Assumption: this stage has not been collapsed
-	*stage = *orig;		//Just copy the whole thing!
-}
-
-static void R_CreateBlendedStage(qhandle_t handle, int idx)
-{
-	shader_t	*work;
-
-	work = R_GetShaderByHandle(handle);
-	R_CopyStage(work->stages, stages + idx);
-	stages[idx].rgbGen = CGEN_EXACT_VERTEX;
-	stages[idx].alphaGen = AGEN_BLEND;
-	stages[idx].stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE | GLS_DEPTHMASK_TRUE;
-
-	if (stages[idx].ss)
-	{
-		stages[idx].ss->density *= 0.33f;
-	}
-}
-
-static qhandle_t R_MergeShaders(const char *blendedName, qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites)
-{
-	shader_t	*blended;
-	shader_t	*work;
-	int			current, i;
-
-	R_IssuePendingRenderCommands();
-
-	// Set up default parameters
-	ClearGlobalShader();
-	Q_strncpyz(shader.name, blendedName, sizeof(shader.name));
-	memcpy(shader.lightmapIndex, lightmapsVertex, sizeof(shader.lightmapIndex));
-	memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
-	shader.fogPass = FP_EQUAL;
-
-	// Get the top left shader and set it up as pass 0 - it should be completely opaque
-	work = R_GetShaderByHandle(c);
-	stages[0].active = qtrue;
-	R_CopyStage(work->stages, stages);
-	stages[0].rgbGen = CGEN_EXACT_VERTEX;
-	stages[0].alphaGen = AGEN_BLEND;
-	stages[0].stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ZERO | GLS_DEPTHMASK_TRUE;
-	shader.multitextureEnv = work->multitextureEnv;	//jic
-
-	// Go through the other verts and add a pass
-	R_CreateBlendedStage(a, 1);
-	R_CreateBlendedStage(b, 2);
-
-	if ( surfaceSprites )
-	{
-		current = 3;
-		work = R_GetShaderByHandle(a);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-
-		work = R_GetShaderByHandle(b);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-
-		work = R_GetShaderByHandle(c);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-	}
-
-	blended = FinishShader();
-	return(blended->index);
-}
-
-
-// Create a 3 pass shader - the last 2 passes are alpha'd out
-
-qhandle_t R_CreateBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites )
-{
-	qhandle_t	blended;
-	shader_t	*work;
-	char		blendedName[MAX_QPATH];
-	char		extendedName[MAX_QPATH + MAX_QPATH];
-
-	Com_sprintf(blendedName, MAX_QPATH, "blend(%d,%d,%d)", a, b, c);
-	if (!surfaceSprites)
-	{
-		strcat(blendedName, "noSS");
-	}
-
-	// Find if this shader has already been created
-	R_CreateExtendedName(extendedName, sizeof(extendedName), blendedName, lightmapsVertex, stylesDefault);
-	work = hashTable[generateHashValue(extendedName, FILE_HASH_SIZE)];
-	for ( ; work; work = work->next)
-	{
-		if (Q_stricmp(work->name, extendedName) == 0)
-		{
-			return work->index;
-		}
-	}
-
-	// Create new shader if it doesn't already exist
-	blended = R_MergeShaders(extendedName, a, b, c, surfaceSprites);
-	return(blended);
-}
 
 /*
 ====================

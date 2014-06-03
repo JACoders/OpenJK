@@ -1,9 +1,7 @@
-// this include must remain at the top of every CPP file
-
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "GenericParser2.h"
+
+#include <cstring>
+#include "qcommon/qcommon.h"
 
 #define MAX_TOKEN_SIZE	1024
 static char	token[MAX_TOKEN_SIZE];

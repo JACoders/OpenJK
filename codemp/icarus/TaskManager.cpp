@@ -2,19 +2,12 @@
 //
 //	-- jweier
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-// this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
 
-
-
 #include <assert.h>
+#include "server/server.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
-
-#include "server/server.h"
 
 /*
 =================================================
@@ -670,10 +663,10 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		{
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
-
-			Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
-			*value = (char *) tempBuffer;
 		}
+
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
+		*value = (char *) tempBuffer;
 
 		return true;
 	}

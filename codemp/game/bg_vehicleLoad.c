@@ -68,7 +68,7 @@ typedef enum {
 
 typedef struct vehField_s {
 	char	*name;
-	int		ofs;
+	size_t		ofs;
 	vehFieldType_t	type;
 } vehField_t;
 

@@ -30,7 +30,6 @@ This file is part of Jedi Academy.
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "b_local.h"
 #include "../Ravl/CVec.h"
-#include "../cgame/cg_main.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -96,6 +95,8 @@ extern void		ChangeWeapon( gentity_t *ent, int newWeapon );
 extern void		WP_ResistForcePush( gentity_t *self, gentity_t *pusher, qboolean noPenalty );
 extern void		ForceJump( gentity_t *self, usercmd_t *ucmd );
 extern void		G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
+
+extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // External Data

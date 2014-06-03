@@ -28,8 +28,8 @@ void CG_RegisterWeapon( int weaponNum) {
 		return;
 	}
 
-	if ( cgs.wDisable & (1<<weaponNum) )
-		return;
+	//if ( cgs.wDisable & (1<<weaponNum) )
+	//	return;
 
 	memset( weaponInfo, 0, sizeof( *weaponInfo ) );
 	weaponInfo->registered = qtrue;

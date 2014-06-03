@@ -815,7 +815,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 	dir = ci->modelName;
 
-	if ( !ci->skinName || !Q_stricmp( "default", ci->skinName ) )
+	if ( !ci->skinName[0] || !Q_stricmp( "default", ci->skinName ) )
 	{//try default sounds.cfg first
 		fLen = trap->FS_Open(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
 		if ( !f )
@@ -861,15 +861,19 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		soundpath[i] = 0;
 
 		trap->FS_Close(f);
-	}
 
-	if (isFemale)
-	{
-		ci->gender = GENDER_FEMALE;
+		if (isFemale)
+		{
+			ci->gender = GENDER_FEMALE;
+		}
+		else
+		{
+			ci->gender = GENDER_MALE;
+		}
 	}
 	else
 	{
-		ci->gender = GENDER_MALE;
+		isFemale = ci->gender == GENDER_FEMALE;
 	}
 
 	trap->S_Shutup(qtrue);
@@ -2715,7 +2719,7 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	{
 		CG_PlayerAnimEvents( cent->localAnimIndex, sFileIndex, qfalse, cent->pe.legs.frame, curFrame, cent->currentState.number );
 	}
-	cent->pe.legs.oldFrame = cent->pe.torso.frame;
+	cent->pe.legs.oldFrame = cent->pe.legs.frame;
 	cent->pe.legs.frame = curFrame;
 
 	if (cent->noLumbar)
@@ -4376,7 +4380,6 @@ static void CG_TrailItem( centity_t *cent, qhandle_t hModel ) {
 	trap->R_AddRefEntityToScene( &ent );
 }
 #endif
-
 
 /*
 ===============

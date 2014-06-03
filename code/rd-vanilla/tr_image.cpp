@@ -793,10 +793,14 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	GL_SelectTexture( 1 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
-	GL_SelectTexture( 0 );
-	qglBindTexture( GL_TEXTURE_2D, 0 );
+	if ( qglActiveTextureARB ) {
+		GL_SelectTexture( 1 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+		GL_SelectTexture( 0 );
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	} else {
+		qglBindTexture( GL_TEXTURE_2D, 0 );
+	}
 }
 
 // special function used in conjunction with "devmapbsp"...
@@ -1052,12 +1056,6 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	AllocatedImages[ image->imgName ] = image;
 
 	return image;
-}
-
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode ) 
-{
-	R_CreateImage(name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode);
 }
 
 /*
@@ -1835,6 +1833,12 @@ qhandle_t RE_RegisterSkin( const char *name) {
 
 	// If not a .skin file, load as a single shader	- then return
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
+#ifdef JK2_MODE
+		skin->numSurfaces = 1;
+		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
+		return hSkin;
+#endif
 /*		skin->numSurfaces = 1;
 		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
@@ -1907,6 +1911,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		// parse the shader name
 		token = CommaParse( &text_p );
 
+#ifndef JK2_MODE
 		if ( !strcmp( &surfName[strlen(surfName)-4], "_off") )
 		{
 			if ( !strcmp( token ,"*off" ) )
@@ -1915,6 +1920,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
+#endif
 		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
 			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );

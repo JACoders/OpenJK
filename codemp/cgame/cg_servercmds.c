@@ -105,7 +105,7 @@ and whenever the server updates any serverinfo flagged cvars
 ================
 */
 void CG_ParseServerinfo( void ) {
-	const char *info = NULL, *tinfo = NULL;
+	const char *info = NULL;
 	char *mapname;
 	int i, value;
 
@@ -186,32 +186,6 @@ void CG_ParseServerinfo( void ) {
 	//Set the siege teams based on what the server has for overrides.
 	trap->Cvar_Set("cg_siegeTeam1", Info_ValueForKey(info, "g_siegeTeam1"));
 	trap->Cvar_Set("cg_siegeTeam2", Info_ValueForKey(info, "g_siegeTeam2"));
-
-	tinfo = CG_ConfigString( CS_TERRAINS + 1 );
-	if ( !tinfo || !*tinfo )
-	{
-		cg.mInRMG = qfalse;
-	}
-	else
-	{
-		int weather = 0;
-
-		cg.mInRMG = qtrue;
-		trap->Cvar_Set("RMG", "1");
-
-		weather = atoi( Info_ValueForKey( info, "RMG_weather" ) );
-
-		trap->Cvar_Set("RMG_weather", va("%i", weather));
-
-		if (weather == 1 || weather == 2)
-		{
-			cg.mRMGWeather = qtrue;
-		}
-		else
-		{
-			cg.mRMGWeather = qfalse;
-		}
-	}
 
 	Q_strncpyz( cgs.voteString, CG_ConfigString( CS_VOTE_STRING ), sizeof( cgs.voteString ) );
 
@@ -433,6 +407,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int setType, const char *p
 		break;
 	case 5:
 		iTableEntries = MAX_CUSTOM_SIEGE_SOUNDS;
+		break;
 	default:
 		assert(0);
 		return;
@@ -1313,8 +1288,10 @@ static void CG_SiegeClassSelect_f( void ) {
 }
 
 static void CG_SiegeProfileMenu_f( void ) {
-	trap->Cvar_Set( "ui_myteam", "3" );
-	trap->OpenUIMenu( UIMENU_PLAYERCONFIG ); //UIMENU_CLASSSEL
+	if ( !cg.demoPlayback ) {
+		trap->Cvar_Set( "ui_myteam", "3" );
+		trap->OpenUIMenu( UIMENU_PLAYERCONFIG ); //UIMENU_CLASSSEL
+	}
 }
 
 static void CG_NewForceRank_f( void ) {
@@ -1338,7 +1315,7 @@ static void CG_NewForceRank_f( void ) {
 
 	trap->Cvar_Set( "ui_myteam", va( "%i", setTeam ) );
 
-	if ( !( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu )
+	if ( !( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu && !cg.demoPlayback )
 		trap->OpenUIMenu( UIMENU_PLAYERCONFIG );
 }
 
@@ -1635,6 +1612,11 @@ Cmd_Argc() / Cmd_Argv()
 static void CG_ServerCommand( void ) {
 	const char		*cmd = CG_Argv( 0 );
 	serverCommand_t	*command = NULL;
+
+	if ( !cmd[0] ) {
+		// server claimed the command
+		return;
+	}
 
 	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 

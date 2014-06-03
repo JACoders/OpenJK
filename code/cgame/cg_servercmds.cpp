@@ -23,7 +23,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "cg_lights.h"
 
 
 /*
@@ -46,7 +45,7 @@ void CG_ParseServerinfo( void ) {
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	const char *p = strrchr(mapname,'/');
-	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
+	Q_strncpyz( cgs.stripLevelName[0], p?p+1:mapname, sizeof(cgs.stripLevelName[0]) );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
@@ -64,7 +63,7 @@ void CG_ParseServerinfo( void ) {
 	// JKA...
 	if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN1B"))
 	{
-		strcpy( cgs.stripLevelName[1], "YAVIN1");
+		Q_strncpyz( cgs.stripLevelName[1], "YAVIN1", sizeof(cgs.stripLevelName[1]));
 	}
 
 /*	// JK2...
@@ -230,6 +229,11 @@ Cmd_Argc() / Cmd_Argv()
 static void CG_ServerCommand( void ) {
 	const char		*cmd = CG_Argv( 0 );
 	serverCommand_t	*command = NULL;
+
+	if ( !cmd[0] ) {
+		// server claimed the command
+		return;
+	}
 
 	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 

@@ -1,24 +1,10 @@
 // cl_cgame.c  -- client system interaction with client game
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
-#include "RMG/RM_Headers.h"
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "botlib/botlib.h"
-#include "RMG/RM_Headers.h"
 #include "FXExport.h"
 #include "FxUtil.h"
 #include "qcommon/RoffSystem.h"
-
-#ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
-#endif
-
-/*
-Ghoul2 Insert Start
-*/
-
 #include "qcommon/stringed_ingame.h"
 #include "ghoul2/G2_gore.h"
 
@@ -501,9 +487,6 @@ void CL_ShutdownCGame( void ) {
 	cls.cgameStarted = qfalse;
 
 	CL_UnbindCGame();
-#ifdef _DONETPROFILE_
-	ClReadProf().ShowTotals();
-#endif
 }
 
 /*
@@ -563,9 +546,6 @@ void CL_InitCGame( void ) {
 
 	// clear anything that got printed
 	Con_ClearNotify ();
-#ifdef _DONETPROFILE_
-	ClReadProf().Reset();
-#endif
 }
 
 
@@ -704,8 +684,6 @@ void CL_FirstSnapshot( void ) {
 		Cbuf_AddText( cl_activeAction->string );
 		Cvar_Set( "activeAction", "" );
 	}
-
-	Sys_BeginProfiling();
 }
 
 /*

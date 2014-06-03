@@ -1,8 +1,4 @@
 // win_syscon.h
-// this include must remain at the top of every CPP file
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client/client.h"
 #include "win_local.h"
 
@@ -116,13 +112,14 @@ static LRESULT CALLBACK ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 			Sys_ShowConsole( 0, qfalse );
 			Cvar_Set( "viewlog", "0" );
 		}
-		return 0;
+		return FALSE;
+
 	case WM_CTLCOLORSTATIC:
 		if ( ( HWND ) lParam == s_wcd.hwndBuffer )
 		{
 			SetBkColor( ( HDC ) wParam, RGB( 0, 0, 0 ) );
 			SetTextColor( ( HDC ) wParam, RGB( 249, 249, 000 ) );
-			return ( long ) s_wcd.hbrEditBackground;
+			return ( LRESULT ) s_wcd.hbrEditBackground;
 		}
 		else if ( ( HWND ) lParam == s_wcd.hwndErrorBox )
 		{
@@ -136,10 +133,9 @@ static LRESULT CALLBACK ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 				SetBkColor(   ( HDC ) wParam, RGB( 0x80, 0x80, 0x80 ) );
 				SetTextColor( ( HDC ) wParam, RGB( 0x00, 0x00, 0x00 ) );
 			}
-			return ( long ) s_wcd.hbrErrorBackground;
+			return ( LRESULT ) s_wcd.hbrErrorBackground;
 		}
 		return FALSE;
-		break;
 
 	case WM_COMMAND:
 		if ( wParam == COPY_ID )
@@ -282,7 +278,7 @@ void Sys_CreateConsole( void )
 	const char *DEDCLASS = "JAMP WinConsole";
 	int nHeight;
 	int swidth, sheight;
-	int DEDSTYLE = WS_POPUPWINDOW | WS_CAPTION | WS_MINIMIZEBOX;
+	DWORD DEDSTYLE = WS_POPUPWINDOW | WS_CAPTION | WS_MINIMIZEBOX;
 
 	memset( &wc, 0, sizeof( wc ) );
 
@@ -293,7 +289,7 @@ void Sys_CreateConsole( void )
 	wc.hInstance     = g_wv.hInstance;
 	wc.hIcon         = LoadIcon( g_wv.hInstance, MAKEINTRESOURCE(IDI_ICON1));
 	wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
-	wc.hbrBackground = (HBRUSH__ *)COLOR_INACTIVEBORDER;
+	wc.hbrBackground = (HBRUSH)COLOR_INACTIVEBORDER;
 	wc.lpszMenuName  = 0;
 	wc.lpszClassName = DEDCLASS;
 
@@ -399,7 +395,7 @@ void Sys_CreateConsole( void )
 												g_wv.hInstance, NULL );
 	SendMessage( s_wcd.hwndBuffer, WM_SETFONT, ( WPARAM ) s_wcd.hfBufferFont, 0 );
 
-	s_wcd.SysInputLineWndProc = ( WNDPROC ) SetWindowLongPtr( s_wcd.hwndInputLine, GWLP_WNDPROC, ( long ) InputLineWndProc );
+	s_wcd.SysInputLineWndProc = ( WNDPROC ) SetWindowLongPtr( s_wcd.hwndInputLine, GWLP_WNDPROC, ( LONG_PTR ) InputLineWndProc );
 	SendMessage( s_wcd.hwndInputLine, WM_SETFONT, ( WPARAM ) s_wcd.hfBufferFont, 0 );
 	SendMessage( s_wcd.hwndBuffer, EM_LIMITTEXT, ( WPARAM ) 0x7fff, 0 );
 

@@ -1,8 +1,8 @@
 
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
- * Last changed in libpng 1.6.0 [February 14, 2013]
- * Copyright (c) 1998-2013 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.9 [February 6, 2014]
+ * Copyright (c) 1998-2014 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -57,7 +57,9 @@ png_set_packing(png_structrp png_ptr)
    if (png_ptr->bit_depth < 8)
    {
       png_ptr->transformations |= PNG_PACK;
-      png_ptr->usr_bit_depth = 8;
+#     ifdef PNG_WRITE_SUPPORTED
+         png_ptr->usr_bit_depth = 8;
+#     endif
    }
 }
 #endif
@@ -782,6 +784,17 @@ png_set_user_transform_info(png_structrp png_ptr, png_voidp
 
    if (png_ptr == NULL)
       return;
+
+#ifdef PNG_READ_USER_TRANSFORM_SUPPORTED
+   if ((png_ptr->mode & PNG_IS_READ_STRUCT) != 0 &&
+      (png_ptr->flags & PNG_FLAG_ROW_INIT) != 0)
+   {
+      png_app_error(png_ptr,
+            "info change after png_start_read_image or png_read_update_info");
+      return;
+   }
+#endif
+
    png_ptr->user_transform_ptr = user_transform_ptr;
    png_ptr->user_transform_depth = (png_byte)user_transform_depth;
    png_ptr->user_transform_channels = (png_byte)user_transform_channels;

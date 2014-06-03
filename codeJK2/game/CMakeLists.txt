@@ -12,13 +12,6 @@ if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
 
-# game/G_Timer.cpp needs <unordered_map> from C++11
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "CLANG")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-
 set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/AI_Atst.cpp"
 	"${JK2SPDir}/game/AI_Default.cpp"
@@ -183,7 +176,6 @@ set(JK2SPGameCGameFiles
 	"${JK2SPDir}/cgame/cg_event.cpp"
 	"${JK2SPDir}/cgame/cg_info.cpp"
 	"${JK2SPDir}/cgame/cg_lights.cpp"
-	"${JK2SPDir}/cgame/cg_lights.h"
 	"${JK2SPDir}/cgame/cg_local.h"
 	"${JK2SPDir}/cgame/cg_localents.cpp"
 	"${JK2SPDir}/cgame/cg_main.cpp"
@@ -262,7 +254,11 @@ endif(NOT WIN32)
 if(WIN32)
 	install(TARGETS ${JK2SPGame} RUNTIME DESTINATION "OpenJK")
 else(WIN32)
-	install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "OpenJK")
+	if(MakeApplicationBundles AND BuildJK2SPEngine)
+		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2SPEngine}.app/Contents/MacOS/OpenJK")
+	else(MakeApplicationBundles AND BuildJK2SPEngine)
+		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "OpenJK")
+	endif(MakeApplicationBundles AND BuildJK2SPEngine) 
 endif(WIN32)
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${JK2SPGameDefines};${ReleaseDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${JK2SPGameDefines};${ReleaseDefines}")

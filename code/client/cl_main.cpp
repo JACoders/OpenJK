@@ -28,8 +28,6 @@ This file is part of Jedi Academy.
 #include <limits.h>
 #include "../ghoul2/G2.h"
 
-#include "../RMG/RM_Headers.h"
-
 #ifndef _WIN32
 #include "../sys/sys_loadlib.h"
 #include "../sys/sys_local.h"
@@ -45,7 +43,6 @@ cvar_t	*cl_debugMove;
 cvar_t	*cl_noprint;
 
 cvar_t	*cl_timeout;
-cvar_t	*cl_maxpackets;
 cvar_t	*cl_packetdup;
 cvar_t	*cl_timeNudge;
 cvar_t	*cl_showTimeDelta;
@@ -128,32 +125,6 @@ void CL_AddReliableCommand( const char *cmd ) {
 		Z_Free( clc.reliableCommands[ index ] );
 	}
 	clc.reliableCommands[ index ] = CopyString( cmd );
-}
-
-//======================================================================
-
-/*
-==================
-CL_NextDemo
-
-Called when a demo or cinematic finishes
-If the "nextdemo" cvar is set, that command will be issued
-==================
-*/
-void CL_NextDemo( void ) {
-	char	v[MAX_STRING_CHARS];
-
-	Q_strncpyz( v, Cvar_VariableString ("nextdemo"), sizeof(v) );
-	v[MAX_STRING_CHARS-1] = 0;
-	Com_DPrintf("CL_NextDemo: %s\n", v );
-	if (!v[0]) {
-		return;
-	}
-
-	Cvar_Set ("nextdemo","");
-	Cbuf_AddText (v);
-	Cbuf_AddText ("\n");
-	Cbuf_Execute();
 }
 
 //======================================================================
@@ -950,6 +921,23 @@ void CL_StartSound( void ) {
 }
 
 /*
+============
+CL_InitRenderer
+============
+*/
+void CL_InitRenderer( void ) {
+	// this sets up the renderer and calls R_Init
+	re.BeginRegistration( &cls.glconfig );
+
+	// load character sets
+	cls.charSetShader = re.RegisterShaderNoMip("gfx/2d/charsgrid_med");
+	cls.whiteShader = re.RegisterShader( "white" );
+	cls.consoleShader = re.RegisterShader( "console" );
+	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
+	g_consoleField.widthInChars = g_console_field_width;
+}
+
+/*
 ============================
 CL_StartHunkUsers
 
@@ -964,14 +952,7 @@ void CL_StartHunkUsers( void ) {
 
 	if ( !cls.rendererStarted ) {
 		cls.rendererStarted = qtrue;
-		re.BeginRegistration( &cls.glconfig );
-
-		// load character sets
-		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
-		cls.whiteShader = re.RegisterShader( "white" );
-		cls.consoleShader = re.RegisterShader( "console" );
-		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
-		g_consoleField.widthInChars = g_console_field_width;
+		CL_InitRenderer();
 	}
 
 	if ( !cls.soundStarted ) {
@@ -1031,15 +1012,12 @@ DLL glue, but highly reusuable DLL glue at that
 ============
 */
 
-#ifdef JK2_MODE
-extern cStringsSingle *JK2SP_GetString(const char *Reference);
-#endif
 const char *String_GetStringValue( const char *reference )
 {
 #ifndef JK2_MODE
 	return SE_GetString(reference);
 #else
-	return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
+	return JK2SP_GetStringTextString(reference);
 #endif
 }
 
@@ -1089,10 +1067,7 @@ CL_InitRef
 */
 extern qboolean S_FileExists( const char *psFilename );
 extern bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
-extern void ShaderTableCleanup();
-extern void CM_ShutdownTerrain( thandle_t terrainId);
 extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
-extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
 extern cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
 extern CMiniHeap *G2VertSpaceServer;
 static CMiniHeap *GetG2VertSpaceServer( void ) {
@@ -1150,9 +1125,6 @@ void CL_InitRef( void ) {
 	RIT(CM_DeleteCachedMap);
 	RIT(CM_DrawDebugSurface);
 	RIT(CM_PointContents);
-	RIT(CM_RegisterTerrain);
-	RIT(CM_ShutdownTerrain);
-	RIT(CM_TerrainPatchIterate);
 	RIT(Cvar_Get);
 	RIT(Cvar_Set);
 	RIT(Cvar_SetValue);
@@ -1176,9 +1148,7 @@ void CL_InitRef( void ) {
 	RIT(Hunk_ClearToMark);
 	RIT(SG_Append);
 	RIT(SND_RegisterAudio_LevelLoadEnd);
-	RIT(SV_GetConfigstring);
 	//RIT(SV_PointContents);
-	RIT(SV_SetConfigstring);
 	RIT(SV_Trace);
 	RIT(S_RestartMusic);
 	RIT(Z_Free);
@@ -1208,7 +1178,6 @@ void CL_InitRef( void ) {
 	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
 
-	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
 	rit.SV_Trace = SV_Trace;
 
 	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
@@ -1259,7 +1228,6 @@ void CL_Init( void ) {
 	cls.realtimeFraction=0.0f;	// fraction of a msec accumulated
 
 	CL_InitInput ();
-	RM_InitTerrain();
 
 	//
 	// register our variables
@@ -1284,7 +1252,6 @@ void CL_Init( void ) {
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE);
 
-	cl_maxpackets = Cvar_Get ("cl_maxpackets", "30", CVAR_ARCHIVE );
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
@@ -1313,12 +1280,22 @@ void CL_Init( void ) {
 #endif
 
 	// userinfo
+#ifdef JK2_MODE
+	Cvar_Get ("name", "Kyle", CVAR_USERINFO | CVAR_ARCHIVE );
+#else
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE );
-	
+#endif
+
+#ifdef JK2_MODE
+	// this is required for savegame compatibility - not ever actually used
+	Cvar_Get ("snaps", "20", CVAR_USERINFO );
+	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_SAVEGAME );
+#else
 	Cvar_Get ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );
 	Cvar_Get ("snd", "jaden_fmle", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );//UI_SetSexandSoundForModel changes to match sounds.cfg for model
 	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_SAVEGAME | CVAR_NORESTART);
+#endif
 
 	//
 	// register our commands
@@ -1365,7 +1342,7 @@ void CL_Shutdown( void ) {
 	Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
-		printf ("recursive shutdown\n");
+		Com_Printf( "WARNING: Recursive shutdown\n" );
 		return;
 	}
 	recursive = qtrue;
@@ -1384,7 +1361,9 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("disconnect");
 	Cmd_RemoveCommand ("cinematic");	
 	Cmd_RemoveCommand ("ingamecinematic");
-	Cmd_RemoveCommand ("pause");
+	Cmd_RemoveCommand ("uimenu");
+	Cmd_RemoveCommand ("datapad");
+	Cmd_RemoveCommand ("endscreendissolve");
 
 	Cvar_Set( "cl_running", "0" );
 

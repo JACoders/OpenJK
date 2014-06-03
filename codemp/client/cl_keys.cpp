@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
@@ -407,6 +404,9 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	if ( prestep + drawLen > len ) {
 		drawLen = len - prestep;
 	}
+
+	if ( drawLen < 0 )
+		return;
 
 	// extract <drawLen> characters from the field at <prestep>
 	if ( drawLen >= MAX_STRING_CHARS ) {

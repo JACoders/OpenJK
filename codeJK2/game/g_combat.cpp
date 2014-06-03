@@ -872,10 +872,10 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 
 	if ( ent->client 
 		&& ( ent->client->NPC_class == CLASS_R2D2 
-			|| ent->client->NPC_class == CLASS_R2D2 
+			|| ent->client->NPC_class == CLASS_R5D2 
 			|| ent->client->NPC_class == CLASS_GONK
 			|| ent->client->NPC_class == CLASS_MOUSE
-			|| ent->client->NPC_class == CLASS_SENTRY
+			|| ent->client->NPC_class == CLASS_SEEKER
 			|| ent->client->NPC_class == CLASS_INTERROGATOR
 			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_PROBE ) )
@@ -1281,7 +1281,6 @@ int G_GetHitLocation ( gentity_t *target, vec3_t ppoint )
 	vec3_t			point, point_dir;
 	vec3_t			forward, right, up;
 	vec3_t			tangles, tcenter;
-	float			tradius;
 	float			udot, fdot, rdot;
 	int				Vertical, Forward, Lateral;
 	int				HitLoc;
@@ -1297,9 +1296,6 @@ int G_GetHitLocation ( gentity_t *target, vec3_t ppoint )
 //get center of target
 	VectorAdd(target->absmin, target->absmax, tcenter);
 	VectorScale(tcenter, 0.5, tcenter);
-
-//get radius width of target
-	tradius = (fabs(target->maxs[0]) + fabs(target->maxs[1]) + fabs(target->mins[0]) + fabs(target->mins[1]))/4;
 
 //get impact point
 	if(ppoint && !VectorCompare(ppoint, vec3_origin))
@@ -4846,7 +4842,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 {
 	gclient_t	*client;
 	int			take;
-	int			save;
 	int			asave = 0;
 	int			knockback;
 	vec3_t		newDir;
@@ -5111,7 +5106,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	take = damage;
-	save = 0;
 
 	//FIXME: Do not use this method of difficulty changing
 	// Scale the amount of damage given to the player based on the skill setting

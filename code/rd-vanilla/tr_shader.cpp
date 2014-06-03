@@ -150,68 +150,6 @@ const unsigned char g_strGlowPShaderARB[] =
 };
 /***********************************************************************************************************/
 
-
-/*
-===============
-R_CreateExtendedName
-
-  Creates a unique shader name taking into account lightstyles
-===============
-*/
-
-void R_CreateExtendedName(char *extendedName, int extendedNameSize, const char *name, const int *lightmapIndex, const byte *styles)
-{
-	int		i;
-
-	// Set the basename
-	COM_StripExtension( name, extendedName, extendedNameSize );
-
-	// Add in lightmaps
-	if(lightmapIndex && styles)
-	{
-		if(lightmapIndex == lightmapsNone)
-		{
-			strcat(extendedName, "_nolightmap");
-		}
-		else if(lightmapIndex == lightmaps2d)
-		{
-			strcat(extendedName, "_2d");
-		}
-		else if(lightmapIndex == lightmapsVertex)
-		{
-			strcat(extendedName, "_vertex");
-		}
-		else if(lightmapIndex == lightmapsFullBright)
-		{
-			strcat(extendedName, "_fullbright");
-		}
-		else
-		{
-			for(i = 0; (i < 4) && (styles[i] != 255); i++)
-			{
-				switch(lightmapIndex[i])
-				{
-				case LIGHTMAP_NONE:
-					strcat(extendedName, va("_style(%d,none)", styles[i]));
-					break;
-				case LIGHTMAP_2D:
-					strcat(extendedName, va("_style(%d,2d)", styles[i]));
-					break;
-				case LIGHTMAP_BY_VERTEX:
-					strcat(extendedName, va("_style(%d,vert)", styles[i]));
-					break;
-				case LIGHTMAP_WHITEIMAGE:
-					strcat(extendedName, va("_style(%d,fb)", styles[i]));
-					break;
-				default:
-					strcat(extendedName, va("_style(%d,%d)", styles[i], lightmapIndex[i]));
-					break;
-				}
-			}
-		}
-	}
-}
-
 // tr_shader.c -- this file deals with the parsing and definition of shaders
 
 static char *s_shaderText;
@@ -1758,8 +1696,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = COM_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseTexMod( buffer, stage );
@@ -1795,8 +1733,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = COM_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSprites( buffer, stage );
@@ -1827,8 +1765,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				token = COM_ParseExt( text, qfalse );
 				if ( token[0] == 0 )
 					break;
-				strcat( buffer, token );
-				strcat( buffer, " " );
+				Q_strcat( buffer, sizeof( buffer ), token );
+				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
 			ParseSurfaceSpritesOptional( param, buffer, stage );
@@ -2151,49 +2089,48 @@ void ParseSort( const char **text )
 
 // this table is also present in q3map
 
-typedef struct {
+typedef struct infoParm_s {
 	const char	*name;
-	int		clearSolid, surfaceFlags, contents;
+	uint32_t	clearSolid, surfaceFlags, contents;
 } infoParm_t;
-		
 
-const infoParm_t	infoParms[] = {
+infoParm_t	infoParms[] = {
 	// Game content Flags
-	{"nonsolid", 	~CONTENTS_SOLID,	0, 				0 },						// special hack to clear solid flag
-	{"nonopaque", 	~CONTENTS_OPAQUE,	0, 				0 },						// special hack to clear opaque flag
-	{"lava",		~CONTENTS_SOLID,	0,				CONTENTS_LAVA },			// very damaging
-	{"slime",		~CONTENTS_SOLID,	0,				CONTENTS_SLIME },			// mildly damaging
-	{"water",		~CONTENTS_SOLID,	0,				CONTENTS_WATER },
-	{"fog",			~CONTENTS_SOLID,	0,				CONTENTS_FOG},				// carves surfaces entering
-	{"shotclip",	~CONTENTS_SOLID,	0,				CONTENTS_SHOTCLIP },		/* block shots, but not people */
-	{"playerclip",	~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_PLAYERCLIP },	   	/* block only the player */ 
-	{"monsterclip",	~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_MONSTERCLIP },		
-	{"botclip",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_BOTCLIP },		   	/* NPC do not enter */															
-	{"trigger",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_TRIGGER },
-	{"nodrop",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_NODROP },			// don't drop items or leave bodies (death fog, lava, etc)
-	{"terrain",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_TERRAIN },		   	/* use special terrain collsion */										
-	{"ladder",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_LADDER },			// climb up in it like water
-	{"abseil",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_ABSEIL },			// can abseil down this brush
-	{"outside",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_OUTSIDE },			// volume is considered to be in the outside (i.e. not indoors)
-	{"inside",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),0,CONTENTS_INSIDE },			// volume is considered to be inside (i.e. indoors)
-																		
-	{"detail",		-1,					0,				CONTENTS_DETAIL },			// don't include in structural bsp
-	{"trans",		-1,					0,				CONTENTS_TRANSLUCENT },		// surface has an alpha component
-	
-	/* Game surface flags */
-	{"sky",			-1,					SURF_SKY,		0 },					   	/* emit light from an environment map */
-	{"slick",		-1,					SURF_SLICK,		0 },
+	{ "nonsolid",		~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_NONE },		// special hack to clear solid flag
+	{ "nonopaque",		~CONTENTS_OPAQUE,					SURF_NONE,			CONTENTS_NONE },		// special hack to clear opaque flag
+	{ "lava",			~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_LAVA },		// very damaging
+	{ "slime",			~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_SLIME },		// mildly damaging
+	{ "water",			~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_WATER },		//
+	{ "fog",			~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_FOG},			// carves surfaces entering
+	{ "shotclip",		~CONTENTS_SOLID,					SURF_NONE,			CONTENTS_SHOTCLIP },	// block shots, but not people
+	{ "playerclip",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_PLAYERCLIP },	// block only the player
+	{ "monsterclip",	~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_MONSTERCLIP },	//
+	{ "botclip",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_BOTCLIP },		// for bots
+	{ "trigger",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_TRIGGER },		//
+	{ "nodrop",			~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_NODROP },		// don't drop items or leave bodies (death fog, lava, etc)
+	{ "terrain",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_TERRAIN },		// use special terrain collsion
+	{ "ladder",			~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_LADDER },		// climb up in it like water
+	{ "abseil",			~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_ABSEIL },		// can abseil down this brush
+	{ "outside",		~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_OUTSIDE },		// volume is considered to be in the outside (i.e. not indoors)
+	{ "inside",			~(CONTENTS_SOLID|CONTENTS_OPAQUE),	SURF_NONE,			CONTENTS_INSIDE },		// volume is considered to be inside (i.e. indoors)
 
-	{"nodamage",	-1,					SURF_NODAMAGE,	0 },					   	   																	
-	{"noimpact",	-1,					SURF_NOIMPACT,	0 },					   	/* don't make impact explosions or marks */
-	{"nomarks",		-1,					SURF_NOMARKS,	0 },					   	/* don't make impact marks, but still explode */
-	{"nodraw",		-1,					SURF_NODRAW,	0 },					   	/* don't generate a drawsurface (or a lightmap) */
-	{"nosteps",		-1,					SURF_NOSTEPS,	0 },
-	{"nodlight",	-1,					SURF_NODLIGHT,	0 },					   	/* don't ever add dynamic lights */
-	{"metalsteps",	-1,					SURF_METALSTEPS,0 },
-	{"nomiscents",	-1,					SURF_NOMISCENTS,0 },						/* No misc ents on this surface */
-	{"forcefield",	-1,					SURF_FORCEFIELD,0 },
-	{"forcesight",	-1,					SURF_FORCESIGHT,0 },						// only visible with force sight
+	{ "detail",			CONTENTS_ALL,						SURF_NONE,			CONTENTS_DETAIL },		// don't include in structural bsp
+	{ "trans",			CONTENTS_ALL,						SURF_NONE,			CONTENTS_TRANSLUCENT },	// surface has an alpha component
+
+	/* Game surface flags */
+	{ "sky",			CONTENTS_ALL,						SURF_SKY,			CONTENTS_NONE },		// emit light from an environment map
+	{ "slick",			CONTENTS_ALL,						SURF_SLICK,			CONTENTS_NONE },		//
+
+	{ "nodamage",		CONTENTS_ALL,						SURF_NODAMAGE,		CONTENTS_NONE },		//
+	{ "noimpact",		CONTENTS_ALL,						SURF_NOIMPACT,		CONTENTS_NONE },		// don't make impact explosions or marks
+	{ "nomarks",		CONTENTS_ALL,						SURF_NOMARKS,		CONTENTS_NONE },		// don't make impact marks, but still explode
+	{ "nodraw",			CONTENTS_ALL,						SURF_NODRAW,		CONTENTS_NONE },		// don't generate a drawsurface (or a lightmap)
+	{ "nosteps",		CONTENTS_ALL,						SURF_NOSTEPS,		CONTENTS_NONE },		//
+	{ "nodlight",		CONTENTS_ALL,						SURF_NODLIGHT,		CONTENTS_NONE },		// don't ever add dynamic lights
+	{ "metalsteps",		CONTENTS_ALL,						SURF_METALSTEPS,	CONTENTS_NONE },		//
+	{ "nomiscents",		CONTENTS_ALL,						SURF_NOMISCENTS,	CONTENTS_NONE },		// No misc ents on this surface
+	{ "forcefield",		CONTENTS_ALL,						SURF_FORCEFIELD,	CONTENTS_NONE },		//
+	{ "forcesight",		CONTENTS_ALL,						SURF_FORCESIGHT,	CONTENTS_NONE },		// only visible with force sight
 };
 
 
@@ -2691,6 +2628,7 @@ static qboolean CollapseMultitexture( void ) {
 	return qtrue;
 }
 
+#if 0 // This does not work in SP for some reason, don't remove
 /*
 =============
 
@@ -2792,6 +2730,7 @@ static void FixRenderCommandList( int newShader ) {
 		}
 	}
 }
+#endif
 
 /*
 ==============
@@ -2900,7 +2839,7 @@ static shader_t *GeneratePermanentShader( void ) {
 VertexLightingCollapse
 
 If vertex lighting is enabled, only render a single
-pass, trying to guess which is the correct one to best aproximate
+pass, trying to guess which is the correct one to best approximate
 what it is supposed to look like.
 
   OUTPUT:  Number of stages after the collapse (in the case of surfacesprites this isn't one).
@@ -3115,7 +3054,7 @@ static shader_t *FinishShader( void ) {
 	// set appropriate stage information
 	//
 	stageIndex = 0;
-	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ ) {
+	for ( stage = 0; stage < MAX_SHADER_STAGES; ) {
 		shaderStage_t *pStage = &stages[stage];
 
 		if ( !pStage->active ) {
@@ -3126,18 +3065,30 @@ static shader_t *FinishShader( void ) {
 		if ( !pStage->bundle[0].image ) {
 			ri.Printf( PRINT_WARNING, "Shader %s has a stage with no image\n", shader.name );
 			pStage->active = false;
-			break;
+			stage++;
+			continue;
 		}
 
 		//
 		// ditch this stage if it's detail and detail textures are disabled
 		//
 		if ( pStage->isDetail && !r_detailTextures->integer ) {
-			if ( stage < ( MAX_SHADER_STAGES - 1 ) ) {
-				memmove( pStage, pStage + 1, sizeof( *pStage ) * ( MAX_SHADER_STAGES - stage - 1 ) );
-				memset(  pStage + ( MAX_SHADER_STAGES - stage - 1 ), 0, sizeof( *pStage ) );	//clear the last one moved down
-				stage--;	//look at this stage next time around
+			int index;
+
+			for ( index = stage + 1; index<MAX_SHADER_STAGES; index++ ) {
+				if ( !stages[index].active )
+					break;
 			}
+
+			if ( index < MAX_SHADER_STAGES )
+				memmove( pStage, pStage + 1, sizeof( *pStage ) * (index - stage) );
+			else {
+				if ( stage + 1 < MAX_SHADER_STAGES )
+					memmove( pStage, pStage + 1, sizeof( *pStage ) * (index - stage - 1) );
+
+				Com_Memset( &stages[index - 1], 0, sizeof( *stages ) );
+			}
+
 			continue;
 		}
 
@@ -3257,6 +3208,7 @@ static shader_t *FinishShader( void ) {
 		//rww - end hw fog
 
 		stageIndex++;
+		stage++;
 	}
 
 	// there are times when you will need to manually apply a sort to
@@ -3839,150 +3791,6 @@ static void ScanAndLoadShaderFiles( void )
 	#ifdef USE_STL_FOR_SHADER_LOOKUPS
 	SetupShaderEntryPtrs();
 	#endif
-}
-
-/*
-====================
-R_CreateBlendedShader
-
-  This takes 4 shaders (one per corner of a quad) and creates a blended shader the fades the textures over
-  eg.
-  if [A][A]
-     [B][B]
-  then the shader would be texture A at the top fading to texture B at the bottom
-
-  This is highly biased towards terrain shaders ie vertex lit surfaces
-====================
-*/
-
-static void R_CopyStage(shaderStage_t *orig, shaderStage_t *stage)
-{
-	// Assumption: this stage has not been collapsed
-	*stage = *orig;		//Just copy the whole thing!
-
-	if (orig->ss)
-	{	//definitely need our own copy of SS so we can modify it
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), qtrue );
-		memcpy( stage->ss, orig->ss, sizeof( surfaceSprite_t ) );
-	}
-}
-
-static void R_CreateBlendedStage(qhandle_t handle, int idx)
-{
-	shader_t	*work;
-	
-	work = R_GetShaderByHandle(handle);
-	R_CopyStage(work->stages, stages + idx);
-	stages[idx].rgbGen = CGEN_EXACT_VERTEX;
-	stages[idx].alphaGen = AGEN_BLEND;
-	stages[idx].stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE | GLS_DEPTHMASK_TRUE;
-
-	if (stages[idx].ss)
-	{
-		stages[idx].ss->density *= 0.33f;
-	}
-}
-
-static qhandle_t R_MergeShaders(const char *blendedName, qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites)
-{
-	shader_t	*blended;
-	shader_t	*work;
-	int			current, i;
-
-	// Set up default parameters
-	ClearGlobalShader();
-	Q_strncpyz(shader.name, blendedName, sizeof(shader.name));
-	memcpy(shader.lightmapIndex, lightmapsVertex, sizeof(shader.lightmapIndex));
-	memcpy(shader.styles, stylesDefault, sizeof(shader.styles));
-	shader.fogPass = FP_EQUAL;
-
-	// Get the top left shader and set it up as pass 0 - it should be completely opaque
-	work = R_GetShaderByHandle(c);
-	stages[0].active = true;
-	R_CopyStage(&work->stages[0], stages);
-	stages[0].rgbGen = CGEN_EXACT_VERTEX;
-	stages[0].alphaGen = AGEN_BLEND;
-	stages[0].stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ZERO | GLS_DEPTHMASK_TRUE;
-	shader.multitextureEnv = work->multitextureEnv;	//jic
-
-	// Go through the other verts and add a pass
-	R_CreateBlendedStage(a, 1);
-	R_CreateBlendedStage(b, 2);
-
-	if ( surfaceSprites )
-	{
-		current = 3;
-		work = R_GetShaderByHandle(a);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-
-		work = R_GetShaderByHandle(b);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-
-		work = R_GetShaderByHandle(c);
-		for(i=1;(i<work->numUnfoggedPasses && current<MAX_SHADER_STAGES);i++)
-		{
-			if (work->stages[i].ss)
-			{
-				stages[current] = work->stages[i];
-	//			stages[current].ss->density *= 0.33f;
-				stages[current].ss->density *= 3;
-				current++;
-			}
-		}
-	}
-
-	blended = FinishShader();
-	return(blended->index);
-}
-
-
-// Create a 3 pass shader - the last 2 passes are alpha'd out
-
-qhandle_t R_CreateBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites )
-{
-	qhandle_t	blended;
-	shader_t	*work;
-	char		blendedName[MAX_QPATH];
-	char		extendedName[MAX_QPATH + MAX_QPATH];
-
-	Com_sprintf(blendedName, MAX_QPATH, "blend(%d,%d,%d)", a, b, c);
-	if (!surfaceSprites)
-	{
-		strcat(blendedName, "noSS");
-	}
-
-	// Find if this shader has already been created
-	R_CreateExtendedName(extendedName, sizeof(extendedName), blendedName, lightmapsVertex, stylesDefault);
-	work = sh_hashTable[generateHashValue(extendedName/*, FILE_HASH_SIZE*/)];
-	for ( ; work; work = work->next) 
-	{
-		if (Q_stricmp(work->name, extendedName) == 0) 
-		{
-			return work->index;
-		}
-	}
-
-	// Create new shader if it doesn't already exist
-	blended = R_MergeShaders(extendedName, a, b, c, surfaceSprites);
-	return(blended);
 }
 
 /*

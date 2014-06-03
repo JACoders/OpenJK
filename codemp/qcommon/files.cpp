@@ -5,15 +5,14 @@
  *
  *****************************************************************************/
 
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "qcommon/qcommon.h"
 
 #ifndef DEDICATED
 #ifndef FINAL_BUILD
 #include "client/client.h"
 #endif
 #endif
-#include "unzip.h"
+#include "minizip/unzip.h"
 
 // for rmdir
 #if defined (_MSC_VER)
@@ -248,7 +247,7 @@ static fileHandleData_t	fsh[MAX_FILE_HANDLES];
 
 // TTimo - https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=540
 // wether we did a reorder on the current search path when joining the server
-static qboolean fs_reordered;
+static qboolean fs_reordered = qfalse;
 
 // never load anything from pk3 files that are not present at the server when pure
 static int		fs_numServerPaks = 0;
@@ -597,11 +596,13 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 	fclose( f );
 
 	if( FS_CreatePath( toOSPath ) ) {
+		free ( buf );
 		return;
 	}
 
 	f = fopen( toOSPath, "wb" );
 	if ( !f ) {
+		free ( buf );
 		return;
 	}
 	if (fwrite( buf, 1, len, f ) != (unsigned)len)

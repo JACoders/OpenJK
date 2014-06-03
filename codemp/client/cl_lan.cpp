@@ -267,6 +267,8 @@ void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "game", server->game);
 		Info_SetValueForKey( info, "gametype", va("%i",server->gameType));
 		Info_SetValueForKey( info, "addr", NET_AdrToString(server->adr));
+		Info_SetValueForKey( info, "g_humanplayers", va( "%i", server->humans ) );
+		Info_SetValueForKey( info, "bots", va( "%i", server->bots ) );
 //		Info_SetValueForKey( info, "sv_allowAnonymous", va("%i", server->allowAnonymous));
 //		Info_SetValueForKey( info, "pure", va("%i", server->pure ) );
 		Q_strncpyz(buf, info, buflen);

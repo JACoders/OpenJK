@@ -102,7 +102,7 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		UI_DataPadMenu();
 		return;
 	}
-
+#ifndef JK2_MODE
 	if ( Q_stricmp (menuname, "missionfailed_menu") == 0 ) 
 	{
 		Menus_CloseAll();
@@ -110,7 +110,7 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		ui.Key_SetCatcher( KEYCATCH_UI );
 		return;
 	}
-
+#endif
 }
 
 
@@ -150,18 +150,16 @@ UI_Cache
 */
 static void UI_Cache_f( void ) 
 {
- int index;
 	Menu_Cache();
-
+#ifndef JK2_MODE
 extern const char *lukeForceStatusSounds[];
 extern const char *kyleForceStatusSounds[];
-
-	for (index = 0; index < 5; index++)
+	for (int index = 0; index < 5; index++)
 	{
 		DC->registerSound(lukeForceStatusSounds[index], qfalse);
 		DC->registerSound(kyleForceStatusSounds[index], qfalse);
 	}
-	for (index = 1; index <= 18; index++)
+	for (int index = 1; index <= 18; index++)
 	{
 		DC->registerSound(va("sound/chars/storyinfo/%d",index), qfalse);
 	}
@@ -186,6 +184,7 @@ extern const char *kyleForceStatusSounds[];
 	Menus_ActivateByName("ingameMissionSelect1");
 	Menus_ActivateByName("ingameMissionSelect2");
 	Menus_ActivateByName("ingameMissionSelect3");
+#endif
 }
 
 
@@ -194,7 +193,9 @@ extern const char *kyleForceStatusSounds[];
 UI_ConsoleCommand
 =================
 */
+#ifndef JK2_MODE
 void UI_Load(void);	//in UI_main.cpp
+#endif
 
 qboolean UI_ConsoleCommand( void ) 
 {
@@ -234,11 +235,13 @@ qboolean UI_ConsoleCommand( void )
 		return qtrue;
 	}
 	
+#ifndef JK2_MODE
 	if ( Q_stricmp (cmd, "ui_load") == 0 ) 
 	{
 		UI_Load();
 		return qtrue;
 	}
+#endif
 
 	return qfalse;
 }

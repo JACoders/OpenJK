@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
 #include "server/sv_gameapi.h"
@@ -609,7 +606,12 @@ static void SV_Status_f( void )
 		"public dedicated",
 	};
 
-	Com_Printf ("hostname: %s^7\n", sv_hostname->string );
+	char hostname[MAX_HOSTNAMELENGTH]={0};
+
+	Q_strncpyz(hostname, sv_hostname->string, sizeof(hostname));
+	Q_StripColor(hostname);
+
+	Com_Printf ("hostname: %s^7\n", hostname );
 	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
 	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
 	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);
@@ -1029,7 +1031,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
-		Q_strstrip( *start, "\n\r;?*<>|\\/\"", NULL );
+		Q_strstrip( *start, "\n\r;:.?*<>|\\/\"", NULL );
 	}
 	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s", demoFolderName, demoFileName );
 	SV_RecordDemo( cl, demoName );

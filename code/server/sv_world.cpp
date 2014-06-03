@@ -44,10 +44,6 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-#if MEM_DEBUG
-#include "..\smartheap\heapagnt.h"
-#define SV_TRACE_PROFILE (0)
-#endif
 
 #if 0 //G2_SUPERSIZEDBBOX is not being used
 static const float superSizedAdd=64.0f;
@@ -445,15 +441,6 @@ int SV_AreaEntities( const vec3_t mins, const vec3_t maxs, gentity_t **elist, in
 	ap.count = 0;
 	ap.maxcount = maxcount;
 
-#if SV_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2003);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
 	SV_AreaEntities_r( sv_worldSectors, &ap );
 
 	return ap.count;
@@ -852,16 +839,6 @@ Ghoul2 Insert End
 	assert( !Q_isnan(start[0])&&!Q_isnan(start[1])&&!Q_isnan(start[2])&&!Q_isnan(end[0])&&!Q_isnan(end[1])&&!Q_isnan(end[2]));
 #endif// _DEBUG
 
-#if SV_TRACE_PROFILE
-#if MEM_DEBUG
-	{
-		int old=dbgMemSetCheckpoint(2002);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
-
 	moveclip_t	clip;
 	int			i;
 //	int			startMS, endMS;
@@ -975,24 +952,7 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 	gentity_t		*touch[MAX_GENTITIES], *hit;
 	int			i, num;
 	int			contents, c2;
-//	int			startMS, endMS;
 	clipHandle_t	clipHandle;
-	const float		*angles;
-
-#if MEM_DEBUG
-#if SV_TRACE_PROFILE
-	{
-		int old=dbgMemSetCheckpoint(2001);
-		malloc(1);
-		dbgMemSetCheckpoint(old);
-	}
-#endif
-#endif
-
-	/*
-	startMS = Sys_Milliseconds ();
-	numTraces++;
-	*/
 
 	// get base contents from world
 	contents = CM_PointContents( p, 0 );
@@ -1007,20 +967,12 @@ int SV_PointContents( const vec3_t p, int passEntityNum ) {
 		}
 		// might intersect, so do an exact clip
 		clipHandle = SV_ClipHandleForEntity( hit );
-		angles = hit->s.angles;
-		if ( !hit->bmodel ) {
-			angles = vec3_origin;	// boxes don't rotate
-		}
 
 		c2 = CM_TransformedPointContents (p, clipHandle, hit->s.origin, hit->s.angles);
 
 		contents |= c2;
 	}
 
-	/*
-	endMS = Sys_Milliseconds ();
-	timeInTrace += endMS - startMS;
-	*/
 	return contents;
 }
 

@@ -159,8 +159,6 @@ protected:
 
 	int Prime( CTaskManager *taskManager, CBlock *command );
 
-	void StripExtension( const char *in, char *out );
-
 	int ParseRun( CBlock *block );
 	int ParseLoop( CBlock *block, bstream_t *bstream );
 	int ParseAffect( CBlock *block, bstream_t *bstream );

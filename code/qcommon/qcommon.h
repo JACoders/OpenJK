@@ -677,10 +677,6 @@ void Com_Shutdown( void );
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);
 
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
-
 /*
 ==============================================================
 
@@ -847,9 +843,6 @@ const char *Sys_Basename( char *path );
 
 char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **filelist );
-
-void	Sys_BeginProfiling( void );
-void	Sys_EndProfiling( void );
 
 qboolean Sys_LowPhysicalMemory();
 qboolean Sys_FileOutOfDate( const char *psFinalFileName /* dest */, const char *psDataFileName /* src */ );

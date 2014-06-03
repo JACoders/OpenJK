@@ -2,7 +2,6 @@
 
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 
-#include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
 
 //============================================================================
@@ -271,6 +270,15 @@ typedef struct vm_s {
 } vm_t;
 
 extern vm_t *currentVM;
+
+class VMSwap {
+private:
+	VMSwap();
+	vm_t *oldVM;
+public:
+	VMSwap( vm_t *newVM ) : oldVM( currentVM ) { currentVM = newVM; };
+	~VMSwap() { if ( oldVM ) currentVM = oldVM; };
+};
 
 extern const char *vmStrs[MAX_VM];
 
@@ -752,7 +760,7 @@ extern	cvar_t	*com_optvehtrace;
 extern	cvar_t	*com_G2Report;
 #endif
 
-extern	cvar_t	*com_RMG;
+extern	cvar_t	*com_affinity;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -864,10 +872,6 @@ void Com_TouchMemory( void );
 void Com_Init( char *commandLine );
 void Com_Frame( void );
 void Com_Shutdown( void );
-//rwwRMG: Inserted:
-bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst = true);
-CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool writeable);
-void Com_ParseTextFileDestroy(class CGenericParser2 &parser);
 
 
 /*
@@ -923,7 +927,7 @@ void CL_FlushMemory( void );
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
 
-qboolean CL_ConnectedToServer( void );
+qboolean CL_ConnectedToRemoteServer( void );
 // returns qtrue if connected to a server
 
 void Key_KeynameCompletion ( void(*callback)( const char *s ) );
@@ -1062,11 +1066,10 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-void	Sys_BeginProfiling( void );
-void	Sys_EndProfiling( void );
-
 qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
+
+void Sys_SetProcessorAffinity( void );
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

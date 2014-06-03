@@ -155,14 +155,14 @@ static void CG_EntityEffects( centity_t *cent ) {
 	// constant light glow
 	if ( cent->currentState.constantLight ) {
 		int		cl;
-		int		i, r, g, b;
+		float	i, r, g, b;
 
 		cl = cent->currentState.constantLight;
-		r = cl & 255;
-		g = ( cl >> 8 ) & 255;
-		b = ( cl >> 16 ) & 255;
-		i = ( ( cl >> 24 ) & 255 ) * 4;
-		cgi_R_AddLightToScene( cent->lerpOrigin, (float)i, (float)r, (float)g, (float)b );
+		r = (float) (cl & 0xFF) / 255.0;
+		g = (float) ((cl >> 8) & 0xFF) / 255.0;
+		b = (float) ((cl >> 16) & 0xFF) / 255.0;
+		i = (float) ((cl >> 24) & 0xFF) * 4.0;
+		cgi_R_AddLightToScene( cent->lerpOrigin, i, r, g, b );
 	}
 }
 
@@ -1060,7 +1060,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->alt_missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->alt_missileModel == NULL )
+		if ( weapon->alt_missileModel == NULL_HANDLE )
 			return;
 	}
 	else
@@ -1079,7 +1079,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->missileModel == NULL )
+		if ( weapon->missileModel == NULL_HANDLE )
 			return;
 	}
 
@@ -1282,47 +1282,14 @@ Ghoul2 Insert End
 	cgi_R_AddRefEntityToScene(&ent);
 }
 
-/*
-===============
-CG_Cylinder
-===============
-*/
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color ) 
-{
-	vec3_t	dir;
-	float	length;
-
-	VectorSubtract( end, start, dir );
-	length = VectorNormalize( dir );
-
-/*	FX_AddCylinder( start, 
-					dir, 
-					length, 
-					0.0f, 
-					radius,
-					0.0f,
-					radius,
-					0.0f,
-					1.0f,
-					1.0f,
-					color,
-					color,
-					100.0f,
-					cgs.media.waterDropShader );*/
-}
-
 static vec2_t st[] = 
 {
-	0.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 1.0f,
-	0.0f, 1.0f
+	{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }
 };
 
 void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
 {
 	vec3_t	point[4], rot={0,0,0};
-	vec2_t	st[4];
 	int		vec[3];
 	int		axis, i;
 
@@ -2064,9 +2031,6 @@ static void CG_Think ( centity_t *cent )
 static void CG_Clouds( centity_t *cent )
 {
 	refEntity_t		ent;
-	entityState_t	*s1;
-
-	s1 = &cent->currentState;
 
 	// create the render entity
 	memset( &ent, 0, sizeof( ent ));
@@ -2346,7 +2310,7 @@ void CG_ROFF_NotetrackCallback( centity_t *cent, const char *notetrack)
 
 		if (posoffsetGathered < 3)
 		{
-			sprintf(errMsg, "Offset position argument for 'effect' type is invalid.");
+			Q_strncpyz(errMsg, "Offset position argument for 'effect' type is invalid.", sizeof(errMsg));
 			goto functionend;
 		}
 

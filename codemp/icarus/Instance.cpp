@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // ICARUS Instance
 //
 //	-- jweier
@@ -540,7 +537,7 @@ int ICARUS_Instance::LoadSequencers( void )
 	int			numSequencers;
 
 	//Get the number of sequencers to load
-	m_interface->I_ReadSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( &numSequencers ) );
+	m_interface->I_ReadSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ) );
 
 	//Load all sequencers
 	for ( int i = 0; i < numSequencers; i++ )

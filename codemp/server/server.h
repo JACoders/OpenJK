@@ -66,10 +66,6 @@ typedef struct server_s {
 	time_t			realMapTimeStarted;	// time the current map was started
 } server_t;
 
-
-
-
-
 typedef struct clientSnapshot_s {
 	int				areabytes;
 	byte			areabits[MAX_MAP_AREA_BYTES];		// portalarea visibility bits
@@ -226,8 +222,6 @@ extern	server_t		sv;					// cleared each map
 //FIXME: dedi server probably can't have this..
 extern	refexport_t		*re;					// interface to refresh .dll
 
-#define	MAX_MASTER_SERVERS	5
-
 extern	cvar_t	*sv_snapsMin;
 extern	cvar_t	*sv_snapsMax;
 extern	cvar_t	*sv_fps;
@@ -260,6 +254,7 @@ extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
+extern	cvar_t	*sv_blockJumpSelect;
 
 //===========================================================
 

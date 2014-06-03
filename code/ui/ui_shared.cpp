@@ -5330,99 +5330,102 @@ void  Menus_Activate(menuDef_t *menu)
 
 }
 
-typedef struct {
-	const char	*command;
-	int		id;
-	int		defaultbind1;
-	int		defaultbind2;
-	int		bind1;
-	int		bind2;
-} bind_t;
-
-static bind_t g_bindings[] = 
-{
-	{"invuse",			A_ENTER,			-1,		-1,		-1},
-	{"force_throw",		A_F1,				-1,		-1,		-1},
-	{"force_pull",		A_F2,				-1,		-1,		-1},
-	{"force_speed",		A_F3,				-1,		-1,		-1},
-	{"force_distract",	A_F4,				-1,		-1,		-1},
-	{"force_heal",		A_F5,				-1,		-1,		-1},
-	{"+force_grip",		A_F6,				-1,		-1,		-1},
-	{"+force_lightning",A_F7,				-1,		-1,		-1},
-	//new powers
-	{"+force_drain",	-1,					-1,		-1,		-1},
-	{"force_rage",		-1,					-1,		-1,		-1},
-	{"force_protect",	-1,					-1,		-1,		-1},
-	{"force_absorb",	-1,					-1,		-1,		-1},
-	{"force_sight",		-1,					-1,		-1,		-1},
-
-	{"taunt",			-1,					-1,		-1,		-1},
-
-	{"+useforce",		'f',				-1,		-1,		-1},
-	{"forceprev",		'z',				-1,		-1,		-1},
-	{"forcenext",		'x',				-1,		-1,		-1},
-	{"use_bacta",		-1,					-1,		-1,		-1},
-	{"use_seeker",		-1,					-1,		-1,		-1},
-	{"use_sentry",		-1,					-1,		-1,		-1},
-	{"use_lightamp_goggles",-1,				-1,		-1,		-1},
-	{"use_electrobinoculars",-1,			-1,		-1,		-1},
-	{"invnext",			-1,					-1,		-1,		-1},
-	{"invprev",			-1,					-1,		-1,		-1},
-	{"invuse",			-1,					-1,		-1,		-1},
-	{"+speed", 			A_SHIFT,			-1,		-1,		-1},
-	{"+forward", 		A_CURSOR_UP,		-1,		-1,		-1},
-	{"+back", 			A_CURSOR_DOWN,		-1,		-1,		-1},
-	{"+moveleft", 		',',				-1,		-1,		-1},
-	{"+moveright",		'.',				-1,		-1,		-1},
-	{"+moveup",			'v',				-1,		-1,		-1},
-	{"+movedown",		'c',				-1,		-1,		-1},
-	{"+left", 			A_CURSOR_LEFT,		-1,		-1,		-1},
-	{"+right", 			A_CURSOR_RIGHT,		-1,		-1,		-1},
-	{"+strafe", 		-1,					-1,		-1,		-1},
-	{"+lookup", 		A_PAGE_DOWN,		-1,		-1,		-1},
-	{"+lookdown",		A_DELETE,			-1,		-1,		-1},
-	{"+mlook", 			 '/',				-1,		-1,		-1},
-	{"centerview",		A_END,				-1,		-1,		-1},
-	{"zoom", 			-1,					-1,		-1,		-1},
-	{"weapon 0",		-1,					-1,		-1,		-1},
-	{"weapon 1",		'1',				-1,		-1,		-1},
-	{"weapon 2",		'2',				-1,		-1,		-1},
-	{"weapon 3",		'3',				-1,		-1,		-1},
-	{"weapon 4",		'4',				-1,		-1,		-1},
-	{"weapon 5",		'5',				-1,		-1,		-1},
-	{"weapon 6",		'6',				-1,		-1,		-1},
-	{"weapon 7",		'7',				-1,		-1,		-1},
-	{"weapon 8",		'8',				-1,		-1,		-1},
-	{"weapon 9",		'9',				-1,		-1,		-1},
-	{"weapon 10",		'0',				-1,		-1,		-1},
-	{"weapon 11",		-1,					-1,		-1,		-1},
-	{"weapon 12",		-1,					-1,		-1,		-1},
-	{"weapon 13",		-1,					-1,		-1,		-1},
-	{"+attack", 		A_CTRL,				-1,		-1,		-1},
-	{"+altattack", 		A_ALT,				-1,		-1,		-1},
-	{"weapprev",		'[',				-1,		-1,		-1},
-	{"weapnext", 		']',				-1,		-1,		-1},
-	{"+use",			A_SPACE,			-1,		-1,		-1},
-	{"datapad",			A_TAB,				-1,		-1,		-1},
-	{"save quick",		A_F9,				-1,		-1,		-1},
-	{"load quick",		-1,					-1,		-1,		-1},
-	{"load auto",		-1,					-1,		-1,		-1},
-	{"cg_thirdperson !",'p',				-1,		-1,		-1},
-	{"exitview",		-1,					-1,		-1,		-1},
-	{"uimenu ingameloadmenu",	A_F10,		-1,		-1,		-1},
-	{"uimenu ingamesavemenu",	A_F11,		-1,		-1,		-1},
-	{"saberAttackCycle",-1,					-1,		-1,		-1},
+static const char *g_bindCommands[] = {
+	"+altattack",
+	"+attack",
+	"+back",
+#ifndef JK2_MODE
+	"+force_drain",
+#endif
+	"+force_grip",
+	"+force_lightning",
+	"+forward",
+	"+left",
+	"+lookdown",
+	"+lookup",
+	"+mlook",
+	"+movedown",
+	"+moveleft",
+	"+moveright",
+	"+moveup",
+	"+right",
+	"+speed",
+	"+strafe",
+	"+use",
+	"+useforce",
+	"centerview",
+	"cg_thirdperson !",
+	"datapad",
+	"exitview",
+#ifndef JK2_MODE
+	"force_absorb",
+#endif
+	"force_distract",
+	"force_heal",
+#ifndef JK2_MODE
+	"force_protect",
+#endif
+	"force_pull",
+#ifndef JK2_MODE
+	"force_rage",
+	"force_sight",
+#endif
+	"force_speed",
+	"force_throw",
+	"forcenext",
+	"forceprev",
+	"invnext",
+	"invprev",
+	"invuse",
+	"load auto",
+#ifdef JK2_MODE
+	"load quik",
+#else
+	"load quick",
+#endif
+	"saberAttackCycle",
+#ifdef JK2_MODE
+	"save quik*",
+#else
+	"save quick",
+#endif
+	"taunt",
+	"uimenu ingameloadmenu",
+	"uimenu ingamesavemenu",
+	"use_bacta",
+	"use_electrobinoculars",
+	"use_lightamp_goggles",
+	"use_seeker",
+	"use_sentry",
+	"weapnext",
+	"weapon 0",
+	"weapon 1",
+	"weapon 10",
+	"weapon 11",
+	"weapon 12",
+	"weapon 13",
+	"weapon 2",
+	"weapon 3",
+	"weapon 4",
+	"weapon 5",
+	"weapon 6",
+	"weapon 7",
+	"weapon 8",
+	"weapon 9",
+	"weapprev",
+	"zoom"
 };
 
+#define g_bindCount ARRAY_LEN(g_bindCommands)
 
-static const int g_bindCount = sizeof(g_bindings) / sizeof(bind_t);
+static int g_bindKeys[g_bindCount][2];
 
 /*
 =================
 Controls_GetKeyAssignment
 =================
 */
-static void Controls_GetKeyAssignment (const char *command, int *twokeys)
+static void Controls_GetKeyAssignment( const char *command, int *twokeys )
 {
 	int		count;
 	int		j;
@@ -5431,21 +5434,13 @@ static void Controls_GetKeyAssignment (const char *command, int *twokeys)
 	twokeys[0] = twokeys[1] = -1;
 	count = 0;
 
-	for ( j = 0; j < MAX_KEYS; j++ )
-	{
-		DC->getBindingBuf( j, b, 256 );
-		if ( *b == 0 ) 
-		{
-			continue;
-		}
-		if ( !Q_stricmp( b, command ) ) 
-		{
+	for ( j=0; j<MAX_KEYS; j++ ) {
+		DC->getBindingBuf( j, b, sizeof( b ) );
+		if ( *b && !Q_stricmp( b, command ) ) {
 			twokeys[count] = j;
 			count++;
-			if (count == 2) 
-			{
+			if ( count == 2 )
 				break;
-			}
 		}
 	}
 }
@@ -5457,17 +5452,11 @@ Controls_GetConfig
 */
 void Controls_GetConfig( void )
 {
-	int		i;
-	int		twokeys[2];
+	size_t	i;
 
 	// iterate each command, get its numeric binding
-	for (i=0; i < g_bindCount; i++)
-	{
- 		Controls_GetKeyAssignment(g_bindings[i].command, twokeys);
-
-		g_bindings[i].bind1 = twokeys[0];
-		g_bindings[i].bind2 = twokeys[1];
-	}
+	for ( i = 0; i < g_bindCount; i++ )
+		Controls_GetKeyAssignment( g_bindCommands[i], g_bindKeys[i] );
 }
 
 
@@ -6369,8 +6358,6 @@ void Item_TextField_Paint(itemDef_t *item)
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
 	} 
 
-	parent = (menuDef_t*)item->parent;
-
 	if (item->window.flags & WINDOW_HASFOCUS) 
 	{
 		lowLight[0] = 0.8 * parent->focusColor[0]; 
@@ -6725,57 +6712,66 @@ void Item_ListBox_Paint(itemDef_t *item)
 	}
 }
 
-char g_nameBind1[32];
-char g_nameBind2[32];
+/*
+=================
+BindingIDFromName
+=================
+*/
+int BindingIDFromName( const char *name ) {
+	size_t i;
 
-typedef struct
-{
-	char*	name;
-	float	defaultvalue;
-	float	value;	
-} configcvar_t;
+	// iterate each command, set its default binding
+	for ( i = 0; i < g_bindCount; i++ ) {
+		if ( !Q_stricmp( name, g_bindCommands[i] ) )
+			return i;
+	}
+	return -1;
+}
 
-
+char g_nameBind[96];
 
 /*
 =================
 BindingFromName
 =================
 */
-void BindingFromName(const char *cvar) 
-{
-	int	i, b1, b2;
+void BindingFromName( const char *cvar ) {
+	size_t	i;
+	int		b1, b2;
+	char	sOR[32];
 
 	// iterate each command, set its default binding
-	for (i=0; i < g_bindCount; i++)
-	{
-		if (Q_stricmp(cvar, g_bindings[i].command) == 0) {
-			b1 = g_bindings[i].bind1;
-			if (b1 == -1) 
-			{
+	for ( i=0; i < g_bindCount; i++ ) {
+		if ( !Q_stricmp(cvar, g_bindCommands[i] ) ) {
+			b2 = g_bindKeys[i][1];
+			b1 = g_bindKeys[i][0];
+			if ( b1 == -1 )
 				break;
-			}
-			DC->keynumToStringBuf( b1, g_nameBind1, sizeof(g_nameBind1) );
-// do NOT do this or it corrupts asian text!!!					Q_strupr(g_nameBind1);
 
-			b2 = g_bindings[i].bind2;
-			if (b2 != -1)
-			{
-				DC->keynumToStringBuf( b2, g_nameBind2, sizeof(g_nameBind2) );
-// do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
+			if ( b2 != -1 ) {
+				char keyname[2][32];
+
+				DC->keynumToStringBuf( b1, keyname[0], sizeof( keyname[0] ) );
+// do NOT do this or it corrupts asian text!!!					Q_strupr(keyname[0]);
+				DC->keynumToStringBuf( b2, keyname[1], sizeof( keyname[1] ) );
+// do NOT do this or it corrupts asian text!!!					Q_strupr(keyname[1]);
 
 #ifdef JK2_MODE
-				strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
+				Q_strncpyz( sOR, ui.SP_GetStringTextString( "MENUS3_KEYBIND_OR" ), sizeof(sOR) );
 #else
-				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
+				Q_strncpyz( sOR, SE_GetString( "MENUS_KEYBIND_OR" ), sizeof(sOR) );
 #endif
-				strcat( g_nameBind1, g_nameBind2 );
+
+				Com_sprintf( g_nameBind, sizeof( g_nameBind ), "%s %s %s", keyname[0], sOR, keyname[1] );
+			}
+			else {
+				DC->keynumToStringBuf( b1, g_nameBind, sizeof( g_nameBind ) );
+// do NOT do this or it corrupts asian text!!!					Q_strupr(g_nameBind);
 			}
 			return;
 		}
 	}
-
-	strcpy(g_nameBind1, "???");
+	Q_strncpyz( g_nameBind, "???", sizeof( g_nameBind ) );
 }
 
 /*
@@ -6829,25 +6825,25 @@ void Item_Bind_Paint(itemDef_t *item)
 
 		// If the text runs past the limit bring the scale down until it fits.
 		textScale = item->textscale;
-		textWidth = DC->textWidth(g_nameBind1,(float) textScale, uiInfo.uiDC.Assets.qhMediumFont);
+		textWidth = DC->textWidth(g_nameBind,(float) textScale, uiInfo.uiDC.Assets.qhMediumFont);
 
 		startingXPos = (item->textRect.x + item->textRect.w + 8);
 
 		while ((startingXPos + textWidth) >= SCREEN_WIDTH)
 		{
 			textScale -= .05f;
-			textWidth = DC->textWidth(g_nameBind1,(float) textScale, uiInfo.uiDC.Assets.qhMediumFont);
+			textWidth = DC->textWidth(g_nameBind,(float) textScale, uiInfo.uiDC.Assets.qhMediumFont);
 		}
 
 		// Try to adjust it's y placement if the scale has changed.
 		yAdj = 0;
 		if (textScale != item->textscale)
 		{
-			textHeight = DC->textHeight(g_nameBind1, item->textscale, uiInfo.uiDC.Assets.qhMediumFont);
-			yAdj = textHeight - DC->textHeight(g_nameBind1, textScale, uiInfo.uiDC.Assets.qhMediumFont);
+			textHeight = DC->textHeight(g_nameBind, item->textscale, uiInfo.uiDC.Assets.qhMediumFont);
+			yAdj = textHeight - DC->textHeight(g_nameBind, textScale, uiInfo.uiDC.Assets.qhMediumFont);
 		}
 
-		DC->drawText(startingXPos, item->textRect.y + yAdj, textScale, newColor, g_nameBind1, maxChars/*item->textRect.w*/, item->textStyle, item->font);
+		DC->drawText(startingXPos, item->textRect.y + yAdj, textScale, newColor, g_nameBind, maxChars/*item->textRect.w*/, item->textStyle, item->font);
 	} 
 	else 
 	{
@@ -7335,8 +7331,8 @@ void Item_YesNo_Paint(itemDef_t *item)
 	}
 
 #ifdef JK2_MODE
-	const char *psYes = ui.SP_GetStringTextString( "MENUS_YES" );;
-	const char *psNo = ui.SP_GetStringTextString( "MENUS_NO" );
+	const char *psYes = ui.SP_GetStringTextString( "MENUS0_YES" );
+	const char *psNo = ui.SP_GetStringTextString( "MENUS0_NO" );
 #else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
@@ -7582,7 +7578,7 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
 		x = item->window.rect.x;
 	}
 
-	if (editDef == NULL && item->cvar) 
+	if (!editDef || !item->cvar) 
 	{
 		return x;
 	}
@@ -9339,58 +9335,32 @@ qboolean Menus_AnyFullScreenVisible(void)
 
 /*
 =================
-BindingIDFromName
-=================
-*/
-int BindingIDFromName(const char *name) 
-{
-	int i;
-	for (i=0; i < g_bindCount; i++)
-	{
-		if (Q_stricmp(name, g_bindings[i].command) == 0) 
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-/*
-=================
 Controls_SetConfig
 =================
 */
-void Controls_SetConfig(qboolean restart)
+void Controls_SetConfig( void )
 {
-	int		i;
+	size_t	i;
 
 	// iterate each command, get its numeric binding
-	for (i=0; i < g_bindCount; i++)
-	{
-		if (g_bindings[i].bind1 != -1)
-		{	
-			DC->setBinding( g_bindings[i].bind1, g_bindings[i].command );
+	for ( i=0; i<g_bindCount; i++ ) {
+		if ( g_bindKeys[i][0] != -1 ) {
+			DC->setBinding( g_bindKeys[i][0], g_bindCommands[i] );
 
-			if (g_bindings[i].bind2 != -1)
-				DC->setBinding( g_bindings[i].bind2, g_bindings[i].command );
+			if ( g_bindKeys[i][1] != -1 )
+				DC->setBinding( g_bindKeys[i][1], g_bindCommands[i] );
 		}
 	}
+}
 
-	//if ( s_controls.invertmouse.curvalue )
-	//	DC->setCVar("m_pitch", va("%f),-fabs( DC->getCVarValue( "m_pitch" ) ) );
-	//else
-	//	trap_Cvar_SetValue( "m_pitch", fabs( trap_Cvar_VariableValue( "m_pitch" ) ) );
+void Controls_SetDefaults( void )
+{
+	size_t	i;
 
-	//trap_Cvar_SetValue( "m_filter", s_controls.smoothmouse.curvalue );
-	//trap_Cvar_SetValue( "cl_run", s_controls.alwaysrun.curvalue );
-	//trap_Cvar_SetValue( "cg_autoswitch", s_controls.autoswitch.curvalue );
-	//trap_Cvar_SetValue( "sensitivity", s_controls.sensitivity.curvalue );
-	//trap_Cvar_SetValue( "in_joystick", s_controls.joyenable.curvalue );
-	//trap_Cvar_SetValue( "joy_threshold", s_controls.joythreshold.curvalue );
-	//trap_Cvar_SetValue( "cl_freelook", s_controls.freelook.curvalue );
-//
-//	DC->executeText(EXEC_APPEND, "in_restart\n");
-// ^--this is bad, it shows the cursor during map load, if you need to, add it as an exec cmd to use_joy or something.
+	for ( i=0; i<g_bindCount; i++ ) {
+		g_bindKeys[i][0] = -1;
+		g_bindKeys[i][1] = -1;
+	}
 }
 
 void Item_Bind_Ungrey(itemDef_t *item)
@@ -9484,14 +9454,12 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 	
 			case A_BACKSPACE:
 				id = BindingIDFromName(item->cvar);
-				if (id != -1) 
+				if (id != -1)
 				{
-					DC->setBinding( g_bindings[id].bind1, "" );
-					DC->setBinding( g_bindings[id].bind2, "" );
-					g_bindings[id].bind1 = -1;
-					g_bindings[id].bind2 = -1;
+					g_bindKeys[id][0] = -1;
+					g_bindKeys[id][1] = -1;
 				}
-				Controls_SetConfig(qtrue);
+				Controls_SetConfig();
 				g_waitingForKey = qfalse;
 				g_bindItem = NULL;
 				Item_Bind_Ungrey(item);
@@ -9503,61 +9471,47 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 	}
 
 	// Is the same key being bound to something else?
-	if (key != -1)
-	{
+	if ( key != -1 ) {
+		size_t	b;
 
-		for (i=0; i < g_bindCount; i++)
+		for ( b=0; b<g_bindCount; b++ )
 		{
-			// The second binding matches the key
-			if (g_bindings[i].bind2 == key) 
-			{
-				g_bindings[i].bind2 = -1;	// NULL it out
-			}
+			if ( g_bindKeys[b][1] == key )
+				g_bindKeys[b][1] = -1;
 
-			if (g_bindings[i].bind1 == key)
-			{
-				g_bindings[i].bind1 = g_bindings[i].bind2;
-				g_bindings[i].bind2 = -1;
+			if ( g_bindKeys[b][0] == key ) {
+				g_bindKeys[b][0] = g_bindKeys[b][1];
+				g_bindKeys[b][1] = -1;
 			}
 		}
 	}
 
+	id = BindingIDFromName( item->cvar );
 
-	id = BindingIDFromName(item->cvar);
-
-	if (id != -1) 
-	{
-		if (key == -1) 
-		{
-			if( g_bindings[id].bind1 != -1 ) 
-			{
-				DC->setBinding( g_bindings[id].bind1, "" );
-				g_bindings[id].bind1 = -1;
+	if ( id != -1 ) {
+		if ( key == -1 ) {
+			if ( g_bindKeys[id][0] != -1 ) {
+				DC->setBinding( g_bindKeys[id][0], "" );
+				g_bindKeys[id][0] = -1;
 			}
-			if( g_bindings[id].bind2 != -1 ) 
-			{
-				DC->setBinding( g_bindings[id].bind2, "" );
-				g_bindings[id].bind2 = -1;
+			if ( g_bindKeys[id][1] != -1 ) {
+				DC->setBinding( g_bindKeys[id][1], "" );
+				g_bindKeys[id][1] = -1;
 			}
 		}
-		else if (g_bindings[id].bind1 == -1) 
-		{
-			g_bindings[id].bind1 = key;
+		else if ( g_bindKeys[id][0] == -1 )
+			g_bindKeys[id][0] = key;
+		else if ( g_bindKeys[id][0] != key && g_bindKeys[id][1] == -1 )
+			g_bindKeys[id][1] = key;
+		else {
+			DC->setBinding( g_bindKeys[id][0], "" );
+			DC->setBinding( g_bindKeys[id][1], "" );
+			g_bindKeys[id][0] = key;
+			g_bindKeys[id][1] = -1;
 		}
-		else if (g_bindings[id].bind1 != key && g_bindings[id].bind2 == -1) 
-		{
-			g_bindings[id].bind2 = key;
-		}
-		else 
-		{
-			DC->setBinding( g_bindings[id].bind1, "" );
-			DC->setBinding( g_bindings[id].bind2, "" );
-			g_bindings[id].bind1 = key;
-			g_bindings[id].bind2 = -1;
-		}						
 	}
 
-	Controls_SetConfig(qtrue);	
+	Controls_SetConfig();
 	g_waitingForKey = qfalse;
 	Item_Bind_Ungrey(item);
 

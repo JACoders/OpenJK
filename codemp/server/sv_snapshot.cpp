@@ -1,8 +1,5 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "server.h"
-
+#include "qcommon/cm_public.h"
 
 /*
 =============================================================================
@@ -426,8 +423,49 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
-		if (com_RMG && com_RMG->integer)
-		{
+		// ignore if not touching a PV leaf
+		// check area
+		if ( !CM_AreasConnected( clientarea, svEnt->areanum ) ) {
+			// doors can legally straddle two areas, so
+			// we may need to check another one
+			if ( !CM_AreasConnected( clientarea, svEnt->areanum2 ) ) {
+				continue;		// blocked by a door
+			}
+		}
+
+		bitvector = clientpvs;
+
+		// check individual leafs
+		if ( !svEnt->numClusters ) {
+			continue;
+		}
+		l = 0;
+		for ( i=0 ; i < svEnt->numClusters ; i++ ) {
+			l = svEnt->clusternums[i];
+			if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
+				break;
+			}
+		}
+
+		// if we haven't found it to be visible,
+		// check overflow clusters that coudln't be stored
+		if ( i == svEnt->numClusters ) {
+			if ( svEnt->lastCluster ) {
+				for ( ; l <= svEnt->lastCluster ; l++ ) {
+					if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
+						break;
+					}
+				}
+				if ( l == svEnt->lastCluster ) {
+					continue;	// not visible
+				}
+			} else {
+				continue;
+			}
+		}
+
+		if (g_svCullDist != -1.0f)
+		{ //do a distance cull check
 			VectorAdd(ent->r.absmax, ent->r.absmin, difference);
 			VectorScale(difference, 0.5f, difference);
 			VectorSubtract(origin, difference, difference);
@@ -436,84 +474,25 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			// calculate the diameter
 			VectorSubtract(ent->r.absmax, ent->r.absmin, difference);
 			radius = VectorLength(difference);
-			if (length-radius < /*sv_RMGDistanceCull->integer*/5000.0f)
-			{	// more of a diameter check
-				SV_AddEntToSnapshot( svEnt, ent, eNums );
-			}
-		}
-		else
-		{
-			// ignore if not touching a PV leaf
-			// check area
-			if ( !CM_AreasConnected( clientarea, svEnt->areanum ) ) {
-				// doors can legally straddle two areas, so
-				// we may need to check another one
-				if ( !CM_AreasConnected( clientarea, svEnt->areanum2 ) ) {
-					continue;		// blocked by a door
-				}
-			}
-
-			bitvector = clientpvs;
-
-			// check individual leafs
-			if ( !svEnt->numClusters ) {
+			if (length-radius >= g_svCullDist)
+			{ //then don't add it
 				continue;
 			}
-			l = 0;
-			for ( i=0 ; i < svEnt->numClusters ; i++ ) {
-				l = svEnt->clusternums[i];
-				if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
-					break;
-				}
-			}
+		}
 
-			// if we haven't found it to be visible,
-			// check overflow clusters that coudln't be stored
-			if ( i == svEnt->numClusters ) {
-				if ( svEnt->lastCluster ) {
-					for ( ; l <= svEnt->lastCluster ; l++ ) {
-						if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
-							break;
-						}
-					}
-					if ( l == svEnt->lastCluster ) {
-						continue;	// not visible
-					}
-				} else {
+		// add it
+		SV_AddEntToSnapshot( svEnt, ent, eNums );
+
+		// if its a portal entity, add everything visible from its camera position
+		if ( ent->r.svFlags & SVF_PORTAL ) {
+			if ( ent->s.generic1 ) {
+				vec3_t dir;
+				VectorSubtract(ent->s.origin, origin, dir);
+				if ( VectorLengthSquared(dir) > (float) ent->s.generic1 * ent->s.generic1 ) {
 					continue;
 				}
 			}
-
-			if (g_svCullDist != -1.0f)
-			{ //do a distance cull check
-				VectorAdd(ent->r.absmax, ent->r.absmin, difference);
-				VectorScale(difference, 0.5f, difference);
-				VectorSubtract(origin, difference, difference);
-				length = VectorLength(difference);
-
-				// calculate the diameter
-				VectorSubtract(ent->r.absmax, ent->r.absmin, difference);
-				radius = VectorLength(difference);
-				if (length-radius >= g_svCullDist)
-				{ //then don't add it
-					continue;
-				}
-			}
-
-			// add it
-			SV_AddEntToSnapshot( svEnt, ent, eNums );
-
-			// if its a portal entity, add everything visible from its camera position
-			if ( ent->r.svFlags & SVF_PORTAL ) {
-				if ( ent->s.generic1 ) {
-					vec3_t dir;
-					VectorSubtract(ent->s.origin, origin, dir);
-					if ( VectorLengthSquared(dir) > (float) ent->s.generic1 * ent->s.generic1 ) {
-						continue;
-					}
-				}
-				SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
-			}
+			SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
 		}
 	}
 }

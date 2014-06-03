@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "cm_local.h"
 
 /*
@@ -235,13 +232,6 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		if ( i == b->numsides )
 		{
 			contents |= b->contents;
-			if(cmg.landScape && (contents & CONTENTS_TERRAIN))
-			{
-				if(p[2] < cmg.landScape->GetWaterHeight())
-				{
-					contents |= cmg.landScape->GetWaterContents();
-				}
-			}
 		}
 	}
 

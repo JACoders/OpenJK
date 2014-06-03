@@ -97,7 +97,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 	}
 
-	if ( weaponInfo->weaponModel == NULL )
+	if ( weaponInfo->weaponModel == NULL_HANDLE )
 	{
 		CG_Error( "Couldn't find weapon model %s\n", weaponData[weaponNum].classname);
 		return;
@@ -1634,7 +1634,7 @@ void CG_DrawDataPadWeaponSelect( void )
 
 	cgi_SP_GetStringTextString( va("INGAME_%s",weaponDesc[cg.DataPadWeaponSelect-1]), text, sizeof(text) );
 
-	if (text)
+	if (text[0])
 	{
 		CG_DisplayBoxedText(70,50,500,300,text,
 												cgs.media.qhFontSmall,
@@ -1807,7 +1807,7 @@ void CG_DrawWeaponSelect( void )
 	int		holdX,x,y,x2,y2,pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
-	int		height;
+	//int		height;
 	vec4_t	calcColor;
 	vec4_t	textColor = { .875f, .718f, .121f, 1.0f };
 
@@ -1891,7 +1891,7 @@ void CG_DrawWeaponSelect( void )
 	cgi_R_SetColor( calcColor);					
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 
 	for (iconCnt=1;iconCnt<(sideLeftIconCnt+1);i--)
 	{
@@ -1927,7 +1927,7 @@ void CG_DrawWeaponSelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
+	//height = bigIconSize * cg.iconHUDPercent;
 	cgi_R_SetColor(NULL);
 	if (weaponData[cg.weaponSelect].weaponIcon[0])
 	{
@@ -1955,7 +1955,7 @@ void CG_DrawWeaponSelect( void )
 	// Work forwards from current icon
 	cgi_R_SetColor( calcColor);					
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
+	//height = smallIconSize * cg.iconHUDPercent;
 	for (iconCnt=1;iconCnt<(sideRightIconCnt+1);i++)
 	{
 		if (i>13)
@@ -2587,7 +2587,7 @@ Caused by an EV_FIRE_WEAPON event
 void CG_FireWeapon( centity_t *cent, qboolean alt_fire ) 
 {
 	entityState_t *ent;
-	weaponInfo_t	*weap;
+	//weaponInfo_t	*weap;
 
 	ent = &cent->currentState;
 	if ( ent->weapon == WP_NONE ) {
@@ -2597,7 +2597,7 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 		CG_Error( "CG_FireWeapon: ent->weapon >= WP_NUM_WEAPONS" );
 		return;
 	}
-	weap = &cg_weapons[ ent->weapon ];
+	//weap = &cg_weapons[ ent->weapon ];
 
 	// mark the entity as muzzle flashing, so when it is added it will
 	// append the flash to the weapon model

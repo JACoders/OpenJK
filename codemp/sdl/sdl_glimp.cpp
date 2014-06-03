@@ -66,12 +66,6 @@ PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
 PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
 PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
 
-void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
-
-void ( APIENTRY * qglPointParameterfEXT)( GLenum param, GLfloat value );
-void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, GLfloat *value );
-
 void ( * qglLockArraysEXT)( int, int);
 void ( * qglUnlockArraysEXT) ( void );
 
@@ -526,7 +520,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 bool GL_CheckForExtension(const char *ext)
 {
-	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
 	if (ptr == NULL)
 		return false;
 	ptr += strlen(ext);
@@ -776,40 +770,6 @@ static void GLimp_InitExtensions( void )
 		Com_Printf ("...GL_EXT_compiled_vertex_array not found\n" );
 	}
 
-	qglPointParameterfEXT = NULL;
-	qglPointParameterfvEXT = NULL;
-
-	//3d textures -rww
-	qglTexImage3DEXT = NULL;
-	qglTexSubImage3DEXT = NULL;
-
-	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
-	{
-		if ( r_ext_compiled_vertex_array->integer )
-		{
-			Com_Printf ("...using GL_EXT_point_parameters\n" );
-			qglPointParameterfEXT = ( void ( APIENTRY * )( GLenum, GLfloat) ) SDL_GL_GetProcAddress( "glPointParameterfEXT" );
-			qglPointParameterfvEXT = ( void ( APIENTRY * )( GLenum, GLfloat *) ) SDL_GL_GetProcAddress( "glPointParameterfvEXT" );
-
-			//3d textures -rww
-			qglTexImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *) ) SDL_GL_GetProcAddress( "glTexImage3DEXT" );
-			qglTexSubImage3DEXT = (void ( APIENTRY * ) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *) ) SDL_GL_GetProcAddress( "glTexSubImage3DEXT" );
-
-			if (!qglPointParameterfEXT || !qglPointParameterfvEXT)
-			{
-				Com_Error (ERR_FATAL, "bad getprocaddress");
-			}
-		}
-		else
-		{
-			Com_Printf ("...ignoring GL_EXT_point_parameters\n" );
-		}
-	}
-	else
-	{
-		Com_Printf ("...GL_EXT_point_parameters not found\n" );
-	}
-
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
 	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
@@ -962,6 +922,35 @@ static void GLimp_InitExtensions( void )
 	}
 }
 
+// Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
+static const char *TruncateGLExtensionsString (const char *extensionsString, int maxExtensions)
+{
+	const char *p = extensionsString;
+	const char *q;
+	int numExtensions = 0;
+	size_t extensionsLen = strlen (extensionsString);
+
+	char *truncatedExtensions;
+
+	while ( (q = strchr (p, ' ')) != NULL && numExtensions <= maxExtensions )
+	{
+		p = q + 1;
+		numExtensions++;
+	}
+
+	if ( q != NULL )
+	{
+		// We still have more extensions. We'll call this the end
+
+		extensionsLen = p - extensionsString - 1;
+	}
+
+	truncatedExtensions = (char *)ri->Hunk_Alloc (extensionsLen + 1, h_low);
+	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
+
+	return truncatedExtensions;
+}
+
 void 		GLimp_Init( void )
 {
 	ri->Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
@@ -1016,6 +1005,9 @@ success:
 	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
 	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
 	glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
+	
+	glConfigExt.originalExtensionString = glConfig.extensions_string;
+	glConfig.extensions_string = TruncateGLExtensionsString (glConfigExt.originalExtensionString, 128);
 
 	// OpenGL driver constants
 	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );

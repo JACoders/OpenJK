@@ -81,6 +81,7 @@ enum
 	SPEECH_PUSHED
 };
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
+extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 static void HT_Speech( gentity_t *self, int speechType, float failChance )
 {
 	if ( random() < failChance )
@@ -294,7 +295,7 @@ public:
 		assert(actor->NPC->troop==mTroopHandle);
 		int		bestNewLeader=-1;
 		int		numEnts = mActors.size();
-		bool	found = false;
+		//bool	found = false;
 		mTroopReform = true;
 
 		// Find The Actor
@@ -303,7 +304,7 @@ public:
 		{
 			if (mActors[i]==actor)
 			{
-				found = true;
+				//found = true;
 				mActors.erase_swap(i);
 				numEnts --;
 				if (i==0 && !mActors.empty())
@@ -322,19 +323,9 @@ public:
 			MakeActorLeader(bestNewLeader);
 		}
 
-		assert(found);
+		//assert(found);
 		actor->NPC->troop = 0;
 	}
-
-	
-
-
-
-
-
-
-
-
 
 private:
 	////////////////////////////////////////////////////////////////////////////////////
@@ -441,8 +432,6 @@ private:
 		}
 		return ClampScale(Scale);
 	}
-
-
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Scan For Enemies
@@ -712,8 +701,6 @@ private:
 
 // PHASE II - COMPUTE THE NEW FORMATION HEAD, FORWARD, AND RIGHT VECTORS
 //=======================================================================
-		CVec3	PreviousFwd = mFormFwd;
-
 		mFormHead	= leader->currentOrigin;
 		mFormFwd	= (NAV::HasPath(leader))?(NAV::NextPosition(leader)):(mTargetLastKnownPosition);
 		mFormFwd	-= mFormHead;

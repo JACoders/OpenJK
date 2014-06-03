@@ -29,7 +29,6 @@ This file is part of Jedi Academy.
 #include "../cgame/cg_local.h"
 #include "g_shared.h"
 #include "g_nav.h"
-#include "../cgame/cg_main.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // HFile Bindings

@@ -7,6 +7,7 @@
 #include "ghoul2/g2_local.h"
 
 glconfig_t	glConfig;
+glconfigExt_t glConfigExt;
 glstate_t	glState;
 static void GfxInfo_f( void );
 
@@ -203,13 +204,6 @@ void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
 
 void ( APIENTRY * qglLockArraysEXT)( GLint, GLint);
 void ( APIENTRY * qglUnlockArraysEXT) ( void );
-
-void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
-void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
-
-//3d textures -rww
-void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
-void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
 
 
 // Declare Register Combiners function pointers.
@@ -990,7 +984,7 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
-	R_PrintLongString( glConfig.extensions_string );
+	R_PrintLongString( glConfigExt.originalExtensionString );
 	ri->Printf( PRINT_ALL, "\n");
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	ri->Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
@@ -1367,8 +1361,6 @@ void R_Init( void ) {
 	R_InitShaders(qfalse);
 	R_InitSkins();
 
-	R_TerrainInit(); //rwwRMG - added
-
 	R_InitFonts();
 
 	R_ModelInit();
@@ -1443,8 +1435,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );
 	}
-
-	R_TerrainShutdown(); //rwwRMG - added
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {
@@ -1536,10 +1526,6 @@ extern void R_SVModelInit( void ); //tr_model.cpp
 extern void R_AutomapElevationAdjustment( float newHeight ); //tr_world.cpp
 extern qboolean R_InitializeWireframeAutomap( void ); //tr_world.cpp
 
-extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
-extern void R_InvertImage(byte *data, int width, int height, int depth);
-extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 extern qhandle_t RE_RegisterServerSkin( const char *name );
 
 /*
@@ -1624,7 +1610,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.InitializeWireframeAutomap			= R_InitializeWireframeAutomap; //tr_world.cpp
 	re.AddWeatherZone						= RE_AddWeatherZone;
 	re.WorldEffectCommand					= RE_WorldEffectCommand;
-	re.InitRendererTerrain					= RE_InitRendererTerrain;
 	re.RegisterMedia_LevelLoadBegin			= RE_RegisterMedia_LevelLoadBegin;
 	re.RegisterMedia_LevelLoadEnd			= RE_RegisterMedia_LevelLoadEnd;
 	re.RegisterMedia_GetLevel				= RE_RegisterMedia_GetLevel;
@@ -1734,14 +1719,6 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.G2API_AddSkinGore					= G2API_AddSkinGore;
 	re.G2API_ClearSkinGore					= G2API_ClearSkinGore;
 	#endif // _SOF2
-
-	// RMG / Terrain stuff
-	re.LoadDataImage						= R_LoadDataImage;
-	re.InvertImage							= R_InvertImage;
-	re.Resample								= R_Resample;
-	re.LoadImageJA							= R_LoadImage;
-	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.SavePNG								= RE_SavePNG;
 
 	// this is set in R_Init
 	//re.G2VertSpaceServer	= G2VertSpaceServer;

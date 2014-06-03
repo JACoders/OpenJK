@@ -144,7 +144,7 @@ public:
 	CBlock *Duplicate( void );
 
 	int	GetBlockID( void )		const	{	return m_id;			}	//Get the ID for the block
-	int	GetNumMembers( void )	const	{	return m_members.size();}	//Get the number of member in the block's list
+	int	GetNumMembers( void )	const	{	return (int)m_members.size();}	//Get the number of member in the block's list
 
 	void SetFlags( unsigned char flags )	{	m_flags = flags;	}
 	void SetFlag( unsigned char flag )		{	m_flags |= flag;	}
@@ -190,8 +190,6 @@ protected:
 	char	GetChar( void );
 	long	GetLong( void );
 	float	GetFloat( void );
-
-	void	StripExtension( const char *, char * );	//Utility function to strip away file extensions
 
 	long	m_fileSize;							//Size of the file
 	FILE	*m_fileHandle;						//Global file handle of current I/O source

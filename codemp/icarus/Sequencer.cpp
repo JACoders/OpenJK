@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // Script Command Sequencer
 //
 //	-- jweier
@@ -349,7 +346,7 @@ int CSequencer::ParseRun( CBlock *block )
 	int			buffer_size;
 
 	//Get the name and format it
-	StripExtension( (char*) block->GetMemberData( 0 ), (char *) newname );
+	COM_StripExtension( (char*) block->GetMemberData( 0 ), (char *) newname, sizeof(newname) );
 
 	//Get the file from the game engine
   	buffer_size = m_ie->I_LoadFile( newname, (void **) &buffer );
@@ -2201,31 +2198,6 @@ CBlock *CSequencer::PopCommand( int flag )
 
 	return block;
 }
-
-/*
-========================
-StripExtension
-
-Filename ultility.  Probably get rid of this if I decided to use CStrings...
-========================
-*/
-
-void CSequencer::StripExtension( const char *in, char *out )
-{
-	int		i = strlen(in) + 1;
-
-	while ( (in[i] != '.') && (i >= 0) )
-	 i--;
-
-	if ( i < 0 )
-	{
-		strcpy(out, in);
-		return;
-	}
-
-	strncpy(out, in, i);
-}
-
 
 /*
 -------------------------
