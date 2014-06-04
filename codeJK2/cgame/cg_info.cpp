@@ -402,6 +402,10 @@ void CG_DrawInformation( void ) {
 	else
 		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
 
+	if (!levelshot) {
+		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+	}
+
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
 	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
 	{
