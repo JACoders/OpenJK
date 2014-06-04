@@ -211,6 +211,12 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 		return;
 	}
 
+	// zyk: Guardian of Resistance resists attack, he just takes the damage but will not have pain anim
+	if (self->client->pers.guardian_mode == 11)
+	{
+		return;
+	}
+
 	if ( self->s.weapon == WP_THERMAL && self->client->ps.weaponTime > 0 )
 	{//don't interrupt thermal throwing anim
 		return;
