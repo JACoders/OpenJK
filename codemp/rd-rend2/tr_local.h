@@ -317,6 +317,7 @@ typedef enum
 	IMGFLAG_CLAMPTOEDGE    = 0x0040,
 	IMGFLAG_SRGB           = 0x0080,
 	IMGFLAG_GENNORMALMAP   = 0x0100,
+	IMGFLAG_MUTABLE        = 0x0200,
 } imgFlags_t;
 
 typedef enum
@@ -1870,6 +1871,7 @@ typedef struct {
 	qboolean textureSrgb;
 	qboolean framebufferSrgb;
 	qboolean textureSrgbDecode;
+	qboolean immutableTextures;
 
 	qboolean depthClamp;
 	qboolean seamlessCubeMap;

@@ -1124,6 +1124,14 @@ extern void (APIENTRY * qglDrawBuffersARB)(GLsizei n, const GLenum *bufs);
 #define GL_DEPTH_CLAMP				      0x864F
 #endif
 
+// GL_ARB_texture_storage
+extern PFNGLTEXSTORAGE1DPROC qglTexStorage1D;
+extern PFNGLTEXSTORAGE2DPROC qglTexStorage2D;
+extern PFNGLTEXSTORAGE3DPROC qglTexStorage3D;
+#ifndef GL_ARB_texture_storage
+#define GL_TEXTURE_IMMUTABLE_FORMAT                0x912F
+#endif
+
 #ifndef GL_ARB_seamless_cube_map
 #define GL_ARB_seamless_cube_map
 #define GL_TEXTURE_CUBE_MAP_SEAMLESS               0x884F

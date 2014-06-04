@@ -181,6 +181,11 @@ void (APIENTRY * qglRenderbufferStorageMultisampleEXT)(GLenum target, GLsizei sa
 // GL_ARB_draw_buffers
 void (APIENTRY * qglDrawBuffersARB)(GLsizei n, const GLenum *bufs);
 
+// GL_ARB_texture_storage
+PFNGLTEXSTORAGE1DPROC qglTexStorage1D;
+PFNGLTEXSTORAGE2DPROC qglTexStorage2D;
+PFNGLTEXSTORAGE3DPROC qglTexStorage3D;
+
 // OpenGL 3.0
 PFNGLCLEARBUFFERFVPROC qglClearBufferfv;
 
@@ -725,6 +730,22 @@ void GLimp_InitExtraExtensions()
 			glRefConfig.packedNormalDataType = GL_UNSIGNED_INT_2_10_10_10_REV;
 
 		ri->Printf(PRINT_ALL, result[r_arb_vertex_type_2_10_10_10_rev->integer ? 1 : 0], extension);
+	}
+	else
+	{
+		ri->Printf(PRINT_ALL, result[2], extension);
+	}
+
+	// GL_ARB_texture_storage
+	extension = "GL_ARB_texture_storage";
+	glRefConfig.immutableTextures = qfalse;
+	if( GLimp_HaveExtension( extension ) )
+	{
+		qglTexStorage1D = (PFNGLTEXSTORAGE1DPROC)GL_GetProcAddress("glTexStorage1D");
+		qglTexStorage2D = (PFNGLTEXSTORAGE2DPROC)GL_GetProcAddress("glTexStorage2D");
+		qglTexStorage3D = (PFNGLTEXSTORAGE3DPROC)GL_GetProcAddress("glTexStorage3D");
+
+		ri->Printf(PRINT_ALL, result[1], extension);
 	}
 	else
 	{
