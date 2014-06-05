@@ -733,9 +733,6 @@ void R_FBOList_f(void)
 	ri->Printf(PRINT_ALL, " %i FBOs\n", tr.numFBOs);
 }
 
-// FIXME
-extern void RB_SetGL2D (void);
-
 void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexScale, FBO_t *dst, vec4i_t inDstBox, struct shaderProgram_s *shaderProgram, vec4_t inColor, int blend)
 {
 	vec4i_t dstBox, srcBox;
