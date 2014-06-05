@@ -2813,13 +2813,6 @@ void NPC_BSST_Attack( void )
 		shoot = qfalse;
 	}
 
-	if ( NPCS.NPC->enemy && NPCS.NPC->enemy->enemy )
-	{
-		if ( NPCS.NPC->enemy->s.weapon == WP_SABER && NPCS.NPC->enemy->enemy->s.weapon == WP_SABER )
-		{//don't shoot at an enemy jedi who is fighting another jedi, for fear of injuring one or causing rogue blaster deflections (a la Obi Wan/Vader duel at end of ANH)
-			shoot = qfalse;
-		}
-	}
 	//FIXME: don't shoot right away!
 	if ( NPCS.NPC->client->ps.weaponTime > 0 )
 	{
