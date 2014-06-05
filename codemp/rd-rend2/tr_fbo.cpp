@@ -444,6 +444,7 @@ void FBO_Init(void)
 		FBO_Bind(tr.renderFbo);
 
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, multisample);
+		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 1, multisample);
 		FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24_ARB, 0, multisample);
 
 		FBO_SetupDrawBuffers();
@@ -455,6 +456,7 @@ void FBO_Init(void)
 
 		//FBO_CreateBuffer(tr.msaaResolveFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.renderImage, 0);
+		FBO_AttachTextureImage(tr.glowImage, 1);
 
 		//FBO_CreateBuffer(tr.msaaResolveFbo, GL_DEPTH_COMPONENT24_ARB, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
@@ -935,9 +937,34 @@ void FBO_FastBlit(FBO_t *src, vec4i_t srcBox, FBO_t *dst, vec4i_t dstBox, int bu
 
 	qglBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, srcFb);
 	qglBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, dstFb);
+
 	qglBlitFramebufferEXT(srcBoxFinal[0], srcBoxFinal[1], srcBoxFinal[2], srcBoxFinal[3],
 	                      dstBoxFinal[0], dstBoxFinal[1], dstBoxFinal[2], dstBoxFinal[3],
 						  buffers, filter);
+
+	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glState.currentFBO = NULL;
+}
+
+void FBO_FastBlitIndexed(FBO_t *src, FBO_t *dst, int srcReadBuffer, int dstDrawBuffer, int buffers, int filter)
+{
+	assert (src != NULL);
+	assert (dst != NULL);
+
+	qglBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, src->frameBuffer);
+	qglReadBuffer (GL_COLOR_ATTACHMENT0_EXT + srcReadBuffer);
+
+	qglBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, dst->frameBuffer);
+	qglDrawBuffer (GL_COLOR_ATTACHMENT0_EXT + dstDrawBuffer);
+
+	qglBlitFramebufferEXT(0, 0, src->width, src->height,
+	                      0, 0, dst->width, dst->height,
+						  buffers, filter);
+
+	qglReadBuffer (GL_COLOR_ATTACHMENT0_EXT);
+
+	glState.currentFBO = dst;
+	FBO_SetupDrawBuffers();
 
 	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	glState.currentFBO = NULL;
