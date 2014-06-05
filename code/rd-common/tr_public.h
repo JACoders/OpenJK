@@ -16,8 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#ifndef __TR_PUBLIC_H
-#define __TR_PUBLIC_H
+#pragma once
 
 #include "tr_types.h"
 #include "../qcommon/qcommon.h"
@@ -371,11 +370,8 @@ typedef struct {
 	void		(*G2Time_ReportTimers)(void);
 } refexport_t;
 
-
 // this is the only function actually exported at the linker level
 // If the module can't init to a valid rendering state, NULL will be
 // returned.
 
 typedef	refexport_t* (QDECL *GetRefAPI_t) (int apiVersion, refimport_t *rimp);
-
-#endif	// __TR_PUBLIC_H
