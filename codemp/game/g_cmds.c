@@ -3857,7 +3857,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			value = atoi(content);
 			ent->client->pers.health_strength = value;
 
-			// zyk: loading grapple hook value
+			// zyk: loading Drain Shield value
 			fscanf(account_file,"%s",content);
 			value = atoi(content);
 			ent->client->pers.drain_shield = value;
@@ -7882,7 +7882,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 33)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Health Strength: ^7Increases your health resistance to damage. Each level increases your health resistance by 10 per cent\n\"" );
 					if (i == 34)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Grapple Hook: ^7the famous grapple hook, it allows you to hook walls and other things taking you to there. To use it, press the Lightsaber Style key (default L) when you have melee\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Drain Shield: ^7When using Drain force power, and your health is full, restores some shield\n\"" );
 					if (i == 35)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Jetpack: ^7the jetpack, used by Boba Fett. Allows you to fly. To use it, jump and press the Use key (usually R) while in the middle of the jump. Each level uses less fuel, allowing you to fly for a longer time\n\"" );
 					if (i == 36)
