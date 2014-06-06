@@ -895,7 +895,7 @@ void Jedi_Cloak( gentity_t *self )
 {
 	if ( self )
 	{
-		self->flags |= FL_NOTARGET;
+		//self->flags |= FL_NOTARGET; zyk: no more sets notarget on player when cloaked so npcs can sometimes attack him
 		if ( self->client )
 		{
 			if ( !self->client->ps.powerups[PW_CLOAKED] )
@@ -914,7 +914,7 @@ void Jedi_Decloak( gentity_t *self )
 {
 	if ( self )
 	{
-		self->flags &= ~FL_NOTARGET;
+		//self->flags &= ~FL_NOTARGET; zyk: no more sets notarget on player when cloaked so npcs can sometimes attack him
 		if ( self->client )
 		{
 			if ( self->client->ps.powerups[PW_CLOAKED] )
