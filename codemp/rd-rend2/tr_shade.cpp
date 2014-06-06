@@ -42,40 +42,14 @@ R_DrawElements
 
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
-	if (glRefConfig.drawRangeElements)
-		qglDrawRangeElementsEXT(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
-	else
-		qglDrawElements(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
-	
+	qglDrawRangeElementsEXT(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
 }
 
 
 static void R_DrawMultiElementsVBO( int multiDrawPrimitives, glIndex_t *multiDrawMinIndex, glIndex_t *multiDrawMaxIndex, 
 	GLsizei *multiDrawNumIndexes, glIndex_t **multiDrawFirstIndex)
 {
-	if (glRefConfig.multiDrawArrays)
-	{
-		qglMultiDrawElementsEXT(GL_TRIANGLES, multiDrawNumIndexes, GL_INDEX_TYPE, (const GLvoid **)multiDrawFirstIndex, multiDrawPrimitives);
-	}
-	else
-	{
-		int i;
-
-		if (glRefConfig.drawRangeElements)
-		{
-			for (i = 0; i < multiDrawPrimitives; i++)
-			{
-				qglDrawRangeElementsEXT(GL_TRIANGLES, multiDrawMinIndex[i], multiDrawMaxIndex[i], multiDrawNumIndexes[i], GL_INDEX_TYPE, multiDrawFirstIndex[i]);
-			}
-		}
-		else
-		{
-			for (i = 0; i < multiDrawPrimitives; i++)
-			{
-				qglDrawElements(GL_TRIANGLES, multiDrawNumIndexes[i], GL_INDEX_TYPE, multiDrawFirstIndex[i]);
-			}
-		}
-	}
+	qglMultiDrawElementsEXT(GL_TRIANGLES, multiDrawNumIndexes, GL_INDEX_TYPE, (const GLvoid **)multiDrawFirstIndex, multiDrawPrimitives);
 }
 
 
@@ -1799,7 +1773,7 @@ void RB_StageIteratorGeneric( void )
 	//
 	// pshadows!
 	//
-	if (glRefConfig.framebufferObject && r_shadows->integer == 4 && tess.pshadowBits &&
+	if (r_shadows->integer == 4 && tess.pshadowBits &&
 		tess.shader->sort <= SS_OPAQUE && !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))) {
 		ProjectPshadowVBOGLSL();
 	}

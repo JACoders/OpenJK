@@ -451,31 +451,28 @@ void RB_BeginDrawingView (void) {
 	// 2D images again
 	backEnd.projection2D = qfalse;
 
-	if (glRefConfig.framebufferObject)
+	// FIXME: HUGE HACK: render to the screen fbo if we've already postprocessed the frame and aren't drawing more world
+	// drawing more world check is in case of double renders, such as skyportals
+	if (backEnd.viewParms.targetFbo == NULL)
 	{
-		// FIXME: HUGE HACK: render to the screen fbo if we've already postprocessed the frame and aren't drawing more world
-		// drawing more world check is in case of double renders, such as skyportals
-		if (backEnd.viewParms.targetFbo == NULL)
+		if (!tr.renderFbo || (backEnd.framePostProcessed && (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
 		{
-			if (!tr.renderFbo || (backEnd.framePostProcessed && (backEnd.refdef.rdflags & RDF_NOWORLDMODEL)))
-			{
-				FBO_Bind(NULL);
-			}
-			else
-			{
-				FBO_Bind(tr.renderFbo);
-			}
+			FBO_Bind(NULL);
 		}
 		else
 		{
-			FBO_Bind(backEnd.viewParms.targetFbo);
+			FBO_Bind(tr.renderFbo);
+		}
+	}
+	else
+	{
+		FBO_Bind(backEnd.viewParms.targetFbo);
 
-			// FIXME: hack for cubemap testing
-			if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
-			{
-				//qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
-				qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
-			}
+		// FIXME: hack for cubemap testing
+		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
+		{
+			//qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
+			qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
 		}
 	}
 
@@ -764,8 +761,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
 	}
 
-	if (glRefConfig.framebufferObject)
-		FBO_Bind(fbo);
+	FBO_Bind(fbo);
 
 	// go back to the world modelview matrix
 
@@ -884,16 +880,13 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 
 	// FIXME: HUGE hack
-	if (glRefConfig.framebufferObject)
+	if (!tr.renderFbo || backEnd.framePostProcessed)
 	{
-		if (!tr.renderFbo || backEnd.framePostProcessed)
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		FBO_Bind(NULL);
+	}
+	else
+	{
+		FBO_Bind(tr.renderFbo);
 	}
 
 	RB_SetGL2D();
@@ -971,16 +964,13 @@ const void *RB_StretchPic ( const void *data ) {
 	cmd = (const stretchPicCommand_t *)data;
 
 	// FIXME: HUGE hack
-	if (glRefConfig.framebufferObject)
+	if (!tr.renderFbo || backEnd.framePostProcessed)
 	{
-		if (!tr.renderFbo || backEnd.framePostProcessed)
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		FBO_Bind(NULL);
+	}
+	else
+	{
+		FBO_Bind(tr.renderFbo);
 	}
 
 	RB_SetGL2D();
@@ -1069,16 +1059,13 @@ const void *RB_RotatePic ( const void *data )
 	cmd = (const rotatePicCommand_t *)data;
 
 	// FIXME: HUGE hack
-	if (glRefConfig.framebufferObject)
+	if (!tr.renderFbo || backEnd.framePostProcessed)
 	{
-		if (!tr.renderFbo || backEnd.framePostProcessed)
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		FBO_Bind(NULL);
+	}
+	else
+	{
+		FBO_Bind(tr.renderFbo);
 	}
 
 	RB_SetGL2D();
@@ -1170,16 +1157,13 @@ const void *RB_RotatePic2 ( const void *data )
 	cmd = (const rotatePicCommand_t *)data;
 
 	// FIXME: HUGE hack
-	if (glRefConfig.framebufferObject)
+	if (!tr.renderFbo || backEnd.framePostProcessed)
 	{
-		if (!tr.renderFbo || backEnd.framePostProcessed)
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		FBO_Bind(NULL);
+	}
+	else
+	{
+		FBO_Bind(tr.renderFbo);
 	}
 
 	RB_SetGL2D();
@@ -1275,12 +1259,12 @@ const void	*RB_DrawSurfs( const void *data ) {
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView ();
 
-	if (glRefConfig.framebufferObject && (backEnd.viewParms.flags & VPF_DEPTHCLAMP) && glRefConfig.depthClamp)
+	if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
 	{
 		qglEnable(GL_DEPTH_CLAMP);
 	}
 
-	if (glRefConfig.framebufferObject && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) && (r_depthPrepass->integer || (backEnd.viewParms.flags & VPF_DEPTHSHADOW)))
+	if (!(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) && (r_depthPrepass->integer || (backEnd.viewParms.flags & VPF_DEPTHSHADOW)))
 	{
 		FBO_t *oldFbo = glState.currentFBO;
 
@@ -1478,7 +1462,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 		SetViewportAndScissor();
 	}
 
-	if (glRefConfig.framebufferObject && (backEnd.viewParms.flags & VPF_DEPTHCLAMP) && glRefConfig.depthClamp)
+	if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
 	{
 		qglDisable(GL_DEPTH_CLAMP);
 	}
@@ -1500,18 +1484,12 @@ const void	*RB_DrawSurfs( const void *data ) {
 			qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 			qglClear( GL_COLOR_BUFFER_BIT );
 
-			if (glRefConfig.occlusionQuery)
-			{
-				tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
-				qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
-			}
+			tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
+			qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
 
 			RB_DrawSun(0.3, tr.sunFlareShader);
 
-			if (glRefConfig.occlusionQuery)
-			{
-				qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
-			}
+			qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
 
 			FBO_Bind(oldFbo);
 		}
@@ -1523,7 +1501,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 		RB_RenderFlares();
 	}
 
-	if (glRefConfig.framebufferObject && tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
+	if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 	{
 		FBO_Bind(NULL);
 		GL_SelectTexture(TB_CUBEMAP);
@@ -1551,8 +1529,7 @@ const void	*RB_DrawBuffer( const void *data ) {
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (glRefConfig.framebufferObject)
-		FBO_Bind(NULL);
+	FBO_Bind(NULL);
 
 	qglDrawBuffer( cmd->buffer );
 
@@ -1638,14 +1615,11 @@ const void *RB_ColorMask(const void *data)
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (glRefConfig.framebufferObject)
-	{
-		// reverse color mask, so 0 0 0 0 is the default
-		backEnd.colorMask[0] = (qboolean)(!cmd->rgba[0]);
-		backEnd.colorMask[1] = (qboolean)(!cmd->rgba[1]);
-		backEnd.colorMask[2] = (qboolean)(!cmd->rgba[2]);
-		backEnd.colorMask[3] = (qboolean)(!cmd->rgba[3]);
-	}
+	// reverse color mask, so 0 0 0 0 is the default
+	backEnd.colorMask[0] = (qboolean)(!cmd->rgba[0]);
+	backEnd.colorMask[1] = (qboolean)(!cmd->rgba[1]);
+	backEnd.colorMask[2] = (qboolean)(!cmd->rgba[2]);
+	backEnd.colorMask[3] = (qboolean)(!cmd->rgba[3]);
 
 	qglColorMask(cmd->rgba[0], cmd->rgba[1], cmd->rgba[2], cmd->rgba[3]);
 	
@@ -1670,16 +1644,13 @@ const void *RB_ClearDepth(const void *data)
 	if (r_showImages->integer)
 		RB_ShowImages();
 
-	if (glRefConfig.framebufferObject)
+	if (!tr.renderFbo || backEnd.framePostProcessed)
 	{
-		if (!tr.renderFbo || backEnd.framePostProcessed)
-		{
-			FBO_Bind(NULL);
-		}
-		else
-		{
-			FBO_Bind(tr.renderFbo);
-		}
+		FBO_Bind(NULL);
+	}
+	else
+	{
+		FBO_Bind(tr.renderFbo);
 	}
 
 	qglClear(GL_DEPTH_BUFFER_BIT);
@@ -1735,20 +1706,17 @@ const void	*RB_SwapBuffers( const void *data ) {
 		ri->Hunk_FreeTempMemory( stencilReadback );
 	}
 
-	if (glRefConfig.framebufferObject)
+	if (!backEnd.framePostProcessed)
 	{
-		if (!backEnd.framePostProcessed)
+		if (tr.msaaResolveFbo && r_hdr->integer)
 		{
-			if (tr.msaaResolveFbo && r_hdr->integer)
-			{
-				// Resolving an RGB16F MSAA FBO to the screen messes with the brightness, so resolve to an RGB16F FBO first
-				FBO_FastBlit(tr.renderFbo, NULL, tr.msaaResolveFbo, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				FBO_FastBlit(tr.msaaResolveFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			}
-			else if (tr.renderFbo)
-			{
-				FBO_FastBlit(tr.renderFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			}
+			// Resolving an RGB16F MSAA FBO to the screen messes with the brightness, so resolve to an RGB16F FBO first
+			FBO_FastBlit(tr.renderFbo, NULL, tr.msaaResolveFbo, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			FBO_FastBlit(tr.msaaResolveFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
+		else if (tr.renderFbo)
+		{
+			FBO_FastBlit(tr.renderFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
 	}
 
@@ -1822,7 +1790,7 @@ const void *RB_PostProcess(const void *data)
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (!glRefConfig.framebufferObject || !r_postProcess->integer || (tr.viewParms.flags & VPF_NOPOSTPROCESS))
+	if (!r_postProcess->integer || (tr.viewParms.flags & VPF_NOPOSTPROCESS))
 	{
 		// do nothing
 		return (const void *)(cmd + 1);

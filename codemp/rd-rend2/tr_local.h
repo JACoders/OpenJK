@@ -132,7 +132,6 @@ extern cvar_t	*r_ext_texture_filter_anisotropic;
 
 extern cvar_t  *r_ext_draw_range_elements;
 extern cvar_t  *r_ext_multi_draw_arrays;
-extern cvar_t  *r_ext_framebuffer_object;
 extern cvar_t  *r_ext_texture_float;
 extern cvar_t  *r_arb_half_float_pixel;
 extern cvar_t  *r_ext_framebuffer_multisample;
@@ -1846,37 +1845,17 @@ typedef enum {
 // We can't change glConfig_t without breaking DLL/vms compatibility, so
 // store extensions we have here.
 typedef struct {
-	qboolean    drawRangeElements;
-	qboolean    multiDrawArrays;
-	qboolean	occlusionQuery;
-
 	int glslMajorVersion;
 	int glslMinorVersion;
 
 	memInfo_t   memInfo;
 
-	qboolean framebufferObject;
 	int maxRenderbufferSize;
 	int maxColorAttachments;
 
-	qboolean textureNonPowerOfTwo;
-	qboolean textureFloat;
-	qboolean halfFloatPixel;
-	qboolean packedDepthStencil;
 	int textureCompression;
-	
-	qboolean framebufferMultisample;
-	qboolean framebufferBlit;
 
-	qboolean textureSrgb;
-	qboolean framebufferSrgb;
-	qboolean textureSrgbDecode;
 	qboolean immutableTextures;
-
-	qboolean depthClamp;
-	qboolean seamlessCubeMap;
-
-	GLenum packedNormalDataType;
 
 	qboolean floatLightmap;
 } glRefConfig_t;

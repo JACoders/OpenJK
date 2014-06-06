@@ -192,7 +192,7 @@ void FBO_CreateBuffer(FBO_t *fbo, int format, int index, int multisample)
 		qglGenRenderbuffersEXT(1, pRenderBuffer);
 
 	qglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, *pRenderBuffer);
-	if (multisample && glRefConfig.framebufferMultisample)
+	if (multisample)
 	{
 		qglRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, multisample, format, fbo->width, fbo->height);
 	}
@@ -395,9 +395,6 @@ void FBO_Init(void)
 
 	ri->Printf(PRINT_ALL, "------- FBO_Init -------\n");
 
-	if(!glRefConfig.framebufferObject)
-		return;
-
 	tr.numFBOs = 0;
 
 	GL_CheckErrors();
@@ -416,7 +413,7 @@ void FBO_Init(void)
 	} */
 
 	hdrFormat = GL_RGBA8;
-	if (r_hdr->integer && glRefConfig.framebufferObject && glRefConfig.textureFloat)
+	if (r_hdr->integer)
 	{
 		hdrFormat = GL_RGB16F_ARB;
 	}
@@ -428,7 +425,7 @@ void FBO_Init(void)
 		multisample = r_ext_framebuffer_multisample->integer;
 	}
 
-	if (multisample < 2 || !glRefConfig.framebufferBlit)
+	if (multisample < 2)
 		multisample = 0;
 
 	if (multisample != r_ext_framebuffer_multisample->integer)
@@ -438,7 +435,7 @@ void FBO_Init(void)
 	
 	// only create a render FBO if we need to resolve MSAA or do HDR
 	// otherwise just render straight to the screen (tr.renderFbo = NULL)
-	if (multisample && glRefConfig.framebufferMultisample)
+	if (multisample)
 	{
 		tr.renderFbo = FBO_Create("_render", tr.renderDepthImage->width, tr.renderDepthImage->height);
 		FBO_Bind(tr.renderFbo);
@@ -678,9 +675,6 @@ void FBO_Shutdown(void)
 
 	ri->Printf(PRINT_ALL, "------- FBO_Shutdown -------\n");
 
-	if(!glRefConfig.framebufferObject)
-		return;
-
 	FBO_Bind(NULL);
 
 	for(i = 0; i < tr.numFBOs; i++)
@@ -713,12 +707,6 @@ void R_FBOList_f(void)
 {
 	int             i;
 	FBO_t          *fbo;
-
-	if(!glRefConfig.framebufferObject)
-	{
-		ri->Printf(PRINT_ALL, "GL_EXT_framebuffer_object is not available.\n");
-		return;
-	}
 
 	ri->Printf(PRINT_ALL, "             size       name\n");
 	ri->Printf(PRINT_ALL, "----------------------------------------------------------\n");
@@ -887,12 +875,6 @@ void FBO_FastBlit(FBO_t *src, vec4i_t srcBox, FBO_t *dst, vec4i_t dstBox, int bu
 {
 	vec4i_t srcBoxFinal, dstBoxFinal;
 	GLuint srcFb, dstFb;
-
-	if (!glRefConfig.framebufferBlit)
-	{
-		FBO_Blit(src, srcBox, NULL, dst, dstBox, NULL, NULL, 0);
-		return;
-	}
 
 	// get to a neutral state first
 	//FBO_Bind(NULL);

@@ -71,10 +71,7 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 		color[0] = 
 		color[1] =
 		color[2] = 1.0f;
-		if (glRefConfig.textureFloat)
-			color[3] = 0.03f;
-		else
-			color[3] = 0.1f;
+		color[3] = 0.03f;
 
 		FBO_Blit(tr.targetLevelsFbo, srcBox, NULL, tr.calcLevelsFbo, NULL,  NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
 	}
@@ -113,114 +110,111 @@ void RB_BokehBlur(FBO_t *src, vec4i_t srcBox, FBO_t *dst, vec4i_t dstBox, float 
 	if (blur < 0.004f)
 		return;
 
-	if (glRefConfig.framebufferObject)
+	// bokeh blur
+	if (blur > 0.0f)
 	{
-		// bokeh blur
-		if (blur > 0.0f)
-		{
-			vec4i_t quarterBox;
+		vec4i_t quarterBox;
 
-			quarterBox[0] = 0;
-			quarterBox[1] = tr.quarterFbo[0]->height;
-			quarterBox[2] = tr.quarterFbo[0]->width;
-			quarterBox[3] = -tr.quarterFbo[0]->height;
+		quarterBox[0] = 0;
+		quarterBox[1] = tr.quarterFbo[0]->height;
+		quarterBox[2] = tr.quarterFbo[0]->width;
+		quarterBox[3] = -tr.quarterFbo[0]->height;
 
-			// create a quarter texture
-			//FBO_Blit(NULL, NULL, NULL, tr.quarterFbo[0], NULL, NULL, NULL, 0);
-			FBO_FastBlit(src, srcBox, tr.quarterFbo[0], quarterBox, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		}
-
-#ifndef HQ_BLUR
-		if (blur > 1.0f)
-		{
-			// create a 1/16th texture
-			//FBO_Blit(tr.quarterFbo[0], NULL, NULL, tr.textureScratchFbo[0], NULL, NULL, NULL, 0);
-			FBO_FastBlit(tr.quarterFbo[0], NULL, tr.textureScratchFbo[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		}
-#endif
-
-		if (blur > 0.0f && blur <= 1.0f)
-		{
-			// Crossfade original with quarter texture
-			VectorSet4(color, 1, 1, 1, blur);
-
-			FBO_Blit(tr.quarterFbo[0], NULL, NULL, dst, dstBox, NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-		}
-#ifndef HQ_BLUR
-		// ok blur, but can see some pixelization
-		else if (blur > 1.0f && blur <= 2.0f)
-		{
-			// crossfade quarter texture with 1/16th texture
-			FBO_Blit(tr.quarterFbo[0], NULL, NULL, dst, dstBox, NULL, NULL, 0);
-
-			VectorSet4(color, 1, 1, 1, blur - 1.0f);
-
-			FBO_Blit(tr.textureScratchFbo[0], NULL, NULL, dst, dstBox, NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-		}
-		else if (blur > 2.0f)
-		{
-			// blur 1/16th texture then replace
-			int i;
-
-			for (i = 0; i < 2; i++)
-			{
-				vec2_t blurTexScale;
-				float subblur;
-
-				subblur = ((blur - 2.0f) / 2.0f) / 3.0f * (float)(i + 1);
-
-				blurTexScale[0] =
-				blurTexScale[1] = subblur;
-
-				color[0] =
-				color[1] =
-				color[2] = 0.5f;
-				color[3] = 1.0f;
-
-				if (i != 0)
-					FBO_Blit(tr.textureScratchFbo[0], NULL, blurTexScale, tr.textureScratchFbo[1], NULL, &tr.bokehShader, color, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
-				else
-					FBO_Blit(tr.textureScratchFbo[0], NULL, blurTexScale, tr.textureScratchFbo[1], NULL, &tr.bokehShader, color, 0);
-			}
-
-			FBO_Blit(tr.textureScratchFbo[1], NULL, NULL, dst, dstBox, &tr.textureColorShader, NULL, 0);
-		}
-#else // higher quality blur, but slower
-		else if (blur > 1.0f)
-		{
-			// blur quarter texture then replace
-			int i;
-
-			src = tr.quarterFbo[0];
-			dst = tr.quarterFbo[1];
-
-			VectorSet4(color, 0.5f, 0.5f, 0.5f, 1);
-
-			for (i = 0; i < 2; i++)
-			{
-				vec2_t blurTexScale;
-				float subblur;
-
-				subblur = (blur - 1.0f) / 2.0f * (float)(i + 1);
-
-				blurTexScale[0] =
-				blurTexScale[1] = subblur;
-
-				color[0] =
-				color[1] =
-				color[2] = 1.0f;
-				if (i != 0)
-					color[3] = 1.0f;
-				else
-					color[3] = 0.5f;
-
-				FBO_Blit(tr.quarterFbo[0], NULL, blurTexScale, tr.quarterFbo[1], NULL, &tr.bokehShader, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
-			}
-
-			FBO_Blit(tr.quarterFbo[1], NULL, NULL, dst, dstBox, &tr.textureColorShader, NULL, 0);
-		}
-#endif
+		// create a quarter texture
+		//FBO_Blit(NULL, NULL, NULL, tr.quarterFbo[0], NULL, NULL, NULL, 0);
+		FBO_FastBlit(src, srcBox, tr.quarterFbo[0], quarterBox, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	}
+
+#ifndef HQ_BLUR
+	if (blur > 1.0f)
+	{
+		// create a 1/16th texture
+		//FBO_Blit(tr.quarterFbo[0], NULL, NULL, tr.textureScratchFbo[0], NULL, NULL, NULL, 0);
+		FBO_FastBlit(tr.quarterFbo[0], NULL, tr.textureScratchFbo[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	}
+#endif
+
+	if (blur > 0.0f && blur <= 1.0f)
+	{
+		// Crossfade original with quarter texture
+		VectorSet4(color, 1, 1, 1, blur);
+
+		FBO_Blit(tr.quarterFbo[0], NULL, NULL, dst, dstBox, NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+	}
+#ifndef HQ_BLUR
+	// ok blur, but can see some pixelization
+	else if (blur > 1.0f && blur <= 2.0f)
+	{
+		// crossfade quarter texture with 1/16th texture
+		FBO_Blit(tr.quarterFbo[0], NULL, NULL, dst, dstBox, NULL, NULL, 0);
+
+		VectorSet4(color, 1, 1, 1, blur - 1.0f);
+
+		FBO_Blit(tr.textureScratchFbo[0], NULL, NULL, dst, dstBox, NULL, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+	}
+	else if (blur > 2.0f)
+	{
+		// blur 1/16th texture then replace
+		int i;
+
+		for (i = 0; i < 2; i++)
+		{
+			vec2_t blurTexScale;
+			float subblur;
+
+			subblur = ((blur - 2.0f) / 2.0f) / 3.0f * (float)(i + 1);
+
+			blurTexScale[0] =
+			blurTexScale[1] = subblur;
+
+			color[0] =
+			color[1] =
+			color[2] = 0.5f;
+			color[3] = 1.0f;
+
+			if (i != 0)
+				FBO_Blit(tr.textureScratchFbo[0], NULL, blurTexScale, tr.textureScratchFbo[1], NULL, &tr.bokehShader, color, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE);
+			else
+				FBO_Blit(tr.textureScratchFbo[0], NULL, blurTexScale, tr.textureScratchFbo[1], NULL, &tr.bokehShader, color, 0);
+		}
+
+		FBO_Blit(tr.textureScratchFbo[1], NULL, NULL, dst, dstBox, &tr.textureColorShader, NULL, 0);
+	}
+#else // higher quality blur, but slower
+	else if (blur > 1.0f)
+	{
+		// blur quarter texture then replace
+		int i;
+
+		src = tr.quarterFbo[0];
+		dst = tr.quarterFbo[1];
+
+		VectorSet4(color, 0.5f, 0.5f, 0.5f, 1);
+
+		for (i = 0; i < 2; i++)
+		{
+			vec2_t blurTexScale;
+			float subblur;
+
+			subblur = (blur - 1.0f) / 2.0f * (float)(i + 1);
+
+			blurTexScale[0] =
+			blurTexScale[1] = subblur;
+
+			color[0] =
+			color[1] =
+			color[2] = 1.0f;
+			if (i != 0)
+				color[3] = 1.0f;
+			else
+				color[3] = 0.5f;
+
+			FBO_Blit(tr.quarterFbo[0], NULL, blurTexScale, tr.quarterFbo[1], NULL, &tr.bokehShader, color, GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+		}
+
+		FBO_Blit(tr.quarterFbo[1], NULL, NULL, dst, dstBox, &tr.textureColorShader, NULL, 0);
+	}
+#endif
 }
 
 
@@ -282,8 +276,6 @@ static void RB_RadialBlur(FBO_t *srcFbo, FBO_t *dstFbo, int passes, float stretc
 static qboolean RB_UpdateSunFlareVis(void)
 {
 	GLuint sampleCount = 0;
-	if (!glRefConfig.occlusionQuery)
-		return qtrue;
 
 	tr.sunFlareQueryIndex ^= 1;
 	if (!tr.sunFlareQueryActive[tr.sunFlareQueryIndex])

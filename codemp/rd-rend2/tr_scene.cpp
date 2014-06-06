@@ -500,13 +500,13 @@ void RE_RenderScene( const refdef_t *fd ) {
 	}
 
 	/* playing with more shadows */
-	if(glRefConfig.framebufferObject && !( fd->rdflags & RDF_NOWORLDMODEL ) && r_shadows->integer == 4)
+	if(!( fd->rdflags & RDF_NOWORLDMODEL ) && r_shadows->integer == 4)
 	{
 		R_RenderPshadowMaps(fd);
 	}
 
 	// playing with even more shadows
-	if(glRefConfig.framebufferObject && r_sunlightMode->integer && !( fd->rdflags & RDF_NOWORLDMODEL ) && (r_forceSun->integer || tr.sunShadows))
+	if(r_sunlightMode->integer && !( fd->rdflags & RDF_NOWORLDMODEL ) && (r_forceSun->integer || tr.sunShadows))
 	{
 		R_RenderSunShadowMaps(fd, 0);
 		R_RenderSunShadowMaps(fd, 1);
@@ -515,7 +515,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	// playing with cube maps
 	// this is where dynamic cubemaps would be rendered
-	if (0) //(glRefConfig.framebufferObject && !( fd->rdflags & RDF_NOWORLDMODEL ))
+	if (0) //(!( fd->rdflags & RDF_NOWORLDMODEL ))
 	{
 		int i, j;
 

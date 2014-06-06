@@ -25,70 +25,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 uint32_t R_VboPackTangent(vec4_t v)
 {
-	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
-	{
-		return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)
-		     | (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
-		     | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
-		     | (((uint32_t)(v[0] * 511.5f + 512.0f)));
-	}
-	else
-	{
-		return (((uint32_t)(v[3] * 127.5f + 128.0f)) << 24)
-		     | (((uint32_t)(v[2] * 127.5f + 128.0f)) << 16)
-		     | (((uint32_t)(v[1] * 127.5f + 128.0f)) << 8)
-		     | (((uint32_t)(v[0] * 127.5f + 128.0f)));
-	}
+	return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)
+		    | (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
+		    | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
+		    | (((uint32_t)(v[0] * 511.5f + 512.0f)));
 }
 
 uint32_t R_VboPackNormal(vec3_t v)
 {
-	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
-	{
-		return (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
-		     | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
-		     | (((uint32_t)(v[0] * 511.5f + 512.0f)));
-	}
-	else
-	{
-		return (((uint32_t)(v[2] * 127.5f + 128.0f)) << 16)
-		     | (((uint32_t)(v[1] * 127.5f + 128.0f)) << 8)
-		     | (((uint32_t)(v[0] * 127.5f + 128.0f)));
-	}
+	return (((uint32_t)(v[2] * 511.5f + 512.0f)) << 20)
+		    | (((uint32_t)(v[1] * 511.5f + 512.0f)) << 10)
+		    | (((uint32_t)(v[0] * 511.5f + 512.0f)));
 }
 
 void R_VboUnpackTangent(vec4_t v, uint32_t b)
 {
-	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
-	{
-		v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
-		v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
-		v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
-		v[3] = ((b >> 30) & 0x3)   * 1.0f/1.5f   - 1.0f;
-	}
-	else
-	{
-		v[0] = ((b)       & 0xff) * 1.0f/127.5f - 1.0f;
-		v[1] = ((b >> 8)  & 0xff) * 1.0f/127.5f - 1.0f;
-		v[2] = ((b >> 16) & 0xff) * 1.0f/127.5f - 1.0f;
-		v[3] = ((b >> 24) & 0xff) * 1.0f/127.5f - 1.0f;
-	}
+	v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
+	v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
+	v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
+	v[3] = ((b >> 30) & 0x3)   * 1.0f/1.5f   - 1.0f;
 }
 
 void R_VboUnpackNormal(vec3_t v, uint32_t b)
 {
-	if (glRefConfig.packedNormalDataType == GL_UNSIGNED_INT_2_10_10_10_REV)
-	{
-		v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
-		v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
-		v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
-	}
-	else
-	{
-		v[0] = ((b)       & 0xff) * 1.0f/127.5f - 1.0f;
-		v[1] = ((b >> 8)  & 0xff) * 1.0f/127.5f - 1.0f;
-		v[2] = ((b >> 16) & 0xff) * 1.0f/127.5f - 1.0f;
-	}
+	v[0] = ((b)       & 0x3ff) * 1.0f/511.5f - 1.0f;
+	v[1] = ((b >> 10) & 0x3ff) * 1.0f/511.5f - 1.0f;
+	v[2] = ((b >> 20) & 0x3ff) * 1.0f/511.5f - 1.0f;
 }
 
 static GLenum GetGLBufferUsage ( vboUsage_t usage )
