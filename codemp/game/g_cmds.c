@@ -2051,26 +2051,82 @@ qboolean G_VoteKick( gentity_t *ent, int numArgs, const char *arg1, const char *
 const char *G_GetArenaInfoByMap( const char *map );
 
 void Cmd_MapList_f( gentity_t *ent ) {
-	int i, toggle=0;
-	char map[24] = "--", buf[512] = {0};
+	char arg1[MAX_STRING_CHARS];
 
-	Q_strcat( buf, sizeof( buf ), "Map list:" );
-
-	for ( i=0; i<level.arenas.num; i++ ) {
-		Q_strncpyz( map, Info_ValueForKey( level.arenas.infos[i], "map" ), sizeof( map ) );
-		Q_StripColor( map );
-
-		if ( G_DoesMapSupportGametype( map, level.gametype ) ) {
-			char *tmpMsg = va( " ^%c%s", (++toggle&1) ? COLOR_GREEN : COLOR_YELLOW, map );
-			if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
-				trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
-				buf[0] = '\0';
-			}
-			Q_strcat( buf, sizeof( buf ), tmpMsg );
-		}
+	if ( trap->Argc() < 2 )
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Use ^3/maplist <page number> ^7to see map list. Use ^3/maplist bsp ^7to show bsp files, which can be used in /callvote map <bsp file>\n\"" );
+		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+	trap->Argv(1, arg1, sizeof( arg1 ));
+
+	if (Q_stricmp(arg1, "bsp") == 0)
+	{
+		int i, toggle=0;
+		char map[24] = "--", buf[512] = {0};
+
+		Q_strcat( buf, sizeof( buf ), "Map list:" );
+
+		for ( i=0; i<level.arenas.num; i++ ) {
+			Q_strncpyz( map, Info_ValueForKey( level.arenas.infos[i], "map" ), sizeof( map ) );
+			Q_StripColor( map );
+
+			if ( G_DoesMapSupportGametype( map, level.gametype ) ) {
+				char *tmpMsg = va( " ^%c%s", (++toggle&1) ? COLOR_GREEN : COLOR_YELLOW, map );
+				if ( strlen( buf ) + strlen( tmpMsg ) >= sizeof( buf ) ) {
+					trap->SendServerCommand( ent-g_entities, va( "print \"%s\"", buf ) );
+					buf[0] = '\0';
+				}
+				Q_strcat( buf, sizeof( buf ), tmpMsg );
+			}
+		}
+
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", buf ) );
+	}
+	else
+	{
+		int page = 1; // zyk: page the user wants to see
+		char file_content[MAX_STRING_CHARS];
+		char content[512];
+		int i = 0;
+		int results_per_page = 9; // zyk: number of results per page
+		FILE *map_list_file;
+		strcpy(file_content,"");
+		strcpy(content,"");
+
+		page = atoi(arg1);
+
+		if (page == 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid page number\n\"" );
+			return;
+		}
+
+		map_list_file = fopen("maplist.txt","r");
+		if (map_list_file != NULL)
+		{
+			while(i < (results_per_page * (page-1)))
+			{ // zyk: reads the file until it reaches the position corresponding to the page number
+				fgets(content,sizeof(content),map_list_file);
+				i++;
+			}
+
+			while(i < (results_per_page * page) && fgets(content,sizeof(content),map_list_file) != NULL)
+			{ // zyk: fgets returns NULL at EOF
+				strcpy(file_content,va("%s%s",file_content,content));
+				i++;
+			}
+
+			fclose(map_list_file);
+			trap->SendServerCommand(ent-g_entities, va("print \"\n%s\n\"",file_content));
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"The maplist file does not exist\n\"" );
+			return;
+		}
+	}
 }
 
 qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
