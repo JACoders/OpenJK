@@ -3353,7 +3353,7 @@ extern void DismembermentByNum(gentity_t *self, int num);
 extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
 #endif
 
-extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
+extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void healing_water(gentity_t *ent, int heal_amount);
 extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance);
 qboolean TryGrapple(gentity_t *ent)
@@ -3400,10 +3400,10 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
-			{ // zyk: Sleeping Flowers
-				sleeping_flowers(ent,4000,500);
+			{ // zyk: Poison Mushrooms
+				poison_mushrooms(ent,500,1000);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: uses Elemental Power

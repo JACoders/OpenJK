@@ -3859,6 +3859,43 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	}
 }
 
+// zyk: Poison Mushrooms skill. Used by Guardian of Forest and the player
+void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance > min_distance && player_distance < max_distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0)
+				{
+					player_ent->client->pers.ultimate_power_user = ent->s.number;
+					player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+					player_ent->client->pers.ultimate_power_target = 20;
+
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -3992,6 +4029,13 @@ void ultimate_power_events(gentity_t *ent)
 				VectorScale(forward,25.0,dir);
 
 			VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+		}
+		else if (ent->client->pers.ultimate_power_target >= 20 && ent->client->pers.ultimate_power_target < 30 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
+		{ // zyk: being hit by Poison Mushrooms
+			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,50,0,MOD_UNKNOWN);
+
+			ent->client->pers.ultimate_power_target++;
+			ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 		}
 	}
 }
@@ -6292,7 +6336,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 4)
 									trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7And by choosing us, we will give you a new power.\"");
 								else if (ent->client->pers.universe_quest_messages == 5)
-									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Sleeping Flowers^7. Choose wisely, hero.\"");
+									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Poison Mushrooms^7. Choose wisely, hero.\"");
 								else if (ent->client->pers.universe_quest_messages == 6)
 									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Hero, by choosing us...\"");
 								else if (ent->client->pers.universe_quest_messages == 7)
@@ -6666,7 +6710,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 24)
 								{
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
-										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Sleeping Flowers ^7now. This will really be useful to you.\"");
+										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Poison Mushrooms ^7now. This will really be useful to you.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
 										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Elemental Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
@@ -7517,10 +7561,59 @@ void G_RunFrame( int levelTime ) {
 				else if (ent->client->pers.guardian_mode == 3)
 				{ // zyk: Guardian of Forest
 					if (ent->client->pers.guardian_timer < level.time)
-					{ // zyk: uses sleeping flowers ability
-						sleeping_flowers(ent,4000,700);
-						trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7Sleeping flowers!\"");
-						ent->client->pers.guardian_timer = level.time + 15000;
+					{ // zyk: uses sleeping flowers or poison mushrooms
+						int players_near = 0;
+						int players_far = 0;
+						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+
+						if ((int)Distance(ent->client->ps.origin,player_ent->client->ps.origin) < 700)
+						{
+							players_near++;
+						}
+						else
+						{
+							players_far++;
+						}
+
+						if (player_ent->client->sess.ally1 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally1].client->ps.origin) < 700)
+						{
+							players_near++;
+						}
+						else if (player_ent->client->sess.ally1 != -1)
+						{
+							players_far++;
+						}
+
+						if (player_ent->client->sess.ally2 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally2].client->ps.origin) < 700)
+						{
+							players_near++;
+						}
+						else if (player_ent->client->sess.ally2 != -1)
+						{
+							players_far++;
+						}
+
+						if (player_ent->client->sess.ally3 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally3].client->ps.origin) < 700)
+						{
+							players_near++;
+						}
+						else if (player_ent->client->sess.ally3 != -1)
+						{
+							players_far++;
+						}
+
+						if (players_near > players_far)
+						{
+							sleeping_flowers(ent,4000,700);
+							trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7Sleeping Flowers!\"");
+							ent->client->pers.guardian_timer = level.time + 12000;
+						}
+						else
+						{
+							poison_mushrooms(ent,700,1700);
+							trap->SendServerCommand( -1, va("chat \"^2Guardian of Forest: ^7Poison Mushrooms!\""));
+							ent->client->pers.guardian_timer = level.time + 12000;
+						}
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 4)
