@@ -7507,7 +7507,7 @@ static void G_TossTheMofo(gentity_t *ent, vec3_t tossDir, float tossStr)
 	ent->client->ps.velocity[2] = 200;
 	if (ent->health > 0 && ent->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN &&
 		BG_KnockDownable(&ent->client->ps) &&
-		G_KickDownable(ent))
+		G_KickDownable(ent) && ent->client->pers.guardian_mode != 11) // zyk: added Guardian of Resistance condition. This guardian cant be knocked down by melee kick
 	{ //if they are alive, knock them down I suppose
 		ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 		ent->client->ps.forceHandExtendTime = level.time + 700;
