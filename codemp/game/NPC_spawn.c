@@ -1757,6 +1757,12 @@ finish:
 		newent->client->pers.universe_quest_objective_control = -1;
 		newent->client->pers.universe_quest_artifact_holder_id = -1;
 		newent->client->pers.race_position = 0;
+
+		// zyk: initializing Ultimate Power attributes
+		newent->client->pers.ultimate_power_user = 0;
+		newent->client->pers.ultimate_power_target = 0;
+		newent->client->pers.ultimate_power_timer = 0;
+		newent->client->pers.ultimate_power_target_timer = 0;
 	}
 
 	return newent;
