@@ -4823,6 +4823,7 @@ void Cmd_NPC_f( gentity_t *ent )
 		Com_Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
 		Com_Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
 		Com_Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
+		Com_Printf( " team [team (player or enemy or neutral or free)]\n" ); // zyk: new option
 	}
 	else if ( Q_stricmp( cmd, "spawn" ) == 0 )
 	{
@@ -4867,6 +4868,40 @@ void Cmd_NPC_f( gentity_t *ent )
 			else
 			{
 				Com_Printf( "ERROR: NPC score - no such NPC %s\n", cmd2 );
+			}
+		}
+	}
+	else if ( Q_stricmp( cmd, "team" ) == 0 )
+	{ // zyk: new option
+		if (trap->Argc() == 3 && ent->client->ps.hasLookTarget == qtrue)
+		{
+			char		cmd2[1024];
+			gentity_t *thisent = &g_entities[ent->client->ps.lookTarget];
+
+			trap->Argv( 2, cmd2, sizeof( cmd2 ) );
+
+			if (thisent->NPC)
+			{
+				if (Q_stricmp(cmd2,"player") == 0)
+				{
+					thisent->client->playerTeam = NPCTEAM_PLAYER;
+					thisent->client->enemyTeam = NPCTEAM_ENEMY;
+				}
+				else if (Q_stricmp(cmd2,"enemy") == 0)
+				{
+					thisent->client->playerTeam = NPCTEAM_ENEMY;
+					thisent->client->enemyTeam = NPCTEAM_PLAYER;
+				}
+				else if (Q_stricmp(cmd2,"neutral") == 0)
+				{
+					thisent->client->playerTeam = NPCTEAM_NEUTRAL;
+					thisent->client->enemyTeam = NPCTEAM_NEUTRAL;
+				}
+				else if (Q_stricmp(cmd2,"free") == 0)
+				{
+					thisent->client->playerTeam = NPCTEAM_FREE;
+					thisent->client->enemyTeam = NPCTEAM_FREE;
+				}
 			}
 		}
 	}
