@@ -101,11 +101,11 @@ PFNGLGETPROGRAMINFOLOGPROC qglGetProgramInfoLog;
 PFNGLGETACTIVEATTRIBPROC qglGetActiveAttrib;
 PFNGLGETATTRIBLOCATIONPROC qglGetAttribLocation;
 PFNGLBINDATTRIBLOCATIONPROC qglBindAttribLocation;
-PFNGLGETVERTEXATTRIBDVPROC qglGetVertxAttribdv;
-PFNGLGETVERTEXATTRIBFVPROC qglGetVertxAttribfv;
-PFNGLGETVERTEXATTRIBIVPROC qglGetVertxAttribiv;
-PFNGLGETVERTEXATTRIBIIVPROC qglGetVertxAttribIiv;
-PFNGLGETVERTEXATTRIBIUIVPROC qglGetVertxAttribIuiv;
+PFNGLGETVERTEXATTRIBDVPROC qglGetVertexAttribdv;
+PFNGLGETVERTEXATTRIBFVPROC qglGetVertexAttribfv;
+PFNGLGETVERTEXATTRIBIVPROC qglGetVertexAttribiv;
+PFNGLGETVERTEXATTRIBIIVPROC qglGetVertexAttribIiv;
+PFNGLGETVERTEXATTRIBIUIVPROC qglGetVertexAttribIuiv;
 
 // Varying variables
 PFNGLTRANSFORMFEEDBACKVARYINGSPROC qglTransformFeedbackVaryings;
@@ -305,11 +305,11 @@ void GLimp_InitExtraExtensions()
 	GetGLFunction (qglGetActiveAttrib, "glGetActiveAttrib");
 	GetGLFunction (qglGetAttribLocation, "glGetAttribLocation");
 	GetGLFunction (qglBindAttribLocation, "glBindAttribLocation");
-	GetGLFunction (qglGetVertxAttribdv, "glGetVertxAttribdv");
-	GetGLFunction (qglGetVertxAttribfv, "glGetVertxAttribfv");
-	GetGLFunction (qglGetVertxAttribiv, "glGetVertxAttribiv");
-	GetGLFunction (qglGetVertxAttribIiv, "glGetVertxAttribIiv");
-	GetGLFunction (qglGetVertxAttribIuiv, "glGetVertxAttribIuiv");
+	GetGLFunction (qglGetVertexAttribdv, "glGetVertexAttribdv");
+	GetGLFunction (qglGetVertexAttribfv, "glGetVertexAttribfv");
+	GetGLFunction (qglGetVertexAttribiv, "glGetVertexAttribiv");
+	GetGLFunction (qglGetVertexAttribIiv, "glGetVertexAttribIiv");
+	GetGLFunction (qglGetVertexAttribIuiv, "glGetVertexAttribIuiv");
 
 	// Varying variables
 	GetGLFunction (qglTransformFeedbackVaryings, "glTransformFeedbackVaryings");
