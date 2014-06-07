@@ -2018,15 +2018,31 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 			if ( data && r_colorMipLevels->integer )
 				R_BlendOverTexture( (byte *)data, width * height, mipBlendColors[miplevel] );
 
-			if ( subtexture )
+			if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
 			{
-				x >>= 1;
-				y >>= 1;
-				qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
+				if ( subtexture )
+				{
+					x >>= 1;
+					y >>= 1;
+					qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
+				}
+				else
+				{
+					qglTexSubImage2D (GL_TEXTURE_2D, miplevel, 0, 0, width, height, dataFormat, dataType, data );
+				}
 			}
 			else
 			{
-				qglTexImage2D (GL_TEXTURE_2D, miplevel, internalFormat, width, height, 0, dataFormat, dataType, data );
+				if ( subtexture )
+				{
+					x >>= 1;
+					y >>= 1;
+					qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
+				}
+				else
+				{
+					qglTexImage2D (GL_TEXTURE_2D, miplevel, internalFormat, width, height, 0, dataFormat, dataType, data );
+				}
 			}
 		}
 	}
