@@ -219,12 +219,16 @@ static qboolean GLimp_HaveExtension(const char *ext)
 }
 
 template<typename GLFuncType>
-static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionString )
+static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionString, qboolean errorOnFailure )
 {
 	glFunction = (GLFuncType)GL_GetProcAddress (glFunctionString);
 	if ( glFunction == NULL )
 	{
-		Com_Error (ERR_FATAL, "ERROR: OpenGL function '%s' could not be found.\n", glFunctionString);
+		if ( errorOnFailure )
+		{
+			Com_Error (ERR_FATAL, "ERROR: OpenGL function '%s' could not be found.\n", glFunctionString);
+		}
+
 		return qfalse;
 	}
 
@@ -237,143 +241,143 @@ void GLimp_InitExtraExtensions()
 	const char* result[3] = { "...ignoring %s\n", "...using %s\n", "...%s not found\n" };
 
 	// Drawing commands
-	GetGLFunction (qglDrawRangeElements, "glDrawRangeElements");
-	GetGLFunction (qglDrawArraysInstanced, "glDrawArraysInstanced");
-	GetGLFunction (qglDrawElementsInstanced, "glDrawElementsInstanced");
-	GetGLFunction (qglDrawElementsBaseVertex, "glDrawElementsBaseVertex");
-	GetGLFunction (qglDrawRangeElementsBaseVertex, "glDrawRangeElementsBaseVertex");
-	GetGLFunction (qglDrawElementsInstancedBaseVertex, "glDrawElementsInstancedBaseVertex");
-	GetGLFunction (qglMultiDrawArrays, "glMultiDrawArrays");
-	GetGLFunction (qglMultiDrawElements, "glMultiDrawElements");
-	GetGLFunction (qglMultiDrawElementsBaseVertex, "glMultiDrawElementsBaseVertex");
+	GetGLFunction (qglDrawRangeElements, "glDrawRangeElements", qtrue);
+	GetGLFunction (qglDrawArraysInstanced, "glDrawArraysInstanced", qtrue);
+	GetGLFunction (qglDrawElementsInstanced, "glDrawElementsInstanced", qtrue);
+	GetGLFunction (qglDrawElementsBaseVertex, "glDrawElementsBaseVertex", qtrue);
+	GetGLFunction (qglDrawRangeElementsBaseVertex, "glDrawRangeElementsBaseVertex", qtrue);
+	GetGLFunction (qglDrawElementsInstancedBaseVertex, "glDrawElementsInstancedBaseVertex", qtrue);
+	GetGLFunction (qglMultiDrawArrays, "glMultiDrawArrays", qtrue);
+	GetGLFunction (qglMultiDrawElements, "glMultiDrawElements", qtrue);
+	GetGLFunction (qglMultiDrawElementsBaseVertex, "glMultiDrawElementsBaseVertex", qtrue);
 
 	// Vertex arrays
-	GetGLFunction (qglVertexAttribPointer, "glVertexAttribPointer");
-	GetGLFunction (qglVertexAttribIPointer, "glVertexAttribIPointer");
-	GetGLFunction (qglEnableVertexAttribArray, "glEnableVertexAttribArray");
-	GetGLFunction (qglDisableVertexAttribArray, "glDisableVertexAttribArray");
+	GetGLFunction (qglVertexAttribPointer, "glVertexAttribPointer", qtrue);
+	GetGLFunction (qglVertexAttribIPointer, "glVertexAttribIPointer", qtrue);
+	GetGLFunction (qglEnableVertexAttribArray, "glEnableVertexAttribArray", qtrue);
+	GetGLFunction (qglDisableVertexAttribArray, "glDisableVertexAttribArray", qtrue);
 
 	// Vertex array objects
-	GetGLFunction (qglGenVertexArrays, "glGenVertexArrays");
-	GetGLFunction (qglDeleteVertexArrays, "glDeleteVertexArrays");
-	GetGLFunction (qglBindVertexArray, "glBindVertexArray");
-	GetGLFunction (qglIsVertexArray, "glIsVertexArray");
+	GetGLFunction (qglGenVertexArrays, "glGenVertexArrays", qtrue);
+	GetGLFunction (qglDeleteVertexArrays, "glDeleteVertexArrays", qtrue);
+	GetGLFunction (qglBindVertexArray, "glBindVertexArray", qtrue);
+	GetGLFunction (qglIsVertexArray, "glIsVertexArray", qtrue);
 	
 	// Buffer objects
-	GetGLFunction (qglBindBuffer, "glBindBuffer");
-	GetGLFunction (qglDeleteBuffers, "glDeleteBuffers");
-	GetGLFunction (qglGenBuffers, "glGenBuffers");
-	GetGLFunction (qglBufferData, "glBufferData");
-	GetGLFunction (qglBufferSubData, "glBufferSubData");
-	GetGLFunction (qglGetBufferSubData, "glGetBufferSubData");
-	GetGLFunction (qglGetBufferParameteriv, "glGetBufferParameteriv");
-	GetGLFunction (qglGetBufferParameteri64v, "glGetBufferParameteri64v");
-	GetGLFunction (qglGetBufferPointerv, "glGetBufferPointerv");
-	GetGLFunction (qglBindBufferRange, "glBindBufferRange");
-	GetGLFunction (qglBindBufferBase, "glBindBufferBase");
-	GetGLFunction (qglMapBufferRange, "glMapBufferRange");
-	GetGLFunction (qglMapBuffer, "glMapBuffer");
-	GetGLFunction (qglFlushMappedBufferRange, "glFlushMappedBufferRange");
-	GetGLFunction (qglUnmapBuffer, "glUnmapBuffer");
-	GetGLFunction (qglCopyBufferSubData, "glCopyBufferSubData");
-	GetGLFunction (qglIsBuffer, "glIsBuffer");
+	GetGLFunction (qglBindBuffer, "glBindBuffer", qtrue);
+	GetGLFunction (qglDeleteBuffers, "glDeleteBuffers", qtrue);
+	GetGLFunction (qglGenBuffers, "glGenBuffers", qtrue);
+	GetGLFunction (qglBufferData, "glBufferData", qtrue);
+	GetGLFunction (qglBufferSubData, "glBufferSubData", qtrue);
+	GetGLFunction (qglGetBufferSubData, "glGetBufferSubData", qtrue);
+	GetGLFunction (qglGetBufferParameteriv, "glGetBufferParameteriv", qtrue);
+	GetGLFunction (qglGetBufferParameteri64v, "glGetBufferParameteri64v", qtrue);
+	GetGLFunction (qglGetBufferPointerv, "glGetBufferPointerv", qtrue);
+	GetGLFunction (qglBindBufferRange, "glBindBufferRange", qtrue);
+	GetGLFunction (qglBindBufferBase, "glBindBufferBase", qtrue);
+	GetGLFunction (qglMapBufferRange, "glMapBufferRange", qtrue);
+	GetGLFunction (qglMapBuffer, "glMapBuffer", qtrue);
+	GetGLFunction (qglFlushMappedBufferRange, "glFlushMappedBufferRange", qtrue);
+	GetGLFunction (qglUnmapBuffer, "glUnmapBuffer", qtrue);
+	GetGLFunction (qglCopyBufferSubData, "glCopyBufferSubData", qtrue);
+	GetGLFunction (qglIsBuffer, "glIsBuffer", qtrue);
 
 	// Shader objects
-	GetGLFunction (qglCreateShader, "glCreateShader");
-	GetGLFunction (qglShaderSource, "glShaderSource");
-	GetGLFunction (qglCompileShader, "glCompileShader");
-	GetGLFunction (qglDeleteShader, "glDeleteShader");
-	GetGLFunction (qglIsShader, "glIsShader");
-	GetGLFunction (qglGetShaderiv, "glGetShaderiv");
-	GetGLFunction (qglGetShaderInfoLog, "glGetShaderInfoLog");
-	GetGLFunction (qglGetShaderSource, "glGetShaderSource");
+	GetGLFunction (qglCreateShader, "glCreateShader", qtrue);
+	GetGLFunction (qglShaderSource, "glShaderSource", qtrue);
+	GetGLFunction (qglCompileShader, "glCompileShader", qtrue);
+	GetGLFunction (qglDeleteShader, "glDeleteShader", qtrue);
+	GetGLFunction (qglIsShader, "glIsShader", qtrue);
+	GetGLFunction (qglGetShaderiv, "glGetShaderiv", qtrue);
+	GetGLFunction (qglGetShaderInfoLog, "glGetShaderInfoLog", qtrue);
+	GetGLFunction (qglGetShaderSource, "glGetShaderSource", qtrue);
 
 	// Program objects
-	GetGLFunction (qglCreateProgram, "glCreateProgram");
-	GetGLFunction (qglAttachShader, "glAttachShader");
-	GetGLFunction (qglDetachShader, "glDetachShader");
-	GetGLFunction (qglLinkProgram, "glLinkProgram");
-	GetGLFunction (qglUseProgram, "glUseProgram");
-	GetGLFunction (qglDeleteProgram, "glDeleteProgram");
-	GetGLFunction (qglValidateProgram, "glValidateProgram");
-	GetGLFunction (qglIsProgram, "glIsProgram");
-	GetGLFunction (qglGetProgramiv, "glGetProgramiv");
-	GetGLFunction (qglGetAttachedShaders, "glGetAttachedShaders");
-	GetGLFunction (qglGetProgramInfoLog, "glGetProgramInfoLog");
+	GetGLFunction (qglCreateProgram, "glCreateProgram", qtrue);
+	GetGLFunction (qglAttachShader, "glAttachShader", qtrue);
+	GetGLFunction (qglDetachShader, "glDetachShader", qtrue);
+	GetGLFunction (qglLinkProgram, "glLinkProgram", qtrue);
+	GetGLFunction (qglUseProgram, "glUseProgram", qtrue);
+	GetGLFunction (qglDeleteProgram, "glDeleteProgram", qtrue);
+	GetGLFunction (qglValidateProgram, "glValidateProgram", qtrue);
+	GetGLFunction (qglIsProgram, "glIsProgram", qtrue);
+	GetGLFunction (qglGetProgramiv, "glGetProgramiv", qtrue);
+	GetGLFunction (qglGetAttachedShaders, "glGetAttachedShaders", qtrue);
+	GetGLFunction (qglGetProgramInfoLog, "glGetProgramInfoLog", qtrue);
 
 	// Vertex attributes
-	GetGLFunction (qglGetActiveAttrib, "glGetActiveAttrib");
-	GetGLFunction (qglGetAttribLocation, "glGetAttribLocation");
-	GetGLFunction (qglBindAttribLocation, "glBindAttribLocation");
-	GetGLFunction (qglGetVertexAttribdv, "glGetVertexAttribdv");
-	GetGLFunction (qglGetVertexAttribfv, "glGetVertexAttribfv");
-	GetGLFunction (qglGetVertexAttribiv, "glGetVertexAttribiv");
-	GetGLFunction (qglGetVertexAttribIiv, "glGetVertexAttribIiv");
-	GetGLFunction (qglGetVertexAttribIuiv, "glGetVertexAttribIuiv");
+	GetGLFunction (qglGetActiveAttrib, "glGetActiveAttrib", qtrue);
+	GetGLFunction (qglGetAttribLocation, "glGetAttribLocation", qtrue);
+	GetGLFunction (qglBindAttribLocation, "glBindAttribLocation", qtrue);
+	GetGLFunction (qglGetVertexAttribdv, "glGetVertexAttribdv", qtrue);
+	GetGLFunction (qglGetVertexAttribfv, "glGetVertexAttribfv", qtrue);
+	GetGLFunction (qglGetVertexAttribiv, "glGetVertexAttribiv", qtrue);
+	GetGLFunction (qglGetVertexAttribIiv, "glGetVertexAttribIiv", qtrue);
+	GetGLFunction (qglGetVertexAttribIuiv, "glGetVertexAttribIuiv", qtrue);
 
 	// Varying variables
-	GetGLFunction (qglTransformFeedbackVaryings, "glTransformFeedbackVaryings");
-	GetGLFunction (qglGetTransformFeedbackVarying, "glGetTransformFeedbackVarying");
+	GetGLFunction (qglTransformFeedbackVaryings, "glTransformFeedbackVaryings", qtrue);
+	GetGLFunction (qglGetTransformFeedbackVarying, "glGetTransformFeedbackVarying", qtrue);
 
 	// Uniform variables
-	GetGLFunction (qglGetUniformLocation, "glGetUniformLocation");
-	GetGLFunction (qglGetUniformBlockIndex, "glGetUniformBlockIndex");
-	GetGLFunction (qglGetActiveUniformBlockName, "glGetActiveUniformBlockName");
-	GetGLFunction (qglGetActiveUniformBlockiv, "glGetActiveUniformBlockiv");
-	GetGLFunction (qglGetUniformIndices, "glGetUniformIndices");
-	GetGLFunction (qglGetActiveUniformName, "glGetActiveUniformName");
-	GetGLFunction (qglGetActiveUniform, "glGetActiveUniform");
-	GetGLFunction (qglGetActiveUniformsiv, "glGetActiveUniformsiv");
-	GetGLFunction (qglUniform1i, "glUniform1i");
-	GetGLFunction (qglUniform2i, "glUniform2i");
-	GetGLFunction (qglUniform3i, "glUniform3i");
-	GetGLFunction (qglUniform4i, "glUniform4i");
-	GetGLFunction (qglUniform1f, "glUniform1f");
-	GetGLFunction (qglUniform2f, "glUniform2f");
-	GetGLFunction (qglUniform3f, "glUniform3f");
-	GetGLFunction (qglUniform4f, "glUniform4f");
-	GetGLFunction (qglUniform1iv, "glUniform1iv");
-	GetGLFunction (qglUniform2iv, "glUniform2iv");
-	GetGLFunction (qglUniform3iv, "glUniform3iv");
-	GetGLFunction (qglUniform4iv, "glUniform4iv");
-	GetGLFunction (qglUniform1fv, "glUniform1fv");
-	GetGLFunction (qglUniform2fv, "glUniform2fv");
-	GetGLFunction (qglUniform3fv, "glUniform3fv");
-	GetGLFunction (qglUniform4fv, "glUniform4fv");
-	GetGLFunction (qglUniform1ui, "glUniform1ui");
-	GetGLFunction (qglUniform2ui, "glUniform2ui");
-	GetGLFunction (qglUniform3ui, "glUniform3ui");
-	GetGLFunction (qglUniform4ui, "glUniform4ui");
-	GetGLFunction (qglUniform1uiv, "glUniform1uiv");
-	GetGLFunction (qglUniform2uiv, "glUniform2uiv");
-	GetGLFunction (qglUniform3uiv, "glUniform3uiv");
-	GetGLFunction (qglUniform4uiv, "glUniform4uiv");
-	GetGLFunction (qglUniformMatrix2fv, "glUniformMatrix2fv");
-	GetGLFunction (qglUniformMatrix3fv, "glUniformMatrix3fv");
-	GetGLFunction (qglUniformMatrix4fv, "glUniformMatrix4fv");
-	GetGLFunction (qglUniformMatrix2x3fv, "glUniformMatrix2x3fv");
-	GetGLFunction (qglUniformMatrix3x2fv, "glUniformMatrix3x2fv");
-	GetGLFunction (qglUniformMatrix2x4fv, "glUniformMatrix2x4fv");
-	GetGLFunction (qglUniformMatrix4x2fv, "glUniformMatrix4x2fv");
-	GetGLFunction (qglUniformMatrix3x4fv, "glUniformMatrix3x4fv");
-	GetGLFunction (qglUniformMatrix4x3fv, "glUniformMatrix4x3fv");
-	GetGLFunction (qglUniformBlockBinding, "glUniformBlockBinding");
-	GetGLFunction (qglGetUniformfv, "glGetUniformfv");
-	GetGLFunction (qglGetUniformiv, "glGetUniformiv");
-	GetGLFunction (qglGetUniformuiv, "glGetUniformuiv");
+	GetGLFunction (qglGetUniformLocation, "glGetUniformLocation", qtrue);
+	GetGLFunction (qglGetUniformBlockIndex, "glGetUniformBlockIndex", qtrue);
+	GetGLFunction (qglGetActiveUniformBlockName, "glGetActiveUniformBlockName", qtrue);
+	GetGLFunction (qglGetActiveUniformBlockiv, "glGetActiveUniformBlockiv", qtrue);
+	GetGLFunction (qglGetUniformIndices, "glGetUniformIndices", qtrue);
+	GetGLFunction (qglGetActiveUniformName, "glGetActiveUniformName", qtrue);
+	GetGLFunction (qglGetActiveUniform, "glGetActiveUniform", qtrue);
+	GetGLFunction (qglGetActiveUniformsiv, "glGetActiveUniformsiv", qtrue);
+	GetGLFunction (qglUniform1i, "glUniform1i", qtrue);
+	GetGLFunction (qglUniform2i, "glUniform2i", qtrue);
+	GetGLFunction (qglUniform3i, "glUniform3i", qtrue);
+	GetGLFunction (qglUniform4i, "glUniform4i", qtrue);
+	GetGLFunction (qglUniform1f, "glUniform1f", qtrue);
+	GetGLFunction (qglUniform2f, "glUniform2f", qtrue);
+	GetGLFunction (qglUniform3f, "glUniform3f", qtrue);
+	GetGLFunction (qglUniform4f, "glUniform4f", qtrue);
+	GetGLFunction (qglUniform1iv, "glUniform1iv", qtrue);
+	GetGLFunction (qglUniform2iv, "glUniform2iv", qtrue);
+	GetGLFunction (qglUniform3iv, "glUniform3iv", qtrue);
+	GetGLFunction (qglUniform4iv, "glUniform4iv", qtrue);
+	GetGLFunction (qglUniform1fv, "glUniform1fv", qtrue);
+	GetGLFunction (qglUniform2fv, "glUniform2fv", qtrue);
+	GetGLFunction (qglUniform3fv, "glUniform3fv", qtrue);
+	GetGLFunction (qglUniform4fv, "glUniform4fv", qtrue);
+	GetGLFunction (qglUniform1ui, "glUniform1ui", qtrue);
+	GetGLFunction (qglUniform2ui, "glUniform2ui", qtrue);
+	GetGLFunction (qglUniform3ui, "glUniform3ui", qtrue);
+	GetGLFunction (qglUniform4ui, "glUniform4ui", qtrue);
+	GetGLFunction (qglUniform1uiv, "glUniform1uiv", qtrue);
+	GetGLFunction (qglUniform2uiv, "glUniform2uiv", qtrue);
+	GetGLFunction (qglUniform3uiv, "glUniform3uiv", qtrue);
+	GetGLFunction (qglUniform4uiv, "glUniform4uiv", qtrue);
+	GetGLFunction (qglUniformMatrix2fv, "glUniformMatrix2fv", qtrue);
+	GetGLFunction (qglUniformMatrix3fv, "glUniformMatrix3fv", qtrue);
+	GetGLFunction (qglUniformMatrix4fv, "glUniformMatrix4fv", qtrue);
+	GetGLFunction (qglUniformMatrix2x3fv, "glUniformMatrix2x3fv", qtrue);
+	GetGLFunction (qglUniformMatrix3x2fv, "glUniformMatrix3x2fv", qtrue);
+	GetGLFunction (qglUniformMatrix2x4fv, "glUniformMatrix2x4fv", qtrue);
+	GetGLFunction (qglUniformMatrix4x2fv, "glUniformMatrix4x2fv", qtrue);
+	GetGLFunction (qglUniformMatrix3x4fv, "glUniformMatrix3x4fv", qtrue);
+	GetGLFunction (qglUniformMatrix4x3fv, "glUniformMatrix4x3fv", qtrue);
+	GetGLFunction (qglUniformBlockBinding, "glUniformBlockBinding", qtrue);
+	GetGLFunction (qglGetUniformfv, "glGetUniformfv", qtrue);
+	GetGLFunction (qglGetUniformiv, "glGetUniformiv", qtrue);
+	GetGLFunction (qglGetUniformuiv, "glGetUniformuiv", qtrue);
 
 	// Transform feedback
-	GetGLFunction (qglBeginTransformFeedback, "glBeginTransformFeedback");
-	GetGLFunction (qglEndTransformFeedback, "glEndTransformFeedback");
+	GetGLFunction (qglBeginTransformFeedback, "glBeginTransformFeedback", qtrue);
+	GetGLFunction (qglEndTransformFeedback, "glEndTransformFeedback", qtrue);
 
 	// Texture compression
-	GetGLFunction (qglCompressedTexImage3D, "glCompressedTexImage3D");
-	GetGLFunction (qglCompressedTexImage2D, "glCompressedTexImage2D");
-	GetGLFunction (qglCompressedTexImage1D, "glCompressedTexImage1D");
-	GetGLFunction (qglCompressedTexSubImage3D, "glCompressedTexSubImage3D");
-	GetGLFunction (qglCompressedTexSubImage2D, "glCompressedTexSubImage2D");
-	GetGLFunction (qglCompressedTexSubImage1D, "glCompressedTexSubImage1D");
-	GetGLFunction (qglGetCompressedTexImage, "glGetCompressedTexImage");
+	GetGLFunction (qglCompressedTexImage3D, "glCompressedTexImage3D", qtrue);
+	GetGLFunction (qglCompressedTexImage2D, "glCompressedTexImage2D", qtrue);
+	GetGLFunction (qglCompressedTexImage1D, "glCompressedTexImage1D", qtrue);
+	GetGLFunction (qglCompressedTexSubImage3D, "glCompressedTexSubImage3D", qtrue);
+	GetGLFunction (qglCompressedTexSubImage2D, "glCompressedTexSubImage2D", qtrue);
+	GetGLFunction (qglCompressedTexSubImage1D, "glCompressedTexSubImage1D", qtrue);
+	GetGLFunction (qglGetCompressedTexImage, "glGetCompressedTexImage", qtrue);
 
 	// GLSL
 	{
@@ -390,37 +394,37 @@ void GLimp_InitExtraExtensions()
 	qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &glRefConfig.maxRenderbufferSize);
 	qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &glRefConfig.maxColorAttachments);
 
-	GetGLFunction (qglIsRenderbuffer, "glIsRenderbuffer");
-	GetGLFunction (qglBindRenderbuffer, "glBindRenderbuffer");
-	GetGLFunction (qglDeleteRenderbuffers, "glDeleteRenderbuffers");
-	GetGLFunction (qglGenRenderbuffers, "glGenRenderbuffers");
-	GetGLFunction (qglRenderbufferStorage, "glRenderbufferStorage");
-	GetGLFunction (qglGetRenderbufferParameteriv, "glGetRenderbufferParameteriv");
-	GetGLFunction (qglIsFramebuffer, "glIsFramebuffer");
-	GetGLFunction (qglBindFramebuffer, "glBindFramebuffer");
-	GetGLFunction (qglDeleteFramebuffers, "glDeleteFramebuffers");
-	GetGLFunction (qglGenFramebuffers, "glGenFramebuffers");
-	GetGLFunction (qglCheckFramebufferStatus, "glCheckFramebufferStatus");
-	GetGLFunction (qglFramebufferTexture1D, "glFramebufferTexture1D");
-	GetGLFunction (qglFramebufferTexture2D, "glFramebufferTexture2D");
-	GetGLFunction (qglFramebufferTexture3D, "glFramebufferTexture3D");
-	GetGLFunction (qglFramebufferRenderbuffer, "glFramebufferRenderbuffer");
-	GetGLFunction (qglGetFramebufferAttachmentParameteriv, "glGetFramebufferAttachmentParameteriv");
-	GetGLFunction (qglRenderbufferStorageMultisample, "glRenderbufferStorageMultisample");
-	GetGLFunction (qglBlitFramebuffer, "glBlitFramebuffer");
-	GetGLFunction (qglGenerateMipmap, "glGenerateMipmap");
-	GetGLFunction (qglDrawBuffers, "glDrawBuffers");
-	GetGLFunction (qglClearBufferfv, "glClearBufferfv");
+	GetGLFunction (qglIsRenderbuffer, "glIsRenderbuffer", qtrue);
+	GetGLFunction (qglBindRenderbuffer, "glBindRenderbuffer", qtrue);
+	GetGLFunction (qglDeleteRenderbuffers, "glDeleteRenderbuffers", qtrue);
+	GetGLFunction (qglGenRenderbuffers, "glGenRenderbuffers", qtrue);
+	GetGLFunction (qglRenderbufferStorage, "glRenderbufferStorage", qtrue);
+	GetGLFunction (qglGetRenderbufferParameteriv, "glGetRenderbufferParameteriv", qtrue);
+	GetGLFunction (qglIsFramebuffer, "glIsFramebuffer", qtrue);
+	GetGLFunction (qglBindFramebuffer, "glBindFramebuffer", qtrue);
+	GetGLFunction (qglDeleteFramebuffers, "glDeleteFramebuffers", qtrue);
+	GetGLFunction (qglGenFramebuffers, "glGenFramebuffers", qtrue);
+	GetGLFunction (qglCheckFramebufferStatus, "glCheckFramebufferStatus", qtrue);
+	GetGLFunction (qglFramebufferTexture1D, "glFramebufferTexture1D", qtrue);
+	GetGLFunction (qglFramebufferTexture2D, "glFramebufferTexture2D", qtrue);
+	GetGLFunction (qglFramebufferTexture3D, "glFramebufferTexture3D", qtrue);
+	GetGLFunction (qglFramebufferRenderbuffer, "glFramebufferRenderbuffer", qtrue);
+	GetGLFunction (qglGetFramebufferAttachmentParameteriv, "glGetFramebufferAttachmentParameteriv", qtrue);
+	GetGLFunction (qglRenderbufferStorageMultisample, "glRenderbufferStorageMultisample", qtrue);
+	GetGLFunction (qglBlitFramebuffer, "glBlitFramebuffer", qtrue);
+	GetGLFunction (qglGenerateMipmap, "glGenerateMipmap", qtrue);
+	GetGLFunction (qglDrawBuffers, "glDrawBuffers", qtrue);
+	GetGLFunction (qglClearBufferfv, "glClearBufferfv", qtrue);
 
 	// Queries
-	GetGLFunction (qglGenQueries, "glGenQueries");
-	GetGLFunction (qglDeleteQueries, "glDeleteQueries");
-	GetGLFunction (qglIsQuery, "glIsQuery");
-	GetGLFunction (qglBeginQuery, "glBeginQuery");
-	GetGLFunction (qglEndQuery, "glEndQuery");
-	GetGLFunction (qglGetQueryiv, "glGetQueryiv");
-	GetGLFunction (qglGetQueryObjectiv, "glGetQueryObjectiv");
-	GetGLFunction (qglGetQueryObjectuiv, "glGetQueryObjectuiv");
+	GetGLFunction (qglGenQueries, "glGenQueries", qtrue);
+	GetGLFunction (qglDeleteQueries, "glDeleteQueries", qtrue);
+	GetGLFunction (qglIsQuery, "glIsQuery", qtrue);
+	GetGLFunction (qglBeginQuery, "glBeginQuery", qtrue);
+	GetGLFunction (qglEndQuery, "glEndQuery", qtrue);
+	GetGLFunction (qglGetQueryiv, "glGetQueryiv", qtrue);
+	GetGLFunction (qglGetQueryObjectiv, "glGetQueryObjectiv", qtrue);
+	GetGLFunction (qglGetQueryObjectuiv, "glGetQueryObjectuiv", qtrue);
 
 	// Memory info
 	glRefConfig.memInfo = MI_NONE;
@@ -469,11 +473,14 @@ void GLimp_InitExtraExtensions()
 	glRefConfig.immutableTextures = qfalse;
 	if( GLimp_HaveExtension( extension ) )
 	{
-		qglTexStorage1D = (PFNGLTEXSTORAGE1DPROC)GL_GetProcAddress("glTexStorage1D");
-		qglTexStorage2D = (PFNGLTEXSTORAGE2DPROC)GL_GetProcAddress("glTexStorage2D");
-		qglTexStorage3D = (PFNGLTEXSTORAGE3DPROC)GL_GetProcAddress("glTexStorage3D");
+		qboolean loaded = qtrue;
+		
+		loaded = (qboolean)(loaded && GetGLFunction (qglTexStorage3D, "glTexStorage3D", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction (qglTexStorage1D, "glTexStorage1D", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction (qglTexStorage2D, "glTexStorage2D", qfalse));
 
-		ri->Printf(PRINT_ALL, result[1], extension);
+		glRefConfig.immutableTextures = loaded;
+		ri->Printf(PRINT_ALL, result[loaded], extension);
 	}
 	else
 	{
