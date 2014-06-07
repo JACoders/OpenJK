@@ -1872,6 +1872,11 @@ void EWebThink(gentity_t *self)
 			EWebDisattach(owner, self);
 			return;
 		}
+		else if (owner->client->ps.forceHandExtendTime > level.time)
+		{ // zyk: knocked down players stop using this weapon
+			EWebDisattach(owner, self);
+			return;
+		}
 
 		if (!killMe)
 		{
