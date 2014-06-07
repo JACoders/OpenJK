@@ -7566,7 +7566,7 @@ void G_RunFrame( int levelTime ) {
 						int players_far = 0;
 						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 
-						if ((int)Distance(ent->client->ps.origin,player_ent->client->ps.origin) < 700)
+						if ((int)Distance(ent->client->ps.origin,player_ent->client->ps.origin) < 800 && (int)player_ent->client->ps.origin[2] < 162)
 						{
 							players_near++;
 						}
@@ -7575,7 +7575,7 @@ void G_RunFrame( int levelTime ) {
 							players_far++;
 						}
 
-						if (player_ent->client->sess.ally1 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally1].client->ps.origin) < 700)
+						if (player_ent->client->sess.ally1 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally1].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
 						{
 							players_near++;
 						}
@@ -7584,7 +7584,7 @@ void G_RunFrame( int levelTime ) {
 							players_far++;
 						}
 
-						if (player_ent->client->sess.ally2 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally2].client->ps.origin) < 700)
+						if (player_ent->client->sess.ally2 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally2].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
 						{
 							players_near++;
 						}
@@ -7593,7 +7593,7 @@ void G_RunFrame( int levelTime ) {
 							players_far++;
 						}
 
-						if (player_ent->client->sess.ally3 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally3].client->ps.origin) < 700)
+						if (player_ent->client->sess.ally3 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally3].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
 						{
 							players_near++;
 						}
@@ -7604,13 +7604,13 @@ void G_RunFrame( int levelTime ) {
 
 						if (players_near > players_far)
 						{
-							sleeping_flowers(ent,4000,700);
+							sleeping_flowers(ent,4000,800);
 							trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7Sleeping Flowers!\"");
 							ent->client->pers.guardian_timer = level.time + 12000;
 						}
 						else
 						{
-							poison_mushrooms(ent,700,1700);
+							poison_mushrooms(ent,100,1700);
 							trap->SendServerCommand( -1, va("chat \"^2Guardian of Forest: ^7Poison Mushrooms!\""));
 							ent->client->pers.guardian_timer = level.time + 12000;
 						}
