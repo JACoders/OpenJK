@@ -236,25 +236,25 @@ void R_ImageList_f( void ) {
 				// 2 bytes per pixel?
 				estSize *= 2;
 				break;
-			case GL_SRGB_EXT:
-			case GL_SRGB8_EXT:
+			case GL_SRGB:
+			case GL_SRGB8:
 				format = "sRGB ";
 				// 3 bytes per pixel?
 				estSize *= 3;
 				break;
-			case GL_SRGB_ALPHA_EXT:
-			case GL_SRGB8_ALPHA8_EXT:
+			case GL_SRGB_ALPHA:
+			case GL_SRGB8_ALPHA8:
 				format = "sRGBA";
 				// 4 bytes per pixel?
 				estSize *= 4;
 				break;
-			case GL_SLUMINANCE_EXT:
-			case GL_SLUMINANCE8_EXT:
+			case GL_SLUMINANCE:
+			case GL_SLUMINANCE8:
 				format = "sL   ";
 				// 1 byte per pixel?
 				break;
-			case GL_SLUMINANCE_ALPHA_EXT:
-			case GL_SLUMINANCE8_ALPHA8_EXT:
+			case GL_SLUMINANCE_ALPHA:
+			case GL_SLUMINANCE8_ALPHA8:
 				format = "sLA  ";
 				// 2 byte per pixel?
 				estSize *= 2;
@@ -1874,40 +1874,40 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 			switch(internalFormat)
 			{
 				case GL_RGB:
-					internalFormat = GL_SRGB_EXT;
+					internalFormat = GL_SRGB;
 					break;
 
 				case GL_RGB4:
 				case GL_RGB5:
 				case GL_RGB8:
-					internalFormat = GL_SRGB8_EXT;
+					internalFormat = GL_SRGB8;
 					break;
 
 				case GL_RGBA:
-					internalFormat = GL_SRGB_ALPHA_EXT;
+					internalFormat = GL_SRGB_ALPHA;
 					break;
 
 				case GL_RGBA4:
 				case GL_RGBA8:
-					internalFormat = GL_SRGB8_ALPHA8_EXT;
+					internalFormat = GL_SRGB8_ALPHA8;
 					break;
 
 				case GL_LUMINANCE:
-					internalFormat = GL_SLUMINANCE_EXT;
+					internalFormat = GL_SLUMINANCE;
 					break;
 
 				case GL_LUMINANCE8:
 				case GL_LUMINANCE16:
-					internalFormat = GL_SLUMINANCE8_EXT;
+					internalFormat = GL_SLUMINANCE8;
 					break;
 
 				case GL_LUMINANCE_ALPHA:
-					internalFormat = GL_SLUMINANCE_ALPHA_EXT;
+					internalFormat = GL_SLUMINANCE_ALPHA;
 					break;
 
 				case GL_LUMINANCE8_ALPHA8:
 				case GL_LUMINANCE16_ALPHA16:
-					internalFormat = GL_SLUMINANCE8_ALPHA8_EXT;
+					internalFormat = GL_SLUMINANCE8_ALPHA8;
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -1940,15 +1940,15 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 	switch(internalFormat)
 	{
 		case GL_DEPTH_COMPONENT:
-		case GL_DEPTH_COMPONENT16_ARB:
-		case GL_DEPTH_COMPONENT24_ARB:
-		case GL_DEPTH_COMPONENT32_ARB:
+		case GL_DEPTH_COMPONENT16:
+		case GL_DEPTH_COMPONENT24:
+		case GL_DEPTH_COMPONENT32:
 			dataFormat = GL_DEPTH_COMPONENT;
 			dataType = GL_UNSIGNED_BYTE;
 			break;
-		case GL_RGBA16F_ARB:
+		case GL_RGBA16F:
 			dataFormat = GL_RGBA;
-			dataType = GL_HALF_FLOAT_ARB;
+			dataType = GL_HALF_FLOAT;
 			break;
 		default:
 			dataFormat = GL_RGBA;
@@ -2218,9 +2218,9 @@ static void EmptyTexture( int width, int height, imgType_t type, int flags,
 	switch(internalFormat)
 	{
 		case GL_DEPTH_COMPONENT:
-		case GL_DEPTH_COMPONENT16_ARB:
-		case GL_DEPTH_COMPONENT24_ARB:
-		case GL_DEPTH_COMPONENT32_ARB:
+		case GL_DEPTH_COMPONENT16:
+		case GL_DEPTH_COMPONENT24:
+		case GL_DEPTH_COMPONENT32:
 			qglTexParameterf(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -2335,7 +2335,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 		}
 
 		if (image->flags & IMGFLAG_MIPMAP)
-			qglGenerateMipmapEXT(GL_TEXTURE_CUBE_MAP);
+			qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 		image->uploadWidth = width;
 		image->uploadHeight = height;
@@ -2857,7 +2857,7 @@ void R_CreateBuiltinImages( void ) {
 
 	hdrFormat = GL_RGBA8;
 	if (r_hdr->integer)
-		hdrFormat = GL_RGBA16F_ARB;
+		hdrFormat = GL_RGBA16F;
 
 	rgbFormat = GL_RGBA8;
 
@@ -2872,14 +2872,14 @@ void R_CreateBuiltinImages( void ) {
 	if (r_drawSunRays->integer)
 		tr.sunRaysImage = R_CreateImage("*sunRays", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);
 
-	tr.renderDepthImage  = R_CreateImage("*renderdepth",  NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24_ARB);
-	tr.textureDepthImage = R_CreateImage("*texturedepth", NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24_ARB);
+	tr.renderDepthImage  = R_CreateImage("*renderdepth",  NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
+	tr.textureDepthImage = R_CreateImage("*texturedepth", NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
 
 	{
 		unsigned short sdata[4];
 		void *p;
 
-		if (hdrFormat == GL_RGBA16F_ARB)
+		if (hdrFormat == GL_RGBA16F)
 		{
 			sdata[0] = FloatToHalf(0.0f);
 			sdata[1] = FloatToHalf(0.45f);
@@ -2928,7 +2928,7 @@ void R_CreateBuiltinImages( void ) {
 	{
 		for ( x = 0; x < 3; x++)
 		{
-			tr.sunShadowDepthImage[x] = R_CreateImage(va("*sunshadowdepth%i", x), NULL, r_shadowMapSize->integer, r_shadowMapSize->integer, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24_ARB);
+			tr.sunShadowDepthImage[x] = R_CreateImage(va("*sunshadowdepth%i", x), NULL, r_shadowMapSize->integer, r_shadowMapSize->integer, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
 		}
 
 		tr.screenShadowImage = R_CreateImage("*screenShadow", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);

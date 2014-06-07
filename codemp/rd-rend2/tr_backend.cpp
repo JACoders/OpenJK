@@ -471,8 +471,8 @@ void RB_BeginDrawingView (void) {
 		// FIXME: hack for cubemap testing
 		if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 		{
-			//qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
-			qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
+			//qglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, backEnd.viewParms.targetFbo->colorImage[0]->texnum, 0);
+			qglFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + backEnd.viewParms.targetFboLayer, tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex]->texnum, 0);
 		}
 	}
 
@@ -758,7 +758,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	}
 
 	if (inQuery) {
-		qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
+		qglEndQuery(GL_SAMPLES_PASSED);
 	}
 
 	FBO_Bind(fbo);
@@ -1485,11 +1485,11 @@ const void	*RB_DrawSurfs( const void *data ) {
 			qglClear( GL_COLOR_BUFFER_BIT );
 
 			tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
-			qglBeginQueryARB(GL_SAMPLES_PASSED_ARB, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
+			qglBeginQuery(GL_SAMPLES_PASSED, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
 
 			RB_DrawSun(0.3, tr.sunFlareShader);
 
-			qglEndQueryARB(GL_SAMPLES_PASSED_ARB);
+			qglEndQuery(GL_SAMPLES_PASSED);
 
 			FBO_Bind(oldFbo);
 		}
@@ -1506,7 +1506,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 		FBO_Bind(NULL);
 		GL_SelectTexture(TB_CUBEMAP);
 		GL_BindToTMU(tr.cubemaps[backEnd.viewParms.targetFboCubemapIndex], TB_CUBEMAP);
-		qglGenerateMipmapEXT(GL_TEXTURE_CUBE_MAP);
+		qglGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 		GL_SelectTexture(0);
 	}
 

@@ -1009,10 +1009,10 @@ void GL_SetDefaultState( void )
 	glState.vertexAttribsState = 0;
 	glState.vertexAttribPointersSet = 0;
 	glState.currentProgram = 0;
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
-	qglBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-	qglBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
+	qglBindBuffer(GL_ARRAY_BUFFER, 0);
+	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glState.currentVBO = NULL;
 	glState.currentIBO = NULL;
 
@@ -1432,13 +1432,13 @@ Ghoul2 Insert End
 void R_InitQueries(void)
 {
 	if (r_drawSunRays->integer)
-		qglGenQueriesARB(ARRAY_LEN(tr.sunFlareQuery), tr.sunFlareQuery);
+		qglGenQueries(ARRAY_LEN(tr.sunFlareQuery), tr.sunFlareQuery);
 }
 
 void R_ShutDownQueries(void)
 {
 	if (r_drawSunRays->integer)
-		qglDeleteQueriesARB(ARRAY_LEN(tr.sunFlareQuery), tr.sunFlareQuery);
+		qglDeleteQueries(ARRAY_LEN(tr.sunFlareQuery), tr.sunFlareQuery);
 }
 
 void RE_SetLightStyle (int style, int color);

@@ -286,7 +286,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 	}
 
 	if (glRefConfig.floatLightmap)
-		textureInternalFormat = GL_RGBA16F_ARB;
+		textureInternalFormat = GL_RGBA16F;
 	else
 		textureInternalFormat = GL_RGBA8;
 
@@ -3317,10 +3317,10 @@ void R_MergeLeafSurfaces(void)
 		mergedSurf->shader        = surf1->shader;
 
 		// finish up the ibo
-		qglGenBuffersARB(1, &ibo->indexesVBO);
+		qglGenBuffers(1, &ibo->indexesVBO);
 
 		R_BindIBO(ibo);
-		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, numIboIndexes * sizeof(*iboIndexes), iboIndexes, GL_STATIC_DRAW_ARB);
+		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, numIboIndexes * sizeof(*iboIndexes), iboIndexes, GL_STATIC_DRAW);
 		R_BindNullIBO();
 
 		GL_CheckErrors();

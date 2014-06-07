@@ -151,8 +151,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_BoneMatrices",			GLSL_MAT16, 80 },
 };
 
-
-static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
+static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
 {
 	char           *msg;
 	static char     msgPart[1024];
@@ -160,7 +159,7 @@ static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
 	int             i;
 	int             printLevel = developerOnly ? PRINT_DEVELOPER : PRINT_ALL;
 
-	qglGetObjectParameterivARB(object, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+	qglGetProgramiv(object, GL_INFO_LOG_LENGTH, &maxLength);
 
 	if (maxLength <= 0)
 	{
@@ -172,7 +171,7 @@ static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
 
 	if (maxLength < 1023)
 	{
-		qglGetInfoLogARB(object, maxLength, &maxLength, msgPart);
+		qglGetProgramInfoLog(object, maxLength, &maxLength, msgPart);
 
 		msgPart[maxLength + 1] = '\0';
 
@@ -182,7 +181,7 @@ static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
 	{
 		msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
 
-		qglGetInfoLogARB(object, maxLength, &maxLength, msg);
+		qglGetProgramInfoLog(object, maxLength, &maxLength, msg);
 
 		for(i = 0; i < maxLength; i += 1024)
 		{
@@ -195,18 +194,61 @@ static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
 	}
 }
 
-static void GLSL_PrintShaderSource(GLhandleARB object)
+static void GLSL_PrintShaderInfoLog(GLuint object, qboolean developerOnly)
+{
+	char           *msg;
+	static char     msgPart[1024];
+	int             maxLength = 0;
+	int             i;
+	int             printLevel = developerOnly ? PRINT_DEVELOPER : PRINT_ALL;
+
+	qglGetShaderiv(object, GL_INFO_LOG_LENGTH, &maxLength);
+
+	if (maxLength <= 0)
+	{
+		ri->Printf(printLevel, "No compile log.\n");
+		return;
+	}
+
+	ri->Printf(printLevel, "compile log:\n");
+
+	if (maxLength < 1023)
+	{
+		qglGetShaderInfoLog(object, maxLength, &maxLength, msgPart);
+
+		msgPart[maxLength + 1] = '\0';
+
+		ri->Printf(printLevel, "%s\n", msgPart);
+	}
+	else
+	{
+		msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
+
+		qglGetShaderInfoLog(object, maxLength, &maxLength, msg);
+
+		for(i = 0; i < maxLength; i += 1024)
+		{
+			Q_strncpyz(msgPart, msg + i, sizeof(msgPart));
+
+			ri->Printf(printLevel, "%s\n", msgPart);
+		}
+
+		Z_Free(msg);
+	}
+}
+
+static void GLSL_PrintShaderSource(GLuint shader)
 {
 	char           *msg;
 	static char     msgPart[1024];
 	int             maxLength = 0;
 	int             i;
 
-	qglGetObjectParameterivARB(object, GL_OBJECT_SHADER_SOURCE_LENGTH_ARB, &maxLength);
+	qglGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &maxLength);
 
 	msg = (char *)Z_Malloc(maxLength, TAG_SHADERTEXT);
 
-	qglGetShaderSourceARB(object, maxLength, &maxLength, msg);
+	qglGetShaderSource(shader, maxLength, &maxLength, msg);
 
 	for(i = 0; i < maxLength; i += 1024)
 	{
@@ -228,7 +270,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	{
 		Q_strcat(dest, size, "#version 330 core\n");
 
-		if(shaderType == GL_VERTEX_SHADER_ARB)
+		if(shaderType == GL_VERTEX_SHADER)
 		{
 			Q_strcat(dest, size, "#define attribute in\n");
 			Q_strcat(dest, size, "#define varying out\n");
@@ -341,16 +383,16 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	Q_strcat(dest, size, "#line 0\n");
 }
 
-static int GLSL_EnqueueCompileGPUShader(GLhandleARB program, GLhandleARB *prevShader, const GLcharARB *buffer, int size, GLenum shaderType)
+static int GLSL_EnqueueCompileGPUShader(GLuint program, GLuint *prevShader, const GLchar *buffer, int size, GLenum shaderType)
 {
-	GLhandleARB     shader;
+	GLuint     shader;
 
-	shader = qglCreateShaderObjectARB(shaderType);
+	shader = qglCreateShader(shaderType);
 
-	qglShaderSourceARB(shader, 1, &buffer, &size);
+	qglShaderSource(shader, 1, &buffer, &size);
 
 	// compile shader
-	qglCompileShaderARB(shader);
+	qglCompileShader(shader);
 
 	*prevShader = shader;
 
@@ -366,7 +408,7 @@ static int GLSL_LoadGPUShaderText(const char *name, const char *fallback,
 	int             size;
 	int             result;
 
-	if(shaderType == GL_VERTEX_SHADER_ARB)
+	if(shaderType == GL_VERTEX_SHADER)
 	{
 		Com_sprintf(filename, sizeof(filename), "glsl/%s_vp.glsl", name);
 	}
@@ -414,59 +456,59 @@ static int GLSL_LoadGPUShaderText(const char *name, const char *fallback,
 	return result;
 }
 
-static void GLSL_LinkProgram(GLhandleARB program)
+static void GLSL_LinkProgram(GLuint program)
 {
 	GLint           linked;
 
-	qglLinkProgramARB(program);
+	qglLinkProgram(program);
 
-	qglGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &linked);
+	qglGetProgramiv(program, GL_LINK_STATUS, &linked);
 	if(!linked)
 	{
-		GLSL_PrintInfoLog(program, qfalse);
+		GLSL_PrintProgramInfoLog(program, qfalse);
 		ri->Printf(PRINT_ALL, "\n");
 		ri->Error(ERR_DROP, "shaders failed to link");
 	}
 }
 
-static void GLSL_ValidateProgram(GLhandleARB program)
+static void GLSL_ValidateProgram(GLuint program)
 {
 	GLint           validated;
 
-	qglValidateProgramARB(program);
+	qglValidateProgram(program);
 
-	qglGetObjectParameterivARB(program, GL_OBJECT_VALIDATE_STATUS_ARB, &validated);
+	qglGetProgramiv(program, GL_VALIDATE_STATUS, &validated);
 	if(!validated)
 	{
-		GLSL_PrintInfoLog(program, qfalse);
+		GLSL_PrintProgramInfoLog(program, qfalse);
 		ri->Printf(PRINT_ALL, "\n");
 		ri->Error(ERR_DROP, "shaders failed to validate");
 	}
 }
 
-static void GLSL_ShowProgramUniforms(GLhandleARB program)
+static void GLSL_ShowProgramUniforms(GLuint program)
 {
 	int             i, count, size;
 	GLenum			type;
 	char            uniformName[1000];
 
 	// install the executables in the program object as part of current state.
-	qglUseProgramObjectARB(program);
+	qglUseProgram(program);
 
 	// check for GL Errors
 
 	// query the number of active uniforms
-	qglGetObjectParameterivARB(program, GL_OBJECT_ACTIVE_UNIFORMS_ARB, &count);
+	qglGetProgramiv(program, GL_ACTIVE_UNIFORMS, &count);
 
 	// Loop over each of the active uniforms, and set their value
 	for(i = 0; i < count; i++)
 	{
-		qglGetActiveUniformARB(program, i, sizeof(uniformName), NULL, &size, &type, uniformName);
+		qglGetActiveUniform(program, i, sizeof(uniformName), NULL, &size, &type, uniformName);
 
 		ri->Printf(PRINT_DEVELOPER, "active uniform: '%s'\n", uniformName);
 	}
 
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 }
 
 static int GLSL_BeginLoadGPUShader2(shaderProgram_t * program, const char *name, int attribs, const char *vpCode, const char *fpCode)
@@ -478,22 +520,22 @@ static int GLSL_BeginLoadGPUShader2(shaderProgram_t * program, const char *name,
 	program->name = (char *)Z_Malloc (nameBufSize, TAG_GENERAL);
 	Q_strncpyz(program->name, name, nameBufSize);
 
-	program->program = qglCreateProgramObjectARB();
+	program->program = qglCreateProgram();
 	program->attribs = attribs;
 
-	if (!(GLSL_EnqueueCompileGPUShader(program->program, &program->vertexShader, vpCode, strlen(vpCode), GL_VERTEX_SHADER_ARB)))
+	if (!(GLSL_EnqueueCompileGPUShader(program->program, &program->vertexShader, vpCode, strlen(vpCode), GL_VERTEX_SHADER)))
 	{
-		ri->Printf(PRINT_ALL, "GLSL_BeginLoadGPUShader2: Unable to load \"%s\" as GL_VERTEX_SHADER_ARB\n", name);
-		qglDeleteObjectARB(program->program);
+		ri->Printf(PRINT_ALL, "GLSL_BeginLoadGPUShader2: Unable to load \"%s\" as GL_VERTEX_SHADER\n", name);
+		qglDeleteProgram(program->program);
 		return 0;
 	}
 
 	if(fpCode)
 	{
-		if(!(GLSL_EnqueueCompileGPUShader(program->program, &program->fragmentShader, fpCode, strlen(fpCode), GL_FRAGMENT_SHADER_ARB)))
+		if(!(GLSL_EnqueueCompileGPUShader(program->program, &program->fragmentShader, fpCode, strlen(fpCode), GL_FRAGMENT_SHADER)))
 		{
-			ri->Printf(PRINT_ALL, "GLSL_BeginLoadGPUShader2: Unable to load \"%s\" as GL_FRAGMENT_SHADER_ARB\n", name);
-			qglDeleteObjectARB(program->program);
+			ri->Printf(PRINT_ALL, "GLSL_BeginLoadGPUShader2: Unable to load \"%s\" as GL_FRAGMENT_SHADER\n", name);
+			qglDeleteProgram(program->program);
 			return 0;
 		}
 	}
@@ -501,15 +543,15 @@ static int GLSL_BeginLoadGPUShader2(shaderProgram_t * program, const char *name,
 	return 1;
 }
 
-static bool GLSL_IsGPUShaderCompiled (GLhandleARB shader)
+static bool GLSL_IsGPUShaderCompiled (GLuint shader)
 {
 	GLint compiled;
 
-	qglGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+	qglGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 	if(!compiled)
 	{
 		GLSL_PrintShaderSource(shader);
-		GLSL_PrintInfoLog(shader, qfalse);
+		GLSL_PrintShaderInfoLog(shader, qfalse);
 		ri->Error(ERR_DROP, "Couldn't compile shader");
 		return qfalse;
 	}
@@ -531,60 +573,60 @@ static bool GLSL_EndLoadGPUShader (shaderProgram_t *program)
 		return false;
 	}
 
-	qglAttachObjectARB(program->program, program->vertexShader);
-	qglAttachObjectARB(program->program, program->fragmentShader);
+	qglAttachShader(program->program, program->vertexShader);
+	qglAttachShader(program->program, program->fragmentShader);
 
 	if(attribs & ATTR_POSITION)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_POSITION, "attr_Position");
+		qglBindAttribLocation(program->program, ATTR_INDEX_POSITION, "attr_Position");
 
 	if(attribs & ATTR_TEXCOORD0)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD0, "attr_TexCoord0");
+		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD0, "attr_TexCoord0");
 
 	if(attribs & ATTR_TEXCOORD1)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_TEXCOORD1, "attr_TexCoord1");
+		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD1, "attr_TexCoord1");
 
 #ifdef USE_VERT_TANGENT_SPACE
 	if(attribs & ATTR_TANGENT)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_TANGENT, "attr_Tangent");
+		qglBindAttribLocation(program->program, ATTR_INDEX_TANGENT, "attr_Tangent");
 #endif
 
 	if(attribs & ATTR_NORMAL)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_NORMAL, "attr_Normal");
+		qglBindAttribLocation(program->program, ATTR_INDEX_NORMAL, "attr_Normal");
 
 	if(attribs & ATTR_COLOR)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_COLOR, "attr_Color");
+		qglBindAttribLocation(program->program, ATTR_INDEX_COLOR, "attr_Color");
 
 	if(attribs & ATTR_PAINTCOLOR)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_PAINTCOLOR, "attr_PaintColor");
+		qglBindAttribLocation(program->program, ATTR_INDEX_PAINTCOLOR, "attr_PaintColor");
 
 	if(attribs & ATTR_LIGHTDIRECTION)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_LIGHTDIRECTION, "attr_LightDirection");
+		qglBindAttribLocation(program->program, ATTR_INDEX_LIGHTDIRECTION, "attr_LightDirection");
 
 	if(attribs & ATTR_POSITION2)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_POSITION2, "attr_Position2");
+		qglBindAttribLocation(program->program, ATTR_INDEX_POSITION2, "attr_Position2");
 
 	if(attribs & ATTR_NORMAL2)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_NORMAL2, "attr_Normal2");
+		qglBindAttribLocation(program->program, ATTR_INDEX_NORMAL2, "attr_Normal2");
 
 #ifdef USE_VERT_TANGENT_SPACE
 	if(attribs & ATTR_TANGENT2)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_TANGENT2, "attr_Tangent2");
+		qglBindAttribLocation(program->program, ATTR_INDEX_TANGENT2, "attr_Tangent2");
 #endif
 
 	if(attribs & ATTR_BONE_INDEXES)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_BONE_INDEXES, "attr_BoneIndexes");
+		qglBindAttribLocation(program->program, ATTR_INDEX_BONE_INDEXES, "attr_BoneIndexes");
 
 	if(attribs & ATTR_BONE_WEIGHTS)
-		qglBindAttribLocationARB(program->program, ATTR_INDEX_BONE_WEIGHTS, "attr_BoneWeights");
+		qglBindAttribLocation(program->program, ATTR_INDEX_BONE_WEIGHTS, "attr_BoneWeights");
 
 	GLSL_LinkProgram(program->program);
 
 	// Won't be needing these anymore...
-	qglDetachObjectARB (program->program, program->vertexShader);
-	qglDetachObjectARB (program->program, program->fragmentShader);
+	qglDetachShader (program->program, program->vertexShader);
+	qglDetachShader (program->program, program->fragmentShader);
 
-	qglDeleteObjectARB (program->vertexShader);
-	qglDeleteObjectARB (program->fragmentShader);
+	qglDeleteShader (program->vertexShader);
+	qglDeleteShader (program->fragmentShader);
 
 	program->vertexShader = program->fragmentShader = 0;
 
@@ -603,7 +645,7 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 	size = sizeof(vpCode);
 	if (addHeader)
 	{
-		GLSL_GetShaderHeader(GL_VERTEX_SHADER_ARB, extra, vpCode, size);
+		GLSL_GetShaderHeader(GL_VERTEX_SHADER, extra, vpCode, size);
 		postHeader = &vpCode[strlen(vpCode)];
 		size -= strlen(vpCode);
 	}
@@ -612,7 +654,7 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 		postHeader = &vpCode[0];
 	}
 
-	if (!GLSL_LoadGPUShaderText(name, fallback_vp, GL_VERTEX_SHADER_ARB, postHeader, size))
+	if (!GLSL_LoadGPUShaderText(name, fallback_vp, GL_VERTEX_SHADER, postHeader, size))
 	{
 		return 0;
 	}
@@ -622,7 +664,7 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 		size = sizeof(fpCode);
 		if (addHeader)
 		{
-			GLSL_GetShaderHeader(GL_FRAGMENT_SHADER_ARB, extra, fpCode, size);
+			GLSL_GetShaderHeader(GL_FRAGMENT_SHADER, extra, fpCode, size);
 			postHeader = &fpCode[strlen(fpCode)];
 			size -= strlen(fpCode);
 		}
@@ -631,7 +673,7 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 			postHeader = &fpCode[0];
 		}
 
-		if (!GLSL_LoadGPUShaderText(name, fallback_fp, GL_FRAGMENT_SHADER_ARB, postHeader, size))
+		if (!GLSL_LoadGPUShaderText(name, fallback_fp, GL_FRAGMENT_SHADER, postHeader, size))
 		{
 			return 0;
 		}
@@ -654,7 +696,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 	size = 0;
 	for (i = 0; i < UNIFORM_COUNT; i++)
 	{
-		uniforms[i] = qglGetUniformLocationARB(program->program, uniformsInfo[i].name);
+		uniforms[i] = qglGetUniformLocation(program->program, uniformsInfo[i].name);
 
 		if (uniforms[i] == -1)
 			continue;
@@ -720,7 +762,7 @@ void GLSL_SetUniformInt(shaderProgram_t *program, int uniformNum, GLint value)
 
 	*compare = value;
 
-	qglUniform1iARB(uniforms[uniformNum], value);
+	qglUniform1i(uniforms[uniformNum], value);
 }
 
 void GLSL_SetUniformFloat(shaderProgram_t *program, int uniformNum, GLfloat value)
@@ -744,7 +786,7 @@ void GLSL_SetUniformFloat(shaderProgram_t *program, int uniformNum, GLfloat valu
 
 	*compare = value;
 	
-	qglUniform1fARB(uniforms[uniformNum], value);
+	qglUniform1f(uniforms[uniformNum], value);
 }
 
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v)
@@ -769,7 +811,7 @@ void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t 
 	compare[0] = v[0];
 	compare[1] = v[1];
 
-	qglUniform2fARB(uniforms[uniformNum], v[0], v[1]);
+	qglUniform2f(uniforms[uniformNum], v[0], v[1]);
 }
 
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v)
@@ -793,7 +835,7 @@ void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t 
 
 	VectorCopy(v, compare);
 
-	qglUniform3fARB(uniforms[uniformNum], v[0], v[1], v[2]);
+	qglUniform3f(uniforms[uniformNum], v[0], v[1], v[2]);
 }
 
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v)
@@ -817,7 +859,7 @@ void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t 
 
 	VectorCopy4(v, compare);
 
-	qglUniform4fARB(uniforms[uniformNum], v[0], v[1], v[2], v[3]);
+	qglUniform4f(uniforms[uniformNum], v[0], v[1], v[2], v[3]);
 }
 
 void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_t v)
@@ -841,7 +883,7 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 
 	VectorCopy5(v, compare);
 
-	qglUniform1fvARB(uniforms[uniformNum], 5, v);
+	qglUniform1fv(uniforms[uniformNum], 5, v);
 }
 
 void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
@@ -869,14 +911,14 @@ void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const flo
 
 	Com_Memcpy (compare, matrix, sizeof (float) * 16 * numElements);
 
-	qglUniformMatrix4fvARB(uniforms[uniformNum], numElements, GL_FALSE, matrix);
+	qglUniformMatrix4fv(uniforms[uniformNum], numElements, GL_FALSE, matrix);
 }
 
 void GLSL_DeleteGPUShader(shaderProgram_t *program)
 {
 	if(program->program)
 	{
-		qglDeleteObjectARB(program->program);
+		qglDeleteProgram(program->program);
 
 		Z_Free (program->name);
 		Z_Free (program->uniformBuffer);
@@ -1292,9 +1334,9 @@ int GLSL_BeginLoadGPUShaders(void)
 
 	GLSL_InitUniforms(&tr.testcubeShader);
 
-	qglUseProgramObjectARB(tr.testcubeShader.program);
+	qglUseProgram(tr.testcubeShader.program);
 	GLSL_SetUniformInt(&tr.testcubeShader, UNIFORM_TEXTUREMAP, TB_COLORMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 	GLSL_FinishGPUShader(&tr.testcubeShader);
 
@@ -1340,10 +1382,10 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 		GLSL_InitUniforms(&tr.genericShader[i]);
 
-		qglUseProgramObjectARB(tr.genericShader[i].program);
+		qglUseProgram(tr.genericShader[i].program);
 		GLSL_SetUniformInt(&tr.genericShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
 		GLSL_SetUniformInt(&tr.genericShader[i], UNIFORM_LIGHTMAP,   TB_LIGHTMAP);
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.genericShader[i]);
@@ -1359,9 +1401,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.textureColorShader);
 
-	qglUseProgramObjectARB(tr.textureColorShader.program);
+	qglUseProgram(tr.textureColorShader.program);
 	GLSL_SetUniformInt(&tr.textureColorShader, UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 	GLSL_FinishGPUShader(&tr.textureColorShader);
 
@@ -1397,9 +1439,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 		
 		GLSL_InitUniforms(&tr.dlightShader[i]);
 		
-		qglUseProgramObjectARB(tr.dlightShader[i].program);
+		qglUseProgram(tr.dlightShader[i].program);
 		GLSL_SetUniformInt(&tr.dlightShader[i], UNIFORM_DIFFUSEMAP, TB_DIFFUSEMAP);
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.dlightShader[i]);
@@ -1427,7 +1469,7 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 		
 		GLSL_InitUniforms(&tr.lightallShader[i]);
 
-		qglUseProgramObjectARB(tr.lightallShader[i].program);
+		qglUseProgram(tr.lightallShader[i].program);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_DIFFUSEMAP,  TB_DIFFUSEMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_LIGHTMAP,    TB_LIGHTMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_NORMALMAP,   TB_NORMALMAP);
@@ -1435,7 +1477,7 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SPECULARMAP, TB_SPECULARMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP,   TB_SHADOWMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_CUBEMAP,     TB_CUBEMAP);
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.lightallShader[i]);
@@ -1463,9 +1505,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.pshadowShader);
 
-	qglUseProgramObjectARB(tr.pshadowShader.program);
+	qglUseProgram(tr.pshadowShader.program);
 	GLSL_SetUniformInt(&tr.pshadowShader, UNIFORM_SHADOWMAP, TB_DIFFUSEMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.pshadowShader);
@@ -1480,9 +1522,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.down4xShader);
 
-	qglUseProgramObjectARB(tr.down4xShader.program);
+	qglUseProgram(tr.down4xShader.program);
 	GLSL_SetUniformInt(&tr.down4xShader, UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.down4xShader);
@@ -1497,9 +1539,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.bokehShader);
 
-	qglUseProgramObjectARB(tr.bokehShader.program);
+	qglUseProgram(tr.bokehShader.program);
 	GLSL_SetUniformInt(&tr.bokehShader, UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.bokehShader);
@@ -1514,10 +1556,10 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.tonemapShader);
 
-	qglUseProgramObjectARB(tr.tonemapShader.program);
+	qglUseProgram(tr.tonemapShader.program);
 	GLSL_SetUniformInt(&tr.tonemapShader, UNIFORM_TEXTUREMAP, TB_COLORMAP);
 	GLSL_SetUniformInt(&tr.tonemapShader, UNIFORM_LEVELSMAP,  TB_LEVELSMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.tonemapShader);
@@ -1534,9 +1576,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 		
 		GLSL_InitUniforms(&tr.calclevels4xShader[i]);
 
-		qglUseProgramObjectARB(tr.calclevels4xShader[i].program);
+		qglUseProgram(tr.calclevels4xShader[i].program);
 		GLSL_SetUniformInt(&tr.calclevels4xShader[i], UNIFORM_TEXTUREMAP, TB_DIFFUSEMAP);
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.calclevels4xShader[i]);
@@ -1552,12 +1594,12 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	
 	GLSL_InitUniforms(&tr.shadowmaskShader);
 
-	qglUseProgramObjectARB(tr.shadowmaskShader.program);
+	qglUseProgram(tr.shadowmaskShader.program);
 	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SCREENDEPTHMAP, TB_COLORMAP);
 	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP,  TB_SHADOWMAP);
 	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP2, TB_SHADOWMAP2);
 	GLSL_SetUniformInt(&tr.shadowmaskShader, UNIFORM_SHADOWMAP3, TB_SHADOWMAP3);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.shadowmaskShader);
@@ -1572,9 +1614,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	GLSL_InitUniforms(&tr.ssaoShader);
 
-	qglUseProgramObjectARB(tr.ssaoShader.program);
+	qglUseProgram(tr.ssaoShader.program);
 	GLSL_SetUniformInt(&tr.ssaoShader, UNIFORM_SCREENDEPTHMAP, TB_COLORMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 #if defined(_DEBUG)
 	GLSL_FinishGPUShader(&tr.ssaoShader);
@@ -1591,10 +1633,10 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 		GLSL_InitUniforms(&tr.depthBlurShader[i]);
 
-		qglUseProgramObjectARB(tr.depthBlurShader[i].program);
+		qglUseProgram(tr.depthBlurShader[i].program);
 		GLSL_SetUniformInt(&tr.depthBlurShader[i], UNIFORM_SCREENIMAGEMAP, TB_COLORMAP);
 		GLSL_SetUniformInt(&tr.depthBlurShader[i], UNIFORM_SCREENDEPTHMAP, TB_LIGHTMAP);
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 
 #if defined(_DEBUG)
 		GLSL_FinishGPUShader(&tr.depthBlurShader[i]);
@@ -1630,9 +1672,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	GLSL_InitUniforms(&tr.testcubeShader);
 
-	qglUseProgramObjectARB(tr.testcubeShader.program);
+	qglUseProgram(tr.testcubeShader.program);
 	GLSL_SetUniformInt(&tr.testcubeShader, UNIFORM_TEXTUREMAP, TB_COLORMAP);
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 
 	GLSL_FinishGPUShader(&tr.testcubeShader);
 
@@ -1650,22 +1692,22 @@ void GLSL_ShutdownGPUShaders(void)
 
 	ri->Printf(PRINT_ALL, "------- GLSL_ShutdownGPUShaders -------\n");
 
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD0);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD1);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_POSITION);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_POSITION2);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_NORMAL);
+	qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
+	qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
+	qglDisableVertexAttribArray(ATTR_INDEX_POSITION);
+	qglDisableVertexAttribArray(ATTR_INDEX_POSITION2);
+	qglDisableVertexAttribArray(ATTR_INDEX_NORMAL);
 #ifdef USE_VERT_TANGENT_SPACE
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_TANGENT);
+	qglDisableVertexAttribArray(ATTR_INDEX_TANGENT);
 #endif
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_NORMAL2);
+	qglDisableVertexAttribArray(ATTR_INDEX_NORMAL2);
 #ifdef USE_VERT_TANGENT_SPACE
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_TANGENT2);
+	qglDisableVertexAttribArray(ATTR_INDEX_TANGENT2);
 #endif
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_COLOR);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_LIGHTDIRECTION);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
-	qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
+	qglDisableVertexAttribArray(ATTR_INDEX_COLOR);
+	qglDisableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
+	qglDisableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
+	qglDisableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
 	GLSL_BindNullProgram();
 
 	for ( i = 0; i < GENERICDEF_COUNT; i++)
@@ -1698,7 +1740,7 @@ void GLSL_ShutdownGPUShaders(void)
 		GLSL_DeleteGPUShader(&tr.depthBlurShader[i]);
 
 	glState.currentProgram = 0;
-	qglUseProgramObjectARB(0);
+	qglUseProgram(0);
 }
 
 
@@ -1718,7 +1760,7 @@ void GLSL_BindProgram(shaderProgram_t * program)
 
 	if(glState.currentProgram != program)
 	{
-		qglUseProgramObjectARB(program->program);
+		qglUseProgram(program->program);
 		glState.currentProgram = program;
 		backEnd.pc.c_glslShaderBinds++;
 	}
@@ -1734,7 +1776,7 @@ void GLSL_BindNullProgram(void)
 
 	if(glState.currentProgram)
 	{
-		qglUseProgramObjectARB(0);
+		qglUseProgram(0);
 		glState.currentProgram = NULL;
 	}
 }
@@ -1756,13 +1798,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_POSITION)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_POSITION )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_POSITION);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_POSITION )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_POSITION);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_POSITION )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_POSITION);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_POSITION )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_POSITION);
 		}
 	}
 
@@ -1770,13 +1812,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_TEXCOORD0)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_TEXCOORD )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD0);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TEXCOORD )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_TEXCOORD )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD0);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TEXCOORD )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
 		}
 	}
 
@@ -1784,13 +1826,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_TEXCOORD1)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_LIGHTCOORD )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD1);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_LIGHTCOORD )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_LIGHTCOORD )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_TEXCOORD1);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_LIGHTCOORD )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
 		}
 	}
 
@@ -1798,13 +1840,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_NORMAL)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_NORMAL )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_NORMAL);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_NORMAL )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_NORMAL);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_NORMAL )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_NORMAL);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_NORMAL )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_NORMAL);
 		}
 	}
 
@@ -1813,13 +1855,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_TANGENT)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_TANGENT )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_TANGENT);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TANGENT )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_TANGENT);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_TANGENT )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_TANGENT);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TANGENT )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_TANGENT);
 		}
 	}
 #endif
@@ -1828,13 +1870,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_COLOR)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_COLOR )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_COLOR);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_COLOR )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_COLOR);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_COLOR )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_COLOR);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_COLOR )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_COLOR);
 		}
 	}
 
@@ -1842,13 +1884,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_LIGHTDIRECTION)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_LIGHTDIRECTION )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_LIGHTDIRECTION);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_LIGHTDIRECTION )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_LIGHTDIRECTION )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_LIGHTDIRECTION);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_LIGHTDIRECTION )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
 		}
 	}
 
@@ -1856,13 +1898,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_POSITION2)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_POSITION2 )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_POSITION2);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_POSITION2 )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_POSITION2);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_POSITION2 )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_POSITION2);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_POSITION2 )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_POSITION2);
 		}
 	}
 
@@ -1870,13 +1912,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_NORMAL2)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_NORMAL2 )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_NORMAL2);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_NORMAL2 )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_NORMAL2);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_NORMAL2 )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_NORMAL2);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_NORMAL2 )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_NORMAL2);
 		}
 	}
 
@@ -1885,13 +1927,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_TANGENT2)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_TANGENT2 )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_TANGENT2);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TANGENT2 )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_TANGENT2);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_TANGENT2 )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_TANGENT2);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TANGENT2 )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_TANGENT2);
 		}
 	}
 #endif
@@ -1900,13 +1942,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_BONE_INDEXES)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_BONE_INDEXES )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_BONE_INDEXES )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_BONE_INDEXES )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_BONE_INDEXES )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
 		}
 	}
 
@@ -1914,13 +1956,13 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	{
 		if(stateBits & ATTR_BONE_WEIGHTS)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_BONE_WEIGHTS )\n");
-			qglEnableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
+			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_BONE_WEIGHTS )\n");
+			qglEnableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
 		}
 		else
 		{
-			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_BONE_WEIGHTS )\n");
-			qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
+			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_BONE_WEIGHTS )\n");
+			qglDisableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
 		}
 	}
 
@@ -1933,16 +1975,16 @@ void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
 
 	if ( attribBits & ATTR_TEXCOORD0 )
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TEXCOORD )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
 	}
 
 	if ( attribBits & ATTR_TEXCOORD1 )
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_LIGHTCOORD )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
 	}
 }
 
@@ -1971,101 +2013,101 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	
 	if((attribBits & ATTR_POSITION) && (!(glState.vertexAttribPointersSet & ATTR_POSITION) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_POSITION )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_POSITION )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_POSITION, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + newFrame * vbo->size_xyz));
+		qglVertexAttribPointer(ATTR_INDEX_POSITION, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + newFrame * vbo->size_xyz));
 		glState.vertexAttribPointersSet |= ATTR_POSITION;
 	}
 
 	if((attribBits & ATTR_TEXCOORD0) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD0))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TEXCOORD )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
 		glState.vertexAttribPointersSet |= ATTR_TEXCOORD0;
 	}
 
 	if((attribBits & ATTR_TEXCOORD1) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD1))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_LIGHTCOORD )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
 		glState.vertexAttribPointersSet |= ATTR_TEXCOORD1;
 	}
 
 	if((attribBits & ATTR_NORMAL) && (!(glState.vertexAttribPointersSet & ATTR_NORMAL) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_NORMAL )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_NORMAL )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_NORMAL, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + newFrame * vbo->size_normal));
+		qglVertexAttribPointer(ATTR_INDEX_NORMAL, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + newFrame * vbo->size_normal));
 		glState.vertexAttribPointersSet |= ATTR_NORMAL;
 	}
 
 #ifdef USE_VERT_TANGENT_SPACE
 	if((attribBits & ATTR_TANGENT) && (!(glState.vertexAttribPointersSet & ATTR_TANGENT) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TANGENT )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TANGENT )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TANGENT, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + newFrame * vbo->size_normal)); // FIXME
+		qglVertexAttribPointer(ATTR_INDEX_TANGENT, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + newFrame * vbo->size_normal)); // FIXME
 		glState.vertexAttribPointersSet |= ATTR_TANGENT;
 	}
 #endif
 
 	if((attribBits & ATTR_COLOR) && !(glState.vertexAttribPointersSet & ATTR_COLOR))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_COLOR )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_COLOR )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_COLOR, 4, GL_FLOAT, 0, vbo->stride_vertexcolor, BUFFER_OFFSET(vbo->ofs_vertexcolor));
+		qglVertexAttribPointer(ATTR_INDEX_COLOR, 4, GL_FLOAT, 0, vbo->stride_vertexcolor, BUFFER_OFFSET(vbo->ofs_vertexcolor));
 		glState.vertexAttribPointersSet |= ATTR_COLOR;
 	}
 
 	if((attribBits & ATTR_LIGHTDIRECTION) && !(glState.vertexAttribPointersSet & ATTR_LIGHTDIRECTION))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_LIGHTDIRECTION )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTDIRECTION )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_LIGHTDIRECTION, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_lightdir, BUFFER_OFFSET(vbo->ofs_lightdir));
+		qglVertexAttribPointer(ATTR_INDEX_LIGHTDIRECTION, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_lightdir, BUFFER_OFFSET(vbo->ofs_lightdir));
 		glState.vertexAttribPointersSet |= ATTR_LIGHTDIRECTION;
 	}
 
 	if((attribBits & ATTR_POSITION2) && (!(glState.vertexAttribPointersSet & ATTR_POSITION2) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_POSITION2 )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_POSITION2 )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_POSITION2, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + oldFrame * vbo->size_xyz));
+		qglVertexAttribPointer(ATTR_INDEX_POSITION2, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + oldFrame * vbo->size_xyz));
 		glState.vertexAttribPointersSet |= ATTR_POSITION2;
 	}
 
 	if((attribBits & ATTR_NORMAL2) && (!(glState.vertexAttribPointersSet & ATTR_NORMAL2) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_NORMAL2 )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_NORMAL2 )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_NORMAL2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + oldFrame * vbo->size_normal));
+		qglVertexAttribPointer(ATTR_INDEX_NORMAL2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + oldFrame * vbo->size_normal));
 		glState.vertexAttribPointersSet |= ATTR_NORMAL2;
 	}
 
 #ifdef USE_VERT_TANGENT_SPACE
 	if((attribBits & ATTR_TANGENT2) && (!(glState.vertexAttribPointersSet & ATTR_TANGENT2) || animated))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_TANGENT2 )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TANGENT2 )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_TANGENT2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + oldFrame * vbo->size_normal)); // FIXME
+		qglVertexAttribPointer(ATTR_INDEX_TANGENT2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + oldFrame * vbo->size_normal)); // FIXME
 		glState.vertexAttribPointersSet |= ATTR_TANGENT2;
 	}
 #endif
 
 	if((attribBits & ATTR_BONE_INDEXES) && !(glState.vertexAttribPointersSet & ATTR_BONE_INDEXES))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_BONE_INDEXES )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_BONE_INDEXES )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_BONE_INDEXES, 4, GL_FLOAT, 0, vbo->stride_boneindexes, BUFFER_OFFSET(vbo->ofs_boneindexes));
+		qglVertexAttribPointer(ATTR_INDEX_BONE_INDEXES, 4, GL_FLOAT, 0, vbo->stride_boneindexes, BUFFER_OFFSET(vbo->ofs_boneindexes));
 		glState.vertexAttribPointersSet |= ATTR_BONE_INDEXES;
 	}
 
 	if((attribBits & ATTR_BONE_WEIGHTS) && !(glState.vertexAttribPointersSet & ATTR_BONE_WEIGHTS))
 	{
-		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_BONE_WEIGHTS )\n");
+		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_BONE_WEIGHTS )\n");
 
-		qglVertexAttribPointerARB(ATTR_INDEX_BONE_WEIGHTS, 4, GL_FLOAT, 0, vbo->stride_boneweights, BUFFER_OFFSET(vbo->ofs_boneweights));
+		qglVertexAttribPointer(ATTR_INDEX_BONE_WEIGHTS, 4, GL_FLOAT, 0, vbo->stride_boneweights, BUFFER_OFFSET(vbo->ofs_boneweights));
 		glState.vertexAttribPointersSet |= ATTR_BONE_WEIGHTS;
 	}
 
