@@ -7395,7 +7395,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 
 				sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.health_strength);
 
-				sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.drain_shield);
+				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
+					sprintf(message_content[3],"^034 - Drain Shield: %d/1     ", ent->client->pers.drain_shield);
+				else
+					sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.drain_shield);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6)
 					sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.jetpack_level);
@@ -9841,6 +9844,12 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 			}
 		}
 
+		while (ent->client->pers.drain_shield > 0)
+		{
+			ent->client->pers.drain_shield--;
+			ent->client->pers.skillpoints++;
+		}
+
 		while (ent->client->pers.playerhealth > 0)
 		{
 			ent->client->pers.playerhealth--;
@@ -9897,6 +9906,12 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 					ent->client->pers.skillpoints++;
 				}
 			}
+		}
+
+		while (ent->client->pers.drain_shield > 0)
+		{
+			ent->client->pers.drain_shield--;
+			ent->client->pers.skillpoints++;
 		}
 
 		while (ent->client->pers.playerhealth > 0)
@@ -10034,6 +10049,12 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 					ent->client->pers.skillpoints++;
 				}
 			}
+		}
+
+		while (ent->client->pers.drain_shield > 0)
+		{
+			ent->client->pers.drain_shield--;
+			ent->client->pers.skillpoints++;
 		}
 
 		while (ent->client->pers.playerhealth > 0)
