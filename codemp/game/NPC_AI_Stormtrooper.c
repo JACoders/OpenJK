@@ -2425,6 +2425,7 @@ void NPC_BSST_Attack( void )
 	vec3_t	enemyDir, shootDir;
 	float dot;
 	qboolean enemy_is_armored_soldier = qfalse;
+	qboolean enemy_is_stealth_attacker = qfalse;
 
 	//Don't do anything if we're hurt
 	if ( NPCS.NPC->painDebounceTime > level.time )
@@ -2519,6 +2520,8 @@ void NPC_BSST_Attack( void )
 	// zyk: Guardian of Intelligence enemy is an Armored Soldier. He is smarter at choosing weapons against this class
 	if (NPCS.NPC->client->pers.guardian_mode == 4 && NPCS.NPC->enemy->client->sess.amrpgmode == 2 && NPCS.NPC->enemy->client->pers.rpg_class == 3)
 		enemy_is_armored_soldier = qtrue;
+	else if (NPCS.NPC->client->pers.guardian_mode == 2 && NPCS.NPC->enemy->client->sess.amrpgmode == 2 && NPCS.NPC->enemy->client->pers.rpg_class == 5 && NPCS.NPC->enemy->client->pers.secrets_found & (1 << 7))
+		enemy_is_stealth_attacker = qtrue; // zyk: if enemy is stealth attacker with upgrade, Guardian of Earth will not use demp2
 
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
@@ -2577,7 +2580,7 @@ void NPC_BSST_Attack( void )
 			else
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 
-			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn && enemy_is_stealth_attacker == qfalse)
 			{ // zyk: use demp2 to try to disable enemy jetpack
 				NPC_ChangeWeapon( WP_DEMP2 );
 			}
@@ -2611,7 +2614,7 @@ void NPC_BSST_Attack( void )
 		// zyk: if he has disruptor, use it. Else, changes to some other weapon
 		if (TIMER_Done( NPCS.NPC, "stormieChangeWeapon" ))
 		{
-			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn && enemy_is_stealth_attacker == qfalse)
 			{ // zyk: use demp2 to try to disable enemy jetpack
 				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
