@@ -1956,26 +1956,23 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 			break;
 	}
 
-	if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
+	if ( subtexture )
 	{
-		if ( subtexture )
-		{
-			qglTexSubImage2D (GL_TEXTURE_2D, 0, x, y, width, height, dataFormat, dataType, data);
-		}
-		else
+		qglTexSubImage2D (GL_TEXTURE_2D, 0, x, y, width, height, dataFormat, dataType, data);
+	}
+	else
+	{
+		if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
 		{
 			int numLevels = (flags & IMGFLAG_MIPMAP) ? CalcNumMipmapLevels (width, height) : 1;
 
 			qglTexStorage2D (GL_TEXTURE_2D, numLevels, internalFormat, width, height);
 			qglTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, width, height, dataFormat, dataType, data);
 		}
-	}
-	else
-	{
-		if ( subtexture )
-			qglTexSubImage2D( GL_TEXTURE_2D, 0, x, y, width, height, dataFormat, dataType, data );
 		else
+		{
 			qglTexImage2D (GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, dataType, data );
+		}
 	}
 
 	if (flags & IMGFLAG_MIPMAP)
@@ -2018,26 +2015,17 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 			if ( data && r_colorMipLevels->integer )
 				R_BlendOverTexture( (byte *)data, width * height, mipBlendColors[miplevel] );
 
-			if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
+			if ( subtexture )
 			{
-				if ( subtexture )
-				{
-					x >>= 1;
-					y >>= 1;
-					qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
-				}
-				else
-				{
-					qglTexSubImage2D (GL_TEXTURE_2D, miplevel, 0, 0, width, height, dataFormat, dataType, data );
-				}
+				x >>= 1;
+				y >>= 1;
+				qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
 			}
 			else
 			{
-				if ( subtexture )
+				if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
 				{
-					x >>= 1;
-					y >>= 1;
-					qglTexSubImage2D( GL_TEXTURE_2D, miplevel, x, y, width, height, dataFormat, dataType, data );
+					qglTexSubImage2D (GL_TEXTURE_2D, miplevel, 0, 0, width, height, dataFormat, dataType, data );
 				}
 				else
 				{
