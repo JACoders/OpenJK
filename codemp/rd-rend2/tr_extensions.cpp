@@ -96,6 +96,7 @@ PFNGLISPROGRAMPROC qglIsProgram;
 PFNGLGETPROGRAMIVPROC qglGetProgramiv;
 PFNGLGETATTACHEDSHADERSPROC qglGetAttachedShaders;
 PFNGLGETPROGRAMINFOLOGPROC qglGetProgramInfoLog;
+PFNGLBINDFRAGDATALOCATIONPROC qglBindFragDataLocation;
 
 // Vertex attributes
 PFNGLGETACTIVEATTRIBPROC qglGetActiveAttrib;
@@ -304,6 +305,7 @@ void GLimp_InitExtraExtensions()
 	GetGLFunction (qglGetProgramiv, "glGetProgramiv", qtrue);
 	GetGLFunction (qglGetAttachedShaders, "glGetAttachedShaders", qtrue);
 	GetGLFunction (qglGetProgramInfoLog, "glGetProgramInfoLog", qtrue);
+	GetGLFunction (qglBindFragDataLocation, "glBindFragDataLocation", qtrue);
 
 	// Vertex attributes
 	GetGLFunction (qglGetActiveAttrib, "glGetActiveAttrib", qtrue);

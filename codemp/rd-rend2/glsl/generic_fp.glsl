@@ -14,7 +14,7 @@ varying vec2      var_LightTex;
 
 varying vec4      var_Color;
 
-layout(location = 1) out vec4 out_Glow;
+out vec4 out_Glow;
 
 void main()
 {

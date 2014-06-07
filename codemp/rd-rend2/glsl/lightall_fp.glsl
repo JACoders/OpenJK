@@ -74,7 +74,7 @@ varying vec4      var_LightDir;
 varying vec4      var_PrimaryLightDir;
 #endif
 
-layout(location = 1) out vec4 out_Glow;
+out vec4 out_Glow;
 
 #define EPSILON 0.00000001
 

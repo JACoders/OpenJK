@@ -1101,9 +1101,9 @@ typedef struct shaderProgram_s
 {
 	char *name;
 
-	GLhandleARB     program;
-	GLhandleARB     vertexShader;
-	GLhandleARB     fragmentShader;
+	GLuint     program;
+	GLuint     vertexShader;
+	GLuint     fragmentShader;
 	uint32_t        attribs;	// vertex array attributes
 
 	// uniform parameters

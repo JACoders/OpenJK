@@ -846,6 +846,7 @@ extern PFNGLISPROGRAMPROC qglIsProgram;
 extern PFNGLGETPROGRAMIVPROC qglGetProgramiv;
 extern PFNGLGETATTACHEDSHADERSPROC qglGetAttachedShaders;
 extern PFNGLGETPROGRAMINFOLOGPROC qglGetProgramInfoLog;
+extern PFNGLBINDFRAGDATALOCATIONPROC qglBindFragDataLocation;
 
 // Vertex attributes
 extern PFNGLGETACTIVEATTRIBPROC qglGetActiveAttrib;
