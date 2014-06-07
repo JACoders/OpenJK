@@ -3401,7 +3401,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
-				poison_mushrooms(ent,500,1000);
+				poison_mushrooms(ent,200,1200);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
