@@ -8008,13 +8008,14 @@ static void G_GrabSomeMofos(gentity_t *self)
 			int tortureAnim = -1;
 			int correspondingAnim = -1;
 
-			if (self->client->pers.cmd.forwardmove > 0)
+			// zyk: changed this so now there are new anims
+			if (self->client->pers.cmd.forwardmove != 0)
 			{ //punch grab
 				tortureAnim = BOTH_KYLE_PA_1;
 				correspondingAnim = BOTH_PLAYER_PA_1;
 			}
-			else if (self->client->pers.cmd.forwardmove < 0)
-			{ //knee-throw
+			else
+			{ //knee-throw // zyk: when just holding attack and alt attack, uses this anim
 				tortureAnim = BOTH_KYLE_PA_2;
 				correspondingAnim = BOTH_PLAYER_PA_2;
 			}
