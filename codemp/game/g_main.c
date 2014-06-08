@@ -5304,9 +5304,9 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Hero... please help us!\"");
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								if (ent->client->pers.universe_quest_objective_control > 12)
+								if (ent->client->pers.universe_quest_objective_control > 10)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn",14027,-673,-3134,-90);
-								else if (ent->client->pers.universe_quest_objective_control > 6)
+								else if (ent->client->pers.universe_quest_objective_control > 4)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",14190,-673,-3134,-90);
 								else if (ent->client->pers.universe_quest_objective_control > 1)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",14111,-673,-3134,-90);
@@ -5451,8 +5451,8 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 12)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > 14012 && (int) ent->client->ps.origin[0] < 14181 && (int) ent->client->ps.origin[1] > -1641 && (int) ent->client->ps.origin[1] < -1528 && (int) ent->client->ps.origin[2] == -3143)
-						{
+						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 12)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_messages < 5 && (int) ent->client->ps.origin[0] > 14012 && (int) ent->client->ps.origin[0] < 14181 && (int) ent->client->ps.origin[1] > -1641 && (int) ent->client->ps.origin[1] < -1528 && (int) ent->client->ps.origin[2] == -3143)
+						{ // zyk: universe_quest_messages must be less than 5. If it is at least 5, player is in the universe quest missions in this map
 							trap->SendServerCommand( -1, "chat \"^3Quest System: ^7Found an ancient note.\"");
 							ent->client->pers.hunter_quest_progress |= (1 << 12);
 							clean_note_model();
@@ -7353,7 +7353,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 3)
 								trap->SendServerCommand( -1, va("chat \"%s: ^7Master of Evil? You won't escape from me!\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 4)
-								trap->SendServerCommand( -1, va("chat \"^1Master of Evil: ^7You are wrong, %s^7. YOU who won't escape from my power!\"", ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"^1Master of Evil: ^7You are wrong, %s^7. You won't escape from my power!\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 5)
 								trap->SendServerCommand( -1, va("chat \"^1Master of Evil: ^7I know you have got all amulets and artifacts. I can feel myself vulnerable again...\""));
 							else if (ent->client->pers.universe_quest_messages == 6)
