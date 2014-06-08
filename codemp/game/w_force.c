@@ -3301,7 +3301,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		tto[1] = tfrom[1] + fwd[1]*radius/2;
 		tto[2] = tfrom[2] + fwd[2]*radius/2;
 
-		trap->Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
+		// zyk: added CONTENTS_TRIGGER so items are traced
+		trap->Trace(&tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID|CONTENTS_TRIGGER, qfalse, 0, 0);
 
 		if (tr.fraction != 1.0 &&
 			tr.entityNum != ENTITYNUM_NONE)
@@ -3331,6 +3332,11 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					return;
 				}
 			}
+
+			// zyk: if a CONTENTS_TRIGGER was traced, must be an item
+			if (g_entities[tr.entityNum].s.eType != ET_ITEM)
+				return;
+
 			numListedEntities++;
 		}
 		else
@@ -3429,7 +3435,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		*/
 
 		if ( !(ent->inuse) )
+		{
 			continue;
+		}
 
 		if (self->client->sess.amrpgmode == 2 && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6))
 		{ // zyk: cannot push or pull allies if they dont allow it
@@ -3902,6 +3910,50 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			{//pretend you pushed it
 				Touch_Button( push_list[x], self, NULL );
 				continue;
+			}
+			else if (ent->s.eType == ET_ITEM)
+			{ // zyk: now it will be possible to push/pull items
+				float dirLen = 0;
+
+				// zyk: it must be the current origin, or the pushDir will use the original origin
+				VectorCopy(push_list[x]->r.currentOrigin, thispush_org);
+
+				pushPowerMod = pushPower;
+
+				//shove them
+				if ( pull )
+				{
+					VectorSubtract( self->client->ps.origin, thispush_org, pushDir );
+				}
+				else
+				{
+					VectorSubtract( thispush_org, self->client->ps.origin, pushDir );
+				}
+
+				if (!dirLen)
+				{
+					dirLen = VectorLength(pushDir);
+				}
+
+				VectorNormalize(pushDir);
+
+				pushPowerMod -= (dirLen*0.7);
+				if (pushPowerMod < 16)
+				{
+					pushPowerMod = 16;
+				}
+
+				VectorScale(pushDir,pushPowerMod,pushDir);
+				push_list[x]->s.pos.trType = TR_GRAVITY;
+				push_list[x]->s.pos.trTime = level.time;
+				VectorCopy( pushDir, push_list[x]->s.pos.trDelta );
+
+				vectoangles(pushDir, push_list[x]->s.angles);
+				push_list[x]->s.angles[PITCH] = 0;
+
+				push_list[x]->physicsObject = qtrue;
+
+				trap->LinkEntity ((sharedEntity_t *)push_list[x]);
 			}
 		}
 	}
