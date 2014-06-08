@@ -3334,7 +3334,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			}
 
 			// zyk: if a CONTENTS_TRIGGER was traced, must be an item
-			if (g_entities[tr.entityNum].s.eType != ET_ITEM)
+			if (g_entities[tr.entityNum].r.contents == CONTENTS_TRIGGER && g_entities[tr.entityNum].s.eType != ET_ITEM)
 				return;
 
 			numListedEntities++;
