@@ -83,7 +83,7 @@ qboolean Wampa_CheckRoar( gentity_t *self )
 		NPC_SetAnim( self, SETANIM_BOTH, Q_irand(BOTH_GESTURE1,BOTH_GESTURE2), (SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD) );
 		TIMER_Set( self, "rageTime", self->client->ps.legsTimer );
 
-		if (self->client->pers.guardian_mode == 1) // zyk: executes sound of howler if this npc is the guardian of water
+		if (self->client->pers.guardian_mode == 3) // zyk: executes sound of howler if this npc is the Guardian of Forest
 			G_Sound( self, CHAN_VOICE, G_SoundIndex( va("sound/chars/howler/howl.mp3") ) );
 
 		return qtrue;
@@ -187,8 +187,8 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 	vec3_t		boltOrg;
 	int			damage = (backhand)?Q_irand(10,15):Q_irand(20,30);
 
-	// zyk: Guardian of Water damage
-	if (NPCS.NPC->client->pers.guardian_mode == 1)
+	// zyk: Guardian of Forest damage
+	if (NPCS.NPC->client->pers.guardian_mode == 3)
 		damage *= 3;
 
 	numEnts = NPC_GetEntsNearBolt( radiusEntNums, radius, boltIndex, boltOrg );
@@ -545,7 +545,7 @@ void NPC_BSWampa_Default( void )
 		{
 			if ( TIMER_Done(NPCS.NPC,"angrynoise") )
 			{
-				if (NPCS.NPC->client->pers.guardian_mode == 1) // zyk: sound of howler if this npc is the guardian of water
+				if (NPCS.NPC->client->pers.guardian_mode == 3) // zyk: sound of howler if this npc is the Guardian of Forest
 					G_Sound( NPCS.NPC, CHAN_VOICE, G_SoundIndex( va("sound/chars/howler/howl_talk%d.mp3", Q_irand(1, 5)) ) );
 				else
 					G_Sound( NPCS.NPC, CHAN_VOICE, G_SoundIndex( va("sound/chars/wampa/misc/anger%d.wav", Q_irand(1, 2)) ) );
@@ -611,7 +611,7 @@ void NPC_BSWampa_Default( void )
 	{
 		if ( TIMER_Done(NPCS.NPC,"idlenoise") )
 		{
-			if (NPCS.NPC->client->pers.guardian_mode == 1) // zyk: sound of howler if this is the guardian of water
+			if (NPCS.NPC->client->pers.guardian_mode == 3) // zyk: sound of howler if this is the Guardian of Forest
 				G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( va("sound/chars/howler/idle_hiss%d.mp3", Q_irand(1, 2)) ) );
 			else
 				G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/wampa/misc/anger3.wav" ) );
