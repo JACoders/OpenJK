@@ -1763,6 +1763,10 @@ finish:
 		newent->client->pers.ultimate_power_target = 0;
 		newent->client->pers.ultimate_power_timer = 0;
 		newent->client->pers.ultimate_power_target_timer = 0;
+
+		// zyk: saboteur npcs start with cloak
+		if (Q_stristr(newent->NPC_type,"saboteur"))
+			Jedi_Cloak(newent);
 	}
 
 	return newent;
