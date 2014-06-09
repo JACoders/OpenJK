@@ -4734,8 +4734,11 @@ Cmd_LoginAccount_f
 void Cmd_LoginAccount_f( gentity_t *ent ) {
 	if (ent->client->sess.amrpgmode == 0)
 	{
-		char   arg1[MAX_STRING_CHARS];
-		char   arg2[MAX_STRING_CHARS];
+		char arg1[MAX_STRING_CHARS];
+		char arg2[MAX_STRING_CHARS];
+		char filename[64];
+		int i = 0;
+		gentity_t *player_ent = NULL;
 
 		if ( trap->Argc() != 3)
 		{ 
@@ -4752,7 +4755,19 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		trap->Argv(2, arg2, sizeof( arg2 ));
 
-		strcpy(ent->client->sess.filename, va("%s_S_%s",arg1,arg2));
+		strcpy(filename, va("%s_S_%s",arg1,arg2));
+
+		for (i = 0; i < level.maxclients; i++)
+		{
+			player_ent = &g_entities[i];
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode > 0 && Q_stricmp(player_ent->client->sess.filename,filename) == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"There is already someone logged in this account.\n\"" );
+				return;
+			}
+		}
+
+		strcpy(ent->client->sess.filename, filename);
 
 		load_account(ent, qfalse);
 
