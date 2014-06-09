@@ -763,7 +763,7 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 
 	case WP_STUN_BATON:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		ent->NPC->burstSpacing = 1000;//attackdebounce
+		ent->NPC->burstSpacing = 500;//attackdebounce // zyk: default 1000. Changed to 500
 		break;
 
 		/*
@@ -872,38 +872,8 @@ void NPC_ApplyWeaponFireDelay(void)
 		return;
 	}
 
-	switch(NPCS.client->ps.weapon)
-	{
-		/*
-	case WP_BOT_LASER:
-		NPCInfo->burstCount = 0;
-		client->ps.weaponTime = 500;
-		break;
-		*/ //rwwFIXMEFIXME: support for this
-
-	case WP_THERMAL:
-		if ( NPCS.client->ps.clientNum )
-		{//NPCs delay...
-			//FIXME: player should, too, but would feel weird in 1st person, even though it
-			//			would look right in 3rd person.  Really should have a wind-up anim
-			//			for player as he holds down the fire button to throw, then play
-			//			the actual throw when he lets go...
-			NPCS.client->ps.weaponTime = 700;
-		}
-		break;
-
-	case WP_STUN_BATON:
-		//if ( !PM_DroidMelee( client->NPC_class ) )
-		if (1) //rwwFIXMEFIXME: ...
-		{//FIXME: should be unique per melee anim
-			NPCS.client->ps.weaponTime = 300;
-		}
-		break;
-
-	default:
-		NPCS.client->ps.weaponTime = 0;
-		break;
-	}
+	// zyk: all weapons now does this
+	NPCS.client->ps.weaponTime = 0;
 }
 
 /*

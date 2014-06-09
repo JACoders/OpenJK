@@ -724,10 +724,20 @@ void NPC_ApplyScriptFlags (void)
 		{ // zyk: snipers can use charged shot
 			NPCS.NPCInfo->attackHold = 2000;
 		}
+		else if (NPCS.NPC->client->ps.weapon == WP_ROCKET_LAUNCHER)
+		{ // zyk: npcs can use homing missiles properly now
+			NPCS.NPCInfo->attackHold = 2000;
+		}
 	}
 	else if (NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && !(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && NPCS.NPC->client->ps.zoomMode != 0)
-	{ // zyk: reset sniper zoomMode when swtching back to primary fire
+	{ // zyk: reset sniper zoomMode when switching back to primary fire
 		NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
+	}
+
+	// zyk: npcs with thermals must calculate distance to enemy and hold fire properly
+	if (NPCS.NPC->client->ps.weapon == WP_THERMAL && NPCS.NPC->enemy)
+	{
+		NPCS.NPCInfo->attackHold = (int)Distance(NPCS.client->ps.origin,NPCS.NPC->enemy->client->ps.origin) * 2;
 	}
 }
 
