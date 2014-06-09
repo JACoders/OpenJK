@@ -5529,12 +5529,14 @@ static void Jedi_Combat( void )
 			TIMER_Set( NPCS.NPC, "taunting", -level.time );
 		}
 	}
-	else
-	{
-	}
+
 	if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
 	{
 		Boba_FireDecide();
+	}
+	else if (NPCS.client->pers.guardian_mode == 12 && NPCS.NPC->client->NPC_class == CLASS_REBORN && Boba_Flying(NPCS.NPC))
+	{ // zyk: Master of Evil switches between CLASS_REBORN and CLASS_BOBAFETT. If CLASS_REBORN and still flying, stop flying
+		Boba_FlyStop(NPCS.NPC);
 	}
 
 	//Check for certain enemy special moves
