@@ -4367,7 +4367,7 @@ void G_RunFrame( int levelTime ) {
 
 		if (level.validated_map_guardian == qtrue)
 		{
-			if (level.map_guardian_counter < 5)
+			if (level.map_guardian_counter < 3)
 			{
 				npc_ent = NPC_SpawnType(npc_ent,"map_guardian_support",NULL,qfalse);
 				if (npc_ent)
