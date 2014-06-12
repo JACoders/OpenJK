@@ -5045,7 +5045,7 @@ void choose_new_player(gentity_t *next_player)
 
 		if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 0) 
 		{ // zyk: first Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 15; // zyk: player must kill quest reborn npcs to complete the first objective
+			next_player->client->pers.universe_quest_objective_control = 12; // zyk: player must kill quest reborn npcs to complete the first objective
 		}
 		else if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 1)
 		{ // zyk: second Universe Quest objective

@@ -5302,9 +5302,9 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Hero... please help us!\"");
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								if (ent->client->pers.universe_quest_objective_control > 10)
+								if (ent->client->pers.universe_quest_objective_control > 8)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn",14027,-673,-3134,-90);
-								else if (ent->client->pers.universe_quest_objective_control > 4)
+								else if (ent->client->pers.universe_quest_objective_control > 3)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",14190,-673,-3134,-90);
 								else if (ent->client->pers.universe_quest_objective_control > 1)
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",14111,-673,-3134,-90);
