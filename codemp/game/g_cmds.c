@@ -3135,19 +3135,18 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		return;
 	}
 
-	//if (level.gametype >= GT_TEAM && level.gametype != GT_SIEGE)
-	if (level.gametype >= GT_TEAM)
-	{ //no private dueling in team modes
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
-		return;
-	}
-
 	if (ent->client->ps.duelTime >= level.time)
 	{
 		return;
 	}
 
 	if (ent->client->ps.weapon != WP_SABER)
+	{
+		return;
+	}
+
+	// zyk: dont engage if held by a rancor to prevent player being invisible after eaten
+	if (ent->client->ps.eFlags2 & EF2_HELD_BY_MONSTER)
 	{
 		return;
 	}
@@ -3198,12 +3197,8 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		if (!challenged || !challenged->client || !challenged->inuse ||
 			challenged->health < 1 || challenged->client->ps.stats[STAT_HEALTH] < 1 ||
 			challenged->client->ps.weapon != WP_SABER || challenged->client->ps.duelInProgress ||
-			challenged->client->ps.saberInFlight)
-		{
-			return;
-		}
-
-		if (level.gametype >= GT_TEAM && OnSameTeam(ent, challenged))
+			challenged->client->ps.saberInFlight ||
+			challenged->client->ps.eFlags2 & EF2_HELD_BY_MONSTER) // zyk: added this condition to prevent player being invisible after eaten by a rancor
 		{
 			return;
 		}
