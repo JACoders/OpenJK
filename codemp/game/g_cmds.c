@@ -3402,25 +3402,25 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: uses Elemental Power
-				if (ent->client->pers.ultimate_power_user == 0)
+				if (ent->client->pers.ultimate_power_user == 0 && !(ent->client->pers.player_settings & (1 << 16)))
 				{ // zyk: Healing Water
 					healing_water(ent,100);
 					ent->client->pers.ultimate_power_user = 1;
 					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 				}
-				else if (ent->client->pers.ultimate_power_user == 1)
+				else if (ent->client->pers.ultimate_power_user == 1 && !(ent->client->pers.player_settings & (1 << 17)))
 				{
 					ent->client->pers.flame_thrower = level.time + 5000;
 					ent->client->pers.ultimate_power_user = 2;
 					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 				}
-				else if (ent->client->pers.ultimate_power_user == 2)
+				else if (ent->client->pers.ultimate_power_user == 2 && !(ent->client->pers.player_settings & (1 << 18)))
 				{
 					earthquake(ent,2000,700,500);
 					ent->client->pers.ultimate_power_user = 3;
 					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 				}
-				else if (ent->client->pers.ultimate_power_user == 3)
+				else if (ent->client->pers.ultimate_power_user == 3 && !(ent->client->pers.player_settings & (1 << 19)))
 				{
 					int i = 0;
 
@@ -9607,6 +9607,42 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			sprintf(message,"%s\n^315 - Difficulty ^2Normal", message);
 		}
 
+		if (ent->client->pers.player_settings & (1 << 16))
+		{
+			sprintf(message,"%s\n^316 - Elemental: Healing Water ^1OFF", message);
+		}
+		else
+		{
+			sprintf(message,"%s\n^316 - Elemental: Healing Water ^2ON", message);
+		}
+
+		if (ent->client->pers.player_settings & (1 << 17))
+		{
+			sprintf(message,"%s\n^317 - Elemental: Flame Burst ^1OFF", message);
+		}
+		else
+		{
+			sprintf(message,"%s\n^317 - Elemental: Flame Burst ^2ON", message);
+		}
+
+		if (ent->client->pers.player_settings & (1 << 18))
+		{
+			sprintf(message,"%s\n^318 - Elemental: Earthquake ^1OFF", message);
+		}
+		else
+		{
+			sprintf(message,"%s\n^318 - Elemental: Earthquake ^2ON", message);
+		}
+
+		if (ent->client->pers.player_settings & (1 << 19))
+		{
+			sprintf(message,"%s\n^319 - Elemental: Blowing Wind ^1OFF", message);
+		}
+		else
+		{
+			sprintf(message,"%s\n^319 - Elemental: Blowing Wind ^2ON", message);
+		}
+
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
 	}
 	else
@@ -9618,7 +9654,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		value = atoi(arg1);
 
-		if (value < 0 || value > 15)
+		if (value < 0 || value > 19)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"Invalid settings value.\n\"" );
 			return;
@@ -9768,6 +9804,22 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		else if (value == 15)
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Difficulty %s\n\"", new_status) );
+		}
+		else if (value == 16)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Healing Water %s\n\"", new_status) );
+		}
+		else if (value == 17)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Flame Burst %s\n\"", new_status) );
+		}
+		else if (value == 18)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Earthquake %s\n\"", new_status) );
+		}
+		else if (value == 19)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Blowing Wind %s\n\"", new_status) );
 		}
 		return;
 	}
