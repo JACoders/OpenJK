@@ -1967,7 +1967,11 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 			int numLevels = (flags & IMGFLAG_MIPMAP) ? CalcNumMipmapLevels (width, height) : 1;
 
 			qglTexStorage2D (GL_TEXTURE_2D, numLevels, internalFormat, width, height);
-			qglTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, width, height, dataFormat, dataType, data);
+
+			if ( data != NULL )
+			{
+				qglTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, width, height, dataFormat, dataType, data);
+			}
 		}
 		else
 		{
@@ -1975,8 +1979,12 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 		}
 	}
 
-	if (flags & IMGFLAG_MIPMAP)
+	if ((flags & IMGFLAG_MIPMAP) &&
+		(data != NULL || !glRefConfig.immutableTextures || (flags & IMGFLAG_MUTABLE)))
 	{
+		// Don't need to generate mipmaps if we are generating an immutable texture and
+		// the data is NULL. All levels have already been allocated by glTexStorage2D.
+
 		int miplevel = 0;
 		
 		while (width > 1 || height > 1)
