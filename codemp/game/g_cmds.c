@@ -3402,6 +3402,16 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: uses Elemental Power
+				// zyk: if an elemental power is disabled, set to the next one
+				if (ent->client->pers.ultimate_power_user == 0 && ent->client->pers.player_settings & (1 << 16))
+					ent->client->pers.ultimate_power_user = 1;
+				if (ent->client->pers.ultimate_power_user == 1 && ent->client->pers.player_settings & (1 << 17))
+					ent->client->pers.ultimate_power_user = 2;
+				if (ent->client->pers.ultimate_power_user == 2 && ent->client->pers.player_settings & (1 << 18))
+					ent->client->pers.ultimate_power_user = 3;
+				if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.player_settings & (1 << 19))
+					ent->client->pers.ultimate_power_user = 0;
+
 				if (ent->client->pers.ultimate_power_user == 0 && !(ent->client->pers.player_settings & (1 << 16)))
 				{ // zyk: Healing Water
 					healing_water(ent,100);
