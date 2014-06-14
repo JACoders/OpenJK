@@ -486,6 +486,7 @@ void Boba_FireDecide( void )
 	qboolean shoot = qfalse, hitAlly = qfalse;
 	vec3_t	impactPos, enemyDir, shootDir;
 	float	enemyDist, dot;
+	qboolean enemy_is_armored_soldier = qfalse;
 
 	/* zyk: removed this code
 	if ( NPCS.NPC->client->ps.groundEntityNum == ENTITYNUM_NONE
@@ -548,7 +549,11 @@ void Boba_FireDecide( void )
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
 		NPCS.ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);
 	}
-	
+
+	// zyk: Master of Evil enemy is an Armored Soldier. He is smarter at choosing weapons against this class
+	if (NPCS.NPC->client->pers.guardian_mode == 12 && NPCS.NPC->enemy && NPCS.NPC->enemy->client->sess.amrpgmode == 2 && NPCS.NPC->enemy->client->pers.rpg_class == 3)
+		enemy_is_armored_soldier = qtrue;
+
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
 		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
@@ -643,7 +648,7 @@ void Boba_FireDecide( void )
 
 				NPC_ChangeWeapon( WP_DEMP2 );
 			}
-			else if (HaveWeapon(WP_DISRUPTOR))
+			else if (HaveWeapon(WP_DISRUPTOR) && enemy_is_armored_soldier == qfalse)
 			{
 				//reset fire-timing variables
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
@@ -653,6 +658,12 @@ void Boba_FireDecide( void )
 			{
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 				NPC_ChangeWeapon( WP_FLECHETTE );
+			}
+			else if (HaveWeapon(WP_CONCUSSION) && enemy_is_armored_soldier == qtrue)
+			{
+				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
+					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
+				NPC_ChangeWeapon( WP_CONCUSSION );
 			}
 			else 
 			{ // zyk: does not have disruptor, use another weapon
