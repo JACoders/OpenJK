@@ -114,7 +114,7 @@ int main ( int argc, char *argv[] )
 		output += "\";\n\n";
 	}
 
-	std::ofstream ofs (outFile, std::ios::out);
+	std::ofstream ofs (outFile.c_str(), std::ios::out);
 	if ( !ofs )
 	{
 		std::cerr << "Could not create file " << outFile << '\n';
