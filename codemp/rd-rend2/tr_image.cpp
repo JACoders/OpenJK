@@ -2331,9 +2331,12 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 
 			qglTexStorage2D (GL_TEXTURE_CUBE_MAP, numLevels, internalFormat, width, height);
 
-			for ( int i = 0; i < 6; i++ )
+			if ( pic != NULL )
 			{
-				qglTexSubImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pic);
+				for ( int i = 0; i < 6; i++ )
+				{
+					qglTexSubImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, pic);
+				}
 			}
 		}
 		else
