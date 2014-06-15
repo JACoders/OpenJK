@@ -14,34 +14,20 @@ static vec3_t muzzle;
 
 // Bryar Pistol
 //--------
-#define BRYAR_PISTOL_VEL			5500 // 1600
-#define BRYAR_PISTOL_DAMAGE			25 // 10
 #define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
 #define BRYAR_ALT_SIZE				1.0f
 
 // E11 Blaster
 //---------
 #define BLASTER_SPREAD				1.6f//1.2f
-#define BLASTER_VELOCITY			6000 // 2300
-#define BLASTER_DAMAGE				40 // 20
 
 // Tenloss Disruptor
 //----------
-#define DISRUPTOR_MAIN_DAMAGE			60 // 30 //40
-#define DISRUPTOR_MAIN_DAMAGE_SIEGE		50
-#define DISRUPTOR_NPC_MAIN_DAMAGE_CUT	0.25f
-
-#define DISRUPTOR_ALT_DAMAGE			180 // 100 //125
-#define DISRUPTOR_NPC_ALT_DAMAGE_CUT	0.2f
 #define DISRUPTOR_ALT_TRACES			3		// can go through a max of 3 damageable(sp?) entities
 #define DISRUPTOR_CHARGE_UNIT			50.0f	// distruptor charging gives us one more unit every 50ms--if you change this, you'll have to do the same in bg_pmove
 
 // Wookiee Bowcaster
 //----------
-#define	BOWCASTER_DAMAGE			60 // 50
-#define	BOWCASTER_VELOCITY			5000 // 1300
-#define BOWCASTER_SPLASH_DAMAGE		0
-#define BOWCASTER_SPLASH_RADIUS		0
 #define BOWCASTER_SIZE				2
 
 #define BOWCASTER_ALT_SPREAD		5.0f
@@ -51,23 +37,14 @@ static vec3_t muzzle;
 // Heavy Repeater
 //----------
 #define REPEATER_SPREAD				1.4f
-#define	REPEATER_DAMAGE				24 // 14
-#define	REPEATER_VELOCITY			5500 // 1600
 
 #define REPEATER_ALT_SIZE				3	// half of bbox size
-#define	REPEATER_ALT_DAMAGE				110 // 60
-#define REPEATER_ALT_SPLASH_DAMAGE		110 // 60
 #define REPEATER_ALT_SPLASH_RADIUS		128
 #define REPEATER_ALT_SPLASH_RAD_SIEGE	80
-#define	REPEATER_ALT_VELOCITY			1800 // 1100
 
 // DEMP2
 //----------
-#define	DEMP2_DAMAGE				40 // 35
-#define	DEMP2_VELOCITY				3500 // 1800
 #define	DEMP2_SIZE					2		// half of bbox size
-
-#define DEMP2_ALT_DAMAGE			16 // 8 //12		// does 12, 36, 84 at each of the 3 charge levels.
 #define DEMP2_CHARGE_UNIT			700.0f	// demp2 charging gives us one more unit every 700ms--if you change this, you'll have to do the same in bg_weapons
 #define DEMP2_ALT_RANGE				4096
 #define DEMP2_ALT_SPLASHRADIUS		256
@@ -76,20 +53,12 @@ static vec3_t muzzle;
 //---------
 #define FLECHETTE_SHOTS				5
 #define FLECHETTE_SPREAD			4.0f
-#define FLECHETTE_DAMAGE			24 // 12//15
-#define FLECHETTE_VEL				5500 // 3500
-#define FLECHETTE_ALT_VEL			1800
 #define FLECHETTE_SIZE				1
 #define FLECHETTE_MINE_RADIUS_CHECK	256
-#define FLECHETTE_ALT_DAMAGE		110 // 60
-#define FLECHETTE_ALT_SPLASH_DAM	60
 #define FLECHETTE_ALT_SPLASH_RAD	128
 
 // Personal Rocket Launcher
 //---------
-#define	ROCKET_VELOCITY				1100 // 900
-#define	ROCKET_DAMAGE				140 // 100
-#define	ROCKET_SPLASH_DAMAGE		140 // 100
 #define	ROCKET_SPLASH_RADIUS		160
 #define ROCKET_SIZE					3
 #define ROCKET_ALT_THINK_TIME		100
@@ -99,29 +68,14 @@ static vec3_t muzzle;
 //primary
 //man, this thing is too absurdly powerful. having to
 //slash the values way down from sp.
-#define	CONC_VELOCITY				2200 // 3000
-#define	CONC_DAMAGE					140 // 75 //150
-#define	CONC_NPC_DAMAGE_EASY		40
-#define	CONC_NPC_DAMAGE_NORMAL		80
-#define	CONC_NPC_DAMAGE_HARD		100
-#define	CONC_SPLASH_DAMAGE			140 // 40 //50
 #define	CONC_SPLASH_RADIUS			200 //300
-//alt
-#define CONC_ALT_DAMAGE				80 // 25 //100
-#define CONC_ALT_NPC_DAMAGE_EASY	20
-#define CONC_ALT_NPC_DAMAGE_MEDIUM	35
-#define CONC_ALT_NPC_DAMAGE_HARD	50
 
 // Stun Baton
 //--------------
-#define STUN_BATON_DAMAGE			15 // 20
-#define STUN_BATON_ALT_DAMAGE		15 // 20
 #define STUN_BATON_RANGE			8
 
 // Melee
 //--------------
-#define MELEE_SWING1_DAMAGE			14 // 10
-#define MELEE_SWING2_DAMAGE			14 // 12
 #define MELEE_RANGE					8
 
 // ATST Main Gun
@@ -234,10 +188,10 @@ BRYAR PISTOL
 static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 //---------------------------------------------------------
 {
-	int damage = BRYAR_PISTOL_DAMAGE;
+	int damage = zyk_blaster_pistol_damage.integer;
 	int count;
 
-	gentity_t	*missile = CreateMissile( muzzle, forward, BRYAR_PISTOL_VEL, 10000, ent, altFire );
+	gentity_t	*missile = CreateMissile( muzzle, forward, zyk_blaster_pistol_velocity.integer, 10000, ent, altFire );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -422,8 +376,8 @@ BLASTER
 void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire )
 //---------------------------------------------------------
 {
-	int velocity	= BLASTER_VELOCITY;
-	int	damage		= BLASTER_DAMAGE;
+	int velocity	= zyk_e11_blaster_rifle_velocity.integer;
+	int	damage		= zyk_e11_blaster_rifle_damage.integer;
 	gentity_t *missile;
 
 	missile = CreateMissile( start, dir, velocity, 10000, ent, altFire );
@@ -485,8 +439,8 @@ void WP_FireTurboLaserMissile( gentity_t *ent, vec3_t start, vec3_t dir )
 void WP_FireEmplacedMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, gentity_t *ignore )
 //---------------------------------------------------------
 {
-	int velocity	= BLASTER_VELOCITY;
-	int	damage		= BLASTER_DAMAGE;
+	int velocity	= zyk_e11_blaster_rifle_velocity.integer;
+	int	damage		= zyk_e11_blaster_rifle_damage.integer;
 	gentity_t *missile;
 
 	missile = CreateMissile( start, dir, velocity, 10000, ent, altFire );
@@ -553,18 +507,13 @@ DISRUPTOR
 static void WP_DisruptorMainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage = DISRUPTOR_MAIN_DAMAGE;
+	int			damage = zyk_disruptor_damage.integer;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
 	float		shotRange = 8192;
 	int			ignore, traces;
-
-	if ( level.gametype == GT_SIEGE )
-	{
-		damage = DISRUPTOR_MAIN_DAMAGE_SIEGE;
-	}
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
 
@@ -729,7 +678,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	int			traces = DISRUPTOR_ALT_TRACES;
 	qboolean	fullCharge = qfalse;
 
-	damage = DISRUPTOR_ALT_DAMAGE-30;
+	damage = zyk_disruptor_alt_damage.integer-30;
 
 	VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
@@ -1007,9 +956,9 @@ BOWCASTER
 
 static void WP_BowcasterAltFire( gentity_t *ent )
 {
-	int	damage	= BOWCASTER_DAMAGE;
+	int	damage	= zyk_bowcaster_damage.integer;
 
-	gentity_t *missile = CreateMissile( muzzle, forward, BOWCASTER_VELOCITY, 10000, ent, qfalse);
+	gentity_t *missile = CreateMissile( muzzle, forward, zyk_bowcaster_velocity.integer, 10000, ent, qfalse);
 
 	missile->classname = "bowcaster_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -1038,7 +987,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 static void WP_BowcasterMainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage	= BOWCASTER_DAMAGE, count;
+	int			damage	= zyk_bowcaster_damage.integer, count;
 	float		vel;
 	vec3_t		angs, dir;
 	gentity_t	*missile;
@@ -1080,7 +1029,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 	for (i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
-		vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
+		vel = zyk_bowcaster_velocity.integer * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
 
 		vectoangles( forward, angs );
 
@@ -1139,9 +1088,9 @@ REPEATER
 static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 //---------------------------------------------------------
 {
-	int	damage	= REPEATER_DAMAGE;
+	int	damage	= zyk_repeater_damage.integer;
 
-	gentity_t *missile = CreateMissile( muzzle, dir, REPEATER_VELOCITY, 10000, ent, qfalse );
+	gentity_t *missile = CreateMissile( muzzle, dir, zyk_repeater_velocity.integer, 10000, ent, qfalse );
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -1162,10 +1111,10 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 static void WP_RepeaterAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int	damage	= REPEATER_ALT_DAMAGE;
-	int splash_damage = REPEATER_ALT_SPLASH_DAMAGE;
+	int	damage	= zyk_repeater_alt_damage.integer;
+	int splash_damage = zyk_repeater_alt_splash_damage.integer;
 
-	gentity_t *missile = CreateMissile( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
+	gentity_t *missile = CreateMissile( muzzle, forward, zyk_repeater_alt_velocity.integer, 10000, ent, qtrue );
 
 	missile->classname = "repeater_alt_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -1243,9 +1192,9 @@ DEMP2
 
 static void WP_DEMP2_MainFire( gentity_t *ent )
 {
-	int	damage	= DEMP2_DAMAGE;
+	int	damage	= zyk_demp2_damage.integer;
 
-	gentity_t *missile = CreateMissile( muzzle, forward, DEMP2_VELOCITY, 10000, ent, qfalse);
+	gentity_t *missile = CreateMissile( muzzle, forward, zyk_demp2_velocity.integer, 10000, ent, qfalse);
 
 	missile->classname = "demp2_proj";
 	missile->s.weapon = WP_DEMP2;
@@ -1441,7 +1390,7 @@ void DEMP2_AltDetonate( gentity_t *ent )
 static void WP_DEMP2_AltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int		damage	= DEMP2_ALT_DAMAGE;
+	int		damage	= zyk_demp2_alt_damage.integer;
 	int		count, origcount;
 	float	fact;
 	vec3_t	start, end;
@@ -1551,7 +1500,7 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 
 		AngleVectors( angs, fwd, NULL, NULL );
 
-		missile = CreateMissile( muzzle, fwd, FLECHETTE_VEL, 10000, ent, qfalse);
+		missile = CreateMissile( muzzle, fwd, zyk_flechette_velocity.integer, 10000, ent, qfalse);
 
 		missile->classname = "flech_proj";
 		missile->s.weapon = WP_FLECHETTE;
@@ -1559,7 +1508,7 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 		VectorSet( missile->r.maxs, FLECHETTE_SIZE, FLECHETTE_SIZE, FLECHETTE_SIZE );
 		VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-		missile->damage = FLECHETTE_DAMAGE;
+		missile->damage = zyk_flechette_damage.integer;
 		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 		missile->methodOfDeath = MOD_FLECHETTE;
 		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -1666,7 +1615,7 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 //------------------------------------------------------------------------------
 {
 	// zyk: gentity_t	*missile = CreateMissile( start, fwd, 700 + random() * 700, 1500 + random() * 2000, self, qtrue );
-	gentity_t	*missile = CreateMissile( start, fwd, FLECHETTE_ALT_VEL, 1500 + random() * 2000, self, qtrue );
+	gentity_t	*missile = CreateMissile( start, fwd, zyk_flechette_alt_velocity.integer, 1500 + random() * 2000, self, qtrue );
 
 	missile->think = WP_flechette_alt_blow;
 
@@ -1691,9 +1640,9 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 
 	missile->bounceCount = 50;
 
-	missile->damage = FLECHETTE_ALT_DAMAGE;
+	missile->damage = zyk_flechette_alt_damage.integer;
 	missile->dflags = 0;
-	missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
+	missile->splashDamage = zyk_flechette_alt_splash_damage.integer;
 	missile->splashRadius = FLECHETTE_ALT_SPLASH_RAD;
 
 	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
@@ -1762,7 +1711,7 @@ void rocketThink( gentity_t *ent )
 	vec3_t	org;
 	float dot, dot2, dis;
 	int i;
-	float vel = (ent->spawnflags&1)?ent->speed:ROCKET_VELOCITY;
+	float vel = (ent->spawnflags&1)?ent->speed:zyk_rocket_velocity.integer;
 
 	if ( ent->genericValue1 && ent->genericValue1 < level.time )
 	{//time's up, we're done, remove us
@@ -1932,9 +1881,9 @@ void RocketDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int d
 static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 //---------------------------------------------------------
 {
-	int	damage	= ROCKET_DAMAGE;
-	int splash_damage = ROCKET_SPLASH_DAMAGE;
-	int	vel = ROCKET_VELOCITY;
+	int	damage	= zyk_rocket_damage.integer;
+	int splash_damage = zyk_rocket_splash_damage.integer;
+	int	vel = zyk_rocket_velocity.integer;
 	int dif = 0;
 	float rTime;
 	gentity_t *missile;
@@ -3126,7 +3075,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
-	int			damage = CONC_ALT_DAMAGE, skip, traces = DISRUPTOR_ALT_TRACES;
+	int			damage = zyk_concussion_alt_damage.integer, skip, traces = DISRUPTOR_ALT_TRACES;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	vec3_t		muzzle2, dir;
@@ -3394,8 +3343,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 static void WP_FireConcussion( gentity_t *ent )
 {//a fast rocket-like projectile
 	vec3_t	start;
-	int		damage	= CONC_DAMAGE;
-	float	vel = CONC_VELOCITY;
+	int		damage	= zyk_concussion_damage.integer;
+	float	vel = zyk_concussion_velocity.integer;
 	gentity_t *missile;
 
 	//hold us still for a bit
@@ -3430,7 +3379,7 @@ static void WP_FireConcussion( gentity_t *ent )
 	missile->splashMethodOfDeath = MOD_CONC;
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = CONC_SPLASH_DAMAGE;
+	missile->splashDamage = zyk_concussion_splash_damage.integer;
 	missile->splashRadius = CONC_SPLASH_RADIUS;
 
 	// we don't want it to ever bounce
@@ -3522,20 +3471,20 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 		G_PlayEffect( EFFECT_STUNHIT, tr.endpos, tr.plane.normal );
 
 		G_Sound( tr_ent, CHAN_WEAPON, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
-		G_Damage( tr_ent, ent, ent, forward, tr.endpos, STUN_BATON_DAMAGE, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
+		G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 
 		// zyk: if stun baton is in level 2 in RPG mode, does double damage
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 2)
 		{
-			G_Damage( tr_ent, ent, ent, forward, tr.endpos, STUN_BATON_DAMAGE * 2, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
+			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 2, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 3)
 		{ // zyk: if in level 3, causes triple damage
-			G_Damage( tr_ent, ent, ent, forward, tr.endpos, STUN_BATON_DAMAGE * 3, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
+			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 3, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
 		else
 		{
-			G_Damage( tr_ent, ent, ent, forward, tr.endpos, STUN_BATON_DAMAGE, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
+			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
 
 		if (tr_ent->client)
@@ -3661,11 +3610,11 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 		if ( tr_ent->takedamage )
 		{ //damage them, do more damage if we're in the second right hook
-			int dmg = MELEE_SWING1_DAMAGE;
+			int dmg = zyk_melee_left_hand_damage.integer;
 
 			if (ent->client && ent->client->ps.torsoAnim == BOTH_MELEE2)
 			{ //do a tad bit more damage on the second swing
-				dmg = MELEE_SWING2_DAMAGE;
+				dmg = zyk_melee_right_hand_damage.integer;
 			}
 
 			if ( G_HeavyMelee( ent ) )

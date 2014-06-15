@@ -7638,7 +7638,7 @@ static void G_KickSomeMofos(gentity_t *ent)
 	float remainingTime = (animLength-elapsedTime);
 	float kickDist = (ent->r.maxs[0]*1.5f)+STAFF_KICK_RANGE+8.0f;//fudge factor of 8
 	// int	  kickDamage = Q_irand(10, 15);//Q_irand( 3, 8 ); //since it can only hit a guy once now
-	int	  kickDamage = Q_irand(25, 30); // zyk: increased kick damage
+	int	  kickDamage = zyk_melee_kick_damage.integer; // zyk: added cvar for kick damage
 	int	  kickPush = flrand( 50.0f, 100.0f );
 	qboolean doKick = qfalse;
 	renderInfo_t *ri = &ent->client->renderInfo;
