@@ -4076,10 +4076,14 @@ void load_account(gentity_t *ent, qboolean change_mode)
 		}
 		else if (ent->client->sess.amrpgmode == 1)
 		{
-			// zyk: loading the holster state of the saber based in the player settings
-			if (ent->client->pers.player_settings & (1 << 11))
+			// zyk: loading the starting weapon based in player settings
+			if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
 			{
-				ent->client->ps.saberHolstered = 2;
+				ent->client->ps.weapon = WP_SABER;
+			}
+			else
+			{
+				ent->client->ps.weapon = WP_MELEE;
 			}
 		
 			// zyk: player starts with jetpack if it is enabled in player settings
@@ -4361,10 +4365,14 @@ void initialize_rpg_skills(gentity_t *ent)
 			}
 		}
 
-		// zyk: loading the holster state of the saber based in the player settings
-		if (ent->client->pers.player_settings & (1 << 11))
+		// zyk: loading the starting weapon based in player settings
+		if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
 		{
-			ent->client->ps.saberHolstered = 2;
+			ent->client->ps.weapon = WP_SABER;
+		}
+		else
+		{
+			ent->client->ps.weapon = WP_MELEE;
 		}
 
 		// zyk: loading Saber Defense value
@@ -9574,11 +9582,11 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 11))
 		{
-			sprintf(message,"%s\n^311 - Saber Starts ^1OFF", message);
+			sprintf(message,"%s\n^311 - Start With Saber ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^311 - Saber Starts ^2ON", message);
+			sprintf(message,"%s\n^311 - Start With Saber ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 12))
@@ -9784,7 +9792,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 11)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Saber Starts %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Start With Saber %s\n\"", new_status) );
 		}
 		else if (value == 12)
 		{
