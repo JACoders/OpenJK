@@ -2129,7 +2129,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					}
 					self->client->ps.stats[STAT_HEALTH] = self->health;
 				}
-				else if (self->client->sess.amrpgmode == 2 && self->client->pers.drain_shield > 0 && self->client->ps.stats[STAT_ARMOR] < self->client->ps.stats[STAT_MAX_HEALTH])
+				else if (dmg > 0 && self->client->sess.amrpgmode == 2 && self->client->pers.drain_shield > 0 && self->client->ps.stats[STAT_ARMOR] < self->client->ps.stats[STAT_MAX_HEALTH])
 				{ // zyk: if player has RPG Drain Shield skill and hp is full, recover shield
 					self->client->ps.stats[STAT_ARMOR] += 1;
 				}
