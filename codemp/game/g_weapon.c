@@ -1982,18 +1982,12 @@ THERMAL DETONATOR
 ======================================================================
 */
 
-#define TD_DAMAGE			170 // 70 //only do 70 on a direct impact
 #define TD_SPLASH_RAD		128
-#define TD_SPLASH_DAM		170 // 90
-#define TD_VELOCITY			1100 // 900
 #define TD_MIN_CHARGE		0.15f
 #define TD_TIME				3000//6000
 #define TD_ALT_TIME			3000
 
-#define TD_ALT_DAMAGE		110 // 60//100
 #define TD_ALT_SPLASH_RAD	128
-#define TD_ALT_SPLASH_DAM	50//90
-#define TD_ALT_VELOCITY		600
 #define TD_ALT_MIN_CHARGE	0.15f
 #define TD_ALT_TIME			3000
 
@@ -2082,7 +2076,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	}
 
 	// get charge amount
-	chargeAmount = chargeAmount / (float)TD_VELOCITY;
+	chargeAmount = chargeAmount / zyk_thermal_velocity.value;
 
 	if ( chargeAmount > 1.0f )
 	{
@@ -2098,7 +2092,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	bolt->s.pos.trType = TR_GRAVITY;
 	bolt->parent = ent;
 	bolt->r.ownerNum = ent->s.number;
-	VectorScale( dir, TD_VELOCITY * chargeAmount, bolt->s.pos.trDelta );
+	VectorScale( dir, zyk_thermal_velocity.integer * chargeAmount, bolt->s.pos.trDelta );
 
 	if ( ent->health >= 0 )
 	{
@@ -2113,9 +2107,9 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	bolt->s.loopSound = G_SoundIndex( "sound/weapons/thermal/thermloop.wav" );
 	bolt->s.loopIsSoundset = qfalse;
 
-	bolt->damage = TD_DAMAGE;
+	bolt->damage = zyk_thermal_damage.integer;
 	bolt->dflags = 0;
-	bolt->splashDamage = TD_SPLASH_DAM;
+	bolt->splashDamage = zyk_thermal_splash_damage.integer;
 	bolt->splashRadius = TD_SPLASH_RAD;
 
 	bolt->s.eType = ET_MISSILE;
@@ -2299,10 +2293,7 @@ LASER TRAP / TRIP MINE
 
 ======================================================================
 */
-#define LT_DAMAGE			230 // 100
 #define LT_SPLASH_RAD		256.0f
-#define LT_SPLASH_DAM		230 // 105
-#define LT_VELOCITY			900.0f
 #define LT_SIZE				1.5f
 #define LT_ALT_TIME			2000
 #define	LT_ACTIVATION_DELAY	1000
@@ -2558,9 +2549,9 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	laserTrap->classname = "laserTrap";
 	laserTrap->flags |= FL_BOUNCE_HALF;
 	laserTrap->s.eFlags |= EF_MISSILE_STICK;
-	laserTrap->splashDamage = LT_SPLASH_DAM;
+	laserTrap->splashDamage = zyk_tripmine_splash_damage.integer;
 	laserTrap->splashRadius = LT_SPLASH_RAD;
-	laserTrap->damage = LT_DAMAGE;
+	laserTrap->damage = zyk_tripmine_damage.integer;
 	laserTrap->methodOfDeath = MOD_TRIP_MINE_SPLASH;
 	laserTrap->splashMethodOfDeath = MOD_TRIP_MINE_SPLASH;
 	laserTrap->s.eType = ET_GENERAL;
@@ -2887,8 +2878,8 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	bolt->parent = self;
 	bolt->r.ownerNum = self->s.number;
-	bolt->damage = 300; // zyk: default 100
-	bolt->splashDamage = 300; // zyk: default 200
+	bolt->damage = zyk_detpack_damage.integer; // zyk: default 100
+	bolt->splashDamage = zyk_detpack_splash_damage.integer; // zyk: default 200
 	bolt->splashRadius = 200;
 	bolt->methodOfDeath = MOD_DET_PACK_SPLASH;
 	bolt->splashMethodOfDeath = MOD_DET_PACK_SPLASH;

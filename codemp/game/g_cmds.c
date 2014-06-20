@@ -7987,11 +7987,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 43)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Rockets: ^7used as ammo for Rocket Launcher. You can carry up to %d ammo\n\"",zyk_max_rocket_ammo.integer) );
 					if (i == 44)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Thermal Detonator: ^7the famous detonator used by Leia in Ep 6 at the Jabba Palace. Normal fire throws it, which explodes after some seconds. Alt fire throws it and it explodes as soon as it touches something. Normal fire causes %d damage and alt fire causes %d damage\n\"", 50, 50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Thermal Detonator: ^7the famous detonator used by Leia in Ep 6 at the Jabba Palace. Normal fire throws it, which explodes after some seconds. Alt fire throws it and it explodes as soon as it touches something. Thermals cause %d damage\n\"", zyk_thermal_damage.integer) );
 					if (i == 45)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Trip Mine: ^7a mine that can be planted somewhere. Normal fire plants a mine with a laser that when touched makes the mine explode, causing %d damage. Alt fire plants proximity mines\n\"", 50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Trip Mine: ^7a mine that can be planted somewhere. Normal fire plants a mine with a laser that when touched makes the mine explode, causing %d damage. Alt fire plants proximity mines\n\"", zyk_tripmine_damage.integer) );
 					if (i == 46)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Det Pack: ^7a very powerful explosive, which you can detonate remotely with the alt fire button. Causes %d damage\n\"", 50) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Det Pack: ^7a very powerful explosive, which you can detonate remotely with the alt fire button. Causes %d damage\n\"", zyk_detpack_damage.integer) );
 					if (i == 47)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Binoculars: ^7this item allows you to see distant things better with its zoom.\n\"") );
 					if (i == 48)

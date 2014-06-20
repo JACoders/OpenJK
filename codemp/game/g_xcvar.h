@@ -193,5 +193,12 @@ XCVAR_DEF( zyk_stun_baton_damage,	"20",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,	
 XCVAR_DEF( zyk_melee_left_hand_damage,	"10",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_melee_right_hand_damage,	"12",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_melee_kick_damage,	"10",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_thermal_damage,	"70",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_thermal_splash_damage,	"90",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_thermal_velocity,	"900",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_tripmine_damage,	"100",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_tripmine_splash_damage,	"105",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_detpack_damage,	"100",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_detpack_splash_damage,	"200",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF
