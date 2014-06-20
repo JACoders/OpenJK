@@ -854,6 +854,16 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "vjun1") == 0)
 	{
+		int i = 0;
+		gentity_t *ent;
+		for (i = 0; i < level.num_entities; i++)
+		{
+			ent = &g_entities[i];
+			if (i == 123 || i == 124)
+			{ // zyk: removing tie fighter misc_model_breakable entities to prevent client crashes
+				G_FreeEntity( ent );
+			}
+		}
 		zyk_create_info_player_deathmatch(-6897,7035,857,-90);
 		zyk_create_info_player_deathmatch(-7271,7034,857,-90);
 	}
@@ -929,6 +939,30 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				fix_sp_func_door(ent);
 			}
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave1_tie1") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave1_tie2") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave1_tie3") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave2_tie1") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave2_tie2") == 0)
+			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "wave2_tie3") == 0)
 			{
 				G_FreeEntity( ent );
 			}
