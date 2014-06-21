@@ -8,8 +8,6 @@
 #include "ghoul2/G2_gore.h"
 #endif
 
-// FIXME: ghoul2 doesn't use cubemaps :(
-
 #ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
