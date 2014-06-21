@@ -189,7 +189,7 @@ void main()
 	vec3 position = position4.xyz;
 	vec3 normal = normalize (normal4.xyz);
 #if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-	vec3 tangent = tangent4.xyz;
+	vec3 tangent = normalize (tangent4.xyz);
 #endif
 #else
 	vec3 position  = attr_Position;
@@ -199,9 +199,11 @@ void main()
   #endif
 #endif
 
+#if !defined(USE_SKELETAL_ANIMATION)
 	normal  = normal  * 2.0 - vec3(1.0);
-#if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
+  #if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 	tangent = tangent * 2.0 - vec3(1.0);
+  #endif
 #endif
 
 #if defined(USE_TCGEN)
