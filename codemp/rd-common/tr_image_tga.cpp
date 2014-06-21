@@ -1,13 +1,5 @@
 #include "tr_common.h"
 
-struct TargaHeader {
-	unsigned char 	id_length, colormap_type, image_type;
-	unsigned short	colormap_index, colormap_length;
-	unsigned char	colormap_size;
-	unsigned short	x_origin, y_origin, width, height;
-	unsigned char	pixel_size, attributes;
-};
-
 // My TGA loader...
 //
 //---------------------------------------------------
@@ -351,7 +343,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 					}
 				}
 			}
-			breakOut:;
+		breakOut:;
 		}
 	}
 

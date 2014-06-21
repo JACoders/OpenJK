@@ -1019,13 +1019,10 @@ CG_PlayerAnimation
 void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBackLerp,
 						int *torsoOld, int *torso, float *torsoBackLerp ) {
 	clientInfo_t	*ci;
-	int				clientNum;
 	int				legsAnim;
 	int				legsTurnAnim = -1;
 	qboolean		newLegsFrame = qfalse;
 	qboolean		newTorsoFrame = qfalse;
-
-	clientNum = cent->currentState.clientNum;
 
 	if ( cg_noPlayerAnims.integer ) {
 		*legsOld = *legs = *torsoOld = *torso = 0;
@@ -2877,33 +2874,6 @@ void CG_PlayerPowerups( centity_t *cent )
 	{
 //		CG_Seeker(cent);
 	}*/
-}
-
-/*
-
-/*
-===============
-CG_GetTeamFromUserinfo
-
-Return team value based on client userinfo
-===============
-*/
-int CG_GetTeamFromUserinfo( int clientNum ) {
-	const char *info, *teamString;
-
-	info = CG_ConfigString( CS_PLAYERS + clientNum );
-	teamString = Info_ValueForKey( info, "t" );
-
-	/*if ( !strcmp( teamString, "s" ) )
-		return TEAM_SPECTATOR;
-
-	if ( !strcmp( teamString, "r" ) ) 
-		return TEAM_RED;
-
-	if ( !strcmp( teamString, "b" ) )
-		return TEAM_BLUE;*/
-
-	return TEAM_FREE;
 }
 
 #define	SHADOW_DISTANCE		128
@@ -4829,7 +4799,6 @@ void CG_Player( centity_t *cent ) {
 	clientInfo_t	*ci;
 	qboolean		shadow, staticScale = qfalse;
 	float			shadowPlane;
-	entityState_t	*ent;
 	const weaponData_t  *wData = NULL;
 
 	calcedMp = qfalse;
@@ -4838,8 +4807,6 @@ void CG_Player( centity_t *cent ) {
 	{
 		return;
 	}
-
-	ent = &cent->currentState;
 
 	//FIXME: make sure this thing has a gent and client
 	if(!cent->gent)

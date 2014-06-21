@@ -1382,36 +1382,6 @@ Ghoul2 Insert End
 	cgi_R_AddRefEntityToScene(&ent);
 }
 
-/*
-===============
-CG_Cylinder
-===============
-*/
-void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color ) 
-{
-	vec3_t	dir;
-	float	length;
-
-	VectorSubtract( end, start, dir );
-	length = VectorNormalize( dir );
-
-/*	FX_AddCylinder( -1, start, 
-					dir, 
-					length, 
-					0.0f, 
-					radius,
-					0.0f,
-					radius,
-					0.0f,
-					1.0f,
-					1.0f,
-					color,
-					color,
-					100.0f,
-					cgs.media.waterDropShader
-					0, -1, -1 );*/
-}
-
 static vec2_t st[] =
 {
 	{ 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f }
@@ -2280,9 +2250,6 @@ static void CG_Think ( centity_t *cent )
 static void CG_Clouds( centity_t *cent )
 {
 	refEntity_t		ent;
-	entityState_t	*s1;
-
-	s1 = &cent->currentState;
 
 	// create the render entity
 	memset( &ent, 0, sizeof( ent ));

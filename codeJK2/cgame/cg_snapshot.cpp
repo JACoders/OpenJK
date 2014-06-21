@@ -335,7 +335,6 @@ of an interpolating one)
 void CG_ProcessSnapshots( void ) {
 	snapshot_t		*snap;
 	int				n;
-	qboolean		newSnapshots;
 
 	// see what the latest snapshot the client system has is
 	cgi_GetCurrentSnapshotNumber( &n, &cg.latestSnapshotTime );
@@ -345,9 +344,6 @@ void CG_ProcessSnapshots( void ) {
 			CG_Error( "CG_ProcessSnapshots: n < cg.latestSnapshotNum" );
 		}
 		cg.latestSnapshotNum = n;
-		newSnapshots = qtrue;
-	} else {
-		newSnapshots = qfalse;
 	}
 
 	// If we have yet to receive a snapshot, check for it.

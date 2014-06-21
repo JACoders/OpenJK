@@ -324,6 +324,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 				|| PM_RollingAnim( self->client->ps.legsAnim )
 				|| (PM_FlippingAnim( self->client->ps.legsAnim )&&!PM_InCartwheel( self->client->ps.legsAnim )) )
 			{//strong attacks, rolls, knockdowns, flips and spins cannot be interrupted by pain
+				return;
 			}
 			else
 			{//play an anim

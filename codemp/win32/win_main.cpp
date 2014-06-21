@@ -774,8 +774,6 @@ Called after the common systems (cvars, files, etc)
 are initialized
 ================
 */
-#define OSR2_BUILD_NUMBER 1111
-#define WIN98_BUILD_NUMBER 1998
 
 void Sys_Init( void ) {
 	// make sure the timer is high precision, otherwise

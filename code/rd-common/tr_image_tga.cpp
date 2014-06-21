@@ -4,85 +4,6 @@
 
 #include "tr_common.h"
 
-struct TargaHeader {
-	unsigned char 	id_length, colormap_type, image_type;
-	unsigned short	colormap_index, colormap_length;
-	unsigned char	colormap_size;
-	unsigned short	x_origin, y_origin, width, height;
-	unsigned char	pixel_size, attributes;
-};
-
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height)
-{
-	int		columns, rows, numPixels;
-	byte	*buf_p;
-	byte	*buffer;
-	TargaHeader	targa_header;
-	byte	*dataStart;
-
-	*pic = NULL;
-
-	//
-	// load the file
-	//
-	ri.FS_ReadFile ( ( char * ) name, (void **)&buffer);
-	if (!buffer) {
-		return false;
-	}
-
-	buf_p = buffer;
-
-	targa_header.id_length = *buf_p++;
-	targa_header.colormap_type = *buf_p++;
-	targa_header.image_type = *buf_p++;
-	
-	targa_header.colormap_index = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.colormap_length = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.colormap_size = *buf_p++;
-	targa_header.x_origin = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.y_origin = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.width = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.height = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.pixel_size = *buf_p++;
-	targa_header.attributes = *buf_p++;
-
-	if (targa_header.image_type!=1 )
-	{
-		Com_Error (ERR_DROP, "LoadTGAPalletteImage: Only type 1 (uncompressed pallettised) TGA images supported\n");
-	}
-
-	if ( targa_header.colormap_type == 0 )
-	{
-		Com_Error( ERR_DROP, "LoadTGAPalletteImage: colormaps ONLY supported\n" );
-	}
-
-	columns = targa_header.width;
-	rows = targa_header.height;
-	numPixels = columns * rows;
-
-	if (width)
-		*width = columns;
-	if (height)
-		*height = rows;
-
-	*pic = (unsigned char *) Z_Malloc (numPixels, TAG_TEMP_WORKSPACE, qfalse );
-	if (targa_header.id_length != 0)
-	{
-		buf_p += targa_header.id_length;  // skip TARGA image comment
-	}
-	dataStart = buf_p + (targa_header.colormap_length * (targa_header.colormap_size / 4));
-	memcpy(*pic, dataStart, numPixels);
-	ri.FS_FreeFile (buffer);
-
-	return true;
-}
-
 // My TGA loader...
 //
 //---------------------------------------------------
@@ -426,7 +347,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 					}
 				}
 			}
-			breakOut:;
+		breakOut:;
 		}
 	}
 

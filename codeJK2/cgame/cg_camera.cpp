@@ -432,8 +432,6 @@ CGCam_Follow
 
 void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 {
-	int len;
-
 	//Clear any previous
 	CGCam_FollowDisable();
 
@@ -456,10 +454,8 @@ void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 	client_camera.info_state |= CAMERA_FOLLOWING;
 	client_camera.info_state &= ~CAMERA_PANNING;
 
-	len = strlen(cameraGroup);
-	strncpy( client_camera.cameraGroup, cameraGroup, sizeof(client_camera.cameraGroup) );
 	//NULL terminate last char in case they type a name too long
-	client_camera.cameraGroup[len] = 0;
+	Q_strncpyz( client_camera.cameraGroup, cameraGroup, sizeof( client_camera.cameraGroup ) );
 
 	if ( speed )
 	{
