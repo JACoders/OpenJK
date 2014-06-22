@@ -1408,16 +1408,16 @@ int BG_VehicleGetIndex( const char *vehicleName )
 //with a $ in front of it.
 //we are expected to then get the model for the
 //vehicle and stomp over modelname with it.
-void BG_GetVehicleModelName(char *modelname, int len)
+void BG_GetVehicleModelName(char *modelName, const char *vehicleName, size_t len)
 {
-	char *vehName = &modelname[1];
+	const char *vehName = &vehicleName[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
-	assert(modelname[0] == '$');
+	assert(vehicleName[0] == '$');
 
 	if (vIndex == VEHICLE_NONE)
 		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
 
-	Q_strncpyz( modelname, g_vehicleInfo[vIndex].model, len );
+	Q_strncpyz( modelName, g_vehicleInfo[vIndex].model, len );
 }
 
 void BG_GetVehicleSkinName(char *skinname, int len)
