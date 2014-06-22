@@ -6899,7 +6899,7 @@ int CG_HandleAppendedSkin(char *modelName)
 }
 
 //Create a temporary ghoul2 instance and get the gla name so we can try loading animation data and sounds.
-void BG_GetVehicleModelName(char *modelname, int len);
+void BG_GetVehicleModelName(char *modelName, const char *vehicleName, size_t len);
 void BG_GetVehicleSkinName(char *skinname, int len);
 
 void CG_CacheG2AnimInfo(char *modelName)
@@ -6915,7 +6915,7 @@ void CG_CacheG2AnimInfo(char *modelName)
 
 	if (modelName[0] == '$')
 	{ //it's a vehicle name actually, let's precache the whole vehicle
-		BG_GetVehicleModelName(useModel, sizeof( useModel ) );
+		BG_GetVehicleModelName(useModel, useModel, sizeof( useModel ) );
 		BG_GetVehicleSkinName(useSkin, sizeof( useSkin ) );
 		if ( useSkin[0] )
 		{ //use a custom skin
@@ -7077,7 +7077,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			//attach the handles for fx cgame-side
 			CG_RegisterVehicleAssets(cent->m_pVehicle);
 
-			BG_GetVehicleModelName(modelName, sizeof( modelName ) );
+			BG_GetVehicleModelName(modelName, modelName, sizeof( modelName ) );
 			if (cent->m_pVehicle->m_pVehicleInfo->skin &&
 				cent->m_pVehicle->m_pVehicleInfo->skin[0])
 			{ //use a custom skin
