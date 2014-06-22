@@ -432,7 +432,7 @@ void main()
 
 	vec3 cubeLightColor = textureCubeLod(u_CubeMap, R + parallax, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
 
-	gl_FragColor.rgb = cubeLightColor * reflectance;
+	gl_FragColor.rgb += cubeLightColor * reflectance;
   #endif
 
   #if defined(USE_PRIMARY_LIGHT)
