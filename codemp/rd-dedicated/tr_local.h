@@ -1777,12 +1777,6 @@ typedef enum {
 } renderCommand_t;
 
 
-// these are sort of arbitrary limits.
-// the limits apply to the sum of all scenes in a frame --
-// the main view, all the 3D icons, etc
-#define	MAX_POLYS		600
-#define	MAX_POLYVERTS	3000
-
 // all of the information needed by the back end must be
 // contained in a backEndData_t.
 typedef struct backEndData_s {
