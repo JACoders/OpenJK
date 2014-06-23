@@ -488,8 +488,8 @@ void R_Init( void ) {
 	}
 	R_Register();
 
-	max_polys = std::min<int>( r_maxpolys->integer, DEFAULT_MAX_POLYS );
-	max_polyverts = std::min<int>( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
+	max_polys = (std::min)( r_maxpolys->integer, DEFAULT_MAX_POLYS );
+	max_polyverts = (std::min)( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
 	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
