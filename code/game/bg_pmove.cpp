@@ -3496,9 +3496,12 @@ static void PM_CrashLandDamage( int damage )
 			damage = 1000;
 			dflags |= DAMAGE_DIE_ON_IMPACT;
 		}
-		else if ( !(pm->gent->flags&FL_NO_IMPACT_DMG) )
+		else
 		{
 			damage = PM_DamageForDelta( damage );
+
+			if ( (pm->gent->flags&FL_NO_IMPACT_DMG) )
+				return;
 		}
 
 		if ( damage )
