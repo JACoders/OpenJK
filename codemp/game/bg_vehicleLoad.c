@@ -1417,7 +1417,8 @@ void BG_GetVehicleModelName(char *modelname, int len)
 	if (vIndex == VEHICLE_NONE)
 		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
 
-	Q_strncpyz( modelname, g_vehicleInfo[vIndex].model, len );
+	// zyk: changed to this function because Q_strncpyz was not working in this case
+	strcpy( modelname, g_vehicleInfo[vIndex].model );
 }
 
 void BG_GetVehicleSkinName(char *skinname, int len)
