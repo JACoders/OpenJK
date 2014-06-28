@@ -9,6 +9,7 @@
 #include "qcommon/stringed_ingame.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
+#include "cl_lan.h"
 #include "snd_local.h"
 
 #ifndef _WIN32
@@ -2561,6 +2562,32 @@ void CL_StopVideo_f( void )
 	CL_CloseAVI( );
 }
 
+static void CL_AddFavorite_f( void ) {
+	const bool connected = (cls.state == CA_ACTIVE) && !clc.demoplaying;
+	const int argc = Cmd_Argc();
+	if ( !connected && argc != 2 ) {
+		Com_Printf( "syntax: addFavorite <ip or hostname>\n" );
+		return;
+	}
+
+	const char *server = (argc == 2) ? Cmd_Argv( 1 ) : NET_AdrToString( clc.serverAddress );
+	const int status = LAN_AddFavAddr( server );
+	switch ( status ) {
+	case -1:
+		Com_Printf( "error adding favorite server: too many favorite servers\n" );
+		break;
+	case 0:
+		Com_Printf( "error adding favorite server: server already exists\n" );
+		break;
+	case 1:
+		Com_Printf( "successfully added favorite server \"%s\"\n", server );
+		break;
+	default:
+		Com_Printf( "unknown error (%i) adding favorite server\n", status );
+		break;
+	}
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2743,6 +2770,7 @@ void CL_Init( void ) {
 	//
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("globalservers", CL_GlobalServers_f);
+	Cmd_AddCommand( "addFavorite", CL_AddFavorite_f );
 	Cmd_AddCommand ("record", CL_Record_f);
 	Cmd_AddCommand ("demo", CL_PlayDemo_f);
 	Cmd_SetCommandCompletionFunc( "demo", CL_CompleteDemoName );
@@ -2831,6 +2859,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("reconnect");
 	Cmd_RemoveCommand ("localservers");
 	Cmd_RemoveCommand ("globalservers");
+	Cmd_RemoveCommand( "addFavorite" );
 	Cmd_RemoveCommand ("rcon");
 	Cmd_RemoveCommand ("ping");
 	Cmd_RemoveCommand ("serverstatus");
