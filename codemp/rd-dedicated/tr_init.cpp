@@ -434,7 +434,7 @@ Ghoul2 Insert End
 	if (ri->Sys_LowPhysicalMemory() )
 		ri->Cvar_Set("r_modelpoolmegs", "0");
 
-	for ( int i = 0; i < numCommands; i++ )
+	for ( size_t i = 0; i < numCommands; i++ )
 		ri->Cmd_AddCommand( commands[i].cmd, commands[i].func );
 }
 
@@ -510,7 +510,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 //	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
 
-	for ( int i = 0; i < numCommands; i++ )
+	for ( size_t i = 0; i < numCommands; i++ )
 		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	tr.registered = qfalse;
