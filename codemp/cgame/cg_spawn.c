@@ -227,6 +227,7 @@ void SP_misc_skyportal_orient( void ) {
 	if( cg_skyOri )
 		trap->Print( S_COLOR_YELLOW "WARNING: multiple misc_skyportal_orients found.\n" );
 
+	cg_skyOri = qtrue;
 	CG_SpawnVector( "origin", "0 0 0", cg_skyOriPos );
 	CG_SpawnFloat( "modelscale", "0", &cg_skyOriScale );
 }
@@ -253,10 +254,10 @@ typedef struct spawn_s {
 /* This array MUST be sorted correctly by alphabetical name field */
 /* for conformity, use lower-case names too */
 spawn_t spawns [] = {
-	{ "misc_model_static",		SP_misc_model_static		  },
-	{ "misc_skyportal",			SP_misc_skyportal		  },
-	{ "misc_skyportal_orient",	SP_misc_skyportal_orient	  },
-	{ "misc_weather_zone",		SP_misc_weather_zone		  },
+	{ "misc_model_static",		SP_misc_model_static		},
+	{ "misc_skyportal",			SP_misc_skyportal			},
+	{ "misc_skyportal_orient",	SP_misc_skyportal_orient	},
+	{ "misc_weather_zone",		SP_misc_weather_zone		},
 };
 
 /*
