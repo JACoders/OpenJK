@@ -3404,7 +3404,6 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	return FinishShader();
 }
 
-static void ScanAndLoadShaderFiles( const char *path );
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage )
 {
 	char		strippedName[MAX_QPATH];
@@ -3815,7 +3814,7 @@ static void ScanAndLoadShaderFiles( void )
 
 
 		if (buffers[i])
-			sum += summand;		
+			sum += summand;
 	}
 
 	// build single large buffer
