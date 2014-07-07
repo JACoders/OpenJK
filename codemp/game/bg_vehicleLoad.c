@@ -263,7 +263,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 			break;
 		}
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 	if ( !p )
 	{
@@ -925,7 +925,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 			break;
 		}
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 
 	if ( !p )

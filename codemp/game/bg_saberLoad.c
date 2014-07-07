@@ -2033,7 +2033,7 @@ qboolean WP_SaberParseParms( const char *saberName, saberInfo_t *saber ) {
 		if ( !Q_stricmp( token, useSaber ) )
 			break;
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 
 	// even the default saber isn't found?
@@ -2101,7 +2101,7 @@ qboolean WP_SaberParseParm( const char *saberName, const char *parmname, char *s
 			break;
 		}
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 	if ( !p )
 	{
@@ -2335,7 +2335,7 @@ void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *
 		//this is a saber name
 		if ( !WP_SaberValidForPlayerInMP( saberName ) )
 		{
-			SkipBracedSection( &p );
+			SkipBracedSection( &p, 0 );
 			continue;
 		}
 
@@ -2362,7 +2362,7 @@ void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *
 			}
 		}
 		//skip the whole braced section and move on to the next entry
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 	//null terminate the list so the UI code knows where to stop listing them
 	singleHilts[numSingleHilts] = NULL;

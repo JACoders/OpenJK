@@ -457,7 +457,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 			break;
 		}
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 
 	if ( !p )
@@ -623,7 +623,7 @@ void NPC_Precache ( gentity_t *spawner )
 			break;
 		}
 
-		SkipBracedSection( &p );
+		SkipBracedSection( &p, 0 );
 	}
 
 	if ( !p )
@@ -1121,7 +1121,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				break;
 			}
 
-			SkipBracedSection( &p );
+			SkipBracedSection( &p, 0 );
 		}
 		if ( !p )
 		{
