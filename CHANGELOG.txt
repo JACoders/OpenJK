@@ -43,7 +43,6 @@ Key: - removed, + added, * modified
 [SP/MP] * Tweaks to the cvar code to make it more strict in terms of read only/cheats/init. Fixes a lot of broken rules with cvars.
 [MP] + Cheats are now defaulted to 1 in menu. Do not be alarmed, starting normally will disable them or connecting to a non-cheat server. This allows cheats to work properly while playing back demos.
 [SP/MP] * Fixed cvar commands that allow you to "cg_thirdPerson !" prevent you from typing out longer strings starting with a ! as the value.
-[MP] + Optimized shader loader.  This also fixes some cases where duplicate shaders that are wrong were being used.
 [SP/MP] * FX Flashes now properly scale to fov and window aspect.
 [MP] + Add sv_lanForceRate (Defaults to 1) Feature was already enabled, but not toggleable.
 [MP] * Timescale frametime fixes.  Frametime < 1 is no longer possible (bad things happen)
