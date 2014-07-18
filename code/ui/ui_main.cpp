@@ -123,6 +123,11 @@ static void		UI_NormalThrowSelection ( void );
 static void		UI_HighLightThrowSelection( void );
 static void		UI_ClearInventory ( void );
 static void		UI_GiveInventory ( const int itemIndex, const int amount );
+static void		UI_AddInventorySelection ( const int inventoryIndex, const int amount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile );
+static void		UI_RemoveInventorySelection ( const int inventoryIndex );
+static void		UI_HighLightInventorySelection ( const int selectionslot );
+static void		UI_NormalInventorySelection ( const int selectionslot );
+static void		UI_InitInventorySelect( void );
 static void		UI_ForcePowerWeaponsButton(qboolean activeFlag);
 static void		UI_UpdateCharacterSkin( void );
 static void		UI_UpdateCharacter( qboolean changedModel );
@@ -1444,7 +1449,84 @@ static qboolean UI_RunMenuScript ( const char **args )
 			String_Parse(args, &amount);
 			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
 		}
-		else if (Q_stricmp(name, "updatefightingstyle") == 0) 
+		else if (Q_stricmp(name, "addinventoryselection") == 0)
+		{
+			const char *inventoryIndex;
+			String_Parse(args, &inventoryIndex);
+			if (!inventoryIndex)
+			{
+				return qfalse;
+			}
+						
+			const char *amount;
+			String_Parse(args, &amount);
+			if (!amount)
+			{
+				return qfalse;
+			}
+			
+			const char *itemName;
+			String_Parse(args, &itemName);
+			if (!itemName)
+			{
+				return qfalse;
+			}
+			
+			const char *litItemName;
+			String_Parse(args, &litItemName);
+			if (!litItemName)
+			{
+				return qfalse;
+			}
+			
+			const char *backgroundName;
+			String_Parse(args, &backgroundName);
+			if (!backgroundName)
+			{
+				return qfalse;
+			}
+			
+			const char *soundfile = NULL;
+			String_Parse(args, &soundfile);
+			
+			UI_AddInventorySelection(atoi(inventoryIndex),atoi(amount),itemName,litItemName, backgroundName, soundfile);
+		}
+		else if (Q_stricmp(name, "removeinventoryselection") == 0)
+		{
+			const char *inventoryIndex;
+			String_Parse(args, &inventoryIndex);
+			if (inventoryIndex)
+			{
+				UI_RemoveInventorySelection(atoi(inventoryIndex));
+			}
+		}
+		else if (Q_stricmp(name, "normalinventoryselection") == 0)
+		{
+			const char *slotIndex;
+			String_Parse(args, &slotIndex);
+			if (!slotIndex)
+			{
+				return qfalse;
+			}
+			
+			UI_NormalInventorySelection(atoi(slotIndex));
+		}
+		else if (Q_stricmp(name, "highlightinventoryselection") == 0)
+		{
+			const char *slotIndex;
+			String_Parse(args, &slotIndex);
+			if (!slotIndex)
+			{
+				return qfalse;
+			}
+			
+			UI_HighLightInventorySelection(atoi(slotIndex));
+		}
+		else if (Q_stricmp(name, "initinventoryselect") == 0)
+		{
+			UI_InitInventorySelect();
+		}
+		else if (Q_stricmp(name, "updatefightingstyle") == 0)
 		{
 			UI_UpdateFightingStyle();
 		}
@@ -3655,7 +3737,22 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 		case UI_ALLMAPS_SELECTION://saved game thumbnail
 
 			int levelshot;
-			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+			levelshot = 0;
+			if (s_savedata[s_savegame.currentLine].currentSaveFileName)
+			{
+				//To avoid error messages when these screenshots are missing
+				fileHandle_t fp;
+				ui.FS_FOpenFile(va( "saves/screenshots/%s.jpg", s_savedata[s_savegame.currentLine].currentSaveFileName ), &fp, FS_READ);
+				if (fp)
+				{
+					ui.FS_FCloseFile(fp);
+					levelshot = ui.R_RegisterShaderNoMip( va( "saves/screenshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileName ) );
+				}
+			}
+			if (!levelshot)
+			{
+				levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+			}
 			if (levelshot)
 			{
 				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
@@ -3921,6 +4018,8 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
+	ui.PrecacheScreenshot();
+
 	Menus_CloseByName("mainhud");
 
 	if (menuID)
@@ -5951,6 +6050,345 @@ static void	UI_HighLightThrowSelection ( void )
 
 	item = (itemDef_s *) Menu_FindItemByName( menu, "chosenthrowweapon_icon" );
 	item->window.background = uiInfo.litThrowableIcon;
+}
+
+//. Find inventory allocation screen NEXT button and make active/inactive
+static void UI_InventoryAllocBeginButton(qboolean activeFlag)
+{
+	menuDef_t	*menu;
+	menu = Menu_GetFocused();	// Get current menu
+	
+	if (!menu)
+	{
+		return;
+	}
+		
+	// Find begin button
+	itemDef_t	*item;
+	item = Menu_FindItemByName(menu, "nextbutton");
+	
+	if (item)
+	{
+		// Make it active
+		if (activeFlag)
+		{
+			item->window.flags &= ~WINDOW_INACTIVE;
+		}
+		else
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+		}
+	}
+}
+
+// If we have both inventory items, turn on the begin mission button,
+static void UI_InventorySelectionsComplete( void )
+{
+	// We need two inventory items
+	if (( uiInfo.selectedInventory1 != NOWEAPON ) &&
+		( uiInfo.selectedInventory2 != NOWEAPON ))
+	{
+		UI_InventoryAllocBeginButton(qtrue);	// Turn it on
+	}
+	else
+	{
+		UI_InventoryAllocBeginButton(qfalse);	// Turn it off
+	}
+}
+
+// Update the player weapons with the chosen weapon
+static void	UI_AddInventorySelection ( const int inventoryIndex, const int amount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile )
+{
+	itemDef_s  *item, *iconItem,*litIconItem;
+	menuDef_t	*menu;
+	
+	menu = Menu_GetFocused();	// Get current menu
+	
+	if (!menu)
+	{
+		return;
+	}
+	
+	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
+	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
+	
+	const char *chosenItemName, *chosenButtonName;
+	
+	// has this weapon already been chosen?
+	if (inventoryIndex == uiInfo.selectedInventory1)
+	{
+		UI_RemoveInventorySelection ( 1 );
+		return;
+	}
+	else if (inventoryIndex == uiInfo.selectedInventory2)
+	{
+		UI_RemoveInventorySelection ( 2 );
+		return;
+	}
+	
+	// See if either slot is empty
+	if ( uiInfo.selectedInventory1 == NOWEAPON )
+	{
+		chosenItemName = "choseninventory1_icon";
+		chosenButtonName = "choseninventory1_button";
+		uiInfo.selectedInventory1 = inventoryIndex;
+		
+		memcpy( uiInfo.selectedInventory1ItemName,hexBackground,sizeof(uiInfo.selectedInventory1ItemName));
+		
+		//Save the lit and unlit icons for the selected weapon slot
+		uiInfo.litInventory1Icon = litIconItem->window.background;
+		uiInfo.unlitInventory1Icon = iconItem->window.background;
+		
+		uiInfo.inventory1ItemButton = uiInfo.runScriptItem;
+		uiInfo.inventory1ItemButton->descText = "@MENUS_CLICKREMOVE";
+	}
+	else if ( uiInfo.selectedWeapon2 == NOWEAPON )
+	{
+		chosenItemName = "choseninventory2_icon";
+		chosenButtonName = "choseninventory2_button";
+		uiInfo.selectedInventory2 = inventoryIndex;
+		
+		memcpy( uiInfo.selectedInventory2ItemName,hexBackground,sizeof(uiInfo.selectedInventory2ItemName));
+		
+		//Save the lit and unlit icons for the selected weapon slot
+		uiInfo.litInventory2Icon = litIconItem->window.background;
+		uiInfo.unlitInventory2Icon = iconItem->window.background;
+		
+		uiInfo.inventory2ItemButton = uiInfo.runScriptItem;
+		uiInfo.inventory2ItemButton->descText = "@MENUS_CLICKREMOVE";
+	}
+	else	// Both slots are used, can't add it.
+	{
+		return;
+	}
+	
+	item = (itemDef_s *) Menu_FindItemByName(menu, chosenItemName );
+	if ((item) && (iconItem))
+	{
+		item->window.background = iconItem->window.background;
+		item->window.flags |= WINDOW_VISIBLE;
+	}
+	
+	// Turn on chosenweapon button so player can unchoose the weapon
+	item = (itemDef_s *) Menu_FindItemByName(menu, chosenButtonName );
+	if (item)
+	{
+		item->window.background = iconItem->window.background;
+		item->window.flags |= WINDOW_VISIBLE;
+	}
+	
+	// Switch hex background to be 'on'
+	item = (itemDef_s *) Menu_FindItemByName(menu, hexBackground );
+	if (item)
+	{
+		item->window.foreColor[0] = 0;
+		item->window.foreColor[1] = 1;
+		item->window.foreColor[2] = 0;
+		item->window.foreColor[3] = 1;
+		
+	}
+	
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+	
+	// NOTE : this UIScript can now be run from outside the game, so don't
+	// return out here, just skip this part
+	if (cl)
+	{
+		// Add weapon
+		if (cl->gentity && cl->gentity->client)
+		{
+			playerState_t*	pState = cl->gentity->client;
+			
+			if ((inventoryIndex>0) && (inventoryIndex<MAX_INVENTORY))
+			{
+				pState->inventory[ inventoryIndex ] = amount;
+			}
+		}
+	}
+	
+	if( soundfile )
+	{
+		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );
+	}
+	
+	UI_InventorySelectionsComplete();	// Test to see if the mission begin button should turn on or off
+	
+	
+}
+
+
+// Update the player weapons with the chosen weapon
+static void UI_RemoveInventorySelection ( const int inventorySelectionIndex )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+	const char *chosenItemName, *chosenButtonName,*background;
+	int		inventoryIndex;
+	
+	menu = Menu_GetFocused();	// Get current menu
+	
+	// Which item has it?
+	if ( inventorySelectionIndex == 1 )
+	{
+		chosenItemName = "choseninventory1_icon";
+		chosenButtonName = "choseninventory1_button";
+		background = uiInfo.selectedInventory1ItemName;
+		inventoryIndex = uiInfo.selectedInventory1;
+		
+		if (uiInfo.inventory1ItemButton)
+		{
+			uiInfo.inventory1ItemButton->descText = "@MENUS_CLICKSELECT";
+			uiInfo.inventory1ItemButton = NULL;
+		}
+	}
+	else if ( inventorySelectionIndex == 2 )
+	{
+		chosenItemName = "choseninventory2_icon";
+		chosenButtonName = "choseninventory2_button";
+		background = uiInfo.selectedInventory2ItemName;
+		inventoryIndex = uiInfo.selectedInventory2;
+		
+		if (uiInfo.inventory2ItemButton)
+		{
+			uiInfo.inventory2ItemButton->descText = "@MENUS_CLICKSELECT";
+			uiInfo.inventory2ItemButton = NULL;
+		}
+	}
+	else
+	{
+		return;
+	}
+	
+	// Reset background of upper icon
+	item = (itemDef_s *) Menu_FindItemByName( menu, background );
+	if ( item )
+	{
+		item->window.foreColor[0] = 0.0f;
+		item->window.foreColor[1] = 0.5f;
+		item->window.foreColor[2] = 0.0f;
+		item->window.foreColor[3] = 1.0f;
+	}
+	
+	// Hide it icon
+	item = (itemDef_s *) Menu_FindItemByName( menu, chosenItemName );
+	if ( item )
+	{
+		item->window.flags &= ~WINDOW_VISIBLE;
+	}
+	
+	// Hide button
+	item = (itemDef_s *) Menu_FindItemByName( menu, chosenButtonName );
+	if ( item )
+	{
+		item->window.flags &= ~WINDOW_VISIBLE;
+	}
+	
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
+	
+	// NOTE : this UIScript can now be run from outside the game, so don't
+	// return out here, just skip this part
+	if (cl)	// No client, get out
+	{
+		
+		// Remove weapon
+		if (cl->gentity && cl->gentity->client)
+		{
+			playerState_t*	pState = cl->gentity->client;
+			
+			if ((inventoryIndex>=0) && (inventoryIndex<MAX_INVENTORY))
+			{
+				pState->inventory[ inventoryIndex ] = 0;
+			}
+		}
+		
+	}
+	
+	// Now do a little clean up
+	if ( inventorySelectionIndex == 1 )
+	{
+		uiInfo.selectedInventory1 = NOWEAPON;
+		memset(uiInfo.selectedInventory1ItemName,0,sizeof(uiInfo.selectedInventory1ItemName));
+	}
+	else if ( inventorySelectionIndex == 2 )
+	{
+		uiInfo.selectedInventory2 = NOWEAPON;
+		memset(uiInfo.selectedInventory2ItemName,0,sizeof(uiInfo.selectedInventory2ItemName));
+	}
+	
+	DC->startLocalSound(DC->registerSound("sound/interface/weapon_deselect.mp3", qfalse), CHAN_LOCAL );
+	
+	UI_InventorySelectionsComplete();	// Test to see if the mission begin button should turn on or off
+	
+	
+}
+
+static void	UI_NormalInventorySelection ( const int selectionslot )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+	
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+	
+	if (selectionslot == 1)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "choseninventory1_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.unlitInventory1Icon;
+		}
+	}
+	
+	if (selectionslot == 2)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "choseninventory2_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.unlitInventory2Icon;
+		}
+	}
+}
+
+static void	UI_HighLightInventorySelection ( const int selectionslot )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+	
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+	
+	if (selectionslot == 1)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "choseninventory1_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.litInventory1Icon;
+		}
+	}
+	
+	if (selectionslot == 2)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "choseninventory2_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.litInventory2Icon;
+		}
+	}
+}
+
+static void UI_InitInventorySelect( void )
+{
+	UI_InventoryAllocBeginButton(qfalse);
+	uiInfo.selectedInventory1 = NOWEAPON;
+	uiInfo.selectedInventory2 = NOWEAPON;
 }
 
 static void UI_GetSaberCvars ( void )

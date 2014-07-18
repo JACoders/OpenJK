@@ -260,6 +260,8 @@ void CL_InitUI( void ) {
 	uii.R_SetColor				= re.SetColor;
 	uii.R_DrawStretchPic		= re.DrawStretchPic;
 	uii.UpdateScreen			= SCR_UpdateScreen;
+	
+	uii.PrecacheScreenshot		= SCR_PrecacheScreenshot;
 
 	uii.R_LerpTag				= re.LerpTag;
 

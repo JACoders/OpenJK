@@ -241,6 +241,7 @@ typedef struct {
 	unsigned int (*AnyLanguage_ReadCharFromString2)( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */);
 
 	// Misc
+	void		(*SaveJPG)( const char * filename, int quality, int image_width, int image_height, byte *image_buffer, int padding );
 	void	(*R_InitWorldEffects)(void);
 	void	(*R_ClearStuffToStopGhoul2CrashingThings)(void);
 	qboolean (*R_inPVS)(vec3_t p1, vec3_t p2);
