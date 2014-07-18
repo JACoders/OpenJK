@@ -3186,7 +3186,7 @@ void ClientThink_real( gentity_t *ent ) {
 				duelAgainst->client->ps.duelTime = 0;
 			}
 		}
-		else
+		else //loda fixme, how to predict this
 		{
 			client->ps.speed = 0;
 			client->ps.basespeed = 0;

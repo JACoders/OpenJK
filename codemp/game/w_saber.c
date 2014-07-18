@@ -6945,7 +6945,7 @@ qboolean saberCheckKnockdown_Thrown(gentity_t *saberent, gentity_t *saberOwner, 
 	{
 		tossIt = qtrue;
 	}
-	else if (defenLevel == throwLevel && Q_irand(1, 10) <= 4)
+	else if (defenLevel == throwLevel && Q_irand(1, 10) <= 4) //loda fixme, how do we want to deal with saberdrop ? its lame, make FP based or?
 	{
 		tossIt = qtrue;
 	}

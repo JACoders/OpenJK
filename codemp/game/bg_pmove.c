@@ -7982,8 +7982,10 @@ if (pm->ps->duelInProgress)
 			pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
 		}
 #endif
-		pm->cmd.weapon = WP_SABER;
-		pm->ps->weapon = WP_SABER;
+		else {
+			pm->cmd.weapon = WP_SABER;
+			pm->ps->weapon = WP_SABER;
+		}
 
 		if (pm->ps->isJediMaster || pm->ps->trueJedi)
 		{
