@@ -1991,7 +1991,7 @@ void PrintStats(int gametype) //JAPRO STATS
 			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Accuracy     Name^7\n" );
 	}
 	else {//ctf
-		if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
+		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
 			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Name^7\n" );
 		else
 			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Accuracy     Name^7\n" );
