@@ -4583,9 +4583,10 @@ void ClientEndFrame( gentity_t *ent ) {
 		frames = 2;
 
 		// if they missed more than two in a row, show the phone jack
-		if (g_lagIcon.integer)
+		if (g_lagIcon.integer) {
 			ent->client->ps.eFlags |= EF_CONNECTION;
-		ent->s.eFlags |= EF_CONNECTION;
+			ent->s.eFlags |= EF_CONNECTION;
+		}
 	}
 
 	// did the client miss any frames?
