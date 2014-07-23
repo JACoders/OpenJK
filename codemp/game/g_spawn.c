@@ -352,6 +352,7 @@ void SP_NPC_MorganKatarn( gentity_t *self );
 void SP_NPC_Jedi( gentity_t *self );
 void SP_NPC_Prisoner( gentity_t *self );
 void SP_NPC_Rebel( gentity_t *self );
+void SP_NPC_Human_Merc( gentity_t *self );
 void SP_NPC_Stormtrooper( gentity_t *self );
 void SP_NPC_StormtrooperOfficer( gentity_t *self );
 void SP_NPC_Snowtrooper( gentity_t *self);
@@ -589,6 +590,7 @@ spawn_t	spawns[] = {
 	{ "npc_droid_sentry",					SP_NPC_Droid_Sentry },
 	{ "npc_galak",							SP_NPC_Galak },
 	{ "npc_gran",							SP_NPC_Gran },
+	{ "npc_human_merc",						SP_NPC_Human_Merc },
 	{ "npc_imperial",						SP_NPC_Imperial },
 	{ "npc_impworker",						SP_NPC_ImpWorker },
 	{ "npc_jan",							SP_NPC_Jan },
