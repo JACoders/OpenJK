@@ -2820,8 +2820,10 @@ void SP_NPC_MorganKatarn( gentity_t *self)
 //ALLIES
 //=============================================================================================
 
-/*QUAKED NPC_Jedi(1 0 0) (-16 -16 -24) (16 16 40) TRAINER x x x CEILING CINEMATIC NOTSOLID STARTINSOLID SHY
+/*QUAKED NPC_Jedi(1 0 0) (-16 -16 -24) (16 16 40) TRAINER MASTER RANDOM x CEILING CINEMATIC NOTSOLID STARTINSOLID SHY
 TRAINER - Special Jedi- instructor
+MASTER - Special Jedi- master
+RANDOM - creates a random Jedi student using the available player models/skins
 CEILING - Sticks to the ceiling until he sees an enemy or takes pain
 CINEMATIC - Will spawn with no default AI (BS_CINEMATIC)
 NOTSOLID - Starts not solid
@@ -2834,7 +2836,54 @@ void SP_NPC_Jedi( gentity_t *self)
 {
 	if(!self->NPC_type)
 	{
-		if ( self->spawnflags & 1 )
+		if ( self->spawnflags & 4 )
+		{//random!
+			switch ( Q_irand( 0, 11 ) )
+			{
+			case 0:
+				self->NPC_type = "jedi_hf1";
+				break;
+			case 1:
+				self->NPC_type = "jedi_hf2";
+				break;
+			case 2:
+				self->NPC_type = "jedi_hm1";
+				break;
+			case 3:
+				self->NPC_type = "jedi_hm2";
+				break;
+			case 4:
+				self->NPC_type = "jedi_kdm1";
+				break;
+			case 5:
+				self->NPC_type = "jedi_kdm2";
+				break;
+			case 6:
+				self->NPC_type = "jedi_rm1";
+				break;
+			case 7:
+				self->NPC_type = "jedi_rm2";
+				break;
+			case 8:
+				self->NPC_type = "jedi_tf1";
+				break;
+			case 9:
+				self->NPC_type = "jedi_tf2";
+				break;
+			case 10:
+				self->NPC_type = "jedi_zf1";
+				break;
+			case 11:
+			default://just in case
+				self->NPC_type = "jedi_zf2";
+				break;
+			}
+		}
+		else if ( self->spawnflags & 2 )
+		{
+			self->NPC_type = "jedimaster";
+		}
+		else if ( self->spawnflags & 1 )
 		{
 			self->NPC_type = "jeditrainer";
 		}
