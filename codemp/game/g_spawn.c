@@ -410,6 +410,7 @@ void SP_waypoint_navgoal_4 (gentity_t *ent);
 void SP_waypoint_navgoal_2 (gentity_t *ent);
 void SP_waypoint_navgoal_1 (gentity_t *ent);
 
+void SP_CreateWind( gentity_t *ent );
 void SP_CreateSpaceDust( gentity_t *ent );
 void SP_CreateSnow( gentity_t *ent );
 void SP_CreateRain( gentity_t *ent );
@@ -514,6 +515,7 @@ spawn_t	spawns[] = {
 	{ "fx_runner",							SP_fx_runner },
 	{ "fx_snow",							SP_CreateSnow },
 	{ "fx_spacedust",						SP_CreateSpaceDust },
+	{ "fx_wind",							SP_CreateWind },
 	{ "gametype_item",						SP_gametype_item },
 	{ "info_camp",							SP_info_camp },
 	{ "info_jedimaster_start",				SP_info_jedimaster_start },
