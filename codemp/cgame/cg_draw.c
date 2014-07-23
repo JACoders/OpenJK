@@ -8286,6 +8286,9 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		VectorMA( cg.refdef.vieworg, -separation, cg.refdef.viewaxis[1], cg.refdef.vieworg );
 	}
 
+	if ( cg.snap->ps.fd.forcePowersActive & (1 << FP_SEE) )
+		cg.refdef.rdflags |= RDF_ForceSightOn;
+
 	cg.refdef.rdflags |= RDF_DRAWSKYBOX;
 
 	CG_DrawMiscStaticModels();
