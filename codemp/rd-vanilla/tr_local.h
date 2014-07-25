@@ -1412,6 +1412,11 @@ void		R_InitShaders(qboolean server);
 void		R_ShaderList_f( void );
 void    R_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
 
+//
+// tr_arb.c
+//
+void ARB_InitGlowShaders( void );
+
 
 /*
 ====================================================================

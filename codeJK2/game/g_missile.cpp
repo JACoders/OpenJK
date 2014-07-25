@@ -262,6 +262,9 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	}
 	VectorNormalize( bounce_dir );
 	VectorScale( bounce_dir, speed, missile->s.pos.trDelta );
+#ifdef _DEBUG
+		assert( !Q_isnan(missile->s.pos.trDelta[0])&&!Q_isnan(missile->s.pos.trDelta[1])&&!Q_isnan(missile->s.pos.trDelta[2]));
+#endif// _DEBUG
 	missile->s.pos.trTime = level.time - 10;		// move a bit on the very first frame
 	VectorCopy( missile->currentOrigin, missile->s.pos.trBase );
 	if ( missile->s.weapon != WP_SABER )
@@ -552,6 +555,17 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		assert(0&&"missile hit itself!!!");
 		return;
 	}
+	if ( trace->plane.normal[0] == 0.0f &&
+		 trace->plane.normal[1] == 0.0f &&
+		 trace->plane.normal[2] == 0.0f
+		)
+	{//model moved into missile in flight probably...
+		trace->plane.normal[0] = -ent->s.pos.trDelta[0];
+		trace->plane.normal[1] = -ent->s.pos.trDelta[1];
+		trace->plane.normal[2] = -ent->s.pos.trDelta[2];
+		VectorNormalize(trace->plane.normal);
+	}
+
 	if ( ent->owner && (other->takedamage||other->client) )
 	{
 		if ( !ent->lastEnemy || ent->lastEnemy == ent->owner )

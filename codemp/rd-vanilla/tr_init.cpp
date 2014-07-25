@@ -1222,7 +1222,7 @@ Ghoul2 Insert End
 	ri->Cvar_CheckRange( r_aviMotionJpegQuality, 10, 100, qtrue );
 	ri->Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
 
-	for ( int i = 0; i < numCommands; i++ )
+	for ( size_t i = 0; i < numCommands; i++ )
 		ri->Cmd_AddCommand( commands[i].cmd, commands[i].func );
 }
 
@@ -1332,7 +1332,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 //	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
-	for ( int i = 0; i < numCommands; i++ )
+	for ( size_t i = 0; i < numCommands; i++ )
 		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	if ( r_DynamicGlow && r_DynamicGlow->integer )
