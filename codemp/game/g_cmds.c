@@ -4973,6 +4973,7 @@ void got_all_amulets(gentity_t *ent)
 {
 	if (number_of_amulets(ent) == 3)
 	{
+		ent->client->pers.universe_quest_objective_control = -6;
 		ent->client->pers.universe_quest_timer = level.time + 3000;
 		ent->client->pers.universe_quest_messages = 199;
 	}
