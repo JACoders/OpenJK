@@ -7377,7 +7377,7 @@ void G_RunFrame( int levelTime ) {
 							if (ent->client->pers.universe_quest_messages < 40 && npc_ent)
 							{ // zyk: tests npc_ent so if for some reason the npc dont get spawned, the server tries to spawn it again
 								ent->client->pers.universe_quest_messages++;
-								ent->client->pers.universe_quest_timer = level.time + 1500;
+								ent->client->pers.universe_quest_timer = level.time + 1200;
 
 								// zyk: sets the universe_quest_objective_control based in universe_quest_messages value so each npc can say a different message. If its 35 (protocol npc), sets the player id
 								if (ent->client->pers.universe_quest_messages == 35)
@@ -7406,7 +7406,7 @@ void G_RunFrame( int levelTime ) {
 							}
 							else
 							{
-								ent->client->pers.universe_quest_timer = level.time + 2000;
+								ent->client->pers.universe_quest_timer = level.time + 3000;
 							}
 						}
 					}
