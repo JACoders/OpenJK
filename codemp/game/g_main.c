@@ -1977,18 +1977,22 @@ void PrintStats(int gametype) //JAPRO STATS
 {
 	int			i;
 	char		msg[1024-128] = {0};
+	qboolean	showAccuracy = qtrue;
 	gclient_t	*cl;
 
 	if (gametype != GT_CTF && gametype != GT_TEAM)
 		return;
 
+	if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))
+		showAccuracy = qfalse;
+
 	trap->SendServerCommand(-1, "print \"\n\"");
 
 	if (gametype == GT_TEAM) {//tffa
-		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Name^7\n" );
-		else
+		if (showAccuracy)//Weps disabled?
 			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Accuracy     Name^7\n" );
+		else
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Name^7\n" );
 	}
 	else {//ctf
 		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
@@ -2013,7 +2017,7 @@ void PrintStats(int gametype) //JAPRO STATS
 			char accuracyStr[32] = {0};
 			float accuracy = 0;
 
-			if (g_weaponDisable.integer < (1<<WP_CONCUSSION)) {//Weps enabled?
+			if (showAccuracy) {//Weps enabled?
 				if(cl->accuracy_shots) 
 					accuracy = (float)cl->accuracy_hits * 100.0f / (float)cl->accuracy_shots;
 				Com_sprintf(accuracyStr, sizeof(accuracyStr), "%.1f", accuracy);
@@ -2035,10 +2039,10 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strSuicides, sizeof(strSuicides), "%i", cl->ps.fd.suicides);
 				Com_sprintf(strTK, sizeof(strTK), "%i", cl->pers.stats.teamKills);
 				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
-				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
-					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, strName);
-				else {
+				if (showAccuracy)//Weps disabled?
 					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%-13s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+				else {
+					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}
 			}
 			else {
@@ -2050,10 +2054,10 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strCaps, sizeof(strCaps), "%i", cl->pers.teamState.captures);
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
-				if (!(g_weaponDisable.integer < (1<<WP_CONCUSSION)))//Weps disabled?
-					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strName);
-				else {
+				if (showAccuracy)
 					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-13s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
+				else {
+					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strName);
 				}
 			}
 
