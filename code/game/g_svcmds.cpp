@@ -307,423 +307,30 @@ static void Svcmd_SaberColor_f()
 	}
 }
 
-static void Svcmd_ForceJump_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forceJump level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] );
-		gi.Printf( "Usage:  setForceJump <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_LEVITATION );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_LEVITATION );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
-	}
-}
+struct SetForceCmd {
+	const char *desc;
+	const char *cmdname;
+	const int maxlevel;
+};
 
-static void Svcmd_SaberThrow_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current saberThrow level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] );
-		gi.Printf( "Usage:  setSaberThrow <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_SABERTHROW );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_SABERTHROW );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABERTHROW] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForceHeal_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forceHeal level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_HEAL] );
-		gi.Printf( "Usage:  forceHeal <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_HEAL );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_HEAL );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_HEAL] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_HEAL] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_HEAL] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_HEAL] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_HEAL] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForcePush_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forcePush level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_PUSH] );
-		gi.Printf( "Usage:  forcePush <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_PUSH );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_PUSH );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_PUSH] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_PUSH] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_PUSH] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_PUSH] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForcePull_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forcePull level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_PULL] );
-		gi.Printf( "Usage:  forcePull <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_PULL );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_PULL );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_PULL] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_PULL] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_PULL] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_PULL] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_PULL] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForceSpeed_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forceSpeed level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_SPEED] );
-		gi.Printf( "Usage:  forceSpeed <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_SPEED );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_SPEED );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_SPEED] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_SPEED] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SPEED] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_SPEED] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SPEED] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForceGrip_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forceGrip level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_GRIP] );
-		gi.Printf( "Usage:  forceGrip <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_GRIP );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_GRIP );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_GRIP] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_GRIP] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_GRIP] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_ForceLightning_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current forceLightning level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] );
-		gi.Printf( "Usage:  forceLightning <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_LIGHTNING );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_LIGHTNING );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_MindTrick_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current mindTrick level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] );
-		gi.Printf( "Usage:  mindTrick <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_TELEPATHY );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_TELEPATHY );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] > FORCE_LEVEL_4 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_TELEPATHY] = FORCE_LEVEL_4;
-	}
-}
-
-static void Svcmd_SaberDefense_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current saberDefense level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] );
-		gi.Printf( "Usage:  saberDefense <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_SABER_DEFENSE );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_SABER_DEFENSE );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_3 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABER_DEFENSE] = FORCE_LEVEL_3;
-	}
-}
-
-static void Svcmd_SaberOffense_f( void )
-{
-	if ( !&g_entities[0] || !g_entities[0].client )
-	{
-		return;
-	}
-	if ( !g_cheats->integer ) 
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-		return;
-	}
-	const char *newVal = gi.argv(1);
-	if ( !VALIDSTRING( newVal ) )
-	{
-		gi.Printf( "Current saberOffense level is %d\n", g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] );
-		gi.Printf( "Usage:  saberOffense <level> (1 - 3)\n" );
-		return;
-	}
-	int val = atoi(newVal);
-	if ( val > FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowersKnown |= ( 1 << FP_SABER_OFFENSE );
-	}
-	else
-	{
-		g_entities[0].client->ps.forcePowersKnown &= ~( 1 << FP_SABER_OFFENSE );
-	}
-	g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] = val;
-	if ( g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] < FORCE_LEVEL_0 )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] = FORCE_LEVEL_0;
-	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] >= SS_NUM_SABER_STYLES )
-	{
-		g_entities[0].client->ps.forcePowerLevel[FP_SABER_OFFENSE] = SS_NUM_SABER_STYLES-1;
-	}
-}
+SetForceCmd SetForceTable[NUM_FORCE_POWERS] = {
+	{ "forceHeal",			"setForceHeal",			FORCE_LEVEL_3			},
+	{ "forceJump",			"setForceJump",			FORCE_LEVEL_3			},
+	{ "forceSpeed",			"setForceSpeed",		FORCE_LEVEL_3			},
+	{ "forcePush",			"setForcePush",			FORCE_LEVEL_3			},
+	{ "forcePull",			"setForcePull",			FORCE_LEVEL_3			},
+	{ "forceMindTrick",		"setForceMindTrick",	FORCE_LEVEL_4			},
+	{ "forceGrip",			"setForceGrip",			FORCE_LEVEL_3			},
+	{ "forceLightning",		"setForceLightning",	FORCE_LEVEL_3			},
+	{ "saberThrow",			"setSaberThrow",		FORCE_LEVEL_3			},
+	{ "saberDefense",		"setSaberDefense",		FORCE_LEVEL_3			},
+	{ "saberOffense",		"setSaberOffense",		SS_NUM_SABER_STYLES-1	},
+	{ "forceRage",			"setForceRage",			FORCE_LEVEL_3			},
+	{ "forceProtect",		"setForceProtect",		FORCE_LEVEL_3			},
+	{ "forceAbsorb",		"setForceAbsorb",		FORCE_LEVEL_3			},
+	{ "forceDrain",			"setForceDrain",		FORCE_LEVEL_3			},
+	{ "forceSight",			"setForceSight",		FORCE_LEVEL_3			},
+};
 
 static void Svcmd_ForceSetLevel_f( int forcePower )
 {
@@ -739,8 +346,8 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 	const char *newVal = gi.argv(1);
 	if ( !VALIDSTRING( newVal ) )
 	{
-		gi.Printf( "Current force level is %d\n", g_entities[0].client->ps.forcePowerLevel[forcePower] );
-		gi.Printf( "Usage:  force <level> (1 - 3)\n" );
+		gi.Printf( "Current %s level is %d\n", SetForceTable[forcePower].desc, g_entities[0].client->ps.forcePowerLevel[forcePower] );
+		gi.Printf( "Usage:  %s <level> (0 - %i)\n", SetForceTable[forcePower].cmdname, SetForceTable[forcePower].maxlevel );
 		return;
 	}
 	int val = atoi(newVal);
@@ -757,9 +364,9 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 	{
 		g_entities[0].client->ps.forcePowerLevel[forcePower] = FORCE_LEVEL_0;
 	}
-	else if ( g_entities[0].client->ps.forcePowerLevel[forcePower] > FORCE_LEVEL_3 )
+	else if ( g_entities[0].client->ps.forcePowerLevel[forcePower] > SetForceTable[forcePower].maxlevel )
 	{
-		g_entities[0].client->ps.forcePowerLevel[forcePower] = FORCE_LEVEL_3;
+		g_entities[0].client->ps.forcePowerLevel[forcePower] = SetForceTable[forcePower].maxlevel;
 	}
 }
 
@@ -1132,57 +739,57 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "setForceJump" ) == 0 )	
 	{
-		Svcmd_ForceJump_f();
+		Svcmd_ForceSetLevel_f( FP_LEVITATION );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setSaberThrow" ) == 0 )	
 	{
-		Svcmd_SaberThrow_f();
+		Svcmd_ForceSetLevel_f( FP_SABERTHROW );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForceHeal" ) == 0 )	
 	{
-		Svcmd_ForceHeal_f();
+		Svcmd_ForceSetLevel_f( FP_HEAL );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForcePush" ) == 0 )	
 	{
-		Svcmd_ForcePush_f();
+		Svcmd_ForceSetLevel_f( FP_PUSH );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForcePull" ) == 0 )	
 	{
-		Svcmd_ForcePull_f();
+		Svcmd_ForceSetLevel_f( FP_PULL );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForceSpeed" ) == 0 )	
 	{
-		Svcmd_ForceSpeed_f();
+		Svcmd_ForceSetLevel_f( FP_SPEED );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForceGrip" ) == 0 )	
 	{
-		Svcmd_ForceGrip_f();
+		Svcmd_ForceSetLevel_f( FP_GRIP );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForceLightning" ) == 0 )	
 	{
-		Svcmd_ForceLightning_f();
+		Svcmd_ForceSetLevel_f( FP_LIGHTNING );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setMindTrick" ) == 0 )	
 	{
-		Svcmd_MindTrick_f();
+		Svcmd_ForceSetLevel_f( FP_TELEPATHY );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setSaberDefense" ) == 0 )	
 	{
-		Svcmd_SaberDefense_f();
+		Svcmd_ForceSetLevel_f( FP_SABER_DEFENSE );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setSaberOffense" ) == 0 )	
 	{
-		Svcmd_SaberOffense_f();
+		Svcmd_ForceSetLevel_f( FP_SABER_OFFENSE );
 		return qtrue;
 	}
 	if ( Q_stricmp( cmd, "setForceRage" ) == 0 )	
@@ -1218,22 +825,10 @@ qboolean	ConsoleCommand( void ) {
 			return qtrue;
 		}
 
-		Svcmd_ForceJump_f();
-		Svcmd_SaberThrow_f();
-		Svcmd_ForceHeal_f();
-		Svcmd_ForcePush_f();
-		Svcmd_ForcePull_f();
-		Svcmd_ForceSpeed_f();
-		Svcmd_ForceGrip_f();
-		Svcmd_ForceLightning_f();
-		Svcmd_MindTrick_f();
-		Svcmd_SaberDefense_f();
-		Svcmd_SaberOffense_f();
-		Svcmd_ForceSetLevel_f( FP_RAGE );
-		Svcmd_ForceSetLevel_f( FP_DRAIN );
-		Svcmd_ForceSetLevel_f( FP_PROTECT );
-		Svcmd_ForceSetLevel_f( FP_ABSORB );
-		Svcmd_ForceSetLevel_f( FP_SEE );
+		for ( int i = FP_HEAL; i < NUM_FORCE_POWERS; i++ )
+		{
+			Svcmd_ForceSetLevel_f( i );
+		}
 		for ( int i = SS_NONE+1; i < SS_NUM_SABER_STYLES; i++ )
 		{
 			g_entities[0].client->ps.saberStylesKnown |= (1<<i);
@@ -1248,9 +843,9 @@ qboolean	ConsoleCommand( void ) {
 			return qtrue;
 		}
 
-		Svcmd_SaberThrow_f();
-		Svcmd_SaberDefense_f();
-		Svcmd_SaberOffense_f();
+		Svcmd_ForceSetLevel_f( FP_SABERTHROW );
+		Svcmd_ForceSetLevel_f( FP_SABER_DEFENSE );
+		Svcmd_ForceSetLevel_f( FP_SABER_OFFENSE );
 		for ( int i = SS_NONE+1; i < SS_NUM_SABER_STYLES; i++ )
 		{
 			g_entities[0].client->ps.saberStylesKnown |= (1<<i);
