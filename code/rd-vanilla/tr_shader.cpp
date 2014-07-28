@@ -3736,7 +3736,7 @@ Finds and loads all .shader files, combining them into
 a single large text block that can be scanned for shader names
 =====================
 */
-#define	MAX_SHADER_FILES	1024
+#define	MAX_SHADER_FILES	4096
 static void ScanAndLoadShaderFiles( void )
 {
 	char **shaderFiles;
