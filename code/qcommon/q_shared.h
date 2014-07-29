@@ -990,6 +990,12 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
+class COM_ParseSession {
+public:
+	COM_ParseSession() { COM_BeginParseSession(); };
+	~COM_ParseSession() { COM_EndParseSession(); };
+};
+
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );
 char	*COM_ParseExt( const char **data_p, qboolean allowLineBreak );
