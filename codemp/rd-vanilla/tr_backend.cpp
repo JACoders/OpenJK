@@ -616,6 +616,7 @@ typedef struct postRender_s {
 static postRender_t g_postRenders[MAX_POST_RENDERS];
 static int g_numPostRenders = 0;
 
+#if 0
 //get the "average" (ideally center) position of a surface on the tess.
 //this is a kind of lame method because I can't think correctly right now.
 static inline bool R_AverageTessXYZ(vec3_t dest)
@@ -649,6 +650,7 @@ static inline bool R_AverageTessXYZ(vec3_t dest)
 
 	return false;
 }
+#endif
 
 void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	shader_t		*shader, *oldShader;
