@@ -3401,6 +3401,14 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
+			{ // zyk: Immunity Power
+				ent->client->pers.ultimate_power_user = 1000;
+				ent->client->pers.ultimate_power_target_timer = level.time + 15000;
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
+			}
+			/* zyk: this power will be back in the future, for now the player will get Immunity Power
+			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: uses Elemental Power
 				// zyk: if an elemental power is disabled, set to the next one
 				if (ent->client->pers.ultimate_power_user == 0 && ent->client->pers.player_settings & (1 << 16))
@@ -3471,6 +3479,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 				ent->client->pers.ultimate_power_timer = level.time + 15000;
 			}
+			*/
 			else if (ent->client->pers.universe_quest_counter & (1 << 2))
 			{ // zyk: uses Chaos Power
 				int i = 0;
@@ -3493,8 +3502,8 @@ qboolean TryGrapple(gentity_t *ent)
 								found = 1;
 							}
 
-							if (found == 0)
-							{
+							if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+							{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
 								player_ent->client->pers.ultimate_power_user = ent->s.number;
 								player_ent->client->pers.ultimate_power_target = 4;
 								player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
@@ -3543,8 +3552,8 @@ qboolean TryGrapple(gentity_t *ent)
 								found = 1;
 							}
 
-							if (found == 0)
-							{
+							if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+							{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
 								player_ent->client->pers.ultimate_power_target = 3;
 								player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
 							}
@@ -8039,13 +8048,13 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else
 					{
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7knocks everyone near you down for some seconds\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7keeps damaging enemies for some seconds\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 1))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7This skill uses Healing Water, Flaming Burst, Earthquake and Blowing Wind at the same time\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7protects you from other special powers\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 2))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7This skill causes high damage, electrifies the enemies and throws them in the ground\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7causes high damage, electrifies the enemies and throws them in the ground\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 3))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7This skill paralyzes enemies for some seconds\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7paralyzes enemies for some seconds\n\"") );
 					}
 				}
 				else
@@ -9628,38 +9637,38 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 16))
 		{
-			sprintf(message,"%s\n^316 - Elemental: Healing Water ^1OFF", message);
+			sprintf(message,"%s\n^316 - Healing Water ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^316 - Elemental: Healing Water ^2ON", message);
+			sprintf(message,"%s\n^316 - Healing Water ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 17))
 		{
-			sprintf(message,"%s\n^317 - Elemental: Flame Burst ^1OFF", message);
+			sprintf(message,"%s\n^317 - Flame Burst ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^317 - Elemental: Flame Burst ^2ON", message);
+			sprintf(message,"%s\n^317 - Flame Burst ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 18))
 		{
-			sprintf(message,"%s\n^318 - Elemental: Earthquake ^1OFF", message);
+			sprintf(message,"%s\n^318 - Earthquake ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^318 - Elemental: Earthquake ^2ON", message);
+			sprintf(message,"%s\n^318 - Earthquake ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 19))
 		{
-			sprintf(message,"%s\n^319 - Elemental: Blowing Wind ^1OFF", message);
+			sprintf(message,"%s\n^319 - Blowing Wind ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^319 - Elemental: Blowing Wind ^2ON", message);
+			sprintf(message,"%s\n^319 - Blowing Wind ^2ON", message);
 		}
 
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
@@ -9826,19 +9835,19 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 16)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Healing Water %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Healing Water %s\n\"", new_status) );
 		}
 		else if (value == 17)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Flame Burst %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Flame Burst %s\n\"", new_status) );
 		}
 		else if (value == 18)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Earthquake %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Earthquake %s\n\"", new_status) );
 		}
 		else if (value == 19)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Elemental: Blowing Wind %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Blowing Wind %s\n\"", new_status) );
 		}
 		return;
 	}

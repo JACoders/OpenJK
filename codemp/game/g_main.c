@@ -3914,8 +3914,8 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 					found = 1;
 				}
 
-				if (found == 0)
-				{
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 100, the target is protected by Immunity Power
 					player_ent->client->pers.ultimate_power_user = ent->s.number;
 					player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 					player_ent->client->pers.ultimate_power_target = 20;
@@ -4021,7 +4021,7 @@ void Player_FireFlameThrower( gentity_t *self )
 void ultimate_power_events(gentity_t *ent)
 {
 	// zyk: controlling Ultimate Power target events
-	if (ent && ent->client && ent->client->pers.ultimate_power_target_timer > level.time)
+	if (ent && ent->client && ent->client->pers.ultimate_power_user != 1000 && ent->client->pers.ultimate_power_target_timer > level.time)
 	{
 		if (ent->client->pers.ultimate_power_target == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
 		{ // zyk: removes Time Power
@@ -4069,6 +4069,10 @@ void ultimate_power_events(gentity_t *ent)
 			ent->client->pers.ultimate_power_target++;
 			ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 		}
+	}
+	else if (ent && ent->client && ent->client->pers.ultimate_power_user == 1000 && ent->client->pers.ultimate_power_target_timer < level.time)
+	{ // zyk: if Immunity Power runs out, set ultimate_power_user back to default value
+		ent->client->pers.ultimate_power_user = -1;
 	}
 }
 
@@ -6416,9 +6420,9 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 8)
 									trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7We are old beings, we have much wisdom.\"");
 								else if (ent->client->pers.universe_quest_messages == 9)
-									trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7If you choose us, we will give you the ^3Elemental Power^7.\"");
+									trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7If you choose us, we will give you the ^3Immunity Power^7.\"");
 								else if (ent->client->pers.universe_quest_messages == 10)
-									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7This power uses the four elements powers you have seen us using in the guardian battles.\"");
+									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7This power protects you from other special powers.\"");
 								else if (ent->client->pers.universe_quest_messages == 11)
 									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Think about that when making your choice.\"");
 								else if (ent->client->pers.universe_quest_messages == 12)
@@ -6784,7 +6788,7 @@ void G_RunFrame( int levelTime ) {
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
 										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Poison Mushrooms ^7now. This will really be useful to you.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
-										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Elemental Power. ^7Use it when necessary.\"");
+										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Immunity Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
 										trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Now, you will become my instrument of conquest. Get this ^1Chaos Power^7. Destroy all the weak!\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 3))
