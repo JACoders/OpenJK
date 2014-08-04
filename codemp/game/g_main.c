@@ -3830,7 +3830,7 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 					found = 1;
 				}
 
-				if (found == 0)
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
 				{
 					if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
 					{ // zyk: player can only be hit if he is on floor
@@ -3875,7 +3875,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 					found = 1;
 				}
 
-				if (found == 0)
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
 				{
 					player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 					player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
@@ -3915,7 +3915,7 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 				}
 
 				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 100, the target is protected by Immunity Power
+				{ // zyk: if ultimate_power_user is 1000, the target is protected by Immunity Power
 					player_ent->client->pers.ultimate_power_user = ent->s.number;
 					player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
 					player_ent->client->pers.ultimate_power_target = 20;
@@ -7721,13 +7721,16 @@ void G_RunFrame( int levelTime ) {
 							{
 								gentity_t *player_ent = &g_entities[player_iterator];
 
-								// zyk: player on floor needs more scale
-								if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-									VectorScale(forward,80.0,dir);
-								else
-									VectorScale(forward,25.0,dir);
+								if (player_ent->client->pers.ultimate_power_user != 1000)
+								{
+									// zyk: player on floor needs more scale
+									if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+										VectorScale(forward,80.0,dir);
+									else
+										VectorScale(forward,25.0,dir);
 
-								VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
+									VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
+								}
 							}
 						}
 					}
