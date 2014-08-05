@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -9,7 +9,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>${MACOSX_BUNDLE_INFO_STRING}</string>
 	<key>CFBundleIconFile</key>
-	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
+	<string>OpenJK.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -17,7 +17,7 @@
 	<key>CFBundleLongVersionString</key>
 	<string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
 	<key>CFBundleName</key>
-	<string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>
+	<string>${SPEngine}</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -33,6 +33,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
 	<key>CFBundleDisplayName</key>
-	<string>${MACOSX_BUNDLE_DISPLAY_NAME}</string>
+	<string>${SPEngine}</string>
 </dict>
 </plist>
