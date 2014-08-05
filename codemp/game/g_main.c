@@ -139,7 +139,7 @@ G_InitGame
 
 ============
 */
-//void InitGameAccountStuff(void);
+void InitGameAccountStuff(void);
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
@@ -249,6 +249,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			trap->Print( "WARNING: Couldn't open logfile: "RACE_LOG"\n" );
 	}
 
+	trap->FS_Open( TEMP_RACE_LOG, &level.tempRaceLog, FS_APPEND_SYNC );
+	if ( level.tempRaceLog )
+		trap->Print( "Logging to "TEMP_RACE_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "TEMP_RACE_LOG"\n" );
+
 	
 	G_LogWeaponInit();
 
@@ -319,7 +325,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//setup the teleto functionality - japro
 	G_SpawnWarpLocationsFromCfg();
-	//InitGameAccountStuff();
+	InitGameAccountStuff();
 
 	// general initialization
 	G_FindTeams();
@@ -516,6 +522,13 @@ void G_ShutdownGame( int restart ) {
 		//G_RaceLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.raceLog );
 		level.raceLog = 0;
+	}
+
+	if ( level.tempRaceLog )
+	{
+		//G_RaceLogPrintf( "ShutdownGame\n\n" );
+		trap->FS_Close( level.tempRaceLog );
+		level.tempRaceLog = 0;
 	}
 
 	// write all the client session data so we can get it back
@@ -1632,6 +1645,28 @@ void QDECL G_RaceLogPrintf( const char *fmt, ... ) {
 
 	trap->FS_Write( string, strlen( string ), level.raceLog );
 }
+
+void QDECL G_TempRaceLogPrintf( const char *fmt, ... ) {
+	va_list		argptr;
+	char		string[1024] = {0};
+	//time_t		rawtime;
+	//int			timeLen=0;
+
+	//time( &rawtime );
+	//localtime( &rawtime );
+	//strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
+	//timeLen = strlen( string );
+
+	va_start( argptr, fmt );
+	Q_vsnprintf( string, sizeof( string ), fmt, argptr );
+	va_end( argptr );
+
+	if ( !level.tempRaceLog )
+		return;
+
+	trap->FS_Write( string, strlen( string ), level.tempRaceLog );
+}
+
 
 /*
 ================

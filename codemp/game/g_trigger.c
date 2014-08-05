@@ -1206,7 +1206,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (g_jk2Lunge.integer)
 		return qfalse;
-	if (sv_fps.integer < 20)//Dosnt really make a difference.. but eh....
+	if (sv_fps.integer != 20)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;
 
 	//type of roll?
@@ -1257,7 +1257,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
-	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+	if (trap->Milliseconds() - player->client->pers.stats.startTime < 1000)//Some built in floodprotect per player?
 		return;
 
 	if (trigger->noise_index) 
@@ -1273,7 +1273,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->ps.duelTime = level.time;
 }
 
-//void G_AddRunToDB(char *account, char *courseName, float time, int style, int topspeed, int average); //should this be extern?
+void G_AddRunToTempFile(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;
@@ -1376,8 +1376,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				*p = 0;
 			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
 				player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
-			//G_AddRunToDB(player->client->pers.accountName, courseName, time, player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average); //Add time right now?
-			//Send info to database: Mapname, message (to use as course ID if map has multiple courses), username, playername?, time (right now), duration of run, avgspeed?, topspeed?
+			if (player->client->pers.userName)
+				G_AddRunToTempFile(player->client->pers.userName, courseName, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
 		}
 
 		player->client->pers.stats.startLevelTime = 0;
@@ -1510,6 +1510,7 @@ void SP_trigger_timer_start( gentity_t *self )
 		else
 			self->noise_index = 0;
 	}
+
 	self->touch = TimerStart;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }
@@ -1546,6 +1547,15 @@ void SP_trigger_timer_stop( gentity_t *self )
 		else
 			self->awesomenoise_index = 0;
 	}
+
+	//trap->Print(va("%s", courseName));
+
+	//For every stop trigger, increment numCourses and put its name in array
+	//if (self->message && self->message[0]) {
+		Q_strncpyz(level.courseName[level.numCourses], self->message, sizeof(level.courseName[0]));
+		level.numCourses++;
+	//}
+
 	self->touch = TimerStop;
 	trap->LinkEntity ((sharedEntity_t *)self);
 }

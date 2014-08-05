@@ -248,7 +248,7 @@ void Cmd_Exec_f( void ) {
 	fileBuffer_t f;
 	char	filename[MAX_QPATH];
 
-	quiet = !Q_stricmp(Cmd_Argv(0), "execq");
+	quiet = !Q_stricmp(Cmd_Argv(0), "silentexec");
 
 	if (Cmd_Argc () != 2) {
 		Com_Printf ("exec%s <filename> : execute a script file%s\n",
@@ -808,9 +808,9 @@ Cmd_Init
 void Cmd_Init (void) {
 	Cmd_AddCommand ("cmdlist",Cmd_List_f);
 	Cmd_AddCommand ("exec",Cmd_Exec_f);
-	Cmd_AddCommand ("execq",Cmd_Exec_f);
+	Cmd_AddCommand ("silentexec",Cmd_Exec_f);
 	Cmd_SetCommandCompletionFunc( "exec", Cmd_CompleteCfgName );
-	Cmd_SetCommandCompletionFunc( "execq", Cmd_CompleteCfgName );
+	Cmd_SetCommandCompletionFunc( "silentexec", Cmd_CompleteCfgName );
 	Cmd_AddCommand ("vstr",Cmd_Vstr_f);
 	Cmd_SetCommandCompletionFunc( "vstr", Cvar_CompleteCvarName );
 	Cmd_AddCommand ("echo",Cmd_Echo_f);

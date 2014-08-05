@@ -1,4 +1,4 @@
-#if 0
+#if (WIN32)
 
 /*
 ** 2001 September 15

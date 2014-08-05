@@ -7998,6 +7998,9 @@ if (pm->ps->duelInProgress)
 	// take an ammo away if not infinite
 	if ( pm->ps->weapon != WP_NONE &&
 		pm->ps->weapon == pm->cmd.weapon &&
+#ifdef _GAME
+		!(g_tweakWeapons.integer & INFINITE_AMMO) &&
+#endif
 		(pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) )
 	{
 		if ( pm->ps->clientNum < MAX_CLIENTS && pm->ps->ammo[ weaponData[pm->ps->weapon].ammoIndex ] != -1 )

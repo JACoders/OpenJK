@@ -508,6 +508,8 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
+		if ( !it_ent || !it_ent->inuse )
+			return;
 		FinishSpawningItem( it_ent );
 		if ( !it_ent || !it_ent->inuse )
 			return;
@@ -3985,6 +3987,34 @@ void Cmd_TheDestroyer_f( gentity_t *ent ) {
 	Cmd_ToggleSaber_f( ent );
 }
 
+void Cmd_DebugSetSaberMove_f(gentity_t *self)
+{
+	int argNum = trap->Argc();
+	char arg[MAX_STRING_CHARS];
+
+	if (argNum < 2)
+	{
+		return;
+	}
+
+	trap->Argv( 1, arg, sizeof( arg ) );
+
+	if (!arg[0])
+	{
+		return;
+	}
+
+	self->client->ps.saberMove = atoi(arg);
+	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
+
+	if (self->client->ps.saberMove >= LS_MOVE_MAX)
+	{
+		self->client->ps.saberMove = LS_MOVE_MAX-1;
+	}
+
+	//Com_Printf("Anim for move: %s\n", animTable[saberMoveData[self->client->ps.saberMove].animToUse].name);
+}
+
 void Cmd_BotMoveForward_f( gentity_t *ent ) {
 	int arg = 4000;
 	int bCl = 0;
@@ -5071,6 +5101,14 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig\n" );
 
+	Q_strncpyz(buf, "   ^3Account commands: ", sizeof(buf));
+	Q_strcat(buf, sizeof(buf), "register ");
+	Q_strcat(buf, sizeof(buf), "login ");
+	Q_strcat(buf, sizeof(buf), "logout ");
+	Q_strcat(buf, sizeof(buf), "dftop10 ");
+	Q_strcat(buf, sizeof(buf), "whois ");
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
+
 	Q_strcat(buf, sizeof(buf), "   ^3Chat commands: ");
 	Q_strcat(buf, sizeof(buf), "ignore ");
 	Q_strcat(buf, sizeof(buf), "clanPass ");
@@ -5666,9 +5704,11 @@ static void Cmd_AmRun_f(gentity_t *ent)
 	//If emote is allowed, print toggle msg?
 }
 
+int RaceNameToInteger(char *style);
 static void Cmd_MovementStyle_f(gentity_t *ent)
 {
 	char mStyle[32];
+	int style;
 
 	if (!ent->client)
 		return;
@@ -5707,6 +5747,14 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
+
+	style = RaceNameToInteger(mStyle);
+	if (style >= 0) {
+		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = style;
+		ent->client->pers.movementStyle = style;
+	}
+
+	/*
 	if (!Q_stricmp("siege", mStyle) || !Q_stricmp("0", mStyle)) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
 		ent->client->pers.movementStyle = 0;
@@ -5735,6 +5783,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 6;
 		ent->client->pers.movementStyle = 6;
 	}
+	*/
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
@@ -6474,6 +6523,11 @@ int cmdcmp( const void *a, const void *b ) {
 }
 
 void Cmd_ACLogin_f( gentity_t *ent );
+void Cmd_ACLogout_f( gentity_t *ent );
+void Cmd_ACRegister_f( gentity_t *ent );
+void Cmd_ACWhois_f( gentity_t *ent );
+void Cmd_DFTop10_f( gentity_t *ent );
+void Cmd_DFBuildTop10_f(gentity_t *ent);//loda temporary
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -6532,6 +6586,12 @@ command_t commands[] = {
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Right",	Cmd_BotMoveRight_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
+
+	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
+
+	{ "dfbuildtop10",		Cmd_DFBuildTop10_f,			CMD_NOINTERMISSION },
+	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
+
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels
@@ -6551,7 +6611,8 @@ command_t commands[] = {
 //	{ "kylesmash",			TryGrapple,					0 },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 
-	//{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
+	{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
+	{ "logout",				Cmd_ACLogout_f,				CMD_NOINTERMISSION },
 
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
@@ -6559,6 +6620,9 @@ command_t commands[] = {
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_ALIVE },//removed cheat for admin
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
+
+	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
+
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
@@ -6579,6 +6643,8 @@ command_t commands[] = {
 	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
 	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
+
+	{ "whois",				Cmd_ACWhois_f,				CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 

@@ -27,6 +27,7 @@ extern vec3_t gPainPoint;
 #define SECURITY_LOG "security.log"
 #define DUEL_LOG "duels.log" //duellog
 #define RACE_LOG "races.log" //racelog
+#define TEMP_RACE_LOG "currentRaces.log" //racelog
 
 #define BODY_QUEUE_SIZE		8
 
@@ -255,7 +256,8 @@ typedef enum {
 	A_VSTR,
 	A_STATUS,
 	A_RENAME,
-	A_LISTMAPS
+	A_LISTMAPS,
+	A_BUILDHIGHSCORES
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates
@@ -662,7 +664,7 @@ typedef struct clientPersistant_s {
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 
 	char		guid[33];
-	char		accountName[16];
+	char		userName[16];
 	stats_t		stats;
 } clientPersistant_t;
 
@@ -1163,12 +1165,17 @@ typedef struct level_locals_s {
 	qboolean	isLockedfree;	
 	fileHandle_t	duelLog;
 	fileHandle_t	raceLog;
+	fileHandle_t	tempRaceLog;
 
 	char		warpName[24][32];//japro warps
 	int			warpX[32];
 	int			warpY[32];
 	int			warpZ[32];
 	int			warpYaw[32];
+	char		courseName[24][32];//japro warps	
+	int			numCourses;
+
+	struct RaceRecord_s	*Highscores;//loda
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;
@@ -1525,6 +1532,7 @@ void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void QDECL G_DuelLogPrintf( const char *fmt, ... );
 void QDECL G_RaceLogPrintf( const char *fmt, ... );
+void QDECL G_TempRaceLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
 const char *G_GetStringEdString(char *refSection, char *refName);
 

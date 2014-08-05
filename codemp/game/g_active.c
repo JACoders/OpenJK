@@ -1966,6 +1966,11 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 			ent->client->ps.torsoAnim = TORSO_RAISEWEAP1;
 		}
 	}
+	/*
+	else if (ent->s.eType == ET_PLAYER && !ent->client->ps.duelInProgress && level.time - ent->client->idleTime > g_inactivityProtectTime.integer * 1000) {
+		ent->client->pers.protect = qtrue;
+	}
+	*/
 	else if ( level.time - ent->client->idleTime > 5000 )
 	{//been idle for 5 seconds
 		int	idleAnim = -1;
@@ -2492,6 +2497,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
+void G_AddDuelToDB(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
 /*
 ==============
 ClientThink
@@ -2778,6 +2784,23 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		else//Start
 		{
+
+			/*
+			if (client->pers.protect)
+			{
+				if (client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove || client->pers.cmd.buttons & BUTTON_ALT_ATTACK ||
+					client->pers.cmd.buttons & BUTTON_ATTACK || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->ps.duelInProgress) {
+					ent->takedamage = qtrue;
+					client->ps.eFlags &= ~EF_INVULNERABLE;
+					client->pers.protect = qfalse;
+				}
+				else {
+					ent->takedamage = qfalse;
+					client->ps.eFlags |= EF_INVULNERABLE;
+				}
+			}
+			*/
+
 			if (client->pers.amfreeze)
 			{
 				if (!client->ps.duelInProgress)
@@ -3224,6 +3247,8 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7) (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower));
 				else
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
+				if (ent->client->pers.userName && duelAgainst->client->pers.userName) //loda
+					G_AddDuelToDB(ent->client->pers.userName, duelAgainst->client->pers.userName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
