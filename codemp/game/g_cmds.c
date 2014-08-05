@@ -6589,7 +6589,7 @@ command_t commands[] = {
 
 	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
-	{ "dfbuildtop10",		Cmd_DFBuildTop10_f,			CMD_NOINTERMISSION },
+	{ "dfrefresh",			Cmd_DFBuildTop10_f,			CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },

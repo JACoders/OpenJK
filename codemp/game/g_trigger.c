@@ -1206,7 +1206,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (g_jk2Lunge.integer)
 		return qfalse;
-	if (sv_fps.integer != 20)//Dosnt really make a difference.. but eh.... loda fixme
+	if (sv_fps.integer != 20 && sv_fps.integer != 30)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;
 
 	//type of roll?
@@ -1365,7 +1365,6 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strcat(courseName, sizeof(courseName), " ()");
 			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^%i%s\n\"",
 				c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
-
 		}
 		if (valid) {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};

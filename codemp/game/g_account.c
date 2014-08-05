@@ -143,14 +143,12 @@ void G_AdToDBFromFile(void) //loda fixme
 {
 	fileHandle_t f;	
 	int		fLen = 0, MAX_FILESIZE = 4096, args = 1;
-	char	info[1024] = {0}, buf[4096] = {0};//eh
+	char	info[1024] = {0}, buf[4096] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
+	char * sql;
+	sqlite3_stmt * stmt;
 	RaceRecord_t	TempRaceRecord;
-
-	return;//fuck this is so broken, its like 10,000 times slower than it should be
 
 	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
 
@@ -170,6 +168,8 @@ void G_AdToDBFromFile(void) //loda fixme
 	Com_Printf ("Loaded defrag data from %s\n", TEMP_RACE_LOG);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 
 	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
 	pch = strtok (buf,":\n");
@@ -189,17 +189,6 @@ void G_AdToDBFromFile(void) //loda fixme
 			TempRaceRecord.style = atoi(pch);
 		else if ((args % 7) == 0) {
 			TempRaceRecord.end_time = atoi(pch);
-
-			//sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	
-			//sql = va("INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (%s, %s, %i, %i, %i, %i, %i)", 
-
-			sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES ('test', 'no', 3, 5, 6, 7, 8)";
-
-				//TempRaceRecord.username, TempRaceRecord.coursename, 34, 35, 125, 53, 125);
-				//TempRaceRecord.username, TempRaceRecord.coursename, TempRaceRecord.duration_ms, TempRaceRecord.topspeed, TempRaceRecord.average, TempRaceRecord.style, TempRaceRecord.end_time);	
-			
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			/*
 			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
@@ -207,15 +196,19 @@ void G_AdToDBFromFile(void) //loda fixme
 			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord.average));
 			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord.style));
 			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_time));
-			*/
-
 			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
 		}
-    pch = strtok (NULL, ":\n");
-	args++;
+    		pch = strtok (NULL, ":\n");
+		args++;
 	}
+	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));	
+
+	trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
+	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
+	trap->FS_Close(f);
 }
 
 void G_AddRunToTempFile(char *username, char *courseName, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
@@ -647,7 +640,8 @@ void Cmd_DFBuildTop10_f(gentity_t *ent) {
 		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfBuildTop10).\n\"" );
 		return;
 	}
-	BuildMapHighscores();
+	G_AdToDBFromFile(); //From file to db
+	BuildMapHighscores(); //From db, built to memory
 }
 
 void Cmd_ACWhois_f( gentity_t *ent ) {
@@ -730,6 +724,9 @@ void InitGameAccountStuff( void ) { //Called every mapload
 	//Style should be TINYINT, same with shields, HP, unsigned
 
 	BuildMapHighscores();//Build highscores into memory from database
+
+
+
 
 	//delete last maps highscores file?
 

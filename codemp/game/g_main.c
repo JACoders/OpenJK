@@ -1649,13 +1649,6 @@ void QDECL G_RaceLogPrintf( const char *fmt, ... ) {
 void QDECL G_TempRaceLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
-	//time_t		rawtime;
-	//int			timeLen=0;
-
-	//time( &rawtime );
-	//localtime( &rawtime );
-	//strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
-	//timeLen = strlen( string );
 
 	va_start( argptr, fmt );
 	Q_vsnprintf( string, sizeof( string ), fmt, argptr );
