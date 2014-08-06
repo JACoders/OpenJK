@@ -2497,7 +2497,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
-void G_AddDuelToDB(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
+void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
 /*
 ==============
 ClientThink
@@ -3248,7 +3248,7 @@ void ClientThink_real( gentity_t *ent ) {
 				else
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
 				if (ent->client->pers.userName && duelAgainst->client->pers.userName) //loda
-					G_AddDuelToDB(ent->client->pers.userName, duelAgainst->client->pers.userName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+					G_AddDuel(ent->client->pers.userName, duelAgainst->client->pers.userName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame

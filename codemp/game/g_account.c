@@ -115,7 +115,7 @@ int CheckUserExists(char *username) {
 	}
 }
 
-void G_AddDuelToDB(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
+void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -139,7 +139,7 @@ void G_AddDuelToDB(char *winner, char *loser, int duration, int type, int winner
 	}
 }
 
-void G_AdToDBFromFile(void) //loda fixme
+void G_AddToDBFromFile(void) //loda fixme
 {
 	fileHandle_t f;	
 	int		fLen = 0, MAX_FILESIZE = 4096, args = 1;
@@ -165,14 +165,14 @@ void G_AdToDBFromFile(void) //loda fixme
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
 	trap->FS_Close(f);
-	Com_Printf ("Loaded defrag data from %s\n", TEMP_RACE_LOG);
+	Com_Printf ("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 
 	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
-	pch = strtok (buf,":\n");
+	pch = strtok (buf,";\n");
 	while (pch != NULL)
 	{
 		if ((args % 7) == 1)
@@ -200,7 +200,7 @@ void G_AdToDBFromFile(void) //loda fixme
 			CALL_SQLITE (reset (stmt));
 			CALL_SQLITE (clear_bindings (stmt));
 		}
-    		pch = strtok (NULL, ":\n");
+    		pch = strtok (NULL, ";\n");
 		args++;
 	}
 	CALL_SQLITE (finalize(stmt));
@@ -211,8 +211,9 @@ void G_AdToDBFromFile(void) //loda fixme
 	trap->FS_Close(f);
 }
 
-void G_AddRunToTempFile(char *username, char *courseName, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
+void G_AddRaceTime(char *username, char *courseName, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
+	char		string[1024] = {0};
 
 	time( &rawtime );
 	localtime( &rawtime );
@@ -220,68 +221,24 @@ void G_AddRunToTempFile(char *username, char *courseName, int duration_ms, int s
 	if (!CheckUserExists(username))
 		return;
 
-	G_TempRaceLogPrintf("%s:%s:%i:%i:%i:%i:%i\n", username, courseName, duration_ms, topspeed, average, style, rawtime);
+	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i", username, courseName, duration_ms, topspeed, average, style, rawtime);
 
-	//Now for live highscore stuff.
-	//Find worst time in category of highscores
-	//Check if our time is better
-		//if yes, delete worst time and resort?
-		//if no, exit
+	if (level.raceLog)
+		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+	if (level.tempRaceLog)
+		trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 
-	//what about if the time is better than the worst, but if the user already has a better time in the highscore?
-		//do nothing then and exit
+	//Now for live highscore stuff:
+
+	//Search memory: coursename = ?, style = ?, username = ? , get fastest time
+		//If our time is faster than that, proceed to check top10?
+			//Uhh...
+		//If not, exit.
 
 	//kinda low priority since we can just rebuild the entire highscore with little performance hit.
-
-#if 0
-		sql = "SELECT MAX(duration_ms), id, COUNT(*) FROM Highscores WHERE coursename = ? AND username = ? AND style = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, style));
-		
-
-		s = sqlite3_step(stmt);
-		if (s == SQLITE_ROW) {
-			worsttime = sqlite3_column_int (stmt, 0);
-			id = sqlite3_column_int (stmt, 1);
-			count = sqlite3_column_int (stmt, 2);
-			trap->Print("worst time, id, count, coursename, style, username: %i, %i, %i, %s, %i, %s\n", worsttime, id, count, courseName, style, username);
-		}
-		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-			CALL_SQLITE (finalize(stmt));
-			CALL_SQLITE (close(db));
-			return;
-		}
-
-		trap->Print("worsttime, time: %i, %i\n", worsttime, itime);
-
-		CALL_SQLITE (finalize(stmt));
-
-		
-		if (duration < worsttime) { //gay
-			sql = "DELETE FROM Highscores WHERE id = ?";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_int (stmt, 1, id));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-
-			sql = "INSERT INTO Highscores (username, coursename, style, topspeed, average, duration_ms, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_text (stmt, 2, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, style));
-			CALL_SQLITE (bind_int (stmt, 4, topspeed));
-			CALL_SQLITE (bind_int (stmt, 5, average));
-			CALL_SQLITE (bind_int (stmt, 6, itime));
-			CALL_SQLITE (bind_int (stmt, 7, datetime));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-		}
-		
-#endif
 }
+
+
 
 //So the best way is to probably add every run as soon as its taken and not filter them.
 //to cut down on database size, there should be a cleanup on every mapload or.. every week..or...?
@@ -292,8 +249,6 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
     char * sql;
     sqlite3_stmt * stmt;
     int row = 0, i = 0;
-	//char *username;
-	//char *password;
 	char username[16], enteredPassword[16], password[16];
 
 	if (trap->Argc() != 3) {
@@ -305,8 +260,6 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
 		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
 		return;
 	}
-
-	trap->Print("das it mane0\n");
 
 	trap->Argv(1, username, sizeof(username));
 	trap->Argv(2, enteredPassword, sizeof(password));
@@ -356,6 +309,81 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (finalize(stmt));
+	}
+	else {
+		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
+	}	
+	CALL_SQLITE (close(db));
+}
+
+void Cmd_ChangePassword_f( gentity_t *ent ) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+    int row = 0, i = 0;
+	char username[16], enteredPassword[16], newPassword[16], newPasswordCleaned[16], password[16];
+
+	if (trap->Argc() != 4) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /changepassword <username> <password> <newpassword>\n\"");
+		return;
+	}
+
+	if (!Q_stricmp(ent->client->pers.userName, "")) {
+		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	trap->Argv(2, enteredPassword, sizeof(password));
+	trap->Argv(3, newPassword, sizeof(password));
+
+	if (Q_stricmp(ent->client->pers.userName, username)) {
+		trap->SendServerCommand(ent-g_entities, "print \"Incorrect username!\n\"");
+		return;
+	}
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT password FROM LocalAccount WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, ent->client->pers.userName, -1, SQLITE_STATIC));
+	
+    while (1) {
+        int s;
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			Q_strncpyz(password, (char*)sqlite3_column_text(stmt, 0), sizeof(password));
+            row++;
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+
+	CALL_SQLITE (finalize(stmt));
+
+	if (enteredPassword && password && enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
+		char *p = NULL;
+		char strIP[NET_ADDRSTRMAXLEN] = {0};
+
+		Q_strncpyz(newPasswordCleaned, newPassword, sizeof(newPasswordCleaned));
+			
+		/*while (newPassword[i]) {
+			newPasswordCleaned[i] = tolower(newPassword[i]);
+			i++;
+		}*/
+		Q_CleanStr(newPasswordCleaned);//also strip other chars..?
+
+		sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, newPasswordCleaned, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, ent->client->pers.userName, -1, SQLITE_STATIC));
+		CALL_SQLITE_EXPECT (step (stmt), DONE);
+		CALL_SQLITE (finalize(stmt));
+
+		trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\"");
 	}
 	else {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
@@ -422,7 +450,69 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
 }
 
-void BuildMapHighscores() {
+void CleanupLocalRun() {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char mapName[40], courseName[40], info[1024] = {0};
+	int i, mstyle;
+
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
+
+	trap->Print("Cleaning up racetimes for %s", mapName);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "DROP TABLE IF EXISTS TempLocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "CREATE TABLE TempLocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
+		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	for (i = 0; i < level.numCourses; i++) { //32 max
+		Q_strncpyz(courseName, mapName, sizeof(courseName));
+		Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
+
+		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
+				"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
+				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		
+		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
+			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 2, mstyle));
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "DELETE FROM LocalRun WHERE coursename = ?"; //This isnt getting executed??
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
+		CALL_SQLITE_EXPECT (step (stmt), DONE);
+		CALL_SQLITE (finalize(stmt));
+	}
+
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
+		"SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM TempLocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	//drop templocalrun here or?
+
+	CALL_SQLITE (close(db));
+
+}
+
+void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -435,9 +525,10 @@ void BuildMapHighscores() {
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
 	for (i = 0; i < level.numCourses; i++) { //32 max
+		Q_strncpyz(courseName, mapName, sizeof(courseName));
+		Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
+
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
-			Q_strncpyz(courseName, mapName, sizeof(courseName));
-			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 			//sql = "SELECT LocalAccount.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun, LocalAccount "
@@ -448,6 +539,7 @@ void BuildMapHighscores() {
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 2, mstyle));
+			//CALL_SQLITE_EXPECT (step (stmt), DONE); //wtf why not lol
 
 			while (1) {
 				int s;
@@ -609,7 +701,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 					minutes = (int)((level.Highscores[i].duration_ms / (1000*60)) % 60);
 					seconds = (int)(level.Highscores[i].duration_ms / 1000) % 60;
 					milliseconds = level.Highscores[i].duration_ms % 1000; 
-					Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);
+					Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);//more precision?
 				}
 				else
 					Q_strncpyz(timeStr, va("%.3f", ((float)level.Highscores[i].duration_ms * 0.001)), sizeof(timeStr));
@@ -640,31 +732,31 @@ void Cmd_DFBuildTop10_f(gentity_t *ent) {
 		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfBuildTop10).\n\"" );
 		return;
 	}
-	G_AdToDBFromFile(); //From file to db
+	G_AddToDBFromFile(); //From file to db
 	BuildMapHighscores(); //From db, built to memory
 }
 
-void Cmd_ACWhois_f( gentity_t *ent ) {
+void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people..?
 	int			i;
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
 
-	trap->SendServerCommand(ent-g_entities, "print \"^5   Nickname                               Username\n\"");
+	trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Nickname\n\"");
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
 		if (!g_entities[i].inuse)
 			continue;
 		cl = &level.clients[i];
-		if (cl->pers.netname[0]) {
+		if (cl->pers.netname[0]) { // && cl->pers.userName[0] ?
 			char strNum[12] = {0};
 			char strName[MAX_NETNAME] = {0};
 			char strUser[16] = {0};
 
-			Q_strncpyz(strNum, va("^5%i^3:^7", i), sizeof(strNum));
+			Q_strncpyz(strNum, va("^5%i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz( strUser, cl->pers.userName, sizeof(strUser));	
-			tmpMsg = va("%-2s %-39s^7%s\n", strNum, strName, strUser);
+			tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
 
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
@@ -686,42 +778,30 @@ void InitGameAccountStuff( void ) { //Called every mapload
 	level.Highscores = HighScores;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id UNSIGNED SMALLINT PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
+	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
 		"captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INT, playtime UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id UNSIGNED SMALLINT PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
+	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
 		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id UNSIGNED SMALLINT PRIMARY KEY, player1 VARCHAR(16), player2 VARCHAR(16), end_time UNSIGNED INT, duration UNSIGNED SMALLINT, "
-		"type UNSIGNED SMALLINT, winner_hp UNSIGNED SMALLINT, winner_shield UNSIGNED SMALLINT)";
+	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, player1 VARCHAR(16), player2 VARCHAR(16), end_time UNSIGNED INT, duration UNSIGNED SMALLINT, "
+		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
+	CleanupLocalRun(); //Deletes useless shit from LocalRun database table
 
-	G_AdToDBFromFile(); //Add last maps highscores
 
-	/*
-	sql = "DROP TABLE IF EXISTS Highscores"; //Remake highscores for map every mapload
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
+	G_AddToDBFromFile(); //Add last maps highscores
 
-	sql = "CREATE TABLE IF NOT EXISTS Highscores(id UNSIGNED SMALLINT PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
-		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	*/
-
-	//Style should be TINYINT, same with shields, HP, unsigned
+	
 
 	BuildMapHighscores();//Build highscores into memory from database
 

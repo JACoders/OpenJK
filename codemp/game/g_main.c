@@ -1622,45 +1622,6 @@ void QDECL G_DuelLogPrintf( const char *fmt, ... ) {
 	trap->FS_Write( string, strlen( string ), level.duelLog );
 }
 
-void QDECL G_RaceLogPrintf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		string[1024] = {0};
-	time_t		rawtime;
-	int			timeLen=0;
-
-	time( &rawtime );
-	localtime( &rawtime );
-	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
-	timeLen = strlen( string );
-
-	va_start( argptr, fmt );
-	Q_vsnprintf( string+timeLen, sizeof( string ) - timeLen, fmt, argptr );
-	va_end( argptr );
-
-	if ( dedicated.integer )
-		trap->Print( "%s", string + timeLen );
-
-	if ( !level.raceLog )
-		return;
-
-	trap->FS_Write( string, strlen( string ), level.raceLog );
-}
-
-void QDECL G_TempRaceLogPrintf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		string[1024] = {0};
-
-	va_start( argptr, fmt );
-	Q_vsnprintf( string, sizeof( string ), fmt, argptr );
-	va_end( argptr );
-
-	if ( !level.tempRaceLog )
-		return;
-
-	trap->FS_Write( string, strlen( string ), level.tempRaceLog );
-}
-
-
 /*
 ================
 LogExit

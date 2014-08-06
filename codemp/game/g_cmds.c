@@ -5099,17 +5099,19 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		return;
 
 	Q_strncpyz(buf, va("^5 Hi there, %s^5.  This server is using the jaPRO mod.\n", ent->client->pers.netname), sizeof(buf));
-	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig\n" );
+	Q_strcat(buf, sizeof(buf), "   ^3To display server settings, type ^7serverConfig" );
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Account commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "register ");
 	Q_strcat(buf, sizeof(buf), "login ");
 	Q_strcat(buf, sizeof(buf), "logout ");
+	Q_strcat(buf, sizeof(buf), "changepassword ");
 	Q_strcat(buf, sizeof(buf), "dftop10 ");
-	Q_strcat(buf, sizeof(buf), "whois ");
+	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
-	Q_strcat(buf, sizeof(buf), "   ^3Chat commands: ");
+	Q_strncpyz(buf, "   ^3Chat commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "ignore ");
 	Q_strcat(buf, sizeof(buf), "clanPass ");
 	Q_strcat(buf, sizeof(buf), "clanWhoIs ");
@@ -6233,7 +6235,7 @@ void Cmd_Race_f(gentity_t *ent)
 }
 
 //[JAPRO - Serverside - All - Serverconfig - Start]
-void Cmd_ServerConfig_f(gentity_t *ent)
+void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make standardized
 {
 	char buf[MAX_STRING_CHARS-64] = {0};
 
@@ -6528,6 +6530,7 @@ void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFBuildTop10_f(gentity_t *ent);//loda temporary
+void Cmd_ChangePassword_f( gentity_t *ent );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -6578,6 +6581,9 @@ command_t commands[] = {
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
+
+	{ "changepassword",		Cmd_ChangePassword_f,		CMD_NOINTERMISSION },
+
 	{ "clanpass",			Cmd_Clanpass_f,				CMD_NOINTERMISSION },
 	{ "clansay",			Cmd_Clansay_f,				0 },
 	{ "clanwhois",			Cmd_Clanwhois_f,			0 },

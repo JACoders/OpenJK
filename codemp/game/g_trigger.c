@@ -1273,7 +1273,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->ps.duelTime = level.time;
 }
 
-void G_AddRunToTempFile(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
+void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;
@@ -1373,10 +1373,11 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			p = strchr(strIP, ':');
 			if (p)
 				*p = 0;
-			G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
-				player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
-			if (player->client->pers.userName)
-				G_AddRunToTempFile(player->client->pers.userName, courseName, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
+			//G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
+				//player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
+			if (player->client->pers.userName) {
+				G_AddRaceTime(player->client->pers.userName, courseName, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
+			}
 		}
 
 		player->client->pers.stats.startLevelTime = 0;

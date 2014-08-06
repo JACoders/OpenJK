@@ -1649,7 +1649,6 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_WARPS = 32, args = 1;
 	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
 	char*	pch;
-	//char	tmp[MAX_QPATH+4];
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(filename, Info_ValueForKey(info, "mapname"), sizeof(filename));
@@ -1675,15 +1674,10 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
 	trap->FS_Close(f);
-	Com_Printf ("loaded tele locations from %s\n", filename);
+	Com_Printf ("Loaded tele locations from %s\n", filename);
 
 	pch = strtok (buf," ");
-	while (pch != NULL) {
-
-		//Q_strncpyz(tmp, &pch, sizeof(tmp));
-		//Com_sprintf(tmp, sizeof(tmp), "%s", pch);
-		//Com_Printf ("pch: %s\n", pch);
-		
+	while (pch != NULL) {		
 		if ((args % 5) == 1)
 			Q_strncpyz(level.warpName[args / 5], pch, sizeof(level.warpName[0]));
 		else if ((args % 5) == 2)

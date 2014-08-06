@@ -1531,8 +1531,6 @@ void AddTournamentQueue(gclient_t *client);
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void QDECL G_DuelLogPrintf( const char *fmt, ... );
-void QDECL G_RaceLogPrintf( const char *fmt, ... );
-void QDECL G_TempRaceLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
 const char *G_GetStringEdString(char *refSection, char *refName);
 
