@@ -1553,6 +1553,8 @@ void SP_trigger_timer_stop( gentity_t *self )
 	//For every stop trigger, increment numCourses and put its name in array
 	//if (self->message && self->message[0]) {
 		Q_strncpyz(level.courseName[level.numCourses], self->message, sizeof(level.courseName[0]));
+		Q_strlwr(level.courseName[level.numCourses]);
+		Q_CleanStr(level.courseName[level.numCourses]);
 		level.numCourses++;
 	//}
 

@@ -1598,30 +1598,6 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	trap->FS_Write( string, strlen( string ), level.security.log );
 }
 
-void QDECL G_DuelLogPrintf( const char *fmt, ... ) {
-	va_list		argptr;
-	char		string[1024] = {0};
-	time_t		rawtime;
-	int			timeLen=0;
-
-	time( &rawtime );
-	localtime( &rawtime );
-	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
-	timeLen = strlen( string );
-
-	va_start( argptr, fmt );
-	Q_vsnprintf( string+timeLen, sizeof( string ) - timeLen, fmt, argptr );
-	va_end( argptr );
-
-	if ( dedicated.integer )
-		trap->Print( "%s", string + timeLen );
-
-	if ( !level.duelLog )
-		return;
-
-	trap->FS_Write( string, strlen( string ), level.duelLog );
-}
-
 /*
 ================
 LogExit

@@ -73,6 +73,18 @@ unsigned int ip_to_int (const char * ip) {
     return v;
 }
 
+/*
+static void CleanStrin(char &string) {
+	
+	int i = 0;
+	//while (string[i]) {
+		//string[i] = tolower(string[i]);
+		i++;
+	//}
+	//Q_CleanStr(string);
+}
+*/
+
 int CheckUserExists(char *username) {
 	sqlite3 * db;
     char * sql;
@@ -120,6 +132,13 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
     char * sql;
     sqlite3_stmt * stmt;
 	time_t	rawtime;
+	char	string[1024] = {0};
+
+	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", winner, loser, duration, type, winner_hp, winner_shield, rawtime);
+	if (level.duelLog)
+		trap->FS_Write(string, strlen(string), level.duelLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+
+	//Might want to make this log to file, and have that sent to db on map change.  But whatever.. duel finishes are not as frequent as race course finishes usually.
 
 	if (CheckUserExists(winner) && CheckUserExists(loser)) {
 		time( &rawtime );
@@ -130,11 +149,11 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, winner, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, loser, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, rawtime));
-		CALL_SQLITE (bind_int (stmt, 4, duration));
-		CALL_SQLITE (bind_int (stmt, 5, type));
-		CALL_SQLITE (bind_int (stmt, 6, winner_hp));
-		CALL_SQLITE (bind_int (stmt, 7, winner_shield));
+		CALL_SQLITE (bind_int (stmt, 3, duration));
+		CALL_SQLITE (bind_int (stmt, 4, type));
+		CALL_SQLITE (bind_int (stmt, 5, winner_hp));
+		CALL_SQLITE (bind_int (stmt, 6, winner_shield));
+		CALL_SQLITE (bind_int (stmt, 7, rawtime));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 	}
 }
@@ -211,7 +230,7 @@ void G_AddToDBFromFile(void) //loda fixme
 	trap->FS_Close(f);
 }
 
-void G_AddRaceTime(char *username, char *courseName, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
+void G_AddRaceTime(char *username, char *coursename, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char		string[1024] = {0};
 
@@ -221,7 +240,10 @@ void G_AddRaceTime(char *username, char *courseName, int duration_ms, int style,
 	if (!CheckUserExists(username))
 		return;
 
-	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i", username, courseName, duration_ms, topspeed, average, style, rawtime);
+	Q_strlwr(coursename);
+	Q_CleanStr(coursename);
+
+	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, coursename, duration_ms, topspeed, average, style, rawtime);
 
 	if (level.raceLog)
 		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
@@ -321,7 +343,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
     char * sql;
     sqlite3_stmt * stmt;
     int row = 0, i = 0;
-	char username[16], enteredPassword[16], newPassword[16], newPasswordCleaned[16], password[16];
+	char username[16], enteredPassword[16], newPassword[16], password[16];
 
 	if (trap->Argc() != 4) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /changepassword <username> <password> <newpassword>\n\"");
@@ -341,6 +363,9 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect username!\n\"");
 		return;
 	}
+
+	Q_strlwr(newPassword);
+	Q_CleanStr(newPassword);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "SELECT password FROM LocalAccount WHERE username = ?";
@@ -368,17 +393,9 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		char *p = NULL;
 		char strIP[NET_ADDRSTRMAXLEN] = {0};
 
-		Q_strncpyz(newPasswordCleaned, newPassword, sizeof(newPasswordCleaned));
-			
-		/*while (newPassword[i]) {
-			newPasswordCleaned[i] = tolower(newPassword[i]);
-			i++;
-		}*/
-		Q_CleanStr(newPasswordCleaned);//also strip other chars..?
-
 		sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, newPasswordCleaned, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, ent->client->pers.userName, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (finalize(stmt));
@@ -460,6 +477,9 @@ void CleanupLocalRun() {
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
 
+	Q_strlwr(mapName);
+	Q_CleanStr(mapName);
+
 	trap->Print("Cleaning up racetimes for %s", mapName);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -481,7 +501,7 @@ void CleanupLocalRun() {
 
 		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
 				"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
-				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
+				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10"; //loda fixme, maybe keep more in table? 
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
@@ -521,6 +541,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
+	Q_strlwr(mapName);
+	Q_CleanStr(mapName);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
@@ -531,9 +553,6 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-			//sql = "SELECT LocalAccount.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun, LocalAccount "
-			//	"WHERE LocalAccount.id = LocalRun.user_id AND LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY user_id, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
-
 			sql = "SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
 				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -597,30 +616,24 @@ void IntegerToRaceName(int style, char *styleString) {
 }
 
 int RaceNameToInteger(char *style) {
-	char cleanedStyle[16];
 	int i = 0;
 
-	Q_strncpyz(cleanedStyle, style, sizeof(cleanedStyle));
+	Q_strlwr(style);
+	Q_CleanStr(style);
 
-	/*while (style[i]) {
-		cleanedStyle[i] = tolower(style[i]);
-		i++;
-	}*/
-	Q_CleanStr(cleanedStyle);//also strip other chars..?
-
-	if (!Q_stricmp(cleanedStyle, "siege") || !Q_stricmp(cleanedStyle, "0"))
+	if (!Q_stricmp(style, "siege") || !Q_stricmp(style, "0"))
 		return 0;
-	if (!Q_stricmp(cleanedStyle, "jka") || !Q_stricmp(cleanedStyle, "jk3") || !Q_stricmp(style, "1"))
+	if (!Q_stricmp(style, "jka") || !Q_stricmp(style, "jk3") || !Q_stricmp(style, "1"))
 		return 1;
-	if (!Q_stricmp(cleanedStyle, "hl2") || !Q_stricmp(cleanedStyle, "hl1") || !Q_stricmp(cleanedStyle, "hl") || !Q_stricmp(cleanedStyle, "qw") || !Q_stricmp(cleanedStyle, "2"))
+	if (!Q_stricmp(style, "hl2") || !Q_stricmp(style, "hl1") || !Q_stricmp(style, "hl") || !Q_stricmp(style, "qw") || !Q_stricmp(style, "2"))
 		return 2;
-	if (!Q_stricmp(cleanedStyle, "cpm") || !Q_stricmp(cleanedStyle, "cpma") || !Q_stricmp(cleanedStyle, "3"))
+	if (!Q_stricmp(style, "cpm") || !Q_stricmp(style, "cpma") || !Q_stricmp(style, "3"))
 		return 3;
-	if (!Q_stricmp(cleanedStyle, "q3") || !Q_stricmp(cleanedStyle, "vq3") || !Q_stricmp(cleanedStyle, "4"))
+	if (!Q_stricmp(style, "q3") || !Q_stricmp(style, "vq3") || !Q_stricmp(style, "4"))
 		return 4;
-	if (!Q_stricmp(cleanedStyle, "pjk") || !Q_stricmp(cleanedStyle, "5"))
+	if (!Q_stricmp(style, "pjk") || !Q_stricmp(style, "5"))
 		return 5;
-	if (!Q_stricmp(cleanedStyle, "wsw") || !Q_stricmp(cleanedStyle, "warsow") || !Q_stricmp(cleanedStyle, "6"))
+	if (!Q_stricmp(style, "wsw") || !Q_stricmp(style, "warsow") || !Q_stricmp(style, "6"))
 		return 6;
 	return -1;
 }
@@ -689,12 +702,23 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
 	if (courseName && courseName[0]) //&& courseName[0]?
 		Q_strcat(courseNameFull, sizeof(courseNameFull), va(" (%s)", courseName));
+
+	Q_strlwr(courseName);
+	Q_CleanStr(courseName);
+	Q_strlwr(courseNameFull);
+	Q_CleanStr(courseNameFull);
+
 	IntegerToRaceName(style, styleString);
 	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseName, styleString));
 	trap->SendServerCommand(ent-g_entities, "print \"   ^5Username           Time         Topspeed    Average\n\"");
 
 	for (i = 0; i < (10 * level.numCourses * 7); i++) {
-		if (level.Highscores[i].username) {
+		if (level.Highscores[i].username && level.Highscores[i].username[0]) {
+
+
+			//loda memes
+			trap->Print("DFTOP10 USED -- username: %s, level coursename: %s, fullcoursename: %s, levelstyle: %i, style %i\n", level.Highscores[i].username, level.Highscores[i].coursename, courseNameFull, level.Highscores[i].style, style);
+
 			if ((!Q_stricmp(level.Highscores[i].coursename, courseNameFull)) && (level.Highscores[i].style == style)) {
 				if (level.Highscores[i].duration_ms >= 60000) {
 					int minutes, seconds, milliseconds;
@@ -773,8 +797,7 @@ void InitGameAccountStuff( void ) { //Called every mapload
     char * sql;
     sqlite3_stmt * stmt;
 
-	// initialize all highscores for this map
-	memset(&HighScores, 0, sizeof(HighScores));
+	memset(&HighScores, 0, sizeof(HighScores)); // initialize all highscores for this map
 	level.Highscores = HighScores;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -790,292 +813,18 @@ void InitGameAccountStuff( void ) { //Called every mapload
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, player1 VARCHAR(16), player2 VARCHAR(16), end_time UNSIGNED INT, duration UNSIGNED SMALLINT, "
-		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT)";
+	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, player1 VARCHAR(16), player2 VARCHAR(16), duration UNSIGNED SMALLINT, "
+		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
 	CleanupLocalRun(); //Deletes useless shit from LocalRun database table
-
-
 	G_AddToDBFromFile(); //Add last maps highscores
-
-	
-
 	BuildMapHighscores();//Build highscores into memory from database
 
-
-
-
-	//delete last maps highscores file?
-
-	CALL_SQLITE (close(db));
-	//Check if stuff needs to be sent to global db? idk
-}
-
-#if 0
-void Cmd_ACLogin_f( gentity_t *ent ) {
-	//Client inputs account name, server querys user database on website, checks last known IP for that username, if match, client is logged in.
-	//This will require client to revisit the master website if their IP changes (and be logged in there).
-	//But it stops client from having to send password over JKA, and lets global accounts work nice
-
-	//Connect to master acounts db, check lastKnownIP of username, compare to ent->client->ip, if match, log player in.
-	//If not, print message and quit (no account found, invalid pass, etc).
-
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-    int row = 0;
-	char accountName[16] = {0};
-	int i = 0;
-	qboolean newAccount;
-
-	if (trap->Argc() != 2) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /login <username>\n\"");
-		return;
-	}
-
-	//if (ent->client->pers.accountName) { //check cuz its a string if [0] = \0 or w/e
-	if (Q_stricmp(ent->client->pers.userName, "")) {
-		trap->SendServerCommand(ent-g_entities, "print \"You are already logged in!\n\"");
-		return;
-	}
-
-	while (ent->client->pers.userName[i]) {
-		accountName[i] = tolower(ent->client->pers.userName[i]);
-		i++;
-	}
-	Q_CleanStr(accountName);//also strip other chars..?
-
-	//set accountName equal to account name on global database
-
-	//Query GLOBAL database with this: select lastKnownIP and user_name from users where user_name == trap->arg2, 
-	//If that ip matches, ent->client->pers.accountName = user_name
-	//else account_id = "", print that 
-
-	//To query the global database, i guess we could use libcurl to open a webpage, and login, make sure we are a whitelisted IP, and have the webpage do the sql query
-
-	//To log someone in, open the page mysite.com/gameserverlogin.php and send username with POST? (since we are probably going to add passwords later)
-	//If the page says "account not found" print the error to user and return.
-	//If the page returns an IP address, compare it to ent->clients ip address, and if it matches log them in.
-
-	//mysite.com/gameserverlogin.php
-		//makes sure querying server address is whitelisted
-		//check against sql injection
-		//checks to see if ACCOUNTNAME is a valid account, if not, return a webpage with "account not found"
-		//for v2, check if PASSWORD matches
-		//if the account exists, return the last known IP for that account
-
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-    sql = va("SELECT COUNT(*) FROM LocalAccount where username=%s"), accountName;
-    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, &stmt, NULL));
-
-	while (1) {
-		int s;
-		s = sqlite3_step (stmt);
-		if (s == SQLITE_ROW) {
-			int bytes;
-			const unsigned char *text;
-			bytes = sqlite3_column_bytes(stmt, 0);
-			text = sqlite3_column_text (stmt, 0);
-			trap->Print("%d: %s\n", row, text);
-			if (atoi((const char *)text) == 0) //woof
-				newAccount = qtrue;
-			row++;
-		}
-		else if (s == SQLITE_DONE)
-			break;
-		else {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-			break;
-		}
-    }
-
-	if (row != 1) { //Count only returns one row, double check
-		trap->Print("ERROR: SQL Select Failed.\n");
-		return;
-	}
-	
-	if (newAccount) {//Found no results, make the account
-
-		trap->SendServerCommand(ent-g_entities, "print \"Account not found! To make a new account, use the /register command.\n\"");
-
-		
-		//sql = va("INSERT INTO LocalAccount (accountname) VALUES (%s)", accountName);
-		//CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));//what does this do, send the insert query?
-		//CALL_SQLITE (bind_text (stmt, 1, "testtesttest", 6, SQLITE_STATIC));//what does this do?
-		//CALL_SQLITE_EXPECT (step (stmt), DONE); //what does this do?
-		
-	}
-
-
-	Q_strncpyz(ent->client->pers.userName, accountName, sizeof(ent->client->pers.userName));
-}
-#endif
-
-#if 0
-void Cmd_DFTop10_f( gentity_t *ent ) {
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	int i, style, row = 0, rank = 1;
-	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
-	char info[1024] = {0};
-
-	if (level.numCourses == 0) {
-		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
-		return;
-	}
-
-	if (trap->Argc() > 3 || (level.numCourses == 1 && trap->Argc() > 2)) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
-		return;
-	}
-
-	if (level.numCourses > 1 && trap->Argc() < 2) {
-		trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /dftop10 <coursename> <style (optional)>\n\"");
-		for (i = 0; i < level.numCourses; i++) { //32 max
-			if (level.courseName[i] && level.courseName[i][0])
-				trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i, level.courseName[i]));
-		}
-		return;
-	}
-
-	if (level.numCourses == 1 && trap->Argc() < 2) { //dftop10
-		style = 1;
-	}
-	else if (level.numCourses == 1 && trap->Argc() == 2) { //dftop10 cpm
-		char input[32];
-		trap->Argv(1, input, sizeof(input));
-		if (atoi(input) >= 0 && atoi(input) < 7) {
-			style = atoi(input);
-		}
-		else {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
-			return;
-		}
-	}
-	else if (level.numCourses > 1 && trap->Argc() == 2) { //dftop10 dash1
-		char input[32];
-		trap->Argv(1, input, sizeof(input));
-		Q_strncpyz(courseName, input, sizeof(courseName));
-		style = 1;
-	}
-	else if (level.numCourses > 1 && trap->Argc() == 3) { //dftop10 dash1 cpm
-		char input1[40], input2[16];
-		trap->Argv(1, input1, sizeof(input1));
-		trap->Argv(2, input2, sizeof(input2));
-		Q_strncpyz(courseName, input1, sizeof(courseName));
-		style = RaceNameToInteger(input2);
-		if (style < 0) {
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
-			return;
-		}
-	}
-	else {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
-		return;
-	}
-
-	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
-	if (courseName && courseName[0]) //&& courseName[0]?
-		Q_strcat(courseNameFull, sizeof(courseNameFull), va(" (%s)", courseName));
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT username, topspeed, average, duration_ms, end_time FROM Highscores WHERE coursename = ? AND style = ? LIMIT 11";//Limit 11 just in case... should only be max 10 anyway tho
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, courseNameFull, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 2, style));
-
-	IntegerToRaceName(style, styleString);
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseName, styleString));
-	trap->SendServerCommand(ent-g_entities, "print \"   ^5username           time         topspeed    average\n\"");
-	
-	while (1) {
-		int s;
-		s = sqlite3_step (stmt);
-		if (s == SQLITE_ROW) {
-			const unsigned char *username;
-			int topspeed, average, time;
-			username = sqlite3_column_text (stmt, 0);
-			topspeed = sqlite3_column_int(stmt, 1);
-			average = sqlite3_column_int(stmt, 2);
-			time = sqlite3_column_int(stmt, 3);
-			//datetime = ?
-			if (username) {
-				if (time >= 60000) {
-					int minutes, seconds, milliseconds;
-					minutes = (int)(time / 1000) % 60;
-					seconds = (int)((time / (1000*60)) % 60);
-					milliseconds = time % 1000; //milliseconds = fmodf(time, milliseconds);
-					Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);
-				}
-				else
-					Q_strncpyz(timeStr, va("%.3f", ((float)time * 0.001)), sizeof(timeStr));
-				trap->SendServerCommand(ent-g_entities, va("print \"%i) ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", rank, username, timeStr, topspeed, average));
-				rank++;
-			}
-			//row++;
-		}
-		else if (s == SQLITE_DONE)
-			break;
-		else {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-			break;
-		}
-	}
-
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
-
-	//This is a server specific top 10, not global.
-
-	//if more than 1 course per map, require usage "/dftop10 <coursename>", how to find this out?  or do it based on how many courses there are for this map in the db?
-	//else display map top10
-
-	//dftop10 <mapname> <coursename> <style> is full syntax... how deal with partial entries?
-
-	//At mapload, get 10thfastest time for that map
-	//Every time someone completes course, check if it was faster than 10thfastest
-	//If so, rebuild top10 list?  And redefine 10thfastest?
-}
-#endif
-
-#if 0
-static void DFBuildTop10() { //Build a highscores of only the fast runs, so we can use that with better performance
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	int i, style, row = 0;
-	char mapName[40], courseName[40], info[1024] = {0};
-
-	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-
-	for (i = 0; i < level.numCourses; i++) { //32 max
-		for (style = 0; style < 7; style++) { //7 movement styles. 0-6
-			Q_strncpyz(courseName, mapName, sizeof(courseName));
-			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-
-			sql = "INSERT INTO Highscores (username, coursename, duration_ms, topspeed, average, style, end_time) "
-				"SELECT LocalAccount.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun, LocalAccount "
-				"WHERE LocalAccount.id = LocalRun.user_id AND LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY user_id, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
-
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 2, style));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-		}
-	}
 	CALL_SQLITE (close(db));
 }
-#endif
 
 #if 0
 void G_AddRunToDB(char *username, char *courseName, float duration, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
