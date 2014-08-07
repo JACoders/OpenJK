@@ -1362,7 +1362,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				message, c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
 		}
 		else {
-			Q_strcat(courseName, sizeof(courseName), " ()");
+			//Q_strcat(courseName, sizeof(courseName), " ()");
 			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^%i%s\n\"",
 				c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
 		}
@@ -1548,15 +1548,17 @@ void SP_trigger_timer_stop( gentity_t *self )
 			self->awesomenoise_index = 0;
 	}
 
-	//trap->Print(va("%s", courseName));
-
 	//For every stop trigger, increment numCourses and put its name in array
-	//if (self->message && self->message[0]) {
+	if (self->message && self->message[0]) {
 		Q_strncpyz(level.courseName[level.numCourses], self->message, sizeof(level.courseName[0]));
 		Q_strlwr(level.courseName[level.numCourses]);
 		Q_CleanStr(level.courseName[level.numCourses]);
 		level.numCourses++;
-	//}
+	}
+	else if (level.numCourses == 0) { //hmmmmmmmmm!
+		Q_strncpyz(level.courseName[level.numCourses], "", sizeof(level.courseName[0]));
+		level.numCourses = 1;
+	}
 
 	self->touch = TimerStop;
 	trap->LinkEntity ((sharedEntity_t *)self);

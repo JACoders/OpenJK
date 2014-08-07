@@ -680,8 +680,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 
 	for (i = 0; i < level.numCourses; i++) { //32 max
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
-		Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-
+		if (level.courseName[i][0])
+			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -794,8 +794,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		return;
 	}
 
-	if (level.numCourses == 1 && trap->Argc() < 2) { //dftop10
+	if (level.numCourses == 1 && trap->Argc() == 1) { //dftop10
 		style = 1;
+		Q_strncpyz(courseName, "", sizeof(courseName));
 	}
 	else if (level.numCourses == 1 && trap->Argc() == 2) { //dftop10 cpm
 		char input[32];
@@ -841,7 +842,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	Q_CleanStr(courseNameFull);
 
 	IntegerToRaceName(style, styleString);
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseName, styleString));
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseNameFull, styleString));
 	trap->SendServerCommand(ent-g_entities, "print \"   ^5Username           Time         Topspeed    Average\n\"");
 
 	for (i = 0; i < (10 * level.numCourses * 7); i++) {
