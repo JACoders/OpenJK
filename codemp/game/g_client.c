@@ -3451,6 +3451,7 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{//jediVmerc is incompatible with this gametype, turn it off!
 		trap->Cvar_Set( "g_jediVmerc", "0" );
+		trap->Cvar_Update( &g_jediVmerc );
 		if (level.gametype == GT_HOLOCRON)
 		{
 			//always get free saber level 1 in holocron
