@@ -1100,39 +1100,75 @@ RB_DrawRotatePic
 const void *RB_RotatePic ( const void *data ) 
 {
 	const rotatePicCommand_t	*cmd;
-	image_t *image;
 	shader_t *shader;
+	int		numVerts, numIndexes;
+	vec3_t	point, rotatedPoint;
+	vec3_t	axis = { 0.0f, 0.0f, 1.0f };
+	vec3_t	xlat;
 
 	cmd = (const rotatePicCommand_t *)data;
 
-	shader = cmd->shader;
-	image = &shader->stages[0].bundle[0].image[0];
-
-	if ( image ) {
-		if ( !backEnd.projection2D ) {
-			RB_SetGL2D();
-		}
-
-		qglColor4ubv( backEnd.color2D );
-		qglPushMatrix();
-
-		qglTranslatef(cmd->x+cmd->w,cmd->y,0);
-		qglRotatef(cmd->a, 0.0, 0.0, 1.0);
-		
-		GL_Bind( image );
-		qglBegin (GL_QUADS);
-		qglTexCoord2f( cmd->s1, cmd->t1);
-		qglVertex2f( -cmd->w, 0 );
-		qglTexCoord2f( cmd->s2, cmd->t1 );
-		qglVertex2f( 0, 0 );
-		qglTexCoord2f( cmd->s2, cmd->t2 );
-		qglVertex2f( 0, cmd->h );
-		qglTexCoord2f( cmd->s1, cmd->t2 );
-		qglVertex2f( -cmd->w, cmd->h );
-		qglEnd();
-		
-		qglPopMatrix();
+	if ( !backEnd.projection2D ) {
+		RB_SetGL2D();
 	}
+
+	shader = cmd->shader;
+	if ( shader != tess.shader ) {
+		if ( tess.numIndexes ) {
+			RB_EndSurface();
+		}
+		backEnd.currentEntity = &backEnd.entity2D;
+		RB_BeginSurface( shader, 0 );
+	}
+
+	RB_CHECKOVERFLOW( 4, 6 );
+	numVerts = tess.numVertexes;
+	numIndexes = tess.numIndexes;
+
+	tess.numVertexes += 4;
+	tess.numIndexes += 6;
+
+	tess.indexes[ numIndexes ] = numVerts + 3;
+	tess.indexes[ numIndexes + 1 ] = numVerts + 0;
+	tess.indexes[ numIndexes + 2 ] = numVerts + 2;
+	tess.indexes[ numIndexes + 3 ] = numVerts + 2;
+	tess.indexes[ numIndexes + 4 ] = numVerts + 0;
+	tess.indexes[ numIndexes + 5 ] = numVerts + 1;
+
+	*(int *)tess.vertexColors[ numVerts ] =
+		*(int *)tess.vertexColors[ numVerts + 1 ] =
+		*(int *)tess.vertexColors[ numVerts + 2 ] =
+		*(int *)tess.vertexColors[ numVerts + 3 ] = *(int *)backEnd.color2D;
+
+	VectorSet (xlat, cmd->x, cmd->y, 0.0f);
+
+	VectorSet (point, -cmd->w, 0.0f, 0.0f);
+	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts]);
+
+	tess.texCoords[ numVerts ][0][0] = cmd->s1;
+	tess.texCoords[ numVerts ][0][1] = cmd->t1;
+
+	VectorSet (point, 0.0f, 0.0f, 0.0f);
+	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 1]);
+
+	tess.texCoords[ numVerts + 1 ][0][0] = cmd->s2;
+	tess.texCoords[ numVerts + 1 ][0][1] = cmd->t1;
+
+	VectorSet (point, 0.0f, cmd->h, 0.0f);
+	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 2]);
+
+	tess.texCoords[ numVerts + 2 ][0][0] = cmd->s2;
+	tess.texCoords[ numVerts + 2 ][0][1] = cmd->t2;
+
+	VectorSet (point, -cmd->w, cmd->h, 0.0f);
+	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
+	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 3]);
+
+	tess.texCoords[ numVerts + 3 ][0][0] = cmd->s1;
+	tess.texCoords[ numVerts + 3 ][0][1] = cmd->t2;
 
 	return (const void *)(cmd + 1);
 }
@@ -1145,57 +1181,77 @@ RB_DrawRotatePic2
 const void *RB_RotatePic2 ( const void *data ) 
 {
 	const rotatePicCommand_t	*cmd;
-	image_t *image;
 	shader_t *shader;
+	int		numVerts, numIndexes;
+	vec3_t	point, rotatedPoint;
+	vec3_t	axis = { 0.0f, 0.0f, 1.0f };
+	vec3_t	xlat;
 
 	cmd = (const rotatePicCommand_t *)data;
 
 	shader = cmd->shader;
 
-	if ( shader->numUnfoggedPasses )
-	{
-		image = &shader->stages[0].bundle[0].image[0];
-
-		if ( image ) 
-		{
-			if ( !backEnd.projection2D ) 
-			{
-				RB_SetGL2D();
-			}
-
-			// Get our current blend mode, etc.
-			GL_State( shader->stages[0].stateBits );
-
-			qglColor4ubv( backEnd.color2D );
-			qglPushMatrix();
-
-			// rotation point is going to be around the center of the passed in coordinates
-			qglTranslatef( cmd->x, cmd->y, 0 );
-			qglRotatef( cmd->a, 0.0, 0.0, 1.0 );
-			
-			GL_Bind( image );
-			qglBegin( GL_QUADS );
-				qglTexCoord2f( cmd->s1, cmd->t1);
-				qglVertex2f( -cmd->w * 0.5f, -cmd->h * 0.5f );
-
-				qglTexCoord2f( cmd->s2, cmd->t1 );
-				qglVertex2f( cmd->w * 0.5f, -cmd->h * 0.5f );
-
-				qglTexCoord2f( cmd->s2, cmd->t2 );
-				qglVertex2f( cmd->w * 0.5f, cmd->h * 0.5f );
-
-				qglTexCoord2f( cmd->s1, cmd->t2 );
-				qglVertex2f( -cmd->w * 0.5f, cmd->h * 0.5f );
-			qglEnd();
-			
-			qglPopMatrix();
-
-			// Hmmm, this is not too cool
-			GL_State( GLS_DEPTHTEST_DISABLE |
-				  GLS_SRCBLEND_SRC_ALPHA |
-				  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
-		}
+	if ( !backEnd.projection2D ) {
+		RB_SetGL2D();
 	}
+
+	shader = cmd->shader;
+	if ( shader != tess.shader ) {
+		if ( tess.numIndexes ) {
+			RB_EndSurface();
+		}
+		backEnd.currentEntity = &backEnd.entity2D;
+		RB_BeginSurface( shader, 0 );
+	}
+
+	RB_CHECKOVERFLOW( 4, 6 );
+	numVerts = tess.numVertexes;
+	numIndexes = tess.numIndexes;
+
+	tess.numVertexes += 4;
+	tess.numIndexes += 6;
+
+	tess.indexes[numIndexes] = numVerts + 3;
+	tess.indexes[numIndexes + 1] = numVerts + 0;
+	tess.indexes[numIndexes + 2] = numVerts + 2;
+	tess.indexes[numIndexes + 3] = numVerts + 2;
+	tess.indexes[numIndexes + 4] = numVerts + 0;
+	tess.indexes[numIndexes + 5] = numVerts + 1;
+
+	*(int *)tess.vertexColors[numVerts] =
+		*(int *)tess.vertexColors[numVerts + 1] =
+		*(int *)tess.vertexColors[numVerts + 2] =
+		*(int *)tess.vertexColors[numVerts + 3] = *(int *)backEnd.color2D;
+
+	VectorSet( xlat, cmd->x, cmd->y, 0.0f );
+
+	VectorSet( point, -cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f );
+	RotatePointAroundVector( rotatedPoint, axis, point, -cmd->a );
+	VectorAdd( rotatedPoint, xlat, tess.xyz[numVerts] );
+
+	tess.texCoords[numVerts][0][0] = cmd->s1;
+	tess.texCoords[numVerts][0][1] = cmd->t1;
+
+	VectorSet( point, cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f );
+	RotatePointAroundVector( rotatedPoint, axis, point, -cmd->a );
+	VectorAdd( rotatedPoint, xlat, tess.xyz[numVerts + 1] );
+
+	tess.texCoords[numVerts + 1][0][0] = cmd->s2;
+	tess.texCoords[numVerts + 1][0][1] = cmd->t1;
+
+	VectorSet( point, cmd->w * 0.5f, cmd->h * 0.5f, 0.0f );
+	RotatePointAroundVector( rotatedPoint, axis, point, -cmd->a );
+	VectorAdd( rotatedPoint, xlat, tess.xyz[numVerts + 2] );
+
+	tess.texCoords[numVerts + 2][0][0] = cmd->s2;
+	tess.texCoords[numVerts + 2][0][1] = cmd->t2;
+
+	VectorSet( point, -cmd->w * 0.5f, cmd->h * 0.5f, 0.0f );
+	RotatePointAroundVector( rotatedPoint, axis, point, -cmd->a );
+	VectorAdd( rotatedPoint, xlat, tess.xyz[numVerts + 3] );
+
+	tess.texCoords[numVerts + 3][0][0] = cmd->s1;
+	tess.texCoords[numVerts + 3][0][1] = cmd->t2;
 
 	return (const void *)(cmd + 1);
 }
