@@ -436,7 +436,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 }
 
 
-
+void G_AddSimpleStatsToDB();
 /*
 =================
 G_ShutdownGame
@@ -445,6 +445,8 @@ G_ShutdownGame
 void G_ShutdownGame( int restart ) {
 	int i = 0;
 	gentity_t *ent;
+
+	G_AddSimpleStatsToDB();//This is for the previous map, so do this here, not in initgame so cl->pers stuff does not get cleared.
 
 //	trap->Print ("==== ShutdownGame ====\n");
 

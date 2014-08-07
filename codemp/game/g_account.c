@@ -266,7 +266,7 @@ void G_AddRaceTime(char *username, char *coursename, int duration_ms, int style,
 //to cut down on database size, there should be a cleanup on every mapload or.. every week..or...?
 //which removes any time not in the top 100 of its category AND more than 1 week old?
 
-void Cmd_ACLogin_f( gentity_t *ent ) {
+void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip somehow
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -465,6 +465,130 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 	}
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
+}
+
+void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16];
+	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths;
+	float kdr, realkdr;
+	char buf[MAX_STRING_CHARS-64] = {0};
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username>\n\"");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT kills, deaths, suicides, captures, returns, lastlogin, playtime FROM LocalAccount WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	
+    while (1) {
+        int s;
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			kills = sqlite3_column_int(stmt, 0);
+			deaths = sqlite3_column_int(stmt, 1);
+			suicides = sqlite3_column_int(stmt, 2);
+			captures = sqlite3_column_int(stmt, 3);
+			returns = sqlite3_column_int(stmt, 4);
+			lastlogin = sqlite3_column_int(stmt, 5);
+			playtime = sqlite3_column_int(stmt, 6);
+            row++;
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	if (row == 0) { //no account found, or more than 1 account with same name, problem
+		trap->SendServerCommand(ent-g_entities, "print \"Account not found!\n\"");
+		return;
+	}
+	else if (row > 1) {
+		trap->SendServerCommand(ent-g_entities, "print \"ERROR: Multiple accounts found!\n\"");
+		return;
+	}
+
+	realdeaths = deaths - suicides;
+	kdr = (float)kills/(float)deaths;
+	realkdr = (float)kills/(float)realdeaths;
+
+	if (deaths == 0)
+		kdr = kills;
+	if (realdeaths == 0)
+		realkdr = kills;
+	if (kills == 0) {
+		kdr = 0;
+		realkdr = 0;
+	}
+
+	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
+	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
+	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
+	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
+	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
+
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+}
+
+void G_AddSimpleStatsToDB() {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	gclient_t	*cl;
+	int i;
+
+	//cancel if cheats enabled
+
+	trap->Print("wtf is this bullshit");
+
+	//loda fixme, check hwere kills is incremented and make sure its not vs a fucking bot or atleast nPCS?
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "UPDATE LocalAccount SET "
+		"kills = kills + ?, "
+		"deaths = deaths + ?, "
+		"suicides = suicides + ?, "
+		"captures = captures + ?, "
+		"returns = returns + ? "
+		"WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+
+	for (i = 0; i < MAX_CLIENTS; i++) {//Build a list of clients
+		if (!g_entities[i].inuse)
+			continue;
+		cl = &level.clients[i];
+		if (cl->pers.netname[0] && cl->pers.userName && cl->pers.userName[0]) {
+
+			trap->Print("Kills for %s, %i", cl->pers.userName, cl->pers.stats.kills);
+
+			CALL_SQLITE (bind_int (stmt, 1, cl->pers.stats.kills));
+			CALL_SQLITE (bind_int (stmt, 2, cl->ps.persistant[PERS_KILLED]));
+			CALL_SQLITE (bind_int (stmt, 3, cl->ps.fd.suicides));
+			CALL_SQLITE (bind_int (stmt, 4, cl->pers.teamState.captures));
+			CALL_SQLITE (bind_int (stmt, 5, cl->pers.teamState.flagrecovery));
+			CALL_SQLITE (bind_text (stmt, 6, cl->pers.userName, -1, SQLITE_STATIC));
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
+		}
+	}
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
 }
 
 void CleanupLocalRun() {
@@ -714,11 +838,6 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 	for (i = 0; i < (10 * level.numCourses * 7); i++) {
 		if (level.Highscores[i].username && level.Highscores[i].username[0]) {
-
-
-			//loda memes
-			trap->Print("DFTOP10 USED -- username: %s, level coursename: %s, fullcoursename: %s, levelstyle: %i, style %i\n", level.Highscores[i].username, level.Highscores[i].coursename, courseNameFull, level.Highscores[i].style, style);
-
 			if ((!Q_stricmp(level.Highscores[i].coursename, courseNameFull)) && (level.Highscores[i].style == style)) {
 				if (level.Highscores[i].duration_ms >= 60000) {
 					int minutes, seconds, milliseconds;
@@ -802,7 +921,7 @@ void InitGameAccountStuff( void ) { //Called every mapload
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INT, playtime UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INT, playtime UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
