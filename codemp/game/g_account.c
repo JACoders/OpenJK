@@ -316,6 +316,11 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	if (enteredPassword && password && enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
 		char *p = NULL;
 		char strIP[NET_ADDRSTRMAXLEN] = {0};
+		time_t	rawtime;
+
+		time( &rawtime );
+		localtime( &rawtime );
+
 
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 		trap->SendServerCommand(ent-g_entities, "print \"Login sucessful.\n\"");
@@ -325,10 +330,11 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		if (p) //loda - fix ip sometimes not printing
 			*p = 0;
 
-		sql = "UPDATE LocalAccount SET lastip = ? WHERE username = ?";
+		sql = "UPDATE LocalAccount SET lastip = ?, lastlogin = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int64 (stmt, 1, ip_to_int(strIP)));
-		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, rawtime));
+		CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -475,6 +481,8 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
+	char timeStr[64] = {0};
+	time_t timeGMT;
 
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username>\n\"");
@@ -536,10 +544,14 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		realkdr = 0;
 	}
 
+	timeGMT = (time_t)lastlogin;
+	strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
 	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
@@ -552,11 +564,7 @@ void G_AddSimpleStatsToDB() {
 	gclient_t	*cl;
 	int i;
 
-	//cancel if cheats enabled
-
-	trap->Print("wtf is this bullshit");
-
-	//loda fixme, check hwere kills is incremented and make sure its not vs a fucking bot or atleast nPCS?
+	//cancel if cheats enabled loda
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET "

@@ -4164,7 +4164,8 @@ void ClientDisconnect( int clientNum ) {
 			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
 			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
 			AddScore( attacker, ent->r.currentOrigin, 1 );
-			attacker->client->pers.stats.kills++;//JAPRO STATS
+			if (ent && ent->s.eType != ET_NPC)
+				attacker->client->pers.stats.kills++;//JAPRO STATS
 		}	
 	}
 //JAPRO - Serverside - Stop those pesky reconnect whores - End

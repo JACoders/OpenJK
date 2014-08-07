@@ -2625,20 +2625,23 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
-					attacker->client->pers.stats.kills++;//JAPRO STATS
+					if (self->s.eType != ET_NPC)
+						attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
 				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
 					AddScore( attacker, self->r.currentOrigin, 2 ); 
-					attacker->client->pers.stats.kills++;//JAPRO STATS
+					if (self->s.eType != ET_NPC)
+						attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
-				else 
+				else if (self->s.eType != ET_NPC)
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 					//AddScore( attacker, self->r.currentOrigin, 1 ); //we dont care about other kills? just rabbit?
 			}
 			else
 			{
 				AddScore( attacker, self->r.currentOrigin, 1 );
-				attacker->client->pers.stats.kills++;//JAPRO STATS
+				if (self->s.eType != ET_NPC)
+					attacker->client->pers.stats.kills++;//JAPRO STATS
 			}
 
 			if( meansOfDeath == MOD_STUN_BATON ) {
