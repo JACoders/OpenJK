@@ -2437,7 +2437,8 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 
 		if ( key == A_MWHEELUP )
 		{
-			scrollPtr->startPos--;
+			int count = trap->Key_IsDown( A_CTRL ) ? 5 : 1;
+			scrollPtr->startPos -= count;
 			if (scrollPtr->startPos < 0)
 			{
 				scrollPtr->startPos = 0;
@@ -2449,7 +2450,8 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 		}
 		if ( key == A_MWHEELDOWN )
 		{
-			scrollPtr->startPos++;
+			int count = trap->Key_IsDown( A_CTRL ) ? 5 : 1;
+			scrollPtr->startPos += count;
 			if (scrollPtr->startPos > max)
 			{
 				scrollPtr->startPos = max;
@@ -3119,7 +3121,8 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 
 			if ( key == A_MWHEELUP )
 			{
-				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				int count = trap->Key_IsDown( A_CTRL ) ? 5 : 1;
+				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : count;
 				if (listPtr->startPos < 0)
 				{
 					listPtr->startPos = 0;
@@ -3131,7 +3134,8 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 			}
 			if ( key == A_MWHEELDOWN )
 			{
-				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				int count = trap->Key_IsDown( A_CTRL ) ? 5 : 1;
+				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS) ? viewmax : count;
 				if (listPtr->startPos > max)
 				{
 					listPtr->startPos = max;
