@@ -621,7 +621,7 @@ void CleanupLocalRun() {
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "CREATE TABLE TempLocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
+	sql = "CREATE TABLE TempLocalRun(id INTEGER PRIMARY KEY, old_id INTEGER, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
 		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
@@ -635,7 +635,7 @@ void CleanupLocalRun() {
 			//	"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
 			//	"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style, topspeed, average, end_time ORDER BY MIN(duration_ms) ASC LIMIT 10"; //loda fixme, maybe keep more in table? 
 
-		
+		/*
 		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
 			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
 				"from (SELECT username, MIN(duration_ms) AS mintime "
@@ -643,6 +643,30 @@ void CleanupLocalRun() {
 				   "WHERE coursename = ? AND style = ? "
 				   "GROUP BY username, coursename, style) " 
 				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
+				*/
+
+
+		//LODA FIXME, use id instead of username to join
+		//is there any way to fix this first query so it does this?
+		//The problem is that we dont want to insert the ID field, but we have to select it to use it in the join later..?
+		//Any way to get around this.. short of making a useless column in this table (as the second query does)?
+		/*
+		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) " 
+			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"from (SELECT username, MIN(duration_ms) AS mintime "
+				   "FROM LocalRun "
+				   "WHERE coursename = ? AND style = ? "
+				   "GROUP BY username, coursename, style) " 
+				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
+		*/
+		
+		sql = "INSERT INTO TempLocalRun (old_id, username, coursename, duration_ms, topspeed, average, style, end_time) " 
+			"SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"from (SELECT id, MIN(duration_ms) AS mintime "
+				   "FROM LocalRun "
+				   "WHERE coursename = ? AND style = ? "
+				   "GROUP BY username, coursename, style) " 
+				"AS x INNER JOIN LocalRun AS LR ON LR.id = x.id AND LR.duration_ms = x.mintime";
 				
 
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -700,12 +724,21 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 			//sql = "SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
 			//	"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style, topspeed, average, end_time ORDER BY MIN(duration_ms) ASC LIMIT 10";
 
-			sql = "SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+			/*
+			sql = "SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //LODA FIXME, user LR.id instead of LR.username in the join? 
 				"FROM (SELECT username, MIN(duration_ms) AS mintime "
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
 				   "GROUP by username, coursename, style) " 
 				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
+			*/
+
+			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"FROM (SELECT id, MIN(duration_ms) AS mintime "
+				   "FROM LocalRun "
+				   "WHERE coursename = ? AND style = ? "
+				   "GROUP by username, coursename, style) " 
+				"AS x INNER JOIN LocalRun AS LR ON LR.id = x.id AND LR.duration_ms = x.mintime";
 
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
@@ -723,13 +756,13 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					unsigned short style;
 					unsigned int end_time;
 
-					username = (char*)sqlite3_column_text(stmt, 0);
-					course = (char*)sqlite3_column_text(stmt, 1);
-					duration_ms = sqlite3_column_int(stmt, 2);
-					topspeed = sqlite3_column_int(stmt, 3);
-					average = sqlite3_column_int(stmt, 4);
-					style = sqlite3_column_int(stmt, 5);
-					end_time = sqlite3_column_int(stmt, 6);
+					username = (char*)sqlite3_column_text(stmt, 1); //Increment each of these by 1 if we use id to join
+					course = (char*)sqlite3_column_text(stmt, 2);
+					duration_ms = sqlite3_column_int(stmt, 3);
+					topspeed = sqlite3_column_int(stmt, 4);
+					average = sqlite3_column_int(stmt, 5);
+					style = sqlite3_column_int(stmt, 6);
+					end_time = sqlite3_column_int(stmt, 7);
 
 					Q_strncpyz(level.Highscores[row].username, username, sizeof(level.Highscores[0].username));
 					Q_strncpyz(level.Highscores[row].coursename, course, sizeof(level.Highscores[0].coursename));
