@@ -206,7 +206,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
 	G_LogPrintf( "------------------------------------------------------------\n" );
-	G_LogPrintf( "InitGame: %s\n", serverinfo );
+	G_LogPrintf( "InitGame: %s^7\n", serverinfo );
 
 	if ( g_securityLog.integer )
 	{

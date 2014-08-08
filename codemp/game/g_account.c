@@ -612,7 +612,7 @@ void CleanupLocalRun() {
 	Q_strlwr(mapName);
 	Q_CleanStr(mapName);
 
-	trap->Print("Cleaning up racetimes for %s", mapName);
+	trap->Print("Cleaning up racetimes for %s\n", mapName);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
@@ -631,9 +631,20 @@ void CleanupLocalRun() {
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
 		Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
 
+		//sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
+			//	"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
+			//	"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style, topspeed, average, end_time ORDER BY MIN(duration_ms) ASC LIMIT 10"; //loda fixme, maybe keep more in table? 
+
+		
 		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
-				"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
-				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10"; //loda fixme, maybe keep more in table? 
+			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"from (SELECT username, MIN(duration_ms) AS mintime "
+				   "FROM LocalRun "
+				   "WHERE coursename = ? AND style = ? "
+				   "GROUP BY username, coursename, style) " 
+				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
+				
+
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
@@ -685,8 +696,17 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-			sql = "SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
-				"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style ORDER BY MIN(duration_ms) ASC LIMIT 10";
+
+			//sql = "SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
+			//	"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style, topspeed, average, end_time ORDER BY MIN(duration_ms) ASC LIMIT 10";
+
+			sql = "SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"FROM (SELECT username, MIN(duration_ms) AS mintime "
+				   "FROM LocalRun "
+				   "WHERE coursename = ? AND style = ? "
+				   "GROUP by username, coursename, style) " 
+				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
+
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 2, mstyle));
