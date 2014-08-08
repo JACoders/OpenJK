@@ -384,7 +384,16 @@ void CG_DrawInformation( void ) {
 	// draw the dialog background
 	const char	*info	= CG_ConfigString( CS_SERVERINFO );
 	const char	*s		= Info_ValueForKey( info, "mapname" );
-	const qhandle_t	levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
+	qhandle_t	levelshot;
+
+	if (!strcmp(s,"bespin_undercity")) // this map has no levelshot
+		levelshot = cgi_R_RegisterShaderNoMip( "levelshots/kejim_post" );
+	else
+		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
+
+	if (!levelshot) {
+		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+	}
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
 	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 

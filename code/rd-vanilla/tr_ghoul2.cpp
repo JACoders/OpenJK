@@ -3608,6 +3608,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #endif
  	for ( i = 0 ; i < mdxm->numSurfaces ; i++) 
 	{
+		LL(surfInfo->flags);
 		LL(surfInfo->numChildren);
 		LL(surfInfo->parentIndex);
 

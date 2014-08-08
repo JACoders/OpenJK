@@ -2123,6 +2123,34 @@ static voteString_t validVoteStrings[] = {
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
+void Svcmd_ToggleAllowVote_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i<validVoteStringsSize; i++ ) {
+			if ( (g_allowVote.integer & (1 << i)) )	trap->Print( "%2d [X] %s\n", i, validVoteStrings[i].string );
+			else									trap->Print( "%2d [ ] %s\n", i, validVoteStrings[i].string );
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+
+		trap->Argv( 1, arg, sizeof( arg ) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= validVoteStringsSize ) {
+			Com_Printf( "ToggleAllowVote: Invalid range: %i [0, %i]\n", index, validVoteStringsSize - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_allowVote", va( "%i", (1 << index) ^ (g_allowVote.integer & ((1 << validVoteStringsSize) - 1)) ) );
+		trap->Cvar_Update( &g_allowVote );
+
+		Com_Printf( "%s %s^7\n", validVoteStrings[index].string, ((g_allowVote.integer & (1 << index)) ? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 void Cmd_CallVote_f( gentity_t *ent ) {
 	int				i=0, numArgs=0;
 	char			arg1[MAX_CVAR_VALUE_STRING] = {0};

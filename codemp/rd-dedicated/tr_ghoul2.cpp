@@ -88,6 +88,7 @@ qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
 extern cvar_t	*r_Ghoul2AnimSmooth;
 extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 
+#if 0
 static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, const int boneNum)
 {
 	size_t i = 0;
@@ -103,6 +104,7 @@ static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, cons
 
 	return -1;
 }
+#endif
 
 const static mdxaBone_t		identityMatrix =
 {
@@ -2814,6 +2816,7 @@ static void RootMatrix(CGhoul2Info_v &ghoul2,int time,const vec3_t scale,mdxaBon
 	retMatrix=identityMatrix;
 }
 
+#if 0
 extern cvar_t	*r_shadowRange;
 static inline bool bInShadowRange(vec3_t location)
 {
@@ -2823,6 +2826,7 @@ static inline bool bInShadowRange(vec3_t location)
 //	return (dist < tr.distanceCull/1.5f);
 	return (dist < r_shadowRange->value);
 }
+#endif
 
 /*
 ==============

@@ -723,7 +723,7 @@ inline void VectorInverse( vec3_t v ){
 	v[2] = -v[2];
 }
 
-inline void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out )
+inline void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out )
 {
 	out[0] = DotProduct( in, matrix[0] );
 	out[1] = DotProduct( in, matrix[1] );
@@ -989,6 +989,12 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 //JLFCALLOUT include MPNOTUSED
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
+
+class COM_ParseSession {
+public:
+	COM_ParseSession() { COM_BeginParseSession(); };
+	~COM_ParseSession() { COM_EndParseSession(); };
+};
 
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );

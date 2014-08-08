@@ -1996,7 +1996,7 @@ void Svcmd_ToggleUserinfoValidation_f( void ) {
 			return;
 		}
 
-		trap->Cvar_Set( "g_userinfoValidate", va( "%i", (1<<index) ^ g_userinfoValidate.integer ) );
+		trap->Cvar_Set( "g_userinfoValidate", va( "%i", (1 << index) ^ (g_userinfoValidate.integer & ((1 << (numUserinfoFields + USERINFO_VALIDATION_MAX)) - 1)) ) );
 		trap->Cvar_Update( &g_userinfoValidate );
 
 		if ( index < numUserinfoFields )	Com_Printf( "%s %s\n", userinfoFields[index].fieldClean,				((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
@@ -3451,6 +3451,7 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{//jediVmerc is incompatible with this gametype, turn it off!
 		trap->Cvar_Set( "g_jediVmerc", "0" );
+		trap->Cvar_Update( &g_jediVmerc );
 		if (level.gametype == GT_HOLOCRON)
 		{
 			//always get free saber level 1 in holocron
