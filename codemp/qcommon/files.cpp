@@ -1317,6 +1317,10 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// shaders, txt, arena files  by themselves do not count as a reference as
 						// these are loaded from all pk3s
 						// from every pk3 file..
+
+						// The x86.dll suffixes are needed in order for sv_pure to continue to
+						// work on non-x86/windows systems... 
+
 						l = strlen( filename );
 						if ( !(pak->referenced & FS_GENERAL_REF)) {
 							if( !FS_IsExt(filename, ".shader", l) &&
@@ -1328,7 +1332,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 							    !FS_IsExt(filename, ".arena", l) &&
 							    !FS_IsExt(filename, ".menu", l) &&
 							    !FS_IsExt(filename, ".fcf", l) &&
-							    Q_stricmp(filename, "jampgame" ARCH_STRING DLL_EXT) != 0 &&
+							    Q_stricmp(filename, "jampgamex86.dll") != 0 &&
 							    //Q_stricmp(filename, "vm/qagame.qvm") != 0 &&
 							    !strstr(filename, "levelshots"))
 							{
@@ -1339,17 +1343,16 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						if (!(pak->referenced & FS_CGAME_REF))
 						{
 							if ( Q_stricmp( filename, "cgame.qvm" ) == 0 ||
-									Q_stricmp( filename, "cgame" ARCH_STRING DLL_EXT ) == 0 )
+									Q_stricmp( filename, "cgamex86.dll" ) == 0 )
 							{
 								pak->referenced |= FS_CGAME_REF;
 							}
 						}
-						// ui.qvm		- 5
-						// pd)lqh
+
 						if (!(pak->referenced & FS_UI_REF))
 						{
 							if ( Q_stricmp( filename, "ui.qvm" ) == 0 ||
-									Q_stricmp( filename, "ui" ARCH_STRING DLL_EXT ) == 0 )
+									Q_stricmp( filename, "uix86.dll" ) == 0 )
 							{
 								pak->referenced |= FS_UI_REF;
 							}
