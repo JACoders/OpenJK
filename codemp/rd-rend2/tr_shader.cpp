@@ -884,6 +884,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
+					imgType_t imgtype = IMGTYPE_COLORALPHA;
 					int flags = type == ANIMMAP_CLAMP ? IMGFLAG_CLAMPTOEDGE : IMGFLAG_NONE;
 
 					if (!shader.noMipMaps)
@@ -898,7 +899,24 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 					if (shader.noTC)
 						flags |= IMGFLAG_NO_COMPRESSION;
 
-					stage->bundle[0].image[num] = R_FindImageFile( token, IMGTYPE_COLORALPHA, flags );
+					if ( stage->type == ST_NORMALMAP || stage->type == ST_NORMALPARALLAXMAP )
+					{
+						imgtype = IMGTYPE_NORMAL;
+						flags |= IMGFLAG_NOLIGHTSCALE;
+
+						if ( stage->type == ST_NORMALPARALLAXMAP )
+							imgtype = IMGTYPE_NORMALHEIGHT;
+					}
+					else
+					{
+						if ( r_genNormalMaps->integer )
+							flags |= IMGFLAG_GENNORMALMAP;
+
+						if ( r_srgb->integer )
+							flags |= IMGFLAG_SRGB;
+					}
+
+					stage->bundle[0].image[num] = R_FindImageFile( token, imgtype, flags );
 					if ( !stage->bundle[0].image[num] )
 					{
 						ri->Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
