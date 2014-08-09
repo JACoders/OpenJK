@@ -1220,22 +1220,6 @@ bool FS_FileCacheable(const char* const filename)
 
 /*
 ===========
-FS_ShiftedStrStr
-===========
-*/
-const char *FS_ShiftedStrStr(const char *string, const char *substring, int shift) {
-	char buf[MAX_STRING_TOKENS];
-	int i;
-
-	for (i = 0; substring[i]; i++) {
-		buf[i] = substring[i] + shift;
-	}
-	buf[i] = '\0';
-	return strstr(string, buf);
-}
-
-/*
-===========
 FS_FOpenFileRead
 
 Finds the file in the search path.
@@ -1344,7 +1328,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 							    !FS_IsExt(filename, ".arena", l) &&
 							    !FS_IsExt(filename, ".menu", l) &&
 							    !FS_IsExt(filename, ".fcf", l) &&
-							    Q_stricmp(filename, "jampgamex86.dll") != 0 &&
+							    Q_stricmp(filename, "jampgame" ARCH_STRING DLL_EXT) != 0 &&
 							    //Q_stricmp(filename, "vm/qagame.qvm") != 0 &&
 							    !strstr(filename, "levelshots"))
 							{
@@ -1352,31 +1336,10 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 							}
 						}
 
-						/*
-						FS_ShiftedStrStr(filename, "jampgamex86.dll", -13);
-												  //]^&`cZT`Xk+)!W__
-						FS_ShiftedStrStr(filename, "cgamex86.dll", -7);
-												  //\`Zf^q1/']ee
-						FS_ShiftedStrStr(filename, "uix86.dll", -5);
-												  //pds31)_gg
-						*/
-
-						// jampgame.qvm	- 13
-						// ]^&`cZT`X!di`
-						/*if (!(pak->referenced & FS_GAME_REF))
-						{
-							if (FS_ShiftedStrStr(filename, "]T`cZT`X!di`", 13) ||
-								FS_ShiftedStrStr(filename, "]T`cZT`Xk+)!W__", 13))
-							{
-								pak->referenced |= FS_GAME_REF;
-							}
-						}*/
-						// cgame.qvm	- 7
-						// \`Zf^'jof
 						if (!(pak->referenced & FS_CGAME_REF))
 						{
-							if (FS_ShiftedStrStr(filename , "\\`Zf^'jof", 7) ||
-								FS_ShiftedStrStr(filename , "\\`Zf^q1/']ee", 7))
+							if ( Q_stricmp( filename, "cgame.qvm" ) == 0 ||
+									Q_stricmp( filename, "cgame" ARCH_STRING DLL_EXT ) == 0 )
 							{
 								pak->referenced |= FS_CGAME_REF;
 							}
@@ -1385,8 +1348,8 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// pd)lqh
 						if (!(pak->referenced & FS_UI_REF))
 						{
-							if (FS_ShiftedStrStr(filename , "pd)lqh", 5) ||
-								FS_ShiftedStrStr(filename , "pds31)_gg", 5))
+							if ( Q_stricmp( filename, "ui.qvm" ) == 0 ||
+									Q_stricmp( filename, "ui" ARCH_STRING DLL_EXT ) == 0 )
 							{
 								pak->referenced |= FS_UI_REF;
 							}
