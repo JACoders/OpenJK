@@ -564,7 +564,8 @@ void G_AddSimpleStatsToDB() {
 	gclient_t	*cl;
 	int i;
 
-	//cancel if cheats enabled loda
+	if (sv_cheats.integer) //Dont record stats if cheats were enabled
+		return;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET "
@@ -629,7 +630,8 @@ void CleanupLocalRun() {
 
 	for (i = 0; i < level.numCourses; i++) { //32 max
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
-		Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
+		if (level.courseName[i] && level.courseName[i][0])
+			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
 
 		//sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
 			//	"SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
@@ -650,25 +652,16 @@ void CleanupLocalRun() {
 		//is there any way to fix this first query so it does this?
 		//The problem is that we dont want to insert the ID field, but we have to select it to use it in the join later..?
 		//Any way to get around this.. short of making a useless column in this table (as the second query does)?
-		/*
-		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) " 
-			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
-				"from (SELECT username, MIN(duration_ms) AS mintime "
-				   "FROM LocalRun "
-				   "WHERE coursename = ? AND style = ? "
-				   "GROUP BY username, coursename, style) " 
-				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
-		*/
 		
-		sql = "INSERT INTO TempLocalRun (old_id, username, coursename, duration_ms, topspeed, average, style, end_time) " 
-			"SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
-				"from (SELECT id, MIN(duration_ms) AS mintime "
+
+		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) " //Place 2
+			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+				"FROM (SELECT id, MIN(duration_ms) AS mintime "
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
-				   "GROUP BY username, coursename, style) " 
-				"AS x INNER JOIN LocalRun AS LR ON LR.id = x.id AND LR.duration_ms = x.mintime";
-				
-
+				   "GROUP BY username) " 
+				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id";
+		
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
@@ -680,7 +673,7 @@ void CleanupLocalRun() {
 		}
 		CALL_SQLITE (finalize(stmt));
 
-		sql = "DELETE FROM LocalRun WHERE coursename = ?"; //This isnt getting executed??
+		sql = "DELETE FROM LocalRun WHERE coursename = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
@@ -698,6 +691,75 @@ void CleanupLocalRun() {
 	CALL_SQLITE (close(db));
 
 }
+
+/*
+void WhatTheFuck() {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	//CHANGING "style = 1" to "style = 3 " makes this return 1 row as it should. 
+	//For some reason no rows are returned with "style = 1 ", EVEN THOUGH both queries return 1 row in sqlite db viewer
+	sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+			"FROM (SELECT id, MIN(duration_ms) AS mintime "
+				"FROM LocalRun "
+					"WHERE coursename = 'racearena_pro (dash1)' AND style = 1 "
+					"GROUP BY username, coursename, style) "							
+			"AS x INNER JOIN LocalRun AS LR ON LR.id = x.id AND LR.duration_ms = x.mintime";
+			
+
+
+
+		sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time " 
+			"FROM (SELECT id, MIN(duration_ms) "
+				"FROM LocalRun "
+				"WHERE coursename = 'racearena_pro (dash1)' AND style = 1 "
+					"GROUP BY username) "							
+			"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id";
+	
+
+			//	"GROUP BY username, coursename, style) "							
+	//	"AS x INNER JOIN LocalRun AS LR ON LR.duration_ms = x.mintime"; //fucking broken
+			
+	
+
+
+			
+
+		//sql = "SELECT * FROM LocalRun";
+			
+
+	sql = "SELECT id, MIN(duration_ms) AS mintime "
+				"FROM LocalRun "
+					"WHERE coursename = 'racearena_pro (dash1)' AND style = 1 "
+					"GROUP BY username, coursename, style";
+
+
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	
+	while (1) {
+		int s;
+		s = sqlite3_step (stmt);
+		if (s == SQLITE_ROW) {
+			trap->Print("Row Found, %i, %s, %s, %i, %i, %i\n", sqlite3_column_int(stmt, 0), sqlite3_column_text(stmt, 1), sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3),  sqlite3_column_int(stmt, 4) , sqlite3_column_int(stmt, 5));
+		}
+		else if (s == SQLITE_DONE) {
+			trap->Print("Query Done\n");
+			break;
+		}
+		else {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");
+			break;
+		}
+	}
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+}
+
+*/
 
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	sqlite3 * db;
@@ -721,29 +783,18 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-			//sql = "SELECT LocalRun.username, LocalRun.coursename, MIN(LocalRun.duration_ms), LocalRun.topspeed, LocalRun.average, LocalRun.style, LocalRun.end_time FROM LocalRun "
-			//	"WHERE LocalRun.coursename = ? AND LocalRun.style = ? GROUP BY username, coursename, style, topspeed, average, end_time ORDER BY MIN(duration_ms) ASC LIMIT 10";
-
-			/*
-			sql = "SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //LODA FIXME, user LR.id instead of LR.username in the join? 
-				"FROM (SELECT username, MIN(duration_ms) AS mintime "
-				   "FROM LocalRun "
-				   "WHERE coursename = ? AND style = ? "
-				   "GROUP by username, coursename, style) " 
-				"AS x INNER JOIN LocalRun AS LR ON LR.username = x.username AND LR.duration_ms = x.mintime";
-			*/
-
-			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
+			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //Place 1
 				"FROM (SELECT id, MIN(duration_ms) AS mintime "
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
-				   "GROUP by username, coursename, style) " 
-				"AS x INNER JOIN LocalRun AS LR ON LR.id = x.id AND LR.duration_ms = x.mintime";
+				   "GROUP by username) " 
+				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id";
 
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 2, mstyle));
-			//CALL_SQLITE_EXPECT (step (stmt), DONE); //wtf why not lol
+
+			trap->Print("Adding highscores for: %s, %i\n", courseName, mstyle);
 
 			while (1) {
 				int s;
@@ -755,7 +806,9 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					unsigned short topspeed, average;
 					unsigned short style;
 					unsigned int end_time;
+					int garbage;
 
+					garbage = sqlite3_column_int(stmt, 0);
 					username = (char*)sqlite3_column_text(stmt, 1); //Increment each of these by 1 if we use id to join
 					course = (char*)sqlite3_column_text(stmt, 2);
 					duration_ms = sqlite3_column_int(stmt, 3);
@@ -771,6 +824,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					level.Highscores[row].average = average;
 					level.Highscores[row].style = style;
 					level.Highscores[row].end_time = end_time;
+
+					trap->Print("Highscore added to memory: %s, %s, %i, %i\n", level.Highscores[row].username, level.Highscores[row].coursename, level.Highscores[row].duration_ms, level.Highscores[row].style);
 
 					row++;
 				}
