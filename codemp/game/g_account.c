@@ -188,7 +188,8 @@ void G_AddToDBFromFile(void) //loda fixme
 	Com_Printf ("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
+
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 
 	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
@@ -224,6 +225,118 @@ void G_AddToDBFromFile(void) //loda fixme
 		args++;
 	}
 	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));	
+
+	trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
+	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
+	trap->FS_Close(f);
+}
+
+
+void G_AddToDBFromFile2(void) //loda fixme
+{
+	fileHandle_t f;	
+	int		fLen = 0, MAX_FILESIZE = 4096, args = 1;
+	char	info[1024] = {0}, buf[4096] = {0}, empty[8] = {0};//eh
+	char*	pch;
+	sqlite3 * db;
+	char * sql;
+	sqlite3_stmt * stmt;
+	RaceRecord_t	TempRaceRecord[32];
+	int row = 0, j;
+	char buf2[1024] = {0};
+
+	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
+
+	if (!f) {
+		Com_Printf ("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
+		return;
+	}
+	//if (fLen >= MAX_FILESIZE) {
+		//trap->FS_Close(f);
+		//Com_Printf ("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
+		//return;
+	//}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+	Com_Printf ("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
+	pch = strtok (buf,";\n");
+	while (pch != NULL)
+	{
+		if ((args % 7) == 1)
+			Q_strncpyz(TempRaceRecord[row].username, pch, sizeof(TempRaceRecord[row].username));
+		else if ((args % 7) == 2)
+			Q_strncpyz(TempRaceRecord[row].coursename, pch, sizeof(TempRaceRecord[row].coursename));
+		else if ((args % 7) == 3)
+			TempRaceRecord[row].duration_ms = atoi(pch);
+		else if ((args % 7) == 4)
+			TempRaceRecord[row].topspeed = atoi(pch);
+		else if ((args % 7) == 5)
+			TempRaceRecord[row].average = atoi(pch);
+		else if ((args % 7) == 6)
+			TempRaceRecord[row].style = atoi(pch);
+		else if ((args % 7) == 0) {
+			TempRaceRecord[row].end_time = atoi(pch);
+			if (row == 0) {
+				Q_strncpyz(buf2, va("(%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[row].username, TempRaceRecord[row].coursename, TempRaceRecord[row].duration_ms, 
+					TempRaceRecord[row].topspeed, TempRaceRecord[row].average, TempRaceRecord[row].style, TempRaceRecord[row].end_time), sizeof(buf2));
+			}
+
+			/*
+
+			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
+			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord.topspeed));
+			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord.average));
+			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord.style));
+			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_time));
+		
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
+
+			*/
+
+			row++;
+		}
+
+		if (row >= 31) { //or end of file?
+			for (j = 0; j < row; j++) {
+				Q_strcat(buf2, sizeof(buf2), va(", (%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[j].username));
+			}
+			row = 0;
+
+			sql = va("INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES %s", buf2);	 //loda fixme, make multiple?
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (finalize(stmt));
+
+		}
+
+    	pch = strtok (NULL, ";\n");
+		args++;
+	}
+
+
+	Q_strncpyz(buf2, va("(%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[row].username, TempRaceRecord[row].coursename, TempRaceRecord[row].duration_ms, 
+		TempRaceRecord[row].topspeed, TempRaceRecord[row].average, TempRaceRecord[row].style, TempRaceRecord[row].end_time), sizeof(buf2));
+
+	for (j = 0; j < row; j++) {
+		Q_strcat(buf2, sizeof(buf2), va(", (%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[j].username));
+	}
+
+	sql = va("INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES %s", buf2);	 //loda fixme, make multiple?
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
 	CALL_SQLITE (close(db));	
 
 	trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
@@ -548,6 +661,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	char username[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
 	time_t	rawtime;
+	int s, ip;
 
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /register <username> <password>\n\"");
@@ -574,14 +688,41 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
 		*p = 0;
+	ip = ip_to_int(strIP);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "SELECT COUNT(*) FROM LocalAccount WHERE lastip = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, ip));
+
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_ROW) {
+		int count;
+		count = sqlite3_column_int(stmt, 0);
+		if (count > 0) {
+			trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account.  Alt accounts are not allowed.\n\"");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+
+	CALL_SQLITE (finalize(stmt));
+
     sql = "INSERT INTO LocalAccount (username, password, kills, deaths, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
-	CALL_SQLITE (bind_int64 (stmt, 4, ip_to_int(strIP)));
+	CALL_SQLITE (bind_int64 (stmt, 4, ip));
     CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
