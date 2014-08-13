@@ -597,6 +597,7 @@ int svcmdcmp( const void *a, const void *b ) {
 
 void G_CheckFields( void );
 void G_CheckSpawns( void );
+void Svcmd_ChangePass_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
@@ -608,6 +609,9 @@ svcmd_t svcmds[] = {
 	{ "amkick",						Svcmd_AmKick_f,						qfalse },
 
 	{ "botlist",					Svcmd_BotList_f,					qfalse },
+
+	{ "changepassword",				Svcmd_ChangePass_f,					qfalse },
+
 	{ "checkfields",				G_CheckFields,						qfalse },
 	{ "checkspawns",				G_CheckSpawns,						qfalse },
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },

@@ -1257,7 +1257,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
-	if (trap->Milliseconds() - player->client->pers.stats.startTime < 1000)//Some built in floodprotect per player?
+	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
 	if (trigger->noise_index) 
@@ -1285,7 +1285,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 	multi_trigger(trigger, player);
 
 	if (player->client->pers.stats.startTime) {
-		char style[32] = {0}, courseName[128] = {0}, info[1024] = {0}, message[MAX_QPATH] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
+		char style[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average, restrictions = 0, nameColor = 7;
@@ -1333,16 +1333,13 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		else if (g_movementStyle.integer > 2)
 			Q_strncpyz(style, "cpm", sizeof(style));
 
-		trap->GetServerinfo(info, sizeof(info));
-		Q_strncpyz(courseName, Info_ValueForKey( info, "mapname" ), sizeof(courseName));
-
 		if (time >= 60.0f) {
 			int minutes, seconds, milliseconds;
 
 			minutes = (int)time / 60;
 			seconds = (int)time % 60;
 			milliseconds = ((int)(time*1000)%1000); //milliseconds = fmodf(time, milliseconds);
-			Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);
+			Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%03i", minutes, seconds, milliseconds);
 		}
 		else
 			Q_strncpyz(timeStr, va("%.3f", time), sizeof(timeStr));
@@ -1356,10 +1353,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			nameColor = 7;
 
 		if (trigger->message) {
-			Com_sprintf(message, sizeof(message), "%s", trigger->message);
-			Q_strcat(courseName, sizeof(courseName), va(" (%s)", message));
 			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-				message, c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
+				trigger->message, c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
 		}
 		else {
 			//Q_strcat(courseName, sizeof(courseName), " ()");
@@ -1373,10 +1368,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			p = strchr(strIP, ':');
 			if (p)
 				*p = 0;
-			//G_RaceLogPrintf("%s ; (%s) completed %s in %.3f seconds using %s style with top speed %i and average speed %i\n",
-				//player->client->pers.netname, strIP, courseName, time, style, player->client->pers.stats.topSpeed, average);
 			if (player->client->pers.userName) {
-				G_AddRaceTime(player->client->pers.userName, courseName, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
 			}
 		}
 

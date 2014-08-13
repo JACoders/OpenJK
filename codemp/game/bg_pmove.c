@@ -3643,7 +3643,7 @@ static void PM_CheckDash(void)
 	}
 }
 
-static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal)
+static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal) //loda fixme, this does not detect some walls...
 {
 	vec3_t min, max, dir;
 	int i, j;
@@ -3740,7 +3740,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		float oldupvelocity = pm->ps->velocity[2];
 
 		VectorClear(normal);
-		PlayerTouchWall( 12, 0.3f, &normal );
+		PlayerTouchWall( 12, 0.3f, &normal ); //0.7 ?
 		if(!VectorLength(normal))
 			return;
 
@@ -3748,8 +3748,8 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 
 		pm->ps->velocity[2] = 0;
 
-		hspeed = VectorNormalize(xyspeed);
-				
+		//hspeed = VectorNormalize(xyspeed); //why
+		
 		PM_ClipVelocity( pm->ps->velocity, normal, pm->ps->velocity, 1.0005f );
 		VectorMA( pm->ps->velocity, WJ_BOUNCEFACTOR, normal, pm->ps->velocity );
 

@@ -1174,8 +1174,6 @@ typedef struct level_locals_s {
 	int			warpYaw[32];
 	char		courseName[24][32];//japro warps	
 	int			numCourses;
-
-	struct RaceRecord_s	*Highscores;//loda
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;

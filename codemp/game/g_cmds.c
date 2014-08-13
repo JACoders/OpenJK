@@ -6544,6 +6544,7 @@ command_t commands[] = {
 	{ "ambreakdance2",		Cmd_EmoteBreakdance2_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "ambreakdance3",		Cmd_EmoteBreakdance3_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "ambreakdance4",		Cmd_EmoteBreakdance4_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+
 	{ "amcheer",			Cmd_EmoteCheer_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amcower",			Cmd_EmoteCower_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amdance",			Cmd_EmoteDance_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
