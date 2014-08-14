@@ -216,6 +216,7 @@ XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelStartArmor,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelDistanceLimit,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowUseInDuel,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowGunDuel,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 //add nonsolid duels!
 
 //JAPRO ADMIN

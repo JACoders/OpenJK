@@ -631,7 +631,8 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	}
 
 	if (wasReset && print)
-		trap->SendServerCommand( ent-g_entities, "print \"Timers reset!\n\"");
+		//trap->SendServerCommand( ent-g_entities, "print \"Timer reset!\n\""); //console spam is bad
+		trap->SendServerCommand( ent-g_entities, "cp \"Timer reset!\n\n\n\n\n\n\n\n\n\n\n\n\"");
 }
 
 /*
@@ -3561,6 +3562,11 @@ void Cmd_GunDuel_f(gentity_t *ent)
 {
 	char weapStr[64];//Idk, could be less
 	int weap = WP_NONE;
+
+	if (!g_allowGunDuel.integer) {
+		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed. (gunduel).\n\"" );
+		return;
+	}
 
 	if (trap->Argc() > 2)
 	{
@@ -6529,7 +6535,7 @@ void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
-void Cmd_DFBuildTop10_f(gentity_t *ent);//loda temporary
+void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 
@@ -6597,7 +6603,7 @@ command_t commands[] = {
 
 	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
-	{ "dfrefresh",			Cmd_DFBuildTop10_f,			CMD_NOINTERMISSION },
+	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },

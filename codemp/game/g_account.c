@@ -232,7 +232,7 @@ void G_AddToDBFromFile(void) //loda fixme
 	trap->FS_Close(f);
 }
 
-
+#if 0
 void G_AddToDBFromFile2(void) //loda fixme
 {
 	fileHandle_t f;	
@@ -343,6 +343,7 @@ void G_AddToDBFromFile2(void) //loda fixme
 	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 	trap->FS_Close(f);
 }
+#endif
 
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
@@ -372,8 +373,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	if (level.raceLog)
 		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
-	if (level.tempRaceLog)
-		trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+	//if (level.tempRaceLog)
+		//trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 
 	//Now for live highscore stuff:
 
@@ -440,6 +441,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		HighScores2[course][style][newRank].average = average;
 		HighScores2[course][style][newRank].style = style;
 		HighScores2[course][style][newRank].end_time = rawtime;
+
+		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 	}
 
 
@@ -462,8 +466,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		
 
 }
-
-
 
 //So the best way is to probably add every run as soon as its taken and not filter them.
 //to cut down on database size, there should be a cleanup on every mapload or.. every week..or...?
@@ -702,7 +704,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		int count;
 		count = sqlite3_column_int(stmt, 0);
 		if (count > 0) {
-			trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account.  Alt accounts are not allowed.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account. Alt accounts are not allowed.\n\"");
 			CALL_SQLITE (finalize(stmt));
 			CALL_SQLITE (close(db));
 			return;
@@ -1218,21 +1220,21 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	}
 }
 
-void Cmd_DFBuildTop10_f(gentity_t *ent) {
+void Cmd_DFRefresh_f(gentity_t *ent) {
 	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfBuildTop10).\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfRefresh).\n\"" );
 			return;
 		}
 	}
 	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfBuildTop10).\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfRefresh).\n\"" );
 			return;
 		}
 	}
 	else {//Not logged in
-		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfBuildTop10).\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfRefresh).\n\"" );
 		return;
 	}
 	G_AddToDBFromFile(); //From file to db

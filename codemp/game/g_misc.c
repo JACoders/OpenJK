@@ -245,6 +245,11 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	qboolean wasNoClip = qfalse;
 	vec3_t neworigin;
 
+	if (!player || !player->client)
+		return;
+	if (BG_InRoll(&player->client->ps, player->s.legsAnim))//is this crashing? if ps is null or something?
+		return;
+
 	neworigin[0] = origin[0];
 	neworigin[1] = origin[1];
 	neworigin[2] = origin[2];
