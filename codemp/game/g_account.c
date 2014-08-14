@@ -942,8 +942,6 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	int i, row = 0, mstyle;
 	char mapName[40], courseName[40], info[1024] = {0};
 
-	trap->Print("Hello");
-
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
 	Q_strlwr(mapName);
@@ -1046,8 +1044,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	}
 	CALL_SQLITE (close(db));
 
-
-	trap->Print("Highscores built\n");
+	trap->Print("Highscores built for %s\n", courseName);
 }
 
 void IntegerToRaceName(int style, char *styleString) {
@@ -1117,10 +1114,11 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	else if (level.numCourses == 1 && trap->Argc() == 2) { //dftop10 cpm
 		char input[32];
 		trap->Argv(1, input, sizeof(input));
-		if (atoi(input) >= 0 && atoi(input) < 7) {
-			style = atoi(input);
-		}
-		else {
+
+		trap->Print("Input: %s, atoi: %i\n", input, atoi(input));
+		style = RaceNameToInteger(input);
+
+		if (style < 0) {
 			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
 			return;
 		}
@@ -1163,6 +1161,10 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			break;
 		}
 	}
+
+	if (level.numCourses == 1)
+		course = 0;
+
 	if (course == -1) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
 		return;

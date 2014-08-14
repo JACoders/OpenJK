@@ -622,8 +622,10 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
 
-	if (ent->client->ps.stats[STAT_RACEMODE])
+	if (ent->client->ps.stats[STAT_RACEMODE]) {
+		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
+	}
 	if (ent->client->ps.stats[STAT_ROCKETJUMP]) {
 		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
