@@ -1,7 +1,5 @@
-#ifdef _WIN32
-
 #include "g_local.h"
-
+#ifdef _WIN32
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
