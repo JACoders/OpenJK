@@ -1,5 +1,4 @@
 #include "g_local.h"
-#ifdef _WIN32
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1450,7 +1449,7 @@ void G_AddRunToDB(char *username, char *courseName, float duration, int style, i
 */
 #endif
 
-#else
+/*
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {
 	return;
 }
@@ -1463,11 +1462,9 @@ void Cmd_ACLogin_f( gentity_t *ent ) {
 void Cmd_ChangePassword_f( gentity_t *ent ) {
 	return;
 }
-
 void Svcmd_ChangePass_f(void) {
 	return;
 }
-
 void Cmd_ACRegister_f( gentity_t *ent ) {
 	return;
 }
@@ -1489,4 +1486,4 @@ void Cmd_ACWhois_f( gentity_t *ent ) {
 void InitGameAccountStuff( void ) {
 	return;
 }
-#endif
+*/

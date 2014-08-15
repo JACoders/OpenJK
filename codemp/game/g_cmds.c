@@ -6646,10 +6646,10 @@ command_t commands[] = {
 	{ "score",				Cmd_Score_f,				0 },
 	{ "serverconfig",		Cmd_ServerConfig_f,			0 },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_NOINTERMISSION },
+	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
 
 	{ "stats",				Cmd_Stats_f,				CMD_NOINTERMISSION },
 
-	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
 	{ "teamvote",			Cmd_TeamVote_f,				CMD_NOINTERMISSION },
