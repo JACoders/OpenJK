@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "g_local.h"
 
 #include <stdio.h>
@@ -1448,4 +1450,45 @@ void G_AddRunToDB(char *username, char *courseName, float duration, int style, i
 | winner_shield | int          | YES  |     | NULL    |       | //7bits
 +----------------+-------------+------+-----+---------+-------+
 */
+#endif
+
+#else
+void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {
+	return;
+}
+void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
+	return;
+}
+void Cmd_ACLogin_f( gentity_t *ent ) {
+	return;
+}
+void Cmd_ChangePassword_f( gentity_t *ent ) {
+	return;
+}
+
+void Svcmd_ChangePass_f(void) {
+	return;
+}
+
+void Cmd_ACRegister_f( gentity_t *ent ) {
+	return;
+}
+void Cmd_ACLogout_f( gentity_t *ent ) {
+	return;
+}
+void Cmd_Stats_f( gentity_t *ent ) {
+	return;
+}
+void Cmd_DFTop10_f(gentity_t *ent) {
+	return;
+}
+void Cmd_DFRefresh_f(gentity_t *ent) {
+	return;
+}
+void Cmd_ACWhois_f( gentity_t *ent ) {
+	return;
+}
+void InitGameAccountStuff( void ) {
+	return;
+}
 #endif
