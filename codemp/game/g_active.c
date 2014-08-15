@@ -1515,6 +1515,9 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 					break;
 				}
 
+				if (ent->client && ent->client->pers.raceMode)
+					break;
+
 				if ( ent->s.eType != ET_PLAYER )
 				{
 					break;		// not in the player model

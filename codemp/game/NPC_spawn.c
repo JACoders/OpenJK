@@ -4173,6 +4173,28 @@ void Cmd_NPC_f( gentity_t *ent )
 {
 	char	cmd[1024];
 
+	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	{
+		if (!(g_fullAdminLevel.integer & (1 << A_NPC)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
+			return;
+		}
+	}
+	else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+	{
+		if (!(g_juniorAdminLevel.integer & (1 << A_NPC)))
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (npc).\n\"" );
+			return;
+		}
+	}
+	else if (!sv_cheats.integer)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (npc).\n\"" );//replaces "Cheats are not enabled on this server." msg
+		return;
+	}
+
 	trap->Argv( 1, cmd, 1024 );
 
 	if ( !cmd[0] ) 
