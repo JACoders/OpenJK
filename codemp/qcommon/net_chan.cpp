@@ -360,28 +360,66 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 
 /*
 ===================
+NET_CompareBaseAdrMask
+
+Compare without port, and up to the bit number given in netmask.
+===================
+*/
+qboolean NET_CompareBaseAdrMask( netadr_t a, netadr_t b, int netmask )
+{
+	byte cmpmask, *addra, *addrb;
+	int curbyte;
+
+	if ( a.type != b.type )
+		return qfalse;
+
+	if ( a.type == NA_LOOPBACK )
+		return qtrue;
+
+	if ( a.type == NA_IP )
+	{
+		addra = (byte *)&a.ip;
+		addrb = (byte *)&b.ip;
+
+		if ( netmask < 0 || netmask > 32 )
+			netmask = 32;
+	}
+	else
+	{
+		Com_Printf( "NET_CompareBaseAdr: bad address type\n" );
+		return qfalse;
+	}
+
+	curbyte = netmask >> 3;
+
+	if ( curbyte && memcmp( addra, addrb, curbyte ) )
+		return qfalse;
+
+	netmask &= 0x07;
+	if ( netmask )
+	{
+		cmpmask = (1 << netmask) - 1;
+		cmpmask <<= 8 - netmask;
+
+		if ( (addra[curbyte] & cmpmask) == (addrb[curbyte] & cmpmask) )
+			return qtrue;
+	}
+	else
+		return qtrue;
+
+	return qfalse;
+}
+
+/*
+===================
 NET_CompareBaseAdr
 
 Compares without the port
 ===================
 */
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
+qboolean NET_CompareBaseAdr( netadr_t a, netadr_t b )
 {
-	if (a.type != b.type)
-		return qfalse;
-
-	if (a.type == NA_LOOPBACK)
-		return qtrue;
-
-	if (a.type == NA_IP)
-	{
-		if ((memcmp(a.ip, b.ip, 4) == 0))
-			return qtrue;
-		return qfalse;
-	}
-
-	Com_Printf ("NET_CompareBaseAdr: bad address type\n");
-	return qfalse;
+	return NET_CompareBaseAdrMask( a, b, -1 );
 }
 
 const char	*NET_AdrToString (netadr_t a)
