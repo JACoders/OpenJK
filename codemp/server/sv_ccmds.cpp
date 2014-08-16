@@ -548,6 +548,511 @@ static void SV_KickNum_f( void ) {
 }
 
 /*
+==================
+SV_RehashBans_f
+
+Load saved bans from file.
+==================
+*/
+static void SV_RehashBans_f( void )
+{
+	int index, filelen;
+	fileHandle_t readfrom;
+	char *textbuf, *curpos, *maskpos, *newlinepos, *endpos;
+	char filepath[MAX_QPATH];
+
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		return;
+	}
+
+	serverBansCount = 0;
+
+	if ( !sv_banFile->string || !*sv_banFile->string )
+		return;
+
+	Com_sprintf( filepath, sizeof( filepath ), "%s/%s", FS_GetCurrentGameDir(), sv_banFile->string );
+
+	if ( (filelen = FS_SV_FOpenFileRead( filepath, &readfrom )) >= 0 )
+	{
+		if ( filelen < 2 )
+		{
+			// Don't bother if file is too short.
+			FS_FCloseFile( readfrom );
+			return;
+		}
+
+		curpos = textbuf = (char *)Z_Malloc( filelen, TAG_TEMP_WORKSPACE );
+
+		filelen = FS_Read( textbuf, filelen, readfrom );
+		FS_FCloseFile( readfrom );
+
+		endpos = textbuf + filelen;
+
+		for ( index = 0; index < SERVER_MAXBANS && curpos + 2 < endpos; index++ )
+		{
+			// find the end of the address string
+			for ( maskpos = curpos + 2; maskpos < endpos && *maskpos != ' '; maskpos++ );
+
+			if ( maskpos + 1 >= endpos )
+				break;
+
+			*maskpos = '\0';
+			maskpos++;
+
+			// find the end of the subnet specifier
+			for ( newlinepos = maskpos; newlinepos < endpos && *newlinepos != '\n'; newlinepos++ );
+
+			if ( newlinepos >= endpos )
+				break;
+
+			*newlinepos = '\0';
+
+			if ( NET_StringToAdr( curpos + 2, &serverBans[index].ip ) )
+			{
+				serverBans[index].isexception = (qboolean)(curpos[0] != '0');
+				serverBans[index].subnet = atoi( maskpos );
+
+				if ( serverBans[index].ip.type == NA_IP &&
+					(serverBans[index].subnet < 1 || serverBans[index].subnet > 32) )
+				{
+					serverBans[index].subnet = 32;
+				}
+			}
+
+			curpos = newlinepos + 1;
+		}
+
+		serverBansCount = index;
+
+		Z_Free( textbuf );
+	}
+}
+
+/*
+==================
+SV_WriteBans
+
+Save bans to file.
+==================
+*/
+static void SV_WriteBans( void )
+{
+	int index;
+	fileHandle_t writeto;
+	char filepath[MAX_QPATH];
+
+	if ( !sv_banFile->string || !*sv_banFile->string )
+		return;
+
+	Com_sprintf( filepath, sizeof( filepath ), "%s/%s", FS_GetCurrentGameDir(), sv_banFile->string );
+
+	if ( (writeto = FS_SV_FOpenFileWrite( filepath )) )
+	{
+		char writebuf[128];
+		serverBan_t *curban;
+
+		for ( index = 0; index < serverBansCount; index++ )
+		{
+			curban = &serverBans[index];
+
+			Com_sprintf( writebuf, sizeof( writebuf ), "%d %s %d\n",
+				curban->isexception, NET_AdrToString( curban->ip ), curban->subnet );
+			FS_Write( writebuf, strlen( writebuf ), writeto );
+		}
+
+		FS_FCloseFile( writeto );
+	}
+}
+
+/*
+==================
+SV_DelBanEntryFromList
+
+Remove a ban or an exception from the list.
+==================
+*/
+
+static qboolean SV_DelBanEntryFromList( int index )
+{
+	if ( index == serverBansCount - 1 )
+		serverBansCount--;
+	else if ( index < ARRAY_LEN( serverBans ) - 1 )
+	{
+		memmove( serverBans + index, serverBans + index + 1, (serverBansCount - index - 1) * sizeof( *serverBans ) );
+		serverBansCount--;
+	}
+	else
+		return qtrue;
+
+	return qfalse;
+}
+
+/*
+==================
+SV_ParseCIDRNotation
+
+Parse a CIDR notation type string and return a netadr_t and suffix by reference
+==================
+*/
+
+static qboolean SV_ParseCIDRNotation( netadr_t *dest, int *mask, char *adrstr )
+{
+	char *suffix;
+
+	suffix = strchr( adrstr, '/' );
+	if ( suffix )
+	{
+		*suffix = '\0';
+		suffix++;
+	}
+
+	if ( !NET_StringToAdr( adrstr, dest ) )
+		return qtrue;
+
+	if ( suffix )
+	{
+		*mask = atoi( suffix );
+
+		if ( dest->type == NA_IP )
+		{
+			if ( *mask < 1 || *mask > 32 )
+				*mask = 32;
+		}
+		else
+			*mask = 32;
+	}
+	//else if ( dest->type == NA_IP )
+	//	*mask = 32;
+	else
+		*mask = 32;
+
+	return qfalse;
+}
+
+/*
+==================
+SV_AddBanToList
+
+Ban a user from being able to play on this server based on his ip address.
+==================
+*/
+
+static void SV_AddBanToList( qboolean isexception )
+{
+	char *banstring;
+	char addy2[NET_ADDRSTRMAXLEN];
+	netadr_t ip;
+	int index, argc, mask;
+	serverBan_t *curban;
+
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	argc = Cmd_Argc();
+
+	if ( argc < 2 || argc > 3 )
+	{
+		Com_Printf( "Usage: %s (ip[/subnet] | clientnum [subnet])\n", Cmd_Argv( 0 ) );
+		return;
+	}
+
+	if ( serverBansCount >= ARRAY_LEN( serverBans ) )
+	{
+		Com_Printf( "Error: Maximum number of bans/exceptions exceeded.\n" );
+		return;
+	}
+
+	banstring = Cmd_Argv( 1 );
+
+	if ( strchr( banstring, '.' ) /*|| strchr( banstring, ':' )*/ )
+	{
+		// This is an ip address, not a client num.
+
+		if ( SV_ParseCIDRNotation( &ip, &mask, banstring ) )
+		{
+			Com_Printf( "Error: Invalid address %s\n", banstring );
+			return;
+		}
+	}
+	else
+	{
+		client_t *cl;
+
+		// client num.
+
+		cl = SV_GetPlayerByNum();
+
+		if ( !cl )
+		{
+			Com_Printf( "Error: Playernum %s does not exist.\n", Cmd_Argv( 1 ) );
+			return;
+		}
+
+		ip = cl->netchan.remoteAddress;
+
+		if ( argc == 3 )
+		{
+			mask = atoi( Cmd_Argv( 2 ) );
+
+			if ( ip.type == NA_IP )
+			{
+				if ( mask < 1 || mask > 32 )
+					mask = 32;
+			}
+			else
+				mask = 32;
+		}
+		else
+			mask = 32;
+	}
+
+	if ( ip.type != NA_IP )
+	{
+		Com_Printf( "Error: Can ban players connected via the internet only.\n" );
+		return;
+	}
+
+	// first check whether a conflicting ban exists that would supersede the new one.
+	for ( index = 0; index < serverBansCount; index++ )
+	{
+		curban = &serverBans[index];
+
+		if ( curban->subnet <= mask )
+		{
+			if ( (curban->isexception || !isexception) && NET_CompareBaseAdrMask( curban->ip, ip, curban->subnet ) )
+			{
+				Q_strncpyz( addy2, NET_AdrToString( ip ), sizeof( addy2 ) );
+
+				Com_Printf( "Error: %s %s/%d supersedes %s %s/%d\n", curban->isexception ? "Exception" : "Ban",
+					NET_AdrToString( curban->ip ), curban->subnet,
+					isexception ? "exception" : "ban", addy2, mask );
+				return;
+			}
+		}
+		if ( curban->subnet >= mask )
+		{
+			if ( !curban->isexception && isexception && NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+			{
+				Q_strncpyz( addy2, NET_AdrToString( curban->ip ), sizeof( addy2 ) );
+
+				Com_Printf( "Error: %s %s/%d supersedes already existing %s %s/%d\n", isexception ? "Exception" : "Ban",
+					NET_AdrToString( ip ), mask,
+					curban->isexception ? "exception" : "ban", addy2, curban->subnet );
+				return;
+			}
+		}
+	}
+
+	// now delete bans that are superseded by the new one
+	index = 0;
+	while ( index < serverBansCount )
+	{
+		curban = &serverBans[index];
+
+		if ( curban->subnet > mask && (!curban->isexception || isexception) && NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+			SV_DelBanEntryFromList( index );
+		else
+			index++;
+	}
+
+	serverBans[serverBansCount].ip = ip;
+	serverBans[serverBansCount].subnet = mask;
+	serverBans[serverBansCount].isexception = isexception;
+
+	serverBansCount++;
+
+	SV_WriteBans();
+
+	Com_Printf( "Added %s: %s/%d\n", isexception ? "ban exception" : "ban",
+		NET_AdrToString( ip ), mask );
+}
+
+/*
+==================
+SV_DelBanFromList
+
+Remove a ban or an exception from the list.
+==================
+*/
+
+static void SV_DelBanFromList( qboolean isexception )
+{
+	int index, count = 0, todel, mask;
+	netadr_t ip;
+	char *banstring;
+
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() != 2 )
+	{
+		Com_Printf( "Usage: %s (ip[/subnet] | num)\n", Cmd_Argv( 0 ) );
+		return;
+	}
+
+	banstring = Cmd_Argv( 1 );
+
+	if ( strchr( banstring, '.' ) || strchr( banstring, ':' ) )
+	{
+		serverBan_t *curban;
+
+		if ( SV_ParseCIDRNotation( &ip, &mask, banstring ) )
+		{
+			Com_Printf( "Error: Invalid address %s\n", banstring );
+			return;
+		}
+
+		index = 0;
+
+		while ( index < serverBansCount )
+		{
+			curban = &serverBans[index];
+
+			if ( curban->isexception == isexception		&&
+				curban->subnet >= mask 			&&
+				NET_CompareBaseAdrMask( curban->ip, ip, mask ) )
+			{
+				Com_Printf( "Deleting %s %s/%d\n",
+					isexception ? "exception" : "ban",
+					NET_AdrToString( curban->ip ), curban->subnet );
+
+				SV_DelBanEntryFromList( index );
+			}
+			else
+				index++;
+		}
+	}
+	else
+	{
+		todel = atoi( Cmd_Argv( 1 ) );
+
+		if ( todel < 1 || todel > serverBansCount )
+		{
+			Com_Printf( "Error: Invalid ban number given\n" );
+			return;
+		}
+
+		for ( index = 0; index < serverBansCount; index++ )
+		{
+			if ( serverBans[index].isexception == isexception )
+			{
+				count++;
+
+				if ( count == todel )
+				{
+					Com_Printf( "Deleting %s %s/%d\n",
+						isexception ? "exception" : "ban",
+						NET_AdrToString( serverBans[index].ip ), serverBans[index].subnet );
+
+					SV_DelBanEntryFromList( index );
+
+					break;
+				}
+			}
+		}
+	}
+
+	SV_WriteBans();
+}
+
+
+/*
+==================
+SV_ListBans_f
+
+List all bans and exceptions on console
+==================
+*/
+
+static void SV_ListBans_f( void )
+{
+	int index, count;
+	serverBan_t *ban;
+
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	// List all bans
+	for ( index = count = 0; index < serverBansCount; index++ )
+	{
+		ban = &serverBans[index];
+		if ( !ban->isexception )
+		{
+			count++;
+
+			Com_Printf( "Ban #%d: %s/%d\n", count,
+				NET_AdrToString( ban->ip ), ban->subnet );
+		}
+	}
+	// List all exceptions
+	for ( index = count = 0; index < serverBansCount; index++ )
+	{
+		ban = &serverBans[index];
+		if ( ban->isexception )
+		{
+			count++;
+
+			Com_Printf( "Except #%d: %s/%d\n", count,
+				NET_AdrToString( ban->ip ), ban->subnet );
+		}
+	}
+}
+
+/*
+==================
+SV_FlushBans_f
+
+Delete all bans and exceptions.
+==================
+*/
+
+static void SV_FlushBans_f( void )
+{
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	serverBansCount = 0;
+
+	// empty the ban file.
+	SV_WriteBans();
+
+	Com_Printf( "All bans and exceptions have been deleted.\n" );
+}
+
+static void SV_BanAddr_f( void )
+{
+	SV_AddBanToList( qfalse );
+}
+
+static void SV_ExceptAddr_f( void )
+{
+	SV_AddBanToList( qtrue );
+}
+
+static void SV_BanDel_f( void )
+{
+	SV_DelBanFromList( qfalse );
+}
+
+static void SV_ExceptDel_f( void )
+{
+	SV_DelBanFromList( qtrue );
+}
+
+/*
 ================
 SV_Status_f
 ================
@@ -1224,6 +1729,13 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
 	Cmd_AddCommand ("svrecord", SV_Record_f);
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
+	Cmd_AddCommand ("rehashbans", SV_RehashBans_f);
+	Cmd_AddCommand ("listbans", SV_ListBans_f);
+	Cmd_AddCommand ("banaddr", SV_BanAddr_f);
+	Cmd_AddCommand ("exceptaddr", SV_ExceptAddr_f);
+	Cmd_AddCommand ("bandel", SV_BanDel_f);
+	Cmd_AddCommand ("exceptdel", SV_ExceptDel_f);
+	Cmd_AddCommand ("flushbans", SV_FlushBans_f);
 }
 
 /*
