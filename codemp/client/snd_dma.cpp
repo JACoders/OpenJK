@@ -17,6 +17,7 @@ qboolean s_shutUp = qfalse;
 static void S_Play_f(void);
 static void S_SoundList_f(void);
 static void S_Music_f(void);
+static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
 
 void S_Update_();
@@ -458,6 +459,7 @@ void S_Init( void ) {
 
 	Cmd_AddCommand("play", S_Play_f);
 	Cmd_AddCommand("music", S_Music_f);
+	Cmd_AddCommand("stopmusic", S_StopMusic_f);
 	Cmd_AddCommand("soundlist", S_SoundList_f);
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
@@ -703,6 +705,7 @@ void S_Shutdown( void )
 
 	Cmd_RemoveCommand("play");
 	Cmd_RemoveCommand("music");
+	Cmd_RemoveCommand("stopmusic");
 	Cmd_RemoveCommand("stopsound");
 	Cmd_RemoveCommand("soundlist");
 	Cmd_RemoveCommand("soundinfo");
@@ -3711,6 +3714,10 @@ static void S_Music_f( void ) {
 		Com_Printf ("music <musicfile> [loopfile]\n");
 		return;
 	}
+}
+
+static void S_StopMusic_f( void ) {
+	S_StopBackgroundTrack();
 }
 
 // a debug function, but no harm to leave in...
