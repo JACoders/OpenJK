@@ -1526,7 +1526,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
-		static const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, 1};
+		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
 
 		gbInShadow = qtrue;
 		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
