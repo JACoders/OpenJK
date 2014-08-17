@@ -4701,6 +4701,11 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 		// decide how much data needs to be read from the file
 		fileSamples = bufferSamples * pMusicInfo->s_backgroundInfo.rate / dma.speed;
 
+		// don't try to play if there are no more samples in the file
+		if (!fileSamples) {
+			return qfalse;
+		}
+
 		// don't try and read past the end of the file
 		if ( fileSamples > pMusicInfo->s_backgroundSamples ) {
 			fileSamples = pMusicInfo->s_backgroundSamples;
