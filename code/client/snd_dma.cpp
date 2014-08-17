@@ -36,7 +36,7 @@ This file is part of Jedi Academy.
 static void S_Play_f(void);
 static void S_SoundList_f(void);
 static void S_Music_f(void);
-static void S_Music_f(void);
+static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
 
 void S_Update_();
