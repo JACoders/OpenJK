@@ -1181,7 +1181,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		char input[32];
 		trap->Argv(1, input, sizeof(input));
 
-		trap->Print("Input: %s, atoi: %i\n", input, atoi(input));
+		Q_strncpyz(courseName, "", sizeof(courseName));
+		//trap->Print("Input: %s, atoi: %i\n", input, atoi(input));
 		style = RaceNameToInteger(input);
 
 		if (style < 0) {

@@ -1269,8 +1269,12 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
 
-	if (player->client->ps.stats[STAT_RACEMODE])
+	if (player->client->ps.stats[STAT_RACEMODE]) {
 		player->client->ps.duelTime = level.time;
+
+		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
+		player->client->ps.stats[STAT_ARMOR] = 25;
+	}
 }
 
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
