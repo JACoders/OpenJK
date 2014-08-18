@@ -1464,7 +1464,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 #endif
 			if ( pVeh->m_pVehicleInfo->iExplodeFX )
 			{
-				vec3_t fxAng = { -90.0f, 0.0f, 0.0f };
+				vec3_t fxAng = { 0.0f, -1.0f, 0.0f };
 				G_PlayEffect( pVeh->m_pVehicleInfo->iExplodeFX, parent->currentOrigin, fxAng );
 
 				//trace down and place mark
