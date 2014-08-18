@@ -1,7 +1,7 @@
 This file will generally summarise the Github repo commit history
 Key: - removed, + added, * modified
 
-[SP/MP] * OpenJK now writes configs/screenshots/etc to fs_homepath directory. No longer have to run as administrator on Windows.
+[SP/MP] * OpenJK now writes configs/screenshots/etc to fs_homepath directory. No longer have to run as administrator on Windows. (Multi-User support)
 [SP] + Now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 [SP/MP] * Increased Command Buffer from 16384 to 128*1024
 [SP/MP] * Increased max cvars from 1224 to 8192
@@ -98,6 +98,9 @@ Key: - removed, + added, * modified
 [MP] + Added s_doppler sound effect for moving sound sources (rockets)
 [MP] * gamecode: Fix cg_smoothClients affecting local player negatively
 [MP] * gamecode: Rewrote callvote code to allow disabling specific votes, added more options (e.g. display map list)
+[MP] + gamecode: Add server command toggleallowvote to easily adjust the bit values of g_allowVote
+[MP] + gamecode: Add userinfo validation options (g_userinfoValidate)
+[MP] + gamecode: Add server command toggleuserinfovalidation to easily adjust the bit values of g_userinfoValidate
 [SP] + gamecode: Added cg_smoothCamera (default 1)
 [SP] + gamecode: Added cg_dynamicCrosshair (default 1)
 [MP] + Added support for surfaceSprites flattened in MP.  (Fixes surface sprites on t2_trip)
@@ -136,3 +139,7 @@ Key: - removed, + added, * modified
 [MP] * Fix teamoverlay not making you look dead in siege when in limbo
 [MP] + Add sv_blockJumpSelect cvar to help prevent use of modded clients using an exploit with FP_LEVIATHAN with old mods
 [MP] * Fix exploit with usercmd bytes set to -128
+[SP/MP] + Add stopmusic command
+[SP] * Fix external lightmap support
+[MP] + Add external lightmap support from SP
+[SP/MP] * General buffer safety cleanup
