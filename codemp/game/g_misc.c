@@ -2615,7 +2615,7 @@ void SP_CreateSnow( gentity_t *ent )
 {
 	G_EffectIndex("*snow");
 	G_EffectIndex("*fog");
-	G_EffectIndex("*constantwind (100 100 -100)");
+	G_EffectIndex("*constantwind ( 100 100 -100 )");
 }
 
 /*QUAKED fx_rain (1 0 0) (-16 -16 -16) (16 16 16) LIGHT MEDIUM HEAVY ACID x MISTY_FOG
