@@ -2031,6 +2031,9 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 
 	if ( !VALIDSTRING( SaberName ) ) 
 		return qfalse;
+	
+	//check if we want to set the sabercolors or not (for if we're loading a savegame)
+	Saber_SetColor = setColors;
 
 	//try to parse it out
 	p = SaberParms;
