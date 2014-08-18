@@ -461,6 +461,11 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	//Set the maximum allowed points used based on the max rank level, and count the points actually used.
 	allowedPoints = forceMasteryPoints[maxRank];
 
+#ifdef _GAME
+	if (g_fixWeaponForcePoints.integer && g_weaponDisable.integer != 524279)
+		allowedPoints += 2;
+#endif
+
 	i = 0;
 	while (i < NUM_FORCE_POWERS)
 	{ //if this power doesn't match the side we're on, then 0 it now.
@@ -2142,6 +2147,8 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		{ //no picking stuff up while in a duel, no matter what the type is
 			return qfalse;
 		}
+		if (ps->stats[STAT_RACEMODE] && item && (item->giTag != PW_YSALAMIRI) && (item->giTag != PW_FORCE_BOON)) // no picking up shit in racemode?
+			return qfalse;
 	}
 	else
 	{//safety return since below code assumes a non-null ps

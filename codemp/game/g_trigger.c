@@ -1186,7 +1186,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2)
 			return qfalse;
 	}
-	if (g_speed.integer != 250)
+	if (g_speed.value != 250.0f)
 		return qfalse;
 	if (g_gravity.integer != 800)
 		return qfalse;	
@@ -1298,9 +1298,13 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		if (trigger->spawnflags)//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
 			restrictions = trigger->spawnflags;
 
-		if (ValidRaceSettings(restrictions, player)) {
+		if (ValidRaceSettings(restrictions, player) && player->client->pers.userName && player->client->pers.userName[0]) {
 			valid = qtrue;
 			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
+		}
+		else if (ValidRaceSettings(restrictions, player)) {
+			valid = qtrue;
+			Q_strncpyz( c, S_COLOR_GREEN, sizeof(c) );
 		}
 
 		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough

@@ -742,6 +742,7 @@ static vec3_t	minFlagRange = { 50, 36, 36 };
 static vec3_t	maxFlagRange = { 44, 36, 36 };
 
 int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team );
+void G_AddSimpleStat(char *username, int type);
 
 int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	int			i, num, j, enemyTeam;
@@ -769,6 +770,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 		AddScore(other, ent->r.currentOrigin, CTF_RECOVERY_BONUS);
 		other->client->pers.teamState.flagrecovery++;
+		if (other->client->pers.userName && other->client->pers.userName[0])
+			G_AddSimpleStat(other->client->pers.userName, 5);
 		other->client->pers.teamState.lastreturnedflag = level.time;
 		//ResetFlag will remove this entity!  We must return zero
 		Team_ReturnFlagSound(Team_ResetFlag(team), team);
@@ -846,6 +849,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	other->client->pers.teamState.captures++;
 	other->client->rewardTime = level.time + REWARD_SPRITE_TIME;
 	other->client->ps.persistant[PERS_CAPTURES]++;
+	if (other->client->pers.userName && other->client->pers.userName[0])
+			G_AddSimpleStat(other->client->pers.userName, 4);
 
 	// other gets another 10 frag bonus
 	if (g_fixCTFScores.integer)

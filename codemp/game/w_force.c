@@ -5630,7 +5630,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
 				}
 				else if (self->client->ps.stats[STAT_RACEMODE])
-					self->client->ps.fd.forcePowerRegenDebounceTime += 10;//Hardcoded regentime of 10ms for racers.. idk
+					self->client->ps.fd.forcePowerRegenDebounceTime += 15;//Hardcoded regentime of 15ms for racers.. idk.. 15 is lowest you can go without horribly broken cartwheel climb
 				else
 					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 			}

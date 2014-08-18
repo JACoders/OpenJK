@@ -3107,8 +3107,10 @@ void ClientThink_real( gentity_t *ent ) {
 		// set speed
 
 		client->ps.speed = g_speed.value;
-		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6)
-			client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
+		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6 || client->ps.stats[STAT_MOVEMENTSTYLE] == 2) {//qw is 320 too
+			if (client->pers.movementStyle == 4 || client->pers.movementStyle == 6 || client->pers.movementStyle == 2)  //loda double check idk...
+				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
+		}
 
 		//Check for a siege class speed multiplier
 		if (level.gametype == GT_SIEGE &&
@@ -3246,10 +3248,24 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
 				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7) (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower));
-				else
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
-				if (ent->client->pers.userName && duelAgainst->client->pers.userName) //loda
+				else {
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));			
+					if (dueltypes[ent->client->ps.clientNum] > 2) {
+						int weapon = dueltypes[ent->client->ps.clientNum] - 2;
+						if (weapon != WP_STUN_BATON && weapon != WP_MELEE && weapon != WP_BRYAR_PISTOL) {
+							ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
+						}
+					}			
+				}
+				if (ent->client->pers.userName && ent->client->pers.userName[0] && duelAgainst->client->pers.userName && duelAgainst->client->pers.userName[0]) //loda
 					G_AddDuel(ent->client->pers.userName, duelAgainst->client->pers.userName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
+					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO
+				if (g_spawnInvulnerability.integer) {
+					ent->client->ps.eFlags |= EF_INVULNERABLE;
+					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
+				}
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
@@ -3261,20 +3277,6 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
 			}
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - End]
-			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
-			{
-				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-				{
-					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-				}
-				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO
-
-				if (g_spawnInvulnerability.integer)
-				{
-					ent->client->ps.eFlags |= EF_INVULNERABLE;
-					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
-				}
-			}
 		}
 		else
 		{

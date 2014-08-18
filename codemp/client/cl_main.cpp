@@ -2787,7 +2787,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("model", CL_SetModel_f );
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
 	Cmd_AddCommand ("video", CL_Video_f );
-	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
+	Cmd_AddCommand ("videostop", CL_StopVideo_f );
 
 	CL_InitRef();
 
@@ -2858,7 +2858,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
 	Cmd_RemoveCommand ("video");
-	Cmd_RemoveCommand ("stopvideo");
+	Cmd_RemoveCommand ("videostop");
 
 	Cvar_Set( "cl_running", "0" );
 

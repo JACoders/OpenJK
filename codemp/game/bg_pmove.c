@@ -6866,7 +6866,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				&& pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] >= weaponData[pm->ps->weapon].altEnergyPerShot )
 			{
 #ifdef _GAME
-				if (!(g_tweakWeapons.integer & ROCKET_MORTAR)) {
+				if (!(g_tweakWeapons.integer & ROCKET_MORTAR) || pm->ps->stats[STAT_RACEMODE]) {
 					PM_RocketLock(2048,qfalse);
 					charging = qtrue;
 				}
@@ -8437,7 +8437,7 @@ if (pm->ps->duelInProgress)
 #ifdef _GAME
 		if (g_tweakWeapons.integer & INFINITE_AMMO)
 			amount = 0;
-		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR && !pm->ps->stats[STAT_RACEMODE])
 			amount = 1;//JAPRO mortar meh
 		else
 #endif
@@ -8503,7 +8503,7 @@ if (pm->ps->duelInProgress)
 #ifdef _GAME
 			if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_SHOCKLANCE)
 				addTime = 1500;
-			else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR)
+			else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
 				addTime = 3000;
 			else
 #endif

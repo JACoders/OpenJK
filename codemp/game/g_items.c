@@ -2953,12 +2953,16 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
+	
 	if (level.gametype != GT_FFA || !g_rabbit.integer) {
 		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
-			G_FreeEntity( ent );
-			return;
+			if (ent->item->giType != IT_WEAPON) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+				G_FreeEntity( ent );
+				return;
+			}
 		}
 	}
+	
 
 	VectorSet (ent->r.mins, -8, -8, -0);
 	VectorSet (ent->r.maxs, 8, 8, 16);

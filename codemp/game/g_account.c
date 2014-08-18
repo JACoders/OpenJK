@@ -37,6 +37,17 @@ typedef struct RaceRecord_s {
 
 RaceRecord_t	HighScores2[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
 
+typedef struct UserStats_s {
+	char				username[16];
+	unsigned short		kills;
+	unsigned short		deaths;
+	unsigned short		suicides;
+	unsigned short		captures;
+	unsigned short		returns;
+} UserStats_t;
+
+UserStats_t	UserStats[256];//256 max logged in users per map :\
+
 typedef struct UserAccount_s {
 	char			username[16];
 	char			password[16];
@@ -391,7 +402,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				//trap->Print("Newrank set %i!\n", newRank);
 			}
 		}
-		trap->Print("us: %s, them: %s\n", username, HighScores2[course][style][i].username);
+		//trap->Print("us: %s, them: %s\n", username, HighScores2[course][style][i].username);
 		if (!Q_stricmp(username, HighScores2[course][style][i].username)) { //Its us
 			if (newRank >= 0) {
 				rowToDelete = i;
@@ -654,6 +665,48 @@ void Svcmd_ChangePass_f(void)
 	CALL_SQLITE (close(db));
 }
 
+void Svcmd_Register_f(void)
+{
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16], password[16];
+	time_t	rawtime;
+
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /register <username> <password>\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	trap->Argv(2, password, sizeof(password));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+	Q_strlwr(password);
+	Q_CleanStr(password);
+
+	if (CheckUserExists(username)) {
+		trap->Print( "User already exists!\n");
+		return;
+	}
+
+	time( &rawtime );
+	localtime( &rawtime );
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, 0)";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 3, rawtime));
+    CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	trap->Print( "Account created.\n");
+	CALL_SQLITE (close(db));
+}
+
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
@@ -823,6 +876,20 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+}
+
+void G_AddSimpleStat(char *username, int type) {
+	//1 = kill
+	//2 = death
+	//3 = suicide
+	//4 = capture
+	//5 = returny
+
+	//Search array list to find players row
+	//If found, update it
+	//If not found, add a new row at next empty spot
+
+	//A new function will read the array on mapchange, and do the querys updates.
 }
 
 void G_AddSimpleStatsToDB() {

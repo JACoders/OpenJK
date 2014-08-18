@@ -5139,6 +5139,11 @@ int BotSelectIdealWeapon(bot_state_t *bs)
 
 	i = 0;
 
+	if (g_newBotAI.integer && (bs->cur_ps.stats[STAT_WEAPONS] & (1 << WP_SABER))) { //always use saber for new bot.. sad hack
+		BotSelectWeapon(bs->client, WP_SABER);
+		return 0;
+	}
+
 	while (i < WP_NUM_WEAPONS)
 	{
 		if (bs->cur_ps.ammo[weaponData[i].ammoIndex] >= weaponData[i].energyPerShot &&

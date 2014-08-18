@@ -54,7 +54,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 			ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 
 			if (g_fakeClients.integer && (g_entities[cl - level.clients].r.svFlags & SVF_BOT))
-				ping = Q_irand(25, 55);
+				ping = Q_irand(25, 40);
 		}
 
 		if( cl->accuracy_shots ) {
@@ -5279,7 +5279,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (ent->client->pers.isJAPRO)
 		trap->SendServerCommand( ent-g_entities, "print \"   ^2You are using the client plugin recommended by the server.\n\"" ); 
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"   ^1You do not have the client plugin.  Download at www.upsgaming.com\n\"" ); 
+		trap->SendServerCommand( ent-g_entities, "print \"   ^1You do not have the client plugin. Download at www.upsgaming.com\n\"" ); 
 
 }
 //[JAPRO - Serverside - All - Aminfo Function - End]
@@ -6632,9 +6632,9 @@ command_t commands[] = {
 
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
-	{ "noclip",				Cmd_Noclip_f,				CMD_ALIVE|CMD_NOINTERMISSION },//change for admin?
+	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "npc",				Cmd_NPC_f,					CMD_ALIVE },//removed cheat for admin
+	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },

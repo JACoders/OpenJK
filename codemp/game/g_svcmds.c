@@ -598,6 +598,8 @@ int svcmdcmp( const void *a, const void *b ) {
 void G_CheckFields( void );
 void G_CheckSpawns( void );
 void Svcmd_ChangePass_f( void );
+void Svcmd_Register_f( void );
+
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
@@ -618,6 +620,9 @@ svcmd_t svcmds[] = {
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
+
+	{ "register",					Svcmd_Register_f,					qfalse },
+
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "say",						Svcmd_Say_f,						qtrue },
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse }

@@ -2856,7 +2856,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		//char arg1[MAX_STRING_TOKENS];
 
 		if (client->pers.isJAPRO == qfalse)
-			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin.  Download at www.upsgaming.com\n\"" ) );
+			trap->SendServerCommand( ent-g_entities, va("print \"^1You do not have the client plugin. Download at www.upsgaming.com\n\"" ) );
 
 		//if (!strchr( arg1, ';' ) && !strchr( arg1, '\r' ) && !strchr( arg1, '\n' )) //loda idk
 		if (Q_stricmp(g_consoleMOTD.string, ""))
@@ -4141,6 +4141,8 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 	}
 }
 
+void G_AddSimpleStat(char *username, int type);
+
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -4164,8 +4166,9 @@ void ClientDisconnect( int clientNum ) {
 			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
 			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
 			AddScore( attacker, ent->r.currentOrigin, 1 );
-			if (ent && ent->s.eType != ET_NPC)
-				attacker->client->pers.stats.kills++;//JAPRO STATS
+			if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && ent && ent->s.eType != ET_NPC && !(ent->r.svFlags & SVF_BOT))
+				G_AddSimpleStat(attacker->client->pers.userName, 1);
+			attacker->client->pers.stats.kills++;//JAPRO STATS
 		}	
 	}
 //JAPRO - Serverside - Stop those pesky reconnect whores - End
