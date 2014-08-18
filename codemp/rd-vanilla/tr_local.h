@@ -942,6 +942,7 @@ typedef struct trGlobals_s {
 
 	qboolean				worldMapLoaded;
 	world_t					*world;
+	char					worldDir[MAX_QPATH];		// ie: maps/tim_dm2 (copy of world_t::name sans extension but still includes the path)
 
 	const byte				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
 

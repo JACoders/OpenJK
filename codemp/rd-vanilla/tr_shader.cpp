@@ -3248,6 +3248,51 @@ inline qboolean IsShader(shader_t *sh, const char *name, const int *lightmapInde
 }
 
 /*
+ ===============
+ R_FindLightmap ( needed for -external LMs created by ydnar's q3map2 )
+ given a (potentially erroneous) lightmap index, attempts to load
+ an external lightmap image and/or sets the index to a valid number
+ ===============
+ */
+#define EXTERNAL_LIGHTMAP     "lm_%04d.tga"     // THIS MUST BE IN SYNC WITH Q3MAP2
+static inline const int *R_FindLightmap( const int *lightmapIndex )
+{
+	image_t          *image;
+	char          fileName[ MAX_QPATH ];
+	
+	// don't bother with vertex lighting
+	if( *lightmapIndex < 0 )
+		return lightmapIndex;
+	
+	// does this lightmap already exist?
+	if( *lightmapIndex < tr.numLightmaps && tr.lightmaps[ *lightmapIndex ] != NULL )
+		return lightmapIndex;
+	
+	// bail if no world dir
+	if( tr.worldDir == NULL || !*tr.worldDir )
+	{
+		return lightmapsVertex;
+	}
+	
+	// sync up render thread, because we're going to have to load an image
+	//R_SyncRenderThread();
+	
+	// attempt to load an external lightmap
+	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex );
+	image = R_FindImageFile( fileName, qfalse, qfalse, (qboolean)r_ext_compressed_lightmaps->integer, GL_CLAMP );
+	if( image == NULL )
+	{
+		return lightmapsVertex;
+	}
+	
+	// add it to the lightmap list
+	if( *lightmapIndex >= tr.numLightmaps )
+		tr.numLightmaps = *lightmapIndex + 1;
+	tr.lightmaps[ *lightmapIndex ] = image;
+	return lightmapIndex;
+}
+
+/*
 ===============
 R_FindShader
 
@@ -3290,11 +3335,14 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 
 	// use (fullbright) vertex lighting if the bsp file doesn't have
 	// lightmaps
-	if ( lightmapIndex[0] >= 0 && lightmapIndex[0] >= tr.numLightmaps )
+/*	if ( lightmapIndex[0] >= 0 && lightmapIndex[0] >= tr.numLightmaps )
 	{
 		lightmapIndex = lightmapsVertex;
-	}
-	else if ( lightmapIndex[0] < LIGHTMAP_2D )
+	}*/
+	
+	lightmapIndex = R_FindLightmap( lightmapIndex );
+	
+	if ( lightmapIndex[0] < LIGHTMAP_2D )
 	{
 		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])
 		ri->Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
