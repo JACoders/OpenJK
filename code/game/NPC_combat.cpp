@@ -1186,10 +1186,11 @@ void WeaponThink( qboolean inCombat )
 	}
 
 	// can't shoot while shield is up
-	if (NPC->flags&FL_SHIELDED && NPC->client->NPC_class==CLASS_ASSASSIN_DROID)
+	/*if (NPC->flags&FL_SHIELDED && NPC->client->NPC_class==CLASS_ASSASSIN_DROID)
 	{
 		return;
-	}
+	}*/
+	//now we can? - Dusty
 
 	// Can't Fire While Cloaked
 	if (NPC->client && 

@@ -563,15 +563,15 @@ int PM_PowerLevelForSaberAnim( playerState_t *ps, int saberNum )
 	}
 	if ( anim >= BOTH_A2_T__B_ && anim <= BOTH_D2_B____ )
 	{
-		return FORCE_LEVEL_2;
+		return FORCE_LEVEL_3;
 	}
 	if ( anim >= BOTH_A3_T__B_ && anim <= BOTH_D3_B____ )
 	{
-		return FORCE_LEVEL_3;
+		return FORCE_LEVEL_5;
 	}
 	if ( anim >= BOTH_A4_T__B_ && anim <= BOTH_D4_B____ )
 	{//desann
-		return FORCE_LEVEL_4;
+		return FORCE_LEVEL_5;
 	}
 	if ( anim >= BOTH_A5_T__B_ && anim <= BOTH_D5_B____ )
 	{//tavion
@@ -583,7 +583,7 @@ int PM_PowerLevelForSaberAnim( playerState_t *ps, int saberNum )
 	}
 	if ( anim >= BOTH_A7_T__B_ && anim <= BOTH_D7_B____ )
 	{//staff
-		return FORCE_LEVEL_2;
+		return FORCE_LEVEL_4;
 	}
 	if ( ( anim >= BOTH_P1_S1_T_ && anim <= BOTH_P1_S1_BR )
 		|| ( anim >= BOTH_P6_S6_T_ && anim <= BOTH_P6_S6_BR ) 
@@ -593,12 +593,16 @@ int PM_PowerLevelForSaberAnim( playerState_t *ps, int saberNum )
 		{
 		case SS_STRONG:
 		case SS_DESANN:
+			return FORCE_LEVEL_5;
+			break;
+		case SS_STAFF:
+			return FORCE_LEVEL_4;
+			break;
+		case SS_MEDIUM:
 			return FORCE_LEVEL_3;
 			break;
-		case SS_TAVION:
-		case SS_STAFF:
 		case SS_DUAL:
-		case SS_MEDIUM:
+		case SS_TAVION:
 			return FORCE_LEVEL_2;
 			break;
 		case SS_FAST:

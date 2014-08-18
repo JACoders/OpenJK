@@ -197,6 +197,12 @@ cvar_t	*g_saber_color;
 cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
 
+//new cvars - Dusty
+cvar_t	*g_saberNewCombat; 
+cvar_t	*g_char_forcepoints;
+cvar_t  *g_saberLocksEnabled;
+
+
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
 
@@ -652,7 +658,6 @@ void G_InitCvars( void ) {
 	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
 	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
-
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
 	
@@ -685,6 +690,10 @@ void G_InitCvars( void ) {
 
 	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
 
+	//new cvars yay - Dusty
+	g_saberNewCombat = gi.cvar("g_saberNewCombat", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLocksEnabled = gi.cvar("g_saberLocksEnabled", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_char_forcepoints = gi.cvar("g_char_forcepoints", "100", CVAR_ARCHIVE | CVAR_CHEAT | CVAR_SAVEGAME );
 }
 /*
 ============
