@@ -1652,6 +1652,7 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(filename, Info_ValueForKey(info, "mapname"), sizeof(filename));
+	Q_strlwr(filename);//dat linux
 	Q_strcat(filename, sizeof(filename), "_warps.cfg");
 
 	for(i = 0; i < strlen(filename); i++) {//Replace / in mapname with _ since we cant have a file named mp/duel1.cfg etc.
