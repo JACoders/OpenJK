@@ -1211,6 +1211,44 @@ static void SV_ConSay_f(void) {
 	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
 }
 
+#define SVTELL_PREFIX "\x19[Server^7\x19]\x19: "
+
+/*
+==================
+SV_ConTell_f
+==================
+*/
+static void SV_ConTell_f(void) {
+	char	text[MAX_SAY_TEXT] = {0};
+	client_t	*cl;
+
+	if( !com_dedicated->integer ) {
+		Com_Printf( "Server is not dedicated.\n" );
+		return;
+	}
+
+	// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc () < 3 ) {
+		Com_Printf ("Usage: svtell <client number> <text>\n");
+		return;
+	}
+
+	cl = SV_GetPlayerByNum();
+	if ( !cl ) {
+		return;
+	}
+
+	Cmd_ArgsFromBuffer( 2, text, sizeof(text) );
+
+	Com_Printf ("tell: svtell to %s"S_COLOR_WHITE": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(cl, "chat \""SVTELL_PREFIX S_COLOR_MAGENTA"%s"S_COLOR_WHITE"\"\n", text);
+}
+
 const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {
 	"HEAL",
 	"JUMP",
@@ -1725,7 +1763,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
 	Cmd_AddCommand ("svsay", SV_ConSay_f);
-
+	Cmd_AddCommand ("svtell", SV_ConTell_f);
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
 	Cmd_AddCommand ("svrecord", SV_Record_f);
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
