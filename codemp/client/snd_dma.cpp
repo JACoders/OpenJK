@@ -363,10 +363,6 @@ void S_SoundInfo_f(void) {
 	if (!s_soundStarted) {
 		Com_Printf ("sound system not started\n");
 	} else {
-		if ( s_soundMuted ) {
-			Com_Printf ("sound system is muted\n");
-		}
-
 #ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
