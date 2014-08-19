@@ -562,7 +562,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	}
 
 	else if (other && other->client && other->client->ps.duelInProgress ) //Attacker is not dueling, but Other is, so dont let them use force on him
-		return;
+		return 0;
 //JAPRO - Serverside - Fullforce Duels - End
 
 	if (forcePower == FP_GRIP)
