@@ -1433,7 +1433,7 @@ const void *RB_RotatePic ( const void *data )
 		*(int *)tess.vertexColors[ numVerts + 2 ] =
 		*(int *)tess.vertexColors[ numVerts + 3 ] = *(int *)backEnd.color2D;
 
-	VectorSet (xlat, cmd->x, cmd->y, 0.0f);
+	VectorSet (xlat, cmd->x + cmd->w, cmd->y, 0.0f);
 
 	VectorSet (point, -cmd->w, 0.0f, 0.0f);
 	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
