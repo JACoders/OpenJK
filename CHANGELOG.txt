@@ -107,7 +107,7 @@ Key: - removed, + added, * modified
 [SP/MP] * Fixed never fading shadow in text
 [SP/MP] + trap_R_DrawRotatePic/2 allows full shader support now
 [SP] * MAX_SHADER_FILES bumped to 4096 from 1024 to match MP
-[MP] + Added in-engine ban code from ioquake3. Cmds: rehashbans, listbans, banaddr, exceptaddr, bandel, exceptdel, flushbans. CVar: sv_banFile
+[MP] + Added in-engine ban code from ioquake3. Cmds: sv_rehashbans, sv_listbans, sv_banaddr, sv_exceptaddr, sv_bandel, sv_exceptdel, sv_flushbans. CVar: sv_banFile
 [SP/MP] * Fix up font renderer glyph positioning
 [MP] + addFavorite
 [SP/MP] * Fixed overstrike mode when using any UI edit box
