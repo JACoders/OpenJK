@@ -841,21 +841,17 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 		i = fLen;
 
-		while (i >= 0 && soundpath[i] != '\n')
-		{
-			if (soundpath[i] == 'f')
-			{
+		while (i >= 0 && soundpath[i] != '\n') {
+			if (soundpath[i] == 'f') {
 				isFemale = qtrue;
 				soundpath[i] = 0;
 			}
-
 			i--;
 		}
 
 		i = 0;
 
-		while (soundpath[i] && soundpath[i] != '\r' && soundpath[i] != '\n')
-		{
+		while (soundpath[i] && soundpath[i] != '\r' && soundpath[i] != '\n') {
 			i++;
 		}
 		soundpath[i] = 0;
@@ -873,7 +869,10 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 	}
 	else
 	{
-		isFemale = ci->gender == GENDER_FEMALE;
+		if ( cgs.gametype != GT_SIEGE )
+			isFemale = ci->gender == GENDER_FEMALE;
+		else
+			isFemale = qfalse;
 	}
 
 	trap->S_Shutup(qtrue);
@@ -1608,10 +1607,10 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	// Gender hints
 	if ( (v = Info_ValueForKey( configstring, "ds" )) )
 	{
-		if ( *v == 'm' )
-			newInfo.gender = GENDER_MALE;
-		else
+		if ( *v == 'f' )
 			newInfo.gender = GENDER_FEMALE;
+		else
+			newInfo.gender = GENDER_MALE;
 	}
 
 	// team task
