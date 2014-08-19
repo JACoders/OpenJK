@@ -978,7 +978,7 @@ void SV_Init (void) {
 	SV_BotInitBotLib();
 
 	// Load saved bans
-	Cbuf_AddText("rehashbans\n");
+	Cbuf_AddText("sv_rehashbans\n");
 
 	// Only allocated once, no point in moving it around and fragmenting
 	// create a heap for Ghoul2 to use for game side model vertex transforms used in collision detection

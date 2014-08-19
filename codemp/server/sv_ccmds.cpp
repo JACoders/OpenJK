@@ -1729,13 +1729,13 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
 	Cmd_AddCommand ("svrecord", SV_Record_f);
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
-	Cmd_AddCommand ("rehashbans", SV_RehashBans_f);
-	Cmd_AddCommand ("listbans", SV_ListBans_f);
-	Cmd_AddCommand ("banaddr", SV_BanAddr_f);
-	Cmd_AddCommand ("exceptaddr", SV_ExceptAddr_f);
-	Cmd_AddCommand ("bandel", SV_BanDel_f);
-	Cmd_AddCommand ("exceptdel", SV_ExceptDel_f);
-	Cmd_AddCommand ("flushbans", SV_FlushBans_f);
+	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f);
+	Cmd_AddCommand ("sv_listbans", SV_ListBans_f);
+	Cmd_AddCommand ("sv_banaddr", SV_BanAddr_f);
+	Cmd_AddCommand ("sv_exceptaddr", SV_ExceptAddr_f);
+	Cmd_AddCommand ("sv_bandel", SV_BanDel_f);
+	Cmd_AddCommand ("sv_exceptdel", SV_ExceptDel_f);
+	Cmd_AddCommand ("sv_flushbans", SV_FlushBans_f);
 }
 
 /*
