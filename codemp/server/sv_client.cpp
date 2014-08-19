@@ -1221,8 +1221,14 @@ void SV_UserinfoChanged( client_t *cl ) {
 	int maxSnaps = min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
 	val = Info_ValueForKey( cl->userinfo, "snaps" );
 	cl->wishSnaps = atoi( val );
-	i = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-	cl->snapshotMsec = 1000/i;
+	if ( !cl->wishSnaps )
+		cl->wishSnaps = maxSnaps;
+	i = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+	if( i != cl->snapshotMsec ) {
+		// Reset next snapshot so we avoid desync between server frame time and snapshot send time
+		cl->nextSnapshotTime = -1;
+		cl->snapshotMsec = i;
+	}
 
 	// TTimo
 	// maintain the IP information
