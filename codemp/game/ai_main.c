@@ -2454,6 +2454,30 @@ gentity_t *GetNearestBadThing(bot_state_t *bs)
 				factor = 0;
 			}
 
+			if (ent->s.weapon == WP_DET_PACK &&
+				(ent->r.ownerNum == bs->client ||
+				(ent->r.ownerNum > 0 && ent->r.ownerNum < MAX_CLIENTS &&
+				g_entities[ent->r.ownerNum].client && OnSameTeam(&g_entities[bs->client], &g_entities[ent->r.ownerNum]))) )
+			{ //don't be afraid of your own detpacks or your teammates' detpacks
+				factor = 0;
+			}
+
+			if (ent->s.weapon == WP_TRIP_MINE &&
+				(ent->r.ownerNum == bs->client ||
+				(ent->r.ownerNum > 0 && ent->r.ownerNum < MAX_CLIENTS &&
+				g_entities[ent->r.ownerNum].client && OnSameTeam(&g_entities[bs->client], &g_entities[ent->r.ownerNum]))) )
+			{ //don't be afraid of your own trip mines or your teammates' trip mines
+				factor = 0;
+			}
+
+			if (ent->s.weapon == WP_THERMAL &&
+				(ent->r.ownerNum == bs->client ||
+				(ent->r.ownerNum > 0 && ent->r.ownerNum < MAX_CLIENTS &&
+				g_entities[ent->r.ownerNum].client && OnSameTeam(&g_entities[bs->client], &g_entities[ent->r.ownerNum]))) )
+			{ //don't be afraid of your own thermals or your teammates' thermals
+				factor = 0;
+			}
+
 			if (glen < bestdist*factor && BotPVSCheck(bs->origin, ent->s.pos.trBase))
 			{
 				trap->Trace(&tr, bs->origin, NULL, NULL, ent->s.pos.trBase, bs->client, MASK_SOLID, qfalse, 0, 0);
