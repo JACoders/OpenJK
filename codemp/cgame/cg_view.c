@@ -1105,22 +1105,6 @@ static void CG_OffsetFighterView( void )
 }
 //======================================================================
 
-void CG_ZoomDown_f( void ) {
-	if ( cg.zoomed ) {
-		return;
-	}
-	cg.zoomed = qtrue;
-	cg.zoomTime = cg.time;
-}
-
-void CG_ZoomUp_f( void ) {
-	if ( !cg.zoomed ) {
-		return;
-	}
-	cg.zoomed = qfalse;
-	cg.zoomTime = cg.time;
-}
-
 /*
 ====================
 CG_CalcFov
