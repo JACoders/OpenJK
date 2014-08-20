@@ -1646,7 +1646,7 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 {
 	fileHandle_t f;	
-	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_WARPS = 32, args = 1;
+	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_WARPS = 32, args = 1;  //use max num warps idk
 	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
 	char*	pch;
 

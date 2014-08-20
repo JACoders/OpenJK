@@ -5438,7 +5438,7 @@ static void Cmd_Clanwhois_f(gentity_t *ent)
 			if (Q_stricmp(clanPass, client->pers.clanpass))
 				continue;
 
-			trap->SendServerCommand(clientNum, va("print \"^5%i ^1- ^7(%s^7)\n\"", i, client->pers.netname)); 
+			trap->SendServerCommand(clientNum, va("print \"^5%i^3: ^7%s\n\"", i, client->pers.netname)); 
 		}
 }
 //[JAPRO - Serverside - All - Clanwhois Function - End]
@@ -5862,7 +5862,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
 			vec3_t	angles = {0, 0, 0};
 			angles[YAW] = ent->client->pers.telemarkAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue );
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue, qtrue);
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -5884,7 +5884,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid].client->ps.origin[1];
 		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
 
-		AmTeleportPlayer( ent, origin, angles, qtrue );
+		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue );
 	}
 }
 
@@ -5942,7 +5942,7 @@ void Cmd_Warp_f(gentity_t *ent)
 		origin[1] = (int)level.warpY[warpNum];
 		origin[2] = (int)level.warpZ[warpNum];
 		angles[YAW] = (int)level.warpYaw[warpNum];
-		AmTeleportPlayer( ent, origin, angles, qtrue );
+		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse );
 	}	
 }
 
@@ -6008,7 +6008,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
 			angles[YAW] = ent->client->pers.telemarkAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor );
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, qfalse );
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -6026,7 +6026,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[0] = g_entities[clientid1].client->ps.origin[0];
 		origin[1] = g_entities[clientid1].client->ps.origin[1];
 		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
-		AmTeleportPlayer( ent, origin, angles, droptofloor );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
 		return;
 	}
 
@@ -6055,7 +6055,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid2].client->ps.origin[1];
 		origin[2] = g_entities[clientid2].client->ps.origin[2] + 96;
 
-		AmTeleportPlayer( teleporter, origin, angles, droptofloor );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
 		return;
 	}
 
@@ -6075,7 +6075,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			angles[YAW] = atoi(yaw);
 		}*/
 			
-		AmTeleportPlayer( ent, origin, angles, droptofloor );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
 		return;
 	}
 
@@ -6097,7 +6097,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			trap->Argv(4, yaw, sizeof(yaw));
 			angles[YAW] = atoi(yaw);
 			
-			AmTeleportPlayer( ent, origin, angles, droptofloor );
+			AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
 		}
 
 		else//Amtele other player to origin
@@ -6121,7 +6121,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			origin[1] = atoi(y);
 			origin[2] = atoi(z);
 
-			AmTeleportPlayer( teleporter, origin, angles, droptofloor );
+			AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
 		}
 		return;
 
@@ -6157,7 +6157,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		trap->Argv(5, yaw, sizeof(yaw));
 		angles[YAW] = atoi(yaw);
 			
-		AmTeleportPlayer( teleporter, origin, angles, droptofloor );
+		AmTeleportPlayer( teleporter, origin, angles, droptofloor, qfalse );
 		return;
 	}
 

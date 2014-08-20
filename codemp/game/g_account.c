@@ -35,7 +35,7 @@ typedef struct RaceRecord_s {
 	unsigned int		end_time;
 } RaceRecord_t;
 
-RaceRecord_t	HighScores2[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
+RaceRecord_t	HighScores[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
 
 typedef struct UserStats_s {
 	char				username[16];
@@ -396,14 +396,14 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	}
 
 	for (i = 0; i < 10; i++) {
-		if (duration_ms < HighScores2[course][style][i].duration_ms) { //We were faster
+		if (duration_ms < HighScores[course][style][i].duration_ms) { //We were faster
 			if (newRank == -1) {
 				newRank = i;
 				//trap->Print("Newrank set %i!\n", newRank);
 			}
 		}
 		//trap->Print("us: %s, them: %s\n", username, HighScores2[course][style][i].username);
-		if (!Q_stricmp(username, HighScores2[course][style][i].username)) { //Its us
+		if (!Q_stricmp(username, HighScores[course][style][i].username)) { //Its us
 			if (newRank >= 0) {
 				rowToDelete = i;
 				//trap->Print("duplicate set!\n");
@@ -414,7 +414,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				return;
 			}
 		}
-		if (!HighScores2[course][style][i].username[0]) { //Empty
+		if (!HighScores[course][style][i].username[0]) { //Empty
 			//trap->Print("Empty!\n");
 			if (newRank == -1) {
 				//trap->Print("OKAY1!\n");
@@ -434,23 +434,23 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		if (rowToDelete >= 0) {
 			for (i = rowToDelete; i < 10; i++) {
 				if (i < 9)
-					HighScores2[course][style][i] = HighScores2[course][style][i + 1];
+					HighScores[course][style][i] = HighScores[course][style][i + 1];
 				else 
-					Q_strncpyz(HighScores2[course][style][i].username, "", sizeof(HighScores2[course][style][i].username));
+					Q_strncpyz(HighScores[course][style][i].username, "", sizeof(HighScores[course][style][i].username));
 			}
 		}
 		
 		for (i = 8; i >= newRank; i--) {
-			HighScores2[course][style][i + 1] = HighScores2[course][style][i];
+			HighScores[course][style][i + 1] = HighScores[course][style][i];
 		}
 
-		Q_strncpyz(HighScores2[course][style][newRank].username, username, sizeof(HighScores2[i][style][newRank].username));
-		Q_strncpyz(HighScores2[course][style][newRank].coursename, username, sizeof(HighScores2[i][style][newRank].coursename));
-		HighScores2[course][style][newRank].duration_ms = duration_ms;
-		HighScores2[course][style][newRank].topspeed = topspeed;
-		HighScores2[course][style][newRank].average = average;
-		HighScores2[course][style][newRank].style = style;
-		HighScores2[course][style][newRank].end_time = rawtime;
+		Q_strncpyz(HighScores[course][style][newRank].username, username, sizeof(HighScores[i][style][newRank].username));
+		Q_strncpyz(HighScores[course][style][newRank].coursename, username, sizeof(HighScores[i][style][newRank].coursename));
+		HighScores[course][style][newRank].duration_ms = duration_ms;
+		HighScores[course][style][newRank].topspeed = topspeed;
+		HighScores[course][style][newRank].average = average;
+		HighScores[course][style][newRank].style = style;
+		HighScores[course][style][newRank].end_time = rawtime;
 
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
@@ -878,18 +878,66 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 }
 
+//Search array list to find players row
+//If found, update it
+//If not found, add a new row at next empty spot
+//A new function will read the array on mapchange, and do the querys updates
 void G_AddSimpleStat(char *username, int type) {
-	//1 = kill
-	//2 = death
-	//3 = suicide
-	//4 = capture
-	//5 = returny
+	int i;
 
-	//Search array list to find players row
-	//If found, update it
-	//If not found, add a new row at next empty spot
+	if (sv_cheats.integer) //Dont record stats if cheats were enabled
+		return;
+	for (i = 0; i < 256; i++) { //size of UserStats ?
+		if (!UserStats[i].username || !UserStats[i].username[0])
+			break;
+		if (!Q_stricmp(UserStats[i].username, username)) { //User found, update his stats in memory, is this check right?
+			if (type == 1) //Kills
+				UserStats[i].kills++;
+			else if (type == 2) //Deaths
+				UserStats[i].deaths++;
+			else if (type == 3) //Suicides
+				UserStats[i].suicides++;
+			else if (type == 4) //Captures
+				UserStats[i].captures++;
+			else if (type == 5) //Returns
+				UserStats[i].returns++;
+			return;
+		}
+	}
+	Q_strncpyz(UserStats[i].username, username, sizeof(UserStats[i].username )); //If we are here it means name not found, so add it
+	UserStats[i].kills = UserStats[i].deaths = UserStats[i].suicides = UserStats[i].captures = UserStats[i].returns = 0; //I guess set all their shit to 0
+}
 
-	//A new function will read the array on mapchange, and do the querys updates.
+
+void G_AddSimpleStatsToDB2() { //For each item in array.. do an update query?
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int i = 0;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "UPDATE LocalAccount SET "
+		"kills = ?, deaths = ?, suicides = ?, captures = ?, returns = ? "
+		"WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+
+	for (i = 0; i < 256; i++) { //size of UserStats ?
+		if (!UserStats[i].username || !UserStats[i].username[0])
+			break;
+
+		CALL_SQLITE (bind_int (stmt, 1, UserStats[i].kills));
+		CALL_SQLITE (bind_int (stmt, 2, UserStats[i].deaths));
+		CALL_SQLITE (bind_int (stmt, 3, UserStats[i].suicides));
+		CALL_SQLITE (bind_int (stmt, 4, UserStats[i].captures));
+		CALL_SQLITE (bind_int (stmt, 5, UserStats[i].returns));
+		CALL_SQLITE (bind_text (stmt, 6, UserStats[i].username, -1, SQLITE_STATIC));
+		CALL_SQLITE_EXPECT (step (stmt), DONE);
+		CALL_SQLITE (reset (stmt));
+		CALL_SQLITE (clear_bindings (stmt));
+	}
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
 }
 
 void G_AddSimpleStatsToDB() {
@@ -1005,7 +1053,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int i, row = 0, mstyle;
+	int i, mstyle;
 	char mapName[40], courseName[40], info[1024] = {0};
 
 	trap->GetServerinfo(info, sizeof(info));
@@ -1056,46 +1104,13 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					style = sqlite3_column_int(stmt, 6);
 					end_time = sqlite3_column_int(stmt, 7);
 
-					
-					/*
-					Q_strncpyz(level.Highscores[row].username, username, sizeof(level.Highscores[0].username));
-					Q_strncpyz(level.Highscores[row].coursename, course, sizeof(level.Highscores[0].coursename));
-					level.Highscores[row].duration_ms = duration_ms;
-					level.Highscores[row].topspeed = topspeed;
-					level.Highscores[row].average = average;
-					level.Highscores[row].style = style;
-					level.Highscores[row].end_time = end_time;
-					*/
-
-					//Q_strncpyz(level.Highscores2[i][style][rank].username, username, sizeof(level.Highscores2[i][style][rank].username));
-
-
-					Q_strncpyz(HighScores2[i][style][rank].username, username, sizeof(HighScores2[i][style][rank].username));
-					Q_strncpyz(HighScores2[i][style][rank].coursename, username, sizeof(HighScores2[i][style][rank].coursename));
-					HighScores2[i][style][rank].duration_ms = duration_ms;
-					HighScores2[i][style][rank].topspeed = topspeed;
-					HighScores2[i][style][rank].average = average;
-					HighScores2[i][style][rank].style = style;
-					HighScores2[i][style][rank].end_time = end_time;
-					
-					/*
-					trap->Print("Highscores building 1 %i\n", i);
-
-					Q_strncpyz(level.Highscores[i][style][rank].username, username, sizeof(level.Highscores[i][style][rank].username));
-					Q_strncpyz(level.Highscores[i][style][rank].coursename, course, sizeof(level.Highscores[i][style][rank].coursename));
-					level.Highscores[i][style][rank].duration_ms = duration_ms;
-					level.Highscores[i][style][rank].topspeed = topspeed;
-					level.Highscores[i][style][rank].average = average;
-					level.Highscores[i][style][rank].style = style;
-					level.Highscores[i][style][rank].end_time = end_time;
-
-					*/
-
-					//level.HighScores[course][style][spot]
-					//level.HighScores[i][mstyle][rank].username = 
-
-					//trap->Print("Highscore added to memory: %s, %s, %i, %i\n", level.Highscores[row].username, level.Highscores[row].coursename, level.Highscores[row].duration_ms, level.Highscores[row].style);
-					row++;
+					Q_strncpyz(HighScores[i][style][rank].username, username, sizeof(HighScores[i][style][rank].username));
+					Q_strncpyz(HighScores[i][style][rank].coursename, username, sizeof(HighScores[i][style][rank].coursename));
+					HighScores[i][style][rank].duration_ms = duration_ms;
+					HighScores[i][style][rank].topspeed = topspeed;
+					HighScores[i][style][rank].average = average;
+					HighScores[i][style][rank].style = style;
+					HighScores[i][style][rank].end_time = end_time;
 					rank++;
 				}
 				else if (s == SQLITE_DONE)
@@ -1270,21 +1285,21 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	
 
 	for (i = 0; i < 10; i++) {
-		if (HighScores2[course][style][i].username && HighScores2[course][style][i].username[0])
+		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
 		{
-			if (HighScores2[course][style][i].duration_ms >= 60000) {
+			if (HighScores[course][style][i].duration_ms >= 60000) {
 				int minutes, seconds, milliseconds;
-				minutes = (int)((HighScores2[course][style][i].duration_ms / (1000*60)) % 60);
-				seconds = (int)(HighScores2[course][style][i].duration_ms / 1000) % 60;
-				milliseconds = HighScores2[course][style][i].duration_ms % 1000; 
+				minutes = (int)((HighScores[course][style][i].duration_ms / (1000*60)) % 60);
+				seconds = (int)(HighScores[course][style][i].duration_ms / 1000) % 60;
+				milliseconds = HighScores[course][style][i].duration_ms % 1000; 
 				Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%03i", minutes, seconds, milliseconds);//more precision?
 			}
 			else
-				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores2[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
+				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
 			if (i == 9) //sad hack for padding
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores2[course][style][i].username, timeStr, HighScores2[course][style][i].topspeed, HighScores2[course][style][i].average));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average));
 			else
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores2[course][style][i].username, timeStr, HighScores2[course][style][i].topspeed, HighScores2[course][style][i].average));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average));
 		}
 	}
 }
