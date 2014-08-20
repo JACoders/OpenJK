@@ -5412,7 +5412,7 @@ Cmd_Clanwhois_f
 static void Cmd_Clanwhois_f(gentity_t *ent)
 {
 		gclient_t *client;
-		const int clientNum = ent - g_entities;
+		int clientNum = ent - g_entities;
 		char clanPass[MAX_QPATH];//meh
 		int i;
 
@@ -5421,7 +5421,7 @@ static void Cmd_Clanwhois_f(gentity_t *ent)
 
 		if (trap->Argc() > 1)//Clanwhois <clanpass>
 			trap->Argv(1, clanPass, sizeof(clanPass));
-		else if (ent->client->pers.clanpass[0] == 0)//Normal clanwhois, and we have no clanpass
+		else if (!ent->client->pers.clanpass[0])//Normal clanwhois, and we have no clanpass
 			return;
 
 		for (i = 0, client = level.clients; i < level.maxclients; ++i, ++client)
@@ -5955,7 +5955,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	char x[32], y[32], z[32], yaw[32];
 	int clientid1 = -1, clientid2 = -1;
 	vec3_t	angles = {0, 0, 0}, origin;
-	qboolean droptofloor = qfalse;
+	qboolean droptofloor = qfalse, race = qfalse;
 
 	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
 	{
@@ -5994,8 +5994,10 @@ void Cmd_Amtele_f(gentity_t *ent)
 		return;	
 	}
 
-	if (ent->client->pers.raceMode)
+	if (ent->client->pers.raceMode) {
 		droptofloor = qtrue;
+		race = qtrue;
+	}
 
 	if (trap->Argc() > 6)
 	{
@@ -6008,7 +6010,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
 			angles[YAW] = ent->client->pers.telemarkAngle;
-			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, qfalse );
+			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, race );
 		}
 		else
 			trap->SendServerCommand( ent-g_entities, "print \"No telemark set!\n\"" );
@@ -6075,7 +6077,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			angles[YAW] = atoi(yaw);
 		}*/
 			
-		AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, race );
 		return;
 	}
 
@@ -6097,7 +6099,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 			trap->Argv(4, yaw, sizeof(yaw));
 			angles[YAW] = atoi(yaw);
 			
-			AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
+			AmTeleportPlayer( ent, origin, angles, droptofloor, race );
 		}
 
 		else//Amtele other player to origin

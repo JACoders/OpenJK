@@ -1045,7 +1045,6 @@ void CleanupLocalRun() {
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	//drop templocalrun here or?
 	CALL_SQLITE (close(db));
 }
 
@@ -1125,7 +1124,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	}
 	CALL_SQLITE (close(db));
 
-	trap->Print("Highscores built for %s\n", courseName);
+	if (level.numCourses)
+		trap->Print("Highscores built for %s\n", courseName);
 }
 
 void IntegerToRaceName(int style, char *styleString) {
