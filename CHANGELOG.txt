@@ -1,10 +1,10 @@
 This file will generally summarise the Github repo commit history
 Key: - removed, + added, * modified
 
-[SP/MP] * OpenJK now writes configs/screenshots/etc to fs_homepath directory. No longer have to run as administrator on Windows.
+[SP/MP] * OpenJK now writes configs/screenshots/etc to fs_homepath directory. No longer have to run as administrator on Windows. (Multi-User support)
 [SP] + Now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 [SP/MP] * Increased Command Buffer from 16384 to 128*1024
-[SP/MP] * Increased max cvars from 1224 to 2048
+[SP/MP] * Increased max cvars from 1224 to 8192
 [MP] * Fixed several parsers that broke with characters which wrapped to being negative.
 [SP/MP] + Added mouse-wheel to console
 [MP] + Added misc security fixes to allow servers to deal with connectionless packets.
@@ -31,7 +31,7 @@ Key: - removed, + added, * modified
 [MP] * Fixed some item prediction errors in team games. (Item prediction still sucks in general though)
 [SP/MP] * Fixed potential out of bounds in sound code.
 [SP] * Fixed buffer overflow in filesystem code which prevented use of some maps (atlantica). Raven made a Com_Error to prevent this from happening, we removed that as well.
-[SP] * Rosh should no longer randomly die due to falling damage on the first level.
+[SP] * Rosh no longer randomly dies due to falling damage on the first level.
 [SP/MP] * Fixed Gamma Clamp on WinXP+
 [SP/MP] * Fixed weather system incorrectly throwing up a warning with shader data if weather system was unable to parse a vector correctly.
 [MP] * Fixed buffer overflow in client side rcon command.
@@ -46,7 +46,7 @@ Key: - removed, + added, * modified
 [SP/MP] * FX Flashes now properly scale to fov and window aspect.
 [MP] + Add sv_lanForceRate (Defaults to 1) Feature was already enabled, but not toggleable.
 [MP] * Timescale frametime fixes.  Frametime < 1 is no longer possible (bad things happen)
-[MP] + Tweaked globalservers master server command a bit for better verbosity.
+[MP] * globalservers master server command now supports multiple master servers with the sv_master1..5 cvars
 [SP/MP] - MPlayer code removed.
 [MP] * Tweaked serverbrowser client engine code.
 [MP] * Pure server code cleanups client and server.
@@ -98,6 +98,48 @@ Key: - removed, + added, * modified
 [MP] + Added s_doppler sound effect for moving sound sources (rockets)
 [MP] * gamecode: Fix cg_smoothClients affecting local player negatively
 [MP] * gamecode: Rewrote callvote code to allow disabling specific votes, added more options (e.g. display map list)
+[MP] + gamecode: Add server command toggleallowvote to easily adjust the bit values of g_allowVote
+[MP] + gamecode: Add userinfo validation options (g_userinfoValidate)
+[MP] + gamecode: Add server command toggleuserinfovalidation to easily adjust the bit values of g_userinfoValidate
 [SP] + gamecode: Added cg_smoothCamera (default 1)
 [SP] + gamecode: Added cg_dynamicCrosshair (default 1)
 [MP] + Added support for surfaceSprites flattened in MP.  (Fixes surface sprites on t2_trip)
+[SP/MP] * Fixed never fading shadow in text
+[SP/MP] + trap_R_DrawRotatePic/2 allows full shader support now
+[SP] * MAX_SHADER_FILES bumped to 4096 from 1024 to match MP
+[MP] + Added in-engine ban code from ioquake3. Cmds: sv_rehashbans, sv_listbans, sv_banaddr, sv_exceptaddr, sv_bandel, sv_exceptdel, sv_flushbans. CVar: sv_banFile
+[SP/MP] * Fix up font renderer glyph positioning
+[MP] + addFavorite
+[SP/MP] * Fixed overstrike mode when using any UI edit box
+[SP/MP] * Fix crash when standing on an NPC who has been knocked down
+[MP] + gamecode: fx_wind entity
+[MP] * gamecode: fx_rain entity supports most options from SP now. LIGHTNING/shaking not supported, acidrain doesn't actually hurt
+[MP] * gamecode: more customRGBA options from SP on NPCs
+[MP] + engine/gamecode: Force Sight surfaces (cgame modification required)
+[MP] + gamecode: Human Merc NPC spawner
+[SP/MP] * Fixed a hang with some weird music sample rates
+[SP/MP] * Fixed a crash at startup when r_dynamicGlow was set to 2
+[SP] * Fix some invalid chunk length errors on x86_64 platforms
+[SP/MP] + Clipboard paste support added to the platforms which use SDL2
+[MP] + Add ability to paste in text files in the UI
+[SP/MP] * Refactor binds code in the UI
+[SP/MP] * Fix Out-Of-Bounds access in CM_EdgePlaneNum
+[SP/MP] * Clamp scr_conspeed to be in the range 1-100
+[MP] * gamecode: Make target_location entities logical (no gentity space used in most cases)
+[SP/MP] - Removed RMG code
+[SP] * Fallback location for jagame mod bin is now OpenJK instead of base
+[MP] + Add cl_motdServer1..5 cvars. cl_motd points to which one is used or 0 to turn off
+[MP] + Add QuakeLive style mouse accel option (cl_mouseAccelStyle, cl_mouseAccelOffset)
+[MP] * gamecode: Fix 2d screen tints with some effects being too dark (protect/abosrb/rage/ysalamiri/inlava/inwater/inslime)
+[MP] + gamecode: Filter out servers with invalid chars in their information from the browser (ui_browserFilterInvalidInfo)
+[MP] + gamecode: UI now supports multiple master servers
+[MP] + Server side demo recording per client (from their pov) support
+[MP] * CVar code in engine is more robust.  Protects against clients setting systeminfo cvars they should not etc.  More accurate warning messages when servers/vms/clients set cvars they should not.
+[SP] + Add modelscale and modelscale_vec support to misc_model_ghoul
+[MP] * Fix teamoverlay not making you look dead in siege when in limbo
+[MP] + Add sv_blockJumpSelect cvar to help prevent use of modded clients using an exploit with FP_LEVIATHAN with old mods
+[MP] * Fix exploit with usercmd bytes set to -128
+[SP/MP] + Add stopmusic command
+[SP] * Fix external lightmap support
+[MP] + Add external lightmap support from SP
+[SP/MP] * General buffer safety cleanup

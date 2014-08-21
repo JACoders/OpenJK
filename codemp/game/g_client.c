@@ -2287,12 +2287,10 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	// gender hints
 	s = Info_ValueForKey( userinfo, "sex" );
-	if ( !Q_stricmp( s, "male" ) )
-		gender = GENDER_MALE;
-	else if ( !Q_stricmp( s, "female" ) )
+	if ( !Q_stricmp( s, "female" ) )
 		gender = GENDER_FEMALE;
 	else
-		gender = GENDER_NEUTER;
+		gender = GENDER_MALE;
 
 	s = Info_ValueForKey( userinfo, "snaps" );
 	if ( atoi( s ) < sv_fps.integer )
@@ -2304,9 +2302,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strcat( buf, sizeof( buf ), va( "n\\%s\\", client->pers.netname ) );
 	Q_strcat( buf, sizeof( buf ), va( "t\\%i\\", client->sess.sessionTeam ) );
 	Q_strcat( buf, sizeof( buf ), va( "model\\%s\\", model ) );
-		 if ( gender == GENDER_MALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'm' ) );
-	else if ( gender == GENDER_FEMALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'f' ) );
-	else								Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'n' ) );
+	if ( gender == GENDER_FEMALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'f' ) );
+	else							Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'm' ) );
 	Q_strcat( buf, sizeof( buf ), va( "st\\%s\\", client->pers.saber1 ) );
 	Q_strcat( buf, sizeof( buf ), va( "st2\\%s\\", client->pers.saber2 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c1\\%s\\", color1 ) );
