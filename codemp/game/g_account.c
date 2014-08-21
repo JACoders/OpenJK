@@ -173,7 +173,7 @@ void G_AddToDBFromFile(void) //loda fixme
 {
 	fileHandle_t f;	
 	int		fLen = 0, args = 1; //MAX_FILESIZE = 4096
-	char	info[1024] = {0}, buf[4096] = {0}, empty[8] = {0};//eh
+	char	buf[4096] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
 	char * sql;
@@ -485,7 +485,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0, i = 0;
+    int row = 0;
 	char username[16], enteredPassword[16], password[16];
 
 	if (trap->Argc() != 3) {
@@ -563,7 +563,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0, i = 0;
+    int row = 0;
 	char username[16], enteredPassword[16], newPassword[16], password[16];
 
 	if (trap->Argc() != 4) {
@@ -610,7 +610,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 
 	CALL_SQLITE (finalize(stmt));
 
-	if (enteredPassword && password && enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
+	if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
 		sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
@@ -708,7 +708,6 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int row = 0;
 	char username[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
 	time_t	rawtime;
