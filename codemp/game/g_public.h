@@ -16,6 +16,7 @@
 // in entityStates (level eType), so the game must explicitly flag
 // special server behaviors
 #define	SVF_NOCLIENT			0x00000001	// don't send entity to clients, even if it has effects
+#define SVF_BROADCASTCLIENTS	0x00000002	// only broadcast to clients specified in r.broadcastClients[clientNum/32]
 #define SVF_BOT					0x00000008	// set if the entity is a bot
 #define SVF_PLAYER_USABLE		0x00000010	// player can use this with the use button
 #define	SVF_BROADCAST			0x00000020	// send to all connected clients
