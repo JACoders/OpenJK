@@ -1213,8 +1213,6 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 static void WP_RepeaterAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int	damage	= REPEATER_ALT_DAMAGE;
-
 //[JAPRO - Serverside - Weapons - Add inheritance to repeater alt fire]
 	gentity_t *missile = CreateMissileInheritance( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
 

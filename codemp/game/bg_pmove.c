@@ -3524,7 +3524,7 @@ static void PM_AirMove( void ) {
 	else if (g_tweakJetpack.integer && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
 #else
 	else if (cgs.jcinfo & JAPRO_CINFO_JETPACK && pm->cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(pm->ps))
-#endif)
+#endif
 	{
 		PM_AirAccelerate(wishdir, wishspeed, 1.4f);//jetpack air control
 	}

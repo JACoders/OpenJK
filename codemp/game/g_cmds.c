@@ -645,8 +645,6 @@ argv(0) noclip
 ==================
 */
 void Cmd_Noclip_f( gentity_t *ent ) {
-	char *msg = NULL;
-
 	if (!sv_cheats.integer)
 	{
 		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
@@ -4498,7 +4496,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 
 			trap->Argv(2, teamname, sizeof(teamname));
 
-			if (!Q_stricmp(teamname, "red") || !Q_stricmp(teamname, "r") && level.gametype >= GT_TEAM)
+			if ((!Q_stricmp(teamname, "red") || !Q_stricmp(teamname, "r")) && level.gametype >= GT_TEAM)
 			{
 				if (everyone)
 				{
@@ -4518,7 +4516,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 					}
 				}
 			}
-			else if (!Q_stricmp(teamname, "blue") || !Q_stricmp( teamname, "b") && level.gametype >= GT_TEAM)
+			else if ((!Q_stricmp(teamname, "blue") || !Q_stricmp( teamname, "b")) && level.gametype >= GT_TEAM)
 			{
 				if (everyone)
 				{
@@ -4703,11 +4701,11 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if( targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+					if ((g_entities[i].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[i].r.svFlags & SVF_JUNIORADMIN))
 						continue;
 					if (!targetplayer->client->pers.amfreeze)
 						targetplayer->client->pers.amfreeze = qtrue;
-						G_ScreenShake(targetplayer->client->ps.origin, &g_entities[clientid],  3.0f, 2000, qtrue); 
+						G_ScreenShake(targetplayer->client->ps.origin, &g_entities[i],  3.0f, 2000, qtrue); 
 						G_Sound(targetplayer, CHAN_AUTO, G_SoundIndex("sound/ambience/thunder_close1"));
 				}
 			}
@@ -4722,7 +4720,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if(targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+					if ((g_entities[i].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[i].r.svFlags & SVF_JUNIORADMIN))
 						continue;
 					if (targetplayer->client->pers.amfreeze)
 					{
@@ -5409,50 +5407,14 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 Cmd_Clanwhois_f
 =================
 */
-static void Cmd_Clanwhois2_f(gentity_t *ent) //loda fixme delete this
-{
-		gclient_t *client;
-		int clientNum = ent - g_entities;
-		char clanPass[MAX_QPATH];//meh
-		int i;
-
-		if (!ent->client)
-			return;
-
-		if (trap->Argc() > 1)//Clanwhois <clanpass>
-			trap->Argv(1, clanPass, sizeof(clanPass));
-		else if (!ent->client->pers.clanpass[0])//Normal clanwhois, and we have no clanpass
-			return;
-
-		for (i = 0, client = level.clients; i < level.maxclients; ++i, ++client)
-		{
-			if (client->pers.connected != CON_CONNECTED)
-				continue;
-
-			if (i == ent->client->ps.clientNum)
-				continue;
-
-			if (trap->Argc() <= 1)
-				Q_strncpyz(clanPass, ent->client->pers.clanpass, sizeof(clanPass));
-
-			if (Q_stricmp(clanPass, client->pers.clanpass))
-				continue;
-
-			trap->SendServerCommand(clientNum, va("print \"^5%i^3: ^7%s\n\"", i, client->pers.netname)); 
-		}
-}
 
 void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in people..?
 	int			i;
 	char		msg[1024-128] = {0}, clanPass[MAX_QPATH];
 	gclient_t	*cl;
 
-	trap->SendServerCommand( ent-g_entities, "print \"hi1\n\"");
-
 	if (!ent->client)
 		return;
-
-	trap->SendServerCommand( ent-g_entities, "print \"hi12\n\"");
 
 	if (trap->Argc() > 1)//Clanwhois <clanpass>
 		trap->Argv(1, clanPass, sizeof(clanPass));
@@ -5462,8 +5424,6 @@ void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in peopl
 		Q_strncpyz(clanPass, ent->client->pers.clanpass, sizeof(clanPass));
 	}
 
-	trap->SendServerCommand( ent-g_entities, "print \"hi3\n\"");
-
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
 		if (!g_entities[i].inuse)
@@ -5472,8 +5432,6 @@ void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in peopl
 		if (cl->pers.netname[0] && !Q_stricmp(clanPass, cl->pers.clanpass)) { // && cl->pers.userName[0] ?
 			char strNum[12] = {0};
 			char strName[MAX_NETNAME] = {0};
-
-			trap->SendServerCommand( ent-g_entities, "print \"hi4\n\"");
 
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			//CG_Printf("^5%2d^3: ^7%s\n", i, cl->name); 

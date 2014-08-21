@@ -1675,7 +1675,6 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
 	trap->FS_Close(f);
-	Com_Printf ("Loaded tele locations from %s\n", filename);
 
 	pch = strtok (buf," ");
 	while (pch != NULL) {		
@@ -1692,6 +1691,11 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 		}
 		pch = strtok(NULL, " \n\r");// \t really just does fucking nothing here
 		args++;
+		if (args > MAX_NUM_WARPS * 5) {
+			Com_Printf ("Error: Too many tele locations in %s\n", filename);
+			return;
+		}
 	}
+	Com_Printf ("Loaded tele locations from %s\n", filename);
 }
 

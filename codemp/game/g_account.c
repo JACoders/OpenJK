@@ -172,7 +172,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 void G_AddToDBFromFile(void) //loda fixme
 {
 	fileHandle_t f;	
-	int		fLen = 0, MAX_FILESIZE = 4096, args = 1;
+	int		fLen = 0, args = 1; //MAX_FILESIZE = 4096
 	char	info[1024] = {0}, buf[4096] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
@@ -528,7 +528,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 	CALL_SQLITE (finalize(stmt));
 
-	if (enteredPassword && password && enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
+	if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
 		char *p = NULL;
 		char strIP[NET_ADDRSTRMAXLEN] = {0};
 		time_t	rawtime;
@@ -611,9 +611,6 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	CALL_SQLITE (finalize(stmt));
 
 	if (enteredPassword && password && enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
-		char *p = NULL;
-		char strIP[NET_ADDRSTRMAXLEN] = {0};
-
 		sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
@@ -711,7 +708,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int i = 0, row = 0;
+	int row = 0;
 	char username[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
 	time_t	rawtime;
@@ -1065,9 +1062,9 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					unsigned int end_time;
 					int garbage;
 
-					garbage = sqlite3_column_int(stmt, 0);
-					username = (char*)sqlite3_column_text(stmt, 1); //Increment each of these by 1 if we use id to join
-					course = (char*)sqlite3_column_text(stmt, 2);
+					garbage = sqlite3_column_int(stmt, 0); //cn i just delete this, it seemed to throw off the order..??
+					username = (char*)sqlite3_column_text(stmt, 1); 
+					course = (char*)sqlite3_column_text(stmt, 2); //again, not needed
 					duration_ms = sqlite3_column_int(stmt, 3);
 					topspeed = sqlite3_column_int(stmt, 4);
 					average = sqlite3_column_int(stmt, 5);
@@ -1113,8 +1110,6 @@ void IntegerToRaceName(int style, char *styleString) {
 }
 
 int RaceNameToInteger(char *style) {
-	int i = 0;
-
 	Q_strlwr(style);
 	Q_CleanStr(style);
 
@@ -1136,7 +1131,7 @@ int RaceNameToInteger(char *style) {
 }
 
 void Cmd_DFTop10_f(gentity_t *ent) {
-	int i, style, rank = 1, course = -1;
+	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
 	char info[1024] = {0};
 
@@ -1200,7 +1195,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
-	if (courseName && courseName[0]) //&& courseName[0]?
+	if (courseName[0]) //&& courseName[0]?
 		Q_strcat(courseNameFull, sizeof(courseNameFull), va(" (%s)", courseName));
 
 	Q_strlwr(courseName);
