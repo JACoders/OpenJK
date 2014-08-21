@@ -883,54 +883,65 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 //If not found, add a new row at next empty spot
 //A new function will read the array on mapchange, and do the querys updates
 void G_AddSimpleStat(char *username, int type) {
-	int i;
+	int row;
 
 	if (sv_cheats.integer) //Dont record stats if cheats were enabled
 		return;
-	for (i = 0; i < 256; i++) { //size of UserStats ?
-		if (!UserStats[i].username || !UserStats[i].username[0])
+	for (row = 0; row < 256; row++) { //size of UserStats ?
+		if (!UserStats[row].username || !UserStats[row].username[0])
 			break;
-		if (!Q_stricmp(UserStats[i].username, username)) { //User found, update his stats in memory, is this check right?
+		if (!Q_stricmp(UserStats[row].username, username)) { //User found, update his stats in memory, is this check right?
 			if (type == 1) //Kills
-				UserStats[i].kills++;
+				UserStats[row].kills++;
 			else if (type == 2) //Deaths
-				UserStats[i].deaths++;
+				UserStats[row].deaths++;
 			else if (type == 3) //Suicides
-				UserStats[i].suicides++;
+				UserStats[row].suicides++;
 			else if (type == 4) //Captures
-				UserStats[i].captures++;
+				UserStats[row].captures++;
 			else if (type == 5) //Returns
-				UserStats[i].returns++;
+				UserStats[row].returns++;
 			return;
 		}
 	}
-	Q_strncpyz(UserStats[i].username, username, sizeof(UserStats[i].username )); //If we are here it means name not found, so add it
-	UserStats[i].kills = UserStats[i].deaths = UserStats[i].suicides = UserStats[i].captures = UserStats[i].returns = 0; //I guess set all their shit to 0
+	Q_strncpyz(UserStats[row].username, username, sizeof(UserStats[row].username )); //If we are here it means name not found, so add it
+	UserStats[row].kills = UserStats[row].deaths = UserStats[row].suicides = UserStats[row].captures = UserStats[row].returns = 0; //I guess set all their shit to 0
+	//Add the one type ..
+	if (type == 1) //Kills
+		UserStats[row].kills++;
+	else if (type == 2) //Deaths
+		UserStats[row].deaths++;
+	else if (type == 3) //Suicides
+		UserStats[row].suicides++;
+	else if (type == 4) //Captures
+		UserStats[row].captures++;
+	else if (type == 5) //Returns
+		UserStats[row].returns++;
 }
 
 
-void G_AddSimpleStatsToDB2() { //For each item in array.. do an update query?
+void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int i = 0;
+	int row = 0;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "UPDATE LocalAccount SET "
-		"kills = ?, deaths = ?, suicides = ?, captures = ?, returns = ? "
+		"kills = kills + ?, deaths = deaths + ?, suicides = suicides + ?, captures = captures + ?, returns = returns + ? "
 		"WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 
-	for (i = 0; i < 256; i++) { //size of UserStats ?
-		if (!UserStats[i].username || !UserStats[i].username[0])
+	for (row = 0; row < 256; row++) { //size of UserStats ?
+		if (!UserStats[row].username || !UserStats[row].username[0])
 			break;
 
-		CALL_SQLITE (bind_int (stmt, 1, UserStats[i].kills));
-		CALL_SQLITE (bind_int (stmt, 2, UserStats[i].deaths));
-		CALL_SQLITE (bind_int (stmt, 3, UserStats[i].suicides));
-		CALL_SQLITE (bind_int (stmt, 4, UserStats[i].captures));
-		CALL_SQLITE (bind_int (stmt, 5, UserStats[i].returns));
-		CALL_SQLITE (bind_text (stmt, 6, UserStats[i].username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 1, UserStats[row].kills));
+		CALL_SQLITE (bind_int (stmt, 2, UserStats[row].deaths));
+		CALL_SQLITE (bind_int (stmt, 3, UserStats[row].suicides));
+		CALL_SQLITE (bind_int (stmt, 4, UserStats[row].captures));
+		CALL_SQLITE (bind_int (stmt, 5, UserStats[row].returns));
+		CALL_SQLITE (bind_text (stmt, 6, UserStats[row].username, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (reset (stmt));
 		CALL_SQLITE (clear_bindings (stmt));
@@ -940,47 +951,7 @@ void G_AddSimpleStatsToDB2() { //For each item in array.. do an update query?
 	CALL_SQLITE (close(db));
 }
 
-void G_AddSimpleStatsToDB() {
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	gclient_t	*cl;
-	int i;
-
-	if (sv_cheats.integer) //Dont record stats if cheats were enabled
-		return;
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "UPDATE LocalAccount SET "
-		"kills = kills + ?, "
-		"deaths = deaths + ?, "
-		"suicides = suicides + ?, "
-		"captures = captures + ?, "
-		"returns = returns + ? "
-		"WHERE username = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-
-	for (i = 0; i < MAX_CLIENTS; i++) {//Build a list of clients
-		if (!g_entities[i].inuse)
-			continue;
-		cl = &level.clients[i];
-		if (cl->pers.netname[0] && cl->pers.userName && cl->pers.userName[0]) {
-			CALL_SQLITE (bind_int (stmt, 1, cl->pers.stats.kills));
-			CALL_SQLITE (bind_int (stmt, 2, cl->ps.persistant[PERS_KILLED]));
-			CALL_SQLITE (bind_int (stmt, 3, cl->ps.fd.suicides));
-			CALL_SQLITE (bind_int (stmt, 4, cl->pers.teamState.captures));
-			CALL_SQLITE (bind_int (stmt, 5, cl->pers.teamState.flagrecovery));
-			CALL_SQLITE (bind_text (stmt, 6, cl->pers.userName, -1, SQLITE_STATIC));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (reset (stmt));
-			CALL_SQLITE (clear_bindings (stmt));
-		}
-	}
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
-}
-
-void CleanupLocalRun() {
+void CleanupLocalRun() { //loda fixme, take prepare out of loop even more?
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1342,11 +1313,12 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 			char strName[MAX_NETNAME] = {0};
 			char strUser[16] = {0};
 
-			Q_strncpyz(strNum, va("^5%i^3:", i), sizeof(strNum));
+			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz( strUser, cl->pers.userName, sizeof(strUser));	
 			tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
-
+			//CG_Printf("^5%2d^3: ^7%s\n", i, cl->name); 
+			
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';

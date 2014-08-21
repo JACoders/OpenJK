@@ -5409,7 +5409,7 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 Cmd_Clanwhois_f
 =================
 */
-static void Cmd_Clanwhois_f(gentity_t *ent)
+static void Cmd_Clanwhois2_f(gentity_t *ent) //loda fixme delete this
 {
 		gclient_t *client;
 		int clientNum = ent - g_entities;
@@ -5440,6 +5440,46 @@ static void Cmd_Clanwhois_f(gentity_t *ent)
 
 			trap->SendServerCommand(clientNum, va("print \"^5%i^3: ^7%s\n\"", i, client->pers.netname)); 
 		}
+}
+
+void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in people..?
+	int			i;
+	char		msg[1024-128] = {0}, clanPass[MAX_QPATH];
+	gclient_t	*cl;
+
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() > 1)//Clanwhois <clanpass>
+		trap->Argv(1, clanPass, sizeof(clanPass));
+	else {//Clanwhois
+		if (!ent->client->pers.clanpass[0])//Normal clanwhois, and we have no clanpass
+			return;
+		Q_strncpyz(clanPass, ent->client->pers.clanpass, sizeof(clanPass));
+	}
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
+		char *tmpMsg = NULL;
+		if (!g_entities[i].inuse)
+			continue;
+		cl = &level.clients[i];
+		if (cl->pers.netname[0] && !Q_stricmp(clanPass, cl->pers.clanpass)) { // && cl->pers.userName[0] ?
+			char strNum[12] = {0};
+			char strName[MAX_NETNAME] = {0};
+
+			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
+			//CG_Printf("^5%2d^3: ^7%s\n", i, cl->name); 
+			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
+			tmpMsg = va("%-2s ^7%s\n", strNum, strName);
+
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+		}
+	}
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
 //[JAPRO - Serverside - All - Clanwhois Function - End]
 
