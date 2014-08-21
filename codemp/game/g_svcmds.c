@@ -599,10 +599,13 @@ void G_CheckFields( void );
 void G_CheckSpawns( void );
 void Svcmd_ChangePass_f( void );
 void Svcmd_Register_f( void );
-
+void Svcmd_AccountInfo_f( void );
+void Svcmd_DeleteAccount_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
+	{ "accountInfo",				Svcmd_AccountInfo_f,				qfalse },
+
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
 
@@ -616,6 +619,9 @@ svcmd_t svcmds[] = {
 
 	{ "checkfields",				G_CheckFields,						qfalse },
 	{ "checkspawns",				G_CheckSpawns,						qfalse },
+
+	{ "deleteAccount",				Svcmd_DeleteAccount_f,				qfalse },
+
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },

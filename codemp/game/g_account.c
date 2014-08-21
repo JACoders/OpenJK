@@ -704,6 +704,114 @@ void Svcmd_Register_f(void)
 	CALL_SQLITE (close(db));
 }
 
+void Svcmd_DeleteAccount_f(void)
+{
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16], password[16];
+	time_t	rawtime;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /deleteAccount <username>\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	
+	if (CheckUserExists(username)) {
+		sql = "DELETE FROM LocalAccount WHERE username = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE_EXPECT (step (stmt), DONE);
+		CALL_SQLITE (finalize(stmt));
+		trap->Print( "Account deleted.\n");
+	}
+	else 
+		trap->Print( "User does not exist, deleting highscores for username anyway.\n");
+
+	sql = "DELETE FROM LocalRun WHERE username = ?";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+    CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+}
+
+void Svcmd_AccountInfo_f(void)
+{
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16], timeStr[64] = {0}, buf[MAX_STRING_CHARS-64] = {0};
+	int row = 0, lastlogin;
+	unsigned int lastip;
+	time_t	timeGMT;
+
+	if (trap->Argc() != 2) {
+		trap->Print( "Usage: /accountInfo <username>\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	if (!CheckUserExists(username)) {
+		trap->Print( "User does not exist!\n");
+		return;
+	}
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT lastlogin, lastip FROM LocalAccount WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	
+    while (1) {
+        int s;
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			lastlogin = sqlite3_column_int(stmt, 0);
+			lastip = sqlite3_column_int(stmt, 1);
+            row++;
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	if (row == 0) { //no account found, or more than 1 account with same name, problem
+		trap->Print( "Account not found!\n");
+		return;
+	}
+	else if (row > 1) {
+		trap->Print( "ERROR: Multiple accounts found!\n");
+		return;
+	}
+
+	timeGMT = (time_t)lastlogin;
+	strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+
+	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
+		Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
+
+	trap->Print( "%s", buf);
+}
+
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
