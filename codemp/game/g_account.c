@@ -709,15 +709,20 @@ void Svcmd_DeleteAccount_f(void)
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	char username[16], password[16];
-	time_t	rawtime;
+	char username[16], confirm[16];
 
-	if (trap->Argc() != 2) {
-		trap->Print( "Usage: /deleteAccount <username>\n");
+	if (trap->Argc() != 3) {
+		trap->Print( "Usage: /deleteAccount <username> <confirm>\n");
 		return;
 	}
 
 	trap->Argv(1, username, sizeof(username));
+	trap->Argv(2, confirm, sizeof(confirm));
+
+	if (Q_stricmp(confirm, "confirm")) {
+		trap->Print( "Usage: /deleteAccount <username> <confirm>\n");
+		return;
+	}
 
 	Q_strlwr(username);
 	Q_CleanStr(username);

@@ -5855,7 +5855,9 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW))
 			ent->client->pers.telemarkOrigin[2] += 58;
 		ent->client->pers.telemarkAngle = (int)ent->client->ps.viewangles[YAW];
-		trap->SendServerCommand( ent-g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i\n\"", (int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], ent->client->pers.telemarkAngle ));
+		ent->client->pers.telemarkPitchAngle = (int)ent->client->ps.viewangles[PITCH];
+		trap->SendServerCommand( ent-g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i, %i\n\"", 
+			(int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], ent->client->pers.telemarkAngle, ent->client->pers.telemarkPitchAngle ));
 }
 //[JAPRO - Serverside - All - Amtelemark Function - End]
 
@@ -5868,6 +5870,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
 			vec3_t	angles = {0, 0, 0};
 			angles[YAW] = ent->client->pers.telemarkAngle;
+			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
 			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, qtrue, qtrue);
 		}
 		else
@@ -6016,6 +6019,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0)
 		{
 			angles[YAW] = ent->client->pers.telemarkAngle;
+			angles[PITCH] = ent->client->pers.telemarkPitchAngle;
 			AmTeleportPlayer( ent, ent->client->pers.telemarkOrigin, angles, droptofloor, race );
 		}
 		else
