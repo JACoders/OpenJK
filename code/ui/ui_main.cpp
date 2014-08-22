@@ -73,7 +73,9 @@ static struct
 #define MAX_SAVELOADFILES	100
 #define MAX_SAVELOADNAME	32
 
-//byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
+#ifdef JK2_MODE
+byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
+#endif
 
 typedef struct 
 {
@@ -1699,14 +1701,14 @@ static void UI_HandleLoadSelection()
 	Cvar_Set("ui_SelectionOK", va("%d",(s_savegame.currentLine < s_savegame.saveFileCnt)) );
 	if (s_savegame.currentLine >= s_savegame.saveFileCnt)
 		return;
-//	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment 
-
-/*	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
->>>>>>> 1.30
+#ifdef JK2_MODE
+	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment
+	
+	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
 	{
-		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); 
+		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4));
 	}
-*/
+#endif
 }
 
 /*
@@ -1722,7 +1724,9 @@ static int UI_FeederCount(float feederID)
 		{
 			ReadSaveDirectory();	//refresh
 			UI_HandleLoadSelection();
+#ifndef JK2_MODE
 			UI_AdjustSaveGameListBox(s_savegame.currentLine);
+#endif
 		}
 		return s_savegame.saveFileCnt;
 	} 
@@ -3656,6 +3660,13 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 
 			int levelshot;
 			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+#ifdef JK2_MODE
+			if (screenShotBuf && screenShotBuf[0])
+			{
+				ui.DrawStretchRaw( x, y, w, h, SG_SCR_WIDTH, SG_SCR_HEIGHT, screenShotBuf, 0, qtrue );
+			}
+			else
+#endif
 			if (levelshot)
 			{
 				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
@@ -3921,6 +3932,9 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
+#ifdef JK2_MODE
+	ui.PrecacheScreenshot();
+#endif
 	Menus_CloseByName("mainhud");
 
 	if (menuID)
@@ -6258,7 +6272,9 @@ void ReadSaveDirectory (void)
 	s_savegame.saveFileCnt = 0;
 	Cvar_Set("ui_gameDesc", "" );	// Blank out comment 
 	Cvar_Set("ui_SelectionOK", "0" );
-	//memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
+#ifdef JK2_MODE
+	memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
+#endif
 
 
 	// Get everything in saves directory

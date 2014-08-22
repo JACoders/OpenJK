@@ -239,6 +239,9 @@ do the apropriate things.
 =============
 */
 void SG_Shutdown();
+#ifdef JK2_MODE
+extern void SCR_UnprecacheScreenshot();
+#endif
 void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
@@ -267,6 +270,10 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 	lastErrorTime = currentTime;
 
+#ifdef JK2_MODE
+	SCR_UnprecacheScreenshot();
+#endif
+	
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
 	va_end (argptr);	
