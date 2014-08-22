@@ -858,8 +858,6 @@ void IN_Activate (qboolean active) {
 	}
 }
 
-extern cvar_t	*r_fullscreen;
-
 /*
 ==================
 IN_Frame
@@ -878,14 +876,11 @@ void IN_Frame (void) {
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
 	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
 
+	// temporarily deactivate if not in the game and
+	// running on the desktop
 	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
-	//if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
-		// temporarily deactivate if not in the game and
-		// running on the desktop
-		//if (r_fullscreen && r_fullscreen->value == 0 )	{
-			IN_DeactivateMouse ();
-			return;
-		//}
+		IN_DeactivateMouse ();
+		return;
 	}
 
 	if( !Cvar_VariableIntegerValue("r_fullscreen") && loading ) {

@@ -1815,13 +1815,14 @@ void RE_WorldEffectCommand(const char *command)
 	else
 	{
 		ri->Printf( PRINT_ALL, "Weather Effect: Please enter a valid command.\n" );
+		ri->Printf( PRINT_ALL, "	die\n" );
 		ri->Printf( PRINT_ALL, "	clear\n" );
 		ri->Printf( PRINT_ALL, "	freeze\n" );
 		ri->Printf( PRINT_ALL, "	zone (mins) (maxs)\n" );
 		ri->Printf( PRINT_ALL, "	wind\n" );
 		ri->Printf( PRINT_ALL, "	constantwind (velocity)\n" );
 		ri->Printf( PRINT_ALL, "	gustingwind\n" );
-		ri->Printf( PRINT_ALL, "	windzone (mins) (maxs) (velocity)\n" );
+		//ri->Printf( PRINT_ALL, "	windzone (mins) (maxs) (velocity)\n" );
 		ri->Printf( PRINT_ALL, "	lightrain\n" );
 		ri->Printf( PRINT_ALL, "	rain\n" );
 		ri->Printf( PRINT_ALL, "	acidrain\n" );
@@ -1867,6 +1868,3 @@ bool R_IsPuffing()
 { //Eh? Don't want surfacesprites to know this?
 	return false;
 }
-
-
-

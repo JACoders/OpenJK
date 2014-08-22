@@ -16,6 +16,7 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/G2_bones.cpp"
 	"${MPDir}/rd-vanilla/G2_misc.cpp"
 	"${MPDir}/rd-vanilla/G2_surfaces.cpp"
+	"${MPDir}/rd-vanilla/tr_arb.cpp"
 	"${MPDir}/rd-vanilla/tr_backend.cpp"
 	"${MPDir}/rd-vanilla/tr_bsp.cpp"
 	"${MPDir}/rd-vanilla/tr_cmds.cpp"

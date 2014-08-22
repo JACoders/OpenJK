@@ -4,6 +4,7 @@
 #include "../rd-common/tr_common.h"
 #include "qcommon/MiniHeap.h"
 #include "ghoul2/g2_local.h"
+#include <algorithm>
 
 
 cvar_t	*r_verbose;
@@ -140,9 +141,13 @@ cvar_t	*r_directedScale;
 cvar_t	*r_debugLight;
 cvar_t	*r_debugSort;
 
+// the limits apply to the sum of all scenes in a frame --
+// the main view, all the 3D icons, etc
+#define	DEFAULT_MAX_POLYS		600
+#define	DEFAULT_MAX_POLYVERTS	3000
 cvar_t	*r_maxpolys;
-int		max_polys;
 cvar_t	*r_maxpolyverts;
+int		max_polys;
 int		max_polyverts;
 
 cvar_t	*r_modelpoolmegs;
@@ -248,6 +253,19 @@ static void R_ModeList_f( void )
 	}
 	Com_Printf ("\n" );
 }
+
+typedef struct consoleCommand_s {
+	const char	*cmd;
+	xcommand_t	func;
+} consoleCommand_t;
+
+static consoleCommand_t	commands[] = {
+	{ "modellist",			R_Modellist_f },
+	{ "modelist",			R_ModeList_f },
+	{ "modelcacheinfo",		RE_RegisterModels_Info_f },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
 
 #ifdef _DEBUG
 #define MIN_PRIMITIVES -1
@@ -386,8 +404,8 @@ void R_Register( void )
 	r_noportals							= ri->Cvar_Get( "r_noportals",						"0",						CVAR_CHEAT );
 	r_shadows							= ri->Cvar_Get( "cg_shadows",						"1",						CVAR_NONE );
 	r_shadowRange						= ri->Cvar_Get( "r_shadowRange",					"1000",						CVAR_NONE );
-	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( MAX_POLYS ),		CVAR_NONE );
-	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( MAX_POLYVERTS ),	CVAR_NONE );
+	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( DEFAULT_MAX_POLYS ),		CVAR_NONE );
+	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( DEFAULT_MAX_POLYVERTS ),	CVAR_NONE );
 /*
 Ghoul2 Insert Start
 */
@@ -416,12 +434,8 @@ Ghoul2 Insert End
 	if (ri->Sys_LowPhysicalMemory() )
 		ri->Cvar_Set("r_modelpoolmegs", "0");
 
-	// make sure all the commands added here are also
-	// removed in R_Shutdown
-	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
-	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f );
-
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_AddCommand( commands[i].cmd, commands[i].func );
 }
 
 
@@ -474,13 +488,8 @@ void R_Init( void ) {
 	}
 	R_Register();
 
-	max_polys = r_maxpolys->integer;
-	if (max_polys < MAX_POLYS)
-		max_polys = MAX_POLYS;
-
-	max_polyverts = r_maxpolyverts->integer;
-	if (max_polyverts < MAX_POLYVERTS)
-		max_polyverts = MAX_POLYVERTS;
+	max_polys = (std::min)( r_maxpolys->integer, DEFAULT_MAX_POLYS );
+	max_polyverts = (std::min)( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
 	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
@@ -501,9 +510,8 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 //	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
 
-	ri->Cmd_RemoveCommand ("modellist");
-	ri->Cmd_RemoveCommand ("modelist");
-	ri->Cmd_RemoveCommand ("modelcacheinfo");
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	tr.registered = qfalse;
 }

@@ -4,6 +4,7 @@ void LAN_LoadCachedServers( );
 void LAN_SaveServersToCache( );
 void LAN_ResetPings(int source);
 int LAN_AddServer(int source, const char *name, const char *address);
+int LAN_AddFavAddr( const char *address );
 void LAN_RemoveServer(int source, const char *addr);
 int LAN_GetServerCount( int source );
 void LAN_GetServerAddressString( int source, int n, char *buf, int buflen );

@@ -39,6 +39,10 @@ cvar_t	*sv_autoDemo;
 cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_blockJumpSelect;
+cvar_t	*sv_banFile;
+
+serverBan_t serverBans[SERVER_MAXBANS];
+int serverBansCount = 0;
 
 /*
 =============================================================================

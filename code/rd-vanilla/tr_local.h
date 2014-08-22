@@ -16,8 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#ifndef TR_LOCAL_H
-#define TR_LOCAL_H
+#pragma once
 
 
 #include "../qcommon/q_shared.h"
@@ -1874,5 +1873,3 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 
 // tr_subs.cpp
 void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign );
-
-#endif //TR_LOCAL_H

@@ -16,8 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#ifndef __CG_CAMERA__
-#define __CG_CAMERA__
+#pragma once
 
 //
 // cg_camera.cpp
@@ -166,5 +165,3 @@ void CGCam_StartRoff( char *roff );
 
 void CGCam_Smooth( float intensity, int duration );
 void CGCam_UpdateSmooth( vec3_t origin, vec3_t angles );
-
-#endif	//__CG_CAMERA__

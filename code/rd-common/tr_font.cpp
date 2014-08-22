@@ -992,7 +992,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 		mAscender = LittleShort(fontdat->mAscender);
 		mDescender = LittleShort(fontdat->mDescender);
 //		mAsianHack = LittleShort(fontdat->mKoreanHack);	// ignore this crap, it's some junk in the fontdat file that no-one uses
-		mbRoundCalcs = !!strstr(fontName,"ergo");
+		mbRoundCalcs = false /*!!strstr(fontName,"ergo")*/;
 
 		// cope with bad fontdat headers...
 		//
@@ -1463,8 +1463,8 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 {	
 #ifdef JK2_MODE
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
-	int			iMaxWidth = 0;
-	int			iThisWidth= 0;
+	float		fMaxWidth = 0.0f;
+	float		fThisWidth = 0.0f;
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
@@ -1473,10 +1473,10 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		return(0);
 	}
 
-	float fScaleA = fScale;
+	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
 	{
-		fScaleA = fScale * 0.75f;
+		fScaleAsian = fScale * 0.75f;
 	}
 
 	while(*psText)
@@ -1484,24 +1484,26 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char **)&psText );
 		if (uiLetter == 0x0A)
 		{
-			iThisWidth = 0;
+			fThisWidth = 0.0f;
 		}
 		else
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
 		
-			iThisWidth += Round(iPixelAdvance * ((uiLetter > 255) ? fScaleA : fScale));
-			if (iThisWidth > iMaxWidth)
+			float fValue = iPixelAdvance * ((uiLetter > 255) ? fScaleAsian : fScale);
+			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
+			if (fThisWidth > fMaxWidth)
 			{
-				iMaxWidth = iThisWidth;
+				fMaxWidth = fThisWidth;
 			}
 		}
 	}
 
-	return iMaxWidth;
+	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
+	return (int)ceilf(fMaxWidth);
 #else
-	int			iMaxWidth = 0;
-	int			iThisWidth= 0;
+	float		fMaxWidth = 0.0f;
+	float		fThisWidth = 0.0f;
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
@@ -1510,10 +1512,10 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		return(0);
 	}
 
-	float fScaleA = fScale;
+	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
 	{
-		fScaleA = fScale * 0.75f;
+		fScaleAsian = fScale * 0.75f;
 	}
 
 	while(*psText)
@@ -1535,22 +1537,23 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 
 		if (uiLetter == 0x0A)
 		{
-			iThisWidth = 0;
+			fThisWidth = 0.0f;
 		}
 		else
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
 	
-			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleA : fScale);
-			iThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
-			if (iThisWidth > iMaxWidth)
+			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
+			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
+			if (fThisWidth > fMaxWidth)
 			{
-				iMaxWidth = iThisWidth;
+				fMaxWidth = fThisWidth;
 			}
 		}
 	}
 
-	return iMaxWidth;
+	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
+	return (int)ceilf(fMaxWidth);
 #endif
 }
 
@@ -1613,7 +1616,8 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifdef JK2_MODE
 	static qboolean gbInShadow = qfalse;	// MUST default to this
-	int					x, y, colour, offset;
+	float				fox, foy, fx, fy;
+	int					colour, offset;
 	const glyphInfo_t	*pLetter;
 	qhandle_t			hShader;
 
@@ -1652,12 +1656,12 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		return;
 	}
 
-	float fScaleA = fScale;
-	int iAsianYAdjust = 0;
+	float fScaleAsian = fScale;
+	float fAsianYAdjust = 0.0f;
 	if (Language_IsAsian() && fScale > 0.7f)
 	{
-		fScaleA = fScale * 0.75f;
-		iAsianYAdjust = /*Round*/((((float)curfont->GetPointSize() * fScale) - ((float)curfont->GetPointSize() * fScaleA))/2);
+		fScaleAsian = fScale * 0.75f;
+		fAsianYAdjust = ((curfont->GetPointSize() * fScale) - (curfont->GetPointSize() * fScaleAsian)) / 2.0f;
 	}
 
 	// Draw a dropshadow if required
@@ -1665,15 +1669,22 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
+		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
+
 		gbInShadow = qtrue;
-		RE_Font_DrawString(ox + offset, oy + offset, psText, colorTable[CT_DKGREY2], iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 		gbInShadow = qfalse;
 	}
 			
 	RE_SetColor( rgba );
 
-	x = ox;
-	oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
+	// Now we take off the training wheels and become a big font renderer
+	// It's all floats from here on out
+	fox = ox;
+	foy = oy;
+
+	fx = fox;
+	foy += curfont->mbRoundCalcs ? Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale) : (curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale;
 
 	qboolean bNextTextWouldOverflow = qfalse;
 	while (*psText && !bNextTextWouldOverflow)
@@ -1696,19 +1707,19 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			}
 			break;
 		case 10:						//linefeed
-			x = ox;
-			oy += Round(curfont->GetPointSize() * fScale);
+			fx = fox;
+			foy += curfont->mbRoundCalcs ? Round(curfont->GetPointSize() * fScale) : curfont->GetPointSize() * fScale;
 			if (Language_IsAsian())
 			{
-				oy += 4;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
+				foy += 4.0f;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
 			}
 			break;
 		case 13:						// Return
 			break;
 		case 32:						// Space
 			pLetter = curfont->GetLetter(' ');			
-			x += Round(pLetter->horizAdvance * fScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) );
+			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) );
 			break;
 
 		default:
@@ -1718,17 +1729,17 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				pLetter = curfont->GetLetter('.');
 			}
 
-			float fThisScale = uiLetter > 255 ? fScaleA : fScale;
-			int iAdvancePixels = Round(pLetter->horizAdvance * fThisScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+iAdvancePixels)-ox)>iMaxPixelWidth) );
+			float fThisScale = uiLetter > 255 ? fScaleAsian : fScale;
+			float fAdvancePixels = curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fThisScale) : pLetter->horizAdvance * fThisScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((fx+fAdvancePixels)-fox) > (float)iMaxPixelWidth) );
 			if (!bNextTextWouldOverflow)
 			{
 				// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...
 				//				
-				y = oy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
+				fy = foy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
 
-				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
-								(uiLetter > 255) ? y - iAsianYAdjust : y,	// float y
+				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+								(uiLetter > 255) ? fy - fAsianYAdjust : fy,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
 								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
 								pLetter->s,						// float s1
@@ -1739,7 +1750,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 								hShader							// qhandle_t hShader
 								);
 
-				x += iAdvancePixels;
+				fx += fAdvancePixels;
 			}
 			break;
 		}		
@@ -1747,7 +1758,8 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	//let it remember the old color //RE_SetColor(NULL);;
 #else
 	static qboolean gbInShadow = qfalse;	// MUST default to this
-	int					x, y, colour, offset;
+	float				fox, foy, fx, fy;
+	int					colour, offset;
 	const glyphInfo_t	*pLetter;
 	qhandle_t			hShader;
 
@@ -1812,12 +1824,12 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		return;
 	}
 
-	float fScaleA = fScale;
-	int iAsianYAdjust = 0;
+	float fScaleAsian = fScale;
+	float fAsianYAdjust = 0.0f;
 	if (Language_IsAsian() && fScale > 0.7f)
 	{
-		fScaleA = fScale * 0.75f;
-		iAsianYAdjust = /*Round*/((((float)curfont->GetPointSize() * fScale) - ((float)curfont->GetPointSize() * fScaleA))/2);
+		fScaleAsian = fScale * 0.75f;
+		fAsianYAdjust = ((curfont->GetPointSize() * fScale) - (curfont->GetPointSize() * fScaleAsian)) / 2.0f;
 	}
 
 	// Draw a dropshadow if required
@@ -1825,7 +1837,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
-		static const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, 1};
+		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
 
 		gbInShadow = qtrue;
 		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
@@ -1834,11 +1846,15 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		
 	RE_SetColor( rgba );
 
-	x = ox;
-	oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
+	// Now we take off the training wheels and become a big font renderer
+	// It's all floats from here on out
+	fox = ox;
+	foy = oy;
+
+	fx = fox;
+	foy += curfont->mbRoundCalcs ? Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale) : (curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale;
 
 	qboolean bNextTextWouldOverflow = qfalse;
-
 	while (*psText && !bNextTextWouldOverflow)
 	{
 		int iAdvanceCount;
@@ -1848,19 +1864,19 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		switch( uiLetter )
 		{
 		case 10:						//linefeed
-			x = ox;
-			oy += Round(curfont->GetPointSize() * fScale);
+			fx = fox;
+			foy += curfont->mbRoundCalcs ? Round(curfont->GetPointSize() * fScale) : curfont->GetPointSize() * fScale;
 			if (Language_IsAsian())
 			{
-				oy += 4;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
+				foy += 4.0f;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
 			}
 			break;
 		case 13:						// Return
 			break;
 		case 32:						// Space
 			pLetter = curfont->GetLetter(' ');			
-			x += Round(pLetter->horizAdvance * fScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;	// yeuch
+			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			break;
 		case '_':	// has a special word-break usage if in Thai (and followed by a thai char), and should not be displayed, else treat as normal
 			if (GetLanguageEnum()== eThai && ((unsigned char *)psText)[0] >= TIS_GLYPHS_START)
@@ -1893,29 +1909,29 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				pLetter = curfont->GetLetter('.');
 			}
 
-			float fThisScale = uiLetter > (unsigned)g_iNonScaledCharRange ? fScaleA : fScale;
+			float fThisScale = uiLetter > (unsigned)g_iNonScaledCharRange ? fScaleAsian : fScale;
 
 			// sigh, super-language-specific hack...
 			//
 			if (uiLetter == TIS_SARA_AM && GetLanguageEnum() == eThai)
 			{
-				x -= Round(7 * fThisScale);
+				fx -= curfont->mbRoundCalcs ? Round(7.0f * fThisScale) : 7.0f * fThisScale;
 			}
 
-			int iAdvancePixels = Round(pLetter->horizAdvance * fThisScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+iAdvancePixels)-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;	// yeuch
+			float fAdvancePixels = curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fThisScale) : pLetter->horizAdvance * fThisScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((fx+fAdvancePixels)-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			if (!bNextTextWouldOverflow)
 			{
 				// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...
 				//				
-				y = oy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
+				fy = foy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
 				if (curfont->m_fAltSBCSFontScaleFactor != -1)
 				{
-					y+=3;	// I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
+					fy += 3.0f; // I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
 				}
 
-				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
-								(uiLetter > (unsigned)g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
+				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+								(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
 								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
 								pLetter->s,						// float s1
@@ -1926,7 +1942,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 								hShader							// qhandle_t hShader
 								);
 
-				x += iAdvancePixels;
+				fx += fAdvancePixels;
 			}
 			break;
 		}		
