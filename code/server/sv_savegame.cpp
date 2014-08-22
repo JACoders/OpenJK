@@ -803,6 +803,9 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 {
 	int ret = 0;
 	time_t tFileTime;
+#ifdef JK2_MODE
+	int iScreenShotLength;
+#endif
 
 	qbSGReadIsTestOnly = qtrue;	// do NOT leave this in this state
 
@@ -818,10 +821,20 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 		if (SG_Read( INT_ID('C','M','T','M'), &fileTime, sizeof(fileTime)))	//read
 		{
 			tFileTime = SG_GetTime (fileTime);
+#ifdef JK2_MODE
+			if (SG_Read(INT_ID('S','H','L','N'), &iScreenShotLength, sizeof(iScreenShotLength)))
+			{
+				if (SG_Read(INT_ID('S','H','O','T'), NULL, iScreenShotLength, NULL))
+				{
+#endif
 			if (SG_Read(INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE ))	// read
 			{
 				ret = tFileTime;
 			}
+#ifdef JK2_MODE
+				}
+			}
+#endif
 		}
 	}
 	qbSGReadIsTestOnly = qfalse;
@@ -853,7 +866,7 @@ static char *SG_GetSaveGameMapName(const char *psPathlessBaseName)
 
 // pass in qtrue to set as loading screen, else pass in pvDest to read it into there...
 //
-/*
+#ifdef JK2_MODE
 static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest = NULL);
 static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 {
@@ -866,7 +879,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
 	//
-	byte *pJPGData = (byte *) Z_Malloc(iScreenShotLength + 4096,TAG_TEMP_SAVEGAME_WORKSPACE, qfalse);
+	byte *pJPGData = (byte *) Z_Malloc(iScreenShotLength + 4096,TAG_TEMP_WORKSPACE, qfalse);
 	//
 	// now read the JPG data...
 	//
@@ -876,7 +889,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	//
 	byte *pDecompressedPic = NULL;
 	int iWidth, iHeight;
-	Decompress_JPG( "[savegame]", pJPGData, &pDecompressedPic, &iWidth, &iHeight );
+	re.LoadJPGFromBuffer(pJPGData, iScreenShotLength, &pDecompressedPic, &iWidth, &iHeight);
 	//
 	// if the loaded image is the same size as the game is expecting, then copy it to supplied arg (if present)...
 	//
@@ -899,7 +912,6 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	Z_Free( pDecompressedPic );
 
 	return bReturn;
-#endif
 }
 // Gets the savegame screenshot
 //
@@ -909,31 +921,6 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 	{
 		return qfalse;
 	}
-//JLFSAVEGAME
-#if 0
-	unsigned short saveGameName[filepathlength];
-	char directoryInfo[filepathlength];
-	char psLocalFilename[filepathlength];
-	DWORD bytesRead;
-	
-	mbstowcs(saveGameName, psPathlessBaseName,filepathlength);
-	
-	XCreateSaveGame("U:\\", saveGameName, OPEN_ALWAYS, 0,directoryInfo, filepathlength);
-
-	strcpy (psLocalFilename , directoryInfo);
-	strcat (psLocalFilename , "saveimage.xbx");
-
-
-	sg_Handle = NULL;
-	sg_Handle = CreateFile(psLocalFilename, GENERIC_READ, FILE_SHARE_READ, 0, 
-		OPEN_EXISTING,	FILE_ATTRIBUTE_NORMAL, 0);
-
-	if (!sg_Handle)
-		return qfalse;
-
-
-
-#else
 
 	if (!SG_Open(psPathlessBaseName))
 	{
@@ -946,7 +933,6 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
 
 	SG_Close();
-#endif
 	return bGotSaveImage;
 }
 
@@ -962,8 +948,20 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 		int iWidth = SG_SCR_WIDTH;
 		int iHeight= SG_SCR_HEIGHT;
 		byte	byBlank[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4] = {0};
+		byte *src, *dst;
 
 		pbRawScreenShot = SCR_TempRawImage_ReadFromFile(va("levelshots/%s.tga",psMapName), &iWidth, &iHeight, byBlank, qtrue);	// qtrue = vert flip
+		for (int y = 0; y < iHeight; y++)
+		{
+			for (int x = 0; x < iWidth; x++)
+			{
+				src = pbRawScreenShot + 4 * (y * iWidth + x);
+				dst = pbRawScreenShot + 3 * (y * iWidth + x);
+				dst[0] = src[0];
+				dst[1] = src[1];
+				dst[2] = src[2];
+			}
+		}
 	}
 
 	if (!pbRawScreenShot)
@@ -972,14 +970,17 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	}
 
 
-	int iJPGDataSize = 0;
-	byte *pJPGData = Compress_JPG(&iJPGDataSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, qfalse);
+	size_t iJPGDataSize = 0;
+	size_t bufSize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 3;
+	byte *pJPGData = (byte *)Z_Malloc( bufSize, TAG_TEMP_WORKSPACE, qfalse, 4 );
+	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0 );
 	SG_Append(INT_ID('S','H','L','N'), &iJPGDataSize, sizeof(iJPGDataSize));
 	SG_Append(INT_ID('S','H','O','T'), pJPGData, iJPGDataSize);
 	Z_Free(pJPGData);
 	SCR_TempRawImage_CleanUp();
 }
-*/
+#endif
+
 
 qboolean SG_GameAllowedToSaveHere(qboolean inCamera)
 {
@@ -1051,7 +1052,9 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	Q_strncpyz( sMapCmd,psMapName, sizeof(sMapCmd));	// need as array rather than ptr because const strlen needed for MPCM chunk
 
 	SG_WriteComment(qbAutosave, sMapCmd);
-//	SG_WriteScreenshot(qbAutosave, sMapCmd);
+#ifdef JK2_MODE
+	SG_WriteScreenshot(qbAutosave, sMapCmd);
+#endif
 	SG_Append(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
 	SG_WriteCvars();
 
@@ -1116,7 +1119,9 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	Com_DPrintf("Reading: %s\n", sComment);
 	SG_Read( INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
 
-//	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
+#ifdef JK2_MODE
+	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
+#endif
 	SG_Read(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
 	SG_ReadCvars();
 

@@ -31,6 +31,9 @@ int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
 intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes
+#ifdef JK2_MODE
+extern qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress );
+#endif
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);
@@ -241,14 +244,18 @@ void CL_InitUI( void ) {
 	uii.Language_UsesSpaces		= re.Language_UsesSpaces;
 	uii.AnyLanguage_ReadCharFromString = re.AnyLanguage_ReadCharFromString;
 
-	//uii.SG_GetSaveImage			= SG_GetSaveImage;
+#ifdef JK2_MODE
+	uii.SG_GetSaveImage			= SG_GetSaveImage;
+#endif
 	uii.SG_GetSaveGameComment	= SG_GetSaveGameComment;
 	uii.SG_StoreSaveGameComment = SG_StoreSaveGameComment;
 	uii.SG_GameAllowedToSaveHere= SG_GameAllowedToSaveHere;
 
 	//uii.SCR_GetScreenshot		= SCR_GetScreenshot;
 
-	//uii.DrawStretchRaw			= re.DrawStretchRaw;
+#ifdef JK2_MODE
+	uii.DrawStretchRaw			= re.DrawStretchRaw;
+#endif
 	uii.R_ClearScene			= re.ClearScene;
 	uii.R_AddRefEntityToScene	= re.AddRefEntityToScene;
 	uii.R_AddPolyToScene		=  re.AddPolyToScene;
@@ -260,6 +267,10 @@ void CL_InitUI( void ) {
 	uii.R_SetColor				= re.SetColor;
 	uii.R_DrawStretchPic		= re.DrawStretchPic;
 	uii.UpdateScreen			= SCR_UpdateScreen;
+
+#ifdef JK2_MODE
+	uii.PrecacheScreenshot		= SCR_PrecacheScreenshot;
+#endif
 
 	uii.R_LerpTag				= re.LerpTag;
 
