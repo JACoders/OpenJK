@@ -68,7 +68,7 @@ extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime )
 extern void CG_ChangeWeapon( int num );
 extern void CG_SaberDoWeaponHitMarks( gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale );
 extern void G_AngerAlert( gentity_t *self );
-extern void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward );
+extern void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse );
 extern int G_CheckLedgeDive( gentity_t *self, float checkDist, const vec3_t checkVel, qboolean tryOpposite, qboolean tryPerp );
 extern void G_BounceMissile( gentity_t *ent, trace_t *trace );
 extern qboolean G_PointInBounds( const vec3_t point, const vec3_t mins, const vec3_t maxs );
@@ -6246,7 +6246,7 @@ else
 
 						VectorSubtract(g_entities[ent->client->ps.saberEntityNum].currentOrigin, hitEnt->currentOrigin, newDir);
 						VectorNormalize(newDir);
-						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir);
+						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir, FP_SABER_DEFENSE);
 					}
 					Jedi_PlayDeflectSound(hitOwner);
 					WP_SaberDrop(ent, &g_entities[ent->client->ps.saberEntityNum]);
@@ -6258,7 +6258,7 @@ else
 						vec3_t newDir;
 						VectorSubtract(g_entities[ent->client->ps.saberEntityNum].currentOrigin, hitEnt->currentOrigin, newDir);
 						VectorNormalize(newDir);
-						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir);
+						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir, FP_SABER_DEFENSE);
 					}
 					WP_SaberReturn(ent, &g_entities[ent->client->ps.saberEntityNum]);
 				}
@@ -6826,7 +6826,7 @@ void WP_SaberInFlightReflectCheck(gentity_t *self, usercmd_t *ucmd)
 					reflectAngle[PITCH] = Q_flrand(-90, 90);
 					AngleVectors(reflectAngle, forward, NULL, NULL);
 
-					G_ReflectMissile(self, missile_list[x], forward);
+					G_ReflectMissile(self, missile_list[x], forward, FP_SABER_DEFENSE);
 					//do an effect
 					VectorNormalize2(missile_list[x]->s.pos.trDelta, fx_dir);
 					G_PlayEffect("blaster/deflect", missile_list[x]->currentOrigin, fx_dir);
@@ -10115,7 +10115,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 							{
 								VectorScale(right, -1, right);
 							}
-							G_ReflectMissile(self, push_list[x], right);
+							G_ReflectMissile(self, push_list[x], right, pull ? FP_PULL : FP_PUSH);
 							//FIXME: isn't turning off!!!
 							WP_SaberDrop(push_list[x]->owner, push_list[x]);
 						}
@@ -10150,7 +10150,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 						}
 						if (dot >= 0)
 						{//it's heading towards me
-							G_ReflectMissile(self, push_list[x], forward);
+							G_ReflectMissile(self, push_list[x], forward, FP_PUSH);
 						}
 						else
 						{
