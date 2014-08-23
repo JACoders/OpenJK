@@ -1310,8 +1310,9 @@ int RaceNameToInteger(char *style) {
 
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
-	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
+	char courseName[40], courseNameFull[40], styleString[16], timeStr[32], dateStr[64] = {0};
 	char info[1024] = {0};
+	time_t timeGMT;
 
 	if (level.numCourses == 0) {
 		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
@@ -1398,35 +1399,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 	IntegerToRaceName(style, styleString);
 	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseNameFull, styleString));
-	trap->SendServerCommand(ent-g_entities, "print \"    ^5Username           Time         Topspeed    Average\n\"");
-
-	/*
-	
-	for (i = 0; i < (10 * level.numCourses * 7); i++) {
-		if (level.Highscores[i].username && level.Highscores[i].username[0]) {
-			if ((!Q_stricmp(level.Highscores[i].coursename, courseNameFull)) && (level.Highscores[i].style == style)) {
-				if (level.Highscores[i].duration_ms >= 60000) {
-					int minutes, seconds, milliseconds;
-					minutes = (int)((level.Highscores[i].duration_ms / (1000*60)) % 60);
-					seconds = (int)(level.Highscores[i].duration_ms / 1000) % 60;
-					milliseconds = level.Highscores[i].duration_ms % 1000; 
-					Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%i", minutes, seconds, milliseconds);//more precision?
-				}
-				else
-					Q_strncpyz(timeStr, va("%.3f", ((float)level.Highscores[i].duration_ms * 0.001)), sizeof(timeStr));
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", rank, level.Highscores[i].username, timeStr, level.Highscores[i].topspeed, level.Highscores[i].average));
-				rank++;
-			}
-		}
-		else break;
-		if (rank > 10) //just in case
-			break;
-	}
-	
-	*/
-	//
-	//convert coursename to course number
-	
+	trap->SendServerCommand(ent-g_entities, "print \"    ^5Username           Time         Topspeed    Average      Date\n\"");
 
 	for (i = 0; i < 10; i++) {
 		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
@@ -1440,10 +1413,14 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			}
 			else
 				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
+
+			timeGMT = (time_t)HighScores[course][style][i].end_time; //Maybe this should be done in the caching itself...but would also have to be done every racetime addition
+			strftime( dateStr, sizeof( dateStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+
 			if (i == 9) //sad hack for padding
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, dateStr));
 			else
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%i\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, dateStr));
 		}
 	}
 }
