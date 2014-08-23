@@ -32,7 +32,8 @@ typedef struct RaceRecord_s {
 	unsigned short		topspeed;
 	unsigned short		average;
 	unsigned short		style; //only needs to be 3 bits	
-	unsigned int		end_time;
+	char				end_time[64];
+	unsigned int		end_timeInt;
 } RaceRecord_t;
 
 RaceRecord_t	HighScores[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
@@ -219,14 +220,14 @@ void G_AddToDBFromFile(void) //loda fixme
 		else if ((args % 7) == 6)
 			TempRaceRecord.style = atoi(pch);
 		else if ((args % 7) == 0) {
-			TempRaceRecord.end_time = atoi(pch);
+			TempRaceRecord.end_timeInt = atoi(pch);
 			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
 			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord.topspeed));
 			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord.average));
 			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord.style));
-			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_time));
+			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_timeInt));
 			CALL_SQLITE_EXPECT (step (stmt), DONE);
 			CALL_SQLITE (reset (stmt));
 			CALL_SQLITE (clear_bindings (stmt));
@@ -450,7 +451,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		HighScores[course][style][newRank].topspeed = topspeed;
 		HighScores[course][style][newRank].average = average;
 		HighScores[course][style][newRank].style = style;
-		HighScores[course][style][newRank].end_time = rawtime;
+		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[i][style][newRank].end_time));
 
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
@@ -1199,7 +1200,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
     char * sql;
     sqlite3_stmt * stmt;
 	int i, mstyle;
-	char mapName[40], courseName[40], info[1024] = {0};
+	char mapName[40], courseName[40], info[1024] = {0}, dateStr[64] = {0};
+	time_t timeGMT;
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
@@ -1255,7 +1257,10 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					HighScores[i][style][rank].topspeed = topspeed;
 					HighScores[i][style][rank].average = average;
 					HighScores[i][style][rank].style = style;
-					HighScores[i][style][rank].end_time = end_time;
+
+					timeGMT = (time_t)end_time; //Maybe this should be done in the caching itself...but would also have to be done every racetime addition
+					strftime( dateStr, sizeof( dateStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+					Q_strncpyz(HighScores[i][style][rank].end_time, dateStr, sizeof(HighScores[i][style][rank].end_time));
 					rank++;
 				}
 				else if (s == SQLITE_DONE)
@@ -1310,9 +1315,8 @@ int RaceNameToInteger(char *style) {
 
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
-	char courseName[40], courseNameFull[40], styleString[16], timeStr[32], dateStr[64] = {0};
+	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
 	char info[1024] = {0};
-	time_t timeGMT;
 
 	if (level.numCourses == 0) {
 		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
@@ -1414,13 +1418,10 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			else
 				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
 
-			timeGMT = (time_t)HighScores[course][style][i].end_time; //Maybe this should be done in the caching itself...but would also have to be done every racetime addition
-			strftime( dateStr, sizeof( dateStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
-
 			if (i == 9) //sad hack for padding
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, dateStr));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
 			else
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, dateStr));
+				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
 		}
 	}
 }
