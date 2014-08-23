@@ -1861,7 +1861,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		{
 			psAudioFile = "music/cinematic_1";
 #ifdef JK2_MODE
-			hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
+			hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->integer) );
 			if(!hCrawl)
 			{
 				// failed, so go back to english
