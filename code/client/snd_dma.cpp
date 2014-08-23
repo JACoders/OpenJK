@@ -2063,6 +2063,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 	int		src, dst;
 	float	scale;
 	int		intVolume;
+	int		rawEndStart;
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -2074,6 +2075,8 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 		Com_DPrintf( "S_RawSamples: resetting minimum: %i < %i\n", s_rawend, s_soundtime );
 		s_rawend = s_soundtime;
 	}
+	
+	rawEndStart = s_rawend;
 
 	scale = (float)rate / dma.speed;
 
@@ -2114,6 +2117,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left = ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right = ((short *)data)[src*2+1] * intVolume;
 				}
@@ -2127,6 +2133,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left  += ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right += ((short *)data)[src*2+1] * intVolume;
 				}
@@ -2144,6 +2153,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right = ((short *)data)[src] * intVolume;
 			}
@@ -2157,6 +2169,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right += ((short *)data)[src] * intVolume;
 			}
@@ -2175,6 +2190,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right = ((char *)data)[src*2+1] * intVolume;
 			}
@@ -2188,6 +2206,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right += ((char *)data)[src*2+1] * intVolume;
 			}
@@ -2206,6 +2227,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right = (((byte *)data)[src]-128) * intVolume;
 			}
@@ -2219,6 +2243,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right += (((byte *)data)[src]-128) * intVolume;
 			}
