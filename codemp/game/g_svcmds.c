@@ -601,6 +601,7 @@ void Svcmd_ChangePass_f( void );
 void Svcmd_Register_f( void );
 void Svcmd_AccountInfo_f( void );
 void Svcmd_DeleteAccount_f( void );
+void Svcmd_ClearIP_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
@@ -620,6 +621,7 @@ svcmd_t svcmds[] = {
 	{ "checkfields",				G_CheckFields,						qfalse },
 	{ "checkspawns",				G_CheckSpawns,						qfalse },
 
+	{ "clearIP",					Svcmd_ClearIP_f,					qfalse },
 	{ "deleteAccount",				Svcmd_DeleteAccount_f,				qfalse },
 
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
