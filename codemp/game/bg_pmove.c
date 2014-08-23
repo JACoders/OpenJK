@@ -12294,6 +12294,11 @@ void PmoveSingle (pmove_t *pmove) {
 	// entering / leaving water splashes
 	PM_WaterEvents();
 
+	//Walbug fix start, if getting stuck w/o noclip is even possible.  This should maybe be after round float? im not sure..
+	if (pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLength(pm->ps->velocity) > VectorLength(pml.previous_velocity)))
+			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
+	//Wallbug fix end
+
 	// snap velocity to integer coordinates to save network bandwidth
 	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
 		trap->SnapVector( pm->ps->velocity );
