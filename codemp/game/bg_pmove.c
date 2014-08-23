@@ -7790,13 +7790,25 @@ if (pm->ps->duelInProgress)
 	{
 #ifdef _CGAME
 		if (cg_dueltypes[pm->ps->clientNum] > 2) {
-			pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2;
-			pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			if (cg_dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2; //gunduel 1
+				pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			}
 		}
 #else
 		if (dueltypes[pm->ps->clientNum] > 2) {
-			pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
-			pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			if (dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+				pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			}
 		}
 #endif
 		else {//Japro - gun duels start
@@ -7973,13 +7985,25 @@ if (pm->ps->duelInProgress)
 	{
 #ifdef _CGAME
 		if (cg_dueltypes[pm->ps->clientNum] > 2) {
-			pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2;
-			pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			if (cg_dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = cg_dueltypes[pm->ps->clientNum] - 2; //gunduel 2
+				pm->ps->weapon = cg_dueltypes[pm->ps->clientNum] - 2;
+			}
 		}
 #else
 		if (dueltypes[pm->ps->clientNum] > 2) {
-			pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
-			pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			if (dueltypes[pm->ps->clientNum] == 19) {
+				pm->cmd.weapon = WP_STUN_BATON;
+				pm->ps->weapon = WP_STUN_BATON;
+			}
+			else {
+				pm->cmd.weapon = dueltypes[pm->ps->clientNum] - 2;
+				pm->ps->weapon = dueltypes[pm->ps->clientNum] - 2;
+			}
 		}
 #endif
 		else {

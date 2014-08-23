@@ -3577,7 +3577,9 @@ void Cmd_GunDuel_f(gentity_t *ent)
 	if (trap->Argc() == 1)//Use current weapon
 	{
 		weap = ent->s.weapon;
-		if (weap == 17)//fuck off
+		//if (weap == 17)//fuck off
+			//weap = WP_NONE;
+		if (weap > LAST_USEABLE_WEAPON) //last usable is 16
 			weap = WP_NONE;
 	}
 	else if (trap->Argc() == 2)//Use specified weapon
@@ -3593,7 +3595,7 @@ void Cmd_GunDuel_f(gentity_t *ent)
 		if (!Q_stricmp( "melee", weapStr) || !Q_stricmp( "fists", weapStr) || !Q_stricmp( "fisticuffs", weapStr))
 			weap = WP_MELEE;
 		else if (!Q_stricmp( "stun", weapStr) || !Q_stricmp( "stunbaton", weapStr))
-			weap = WP_STUN_BATON + 16;
+			weap = WP_STUN_BATON + 16;//17
 		else if (!Q_stricmp( "pistol", weapStr) || !Q_stricmp( "dl44", weapStr))
 			weap = WP_BRYAR_PISTOL;
 		else if (!Q_stricmp( "bryar", weapStr) || !Q_stricmp( "bryarpistol", weapStr) )
@@ -3623,7 +3625,7 @@ void Cmd_GunDuel_f(gentity_t *ent)
 
 	}
 
-	if (weap == WP_NONE || weap == WP_SABER || (weap > WP_BRYAR_OLD && weap != 17)) {
+	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 1))) {
 		//trap_SendServerCommand( ent-g_entities, "print \"Invalid weapon specified, using default case: Bryar\n\"" );
 		weap = WP_BRYAR_PISTOL;//pff
 	}
@@ -3790,36 +3792,37 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			char weapStr[64];
 			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
 			switch (dueltype) {
-			case	0:
-				trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
-				trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
-				break;
-			case	1:
-				trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^4(Force Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
-				trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^4(Force Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
-				break;
-			default:
-				switch (dueltype - 2) {
-					case 1:	Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
-					case 2: Com_sprintf(weapStr, sizeof(weapStr), "Melee"); break;
-					case 4:	Com_sprintf(weapStr, sizeof(weapStr), "Pistol"); break;
-					case 5:	Com_sprintf(weapStr, sizeof(weapStr), "E11"); break;
-					case 6:	Com_sprintf(weapStr, sizeof(weapStr), "Sniper"); break;
-					case 7:	Com_sprintf(weapStr, sizeof(weapStr), "Bowcaster");	break;
-					case 8:	Com_sprintf(weapStr, sizeof(weapStr), "Repeater"); break;
-					case 9:	Com_sprintf(weapStr, sizeof(weapStr), "Demp2");	break;
-					case 10: Com_sprintf(weapStr, sizeof(weapStr), "Flechette"); break;
-					case 11: Com_sprintf(weapStr, sizeof(weapStr), "Rocket"); break;
-					case 12: Com_sprintf(weapStr, sizeof(weapStr), "Thermal"); break;
-					case 13: Com_sprintf(weapStr, sizeof(weapStr), "Tripmine"); break;
-					case 14: Com_sprintf(weapStr, sizeof(weapStr), "Detpack"); break;
-					case 15: Com_sprintf(weapStr, sizeof(weapStr), "Concussion rifle"); break;
-					case 16: Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
-					default: Com_sprintf(weapStr, sizeof(weapStr), "Gun"); break;
-				}
-				trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^4(%s Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE"), weapStr) );
-				trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^4(%s Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname, weapStr) );
-				break;
+				case	0:
+					trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^2(Saber Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
+					trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^2(Saber Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
+					break;
+				case	1:
+					trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^4(Force Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
+					trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^4(Force Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
+					break;
+				default:
+					switch (dueltype - 2) {
+						case 1:	Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
+						case 2: Com_sprintf(weapStr, sizeof(weapStr), "Melee"); break;
+						case 4:	Com_sprintf(weapStr, sizeof(weapStr), "Pistol"); break;
+						case 5:	Com_sprintf(weapStr, sizeof(weapStr), "E11"); break;
+						case 6:	Com_sprintf(weapStr, sizeof(weapStr), "Sniper"); break;
+						case 7:	Com_sprintf(weapStr, sizeof(weapStr), "Bowcaster");	break;
+						case 8:	Com_sprintf(weapStr, sizeof(weapStr), "Repeater"); break;
+						case 9:	Com_sprintf(weapStr, sizeof(weapStr), "Demp2");	break;
+						case 10: Com_sprintf(weapStr, sizeof(weapStr), "Flechette"); break;
+						case 11: Com_sprintf(weapStr, sizeof(weapStr), "Rocket"); break;
+						case 12: Com_sprintf(weapStr, sizeof(weapStr), "Thermal"); break;
+						case 13: Com_sprintf(weapStr, sizeof(weapStr), "Tripmine"); break;
+						case 14: Com_sprintf(weapStr, sizeof(weapStr), "Detpack"); break;
+						case 15: Com_sprintf(weapStr, sizeof(weapStr), "Concussion rifle"); break;
+						case 16: Com_sprintf(weapStr, sizeof(weapStr), "Bryar"); break;
+						case 17: Com_sprintf(weapStr, sizeof(weapStr), "Stun baton"); break;
+						default: Com_sprintf(weapStr, sizeof(weapStr), "Gun"); break;
+					}
+					trap->SendServerCommand( challenged-g_entities, va("cp \"%s ^7%s\n^4(%s Duel)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE"), weapStr) );
+					trap->SendServerCommand( ent-g_entities, va("cp \"%s %s\n^4(%s Duel)\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname, weapStr) );
+					break;
 			}
 		}
 //JAPRO - Serverside - Fullforce Duels + Duel Messages - End
