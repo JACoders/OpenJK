@@ -317,15 +317,15 @@ byte* RE_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, in
 
 	if (pbReturn && qbVertFlip)
 	{			
-		unsigned long *pSrcLine = (unsigned long *) pbReturn;
-		unsigned long *pDstLine = (unsigned long *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)		
+		unsigned int *pSrcLine = (unsigned int *) pbReturn;
+		unsigned int *pDstLine = (unsigned int *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)
 					   pDstLine-= *piWidth;	// point at start of last line, not first after buffer
 
 		for (int iLineCount=0; iLineCount<*piHeight/2; iLineCount++)
 		{
 			for (int x=0; x<*piWidth; x++)
 			{
-				unsigned long l = pSrcLine[x];
+				unsigned int l = pSrcLine[x];
 				pSrcLine[x] = pDstLine[x];
 				pDstLine[x] = l;
 			}
