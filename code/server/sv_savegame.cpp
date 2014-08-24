@@ -804,7 +804,7 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 	int ret = 0;
 	time_t tFileTime;
 #ifdef JK2_MODE
-	int iScreenShotLength;
+	size_t iScreenShotLength;
 #endif
 
 	qbSGReadIsTestOnly = qtrue;	// do NOT leave this in this state
@@ -874,7 +874,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 
 	// get JPG screenshot data length...
 	//
-	int iScreenShotLength = 0;
+	size_t iScreenShotLength = 0;
 	SG_Read(INT_ID('S','H','L','N'), &iScreenShotLength, sizeof(iScreenShotLength));
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
@@ -928,7 +928,7 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 	}
 	
 	SG_Read(INT_ID('C','O','M','M'), NULL, 0, NULL);	// skip
-	SG_Read(INT_ID('C','M','T','M'), NULL, sizeof( time_t ));
+	SG_Read(INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
 
 	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
 
