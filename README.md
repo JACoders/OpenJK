@@ -8,6 +8,7 @@ The main goals of this mod are as follows, in order of priority:
 * To improve the weapon (gun) combat and balance.
 * To add netcode features such as lag compensation for hitscan and projectiles, clientside simulated projectiles, etc.
 * To add a simple admin system, with little potential for abuse.
+* To add support for a race gametype, similar to racesow in warsow or defrag in quake 3, with player isolation, accounts, and persistent highscores.
 * To add other gameplay enhancing features.
 
 All features will be able to be configured, so that no gameplay changes will interfere with the default JKA settings.
@@ -16,7 +17,7 @@ All features will be able to be configured, so that no gameplay changes will int
 * videoP (loda)
 * kohabi (derp)
 
-Notes: You will need to enable the -pthread flag for linux compiles, due to the sqlite3 features.
+Note: You will need to enable the -pthread flag for linux compiles, due to the sqlite3 features.
 
 ###Credits###
 Raz0r, for all his help.

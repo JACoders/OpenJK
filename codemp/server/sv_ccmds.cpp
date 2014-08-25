@@ -657,7 +657,7 @@ static void SV_Status_f( void )
 		}
 		else
 		{
-			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n",
+			Com_Printf ("%3i %5i %s %s^7 %7i %21s %5i %5i\n",
 				i,
 				ps->persistant[PERS_SCORE],
 				state,
