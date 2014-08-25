@@ -16,6 +16,8 @@ All features will be able to be configured, so that no gameplay changes will int
 * videoP (loda)
 * kohabi (derp)
 
+Notes: You will need to enable the -pthread flag for linux compiles, due to the sqlite3 features.
+
 ###Credits###
 Raz0r, for all his help.
 Source, Kane, and Pivot, for testing.
