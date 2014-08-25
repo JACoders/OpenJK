@@ -951,7 +951,7 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 		const size_t	bySize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 4;
 		byte *src, *dst;
 
-		byBlank = (byte *)Z_Malloc( bySize, TAG_TEMP_WORKSPACE, qfalse );
+		byBlank = new byte[bySize];
 		pbRawScreenShot = SCR_TempRawImage_ReadFromFile(va("levelshots/%s.tga",psMapName), &iWidth, &iHeight, byBlank, qtrue);	// qtrue = vert flip
 		for (int y = 0; y < iHeight; y++)
 		{
@@ -977,7 +977,7 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	byte *pJPGData = (byte *)Z_Malloc( bufSize, TAG_TEMP_WORKSPACE, qfalse, 4 );
 	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0 );
 	if ( qbAutosave )
-		Z_Free( byBlank );
+		delete[] byBlank;
 	SG_Append(INT_ID('S','H','L','N'), &iJPGDataSize, sizeof(iJPGDataSize));
 	SG_Append(INT_ID('S','H','O','T'), pJPGData, iJPGDataSize);
 	Z_Free(pJPGData);
