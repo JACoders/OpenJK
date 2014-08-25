@@ -1166,8 +1166,7 @@ void CleanupLocalRun() { //loda fixme, take prepare out of loop even more?
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
 				   "GROUP BY username) " 
-				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 50";//memes
-		
+				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 50";//memes	
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
@@ -1317,6 +1316,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
 	char info[1024] = {0};
+	char msg[1024-128] = {0};
 
 	if (level.numCourses == 0) {
 		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
@@ -1402,10 +1402,10 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	}
 
 	IntegerToRaceName(style, styleString);
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n\"", courseNameFull, styleString));
-	trap->SendServerCommand(ent-g_entities, "print \"    ^5Username           Time         Topspeed    Average      Date\n\"");
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
 
 	for (i = 0; i < 10; i++) {
+		char *tmpMsg = NULL;
 		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
 		{
 			if (HighScores[course][style][i].duration_ms >= 60000) {
@@ -1418,12 +1418,15 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			else
 				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
 
-			if (i == 9) //sad hack for padding
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
-			else
-				trap->SendServerCommand(ent-g_entities, va("print \"^5%i^3:  ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n\"", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
 		}
 	}
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
 
 void Cmd_DFRefresh_f(gentity_t *ent) {

@@ -2547,13 +2547,13 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	self->enemy = attacker;
 
 	self->client->ps.persistant[PERS_KILLED]++;
-	if (self->client->pers.userName && self->client->pers.userName[0])
+	if (self->client->pers.userName && self->client->pers.userName[0] && !self->client->pers.raceMode)//Dont count deaths in racemode
 		G_AddSimpleStat(self->client->pers.userName, 2);
 
 	if (self == attacker)
 	{
 		self->client->ps.fd.suicides++;
-		if (self->client->pers.userName && self->client->pers.userName[0])
+		if (self->client->pers.userName && self->client->pers.userName[0] && !self->client->pers.raceMode)
 			G_AddSimpleStat(self->client->pers.userName, 3);
 	}
 
