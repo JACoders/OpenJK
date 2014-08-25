@@ -486,7 +486,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0, s, count;
+    int row = 0, s, count = 0;
 	unsigned int ip, lastip;
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
@@ -975,7 +975,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths;
+	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths, s, highscores = 0;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
@@ -996,7 +996,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
     while (1) {
-        int s;
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
 			kills = sqlite3_column_int(stmt, 0);
@@ -1015,8 +1014,23 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			break;
         }
     }
-
 	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT COUNT(*) FROM LocalRun WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW)
+		highscores = sqlite3_column_int(stmt, 0);
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
 	CALL_SQLITE (close(db));
 
 	if (row == 0) { //no account found, or more than 1 account with same name, problem
@@ -1048,6 +1062,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
 	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Race Highscores: ^2%i\n", highscores));
 	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
 
