@@ -157,7 +157,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 
 	if (CheckUserExists(winner) && CheckUserExists(loser)) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-		sql = "INSERT INTO LocalDuel(player1, player2, end_time, duration, type, winner_hp, winner_shield) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		sql = "INSERT INTO LocalDuel(player1, player2, duration, type, winner_hp, winner_shield, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, winner, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, loser, -1, SQLITE_STATIC));
