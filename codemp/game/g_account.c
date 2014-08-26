@@ -984,7 +984,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths, s, highscores = 0, i;
+	int row = 0, kills = 0, deaths = 0, suicides = 0, captures = 0, returns = 0, lastlogin = 0, playtime = 0, realdeaths, s, highscores = 0, i;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
