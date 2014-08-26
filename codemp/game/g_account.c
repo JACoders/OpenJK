@@ -157,7 +157,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 
 	if (CheckUserExists(winner) && CheckUserExists(loser)) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-		sql = "INSERT INTO LocalDuel(player1, player2, duration, type, winner_hp, winner_shield, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		sql = "INSERT INTO LocalDuel(winner, loser, duration, type, winner_hp, winner_shield, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, winner, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, loser, -1, SQLITE_STATIC));
@@ -1537,7 +1537,7 @@ void InitGameAccountStuff( void ) { //Called every mapload
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, player1 VARCHAR(16), player2 VARCHAR(16), duration UNSIGNED SMALLINT, "
+	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, winner VARCHAR(16), loser VARCHAR(16), duration UNSIGNED SMALLINT, "
 		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
@@ -1549,147 +1549,3 @@ void InitGameAccountStuff( void ) { //Called every mapload
 
 	CALL_SQLITE (close(db));
 }
-
-#if 0
-void G_AddRunToDB(char *username, char *courseName, float duration, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	int row = 0, worsttime, id, count, itime = (int)(duration*1000);
-
-	//Get 10th place run (aka slowest) for current course/style from highscores database
-	//If we are faster, delete 10th place run.  Insert this one.
-
-
-	int datetime = 0, user_id;//yeah use rawtime or something?
-
-	user_id = CheckUserExists(username);
-
-	
-	trap->Print("itime, ftime: %i, %f\n", itime, duration);
-
-	if (user_id >= 0) { //he exists
-		int s;
-
-		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-		sql = "INSERT INTO LocalRun(user_id, courseName, duration_ms, style, topspeed, average, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int (stmt, 1, user_id));
-		CALL_SQLITE (bind_text (stmt, 2, courseName, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, itime));
-		CALL_SQLITE (bind_int (stmt, 4, style));
-		CALL_SQLITE (bind_int (stmt, 5, topspeed));
-		CALL_SQLITE (bind_int (stmt, 6, average));
-		CALL_SQLITE (bind_int (stmt, 7, datetime));
-		CALL_SQLITE_EXPECT (step (stmt), DONE);
-
-		//Now check if it would work as a highscore
-
-		//Highscore logic:
-		//If we dont have a faster time, and its fast enough, add it.
-
-		sql = "SELECT MAX(duration_ms), id, COUNT(*) FROM Highscores WHERE coursename = ? AND username = ? AND style = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, style));
-
-		s = sqlite3_step(stmt);
-		if (s == SQLITE_ROW) {
-			worsttime = sqlite3_column_int (stmt, 0);
-			id = sqlite3_column_int (stmt, 1);
-			count = sqlite3_column_int (stmt, 2);
-			trap->Print("worst time, id, count, coursename, style, username: %i, %i, %i, %s, %i, %s\n", worsttime, id, count, courseName, style, username);
-		}
-		else if (s != SQLITE_DONE) {
-			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-			CALL_SQLITE (finalize(stmt));
-			CALL_SQLITE (close(db));
-			return;
-		}
-
-		trap->Print("worsttime, time: %i, %i\n", worsttime, itime);
-
-		CALL_SQLITE (finalize(stmt));
-
-		
-		if (duration < worsttime) { //gay
-			sql = "DELETE FROM Highscores WHERE id = ?";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_int (stmt, 1, id));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-
-			sql = "INSERT INTO Highscores (username, coursename, style, topspeed, average, duration_ms, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_text (stmt, 2, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, style));
-			CALL_SQLITE (bind_int (stmt, 4, topspeed));
-			CALL_SQLITE (bind_int (stmt, 5, average));
-			CALL_SQLITE (bind_int (stmt, 6, itime));
-			CALL_SQLITE (bind_int (stmt, 7, datetime));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-		}
-		
-
-	}
-	CALL_SQLITE (close(db));
-}
-#endif
-
-
-#if 0
-//No register function, thats done on master website.
-//ent->client->accountID ? if 0 , not logged in ?, use this in interaction with db?
-
-//When user logs in, if no PlayerServerAccount is created for them yet, create it.  If it already exists, just update it.
-
-//In the v2 update, maybe also add ingame passwords, so people sharing a net connection (at university etc) wont be able to login to eachothers accounts ingame.
-
-/*
-"LocalRun" Entity
-+------------+-------------+------+-----+---------+-------+
-| Field		 | Type        | Null | Key | Default | Extra |
-+------------+-------------+------+-----+---------+-------+
-| id         | int         | YES  |     | NULL    |       | 
-| user_id	 | int		   | YES  |     | NULL    |       |
-| coursename | varchar(40) | YES  |     | NULL    |       | //Mapname + coursename, or just mapname if only 1 course per map
-| duration_ms| int		   | YES  |     | NULL    |       | //24 bits would allow 4+ hours of time to be recorded, should be plenty? or maybe go to 26bits for people with autism.
-| style      | int         | YES  |     | NULL    |       | //max value atm is 6, future proof to 16?
-| topspeed   | int         | YES  |     | NULL    |       | 
-| average    | int         | YES  |     | NULL    |       | 
-| end_time	 | datetime    | YES  |     | NULL    |       | 
-+------------+-------------+------+-----+---------+-------+
-
-"LocalAccount" Entity, account of player specific to this server (though he logs in using IP matching tied to his website account)
-+------------+-------------+------+-----+---------+-------+
-| Field		 | Type        | Null | Key | Default | Extra |
-+------------+-------------+------+-----+---------+-------+
-| username   | varchar(16) | YES  |     | NULL    |       |
-| id		 | int		   | YES  |     | NULL    |       |
-//The following (rest of fields in gameaccount, and the Duel entity) will be in v2 update, after defrag functionality is complete
-//Simple stuff that does not need to be described or have its own entity
-| playtime	 | int		   | YES  |     | NULL    |       |
-| kills      | int         | YES  |     | NULL    |       |
-| deaths     | int         | YES  |     | NULL    |       |
-| captures   | int         | YES  |     | NULL    |       |
-| returns    | int         | YES  |     | NULL    |       | //I guess all these could be 16bits or something really
-+------------+-------------+------+-----+---------+-------+
-
-"LocalDuel" Entity, can we just user winner_id, loser_id, and ignore ties? or do we have to do id1, id2, and make 'outcome' to store wether id1>id2, id2>id1, or tie?
-+---------------+---------=----+------+-----+---------+-------+
-| Field		    | Type         | Null | Key | Default | Extra |
-+---------------+--------------+------+-----+---------+-------+
-| player1_id	| int		   | YES  |     | NULL    |       |
-| player2_id	| int		   | YES  |     | NULL    |       |
-| outcome		| int		   | YES  |     | NULL    |       | //2 bits, 0 = draw, 1 = player1 wins, 2 = player2 wins.  cuz ties in duels are a thing so whatever
-| end_time		| datetime     | YES  |     | NULL    |       |
-| duration		| int          | YES  |     | NULL    |       | //in ms or sec?
-| type			| int          | YES  |     | NULL    |       | //What weapon was used, (melee, saber, pistol, etc.. "fullforce duel",...
-| winner_hp		| int          | YES  |     | NULL    |       | //7bits
-| winner_shield | int          | YES  |     | NULL    |       | //7bits
-+----------------+-------------+------+-----+---------+-------+
-*/
-#endif
