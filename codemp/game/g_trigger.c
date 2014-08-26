@@ -1262,6 +1262,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
+	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
+
 	if (trigger->noise_index) 
 		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
 
