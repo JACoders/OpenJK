@@ -249,6 +249,29 @@ static int JP_ClientNumberFromString(gentity_t *to, const char *s)
 	int			idnum, i, match = -1;
 	char		s2[MAX_STRING_CHARS];
 	char		n2[MAX_STRING_CHARS];
+	idnum = atoi(s);
+
+
+	//redo
+	/*
+	if (!Q_stricmp(s, "0")) {
+		cl = &level.clients[idnum];
+		if ( cl->pers.connected != CON_CONNECTED ) {
+			trap->SendServerCommand( to-g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+			return -1;
+		}
+		return 0;
+	}
+	if (idnum && idnum < 32) {
+		cl = &level.clients[idnum];
+		if ( cl->pers.connected != CON_CONNECTED ) {
+			trap->SendServerCommand( to-g_entities, va("print \"Client '%i' is not active\n\"", idnum));
+			return -1;
+		}
+		return idnum;
+	}
+	*/
+	//end redo
 
 	// numeric values are just slot numbers
 	if (s[0] >= '0' && s[0] <= '9' && strlen(s) == 1) //changed this to only recognize numbers 0-31 as client numbers, otherwise interpret as a name, in which case sanitize2 it and accept partial matches (return error if multiple matches)
@@ -262,7 +285,7 @@ static int JP_ClientNumberFromString(gentity_t *to, const char *s)
 		return idnum;
 	}
 
-	else if (s[0] == '1' && s[0] == '2' && (s[1] >= '0' && s[1] <= '9' && strlen(s) == 2)) 
+	if ((s[0] == '1' || s[0] == '2') && (s[1] >= '0' && s[1] <= '9' && strlen(s) == 2))  //changed and to or ..
 	{
 		idnum = atoi( s );
 		cl = &level.clients[idnum];
@@ -273,7 +296,7 @@ static int JP_ClientNumberFromString(gentity_t *to, const char *s)
 		return idnum;
 	}
 
-	else if (s[0] == '3' && (s[1] >= '0' && s[1] <= '1' && strlen(s) == 2)) 
+	if (s[0] == '3' && (s[1] >= '0' && s[1] <= '1' && strlen(s) == 2)) 
 	{
 		idnum = atoi( s );
 		cl = &level.clients[idnum];
@@ -283,6 +306,10 @@ static int JP_ClientNumberFromString(gentity_t *to, const char *s)
 		}
 		return idnum;
 	}
+	
+
+
+
 	// check for a name match
 	SanitizeString2( s, s2 );
 	for ( idnum=0,cl=level.clients ; idnum < level.maxclients ; idnum++,cl++ ){

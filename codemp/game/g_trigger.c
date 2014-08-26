@@ -1178,13 +1178,15 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (player->client->ps.stats[STAT_ROCKETJUMP] && g_knockback.integer > 1000)
 		return qfalse;
-	if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
-		if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1)
-			return qfalse;
-	}
-	else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
-		if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2)
-			return qfalse;
+	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6) { //Ignore forcejump restrictions if in onlybhop movement modes
+		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1)
+				return qfalse;
+		}
+		else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2)
+				return qfalse;
+		}
 	}
 	if (g_speed.value != 250.0f)
 		return qfalse;

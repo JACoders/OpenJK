@@ -6295,11 +6295,11 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_GRIP)) && ((((bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP)) && NewBotAI_GetDist(bs) < MAX_GRIP_DISTANCE && bs->cur_ps.fd.forcePower > 60 && InFieldOfVision(bs->viewangles, 50, a_fo)) &&
-		(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) ||
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_GRIP)) && ((((bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP)) && (NewBotAI_GetDist(bs) < MAX_GRIP_DISTANCE) && (bs->cur_ps.fd.forcePower > 60) && InFieldOfVision(bs->viewangles, 50, a_fo)) &&
+		((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) ||
 		(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_SPEED)) ||
 		(bs->currentEnemy->client->ps.fd.forcePower < 20) ||
-		(((bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel == SS_STRONG)))))
+		(((bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel == SS_STRONG))))))
 	{
 		if (g_entities[bs->client].health > 80 && bs->cur_ps.fd.forcePower > 60) {//general case
 			if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {

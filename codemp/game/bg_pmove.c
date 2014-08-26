@@ -12295,7 +12295,7 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_WaterEvents();
 
 	//Walbug fix start, if getting stuck w/o noclip is even possible.  This should maybe be after round float? im not sure..
-	if (pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLength(pm->ps->velocity) > VectorLength(pml.previous_velocity)))
+	if (pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity)))
 			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
 	//Wallbug fix end
 

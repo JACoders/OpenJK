@@ -356,6 +356,18 @@ void G_AddToDBFromFile2(void) //loda fixme
 }
 #endif
 
+gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
+void PlayActualGlobalSound(char * sound) {
+	gentity_t	*te;
+	vec3_t temp = {0, 0, 0};
+
+	te = G_SoundTempEntity( temp, EV_GENERAL_SOUND, EV_GLOBAL_SOUND );
+	te->s.eventParm = G_SoundIndex(sound);
+	//te->s.saberEntityNum = channel;
+	te->s.eFlags = EF_SOUNDTRACKER;
+	te->r.svFlags |= SVF_BROADCAST;
+}
+
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char		string[1024] = {0}, info[1024] = {0}, courseName[40];
@@ -455,10 +467,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+
+		if (newRank == 0) //Play the sound
+			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
+		else 
+			PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
 	}
-
-
-
 		//One by one
 			//If my time is faster, and newRank is -1, store i as NewRank.  We will eventually insert our time into spot i
 
@@ -472,10 +486,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 			//Shift every row after newRank down one
 			//Insert our new time into newRank spot
-
-
-		
-
 }
 
 //So the best way is to probably add every run as soon as its taken and not filter them.
@@ -1290,7 +1300,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	CALL_SQLITE (close(db));
 
 	if (level.numCourses)
-		trap->Print("Highscores built for %s\n", courseName);
+		trap->Print("Highscores built for %s\n", mapName);
 }
 
 void IntegerToRaceName(int style, char *styleString) {
@@ -1672,42 +1682,3 @@ void G_AddRunToDB(char *username, char *courseName, float duration, int style, i
 +----------------+-------------+------+-----+---------+-------+
 */
 #endif
-
-/*
-void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {
-	return;
-}
-void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
-	return;
-}
-void Cmd_ACLogin_f( gentity_t *ent ) {
-	return;
-}
-void Cmd_ChangePassword_f( gentity_t *ent ) {
-	return;
-}
-void Svcmd_ChangePass_f(void) {
-	return;
-}
-void Cmd_ACRegister_f( gentity_t *ent ) {
-	return;
-}
-void Cmd_ACLogout_f( gentity_t *ent ) {
-	return;
-}
-void Cmd_Stats_f( gentity_t *ent ) {
-	return;
-}
-void Cmd_DFTop10_f(gentity_t *ent) {
-	return;
-}
-void Cmd_DFRefresh_f(gentity_t *ent) {
-	return;
-}
-void Cmd_ACWhois_f( gentity_t *ent ) {
-	return;
-}
-void InitGameAccountStuff( void ) {
-	return;
-}
-*/
