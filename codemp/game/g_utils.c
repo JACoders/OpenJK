@@ -690,6 +690,7 @@ void G_InitGentity( gentity_t *e ) {
 }
 
 //give us some decent info on all the active ents -rww
+#if 0
 static void G_SpewEntList(void)
 {
 	int i = 0;
@@ -771,7 +772,7 @@ static void G_SpewEntList(void)
 	}
 #endif
 }
-
+#endif
 /*
 =================
 G_Spawn

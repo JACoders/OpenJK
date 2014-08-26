@@ -767,7 +767,7 @@ void Svcmd_Register_f(void)
 	localtime( &rawtime );
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, 0)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, 0)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
@@ -953,11 +953,10 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 			CALL_SQLITE (close(db));
 			return;
 		}
-
 		CALL_SQLITE (finalize(stmt));
 	}
 
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
@@ -985,7 +984,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths, s, highscores = 0;
+	int row = 0, kills, deaths, suicides, captures, returns, lastlogin, playtime, realdeaths, s, highscores = 0, i;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
@@ -1040,8 +1039,20 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		return;
 	}
 	CALL_SQLITE (finalize(stmt));
-
 	CALL_SQLITE (close(db));
+
+	for (i = 0; i < 256; i++) { //size of UserStats?.. Live update stats feature
+		if (!UserStats[i].username || !UserStats[i].username[0])
+			break;
+		if (!Q_stricmp(UserStats[i].username, username)) { //User found, update their stat totals with recent stuff from memory
+			kills += UserStats[i].kills;
+			deaths += UserStats[i].deaths;
+			suicides += UserStats[i].suicides;
+			captures += UserStats[i].captures;
+			returns += UserStats[i].returns;
+			break;
+		}
+	}
 
 	if (row == 0) { //no account found, or more than 1 account with same name, problem
 		trap->SendServerCommand(ent-g_entities, "print \"Account not found!\n\"");
