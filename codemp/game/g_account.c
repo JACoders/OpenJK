@@ -55,6 +55,14 @@ typedef struct UserAccount_s {
 	int				lastIP;
 } UserAccount_t;
 
+/*
+typedef struct PlayerID_s {
+	char			name[MAX_NETNAME];
+	unsigned int	ip[NET_ADDRSTRMAXLEN];
+	int				guid[33];
+} PlayerID_t;
+*/
+
 unsigned int ip_to_int (const char * ip) {
     unsigned v = 0;
     int i;
@@ -136,6 +144,37 @@ int CheckUserExists(char *username) {
 		trap->Print("ERROR: Multiple accounts with same accountname!\n");
 		return 0;
 	}
+}
+
+void G_ClientConnectIP(char *name, char *strIP, char *guid) {
+	//PlayerID_t	Player;
+	char string[128];
+	char *p = NULL;
+	unsigned int ip;
+
+	p = strchr(strIP, ':');
+	if (p) //loda - fix ip sometimes not printing
+		*p = 0;
+	//ip = ip_to_int(strIP);
+	
+	//Com_sprintf(string, sizeof(string), "%s;%u;%s\n", name, ip, guid); //Store ip as int or char??.. lets do int
+	Com_sprintf(string, sizeof(string), "%s;%s;%s\n", name, strIP, guid); //Store ip as int or char??.. lets do int
+
+	trap->FS_Write(string, strlen(string), level.playerLog );
+
+	//ftell, fseek
+
+	//Check to see if IP already exists
+		//If so, check if username is same
+			//If not, update username (or add to it?)
+	
+		//If not, check if GUID exists
+			//If yes, update IP of guid, check to see if name is same
+				//If no, update username (or add to it)
+
+			//If not (no IP or guid), add entry.
+
+	//Somehow make this sorted..
 }
 
 void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
@@ -242,119 +281,6 @@ void G_AddToDBFromFile(void) //loda fixme
 	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 	trap->FS_Close(f);
 }
-
-#if 0
-void G_AddToDBFromFile2(void) //loda fixme
-{
-	fileHandle_t f;	
-	int		fLen = 0, MAX_FILESIZE = 4096, args = 1;
-	char	info[1024] = {0}, buf[4096] = {0}, empty[8] = {0};//eh
-	char*	pch;
-	sqlite3 * db;
-	char * sql;
-	sqlite3_stmt * stmt;
-	RaceRecord_t	TempRaceRecord[32];
-	int row = 0, j;
-	char buf2[1024] = {0};
-
-	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
-
-	if (!f) {
-		Com_Printf ("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
-		return;
-	}
-	//if (fLen >= MAX_FILESIZE) {
-		//trap->FS_Close(f);
-		//Com_Printf ("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
-		//return;
-	//}
-
-	trap->FS_Read(buf, fLen, f);
-	buf[fLen] = 0;
-	trap->FS_Close(f);
-	Com_Printf ("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-
-	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
-	pch = strtok (buf,";\n");
-	while (pch != NULL)
-	{
-		if ((args % 7) == 1)
-			Q_strncpyz(TempRaceRecord[row].username, pch, sizeof(TempRaceRecord[row].username));
-		else if ((args % 7) == 2)
-			Q_strncpyz(TempRaceRecord[row].coursename, pch, sizeof(TempRaceRecord[row].coursename));
-		else if ((args % 7) == 3)
-			TempRaceRecord[row].duration_ms = atoi(pch);
-		else if ((args % 7) == 4)
-			TempRaceRecord[row].topspeed = atoi(pch);
-		else if ((args % 7) == 5)
-			TempRaceRecord[row].average = atoi(pch);
-		else if ((args % 7) == 6)
-			TempRaceRecord[row].style = atoi(pch);
-		else if ((args % 7) == 0) {
-			TempRaceRecord[row].end_time = atoi(pch);
-			if (row == 0) {
-				Q_strncpyz(buf2, va("(%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[row].username, TempRaceRecord[row].coursename, TempRaceRecord[row].duration_ms, 
-					TempRaceRecord[row].topspeed, TempRaceRecord[row].average, TempRaceRecord[row].style, TempRaceRecord[row].end_time), sizeof(buf2));
-			}
-
-			/*
-
-			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
-			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord.topspeed));
-			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord.average));
-			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord.style));
-			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_time));
-		
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (reset (stmt));
-			CALL_SQLITE (clear_bindings (stmt));
-
-			*/
-
-			row++;
-		}
-
-		if (row >= 31) { //or end of file?
-			for (j = 0; j < row; j++) {
-				Q_strcat(buf2, sizeof(buf2), va(", (%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[j].username));
-			}
-			row = 0;
-
-			sql = va("INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES %s", buf2);	 //loda fixme, make multiple?
-			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (finalize(stmt));
-
-		}
-
-    	pch = strtok (NULL, ";\n");
-		args++;
-	}
-
-
-	Q_strncpyz(buf2, va("(%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[row].username, TempRaceRecord[row].coursename, TempRaceRecord[row].duration_ms, 
-		TempRaceRecord[row].topspeed, TempRaceRecord[row].average, TempRaceRecord[row].style, TempRaceRecord[row].end_time), sizeof(buf2));
-
-	for (j = 0; j < row; j++) {
-		Q_strcat(buf2, sizeof(buf2), va(", (%s, %s, %i, %i, %i, %i, %i)", TempRaceRecord[j].username));
-	}
-
-	sql = va("INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES %s", buf2);	 //loda fixme, make multiple?
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	CALL_SQLITE (close(db));	
-
-	trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
-	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
-	trap->FS_Close(f);
-}
-#endif
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
 void PlayActualGlobalSound(char * sound) {
@@ -1490,6 +1416,26 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 	int			i;
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
+	qboolean	admin = qfalse;
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+
+	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+		if (g_fullAdminLevel.integer & (1 << A_STATUS))
+			admin = qtrue;
+	}
+	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+		if (g_juniorAdminLevel.integer & (1 << A_STATUS))
+			admin = qtrue;
+	}
+
+	if (admin) {
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		sql = "SELECT username FROM LocalAccount WHERE lastip = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	}
 
 	trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Nickname\n\"");
 
@@ -1506,8 +1452,38 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz( strUser, cl->pers.userName, sizeof(strUser));	
-			tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
-			//CG_Printf("^5%2d^3: ^7%s\n", i, cl->name); 
+
+			if (admin && !strUser[0]) { //No username means not logged in, so check if they have an account tied to their ip
+				char strIP[NET_ADDRSTRMAXLEN] = {0};
+				char *p = NULL;
+				unsigned int ip;
+
+				Q_strncpyz(strIP, ent->client->sess.IP, sizeof(strIP));
+				p = strchr(strIP, ':');
+				if (p) //loda - fix ip sometimes not printing
+					*p = 0;
+				ip = ip_to_int(strIP);
+
+				CALL_SQLITE (bind_int64 (stmt, 1, ip));
+
+				s = sqlite3_step(stmt);
+
+				if (s == SQLITE_ROW)
+					Q_strncpyz(strUser, (char*)sqlite3_column_text(stmt, 0), sizeof(strUser));
+				else if (s != SQLITE_DONE) {
+					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+					CALL_SQLITE (reset (stmt));
+					CALL_SQLITE (clear_bindings (stmt));
+					break;
+				}
+
+				CALL_SQLITE (reset (stmt));
+				CALL_SQLITE (clear_bindings (stmt));
+
+				tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+			}
+			else
+				tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
 			
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
@@ -1516,6 +1492,12 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 			Q_strcat(msg, sizeof(msg), tmpMsg);
 		}
 	}
+
+	if (admin) {
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+	}
+
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
 

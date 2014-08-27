@@ -255,6 +255,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	else
 		trap->Print( "WARNING: Couldn't open logfile: "TEMP_RACE_LOG"\n" );
 
+	trap->FS_Open( PLAYER_LOG, &level.playerLog, FS_APPEND_SYNC );
+	if ( level.playerLog )
+		trap->Print( "Logging to "PLAYER_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "PLAYER_LOG"\n" );
+
 	
 	G_LogWeaponInit();
 
@@ -531,6 +537,13 @@ void G_ShutdownGame( int restart ) {
 		//G_RaceLogPrintf( "ShutdownGame\n\n" );
 		trap->FS_Close( level.tempRaceLog );
 		level.tempRaceLog = 0;
+	}
+
+	if ( level.playerLog )
+	{
+		//G_RaceLogPrintf( "ShutdownGame\n\n" );
+		trap->FS_Close( level.playerLog );
+		level.playerLog = 0;
 	}
 
 	// write all the client session data so we can get it back

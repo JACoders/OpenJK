@@ -2506,6 +2506,7 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 	return qtrue;
 }
 
+void G_ClientConnectIP(char *name, char *ip, char *guid);
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		*value = NULL;
 	gentity_t	*ent = NULL, *te = NULL;
@@ -2665,6 +2666,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
 		trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
+
+		if (g_playerLog.integer)
+			G_ClientConnectIP(client->pers.netname, client->sess.IP, client->pers.guid);
 	}
 
 	if ( level.gametype >= GT_TEAM &&
