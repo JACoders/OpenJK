@@ -153,6 +153,9 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	char*	pch;
 	qboolean unique = qtrue;
 
+	if (!Q_stricmp(name, "Padawan"))
+		return;
+
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
 		*p = 0;

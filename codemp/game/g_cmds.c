@@ -5450,6 +5450,7 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amLookup <client>\n\"" );
+		return;
 	}	
 
 	trap->Argv(1, client, sizeof(client));
@@ -5488,10 +5489,10 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 		if (!Q_stricmp(strIP, pch)) {
 
 			if (multiple) {
-				Q_strcat(msg, sizeof(msg), va("\n  %s", last));
+				Q_strcat(msg, sizeof(msg), va("\n  ^7%s", last));
 			}
 			else {
-				Q_strcat(msg, sizeof(msg), va("%s", last));
+				Q_strcat(msg, sizeof(msg), va("^7%s", last));
 			}
 			multiple = qtrue;
 		}
