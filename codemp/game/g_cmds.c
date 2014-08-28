@@ -5417,6 +5417,86 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 }
 //[JAPRO - Serverside - All - Amstatus Function - End]
 
+static void Cmd_Amlookup_f( gentity_t *ent )
+{//Display list of players + clientNum + IP + admin
+	int              fLen = 0, clientid;
+	char             msg[1024-128] = {0}, buf[80*1024], strIP[NET_ADDRSTRMAXLEN] = {0};
+	char*	pch;
+	char *p = NULL;
+	char last[64], client[MAX_NETNAME];
+	fileHandle_t f;
+	qboolean multiple = qfalse;
+
+	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+		if (!(g_fullAdminLevel.integer & (1 << A_LOOKUP))) {
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
+			return;
+		}
+	}
+	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+		if (!(g_juniorAdminLevel.integer & (1 << A_LOOKUP))) {
+			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
+			return;
+		}
+	}
+	else {//Not logged in
+		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amLookup).\n\"" );
+		return;
+	}
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amLookup <client>\n\"" );
+	}	
+
+	trap->Argv(1, client, sizeof(client));
+	clientid = JP_ClientNumberFromString(ent, client);
+
+	if (clientid == -1 || clientid == -2)  
+		return; 
+
+	fLen = trap->FS_Open(PLAYER_LOG, &f, FS_READ);
+	if (!f) {
+		Com_Printf ("ERROR: Couldn't load player logfile %s\n", PLAYER_LOG);
+		return;
+	}
+	
+	if (fLen >= 80*1024) {
+		trap->FS_Close(f);
+		Com_Printf ("ERROR: Couldn't load player logfile %s, file is too large\n", PLAYER_LOG);
+		return;
+	}
+
+	Q_strncpyz(strIP, g_entities[clientid].client->sess.IP, sizeof(strIP));
+
+	p = strchr(strIP, ':');
+	if (p) //loda - fix ip sometimes not printing
+		*p = 0;
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf,";\n");
+
+	Q_strncpyz(last, pch, sizeof(last));
+
+	while (pch != NULL) {
+		if (!Q_stricmp(strIP, pch)) {
+
+			if (multiple) {
+				Q_strcat(msg, sizeof(msg), va("\n  %s", last));
+			}
+			else {
+				Q_strcat(msg, sizeof(msg), va("%s", last));
+			}
+			multiple = qtrue;
+		}
+		Q_strncpyz(last, pch, sizeof(last));
+    	pch = strtok (NULL, ";\n");
+	}
+	trap->SendServerCommand(ent-g_entities, va("print \"^5 This player has used the following names on this server:\n  %s\n\"", msg)); 
+}
+
 //Jetpack start
 static void Cmd_Jetpack_f(gentity_t *ent)
 {
@@ -6612,6 +6692,7 @@ command_t commands[] = {
 	{ "amlockteam",			Cmd_Amlockteam_f,			CMD_NOINTERMISSION },
 	{ "amlogin",			Cmd_Amlogin_f,				0 },
 	{ "amlogout",			Cmd_Amlogout_f,				0 },
+	{ "amlookup",			Cmd_Amlookup_f,				0 },
 	{ "ammap",				Cmd_Ammap_f,				CMD_NOINTERMISSION },
 	{ "ammotd",				Cmd_Showmotd_f,				CMD_NOINTERMISSION },
 	{ "amnoisy",			Cmd_EmoteNoisy_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE

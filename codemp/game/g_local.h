@@ -259,7 +259,8 @@ typedef enum {
 	A_RENAME,
 	A_LISTMAPS,
 	A_BUILDHIGHSCORES,
-	A_WHOIS
+	A_WHOIS,
+	A_LOOKUP
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates
