@@ -145,22 +145,53 @@ int CheckUserExists(char *username) {
 		return 0;
 	}
 }
-
-void G_ClientConnectIP(char *name, char *strIP, char *guid) {
-	//PlayerID_t	Player;
-	char string[128];
+void G_AddPlayerLog(char *name, char *strIP, char *guid) {
+	fileHandle_t f;
+	char string[128], string2[128], buf[80000];
 	char *p = NULL;
-	unsigned int ip;
+	int	fLen = 0;
+	char*	pch;
+	qboolean unique = qtrue;
+
 
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
 		*p = 0;
-	//ip = ip_to_int(strIP);
-	
-	//Com_sprintf(string, sizeof(string), "%s;%u;%s\n", name, ip, guid); //Store ip as int or char??.. lets do int
-	Com_sprintf(string, sizeof(string), "%s;%s;%s\n", name, strIP, guid); //Store ip as int or char??.. lets do int
 
-	trap->FS_Write(string, strlen(string), level.playerLog );
+	Com_sprintf(string, sizeof(string), "%s;%s;%s", name, strIP, guid); //Store ip as int or char??.. lets do int
+
+	fLen = trap->FS_Open(PLAYER_LOG, &f, FS_READ);
+	if (!f) {
+		Com_Printf ("ERROR: Couldn't load player logfile %s\n", PLAYER_LOG);
+		return;
+	}
+	
+	if (fLen >= 1024*1024) {
+		trap->FS_Close(f);
+		Com_Printf ("ERROR: Couldn't load player logfile %s, file is too large\n", PLAYER_LOG);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf,"\n");
+
+	while (pch != NULL) {
+		if (!Q_stricmp(string, pch)) {
+			unique = qfalse;
+			break;
+		}
+    	pch = strtok (NULL, "\n");
+	}
+
+	if (unique) {
+		Com_sprintf(string2, sizeof(string2), "%s\n", string);
+		trap->FS_Write(string2, strlen(string2), level.playerLog );
+	}
+
+	//If line does not already exist, write it.
 
 	//ftell, fseek
 

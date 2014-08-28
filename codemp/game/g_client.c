@@ -15,6 +15,7 @@ void WP_SaberAddG2Model( gentity_t *saberent, const char *saberModel, qhandle_t 
 void WP_SaberRemoveG2Model( gentity_t *saberent );
 extern qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel );
 extern qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int *saberAnimLevel );
+void G_AddPlayerLog(char *name, char *ip, char *guid);
 
 forcedata_t Client_Force[MAX_CLIENTS];
 
@@ -2249,6 +2250,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 				G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 				client->pers.netnameTime = level.time + 5000;
+				if (g_playerLog.integer)
+					G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 			}
 		}
 	}
@@ -2506,7 +2509,6 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 	return qtrue;
 }
 
-void G_ClientConnectIP(char *name, char *ip, char *guid);
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	char		*value = NULL;
 	gentity_t	*ent = NULL, *te = NULL;
@@ -2668,7 +2670,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
 
 		if (g_playerLog.integer)
-			G_ClientConnectIP(client->pers.netname, client->sess.IP, client->pers.guid);
+			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 	}
 
 	if ( level.gametype >= GT_TEAM &&
