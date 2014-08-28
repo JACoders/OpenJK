@@ -1488,7 +1488,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 				char *p = NULL;
 				unsigned int ip;
 
-				Q_strncpyz(strIP, ent->client->sess.IP, sizeof(strIP));
+				Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
 				p = strchr(strIP, ':');
 				if (p) //loda - fix ip sometimes not printing
 					*p = 0;
