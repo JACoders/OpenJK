@@ -2250,7 +2250,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 				G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 				client->pers.netnameTime = level.time + 5000;
-				if (g_playerLog.integer)
+				if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
 					G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 			}
 		}
@@ -2669,7 +2669,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if ( firstTime ) {
 		trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
 
-		if (g_playerLog.integer)
+		if (g_playerLog.integer && !isBot)
 			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 	}
 
