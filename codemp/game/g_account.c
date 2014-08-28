@@ -147,7 +147,7 @@ int CheckUserExists(char *username) {
 }
 void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	fileHandle_t f;
-	char string[128], string2[128], buf[80000];
+	char string[128], string2[128], buf[80*1024];
 	char *p = NULL;
 	int	fLen = 0;
 	char*	pch;
@@ -166,7 +166,7 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 		return;
 	}
 	
-	if (fLen >= 1024*1024) {
+	if (fLen >= 80*1024) {
 		trap->FS_Close(f);
 		Com_Printf ("ERROR: Couldn't load player logfile %s, file is too large\n", PLAYER_LOG);
 		return;
@@ -244,7 +244,7 @@ void G_AddToDBFromFile(void) //loda fixme
 {
 	fileHandle_t f;	
 	int		fLen = 0, args = 1; //MAX_FILESIZE = 4096
-	char	buf[4096] = {0}, empty[8] = {0};//eh
+	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
 	char * sql;
@@ -257,11 +257,11 @@ void G_AddToDBFromFile(void) //loda fixme
 		Com_Printf ("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
 		return;
 	}
-	//if (fLen >= MAX_FILESIZE) {
-		//trap->FS_Close(f);
-		//Com_Printf ("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
-		//return;
-	//}
+	if (fLen >= 80*1024) {
+		trap->FS_Close(f);
+		Com_Printf ("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
+		return;
+	}
 
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
