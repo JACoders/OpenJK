@@ -1498,8 +1498,10 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 
 				s = sqlite3_step(stmt);
 
-				if (s == SQLITE_ROW)
-					Q_strncpyz(strUser, (char*)sqlite3_column_text(stmt, 0), sizeof(strUser));
+				if (s == SQLITE_ROW) {
+					if (ip)
+						Q_strncpyz(strUser, (char*)sqlite3_column_text(stmt, 0), sizeof(strUser));
+				}
 				else if (s != SQLITE_DONE) {
 					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
 					CALL_SQLITE (reset (stmt));
