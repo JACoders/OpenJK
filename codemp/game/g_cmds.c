@@ -5499,7 +5499,7 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 		Q_strncpyz(last, pch, sizeof(last));
     	pch = strtok (NULL, ";\n");
 	}
-	trap->SendServerCommand(ent-g_entities, va("print \"^5 This player has used the following names on this server:\n  %s\n\"", msg)); 
+	trap->SendServerCommand(ent-g_entities, va("print \"^5 This players IP has used the following names on this server:\n  %s\n\"", msg)); 
 }
 
 //Jetpack start
@@ -6671,6 +6671,7 @@ void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
+void Cmd_PersonalBest_f( gentity_t *ent);
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -6767,6 +6768,8 @@ command_t commands[] = {
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
+
+	{ "personalbest",		Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },

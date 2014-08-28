@@ -1307,6 +1307,90 @@ int RaceNameToInteger(char *style) {
 	return -1;
 }
 
+void Cmd_PersonalBest_f(gentity_t *ent) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s, style, duration_ms, time;
+	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32];
+	time_t timeGMT;
+
+	if (trap->Argc() != 4 && trap->Argc() != 5) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /personalBest <username> <full coursename> <style>.  Example: /personalBest user mapname (coursename) style\n\"");
+		return;
+	}
+
+
+	trap->Argv(1, username, sizeof(username));
+
+	if (trap->Argc() == 5) {
+		trap->Argv(2, courseNameFull, sizeof(courseNameFull));
+		trap->Argv(3, courseName, sizeof(courseName));
+		Q_strcat(courseNameFull, sizeof(courseNameFull), va(" %s", courseName));
+		trap->Argv(4, styleString, sizeof(styleString));
+	}
+	else {
+		trap->Argv(2, courseNameFull, sizeof(courseNameFull));
+		trap->Argv(3, styleString, sizeof(styleString));
+	}
+
+	Q_strlwr(styleString);
+	Q_CleanStr(styleString);
+
+	style = RaceNameToInteger(styleString);
+
+	if (style < 0) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /personalBest <username> <full coursename> <style>.\n\"");
+		return;
+	}
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+	Q_strlwr(courseNameFull);
+	Q_CleanStr(courseNameFull);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, courseNameFull, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 3, style));
+
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_ROW) {
+		duration_ms = sqlite3_column_int(stmt, 0);
+		//time = sqlite3_column_int(stmt, 0);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	//timeGMT = (time_t)time;
+	//strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+
+	if (duration_ms >= 60000) {
+		int minutes, seconds, milliseconds;
+		minutes = (int)((duration_ms / (1000*60)) % 60);
+		seconds = (int)(duration_ms / 1000) % 60;
+		milliseconds = duration_ms % 1000; 
+		Com_sprintf(durationStr, sizeof(durationStr), "%i:%02i.%03i", minutes, seconds, milliseconds);//more precision?
+	}
+	else
+		Q_strncpyz(durationStr, va("%.3f", ((float)duration_ms * 0.001)), sizeof(durationStr));
+
+	if (duration_ms)
+		trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5.\n\"", durationStr));
+	else
+		trap->SendServerCommand(ent-g_entities, "print \"^5 No results found.\n\"");
+}
+
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
