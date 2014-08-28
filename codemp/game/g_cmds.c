@@ -5288,6 +5288,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM))) 
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
+		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOOKUP))) 
+			Q_strcat(buf, sizeof(buf), "amLookup "); 
+		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOOKUP))) 
+			Q_strcat(buf, sizeof(buf), "amLookup "); 
 		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_VSTR))) 
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
 		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
