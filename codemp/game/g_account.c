@@ -1453,11 +1453,11 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 	int s;
 
 	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
-		if (g_fullAdminLevel.integer & (1 << A_STATUS))
+		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
 			admin = qtrue;
 	}
 	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
-		if (g_juniorAdminLevel.integer & (1 << A_STATUS))
+		if (g_juniorAdminLevel.integer & (1 << A_WHOIS))
 			admin = qtrue;
 	}
 
