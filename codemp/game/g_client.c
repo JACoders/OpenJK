@@ -2668,9 +2668,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
 		trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
-
-		if (g_playerLog.integer && !isBot)
-			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 	}
 
 	if ( level.gametype >= GT_TEAM &&
@@ -2826,6 +2823,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
+	if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+		G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+
 	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
 		client->pers.raceMode = qtrue;
 	if (client->pers.raceMode) 
@@ -2872,6 +2872,10 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 			strcpy(ent->client->csMessage, G_NewString(va("^7%s\n", g_centerMOTD.string )));
 			ent->client->csTimeLeft = g_centerMOTDTime.integer;
 		}
+
+		if (g_playerLog.integer && ent && ent->client && !(ent->r.svFlags & SVF_BOT))
+			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+
 		ent->client->sess.sawMOTD = qtrue;
 	}
 
