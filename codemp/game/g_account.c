@@ -253,13 +253,14 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 
 void G_AddToDBFromFile(void) { //loda fixme
 	fileHandle_t f;	
-	int		fLen = 0, args = 1; //MAX_FILESIZE = 4096
+	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
 	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
 	char * sql;
 	sqlite3_stmt * stmt;
 	RaceRecord_t	TempRaceRecord;
+	qboolean good = qfalse;
 
 	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
 
@@ -315,12 +316,21 @@ void G_AddToDBFromFile(void) { //loda fixme
     		pch = strtok (NULL, ";\n");
 		args++;
 	}
+
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		good = qtrue;
+	}
+
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));	
 
-	trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
-	trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
-	trap->FS_Close(f);
+	if (good) { //dont delete tmp file if mysql database is not responding 
+		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE); //Only do this if sqlite done? LODA FIXME
+		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
+		trap->FS_Close(f);
+	}
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
@@ -449,7 +459,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		//Found it? cool.. otherwise add their current personal best to cache. and check 
 		for (i = 0; i < 50; i++) {
 			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseName, PersonalBests[style][i].coursename)) { //Its us, and right course
-				if (duration_ms > PersonalBests[style][i].duration_ms) { //Our new time is faster, so update the cache..
+				if (duration_ms < PersonalBests[style][i].duration_ms) { //Our new time is faster, so update the cache..
 					PersonalBests[style][i].duration_ms = duration_ms;
 
 					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
@@ -1396,7 +1406,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	//time_t timeGMT;
 
 	if (trap->Argc() != 4 && trap->Argc() != 5) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /personalBest <username> <full coursename> <style>.  Example: /personalBest user mapname (coursename) style\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /best <username> <full coursename> <style>.  Example: /best user mapname (coursename) style\n\"");
 		return;
 	}
 
