@@ -1915,7 +1915,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->pers.clanpass, other->client->pers.clanpass) || ent->client->pers.clanpass[0] == 0 || other->client->pers.clanpass[0] == 0)))//Idk
 		return;//Ignore it
-	if (mode == SAY_ADMIN && !(other->r.svFlags & SVF_FULLADMIN || other->r.svFlags & SVF_FULLADMIN) && ent != other)
+	if (mode == SAY_ADMIN && !(other->r.svFlags & SVF_FULLADMIN || other->r.svFlags & SVF_JUNIORADMIN) && ent != other)
 		return;
 
 	if (ClientIsIgnored(other-g_entities, ent-g_entities)) {//Also make sure clanpass is set?
