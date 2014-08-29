@@ -458,12 +458,19 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		//Check if its a personal best.. Check the cache first.
 		//Found it? cool.. otherwise add their current personal best to cache. and check 
 		for (i = 0; i < 50; i++) {
+			//trap->Print("Checking cache: %s, %s ... %s, %s\n", username, courseName, PersonalBests[style][i].username, PersonalBests[style][i].coursename);
 			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseName, PersonalBests[style][i].coursename)) { //Its us, and right course
 				if (duration_ms < PersonalBests[style][i].duration_ms) { //Our new time is faster, so update the cache..
 					PersonalBests[style][i].duration_ms = duration_ms;
 
+					//trap->Print("Found in cach, updating cache and writing to file %i", duration_ms);
 					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 						trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+					break;
+				}
+				else {
+					//trap->Print("Found in cache, but cache is faster so doing nothing\n");
+					break;
 				}
 			}
 			else if (!PersonalBests[style][i].username[0]) { //End of cache, and still not found, so add it
@@ -486,18 +493,26 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 					//trap->Print("Oldbest, Duration_ms: %i, %i\n", oldBest, duration_ms);
 
-					if (oldBest && duration_ms < oldBest) {//our new time is faster, so update cache and add save this time to file/db?
-						PersonalBests[style][i].duration_ms = duration_ms;
-
-						if (level.tempRaceLog)
-							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+					if (oldBest) {// We found a time in the database
+						if (duration_ms < oldBest) { //our time we just recorded is faster, so log it
+							PersonalBests[style][i].duration_ms = duration_ms;
+							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
+							if (level.tempRaceLog)
+								trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+							break;
+						}
+						else { //Our time we jus recorded is slower, so add faster time from db to cache
+							//trap->Print("Time not found in cache, adding time from db: %i\n", oldBest);
+							PersonalBests[style][i].duration_ms = oldBest;
+							break;
+						}
 					}
-					else if (oldBest)
-						PersonalBests[style][i].duration_ms = oldBest;
-					else {
+					else { //No time found in database, so record the time we just recorded 
 						PersonalBests[style][i].duration_ms = duration_ms;
+						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
 						if (level.tempRaceLog)
 							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+						break;
 					}
 				}
 				else if (s != SQLITE_DONE) {
@@ -1123,9 +1138,12 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
 	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
-	Q_strcat(buf, sizeof(buf), va("   ^5Race Highscores: ^2%i\n", highscores));
+	Q_strcat(buf, sizeof(buf), va("   ^5Race Scores: ^2%i\n", highscores)); //Loda fixme --
 	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
+
+	//--find a way to rank player in defrag.. maybe when building every highscore table on mapload, increment number of points each player has in a new table..in database.. 
+	// make 1st places worth 10 points, 2nd place 9 points.. etc..? 
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 }
