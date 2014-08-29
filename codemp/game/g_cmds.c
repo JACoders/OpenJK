@@ -6722,6 +6722,9 @@ command_t commands[] = {
 	{ "amtelemark",			Cmd_Amtelemark_f,			CMD_NOINTERMISSION },
 	{ "amvictory",			Cmd_EmoteVictory_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
+
+	{ "best",				Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
+
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
 
@@ -6769,9 +6772,7 @@ command_t commands[] = {
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 
-	{ "personalbest",		Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
-
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },

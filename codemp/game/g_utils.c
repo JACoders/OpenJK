@@ -820,7 +820,10 @@ gentity_t *G_Spawn( void ) {
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL ) {
 		trap->SendServerCommand(-1, "print \"Warning: Entity limit reached!\n\"");
-		trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+		if (g_raceMode.integer == 2)
+			trap->SendConsoleCommand( EXEC_APPEND, "g_raceMode 1;map_restart 0;wait 20;g_raceMode 2\n" ); //kane, no.
+		else
+			trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
 		return e;
 		//G_SpewEntList();
 		//trap->Error( ERR_DROP, "G_Spawn: no free entities" );

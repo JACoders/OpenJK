@@ -38,6 +38,15 @@ typedef struct RaceRecord_s {
 
 RaceRecord_t	HighScores[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
 
+typedef struct PersonalBests_s {
+	char				username[16];
+	char				coursename[40];
+	unsigned int		duration_ms;
+	unsigned short		style; //only needs to be 3 bits	
+} PersonalBests_t;
+
+PersonalBests_t	PersonalBests[7][50];//7 styles, 50 cached spots
+
 typedef struct UserStats_s {
 	char				username[16];
 	unsigned short		kills;
@@ -242,8 +251,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 	}
 }
 
-void G_AddToDBFromFile(void) //loda fixme
-{
+void G_AddToDBFromFile(void) { //loda fixme
 	fileHandle_t f;	
 	int		fLen = 0, args = 1; //MAX_FILESIZE = 4096
 	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
@@ -332,6 +340,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	char		string[1024] = {0}, info[1024] = {0}, courseName[40];
 	int i, course = 0, newRank = -1, rowToDelete = 9;
 	qboolean duplicate = qfalse;
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
 
 	time( &rawtime );
 	localtime( &rawtime );
@@ -416,13 +427,14 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			HighScores[course][style][i + 1] = HighScores[course][style][i];
 		}
 
-		Q_strncpyz(HighScores[course][style][newRank].username, username, sizeof(HighScores[i][style][newRank].username));
-		Q_strncpyz(HighScores[course][style][newRank].coursename, username, sizeof(HighScores[i][style][newRank].coursename));
+		//trap->Print("Setting username, coursename in highscores %s, %s\n", username, courseName);
+		Q_strncpyz(HighScores[course][style][newRank].username, username, sizeof(HighScores[course][style][newRank].username));
+		Q_strncpyz(HighScores[course][style][newRank].coursename, courseName, sizeof(HighScores[course][style][newRank].coursename)); //LODA FIX ME HOW WAS THIS WORKING WITH USERNAME TYPO??
 		HighScores[course][style][newRank].duration_ms = duration_ms;
 		HighScores[course][style][newRank].topspeed = topspeed;
 		HighScores[course][style][newRank].average = average;
 		HighScores[course][style][newRank].style = style;
-		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[i][style][newRank].end_time));
+		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
 
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
@@ -431,6 +443,65 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
 		else 
 			PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
+	}
+	else {
+		//Check if its a personal best.. Check the cache first.
+		//Found it? cool.. otherwise add their current personal best to cache. and check 
+		for (i = 0; i < 50; i++) {
+			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseName, PersonalBests[style][i].coursename)) { //Its us, and right course
+				if (duration_ms > PersonalBests[style][i].duration_ms) { //Our new time is faster, so update the cache..
+					PersonalBests[style][i].duration_ms = duration_ms;
+
+					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+						trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+				}
+			}
+			else if (!PersonalBests[style][i].username[0]) { //End of cache, and still not found, so add it
+				int s, oldBest;
+
+				Q_strncpyz(PersonalBests[style][i].username, username, sizeof(PersonalBests[style][i].username));
+				Q_strncpyz(PersonalBests[style][i].coursename, courseName, sizeof(PersonalBests[style][i].coursename));
+
+				CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+				sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+				CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+				CALL_SQLITE (bind_text (stmt, 2, courseName, -1, SQLITE_STATIC));
+				CALL_SQLITE (bind_int (stmt, 3, style));
+
+				s = sqlite3_step(stmt);
+
+				if (s == SQLITE_ROW) {
+					oldBest = sqlite3_column_int(stmt, 0);
+
+					//trap->Print("Oldbest, Duration_ms: %i, %i\n", oldBest, duration_ms);
+
+					if (oldBest && duration_ms < oldBest) {//our new time is faster, so update cache and add save this time to file/db?
+						PersonalBests[style][i].duration_ms = duration_ms;
+
+						if (level.tempRaceLog)
+							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+					}
+					else if (oldBest)
+						PersonalBests[style][i].duration_ms = oldBest;
+					else {
+						PersonalBests[style][i].duration_ms = duration_ms;
+						if (level.tempRaceLog)
+							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+					}
+				}
+				else if (s != SQLITE_DONE) {
+					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+				}
+
+				//trap->Print("PersonalBest cache updated with %s, %s, %i", username, courseName, PersonalBests[style][i].duration_ms);
+
+				CALL_SQLITE (finalize(stmt));
+				CALL_SQLITE (close(db));
+
+				break;
+			}
+		}
 	}
 		//One by one
 			//If my time is faster, and newRank is -1, store i as NewRank.  We will eventually insert our time into spot i
@@ -1161,7 +1232,7 @@ void CleanupLocalRun() { //loda fixme, take prepare out of loop even more?
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
 				   "GROUP BY username) " 
-				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 50";//memes	
+				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 200";//keep 200 fastest users per  course/style ?	
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		
 		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
@@ -1246,7 +1317,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					end_time = sqlite3_column_int(stmt, 7);
 
 					Q_strncpyz(HighScores[i][style][rank].username, username, sizeof(HighScores[i][style][rank].username));
-					Q_strncpyz(HighScores[i][style][rank].coursename, username, sizeof(HighScores[i][style][rank].coursename));
+					Q_strncpyz(HighScores[i][style][rank].coursename, course, sizeof(HighScores[i][style][rank].coursename));
 					HighScores[i][style][rank].duration_ms = duration_ms;
 					HighScores[i][style][rank].topspeed = topspeed;
 					HighScores[i][style][rank].average = average;
@@ -1307,19 +1378,27 @@ int RaceNameToInteger(char *style) {
 	return -1;
 }
 
+void remove_all_chars(char* str, char c) {
+    char *pr = str, *pw = str;
+    while (*pr) {
+        *pw = *pr++;
+        pw += (*pw != c);
+    }
+    *pw = '\0';
+}
+
 void Cmd_PersonalBest_f(gentity_t *ent) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int s, style, duration_ms, time;
-	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32];
-	time_t timeGMT;
+	int s, style, duration_ms = 0, i, course = -1;
+	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32], tempCourseName[32];
+	//time_t timeGMT;
 
 	if (trap->Argc() != 4 && trap->Argc() != 5) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /personalBest <username> <full coursename> <style>.  Example: /personalBest user mapname (coursename) style\n\"");
 		return;
 	}
-
 
 	trap->Argv(1, username, sizeof(username));
 
@@ -1349,31 +1428,70 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	Q_strlwr(courseNameFull);
 	Q_CleanStr(courseNameFull);
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_text (stmt, 2, courseNameFull, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, style));
+	Q_strncpyz(tempCourseName, courseName, sizeof(tempCourseName));
+	remove_all_chars(tempCourseName, '(');
+	remove_all_chars(tempCourseName, ')');
 
-	s = sqlite3_step(stmt);
-
-	if (s == SQLITE_ROW) {
-		duration_ms = sqlite3_column_int(stmt, 0);
-		//time = sqlite3_column_int(stmt, 0);
+	for (i = 0; i < level.numCourses; i++) {
+		trap->Print("course, course : %s, %s\n", tempCourseName, level.courseName[i]);
+		if (!Q_stricmp(tempCourseName, level.courseName[i])) {
+			course = i;
+			break;
+		}
 	}
-	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+
+	if (level.numCourses == 1)
+		course = 0;
+
+	if (course != -1) { //Found course on current map, check highscores cache
+		for (i = 0; i < 10; i++) { //Search for highscore in highscore cache table
+			//trap->Print("Cycling Highscores %s, %s matching with %s, %s\n", HighScores[course][style][i].username, HighScores[course][style][i].coursename , username, courseNameFull);
+			if (!Q_stricmp(username, HighScores[course][style][i].username) && !Q_stricmp(courseNameFull, HighScores[course][style][i].coursename)) { //Its us, and right course
+				//trap->Print("Found In Highscore Cache\n");
+				duration_ms = HighScores[course][style][i].duration_ms;
+				break;
+			}
+			if (!HighScores[course][style][i].username[0])
+				break;
+		}
+	}
+
+	if (!duration_ms) { //Search for highscore in personalbest cache table
+		for (i = 0; i < 50; i++) {
+			//trap->Print("Cycling PB %s, %s matching with %s, %s\n", PersonalBests[style][i].username, PersonalBests[style][i].coursename , username, courseNameFull);
+			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseNameFull, PersonalBests[style][i].coursename)) { //Its us, and right course
+				//trap->Print("Found In My Cache\n");
+				duration_ms = PersonalBests[style][i].duration_ms;
+				break;
+			}
+			if (!PersonalBests[style][i].username[0])
+				break;
+		}
+	}
+
+	if (!duration_ms) { //Not found in cache, so check db
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, courseNameFull, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style));
+
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_ROW) {
+			duration_ms = sqlite3_column_int(stmt, 0);
+		}
+		else if (s != SQLITE_DONE) {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
-		return;
 	}
-
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));
-
-	//timeGMT = (time_t)time;
-	//strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
 
 	if (duration_ms >= 60000) {
 		int minutes, seconds, milliseconds;
