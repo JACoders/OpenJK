@@ -947,6 +947,61 @@ void Svcmd_AccountInfo_f(void)
 	trap->Print( "%s", buf);
 }
 
+void Svcmd_DBInfo_f(void)
+{
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char buf[MAX_STRING_CHARS-64] = {0};
+	int s, numAccounts = 0, numRaces = 0, numDuels = 0;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT COUNT(*) FROM LocalAccount";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    s = sqlite3_step(stmt);
+    if (s == SQLITE_ROW)
+		numAccounts = sqlite3_column_int(stmt, 0);
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT COUNT(*) FROM LocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    s = sqlite3_step(stmt);
+    if (s == SQLITE_ROW)
+		numRaces = sqlite3_column_int(stmt, 0);
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT COUNT(*) FROM LocalDuel";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    s = sqlite3_step(stmt);
+    if (s == SQLITE_ROW)
+		numDuels = sqlite3_column_int(stmt, 0);
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
+
+	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.", numAccounts, numRaces, numDuels);
+}
+
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
