@@ -265,19 +265,19 @@ void G_AddToDBFromFile(void) { //loda fixme
 	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
 
 	if (!f) {
-		Com_Printf ("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
+		trap->Print("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
 		return;
 	}
 	if (fLen >= 80*1024) {
 		trap->FS_Close(f);
-		Com_Printf ("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
+		trap->Print("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
 		return;
 	}
 
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
 	trap->FS_Close(f);
-	Com_Printf ("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
+	trap->Print("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
@@ -331,6 +331,8 @@ void G_AddToDBFromFile(void) { //loda fixme
 		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 		trap->FS_Close(f);
 	}
+	else 
+		trap->Print("ERROR: Unable to rebuild insert times into database.\n");
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
@@ -1276,7 +1278,7 @@ void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?
 	CALL_SQLITE (close(db));
 }
 
-void CleanupLocalRun() { //loda fixme, take prepare out of loop even more?
+void CleanupLocalRun() { //loda fixme, there really has to be a better way to do this. -Delete from table localrun, all but fastest time, grouped by username, coursename, style.. HOW?
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1336,6 +1338,37 @@ void CleanupLocalRun() { //loda fixme, take prepare out of loop even more?
 
 	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
 		"SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM TempLocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	
+	sql = "DROP TABLE IF EXISTS Temp";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "CREATE TABLE Temp(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT INTO Temp (username, coursename, duration_ms, topspeed, average, style, end_time) SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM LocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "DROP TABLE IF EXISTS LocalRun";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "CREATE TABLE LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM Temp";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
