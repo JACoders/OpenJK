@@ -1282,16 +1282,18 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	char mapName[40], courseName[40], info[1024] = {0};
-	int i, mstyle;
+	//char mapName[40], courseName[40], info[1024] = {0};
+	//int i, mstyle;
 
-	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
+	//trap->GetServerinfo(info, sizeof(info));
+	//Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
 
-	Q_strlwr(mapName);
-	Q_CleanStr(mapName);
+	//Q_strlwr(mapName);
+	//Q_CleanStr(mapName);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+#if 0
 
 	sql = "DROP TABLE IF EXISTS TempLocalRun";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -1370,10 +1372,19 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
+#endif
+
+	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM Temp GROUP BY username, coursename, style))";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+
+	//loda fixme, maybe remake table or something.. ?
 
 	CALL_SQLITE (close(db));
 
-	trap->Print("Cleaned up racetimes for %s\n", mapName);
+
+	trap->Print("Cleaned up racetimes\n");
 }
 
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop

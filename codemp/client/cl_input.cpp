@@ -902,10 +902,11 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	cmd->rightmove = ClampChar( side );
 	cmd->upmove = ClampChar( up );
 
-	
+#if 1
 	if (cl_test->integer && left == 127 && right == 0) {
 		cmd->rightmove = 127;
 	}
+#endif
 }
 
 /*
@@ -1219,7 +1220,6 @@ void CL_FinishMove( usercmd_t *cmd ) {
 #if 1
 	if (cl_test->integer && cl_testAngle->value && cl_testAngle->value < 90.0f && cl_testAngle->value > -90.0f) {
 		cl.viewangles[YAW] -= cl_testAngle->value; //JAPRO ENGINE
-		//Com_Printf( "ANGLE: %f, %f, %f\n", cl_testAngle->value, AngleNormalize180(cl_testAngle->value), AngleNormalize360(cl_testAngle->value) );
 	}
 #endif
 
@@ -1717,6 +1717,8 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 
+#if 1
 	cl_test = Cvar_Get ("cl_test", "0", 0);//JAPRO ENGINE
 	cl_testAngle = Cvar_Get ("cl_testAngle", "0", 0);//JAPRO ENGINE
+#endif
 }
