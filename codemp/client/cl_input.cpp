@@ -858,6 +858,8 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
 
+	int		left, right;
+
 	//
 	// adjust for speed key / running
 	// the walking flag is to keep animations consistant
@@ -880,8 +882,15 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	}
 
 	side += movespeed * CL_KeyState (&in_moveright);
+#if 1
+	left = side;
+#endif
 	side -= movespeed * CL_KeyState (&in_moveleft);
+#if 1
+	right = -side;
+#endif
 
+	//Com_Printf( "R: %i / L: %i / side: %i\n", left, right, side );
 
 	up += movespeed * CL_KeyState (&in_up);
 	up -= movespeed * CL_KeyState (&in_down);
@@ -892,6 +901,11 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	cmd->forwardmove = ClampChar( forward );
 	cmd->rightmove = ClampChar( side );
 	cmd->upmove = ClampChar( up );
+
+	
+	if (cl_test->integer && left == 127 && right == 0) {
+		cmd->rightmove = 127;
+	}
 }
 
 /*
@@ -1201,6 +1215,13 @@ void CL_FinishMove( usercmd_t *cmd ) {
 		cl.viewangles[YAW] = cl.cgameViewAngleForce[YAW];
 		cl.cgameViewAngleForceTime = 0;
 	}
+
+#if 1
+	if (cl_test->integer && cl_testAngle->value && cl_testAngle->value < 90.0f && cl_testAngle->value > -90.0f) {
+		cl.viewangles[YAW] -= cl_testAngle->value; //JAPRO ENGINE
+		//Com_Printf( "ANGLE: %f, %f, %f\n", cl_testAngle->value, AngleNormalize180(cl_testAngle->value), AngleNormalize360(cl_testAngle->value) );
+	}
+#endif
 
 	if ( cl_crazyShipControls )
 	{
@@ -1695,4 +1716,7 @@ void CL_InitInput( void ) {
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
+
+	cl_test = Cvar_Get ("cl_test", "0", 0);//JAPRO ENGINE
+	cl_testAngle = Cvar_Get ("cl_testAngle", "0", 0);//JAPRO ENGINE
 }

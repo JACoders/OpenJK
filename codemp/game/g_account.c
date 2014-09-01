@@ -277,8 +277,7 @@ void G_AddToDBFromFile(void) { //loda fixme
 	trap->FS_Read(buf, fLen, f);
 	buf[fLen] = 0;
 	trap->FS_Close(f);
-	trap->Print("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
-
+	
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
 
@@ -330,6 +329,7 @@ void G_AddToDBFromFile(void) { //loda fixme
 		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE); //Only do this if sqlite done? LODA FIXME
 		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 		trap->FS_Close(f);
+		trap->Print("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
 	}
 	else 
 		trap->Print("ERROR: Unable to rebuild insert times into database.\n");
@@ -1001,7 +1001,7 @@ void Svcmd_DBInfo_f(void)
 
 	CALL_SQLITE (close(db));
 
-	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.", numAccounts, numRaces, numDuels);
+	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.\n", numAccounts, numRaces, numDuels);
 }
 
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
@@ -1291,8 +1291,6 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	Q_strlwr(mapName);
 	Q_CleanStr(mapName);
 
-	trap->Print("Cleaning up racetimes for %s\n", mapName);
-
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
 	sql = "DROP TABLE IF EXISTS TempLocalRun";
@@ -1374,6 +1372,8 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	CALL_SQLITE (finalize(stmt));
 
 	CALL_SQLITE (close(db));
+
+	trap->Print("Cleaned up racetimes for %s\n", mapName);
 }
 
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop

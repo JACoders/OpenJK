@@ -81,6 +81,9 @@ cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 cvar_t	*m_repeatDelay;//JAPRO ENGINE
 cvar_t	*m_repeat;//JAPRO ENGINE
 
+cvar_t	*cl_test;//JAPRO ENGINE
+cvar_t	*cl_testAngle;//JAPRO ENGINE
+
 cvar_t	*cl_autolodscale;
 
 #ifndef _WIN32

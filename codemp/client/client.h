@@ -379,6 +379,8 @@ extern	cvar_t	*m_filter;
 extern	cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 extern	cvar_t	*m_repeatDelay;//JAPRO ENGINE
 extern	cvar_t	*m_repeat;//JAPRO ENGINE
+extern	cvar_t	*cl_test;//JAPRO ENGINE
+extern	cvar_t	*cl_testAngle;//JAPRO ENGINE
 
 extern	cvar_t	*cl_timedemo;
 extern	cvar_t	*cl_aviFrameRate;
