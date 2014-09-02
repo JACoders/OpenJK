@@ -6016,7 +6016,7 @@ void Cmd_RaceTele_f(gentity_t *ent)
 void Cmd_WarpList_f(gentity_t *ent)
 {
 	char buf[MAX_STRING_CHARS-64] = {0};
-	int i, MAX_NUM_WARPS = 32;
+	int i, MAX_NUM_WARPS = 64;
 
 	if (!ent->client) {
 		trap->SendServerCommand( ent-g_entities, "print \"You can only use this command in racemode!\n\"" );
@@ -6028,9 +6028,9 @@ void Cmd_WarpList_f(gentity_t *ent)
 	}
 
 	for (i = 0; i < MAX_NUM_WARPS; i++) {
-		if (!Q_stricmp("", level.warpName[i])) //dis right? 
+		if (!warpList[i].name[0])
 			break;
-		Q_strcat(buf, sizeof(buf), va(" ^3%s", level.warpName[i]));
+		Q_strcat(buf, sizeof(buf), va(" ^3%s", warpList[i].name));
 	}
 	if (buf[0] == '\0')
 		trap->SendServerCommand(ent-g_entities, "print \"There are no warps on this map\n\"");
@@ -6040,7 +6040,7 @@ void Cmd_WarpList_f(gentity_t *ent)
 
 void Cmd_Warp_f(gentity_t *ent)
 {
-	int i, warpNum = -1, MAX_NUM_WARPS = 32;
+	int i, warpNum = -1, MAX_NUM_WARPS = 64;
 	char enteredWarpName[MAX_NETNAME];
 	vec3_t	angles = {0, 0, 0}, origin = {0, 0, 0};
 
@@ -6055,18 +6055,18 @@ void Cmd_Warp_f(gentity_t *ent)
 	trap->Argv(1, enteredWarpName, sizeof(enteredWarpName));
 
 	for (i = 0;i < MAX_NUM_WARPS; i++) {
-		if (!Q_stricmp("", level.warpName[i])) //dis right? 
+		if (!warpList[i].name[0]) //dis right? 
 			break;
-		if (!Q_stricmp(enteredWarpName, level.warpName[i])) {
+		if (!Q_stricmp(enteredWarpName, warpList[i].name)) {
 			warpNum = i;
 			break;
 		}
 	}		
 	if (warpNum != -1) { //Loda fixme, check if these are not null?
-		origin[0] = (int)level.warpX[warpNum]; //how the FUCK does this make any sense, its already an int, but it crashes unless i cast to int???
-		origin[1] = (int)level.warpY[warpNum];
-		origin[2] = (int)level.warpZ[warpNum];
-		angles[YAW] = (int)level.warpYaw[warpNum];
+		origin[0] = warpList[warpNum].x; 
+		origin[1] = warpList[warpNum].y;
+		origin[2] = warpList[warpNum].z;
+		angles[YAW] = warpList[warpNum].yaw;
 		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse );
 	}	
 }

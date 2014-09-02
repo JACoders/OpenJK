@@ -4169,14 +4169,14 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 //JAPRO - Serverside - Stop those pesky reconnect whores - Start
-	if (g_fixKillCredit.integer > 1 && ent->client && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	if (g_fixKillCredit.integer > 1 && ent->client && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{
 		attacker = &g_entities[ent->client->ps.otherKiller];
 		if (attacker->client) {
 			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
 			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
 			AddScore( attacker, ent->r.currentOrigin, 1 );
-			if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && ent && ent->s.eType != ET_NPC && !(ent->r.svFlags & SVF_BOT))
+			if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && ent && ent->s.eType != ET_NPC)
 				G_AddSimpleStat(attacker->client->pers.userName, 1);
 			attacker->client->pers.stats.kills++;//JAPRO STATS
 		}	

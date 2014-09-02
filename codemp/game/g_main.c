@@ -140,6 +140,7 @@ G_InitGame
 ============
 */
 void InitGameAccountStuff(void);
+void G_SpawnWarpLocationsFromCfg(void);
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
@@ -329,7 +330,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
 
-	//setup the teleto functionality - japro
+	//setup the warp functionality, and database stuff - japro
 	G_SpawnWarpLocationsFromCfg();
 	InitGameAccountStuff();
 

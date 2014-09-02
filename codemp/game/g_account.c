@@ -58,11 +58,13 @@ typedef struct UserStats_s {
 
 UserStats_t	UserStats[256];//256 max logged in users per map :\
 
+/*
 typedef struct UserAccount_s {
 	char			username[16];
 	char			password[16];
 	int				lastIP;
 } UserAccount_t;
+*/
 
 /*
 typedef struct PlayerID_s {
@@ -329,10 +331,10 @@ void G_AddToDBFromFile(void) { //loda fixme
 		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE); //Only do this if sqlite done? LODA FIXME
 		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 		trap->FS_Close(f);
-		trap->Print("Loaded previous maps racetimes from %s\n", TEMP_RACE_LOG);
+		trap->Print("Loaded previous map racetimes from %s.\n", TEMP_RACE_LOG);
 	}
 	else 
-		trap->Print("ERROR: Unable to rebuild insert times into database.\n");
+		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
@@ -1247,7 +1249,7 @@ void G_AddSimpleStat(char *username, int type) {
 }
 
 
-void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?
+void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?  Called on shutdown game.
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1865,7 +1867,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
 
-void InitGameAccountStuff( void ) { //Called every mapload
+void InitGameAccountStuff( void ) { //Called every mapload , move the create table stuff to something that gets called every srvr start.. eh?
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1894,4 +1896,60 @@ void InitGameAccountStuff( void ) { //Called every mapload
 	BuildMapHighscores();//Build highscores into memory from database
 
 	CALL_SQLITE (close(db));
+}
+
+void G_SpawnWarpLocationsFromCfg(void) //loda fixme
+{
+	fileHandle_t f;	
+	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_WARPS = 64, args = 1, row = 0;  //use max num warps idk
+	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0};//eh
+	char*	pch;
+
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(filename, Info_ValueForKey(info, "mapname"), sizeof(filename));
+	Q_strlwr(filename);//dat linux
+	Q_strcat(filename, sizeof(filename), "_warps.cfg");
+
+	for(i = 0; i < strlen(filename); i++) {//Replace / in mapname with _ since we cant have a file named mp/duel1.cfg etc.
+		if (filename[i] == '/')
+			filename[i] = '_'; 
+	} 
+
+	fLen = trap->FS_Open(filename, &f, FS_READ);
+
+	if (!f) {
+		Com_Printf ("Couldn't load tele locations from %s\n", filename);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(f);
+		Com_Printf ("Couldn't load tele locations from %s, file is too large\n", filename);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+
+	pch = strtok (buf," \n\t");  //loda fixme why is this broken
+	while (pch != NULL && row < MAX_NUM_WARPS)
+	{
+		if ((args % 5) == 1)
+			Q_strncpyz(warpList[row].name, pch, sizeof(warpList[row].name));
+		else if ((args % 5) == 2)
+			warpList[row].x = atoi(pch);
+		else if ((args % 5) == 3)
+			warpList[row].y = atoi(pch);
+		else if ((args % 5) == 4)
+			warpList[row].z = atoi(pch);
+		else if ((args % 5) == 0) {
+			warpList[row].yaw = atoi(pch);
+			//trap->Print("Warp added: %s, <%i, %i, %i, %i>\n", warpList[row].name, warpList[row].x, warpList[row].y, warpList[row].z, warpList[row].yaw);
+			row++;
+		}
+    	pch = strtok (NULL, " \n\t");
+		args++;
+	}
+
+	Com_Printf ("Loaded warp locations from %s\n", filename);
 }

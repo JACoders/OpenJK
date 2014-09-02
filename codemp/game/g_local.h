@@ -1049,6 +1049,18 @@ typedef struct waypointData_s {
 	int		nodeID;
 } waypointData_t;
 
+//japro
+typedef struct Warp_s {
+	char			name[24];
+	short			x;
+	short			y;
+	short			z;
+	short			yaw;
+} Warp_t;
+
+Warp_t	warpList[64];
+//japro
+
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
@@ -1172,12 +1184,7 @@ typedef struct level_locals_s {
 	fileHandle_t	tempRaceLog;
 	fileHandle_t	playerLog;
 
-	char		warpName[24][32];//japro warps
-	int			warpX[32];
-	int			warpY[32];
-	int			warpZ[32];
-	int			warpYaw[32];
-	char		courseName[24][32];//japro warps	
+	char		courseName[24][32];//japro defrag	
 	int			numCourses;
 //JAPRO - Serverside - Amlockteam - End
 
@@ -1215,7 +1222,6 @@ qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnBoolean( const char *key, const char *defaultString, qboolean *out );
 void		G_SpawnEntitiesFromString( qboolean inSubBSP );
-void		G_SpawnWarpLocationsFromCfg(void);//japro
 char *G_NewString( const char *string );
 
 //
