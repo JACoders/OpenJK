@@ -684,15 +684,18 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	}
 
 	trap->Argv(1, username, sizeof(username));
-	trap->Argv(2, enteredPassword, sizeof(password));
-	trap->Argv(3, newPassword, sizeof(password));
+	trap->Argv(2, enteredPassword, sizeof(enteredPassword));
+	trap->Argv(3, newPassword, sizeof(newPassword));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
 
 	if (Q_stricmp(ent->client->pers.userName, username)) {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect username!\n\"");
 		return;
 	}
 
-	Q_strlwr(newPassword);
+	Q_CleanStr(enteredPassword);
 	Q_CleanStr(newPassword);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -725,7 +728,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (finalize(stmt));
 
-		trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\""); //loda fixme check if this executed
 	}
 	else {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
@@ -750,7 +753,7 @@ void Svcmd_ChangePass_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strlwr(newPassword);
+
 	Q_CleanStr(newPassword);
 
 	if (!CheckUserExists(username)) {
@@ -1562,6 +1565,9 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	}
 
 	trap->Argv(1, username, sizeof(username));
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
 
 	if (trap->Argc() == 5) {
 		trap->Argv(2, courseNameFull, sizeof(courseNameFull));
