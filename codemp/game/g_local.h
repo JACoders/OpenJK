@@ -1052,9 +1052,9 @@ typedef struct waypointData_s {
 //japro
 typedef struct Warp_s {
 	char			name[24];
-	short			x;
-	short			y;
-	short			z;
+	int				x;
+	int				y;
+	int				z;
 	short			yaw;
 } Warp_t;
 
