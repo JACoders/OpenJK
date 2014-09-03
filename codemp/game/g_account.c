@@ -1376,7 +1376,7 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	CALL_SQLITE (finalize(stmt));
 #endif
 
-	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM Temp GROUP BY username, coursename, style))";
+	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
@@ -1384,7 +1384,6 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	//loda fixme, maybe remake table or something.. ?
 
 	CALL_SQLITE (close(db));
-
 
 	trap->Print("Cleaned up racetimes\n");
 }
