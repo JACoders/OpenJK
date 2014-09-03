@@ -3256,7 +3256,7 @@ void ClientThink_real( gentity_t *ent ) {
 							if (weapon == WP_ROCKET_LAUNCHER)
 								ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 3;
 							else
-								ent->client->ps.ammo[weaponData[weapon].ammoIndex] = int(ammoData[weaponData[weapon].ammoIndex].max * 0.5); //gun duel ammo.. fix this
+								ent->client->ps.ammo[weaponData[weapon].ammoIndex] = (int)(ammoData[weaponData[weapon].ammoIndex].max * 0.5); //gun duel ammo.. fix this
 						}
 					}			
 				}
