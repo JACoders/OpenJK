@@ -573,6 +573,11 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	trap->Argv(1, username, sizeof(username));
 	trap->Argv(2, enteredPassword, sizeof(password));
 
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_CleanStr(enteredPassword);
+
 	Q_strncpyz(strIP, ent->client->sess.IP, sizeof(strIP));
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
@@ -770,6 +775,7 @@ void Svcmd_ClearIP_f(void)
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
+	int s;
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /clearIP <username>\n");
@@ -791,8 +797,15 @@ void Svcmd_ClearIP_f(void)
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE)
+		trap->Print( "IP Cleared.\n");
+	else
+		trap->Print( "Error: Could not write to database.\n");
+
 	CALL_SQLITE (finalize(stmt));
-	trap->Print( "IP Cleared.\n");
 	CALL_SQLITE (close(db));
 }
 
@@ -803,6 +816,7 @@ void Svcmd_Register_f(void)
     sqlite3_stmt * stmt;
 	char username[16], password[16];
 	time_t	rawtime;
+	int s;
 
 	if (trap->Argc() != 3) {
 		trap->Print( "Usage: /register <username> <password>\n");
@@ -814,7 +828,7 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
-	Q_strlwr(password);
+
 	Q_CleanStr(password);
 
 	if (CheckUserExists(username)) {
@@ -832,9 +846,15 @@ void Svcmd_Register_f(void)
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
     CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
 
-	trap->Print( "Account created.\n");
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE)
+		trap->Print( "Account created.\n");
+	else
+		trap->Print( "Error: Could not write to database.\n");
+
+	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 }
 
@@ -1028,6 +1048,11 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	trap->Argv(1, username, sizeof(username));
 	trap->Argv(2, password, sizeof(password));
 
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_CleanStr(password);
+
 	if (CheckUserExists(username)) {
 		trap->SendServerCommand(ent-g_entities, "print \"This account name has already been taken!\n\"");
 		return;
@@ -1077,11 +1102,19 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
 	CALL_SQLITE (bind_int64 (stmt, 4, ip));
     CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+	s = sqlite3_step(stmt);
+
+	if (s == SQLITE_DONE) {
+		trap->SendServerCommand(ent-g_entities, "print \"Account created.\n\"");
+		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
+	}
+	else
+		trap->Print( "Error: Could not write to database.\n");
+
+
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
-
-	trap->SendServerCommand(ent-g_entities, "print \"Account created.\n\"");
-	Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 }
 
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
@@ -1561,7 +1594,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	remove_all_chars(tempCourseName, ')');
 
 	for (i = 0; i < level.numCourses; i++) {
-		trap->Print("course, course : %s, %s\n", tempCourseName, level.courseName[i]);
+		//trap->Print("course, course : %s, %s\n", tempCourseName, level.courseName[i]);
 		if (!Q_stricmp(tempCourseName, level.courseName[i])) {
 			course = i;
 			break;
