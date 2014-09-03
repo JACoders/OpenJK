@@ -1776,7 +1776,7 @@ void Cmd_DFRefresh_f(gentity_t *ent) {
 	BuildMapHighscores(); //From db, built to memory
 }
 
-void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people..?
+void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? conditional open/close issue??
 	int			i;
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
@@ -1838,9 +1838,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //Should this only show logged in people.
 				}
 				else if (s != SQLITE_DONE) {
 					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-					CALL_SQLITE (reset (stmt));
-					CALL_SQLITE (clear_bindings (stmt));
-					break;
+					CALL_SQLITE (finalize(stmt));
+					CALL_SQLITE (close(db));
+					return;
 				}
 
 				CALL_SQLITE (reset (stmt));

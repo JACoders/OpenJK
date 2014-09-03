@@ -6067,7 +6067,7 @@ void Cmd_Warp_f(gentity_t *ent)
 		origin[1] = warpList[warpNum].y;
 		origin[2] = warpList[warpNum].z;
 		angles[YAW] = warpList[warpNum].yaw;
-		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse );
+		AmTeleportPlayer( ent, origin, angles, qtrue, qfalse ); //Maybe this should not be droptofloor but whatever
 	}	
 }
 
