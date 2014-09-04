@@ -721,14 +721,22 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	CALL_SQLITE (finalize(stmt));
 
 	if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
+		int s;
+
 		sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, ent->client->pers.userName, -1, SQLITE_STATIC));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
-		CALL_SQLITE (finalize(stmt));
 
-		trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\""); //loda fixme check if this executed
+		s = sqlite3_step(stmt);
+
+		if (s == SQLITE_DONE)
+			trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\""); //loda fixme check if this executed
+		else
+			trap->Print( "Error: Could not write to database.\n");
+
+		CALL_SQLITE (finalize(stmt));
 	}
 	else {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
@@ -799,7 +807,7 @@ void Svcmd_ClearIP_f(void)
 	sql = "UPDATE LocalAccount SET lastip = 0 WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	//CALL_SQLITE_EXPECT (step (stmt), DONE);
 
 	s = sqlite3_step(stmt);
 
@@ -848,8 +856,9 @@ void Svcmd_Register_f(void)
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
-    CALL_SQLITE_EXPECT (step (stmt), DONE);
 
+   //CALL_SQLITE_EXPECT (step (stmt), DONE);
+	
 	s = sqlite3_step(stmt);
 
 	if (s == SQLITE_DONE)
@@ -1036,7 +1045,8 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	char username[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
 	time_t	rawtime;
-	int s, ip;
+	int s;
+	unsigned int ip;
 
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /register <username> <password>\n\"");
@@ -1075,7 +1085,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	if (ip) {
 		sql = "SELECT COUNT(*) FROM LocalAccount WHERE lastip = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int (stmt, 1, ip));
+		CALL_SQLITE (bind_int64 (stmt, 1, ip));
 
 		s = sqlite3_step(stmt);
 
@@ -1104,7 +1114,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
 	CALL_SQLITE (bind_int64 (stmt, 4, ip));
-    CALL_SQLITE_EXPECT (step (stmt), DONE);
+    //CALL_SQLITE_EXPECT (step (stmt), DONE);
 
 	s = sqlite3_step(stmt);
 
