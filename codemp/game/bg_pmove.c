@@ -3662,7 +3662,7 @@ static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal) //l
 			max[j] = pm->maxs[j];
 		}
 		min[2] = max[2] = 0;
-		//VectorScale(dir, 1.001f, dir);//was 1.002... who knows man
+		//VectorScale(dir, 1.002f, dir); // ditching this fixes walljump not registering on some surfaces.. could it be vectorScale fucks with the sign somehow??
 
 		pm->trace(&trace, pm->ps->origin, min, max, dir, pm->ps->clientNum, CONTENTS_SOLID);
 
@@ -3709,11 +3709,11 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	if (pm->ps->weaponTime > 0)
 		return;
 
-	if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
-		return;
+	//if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) > 128)//(forceJumpHeightMax[FORCE_LEVEL_3]-(BG_ForceWallJumpStrength()/2.0f)))
+		//return; //This means if we are more than 128 above our jump, abort..?
 
-	if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
-		return;
+	//if (PM_ForceJumpingUp())//only for bhops loda fixme, uh use forcejumpZstartheight to only do this if we are bhop height :S?
+		//return;
 
 	if (PM_GetMovePhysics() != 6)
 		return;
