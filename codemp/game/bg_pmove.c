@@ -3662,7 +3662,7 @@ static void PlayerTouchWall(int nbTestDir, float maxZnormal, vec3_t *normal) //l
 			max[j] = pm->maxs[j];
 		}
 		min[2] = max[2] = 0;
-		VectorScale(dir, 1.002f, dir);
+		VectorScale(dir, 1.001f, dir);//was 1.002... who knows man
 
 		pm->trace(&trace, pm->ps->origin, min, max, dir, pm->ps->clientNum, CONTENTS_SOLID);
 
