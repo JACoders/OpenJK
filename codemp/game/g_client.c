@@ -3646,8 +3646,9 @@ void ClientSpawn(gentity_t *ent) {
 		if (level.gametype != GT_SIEGE) {
 			if (client->pers.raceMode) {
 				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
-				client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
+				client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR); //give them disruptor not pistol, since pistol fucks dyn crosshair/strafehelper 
 				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+				client->ps.ammo[AMMO_POWERCELL] = 300;
 			}
 			else {
 				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))
