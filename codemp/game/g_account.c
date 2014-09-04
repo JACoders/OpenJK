@@ -318,7 +318,7 @@ void G_AddToDBFromFile(void) { //loda fixme
 		args++;
 	}
 
-	s = sqlite3_step(stmt);
+	s = sqlite3_step(stmt); //this duplicates last one..?
 
 	if (s == SQLITE_DONE) {
 		good = qtrue;
@@ -727,7 +727,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, ent->client->pers.userName, -1, SQLITE_STATIC));
-		CALL_SQLITE_EXPECT (step (stmt), DONE);
+		//CALL_SQLITE_EXPECT (step (stmt), DONE);
 
 		s = sqlite3_step(stmt);
 
