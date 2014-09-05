@@ -1534,7 +1534,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 
 	JP_Trace( &tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
 
-	missile = G_Spawn();
+	missile = G_Spawn(qtrue);
 	G_SetOrigin(missile, tr.endpos);
 	//In SP the impact actually travels as a missile based on the trace fraction, but we're
 	//just going to be instant. -rww
@@ -2349,7 +2349,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	bolt = G_Spawn();
+	bolt = G_Spawn(qtrue);
 	
 	bolt->physicsObject = qtrue;
 
@@ -2903,7 +2903,7 @@ void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire )
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	laserTrap = G_Spawn();
+	laserTrap = G_Spawn(qtrue);
 	
 	//limit to 10 placed at any one time
 	//see how many there are now
@@ -3153,7 +3153,7 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	VectorNormalize (dir);
 
-	bolt = G_Spawn();
+	bolt = G_Spawn(qtrue);
 	bolt->classname = "detpack";
 	bolt->nextthink = level.time + FRAMETIME;
 	bolt->think = G_RunObject;
@@ -3856,7 +3856,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 static void WP_FireLightningGun( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage = 5 * g_weaponDamageScale.value;
+	int			damage = 4 * g_weaponDamageScale.value; // LG nerf even though it didnt nead it vs good players.. woop
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	trace_t		tr;

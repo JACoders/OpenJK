@@ -2346,7 +2346,7 @@ gentity_t *CreateNewDamageBox( gentity_t *ent )
 
 	//We do not want the client to have any real knowledge of the entity whatsoever. It will only
 	//ever be used on the server.
-	dmgBox = G_Spawn();
+	dmgBox = G_Spawn(qtrue);
 	dmgBox->classname = "dmg_box";
 			
 	dmgBox->r.svFlags = SVF_USE_CURRENT_ORIGIN;
@@ -3042,7 +3042,7 @@ void faller_think(gentity_t *ent)
 
 void misc_faller_create( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
-	gentity_t *faller = G_Spawn();
+	gentity_t *faller = G_Spawn(qtrue);
 
 	faller->genericValue10 = G_SoundIndex("sound/player/fallsplat");
 	faller->genericValue9 = G_SoundIndex("sound/chars/stofficer1/misc/falling1");

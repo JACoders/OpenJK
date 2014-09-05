@@ -991,7 +991,7 @@ void InitBodyQue (void) {
 
 	level.bodyQueIndex = 0;
 	for (i=0; i<BODY_QUEUE_SIZE ; i++) {
-		ent = G_Spawn();
+		ent = G_Spawn(qtrue);
 		ent->classname = "bodyque";
 		ent->neverFree = qtrue;
 		level.bodyQue[i] = ent;

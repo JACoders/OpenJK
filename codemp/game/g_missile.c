@@ -282,7 +282,7 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 {
 	gentity_t	*missile;
 
-	missile = G_Spawn();
+	missile = G_Spawn(qfalse);
 	
 	missile->nextthink = level.time + life;
 	missile->think = G_FreeEntity;
@@ -318,7 +318,7 @@ gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life
 	//gclient_t	*client;//JAPRO - Unlagged
 	float dspeed;
 
-	missile = G_Spawn();
+	missile = G_Spawn(qfalse);
 
 	missile->nextthink = level.time + life;
 	missile->think = G_FreeEntity;

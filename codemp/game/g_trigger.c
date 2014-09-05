@@ -2277,7 +2277,7 @@ void asteroid_field_think(gentity_t *self)
 	if ( numAsteroids < self->count )
 	{
 		//need to spawn a new asteroid
-		gentity_t *newAsteroid = G_Spawn();
+		gentity_t *newAsteroid = G_Spawn(qtrue);
 		if ( newAsteroid )
 		{
 			vec3_t startSpot, endSpot, startAngles;

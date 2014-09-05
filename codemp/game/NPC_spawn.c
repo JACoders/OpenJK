@@ -1393,7 +1393,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		}
 	}
 
-	newent = G_Spawn();
+	newent = G_Spawn(qtrue);
 
 	if ( newent == NULL ) 
 	{
@@ -1414,7 +1414,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	//newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
 	G_CreateFakeClient(newent->s.number, &newent->client);
 
-	newent->NPC->tempGoal = G_Spawn();
+	newent->NPC->tempGoal = G_Spawn(qtrue);
 	
 	if ( newent->NPC->tempGoal == NULL ) 
 	{
@@ -1936,7 +1936,7 @@ extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 void NPC_Precache ( gentity_t *spawner );
 void NPC_PrecacheType( char *NPC_type )
 {
-	gentity_t *fakespawner = G_Spawn();
+	gentity_t *fakespawner = G_Spawn(qtrue);
 	if ( fakespawner )
 	{
 		fakespawner->NPC_type = NPC_type;
@@ -3847,7 +3847,7 @@ NPC_Spawn_f
 
 gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle ) 
 {
-	gentity_t		*NPCspawner = G_Spawn();
+	gentity_t		*NPCspawner = G_Spawn(qtrue);
 	vec3_t			forward, end;
 	trace_t			trace;
 

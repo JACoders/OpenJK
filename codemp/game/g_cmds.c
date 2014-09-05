@@ -531,7 +531,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		if ( !it )
 			return;
 
-		it_ent = G_Spawn();
+		it_ent = G_Spawn(qtrue);
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
@@ -1138,8 +1138,15 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 		*/
 
 	} else {
-		// force them to spectators if there aren't any spots free
-		team = TEAM_FREE;
+		if(level.isLockedfree && !forcedToJoin)
+		{
+			trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Free ^7team is locked!\n\""));
+			return;
+		}
+		else
+		{
+			team = TEAM_FREE; // force them to spectators if there aren't any spots free
+		}
 	}
 
 	oldTeam = client->sess.sessionTeam;

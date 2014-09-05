@@ -435,7 +435,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				return;
 			}
 
-			ent = G_Spawn();
+			ent = G_Spawn(qtrue);
 			G_SetOrigin( ent, spawnpoint->s.origin );
 			SP_info_jedimaster_start( ent );
 		}

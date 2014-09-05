@@ -788,7 +788,7 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_t *G_Spawn( void ) {
+gentity_t *G_Spawn( qboolean essential ) {
 	int			i, force;
 	gentity_t	*e;
 
@@ -818,7 +818,10 @@ gentity_t *G_Spawn( void ) {
 			break;
 		}
 	}
-	if ( i == ENTITYNUM_MAX_NORMAL ) {
+	if (!essential && (i > ENTITYNUM_MAX_NORMAL - 8)) { //Just dont spawn the bullet... TODO: add logical entities distinction maybe :/
+		return e;
+	}
+	if ( i > ENTITYNUM_MAX_NORMAL ) {
 		trap->SendServerCommand(-1, "print \"Warning: Entity limit reached!\n\"");
 		if (g_raceMode.integer == 2)
 			trap->SendConsoleCommand( EXEC_APPEND, "g_raceMode 1;map_restart 0;g_raceMode 2\n" ); //kane, no.
@@ -1043,7 +1046,7 @@ gentity_t *G_TempEntity( vec3_t origin, int event ) {
 	gentity_t		*e;
 	vec3_t		snapped;
 
-	e = G_Spawn();
+	e = G_Spawn(qtrue);
 	e->s.eType = ET_EVENTS + event;
 
 	e->classname = "tempEntity";
@@ -1076,7 +1079,7 @@ gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel ) {
 	gentity_t		*e;
 	vec3_t		snapped;
 
-	e = G_Spawn();
+	e = G_Spawn(qtrue);
 
 	e->s.eType = ET_EVENTS + event;
 	e->inuse = qtrue;

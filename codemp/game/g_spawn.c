@@ -933,7 +933,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	static char *gametypeNames[] = {"ffa", "holocron", "jedimaster", "duel", "powerduel", "single", "team", "siege", "ctf", "cty"};
 
 	// get the next free entity
-	ent = G_Spawn();
+	ent = G_Spawn(qtrue);
 
 	for ( i = 0 ; i < level.numSpawnVars ; i++ ) {
 		G_ParseField( level.spawnVars[i][0], level.spawnVars[i][1], ent );
@@ -1620,7 +1620,7 @@ void G_SpawnEntitiesFromString( qboolean inSubBSP ) {
 	if( g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN] && g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN][0] )
 	{//World has a spawn script, but we don't want the world in ICARUS and running scripts,
 		//so make a scriptrunner and start it going.
-		gentity_t *script_runner = G_Spawn();
+		gentity_t *script_runner = G_Spawn(qtrue);
 		if ( script_runner )
 		{
 			script_runner->behaviorSet[BSET_USE] = g_entities[ENTITYNUM_WORLD].behaviorSet[BSET_SPAWN];

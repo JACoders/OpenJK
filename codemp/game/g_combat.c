@@ -3468,7 +3468,7 @@ void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, 
 	}
 
 	VectorCopy( point, newPoint );
-	limb = G_Spawn();
+	limb = G_Spawn(qtrue);
 	limb->classname = "playerlimb";
 
 	/*

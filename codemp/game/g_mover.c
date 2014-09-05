@@ -1544,7 +1544,7 @@ void SpawnPlatTrigger( gentity_t *ent ) {
 
 	// the middle trigger will be a thin trigger just
 	// above the starting position
-	trigger = G_Spawn();
+	trigger = G_Spawn(qtrue);
 	trigger->touch = Touch_PlatCenterTrigger;
 	trigger->r.contents = CONTENTS_TRIGGER;
 	trigger->parent = ent;
