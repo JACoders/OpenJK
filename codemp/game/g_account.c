@@ -734,7 +734,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		if (s == SQLITE_DONE)
 			trap->SendServerCommand(ent-g_entities, "print \"Password Changed.\n\""); //loda fixme check if this executed
 		else
-			trap->Print( "Error: Could not write to database.\n");
+			trap->Print( "Error: Could not write to database: %i.\n", s);
 
 		CALL_SQLITE (finalize(stmt));
 	}
@@ -814,7 +814,7 @@ void Svcmd_ClearIP_f(void)
 	if (s == SQLITE_DONE)
 		trap->Print( "IP Cleared.\n");
 	else
-		trap->Print( "Error: Could not write to database.\n");
+		trap->Print( "Error: Could not write to database: %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -864,7 +864,7 @@ void Svcmd_Register_f(void)
 	if (s == SQLITE_DONE)
 		trap->Print( "Account created.\n");
 	else
-		trap->Print( "Error: Could not write to database.\n");
+		trap->Print( "Error: Could not write to database: %i.\n", s);
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
@@ -1123,7 +1123,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 	}
 	else
-		trap->Print( "Error: Could not write to database.\n");
+		trap->Print( "Error: Could not write to database: %i.\n", s);
 
 
 	CALL_SQLITE (finalize(stmt));

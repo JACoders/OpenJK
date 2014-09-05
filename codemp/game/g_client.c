@@ -2660,8 +2660,11 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		}
 	}
 
-	if ( firstTime ) //loda fixme
+	if ( firstTime ) {//loda fixme
 		Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
+		if (g_playerLog.integer && ent && ent->client && !isBot)
+			G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
+	}
 
 	G_LogPrintf( "ClientConnect: %i [%s] (%s) \"%s^7\"\n", clientNum, tmpIP, guid, client->pers.netname );
 
