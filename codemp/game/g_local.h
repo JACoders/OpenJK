@@ -28,6 +28,7 @@ extern vec3_t gPainPoint;
 #define DUEL_LOG "duels.log" //duellog
 #define RACE_LOG "races.log" //racelog
 #define TEMP_RACE_LOG "currentRaces.tmp" //racelog
+#define TEMP_STAT_LOG "currentStats.tmp" //racelog
 #define	PLAYER_LOG "players.log" //Name, IP, Guid
 
 #define BODY_QUEUE_SIZE		8
@@ -1182,6 +1183,7 @@ typedef struct level_locals_s {
 	fileHandle_t	duelLog;
 	fileHandle_t	raceLog;
 	fileHandle_t	tempRaceLog;
+	fileHandle_t	tempStatLog;
 	fileHandle_t	playerLog;
 
 	char		courseName[24][32];//japro defrag	

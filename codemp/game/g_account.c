@@ -328,7 +328,7 @@ void G_AddToDBFromFile(void) { //loda fixme
 	CALL_SQLITE (close(db));	
 
 	if (good) { //dont delete tmp file if mysql database is not responding 
-		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE); //Only do this if sqlite done? LODA FIXME
+		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
 		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
 		trap->FS_Close(f);
 		trap->Print("Loaded previous map racetimes from %s.\n", TEMP_RACE_LOG);
@@ -1294,8 +1294,107 @@ void G_AddSimpleStat(char *username, int type) {
 		UserStats[row].returns++;
 }
 
+void G_AddSimpleStatsToFile() { //For each item in array.. do an update query?  Called on shutdown game.
+	//fileHandle_t	f;	
+	char	buf[8 * 4096] = {0};
+	int		row;
 
-void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?  Called on shutdown game.
+	Q_strncpyz(buf, "", sizeof(buf));
+
+	for (row = 0; row < 256; row++) { //size of UserStats ?
+
+		if (!UserStats[row].username || !UserStats[row].username[0])
+			break;
+
+		Q_strcat(buf, sizeof(buf), va("%s;%i;%i;%i;%i;%i\n", UserStats[row].username, UserStats[row].kills, UserStats[row].deaths, UserStats[row].suicides, UserStats[row].captures, UserStats[row].returns));
+	}
+
+	trap->FS_Write( buf, strlen( buf ), level.tempStatLog );
+	trap->Print("Adding stats to file: %s\n", TEMP_STAT_LOG);
+}
+
+void G_AddSimpleStatsToDB() {
+	fileHandle_t f;	
+	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
+	char	buf[8 * 1024] = {0}, empty[8] = {0};//eh
+	char*	pch;
+	sqlite3 * db;
+	char * sql;
+	sqlite3_stmt * stmt;
+	UserStats_t	TempUserStats;
+	qboolean good = qfalse;
+
+	fLen = trap->FS_Open(TEMP_STAT_LOG, &f, FS_READ);
+
+	if (!f) {
+		trap->Print("ERROR: Couldn't load stat data from %s\n", TEMP_STAT_LOG);
+		return;
+	}
+	if (fLen >= 8*1024) {
+		trap->FS_Close(f);
+		trap->Print("ERROR: Couldn't load stat data from %s, file is too large\n", TEMP_STAT_LOG);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "UPDATE LocalAccount SET "
+		"kills = kills + ?, deaths = deaths + ?, suicides = suicides + ?, captures = captures + ?, returns = returns + ? "
+		"WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+
+	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
+	pch = strtok (buf,";\n");
+	while (pch != NULL)
+	{
+		if ((args % 6) == 1)
+			Q_strncpyz(TempUserStats.username, pch, sizeof(TempUserStats.username));
+		else if ((args % 6) == 2)
+			TempUserStats.kills = atoi(pch);
+		else if ((args % 6) == 3)
+			TempUserStats.deaths = atoi(pch);
+		else if ((args % 6) == 4)
+			TempUserStats.suicides = atoi(pch);
+		else if ((args % 6) == 5)
+			TempUserStats.captures = atoi(pch);
+		else if ((args % 6) == 0) {
+			TempUserStats.returns = atoi(pch);
+			trap->Print("Inserting stat into db: %s, %i, %i, %i, %i, %i\n", TempUserStats.username, TempUserStats.kills, TempUserStats.deaths, TempUserStats.suicides, TempUserStats.captures, TempUserStats.returns);
+			CALL_SQLITE (bind_int (stmt, 1, TempUserStats.kills));
+			CALL_SQLITE (bind_int (stmt, 2, TempUserStats.deaths));
+			CALL_SQLITE (bind_int (stmt, 3, TempUserStats.suicides));
+			CALL_SQLITE (bind_int (stmt, 4, TempUserStats.captures));
+			CALL_SQLITE (bind_int (stmt, 5, TempUserStats.returns));
+			CALL_SQLITE (bind_text (stmt, 6, TempUserStats.username, -1, SQLITE_STATIC));
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
+		}
+    	pch = strtok (NULL, ";\n");
+		args++;
+	}
+
+	s = sqlite3_step(stmt); //this duplicates last one..?
+	if (s == SQLITE_DONE)
+		good = qtrue;
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));	
+
+	if (good) { //dont delete tmp file if mysql database is not responding 
+		trap->FS_Open(TEMP_STAT_LOG, &f, FS_WRITE); 
+		trap->FS_Write( empty, strlen( empty ), level.tempStatLog );
+		trap->FS_Close(f);
+		trap->Print("Loaded previous map stats from %s.\n", TEMP_STAT_LOG);
+	}
+	else 
+		trap->Print("ERROR: Unable to insert previous map stats into database.\n");
+}
+
+#if 0
+void G_AddSimpleStatsToDB2() { //For each item in array.. do an update query?  Called on shutdown game.
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -1325,6 +1424,7 @@ void G_AddSimpleStatsToDB() { //For each item in array.. do an update query?  Ca
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 }
+#endif
 
 void CleanupLocalRun() { //loda fixme, there really has to be a better way to do this. -Delete from table localrun, all but fastest time, grouped by username, coursename, style.. HOW?
 	sqlite3 * db;

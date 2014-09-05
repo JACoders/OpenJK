@@ -256,6 +256,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	else
 		trap->Print( "WARNING: Couldn't open logfile: "TEMP_RACE_LOG"\n" );
 
+	trap->FS_Open( TEMP_STAT_LOG, &level.tempStatLog, FS_APPEND_SYNC );
+	if ( level.tempStatLog )
+		trap->Print( "Logging to "TEMP_STAT_LOG"\n" );
+	else
+		trap->Print( "WARNING: Couldn't open logfile: "TEMP_STAT_LOG"\n" );
+
 	trap->FS_Open( PLAYER_LOG, &level.playerLog, FS_APPEND_SYNC );
 	if ( level.playerLog )
 		trap->Print( "Logging to "PLAYER_LOG"\n" );
@@ -442,7 +448,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 }
 
-
+void G_AddSimpleStatsToFile();
 void G_AddSimpleStatsToDB();
 /*
 =================
@@ -453,7 +459,9 @@ void G_ShutdownGame( int restart ) {
 	int i = 0;
 	gentity_t *ent;
 
-	G_AddSimpleStatsToDB();//This is for the previous map, so do this here, not in initgame so cl->pers stuff does not get cleared.
+	//This is for the previous map, so do this here, not in initgame so cl->pers stuff does not get cleared.
+	G_AddSimpleStatsToFile();//Add previous maps stats from memory to file.
+	G_AddSimpleStatsToDB();//Add previous maps stats from file to database.  (use file incase database cant be written to, so the stats wont be lost.. we can just add them later).
 
 //	trap->Print ("==== ShutdownGame ====\n");
 
