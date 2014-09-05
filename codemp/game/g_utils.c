@@ -1046,7 +1046,7 @@ gentity_t *G_TempEntity( vec3_t origin, int event ) {
 	gentity_t		*e;
 	vec3_t		snapped;
 
-	e = G_Spawn(qtrue);
+	e = G_Spawn(qfalse);
 	e->s.eType = ET_EVENTS + event;
 
 	e->classname = "tempEntity";
