@@ -1214,7 +1214,7 @@ void Think_SpawnNewDoorTrigger( gentity_t *ent )
 	mins[best] -= 120;
 
 	// create a trigger with this size
-	other = G_Spawn ();
+	other = G_Spawn (qtrue);
 	VectorCopy (mins, other->r.mins);
 	VectorCopy (maxs, other->r.maxs);
 	other->parent = ent;
