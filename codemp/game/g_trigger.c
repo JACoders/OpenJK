@@ -1342,8 +1342,14 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz(style, "jka", sizeof(style));
 		else if (g_movementStyle.integer == 2)
 			Q_strncpyz(style, "qw", sizeof(style));
-		else if (g_movementStyle.integer > 2)
+		else if (g_movementStyle.integer == 3)
 			Q_strncpyz(style, "cpm", sizeof(style));
+		else if (g_movementStyle.integer == 4)
+			Q_strncpyz(style, "q3", sizeof(style));
+		else if (g_movementStyle.integer == 5)
+			Q_strncpyz(style, "pjk", sizeof(style));
+		else if (g_movementStyle.integer == 6)
+			Q_strncpyz(style, "wsw", sizeof(style));
 
 		if (time >= 60.0f) {
 			int minutes, seconds, milliseconds;

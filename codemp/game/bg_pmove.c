@@ -277,15 +277,17 @@ int PM_GetMovePhysics(void)
 #if _GAME
 	if (pm->ps->stats[STAT_RACEMODE])
 		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
-	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 3)
+	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6)
 		return (g_movementStyle.integer);
 	else if (g_movementStyle.integer < 0)
 		return 0;
-	else if (g_movementStyle.integer > 3)
-		return 3;
+	else if (g_movementStyle.integer > 6)
+		return 6;
 #else
 	if (!cgs.isJAPro)
 		return 1;
+	return pm->ps->stats[STAT_MOVEMENTSTYLE];
+	/*
 	else if (pm->ps->stats[STAT_RACEMODE])
 		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
 	else if (cgs.jcinfo & JAPRO_CINFO_CPM)
@@ -294,8 +296,8 @@ int PM_GetMovePhysics(void)
 		return 2;
 	else if (cgs.jcinfo & JAPRO_CINFO_NOSTRAFE)
 		return 0;
+		*/
 #endif
-	return 1;
 }
 
 int PM_GetSaberStance(void)

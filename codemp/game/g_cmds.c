@@ -5896,37 +5896,6 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = style;
 		ent->client->pers.movementStyle = style;
 	}
-
-	/*
-	if (!Q_stricmp("siege", mStyle) || !Q_stricmp("0", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 0;
-		ent->client->pers.movementStyle = 0;
-	}
-	else if (!Q_stricmp("jka", mStyle) || !Q_stricmp("jka", mStyle) || !Q_stricmp("1", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 1;
-		ent->client->pers.movementStyle = 1;
-	}
-	else if (!Q_stricmp("hl2", mStyle) || !Q_stricmp("hl1", mStyle) || !Q_stricmp("hl", mStyle) || !Q_stricmp("qw", mStyle) || !Q_stricmp("2", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 2;
-		ent->client->pers.movementStyle = 2;
-	}
-	else if (!Q_stricmp("cpm", mStyle) || !Q_stricmp("cpma", mStyle) || !Q_stricmp("3", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 3;
-		ent->client->pers.movementStyle = 3;
-	}
-	else if (!Q_stricmp("q3", mStyle) || !Q_stricmp("vq3", mStyle) || !Q_stricmp("4", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 4;
-		ent->client->pers.movementStyle = 4;
-	}
-	else if (!Q_stricmp("pjk", mStyle) || !Q_stricmp("5", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 5;
-		ent->client->pers.movementStyle = 5;
-	}
-	else if (!Q_stricmp("wsw", mStyle) || !Q_stricmp("warsow", mStyle) || !Q_stricmp("6", mStyle)) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = 6;
-		ent->client->pers.movementStyle = 6;
-	}
-	*/
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
@@ -6532,12 +6501,18 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5No force jumps option enabled\n");
 	if (g_tweakJetpack.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Tweaked jetpack physics\n");
-	if (g_movementStyle.integer == 3)
-		Q_strcat(buf, sizeof(buf), "   ^5CPM style air control\n");
-	else if (g_movementStyle.integer == 2)
-		Q_strcat(buf, sizeof(buf), "   ^5QuakeWorld style air control\n");
 	else if (g_movementStyle.integer == 0)
-		Q_strcat(buf, sizeof(buf), "   ^5Siege style air control\n");
+		Q_strcat(buf, sizeof(buf), "   ^5Siege style movement\n");
+	else if (g_movementStyle.integer == 2)
+		Q_strcat(buf, sizeof(buf), "   ^5QuakeWorld style movement\n");
+	else if (g_movementStyle.integer == 3)
+		Q_strcat(buf, sizeof(buf), "   ^5CPM style movement\n");
+	else if (g_movementStyle.integer == 4)
+		Q_strcat(buf, sizeof(buf), "   ^5Q3 style movement\n");
+	else if (g_movementStyle.integer == 5)
+		Q_strcat(buf, sizeof(buf), "   ^5PJK style movement\n");
+	else if (g_movementStyle.integer == 6)
+		Q_strcat(buf, sizeof(buf), "   ^5Warsow style movement\n");
 	if (g_fixRoll.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Tweaked roll\n"); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)

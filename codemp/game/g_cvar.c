@@ -135,6 +135,7 @@ static void CVU_TweakWeapons(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+/*
 static void CVU_MovementStyle(void) {
 	if (g_movementStyle.integer == 1) {
 		jcinfo.integer &= ~JAPRO_CINFO_NOSTRAFE;
@@ -158,6 +159,7 @@ static void CVU_MovementStyle(void) {
 	}
 	trap->Cvar_Set( "jcinfo", va( "%i", jcinfo.integer ) );
 }
+*/
 
 static void CVU_LegDangle(void) {
 	g_LegDangle.integer ?
