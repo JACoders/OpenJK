@@ -5075,9 +5075,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 
 	if (mod == MOD_STUN_BATON && g_tweakWeapons.integer & STUN_HEAL) {
-		if (damage < 1 && damage >= 0)
-			damage = 1;
-		else if (damage > -1 && damage <= 0)
+		//if (damage < 1 && damage >= 0)
+		//	damage = 1;
+		if (damage > -1 && damage <= 0)
 			damage = -1;	
 
 		if (damage < 0 && !targ)
