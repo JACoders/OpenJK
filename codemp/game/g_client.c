@@ -3851,6 +3851,8 @@ void ClientSpawn(gentity_t *ent) {
 			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_EWEB);
 		if (g_startingItems.integer & (1 << HI_CLOAK))
 			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
+		if (g_startingItems.integer & (1 << HI_HEALTHDISP))
+			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
 	}
 
 	if (level.gametype == GT_SIEGE &&

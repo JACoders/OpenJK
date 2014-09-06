@@ -1362,7 +1362,7 @@ void G_AddSimpleStatsToDB() {
 			TempUserStats.captures = atoi(pch);
 		else if ((args % 6) == 0) {
 			TempUserStats.returns = atoi(pch);
-			trap->Print("Inserting stat into db: %s, %i, %i, %i, %i, %i\n", TempUserStats.username, TempUserStats.kills, TempUserStats.deaths, TempUserStats.suicides, TempUserStats.captures, TempUserStats.returns);
+			//trap->Print("Inserting stat into db: %s, %i, %i, %i, %i, %i\n", TempUserStats.username, TempUserStats.kills, TempUserStats.deaths, TempUserStats.suicides, TempUserStats.captures, TempUserStats.returns);
 			CALL_SQLITE (bind_int (stmt, 1, TempUserStats.kills));
 			CALL_SQLITE (bind_int (stmt, 2, TempUserStats.deaths));
 			CALL_SQLITE (bind_int (stmt, 3, TempUserStats.suicides));
@@ -1490,7 +1490,6 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-	
 	sql = "DROP TABLE IF EXISTS Temp";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
