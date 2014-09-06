@@ -3938,7 +3938,7 @@ static void WP_FireLightningGun( gentity_t *ent )
 			} 
 
 			if (g_tweakWeapons.integer & STUN_HEAL)
-				G_Damage( traceEnt, ent, ent, forward, tr.endpos, -damage*0.5, DAMAGE_NO_ARMOR, MOD_STUN_BATON );
+				G_Damage( traceEnt, ent, ent, forward, tr.endpos, -damage*0.25, DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_STUN_BATON );
 			else
 				G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_STUN_BATON );
 			
