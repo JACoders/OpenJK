@@ -209,6 +209,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ROCKET_MORTAR		(1<<15)
 #define ROCKET_REDEEMER		(1<<16)
 #define INFINITE_AMMO		(1<<17)
+#define STUN_HEAL			(1<<18)
 
 //JAPRO - Serverside - Unlagged bitvalues
 #define UNLAGGED_PROJ_NUDGE	(1<<0)

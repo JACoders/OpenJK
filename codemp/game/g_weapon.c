@@ -3937,7 +3937,10 @@ static void WP_FireLightningGun( gentity_t *ent )
 				ent->client->accuracy_hits++;
 			} 
 
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_STUN_BATON );
+			if (g_tweakWeapons.integer & STUN_HEAL)
+				G_Damage( traceEnt, ent, ent, forward, tr.endpos, -damage*0.5, DAMAGE_NO_ARMOR, MOD_STUN_BATON );
+			else
+				G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_STUN_BATON );
 			
 			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
 			tent->s.eventParm = DirToByte( tr.plane.normal );

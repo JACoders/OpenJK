@@ -5072,9 +5072,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage *= g_selfDamageScale.value;
 	}
 
-	if ( damage < 1 ) {
-		damage = 1;
+
+
+	if (mod == MOD_STUN_BATON && g_tweakWeapons.integer & STUN_HEAL) {
+		if (damage < 1 && damage >= 0)
+			damage = 1;
+		else if (damage > -1 && damage <= 0)
+			damage = -1;	
+
+		if (damage < 0 && !targ)
+			damage = 0;	//Dont let them overheal too much.. or revive
+		else if (damage < 0 && targ && ((targ->health >= 125) || (targ->health < 1)))
+			damage = 0;
 	}
+	else if (damage < 1)
+		damage = 1;
 	take = damage;
 
 	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1 && !attacker->client->pers.noDamageNumbers) { //JAPRO - Serverside - Damage numbers  - Start
