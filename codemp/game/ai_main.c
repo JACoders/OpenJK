@@ -4576,7 +4576,7 @@ float BotWeaponCanLead(bot_state_t *bs)
 	switch ( bs->cur_ps.weapon )
 	{
 	case WP_BRYAR_PISTOL:
-		return 0.7f;
+		return 0.8f;
 	case WP_BLASTER:
 		return 0.35f;
 	case WP_BOWCASTER:
@@ -6133,7 +6133,7 @@ void NewBotAI_Draining(bot_state_t *bs)
 	//useTheForce = qtrue;
 	//}
 
-	if (((g_entities[bs->client].health) < 100 && !(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))))
+	if (((g_entities[bs->client].health) < 100 && !(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)))
 		trap->EA_ForcePower(bs->client);
 }
 
@@ -6197,6 +6197,7 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 	const int hisHealth = bs->currentEnemy->health, ourHealth = g_entities[bs->client].health, distance = NewBotAI_GetDist(bs);
 	int hisWeapon = WP_SABER;
 	int bestWeapon = WP_SABER;
+	qboolean altAttack = qfalse;
 
 	if (bs->currentEnemy->client)
 		hisWeapon = bs->currentEnemy->client->ps.weapon;
@@ -6207,26 +6208,40 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 		if (NewBotAI_GetDist(bs) > 1024) {
 			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
-			else if (hisWeapon = WP_DISRUPTOR)
+			else if (hisWeapon == WP_DISRUPTOR)
 				bestWeapon = WP_SABER;
-			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2))
+			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2)) {
 				bestWeapon = WP_DEMP2;
+				altAttack = qtrue;
+			}
 			else if (BotWeaponSelectable(bs, WP_BLASTER))
 				bestWeapon = WP_BLASTER;
-			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL))
+			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
 				bestWeapon = WP_BRYAR_PISTOL;
+				altAttack = qtrue;
+				bs->altChargeTime = 2000;
+			}
 		}
-		else if (NewBotAI_GetDist(bs) > 300 && NewBotAI_GetDist(bs) < 900) {
-			if (BotWeaponSelectableAltFire(bs, WP_BLASTER))
+		else if (NewBotAI_GetDist(bs) > 350 && NewBotAI_GetDist(bs) < 900) {
+			if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
 				bestWeapon = WP_BLASTER;
+				altAttack = qtrue;
+			}
 			else if (BotWeaponSelectableAltFire(bs, WP_REPEATER))
 				bestWeapon = WP_REPEATER;
 			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
-			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL))
+			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
 				bestWeapon = WP_BRYAR_PISTOL;
+				altAttack = qtrue;
+				bs->altChargeTime = 2000;
+			}
+			else if (BotWeaponSelectableAltFire(bs, WP_BOWCASTER)) {
+				bestWeapon = WP_BOWCASTER;
+				altAttack = qtrue;
+			}
 		}
-		else if (NewBotAI_GetDist(bs) < 150) {
+		else if (NewBotAI_GetDist(bs) < 200) {
 			if (BotWeaponSelectable(bs, WP_FLECHETTE))
 				bestWeapon = WP_FLECHETTE;
 			else if (BotWeaponSelectable(bs, WP_REPEATER))
@@ -6235,20 +6250,55 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 				bestWeapon = WP_ROCKET_LAUNCHER;
 			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
 				bestWeapon = WP_CONCUSSION;
-			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER))
+			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
 				bestWeapon = WP_BLASTER;
+				altAttack = qtrue;
+			}
 			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
+			else if (BotWeaponSelectableAltFire(bs, WP_BOWCASTER)) {
+				bestWeapon = WP_BOWCASTER;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_BOWCASTER))
+				bestWeapon = WP_BOWCASTER;
 		}
 	}
+
+	if (altAttack)
+		bestWeapon = bestWeapon + 64;
+
 	return bestWeapon;
+}
+
+int NewBotAI_GetAltCharge(bot_state_t *bs)
+{
+	int weap;
+
+	weap = bs->cur_ps.weapon;
+
+	if (bs->cur_ps.ammo[weaponData[weap].ammoIndex] < weaponData[weap].altEnergyPerShot)
+		return 0;
+
+	if ((bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT) && (level.time - bs->cur_ps.weaponChargeTime) > bs->altChargeTime)
+		return 0;//release charge.. was 2 ?
+	else if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
+		return 1;
+	if (weap == WP_BRYAR_PISTOL)
+		return 1;
+	return 0;
 }
 
 void NewBotAI_GetAttack(bot_state_t *bs)
 {
 	int weapon;
+	qboolean altAttack = qfalse;
 
 	weapon = NewBotAI_GetWeapon(bs);
+	if (weapon >= 64) {
+		weapon = weapon - 64;
+		altAttack = qtrue;
+	}
 	BotSelectWeapon(bs->client, weapon);
 
 	if (bs->cur_ps.weapon == WP_SABER) {//Fullforce saber attacks
@@ -6260,10 +6310,16 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 					trap->EA_Attack(bs->client);
 			}
 		}
+		return;
 	}
-	//else if (ShouldSecondaryFire(bs)) //Ehhh..
-		//trap->EA_Alt_Attack;
-	else if (bs->cur_ps.weapon == weapon)
+	
+	if (!OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) //Dont waste ammo if we cant see them..?
+		return;
+
+	if ((bs->cur_ps.weapon == weapon) && altAttack && NewBotAI_GetAltCharge(bs)) {//Ehhh..
+		trap->EA_Alt_Attack(bs->client);
+	}
+	else if (bs->cur_ps.weapon == weapon) //we are using desired weapon
 		trap->EA_Attack(bs->client);
 }
 
@@ -6304,23 +6360,24 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 {
 	vec3_t a_fo;
 	qboolean useTheForce = qfalse;
+	const float distance = NewBotAI_GetDist(bs);
 
 	VectorSubtract(bs->currentEnemy->client->ps.origin, bs->eye, a_fo);
 	vectoangles(a_fo, a_fo);
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (NewBotAI_GetDist(bs) < 640) && InFieldOfVision(bs->viewangles, 50, a_fo)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (distance < 640) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if ((g_entities[bs->client].health < 25) && (NewBotAI_GetDist(bs) < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
+			if ((g_entities[bs->client].health < 25) && (distance < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
 				if (!bs->currentEnemy->client->ps.saberInFlight) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PUSH;
-					useTheForce = qtrue;
+					useTheForce = qtrue; 
 				}
 			}
 		}	
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_DRAIN)) && ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && NewBotAI_GetDist(bs) < MAX_DRAIN_DISTANCE //level.clients[bs->client].ps.fd.forcePower
-		&& InFieldOfVision(bs->viewangles, 50, a_fo) && g_entities[bs->client].health < 80)) //It should always be in viewangles but double check..
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_DRAIN)) && ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && distance < MAX_DRAIN_DISTANCE //level.clients[bs->client].ps.fd.forcePower
+		&& OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client && g_entities[bs->client].health < 80))) //It should always be in viewangles but double check..
 	{
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
 			if ((bs->cur_ps.fd.forcePower > 30) && (bs->currentEnemy->client->ps.fd.forcePower > 10)) {
@@ -6336,18 +6393,22 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (NewBotAI_GetDist(bs) < 640) && InFieldOfVision(bs->viewangles, 50, a_fo)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (distance < 640) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if (g_entities[bs->client].health > 70) { // General case
+			if (bs->currentEnemy->client->ps.weapon >= WP_BLASTER && distance < 200) { //Pull their weapon
+				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
+				useTheForce = qtrue;
+			}
+			else if (g_entities[bs->client].health > 70) { // General case
 				if (BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				if ((!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))) {
+				if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				else if ((bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel != SS_STRONG) {
+				else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel != SS_STRONG) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
@@ -6356,14 +6417,14 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
-			else if (bs->currentEnemy->health < 20 && (NewBotAI_GetDist(bs) > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1))) {
+			else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && bs->currentEnemy->health < 20 && (distance > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.fd.forcePower < 20))) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_GRIP)) && ((((bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP)) && (NewBotAI_GetDist(bs) < MAX_GRIP_DISTANCE) && (bs->cur_ps.fd.forcePower > 60) && InFieldOfVision(bs->viewangles, 50, a_fo)) &&
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_GRIP)) && ((((bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP)) && (distance < MAX_GRIP_DISTANCE) && (bs->cur_ps.fd.forcePower > 60) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) &&
 		((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) ||
 		(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_SPEED)) ||
 		(bs->currentEnemy->client->ps.fd.forcePower < 20) ||
@@ -6384,7 +6445,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (NewBotAI_GetDist(bs) > 90)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (distance > 90)) {
 		if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)) {
 			if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED;
@@ -6400,7 +6461,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if ((level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
+	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
 		useTheForce = qfalse;
 
 	if (useTheForce) {
@@ -6412,13 +6473,14 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 {
 	vec3_t a_fo;
 	qboolean useTheForce = qfalse;
+	const float distance = NewBotAI_GetDist(bs);
 
 	VectorSubtract(bs->currentEnemy->client->ps.origin, bs->eye, a_fo);
 	vectoangles(a_fo, a_fo);
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (NewBotAI_GetDist(bs) < 640) && (bs->cur_ps.fd.forcePower > 20) && InFieldOfVision(bs->viewangles, 50, a_fo)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (distance < 640) && (bs->cur_ps.fd.forcePower > 20) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if ((g_entities[bs->client].health < 25) && (NewBotAI_GetDist(bs) < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
+			if ((g_entities[bs->client].health < 25) && (distance < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
 				if (!bs->currentEnemy->client->ps.saberInFlight) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PUSH;
 					useTheForce = qtrue;
@@ -6460,18 +6522,22 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (NewBotAI_GetDist(bs) < 640) && InFieldOfVision(bs->viewangles, 50, a_fo)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (distance < 640) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if (g_entities[bs->client].health > 70) { // General case
+			if (bs->currentEnemy->client->ps.weapon >= WP_BLASTER && distance < 200) { //Pull their weapon
+				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
+				useTheForce = qtrue;
+			}
+			else if (g_entities[bs->client].health > 70) { // General case
 				if (BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				if ((!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))) {
+				if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				else if ((bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel != SS_STRONG) {
+				else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel != SS_STRONG) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
@@ -6480,14 +6546,14 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
-			else if (bs->currentEnemy->health < 20 && (NewBotAI_GetDist(bs) > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1))) {
+			else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && bs->currentEnemy->health < 20 && (distance > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.fd.forcePower < 20))) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (NewBotAI_GetDist(bs) > 90)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (distance > 90)) {
 		if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)) {
 			if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED;
@@ -6503,7 +6569,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if ((level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
+	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
 		useTheForce = qfalse;
 
 	if (useTheForce) {
@@ -6821,9 +6887,8 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	}
 	
 	if (closestID == -1) {//Its just us, or they are too far away.
-		if (level.time % 1000 > 500) { //autism
+		if (level.time % 1000 > 500) //autism
 			DoAloneStuff(bs);
-		}
 		return;
 	}
 
