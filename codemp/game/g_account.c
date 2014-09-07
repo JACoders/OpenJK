@@ -253,7 +253,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 	}
 }
 
-void G_AddToDBFromFile(void) { //loda fixme
+void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
 	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh

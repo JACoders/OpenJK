@@ -6764,8 +6764,7 @@ void NewBotAI_StrafeJump(bot_state_t *bs)
 }
 
 void DoAloneStuff(bot_state_t *bs) {
-	qboolean useTheForce;
-
+	qboolean useTheForce = qfalse;
 
 	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_SPEED)) { 
 		level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED; //Turn off speed
@@ -6781,7 +6780,7 @@ void DoAloneStuff(bot_state_t *bs) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB; //Turn off absorb
 			useTheForce = qtrue;
 		}
-		else if ((g_entities[bs->client].health < 100) && (bs->cur_ps.fd.forcePower > 50)) { //Heal if needed
+		else if ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_HEAL)) && (g_entities[bs->client].health < 100) && (bs->cur_ps.fd.forcePower > 50)) { //Heal if needed
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
 			useTheForce = qtrue;
 		}
@@ -6794,10 +6793,8 @@ void DoAloneStuff(bot_state_t *bs) {
 		}
 	}
 
-	if (useTheForce) {
-		trap->EA_ForcePower(bs->client);
-	}
-		
+	if (useTheForce)
+		trap->EA_ForcePower(bs->client);	//Why wont this work?? Heal is selected, this is sent.. yet no healing??	
 }
 
 void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
@@ -6824,14 +6821,14 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	}
 	
 	if (closestID == -1) {//Its just us, or they are too far away.
-		//StandardBotAI(bs, thinktime);//Fall back to default AI if this.
-		DoAloneStuff(bs);
+		if (level.time % 1000 > 500) { //autism
+			DoAloneStuff(bs);
+		}
 		return;
 	}
 
 	bs->currentEnemy = &g_entities[closestID];
 	bs->enemySeenTime = level.time + ENEMY_FORGET_MS;
-
 
 	/*
 	Select the best weapon possible, based on distance from enemy, and available weaopns.
