@@ -1562,7 +1562,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 				   "FROM LocalRun "
 				   "WHERE coursename = ? AND style = ? "
 				   "GROUP by username) " 
-				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 10";
+				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms, end_time LIMIT 10"; //end_time so in case of tie, first one shows up first?
 
 			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));

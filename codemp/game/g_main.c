@@ -3094,6 +3094,11 @@ void G_RunFrame( int levelTime ) {
 	void		*timer_Queues;
 #endif
 
+	if ((unsigned int)levelTime > (1<<31)) {
+		trap->Print ("Auto quitting server %i\n", levelTime);
+		trap->SendConsoleCommand( EXEC_APPEND, "quit\n");
+	}
+
 	if (level.gametype == GT_SIEGE &&
 		g_siegeRespawn.integer &&
 		g_siegeRespawnCheck < level.time)

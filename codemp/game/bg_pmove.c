@@ -298,6 +298,7 @@ int PM_GetMovePhysics(void)
 		return 0;
 		*/
 #endif
+	return 1;
 }
 
 int PM_GetSaberStance(void)
@@ -6972,7 +6973,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
 #ifdef _GAME
-					if (!pm->ps->stats[STAT_RACEMODE])
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & INFINITE_AMMO))
 #endif
 						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].altChargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].altChargeSubTime;
@@ -7013,7 +7014,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
 #ifdef _GAME
-					if (!pm->ps->stats[STAT_RACEMODE])
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & INFINITE_AMMO))
 #endif
 						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].chargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].chargeSubTime;

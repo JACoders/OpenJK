@@ -4073,7 +4073,7 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	//client->ps.stats[STAT_MOVEMENTSTYLE] = client->pers.movementStyle;
+	client->ps.stats[STAT_MOVEMENTSTYLE] = client->pers.movementStyle;
 
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;

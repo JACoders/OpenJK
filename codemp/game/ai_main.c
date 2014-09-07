@@ -559,7 +559,7 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 
 	if (bi->actionflags & ACTION_FORCEPOWER) ucmd->buttons |= BUTTON_FORCEPOWER;
 
-	if (useTime < level.time && Q_irand(1, 10) < 5)
+	if (!g_newBotAI.integer && (useTime < level.time && Q_irand(1, 10) < 5))
 	{ //for now just hit use randomly in case there's something useable around
 		ucmd->buttons |= BUTTON_USE;
 	}
@@ -4576,7 +4576,7 @@ float BotWeaponCanLead(bot_state_t *bs)
 	switch ( bs->cur_ps.weapon )
 	{
 	case WP_BRYAR_PISTOL:
-		return 0.5f;
+		return 0.7f;
 	case WP_BLASTER:
 		return 0.35f;
 	case WP_BOWCASTER:
@@ -5982,11 +5982,16 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 void NewBotAI_GetAim(bot_state_t *bs)
 {
 	vec3_t headlevel, a, ang;
+	float bLeadAmount;
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
 	if (bs->currentEnemy->client)
 		headlevel[2] += bs->currentEnemy->client->ps.viewheight + - 24;//aim at chest?
+
+	bLeadAmount = BotWeaponCanLead(bs);
+	BotAimLeading(bs, headlevel, bLeadAmount);
+	//BotAimOffsetGoalAngles(bs);
 
 	VectorSubtract(headlevel, bs->eye, a);
 	vectoangles(a, ang);
@@ -6187,16 +6192,79 @@ float NewBotAI_GetSpeedTowardsEnemy(bot_state_t *bs)
 	return 0;
 }
 
-void NewBotAI_GetAttack(bot_state_t *bs)
+int NewBotAI_GetWeapon(bot_state_t *bs)
 {
-	g_entities[bs->client].client->ps.fd.saberAnimLevel = SS_STRONG;
+	const int hisHealth = bs->currentEnemy->health, ourHealth = g_entities[bs->client].health, distance = NewBotAI_GetDist(bs);
+	int hisWeapon = WP_SABER;
+	int bestWeapon = WP_SABER;
 
-	if (((NewBotAI_GetSpeedTowardsEnemy(bs) >= 0) && ((NewBotAI_GetDist(bs) / NewBotAI_GetSpeedTowardsEnemy(bs)) < 1.2f)) || (NewBotAI_GetDist(bs) < 64)) {
-		if (g_entities[bs->client].health > 60) {
-			if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || bs->cur_ps.fd.forcePower < 40)
-				trap->EA_Attack(bs->client);
+	if (bs->currentEnemy->client)
+		hisWeapon = bs->currentEnemy->client->ps.weapon;
+
+	//Dependant on distance from enemy, enemys health, enemys weapon, and our health?
+
+	if (bs->currentEnemy) {
+		if (NewBotAI_GetDist(bs) > 1024) {
+			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else if (hisWeapon = WP_DISRUPTOR)
+				bestWeapon = WP_SABER;
+			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2))
+				bestWeapon = WP_DEMP2;
+			else if (BotWeaponSelectable(bs, WP_BLASTER))
+				bestWeapon = WP_BLASTER;
+			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL))
+				bestWeapon = WP_BRYAR_PISTOL;
+		}
+		else if (NewBotAI_GetDist(bs) > 300 && NewBotAI_GetDist(bs) < 900) {
+			if (BotWeaponSelectableAltFire(bs, WP_BLASTER))
+				bestWeapon = WP_BLASTER;
+			else if (BotWeaponSelectableAltFire(bs, WP_REPEATER))
+				bestWeapon = WP_REPEATER;
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL))
+				bestWeapon = WP_BRYAR_PISTOL;
+		}
+		else if (NewBotAI_GetDist(bs) < 150) {
+			if (BotWeaponSelectable(bs, WP_FLECHETTE))
+				bestWeapon = WP_FLECHETTE;
+			else if (BotWeaponSelectable(bs, WP_REPEATER))
+				bestWeapon = WP_REPEATER;
+			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+				bestWeapon = WP_ROCKET_LAUNCHER;
+			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
+				bestWeapon = WP_CONCUSSION;
+			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER))
+				bestWeapon = WP_BLASTER;
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
 		}
 	}
+	return bestWeapon;
+}
+
+void NewBotAI_GetAttack(bot_state_t *bs)
+{
+	int weapon;
+
+	weapon = NewBotAI_GetWeapon(bs);
+	BotSelectWeapon(bs->client, weapon);
+
+	if (bs->cur_ps.weapon == WP_SABER) {//Fullforce saber attacks
+		g_entities[bs->client].client->ps.fd.saberAnimLevel = SS_STRONG;
+
+		if (((NewBotAI_GetSpeedTowardsEnemy(bs) >= 0) && ((NewBotAI_GetDist(bs) / NewBotAI_GetSpeedTowardsEnemy(bs)) < 1.2f)) || (NewBotAI_GetDist(bs) < 64)) {
+			if (g_entities[bs->client].health > 60) {
+				if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || bs->cur_ps.fd.forcePower < 40)
+					trap->EA_Attack(bs->client);
+			}
+		}
+	}
+	//else if (ShouldSecondaryFire(bs)) //Ehhh..
+		//trap->EA_Alt_Attack;
+	else if (bs->cur_ps.weapon == weapon)
+		trap->EA_Attack(bs->client);
 }
 
 void NewBotAI_GetMovement(bot_state_t *bs)
@@ -6471,7 +6539,7 @@ void NewBotAI_DSvDS(bot_state_t *bs)
 		NewBotAI_Speeding(bs);
 	}
 
-	NewBotAI_GetMovement(bs);
+	NewBotAI_GetMovement(bs); //Depends on the weapon enemy is using (how to dodge, etc).
 	NewBotAI_GetDSForcepower(bs);
 	NewBotAI_GetAttack(bs);
 }
@@ -6695,11 +6763,48 @@ void NewBotAI_StrafeJump(bot_state_t *bs)
 	}
 }
 
-void NewBotAI(bot_state_t *bs, float thinktime)
+void DoAloneStuff(bot_state_t *bs) {
+	qboolean useTheForce;
+
+
+	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_SPEED)) { 
+		level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED; //Turn off speed
+		useTheForce = qtrue;
+	}
+
+	else if (bs->cur_ps.fd.forceSide == FORCE_LIGHTSIDE) {
+		if (bs->cur_ps.fd.forcePowersActive & (1 << FP_PROTECT)) { 
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_PROTECT; //Turn off protect
+			useTheForce = qtrue;
+		}
+		else if (bs->cur_ps.fd.forcePowersActive & (1 << FP_ABSORB)) { 
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB; //Turn off absorb
+			useTheForce = qtrue;
+		}
+		else if ((g_entities[bs->client].health < 100) && (bs->cur_ps.fd.forcePower > 50)) { //Heal if needed
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
+			useTheForce = qtrue;
+		}
+	}
+
+	else if (bs->cur_ps.fd.forceSide == FORCE_DARKSIDE) {
+		if (bs->cur_ps.fd.forcePowersActive & (1 << FP_RAGE)) { 
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_RAGE; //Turn off rage
+			useTheForce = qtrue;
+		}
+	}
+
+	if (useTheForce) {
+		trap->EA_ForcePower(bs->client);
+	}
+		
+}
+
+void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 {
 	int closestID = -1;
 
-	if (g_entities[bs->client].health < 1) { //We are dead!
+	if (g_entities[bs->client].health < 1) { //We are dead, so respawn!
 		trap->EA_Attack(bs->client);
 		return;
 	}
@@ -6719,17 +6824,61 @@ void NewBotAI(bot_state_t *bs, float thinktime)
 	}
 	
 	if (closestID == -1) {//Its just us, or they are too far away.
-		StandardBotAI(bs, thinktime);//Fall back to default AI if this.
+		//StandardBotAI(bs, thinktime);//Fall back to default AI if this.
+		DoAloneStuff(bs);
 		return;
 	}
 
 	bs->currentEnemy = &g_entities[closestID];
 	bs->enemySeenTime = level.time + ENEMY_FORGET_MS;
 
-	if (NewBotAI_GetDist(bs) > 512) {
+
+	/*
+	Select the best weapon possible, based on distance from enemy, and available weaopns.
+	If we are low on health, and we have drain, rever to DS code?
+	Also a function of our health and their weapon and distance, if we should use saber to block shot.
+	
+	CASES:  
+		Incoming projectile, Push it away if possible, and continue code.
+
+
+
+
+		Attack/Aim depends on: 
+			Weapon, which depends on
+				Distance, their health, our health.
+
+		Movement depends on:
+			Distance, their weapon, our health...?
+
+
+
+		Super to target: (within flipkick/saber range)
+			If they have saber out
+				Use the best splash dmg weapon we have that outdmgs saber, rocket/orbs/flechette alt fire etc.  Use Fullforce code for forcepowers if we have them.
+				If we dont have any good weapons, do the fullforce code, if we have fullforce and can flipkick etc..?
+				If we just have saber, do the saber code.
+			If they dont have a saber out
+				Use the best weapon available... repeater primary, e11 alt fire, etc.  Use Fullforce code for forcepowers if we have them.
+				If we dont have that use the fullforce code ..
+				If we dont have FF use saber.
+
+		Close range:  (out of flipkick/saber range, within pull range)
+			If they have saber out, use best weapon for the job.
+			If they have a gun out that can be blocked by saber, we should use saber, atleast until we heal..?
+
+		Long range: Out of pull range
+			Try to close distance unless we have a sniper.
+			Use strafejumping.
+
+	*/
+
+	/*
+	if (NewBotAI_GetDist(bs) > 1024) { //Chase mode, only do this if
 		NewBotAI_StrafeJump(bs);
 		return;
 	}
+	*/
 
 	if (g_forcePowerDisable.integer != 163837 || g_flipKick.integer) {
 		if (bs->currentEnemy->client->ps.fd.forceSide == FORCE_LIGHTSIDE) { // They are LS.
