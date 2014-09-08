@@ -5958,59 +5958,7 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 	}
 }
 
-void NewBotAI_LeadAim(bot_state_t *bs, vec3_t headlevel, float leadAmount, float distance)
-{
-	int x;
-	vec3_t predictedSpot;
-	vec3_t movementVector;
-	vec3_t a, ang;
-	float vtotal;
-
-	if (!bs->currentEnemy || !bs->currentEnemy->client)
-		return;
-
-	if (distance < 1)
-		return;
-
-	vtotal = 0;
-
-	if (bs->currentEnemy->client->ps.velocity[0] < 0)
-		vtotal += -bs->currentEnemy->client->ps.velocity[0];
-	else
-		vtotal += bs->currentEnemy->client->ps.velocity[0];
-
-	if (bs->currentEnemy->client->ps.velocity[1] < 0)
-		vtotal += -bs->currentEnemy->client->ps.velocity[1];
-	else
-		vtotal += bs->currentEnemy->client->ps.velocity[1];
-
-	if (bs->currentEnemy->client->ps.velocity[2] < 0)
-		vtotal += -bs->currentEnemy->client->ps.velocity[2];
-	else
-		vtotal += bs->currentEnemy->client->ps.velocity[2];
-
-	VectorCopy(bs->currentEnemy->client->ps.velocity, movementVector);
-	VectorNormalize(movementVector);
-	x = distance*leadAmount; //hardly calculated with an exact science, but it works
-
-	if (vtotal > 400)
-		vtotal = 400;
-
-	if (vtotal)
-		x = (distance*0.9)*leadAmount*(vtotal*0.0012); //hardly calculated with an exact science, but it works
-	else
-		x = (distance*0.9)*leadAmount; //hardly calculated with an exact science, but it works
-
-	predictedSpot[0] = headlevel[0] + (movementVector[0]*x);
-	predictedSpot[1] = headlevel[1] + (movementVector[1]*x);
-	predictedSpot[2] = headlevel[2] + (movementVector[2]*x);
-
-	VectorSubtract(predictedSpot, bs->eye, a);
-	vectoangles(a, ang);
-	VectorCopy(ang, bs->goalAngles);
-}
-
-void NewBotAI_GetAim(bot_state_t *bs, float distance)
+void NewBotAI_GetAim(bot_state_t *bs)
 {
 	vec3_t headlevel;
 	float bLeadAmount;
@@ -6021,7 +5969,7 @@ void NewBotAI_GetAim(bot_state_t *bs, float distance)
 		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
 
 	bLeadAmount = BotWeaponCanLead(bs);
-	NewBotAI_LeadAim(bs, headlevel, bLeadAmount, distance);
+	BotAimLeading(bs, headlevel, bLeadAmount);
 	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
 }
 
@@ -6032,7 +5980,7 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
 	if (bs->currentEnemy->client)
-		headlevel[2] += bs->currentEnemy->client->ps.viewheight + - 24;//aim at chest?
+		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
 
 	VectorSubtract(headlevel, bs->eye, a);
 	vectoangles(a, ang);
@@ -6400,7 +6348,7 @@ int NewBotAI_GetAltCharge(bot_state_t *bs)
 	return 1;
 }
 
-void NewBotAI_GetAttack(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_GetAttack(bot_state_t *bs)
 {
 	int weapon;
 	qboolean altAttack = qfalse;
@@ -6416,7 +6364,7 @@ void NewBotAI_GetAttack(bot_state_t *bs, float distance, qboolean lineOfSight)
 	if (bs->cur_ps.weapon == WP_SABER) {//Fullforce saber attacks
 		g_entities[bs->client].client->ps.fd.saberAnimLevel = SS_STRONG;
 
-		if (((speed >= 0) && ((distance / speed) < 1.2f)) || (distance < 64)) {
+		if (((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 1.2f)) || (bs->frame_Enemy_Len < 64)) {
 			if (g_entities[bs->client].health > 60) {
 				if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || bs->cur_ps.fd.forcePower < 40)
 					trap->EA_Attack(bs->client);
@@ -6425,7 +6373,7 @@ void NewBotAI_GetAttack(bot_state_t *bs, float distance, qboolean lineOfSight)
 		return;
 	}
 	
-	if (!OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) //Dont waste ammo if we cant see them..?
+	if (!bs->frame_Enemy_Vis) //Dont waste ammo if we cant see them..?
 		return;
 
 	if ((bs->cur_ps.weapon == weapon) && altAttack && NewBotAI_GetAltCharge(bs)) {//Ehhh..
@@ -6435,18 +6383,20 @@ void NewBotAI_GetAttack(bot_state_t *bs, float distance, qboolean lineOfSight)
 		trap->EA_Attack(bs->client);
 }
 
-void NewBotAI_GetMovement(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_GetMovement(bot_state_t *bs)
 {
-	if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (distance < 450)) {
+	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+
+	if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
 		//trap_EA_MoveBack(bs->client);//Always move forward i guess	
 		if (level.time % 1000 > 500)  {
-			if (distance < 140)
+			if (bs->frame_Enemy_Len < 140)
 				trap->EA_MoveForward(bs->client);//Always move forward i guess	
 			else
 				trap->EA_MoveLeft(bs->client);//Always move forward i guess	
 		}
 		else {
-			if (distance < 140)
+			if (bs->frame_Enemy_Len < 140)
 				trap->EA_MoveForward(bs->client);//Always move forward i guess	
 			else
 				trap->EA_MoveRight(bs->client);//Always move forward i guess	
@@ -6455,8 +6405,8 @@ void NewBotAI_GetMovement(bot_state_t *bs, float distance, qboolean lineOfSight)
 	else
 		trap->EA_MoveForward(bs->client);//Always move forward i guess	
 
-	if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || ((NewBotAI_GetSpeedTowardsEnemy(bs) >= 0) && ((distance / NewBotAI_GetSpeedTowardsEnemy(bs)) < 0.63f)) || 
-		(distance < 64) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
+	if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || ((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 0.63f)) || 
+		(bs->frame_Enemy_Len < 64) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
 			if ((bs->cur_ps.fd.forcePower > 6)) 
 				NewBotAI_Flipkick(bs);
 	}
@@ -6510,7 +6460,7 @@ qboolean NewBotAI_IsEnemyPullable(bot_state_t *bs) {
 	return qfalse;
 }
 
-int NewBotAI_GetPull(bot_state_t *bs, float distance, qboolean lineOfSight) {
+int NewBotAI_GetPull(bot_state_t *bs) {
 	const int ourHealth = g_entities[bs->client].health, hisHealth = bs->currentEnemy->health, ourForce = bs->cur_ps.fd.forcePower;
 	int weight = ourHealth - hisHealth;
 
@@ -6518,9 +6468,9 @@ int NewBotAI_GetPull(bot_state_t *bs, float distance, qboolean lineOfSight) {
 		return 0;
 	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL))
 		return 0;
-	if (distance > 640) //Check pull range..
+	if (bs->frame_Enemy_Len > 640) //Check pull range..
 		return 0;
-	if (!lineOfSight)
+	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		return 0;
@@ -6534,7 +6484,7 @@ int NewBotAI_GetPull(bot_state_t *bs, float distance, qboolean lineOfSight) {
 	if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
 		weight *= 0.5f; //Dont cancel a charge unless its important
 
-	if (distance < 200 && ourForce >= 20) { //Pulling their weapon should be top priority always
+	if (bs->frame_Enemy_Len < 200 && ourForce >= 20) { //Pulling their weapon should be top priority always
 		if (bs->currentEnemy->client->ps.weapon < WP_BLASTER)
 			return 100;
 	}
@@ -6548,28 +6498,28 @@ int NewBotAI_GetPull(bot_state_t *bs, float distance, qboolean lineOfSight) {
 	return 0;
 }
 
-int NewBotAI_GetPush(bot_state_t *bs, float distance, qboolean lineOfSight) {
+int NewBotAI_GetPush(bot_state_t *bs) {
 	const int ourHealth = g_entities[bs->client].health;
 
 	if (g_forcePowerDisable.integer & (1 << FP_PUSH))
 		return 0;
 	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH))
 		return 0;
-	if (distance > 640)
+	if (bs->frame_Enemy_Len > 640)
 		return 0;
-	if (!lineOfSight)
+	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		return 0;
 
-	if (NewBotAI_IsEnemyPullable(bs) && (ourHealth < 25) && (distance < 160) && (bs->currentEnemy->client->ps.weapon == WP_SABER)) {
+	if (NewBotAI_IsEnemyPullable(bs) && (ourHealth < 25) && (bs->frame_Enemy_Len < 160) && (bs->currentEnemy->client->ps.weapon == WP_SABER)) {
 		return 100; //Only time we should push atm is to get them off us.. to prevent the flipkick
 	}
 
 	return 0;
 }
 
-int NewBotAI_GetDrain(bot_state_t *bs, float distance, qboolean lineOfSight) {
+int NewBotAI_GetDrain(bot_state_t *bs) {
 	const int ourHealth = g_entities[bs->client].health, hisHealth = bs->currentEnemy->health, ourForce = bs->cur_ps.fd.forcePower, hisForce = bs->currentEnemy->client->ps.fd.forcePower;
 	int weight = 100;
 
@@ -6577,9 +6527,9 @@ int NewBotAI_GetDrain(bot_state_t *bs, float distance, qboolean lineOfSight) {
 		return 0;
 	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_DRAIN))
 		return 0;
-	if (distance > MAX_DRAIN_DISTANCE)
+	if (bs->frame_Enemy_Len > MAX_DRAIN_DISTANCE)
 		return 0;
-	if (!lineOfSight)
+	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		return 0;
@@ -6598,7 +6548,7 @@ int NewBotAI_GetDrain(bot_state_t *bs, float distance, qboolean lineOfSight) {
 	return 0;
 }
 
-int NewBotAI_GetGrip(bot_state_t *bs, float distance, qboolean lineOfSight) {
+int NewBotAI_GetGrip(bot_state_t *bs) {
 	const int ourHealth = g_entities[bs->client].health, hisHealth = bs->currentEnemy->health, ourForce = bs->cur_ps.fd.forcePower, hisForce = bs->currentEnemy->client->ps.fd.forcePower;
 	int weight = 100;
 
@@ -6606,9 +6556,9 @@ int NewBotAI_GetGrip(bot_state_t *bs, float distance, qboolean lineOfSight) {
 		return 0;
 	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP))
 		return 0;
-	if (distance > MAX_GRIP_DISTANCE)
+	if (bs->frame_Enemy_Len > MAX_GRIP_DISTANCE)
 		return 0;
-	if (!lineOfSight)
+	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		return 0;
@@ -6630,7 +6580,7 @@ int NewBotAI_GetGrip(bot_state_t *bs, float distance, qboolean lineOfSight) {
 	return 0;
 }
 
-void NewBotAI_GetDSForcepower(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_GetDSForcepower(bot_state_t *bs)
 {
 	vec3_t a_fo;
 	qboolean useTheForce = qfalse;
@@ -6639,10 +6589,10 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 	VectorSubtract(bs->currentEnemy->client->ps.origin, bs->eye, a_fo);
 	vectoangles(a_fo, a_fo);
 
-	pullWeight = NewBotAI_GetPull(bs, distance, lineOfSight);
-	pushWeight = NewBotAI_GetPush(bs, distance, lineOfSight);
-	drainWeight = NewBotAI_GetDrain(bs, distance, lineOfSight);
-	gripWeight = NewBotAI_GetGrip(bs, distance, lineOfSight);
+	pullWeight = NewBotAI_GetPull(bs);
+	pushWeight = NewBotAI_GetPush(bs);
+	drainWeight = NewBotAI_GetDrain(bs);
+	gripWeight = NewBotAI_GetGrip(bs);
 
 	//trap->Print("Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
 
@@ -6663,7 +6613,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 		useTheForce = qtrue;
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (distance > 90)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (bs->frame_Enemy_Len > 90)) {
 		if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)) {
 			if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED;
@@ -6686,7 +6636,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 		trap->EA_ForcePower(bs->client);
 }
 
-void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_GetLSForcepower(bot_state_t *bs)
 {
 	vec3_t a_fo;
 	qboolean useTheForce = qfalse;
@@ -6694,9 +6644,9 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 	VectorSubtract(bs->currentEnemy->client->ps.origin, bs->eye, a_fo);
 	vectoangles(a_fo, a_fo);
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (distance < 640) && (bs->cur_ps.fd.forcePower > 20) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PUSH)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)) && (bs->frame_Enemy_Len < 640) && (bs->cur_ps.fd.forcePower > 20) && bs->frame_Enemy_Vis) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if ((g_entities[bs->client].health < 25) && (distance < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
+			if ((g_entities[bs->client].health < 25) && (bs->frame_Enemy_Len < 192) && (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1)) {
 				if (!bs->currentEnemy->client->ps.saberInFlight) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PUSH;
 					useTheForce = qtrue;
@@ -6705,9 +6655,9 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 		}	
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (distance < 640) && OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PULL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)) && (bs->frame_Enemy_Len < 640) && bs->frame_Enemy_Vis) {
 		if (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
-			if (bs->currentEnemy->client->ps.weapon >= WP_BLASTER && distance < 200) { //Pull their weapon
+			if (bs->currentEnemy->client->ps.weapon >= WP_BLASTER && bs->frame_Enemy_Len < 200) { //Pull their weapon
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
@@ -6729,7 +6679,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
-			else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && bs->currentEnemy->health < 40 && (distance > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.fd.forcePower < 20))) {
+			else if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && bs->currentEnemy->health < 40 && (bs->frame_Enemy_Len > 90) && ((BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) || (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.fd.forcePower < 20))) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 				useTheForce = qtrue;
 			}
@@ -6769,7 +6719,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 		}
 	}
 
-	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (distance > 90)) {
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (bs->frame_Enemy_Len > 90)) {
 		if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB)) {
 			if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 				level.clients[bs->client].ps.fd.forcePowerSelected = FP_SPEED;
@@ -6793,9 +6743,9 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 	}
 }
 
-void NewBotAI_DSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_DSvDS(bot_state_t *bs)
 {
-	NewBotAI_GetAim(bs, distance); //If a saber is the closest entity and it is in flight, aim at it?
+	NewBotAI_GetAim(bs); //If a saber is the closest entity and it is in flight, aim at it?
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6821,14 +6771,14 @@ void NewBotAI_DSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 		NewBotAI_Speeding(bs);
 	}
 
-	NewBotAI_GetMovement(bs, distance, lineOfSight);
-	NewBotAI_GetDSForcepower(bs, distance, lineOfSight);
-	NewBotAI_GetAttack(bs, distance, lineOfSight);
+	NewBotAI_GetMovement(bs);
+	NewBotAI_GetDSForcepower(bs);
+	NewBotAI_GetAttack(bs);
 }
 
-void NewBotAI_DSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_DSvLS(bot_state_t *bs)
 {
-	NewBotAI_GetAim(bs, distance);
+	NewBotAI_GetAim(bs);
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6849,14 +6799,14 @@ void NewBotAI_DSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
 		NewBotAI_Speeding(bs);
 	}
 
-	NewBotAI_GetMovement(bs, distance, lineOfSight);
-	NewBotAI_GetDSForcepower(bs, distance, lineOfSight);
-	NewBotAI_GetAttack(bs, distance, lineOfSight);
+	NewBotAI_GetMovement(bs);
+	NewBotAI_GetDSForcepower(bs);
+	NewBotAI_GetAttack(bs);
 }
 
-void NewBotAI_LSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_LSvDS(bot_state_t *bs)
 {
-	NewBotAI_GetAim(bs, distance);
+	NewBotAI_GetAim(bs);
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6870,14 +6820,14 @@ void NewBotAI_LSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		NewBotAI_Absorbing(bs);
 	
-	NewBotAI_GetMovement(bs, distance, lineOfSight);
-	NewBotAI_GetLSForcepower(bs, distance, lineOfSight);
-	NewBotAI_GetAttack(bs, distance, lineOfSight);
+	NewBotAI_GetMovement(bs);
+	NewBotAI_GetLSForcepower(bs);
+	NewBotAI_GetAttack(bs);
 }
 
-void NewBotAI_LSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_LSvLS(bot_state_t *bs)
 {
-	NewBotAI_GetAim(bs, distance);
+	NewBotAI_GetAim(bs);
 	
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6891,17 +6841,17 @@ void NewBotAI_LSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
 	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		NewBotAI_Absorbing(bs);
 
-	NewBotAI_GetMovement(bs, distance, lineOfSight);
-	NewBotAI_GetLSForcepower(bs, distance, lineOfSight);
-	NewBotAI_GetAttack(bs, distance, lineOfSight);
+	NewBotAI_GetMovement(bs);
+	NewBotAI_GetLSForcepower(bs);
+	NewBotAI_GetAttack(bs);
 }
 
-void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
+void NewBotAI_NF(bot_state_t *bs)
 {
 	qboolean swing = qfalse;
 	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 
-	NewBotAI_GetAim(bs, distance);
+	NewBotAI_GetAim(bs);
 	
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6915,10 +6865,10 @@ void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
 	if (g_entities[bs->client].client->ps.saberMove > 1)
 		swing = qtrue;
 
-	if (distance >= 325) {
+	if (bs->frame_Enemy_Len >= 325) {
 		trap->EA_MoveForward(bs->client); 
 	}
-	else if (distance <= 200) {//Closerange
+	else if (bs->frame_Enemy_Len <= 200) {//Closerange
 		if (g_entities[bs->client].client->ps.saberMove > 1) {
 			if (bs->origin[2] < bs->currentEnemy->client->ps.origin[2]) {
 				trap->EA_Jump(bs->client);
@@ -6950,7 +6900,7 @@ void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
 				trap->EA_Attack(bs->client);
 		}
 	}
-	else if ((speed >= 125) && ((distance / speed) > 0.7f)) {//Midrange
+	else if ((speed >= 125) && ((bs->frame_Enemy_Len / speed) > 0.7f)) {//Midrange
 		if ((sqrt(bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0] +  bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1])) > 240.0f) {
 			trap->EA_Jump(bs->client);
 			if (BS_GroundDistance(bs) > 20 && g_entities[bs->client].client->ps.saberMove <= 1) {
@@ -6966,7 +6916,7 @@ void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
 		trap->EA_MoveForward(bs->client); 
 	}
 	
-	if (swing && distance < 200)
+	if (swing && bs->frame_Enemy_Len < 200)
 	{
 		vec3_t saberEnd, saberAngs;
 		VectorCopy(g_entities[bs->client].client->saber[0].blade[0].trail.tip, saberEnd); //Vector of the tip of the saber 
@@ -7019,7 +6969,7 @@ void NewBotAI_StrafeJump(bot_state_t *bs, float distance)
 	qboolean aimright = qfalse;
 //	float xyspeed, optimalAngle, frametime = 0.05f, baseSpeed = g_speed.integer;
 
-	NewBotAI_GetAim(bs, distance);
+	NewBotAI_GetAim(bs);
 
 	NewBotAI_Flipkick(bs);
 
@@ -7188,9 +7138,7 @@ void DoAloneStuff(bot_state_t *bs) {
 void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 {
 	int closestID = -1;
-	float distance;
-	qboolean lineOfSight;
-
+	
 	if (g_entities[bs->client].health < 1) { //We are dead, so respawn!
 		trap->EA_Attack(bs->client);
 		return;
@@ -7218,9 +7166,11 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	bs->currentEnemy = &g_entities[closestID];
 	bs->enemySeenTime = level.time + ENEMY_FORGET_MS;
 
-	distance = NewBotAI_GetDist(bs);
+	bs->frame_Enemy_Len = NewBotAI_GetDist(bs);
 	if (OrgVisible(bs->eye, bs->currentEnemy->client->ps.origin, bs->client))
-		lineOfSight = qtrue;
+		bs->frame_Enemy_Vis = 1;
+	else
+		bs->frame_Enemy_Vis = 0;
 
 	/*
 	if (NewBotAI_GetDist(bs) > 1024) { //Chase mode, only do this if
@@ -7232,19 +7182,19 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	if (g_forcePowerDisable.integer != 163837 || g_flipKick.integer) {
 		if (bs->currentEnemy->client->ps.fd.forceSide == FORCE_LIGHTSIDE) { // They are LS.
 			if (bs->cur_ps.fd.forceSide == FORCE_LIGHTSIDE)
-				NewBotAI_LSvLS(bs, distance, lineOfSight);
+				NewBotAI_LSvLS(bs);
 			else
-				NewBotAI_DSvLS(bs, distance, lineOfSight);
+				NewBotAI_DSvLS(bs);
 		}
 		else { // A sith is amongst us!
 			if (bs->cur_ps.fd.forceSide == FORCE_LIGHTSIDE)
-				NewBotAI_LSvDS(bs, distance, lineOfSight);
+				NewBotAI_LSvDS(bs);
 			else
-				NewBotAI_DSvDS(bs, distance, lineOfSight);
+				NewBotAI_DSvDS(bs);
 		}
 	}
 	else {//Ruh roh, NF with no kick!
-		NewBotAI_NF(bs, distance, lineOfSight);
+		NewBotAI_NF(bs);
 	}
 }
 
