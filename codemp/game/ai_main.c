@@ -4580,7 +4580,7 @@ float BotWeaponCanLead(bot_state_t *bs)
 	switch ( bs->cur_ps.weapon )
 	{
 	case WP_BRYAR_PISTOL:
-		return 0.8f;
+		return 0.5f;
 	case WP_BLASTER:
 		return 0.35f;
 	case WP_BOWCASTER:
@@ -5958,36 +5958,71 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 	}
 }
 
-void NewBotAI_GetAim(bot_state_t *bs)
+void NewBotAI_LeadAim(bot_state_t *bs, vec3_t headlevel, float leadAmount, float distance)
 {
-	vec3_t headlevel, a, ang;
+	int x;
+	vec3_t predictedSpot;
+	vec3_t movementVector;
+	vec3_t a, ang;
+	float vtotal;
+
+	if (!bs->currentEnemy || !bs->currentEnemy->client)
+		return;
+
+	if (distance < 1)
+		return;
+
+	vtotal = 0;
+
+	if (bs->currentEnemy->client->ps.velocity[0] < 0)
+		vtotal += -bs->currentEnemy->client->ps.velocity[0];
+	else
+		vtotal += bs->currentEnemy->client->ps.velocity[0];
+
+	if (bs->currentEnemy->client->ps.velocity[1] < 0)
+		vtotal += -bs->currentEnemy->client->ps.velocity[1];
+	else
+		vtotal += bs->currentEnemy->client->ps.velocity[1];
+
+	if (bs->currentEnemy->client->ps.velocity[2] < 0)
+		vtotal += -bs->currentEnemy->client->ps.velocity[2];
+	else
+		vtotal += bs->currentEnemy->client->ps.velocity[2];
+
+	VectorCopy(bs->currentEnemy->client->ps.velocity, movementVector);
+	VectorNormalize(movementVector);
+	x = distance*leadAmount; //hardly calculated with an exact science, but it works
+
+	if (vtotal > 400)
+		vtotal = 400;
+
+	if (vtotal)
+		x = (distance*0.9)*leadAmount*(vtotal*0.0012); //hardly calculated with an exact science, but it works
+	else
+		x = (distance*0.9)*leadAmount; //hardly calculated with an exact science, but it works
+
+	predictedSpot[0] = headlevel[0] + (movementVector[0]*x);
+	predictedSpot[1] = headlevel[1] + (movementVector[1]*x);
+	predictedSpot[2] = headlevel[2] + (movementVector[2]*x);
+
+	VectorSubtract(predictedSpot, bs->eye, a);
+	vectoangles(a, ang);
+	VectorCopy(ang, bs->goalAngles);
+}
+
+void NewBotAI_GetAim(bot_state_t *bs, float distance)
+{
+	vec3_t headlevel;
 	float bLeadAmount;
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
 	if (bs->currentEnemy->client)
-		headlevel[2] += bs->currentEnemy->client->ps.viewheight + - 24;//aim at chest?
+		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
 
 	bLeadAmount = BotWeaponCanLead(bs);
-	//BotAimLeading(bs, headlevel, bLeadAmount);
-	//BotAimOffsetGoalAngles(bs);
-
-	//VectorSubtract(headlevel, bs->eye, a);
-
-	//VectorCopy(ang, bs->goalAngles);
-	
-
-	vectoangles(a, ang);
-	//VectorCopy(ang, bs->goalAngles);
-
-	BotAimLeading(bs, headlevel, bLeadAmount);
-
-	//trap->Print("Old: %f, %f, %f     New: %f, %f, %f\n", a[0] ,a[1], a[2], bs->goalAngles[0], bs->goalAngles[1], bs->goalAngles[2]);
-
-	//BotAimOffsetGoalAngles(bs);
-
+	NewBotAI_LeadAim(bs, headlevel, bLeadAmount, distance);
 	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
-	//trap_EA_View(bs->client, bs->goalAngles); // if we want instant aim?
 }
 
 void NewBotAI_GetStrafeAim(bot_state_t *bs)
@@ -6197,31 +6232,78 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 
 	//Dependant on distance from enemy, enemys health, enemys weapon, and our health?
 
-	if (bs->currentEnemy) {
+	if (hisWeapon == WP_SABER) { //Use splash damage if possible
 		if (distance > 1024) {
 			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
-			else if (hisWeapon == WP_DISRUPTOR)
-				bestWeapon = WP_SABER;
 			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2)) {
 				bestWeapon = WP_DEMP2;
 				altAttack = qtrue;
 			}
-			else if (BotWeaponSelectable(bs, WP_BLASTER))
+			else
+				bestWeapon = WP_SABER;
+		}
+		else if (distance > 350 && distance < 900) { //Have some padding between distance tiers so we dont weaponswitch spam
+			if (BotWeaponSelectableAltFire(bs, WP_REPEATER)) {
+				bestWeapon = WP_REPEATER;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
 				bestWeapon = WP_BLASTER;
-			else if (BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectableAltFire(bs, WP_BOWCASTER)) {
+				bestWeapon = WP_BOWCASTER;
+				altAttack = qtrue;
+			}
+			else if (distance > 500 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
 				bestWeapon = WP_BRYAR_PISTOL;
 				altAttack = qtrue;
 				bs->altChargeTime = 1500;
 			}
 			else bestWeapon = WP_SABER;
 		}
-		else if (distance > 350 && distance < 900) {
+		else if (distance < 200) {
+			if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+				bestWeapon = WP_ROCKET_LAUNCHER;
+			else if (BotWeaponSelectable(bs, WP_REPEATER)) {
+				bestWeapon = WP_REPEATER;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
+				bestWeapon = WP_CONCUSSION;
+			else if (BotWeaponSelectable(bs, WP_FLECHETTE)) {
+				bestWeapon = WP_FLECHETTE;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
+				bestWeapon = WP_BLASTER;
+				altAttack = qtrue;
+			}
+			else bestWeapon = WP_SABER;
+		}
+	}
+	else if (hisWeapon == WP_ROCKET_LAUNCHER || hisWeapon == WP_REPEATER || hisWeapon == WP_CONCUSSION || hisWeapon == WP_FLECHETTE) { //Likely going to splash damage us, so dont bother trying to block with saber
+		if (distance > 1024) {
+			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2)) {
+				bestWeapon = WP_DEMP2;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_BLASTER))
+				bestWeapon = WP_BLASTER;
+			else
+				bestWeapon = WP_SABER;
+		}
+		else if (distance > 350 && distance < 900) { //Have some padding between distance tiers so we dont weaponswitch spam
 			if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
 				bestWeapon = WP_BLASTER;
 				altAttack = qtrue;
 			}
-			else if (BotWeaponSelectableAltFire(bs, WP_REPEATER))
+			else if (BotWeaponSelectable(bs, WP_REPEATER))
 				bestWeapon = WP_REPEATER;
 			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
@@ -6229,7 +6311,7 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 				bestWeapon = WP_BOWCASTER;
 				altAttack = qtrue;
 			}
-			else if (distance > 425 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
+			else if (distance > 500 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
 				bestWeapon = WP_BRYAR_PISTOL;
 				altAttack = qtrue;
 				bs->altChargeTime = 1500;
@@ -6255,8 +6337,44 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 				bestWeapon = WP_BOWCASTER;
 				altAttack = qtrue;
 			}
-			else if (BotWeaponSelectable(bs, WP_BOWCASTER))
-				bestWeapon = WP_BOWCASTER;
+			else bestWeapon = WP_SABER;
+		}
+	}
+	else { //We can block most of his bullets with saber i guess
+		if (distance > 1024) {
+			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else if (BotWeaponSelectable(bs, WP_BLASTER))
+				bestWeapon = WP_BLASTER;
+			else
+				bestWeapon = WP_SABER;
+		}
+		else if (distance > 350 && distance < 900) { //Have some padding between distance tiers so we dont weaponswitch spam
+			if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
+				bestWeapon = WP_BLASTER;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_REPEATER))
+				bestWeapon = WP_REPEATER;
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
+			else bestWeapon = WP_SABER;
+		}
+		else if (distance < 200) {
+			if (BotWeaponSelectable(bs, WP_FLECHETTE))
+				bestWeapon = WP_FLECHETTE;
+			else if (BotWeaponSelectable(bs, WP_REPEATER))
+				bestWeapon = WP_REPEATER;
+			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
+				bestWeapon = WP_BLASTER;
+				altAttack = qtrue;
+			}
+			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+				bestWeapon = WP_ROCKET_LAUNCHER;
+			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
+				bestWeapon = WP_CONCUSSION;
+			else if (BotWeaponSelectable(bs, WP_DISRUPTOR))
+				bestWeapon = WP_DISRUPTOR;
 			else bestWeapon = WP_SABER;
 		}
 	}
@@ -6677,7 +6795,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs, float distance, qboolean lineOfSi
 
 void NewBotAI_DSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 {
-	NewBotAI_GetAim(bs); //If a saber is the closest entity and it is in flight, aim at it?
+	NewBotAI_GetAim(bs, distance); //If a saber is the closest entity and it is in flight, aim at it?
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6710,7 +6828,7 @@ void NewBotAI_DSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 
 void NewBotAI_DSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
 {
-	NewBotAI_GetAim(bs);
+	NewBotAI_GetAim(bs, distance);
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6738,7 +6856,7 @@ void NewBotAI_DSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
 
 void NewBotAI_LSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 {
-	NewBotAI_GetAim(bs);
+	NewBotAI_GetAim(bs, distance);
 
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6759,7 +6877,7 @@ void NewBotAI_LSvDS(bot_state_t *bs, float distance, qboolean lineOfSight)
 
 void NewBotAI_LSvLS(bot_state_t *bs, float distance, qboolean lineOfSight)
 {
-	NewBotAI_GetAim(bs);
+	NewBotAI_GetAim(bs, distance);
 	
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6783,7 +6901,7 @@ void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
 	qboolean swing = qfalse;
 	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 
-	NewBotAI_GetAim(bs);
+	NewBotAI_GetAim(bs, distance);
 	
 	if (bs->cur_ps.forceHandExtend == HANDEXTEND_KNOCKDOWN) {
 		NewBotAI_Getup(bs);
@@ -6896,12 +7014,12 @@ void NewBotAI_NF(bot_state_t *bs, float distance, qboolean lineOfSight)
 	//NewBotAI_GetAttack(bs);
 }
 
-void NewBotAI_StrafeJump(bot_state_t *bs)
+void NewBotAI_StrafeJump(bot_state_t *bs, float distance)
 {
 	qboolean aimright = qfalse;
 //	float xyspeed, optimalAngle, frametime = 0.05f, baseSpeed = g_speed.integer;
 
-	NewBotAI_GetAim(bs);
+	NewBotAI_GetAim(bs, distance);
 
 	NewBotAI_Flipkick(bs);
 

@@ -750,6 +750,7 @@ void Svcmd_ChangePass_f(void)
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16], newPassword[16];
+	int s;
 
 	if (trap->Argc() != 3) {
 		trap->Print( "Usage: /changepassword <username> <newpassword>\n");
@@ -774,9 +775,15 @@ void Svcmd_ChangePass_f(void)
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	//CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
-	trap->Print( "Password changed.\n");
+
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_DONE)
+			trap->Print( "Password changed.\n");
+	else
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
 	CALL_SQLITE (close(db));
 }
 
