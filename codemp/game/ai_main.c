@@ -6180,7 +6180,7 @@ float NewBotAI_GetSpeedTowardsEnemy(bot_state_t *bs)
 
 int NewBotAI_GetWeapon(bot_state_t *bs)
 {
-	const int hisHealth = bs->currentEnemy->health, ourHealth = g_entities[bs->client].health, distance = NewBotAI_GetDist(bs);
+	const int hisHealth = bs->currentEnemy->health, ourHealth = g_entities[bs->client].health, distance = bs->frame_Enemy_Len;
 	int hisWeapon = WP_SABER;
 	int bestWeapon = bs->cur_ps.weapon;
 	
@@ -6192,12 +6192,15 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 	//Dependant on distance from enemy, enemys health, enemys weapon, and our health?
 
 	if (hisWeapon == WP_SABER) { //Use splash damage if possible
-		if (distance > 1024) {
+		if (distance > 1300) {
 			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
 				bestWeapon = WP_DISRUPTOR;
 			else if (BotWeaponSelectableAltFire(bs, WP_DEMP2)) {
 				bestWeapon = WP_DEMP2;
 				bs->doAltAttack = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_BLASTER)) {
+				bestWeapon = WP_BLASTER;
 			}
 			else if (distance > 500 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
 				bestWeapon = WP_BRYAR_PISTOL;
@@ -6207,8 +6210,8 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			else
 				bestWeapon = WP_SABER;
 		}
-		else if (distance > 350 && distance < 900) { //Have some padding between distance tiers so we dont weaponswitch spam
-			if (BotWeaponSelectableAltFire(bs, WP_REPEATER)) {
+		else if (distance > 350 && distance < 1100) { //Have some padding between distance tiers so we dont weaponswitch spam
+			if (distance < 900 && BotWeaponSelectableAltFire(bs, WP_REPEATER)) {
 				bestWeapon = WP_REPEATER;
 				bs->doAltAttack = 1;
 			}
