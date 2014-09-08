@@ -563,6 +563,7 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 	{ //for now just hit use randomly in case there's something useable around
 		ucmd->buttons |= BUTTON_USE;
 	}
+
 #if 0
 // Here's an interesting bit.  The bots in TA used buttons to do additional gestures.
 // I ripped them out because I didn't want too many buttons given the fact that I was already adding some for JK2.
@@ -1755,6 +1756,9 @@ int PassStandardEnemyChecks(bot_state_t *bs, gentity_t *en)
 	{ //not a client, don't care about him
 		return 0;
 	}
+
+	if (en->client->pers.raceMode)
+		return 0;
 
 	if (en->health < 1)
 	{ //he's already dead
@@ -6942,6 +6946,12 @@ void DoAloneStuff(bot_state_t *bs) {
 			}
 		}
 
+		if ((hit->item->giType == IT_HEALTH) && (g_entities[bs->client].health >= 100))
+			continue;
+
+		if ((hit->item->giType == IT_ARMOR) && (bs->cur_ps.stats[STAT_ARMOR] >= 100))
+			continue;
+
 		/*
 		bs->wpSwitchTime++;
 
@@ -6969,7 +6979,17 @@ void DoAloneStuff(bot_state_t *bs) {
 		bs->ideal_viewangles[YAW] += 1;
 	}
 
-	if ((bs->origin[2] + STEPSIZE) < waypoint[2]) //Its above us
+	if (Q_irand(1, 10) < 2)
+		trap->EA_MoveRight(bs->client);
+	else if (Q_irand(1, 10) < 2)
+		trap->EA_MoveLeft(bs->client);
+
+	if (Q_irand(1, 100) < 2)
+		bs->ideal_viewangles[YAW] += 90;
+	if (Q_irand(1, 100) < 2)
+		bs->ideal_viewangles[YAW] -= 90;
+
+	if ((bs->origin[2] + STEPSIZE) < waypoint[2] && (level.time % 1000 > 500)) //autism)) //Its above us
 		NewBotAI_Flipkick(bs);
 	trap->EA_MoveForward(bs->client);
 
@@ -7007,13 +7027,16 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 			closestID = -1;
 	}
 	
-	if (closestID == -1) {//Its just us, or they are too far away.
+	if (closestID == -1 || bs->cur_ps.stats[STAT_RACEMODE]) {//Its just us, or they are too far away.
 		DoAloneStuff(bs);
 		return;
 	}
 
 	bs->currentEnemy = &g_entities[closestID];
 	bs->enemySeenTime = level.time + ENEMY_FORGET_MS;
+
+	//if (bs->currentEnemy->client->ps.stats[STAT_RACEMODE])
+
 
 	/*
 	Select the best weapon possible, based on distance from enemy, and available weaopns.
