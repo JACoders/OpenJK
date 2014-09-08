@@ -1760,6 +1760,9 @@ int PassStandardEnemyChecks(bot_state_t *bs, gentity_t *en)
 	if (en->client->pers.raceMode)
 		return 0;
 
+	if (en->client->ps.pm_type == PM_NOCLIP) 
+		return 0;
+
 	if (en->health < 1)
 	{ //he's already dead
 		return 0;
@@ -6188,6 +6191,11 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 				bestWeapon = WP_DEMP2;
 				altAttack = qtrue;
 			}
+			else if (distance > 500 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
+				bestWeapon = WP_BRYAR_PISTOL;
+				altAttack = qtrue;
+				bs->altChargeTime = 1500;
+			}
 			else
 				bestWeapon = WP_SABER;
 		}
@@ -6243,6 +6251,11 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			}
 			else if (BotWeaponSelectable(bs, WP_BLASTER))
 				bestWeapon = WP_BLASTER;
+			else if (distance > 500 && BotWeaponSelectableAltFire(bs, WP_BRYAR_PISTOL)) {
+				bestWeapon = WP_BRYAR_PISTOL;
+				altAttack = qtrue;
+				bs->altChargeTime = 1500;
+			}
 			else
 				bestWeapon = WP_SABER;
 		}
