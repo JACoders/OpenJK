@@ -6230,7 +6230,11 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			else bestWeapon = WP_SABER;
 		}
 		else if (distance < 200) {
-			if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
+			if (BotWeaponSelectable(bs, WP_FLECHETTE)) {
+				bestWeapon = WP_FLECHETTE;
+				bs->doAltAttack = 1;
+			}
+			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
 				bestWeapon = WP_ROCKET_LAUNCHER;
 			else if (BotWeaponSelectable(bs, WP_REPEATER)) {
 				bestWeapon = WP_REPEATER;
@@ -6238,10 +6242,6 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			}
 			else if (BotWeaponSelectable(bs, WP_CONCUSSION))
 				bestWeapon = WP_CONCUSSION;
-			else if (BotWeaponSelectable(bs, WP_FLECHETTE)) {
-				bestWeapon = WP_FLECHETTE;
-				bs->doAltAttack = 1;
-			}
 			else if (BotWeaponSelectableAltFire(bs, WP_BLASTER)) {
 				bestWeapon = WP_BLASTER;
 				bs->doAltAttack = 1;
