@@ -266,4 +266,7 @@ XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
 
+XCVAR_DEF( bot_strafeOffset,			"0",				NULL,				CVAR_ARCHIVE,						qtrue )
+XCVAR_DEF( bot_frameTime,				"0.008",			NULL,				CVAR_ARCHIVE,						qtrue )
+
 #undef XCVAR_DEF

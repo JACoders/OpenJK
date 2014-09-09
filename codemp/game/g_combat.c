@@ -4408,9 +4408,6 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	case HL_BACK_LT:
 		break;
 	case HL_BACK:
-		if (g_tweakWeapons.integer & STUN_SHOCKLANCE && mod == MOD_TURBLAST)
-			*damage *= 3.3;
-		 break;
 	case HL_CHEST_RT:
 	case HL_CHEST_LT:
 	case HL_CHEST:

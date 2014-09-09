@@ -4026,7 +4026,7 @@ static void WP_FireShockLance( gentity_t *ent )
 				ent->client->accuracy_hits++;
 			} 
 
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST );
+			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST ); //I guess keep this as turblast since MOD_STUN is used for healgun .. and we dont want shocklance to heal :\
 			
 			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
 			tent->s.eventParm = DirToByte( tr.plane.normal );

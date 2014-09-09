@@ -5967,25 +5967,11 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 	}
 }
 
-void NewBotAI_GetAim(bot_state_t *bs)
-{
-	vec3_t headlevel;
-	float bLeadAmount;
-
-	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
-
-	if (bs->currentEnemy->client)
-		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
-
-	bLeadAmount = BotWeaponCanLead(bs);
-	BotAimLeading(bs, headlevel, bLeadAmount);
-
-	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
-}
-
 void NewBotAI_GetStrafeAim(bot_state_t *bs)
 {
 	vec3_t headlevel, a, ang;
+	float optimalAngle, newAngle;
+	const float baseSpeed = bs->cur_ps.speed, frameTime = 0.008f, currentSpeed = sqrtf(bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0] + bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]);
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
@@ -5996,8 +5982,55 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 	vectoangles(a, ang);
 	VectorCopy(ang, bs->goalAngles);
 
+	//Treat angle to them as our base angle.. add offset angle to that to accel?
+
+	optimalAngle = acos((double) ((baseSpeed - (baseSpeed * frameTime)) / currentSpeed)) * (180.0f/M_PI) - 45.0f; 
+
+	optimalAngle += bot_strafeOffset.value; //Ayy
+	if (bot_frameTime.value > 0 && bot_frameTime.value < 1) 
+		frameTime = bot_frameTime.value;
+
+	if (optimalAngle < 0 || optimalAngle > 360)
+		optimalAngle = 0;
+
+	if (bs->forceMove_Forward) {
+		if (bs->forceMove_Right < 0)
+			newAngle = optimalAngle; //WA
+		else if (bs->forceMove_Right > 0)
+			newAngle = -optimalAngle; //WD
+	}
+	else {
+		if (bs->forceMove_Right < 0)
+			newAngle = 45.0f - optimalAngle;//D
+		else if (bs->forceMove_Right > 0)
+			newAngle = -(45.0f - optimalAngle);//A
+	}
+
+	bs->goalAngles[YAW] += newAngle;
+
 	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
 	//trap_EA_View(bs->client, bs->goalAngles); // if we want instant aim?
+}
+
+void NewBotAI_GetAim(bot_state_t *bs)
+{
+	vec3_t headlevel;
+	float bLeadAmount;
+
+	if (bs->runningLikeASissy) {
+		NewBotAI_GetStrafeAim(bs);
+		return;
+	}
+
+	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
+
+	if (bs->currentEnemy->client)
+		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
+
+	bLeadAmount = BotWeaponCanLead(bs);
+	BotAimLeading(bs, headlevel, bLeadAmount);
+
+	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
 }
 
 float NewBotAI_GetDist(bot_state_t *bs)
@@ -6401,34 +6434,51 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 
 void NewBotAI_GetMovement(bot_state_t *bs)
 {
-	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
-
-	if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
-		//trap_EA_MoveBack(bs->client);//Always move forward i guess	
-		if (level.time % 1000 > 500)  {
-			if (bs->frame_Enemy_Len < 140)
-				trap->EA_MoveForward(bs->client);//Always move forward i guess	
-			else
-				trap->EA_MoveLeft(bs->client);//Always move forward i guess	
+	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy->client->ps.weapon == WP_SABER)) { //Chase movement
+		trap->EA_MoveForward(bs->client);//W	
+		bs->forceMove_Forward = 1;
+		if (level.time % 2000 > 1000) {
+			trap->EA_MoveRight(bs->client);
+			bs->forceMove_Right = 1; //D
 		}
 		else {
-			if (bs->frame_Enemy_Len < 140)
-				trap->EA_MoveForward(bs->client);//Always move forward i guess	
-			else
-				trap->EA_MoveRight(bs->client);//Always move forward i guess	
+			trap->EA_MoveLeft(bs->client);
+			bs->forceMove_Right = -1; //A
 		}
-	}
-	else
-		trap->EA_MoveForward(bs->client);//Always move forward i guess	
-
-	if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || ((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 0.63f)) || 
-		(bs->frame_Enemy_Len < 64) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
-			if ((bs->cur_ps.fd.forcePower > 6)) 
-				NewBotAI_Flipkick(bs);
-	}
-	else if (random() < 0.01 && (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)) {
-		trap->EA_MoveRight(bs->client);
 		NewBotAI_Flipkick(bs);
+		bs->runningLikeASissy = 1;
+	}
+	else { //Combat movement
+		const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+
+		if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
+			//trap_EA_MoveBack(bs->client);//Always move forward i guess	
+			if (level.time % 1000 > 500)  {
+				if (bs->frame_Enemy_Len < 140)
+					trap->EA_MoveForward(bs->client);//Always move forward i guess	
+				else
+					trap->EA_MoveLeft(bs->client);
+			}
+			else {
+				if (bs->frame_Enemy_Len < 140)
+					trap->EA_MoveForward(bs->client);//Always move forward i guess	
+				else
+					trap->EA_MoveRight(bs->client);
+			}
+		}
+		else
+			trap->EA_MoveForward(bs->client);//Always move forward i guess	
+
+		if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || ((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 0.63f)) || 
+			(bs->frame_Enemy_Len < 64) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
+				if ((bs->cur_ps.fd.forcePower > 6)) 
+					NewBotAI_Flipkick(bs);
+		}
+		else if (random() < 0.01 && (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)) {
+			trap->EA_MoveRight(bs->client);
+			NewBotAI_Flipkick(bs);
+		}
+		bs->runningLikeASissy = 0;
 	}
 }
 
