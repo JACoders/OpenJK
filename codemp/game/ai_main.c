@@ -6158,6 +6158,14 @@ void NewBotAI_Speeding(bot_state_t *bs)
 	}
 }
 
+void NewBotAI_Raging(bot_state_t *bs)
+{
+	if (bs->currentEnemy->client->ps.weapon >= WP_BLASTER && NewBotAI_GetDist(bs) < 200) { //Pull their weapon
+		level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
+		trap->EA_ForcePower(bs->client);
+	}
+}
+
 void NewBotAI_Protecting(bot_state_t *bs)
 {
 	if ((g_entities[bs->client].health) > 90 || NewBotAI_GetDist(bs) > MAX_DRAIN_DISTANCE) {
@@ -6690,6 +6698,13 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
+	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_RAGE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_RAGE))) {
+		if ((bs->cur_ps.weapon >= WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) {
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_RAGE;
+			useTheForce = qtrue;
+		}
+	}
+
 	if (!useTheForce && level.gametype >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_FORCE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE))) {
 		if (g_entities[bs->client].health > 80 && (bs->cur_ps.fd.forcePower > 70)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_TEAM_FORCE;
@@ -6845,6 +6860,10 @@ void NewBotAI_DSvDS(bot_state_t *bs)
 
 	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_SPEED)) {
 		NewBotAI_Speeding(bs);
+	}
+
+	if (bs->cur_ps.fd.forcePowersActive & (1 << FP_RAGE)) {
+		NewBotAI_Raging(bs);
 	}
 
 	NewBotAI_GetMovement(bs);
