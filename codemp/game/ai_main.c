@@ -493,12 +493,10 @@ void BotChangeViewAngles(bot_state_t *bs, float thinktime) {
 		factor = bs->skills.turnspeed;
 	}
 
-	if (factor > 1 && !g_newBotAI.integer)
+	if (factor > 1)
 		factor = 1;
 	if (factor < 0.001)
-	{
 		factor = 0.001f;
-	}
 
 	maxchange = bs->skills.maxturn;
 
@@ -6430,7 +6428,9 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 
 void NewBotAI_GetMovement(bot_state_t *bs)
 {
-	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy->client->ps.weapon == WP_SABER)) { //Chase movement
+	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy && bs->currentEnemy->client && bs->currentEnemy->client->ps.weapon == WP_SABER)) { //Chase movement
+		bs->runningLikeASissy = 1;
+
 		trap->EA_MoveForward(bs->client);//W	
 		bs->forceMove_Forward = 1;
 		if (level.time % 2000 > 1000) {
@@ -6442,10 +6442,13 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 			bs->forceMove_Right = -1; //A
 		}
 		NewBotAI_Flipkick(bs);
-		bs->runningLikeASissy = 1;
 	}
 	else { //Combat movement
 		const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+
+		bs->runningLikeASissy = 0;
+		bs->forceMove_Forward = 0;
+		bs->forceMove_Right = 0;
 
 		if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
 			//trap_EA_MoveBack(bs->client);//Always move forward i guess	
@@ -6474,7 +6477,6 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 			trap->EA_MoveRight(bs->client);
 			NewBotAI_Flipkick(bs);
 		}
-		bs->runningLikeASissy = 0;
 	}
 }
 
