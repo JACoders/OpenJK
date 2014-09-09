@@ -7095,7 +7095,7 @@ void NewBotAI_StrafeJump(bot_state_t *bs, float distance)
 void DoAloneStuff(bot_state_t *bs, float thinktime) {
 	qboolean useTheForce = qfalse;
 	int numEnts, i, radiusEnts[256];
-	vec3_t mins = {-512, -512, -256}, maxs = {512, 512, 256}, waypoint, temp;
+	vec3_t mins = {-1024, -1024, -256}, maxs = {1024, 1024, 256}, waypoint, temp;
 	gentity_t	*hit;
 	qboolean destination = qfalse;
 
@@ -7254,7 +7254,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 			closestID = -1;
 	}
 	
-	if (closestID == -1 || bs->cur_ps.stats[STAT_RACEMODE]) {//Its just us, or they are too far away.
+	if (closestID == -1 || bs->cur_ps.stats[STAT_RACEMODE] ) {//Its just us, or they are too far away.
 		DoAloneStuff(bs, thinktime);
 		return;
 	}
@@ -7267,6 +7267,11 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 		bs->frame_Enemy_Vis = 1;
 	else
 		bs->frame_Enemy_Vis = 0;
+
+	if (!bs->frame_Enemy_Vis && bs->frame_Enemy_Len > 8192) {
+		DoAloneStuff(bs, thinktime);
+		return;
+	}
 
 	/*
 	if (NewBotAI_GetDist(bs) > 1024) { //Chase mode, only do this if
