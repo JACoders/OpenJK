@@ -7092,7 +7092,7 @@ void NewBotAI_StrafeJump(bot_state_t *bs, float distance)
 	}
 }
 
-void DoAloneStuff(bot_state_t *bs) {
+void DoAloneStuff(bot_state_t *bs, float thinktime) {
 	qboolean useTheForce = qfalse;
 	int numEnts, i, radiusEnts[256];
 	vec3_t mins = {-512, -512, -256}, maxs = {512, 512, 256}, waypoint, temp;
@@ -7196,14 +7196,15 @@ void DoAloneStuff(bot_state_t *bs) {
 		
 	}
 
-	if (destination) {
-		VectorSubtract(waypoint, bs->origin, temp);
-		vectoangles(temp, temp);
-		VectorCopy(temp, bs->ideal_viewangles);
+	if (!destination) {
+		StandardBotAI(bs, thinktime);
+		return;
 	}
-	else {
-		bs->ideal_viewangles[YAW] += 1;
-	}
+
+	VectorSubtract(waypoint, bs->origin, temp);
+	vectoangles(temp, temp);
+	VectorCopy(temp, bs->ideal_viewangles);
+	bs->ideal_viewangles[YAW] += 1;
 
 	if (Q_irand(1, 10) < 2)
 		trap->EA_MoveRight(bs->client);
@@ -7254,7 +7255,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	}
 	
 	if (closestID == -1 || bs->cur_ps.stats[STAT_RACEMODE]) {//Its just us, or they are too far away.
-		DoAloneStuff(bs);
+		DoAloneStuff(bs, thinktime);
 		return;
 	}
 
