@@ -493,10 +493,6 @@ void BotChangeViewAngles(bot_state_t *bs, float thinktime) {
 		factor = bs->skills.turnspeed;
 	}
 
-	if (factor > 1)
-	{
-		factor = 1;
-	}
 	if (factor > 1 && !g_newBotAI.integer)
 		factor = 1;
 	if (factor < 0.001)
@@ -5970,8 +5966,8 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 void NewBotAI_GetStrafeAim(bot_state_t *bs)
 {
 	vec3_t headlevel, a, ang;
-	float optimalAngle, newAngle;
-	const float baseSpeed = bs->cur_ps.speed, frameTime = 0.008f, currentSpeed = sqrtf(bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0] + bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]);
+	float optimalAngle, newAngle, frameTime = 0.008f;
+	const float baseSpeed = bs->cur_ps.speed, currentSpeed = sqrtf(bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0] + bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]);
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
