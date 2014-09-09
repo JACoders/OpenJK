@@ -6260,13 +6260,13 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			else bestWeapon = WP_SABER;
 		}
 		else if (distance < 200) {
-			if (BotWeaponSelectable(bs, WP_FLECHETTE)) {
+			if (BotWeaponSelectableAltFire(bs, WP_FLECHETTE)) {
 				bestWeapon = WP_FLECHETTE;
 				bs->doAltAttack = 1;
 			}
 			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))
 				bestWeapon = WP_ROCKET_LAUNCHER;
-			else if (BotWeaponSelectable(bs, WP_REPEATER)) {
+			else if (BotWeaponSelectableAltFire(bs, WP_REPEATER)) {
 				bestWeapon = WP_REPEATER;
 				bs->doAltAttack = 1;
 			}
@@ -6279,6 +6279,8 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			else bestWeapon = WP_SABER;
 		}
 	}
+
+
 	else if (hisWeapon == WP_ROCKET_LAUNCHER || hisWeapon == WP_REPEATER || hisWeapon == WP_CONCUSSION || hisWeapon == WP_FLECHETTE) { //Likely going to splash damage us, so dont bother trying to block with saber
 		if (distance > 1024) {
 			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
@@ -6339,6 +6341,8 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 			else bestWeapon = WP_SABER;
 		}
 	}
+
+
 	else { //We can block most of his bullets with saber i guess
 		if (distance > 1024) {
 			if (BotWeaponSelectable(bs, WP_DISRUPTOR))
@@ -6773,11 +6777,19 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB;
 			useTheForce = qtrue;
 		}
+		else if (bs->cur_ps.weapon > WP_BRYAR_PISTOL) { //Protect our guns
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB;
+			useTheForce = qtrue;
+		}
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_PROTECT)) && ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_PROTECT))) && (bs->cur_ps.fd.forcePower > 20)) //level.clients[bs->client].ps.fd.forcePower
 	{				
 		if ((g_entities[bs->client].health < 60) && (bs->cur_ps.fd.forcePower > 75) && (bs->cur_ps.fd.forcePowersActive & (1 << FP_ABSORB))) {
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_PROTECT;
+			useTheForce = qtrue;
+		}
+		else if ((bs->cur_ps.fd.forcePower > 25) && (bs->cur_ps.fd.forcePowersActive & (1 << FP_ABSORB)) && bs->currentEnemy->client->ps.weapon > WP_SABER) { //Use protect more in gun battles
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_PROTECT;
 			useTheForce = qtrue;
 		}

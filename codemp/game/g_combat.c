@@ -2547,7 +2547,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	self->enemy = attacker;
 
 	self->client->ps.persistant[PERS_KILLED]++;
-	if (self->client->pers.userName && self->client->pers.userName[0] && !self->client->pers.raceMode)//Dont count deaths in racemode
+	if (attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && !self->client->pers.raceMode)//Dont count deaths in racemode
 		G_AddSimpleStat(self->client->pers.userName, 2);
 
 	if (self == attacker)
@@ -2630,17 +2630,17 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
-					if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
+					if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
 						G_AddSimpleStat(attacker->client->pers.userName, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
 				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
 					AddScore( attacker, self->r.currentOrigin, 2 ); 
-					if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
+					if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
 						G_AddSimpleStat(attacker->client->pers.userName, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
-				else if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT)) {
+				else if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT)) {
 					G_AddSimpleStat(attacker->client->pers.userName, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
@@ -2651,7 +2651,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			else
 			{
 				AddScore( attacker, self->r.currentOrigin, 1 );
-				if (attacker && attacker->client && attacker->client->pers.userName && attacker->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
+				if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
 					G_AddSimpleStat(attacker->client->pers.userName, 1);
 				attacker->client->pers.stats.kills++;//JAPRO STATS
 			}
