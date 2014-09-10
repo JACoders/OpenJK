@@ -8498,7 +8498,10 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if (!pm->ps->stats[STAT_RACEMODE] || pm->ps->stats[STAT_ROCKETJUMP]) {
+	if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->weapon == WP_DISRUPTOR)) {
+		addTime = 600;
+	}
+	else {
 		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
 			if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode != 1) {
 				PM_AddEvent( EV_FIRE_WEAPON );

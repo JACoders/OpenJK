@@ -2254,7 +2254,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 6)
+		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4)
 			allowCartwheels = qfalse;
 		else if (pm->ps->stats[STAT_ONLYBHOP])
 			allowCartwheels = qfalse;
