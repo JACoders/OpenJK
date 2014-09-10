@@ -4157,7 +4157,7 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 	}
 }
 
-void G_AddSimpleStat(char *username, int type);
+void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
 
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
@@ -4182,8 +4182,7 @@ void ClientDisconnect( int clientNum ) {
 			trap->SendServerCommand( attacker-g_entities, va("cp \"You pwned\n%s^7!\n\"", ent->client->pers.netname) );
 			trap->SendServerCommand( -1, va("print \"%s ^7was pwned by %s\n\"", ent->client->pers.netname, attacker->client->pers.netname));
 			AddScore( attacker, ent->r.currentOrigin, 1 );
-			if (attacker && attacker->client&& attacker->client->pers.userName[0] && ent->client->pers.userName[0] &&ent && ent->s.eType != ET_NPC)
-				G_AddSimpleStat(attacker->client->pers.userName, 1);
+			G_AddSimpleStat(attacker, ent, 1);
 			attacker->client->pers.stats.kills++;//JAPRO STATS
 		}	
 	}

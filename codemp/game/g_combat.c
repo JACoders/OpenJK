@@ -2089,7 +2089,7 @@ void CheckExitRules( void );
 extern void Rancor_DropVictim( gentity_t *self );
 
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
-void G_AddSimpleStat(char *username, int type);
+void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
 extern qboolean g_dontFrickinCheck;
 extern qboolean g_endPDuel;
 extern qboolean g_noPDuelCheck;
@@ -2547,14 +2547,14 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	self->enemy = attacker;
 
 	self->client->ps.persistant[PERS_KILLED]++;
-	if (meansOfDeath != MOD_TEAM_CHANGE && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && !self->client->pers.raceMode)//Dont count deaths in racemode
-		G_AddSimpleStat(self->client->pers.userName, 2);
+	if (meansOfDeath != MOD_TEAM_CHANGE)//Dont count deaths in racemode
+		G_AddSimpleStat(self, attacker, 2);
 
 	if (self == attacker)
 	{
 		self->client->ps.fd.suicides++;
-		if (meansOfDeath != MOD_TEAM_CHANGE && self->client->pers.userName && self->client->pers.userName[0] && !self->client->pers.raceMode)
-			G_AddSimpleStat(self->client->pers.userName, 3);
+		if (meansOfDeath != MOD_TEAM_CHANGE)
+			G_AddSimpleStat(self, attacker, 3);
 	}
 
 	if (attacker && attacker->client) {
@@ -2630,29 +2630,24 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
-					if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
-						G_AddSimpleStat(attacker->client->pers.userName, 1);
+					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
 				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
 					AddScore( attacker, self->r.currentOrigin, 2 ); 
-					if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
-						G_AddSimpleStat(attacker->client->pers.userName, 1);
+					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
-				else if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT)) {
-					G_AddSimpleStat(attacker->client->pers.userName, 1);
-					attacker->client->pers.stats.kills++;//JAPRO STATS
-				}
-				else 
+				else {
+					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 					//AddScore( attacker, self->r.currentOrigin, 1 ); //we dont care about other kills? just rabbit?
+				}
 			}
 			else
 			{
 				AddScore( attacker, self->r.currentOrigin, 1 );
-				if (attacker && attacker->client && attacker->client->pers.userName[0] && self->client->pers.userName[0] && self->s.eType != ET_NPC && !(self->r.svFlags & SVF_BOT))
-					G_AddSimpleStat(attacker->client->pers.userName, 1);
+				G_AddSimpleStat(attacker, self, 1);
 				attacker->client->pers.stats.kills++;//JAPRO STATS
 			}
 

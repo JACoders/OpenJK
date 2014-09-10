@@ -5965,7 +5965,7 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 {
 	vec3_t headlevel, a, ang;
 	float optimalAngle, newAngle, frameTime = 0.008f;
-	const float baseSpeed = bs->cur_ps.speed, currentSpeed = sqrtf(bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0] + bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]);
+	const float baseSpeed = bs->cur_ps.speed, currentSpeed = sqrt((bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0]) + (bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]));
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
@@ -6000,7 +6000,9 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 			newAngle = -(45.0f - optimalAngle);//A
 	}
 
-	bs->goalAngles[YAW] += newAngle;
+	//trap->Print("Current: %f, Dir: %f, New: %f\n", bs->goalAngles[YAW],  moveAngles[YAW], newAngle);
+
+	bs->goalAngles[YAW] = bs->aimOffsetAmtYaw + newAngle;
 
 	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
 	//trap_EA_View(bs->client, bs->goalAngles); // if we want instant aim?
@@ -6441,18 +6443,53 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 void NewBotAI_GetMovement(bot_state_t *bs)
 {
 	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy && bs->currentEnemy->client && bs->currentEnemy->client->ps.weapon == WP_SABER)) { //Chase movement
+		const vec3_t xyVelocity = {bs->cur_ps.velocity[0], bs->cur_ps.velocity[1]};
+		float diffAngle;
+		vec3_t moveAngles, a_fo;
+
 		bs->runningLikeASissy = 1;
+
+		vectoangles( xyVelocity, moveAngles );
+		bs->aimOffsetAmtYaw = moveAngles[YAW];
+
+		VectorSubtract(bs->eye, bs->currentEnemy->client->ps.origin, a_fo);
+		vectoangles(a_fo, a_fo);
+
+		//LODA FIXME TODO:
+		//Find angle from us to target.
+		//Find angle of our movement
+		//If we are holding WA, and our movement angle is X to the left of our target angle, switch to WD, otherwise keep holding WA.
+		//If we are holding WD, and our movemetn angle si X to the right of our target angle, switch to WA, othwerise keep holding WD.
+		
+
+
+		diffAngle = bs->aimOffsetAmtYaw - a_fo[YAW];
 
 		trap->EA_MoveForward(bs->client);//W	
 		bs->forceMove_Forward = 1;
-		if (level.time % 2000 > 1000) {
-			trap->EA_MoveRight(bs->client);
-			bs->forceMove_Right = 1; //D
+
+		if (bs->forceMove_Right >= 0) {
+			if (diffAngle > 10) {
+				trap->EA_MoveLeft(bs->client);
+				bs->forceMove_Right = -1; //A
+			}
+			else {
+				trap->EA_MoveRight(bs->client);
+				bs->forceMove_Right = 1; //A
+			}
+
 		}
 		else {
-			trap->EA_MoveLeft(bs->client);
-			bs->forceMove_Right = -1; //A
+			if (diffAngle > 10) {
+				trap->EA_MoveRight(bs->client);
+				bs->forceMove_Right = 1; //A
+			}
+			else {
+				trap->EA_MoveLeft(bs->client);
+				bs->forceMove_Right = -1; //A
+			}
 		}
+
 		NewBotAI_Flipkick(bs);
 	}
 	else { //Combat movement
@@ -7268,7 +7305,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	else
 		bs->frame_Enemy_Vis = 0;
 
-	if (!bs->frame_Enemy_Vis && bs->frame_Enemy_Len > 8192) {
+	if (!bs->frame_Enemy_Vis && bs->frame_Enemy_Len > 8096) {
 		DoAloneStuff(bs, thinktime);
 		return;
 	}

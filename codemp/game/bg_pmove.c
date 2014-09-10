@@ -8277,18 +8277,6 @@ if (pm->ps->duelInProgress)
 			G_CheapWeaponFire(pm->ps->clientNum, EV_FIRE_WEAPON);
 		}
 #endif
-		/*
-		addTime = weaponData[WP_EMPLACED_GUN].fireTime;
-		pm->ps->weaponTime += addTime;
-		if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK) )
-		{
-			PM_AddEvent( EV_ALT_FIRE );
-		}
-		else
-		{
-			PM_AddEvent( EV_FIRE_WEAPON );
-		}
-		*/
 		return;
 	}
 
@@ -8508,70 +8496,45 @@ if (pm->ps->duelInProgress)
 		}
 	}
 
-	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
-		//if ( pm->ps->weapon == WP_BRYAR_PISTOL && pm->gametype != GT_SIEGE )
-		if (0)
-		{ //kind of a hack for now
-			PM_AddEvent( EV_FIRE_WEAPON );
-			addTime = weaponData[pm->ps->weapon].fireTime;
-		}
-		else if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode != 1)
-		{
-			PM_AddEvent( EV_FIRE_WEAPON );
-			addTime = weaponData[pm->ps->weapon].fireTime;
-		}
-		else
-		{
-			if (pm->ps->weapon != WP_MELEE ||
-				!pm->ps->m_iVehicleNum)
-			{ //do not fire melee events at all when on vehicle
-				PM_AddEvent( EV_ALT_FIRE );
+	if (!pm->ps->stats[STAT_RACEMODE] || pm->ps->stats[STAT_ROCKETJUMP]) {
+		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK ) 	{
+			if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode != 1) {
+				PM_AddEvent( EV_FIRE_WEAPON );
+				addTime = weaponData[pm->ps->weapon].fireTime;
 			}
+			else {
+				if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
+					PM_AddEvent( EV_ALT_FIRE );
 #ifdef _GAME
-			if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_SHOCKLANCE)
+				if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_SHOCKLANCE)
+					addTime = 1500;
+				else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
+					addTime = 3000;
+				else
+#endif
+					addTime = weaponData[pm->ps->weapon].altFireTime;
+			}
+		}
+		else {
+			if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
+				PM_AddEvent( EV_FIRE_WEAPON );
+#ifdef _GAME
+			if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & INFINITE_AMMO)//Sad hack to make instagib more playable
 				addTime = 1500;
-			else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
-				addTime = 3000;
+			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
+				addTime = 50;
 			else
 #endif
-				addTime = weaponData[pm->ps->weapon].altFireTime;
+			addTime = weaponData[pm->ps->weapon].fireTime;
+			if ( pm->gametype == GT_SIEGE && pm->ps->weapon == WP_DET_PACK )
+				addTime *= 2;
 		}
 	}
-	else {
-		if (pm->ps->weapon != WP_MELEE ||
-			!pm->ps->m_iVehicleNum)
-		{ //do not fire melee events at all when on vehicle
-			PM_AddEvent( EV_FIRE_WEAPON );
-		}
-#ifdef _GAME
-		if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & INFINITE_AMMO)//Sad hack to make instagib more playable
-			addTime = 1500;
-		else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
-			addTime = 50;
-		else
-#endif
-		addTime = weaponData[pm->ps->weapon].fireTime;
-		if ( pm->gametype == GT_SIEGE && pm->ps->weapon == WP_DET_PACK )
-		{	// were far too spammy before?  So says Rick.
-			addTime *= 2;
-		}
-	}
-
-	/*
-	if ( pm->ps->powerups[PW_HASTE] ) {
-		addTime /= 1.3;
-	}
-	*/
 
 	if (pm->ps->fd.forcePowersActive & (1 << FP_RAGE))
-	{
 		addTime *= 0.75;
-	}
 	else if (pm->ps->fd.forceRageRecoveryTime > pm->cmd.serverTime)
-	{
 		addTime *= 1.5;
-	}
-
 	pm->ps->weaponTime += addTime;
 }
 

@@ -1264,15 +1264,35 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 //If found, update it
 //If not found, add a new row at next empty spot
 //A new function will read the array on mapchange, and do the querys updates
-void G_AddSimpleStat(char *username, int type) {
+void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
 	int row;
+	char userName[16];
 
 	if (sv_cheats.integer) //Dont record stats if cheats were enabled
 		return;
+	if (!self)
+		return;
+	if (!other)
+		return;
+	if (!self->client)
+		return;
+	if (!other->client)
+		return;
+	if (!self->client->pers.userName[0])
+		return;
+	if (!other->client->pers.userName[0])
+		return;
+	if (self->client->pers.raceMode)
+		return;
+	if (other->client->pers.raceMode) //EH?
+		return;
+
+	Q_strncpyz(userName, self->client->pers.userName, sizeof(userName));
+
 	for (row = 0; row < 256; row++) { //size of UserStats ?
 		if (!UserStats[row].username || !UserStats[row].username[0])
 			break;
-		if (!Q_stricmp(UserStats[row].username, username)) { //User found, update his stats in memory, is this check right?
+		if (!Q_stricmp(UserStats[row].username, userName)) { //User found, update his stats in memory, is this check right?
 			if (type == 1) //Kills
 				UserStats[row].kills++;
 			else if (type == 2) //Deaths
@@ -1286,7 +1306,7 @@ void G_AddSimpleStat(char *username, int type) {
 			return;
 		}
 	}
-	Q_strncpyz(UserStats[row].username, username, sizeof(UserStats[row].username )); //If we are here it means name not found, so add it
+	Q_strncpyz(UserStats[row].username, userName, sizeof(UserStats[row].username )); //If we are here it means name not found, so add it
 	UserStats[row].kills = UserStats[row].deaths = UserStats[row].suicides = UserStats[row].captures = UserStats[row].returns = 0; //I guess set all their shit to 0
 	//Add the one type ..
 	if (type == 1) //Kills
