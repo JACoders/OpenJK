@@ -2190,6 +2190,7 @@ qboolean PM_InSecondaryStyle( void )
 	return qfalse;
 }
 
+int PM_GetMovePhysics(void);
 saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 {
 	saberMoveName_t newmove = LS_NONE;
@@ -2253,7 +2254,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		else if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == 4)
+		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 6)
 			allowCartwheels = qfalse;
 		else if (pm->ps->stats[STAT_ONLYBHOP])
 			allowCartwheels = qfalse;

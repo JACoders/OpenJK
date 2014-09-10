@@ -1361,7 +1361,7 @@ qboolean PM_ForceJumpingUp(void)
 		return qfalse;
 	}
 
-	if ((PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
+	if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
 		return qfalse;
 
 	if (!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
@@ -2202,7 +2202,7 @@ static qboolean PM_CheckJump( void )
 
 					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
 					pm->ps->velocity[2] /= 10;
-					if (PM_GetMovePhysics() == 3)
+					if (PM_GetMovePhysics() == 2)
 						pm->ps->velocity[2] += pm->ps->stats[STAT_LASTJUMPSPEED];
 					else 
 						pm->ps->velocity[2] += JUMP_VELOCITY;
@@ -2221,11 +2221,11 @@ static qboolean PM_CheckJump( void )
 				{
 					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
 					{
-						if (PM_GetMovePhysics() != 3)
+						if (PM_GetMovePhysics() != 2)
 							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-				if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 5) {
+				if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6) {
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 					return qfalse;
 				}
@@ -2244,7 +2244,7 @@ static qboolean PM_CheckJump( void )
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
 		// clear upmove so cmdscale doesn't lower running speed
-		if (PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 5 && PM_GetMovePhysics() != 6)
+		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6)
 		{
 			pm->cmd.upmove = 0;
 			return qfalse;
@@ -2273,6 +2273,7 @@ static qboolean PM_CheckJump( void )
 		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
+		(PM_GetMovePhysics() != 3) &&
 		(PM_GetMovePhysics() != 4) &&
 		(PM_GetMovePhysics() != 6) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
@@ -2943,7 +2944,7 @@ static qboolean PM_CheckJump( void )
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
-		if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
+		if ((PM_GetMovePhysics() == 2) || (PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
 		{
 			vec3_t hVel;
 			float added, xyspeed;
@@ -4111,6 +4112,7 @@ static int PM_TryRoll( void )
 	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
+		(PM_GetMovePhysics() == 3) ||
 		(PM_GetMovePhysics() == 4) ||
 		(PM_GetMovePhysics() == 6) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
@@ -4492,7 +4494,7 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
-	if ((PM_GetMovePhysics() == 4) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
+	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4)) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
 		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel
 			pm->ps->velocity[2] = -vel;
 	}
