@@ -2588,9 +2588,11 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			}
 			else
 			{
-				AddScore( attacker, self->r.currentOrigin, -1 );
-				if (attacker != self  && attacker->client)//JAPRO STATS
-					attacker->client->pers.stats.teamKills++;
+				if (attacker != self) {
+					AddScore( attacker, self->r.currentOrigin, -1 );
+					if (attacker != self  && attacker->client)//JAPRO STATS
+						attacker->client->pers.stats.teamKills++;
+				}
 			}
 			if (level.gametype == GT_JEDIMASTER)
 			{
@@ -2707,7 +2709,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 		else
 		{
-			AddScore( self, self->r.currentOrigin, -1 );
+			AddScore( self, self->r.currentOrigin, -1 ); //Not sure what this is.. loda fixme
 		}
 	}
 

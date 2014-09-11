@@ -1757,6 +1757,9 @@ int PassStandardEnemyChecks(bot_state_t *bs, gentity_t *en)
 	if (en->client->ps.pm_type == PM_NOCLIP) 
 		return 0;
 
+	if ((g_newBotAITarget.integer < -1) && (en->r.svFlags & SVF_BOT))
+		return 0;
+
 	if (en->health < 1)
 	{ //he's already dead
 		return 0;
@@ -6440,9 +6443,27 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 		trap->EA_Attack(bs->client);
 }
 
+void NewBotAI_GetGroundDodge(bot_state_t *bs) {
+	bs->runningLikeASissy = 0;
+
+	if (bs->forceMove_Right > 0)
+		trap->EA_MoveRight(bs->client);
+	else if(bs->forceMove_Right < 0)
+		trap->EA_MoveLeft(bs->client);
+
+	if (level.time % 1500 > 750) {
+		if (random() > 0.5)
+			bs->forceMove_Right = 1;
+		else
+			bs->forceMove_Right = -1;
+	}
+}
+
 void NewBotAI_GetMovement(bot_state_t *bs)
 {
-	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy && bs->currentEnemy->client && bs->currentEnemy->client->ps.weapon == WP_SABER)) { //Chase movement
+	const int hisWeapon = bs->currentEnemy->client->ps.weapon;
+
+	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy && bs->currentEnemy->client && hisWeapon == WP_SABER)) { //Chase movement
 		const vec3_t xyVelocity = {bs->cur_ps.velocity[0], bs->cur_ps.velocity[1]};
 		float diffAngle;
 		vec3_t moveAngles, a_fo;
@@ -6492,7 +6513,24 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 
 		NewBotAI_Flipkick(bs);
 	}
-	else { //Combat movement
+	else if (hisWeapon >= WP_SABER) {
+		bs->runningLikeASissy = 0;
+
+		if (hisWeapon == WP_REPEATER || hisWeapon == WP_ROCKET_LAUNCHER || hisWeapon == WP_CONCUSSION) { //Splash dmg, jump
+			NewBotAI_Flipkick(bs);
+			NewBotAI_GetGroundDodge(bs);
+			trap->EA_MoveForward(bs->client);
+		}
+		else { //Chaingun, dodge.  Every half second, pick between A or D at random.
+			trap->EA_MoveForward(bs->client);
+			NewBotAI_GetGroundDodge(bs);
+			if (random() < 0.01) {
+				trap->EA_MoveForward(bs->client);
+				trap->EA_Jump(bs->client);
+			}
+		}
+	}
+	else { //FF Combat movement
 		const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 
 		bs->runningLikeASissy = 0;
@@ -6736,7 +6774,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_RAGE)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_RAGE))) {
-		if ((bs->cur_ps.weapon >= WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) {
+		if ((bs->cur_ps.weapon > WP_BRYAR_PISTOL) && (bs->cur_ps.fd.forcePower > 50)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_RAGE;
 			useTheForce = qtrue;
 		}
@@ -7277,7 +7315,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 		return;
 	}
 
-	if (g_newBotAITarget.integer == -1)
+	if (g_newBotAITarget.integer < 0)
 		closestID = ScanForEnemies(bs); //This has been modified to take health into account, and ignore FOV, mindtrick, etc, when newBotAI is being used.
 	else {
 		gclient_t	*cl;

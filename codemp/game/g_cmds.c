@@ -6350,6 +6350,140 @@ void Cmd_Race_f(gentity_t *ent)
 	}
 }
 
+void Cmd_Nudge_f(gentity_t *ent)//JAPRO - test entity nudge cmd
+{
+	trace_t tr;
+	vec3_t forward, fwdOrg;
+	int nudgeX, nudgeY, nudgeZ;
+	char nudgeXStr[16], nudgeYStr[16], nudgeZStr[16];
+	vec3_t mins = {-4, -4, -4}, maxs = {4, 4, 4};
+
+	if ( trap->Argc() != 4) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /nudge <X> <Y> <Z>.\n\"" );
+		return;
+	} 
+
+	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
+
+	fwdOrg[0] = ent->client->ps.origin[0] + forward[0]*4096;
+	fwdOrg[1] = ent->client->ps.origin[1] + forward[1]*4096;
+	fwdOrg[2] = (ent->client->ps.origin[2]+ent->client->ps.viewheight) + forward[2]*4096;
+
+	JP_Trace( &tr, ent->client->ps.origin, mins, maxs, fwdOrg, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
+
+	//trap->SendServerCommand( ent-g_entities, va("print \"Trace info: fraction = %f, num = %i, \n\"", tr.fraction, (int)tr.entityNum ));
+
+	if (tr.fraction != 1 && tr.entityNum >= MAX_CLIENTS && tr.entityNum != ENTITYNUM_WORLD && tr.entityNum != ENTITYNUM_NONE) {
+		gentity_t *ent = &g_entities[tr.entityNum];
+		vec3_t oldOrigin, newOrigin;
+
+		//trap->SendServerCommand( ent-g_entities, "print \"Nudging.\n\"" );
+		trap->Argv(1, nudgeXStr, sizeof(nudgeXStr)); 
+		trap->Argv(2, nudgeYStr, sizeof(nudgeYStr));
+		trap->Argv(3, nudgeZStr, sizeof(nudgeZStr));
+
+		nudgeX = atoi(nudgeXStr);
+		nudgeY = atoi(nudgeYStr);
+		nudgeZ = atoi(nudgeZStr);
+
+		//trap->Print("Nudging %i %i %i\n", nudgeX, nudgeY, nudgeZ);
+		
+		oldOrigin[0] = ent->s.pos.trBase[0];
+		oldOrigin[1] = ent->s.pos.trBase[1];
+		oldOrigin[2] = ent->s.pos.trBase[2];
+
+		newOrigin[0] = oldOrigin[0] + nudgeX;
+		newOrigin[1] = oldOrigin[1] + nudgeY;
+		newOrigin[2] = oldOrigin[2] + nudgeZ;
+
+		G_SetOrigin(ent, newOrigin);
+		trap->LinkEntity( (sharedEntity_t *)ent );
+		/*
+
+		ent->s.pos.trBase[0] += nudgeX;
+		ent->s.pos.trBase[1] += nudgeY;
+		ent->s.pos.trBase[2] += nudgeZ;
+		*/
+	}
+	else {
+		trap->SendServerCommand( ent-g_entities, "print \"Entity not found.\n\"" );
+		return;
+	}
+}
+
+//Save ents
+/*
+For each entity, if not func_static, continue
+//Print { , newline,  Print "origin" "<ORIGIN>" newline, print classname newline.. } newline
+
+
+*/
+
+
+
+
+
+
+
+
+static void Cmd_SaveEnts_f(void)
+{
+	int i = 0, x, y, z;
+	char className[MAX_STRING_CHARS], model[32];
+	gentity_t *ent;
+	char *str;
+
+	fileHandle_t fh;
+	trap->FS_Open("mapents.ent", &fh, FS_WRITE);
+
+	while (i < ENTITYNUM_MAX_NORMAL) {
+		ent = &g_entities[i];
+		if (ent->inuse) {
+			if (ent->s.eType == ET_MOVER) {
+				if (ent->classname && ent->classname[0])
+					Q_strncpyz( className, ent->classname, sizeof(className));
+				else
+					Q_strncpyz( className, "Unknown", sizeof(className));
+
+				if (ent->model && ent->model[0])
+					Q_strncpyz( model, ent->model, sizeof(model));
+				else
+					Q_strncpyz( model, "Unknown", sizeof(model));
+
+				x = ent->s.pos.trBase[0];
+				y = ent->s.pos.trBase[1];
+				z = ent->s.pos.trBase[2];
+
+				str = va("{\n\"classname\" \"%s\"\n\"origin\" \"%i %i %i\"\n\"model\" \"%s\"\n}\n", className, x, y, z, model);
+
+				if (fh)
+					trap->FS_Write(str, strlen(str), fh);
+			}
+		}
+		i++;
+	}
+
+	if (fh)
+	{
+		trap->FS_Write(str, strlen(str), fh);
+		trap->FS_Close(fh);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //[JAPRO - Serverside - All - Serverconfig - Start]
 void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make standardized
 {
@@ -6655,6 +6789,8 @@ void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 void Cmd_PersonalBest_f( gentity_t *ent);
+void Cmd_Nudge_f( gentity_t *ent);
+void Cmd_SaveEnts_f( void );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -6754,11 +6890,15 @@ command_t commands[] = {
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
+	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
+
+	{ "saveents",			Cmd_SaveEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
+
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "say_team_mod",		Cmd_SayTeamMod_f,			0 },

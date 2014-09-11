@@ -115,6 +115,31 @@ static void CleanStrin(char &string) {
 }
 */
 
+void DebugWriteToDB(char *entrypoint) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[16], password[16];
+
+	Q_strncpyz(username, "test", sizeof(username));
+	Q_strncpyz(password, "test", sizeof(password));
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	sql = "UPDATE LocalAccount SET password = ? WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+
+	s = sqlite3_step(stmt);
+
+	if (s != SQLITE_DONE)
+		G_SecurityLogPrintf( "ERROR: Could not write to database with error %i, entrypoint %s\n", s, entrypoint );
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+}
+
 int CheckUserExists(char *username) {
 	sqlite3 * db;
     char * sql;
@@ -155,6 +180,8 @@ int CheckUserExists(char *username) {
 		trap->Print("ERROR: Multiple accounts with same accountname!\n");
 		return 0;
 	}
+
+	DebugWriteToDB("CheckUserExists");
 }
 void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	fileHandle_t f;
@@ -240,6 +267,7 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 
 	if (CheckUserExists(winner) && CheckUserExists(loser)) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
 		sql = "INSERT INTO LocalDuel(winner, loser, duration, type, winner_hp, winner_shield, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, winner, -1, SQLITE_STATIC));
@@ -250,7 +278,12 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 		CALL_SQLITE (bind_int (stmt, 6, winner_shield));
 		CALL_SQLITE (bind_int (stmt, 7, rawtime));
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
 	}
+
+	DebugWriteToDB("G_AddDuel");
 }
 
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
@@ -335,6 +368,8 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 	}
 	else 
 		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
+
+	DebugWriteToDB("G_AddToDBFromFile");
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
@@ -545,6 +580,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 			//Shift every row after newRank down one
 			//Insert our new time into newRank spot
+
+	DebugWriteToDB("G_AddRaceTime");
 }
 
 //So the best way is to probably add every run as soon as its taken and not filter them.
@@ -555,10 +592,11 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0, s, count = 0;
+    int row = 0, s, count = 0, i;
 	unsigned int ip, lastip;
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
+	gclient_t	*cl;
 
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /login <username> <password>\n\"");
@@ -642,6 +680,16 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		CALL_SQLITE (close(db));
 		return;
 	}
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
+		if (!g_entities[i].inuse)
+			continue;
+		cl = &level.clients[i];
+		if (!Q_stricmp(username, cl->pers.userName)) {
+			trap->SendServerCommand(ent-g_entities, "print \"This account is already logged in!\n\"");
+			return;
+		}
+	}
 		
 	if (enteredPassword[0] && password[0] && !Q_stricmp(enteredPassword, password)) {
 		time_t	rawtime;
@@ -664,6 +712,8 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
 	}	
 	CALL_SQLITE (close(db));
+
+	DebugWriteToDB("Cmd_ACLogin_f");
 }
 
 void Cmd_ChangePassword_f( gentity_t *ent ) {
@@ -742,6 +792,8 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
 	}	
 	CALL_SQLITE (close(db));
+
+	DebugWriteToDB("Cmd_ChangePassword_f");
 }
 
 void Svcmd_ChangePass_f(void)
@@ -1135,6 +1187,8 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
+
+	DebugWriteToDB("Cmd_ACRegister_f");
 }
 
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
@@ -1258,6 +1312,8 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	// make 1st places worth 10 points, 2nd place 9 points.. etc..? 
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+
+	DebugWriteToDB("Cmd_Stats_f");
 }
 
 //Search array list to find players row
@@ -1418,6 +1474,8 @@ void G_AddSimpleStatsToDB() {
 	}
 	else 
 		trap->Print("ERROR: Unable to insert previous map stats into database.\n");
+
+	DebugWriteToDB("G_AddSimpleStatToDB");
 }
 
 #if 0
@@ -1558,6 +1616,8 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	CALL_SQLITE (close(db));
 
 	trap->Print("Cleaned up racetimes\n");
+
+	DebugWriteToDB("CleanupLocalRun");
 }
 
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
@@ -1642,6 +1702,8 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 
 	if (level.numCourses)
 		trap->Print("Highscores built for %s\n", mapName);
+
+	DebugWriteToDB("BuildMapHighscores");
 }
 
 void IntegerToRaceName(int style, char *styleString) {
@@ -1810,6 +1872,8 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 		trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5.\n\"", durationStr));
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"^5 No results found.\n\"");
+
+	DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
 void Cmd_DFTop10_f(gentity_t *ent) {
@@ -2039,6 +2103,8 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	}
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+	DebugWriteToDB("Cmd_ACWhois_f");
 }
 
 void InitGameAccountStuff( void ) { //Called every mapload , move the create table stuff to something that gets called every srvr start.. eh?
@@ -2070,6 +2136,8 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	BuildMapHighscores();//Build highscores into memory from database
 
 	CALL_SQLITE (close(db));
+
+	DebugWriteToDB("InitGameAccountStuff");
 }
 
 void G_SpawnWarpLocationsFromCfg(void) //loda fixme
