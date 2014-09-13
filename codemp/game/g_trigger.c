@@ -1265,7 +1265,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
 
 	if (trigger->noise_index) 
-		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?
+		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
 	player->client->pers.stats.startLevelTime = level.time;
 	player->client->pers.stats.startTime = trap->Milliseconds();

@@ -191,12 +191,18 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	char*	pch;
 	qboolean unique = qtrue;
 
-	if (!Q_stricmp(name, "Padawan"))
+	if (!Q_stricmp(name, "Padawan")) //loda fixme, also ignore Padawan[0] etc..
 		return;
 
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
 		*p = 0;
+
+	if (!Q_stricmp(strIP, "") && !Q_stricmp(guid, "NOGUID")) //No IP or GUID info to be gained.. so forget it
+		return;
+
+	Q_strlwr(name);
+	Q_CleanStr(name);
 
 	Com_sprintf(string, sizeof(string), "%s;%s;%s", name, strIP, guid); //Store ip as int or char??.. lets do int
 
@@ -538,11 +544,15 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
 							if (level.tempRaceLog)
 								trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+							CALL_SQLITE (finalize(stmt));
+							CALL_SQLITE (close(db));
 							break;
 						}
 						else { //Our time we jus recorded is slower, so add faster time from db to cache
 							//trap->Print("Time not found in cache, adding time from db: %i\n", oldBest);
 							PersonalBests[style][i].duration_ms = oldBest;
+							CALL_SQLITE (finalize(stmt));
+							CALL_SQLITE (close(db));
 							break;
 						}
 					}
@@ -551,6 +561,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
 						if (level.tempRaceLog)
 							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+						CALL_SQLITE (finalize(stmt));
+						CALL_SQLITE (close(db));
 						break;
 					}
 				}

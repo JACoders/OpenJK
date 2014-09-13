@@ -6513,7 +6513,7 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 
 		NewBotAI_Flipkick(bs);
 	}
-	else if (hisWeapon >= WP_SABER) {
+	else if (hisWeapon > WP_SABER) {
 		bs->runningLikeASissy = 0;
 
 		if (hisWeapon == WP_REPEATER || hisWeapon == WP_ROCKET_LAUNCHER || hisWeapon == WP_CONCUSSION) { //Splash dmg, jump
