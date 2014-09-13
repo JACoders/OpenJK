@@ -185,7 +185,7 @@ int CheckUserExists(char *username) {
 }
 void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	fileHandle_t f;
-	char string[128], string2[128], buf[80*1024];
+	char string[128], string2[128], buf[80*1024], cleanName[MAX_NETNAME];
 	char *p = NULL;
 	int	fLen = 0;
 	char*	pch;
@@ -201,10 +201,12 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	if (!Q_stricmp(strIP, "") && !Q_stricmp(guid, "NOGUID")) //No IP or GUID info to be gained.. so forget it
 		return;
 
-	Q_strlwr(name);
-	Q_CleanStr(name);
+	Q_strncpyz(cleanName, name, sizeof(cleanName));
 
-	Com_sprintf(string, sizeof(string), "%s;%s;%s", name, strIP, guid); //Store ip as int or char??.. lets do int
+	Q_strlwr(cleanName);
+	Q_CleanStr(cleanName);
+
+	Com_sprintf(string, sizeof(string), "%s;%s;%s", cleanName, strIP, guid); //Store ip as int or char??.. lets do int
 
 	fLen = trap->FS_Open(PLAYER_LOG, &f, FS_READ);
 	if (!f) {
