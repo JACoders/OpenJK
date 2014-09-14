@@ -3580,15 +3580,19 @@ static void PM_DodgeMove(int forward, int right)
 
 static void PM_DashMove(void)
 {
-	vec3_t dashdir;
+	vec3_t dashdir, view;
 	static const int DASH_SPEED = 475;
 	static const int DASH_JUMP_SPEED = 280;
 	float xyspeed;
 
 	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
 
-	VectorMA(vec3_origin, 1, pml.forward, dashdir);
+	VectorCopy(pml.forward, view);
+	view[ROLL] = 0; //I guess this is really pitch angle
+
+	VectorMA(vec3_origin, 1, view, dashdir);
 	VectorNormalize( dashdir );
+
 	if(xyspeed <= DASH_SPEED)
 		VectorScale(dashdir, DASH_SPEED, dashdir);
 	else

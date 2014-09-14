@@ -6426,17 +6426,30 @@ For each entity, if not func_static, continue
 
 
 
-static void Cmd_SaveEnts_f(void)
+static void Cmd_SaveEnts_f(gentity_t *self)
 {
-	int i = 0, x, y, z;
-	char className[MAX_STRING_CHARS], model[32];
+	int i, x, y, z;
+	char className[MAX_STRING_CHARS], model[32], fileName[MAX_QPATH], info[1024] = {0}, arg1[MAX_QPATH];
 	gentity_t *ent;
 	char *str;
-
 	fileHandle_t fh;
-	trap->FS_Open("mapents.ent", &fh, FS_WRITE);
 
-	while (i < ENTITYNUM_MAX_NORMAL) {
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( self-g_entities, "print \"Usage: saveEnts <name>\n\"" );
+		return;
+	}
+	trap->Argv(1, arg1, sizeof(arg1));
+
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(fileName, Info_ValueForKey( info, "mapname" ), sizeof(fileName));
+	Q_strcat(fileName, sizeof(fileName), va("_%s.ent", arg1));
+
+	Q_strlwr(fileName);
+	Q_CleanStr(fileName); //also remove . and other chars for windows filesystem..?
+
+	trap->FS_Open(fileName, &fh, FS_WRITE);
+
+	for (i=0; i < ENTITYNUM_MAX_NORMAL; i++) {
 		ent = &g_entities[i];
 		if (ent->inuse) {
 			if (ent->s.eType == ET_MOVER) {
@@ -6460,20 +6473,125 @@ static void Cmd_SaveEnts_f(void)
 					trap->FS_Write(str, strlen(str), fh);
 			}
 		}
-		i++;
 	}
 
 	if (fh)
 	{
 		trap->FS_Write(str, strlen(str), fh);
 		trap->FS_Close(fh);
+
+		trap->SendServerCommand( self-g_entities, "print \"Entities saved\n\"" );
 	}
 }
 
 
 
+static void Cmd_LoadEnts_f(gentity_t *self) {
+	gentity_t *ent;
+	int i, fLen, MAX_FILESIZE = 80*1024;
+	char arg1[MAX_QPATH], info[1024] = {0}, fileName[MAX_QPATH], buf[80*1024];
+	fileHandle_t fh;
+	char*	pch;
 
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( self-g_entities, "print \"Usage: saveEnts <name>\n\"" );
+		return;
+	}
+	trap->Argv(1, arg1, sizeof(arg1));
 
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(fileName, Info_ValueForKey( info, "mapname" ), sizeof(fileName));
+	Q_strcat(fileName, sizeof(fileName), va("_%s.ent", arg1));
+
+	Q_strlwr(fileName);
+	Q_CleanStr(fileName); //also remove . and other chars for windows filesystem..?
+
+	for (i=0; i < ENTITYNUM_MAX_NORMAL; i++) { //First delete the current entities..?
+		ent = &g_entities[i];
+		if (ent->inuse) {
+			if (ent->s.eType == ET_MOVER) {
+				G_FreeEntity(ent);
+			}
+		}
+	}
+
+	fLen = trap->FS_Open(fileName, &fh, FS_READ);
+
+	if (!fh) {
+		Com_Printf ("Couldn't load tele locations from %s\n", fileName);
+		return;
+	}
+	if (fLen >= MAX_FILESIZE) {
+		trap->FS_Close(fh);
+		Com_Printf ("Couldn't load tele locations from %s, file is too large\n", fileName);
+		return;
+	}
+
+	{
+		char *token;
+		const char *buf2;
+
+		trap->FS_Read(buf, fLen, fh);
+		buf[fLen] = 0;
+		trap->FS_Close(fh);
+
+	
+		//if ( COM_ParseString( &buf2, &value ) ) 
+		//{
+		//}
+
+		//token = COM_ParseExt(&buf2, qfalse);
+
+	
+	}
+
+	/*
+	{
+		char line[80];
+
+		while(fgets(line, 80, fh) != NULL) // get a line, up to 80 chars from fr.  done if NULL 
+		{
+
+		}
+
+	}
+	*/
+
+	/*
+	
+	trap->FS_Read(buf, fLen, fh);
+	buf[fLen] = 0;
+	trap->FS_Close(fh);
+
+	pch = strtok (buf,"\n");  //loda fixme why is this broken
+	while (pch != NULL)
+	{
+		if ((args % 5) == 1)
+			Q_strncpyz(warpList[row].name, pch, sizeof(warpList[row].name));
+		else if ((args % 5) == 2)
+			warpList[row].x = atoi(pch);
+		else if ((args % 5) == 3)
+			warpList[row].y = atoi(pch);
+		else if ((args % 5) == 4)
+			warpList[row].z = atoi(pch);
+		else if ((args % 5) == 0) {
+			warpList[row].yaw = atoi(pch);
+			//trap->Print("Warp added: %s, <%i, %i, %i, %i>\n", warpList[row].name, warpList[row].x, warpList[row].y, warpList[row].z, warpList[row].yaw);
+			row++;
+		}
+    	pch = strtok (NULL, " \n\t");
+		args++;
+	}
+
+	*/
+	
+
+	//G_ParseSpawnVars();
+
+	//COM_ParseExt
+
+	//load from file... look at R_LoadEntities.. or G_SpawnEntitiesFromString...G_ParseSpawnVars 
+}
 
 
 
@@ -6790,7 +6908,7 @@ void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
-void Cmd_SaveEnts_f(void);
+void Cmd_SaveEnts_f( gentity_t *self);
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {

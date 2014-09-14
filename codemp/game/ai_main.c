@@ -6420,6 +6420,9 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 	weapon = NewBotAI_GetWeapon(bs);
 	BotSelectWeapon(bs->client, weapon);
 
+	if (bs->runningLikeASissy) //Dont attack when chasing them with strafe i guess
+		return;
+
 	if (bs->cur_ps.weapon == WP_SABER) {//Fullforce saber attacks
 		g_entities[bs->client].client->ps.fd.saberAnimLevel = SS_STRONG;
 
@@ -6462,7 +6465,7 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 {
 	const int hisWeapon = bs->currentEnemy->client->ps.weapon;
 
-	if (bs->frame_Enemy_Len > 2000 && (bs->currentEnemy && bs->currentEnemy->client && hisWeapon == WP_SABER)) { //Chase movement
+	if ((bs->frame_Enemy_Len > 2000) && (bs->currentEnemy && bs->currentEnemy->client && (hisWeapon == WP_SABER))) { //Chase movement
 		const vec3_t xyVelocity = {bs->cur_ps.velocity[0], bs->cur_ps.velocity[1]};
 		float diffAngle;
 		vec3_t moveAngles, a_fo;
