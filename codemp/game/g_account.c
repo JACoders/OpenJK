@@ -2086,11 +2086,11 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
+	CALL_SQLITE (close(db));
+
 	CleanupLocalRun(); //Deletes useless shit from LocalRun database table
 	G_AddToDBFromFile(); //Add last maps highscores
 	BuildMapHighscores();//Build highscores into memory from database
-
-	CALL_SQLITE (close(db));
 
 	DebugWriteToDB("InitGameAccountStuff");
 }
