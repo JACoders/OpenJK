@@ -6831,7 +6831,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				if (!(bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT) && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && ((bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN)))) {
+				if (!(bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT) && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && ((bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))))) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
