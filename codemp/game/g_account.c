@@ -170,6 +170,8 @@ int CheckUserExists(char *username) {
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 
+	DebugWriteToDB("CheckUserExists");
+
 	if (row == 0) {
 		return 0;
 	}
@@ -180,8 +182,6 @@ int CheckUserExists(char *username) {
 		trap->Print("ERROR: Multiple accounts with same accountname!\n");
 		return 0;
 	}
-
-	DebugWriteToDB("CheckUserExists");
 }
 void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	fileHandle_t f;
@@ -381,7 +381,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
-void PlayActualGlobalSound(char * sound) {
+void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each client and play it on them..?
 	gentity_t	*te;
 	vec3_t temp = {0, 0, 0};
 
@@ -390,6 +390,17 @@ void PlayActualGlobalSound(char * sound) {
 	//te->s.saberEntityNum = channel;
 	te->s.eFlags = EF_SOUNDTRACKER;
 	te->r.svFlags |= SVF_BROADCAST;
+}
+void PlayActualGlobalSound(char * sound) {
+	gentity_t *player;
+	int i;
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
+		if (!g_entities[i].inuse)
+			continue;
+		player = &g_entities[i];
+		G_Sound(player, CHAN_AUTO, G_SoundIndex(sound));
+	}
 }
 
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
@@ -527,6 +538,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				Q_strncpyz(PersonalBests[style][i].coursename, courseName, sizeof(PersonalBests[style][i].coursename));
 
 				CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
 				sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
 				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 				CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
@@ -637,6 +649,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	ip = ip_to_int(strIP);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
 	if (ip) {
 		sql = "SELECT COUNT(*) FROM LocalAccount WHERE lastip = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -701,6 +714,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		cl = &level.clients[i];
 		if (!Q_stricmp(username, cl->pers.userName)) {
 			trap->SendServerCommand(ent-g_entities, "print \"This account is already logged in!\n\"");
+			CALL_SQLITE (close(db));
 			return;
 		}
 	}
@@ -719,8 +733,14 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		CALL_SQLITE (bind_int64 (stmt, 1, ip));
 		CALL_SQLITE (bind_int (stmt, 2, rawtime));
 		CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
-		CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+		s = sqlite3_step(stmt);
+
+		if (s != SQLITE_DONE)
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+
 		CALL_SQLITE (finalize(stmt));
+
 	}
 	else {
 		trap->SendServerCommand(ent-g_entities, "print \"Incorrect password!\n\"");
@@ -842,7 +862,6 @@ void Svcmd_ChangePass_f(void)
 	CALL_SQLITE (bind_text (stmt, 1, newPassword, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
 	//CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
 
 	s = sqlite3_step(stmt);
 	if (s == SQLITE_DONE)
@@ -850,6 +869,7 @@ void Svcmd_ChangePass_f(void)
 	else
 		trap->Print( "Error: Could not write to database: %i.\n", s);
 
+	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 }
 
@@ -949,6 +969,7 @@ void Svcmd_DeleteAccount_f(void)
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16], confirm[16];
+	int s;
 
 	if (trap->Argc() != 3) {
 		trap->Print( "Usage: /deleteAccount <username> <confirm>\n");
@@ -972,9 +993,12 @@ void Svcmd_DeleteAccount_f(void)
 		sql = "DELETE FROM LocalAccount WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-		CALL_SQLITE_EXPECT (step (stmt), DONE);
 		CALL_SQLITE (finalize(stmt));
-		trap->Print( "Account deleted.\n");
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_DONE)
+			trap->Print( "Account deleted.\n");
+		else 
+			trap->Print( "Error: Could not write to database: %i.\n", s);
 	}
 	else 
 		trap->Print( "User does not exist, deleting highscores for username anyway.\n");
@@ -982,9 +1006,12 @@ void Svcmd_DeleteAccount_f(void)
 	sql = "DELETE FROM LocalRun WHERE username = ?";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-    CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
+    
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
 
+	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 }
 
@@ -1092,7 +1119,6 @@ void Svcmd_DBInfo_f(void)
 	}
 	CALL_SQLITE (finalize(stmt));
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "SELECT COUNT(*) FROM LocalDuel";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     s = sqlite3_step(stmt);
@@ -1529,107 +1555,22 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	//char mapName[40], courseName[40], info[1024] = {0};
-	//int i, mstyle;
-
-	//trap->GetServerinfo(info, sizeof(info));
-	//Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
-
-	//Q_strlwr(mapName);
-	//Q_CleanStr(mapName);
+	int s;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-#if 0
-
-	sql = "DROP TABLE IF EXISTS TempLocalRun";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "CREATE TABLE TempLocalRun(id INTEGER PRIMARY KEY, old_id INTEGER, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
-		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	for (i = 0; i < level.numCourses; i++) { //32 max
-		Q_strncpyz(courseName, mapName, sizeof(courseName));
-		if (level.courseName[i] && level.courseName[i][0])
-			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-
-		sql = "INSERT INTO TempLocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) " //Place 2
-			"SELECT LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "
-				"FROM (SELECT id, MIN(duration_ms) "
-				   "FROM LocalRun "
-				   "WHERE coursename = ? AND style = ? "
-				   "GROUP BY username) " 
-				"AS X INNER JOIN LocalRun AS LR ON LR.id = X.id ORDER BY duration_ms LIMIT 200";//keep 200 fastest users per  course/style ?	
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		
-		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
-			CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 2, mstyle));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (reset (stmt));
-			CALL_SQLITE (clear_bindings (stmt));
-		}
-		CALL_SQLITE (finalize(stmt));
-
-		sql = "DELETE FROM LocalRun WHERE coursename = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-		CALL_SQLITE_EXPECT (step (stmt), DONE);
-		CALL_SQLITE (finalize(stmt));
-	}
-
-	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) "
-		"SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM TempLocalRun";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "DROP TABLE IF EXISTS Temp";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "CREATE TABLE Temp(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "INSERT INTO Temp (username, coursename, duration_ms, topspeed, average, style, end_time) SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM LocalRun";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "DROP TABLE IF EXISTS LocalRun";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "CREATE TABLE LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-
-	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) SELECT username, coursename, duration_ms, topspeed, average, style, end_time FROM Temp";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
-	CALL_SQLITE (finalize(stmt));
-#endif
-
 	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_DONE)
+		trap->Print("Cleaned up racetimes\n");
+	else 
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
 	CALL_SQLITE (finalize(stmt));
-
 	//loda fixme, maybe remake table or something.. ?
-
 	CALL_SQLITE (close(db));
-
-	trap->Print("Cleaned up racetimes\n");
 
 	DebugWriteToDB("CleanupLocalRun");
 }
