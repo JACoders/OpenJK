@@ -5967,7 +5967,7 @@ void Bot_SetForcedMovement(int bot, int forward, int right, int up)
 void NewBotAI_GetStrafeAim(bot_state_t *bs)
 {
 	vec3_t headlevel, a, ang;
-	float optimalAngle, newAngle, frameTime = 0.008f;
+	float optimalAngle, newAngle = 0, frameTime = 0.008f;
 	const float baseSpeed = bs->cur_ps.speed, currentSpeed = sqrt((bs->cur_ps.velocity[0] * bs->cur_ps.velocity[0]) + (bs->cur_ps.velocity[1] * bs->cur_ps.velocity[1]));
 
 	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
@@ -6220,7 +6220,7 @@ float NewBotAI_GetSpeedTowardsEnemy(bot_state_t *bs)
 
 int NewBotAI_GetWeapon(bot_state_t *bs)
 {
-	const int hisHealth = bs->currentEnemy->health, ourHealth = g_entities[bs->client].health, distance = bs->frame_Enemy_Len;
+	const int /*hisHealth = bs->currentEnemy->health,*/ distance = bs->frame_Enemy_Len;
 	int hisWeapon = WP_SABER;
 	int bestWeapon = bs->cur_ps.weapon;
 	
@@ -6415,7 +6415,6 @@ int NewBotAI_GetAltCharge(bot_state_t *bs)
 void NewBotAI_GetAttack(bot_state_t *bs)
 {
 	int weapon;
-	qboolean altAttack = qfalse;
 	const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
 
 	weapon = NewBotAI_GetWeapon(bs);
@@ -6617,13 +6616,15 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 
 	if (g_forcePowerDisable.integer & (1 << FP_PULL))
 		return 0;
-	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL))
+	if  (!(bs->cur_ps.fd.forcePowersKnown & (1 << FP_PULL)))
 		return 0;
 	if (bs->frame_Enemy_Len > 640) //Check pull range..
 		return 0;
 	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+		return 0;
+	if (ourForce < 20)
 		return 0;
 
 	if (weight < 0)
@@ -6650,17 +6651,19 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 }
 
 int NewBotAI_GetPush(bot_state_t *bs) {
-	const int ourHealth = g_entities[bs->client].health;
+	const int ourHealth = g_entities[bs->client].health, ourForce = bs->cur_ps.fd.forcePower;
 
 	if (g_forcePowerDisable.integer & (1 << FP_PUSH))
 		return 0;
-	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH))
+	if  (!(bs->cur_ps.fd.forcePowersKnown & (1 << FP_PUSH)))
 		return 0;
 	if (bs->frame_Enemy_Len > 640)
 		return 0;
 	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+		return 0;
+	if (ourForce < 20)
 		return 0;
 
 	if (NewBotAI_IsEnemyPullable(bs) && (ourHealth < 25) && (bs->frame_Enemy_Len < 160) && (bs->currentEnemy->client->ps.weapon == WP_SABER)) {
@@ -6671,18 +6674,20 @@ int NewBotAI_GetPush(bot_state_t *bs) {
 }
 
 int NewBotAI_GetDrain(bot_state_t *bs) {
-	const int ourHealth = g_entities[bs->client].health, hisHealth = bs->currentEnemy->health, ourForce = bs->cur_ps.fd.forcePower, hisForce = bs->currentEnemy->client->ps.fd.forcePower;
+	const int ourHealth = g_entities[bs->client].health, ourForce = bs->cur_ps.fd.forcePower, hisForce = bs->currentEnemy->client->ps.fd.forcePower;
 	int weight = 100;
 
 	if (g_forcePowerDisable.integer & (1 << FP_DRAIN))
 		return 0;
-	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_DRAIN))
+	if  (!(bs->cur_ps.fd.forcePowersKnown & (1 << FP_DRAIN)))
 		return 0;
 	if (bs->frame_Enemy_Len > MAX_DRAIN_DISTANCE)
 		return 0;
 	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+		return 0;
+	if (ourForce < 21)
 		return 0;
 
 	if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
@@ -6705,13 +6710,15 @@ int NewBotAI_GetGrip(bot_state_t *bs) {
 
 	if (g_forcePowerDisable.integer & (1 << FP_GRIP))
 		return 0;
-	if  (!bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP))
+	if  (!(bs->cur_ps.fd.forcePowersKnown & (1 << FP_GRIP)))
 		return 0;
 	if (bs->frame_Enemy_Len > MAX_GRIP_DISTANCE)
 		return 0;
 	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+		return 0;
+	if (ourForce < 50) //loda fixme
 		return 0;
 
 	if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
@@ -6824,7 +6831,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}
-				if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && (bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN))) {
+				if (!(bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT) && (!(bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_LEVITATION)) && ((bs->currentEnemy->client->ps.groundEntityNum != ENTITYNUM_NONE - 1)) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN)))) {
 					level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 					useTheForce = qtrue;
 				}

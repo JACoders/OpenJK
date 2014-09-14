@@ -1088,7 +1088,6 @@ void Svcmd_DBInfo_f(void)
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	char buf[MAX_STRING_CHARS-64] = {0};
 	int s, numAccounts = 0, numRaces = 0, numDuels = 0;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));

@@ -6790,7 +6790,7 @@ void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
-void Cmd_SaveEnts_f( void );
+void Cmd_SaveEnts_f(void);
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
