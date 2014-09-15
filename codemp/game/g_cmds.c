@@ -6419,33 +6419,15 @@ For each entity, if not func_static, continue
 
 */
 
+#if 1 //BULLSHIT FUNC_STATIC LIVE PLACEMENT
 
-
-
-
-
-
-
-static void Cmd_SaveEnts_f(gentity_t *self)
+static qboolean SaveEnts(char *fileName)
 {
 	int i, x, y, z;
-	char className[MAX_STRING_CHARS], model[32], fileName[MAX_QPATH], info[1024] = {0}, arg1[MAX_QPATH];
+	char className[MAX_STRING_CHARS], model[32];
 	gentity_t *ent;
 	char *str;
 	fileHandle_t fh;
-
-	if (trap->Argc() != 2) {
-		trap->SendServerCommand( self-g_entities, "print \"Usage: saveEnts <name>\n\"" );
-		return;
-	}
-	trap->Argv(1, arg1, sizeof(arg1));
-
-	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(fileName, Info_ValueForKey( info, "mapname" ), sizeof(fileName));
-	Q_strcat(fileName, sizeof(fileName), va("_%s.ent", arg1));
-
-	Q_strlwr(fileName);
-	Q_CleanStr(fileName); //also remove . and other chars for windows filesystem..?
 
 	trap->FS_Open(fileName, &fh, FS_WRITE);
 
@@ -6453,6 +6435,7 @@ static void Cmd_SaveEnts_f(gentity_t *self)
 		ent = &g_entities[i];
 		if (ent->inuse) {
 			if (ent->s.eType == ET_MOVER) {
+				//trap->Print("CLASSNAME?? %s\n", ent->classname);
 				if (ent->classname && ent->classname[0])
 					Q_strncpyz( className, ent->classname, sizeof(className));
 				else
@@ -6477,129 +6460,146 @@ static void Cmd_SaveEnts_f(gentity_t *self)
 
 	if (fh)
 	{
-		trap->FS_Write(str, strlen(str), fh);
+		//trap->FS_Write(str, strlen(str), fh);
 		trap->FS_Close(fh);
-
-		trap->SendServerCommand( self-g_entities, "print \"Entities saved\n\"" );
+		return qtrue;
 	}
+	return qfalse;
 }
 
+typedef struct TempEntity_s {
+	char				classname[48];
+	char				origin[48];
+	char				model[16];
+} TempEntity_t;
 
-
-static void Cmd_LoadEnts_f(gentity_t *self) {
-	gentity_t *ent;
+void SP_func_static( gentity_t *ent );
+qboolean G_CallSpawn( gentity_t *ent );
+static qboolean LoadEnts(char *fileName) {
+	gentity_t *oldEnt;
+	gentity_t *newEnt;
 	int i, fLen, MAX_FILESIZE = 80*1024;
-	char arg1[MAX_QPATH], info[1024] = {0}, fileName[MAX_QPATH], buf[80*1024];
+	char info[1024] = {0};//, buf[80*1024];
 	fileHandle_t fh;
-	char*	pch;
-
-	if (trap->Argc() != 2) {
-		trap->SendServerCommand( self-g_entities, "print \"Usage: saveEnts <name>\n\"" );
-		return;
-	}
-	trap->Argv(1, arg1, sizeof(arg1));
-
-	trap->GetServerinfo(info, sizeof(info));
-	Q_strncpyz(fileName, Info_ValueForKey( info, "mapname" ), sizeof(fileName));
-	Q_strcat(fileName, sizeof(fileName), va("_%s.ent", arg1));
-
-	Q_strlwr(fileName);
-	Q_CleanStr(fileName); //also remove . and other chars for windows filesystem..?
+	const char *token;
+	const char	*p;
+	static char buf[80*1024];
+	char lastToken[MAX_QPATH] = {0};
+	TempEntity_t	TempEntity;
 
 	for (i=0; i < ENTITYNUM_MAX_NORMAL; i++) { //First delete the current entities..?
-		ent = &g_entities[i];
-		if (ent->inuse) {
-			if (ent->s.eType == ET_MOVER) {
-				G_FreeEntity(ent);
+		oldEnt = &g_entities[i];
+		if (oldEnt->inuse) {
+			if (oldEnt->s.eType == ET_MOVER) {
+				G_FreeEntity(oldEnt);
 			}
 		}
 	}
-
+	
 	fLen = trap->FS_Open(fileName, &fh, FS_READ);
 
 	if (!fh) {
 		Com_Printf ("Couldn't load tele locations from %s\n", fileName);
-		return;
+		return qfalse;
 	}
 	if (fLen >= MAX_FILESIZE) {
 		trap->FS_Close(fh);
 		Com_Printf ("Couldn't load tele locations from %s, file is too large\n", fileName);
-		return;
+		return qfalse;
 	}
-
-	{
-		char *token;
-		const char *buf2;
-
-		trap->FS_Read(buf, fLen, fh);
-		buf[fLen] = 0;
-		trap->FS_Close(fh);
-
-	
-		//if ( COM_ParseString( &buf2, &value ) ) 
-		//{
-		//}
-
-		//token = COM_ParseExt(&buf2, qfalse);
-
-	
-	}
-
-	/*
-	{
-		char line[80];
-
-		while(fgets(line, 80, fh) != NULL) // get a line, up to 80 chars from fr.  done if NULL 
-		{
-
-		}
-
-	}
-	*/
-
-	/*
 	
 	trap->FS_Read(buf, fLen, fh);
-	buf[fLen] = 0;
+	buf[fLen] = '%';
 	trap->FS_Close(fh);
 
-	pch = strtok (buf,"\n");  //loda fixme why is this broken
-	while (pch != NULL)
-	{
-		if ((args % 5) == 1)
-			Q_strncpyz(warpList[row].name, pch, sizeof(warpList[row].name));
-		else if ((args % 5) == 2)
-			warpList[row].x = atoi(pch);
-		else if ((args % 5) == 3)
-			warpList[row].y = atoi(pch);
-		else if ((args % 5) == 4)
-			warpList[row].z = atoi(pch);
-		else if ((args % 5) == 0) {
-			warpList[row].yaw = atoi(pch);
-			//trap->Print("Warp added: %s, <%i, %i, %i, %i>\n", warpList[row].name, warpList[row].x, warpList[row].y, warpList[row].z, warpList[row].yaw);
-			row++;
+	p = buf;
+
+	for (i = 0; i < 20000; i++) { //just to be safe..
+		token = COM_ParseExt(&p, qfalse);
+
+		//trap->Print("LastToken: %s\n", lastToken);
+
+		if (token[0] == '%') //sad hack
+			break;
+		if (!Q_stricmp(lastToken, "classname"))
+			Q_strncpyz(TempEntity.classname, token, sizeof(TempEntity.classname));
+		if (!Q_stricmp(lastToken, "origin"))
+			Q_strncpyz(TempEntity.origin, token, sizeof(TempEntity.origin));
+		if (!Q_stricmp(lastToken, "model"))
+			Q_strncpyz(TempEntity.model, token, sizeof(TempEntity.model));
+
+		if (token[0] == '}') {
+			//trap->Print("Classname: %s Model: %s, Origin: %s\n", TempEntity.classname, TempEntity.model, TempEntity.origin);
+
+			newEnt = G_Spawn(qtrue);
+
+			newEnt->classname = (char *) malloc(sizeof(TempEntity.classname));  //LODA FIXME, FREE THIS AFTER USE SOMEHOW
+			Q_strncpyz(newEnt->classname, TempEntity.classname, sizeof(TempEntity.classname));
+
+			newEnt->model = (char *) malloc(sizeof(TempEntity.model));
+			Q_strncpyz(newEnt->model, TempEntity.model, sizeof(TempEntity.model));
+
+			{
+				char tmp[48] = {0}, *p = NULL;
+				const char *delim = " ";
+				int i = 0;
+				vec3_t temp;
+
+				Q_strncpyz(tmp, TempEntity.origin, sizeof(tmp));
+				p = strtok( tmp, delim );
+				while ( p != NULL ) {
+					if (i == 0)
+						temp[0] = atoi(p);
+					else if (i == 1)
+						temp[1] = atoi(p);
+					else if (i == 2)
+						temp[2] = atoi(p);
+					p = strtok( NULL, delim );
+					i++;
+				}
+				VectorCopy(temp, newEnt->s.origin);
+			}
+			if (!G_CallSpawn(newEnt))
+				G_FreeEntity(newEnt);
 		}
-    	pch = strtok (NULL, " \n\t");
-		args++;
+		Q_strncpyz(lastToken, token, sizeof(lastToken));
 	}
 
-	*/
-	
-
-	//G_ParseSpawnVars();
-
-	//COM_ParseExt
-
-	//load from file... look at R_LoadEntities.. or G_SpawnEntitiesFromString...G_ParseSpawnVars 
+	return qtrue;
 }
 
+static void Cmd_MapEnts_f(gentity_t *self)
+{
+	char arg1[32], arg2[MAX_QPATH], info[1024] = {0}, fileName[MAX_QPATH];
 
+	if (trap->Argc() != 3) {
+		trap->SendServerCommand( self-g_entities, "print \"Usage: mapEnts <save/load> <name>\n\"" );
+		return;
+	}
+	trap->Argv(1, arg1, sizeof(arg1));
+	trap->Argv(2, arg2, sizeof(arg2));
+	Q_strlwr(arg1);
+	Q_CleanStr(arg1);
 
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(fileName, Info_ValueForKey( info, "mapname" ), sizeof(fileName));
+	Q_strcat(fileName, sizeof(fileName), va("_%s.ent", arg2));
 
+	Q_strlwr(fileName);
+	Q_CleanStr(fileName);
 
-
-
-
+	if (!Q_stricmp(arg1, "save")) {
+		if (SaveEnts(fileName))
+			trap->SendServerCommand( self-g_entities, "print \"Entities saved\n\"" );
+	}
+	else if (!Q_stricmp(arg1, "load")) {
+		if (LoadEnts(fileName))
+			trap->SendServerCommand( self-g_entities, "print \"Entities loaded\n\"" );
+	}
+	else 
+		trap->SendServerCommand( self-g_entities, "print \"Usage: mapEnts <save/load> <name>\n\"" );
+}
+#endif
 
 
 //[JAPRO - Serverside - All - Serverconfig - Start]
@@ -6908,7 +6908,7 @@ void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
 void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
-void Cmd_SaveEnts_f( gentity_t *self);
+void Cmd_MapEnts_f( gentity_t *self);
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -7002,7 +7002,8 @@ command_t commands[] = {
 
 	{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
 	{ "logout",				Cmd_ACLogout_f,				CMD_NOINTERMISSION },
-
+	
+	{ "mapents",			Cmd_MapEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION},//EMOTE
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
@@ -7014,9 +7015,6 @@ command_t commands[] = {
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
-
-	{ "saveents",			Cmd_SaveEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
-
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "say_team_mod",		Cmd_SayTeamMod_f,			0 },

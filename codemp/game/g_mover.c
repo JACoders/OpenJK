@@ -948,7 +948,7 @@ void InitMover( gentity_t *ent )
 	float		light;
 	vec3_t		color;
 	qboolean	lightSet, colorSet;
-
+	
 	// if the "model2" key is set, use a seperate model
 	// for drawing, but clip against the brushes
 	if ( ent->model2 ) 
@@ -962,7 +962,6 @@ void InitMover( gentity_t *ent )
 			ent->s.modelindex2 = G_ModelIndex( ent->model2 );
 		}
 	}
-
 	// if the "color" or "light" keys are set, setup constantLight
 	lightSet = G_SpawnFloat( "light", "100", &light );
 	colorSet = G_SpawnVector( "color", "1 1 1", color );
@@ -987,7 +986,6 @@ void InitMover( gentity_t *ent )
 		}
 		ent->s.constantLight = r | ( g << 8 ) | ( b << 16 ) | ( i << 24 );
 	}
-
 	ent->use = Use_BinaryMover;
 	ent->reached = Reached_BinaryMover;
 
@@ -1004,7 +1002,6 @@ void InitMover( gentity_t *ent )
 	ent->s.eType = ET_MOVER;
 	VectorCopy( ent->pos1, ent->r.currentOrigin );
 	trap->LinkEntity( (sharedEntity_t *)ent );
-
 	InitMoverTrData( ent );
 }
 

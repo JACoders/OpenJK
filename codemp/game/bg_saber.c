@@ -3686,9 +3686,10 @@ weapChecks:
 						newmove = saberMoveData[curmove].chain_attack;
 					}
 
-					if ( PM_SaberKataDone( curmove, newmove ) )
+					if (PM_SaberKataDone(curmove, newmove))
 					{//cannot chain this time
-						newmove = saberMoveData[curmove].chain_idle;
+						if (newmove != LS_A_JUMP_T__B_ || !g_fixRedDFA.integer)
+							newmove = saberMoveData[curmove].chain_idle;
 					}
 				}
 				/*
@@ -3698,6 +3699,7 @@ weapChecks:
 					newmove = PM_AttackMoveForQuad( saberMoveData[curmove].endQuad );
 				}
 				*/
+
 				if ( newmove != LS_NONE )
 				{
 					//Now get the proper transition move
@@ -3752,6 +3754,8 @@ weapChecks:
 //				}
 				newmove = LS_READY;
 			}
+
+			trap->Print("Setting Saber Move: %i\n", newmove);
 
 			PM_SetSaberMove( newmove );
 
