@@ -3688,7 +3688,9 @@ weapChecks:
 
 					if (PM_SaberKataDone(curmove, newmove))
 					{//cannot chain this time
-						if (newmove != LS_A_JUMP_T__B_ || !g_fixRedDFA.integer)
+#ifdef _GAME
+						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer))
+#endif
 							newmove = saberMoveData[curmove].chain_idle;
 					}
 				}
