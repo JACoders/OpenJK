@@ -3755,8 +3755,6 @@ weapChecks:
 				newmove = LS_READY;
 			}
 
-			trap->Print("Setting Saber Move: %i\n", newmove);
-
 			PM_SetSaberMove( newmove );
 
 			if ( both && pm->ps->torsoAnim == anim )
