@@ -527,30 +527,27 @@ void G_ShutdownGame( int restart ) {
 	}
 
 
-	if ( level.duelLog )
-	{
-		//G_DuelLogPrintf( "ShutdownGame\n\n" );
+	if ( level.duelLog ) {
 		trap->FS_Close( level.duelLog );
 		level.duelLog = 0;
 	}
 
-	if ( level.raceLog )
-	{
-		//G_RaceLogPrintf( "ShutdownGame\n\n" );
+	if ( level.raceLog ) {
 		trap->FS_Close( level.raceLog );
 		level.raceLog = 0;
 	}
 
-	if ( level.tempRaceLog )
-	{
-		//G_RaceLogPrintf( "ShutdownGame\n\n" );
+	if ( level.tempRaceLog ) {
 		trap->FS_Close( level.tempRaceLog );
 		level.tempRaceLog = 0;
 	}
 
-	if ( level.playerLog )
-	{
-		//G_RaceLogPrintf( "ShutdownGame\n\n" );
+	if ( level.tempStatLog ) {
+		trap->FS_Close( level.tempStatLog );
+		level.tempStatLog = 0;
+	}
+
+	if ( level.playerLog ) {
 		trap->FS_Close( level.playerLog );
 		level.playerLog = 0;
 	}

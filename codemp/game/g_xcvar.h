@@ -175,7 +175,6 @@ XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qt
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
-
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
@@ -211,6 +210,7 @@ XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -218,7 +218,6 @@ XCVAR_DEF( g_duelStartArmor,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelDistanceLimit,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowUseInDuel,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowGunDuel,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
-//add nonsolid duels!
 
 //JAPRO ADMIN
 XCVAR_DEF( g_juniorAdminLevel,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )
@@ -228,28 +227,23 @@ XCVAR_DEF( g_fullAdminPass,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_juniorAdminMsg,			"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 
-
 //JAPRO OTHER Gameplay
 XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_raceMode,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue )
-
-//JAPRO Other
-XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue )
-XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
-XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( bot_nochat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_corpseRemovalTime,			"30",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowSaberSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowTeamSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_removeSpectatorPortals,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_godChat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+//JAPRO Other
+XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue ) //not a cvar, dont change it
+XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_corpseRemovalTime,			"30",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_removeSpectatorPortals,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_consoleMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_centerMOTDTime,			"5",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_centerMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
@@ -257,18 +251,24 @@ XCVAR_DEF( g_fakeClients,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_votesDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_lagIcon,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
+
+//JAPRO RACE / ACCOUNTS
+XCVAR_DEF( g_raceMode,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
+
+//JAPRO LOGGING
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_raceLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_playerLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
-XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
-XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
-
+//JAPRO BOTS
+XCVAR_DEF( bot_nochat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_strafeOffset,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_frameTime,				"0.008",		NULL,				CVAR_ARCHIVE,									qtrue )
-
-XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
+XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 #undef XCVAR_DEF
