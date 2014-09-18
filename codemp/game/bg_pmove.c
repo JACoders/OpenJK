@@ -3610,6 +3610,10 @@ static void PM_CheckDash(void)
 	if (pm->ps->groundEntityNum == ENTITYNUM_NONE)
 		return;
 
+	if (pm->ps->stats[STAT_HEALTH] <= 0) {
+		return;
+	}
+
 	if (pm->ps->weaponTime > 0)
 		return;
 

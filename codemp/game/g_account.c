@@ -505,6 +505,7 @@ void G_AddToDBFromFile2(void) { //loda fixme, we can filter out the slower times
 #endif
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
+#if 0
 void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each client and play it on them..?
 	gentity_t	*te;
 	vec3_t temp = {0, 0, 0};
@@ -515,6 +516,7 @@ void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each c
 	te->s.eFlags = EF_SOUNDTRACKER;
 	te->r.svFlags |= SVF_BROADCAST;
 }
+#endif
 void PlayActualGlobalSound(char * sound) {
 	gentity_t *player;
 	int i;
