@@ -415,6 +415,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 	DebugWriteToDB("G_AddToDBFromFile");
 }
 
+#if 0
 void G_AddToDBFromFile2(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
@@ -501,6 +502,7 @@ void G_AddToDBFromFile2(void) { //loda fixme, we can filter out the slower times
 
 	DebugWriteToDB("G_AddToDBFromFile");
 }
+#endif
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
 void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each client and play it on them..?
