@@ -60,8 +60,8 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 		VectorNormalize( bounce_dir );
 	}
 
-	if (g_fixProjectilePush.integer) { // feature from base_enhanced where missile reflects in direction you are aiming
-		VectorCopy( forward, bounce_dir );
+	if (g_fixProjectilePush.integer) { // feature from base_enhanced where missile reflects in direction you are a
+		VectorCopy(forward, bounce_dir);
 		for (i = 0; i < 3; i++)
 			bounce_dir[i] += RandFloat(-0.1f, 0.1f); 
 	} else { // original behaviour

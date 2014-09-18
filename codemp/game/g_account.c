@@ -296,6 +296,127 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
+	int		fLen = 0, args = 1, s, row = 0, i, j; //MAX_FILESIZE = 4096
+	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
+	char*	pch;
+	sqlite3 * db;
+	char * sql;
+	sqlite3_stmt * stmt;
+	RaceRecord_t	TempRaceRecord[1024]; //Max races per map to count i gues..?
+	qboolean good = qfalse, foundFaster = qfalse;
+
+	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
+
+	if (!f) {
+		trap->Print("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
+		return;
+	}
+	if (fLen >= 80*1024) {
+		trap->FS_Close(f);
+		trap->Print("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
+		return;
+	}
+
+	trap->FS_Read(buf, fLen, f);
+	buf[fLen] = 0;
+	trap->FS_Close(f);
+	
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
+
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+
+	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
+	pch = strtok (buf,";\n");
+	while (pch != NULL)
+	{
+		if ((args % 7) == 1)
+			Q_strncpyz(TempRaceRecord[row].username, pch, sizeof(TempRaceRecord[row].username));
+		else if ((args % 7) == 2)
+			Q_strncpyz(TempRaceRecord[row].coursename, pch, sizeof(TempRaceRecord[row].coursename));
+		else if ((args % 7) == 3)
+			TempRaceRecord[row].duration_ms = atoi(pch);
+		else if ((args % 7) == 4)
+			TempRaceRecord[row].topspeed = atoi(pch);
+		else if ((args % 7) == 5)
+			TempRaceRecord[row].average = atoi(pch);
+		else if ((args % 7) == 6)
+			TempRaceRecord[row].style = atoi(pch);
+		else if ((args % 7) == 0) {
+			TempRaceRecord[row].end_timeInt = atoi(pch);
+
+			if (row >= 1024) {
+				trap->Print("ERROR: Too many entries in %s! Could not add to database.\n", TEMP_RACE_LOG);
+				return;
+			}
+			row++;
+		}
+    	pch = strtok (NULL, ";\n");
+		args++;
+	}
+
+	for (i=0;i<1024;i++) {
+		//This is the time we are looking at [i]
+
+		//See if we can find any faster times
+
+		for (j=0;j<1024;j++) {	
+			foundFaster = qfalse;
+
+			if (!Q_stricmp(TempRaceRecord[j].username, TempRaceRecord[i].username) &&
+				!Q_stricmp(TempRaceRecord[j].coursename, TempRaceRecord[i].coursename) &&
+				TempRaceRecord[j].style == TempRaceRecord[i].style)
+			{
+				if (TempRaceRecord[j].duration_ms < TempRaceRecord[i].duration_ms) { //we found a faster time
+					foundFaster = qtrue;
+					//trap->Print("Found a faster time!\n");
+					break;
+				}
+			}
+			if (!TempRaceRecord[j].username[0])
+				break;
+		}
+
+		if (!foundFaster) {
+			const int place = i;//The fuck is this.. shut the compiler up
+			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord[place].duration_ms));
+			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord[place].topspeed));
+			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord[place].average));
+			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord[place].style));
+			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord[place].end_timeInt));
+			CALL_SQLITE_EXPECT (step (stmt), DONE);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
+		}
+		if (!TempRaceRecord[i].username[0])
+			break;
+	}
+
+	s = sqlite3_step(stmt); //this duplicates last one..?
+
+	if (s == SQLITE_DONE) {
+		good = qtrue;
+	}
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));	
+
+	if (good) { //dont delete tmp file if mysql database is not responding 
+		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
+		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
+		trap->FS_Close(f);
+		trap->Print("Loaded previous map racetimes from %s.\n", TEMP_RACE_LOG);
+	}
+	else 
+		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
+
+	DebugWriteToDB("G_AddToDBFromFile");
+}
+
+void G_AddToDBFromFile2(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
+	fileHandle_t f;	
 	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
 	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
 	char*	pch;
@@ -344,6 +465,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			TempRaceRecord.style = atoi(pch);
 		else if ((args % 7) == 0) {
 			TempRaceRecord.end_timeInt = atoi(pch);
+
 			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
