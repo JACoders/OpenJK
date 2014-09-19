@@ -5942,6 +5942,9 @@ static void Cmd_Rocket_f(gentity_t *ent)
 	}
 	ent->client->ps.stats[STAT_ROCKETJUMP] = !ent->client->ps.stats[STAT_ROCKETJUMP]; //Toggle this
 	ent->client->pers.rocketjump = (qboolean)ent->client->ps.stats[STAT_ROCKETJUMP]; //Set pers.rocketjump to it.  If pers.rocketjump, time is not legit
+
+	ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
+	ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
