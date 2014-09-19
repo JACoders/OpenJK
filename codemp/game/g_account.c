@@ -294,6 +294,44 @@ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp,
 	DebugWriteToDB("G_AddDuel");
 }
 
+void AddRunToWebServer(RaceRecord_t record) 
+{ 
+#if 0
+    CURL *curl; 
+    CURLcode res; 
+    struct stat file_info; 
+    double speed_upload, total_time; 
+    FILE *fd; 
+	char address[128], data[256];
+
+	//Also send a password, just as another layer of security..?
+
+	Q_strncpyz(address, sv_webServerPath.string, sizeof(address));
+	Com_sprintf(data, sizeof(data), "username=%s&coursename=%s&duration_ms=%i&topspeed=%i&average=%i&style=%i&end_time=%i", 
+		record.username, record.coursename, record.duration_ms, record.topspeed, record.average, record.style, record.end_time);
+
+    curl = curl_easy_init(); 
+
+    if(curl) { 
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); 
+        curl_easy_setopt(curl,CURLOPT_CUSTOMREQUEST,"delete"); 
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,&http_callback); 
+        curl_easy_setopt(curl, 
+		CURLOPT_URL, address); 
+        curl_easy_setopt(curl,CURLOPT_POSTFIELDS,"username=huancong&password=doyou"); 
+        res = curl_easy_perform(curl); 
+        if(res != CURLE_OK) { 
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", 
+                    curl_easy_strerror(res)); 
+        } 
+        else { 
+			trap->Print("Received data:\n", g_buf);
+        } 
+        curl_easy_cleanup(curl); 
+    } 
+#endif
+} 
+
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s, row = 0, i, j; //MAX_FILESIZE = 4096
@@ -389,6 +427,8 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			CALL_SQLITE_EXPECT (step (stmt), DONE);
 			CALL_SQLITE (reset (stmt));
 			CALL_SQLITE (clear_bindings (stmt));
+
+			AddRunToWebServer(TempRaceRecord[place]);
 		}
 		if (!TempRaceRecord[i].username[0])
 			break;

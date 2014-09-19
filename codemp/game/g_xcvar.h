@@ -259,6 +259,7 @@ XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue 
 XCVAR_DEF( g_raceMode,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
+XCVAR_DEF( sv_webServerPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
 
 //JAPRO LOGGING
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

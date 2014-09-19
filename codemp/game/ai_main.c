@@ -6855,13 +6855,13 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_HEAL)) && ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_HEAL)) //level.clients[bs->client].ps.fd.forcePower
-		&& g_entities[bs->client].health < 75)) //It should always be in viewangles but double check..
+		&& g_entities[bs->client].health < 75))
 	{
-		if ((bs->cur_ps.fd.forcePower > 80)) {
+		if ((bs->cur_ps.fd.forcePower > 70)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
 			useTheForce = qtrue;
 		}
-		else if ((g_entities[bs->client].health < 40) && (bs->cur_ps.fd.forcePower > 65)) {
+		else if ((g_entities[bs->client].health < 40) && (bs->cur_ps.fd.forcePower > 50)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
 			useTheForce = qtrue;
 		}
@@ -6877,7 +6877,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB;
 			useTheForce = qtrue;
 		}
-		else if (bs->cur_ps.weapon > WP_BRYAR_PISTOL) { //Protect our guns
+		else if (bs->cur_ps.weapon > WP_BRYAR_PISTOL && (bs->frame_Enemy_Len < 200)) { //Protect our guns
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_ABSORB;
 			useTheForce = qtrue;
 		}
@@ -7230,6 +7230,17 @@ void DoAloneStuff(bot_state_t *bs, float thinktime) {
 
 		if (hit->nextthink) //Its respawning still
 			continue;
+
+		if (hit->item->giType == IT_POWERUP) {
+			if (bs->cur_ps.fd.forceSide == FORCE_LIGHTSIDE) {
+				if (hit->item->giTag == PW_FORCE_ENLIGHTENED_DARK)
+					continue;
+			}
+			else {
+				if (hit->item->giTag == PW_FORCE_ENLIGHTENED_LIGHT)
+					continue;
+			}
+		}
 		
 		if (hit->item->giType == IT_WEAPON) {
 			weapon = hit->item->giTag;

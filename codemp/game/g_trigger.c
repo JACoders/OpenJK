@@ -1176,6 +1176,8 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
+	if (player->client->pers.rocketjump) //Freestyle rocketjump mode i guess...
+		return qfalse;
 	if (player->client->ps.stats[STAT_ROCKETJUMP] && g_knockback.integer > 1000)
 		return qfalse;
 	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6) { //Ignore forcejump restrictions if in onlybhop movement modes
@@ -1426,8 +1428,10 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	player->client->ps.stats[STAT_ONLYBHOP] = 1;
-	if (trigger->spawnflags & 2)
+	if (trigger->spawnflags & 2) {
 		player->client->ps.stats[STAT_ROCKETJUMP] = 1;
+		player->client->pers.rocketjump = qfalse;//Turn this off because this is forced rocketjump mode and its legit
+	}
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
@@ -1437,7 +1441,7 @@ void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 		return;
 	player->client->ps.stats[STAT_ONLYBHOP] = 0;
 
-	if (player->client->ps.stats[STAT_ROCKETJUMP]) {
+	if (player->client->ps.stats[STAT_ROCKETJUMP] && !player->client->pers.rocketjump) { //Only remove rocketjump if they were in forced RJ mode i guess..
 		player->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
 		player->client->ps.ammo[AMMO_ROCKETS] = 0;
 		player->client->ps.stats[STAT_ROCKETJUMP] = 0;
