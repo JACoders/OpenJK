@@ -490,7 +490,7 @@ typedef struct clientSession_s {
 #define NUMBER_OF_SKILLS 56
 
 // zyk: max value of the skill counter to increase level up score of the rpg player
-#define MAX_SKILL_COUNTER 50000
+#define MAX_SKILL_COUNTER 30000
 
 // zyk: max level a player can be in RPG Mode
 #define MAX_RPG_LEVEL 100
