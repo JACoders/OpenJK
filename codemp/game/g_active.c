@@ -2744,7 +2744,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
-	if (ent && ent->client && ent->client->ps.stats[STAT_ROCKETJUMP] && ent->health > 0) {
+	if (ent && ent->client && (ent->client->ps.stats[STAT_MOVEMENTSTYLE] >= 7) && ent->health > 0) {
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 2;
@@ -3112,8 +3112,8 @@ void ClientThink_real( gentity_t *ent ) {
 		// set speed
 
 		client->ps.speed = g_speed.value;
-		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 2 || client->ps.stats[STAT_MOVEMENTSTYLE] == 3 || client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6) {//qw is 320 too
-			if (client->pers.movementStyle == 2 || client->pers.movementStyle == 3 || client->pers.movementStyle == 4 || client->pers.movementStyle == 6)  //loda double check idk...
+		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 2 || client->ps.stats[STAT_MOVEMENTSTYLE] == 3 || client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6 || client->ps.stats[STAT_MOVEMENTSTYLE] == 7 || client->ps.stats[STAT_MOVEMENTSTYLE] == 8) {//qw is 320 too
+			if (client->pers.movementStyle == 2 || client->pers.movementStyle == 3 || client->pers.movementStyle == 4 || client->pers.movementStyle == 6 || client->pers.movementStyle == 7 || client->pers.movementStyle == 8)  //loda double check idk...
 				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
 		}
 

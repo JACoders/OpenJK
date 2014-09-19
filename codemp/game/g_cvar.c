@@ -135,32 +135,6 @@ static void CVU_TweakWeapons(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
-/*
-static void CVU_MovementStyle(void) {
-	if (g_movementStyle.integer == 1) {
-		jcinfo.integer &= ~JAPRO_CINFO_NOSTRAFE;
-		jcinfo.integer &= ~JAPRO_CINFO_HL2;
-		jcinfo.integer &= ~JAPRO_CINFO_CPM;
-	}
-	else if (g_movementStyle.integer == 2) {
-		jcinfo.integer |= JAPRO_CINFO_HL2;
-		jcinfo.integer &= ~JAPRO_CINFO_CPM;
-		jcinfo.integer &= ~JAPRO_CINFO_NOSTRAFE;
-	}
-	else if (g_movementStyle.integer > 2) {
-		jcinfo.integer |= JAPRO_CINFO_CPM;
-		jcinfo.integer &= ~JAPRO_CINFO_HL2;
-		jcinfo.integer &= ~JAPRO_CINFO_NOSTRAFE;
-	}
-	else { // 0
-		jcinfo.integer |= JAPRO_CINFO_NOSTRAFE;
-		jcinfo.integer &= ~JAPRO_CINFO_HL2;
-		jcinfo.integer &= ~JAPRO_CINFO_CPM;
-	}
-	trap->Cvar_Set( "jcinfo", va( "%i", jcinfo.integer ) );
-}
-*/
-
 static void CVU_LegDangle(void) {
 	g_LegDangle.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_LEGDANGLE) : (jcinfo.integer &= ~JAPRO_CINFO_LEGDANGLE);

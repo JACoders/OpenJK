@@ -653,11 +653,6 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
 	}
-	if (ent->client->ps.stats[STAT_ROCKETJUMP] && !ent->client->pers.rocketjump) { //Only reset if they arnt doing freestyle i guess.. HMM??
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
-		ent->client->ps.stats[STAT_ROCKETJUMP] = 0;
-	}
 
 	if (wasReset && print)
 		//trap->SendServerCommand( ent-g_entities, "print \"Timer reset!\n\""); //console spam is bad
@@ -5174,7 +5169,6 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "race ");
 	if (g_raceMode.integer && level.gametype == GT_FFA) {
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
-		Q_strcat(buf, sizeof(buf), "freestyle ");
 		Q_strcat(buf, sizeof(buf), "warpList ");
 		Q_strcat(buf, sizeof(buf), "warp ");
 	}
@@ -5407,6 +5401,10 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 					Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
 					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
+					Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+					Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
 			}
 
 			if (g_entities[i].r.svFlags & SVF_BOT)
@@ -5858,7 +5856,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, or wsw>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 		return;
 	}
 
@@ -5887,64 +5885,27 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ResetPlayerTimers(ent, qtrue);
 	}
 	else 
-		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+		
 
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
-
 	style = RaceNameToInteger(mStyle);
+
+	if (style < 0 || style > 8) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		return;
+	}
+	else
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+
 	if (style >= 0) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = style;
 		ent->client->pers.movementStyle = style;
 	}
-}
-
-static void Cmd_Rocket_f(gentity_t *ent)
-{
-	if (!ent->client)
-		return;
-
-	if (trap->Argc() > 1) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /rocket (toggle).\n\"" );
-		return;
+	if (style <= 6) {
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
+		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 	}
-
-	if (!g_raceMode.integer) {
-		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");
-		return;
-	}
-
-	if (level.gametype != GT_FFA) {
-		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
-		return;
-	}
-
-	if (!ent->client->pers.raceMode) {
-		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
-		return;
-	}
-
-	if (VectorLength(ent->client->ps.velocity)) {
-		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
-		return;
-	}
-
-	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
-		trap->SendServerCommand(ent-g_entities, "print \"Freestyle mode updated: timer reset.\n\"");
-		ResetPlayerTimers(ent, qtrue);
-	}
-	else 
-		trap->SendServerCommand(ent-g_entities, "print \"Freestyle mode updated.\n\"");
-
-	if (ent->client->ps.stats[STAT_ROCKETJUMP] && !ent->client->pers.rocketjump) { //Cant do this is they are in forced rocketjump mode... i guess?
-		trap->SendServerCommand(ent-g_entities, "print \"You cannot be in forced rocketjump mode to use this command!\n\"");
-		return;
-	}
-	ent->client->ps.stats[STAT_ROCKETJUMP] = !ent->client->ps.stats[STAT_ROCKETJUMP]; //Toggle this
-	ent->client->pers.rocketjump = (qboolean)ent->client->ps.stats[STAT_ROCKETJUMP]; //Set pers.rocketjump to it.  If pers.rocketjump, time is not legit
-
-	ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
-	ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 }
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
@@ -7038,8 +6999,6 @@ command_t commands[] = {
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
 	{ "forcechanged",		Cmd_ForceChanged_f,			0 },
-
-	{ "freestyle",			Cmd_Rocket_f,				CMD_NOINTERMISSION|CMD_ALIVE},//EMOTE
 
 	{ "gc",					Cmd_GameCommand_f,			CMD_NOINTERMISSION },
 	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },

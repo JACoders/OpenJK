@@ -281,8 +281,8 @@ int PM_GetMovePhysics(void)
 		return (g_movementStyle.integer);
 	else if (g_movementStyle.integer < 0)
 		return 0;
-	else if (g_movementStyle.integer > 6)
-		return 6;
+	else if (g_movementStyle.integer > 8)
+		return 8;
 #else
 	if (!cgs.isJAPro)
 		return 1;
@@ -1029,7 +1029,7 @@ static void PM_Friction( void ) {
 		pEnt = pm_entSelf;
 	}
 
-	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 6)
+	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 6 || PM_GetMovePhysics() == 8)
 		realfriction = 8.0f;
 
 	// apply ground friction, even if on ladder
@@ -1361,7 +1361,7 @@ qboolean PM_ForceJumpingUp(void)
 		return qfalse;
 	}
 
-	if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
+	if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8))
 		return qfalse;
 
 	if (!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
@@ -2225,7 +2225,7 @@ static qboolean PM_CheckJump( void )
 							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-				if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6) {
+				if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8) {
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 					return qfalse;
 				}
@@ -2244,7 +2244,7 @@ static qboolean PM_CheckJump( void )
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
 		// clear upmove so cmdscale doesn't lower running speed
-		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6)
+		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8)
 		{
 			pm->cmd.upmove = 0;
 			return qfalse;
@@ -2276,6 +2276,8 @@ static qboolean PM_CheckJump( void )
 		(PM_GetMovePhysics() != 3) &&
 		(PM_GetMovePhysics() != 4) &&
 		(PM_GetMovePhysics() != 6) &&
+		(PM_GetMovePhysics() != 7) &&
+		(PM_GetMovePhysics() != 8) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
@@ -2944,7 +2946,7 @@ static qboolean PM_CheckJump( void )
 if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
-		if ((PM_GetMovePhysics() == 2) || (PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6))
+		if ((PM_GetMovePhysics() == 2) || (PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8))
 		{
 			vec3_t hVel;
 			float added, xyspeed;
@@ -3504,7 +3506,7 @@ static void PM_AirMove( void ) {
 	// not on ground, so little effect on velocity
 	if (PM_GetMovePhysics() == 2)
 		PM_AirAccelerate(wishdir, wishspeed, 0.7f);//pm_qw_airaccel
-	else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || (PM_GetMovePhysics() == 6))
+	else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8))
 	{
 		float		accel;
 		float		wishspeed2;
@@ -3514,7 +3516,7 @@ static void PM_AirMove( void ) {
 			accel = 2.5f;//cpm_pm_airstopaccelerate 
 		else
 			accel = pm_airaccelerate;
-		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 6)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) || (PM_GetMovePhysics() == 5 && (pm->ps->movementDir == 0)))
+		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6))
 		{
 			if (wishspeed > 30.0f)//cpm_pm_wishspeed
 				wishspeed = 30.0f;	
@@ -3821,9 +3823,9 @@ static void PM_WalkMove( void ) {
 		}
 	}
 
-	if (PM_GetMovePhysics() == 3)
+	if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 8)
 		realaccelerate = 15.0f;
-	else if (PM_GetMovePhysics() == 4)
+	else if (PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7)
 		realduckscale = 0.25f;
 	else if (PM_GetMovePhysics() == 6) {
 		realaccelerate = 12.0f;
@@ -4123,6 +4125,8 @@ static int PM_TryRoll( void )
 		(PM_GetMovePhysics() == 3) ||
 		(PM_GetMovePhysics() == 4) ||
 		(PM_GetMovePhysics() == 6) ||
+		(PM_GetMovePhysics() == 7) ||
+		(PM_GetMovePhysics() == 8) ||
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;
@@ -4502,7 +4506,7 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
-	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4)) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
+	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8)) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
 		if (1 > sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]))//No xyvel
 			pm->ps->velocity[2] = -vel;
 	}

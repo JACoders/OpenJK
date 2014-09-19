@@ -36,7 +36,7 @@ typedef struct RaceRecord_s {
 	unsigned int		end_timeInt;
 } RaceRecord_t;
 
-RaceRecord_t	HighScores[32][7][10];//32 courses, 7 styles, 10 spots on highscore list
+RaceRecord_t	HighScores[32][9][10];//32 courses, 9 styles, 10 spots on highscore list
 
 typedef struct PersonalBests_s {
 	char				username[16];
@@ -45,7 +45,7 @@ typedef struct PersonalBests_s {
 	unsigned short		style; //only needs to be 3 bits	
 } PersonalBests_t;
 
-PersonalBests_t	PersonalBests[7][50];//7 styles, 50 cached spots
+PersonalBests_t	PersonalBests[9][50];//9 styles, 50 cached spots
 
 typedef struct UserStats_s {
 	char				username[16];
@@ -311,18 +311,22 @@ void AddRunToWebServer(RaceRecord_t record)
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-	curl_easy_setopt(curl, CURLOPT_URL, address);
-	curl_easy_setopt(curl, CURLOPT_POST, 1);
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
-	res = curl_easy_perform(curl); 
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+		curl_easy_setopt(curl, CURLOPT_URL, address);
+		curl_easy_setopt(curl, CURLOPT_POST, 1);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+		res = curl_easy_perform(curl); 
 	
-	if(res != CURLE_OK) 
-		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
-	else 
-		trap->Print("Received data:\n", g_buf); //de fuck izzat
+		if(res != CURLE_OK) 
+			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
+		else 
+			trap->Print("Received data:\n", g_buf); //de fuck izzat
 
-	curl_easy_cleanup(curl);
+		curl_easy_cleanup(curl);
+	}
+	else 
+		trap->Print("ERROR: Libcurl failed\n"); //de fuck izzat
 #endif
 
 
@@ -1756,7 +1760,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
 		if (level.courseName[i][0])
 			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-		for (mstyle = 0; mstyle < 7; mstyle++) { //7 movement styles. 0-6
+		for (mstyle = 0; mstyle < 9; mstyle++) { //9 movement styles. 0-7
 			int rank = 0;
 
 			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -1832,6 +1836,8 @@ void IntegerToRaceName(int style, char *styleString) {
 		case 4:	Q_strncpyz(styleString, "vq3", sizeof(styleString)); break;
 		case 5:	Q_strncpyz(styleString, "pjk", sizeof(styleString)); break;
 		case 6:	Q_strncpyz(styleString, "wsw", sizeof(styleString)); break;
+		case 7:	Q_strncpyz(styleString, "rjq3", sizeof(styleString)); break;
+		case 8:	Q_strncpyz(styleString, "rjcpm", sizeof(styleString)); break;
 		default: Q_strncpyz(styleString, "ERROR", sizeof(styleString)); break;
 	}
 }
@@ -1854,6 +1860,10 @@ int RaceNameToInteger(char *style) {
 		return 5;
 	if (!Q_stricmp(style, "wsw") || !Q_stricmp(style, "warsow") || !Q_stricmp(style, "6"))
 		return 6;
+	if (!Q_stricmp(style, "rjq3") || !Q_stricmp(style, "q3rj") || !Q_stricmp(style, "7"))
+		return 7;
+	if (!Q_stricmp(style, "rjcpm") || !Q_stricmp(style, "cpmrj") || !Q_stricmp(style, "8"))
+		return 8;
 	return -1;
 }
 
@@ -1995,7 +2005,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
-	char courseName[40], courseNameFull[40], styleString[16], timeStr[32];
+	char courseName[40], courseNameFull[40], styleString[16] = {0}, timeStr[32];
 	char info[1024] = {0};
 	char msg[1024-128] = {0};
 
