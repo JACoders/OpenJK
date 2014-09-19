@@ -933,6 +933,8 @@ void G_CheapWeaponFire(int entNum, int ev)
 	}
 }
 
+extern void rpg_skill_counter(gentity_t *ent, int amount);
+
 /*
 ================
 ClientEvents
@@ -1050,21 +1052,27 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 		//rww - Note that these must be in the same order (ITEM#-wise) as they are in holdable_t
 		case EV_USE_ITEM1: //seeker droid
 			ItemUse_Seeker(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM2: //shield
 			ItemUse_Shield(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM3: //medpack
 			ItemUse_MedPack(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM4: //big medpack
 			ItemUse_MedPack_Big(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM5: //binoculars
 			ItemUse_Binoculars(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM6: //sentry gun
 			ItemUse_Sentry(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM7: //jetpack
 			ItemUse_Jetpack(ent);
@@ -1077,9 +1085,11 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			break;
 		case EV_USE_ITEM10: //eweb
 			ItemUse_UseEWeb(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM11: //cloak
 			ItemUse_UseCloak(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		default:
 			break;

@@ -1273,6 +1273,8 @@ void Jetpack_On(gentity_t *ent)
 	ent->client->jetPackOn = qtrue;
 }
 
+extern void rpg_skill_counter(gentity_t *ent, int amount);
+
 void ItemUse_Jetpack( gentity_t *ent )
 {
 	assert(ent && ent->client);
@@ -1305,6 +1307,8 @@ void ItemUse_Jetpack( gentity_t *ent )
 	{
 		Jetpack_On(ent);
 	}
+
+	rpg_skill_counter(ent, 10);
 
 	ent->client->jetPackToggleTime = level.time + JETPACK_TOGGLE_TIME;
 }
