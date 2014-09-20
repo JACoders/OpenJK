@@ -984,6 +984,8 @@ qboolean G_PowerDuelCheckFail(gentity_t *ent)
 SetTeam
 =================
 */
+ void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
+
 qboolean g_dontPenalizeTeam = qfalse;
 qboolean g_preventTeamBegin = qfalse;
 void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modified for proper amforceteam
@@ -1309,6 +1311,14 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 	// get and distribute relevent paramters
 	if ( !ClientUserinfoChanged( clientNum ) )
 		return;
+
+	if (client->ps.duelInProgress) {
+		gentity_t *duelAgainst = &g_entities[client->ps.duelIndex];
+
+		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
+			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, 0, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+		}
+	}
 
 	if (!g_preventTeamBegin)
 	{
@@ -3831,6 +3841,9 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 				}
 			}
+
+			Q_strncpyz(ent->client->pers.lastUserName, ent->client->pers.userName, sizeof(ent->client->pers.lastUserName));
+			Q_strncpyz(challenged->client->pers.lastUserName, challenged->client->pers.userName, sizeof(challenged->client->pers.lastUserName));
 		}
 		else
 		{
@@ -5418,7 +5431,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
 					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
-					Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
+					Q_strncpyz(strStyle, "^7rjvq3^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
 					Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
 			}
@@ -5872,7 +5885,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjvq3, or rjcpm>.\n\"" );
 		return;
 	}
 
@@ -5908,7 +5921,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	style = RaceNameToInteger(mStyle);
 
 	if (style < 0 || style > 8) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjvq3, or rjcpm>.\n\"" );
 		return;
 	}
 	else

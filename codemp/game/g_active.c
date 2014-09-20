@@ -3265,8 +3265,8 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 					}			
 				}
-				if (ent->client->pers.userName && ent->client->pers.userName[0] && duelAgainst->client->pers.userName && duelAgainst->client->pers.userName[0]) //loda
-					G_AddDuel(ent->client->pers.userName, duelAgainst->client->pers.userName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+				if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) //loda
+					G_AddDuel(ent->client->pers.lastUserName, duelAgainst->client->pers.lastUserName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
 				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO
