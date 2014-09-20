@@ -2100,6 +2100,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	int dif = 0;
 	float rTime;
 	gentity_t *missile;
+	qboolean q3style;
 
 	if ( altFire )
 		vel *= 0.5f;
@@ -2107,8 +2108,16 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	if (altFire && g_tweakWeapons.integer & ROCKET_REDEEMER)
 		damage *= 2;
 
+	if (ent->client && ent->client->pers.raceMode) {
+		q3style = qtrue;
+
+	}
+
 //[JAPRO - Serverside - Weapons - Add inheritance to rocket]
-	missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
+	if (q3style)
+		missile = CreateMissile( muzzle, forward, vel, 10000, ent, altFire );
+	else
+		missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
@@ -2171,9 +2180,11 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		missile->splashMethodOfDeath = MOD_ROCKET_SPLASH;
 	}
 //===testing being able to shoot rockets out of the air==================================
-	missile->health = 10;
-	missile->takedamage = qtrue;
-	missile->r.contents = MASK_SHOT;
+	if (!q3style) {
+		missile->health = 10;
+		missile->takedamage = qtrue;
+		missile->r.contents = MASK_SHOT;
+	}
 	missile->die = RocketDie;
 //===testing being able to shoot rockets out of the air==================================
 	
