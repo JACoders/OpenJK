@@ -666,6 +666,12 @@ Cmd_Noclip_f
 argv(0) noclip
 ==================
 */
+void Cmd_RaceNoclip_f( gentity_t *ent ) {
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
+	ent->client->noclip = !ent->client->noclip;
+	ResetPlayerTimers(ent, qtrue);
+}
+
 void Cmd_Noclip_f( gentity_t *ent ) {
 	if (!sv_cheats.integer)
 	{
@@ -677,6 +683,10 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
 					ResetPlayerTimers(ent, qtrue);
+				}
+				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+					Cmd_RaceNoclip_f(ent);
+					return;
 				}
 				else
 					trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
@@ -692,6 +702,10 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
 					ResetPlayerTimers(ent, qtrue);
 				}
+				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+					Cmd_RaceNoclip_f(ent);
+					return;
+				}
 				else 
 					trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip).\n\"") );
 				return;
@@ -703,6 +717,10 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				ent->client->noclip = qfalse;
 				trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
 				ResetPlayerTimers(ent, qtrue);
+			}
+			else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+				Cmd_RaceNoclip_f(ent);
+				return;
 			}
 			else 
 				trap->SendServerCommand( ent-g_entities, "print \"Cheats are not enabled. You must be logged in to use this command (noclip).\n\"" );//replaces "Cheats are not enabled on this server." msg
@@ -723,15 +741,13 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
 			target->client->noclip = !target->client->noclip;
-			if (!target->client->noclip)
-				ResetPlayerTimers(target, qtrue);
+			ResetPlayerTimers(target, qtrue);
 			return;
 		}
 		if (trap->Argc() == 1) {
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 			ent->client->noclip = !ent->client->noclip;
-			if (!ent->client->noclip)
-				ResetPlayerTimers(ent, qtrue);
+			ResetPlayerTimers(ent, qtrue);
 			return;
 		}
 	}

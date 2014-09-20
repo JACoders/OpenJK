@@ -2100,7 +2100,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	int dif = 0;
 	float rTime;
 	gentity_t *missile;
-	qboolean q3style;
+	qboolean q3style = qfalse;
 
 	if ( altFire )
 		vel *= 0.5f;
@@ -2108,10 +2108,8 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	if (altFire && g_tweakWeapons.integer & ROCKET_REDEEMER)
 		damage *= 2;
 
-	if (ent->client && ent->client->pers.raceMode) {
+	if (ent->client && ent->client->pers.raceMode)
 		q3style = qtrue;
-
-	}
 
 //[JAPRO - Serverside - Weapons - Add inheritance to rocket]
 	if (q3style)
@@ -2125,15 +2123,11 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		rTime = ent->client->ps.rocketLockTime;
 
 		if (rTime == -1)
-		{
 			rTime = ent->client->ps.rocketLastValidTime;
-		}
 		dif = ( level.time - rTime ) / lockTimeInterval;
 
 		if (dif < 0)
-		{
 			dif = 0;
-		}
 
 		//It's 10 even though it locks client-side at 8, because we want them to have a sturdy lock first, and because there's a slight difference in time between server and client
 		if ( dif >= 10 && rTime != -1 )
@@ -2159,12 +2153,14 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		missile->nextthink = level.time + ROCKET_ALT_THINK_TIME;
 	}
 
-
 	missile->classname = "rocket_proj";
 	missile->s.weapon = WP_ROCKET_LAUNCHER;
 
 	// Make it easier to hit things
-	VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
+	if (q3style)
+		VectorSet( missile->r.maxs, 1, 1, 1 ); //Can this be smaller?
+	else
+		VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
 	VectorScale( missile->r.maxs, -1, missile->r.mins );
 
 	missile->damage = damage;
