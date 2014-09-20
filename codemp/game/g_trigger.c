@@ -170,6 +170,11 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		}
 	}
 
+	if (ent->spawnflags & 4096) {
+		if (activator && activator->client && activator->client->pers.raceMode)
+			return;
+	}
+
 	if (level.gametype == GT_SIEGE && ent->genericValue1)
 	{
 		haltTrigger = qtrue;
