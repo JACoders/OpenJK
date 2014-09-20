@@ -2113,7 +2113,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 //[JAPRO - Serverside - Weapons - Add inheritance to rocket]
 	if (q3style)
-		missile = CreateMissile( muzzle, forward, vel, 10000, ent, altFire );
+		missile = CreateMissile( muzzle, forward, vel, 15000, ent, altFire );
 	else
 		missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
 
