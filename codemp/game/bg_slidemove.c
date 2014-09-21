@@ -1011,10 +1011,28 @@ void PM_StepSlideMove( qboolean gravity ) {
 		else
 		{
 			VectorCopy (trace.endpos, pm->ps->origin);
-			if ( pm->stepSlideFix )
+			if (pm->stepSlideFix)
 			{
-				if ( trace.fraction < 1.0 ) {
-					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+				if (trace.fraction < 1.0) {
+					if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) {
+						vec3_t oldVel, clipped_velocity, newVel;
+						float oldSpeed, newSpeed;
+
+						VectorCopy(pm->ps->velocity, oldVel);
+						oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+
+						VectorCopy(clipped_velocity, newVel);
+						newVel[2] = 0;
+						newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+						if (newSpeed > oldSpeed)
+							VectorCopy(clipped_velocity, pm->ps->velocity);
+					}
+					else {
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
+					}
 				}
 			}
 		}
@@ -1030,7 +1048,25 @@ void PM_StepSlideMove( qboolean gravity ) {
 	if ( !pm->stepSlideFix )
 	{
 		if ( trace.fraction < 1.0 ) {
-			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
+			if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) {
+				vec3_t oldVel, clipped_velocity, newVel;
+				float oldSpeed, newSpeed;
+
+				VectorCopy(pm->ps->velocity, oldVel);
+				oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+
+				VectorCopy(clipped_velocity, newVel);
+				newVel[2] = 0;
+				newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+				if (newSpeed > oldSpeed)
+					VectorCopy(clipped_velocity, pm->ps->velocity);
+			}
+			else {
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
+			}
 		}
 	}
 

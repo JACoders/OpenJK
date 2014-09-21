@@ -2243,7 +2243,7 @@ static qboolean PM_CheckJump( void )
 	// must wait for jump to be released
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
-		// clear upmove so cmdscale doesn't lower running speed
+		// clear upmove so cmdscale doesn't lower running speed - LODA FIXME
 		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8)
 		{
 			pm->cmd.upmove = 0;
@@ -2965,12 +2965,28 @@ if ( pm->cmd.upmove > 0 )
 			if (added > xyspeed)
 				added = xyspeed;//Sad sanity check hack
 
-			if (added > 0)
-				pm->ps->velocity[2] += (added * 1.25);//Make rampjump stronger
+			if (added > 0) {
+				if ((PM_GetMovePhysics() == 6))
+					pm->ps->velocity[2] += (added * 0.75f);//Make rampjump weaker for wsw since no speedloss
+				else {
+					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger
+				}
+			}
 
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
 
+		}/*
+		else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6)) {
+			if (PM_GetMovePhysics() == 6)
+				realjumpvelocity = 280.0f;
+			else realjumpvelocity = 270.0f;
+
+			if(pm->ps->velocity[2] > 0)
+				pm->ps->velocity[2] += realjumpvelocity;
+			else
+				pm->ps->velocity[2] = realjumpvelocity;
 		}
+		*/
 		else
 			pm->ps->velocity[2] = realjumpvelocity;
 		PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
