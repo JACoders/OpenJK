@@ -1183,7 +1183,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if ((player->client->ps.stats[STAT_MOVEMENTSTYLE] >= 7) && g_knockback.integer > 1000)
 		return qfalse;
-	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6) { //Ignore forcejump restrictions if in onlybhop movement modes
+	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 7 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 8) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
 			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1)
 				return qfalse;
@@ -1250,7 +1250,7 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	while (InTrigger(interpOrigin, trigger)) {//This will be done a max of pml.msec times, in theory, before we are guarenteed to not be in the trigger anymore.
 		lessTime++; //Add one more ms to be subtracted
 		VectorSubtract(interpOrigin, delta, interpOrigin); //Keep Rewinding position by a tiny bit, that corresponds with 1ms precision (delta*0.001), since delta is per second.
-		if (lessTime >= activator->client->pmoveMsec) {
+		if (lessTime >= activator->client->pmoveMsec || lessTime >= 8) { //activator->client->pmoveMsec
 			break; //In theory, this should never happen, but just incase stop it here.
 		}
 	}
@@ -1343,7 +1343,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7)
 				Q_strncpyz(style, "rjvq3", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
-				Q_strncpyz(style, "rjvcpm", sizeof(style));
+				Q_strncpyz(style, "rjcpm", sizeof(style));
 		}
 		else if (g_movementStyle.integer == 0)
 			Q_strncpyz(style, "siege", sizeof(style));

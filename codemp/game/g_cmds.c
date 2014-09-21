@@ -3588,6 +3588,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 	}
 }
 
+#if 0
 qboolean G_OtherPlayersDueling(void)
 {
 	int i = 0;
@@ -3606,6 +3607,7 @@ qboolean G_OtherPlayersDueling(void)
 
 	return qfalse;
 }
+#endif
 
 //JAPRO - Serverside - Fullforce Duels - Start
 void Cmd_ForceDuel_f(gentity_t *ent)
@@ -5200,6 +5202,12 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
 		Q_strcat(buf, sizeof(buf), "warpList ");
 		Q_strcat(buf, sizeof(buf), "warp ");
+		if (g_allowRaceTele.integer) {
+			Q_strcat(buf, sizeof(buf), "amTele ");
+			Q_strcat(buf, sizeof(buf), "amTelemark ");
+			if (g_allowRaceTele.integer > 1)
+				Q_strcat(buf, sizeof(buf), "noclip ");
+		}
 	}
 	if (g_allowSaberSwitch.integer) 
 		Q_strcat(buf, sizeof(buf), "saber ");
@@ -5431,7 +5439,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
 					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
-					Q_strncpyz(strStyle, "^7rjvq3^7", sizeof(strStyle));
+					Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
 				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
 					Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
 			}
@@ -5885,7 +5893,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjvq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 		return;
 	}
 
@@ -5921,7 +5929,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	style = RaceNameToInteger(mStyle);
 
 	if (style < 0 || style > 8) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjvq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 		return;
 	}
 	else

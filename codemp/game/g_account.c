@@ -1833,10 +1833,10 @@ void IntegerToRaceName(int style, char *styleString) {
 		case 1: Q_strncpyz(styleString, "jka", sizeof(styleString)); break;
 		case 2:	Q_strncpyz(styleString, "qw", sizeof(styleString));	break;
 		case 3:	Q_strncpyz(styleString, "cpm", sizeof(styleString)); break;
-		case 4:	Q_strncpyz(styleString, "vq3", sizeof(styleString)); break;
+		case 4:	Q_strncpyz(styleString, "q3", sizeof(styleString)); break;
 		case 5:	Q_strncpyz(styleString, "pjk", sizeof(styleString)); break;
 		case 6:	Q_strncpyz(styleString, "wsw", sizeof(styleString)); break;
-		case 7:	Q_strncpyz(styleString, "rvjq3", sizeof(styleString)); break;
+		case 7:	Q_strncpyz(styleString, "rjq3", sizeof(styleString)); break;
 		case 8:	Q_strncpyz(styleString, "rjcpm", sizeof(styleString)); break;
 		default: Q_strncpyz(styleString, "ERROR", sizeof(styleString)); break;
 	}
@@ -1854,13 +1854,13 @@ int RaceNameToInteger(char *style) {
 		return 2;
 	if (!Q_stricmp(style, "cpm") || !Q_stricmp(style, "cpma") || !Q_stricmp(style, "3"))
 		return 3;
-	if (!Q_stricmp(style, "q3") || !Q_stricmp(style, "vq3") || !Q_stricmp(style, "4"))
+	if (!Q_stricmp(style, "q3") || !Q_stricmp(style, "q3") || !Q_stricmp(style, "4"))
 		return 4;
 	if (!Q_stricmp(style, "pjk") || !Q_stricmp(style, "5"))
 		return 5;
 	if (!Q_stricmp(style, "wsw") || !Q_stricmp(style, "warsow") || !Q_stricmp(style, "6"))
 		return 6;
-	if (!Q_stricmp(style, "rjvq3") || !Q_stricmp(style, "vq3rj") || !Q_stricmp(style, "7"))
+	if (!Q_stricmp(style, "rjq3") || !Q_stricmp(style, "q3rj") || !Q_stricmp(style, "7"))
 		return 7;
 	if (!Q_stricmp(style, "rjcpm") || !Q_stricmp(style, "cpmrj") || !Q_stricmp(style, "8"))
 		return 8;

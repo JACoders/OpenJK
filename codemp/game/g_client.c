@@ -1201,8 +1201,6 @@ ClientRespawn
 void SiegeRespawn(gentity_t *ent);
 void ClientRespawn( gentity_t *ent ) {
 
-	trap->Print("---- SPAWN point 1\n");
-
 	MaintainBodyQueue(ent);
 
 	if (gEscaping || level.gametype == GT_POWERDUEL)
@@ -1256,7 +1254,6 @@ void ClientRespawn( gentity_t *ent ) {
 	}
 	else
 	{
-		trap->Print("---- SPAWN point 2\n");
 		ClientSpawn(ent);
 	}
 }
@@ -3254,8 +3251,6 @@ void ClientSpawn(gentity_t *ent) {
 	//first we want the userinfo so we can see if we should update this client's saber -rww
 	trap->GetUserinfo( index, userinfo, sizeof( userinfo ) );
 
-	trap->Print("---- SPAWN point 3\n");
-
 	for ( i=0; i<MAX_SABERS; i++ )
 	{
 		saber = (i&1) ? ent->client->pers.saber2 : ent->client->pers.saber1;
@@ -3318,8 +3313,6 @@ void ClientSpawn(gentity_t *ent) {
 			}
 		}
 	}
-
-	trap->Print("---- SPAWN point 4\n");
 
 	if (client->ps.fd.forceDoInit)
 	{ //force a reread of force powers
@@ -3385,8 +3378,6 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	client->pers.teamState.state = TEAM_ACTIVE;
 
-	trap->Print("---- SPAWN point 5\n");
-
 	// toggle the teleport bit so the client knows to not lerp
 	// and never clear the voted flag
 	flags = ent->client->ps.eFlags & (EF_TELEPORT_BIT);
@@ -3419,8 +3410,6 @@ void ClientSpawn(gentity_t *ent) {
 		saberSaved[i] = client->saber[i];
 		g2WeaponPtrs[i] = client->weaponGhoul2[i];
 	}
-
-	trap->Print("---- SPAWN point 6\n");
 
 	for ( i=0; i<HL_MAX; i++ )
 		ent->locationDamage[i] = 0;
@@ -3459,8 +3448,6 @@ void ClientSpawn(gentity_t *ent) {
 		client->saber[i] = saberSaved[i];
 		client->weaponGhoul2[i] = g2WeaponPtrs[i];
 	}
-
-	trap->Print("---- SPAWN point 7\n");
 
 	//or the saber ent num
 	client->ps.saberEntityNum = saveSaberNum;
@@ -3543,8 +3530,6 @@ void ClientSpawn(gentity_t *ent) {
 	//give default weapons
 	client->ps.stats[STAT_WEAPONS] = ( 1 << WP_NONE );
 
-	trap->Print("---- SPAWN point 8\n");
-
 	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		wDisable = g_duelWeaponDisable.integer;
@@ -3609,8 +3594,6 @@ void ClientSpawn(gentity_t *ent) {
 			}
 		}
 
-		trap->Print("---- SPAWN point 9a\n");
-
 		if ( WP_HasForcePowers( &client->ps ) )
 		{
 			client->ps.trueNonJedi = qfalse;
@@ -3663,8 +3646,6 @@ void ClientSpawn(gentity_t *ent) {
 					client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
 			}
 		}
-
-		trap->Print("---- SPAWN point 9b\n");
 
 		if (level.gametype != GT_SIEGE) {
 			if (client->pers.raceMode) {
@@ -3839,8 +3820,6 @@ void ClientSpawn(gentity_t *ent) {
 		}
 	}
 
-	trap->Print("---- SPAWN point 10\n");
-
 	if (level.gametype == GT_SIEGE &&
 		client->siegeClass != -1 &&
 		client->sess.sessionTeam != TEAM_SPECTATOR)
@@ -3941,8 +3920,6 @@ void ClientSpawn(gentity_t *ent) {
 
 	//Do per-spawn force power initialization
 	WP_SpawnInitForcePowers( ent );
-
-	trap->Print("---- SPAWN point 11\n");
 
 	// health will count down towards max_health
 	if (level.gametype == GT_SIEGE &&
@@ -4062,8 +4039,6 @@ void ClientSpawn(gentity_t *ent) {
 		// move players to intermission
 		MoveClientToIntermission(ent);
 	}
-
-	trap->Print("---- SPAWN point 12\n");
 
 	//set teams for NPCs to recognize
 	if (level.gametype == GT_SIEGE)
