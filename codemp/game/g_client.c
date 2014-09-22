@@ -4159,7 +4159,7 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 }
 
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
-void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
+void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
 
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
@@ -4194,7 +4194,7 @@ void ClientDisconnect( int clientNum ) {
 
 		if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) {
 			//Trying to dodge the duel, no no no
-			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, 0, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
+			G_AddDuel(duelAgainst->client->pers.lastUserName, ent->client->pers.lastUserName, duelAgainst->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], duelAgainst->client->ps.stats[STAT_HEALTH], duelAgainst->client->ps.stats[STAT_ARMOR]);
 		}
 	}
 

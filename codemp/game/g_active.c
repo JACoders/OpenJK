@@ -2500,7 +2500,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
-void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield);
+void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
 /*
 ==============
 ClientThink
@@ -3266,7 +3266,7 @@ void ClientThink_real( gentity_t *ent ) {
 					}			
 				}
 				if (ent->client->pers.lastUserName && ent->client->pers.lastUserName[0] && duelAgainst->client->pers.lastUserName && duelAgainst->client->pers.lastUserName[0]) //loda
-					G_AddDuel(ent->client->pers.lastUserName, duelAgainst->client->pers.lastUserName, 0, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
+					G_AddDuel(ent->client->pers.lastUserName, duelAgainst->client->pers.lastUserName, ent->client->pers.duelStartTime, dueltypes[ent->client->ps.clientNum], ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]);
 				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 				ent->client->ps.stats[STAT_ARMOR] = 25;//JAPRO

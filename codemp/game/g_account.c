@@ -256,12 +256,13 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	//Somehow make this sorted..
 }
 
-void G_AddDuel(char *winner, char *loser, int duration, int type, int winner_hp, int winner_shield) {
+void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	time_t	rawtime;
 	char	string[1024] = {0};
+	const int duration = start_time ? (level.time - start_time) : 0;
 
 	time( &rawtime );
 	localtime( &rawtime );
