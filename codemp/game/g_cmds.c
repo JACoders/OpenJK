@@ -5921,8 +5921,6 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 		ResetPlayerTimers(ent, qtrue);
 	}
-	else 
-		
 
 	trap->Argv(1, mStyle, sizeof(mStyle));
 

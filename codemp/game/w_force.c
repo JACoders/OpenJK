@@ -3675,7 +3675,16 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				}
 				else 
 				{
-					G_ReflectMissile( self, push_list[x], forward );
+					//Okay, dont do this is the owner of missile is in racemode. (rocketjump mode)
+					if (g_raceMode.integer) {
+						gentity_t *owner = &g_entities[push_list[x]->r.ownerNum];
+						if (owner->client && owner->client->pers.raceMode) {
+						}
+						else 
+							G_ReflectMissile( self, push_list[x], forward );
+					}
+					else
+						G_ReflectMissile( self, push_list[x], forward );
 				}
 			}
 //JAPRO - Serverside - Flag push/pull physics - Start
