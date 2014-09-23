@@ -1076,6 +1076,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			break;
 		case EV_USE_ITEM7: //jetpack
 			ItemUse_Jetpack(ent);
+			rpg_skill_counter(ent, 10);
 			break;
 		case EV_USE_ITEM8: //health disp
 			//ItemUse_UseDisp(ent, HI_HEALTHDISP);
