@@ -4531,9 +4531,54 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 	
-	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (mod <= MOD_CONC_ALT) && (mod != MOD_UNKNOWN) && (mod != MOD_TURBLAST) && (mod != MOD_VEHICLE)) {
-		if ((targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER))
-			damage *= 7.5;
+	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) {
+		switch (mod)
+		{
+			//Bullets do ~5x dmg..
+			//Splash does ~3x dmg..
+			//Hitscan does normal dmg..?
+
+			case MOD_STUN_BATON:
+				damage *= 7;
+			case MOD_BRYAR_PISTOL:
+			case MOD_BRYAR_PISTOL_ALT:
+				damage *= 5;
+			case MOD_BLASTER:
+				damage *= 4;
+			case MOD_DISRUPTOR:
+				damage *= 0.25;
+			case MOD_DISRUPTOR_SNIPER:
+				damage *= 0.2;
+			case MOD_BOWCASTER:
+				damage *= 3;
+			case MOD_REPEATER:
+				damage *= 3;
+			case MOD_REPEATER_ALT:
+			case MOD_REPEATER_ALT_SPLASH:
+				damage *= 5;
+			case MOD_FLECHETTE:
+				damage *= 4;
+			case MOD_FLECHETTE_ALT_SPLASH:
+				damage *= 4;
+			case MOD_ROCKET:
+			case MOD_ROCKET_SPLASH:
+			case MOD_ROCKET_HOMING:
+			case MOD_ROCKET_HOMING_SPLASH:
+				damage *= 5;
+			case MOD_THERMAL:
+			case MOD_THERMAL_SPLASH:
+				damage *= 6;
+			case MOD_TRIP_MINE_SPLASH:
+			case MOD_TIMED_MINE_SPLASH:
+			case MOD_DET_PACK_SPLASH:
+				damage *= 5;
+			case MOD_CONC:
+				damage *= 4;
+			case MOD_CONC_ALT:
+				damage *= 1;
+			default:
+				break;
+		}
 	}
 
 
