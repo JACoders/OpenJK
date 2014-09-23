@@ -4530,6 +4530,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 	}
+	
+	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (mod <= MOD_CONC_ALT) && (mod != MOD_UNKNOWN) && (mod != MOD_TURBLAST) && (mod != MOD_VEHICLE)) {
+		if ((targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER))
+			damage *= 7.5;
+	}
+
 
 	if (level.gametype == GT_SIEGE &&
 		!gSiegeRoundBegun)

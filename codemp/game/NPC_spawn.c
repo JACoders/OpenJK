@@ -1530,7 +1530,12 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		newent->client->NPC_class = CLASS_VEHICLE;
 		if ( g_vehicleInfo[iVehIndex].type == VH_FIGHTER )
 		{//FIXME: EXTERN!!!
-			newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED|FL_DMG_BY_HEAVY_WEAP_ONLY);//don't get pushed around, blasters bounce off, only damage from heavy weaps
+			if (g_tweakWeapons.integer & ANTI_VEHICLE) {
+				newent->flags |= (FL_NO_KNOCKBACK);
+				trap->Print("DUHH HELLO\n");
+			}
+			else
+				newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED|FL_DMG_BY_HEAVY_WEAP_ONLY);//don't get pushed around, blasters bounce off, only damage from heavy weaps
 		}
 		//WTF?!!! Ships spawning in pointing straight down!
 		//set them up to start landed

@@ -6701,8 +6701,11 @@ int NewBotAI_GetDrain(bot_state_t *bs) {
 			if (hisForce > 10)
 				return (weight - 30);
 		}
+		else return 0;
 	}
-	else return (weight - ourHealth); //Eeee
+
+	if (ourHealth < 100)
+		return ((weight - ourHealth) + 20); //Eeee
 
 	return 0;
 }
@@ -6905,7 +6908,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && level.gametype >= GT_TEAM && !(g_forcePowerDisable.integer & (1 << FP_TEAM_HEAL)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL))) {
-		if (g_entities[bs->client].health > 90 && (bs->cur_ps.fd.forcePower > 70)) {
+		if (g_entities[bs->client].health > 75 && (bs->cur_ps.fd.forcePower > 70)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_TEAM_HEAL;
 			useTheForce = qtrue;
 		}
