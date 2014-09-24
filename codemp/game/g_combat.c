@@ -4540,42 +4540,57 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 			case MOD_STUN_BATON:
 				damage *= 7;
+				break;
 			case MOD_BRYAR_PISTOL:
 			case MOD_BRYAR_PISTOL_ALT:
 				damage *= 5;
+				break;
 			case MOD_BLASTER:
 				damage *= 4;
+				break;
 			case MOD_DISRUPTOR:
 				damage *= 0.25;
+				break;
 			case MOD_DISRUPTOR_SNIPER:
 				damage *= 0.2;
+				break;
 			case MOD_BOWCASTER:
 				damage *= 3;
+				break;
 			case MOD_REPEATER:
 				damage *= 3;
+				break;
 			case MOD_REPEATER_ALT:
 			case MOD_REPEATER_ALT_SPLASH:
 				damage *= 5;
+				break;
 			case MOD_FLECHETTE:
 				damage *= 4;
+				break;
 			case MOD_FLECHETTE_ALT_SPLASH:
 				damage *= 4;
+				break;
 			case MOD_ROCKET:
 			case MOD_ROCKET_SPLASH:
 			case MOD_ROCKET_HOMING:
 			case MOD_ROCKET_HOMING_SPLASH:
 				damage *= 5;
+				break;
 			case MOD_THERMAL:
 			case MOD_THERMAL_SPLASH:
 				damage *= 6;
+				break;
 			case MOD_TRIP_MINE_SPLASH:
 			case MOD_TIMED_MINE_SPLASH:
 			case MOD_DET_PACK_SPLASH:
 				damage *= 5;
+				break;
 			case MOD_CONC:
 				damage *= 4;
+				break;
 			case MOD_CONC_ALT:
 				damage *= 1;
+				break;
 			default:
 				break;
 		}
