@@ -1342,7 +1342,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 6)
 				Q_strncpyz(style, "wsw", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7)
-				Q_strncpyz(style, "rjvq3", sizeof(style));
+				Q_strncpyz(style, "rjq3", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
 				Q_strncpyz(style, "rjcpm", sizeof(style));
 		}

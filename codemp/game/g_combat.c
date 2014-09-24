@@ -4549,10 +4549,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				damage *= 4;
 				break;
 			case MOD_DISRUPTOR:
-				damage *= 0.25;
+				damage *= 1;
 				break;
 			case MOD_DISRUPTOR_SNIPER:
-				damage *= 0.2;
+				damage *= 1;
 				break;
 			case MOD_BOWCASTER:
 				damage *= 3;

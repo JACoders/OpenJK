@@ -1690,6 +1690,10 @@ int PM_SaberBackflipAttackMove( void )
 	{
 		return LS_A_T2B;//LS_NONE;
 	}
+
+	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) //not in wsw
+		return LS_A_T2B;
+
 	//just do it
 	pm->cmd.upmove = 127;
 	pm->ps->velocity[2] = 500;
@@ -2187,6 +2191,9 @@ qboolean PM_InSecondaryStyle( void )
 			return qtrue;
 		}
 	}
+	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8)
+		return qtrue;
+
 	return qfalse;
 }
 
