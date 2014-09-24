@@ -1088,10 +1088,6 @@ gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel ) {
 	e->eventTime = level.time;
 	e->freeAfterEvent = qtrue;
 
-		e->r.svFlags |= SVF_SINGLECLIENT;
-		e->r.singleClient = 1;
-
-
 	VectorCopy( origin, snapped );
 	SnapVector( snapped );		// save network bandwidth
 	G_SetOrigin( e, snapped );
