@@ -1257,6 +1257,7 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	return lessTime;
 }
 
+//void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;

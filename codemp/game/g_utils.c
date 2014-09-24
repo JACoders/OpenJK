@@ -1088,6 +1088,10 @@ gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel ) {
 	e->eventTime = level.time;
 	e->freeAfterEvent = qtrue;
 
+		e->r.svFlags |= SVF_SINGLECLIENT;
+		e->r.singleClient = 1;
+
+
 	VectorCopy( origin, snapped );
 	SnapVector( snapped );		// save network bandwidth
 	G_SetOrigin( e, snapped );
@@ -1097,6 +1101,35 @@ gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel ) {
 
 	return e;
 }
+
+#if 0
+gentity_t *G_SoundTempEntityPrivate( vec3_t origin, int event, int channel, int clientnum ) {
+	gentity_t		*e;
+	vec3_t		snapped;
+
+	e = G_Spawn(qtrue);
+
+	e->s.eType = ET_EVENTS + event;
+	e->inuse = qtrue;
+
+	e->classname = "tempEntity";
+	e->eventTime = level.time;
+	e->freeAfterEvent = qtrue;
+
+		e->r.svFlags |= SVF_SINGLECLIENT;
+		e->r.singleClient = clientnum;
+
+
+	VectorCopy( origin, snapped );
+	SnapVector( snapped );		// save network bandwidth
+	G_SetOrigin( e, snapped );
+
+	// find cluster for PVS
+	//trap->LinkEntity( (sharedEntity_t *)e );
+
+	return e;
+}
+#endif
 
 
 //scale health down below 1024 to fit in health bits
@@ -1364,6 +1397,41 @@ void G_Sound( gentity_t *ent, int channel, int soundIndex ) {
 		//te->freeAfterEvent = qfalse;
 	}
 }
+
+#if 0
+void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex ) {
+	gentity_t	*te;
+
+	assert(soundIndex);
+
+	te = G_SoundTempEntityPrivate( ent->r.currentOrigin, EV_GENERAL_SOUND, channel, ent->s.number );
+	te->s.eventParm = soundIndex;
+	te->s.saberEntityNum = channel;
+
+	if (ent && ent->client && channel > TRACK_CHANNEL_NONE)
+	{ //let the client remember the index of the player entity so he can kill the most recent sound on request
+		if (g_entities[ent->client->ps.fd.killSoundEntIndex[channel-50]].inuse &&
+			ent->client->ps.fd.killSoundEntIndex[channel-50] > MAX_CLIENTS)
+		{
+			G_MuteSound(ent->client->ps.fd.killSoundEntIndex[channel-50], CHAN_VOICE);
+			if (ent->client->ps.fd.killSoundEntIndex[channel-50] > MAX_CLIENTS && g_entities[ent->client->ps.fd.killSoundEntIndex[channel-50]].inuse)
+			{
+				G_FreeEntity(&g_entities[ent->client->ps.fd.killSoundEntIndex[channel-50]]);
+			}
+			ent->client->ps.fd.killSoundEntIndex[channel-50] = 0;
+		}
+
+		ent->client->ps.fd.killSoundEntIndex[channel-50] = te->s.number;
+		te->s.trickedentindex = ent->s.number;
+		te->s.eFlags = EF_SOUNDTRACKER;
+		// fix: let other players know about this
+		// for case that they will meet this one
+		//te->r.svFlags |= SVF_SINGLECLIENT;
+		//te->r.singleClient = ent->s.number;
+		//te->freeAfterEvent = qfalse;
+	}
+}
+#endif
 
 /*
 =============

@@ -4536,7 +4536,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			//Bullets do ~5x dmg..
 			//Splash does ~3x dmg..
-			//Hitscan does normal dmg..?
+			//Hitscan does less dmg..?
 
 			case MOD_STUN_BATON:
 				damage *= 7;

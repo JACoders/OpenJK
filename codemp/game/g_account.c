@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sqlite3.h"
+//#include "http/url.h"
+//#include "http/connect.h"
 
 #define LOCAL_DB_PATH "japro/data.db"
 #define GLOBAL_DB_PATH sv_globalDBPath.string
@@ -297,6 +299,8 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 
 void AddRunToWebServer(RaceRecord_t record) 
 { 
+
+	//fetch_response();
 #if 0
 	CURL *curl;
 	char address[128], data[256], password[64];
@@ -1726,7 +1730,8 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
+	//sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
+	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, coursename, username, style FROM LocalRun ORDER BY duration_ms DESC) AS T GROUP BY T.username, T.coursename, T.style)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 
 	s = sqlite3_step(stmt);
