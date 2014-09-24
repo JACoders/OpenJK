@@ -553,7 +553,7 @@ void BotInputToUserCommand(bot_input_t *bi, usercmd_t *ucmd, int delta_angles[3]
 
 	if (bi->actionflags & ACTION_FORCEPOWER) ucmd->buttons |= BUTTON_FORCEPOWER;
 
-	if (!g_newBotAI.integer && (useTime < level.time && Q_irand(1, 10) < 5))
+	if (useTime < level.time && Q_irand(1, 10) < 5)
 	{ //for now just hit use randomly in case there's something useable around
 		ucmd->buttons |= BUTTON_USE;
 	}
