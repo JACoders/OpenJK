@@ -682,6 +682,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
+					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
 				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
@@ -700,6 +701,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				if (ent->client->noclip) {
 					ent->client->noclip = qfalse;
 					trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
+					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
 				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
@@ -716,6 +718,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			if (ent->client->noclip) {
 				ent->client->noclip = qfalse;
 				trap->SendServerCommand(ent-g_entities, "print \"noclip OFF\n\"");
+				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 				ResetPlayerTimers(ent, qtrue);
 			}
 			else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
