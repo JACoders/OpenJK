@@ -2044,6 +2044,22 @@ static qboolean PM_CheckJump( void )
 		pm->ps->forceJumpFlip = qfalse;
 		return qtrue;
 	}
+
+#if _GAME
+	if (g_showJumpSpot.integer) {
+		if ((pm->ps->origin[2] - pm->ps->fd.forceJumpZStart) == 0 && pm->cmd.upmove>=10) {
+			vec3_t start;
+			vec3_t end;
+			VectorCopy(pm->ps->origin, end);
+			VectorCopy(pm->ps->origin, start);
+			start[2] -= 64;
+			end[2] += 256;
+
+			G_TestLine(start, end, 0x00000ff, 60000);
+		}
+	}
+#endif
+
 #if METROID_JUMP
 	if ( pm->waterlevel < 2 ) 
 	{

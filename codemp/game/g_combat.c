@@ -4546,7 +4546,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				damage *= 5;
 				break;
 			case MOD_BLASTER:
-				damage *= 4;
+				damage *= 5;
 				break;
 			case MOD_DISRUPTOR:
 				damage *= 1;
@@ -4555,10 +4555,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				damage *= 1;
 				break;
 			case MOD_BOWCASTER:
-				damage *= 3;
+				damage *= 5;
 				break;
 			case MOD_REPEATER:
-				damage *= 3;
+				damage *= 5;
 				break;
 			case MOD_REPEATER_ALT:
 			case MOD_REPEATER_ALT_SPLASH:
@@ -4572,13 +4572,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				break;
 			case MOD_ROCKET:
 			case MOD_ROCKET_SPLASH:
+				damage *= 6;
+				break;
 			case MOD_ROCKET_HOMING:
 			case MOD_ROCKET_HOMING_SPLASH:
-				damage *= 5;
+				damage *= 8;
 				break;
 			case MOD_THERMAL:
 			case MOD_THERMAL_SPLASH:
-				damage *= 6;
+				damage *= 7;
 				break;
 			case MOD_TRIP_MINE_SPLASH:
 			case MOD_TIMED_MINE_SPLASH:
