@@ -36,6 +36,7 @@ This file is part of Jedi Academy.
 static void S_Play_f(void);
 static void S_SoundList_f(void);
 static void S_Music_f(void);
+static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
 
 void S_Update_();
@@ -381,9 +382,6 @@ void S_SoundInfo_f(void) {
 	if (!s_soundStarted) {
 		Com_Printf ("sound system not started\n");
 	} else {
-		if ( s_soundMuted ) {
-			Com_Printf ("sound system is muted\n");
-		}
 #ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
@@ -474,6 +472,7 @@ void S_Init( void ) {
 
 	Cmd_AddCommand("play", S_Play_f);
 	Cmd_AddCommand("music", S_Music_f);
+	Cmd_AddCommand("stopmusic", S_StopMusic_f);
 	Cmd_AddCommand("soundlist", S_SoundList_f);
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
@@ -722,6 +721,7 @@ void S_Shutdown( void )
 
 	Cmd_RemoveCommand("play");
 	Cmd_RemoveCommand("music");
+	Cmd_RemoveCommand("stopmusic");
 	Cmd_RemoveCommand("stopsound");
 	Cmd_RemoveCommand("soundlist");
 	Cmd_RemoveCommand("soundinfo");
@@ -2063,6 +2063,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 	int		src, dst;
 	float	scale;
 	int		intVolume;
+	int		rawEndStart;
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -2074,6 +2075,8 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 		Com_DPrintf( "S_RawSamples: resetting minimum: %i < %i\n", s_rawend, s_soundtime );
 		s_rawend = s_soundtime;
 	}
+	
+	rawEndStart = s_rawend;
 
 	scale = (float)rate / dma.speed;
 
@@ -2114,6 +2117,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left = ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right = ((short *)data)[src*2+1] * intVolume;
 				}
@@ -2127,6 +2133,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left  += ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right += ((short *)data)[src*2+1] * intVolume;
 				}
@@ -2144,6 +2153,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right = ((short *)data)[src] * intVolume;
 			}
@@ -2157,6 +2169,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right += ((short *)data)[src] * intVolume;
 			}
@@ -2175,6 +2190,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right = ((char *)data)[src*2+1] * intVolume;
 			}
@@ -2188,6 +2206,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right += ((char *)data)[src*2+1] * intVolume;
 			}
@@ -2206,6 +2227,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right = (((byte *)data)[src]-128) * intVolume;
 			}
@@ -2219,6 +2243,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right += (((byte *)data)[src]-128) * intVolume;
 			}
@@ -3681,6 +3708,10 @@ static void S_Music_f( void ) {
 	}
 }
 
+static void S_StopMusic_f( void ) {
+	S_StopBackgroundTrack();
+}
+
 // a debug function, but no harm to leave in...
 //
 static void S_SetDynamicMusic_f(void)
@@ -4674,6 +4705,11 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 
 		// decide how much data needs to be read from the file
 		fileSamples = bufferSamples * pMusicInfo->s_backgroundInfo.rate / dma.speed;
+
+		// don't try to play if there are no more samples in the file
+		if (!fileSamples) {
+			return qfalse;
+		}
 
 		// don't try and read past the end of the file
 		if ( fileSamples > pMusicInfo->s_backgroundSamples ) {

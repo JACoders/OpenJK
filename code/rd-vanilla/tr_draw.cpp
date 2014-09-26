@@ -158,97 +158,50 @@ void RE_UploadCinematic (int cols, int rows, const byte *data, int client, qbool
 	}
 }
 
-
-
-#if 0
-void RE_GetScreenShot(byte *data, int w, int h)
-{
-	byte		*buffer;
-	int			offset;
-	int			x, y;
-	int			xc, yc;
-	int			xstep, ystep;
-	int			count = 0;
-
-	buffer = (byte *)R_Malloc(glConfig.vidWidth * glConfig.vidHeight * 3);
-	if(!buffer)
-	{
-		return;
-	}
-	qglReadPixels (0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer ); 
-	
-	xstep = (glConfig.vidWidth << 16) / w;
-	ystep = (glConfig.vidHeight << 16) / h;
-	yc = 0;
-	for(y = 0; y < h; y++, yc += ystep)
-	{
-		xc = 0;
-		for(x = 0; x < w; x++, xc += xstep)
-		{
-			offset = ((glConfig.vidWidth * (yc >> 16)) + (xc >> 16)) * 3;
-			*data++ = buffer[offset++];
-			*data++ = buffer[offset++];
-			*data++ = buffer[offset++];
-			*data++ = 0xff;
-			count++;
-		}
-	}
-	assert(count == w * h);
-	R_Free(buffer);
-}
-
-#else
-
+extern byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen);
 void RE_GetScreenShot(byte *buffer, int w, int h)
 {
 	byte		*source;
 	byte		*src, *dst;
+	size_t offset = 0, memcount;
+	int padlen;
+	
 	int			x, y;
 	int			r, g, b;
 	float		xScale, yScale;
 	int			xx, yy;
-
-    qglFinish();	// try and fix broken Radeon cards (7500 & 8500) that don't read screen pixels properly
-
-	source = (byte *)Z_Malloc(glConfig.vidWidth * glConfig.vidHeight * 3, TAG_TEMP_WORKSPACE, qfalse);
-	if(!source)
-	{
-		return;
-	}
-	qglReadPixels (0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGB, GL_UNSIGNED_BYTE, source ); 
 	
-	assert (w == h);
-	int count = 0;
+	
+	source = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
+	memcount = (glConfig.vidWidth * 3 + padlen) * glConfig.vidHeight;
+	
+	// gamma correct
+	if(glConfig.deviceSupportsGamma)
+		R_GammaCorrect(source + offset, memcount);
+	
 	// resample from source
-	xScale = glConfig.vidWidth / (4.0 * w);
-	yScale = glConfig.vidHeight / (3.0 * w);
-	for ( y = 0 ; y < w ; y++ ) {
+	xScale = glConfig.vidWidth / (4.0*w);
+	yScale = glConfig.vidHeight / (3.0*h);
+	for ( y = 0 ; y < h ; y++ ) {
 		for ( x = 0 ; x < w ; x++ ) {
 			r = g = b = 0;
 			for ( yy = 0 ; yy < 3 ; yy++ ) {
 				for ( xx = 0 ; xx < 4 ; xx++ ) {
-					src = source + 3 * ( glConfig.vidWidth * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale ) );
+					src = source + offset + 3 * ( glConfig.vidWidth * (int)( (y*3+yy)*yScale ) + (int)( (x*4+xx)*xScale ) );
 					r += src[0];
 					g += src[1];
 					b += src[2];
 				}
 			}
-			dst = buffer + 4 * ( y * w + x );
+			dst = buffer + 3 * ( y * w + x );
 			dst[0] = r / 12;
 			dst[1] = g / 12;
 			dst[2] = b / 12;
-			count++;
 		}
 	}
-
-	assert(count == w * h);
-	Z_Free(source);
+	
+	ri.Z_Free(source);
 }
-
-#endif
-
-
-
 
 // this is just a chunk of code from RE_TempRawImage_ReadFromFile() below, subroutinised so I can call it
 //	from the screen dissolve code as well...
@@ -364,15 +317,15 @@ byte* RE_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, in
 
 	if (pbReturn && qbVertFlip)
 	{			
-		unsigned long *pSrcLine = (unsigned long *) pbReturn;
-		unsigned long *pDstLine = (unsigned long *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)		
+		unsigned int *pSrcLine = (unsigned int *) pbReturn;
+		unsigned int *pDstLine = (unsigned int *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)
 					   pDstLine-= *piWidth;	// point at start of last line, not first after buffer
 
 		for (int iLineCount=0; iLineCount<*piHeight/2; iLineCount++)
 		{
 			for (int x=0; x<*piWidth; x++)
 			{
-				unsigned long l = pSrcLine[x];
+				unsigned int l = pSrcLine[x];
 				pSrcLine[x] = pDstLine[x];
 				pDstLine[x] = l;
 			}

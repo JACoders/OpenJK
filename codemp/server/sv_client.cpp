@@ -112,6 +112,40 @@ void SV_GetChallenge( netadr_t from ) {
 
 /*
 ==================
+SV_IsBanned
+
+Check whether a certain address is banned
+==================
+*/
+
+static qboolean SV_IsBanned( netadr_t *from, qboolean isexception )
+{
+	int index;
+	serverBan_t *curban;
+
+	if ( !isexception )
+	{
+		// If this is a query for a ban, first check whether the client is excepted
+		if ( SV_IsBanned( from, qtrue ) )
+			return qfalse;
+	}
+
+	for ( index = 0; index < serverBansCount; index++ )
+	{
+		curban = &serverBans[index];
+
+		if ( curban->isexception == isexception )
+		{
+			if ( NET_CompareBaseAdrMask( curban->ip, *from, curban->subnet ) )
+				return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+/*
+==================
 SV_DirectConnect
 
 A "connect" OOB command has been received
@@ -134,6 +168,14 @@ void SV_DirectConnect( netadr_t from ) {
 	char		*ip;
 
 	Com_DPrintf ("SVC_DirectConnect ()\n");
+
+	// Check whether this client is banned.
+	if ( SV_IsBanned( &from, qfalse ) )
+	{
+		NET_OutOfBandPrint( NS_SERVER, from, "print\nYou are banned from this server.\n" );
+		Com_DPrintf( "    rejected connect from %s (banned)\n", NET_AdrToString(from) );
+		return;
+	}
 
 	Q_strncpyz( userinfo, Cmd_Argv(1), sizeof(userinfo) );
 
@@ -1179,8 +1221,14 @@ void SV_UserinfoChanged( client_t *cl ) {
 	int maxSnaps = min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
 	val = Info_ValueForKey( cl->userinfo, "snaps" );
 	cl->wishSnaps = atoi( val );
-	i = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-	cl->snapshotMsec = 1000/i;
+	if ( !cl->wishSnaps )
+		cl->wishSnaps = maxSnaps;
+	i = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+	if( i != cl->snapshotMsec ) {
+		// Reset next snapshot so we avoid desync between server frame time and snapshot send time
+		cl->nextSnapshotTime = -1;
+		cl->snapshotMsec = i;
+	}
 
 	// TTimo
 	// maintain the IP information

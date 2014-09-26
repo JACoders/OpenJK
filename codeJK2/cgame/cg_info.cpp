@@ -384,16 +384,28 @@ void CG_DrawInformation( void ) {
 	// draw the dialog background
 	const char	*info	= CG_ConfigString( CS_SERVERINFO );
 	const char	*s		= Info_ValueForKey( info, "mapname" );
-	const qhandle_t	levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
+	qhandle_t	levelshot;
+
+	if (!strcmp(s,"bespin_undercity")) // this map has no levelshot
+		levelshot = cgi_R_RegisterShaderNoMip( "levelshots/kejim_post" );
+	else
+		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
+
+	if (!levelshot) {
+		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+	}
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
-	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
+#ifdef JK2_MODE
+	if ( !levelshot || g_eSavedGameJustLoaded == eFULL )
 	{
 		// keep whatever's in the screen buffer so far (either the last ingame rendered-image (eg for maptransition)
 		//	or the screenshot built-in to a loaded save game...
 		//
-		cgi_R_DrawScreenShot( 0, 480, 640, -480 );
-	} else*/ {
+		cgi_R_DrawScreenShot( 0, 0, 640, 480 );
+	} else
+#endif
+	{
 		// put up the pre-defined levelshot for this map...
 		//
 		cgi_R_SetColor( NULL );

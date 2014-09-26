@@ -63,6 +63,7 @@
 
 #define RDF_AUTOMAP			32		//means this scene is to draw the automap -rww
 #define	RDF_NOFOG			64		//no global fog in this scene (but still brush fog) -rww
+#define RDF_ForceSightOn	128		//using force sight
 
 extern int	skyboxportal;
 extern int	drawskyboxportal;

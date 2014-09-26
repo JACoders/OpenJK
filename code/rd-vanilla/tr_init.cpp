@@ -984,7 +984,7 @@ void GfxInfo_f( void )
 		else
 			ri.Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
 	}
-	ri.Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	ri.Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer ? 1 : 0] );
 	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
@@ -1730,6 +1730,10 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	REX(InitDissolve);
 
 	REX(GetScreenShot);
+#ifdef JK2_MODE
+	REX(SaveJPGToBuffer);
+	re.LoadJPGFromBuffer = LoadJPGFromBuffer;
+#endif
 	REX(TempRawImage_ReadFromFile);
 	REX(TempRawImage_CleanUp);
 

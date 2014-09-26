@@ -1290,25 +1290,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 						magnitude = 0;
 					}
 
-					if( (!Q_stricmp(self->NPC_type, "rosh_penin") ||
-						!Q_stricmp(self->NPC_type, "rosh_penin_noforce")) &&
-						!Q_stricmp(level.mapname, "yavin1b") )
-					{
-						// This is a small little fix I implemented over a matter of 3 commits due to bugs/etc.
-						// There is an EXTREMELY frustrating bug on yavin1b where Rosh can take enough damage from howlers to the point
-						// where, during one section where he jumps over a stream, he can suffer falling damage and die. So the player
-						// would be forced to repeat the level over and over again.
-						// Despite it being clearly a jump, the scripters for the level somehow forgot to add a cushion brush on
-						// the landing zone where Rosh would be, (fucking woglodytes that Raven outsourced the levels to, I swear...)
-						// resulting in a very weird and unnatural death. So it didn't make any sense. So I did the nasty thing and did
-						// it through code.
-						// This could also probably explain why Rosh suddenly dies for NO reason whatsoever in rare occasions on Jedi
-						// Master/Jedi Knight mode at the start of the level. --eezstreet
-					}
-					else
-					{
-						G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
-					}
+					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
 				}
 			}
 		}
