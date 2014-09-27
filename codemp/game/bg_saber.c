@@ -84,7 +84,10 @@ void BG_ForcePowerDrain( playerState_t *ps, forcePowers_t forcePower, int overri
 		{
 			if (ps->fd.forcePowerLevel[FP_LEVITATION])
 			{ //don't divide by 0!
-				jumpDrain /= ps->fd.forcePowerLevel[FP_LEVITATION];
+				if (ps->stats[STAT_RACEMODE])
+					jumpDrain /= 3;
+				else
+					jumpDrain /= ps->fd.forcePowerLevel[FP_LEVITATION];
 			}
 		}
 
