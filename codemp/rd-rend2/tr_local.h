@@ -2079,9 +2079,11 @@ typedef struct trGlobals_s {
 	FBO_t					*fbos[MAX_FBOS];
 
 	int						numVBOs;
+	unsigned int			vboNames[MAX_VBOS];
 	VBO_t					*vbos[MAX_VBOS];
 
 	int						numIBOs;
+	unsigned int			iboNames[MAX_IBOS];
 	IBO_t					*ibos[MAX_IBOS];
 
 	// shader indexes from other modules will be looked up in tr.shaders[]

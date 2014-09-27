@@ -86,13 +86,12 @@ VBO_t *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 	R_IssuePendingRenderCommands();
 
 	vbo = tr.vbos[tr.numVBOs] = (VBO_t *)ri->Hunk_Alloc(sizeof(*vbo), h_low);
-	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
 
 	vbo->vertexesSize = vertexesSize;
-
-	qglGenBuffers(1, &vbo->vertexesVBO);
+	vbo->vertexesVBO = tr.vboNames[tr.numVBOs];
+	tr.numVBOs++;
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo->vertexesVBO);
 	qglBufferData(GL_ARRAY_BUFFER, vertexesSize, vertexes, glUsage);
@@ -123,11 +122,10 @@ IBO_t *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 	R_IssuePendingRenderCommands();
 
 	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
-	tr.numIBOs++;
 
 	ibo->indexesSize = indexesSize;
-
-	qglGenBuffers(1, &ibo->indexesVBO);
+	ibo->indexesVBO = tr.iboNames[tr.numIBOs];
+	tr.numIBOs++;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->indexesVBO);
 	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize, indexes, glUsage);
@@ -255,6 +253,11 @@ void R_InitVBOs(void)
 
 	ri->Printf(PRINT_ALL, "------- R_InitVBOs -------\n");
 
+	// glGenBuffers only allocates the IDs for these buffers. The 'buffer object' is
+	// actually created on first bind.
+	qglGenBuffers(MAX_IBOS, tr.iboNames);
+	qglGenBuffers(MAX_VBOS, tr.vboNames);
+
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
 
@@ -309,39 +312,13 @@ R_ShutdownVBOs
 */
 void R_ShutdownVBOs(void)
 {
-	int             i;
-	VBO_t          *vbo;
-	IBO_t          *ibo;
-
 	ri->Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
 
 	R_BindNullVBO();
 	R_BindNullIBO();
 
-
-	for(i = 0; i < tr.numVBOs; i++)
-	{
-		vbo = tr.vbos[i];
-
-		if(vbo->vertexesVBO)
-		{
-			qglDeleteBuffers(1, &vbo->vertexesVBO);
-		}
-
-		//ri->Free(vbo);
-	}
-
-	for(i = 0; i < tr.numIBOs; i++)
-	{
-		ibo = tr.ibos[i];
-
-		if(ibo->indexesVBO)
-		{
-			qglDeleteBuffers(1, &ibo->indexesVBO);
-		}
-
-		//ri->Free(ibo);
-	}
+	qglDeleteBuffers(MAX_IBOS, tr.iboNames);
+	qglDeleteBuffers(MAX_VBOS, tr.vboNames);
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
