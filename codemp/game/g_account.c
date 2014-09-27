@@ -193,9 +193,6 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 	char*	pch;
 	qboolean unique = qtrue;
 
-	if (!Q_stricmp(name, "Padawan")) //loda fixme, also ignore Padawan[0] etc..
-		return;
-
 	p = strchr(strIP, ':');
 	if (p) //loda - fix ip sometimes not printing
 		*p = 0;
@@ -207,6 +204,13 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 
 	Q_strlwr(cleanName);
 	Q_CleanStr(cleanName);
+
+	if (!Q_stricmp(name, "padawan")) //loda fixme, also ignore Padawan[0] etc..
+		return;
+	if (!Q_stricmp(name, "padawan[0]")) //loda fixme, also ignore Padawan[0] etc..
+		return;
+	if (!Q_stricmp(name, "padawan[1]")) //loda fixme, also ignore Padawan[0] etc..
+		return;
 
 	Com_sprintf(string, sizeof(string), "%s;%s;%s", cleanName, strIP, guid); //Store ip as int or char??.. lets do int
 
