@@ -2102,20 +2102,31 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	gentity_t *missile;
 	qboolean q3style = qfalse;
 
+	//
+	vec3_t temp;
+
+	if (ent->client && ent->client->pers.raceMode)
+		q3style = qtrue;
+
 	if ( altFire )
 		vel *= 0.5f;
 
 	if (altFire && g_tweakWeapons.integer & ROCKET_REDEEMER)
 		damage *= 2;
 
-	if (ent->client && ent->client->pers.raceMode)
-		q3style = qtrue;
+	if (q3style && ent->client->pers.backwardsRocket) {
+		vectoangles( forward, temp );
+		temp[1] += 180;
+		AngleVectors( temp, temp, NULL, NULL );
+		missile = CreateMissile( muzzle, temp, vel, 15000, ent, altFire );
+	}
+	else if (q3style) {
+		missile = CreateMissile( muzzle, forward, vel, 15000, ent, altFire );
+	}
+	else 
+		missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
 
 //[JAPRO - Serverside - Weapons - Add inheritance to rocket]
-	if (q3style)
-		missile = CreateMissile( muzzle, forward, vel, 15000, ent, altFire );
-	else
-		missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{

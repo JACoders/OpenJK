@@ -5205,6 +5205,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "race ");
 	if (g_raceMode.integer && level.gametype == GT_FFA) {
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
+		Q_strcat(buf, sizeof(buf), "rocketChange ");
 		Q_strcat(buf, sizeof(buf), "warpList ");
 		Q_strcat(buf, sizeof(buf), "warp ");
 		if (g_allowRaceTele.integer) {
@@ -5947,6 +5948,47 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 	}
 }
+
+static void Cmd_BackwardsRocket_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle\n\"" );
+		return;
+	}
+
+	if (!g_raceMode.integer) {
+		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gamemode!\n\"");
+		return;
+	}
+
+	if (level.gametype != GT_FFA) {
+		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
+		return;
+	}
+
+	if (!ent->client->pers.raceMode) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+		ResetPlayerTimers(ent, qtrue);
+	}
+
+	trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+
+	ent->client->pers.backwardsRocket = !ent->client->pers.backwardsRocket;
+}
+
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
@@ -7064,6 +7106,7 @@ command_t commands[] = {
 
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
+	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 
 	{ "saber",				Cmd_Saber_f,				CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },

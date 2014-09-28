@@ -674,6 +674,7 @@ typedef struct clientPersistant_s {
 	char		userName[16];
 	char		lastUserName[16];//To stop duel stats abuse
 	int			duelStartTime;
+	qboolean	backwardsRocket;
 
 	stats_t		stats;
 } clientPersistant_t;
