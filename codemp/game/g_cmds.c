@@ -6038,10 +6038,10 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 		VectorCopy(ent->client->ps.origin, ent->client->pers.telemarkOrigin);
 		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR && (ent->client->ps.pm_flags & PMF_FOLLOW))
 			ent->client->pers.telemarkOrigin[2] += 58;
-		ent->client->pers.telemarkAngle = (int)ent->client->ps.viewangles[YAW];
-		ent->client->pers.telemarkPitchAngle = (int)ent->client->ps.viewangles[PITCH];
+		ent->client->pers.telemarkAngle = ent->client->ps.viewangles[YAW];
+		ent->client->pers.telemarkPitchAngle = ent->client->ps.viewangles[PITCH];
 		trap->SendServerCommand( ent-g_entities, va("print \"Teleport Marker: ^3<%i, %i, %i> %i, %i\n\"", 
-			(int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], ent->client->pers.telemarkAngle, ent->client->pers.telemarkPitchAngle ));
+			(int)ent->client->pers.telemarkOrigin[0], (int)ent->client->pers.telemarkOrigin[1], (int)ent->client->pers.telemarkOrigin[2], (int)ent->client->pers.telemarkAngle, (int)ent->client->pers.telemarkPitchAngle ));
 }
 //[JAPRO - Serverside - All - Amtelemark Function - End]
 

@@ -656,8 +656,8 @@ typedef struct clientPersistant_s {
 	qboolean	noDamageNumbers;//Japro
 	qboolean	amfreeze;//JAPRO - Serverside - Admin - Amfreeze admin cmd
 	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
-	int			telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
-	int			telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
+	float		telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
 	char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
 	int			sayteammod;//0 = normal, 1 = clan, 2 = admin
 	int			lastChatTime;//godchat fuck idk why im doing this
