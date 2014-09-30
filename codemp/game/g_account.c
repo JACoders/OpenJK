@@ -1782,8 +1782,6 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		for (mstyle = 0; mstyle < 9; mstyle++) { //9 movement styles. 0-7
 			int rank = 0;
 
-			CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-
 			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //Place 1
 				"FROM (SELECT id, MIN(duration_ms) "
 				   "FROM LocalRun "
@@ -2259,6 +2257,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
     sqlite3_stmt * stmt;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
 		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INT, playtime UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
