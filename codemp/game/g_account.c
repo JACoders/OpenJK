@@ -427,6 +427,11 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 
 		if (!foundFaster) {
 			const int place = i;//The fuck is this.. shut the compiler up
+
+			//Debug this..
+			G_SecurityLogPrintf( "ADDING RACE TIME TO DB WITH PLACE %i: %s, %s, %i, %i, %i, %i, %i \n", 
+				place, TempRaceRecord[place].username, TempRaceRecord[place].coursename, TempRaceRecord[place].duration_ms, TempRaceRecord[place].topspeed, TempRaceRecord[place].average, TempRaceRecord[place].style, TempRaceRecord[place].end_timeInt);
+
 			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord[place].duration_ms));
