@@ -2002,7 +2002,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 		CALL_SQLITE (close(db));
 	}
 
-	if (duration_ms >= 60000) {
+	if (duration_ms >= 60000) { //FIXME, make this use the inttostring function if it tests bugfree
 		int minutes, seconds, milliseconds;
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
@@ -2020,11 +2020,32 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
+void IntToString(int duration_ms, char *timeStr, size_t strSize) { 
+	if (duration_ms > (60*60*1000)) { //thanks, eternal
+		int hours, minutes, seconds, milliseconds; 
+		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
+		minutes = (int)((duration_ms / (1000*60)) % 60);
+		seconds = (int)(duration_ms / 1000) % 60;
+		milliseconds = duration_ms % 1000; 
+		Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
+	}
+	else if (duration_ms > (60*1000)) {
+		int minutes, seconds, milliseconds;
+		minutes = (int)((duration_ms / (1000*60)) % 60);
+		seconds = (int)(duration_ms / 1000) % 60;
+		milliseconds = duration_ms % 1000; 
+		Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
+	}
+	else
+		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
+}
+
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16] = {0}, timeStr[32];
 	char info[1024] = {0};
 	char msg[1024-128] = {0};
+	size_t timeStrSize = sizeof(timeStr);
 
 	if (level.numCourses == 0) {
 		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
@@ -2116,16 +2137,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		char *tmpMsg = NULL;
 		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
 		{
-			if (HighScores[course][style][i].duration_ms >= 60000) {
-				int minutes, seconds, milliseconds;
-				minutes = (int)((HighScores[course][style][i].duration_ms / (1000*60)) % 60);
-				seconds = (int)(HighScores[course][style][i].duration_ms / 1000) % 60;
-				milliseconds = HighScores[course][style][i].duration_ms % 1000; 
-				Com_sprintf(timeStr, sizeof(timeStr), "%i:%02i.%03i", minutes, seconds, milliseconds);//more precision?
-			}
-			else
-				Q_strncpyz(timeStr, va("%.3f", ((float)HighScores[course][style][i].duration_ms * 0.001)), sizeof(timeStr));
-
+			IntToString(HighScores[course][style][i].duration_ms, timeStr, timeStrSize);
 			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
