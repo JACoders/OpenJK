@@ -424,6 +424,8 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			if (!TempRaceRecord[j].username[0])
 				break;
 		}
+		if (!TempRaceRecord[i].username[0])//see what happens if we move this up here..
+			break;
 
 		if (!foundFaster) {
 			const int place = i;//The fuck is this.. shut the compiler up
@@ -432,7 +434,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			G_SecurityLogPrintf( "ADDING RACE TIME TO DB WITH PLACE %i: %s, %s, %u, %u, %u, %u, %u \n", 
 				place, TempRaceRecord[place].username, TempRaceRecord[place].coursename, TempRaceRecord[place].duration_ms, TempRaceRecord[place].topspeed, TempRaceRecord[place].average, TempRaceRecord[place].style, TempRaceRecord[place].end_timeInt);
 
-			if (TempRaceRecord[place].username[0]) {
+			//if (TempRaceRecord[place].username[0]) {
 
 				CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
 				CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
@@ -446,11 +448,8 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 				CALL_SQLITE (clear_bindings (stmt));
 
 				AddRunToWebServer(TempRaceRecord[place]);
-
-			}
+			//}
 		}
-		if (!TempRaceRecord[i].username[0])
-			break;
 	}
 
 	s = sqlite3_step(stmt); //this duplicates last one..?

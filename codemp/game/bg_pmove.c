@@ -2981,8 +2981,8 @@ static qboolean PM_CheckJump( void )
 			added = -DotProduct(hVel, pml.groundTrace.plane.normal);
 			pm->ps->velocity[2] = realjumpvelocity;
 
-			if (added > xyspeed * 0.5f)
-				added = xyspeed * 0.5f;//Sad sanity check hack
+			if (added > (xyspeed * 0.5))
+				added = (xyspeed * 0.5);//Sad sanity check hack
 
 			if (added > 0) {
 				if ((PM_GetMovePhysics() == 6))
@@ -2994,6 +2994,14 @@ static qboolean PM_CheckJump( void )
 				pm->ps->velocity[2] = realjumpvelocity*1.25f;
 				pm->ps->pm_flags &= ~PMF_JUMP_HELD;
 			}
+
+#if 0
+			{
+				gentity_t *gent = (gentity_t *)pm_entSelf;
+				trap->SendServerCommand(gent-g_entities, va("print \"XYSPEED: %.2f, ZSPEED: %.2f, ADDED: %.2f\n\"", xyspeed, pm->ps->velocity[2], added));
+			}
+#endif
+
 
 			pm->ps->stats[STAT_JUMPTIME] = 400;
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
