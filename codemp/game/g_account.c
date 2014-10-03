@@ -344,7 +344,7 @@ void AddRunToWebServer(RaceRecord_t record)
 
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
-	int		fLen = 0, args = 1, s, row = 0, i, j; //MAX_FILESIZE = 4096
+	int		fLen = 0, args = 1, s = 0, row = 0, i, j; //MAX_FILESIZE = 4096
 	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
@@ -443,7 +443,10 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 				CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord[place].average));
 				CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord[place].style));
 				CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord[place].end_timeInt));
-				CALL_SQLITE_EXPECT (step (stmt), DONE);
+
+				//CALL_SQLITE_EXPECT (step (stmt), DONE);
+				s = sqlite3_step(stmt);
+
 				CALL_SQLITE (reset (stmt));
 				CALL_SQLITE (clear_bindings (stmt));
 
@@ -452,7 +455,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 		}
 	}
 
-	s = sqlite3_step(stmt); //this duplicates last one..?
+	//s = sqlite3_step(stmt); //this duplicates last one..? LODA FIXME, this inserts empty row
 
 	if (s == SQLITE_DONE) {
 		good = qtrue;
