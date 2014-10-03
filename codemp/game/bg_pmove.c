@@ -2959,13 +2959,16 @@ static qboolean PM_CheckJump( void )
 	{
 		return qfalse;
 	}
-if ( pm->cmd.upmove > 0 )
+	if ( pm->cmd.upmove > 0 )
 	{//no special jumps
 		float realjumpvelocity = JUMP_VELOCITY;
 		if ((PM_GetMovePhysics() == 2) || (PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8))
 		{
 			vec3_t hVel;
 			float added, xyspeed;
+
+			PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+			pm->ps->pm_flags |= PMF_JUMP_HELD;
 
 			if (PM_GetMovePhysics() == 6)
 				realjumpvelocity = 280.0f;
@@ -2978,43 +2981,34 @@ if ( pm->cmd.upmove > 0 )
 			added = -DotProduct(hVel, pml.groundTrace.plane.normal);
 			pm->ps->velocity[2] = realjumpvelocity;
 
-			if (added > xyspeed)
-				added = xyspeed;//Sad sanity check hack
+			if (added > xyspeed * 0.5f)
+				added = xyspeed * 0.5f;//Sad sanity check hack
 
 			if (added > 0) {
 				if ((PM_GetMovePhysics() == 6))
 					pm->ps->velocity[2] += (added * 0.75f);//Make rampjump weaker for wsw since no speedloss
-				else {
+				else
 					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger
-				}
+			}
+			else if (pm->ps->stats[STAT_JUMPTIME] > 0) {
+				pm->ps->velocity[2] = realjumpvelocity*1.25f;
+				pm->ps->pm_flags &= ~PMF_JUMP_HELD;
 			}
 
+			pm->ps->stats[STAT_JUMPTIME] = 400;
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
 
-		}/*
-		else if ((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6)) {
-			if (PM_GetMovePhysics() == 6)
-				realjumpvelocity = 280.0f;
-			else realjumpvelocity = 270.0f;
-
-			if(pm->ps->velocity[2] > 0)
-				pm->ps->velocity[2] += realjumpvelocity;
-			else
-				pm->ps->velocity[2] = realjumpvelocity;
 		}
-		*/
 		else
 			pm->ps->velocity[2] = realjumpvelocity;
-		PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-		pm->ps->pm_flags |= PMF_JUMP_HELD;
 	}
 
 	//Jumping
 	pml.groundPlane = qfalse;
 	pml.walking = qfalse;
-	pm->ps->pm_flags |= PMF_JUMP_HELD;
+	//pm->ps->pm_flags |= PMF_JUMP_HELD;
 	pm->ps->groundEntityNum = ENTITYNUM_NONE;
-	PM_SetForceJumpZStart(pm->ps->origin[2]);
+	//PM_SetForceJumpZStart(pm->ps->origin[2]);
 
 	PM_AddEvent( EV_JUMP );
 
@@ -8689,6 +8683,9 @@ static void PM_DropTimers( void ) {
 
 	if(pm->ps->stats[STAT_DASHTIME] > 0)//JAPRO dodge/dash/wj
 		pm->ps->stats[STAT_DASHTIME] -= pml.msec;
+
+	if (pm->ps->stats[STAT_JUMPTIME] > 0)
+		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
 }
 
 // Following function is stateless (at the moment). And hoisting it out

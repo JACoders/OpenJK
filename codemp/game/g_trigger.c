@@ -1185,12 +1185,16 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 3 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 7 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 8) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1)
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1) {
+				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
+			}
 		}
 		else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2)
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2) {
+				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 2!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
+			}
 		}
 	}
 	if (g_speed.value != 250.0f)
@@ -1284,6 +1288,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
 		player->client->ps.stats[STAT_ARMOR] = 25;
+
+		if (!player->client->pers.userName[0]) //In racemode but not logged in
+			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: You are not logged in!\n\n\n\n\n\n\n\n\n\n\"");
 	}
 }
 
@@ -1314,13 +1321,12 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		if (trigger->spawnflags)//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
 			restrictions = trigger->spawnflags;
 
-		if (ValidRaceSettings(restrictions, player) && player->client->pers.userName && player->client->pers.userName[0]) {
+		if (ValidRaceSettings(restrictions, player)) {
 			valid = qtrue;
-			Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
-		}
-		else if (ValidRaceSettings(restrictions, player)) {
-			valid = qtrue;
-			Q_strncpyz( c, S_COLOR_GREEN, sizeof(c) );
+			if (player->client->pers.userName && player->client->pers.userName[0])
+				Q_strncpyz( c, S_COLOR_CYAN, sizeof(c) );
+			else
+				Q_strncpyz( c, S_COLOR_GREEN, sizeof(c) );
 		}
 
 		if (valid && (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1) && trigger->awesomenoise_index && (time <= trigger->speed)) //Play the awesome noise if they were fast enough
