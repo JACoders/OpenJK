@@ -2967,8 +2967,8 @@ static qboolean PM_CheckJump( void )
 			vec3_t hVel;
 			float added, xyspeed;
 
-			PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-			pm->ps->pm_flags |= PMF_JUMP_HELD;
+			//PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+			//pm->ps->pm_flags |= PMF_JUMP_HELD;
 
 			if (PM_GetMovePhysics() == 6)
 				realjumpvelocity = 280.0f;
@@ -3014,9 +3014,9 @@ static qboolean PM_CheckJump( void )
 	//Jumping
 	pml.groundPlane = qfalse;
 	pml.walking = qfalse;
-	//pm->ps->pm_flags |= PMF_JUMP_HELD;
+	pm->ps->pm_flags |= PMF_JUMP_HELD;
 	pm->ps->groundEntityNum = ENTITYNUM_NONE;
-	//PM_SetForceJumpZStart(pm->ps->origin[2]);
+	PM_SetForceJumpZStart(pm->ps->origin[2]);
 
 	PM_AddEvent( EV_JUMP );
 
