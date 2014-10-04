@@ -2595,6 +2595,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	ent->r.svFlags &= ~SVF_JUNIORADMIN; // prevent admin from being carried over to new players and bots
 	ent->r.svFlags &= ~SVF_FULLADMIN;
 
+	ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
+
 	// they can connect
 	client = &level.clients[ clientNum ];
 	ent->client = client;
@@ -2837,10 +2839,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
-	if (client->pers.noFollow) {
-		client->pers.noFollow = qfalse;
-		ent->r.svFlags &= ~SVF_SINGLECLIENT;
-	}
+
+	client->pers.noFollow = qfalse;
+	ent->r.svFlags &= ~SVF_SINGLECLIENT;
 
 	if ( ent->ghoul2 && ent->client )
 		ent->client->renderInfo.lastG2 = NULL; //update the renderinfo bolts next update.
