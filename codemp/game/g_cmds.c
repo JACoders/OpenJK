@@ -5391,7 +5391,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 	}
 
 	if (g_raceMode.integer)
-		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Race    Style    Name^7\n" );
+		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Race    Style    Hidden    Name^7\n" );
 	else
 		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Name^7\n" );
 
@@ -5410,6 +5410,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			char strAdmin[32] = {0};
 			char strPlugin[32] = {0};
 			char strRace[32] = {0};
+			char strHidden[32] = {0};
 			char strStyle[32] = {0};
 			char *p = NULL;
 
@@ -5428,6 +5429,8 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 
 			if (g_raceMode.integer) {
 				Q_strncpyz(strRace, (cl->pers.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+
+				Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
 
 				if (cl->sess.sessionTeam == TEAM_SPECTATOR)
 					Q_strncpyz(strStyle, "^7^7", sizeof(strStyle));
@@ -5457,7 +5460,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
 			if (g_raceMode.integer)
-				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%-12s%-13s%s^7\n", strNum, strIP, strPlugin, strAdmin, strRace, strStyle, strName);
+				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%-12s%-13s%-14s%s^7\n", strNum, strIP, strPlugin, strAdmin, strRace, strStyle, strHidden, strName);
 			else
 				tmpMsg = va( "%-5s%-18s^7%-14s%-16s%s^7\n", strNum, strIP, strPlugin, strAdmin, strName);
 
