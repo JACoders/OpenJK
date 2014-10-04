@@ -6010,7 +6010,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 					ent->client->pers.noFollow = qfalse;
 					return;
 				}
-				else if (ent->client->pers.raceMode && !g_allowNoFollow.integer) {
+				else if (!ent->client->pers.raceMode || !g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
@@ -6024,7 +6024,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 					ent->client->pers.noFollow = qfalse;
 					return;
 				}
-				else if (ent->client->pers.raceMode && !g_allowNoFollow.integer) {
+				else if (!ent->client->pers.raceMode || !g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
@@ -6037,7 +6037,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 				ent->client->pers.noFollow = qfalse;
 				return;
 			}
-			else if (!g_allowNoFollow.integer || !g_raceMode.integer) {
+			else if (!g_allowNoFollow.integer || !ent->client->pers.raceMode) {
 				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (hide).\n\"" );
 				ent->client->pers.noFollow = qfalse;
 				return;
