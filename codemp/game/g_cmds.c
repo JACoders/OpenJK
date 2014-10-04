@@ -5989,6 +5989,63 @@ static void Cmd_BackwardsRocket_f(gentity_t *ent)
 	ent->client->pers.backwardsRocket = !ent->client->pers.backwardsRocket;
 }
 
+static void Cmd_Hide_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /noFollow\n\"" );
+		return;
+	}
+
+		if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+			if (!(g_fullAdminLevel.integer & (1 << A_NOFOLLOW))) {
+				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
+					ent->client->pers.noFollow = qfalse;
+					return;
+				}
+				else if (ent->client->pers.raceMode && !g_allowNoFollow.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
+					ent->client->pers.noFollow = qfalse;
+					return;
+				}
+			}
+		}
+		else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+			if (!(g_juniorAdminLevel.integer & (1 << A_NOFOLLOW))) {
+				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
+					ent->client->pers.noFollow = qfalse;
+					return;
+				}
+				else if (ent->client->pers.raceMode && !g_allowNoFollow.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
+					ent->client->pers.noFollow = qfalse;
+					return;
+				}
+			}
+		}
+		else {//Not logged in
+			if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
+				ent->client->pers.noFollow = qfalse;
+				return;
+			}
+			else if (!g_allowNoFollow.integer || !g_raceMode.integer) {
+				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (hide).\n\"" );
+				ent->client->pers.noFollow = qfalse;
+				return;
+			}
+		}
+
+	ent->client->pers.noFollow = (qboolean)!ent->client->pers.noFollow;
+	if (ent->client->pers.noFollow)
+		trap->SendServerCommand(ent-g_entities, "print \"You can not be spectated now.\n\"");
+	else 
+		trap->SendServerCommand(ent-g_entities, "print \"You can be spectated now.\n\"");
+}
 
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
@@ -7086,8 +7143,11 @@ command_t commands[] = {
 	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+
+	{ "hide",				Cmd_Hide_f,					CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "ignore",				Cmd_Ignore_f,				0 },//[JAPRO - Serverside - All - Ignore]
 	{ "jetpack",			Cmd_Jetpack_f,				CMD_NOINTERMISSION|CMD_ALIVE },
+
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },

@@ -275,4 +275,7 @@ XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 XCVAR_DEF( g_showJumpSpot,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
+XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+
 #undef XCVAR_DEF

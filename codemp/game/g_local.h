@@ -263,7 +263,8 @@ typedef enum {
 	A_LISTMAPS,
 	A_BUILDHIGHSCORES,
 	A_WHOIS,
-	A_LOOKUP
+	A_LOOKUP,
+	A_NOFOLLOW
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates
@@ -675,6 +676,7 @@ typedef struct clientPersistant_s {
 	char		lastUserName[16];//To stop duel stats abuse
 	int			duelStartTime;
 	qboolean	backwardsRocket;
+	qboolean	noFollow;
 
 	stats_t		stats;
 } clientPersistant_t;

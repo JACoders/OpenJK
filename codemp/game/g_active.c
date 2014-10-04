@@ -1306,10 +1306,29 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		else if ( client->sess.spectatorState == SPECTATOR_FOLLOW && (client->buttons & BUTTON_ALT_ATTACK) && !(client->oldbuttons & BUTTON_ALT_ATTACK) )
 			Cmd_FollowCycle_f( ent, -1 );
 
+		/*
 		if (client->sess.spectatorState == SPECTATOR_FOLLOW && (ucmd->upmove > 0))
 		{ //jump now removes you from follow mode
 			StopFollowing(ent);
 		}
+		*/
+
+		if (client->sess.spectatorState == SPECTATOR_FOLLOW) {
+			if (ucmd->upmove > 0)
+				StopFollowing(ent);
+			else {
+				gentity_t *other;
+				other = &g_entities[client->sess.spectatorClient];
+				if (other && other->client) {
+					if (other->client->pers.noFollow)
+						StopFollowing(ent);
+				}
+				else 
+					StopFollowing(ent);
+			}
+		}
+
+
 	}
 }
 
