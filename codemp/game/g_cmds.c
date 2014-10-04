@@ -6042,6 +6042,16 @@ static void Cmd_Hide_f(gentity_t *ent)
 		}
 
 	ent->client->pers.noFollow = (qboolean)!ent->client->pers.noFollow;
+
+	if (ent->client->pers.raceMode && g_allowNoFollow.integer > 1) {
+		if (ent->client->pers.noFollow) {
+			ent->r.svFlags |= SVF_SINGLECLIENT;
+			ent->r.singleClient = ent->s.number;
+		}
+		else
+			ent->r.svFlags &= ~SVF_SINGLECLIENT;
+	}
+
 	if (ent->client->pers.noFollow)
 		trap->SendServerCommand(ent-g_entities, "print \"You can not be spectated now.\n\"");
 	else 

@@ -2837,7 +2837,10 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
-	client->pers.noFollow = qfalse;
+	if (client->pers.noFollow) {
+		client->pers.noFollow = qfalse;
+		ent->r.svFlags &= ~SVF_SINGLECLIENT;
+	}
 
 	if ( ent->ghoul2 && ent->client )
 		ent->client->renderInfo.lastG2 = NULL; //update the renderinfo bolts next update.
