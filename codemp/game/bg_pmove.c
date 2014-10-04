@@ -2991,7 +2991,7 @@ static qboolean PM_CheckJump( void )
 					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger
 			}
 			else if (pm->ps->stats[STAT_JUMPTIME] > 0) {
-				pm->ps->velocity[2] = realjumpvelocity*1.25f;
+				pm->ps->velocity[2] += 100.0f;
 				pm->ps->pm_flags &= ~PMF_JUMP_HELD;
 			}
 
