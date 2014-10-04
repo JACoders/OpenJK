@@ -264,7 +264,8 @@ typedef enum {
 	A_BUILDHIGHSCORES,
 	A_WHOIS,
 	A_LOOKUP,
-	A_NOFOLLOW
+	A_NOFOLLOW,
+	A_SEEHIDDEN
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates

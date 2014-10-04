@@ -1320,8 +1320,18 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				gentity_t *other;
 				other = &g_entities[client->sess.spectatorClient];
 				if (other && other->client) {
-					if (other->client->pers.noFollow)
-						StopFollowing(ent);
+					if (other->client->pers.noFollow) {
+						if (other->r.svFlags & SVF_FULLADMIN) {
+							if (!(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+								StopFollowing(ent);
+						}
+						else if (other->r.svFlags & SVF_JUNIORADMIN) {
+							if (!(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
+								StopFollowing(ent);
+						}
+						else
+							StopFollowing(ent);
+					}
 				}
 				else 
 					StopFollowing(ent);
