@@ -5206,6 +5206,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (g_raceMode.integer && level.gametype == GT_FFA) {
 		Q_strcat(buf, sizeof(buf), "movementStyle ");
 		Q_strcat(buf, sizeof(buf), "rocketChange ");
+		Q_strcat(buf, sizeof(buf), "hide ");
 		Q_strcat(buf, sizeof(buf), "warpList ");
 		Q_strcat(buf, sizeof(buf), "warp ");
 		if (g_allowRaceTele.integer) {
