@@ -3682,10 +3682,12 @@ void Cmd_GunDuel_f(gentity_t *ent)
 			weap = WP_THERMAL;
 		else if (!Q_stricmp( "tripmine", weapStr) || !Q_stricmp( "trip", weapStr) || !Q_stricmp( "trips", weapStr))
 			weap = WP_TRIP_MINE;
+		else if (!Q_stricmp( "all", weapStr))
+			weap = LAST_USEABLE_WEAPON + 2; //18
 
 	}
 
-	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 1))) {
+	if (weap == WP_NONE || weap == WP_SABER || (weap > (LAST_USEABLE_WEAPON + 2))) {
 		//trap_SendServerCommand( ent-g_entities, "print \"Invalid weapon specified, using default case: Bryar\n\"" );
 		weap = WP_BRYAR_PISTOL;//pff
 	}
@@ -3841,7 +3843,21 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			
 			if (dueltypes[challenged->client->ps.clientNum] > 2) {
 				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;
-				if (weapon != WP_STUN_BATON && weapon != WP_MELEE && weapon != WP_BRYAR_PISTOL) {
+				if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons and ammo.
+					int i;
+					for (i=1; i<=LAST_USEABLE_WEAPON; i++) {
+						ent->client->ps.stats[STAT_WEAPONS] |= (1 << i);
+						challenged->client->ps.stats[STAT_WEAPONS] |= (1 << i);
+					}
+					ent->client->ps.ammo[AMMO_BLASTER] = challenged->client->ps.ammo[AMMO_BLASTER] = 300;
+					ent->client->ps.ammo[AMMO_POWERCELL] = challenged->client->ps.ammo[AMMO_POWERCELL] = 300;
+					ent->client->ps.ammo[AMMO_METAL_BOLTS] = challenged->client->ps.ammo[AMMO_METAL_BOLTS] = 300;
+					ent->client->ps.ammo[AMMO_ROCKETS] = challenged->client->ps.ammo[AMMO_ROCKETS] = 10;//hm
+					ent->client->ps.ammo[AMMO_THERMAL] = challenged->client->ps.ammo[AMMO_THERMAL] = 10;
+					ent->client->ps.ammo[AMMO_TRIPMINE] = challenged->client->ps.ammo[AMMO_TRIPMINE] = 10;
+					ent->client->ps.ammo[AMMO_DETPACK] = challenged->client->ps.ammo[AMMO_DETPACK] = 10;
+				}
+				else if (weapon != WP_STUN_BATON && weapon != WP_MELEE && weapon != WP_BRYAR_PISTOL) {
 					ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 				}

@@ -1294,7 +1294,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 }
 
-void IntToString(int duration_ms, char *timeStr, size_t strSize);
+void TimeToString(int duration_ms, char *timeStr, size_t strSize);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
@@ -1312,7 +1312,6 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
 		int average, restrictions = 0, nameColor = 7;
 		qboolean valid = qfalse;
-		size_t timeStrSize = sizeof(timeStr);
 
 		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
@@ -1386,7 +1385,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz(timeStr, va("%.3f", time), sizeof(timeStr));
 			*/
 
-		IntToString((int)(time*1000), timeStr, timeStrSize);
+		TimeToString((int)(time*1000), timeStr, sizeof(timeStr));
 
 		Q_strncpyz(playerName, player->client->pers.netname, sizeof(playerName));
 		Q_StripColor(playerName);

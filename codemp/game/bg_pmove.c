@@ -7841,7 +7841,9 @@ if (pm->ps->duelInProgress)
 	{
 #ifdef _CGAME
 		if (cg_dueltypes[pm->ps->clientNum] > 2) {
-			if (cg_dueltypes[pm->ps->clientNum] == 19) {
+			if (cg_dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (cg_dueltypes[pm->ps->clientNum] == 19) {
 				pm->cmd.weapon = WP_STUN_BATON;
 				pm->ps->weapon = WP_STUN_BATON;
 			}
@@ -7852,7 +7854,9 @@ if (pm->ps->duelInProgress)
 		}
 #else
 		if (dueltypes[pm->ps->clientNum] > 2) {
-			if (dueltypes[pm->ps->clientNum] == 19) {
+			if (dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (dueltypes[pm->ps->clientNum] == 19) {
 				pm->cmd.weapon = WP_STUN_BATON;
 				pm->ps->weapon = WP_STUN_BATON;
 			}
@@ -8036,7 +8040,9 @@ if (pm->ps->duelInProgress)
 	{
 #ifdef _CGAME
 		if (cg_dueltypes[pm->ps->clientNum] > 2) {
-			if (cg_dueltypes[pm->ps->clientNum] == 19) {
+			if (cg_dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (cg_dueltypes[pm->ps->clientNum] == 19) {
 				pm->cmd.weapon = WP_STUN_BATON;
 				pm->ps->weapon = WP_STUN_BATON;
 			}
@@ -8047,7 +8053,9 @@ if (pm->ps->duelInProgress)
 		}
 #else
 		if (dueltypes[pm->ps->clientNum] > 2) {
-			if (dueltypes[pm->ps->clientNum] == 19) {
+			if (dueltypes[pm->ps->clientNum] == 20) {
+			}
+			else if (dueltypes[pm->ps->clientNum] == 19) {
 				pm->cmd.weapon = WP_STUN_BATON;
 				pm->ps->weapon = WP_STUN_BATON;
 			}

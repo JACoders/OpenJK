@@ -1846,18 +1846,18 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	DebugWriteToDB("BuildMapHighscores");
 }
 
-void IntegerToRaceName(int style, char *styleString) {
+void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 	switch(style) {
-		case 0: Q_strncpyz(styleString, "siege", sizeof(styleString)); break;
-		case 1: Q_strncpyz(styleString, "jka", sizeof(styleString)); break;
-		case 2:	Q_strncpyz(styleString, "qw", sizeof(styleString));	break;
-		case 3:	Q_strncpyz(styleString, "cpm", sizeof(styleString)); break;
-		case 4:	Q_strncpyz(styleString, "q3", sizeof(styleString)); break;
-		case 5:	Q_strncpyz(styleString, "pjk", sizeof(styleString)); break;
-		case 6:	Q_strncpyz(styleString, "wsw", sizeof(styleString)); break;
-		case 7:	Q_strncpyz(styleString, "rjq3", sizeof(styleString)); break;
-		case 8:	Q_strncpyz(styleString, "rjcpm", sizeof(styleString)); break;
-		default: Q_strncpyz(styleString, "ERROR", sizeof(styleString)); break;
+		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
+		case 1: Q_strncpyz(styleString, "jka", styleStringSize); break;
+		case 2:	Q_strncpyz(styleString, "qw", styleStringSize);	break;
+		case 3:	Q_strncpyz(styleString, "cpm", styleStringSize); break;
+		case 4:	Q_strncpyz(styleString, "q3", styleStringSize); break;
+		case 5:	Q_strncpyz(styleString, "pjk", styleStringSize); break;
+		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
+		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
+		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
+		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
 	}
 }
 
@@ -2022,7 +2022,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
-void IntToString(int duration_ms, char *timeStr, size_t strSize) { 
+void TimeToString(int duration_ms, char *timeStr, size_t strSize) { 
 	if (duration_ms > (60*60*1000)) { //thanks, eternal
 		int hours, minutes, seconds, milliseconds; 
 		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
@@ -2047,7 +2047,6 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	char courseName[40], courseNameFull[40], styleString[16] = {0}, timeStr[32];
 	char info[1024] = {0};
 	char msg[1024-128] = {0};
-	size_t timeStrSize = sizeof(timeStr);
 
 	if (level.numCourses == 0) {
 		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
@@ -2132,14 +2131,14 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		return;
 	}
 
-	IntegerToRaceName(style, styleString);
+	IntegerToRaceName(style, styleString, sizeof(styleString));
 	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
 
 	for (i = 0; i < 10; i++) {
 		char *tmpMsg = NULL;
 		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
 		{
-			IntToString(HighScores[course][style][i].duration_ms, timeStr, timeStrSize);
+			TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr));
 			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));

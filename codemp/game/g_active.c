@@ -2530,6 +2530,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 }
 
 void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
+void GiveClientWeapons(gclient_t *client);
 /*
 ==============
 ClientThink
@@ -3286,7 +3287,11 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));			
 					if (dueltypes[ent->client->ps.clientNum] > 2) {
 						int weapon = dueltypes[ent->client->ps.clientNum] - 2;
-						if (weapon >= WP_BLASTER && weapon <= WP_BRYAR_OLD) { //loda fixme..
+						if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons
+							GiveClientWeapons(ent->client);
+							GiveClientWeapons(duelAgainst->client);
+						}
+						else if (weapon >= WP_BLASTER && weapon <= WP_BRYAR_OLD) { //loda fixme..
 							if (weapon == WP_ROCKET_LAUNCHER)
 								ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 3;
 							else
