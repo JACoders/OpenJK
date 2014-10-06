@@ -3521,7 +3521,7 @@ qboolean TryGrapple(gentity_t *ent)
 								player_ent->client->ps.quickerGetup = qtrue;
 								player_ent->client->ps.electrifyTime = level.time + 5000;
 
-								G_Damage(player_ent,ent,ent,NULL,NULL,100,0,MOD_UNKNOWN);
+								G_Damage(player_ent,ent,ent,NULL,NULL,90,0,MOD_UNKNOWN);
 							}
 						}
 					}
