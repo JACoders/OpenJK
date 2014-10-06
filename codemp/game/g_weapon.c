@@ -2361,10 +2361,13 @@ void touchLaserTrap( gentity_t *ent, gentity_t *other, trace_t *trace )
 			// zyk: allies dont activate proximity mine
 			if (ent->activator && ent->activator->client && ent->activator->client->sess.ally1 != other->s.number && ent->activator->client->sess.ally2 != other->s.number && ent->activator->client->sess.ally3 != other->s.number)
 			{
-				ent->touch = 0;
-				ent->nextthink = level.time + FRAMETIME;
-				ent->think = laserTrapExplode;
-				VectorCopy(trace->plane.normal, ent->s.pos.trDelta);
+				if (!(other->client) || other->client->noclip == qfalse)
+				{ // zyk: noclipped players will not activate mine
+					ent->touch = 0;
+					ent->nextthink = level.time + FRAMETIME;
+					ent->think = laserTrapExplode;
+					VectorCopy(trace->plane.normal, ent->s.pos.trDelta);
+				}
 			}
 		}
 	}
@@ -2422,8 +2425,11 @@ void proxMineThink(gentity_t *ent)
 					{ // zyk: allies dont activate proximity mine
 						if (owner->client->sess.ally1 != cl->s.number && owner->client->sess.ally2 != cl->s.number && owner->client->sess.ally3 != cl->s.number)
 						{
-							ent->think = laserTrapExplode;
-							return;
+							if (cl->client->noclip == qfalse)
+							{ // zyk: noclipped players will not activate mine
+								ent->think = laserTrapExplode;
+								return;
+							}
 						}
 					}
 				}
