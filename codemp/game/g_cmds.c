@@ -7842,7 +7842,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "commands" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\n^2RPG Mode commands\n\n^3/new [login] [password]: ^7creates a new account.\n^3/login [login] [password]: ^7loads the account.\n^3/playermode: ^7switches between ^2Admin-Only Mode ^7and ^2RPG Mode^7.\n^3/up [skill number]: ^7upgrades a skill.\n^3/down [skill number]: ^7downgrades a skill.\n^3/resetaccount: ^7resets quests or the entire RPG Mode of a player.\n^3/adminlist: ^7lists admin commands.\n^3/adminup [player id or name] [command number]: ^7gives the player an admin command.\n^3/admindown [player id or name] [command number]: ^7removes an admin command from a player.\n^3/settings: ^7turn on or off player settings.\n^3/callseller: ^7calls the jawa seller.\n^3/creditgive [player id or name] [amount]: ^7gives credits to a player.\n^3/changepassword <new_password>: ^7changes the account password.\n^3/entitysystem: ^7shows Entity System commands.\n^3/logout: ^7logs out the account.\n\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"\n^2RPG Mode commands\n\n^3/new [login] [password]: ^7creates a new account.\n^3/login [login] [password]: ^7loads the account.\n^3/playermode: ^7switches between ^2Admin-Only Mode ^7and ^2RPG Mode^7.\n^3/up [skill number]: ^7upgrades a skill.\n^3/down [skill number]: ^7downgrades a skill.\n^3/resetaccount: ^7resets account stuff of the player.\n^3/adminlist: ^7lists admin commands.\n^3/adminup [player id or name] [command number]: ^7gives the player an admin command.\n^3/admindown [player id or name] [command number]: ^7removes an admin command from a player.\n^3/settings: ^7turn on or off player settings.\n^3/callseller: ^7calls the jawa seller.\n^3/creditgive [player id or name] [amount]: ^7gives credits to a player.\n^3/changepassword <new_password>: ^7changes the account password.\n^3/entitysystem: ^7shows Entity System commands.\n^3/logout: ^7logs out the account.\n\n\"" );
 			}
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
@@ -8878,7 +8878,7 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 	}
 	else if (trap->Argc() == 1)
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"^2Choose one of the options below\n\n^3/resetaccount rpg: ^7resets your entire account except admin commands.\n^3/resetaccount quests: ^7resets your RPG quests.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"^2Choose one of the options below\n\n^3/resetaccount rpg: ^7resets your entire account except admin commands.\n^3/resetaccount quests: ^7resets your RPG quests.\n^3/resetaccount levels: ^7resets your levels and upgrades.\n\"" );
 		return;
 	}
 
@@ -8931,7 +8931,7 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 
 		save_account(ent);
 
-		trap->SendServerCommand( ent-g_entities, "print \"You are back to level 1 again.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Your entire account is reset.\n\"" );
 	}
 	else if (Q_stricmp( arg1, "quests") == 0)
 	{
@@ -8944,6 +8944,48 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, "print \"Your quests are reset.\n\"" );
+	}
+	else if (Q_stricmp( arg1, "levels") == 0)
+	{
+		int i = 0;
+
+		for (i = 0; i < 18; i++)
+			ent->client->pers.force_powers_levels[i] = 0;
+
+		for (i = 0; i < 10; i++)
+			ent->client->pers.weapons_levels[i] = 0;
+
+		for (i = 0; i < 7; i++)
+			ent->client->pers.ammo_levels[i] = 0;
+
+		for (i = 0; i < 8; i++)
+			ent->client->pers.holdable_items_levels[i] = 0;
+
+		ent->client->pers.starting_shield_level = 0;
+		ent->client->pers.max_rpg_shield = 0;
+		ent->client->pers.jetpack_level = 0;
+		ent->client->pers.playerhealth = 0;
+		ent->client->pers.shield = 0;
+		ent->client->pers.teamshield = 0;
+		ent->client->pers.drain_shield = 0;
+		ent->client->pers.stun_baton_level = 0;
+		ent->client->pers.mind_control = 0;
+		ent->client->pers.melee_level = 0;
+		ent->client->pers.health_strength = 0;
+		ent->client->pers.shield_strength = 0;
+		ent->client->pers.secrets_found = 0;
+		ent->client->pers.max_force_power_level = 0;
+		ent->client->pers.improvements_level = 0;
+
+		ent->client->pers.level = 1;
+		ent->client->pers.level_up_score = 0;
+		ent->client->pers.skillpoints = 1;
+
+		ent->client->pers.credits = 0;
+
+		save_account(ent);
+
+		trap->SendServerCommand( ent-g_entities, "print \"Your levels are reset.\n\"" );
 	}
 	else
 	{
