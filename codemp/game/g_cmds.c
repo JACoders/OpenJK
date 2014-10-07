@@ -4702,7 +4702,13 @@ void Cmd_NewAccount_f( gentity_t *ent ) {
 	}
 
 	// zyk: validating if this login already exists
+	system("mkdir accounts");
+
+#if defined(__linux__)
+	system("ls accounts > accounts/accounts.txt");
+#else
 	system("dir /B accounts > accounts/accounts.txt");
+#endif
 
 	logins_file = fopen("accounts/accounts.txt","r");
 	if (logins_file != NULL)
