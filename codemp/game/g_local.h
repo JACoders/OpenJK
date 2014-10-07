@@ -678,6 +678,8 @@ typedef struct clientPersistant_s {
 	int			duelStartTime;
 	qboolean	backwardsRocket;
 	qboolean	noFollow;
+	qboolean	haste;
+
 
 	stats_t		stats;
 } clientPersistant_t;
