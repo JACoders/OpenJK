@@ -2998,12 +2998,12 @@ static qboolean PM_CheckJump( void )
 #if 0
 			{
 				gentity_t *gent = (gentity_t *)pm_entSelf;
-				trap->SendServerCommand(gent-g_entities, va("print \"XYSPEED: %.2f, ZSPEED: %.2f, ADDED: %.2f\n\"", xyspeed, pm->ps->velocity[2], added));
+				trap->SendServerCommand(gent-g_entities, va("chat \"XYSPEED: %.2f, ZSPEED: %.2f, ADDED: %.2f, JUMPTIME: %i\n\"", xyspeed, pm->ps->velocity[2], added, pm->ps->stats[STAT_JUMPTIME]));
 			}
 #endif
 
 
-			pm->ps->stats[STAT_JUMPTIME] = 400;
+			pm->ps->stats[STAT_JUMPTIME] = 401; //The fuck? Great to know
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
 
 		}
@@ -3601,7 +3601,7 @@ static void PM_AirMove( void ) {
 static void PM_DodgeMove(int forward, int right)
 {
 	vec3_t dodgedir;
-	static const int DODGE_SPEED = 400;
+	const int DODGE_SPEED = pm->ps->speed * 1.25f;
 	static const int DODGE_JUMP_SPEED = 180;
 
 	VectorMA( vec3_origin, right, pml.right, dodgedir );
@@ -3617,14 +3617,14 @@ static void PM_DodgeMove(int forward, int right)
 static void PM_DashMove(void)
 {
 	vec3_t dashdir, view;
-	static const int DASH_SPEED = 475;
+	const int DASH_SPEED = pm->ps->speed * (1.9f / 1.28f); //475... ayy 
 	static const int DASH_JUMP_SPEED = 280;
 	float xyspeed;
 
 	xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] +  pm->ps->velocity[1] * pm->ps->velocity[1]);
 
 	VectorCopy(pml.forward, view);
-	view[ROLL] = 0; //I guess this is really pitch angle
+	view[2] = 0; //I guess this is really pitch angle
 
 	VectorMA(vec3_origin, 1, view, dashdir);
 	VectorNormalize( dashdir );

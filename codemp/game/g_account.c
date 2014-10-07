@@ -431,27 +431,24 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			const int place = i;//The fuck is this.. shut the compiler up
 
 			//Debug this..
-			G_SecurityLogPrintf( "ADDING RACE TIME TO DB WITH PLACE %i: %s, %s, %u, %u, %u, %u, %u \n", 
-				place, TempRaceRecord[place].username, TempRaceRecord[place].coursename, TempRaceRecord[place].duration_ms, TempRaceRecord[place].topspeed, TempRaceRecord[place].average, TempRaceRecord[place].style, TempRaceRecord[place].end_timeInt);
+			//G_SecurityLogPrintf( "ADDING RACE TIME TO DB WITH PLACE %i: %s, %s, %u, %u, %u, %u, %u \n", 
+				//place, TempRaceRecord[place].username, TempRaceRecord[place].coursename, TempRaceRecord[place].duration_ms, TempRaceRecord[place].topspeed, TempRaceRecord[place].average, TempRaceRecord[place].style, TempRaceRecord[place].end_timeInt);
 
-			//if (TempRaceRecord[place].username[0]) {
+			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord[place].duration_ms));
+			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord[place].topspeed));
+			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord[place].average));
+			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord[place].style));
+			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord[place].end_timeInt));
 
-				CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
-				CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
-				CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord[place].duration_ms));
-				CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord[place].topspeed));
-				CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord[place].average));
-				CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord[place].style));
-				CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord[place].end_timeInt));
+			//CALL_SQLITE_EXPECT (step (stmt), DONE);
+			s = sqlite3_step(stmt);
 
-				//CALL_SQLITE_EXPECT (step (stmt), DONE);
-				s = sqlite3_step(stmt);
+			CALL_SQLITE (reset (stmt));
+			CALL_SQLITE (clear_bindings (stmt));
 
-				CALL_SQLITE (reset (stmt));
-				CALL_SQLITE (clear_bindings (stmt));
-
-				AddRunToWebServer(TempRaceRecord[place]);
-			//}
+			AddRunToWebServer(TempRaceRecord[place]);
 		}
 	}
 
