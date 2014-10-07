@@ -484,7 +484,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	vec3_t down, up;
 	trace_t trace;
 	float stepSize;
-	const int NEW_STEPSIZE = ((ent->client->pers.movementStyle == 3 || ent->client->pers.movementStyle == 6 || ent->client->pers.movementStyle == 7) ? 24 : STEPSIZE );
+	const int NEW_STEPSIZE = ((ent->client->pers.movementStyle == 3 || ent->client->pers.movementStyle == 4 || ent->client->pers.movementStyle == 6 || ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8) ? bot_strafeOffset.integer : STEPSIZE );
 
 	VectorCopy (ent->s.pos.trBase, start_o);
 	VectorCopy (ent->s.pos.trDelta, start_v);

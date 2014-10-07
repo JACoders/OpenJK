@@ -868,7 +868,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	qboolean	isGiant = qfalse;
 	bgEntity_t	*pEnt;
 	qboolean skipStep = qfalse;
-	const int NEW_STEPSIZE = ((pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7) ? 24 : STEPSIZE );
+	const int NEW_STEPSIZE = ((pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8) ? bot_strafeOffset.integer : STEPSIZE );
 
 	VectorCopy (pm->ps->origin, start_o);
 	VectorCopy (pm->ps->velocity, start_v);
