@@ -1452,7 +1452,7 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 		return;
 
 	player->client->ps.stats[STAT_ONLYBHOP] = 1;
-	if (trigger->spawnflags & 1)
+	if (trigger->spawnflags & 2)
 		player->client->pers.haste = qtrue;
 }
 
@@ -1463,7 +1463,7 @@ void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *p
 		return;
 
 	player->client->ps.stats[STAT_ONLYBHOP] = 0;
-	if (trigger->spawnflags & 1)
+	if (trigger->spawnflags & 2)
 		player->client->pers.haste = qfalse;
 }
 
