@@ -868,6 +868,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	qboolean	isGiant = qfalse;
 	bgEntity_t	*pEnt;
 	qboolean skipStep = qfalse;
+	const int NEW_STEPSIZE = ((pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7) ? 24 : STEPSIZE );
 
 	VectorCopy (pm->ps->origin, start_o);
 	VectorCopy (pm->ps->velocity, start_v);
@@ -893,7 +894,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	VectorCopy(start_o, down);
-	down[2] -= STEPSIZE;
+	down[2] -= NEW_STEPSIZE;
 	pm->trace (&trace, start_o, pm->mins, pm->maxs, down, pm->ps->clientNum, pm->tracemask);
 	VectorSet(up, 0, 0, 1);
 	// never step up when you still have up velocity
@@ -925,12 +926,12 @@ void PM_StepSlideMove( qboolean gravity ) {
 		}
 		else
 		{
-			up[2] += STEPSIZE;
+			up[2] += NEW_STEPSIZE;
 		}
 	}
 	else
 	{
-		up[2] += STEPSIZE;
+		up[2] += NEW_STEPSIZE;
 	}
 
 	// test the player position if they were a stepheight higher
