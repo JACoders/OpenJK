@@ -1451,9 +1451,10 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 
-	player->client->ps.stats[STAT_ONLYBHOP] = 1;
 	if (trigger->spawnflags & 2)
 		player->client->pers.haste = qtrue;
+	else 
+		player->client->ps.stats[STAT_ONLYBHOP] = 1;
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
