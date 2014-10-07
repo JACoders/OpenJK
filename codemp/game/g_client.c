@@ -4099,6 +4099,7 @@ void ClientSpawn(gentity_t *ent) {
 	// initialize animations and other things
 
 	client->ps.stats[STAT_MOVEMENTSTYLE] = client->pers.movementStyle;
+	client->pers.haste = qfalse; //reset this upon respawn i guess
 
 	client->ps.commandTime = level.time - 100;
 	ent->client->pers.cmd.serverTime = level.time;
