@@ -3809,7 +3809,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		VectorScale( pm->ps->velocity, hspeed, pm->ps->velocity );
 		pm->ps->velocity[2] = ( oldupvelocity > WJ_UPSPEED ) ? oldupvelocity : WJ_UPSPEED; // jal: if we had a faster upwards speed, keep it
 				
-		pm->ps->stats[STAT_DASHTIME] = WJ_DELAY;
+		pm->ps->stats[STAT_WJTIME] = WJ_DELAY;
 		
 		//PM_AddEvent( EV_FALL );
 #ifdef _GAME
@@ -8699,6 +8699,9 @@ static void PM_DropTimers( void ) {
 
 	if(pm->ps->stats[STAT_DASHTIME] > 0)//JAPRO dodge/dash/wj
 		pm->ps->stats[STAT_DASHTIME] -= pml.msec;
+
+	if(pm->ps->stats[STAT_WJTIME] > 0)//JAPRO dodge/dash/wj
+		pm->ps->stats[STAT_WJTIME] -= pml.msec;
 
 	if (pm->ps->stats[STAT_JUMPTIME] > 0)
 		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
