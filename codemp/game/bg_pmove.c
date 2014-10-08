@@ -3766,7 +3766,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	if (PM_GetMovePhysics() != 6)
 		return;
 
-	if (pm->ps->stats[STAT_DASHTIME] > 0)
+	if (pm->ps->stats[STAT_WJTIME] > 0)
 		return;
 
 	point[0] = pm->ps->origin[0];
