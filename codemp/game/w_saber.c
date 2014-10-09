@@ -4777,7 +4777,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		}
 		else
 		{//hit an in-hand saber, do extra collision check against it
-			if ( GetSaberDamageStyle(self) )
+			if ( GetSaberDamageStyle(self) || (g_tweakWeapons.integer & REDUCE_SABERBLOCK))
 			{//use SP-style blade-collision test
 				if ( !WP_SabersIntersect( self, rSaberNum, rBladeNum, otherOwner, qfalse ) )
 				{//sabers did not actually intersect
@@ -9345,6 +9345,25 @@ void WP_SaberBlock( gentity_t *playerent, vec3_t hitloc, qboolean missileBlock )
 	}
 }
 
+static int G_SaberLevelForStance( int stance ) {
+	switch ( stance ) {
+	case SS_FAST:
+	case SS_STAFF:
+	case SS_DUAL:
+		return 1;
+	case SS_MEDIUM:
+	case SS_TAVION:
+		return 2;
+	case SS_STRONG:
+	case SS_DESANN:
+		return 3;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolean projectile, int attackStr)
 {
 	qboolean thrownSaber = qfalse;
@@ -9411,49 +9430,19 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 		return 0;
 	}
 
-	//Removed this for now, the new broken parry stuff should handle it. This is how
-	//blocks were decided before the 1.03 patch (as you can see, it was STUPID.. for the most part)
-	/*
-	if (attackStr == FORCE_LEVEL_3)
-	{
-		if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] >= FORCE_LEVEL_3)
-		{
-			if (Q_irand(1, 10) < 3)
-			{
-				return 0;
-			}
-		}
-		else
-		{
+	if ( g_tweakWeapons.integer & REDUCE_SABERBLOCK ) {
+		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
+		const int theirLevel = G_SaberLevelForStance( attackStr );
+		const float diff = (float)(theirLevel - ourLevel); // range [0, 2]
+		const float parity = g_saberBlockStanceParity.value; // range [0, 3]
+		const float chanceMin = g_saberBlockChanceMin.value;
+		const float chanceMax = g_saberBlockChanceMax.value;
+		const float chanceScalar = g_saberBlockChanceScale.value;
+		const float chance = Com_Clamp( chanceMin, (1.0f - (diff / parity)) * chanceScalar, chanceMax );
+		if ( flrand( 0.0f, 1.0f ) > chance ) {
 			return 0;
 		}
 	}
-
-	if (attackStr == FORCE_LEVEL_2 && Q_irand(1, 10) < 3)
-	{
-		if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] >= FORCE_LEVEL_3)
-		{
-			//do nothing for now
-		}
-		else if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] >= FORCE_LEVEL_2)
-		{
-			if (Q_irand(1, 10) < 5)
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	
-	if (attackStr == FORCE_LEVEL_1 && !self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] &&
-		Q_irand(1, 40) < 3)
-	{ //if I have no defense level at all then I might be unable to block a level 1 attack (but very rarely)
-		return 0;
-	}
-	*/
 
 	if (SaberAttacking(self))
 	{ //attacking, can't block now
