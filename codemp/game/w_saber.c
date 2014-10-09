@@ -3805,6 +3805,16 @@ static float saberHitFraction = 1.0f;
 //This is a large function. I feel sort of bad inlining it. But it does get called tons of times per frame.
 qboolean BG_SuperBreakWinAnim( int anim );
 
+static QINLINE int GetSaberDamageStyle(gentity_t *self)
+{
+	if (self->client->ps.duelInProgress && (dueltypes[self->client->ps.clientNum] == 0))
+		return 1;
+	return d_saberSPStyleDamage.integer;
+
+	//If we are dueling, and in dueltype saber, give us SP dmgs
+	//Otherwise give us saberSpStyleDmg.integer damages .. ?
+}
+
 static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBladeNum, vec3_t saberStart, vec3_t saberEnd, qboolean doInterpolate, int trMask, qboolean extrapolate )
 {
 	static trace_t tr;
@@ -3846,7 +3856,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 	}
 	else if (d_saberGhoul2Collision.integer)
 	{
-		if ( d_saberSPStyleDamage.integer )
+		if ( GetSaberDamageStyle(self) )
 		{//SP-size saber damage traces
 			VectorSet(saberTrMins, -2, -2, -2 );
 			VectorSet(saberTrMaxs, 2, 2, 2 );
@@ -3878,7 +3888,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 	while (!saberTraceDone)
 	{
 		if ( doInterpolate
-			&& !d_saberSPStyleDamage.integer )
+			&& !GetSaberDamageStyle(self) )
 		{ //This didn't quite work out like I hoped. But it's better than nothing. Sort of.
 			vec3_t oldSaberStart, oldSaberEnd, saberDif, oldSaberDif;
 			int traceTests = 0;
@@ -4027,7 +4037,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 	if ( self->client->ps.saberAttackWound < level.time
 		&& (SaberAttacking(self) 
 			|| BG_SuperBreakWinAnim(self->client->ps.torsoAnim)
-			|| (d_saberSPStyleDamage.integer&&self->client->ps.saberInFlight&&rSaberNum==0)
+			|| (GetSaberDamageStyle(self) && self->client->ps.saberInFlight&&rSaberNum==0)
 			|| (WP_SaberBladeDoTransitionDamage( &self->client->saber[rSaberNum], rBladeNum )&&BG_SaberInTransitionAny(self->client->ps.saberMove))
 			|| (self->client->ps.m_iVehicleNum && self->client->ps.saberMove > LS_READY) )
 	   )
@@ -4035,7 +4045,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		//qboolean saberInSpecial = BG_SaberInSpecial(self->client->ps.saberMove);
 		//qboolean inBackAttack = G_SaberInBackAttack(self->client->ps.saberMove);
 
-		if ( d_saberSPStyleDamage.integer )
+		if ( GetSaberDamageStyle(self) )
 		{
 			float fDmg = 0.0f;
 			if ( self->client->ps.saberInFlight )
@@ -4301,7 +4311,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qtrue;//true cause even though we didn't get a hit, we don't want to do those extra traces because the debounce time says not to.
 		}
 		trMask &= ~CONTENTS_LIGHTSABER;
-		if ( d_saberSPStyleDamage.integer )
+		if ( GetSaberDamageStyle(self) )
 		{
 			if ( BG_SaberInReturn( self->client->ps.saberMove ) )
 			{
@@ -4309,7 +4319,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			}
 			else
 			{
-				if (d_saberSPStyleDamage.integer == 2)
+				if (GetSaberDamageStyle(self) == 2)
 				{
 					dmg = SABER_NONATTACK_DAMAGE;
 				}
@@ -4341,7 +4351,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		unblockable = qtrue;
 		self->client->ps.saberBlocked = 0;
 
-		if (!d_saberSPStyleDamage.integer && !inBackAttack)
+		if (!GetSaberDamageStyle(self) && !inBackAttack)
 		{
 			if (self->client->ps.saberMove == LS_A_JUMP_T__B_)
 			{ //do extra damage for special unblockables
@@ -4578,7 +4588,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 		didHit = qtrue;
 
-		if ( !d_saberSPStyleDamage.integer//let's trying making blocks have to be blocked by a saber
+		if ( !GetSaberDamageStyle(self)//let's trying making blocks have to be blocked by a saber
 			&& g_entities[tr.entityNum].client 
 			&& !unblockable 
 			&& WP_SaberCanBlock(&g_entities[tr.entityNum], tr.endpos, 0, MOD_SABER, qfalse, attackStr))
@@ -4632,7 +4642,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			qboolean doDismemberment = qfalse;
 			int	knockbackFlags = 0;
 
-			if (d_saberSPStyleDamage.integer && g_entities[tr.entityNum].client)//Japro - what? so all dmg gets buffed 1.5x in basejka here?
+			if (GetSaberDamageStyle(self) && g_entities[tr.entityNum].client)//Japro - what? so all dmg gets buffed 1.5x in basejka here?
 			{ //not a "jedi", so make them suffer more
 				if ( dmg > SABER_NONATTACK_DAMAGE )
 				{ //don't bother increasing just for idle touch damage
@@ -4732,7 +4742,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				}
 			}
 
-			if ( d_saberSPStyleDamage.integer )
+			if ( GetSaberDamageStyle(self) )
 			{
 			}
 			else
@@ -4767,7 +4777,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		}
 		else
 		{//hit an in-hand saber, do extra collision check against it
-			if ( d_saberSPStyleDamage.integer )
+			if ( GetSaberDamageStyle(self) )
 			{//use SP-style blade-collision test
 				if ( !WP_SabersIntersect( self, rSaberNum, rBladeNum, otherOwner, qfalse ) )
 				{//sabers did not actually intersect
