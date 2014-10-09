@@ -3856,28 +3856,30 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
 		client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
 //JAPRO - Serverside - Clan arena type spawn with items - Start
-		if (g_startingItems.integer & (1 << HI_SEEKER))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SEEKER);
-		if (g_startingItems.integer & (1 << HI_SHIELD))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SHIELD);
-		if (g_startingItems.integer & (1 << HI_MEDPAC))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC);
-		if (g_startingItems.integer & (1 << HI_MEDPAC_BIG))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC_BIG);
-		if (g_startingItems.integer & (1 << HI_BINOCULARS))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_BINOCULARS);
-		if (g_startingItems.integer & (1 << HI_SENTRY_GUN))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SENTRY_GUN);
-		if (g_startingItems.integer & (1 << HI_JETPACK))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_JETPACK);
-		if (g_startingItems.integer & (1 << HI_AMMODISP))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_AMMODISP);
-		if (g_startingItems.integer & (1 << HI_EWEB))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_EWEB);
-		if (g_startingItems.integer & (1 << HI_CLOAK))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
-		if (g_startingItems.integer & (1 << HI_HEALTHDISP))
-			client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
+		if (!client->pers.raceMode) {
+			if (g_startingItems.integer & (1 << HI_SEEKER))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SEEKER);
+			if (g_startingItems.integer & (1 << HI_SHIELD))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SHIELD);
+			if (g_startingItems.integer & (1 << HI_MEDPAC))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC);
+			if (g_startingItems.integer & (1 << HI_MEDPAC_BIG))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_MEDPAC_BIG);
+			if (g_startingItems.integer & (1 << HI_BINOCULARS))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_BINOCULARS);
+			if (g_startingItems.integer & (1 << HI_SENTRY_GUN))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SENTRY_GUN);
+			if (g_startingItems.integer & (1 << HI_JETPACK))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_JETPACK);
+			if (g_startingItems.integer & (1 << HI_AMMODISP))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_AMMODISP);
+			if (g_startingItems.integer & (1 << HI_EWEB))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_EWEB);
+			if (g_startingItems.integer & (1 << HI_CLOAK))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_CLOAK);
+			if (g_startingItems.integer & (1 << HI_HEALTHDISP))
+				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_HEALTHDISP);
+		}
 	}
 
 	if (level.gametype == GT_SIEGE &&

@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef __CURL_CURLVER_H
 #define __CURL_CURLVER_H
 /***************************************************************************
@@ -54,3 +56,5 @@
 #define LIBCURL_VERSION_NUM 0x070f05
 
 #endif /* __CURL_CURLVER_H */
+
+#endif

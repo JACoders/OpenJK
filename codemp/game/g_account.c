@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sqlite3.h"
-//#include "http/url.h"
-//#include "http/connect.h"
+
+#include "curl/curl.h"
+#include "curl/easy.h"
 
 #define LOCAL_DB_PATH "japro/data.db"
 #define GLOBAL_DB_PATH sv_globalDBPath.string
+#define MAX_TMP_RACELOG_SIZE 80 * 1024
 
 #define CALL_SQLITE(f) {                                        \
         int i;                                                  \
@@ -34,7 +36,7 @@ typedef struct RaceRecord_s {
 	unsigned short		topspeed;
 	unsigned short		average;
 	unsigned short		style; //only needs to be 3 bits	
-	char				end_time[64];
+	char				end_time[64]; //Why a char?
 	unsigned int		end_timeInt;
 } RaceRecord_t;
 
@@ -308,12 +310,23 @@ void AddRunToWebServer(RaceRecord_t record)
 #if 0
 	CURL *curl;
 	char address[128], data[256], password[64];
+	CURLcode res;
 
 
 	Q_strncpyz(address, sv_webServerPath.string, sizeof(address));
 	Q_strncpyz(password, sv_webServerPassword.string, sizeof(password));
 
 	//Case, special chars matter? clean??  Encode coursename / username for html ?
+
+#if 0
+	Q_strncpyz(record.username, "testuser", sizeof(record.username));
+	Q_strncpyz(record.coursename, "testcourse", sizeof(record.coursename));
+	record.duration_ms = 123456;
+	record.topspeed = 835;
+	record.average = 652;
+	record.style = 3;
+	record.end_timeInt = 26246234;
+#endif
 
 	Com_sprintf(data, sizeof(data), "username=%s&coursename=%s&duration_ms=%i&topspeed=%i&average=%i&style=%i&end_time=%i", 
 		record.username, record.coursename, record.duration_ms, record.topspeed, record.average, record.style, record.end_time);
@@ -330,7 +343,7 @@ void AddRunToWebServer(RaceRecord_t record)
 		if(res != CURLE_OK) 
 			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
 		else 
-			trap->Print("Received data:\n", g_buf); //de fuck izzat
+			trap->Print("cURL Worked?\n"); //de fuck izzat
 
 		curl_easy_cleanup(curl);
 	}
@@ -345,7 +358,7 @@ void AddRunToWebServer(RaceRecord_t record)
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s = 0, row = 0, i, j; //MAX_FILESIZE = 4096
-	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
+	char	buf[MAX_TMP_RACELOG_SIZE] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
 	char * sql;
@@ -359,7 +372,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 		trap->Print("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
 		return;
 	}
-	if (fLen >= 80*1024) {
+	if (fLen >= MAX_TMP_RACELOG_SIZE) {
 		trap->FS_Close(f);
 		trap->Print("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
 		return;
@@ -473,95 +486,6 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 	DebugWriteToDB("G_AddToDBFromFile");
 }
 
-#if 0
-void G_AddToDBFromFile2(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
-	fileHandle_t f;	
-	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
-	char	buf[80 * 1024] = {0}, empty[8] = {0};//eh
-	char*	pch;
-	sqlite3 * db;
-	char * sql;
-	sqlite3_stmt * stmt;
-	RaceRecord_t	TempRaceRecord;
-	qboolean good = qfalse;
-
-	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
-
-	if (!f) {
-		trap->Print("ERROR: Couldn't load defrag data from %s\n", TEMP_RACE_LOG);
-		return;
-	}
-	if (fLen >= 80*1024) {
-		trap->FS_Close(f);
-		trap->Print("ERROR: Couldn't load defrag data from %s, file is too large\n", TEMP_RACE_LOG);
-		return;
-	}
-
-	trap->FS_Read(buf, fLen, f);
-	buf[fLen] = 0;
-	trap->FS_Close(f);
-	
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
-
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-
-	//Todo: make TempRaceRecord an array of structs instead, maybe like 32 long idk, and build a query to insert 32 at a time or something.. instead of 1 by 1
-	pch = strtok (buf,";\n");
-	while (pch != NULL)
-	{
-		if ((args % 7) == 1)
-			Q_strncpyz(TempRaceRecord.username, pch, sizeof(TempRaceRecord.username));
-		else if ((args % 7) == 2)
-			Q_strncpyz(TempRaceRecord.coursename, pch, sizeof(TempRaceRecord.coursename));
-		else if ((args % 7) == 3)
-			TempRaceRecord.duration_ms = atoi(pch);
-		else if ((args % 7) == 4)
-			TempRaceRecord.topspeed = atoi(pch);
-		else if ((args % 7) == 5)
-			TempRaceRecord.average = atoi(pch);
-		else if ((args % 7) == 6)
-			TempRaceRecord.style = atoi(pch);
-		else if ((args % 7) == 0) {
-			TempRaceRecord.end_timeInt = atoi(pch);
-
-			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord.username, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord.coursename, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord.duration_ms));
-			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord.topspeed));
-			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord.average));
-			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord.style));
-			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord.end_timeInt));
-			CALL_SQLITE_EXPECT (step (stmt), DONE);
-			CALL_SQLITE (reset (stmt));
-			CALL_SQLITE (clear_bindings (stmt));
-		}
-    		pch = strtok (NULL, ";\n");
-		args++;
-	}
-
-	s = sqlite3_step(stmt); //this duplicates last one..?
-
-	if (s == SQLITE_DONE) {
-		good = qtrue;
-	}
-
-	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));	
-
-	if (good) { //dont delete tmp file if mysql database is not responding 
-		trap->FS_Open(TEMP_RACE_LOG, &f, FS_WRITE);
-		trap->FS_Write( empty, strlen( empty ), level.tempRaceLog );
-		trap->FS_Close(f);
-		trap->Print("Loaded previous map racetimes from %s.\n", TEMP_RACE_LOG);
-	}
-	else 
-		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
-
-	DebugWriteToDB("G_AddToDBFromFile");
-}
-#endif
-
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
 #if 0
 void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each client and play it on them..?
@@ -572,7 +496,8 @@ void PlayActualGlobalSound2(char * sound) { //loda fixme, just go through each c
 	te->s.eventParm = G_SoundIndex(sound);
 	//te->s.saberEntityNum = channel;
 	te->s.eFlags = EF_SOUNDTRACKER;
-	te->r.svFlags |= SVF_BROADCAST;
+	te->
+	r.svFlags |= SVF_BROADCAST;
 }
 #endif
 void PlayActualGlobalSound(char * sound) {
@@ -584,6 +509,30 @@ void PlayActualGlobalSound(char * sound) {
 			continue;
 		player = &g_entities[i];
 		G_Sound(player, CHAN_AUTO, G_SoundIndex(sound));
+	}
+}
+
+void WriteToTmpRaceLog(char *string, size_t stringSize) {
+	int fLen;
+	fileHandle_t	f;
+
+	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
+
+	/*
+	if (!f) {
+		trap->Print("ERROR: Couldn't write defrag data to %s\n", TEMP_RACE_LOG);
+		return;
+	}
+	*/
+
+	if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+		trap->FS_Write(string, stringSize, level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+
+	if (fLen >= (MAX_TMP_RACELOG_SIZE - ((int)stringSize * 2))) { //Just to be safe..
+		trap->FS_Close(f);
+		trap->SendServerCommand(-1, va("print \"WARNING: %s file is too large, reloading map to clear it.\n\"", TEMP_RACE_LOG));
+		trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n" );
+		return;
 	}
 }
 
@@ -618,8 +567,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 	if (level.raceLog)
 		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
-	//if (level.tempRaceLog)
-		//trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 
 	//Now for live highscore stuff:
 
@@ -688,8 +635,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		HighScores[course][style][newRank].style = style;
 		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
 
-		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
-			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+		WriteToTmpRaceLog(string, strlen(string));
 
 		if (newRank == 0) //Play the sound
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
@@ -706,8 +652,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					PersonalBests[style][i].duration_ms = duration_ms;
 
 					//trap->Print("Found in cach, updating cache and writing to file %i", duration_ms);
-					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
-						trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+					WriteToTmpRaceLog(string, strlen(string));
 					break;
 				}
 				else {
@@ -740,8 +685,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						if (duration_ms < oldBest) { //our time we just recorded is faster, so log it
 							PersonalBests[style][i].duration_ms = duration_ms;
 							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
-							if (level.tempRaceLog)
-								trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+							WriteToTmpRaceLog(string, strlen(string));
 							CALL_SQLITE (finalize(stmt));
 							CALL_SQLITE (close(db));
 							break;
@@ -757,8 +701,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					else { //No time found in database, so record the time we just recorded 
 						PersonalBests[style][i].duration_ms = duration_ms;
 						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
-						if (level.tempRaceLog)
-							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+						WriteToTmpRaceLog(string, strlen(string));
 						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						break;

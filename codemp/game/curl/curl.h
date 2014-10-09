@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef __CURL_CURL_H
 #define __CURL_CURL_H
 /***************************************************************************
@@ -1561,3 +1563,5 @@ CURL_EXTERN const char *curl_share_strerror(CURLSHcode);
 #include "multi.h"
 
 #endif /* __CURL_CURL_H */
+
+#endif

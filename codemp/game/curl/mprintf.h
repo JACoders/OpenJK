@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef __CURL_MPRINTF_H
 #define __CURL_MPRINTF_H
 /***************************************************************************
@@ -60,3 +62,5 @@ CURL_EXTERN char *curl_mvaprintf(const char *format, va_list args);
 #endif
 
 #endif /* __CURL_MPRINTF_H */
+
+#endif

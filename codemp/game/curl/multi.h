@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef __CURL_MULTI_H
 #define __CURL_MULTI_H
 /***************************************************************************
@@ -339,6 +341,8 @@ CURL_EXTERN CURLMcode curl_multi_assign(CURLM *multi_handle,
 
 #ifdef __cplusplus
 } /* end of extern "C" */
+#endif
+
 #endif
 
 #endif

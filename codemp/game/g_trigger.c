@@ -1205,17 +1205,13 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!g_stepSlideFix.integer)
 		return qfalse;
-	if (g_jediVmerc.integer)
-		return qfalse;
-	if (g_startingItems.integer & (1 << HI_JETPACK))
+	if (g_jediVmerc.integer) //umm..
 		return qfalse;
 	if (g_quakeStyleTeleport.integer)
 		return qfalse;
-	if (g_debugMelee.integer != 1)
+	if (g_debugMelee.integer >= 2)
 		return qfalse;
 	if (!g_smoothClients.integer)
-		return qfalse;
-	if (g_jk2Lunge.integer)
 		return qfalse;
 	if (sv_fps.integer != 20 && sv_fps.integer != 30)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;

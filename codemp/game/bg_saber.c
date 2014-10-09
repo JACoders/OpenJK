@@ -2503,7 +2503,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
 			}
-			else if ((pm->ps->fd.saberAnimLevel == SS_FAST || pm->ps->fd.saberAnimLevel == SS_DUAL) &&
+			else if ((pm->ps->fd.saberAnimLevel == SS_FAST || pm->ps->fd.saberAnimLevel == SS_DUAL) && !pm->ps->stats[STAT_RACEMODE] &&
 #ifdef _GAME
 				g_jk2Lunge.integer && //japro idk
 #else
