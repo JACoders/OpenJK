@@ -4189,7 +4189,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//back staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else//Normal Staff Swing
-					dmg = 20;
+					dmg = 30;
 			}
 
 			else if (self->client->ps.fd.saberAnimLevel == SS_DUAL)//Dual Style
@@ -4213,7 +4213,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_JUMPATTACK_DUAL)//Forward dual butterfly
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else//Normal Dual swing
-					dmg = 25;
+					dmg = 30;
 			}
 
 			else if (self->client->ps.saberMove == LS_STABDOWN && g_fixGroundStab.integer > 1)//Tweaked single groundstab (all styles)
