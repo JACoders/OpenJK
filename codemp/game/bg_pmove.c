@@ -4540,7 +4540,7 @@ static void PM_CrashLand( void ) {
 	// make sure velocity resets so we don't bounce back up again in case we miss the clear elsewhere
 	pm->ps->velocity[2] = 0;
 
-	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8)) && ((int)pm->ps->fd.forceJumpZStart > (pm->ps->origin[2] + 1))) {
+	if (((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8)) && ((int)pm->ps->fd.forceJumpZStart > pm->ps->origin[2])) {
 		if (1 > (sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1])))//No xyvel
 			pm->ps->velocity[2] = -vel; //OVERBOUNCE OVER BOUNCE
 	}
