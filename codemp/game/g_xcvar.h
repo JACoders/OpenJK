@@ -174,10 +174,6 @@ XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue 
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_saberBlockChanceMin,		"0.0",			NULL,				CVAR_NONE,										qtrue )
-XCVAR_DEF( g_saberBlockChanceMax,		"0.75",			NULL,				CVAR_NONE,										qtrue )
-XCVAR_DEF( g_saberBlockStanceParity,	"3.0",			NULL,				CVAR_NONE,										qtrue )
-XCVAR_DEF( g_saberBlockChanceScale,		"0.5",			NULL,				CVAR_NONE,										qtrue )
 
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )
