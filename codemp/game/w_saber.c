@@ -9360,7 +9360,6 @@ static int G_SaberLevelForStance( int stance ) {
 	default:
 		break;
 	}
-
 	return 0;
 }
 
@@ -9438,7 +9437,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 		const float chanceMin = g_saberBlockChanceMin.value;
 		const float chanceMax = g_saberBlockChanceMax.value;
 		const float chanceScalar = g_saberBlockChanceScale.value;
-		const float chance = Com_Clamp( chanceMin, (1.0f - (diff / parity)) * chanceScalar, chanceMax );
+		const float chance = Com_Clamp( chanceMin, chanceMax, (1.0f - (diff / parity)) * chanceScalar );
 		if ( flrand( 0.0f, 1.0f ) > chance ) {
 			return 0;
 		}
