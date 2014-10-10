@@ -1032,9 +1032,10 @@ static QINLINE qboolean SaberAttacking( gentity_t *self )
 		return qfalse;
 
 	//if we're firing and not blocking, then we're attacking.
-	if (BG_SaberInAttack(self->client->ps.saberMove))
+	if (BG_SaberInAttack(self->client->ps.saberMove)) { //great?
 		if (self->client->ps.weaponstate == WEAPON_FIRING && self->client->ps.saberBlocked == BLOCKED_NONE)
 			return qtrue;
+	}
 
 	if ( BG_SaberInSpecial( self->client->ps.saberMove ) )
 		return qtrue;
@@ -6832,6 +6833,9 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 		return qfalse;
 	}
 
+	if (!GetSaberDamageStyle(saberOwner))
+		return qfalse; //Dont do this shit in MP dmgs i guess...
+
 	//Neither gets an advantage based on attack state, when it comes to knocking
 	//saber out of hand.
 	myAttack = G_SaberAttackPower(saberOwner, qfalse);
@@ -6947,6 +6951,9 @@ qboolean saberCheckKnockdown_Thrown(gentity_t *saberent, gentity_t *saberOwner, 
 	{
 		return qfalse;
 	}
+
+	if (!GetSaberDamageStyle(saberOwner))
+		return qfalse; //Dont do saberdrops for idle STs either i guess..
 
 	defenLevel = other->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE];
 	throwLevel = saberOwner->client->ps.fd.forcePowerLevel[FP_SABERTHROW];
@@ -9363,6 +9370,152 @@ static int G_SaberLevelForStance( int stance ) {
 	return 0;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolean projectile, int attackStr)
+{
+	qboolean thrownSaber = qfalse;
+	float blockFactor = 0;
+
+	if (!self || !self->client || !point)
+		return 0;
+
+	if (BG_SaberInAttack(self->client->ps.saberMove))
+		return 0;
+
+	if (SaberAttacking(self)) //attacking, can't block now
+		return 0;
+
+	if (PM_InSaberAnim(self->client->ps.torsoAnim) && !self->client->ps.saberBlocked &&	self->client->ps.saberMove != LS_READY && self->client->ps.saberMove != LS_NONE) {
+		if ( self->client->ps.saberMove < LS_PARRY_UP || self->client->ps.saberMove > LS_REFLECT_LL )
+			return 0;
+	}
+
+	if (PM_SaberInBrokenParry(self->client->ps.saberMove))
+		return 0;
+
+	if (!self->client->ps.saberEntityNum) //saber is knocked away
+		return 0;
+
+	if (BG_SabersOff( &self->client->ps ))
+		return 0;
+
+	if (self->client->ps.weapon != WP_SABER)
+		return 0;
+
+	if (self->client->ps.weaponstate == WEAPON_RAISING)
+		return 0;
+
+	if (self->client->ps.saberInFlight)
+		return 0;
+
+	if (self->client->pers.cmd.buttons & BUTTON_ATTACK) //don't block when the player is trying to slash, if it's a projectile or he's doing a very strong attack
+		return 0;
+
+	if (attackStr == 999) {
+		attackStr = 0;
+		thrownSaber = qtrue;
+	}
+
+	/*
+	if ( g_tweakWeapons.integer & REDUCE_SABERBLOCK && !projectile && !thrownSaber) {
+		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
+		const int theirLevel = G_SaberLevelForStance( attackStr );
+		const float diff = (float)(theirLevel - ourLevel); // range [0, 2]
+		const float parity = g_saberBlockStanceParity.value; // range [0, 3]
+		const float chanceMin = g_saberBlockChanceMin.value;
+		const float chanceMax = g_saberBlockChanceMax.value;
+		const float chanceScalar = g_saberBlockChanceScale.value;
+		const float chance = Com_Clamp( chanceMin, chanceMax, (1.0f - (diff / parity)) * chanceScalar );
+		if ( flrand( 0.0f, 1.0f ) > chance ) {
+			return 0;
+		}
+	}
+	*/
+
+
+	if ( g_tweakWeapons.integer & REDUCE_SABERBLOCK && !projectile && !thrownSaber) {
+		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
+		const int theirLevel = G_SaberLevelForStance( attackStr );
+		const float diff = (float)(theirLevel - ourLevel); // range [0, 2]
+
+		if (diff >= 0) //Diff is positive if they are stronger than us.
+			return 0;
+
+
+	}
+
+
+	if (self->client->ps.saberMove != LS_READY && !self->client->ps.saberBlocking)
+		return 0;
+
+	if (self->client->ps.saberBlockTime >= level.time)
+		return 0;
+
+	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE)
+		return 0;
+
+	if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == FORCE_LEVEL_3) {
+		if (d_saberGhoul2Collision.integer)
+			blockFactor = 0.3f;
+		else
+			blockFactor = 0.05f;
+	}
+	else if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == FORCE_LEVEL_2)
+		blockFactor = 0.6f;
+	else if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == FORCE_LEVEL_1)
+		blockFactor = 0.9f;
+	else //for now we just don't get to autoblock with no def
+		return 0;
+
+	if (thrownSaber)
+		blockFactor -= 0.25f;
+
+	if (attackStr)//blocking a saber, not a projectile.
+		blockFactor -= 0.25f;
+
+	if (!InFront( point, self->client->ps.origin, self->client->ps.viewangles, blockFactor )) //orig 0.2f
+		return 0;
+
+	if (projectile)
+		WP_SaberBlockNonRandom(self, point, projectile);
+
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
+
+
+
+
 int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolean projectile, int attackStr)
 {
 	qboolean thrownSaber = qfalse;
@@ -9509,6 +9662,9 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	}
 	return 1;
 }
+
+
+#endif
 
 qboolean HasSetSaberOnly(void)
 {
