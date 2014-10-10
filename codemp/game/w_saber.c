@@ -6833,7 +6833,7 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 		return qfalse;
 	}
 
-	if (!GetSaberDamageStyle(saberOwner))
+	if (!GetSaberDamageStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERBLOCK))
 		return qfalse; //Dont do this shit in MP dmgs i guess...
 
 	//Neither gets an advantage based on attack state, when it comes to knocking
@@ -6952,7 +6952,7 @@ qboolean saberCheckKnockdown_Thrown(gentity_t *saberent, gentity_t *saberOwner, 
 		return qfalse;
 	}
 
-	if (!GetSaberDamageStyle(saberOwner))
+	if (!GetSaberDamageStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERBLOCK))
 		return qfalse; //Dont do saberdrops for idle STs either i guess..
 
 	defenLevel = other->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE];
