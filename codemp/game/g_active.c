@@ -4249,7 +4249,7 @@ void ClientThink_real( gentity_t *ent ) {
 //	G_VehicleAttachDroidUnit( ent );
 
 		// Did we kick someone in our pmove sequence?
-	if (client->ps.forceKickFlip && !client->pers.raceMode)
+	if (client->ps.forceKickFlip && !client->pers.raceMode && !(client->ps.duelInProgress && dueltypes[ent->client->ps.clientNum] == 0))//Saber)
 	{
 		gentity_t *faceKicked = &g_entities[client->ps.forceKickFlip-1];
 

@@ -2561,9 +2561,9 @@ static qboolean PM_CheckJump( void )
 						{
 							kickedEnt = PM_BGEntForNum(trace.entityNum);
 #ifdef _GAME
-							if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && !(pm->ps->duelInProgress && (dueltypes[pm->ps->clientNum] == 0)) && kickedEnt->s.eType == ET_NPC))
+							if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
 #else
-							if ((trace.entityNum < MAX_CLIENTS) || (((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && !(pm->ps->duelInProgress && (cg_dueltypes[pm->ps->clientNum] == 0))) && kickedEnt->s.eType == ET_NPC))
+							if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
 #endif
 							{
 								pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
@@ -2783,10 +2783,10 @@ static qboolean PM_CheckJump( void )
 
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
 #ifdef _GAME
-						if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && !(pm->ps->duelInProgress && (dueltypes[pm->ps->clientNum] == 0)) && kickedEnt->s.eType == ET_NPC))
+						if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
 #else
-						if ((trace.entityNum < MAX_CLIENTS) || (((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && !(pm->ps->duelInProgress && (cg_dueltypes[pm->ps->clientNum] == 0))) && kickedEnt->s.eType == ET_NPC))
-#endif
+						if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
+#endif	
 						{
 							pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 						}
@@ -2855,9 +2855,9 @@ static qboolean PM_CheckJump( void )
 						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
 #ifdef _GAME
-						if (g_flipKick.integer >= 1 && !(pm->ps->duelInProgress && (dueltypes[pm->ps->clientNum] == 0))) {
+						if (g_flipKick.integer >= 1) {
 #else
-						if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && !(pm->ps->duelInProgress && (cg_dueltypes[pm->ps->clientNum] == 0)))) {
+						if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
 #endif
 							if (kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC))
 								pm->ps->forceKickFlip = traceEnt->s.number+1;
