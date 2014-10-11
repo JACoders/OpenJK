@@ -6853,6 +6853,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5JK2 style lunge\n");
 	if (g_maxSaberDefense.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber defense level capped at^3: ^2%i\n", g_maxSaberDefense.integer));
+	if ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && !d_saberSPStyleDamage.integer)
+		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber block for MP style damage\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes

@@ -174,6 +174,8 @@ XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue 
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_saberDuelSPDamage,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_forceDuelSPDamage,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )
