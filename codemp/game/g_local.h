@@ -1323,9 +1323,6 @@ typedef struct level_locals_s {
 	// zyk: if npc is not stuck, set this as qtrue
 	qboolean validated_map_guardian;
 
-	// zyk: counts how many support npcs the map guardian has spawned
-	int map_guardian_counter;
-
 	int initial_map_guardian_weapons;
 } level_locals_t;
 

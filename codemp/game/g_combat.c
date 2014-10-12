@@ -2128,7 +2128,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		if (level.guardian_quest > 1 && self->NPC && self->s.number == level.guardian_quest)
 		{ // zyk: if player defeated the map guardian npc
-			attacker->client->pers.score_modifier = 4;
+			attacker->client->pers.score_modifier = 2;
 			attacker->client->pers.credits_modifier = 990;
 			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the map guardian\n\"", attacker->client->pers.netname) );
 			level.guardian_quest = 0;
@@ -2176,11 +2176,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		gentity_t *controlled_ent = &g_entities[self->client->pers.mind_controlled1_id];
 		self->client->pers.mind_controlled1_id = -1;
 		controlled_ent->client->pers.being_mind_controlled = -1;
-	}
-
-	if (self->NPC && Q_stricmp( self->NPC_type, "map_guardian_support" ) == 0)
-	{
-		level.map_guardian_counter--;
 	}
 
 	if (self->client->pers.guardian_invoked_by_id != -1)
@@ -4823,6 +4818,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		// zyk: Guardian of Darkness used his Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
 			damage = (int)ceil(damage*1.15);
+	}
+
+	// zyk: attacker is the Guardian of Map. If he is using his special ability, increase damage
+	if (attacker && attacker->client && attacker->NPC && level.guardian_quest == attacker->s.number && attacker->client->pers.hunter_quest_messages == 1)
+	{
+		damage *= (int)ceil(damage*1.5);
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)

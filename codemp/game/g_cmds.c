@@ -10314,7 +10314,7 @@ void Cmd_GuardianQuest_f( gentity_t *ent ) {
 			}
 		}
 
-		level.guardian_quest_timer = level.time + 5000;
+		level.guardian_quest_timer = level.time + 3000;
 		level.guardian_quest = 1;
 		trap->SendServerCommand( -1, va("print \"Guardian Quest activated.\n\"") );
 	}

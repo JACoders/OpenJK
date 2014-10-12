@@ -511,7 +511,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.guardian_quest = 0;
 	level.guardian_quest_timer = 0;
 	level.validated_map_guardian = qfalse;
-	level.map_guardian_counter = 0;
 	level.initial_map_guardian_weapons = 0;
 
 	// zyk: getting mapname
@@ -4376,6 +4375,7 @@ void G_RunFrame( int levelTime ) {
 
 				if (npc_ent)
 				{
+					npc_ent->client->pers.hunter_quest_messages = 0;
 					npc_ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 					level.initial_map_guardian_weapons = npc_ent->client->ps.stats[STAT_WEAPONS];
 					VectorCopy(npc_ent->client->ps.origin,level.initial_guardian_origin);
@@ -4401,22 +4401,18 @@ void G_RunFrame( int levelTime ) {
 			level.validated_map_guardian = qtrue;
 		}
 
-		if (level.validated_map_guardian == qtrue)
-		{
-			if (level.map_guardian_counter < 3)
+		if (level.validated_map_guardian == qtrue && npc_ent && npc_ent->client)
+		{		
+			npc_ent->client->ps.stats[STAT_WEAPONS] = level.initial_map_guardian_weapons;
+			// zyk: Guardian of Map special ability
+			if (npc_ent->client->pers.hunter_quest_messages == 0 && npc_ent->health < (npc_ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 			{
-				npc_ent = NPC_SpawnType(npc_ent,"map_guardian_support",NULL,qfalse);
-				if (npc_ent)
-				{
-					level.map_guardian_counter++;
-				}
+				npc_ent->client->pers.hunter_quest_messages = 1;
+				trap->SendServerCommand( -1, va("print \"^3Guardian of Map: ^7Ultra Strength!\n\"") );
 			}
-		
-			if (npc_ent && npc_ent->client)
-				npc_ent->client->ps.stats[STAT_WEAPONS] = level.initial_map_guardian_weapons;
 		}
 
-		level.guardian_quest_timer = level.time + 5000;
+		level.guardian_quest_timer = level.time + 3000;
 	}
 
 	//
