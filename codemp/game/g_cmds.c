@@ -6822,6 +6822,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	//Saber changes
 	Q_strncpyz(buf, " ^3Saber Changes:\n", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage^3: ^2%s\n", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
+	if (d_saberSPStyleDamage.integer != g_saberDuelSPDamage.integer)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in saber duels^3: ^2%s\n", (g_saberDuelSPDamage.integer) ? "SP" : "MP"));
+	if (d_saberSPStyleDamage.integer != g_forceDuelSPDamage.integer)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in force duels^3: ^2%s\n", (g_forceDuelSPDamage.integer) ? "SP" : "MP"));
 	if (!d_saberGhoul2Collision.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for lightsabers\n");
 	if (d_saberBoxTraceSize.integer)

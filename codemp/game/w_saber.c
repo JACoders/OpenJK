@@ -3808,7 +3808,7 @@ qboolean BG_SuperBreakWinAnim( int anim );
 
 static QINLINE int SaberSPStyle(gentity_t *self)
 {
-	if (self->client->ps.duelInProgress) {
+	if (self->client && self->client->ps.duelInProgress) {
 		if (dueltypes[self->client->ps.clientNum] == 0)
 			return g_saberDuelSPDamage.integer;
 		if (dueltypes[self->client->ps.clientNum] == 1)
