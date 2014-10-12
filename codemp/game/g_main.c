@@ -4408,7 +4408,7 @@ void G_RunFrame( int levelTime ) {
 			if (npc_ent->client->pers.hunter_quest_messages == 0 && npc_ent->health < (npc_ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 			{
 				npc_ent->client->pers.hunter_quest_messages = 1;
-				trap->SendServerCommand( -1, va("print \"^3Guardian of Map: ^7Ultra Strength!\n\"") );
+				trap->SendServerCommand( -1, va("chat \"^3Guardian of Map: ^7Ultra Strength!\n\"") );
 			}
 		}
 
