@@ -4823,7 +4823,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	// zyk: attacker is the Guardian of Map. If he is using his special ability, increase damage
 	if (attacker && attacker->client && attacker->NPC && level.guardian_quest == attacker->s.number && attacker->client->pers.hunter_quest_messages == 1)
 	{
-		damage *= (int)ceil(damage*1.5);
+		damage *= 2;
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
