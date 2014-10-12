@@ -5008,7 +5008,7 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 2)))))
 			found = 1;
-		else if (level.quest_map == 5 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8)))
+		else if (level.quest_map == 5 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))))
 			found = 1;
 		else if (level.quest_map == 6 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 9))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 6)))))
 			found = 1;
@@ -5035,8 +5035,6 @@ void choose_new_player(gentity_t *next_player)
 		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
 			found = 1;
 		else if (level.quest_map == 20 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 7)))))
-			found = 1;
-		else if (level.quest_map == 22 && next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))
 			found = 1;
 		else if (level.quest_map == 24 && next_player->client->pers.universe_quest_progress == 5)
 			found = 1;
