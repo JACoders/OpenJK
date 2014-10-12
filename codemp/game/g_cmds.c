@@ -11085,7 +11085,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[i],"");
 			i++;
 		}
-		message_content[7][0] = '\0';
+		message_content[6][0] = '\0';
 
 		if ((ent->client->pers.bitvalue & (1 << 0))) 
 		{
