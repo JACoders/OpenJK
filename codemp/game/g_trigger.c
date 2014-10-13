@@ -1285,6 +1285,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
 
+	if (player->r.svFlags & SVF_JUNIORADMIN)
+		trap->SendServerCommand( player-g_entities, va("cp \"Starting lag: %i\"", player->client->pers.startLag));
+
 	if (player->client->ps.stats[STAT_RACEMODE]) {
 		player->client->ps.duelTime = level.time;
 
@@ -1322,9 +1325,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		diffLag = player->client->pers.startLag - player->client->pers.endLag;
 		if (diffLag > 0) {//Should this be more trusting..?
 			time += diffLag;
-			if (player->r.svFlags & SVF_JUNIORADMIN)
-				trap->SendServerCommand( player-g_entities, va("chat \"Added msec due to warp: %i\"", diffLag));
 		}
+		if (player->r.svFlags & SVF_JUNIORADMIN)
+			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if positive): %i\"", diffLag));
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 
