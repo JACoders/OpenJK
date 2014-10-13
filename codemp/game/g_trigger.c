@@ -1276,7 +1276,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trigger->noise_index) 
 		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
-	player->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
+	player->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
 	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));
 
 	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
