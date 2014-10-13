@@ -635,7 +635,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		HighScores[course][style][newRank].style = style;
 		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
 
-		WriteToTmpRaceLog(string, strlen(string));
+		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+			trap->FS_Write(string, sizeof(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 
 		if (newRank == 0) //Play the sound
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
@@ -652,7 +653,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					PersonalBests[style][i].duration_ms = duration_ms;
 
 					//trap->Print("Found in cach, updating cache and writing to file %i", duration_ms);
-					WriteToTmpRaceLog(string, strlen(string));
+					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+						trap->FS_Write(string, sizeof(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 					break;
 				}
 				else {
@@ -685,7 +687,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						if (duration_ms < oldBest) { //our time we just recorded is faster, so log it
 							PersonalBests[style][i].duration_ms = duration_ms;
 							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
-							WriteToTmpRaceLog(string, strlen(string));
+							if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+								trap->FS_Write(string, sizeof(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 							CALL_SQLITE (finalize(stmt));
 							CALL_SQLITE (close(db));
 							break;
@@ -701,7 +704,8 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					else { //No time found in database, so record the time we just recorded 
 						PersonalBests[style][i].duration_ms = duration_ms;
 						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
-						WriteToTmpRaceLog(string, strlen(string));
+						if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
+							trap->FS_Write(string, sizeof(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						break;
