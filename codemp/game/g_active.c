@@ -2700,9 +2700,8 @@ void ClientThink_real( gentity_t *ent ) {
 //sad hack
 #if 1
 	if (g_antiWarp.integer && client->sess.sessionTeam != TEAM_SPECTATOR && client->pers.raceMode) {
-		const int clientLag = level.time - ucmd->serverTime - (level.time - level.previousTime) - client->ps.ping - 35; //70.. ?.. is this not working?
-		const int lastClientLag = client->pers.lastClientLag;
-		const int warp = lastClientLag - clientLag; //Positive for lurching forward..?
+		const int clientLag = level.time - ucmd->serverTime - (level.time - level.previousTime); //70.. ?.. is this not working?  DOES NOT MAKE ANY SENSE
+		const int warp = client->pers.lastClientLag - clientLag; //Positive for lurching forward..? .. 
 
 		if (g_antiWarp.integer == 1) {
 			if ((warp > 40) || (warp < -40)) {
@@ -2716,7 +2715,7 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 		}
 		else {
-			if (clientLag > 30) {  
+			if (clientLag > (client->ps.ping + 30)) {  
 				ucmd->serverTime = level.time - 30;
 				if (level.time - client->pers.warpMessageTime > 2000) {
 					client->pers.warpMessageTime = level.time;
@@ -2724,7 +2723,7 @@ void ClientThink_real( gentity_t *ent ) {
 					//trap->SendServerCommand(ent-g_entities, va("print \"ClientLag: %ims, Ping: %i, Diff1: %i\n\"", clientLag, client->ps.ping, client->lastCmdTime - level.time)); 
 				}
 			}
-			else if (clientLag < -30)  {
+			else if (clientLag < (-client->ps.ping -30))  {
 				ucmd->serverTime = level.time + 30; 
 				if (level.time - client->pers.warpMessageTime > 2000) {
 					client->pers.warpMessageTime = level.time;
