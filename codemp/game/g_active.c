@@ -2686,6 +2686,7 @@ void ClientThink_real( gentity_t *ent ) {
 		G_HeldByMonster( ent, ucmd );
 	}
 
+
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {
 		ucmd->serverTime = level.time + 200;
@@ -2695,6 +2696,21 @@ void ClientThink_real( gentity_t *ent ) {
 		ucmd->serverTime = level.time - 1000;
 //		trap->Print("serverTime >>>>>\n" );
 	} 
+
+//sad hack
+#if 1
+	if (g_checkClientServertime.integer) {
+		if (((level.time - ucmd->serverTime)) > (client->ps.ping + 30))  //Our time is less than servers time by more than 100+our ping
+			ucmd->serverTime = level.time - 30; //Set our time to servers time - 100 - our ping
+		if (((level.time - ucmd->serverTime)) < (client->ps.ping - 30))  //Our time is greater than servers time by more than 100+our ping
+			ucmd->serverTime = level.time + 30; //Set our time to servers time + 100 + our ping?
+	}
+#endif
+//sad hack end
+
+
+
+
 
 	if (isNPC && (ucmd->serverTime - client->ps.commandTime) < 1)
 	{
@@ -4512,6 +4528,7 @@ void G_RunClient( gentity_t *ent ) {
 		ClientThink_real( ent );
 		return;
 	}
+	
 
 	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
 		return;

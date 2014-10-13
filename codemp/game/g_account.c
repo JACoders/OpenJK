@@ -513,20 +513,18 @@ void PlayActualGlobalSound(char * sound) {
 }
 
 void WriteToTmpRaceLog(char *string, size_t stringSize) {
-	int fLen;
-	fileHandle_t	f;
-
-	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
-
-	/*
-	if (!f) {
-		trap->Print("ERROR: Couldn't write defrag data to %s\n", TEMP_RACE_LOG);
-		return;
-	}
-	*/
+	int fLen = 0;
+	fileHandle_t f;
 
 	if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 		trap->FS_Write(string, stringSize, level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+
+	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
+
+	if (!f) {
+		trap->Print("ERROR: Couldn't read defrag data from %s\n", TEMP_RACE_LOG);
+		return;
+	}	
 
 	if (fLen >= (MAX_TMP_RACELOG_SIZE - ((int)stringSize * 2))) { //Just to be safe..
 		trap->FS_Close(f);

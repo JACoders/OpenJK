@@ -1254,6 +1254,9 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 			break; //In theory, this should never happen, but just incase stop it here.
 		}
 	}
+
+	//trap->SendServerCommand( -1, va("chat \"Subtracted %i milliseconds with interp\"", lessTime) );
+
 	return lessTime;
 }
 
