@@ -2698,7 +2698,7 @@ void ClientThink_real( gentity_t *ent ) {
 	} 
 
 //sad hack
-#if 1
+#if 0
 	if (g_antiWarp.integer && client->sess.sessionTeam != TEAM_SPECTATOR && client->pers.raceMode) {
 		const int clientLag = level.time - ucmd->serverTime - (level.time - level.previousTime) - client->ps.ping; //70.. ?.. is this not working?  DOES NOT MAKE ANY SENSE
 		const int warp = client->pers.lastClientLag - clientLag; //Positive for lurching forward..? .. Does not fucking matter how clientLag is calculated.. there still should be no warp.
@@ -2733,9 +2733,7 @@ void ClientThink_real( gentity_t *ent ) {
 				}
 			}
 		}
-
-		client->pers.lastClientLag = clientLag;
-		
+		client->pers.lastClientLag = clientLag;		
 	}
 #endif
 //sad hack end

@@ -1276,7 +1276,10 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trigger->noise_index) 
 		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
-	player->client->pers.stats.startLevelTime = level.time;
+	player->client->pers.startLag = level.time - player->client->pers.cmd.serverTime;
+	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));
+
+	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
 	player->client->pers.stats.startTime = trap->Milliseconds();
 	player->client->pers.stats.startTime -= InterpolateTouchTime(player, trigger);
 	player->client->pers.stats.topSpeed = 0;
@@ -1309,8 +1312,17 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		char style[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
-		int average, restrictions = 0, nameColor = 7;
+		int average, restrictions = 0, nameColor = 7, diffLag;
 		qboolean valid = qfalse;
+
+		player->client->pers.endLag = level.time - player->client->pers.cmd.serverTime; //Should this use trap milliseconds instead.. 
+		//trap->SendServerCommand( player-g_entities, va("chat \"endlag: %i\"", player->client->pers.endLag));
+
+		diffLag = player->client->pers.startLag - player->client->pers.endLag;
+		if (diffLag > 0) //Should this be more trusting..?
+			time += diffLag;
+		
+		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 
 		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
