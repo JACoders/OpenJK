@@ -2699,7 +2699,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 //sad hack
 #if 1
-	if (g_checkClientServertime.integer) {
+	if (g_checkClientServerTime.integer) {
 		if (((level.time - ucmd->serverTime)) > (client->ps.ping + 30))  //Our time is less than servers time by more than 100+our ping
 			ucmd->serverTime = level.time - 30; //Set our time to servers time - 100 - our ping
 		if (((level.time - ucmd->serverTime)) < (client->ps.ping - 30))  //Our time is greater than servers time by more than 100+our ping
