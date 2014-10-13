@@ -2699,35 +2699,47 @@ void ClientThink_real( gentity_t *ent ) {
 
 //sad hack
 #if 1
-	if (g_checkClientServerTime.integer && client->sess.sessionTeam != TEAM_SPECTATOR && client->pers.raceMode) {
+	if (g_antiWarp.integer && client->sess.sessionTeam != TEAM_SPECTATOR && client->pers.raceMode) {
+		const int clientLag = level.time - ucmd->serverTime - (level.time - level.previousTime);
+		const int lastClientLag = client->pers.lastClientLag;
+		const int warp = lastClientLag - clientLag; //Positive for lurching forward..?
 
-		//const int oldtime = level.time - ucmd->serverTime;
-		//const int serverFrametime = level.time - level.previousTime;
-		//const int expectedDiff = level.time - ucmd->serverTime - serverFrametime*0.5;
-
-		//Level.time - serverTime should always be positive?
-
-
-		if ((level.time - ucmd->serverTime - (level.time - level.previousTime)*0.5) > (client->ps.ping + 50)) {  //Our time is less than servers time by more than 100+our ping
-			trap->SendServerCommand(ent-g_entities, "print \"Client was too far behind!\n\"");
-			ucmd->serverTime = level.time - 50; //Set our time to servers time - 100 - our ping
+		if (g_antiWarp.integer == 1) {
+			if ((warp > 40) || (warp < -40)) {
+				client->ps.velocity[0] = 0;
+				client->ps.velocity[1] = 0;
+				client->ps.velocity[2] = 0;
+				if (level.time - client->pers.warpMessageTime > 2000) {
+					client->pers.warpMessageTime = level.time;
+					trap->SendServerCommand(ent-g_entities, va("print \"Antiwarp cheatprotect: Your client warped %ims!\n\"", warp)); 
+				}
+			}
 		}
-		if (((level.time - ucmd->serverTime - (level.time - level.previousTime)*0.5)) < (-client->ps.ping - 50))  {//Our time is greater than servers time by more than 100+our ping
-			trap->SendServerCommand(ent-g_entities, "print \"Client was too far ahead!\n\""); 
-			ucmd->serverTime = level.time + 50; //Set our time to servers time + 100 + our ping?
+		else {
+			if (clientLag > (client->ps.ping + 30)) {  
+				ucmd->serverTime = level.time - 30;
+				if (level.time - client->pers.warpMessageTime > 2000) {
+					client->pers.warpMessageTime = level.time;
+					trap->SendServerCommand(ent-g_entities, va("print \"Your client was too far behind by %ims!\n\"", clientLag)); 
+					//trap->SendServerCommand(ent-g_entities, va("print \"ClientLag: %ims, Ping: %i, Diff1: %i\n\"", clientLag, client->ps.ping, client->lastCmdTime - level.time)); 
+				}
+			}
+			else if (clientLag < (-client->ps.ping - 30))  {
+				ucmd->serverTime = level.time + 30; 
+				if (level.time - client->pers.warpMessageTime > 2000) {
+					client->pers.warpMessageTime = level.time;
+					trap->SendServerCommand(ent-g_entities, va("print \"Your client was too far ahead by %ims!\n\"", -clientLag)); 
+
+					//trap->SendServerCommand(ent-g_entities, va("print \"ClientLag: %ims, Ping: %i, Diff1: %i\n\"", clientLag, client->ps.ping, client->lastCmdTime - level.time)); 
+				}
+			}
 		}
 
-		/*
-		if (client && client->sess.sessionTeam == TEAM_FREE && (level.time % 1000 <= 50))
-			trap->SendServerCommand(-1, va("print \"Servertime diff for %s: %i, ping = %i, new diff = %i, serverPreviousTime Diff %i, level frameStartTime Diff %i\n\"",
-				client->pers.netname, oldtime, client->ps.ping,  level.time - ucmd->serverTime, level.time - level.previousTime, level.time - level.frameStartTime));
-		*/
-
+		client->pers.lastClientLag = clientLag;
 		
 	}
 #endif
 //sad hack end
-
 
 
 

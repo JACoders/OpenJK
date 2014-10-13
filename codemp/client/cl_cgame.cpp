@@ -773,10 +773,10 @@ void CL_SetCGameTime( void ) {
 			tn = 900;
 		}
 #else
-		if (tn<-200) {//JAPRO ENGINE
-			tn = -200;
-		} else if (tn>200) {
-			tn = 200;
+		if (tn<-2000) {//JAPRO ENGINE
+			tn = -2000;
+		} else if (tn>2000) {
+			tn = 2000;
 		}
 #endif
 
