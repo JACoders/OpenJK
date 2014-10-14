@@ -1315,14 +1315,11 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		char style[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
 		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
-		int average, restrictions = 0, nameColor = 7, diffLag;
+		int average, restrictions = 0, nameColor = 7;
 		qboolean valid = qfalse;
+		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
+		const int diffLag = player->client->pers.startLag - endLag;
 
-
-		player->client->pers.endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //Should this use trap milliseconds instead.. 
-		//trap->SendServerCommand( player-g_entities, va("chat \"endlag: %i\"", player->client->pers.endLag));
-
-		diffLag = player->client->pers.startLag - player->client->pers.endLag;
 		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
 		}
@@ -1455,13 +1452,21 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		return;
 
 	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
-		const float time = (trap->Milliseconds() - player->client->pers.stats.startTime) / 1000.0f;
+		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
 		int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
+		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
+		const int diffLag = player->client->pers.startLag - endLag;
+
+		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
+			time += diffLag;
+		}
+		else 
+			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
 		if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
-			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", time, average));
+			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 		else
-			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", time, player->client->pers.stats.topSpeed, average));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
 		player->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }

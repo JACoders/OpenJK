@@ -669,7 +669,6 @@ typedef struct clientPersistant_s {
 	qboolean	raceMode;
 	qboolean	onlyBhop;
 	int			startLag;
-	int			endLag;
 	int			movementStyle;
 
 	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
