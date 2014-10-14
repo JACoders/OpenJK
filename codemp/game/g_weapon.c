@@ -4160,7 +4160,7 @@ void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRi
 
 	if (weapontype > WP_NONE && weapontype < WP_NUM_WEAPONS)
 	{	// Use the table to generate the muzzlepoint;
-		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT && ent->client->pers.centerMuzzle)
+		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT && (ent->client->pers.centerMuzzle || ent->client->pers.raceMode)) //Also centerMuzzle for racemode rocketjump styles
 		{
 			switch (weapontype)
 			{

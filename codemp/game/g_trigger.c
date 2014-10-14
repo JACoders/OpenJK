@@ -1323,7 +1323,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		//trap->SendServerCommand( player-g_entities, va("chat \"endlag: %i\"", player->client->pers.endLag));
 
 		diffLag = player->client->pers.startLag - player->client->pers.endLag;
-		if (diffLag > -10) {//Should this be more trusting..?
+		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
 		}
 		else 
