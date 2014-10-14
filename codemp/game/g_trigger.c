@@ -1323,11 +1323,11 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		//trap->SendServerCommand( player-g_entities, va("chat \"endlag: %i\"", player->client->pers.endLag));
 
 		diffLag = player->client->pers.startLag - player->client->pers.endLag;
-		if (diffLag > 30) {//Should this be more trusting..?
-			time += (diffLag - 30);
+		if (diffLag > -10) {//Should this be more trusting..?
+			time += diffLag;
 		}
 		if (player->r.svFlags & SVF_FULLADMIN)
-			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if >30): %i\"", diffLag));
+			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > -10): %i\"", diffLag));
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 
