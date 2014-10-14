@@ -1326,6 +1326,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		if (diffLag > -10) {//Should this be more trusting..?
 			time += diffLag;
 		}
+		else 
+			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
+
 		if (player->r.svFlags & SVF_FULLADMIN)
 			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > -10): %i\"", diffLag));
 		
