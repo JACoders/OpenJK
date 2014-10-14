@@ -3849,6 +3849,8 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			}
 			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax; //max force power too!
 			challenged->client->ps.fd.forcePower = challenged->client->ps.fd.forcePowerMax; //max force power too!
+			ent->client->ps.fd.forceRageRecoveryTime = 0;
+			challenged->client->ps.fd.forceRageRecoveryTime = 0; //Get rid of rage recovery when duel starts!
 			
 			if (dueltypes[challenged->client->ps.clientNum] > 2) {
 				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;

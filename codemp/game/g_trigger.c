@@ -1286,7 +1286,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.displacement = 0;
 
 	if (player->r.svFlags & SVF_JUNIORADMIN)
-		trap->SendServerCommand( player-g_entities, va("cp \"Starting lag: %i\"", player->client->pers.startLag));
+		trap->SendServerCommand( player-g_entities, va("cp \"Starting lag: %i\n#2: %i\n%3: %i\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, trap->Milliseconds() - player->client->pers.cmd.serverTime));
 
 	if (player->client->ps.stats[STAT_RACEMODE]) {
 		player->client->ps.duelTime = level.time;
