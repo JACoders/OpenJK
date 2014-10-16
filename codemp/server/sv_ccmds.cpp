@@ -1052,6 +1052,35 @@ static void SV_ExceptDel_f( void )
 	SV_DelBanFromList( qtrue );
 }
 
+static const char *SV_CalcUptime( void ) {
+	static char buf[MAX_STRING_CHARS / 4] = { '\0' };
+	char tmp[64] = { '\0' };
+	time_t currTime;
+
+	time( &currTime );
+
+	int secs = difftime( currTime, svs.startTime );
+	int mins = secs / 60;
+	int hours = mins / 60;
+	int days = hours / 24;
+
+	secs %= 60;
+	mins %= 60;
+	hours %= 24;
+	//days %= 365;
+
+	buf[0] = '\0';
+	if ( days > 0 ) {
+		Com_sprintf( tmp, sizeof(tmp), "%i days ", days );
+		Q_strcat( buf, sizeof(buf), tmp );
+	}
+
+	Com_sprintf( tmp, sizeof(tmp), "%ih%im%is", hours, mins, secs );
+	Q_strcat( buf, sizeof(buf), tmp );
+
+	return buf;
+}
+
 /*
 ================
 SV_Status_f
@@ -1122,6 +1151,7 @@ static void SV_Status_f( void )
 	Com_Printf( "udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString( "net_ip" ), Cvar_VariableIntegerValue( "net_port" ), STATUS_OS, ded_table[com_dedicated->integer] );
 	Com_Printf( "map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
 	Com_Printf( "players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer );
+	Com_Printf( "uptime  : %s\n", SV_CalcUptime() );
 
 	Com_Printf ("cl score ping name            address                                 rate \n");
 	Com_Printf ("-- ----- ---- --------------- --------------------------------------- -----\n");
