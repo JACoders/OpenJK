@@ -198,6 +198,7 @@ typedef struct serverStatic_s {
 	qboolean	initialized;				// sv_init has completed
 
 	int			time;						// will be strictly increasing across level changes
+	time_t		startTime;					// time since epoch the executable was started
 
 	int			snapFlagServerBit;			// ^= SNAPFLAG_SERVERCOUNT every SV_SpawnServer()
 
