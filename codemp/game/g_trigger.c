@@ -1185,14 +1185,20 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 3 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 7 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 8) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
 		else if (restrictions & (1 << 1)) {//flags 2 = restrict to jump2
-			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] > 2) {
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 2) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 2!\n\n\n\n\n\n\n\n\n\n\"");
+				return qfalse;
+			}
+		}
+		else if (restrictions & (1 << 2)) {//flags 4 = only jump3
+			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 3) {
+				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 3!\n\n\n\n\n\n\n\n\n\n\"");
 				return qfalse;
 			}
 		}
@@ -1453,9 +1459,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 
 	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
 		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
-		int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;
 		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
+		const int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f; //Could this be more accurate?
 
 		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
