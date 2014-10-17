@@ -3392,7 +3392,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
@@ -5030,7 +5030,9 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
 			found = 1;
-		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
+		else if (level.quest_map == 16 && next_player->client->pers.universe_quest_progress > 14 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+			found = 1;
+		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < 15)))
 			found = 1;
 		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
 			found = 1;
@@ -5047,7 +5049,7 @@ void choose_new_player(gentity_t *next_player)
 		int j = 0;
 		for (j = MAX_CLIENTS; j < level.num_entities; j++)
 		{
-			if (&g_entities[j] && g_entities[j].NPC && g_entities[j].health > 0 && (Q_stricmp( g_entities[j].NPC_type, "quest_ragnos" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_jawa" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_protocol_imp" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_green" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_brown" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_boss" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_light" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_time" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_boss_9" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "master_of_evil" ) == 0))
+			if (&g_entities[j] && g_entities[j].NPC && g_entities[j].health > 0 && (Q_stricmp( g_entities[j].NPC_type, "quest_ragnos" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_jawa" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_protocol_imp" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_green" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_brown" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_sand_raider_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_blue" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_boss" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_reborn_red" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_light" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "sage_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_time" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_boss_9" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_darkness" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_eternity" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "guardian_of_universe" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "master_of_evil" ) == 0 || Q_stricmp( g_entities[j].NPC_type, "master_of_death" ) == 0))
 			{
 				G_FreeEntity(&g_entities[j]);
 			}
@@ -7492,7 +7494,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[5],"%s^3#  ^2- Universe Power: ^1no\n",message_content[5]);
 
-				if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+				if (ent->client->pers.universe_quest_progress == 15)
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[6]);
 				else
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[6]);
@@ -7826,6 +7828,18 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					{
 						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension and defeat the ^1Guardian of Chaos^7.\nThe end of the quest depends on the choice you made earlier.");
 					}
+					else if (ent->client->pers.universe_quest_progress == 15)
+					{
+						strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7The chosen people are in ^3mp/duel7 ^7and called you through telepathy.\nSomething very serious is going on.\nGo there to find out what is happening.");
+					}
+					else if (ent->client->pers.universe_quest_progress == 16)
+					{
+						strcpy(universe_message, "^3\n17. A New Menace\n\n^7The Master of Death appears! You will now know what he wants.");
+					}
+					else if (ent->client->pers.universe_quest_progress == 17)
+					{
+						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the Master of Death at ^3mp/duel7 ^7to get the Resurrection Power.");
+					}
 				}
 				else
 				{
@@ -8045,9 +8059,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "!" ) == 0)
 				{
-					if (ent->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+					if (ent->client->pers.universe_quest_progress < 15)
 					{
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7You must finish the ^2Universe Quest ^7to have this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7You must finish the 15th mission of the ^2Universe Quest ^7to have this power\n\"") );
 					}
 					else
 					{
@@ -9599,11 +9613,11 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 7))
 		{
-			sprintf(message,"%s\n^3 7 - Use Movers with Stun Baton - ^1OFF", message);
+			sprintf(message,"%s\n^3 7 - Resurrection Power - ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^3 7 - Use Movers with Stun Baton - ^2ON", message);
+			sprintf(message,"%s\n^3 7 - Resurrection Power - ^2ON", message);
 		}
 
 		// zyk: Saber Style flags
@@ -9832,7 +9846,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 7)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Use Movers with Stun Baton %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Resurrection Power %s\n\"", new_status) );
 		}
 		else if (value == 8)
 		{

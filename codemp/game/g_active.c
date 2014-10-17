@@ -788,6 +788,7 @@ ClientTimerActions
 Actions that happen once a second
 ==================
 */
+extern void initialize_rpg_skills(gentity_t *ent);
 void ClientTimerActions( gentity_t *ent, int msec ) {
 	gclient_t	*client;
 
@@ -821,8 +822,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
 
-			/*
-			if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 0) && !(ent->client->pers.player_settings & (1 << 5)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
+			if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 7)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
 			{ // zyk: Resurrection skill
 				if (ent->health < -3) // zyk: so the player doesnt take too long to resurrect
 					ent->health = -3;
@@ -831,11 +831,9 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 				if (ent->health == 1) // zyk: reload his account to set all skills back
 				{
-					load_account(ent,qfalse);
 					initialize_rpg_skills(ent);
 				}
 			}
-			*/
 		}
 	}
 }

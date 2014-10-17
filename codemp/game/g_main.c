@@ -1077,6 +1077,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		zyk_create_info_player_deathmatch(286,-2859,345,92);
 		zyk_create_info_player_deathmatch(190,-2834,345,90);
 	}
+	else if (Q_stricmp(zyk_mapname, "mp/duel7") == 0 && g_gametype.integer == GT_FFA)
+	{
+		level.quest_map = 16;
+	}
 	else if (Q_stricmp(zyk_mapname, "mp/duel8") == 0 && g_gametype.integer == GT_FFA)
 	{
 		level.quest_map = 14;
@@ -3766,10 +3770,10 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	player_yaw[1] = yaw;
 	player_yaw[2] = 0;
 
-	if (guardian_mode != 14)
+	if (guardian_mode < 14)
 		zyk_TeleportPlayer(ent,player_origin,player_yaw);
 
-	if ((guardian_mode >= 1 && guardian_mode <= 7) || guardian_mode == 11 || guardian_mode == 14)
+	if ((guardian_mode >= 1 && guardian_mode <= 7) || guardian_mode == 11 || guardian_mode >= 14)
 		npc_ent = Zyk_NPC_SpawnType(boss_name,gx,gy,gz,gyaw);
 	else
 		npc_ent = NPC_SpawnType(ent,boss_name,NULL,qfalse);
@@ -5962,6 +5966,193 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 					}
+					else if (level.quest_map == 16)
+					{ // zyk: Universe Quest final missions
+						if (ent->client->pers.universe_quest_progress == 15 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time)
+						{
+							if (ent->client->pers.universe_quest_messages == 1)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Hero. Listen very carefully.\""));
+							else if (ent->client->pers.universe_quest_messages == 2)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Universe is not safe yet.\""));
+							else if (ent->client->pers.universe_quest_messages == 3)
+								trap->SendServerCommand( -1, va("chat \"%s^7: Why not?\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 4)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: After the Guardian of Chaos was beaten, a new menace appeared.\""));
+							else if (ent->client->pers.universe_quest_messages == 5)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Master of Death.\""));
+							else if (ent->client->pers.universe_quest_messages == 6)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: This is written in the end of the Prophecy of Time.\""));
+							else if (ent->client->pers.universe_quest_messages == 7)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The final challenge the hero must face is this being.\""));
+							else if (ent->client->pers.universe_quest_messages == 8)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: He is the master of the Guardian of Chaos. Expect a very difficut battle.\""));
+							else if (ent->client->pers.universe_quest_messages == 9)
+								trap->SendServerCommand( -1, va("chat \"%s^7: Can you chosen people help me somehow?\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 10)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: We no longer have our powers since the sacred dimension was open.\""));
+							else if (ent->client->pers.universe_quest_messages == 11)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: In fact, there is no True Guardian. We thought this menace would not happen...\""));
+							else if (ent->client->pers.universe_quest_messages == 12)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: So we said that to you to make you feel better about the fate of the universe...\""));
+							else if (ent->client->pers.universe_quest_messages == 13)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: But we were wrong about that. Forgive us.\""));
+							else if (ent->client->pers.universe_quest_messages == 14)
+								trap->SendServerCommand( -1, va("chat \"%s^7: I understand. So I have to face him alone.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 15)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Master of Death cannot die. But there is a way to make him vulnerable.\""));
+							else if (ent->client->pers.universe_quest_messages == 16)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The prophecy of time says we chosen people must sacrifice our lifes...\""));
+							else if (ent->client->pers.universe_quest_messages == 17)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: After that the link between us and the amulet of time will be completely broken and the amulet will disappear.\""));
+							else if (ent->client->pers.universe_quest_messages == 18)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The power released in this event will break the invulnerability of the Master of Death.\""));
+							else if (ent->client->pers.universe_quest_messages == 19)
+								trap->SendServerCommand( -1, va("chat \"%s^7: That is a terrible sacrifice! Is there any other way instead?\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 20)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: That is the only way.\""));
+							else if (ent->client->pers.universe_quest_messages == 21)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Age of the  Guardians is over. After that, you will be the last to have the guardian powers.\""));
+							else if (ent->client->pers.universe_quest_messages == 22)
+								trap->SendServerCommand( -1, va("chat \"%s^7: Thank you my friends. I will not forget you.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 23)
+								trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Farewell. I wish you the best in your life.\""));
+							else if (ent->client->pers.universe_quest_messages == 24)
+							{
+								ent->client->pers.universe_quest_progress = 16;
+								save_account(ent);
+								quest_get_new_player(ent);
+							}
+
+							ent->client->pers.universe_quest_messages++;
+							ent->client->pers.universe_quest_timer = level.time + 5000;
+
+							if (ent->client->pers.hunter_quest_timer < level.time)
+							{
+								gentity_t *npc_ent = NULL;
+
+								if (ent->client->pers.hunter_quest_messages == 0)
+								{
+									npc_ent = Zyk_NPC_SpawnType("guardian_of_time",896,645,-6,-179);
+								}
+								else if (ent->client->pers.hunter_quest_messages == 1)
+								{
+									npc_ent = Zyk_NPC_SpawnType("master_of_evil",896,565,-6,-179);
+									if (npc_ent)
+									{
+										npc_ent->client->playerTeam = NPCTEAM_PLAYER;
+										npc_ent->client->enemyTeam = NPCTEAM_ENEMY;
+									}
+								}
+								else if (ent->client->pers.hunter_quest_messages == 2)
+								{
+									npc_ent = Zyk_NPC_SpawnType("guardian_of_universe",896,485,-6,-179);
+									if (npc_ent)
+									{
+										npc_ent->client->playerTeam = NPCTEAM_PLAYER;
+										npc_ent->client->enemyTeam = NPCTEAM_ENEMY;
+									}
+								}
+								else if (ent->client->pers.hunter_quest_messages == 3)
+								{
+									npc_ent = Zyk_NPC_SpawnType("guardian_of_eternity",896,405,-6,-179);
+									if (npc_ent)
+									{
+										npc_ent->client->playerTeam = NPCTEAM_PLAYER;
+										npc_ent->client->enemyTeam = NPCTEAM_ENEMY;
+									}
+								}
+								else if (ent->client->pers.hunter_quest_messages == 4)
+								{
+									npc_ent = Zyk_NPC_SpawnType("guardian_boss_9",896,325,-6,-179);
+									if (npc_ent)
+									{
+										npc_ent->client->playerTeam = NPCTEAM_PLAYER;
+										npc_ent->client->enemyTeam = NPCTEAM_ENEMY;
+									}
+								}
+								else if (ent->client->pers.hunter_quest_messages == 5)
+								{
+									npc_ent = Zyk_NPC_SpawnType("guardian_of_darkness",65,645,-6,0);
+									if (npc_ent)
+									{
+										npc_ent->client->playerTeam = NPCTEAM_PLAYER;
+										npc_ent->client->enemyTeam = NPCTEAM_ENEMY;
+									}
+								}
+								else if (ent->client->pers.hunter_quest_messages == 6)
+								{
+									npc_ent = Zyk_NPC_SpawnType("sage_of_universe",65,565,-6,0);
+								}
+								else if (ent->client->pers.hunter_quest_messages == 7)
+								{
+									npc_ent = Zyk_NPC_SpawnType("sage_of_light",65,485,-6,0);
+								}
+								else if (ent->client->pers.hunter_quest_messages == 8)
+								{
+									npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",65,405,-6,0);
+								}
+								else if (ent->client->pers.hunter_quest_messages == 9)
+								{
+									npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",65,325,-6,0);
+								}
+
+								if (ent->client->pers.hunter_quest_messages < 10)
+								{
+									ent->client->pers.hunter_quest_messages++;
+									ent->client->pers.hunter_quest_timer = level.time + 1500;
+								}
+							}
+						}
+						else if (ent->client->pers.universe_quest_progress == 16 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time)
+						{ // zyk: Master of Death appearance
+							if (ent->client->pers.universe_quest_messages == 1)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: So here is the legendary hero at last.\""));
+							else if (ent->client->pers.universe_quest_messages == 2)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: I did not think you would make this far.\""));
+							else if (ent->client->pers.universe_quest_messages == 3)
+								trap->SendServerCommand( -1, va("chat \"%s^7: I will not let you take over the Universe.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 4)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: Don't be that sure. You defeated my servant.\""));
+							else if (ent->client->pers.universe_quest_messages == 5)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: But you have no chance against me.\""));
+							else if (ent->client->pers.universe_quest_messages == 6)
+								trap->SendServerCommand( -1, va("chat \"%s^7: I will put an end to this threat.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 7)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: Come and fight me, hero. Let's see what you can do.\""));
+							else if (ent->client->pers.universe_quest_messages == 8)
+							{
+								ent->client->pers.universe_quest_progress = 17;
+								save_account(ent);
+								quest_get_new_player(ent);
+							}
+
+							ent->client->pers.universe_quest_messages++;
+							ent->client->pers.universe_quest_timer = level.time + 5000;
+						}
+						else if (ent->client->pers.universe_quest_progress == 17 && ent->client->pers.guardian_mode == 0 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time)
+						{ // zyk: Master of Death battle
+							if (ent->client->pers.universe_quest_messages == 1)
+								spawn_boss(ent,0,0,0,0,"master_of_death",471,1553,329,-90,15);
+							else if (ent->client->pers.universe_quest_messages == 2)
+								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: This can't be...\""));
+							else if (ent->client->pers.universe_quest_messages == 3)
+								trap->SendServerCommand( -1, va("chat \"%s^7: I did it! Now I have the Resurrection Power.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 4)
+								trap->SendServerCommand( -1, va("chat \"%s^7: I will use my powers wisely. Thank you chosen people for all you have done.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 5)
+							{
+								ent->client->pers.universe_quest_progress = 18;
+								save_account(ent);
+								quest_get_new_player(ent);
+							}
+
+							if ((ent->client->pers.universe_quest_messages == 0 && (int) ent->client->ps.origin[1] > 1145) || ent->client->pers.universe_quest_messages > 0)
+							{
+								ent->client->pers.universe_quest_messages++;
+								ent->client->pers.universe_quest_timer = level.time + 5000;
+							}
+						}
+					}
 					else if (level.quest_map == 17)
 					{
 						if (ent->client->pers.universe_quest_progress == 8 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18584 && (int) ent->client->ps.origin[0] < -17585 && (int) ent->client->ps.origin[1] > 17752 && (int) ent->client->ps.origin[1] < 18681 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1550)
@@ -6638,7 +6829,7 @@ void G_RunFrame( int levelTime ) {
 						}
 
 						if (ent->client->pers.universe_quest_progress == 14 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: Universe Quest last mission
+						{ // zyk: Guardian of Chaos battle
 							if (ent->client->pers.guardian_mode == 0 && ent->client->pers.universe_quest_timer < level.time)
 							{
 								gentity_t *new_ent = NULL;
@@ -8149,6 +8340,217 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages = 0;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
+					}
+
+					if (ent->client->pers.flame_thrower > level.time)
+						Player_FireFlameThrower(ent);
+				}
+				else if (ent->client->pers.guardian_mode == 15)
+				{ // zyk: Master of Death
+					if (ent->client->pers.guardian_timer < level.time)
+					{
+						if (ent->client->pers.hunter_quest_messages == 0)
+						{
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Cloaking!\"");
+							if (!ent->client->ps.powerups[PW_CLOAKED])
+								Jedi_Cloak(ent);
+
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 1)
+						{
+							if (ent->client->pers.guardian_timer < (level.time - 5000))
+							{
+								ent->client->pers.hunter_quest_messages++;
+								ent->client->pers.universe_quest_messages = 0;
+							}
+							else if (ent->client->pers.universe_quest_messages == 0)
+							{
+								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+
+								G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+
+								ent->client->pers.universe_quest_messages = 1;
+								trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Blowing Wind!\"");
+							}
+							else
+							{
+								static	vec3_t	forward;
+								vec3_t dir;
+								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+
+								AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
+
+								VectorNormalize(forward);
+
+								if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+									VectorScale(forward,90.0,dir);
+								else
+									VectorScale(forward,25.0,dir);
+
+								VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
+							}
+						}
+						else if (ent->client->pers.hunter_quest_messages == 2)
+						{
+							trap->SendServerCommand( -1, "chat \"^1Master of Deaths: ^7Healing Water!\"");
+
+							healing_water(ent,200);
+
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 3)
+						{
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (distance < 300)
+							{
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+							}
+
+							ent->client->pers.hunter_quest_messages++;
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Inner Area Damage!\"");
+						}
+						else if (ent->client->pers.hunter_quest_messages == 4)
+						{
+							sleeping_flowers(ent,3000,700);
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Sleeping Flowers!\"");
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 5)
+						{
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Deaths: ^7Ultra Slap of Death!\"");
+							
+							if (distance < 800)
+							{
+								if (player_ent->client->jetPackOn)
+								{
+									Jetpack_Off(player_ent);
+								}
+
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,500,0,MOD_UNKNOWN);
+
+								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
+								player_ent->client->ps.velocity[2] += 900;
+								player_ent->client->ps.forceDodgeAnim = 0;
+								player_ent->client->ps.quickerGetup = qtrue;
+							}
+
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 6)
+						{
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (ent->client->pers.flame_thrower < level.time)
+							{
+								ent->client->pers.flame_thrower = level.time + 5000;
+								trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Flame Burst!\"");
+							}
+
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 7)
+						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (distance > 300)
+							{
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+							}
+
+							ent->client->pers.hunter_quest_messages++;
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Outer Area Damage!\"");
+						}
+						else if (ent->client->pers.hunter_quest_messages == 8)
+						{
+							earthquake(ent,2000,800,3000);
+							ent->client->pers.hunter_quest_messages++;
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Earthquake!\"");
+						}
+						else if (ent->client->pers.hunter_quest_messages == 9)
+						{
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (distance < 1000)
+							{
+								// zyk: set the player as being affected by Time Power
+								player_ent->client->pers.ultimate_power_target = 3;
+								player_ent->client->pers.ultimate_power_target_timer = level.time + 6000;
+							}
+
+							ent->client->pers.hunter_quest_messages++;
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Time Power!\"");
+						}
+						else if (ent->client->pers.hunter_quest_messages == 10)
+						{
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+							if (distance < 1200)
+							{
+								if (player_ent->client->jetPackOn)
+								{
+									Jetpack_Off(player_ent);
+								}
+
+								// zyk: set the player as being affected by Chaos Power
+								player_ent->client->pers.ultimate_power_target = 2;
+								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								player_ent->client->ps.forceHandExtendTime = level.time + 5000;
+								player_ent->client->ps.velocity[2] += 150;
+								player_ent->client->ps.forceDodgeAnim = 0;
+								player_ent->client->ps.quickerGetup = qtrue;
+								player_ent->client->ps.electrifyTime = level.time + 5000;
+
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+							}
+
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Chaos Power!\"");
+
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 11)
+						{ // zyk: second part of chaos power
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+
+							if (player_ent->client->pers.ultimate_power_target == 2)
+							{
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+							}
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 12)
+						{ // zyk: last part of chaos power
+							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+
+							if (player_ent->client->pers.ultimate_power_target == 2)
+							{
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+
+								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
+								player_ent->client->ps.velocity[2] += 900;
+								player_ent->client->ps.forceDodgeAnim = 0;
+								player_ent->client->ps.quickerGetup = qtrue;
+								player_ent->client->pers.ultimate_power_target = 0;
+							}
+							ent->client->pers.hunter_quest_messages = 0;
+						}
+
+						ent->client->pers.guardian_timer = level.time + (ent->health/2);
 					}
 
 					if (ent->client->pers.flame_thrower > level.time)

@@ -3442,7 +3442,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 	tr_ent = &g_entities[tr.entityNum];
 
 	// zyk: Stun Baton with Stun Baton Upgrade in RPG Mode allows the player to open any door
-	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 15) && !(ent->client->pers.player_settings & (1 << 7)) && (tr_ent->s.eType == ET_MOVER || Q_stricmp( tr_ent->classname, "func_door" ) == 0))
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 15) && (tr_ent->s.eType == ET_MOVER || Q_stricmp( tr_ent->classname, "func_door" ) == 0))
 	{
 		GlobalUse(tr_ent, ent, ent);
 	}
