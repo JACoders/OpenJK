@@ -3392,7 +3392,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
@@ -7494,7 +7494,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[5],"%s^3#  ^2- Universe Power: ^1no\n",message_content[5]);
 
-				if (ent->client->pers.universe_quest_progress == 15)
+				if (ent->client->pers.universe_quest_progress >= 15)
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[6]);
 				else
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[6]);
