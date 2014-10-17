@@ -652,6 +652,10 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	if (ent->client->ps.stats[STAT_RACEMODE]) {
 		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
+		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
+		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
+		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		//}
 	}
 
 	if (wasReset && print)
