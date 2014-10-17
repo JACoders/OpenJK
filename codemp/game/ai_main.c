@@ -6858,9 +6858,13 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_HEAL)) && ((bs->cur_ps.fd.forcePowersKnown & (1 << FP_HEAL)) //level.clients[bs->client].ps.fd.forcePower
-		&& g_entities[bs->client].health < 75))
+		&& g_entities[bs->client].health < 100))
 	{
-		if ((bs->cur_ps.fd.forcePower > 70)) {
+		if (bs->cur_ps.fd.forcePower > 99) {
+			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
+			useTheForce = qtrue;
+		}
+		if ((bs->cur_ps.fd.forcePower > 70) && (g_entities[bs->client].health < 75)) {
 			level.clients[bs->client].ps.fd.forcePowerSelected = FP_HEAL;
 			useTheForce = qtrue;
 		}
