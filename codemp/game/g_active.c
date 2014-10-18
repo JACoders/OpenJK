@@ -493,6 +493,8 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 
 			if (jumpHeight > 48)
 				jumpHeight = 48;
+			else if (jumpHeight < 0)
+				jumpHeight = 0;
 
 			NEW_STEPSIZE = 48 - jumpHeight + 22;
 		}
