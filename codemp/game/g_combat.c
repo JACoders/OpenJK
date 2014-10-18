@@ -4763,12 +4763,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = damage * (1 + attacker->client->pers.improvements_level);
 			is_a_monk = qtrue;
 		}
-		else if (attacker->client->pers.rpg_class == 5 && mod != MOD_MELEE)
+		else if (attacker->client->pers.rpg_class == 5 && (mod == MOD_STUN_BATON || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || 
+			     mod == MOD_REPEATER || mod == MOD_REPEATER_ALT || mod == MOD_REPEATER_ALT_SPLASH || mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || 
+				 mod == MOD_LAVA || mod == MOD_TRIP_MINE_SPLASH || mod == MOD_TIMED_MINE_SPLASH || mod == MOD_DET_PACK_SPLASH || 
+				 mod == MOD_CONC || mod == MOD_CONC_ALT || mod == MOD_DISRUPTOR_SPLASH))
 		{ // zyk: Stealth Attacker has more gun damage
 			float stealth_attacker_bonus_damage = 0.0;
 			// zyk: Stealth Attacker Upgrade increases damage
 			if (attacker->client->pers.secrets_found & (1 << 7))
-				stealth_attacker_bonus_damage = 0.05;
+				stealth_attacker_bonus_damage = 0.1;
 
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level) + stealth_attacker_bonus_damage));
 		}
