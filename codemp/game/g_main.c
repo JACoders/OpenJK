@@ -4166,6 +4166,8 @@ extern void set_max_health(gentity_t *ent);
 extern void set_max_shield(gentity_t *ent);
 extern gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile);
 
+extern void initialize_rpg_skills(gentity_t *ent);
+
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
@@ -4750,6 +4752,25 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->pers.flame_thrower > level.time)
 				{ // zyk: fires the flame thrower
 					Player_FireFlameThrower(ent);
+				}
+
+				if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 7)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
+				{ // zyk: Resurrection skill
+					if (ent->health < (-5 * sv_fps.integer)) // zyk: so the player doesnt take too long to resurrect
+						ent->health = (-5 * sv_fps.integer);
+					else
+					{
+						ent->health += 1;
+					}
+
+					if (ent->health == 1) // zyk: reload his account to set all skills back
+					{
+						ent->r.contents = CONTENTS_BODY;
+						ent->client->ps.pm_type = PM_NORMAL;
+						ent->client->ps.fallingToDeath = 0;
+						ent->client->noCorpse = qtrue;
+						initialize_rpg_skills(ent);
+					}
 				}
 
 				if (level.quest_map > 0)
