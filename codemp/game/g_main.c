@@ -8191,11 +8191,11 @@ void G_RunFrame( int levelTime ) {
 									Jetpack_Off(player_ent);
 								}
 
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,300,0,MOD_UNKNOWN);
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
 
 								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
-								player_ent->client->ps.velocity[2] += 900;
+								player_ent->client->ps.velocity[2] += 800;
 								player_ent->client->ps.forceDodgeAnim = 0;
 								player_ent->client->ps.quickerGetup = qtrue;
 							}
@@ -8518,7 +8518,7 @@ void G_RunFrame( int levelTime ) {
 											Jetpack_Off(player_ent);
 										}
 
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,500,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,400,0,MOD_UNKNOWN);
 
 										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
@@ -8630,7 +8630,7 @@ void G_RunFrame( int levelTime ) {
 										player_ent->client->ps.quickerGetup = qtrue;
 										player_ent->client->ps.electrifyTime = level.time + 5000;
 
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8652,7 +8652,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									if (player_ent->client->pers.ultimate_power_target == 2)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8672,11 +8672,11 @@ void G_RunFrame( int levelTime ) {
 								{
 									if (player_ent->client->pers.ultimate_power_target == 2)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
 
 										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
-										player_ent->client->ps.velocity[2] += 900;
+										player_ent->client->ps.velocity[2] += 800;
 										player_ent->client->ps.forceDodgeAnim = 0;
 										player_ent->client->ps.quickerGetup = qtrue;
 										player_ent->client->pers.ultimate_power_target = 0;
