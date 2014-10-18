@@ -8410,9 +8410,15 @@ void G_RunFrame( int levelTime ) {
 							}
 							else if (ent->client->pers.universe_quest_messages == 0)
 							{
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+								int player_it = 0;
 
-								G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+								for (player_it = 0; player_it < level.maxclients; player_it++)
+								{
+									gentity_t *player_ent = &g_entities[player_it];
+
+									if (player_ent && player_ent->client)
+										G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+								}
 
 								ent->client->pers.universe_quest_messages = 1;
 								trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Blowing Wind!\"");
@@ -8421,23 +8427,31 @@ void G_RunFrame( int levelTime ) {
 							{
 								static	vec3_t	forward;
 								vec3_t dir;
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+								int player_it = 0;
 
-								AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
+								for (player_it = 0; player_it < level.maxclients; player_it++)
+								{
+									gentity_t *player_ent = &g_entities[player_it];
 
-								VectorNormalize(forward);
+									if (player_ent && player_ent->client)
+									{
+										AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
 
-								if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-									VectorScale(forward,90.0,dir);
-								else
-									VectorScale(forward,25.0,dir);
+										VectorNormalize(forward);
 
-								VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
+										if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+											VectorScale(forward,90.0,dir);
+										else
+											VectorScale(forward,25.0,dir);
+
+										VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
+									}
+								}
 							}
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
-							trap->SendServerCommand( -1, "chat \"^1Master of Deaths: ^7Healing Water!\"");
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Healing Water!\"");
 
 							healing_water(ent,200);
 
@@ -8446,12 +8460,21 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							int player_it = 0;
 
-							if (distance < 300)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
+								{
+									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+									if (distance < 300)
+									{
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+									}
+								}
 							}
 
 							ent->client->pers.hunter_quest_messages++;
@@ -8468,35 +8491,40 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 5)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							int player_it = 0;
 
-							trap->SendServerCommand( -1, "chat \"^1Master of Deaths: ^7Ultra Slap of Death!\"");
-							
-							if (distance < 800)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								if (player_ent->client->jetPackOn)
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
 								{
-									Jetpack_Off(player_ent);
+									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							
+									if (distance < 800)
+									{
+										if (player_ent->client->jetPackOn)
+										{
+											Jetpack_Off(player_ent);
+										}
+
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,500,0,MOD_UNKNOWN);
+
+										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
+										player_ent->client->ps.velocity[2] += 900;
+										player_ent->client->ps.forceDodgeAnim = 0;
+										player_ent->client->ps.quickerGetup = qtrue;
+									}
 								}
-
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,500,0,MOD_UNKNOWN);
-
-								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
-								player_ent->client->ps.velocity[2] += 900;
-								player_ent->client->ps.forceDodgeAnim = 0;
-								player_ent->client->ps.quickerGetup = qtrue;
 							}
 
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Ultra Slap of Death!\"");
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2);
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
 							if (ent->client->pers.flame_thrower < level.time)
 							{
 								ent->client->pers.flame_thrower = level.time + 5000;
@@ -8508,12 +8536,21 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							int player_it = 0;
 
-							if (distance > 300)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
+								{
+									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+									if (distance > 300)
+									{
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+									}
+								}
 							}
 
 							ent->client->pers.hunter_quest_messages++;
@@ -8531,14 +8568,23 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							int player_it = 0;
 
-							if (distance < 1000)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								// zyk: set the player as being affected by Time Power
-								player_ent->client->pers.ultimate_power_target = 3;
-								player_ent->client->pers.ultimate_power_target_timer = level.time + 6000;
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
+								{
+									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+									if (distance < 1000)
+									{
+										// zyk: set the player as being affected by Time Power
+										player_ent->client->pers.ultimate_power_target = 3;
+										player_ent->client->pers.ultimate_power_target_timer = level.time + 6000;
+									}
+								}
 							}
 
 							ent->client->pers.hunter_quest_messages++;
@@ -8548,26 +8594,35 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 10)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+							int player_it = 0;
 
-							if (distance < 1200)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								if (player_ent->client->jetPackOn)
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
 								{
-									Jetpack_Off(player_ent);
+									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+									if (distance < 1200)
+									{
+										if (player_ent->client->jetPackOn)
+										{
+											Jetpack_Off(player_ent);
+										}
+
+										// zyk: set the player as being affected by Chaos Power
+										player_ent->client->pers.ultimate_power_target = 2;
+										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+										player_ent->client->ps.forceHandExtendTime = level.time + 5000;
+										player_ent->client->ps.velocity[2] += 150;
+										player_ent->client->ps.forceDodgeAnim = 0;
+										player_ent->client->ps.quickerGetup = qtrue;
+										player_ent->client->ps.electrifyTime = level.time + 5000;
+
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+									}
 								}
-
-								// zyk: set the player as being affected by Chaos Power
-								player_ent->client->pers.ultimate_power_target = 2;
-								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								player_ent->client->ps.forceHandExtendTime = level.time + 5000;
-								player_ent->client->ps.velocity[2] += 150;
-								player_ent->client->ps.forceDodgeAnim = 0;
-								player_ent->client->ps.quickerGetup = qtrue;
-								player_ent->client->ps.electrifyTime = level.time + 5000;
-
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
 							}
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Chaos Power!\"");
@@ -8577,30 +8632,48 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 11)
 						{ // zyk: second part of chaos power
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int player_it = 0;
 
-							if (player_ent->client->pers.ultimate_power_target == 2)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (player_ent && player_ent->client)
+								{
+									if (player_ent->client->pers.ultimate_power_target == 2)
+									{
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+									}
+								}
 							}
+
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 1500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{ // zyk: last part of chaos power
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							int player_it = 0;
 
-							if (player_ent->client->pers.ultimate_power_target == 2)
+							for (player_it = 0; player_it < level.maxclients; player_it++)
 							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+								gentity_t *player_ent = &g_entities[player_it];
 
-								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
-								player_ent->client->ps.velocity[2] += 900;
-								player_ent->client->ps.forceDodgeAnim = 0;
-								player_ent->client->ps.quickerGetup = qtrue;
-								player_ent->client->pers.ultimate_power_target = 0;
+								if (player_ent && player_ent->client)
+								{
+									if (player_ent->client->pers.ultimate_power_target == 2)
+									{
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
+
+										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
+										player_ent->client->ps.velocity[2] += 900;
+										player_ent->client->ps.forceDodgeAnim = 0;
+										player_ent->client->ps.quickerGetup = qtrue;
+										player_ent->client->pers.ultimate_power_target = 0;
+									}
+								}
 							}
+
 							ent->client->pers.hunter_quest_messages = 0;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2);
 						}
