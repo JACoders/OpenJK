@@ -96,8 +96,9 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_TCGen0Vector0", GLSL_VEC3, 1 },
 	{ "u_TCGen0Vector1", GLSL_VEC3, 1 },
 
-	{ "u_DeformGen",    GLSL_INT, 1 },
-	{ "u_DeformParams", GLSL_FLOAT5, 1 },
+	{ "u_DeformType",    GLSL_INT, 1 },
+	{ "u_DeformFunc",    GLSL_INT, 1 },
+	{ "u_DeformParams", GLSL_FLOAT, 7 },
 
 	{ "u_ColorGen",  GLSL_INT, 1 },
 	{ "u_AlphaGen",  GLSL_INT, 1 },
@@ -296,21 +297,29 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 	Q_strcat(dest, size,
 					 va("#ifndef deformGen_t\n"
 						"#define deformGen_t\n"
-						"#define DGEN_WAVE_SIN %i\n"
-						"#define DGEN_WAVE_SQUARE %i\n"
-						"#define DGEN_WAVE_TRIANGLE %i\n"
-						"#define DGEN_WAVE_SAWTOOTH %i\n"
-						"#define DGEN_WAVE_INVERSE_SAWTOOTH %i\n"
-						"#define DGEN_BULGE %i\n"
-						"#define DGEN_MOVE %i\n"
+						"#define DEFORM_NONE %i\n"
+						"#define DEFORM_WAVE %i\n"
+						"#define DEFORM_NORMALS %i\n"
+						"#define DEFORM_BULGE %i\n"
+						"#define DEFORM_MOVE %i\n"
+						"#define WF_NONE %i\n"
+						"#define WF_SIN %i\n"
+						"#define WF_SQUARE %i\n"
+						"#define WF_TRIANGLE %i\n"
+						"#define WF_SAWTOOTH %i\n"
+						"#define WF_INVERSE_SAWTOOTH %i\n"
 						"#endif\n",
-						DGEN_WAVE_SIN,
-						DGEN_WAVE_SQUARE,
-						DGEN_WAVE_TRIANGLE,
-						DGEN_WAVE_SAWTOOTH,
-						DGEN_WAVE_INVERSE_SAWTOOTH,
-						DGEN_BULGE,
-						DGEN_MOVE));
+						DEFORM_NONE,
+						DEFORM_WAVE,
+						DEFORM_NORMALS,
+						DEFORM_BULGE,
+						DEFORM_MOVE,
+						GF_NONE,
+						GF_SIN,
+						GF_SQUARE,
+						GF_TRIANGLE,
+						GF_SAWTOOTH,
+						GF_INVERSE_SAWTOOTH));
 
 	Q_strcat(dest, size,
 					 va("#ifndef tcGen_t\n"
@@ -706,9 +715,6 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 			case GLSL_FLOAT:
 				size += sizeof(GLfloat) * uniformsInfo[i].size;
 				break;
-			case GLSL_FLOAT5:
-				size += sizeof(float) * 5 * uniformsInfo[i].size;
-				break;
 			case GLSL_VEC2:
 				size += sizeof(float) * 2 * uniformsInfo[i].size;
 				break;
@@ -857,7 +863,7 @@ void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t 
 	qglUniform4f(uniforms[uniformNum], v[0], v[1], v[2], v[3]);
 }
 
-void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_t v)
+void GLSL_SetUniformFloatN(shaderProgram_t *program, int uniformNum, const float *v, int numFloats)
 {
 	GLint *uniforms = program->uniforms;
 	float *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
@@ -865,20 +871,29 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 	if (uniforms[uniformNum] == -1)
 		return;
 
-	if (uniformsInfo[uniformNum].type != GLSL_FLOAT5)
+	if (uniformsInfo[uniformNum].type != GLSL_FLOAT)
 	{
-		ri->Printf( PRINT_WARNING, "GLSL_SetUniformFloat5: wrong type for uniform %i in program %s\n", uniformNum, program->name);
+		ri->Printf( PRINT_WARNING, "GLSL_SetUniformFloatN: wrong type for uniform %i in program %s\n", uniformNum, program->name);
 		return;
 	}
 
-	if (VectorCompare5(v, compare))
+	if (uniformsInfo[uniformNum].size < numFloats)
+	{
+		ri->Printf( PRINT_WARNING, "GLSL_SetUniformFloatN: uniform %i only has %d elements! Tried to set %d\n",
+					uniformNum,
+					uniformsInfo[uniformNum].size,
+					numFloats );
+		return;
+	}
+
+	if ( memcmp( compare, v, sizeof( float ) * numFloats ) == 0 )
 	{
 		return;
 	}
 
-	VectorCopy5(v, compare);
+	memcpy( compare, v, sizeof( float ) * numFloats );
 
-	qglUniform1fv(uniforms[uniformNum], 5, v);
+	qglUniform1fv(uniforms[uniformNum], numFloats, v);
 }
 
 void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)

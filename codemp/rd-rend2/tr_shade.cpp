@@ -311,10 +311,12 @@ static void ComputeTexMods( shaderStage_t *pStage, int bundleNum, float *outMatr
 }
 
 
-static void ComputeDeformValues(int *deformGen, vec5_t deformParams)
+static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float deformParams[7])
 {
 	// u_DeformGen
-	*deformGen = DGEN_NONE;
+	*type = DEFORM_NONE;
+	*waveFunc = GF_NONE;
+
 	if(!ShaderRequiresCPUDeforms(tess.shader))
 	{
 		deformStage_t  *ds;
@@ -325,23 +327,54 @@ static void ComputeDeformValues(int *deformGen, vec5_t deformParams)
 		switch (ds->deformation)
 		{
 			case DEFORM_WAVE:
-				*deformGen = ds->deformationWave.func;
+				*type = DEFORM_WAVE;
+				*waveFunc = ds->deformationWave.func;
 
 				deformParams[0] = ds->deformationWave.base;
 				deformParams[1] = ds->deformationWave.amplitude;
 				deformParams[2] = ds->deformationWave.phase;
 				deformParams[3] = ds->deformationWave.frequency;
 				deformParams[4] = ds->deformationSpread;
+				deformParams[5] = 0.0f;
+				deformParams[6] = 0.0f;
 				break;
 
 			case DEFORM_BULGE:
-				*deformGen = DGEN_BULGE;
+				*type = DEFORM_BULGE;
 
-				deformParams[0] = 0;
+				deformParams[0] = 0.0f;
 				deformParams[1] = ds->bulgeHeight; // amplitude
 				deformParams[2] = ds->bulgeWidth;  // phase
 				deformParams[3] = ds->bulgeSpeed;  // frequency
-				deformParams[4] = 0;
+				deformParams[4] = 0.0f;
+				deformParams[5] = 0.0f;
+				deformParams[6] = 0.0f;
+				break;
+
+			case DEFORM_MOVE:
+				*type = DEFORM_MOVE;
+				*waveFunc = ds->deformationWave.func;
+
+				deformParams[0] = ds->deformationWave.base;
+				deformParams[1] = ds->deformationWave.amplitude;
+				deformParams[2] = ds->deformationWave.phase;
+				deformParams[3] = ds->deformationWave.frequency;
+				deformParams[4] = ds->moveVector[0];
+				deformParams[5] = ds->moveVector[1];
+				deformParams[6] = ds->moveVector[2];
+
+				break;
+
+			case DEFORM_NORMALS:
+				*type = DEFORM_NORMALS;
+
+				deformParams[0] = 0.0f;
+				deformParams[1] = ds->deformationWave.amplitude; // amplitude
+				deformParams[2] = 0.0f;  // phase
+				deformParams[3] = ds->deformationWave.frequency;  // frequency
+				deformParams[4] = 0.0f;
+				deformParams[5] = 0.0f;
+				deformParams[6] = 0.0f;
 				break;
 
 			default:
@@ -356,14 +389,15 @@ static void ProjectDlightTexture( void ) {
 	vec3_t	origin;
 	float	scale;
 	float	radius;
-	int deformGen;
-	vec5_t deformParams;
+	deform_t deformType;
+	genFunc_t deformGen;
+	float deformParams[7];
 
 	if ( !backEnd.refdef.num_dlights ) {
 		return;
 	}
 
-	ComputeDeformValues(&deformGen, deformParams);
+	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	for ( l = 0 ; l < backEnd.refdef.num_dlights ; l++ ) {
 		dlight_t	*dl;
@@ -389,10 +423,11 @@ static void ProjectDlightTexture( void ) {
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 		
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMGEN, deformGen);
-		if (deformGen != DGEN_NONE)
+		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+		if (deformType != DEFORM_NONE)
 		{
-			GLSL_SetUniformFloat5(sp, UNIFORM_DEFORMPARAMS, deformParams);
+			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
+			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
 			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 		}
 
@@ -737,8 +772,9 @@ static void ForwardDlight( void ) {
 	//float	scale;
 	float	radius;
 
-	int deformGen;
-	vec5_t deformParams;
+	deform_t deformType;
+	genFunc_t deformGen;
+	float deformParams[7];
 	
 	vec4_t fogDistanceVector, fogDepthVector = {0, 0, 0, 0};
 	float eyeT = 0;
@@ -750,7 +786,7 @@ static void ForwardDlight( void ) {
 		return;
 	}
 	
-	ComputeDeformValues(&deformGen, deformParams);
+	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
@@ -790,10 +826,11 @@ static void ForwardDlight( void ) {
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMGEN, deformGen);
-		if (deformGen != DGEN_NONE)
+		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+		if (deformType != DEFORM_NONE)
 		{
-			GLSL_SetUniformFloat5(sp, UNIFORM_DEFORMPARAMS, deformParams);
+			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
+			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
 			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 		}
 
@@ -915,16 +952,11 @@ static void ProjectPshadowVBOGLSL( void ) {
 	vec3_t	origin;
 	float	radius;
 
-	int deformGen;
-	vec5_t deformParams;
-
 	shaderCommands_t *input = &tess;
 
 	if ( !backEnd.refdef.num_pshadows ) {
 		return;
 	}
-	
-	ComputeDeformValues(&deformGen, deformParams);
 
 	for ( l = 0 ; l < backEnd.refdef.num_pshadows ; l++ ) {
 		pshadow_t	*ps;
@@ -1000,10 +1032,11 @@ static void RB_FogPass( void ) {
 	float	eyeT = 0;
 	shaderProgram_t *sp;
 
-	int deformGen;
+	deform_t deformType;
+	genFunc_t deformGen;
 	vec5_t deformParams;
 
-	ComputeDeformValues(&deformGen, deformParams);
+	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	{
 		int index = 0;
@@ -1030,10 +1063,11 @@ static void RB_FogPass( void ) {
 
 	GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 	
-	GLSL_SetUniformInt(sp, UNIFORM_DEFORMGEN, deformGen);
-	if (deformGen != DGEN_NONE)
+	GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+	if (deformType != DEFORM_NONE)
 	{
-		GLSL_SetUniformFloat5(sp, UNIFORM_DEFORMPARAMS, deformParams);
+		GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
+		GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
 		GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 	}
 
@@ -1173,10 +1207,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 	vec4_t fogDistanceVector, fogDepthVector = {0, 0, 0, 0};
 	float eyeT = 0;
 
-	int deformGen;
-	vec5_t deformParams;
+	deform_t deformType;
+	genFunc_t deformGen;
+	float deformParams[7];
 
-	ComputeDeformValues(&deformGen, deformParams);
+	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
@@ -1308,10 +1343,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 		
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMGEN, deformGen);
-		if (deformGen != DGEN_NONE)
+		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+		if (deformType != DEFORM_NONE)
 		{
-			GLSL_SetUniformFloat5(sp, UNIFORM_DEFORMPARAMS, deformParams);
+			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
+			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
 			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 		}
 
@@ -1600,10 +1636,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 static void RB_RenderShadowmap( shaderCommands_t *input )
 {
-	int deformGen;
-	vec5_t deformParams;
+	deform_t deformType;
+	genFunc_t deformGen;
+	float deformParams[7];
 
-	ComputeDeformValues(&deformGen, deformParams);
+	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	{
 		shaderProgram_t *sp = &tr.shadowmapShader;
@@ -1618,10 +1655,11 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMGEN, deformGen);
-		if (deformGen != DGEN_NONE)
+		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+		if (deformType != DEFORM_NONE)
 		{
-			GLSL_SetUniformFloat5(sp, UNIFORM_DEFORMPARAMS, deformParams);
+			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
+			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
 			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 		}
 

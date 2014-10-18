@@ -509,7 +509,8 @@ typedef enum
 	// do not edit until this line
 
 	DGEN_BULGE,
-	DGEN_MOVE
+	DGEN_NORMALS,
+	DGEN_MOVE,
 } deformGen_t;
 
 typedef enum {
@@ -794,23 +795,28 @@ typedef struct shader_s {
 
 static QINLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
 {
-	if(shader->numDeforms)
+	if ( shader->numDeforms > 1 )
 	{
-		const deformStage_t *ds = &shader->deforms[0];
+		return qtrue;
+	}
 
-		if (shader->numDeforms > 1)
-			return qtrue;
-
-		switch (ds->deformation)
+	if ( shader->numDeforms > 0 )
+	{
+		switch (shader->deforms[0].deformation)
 		{
+			case DEFORM_NONE:
+			case DEFORM_NORMALS:
 			case DEFORM_WAVE:
 			case DEFORM_BULGE:
+			case DEFORM_MOVE:
 				return qfalse;
 
 			default:
 				return qtrue;
 		}
 	}
+
+	assert( shader->numDeforms == 0 );
 
 	return qfalse;
 }
@@ -998,7 +1004,6 @@ enum
 {
 	GLSL_INT,
 	GLSL_FLOAT,
-	GLSL_FLOAT5,
 	GLSL_VEC2,
 	GLSL_VEC3,
 	GLSL_VEC4,
@@ -1038,7 +1043,8 @@ typedef enum
 	UNIFORM_TCGEN0VECTOR0,
 	UNIFORM_TCGEN0VECTOR1,
 
-	UNIFORM_DEFORMGEN,
+	UNIFORM_DEFORMTYPE,
+	UNIFORM_DEFORMFUNC,
 	UNIFORM_DEFORMPARAMS,
 
 	UNIFORM_COLORGEN,
@@ -2690,7 +2696,7 @@ void GLSL_BindNullProgram(void);
 
 void GLSL_SetUniformInt(shaderProgram_t *program, int uniformNum, GLint value);
 void GLSL_SetUniformFloat(shaderProgram_t *program, int uniformNum, GLfloat value);
-void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_t v);
+void GLSL_SetUniformFloatN(shaderProgram_t *program, int uniformNum, const float *v, int numFloats);
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v);
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v);
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
