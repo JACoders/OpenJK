@@ -4769,6 +4769,8 @@ void G_RunFrame( int levelTime ) {
 						ent->client->ps.pm_type = PM_NORMAL;
 						ent->client->ps.fallingToDeath = 0;
 						ent->client->noCorpse = qtrue;
+						ent->client->ps.eFlags &= ~EF_NODRAW;
+						ent->client->ps.eFlags2 &= ~EF2_HELD_BY_MONSTER;
 						initialize_rpg_skills(ent);
 					}
 				}
