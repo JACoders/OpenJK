@@ -872,7 +872,15 @@ void PM_StepSlideMove( qboolean gravity ) {
 
 	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 6 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8) {
 		if (pm->ps->velocity[2] > 0 && pm->cmd.upmove > 0) {
-			NEW_STEPSIZE = 46;
+			int jumpHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
+
+			if (jumpHeight > 48)
+				jumpHeight = 48;
+
+			NEW_STEPSIZE = 48 - jumpHeight + 22;
+
+			//NEW_STEPSIZE = 46;
+			//Make stepsize equal to.. our current 48 - our current jumpheight ?
 		}
 		else 
 			NEW_STEPSIZE = 22;

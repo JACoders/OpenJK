@@ -655,6 +655,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
 		//if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 3) { //this is a sad hack..
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
+		ent->client->pers.haste = qfalse;
 		//}
 	}
 
@@ -7209,6 +7210,7 @@ command_t commands[] = {
 	
 	{ "mapents",			Cmd_MapEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "modversion",			Cmd_ModVersion_f,			0 },
+	{ "move",				Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },

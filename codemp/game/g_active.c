@@ -488,7 +488,13 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 
 	if (ent->client && (ent->client->pers.movementStyle == 3 || ent->client->pers.movementStyle == 4 || ent->client->pers.movementStyle == 6 || ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8)) {
 		if (ent->client->ps.velocity[2] > 0 && ent->client->pers.cmd.upmove > 0) {
-			NEW_STEPSIZE = 46;
+			int jumpHeight = ent->client->ps.origin[2] - ent->client->ps.fd.forceJumpZStart;
+			//NEW_STEPSIZE = 46;
+
+			if (jumpHeight > 48)
+				jumpHeight = 48;
+
+			NEW_STEPSIZE = 48 - jumpHeight + 22;
 		}
 		else 
 			NEW_STEPSIZE = 22;
