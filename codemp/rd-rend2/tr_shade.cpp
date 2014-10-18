@@ -377,6 +377,18 @@ static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float defor
 				deformParams[6] = 0.0f;
 				break;
 
+			case DEFORM_PROJECTION_SHADOW:
+				*type = DEFORM_PROJECTION_SHADOW;
+
+				deformParams[0] = backEnd.ori.axis[0][2];
+				deformParams[1] = backEnd.ori.axis[1][2];
+				deformParams[2] = backEnd.ori.axis[2][2];
+				deformParams[3] = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
+				deformParams[4] = backEnd.currentEntity->lightDir[0];
+				deformParams[5] = backEnd.currentEntity->lightDir[1];
+				deformParams[6] = backEnd.currentEntity->lightDir[2];
+				break;
+
 			default:
 				break;
 		}

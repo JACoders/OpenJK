@@ -101,6 +101,28 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 
 			return pos + direction * (base + scale * amplitude);
 		}
+
+		case DEFORM_PROJECTION_SHADOW:
+		{
+			vec3 ground = vec3(
+				u_DeformParams[0],
+				u_DeformParams[1],
+				u_DeformParams[2]);
+			float groundDist = u_DeformParams[3];
+			vec3 lightDir = vec3(
+				u_DeformParams[4],
+				u_DeformParams[5],
+				u_DeformParams[6]);
+
+			float d = dot( lightDir, ground );
+
+			lightDir = lightDir * max( 0.5 - d, 0.0 ) + ground;
+			d = 1.0 / dot( lightDir, ground );
+
+			vec3 lightPos = lightDir * d;
+
+			return pos - lightPos * dot( pos, ground ) + groundDist;
+		}
 	}
 }
 

@@ -809,6 +809,7 @@ static QINLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
 			case DEFORM_WAVE:
 			case DEFORM_BULGE:
 			case DEFORM_MOVE:
+			case DEFORM_PROJECTION_SHADOW:
 				return qfalse;
 
 			default:

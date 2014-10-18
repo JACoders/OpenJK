@@ -302,6 +302,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 						"#define DEFORM_NORMALS %i\n"
 						"#define DEFORM_BULGE %i\n"
 						"#define DEFORM_MOVE %i\n"
+						"#define DEFORM_PROJECTION_SHADOW %i\n"
 						"#define WF_NONE %i\n"
 						"#define WF_SIN %i\n"
 						"#define WF_SQUARE %i\n"
@@ -314,6 +315,7 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 						DEFORM_NORMALS,
 						DEFORM_BULGE,
 						DEFORM_MOVE,
+						DEFORM_PROJECTION_SHADOW,
 						GF_NONE,
 						GF_SIN,
 						GF_SQUARE,
