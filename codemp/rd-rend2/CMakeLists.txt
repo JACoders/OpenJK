@@ -79,7 +79,8 @@ set(MPRend2RdCommonFiles
 	"${MPDir}/rd-common/tr_image_tga.cpp"
 	"${MPDir}/rd-common/tr_image_png.cpp"
 	"${MPDir}/rd-common/tr_noise.cpp"
-	"${MPDir}/rd-common/tr_public.h")
+	"${MPDir}/rd-common/tr_public.h"
+	"${MPDir}/rd-common/tr_types.h")
 source_group("rd-common" FILES ${MPRend2RdCommonFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
 

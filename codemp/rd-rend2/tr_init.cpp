@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 #include "ghoul2/g2_local.h"
+#include <algorithm>
 
 bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp from whining at us. --eez
 
@@ -104,6 +105,8 @@ cvar_t  *r_mergeMultidraws;
 cvar_t  *r_mergeLeafSurfaces;
 
 cvar_t  *r_cameraExposure;
+
+cvar_t  *r_externalGLSL;
 
 cvar_t  *r_hdr;
 cvar_t  *r_floatLightmap;
@@ -253,9 +256,13 @@ cvar_t	*r_marksOnTriangleMeshes;
 cvar_t	*r_aviMotionJpegQuality;
 cvar_t	*r_screenshotJpegQuality;
 
+// the limits apply to the sum of all scenes in a frame --
+// the main view, all the 3D icons, etc
+#define	DEFAULT_MAX_POLYS		600
+#define	DEFAULT_MAX_POLYVERTS	3000
 cvar_t	*r_maxpolys;
-int		max_polys;
 cvar_t	*r_maxpolyverts;
+int		max_polys;
 int		max_polyverts;
 
 cvar_t	*r_dynamicGlow;
@@ -1166,6 +1173,32 @@ void GfxMemInfo_f( void )
 	}
 }
 
+typedef struct consoleCommand_s {
+	const char	*cmd;
+	xcommand_t	func;
+} consoleCommand_t;
+
+static consoleCommand_t	commands[] = {
+	{ "imagelist",			R_ImageList_f },
+	{ "shaderlist",			R_ShaderList_f },
+	{ "skinlist",			R_SkinList_f },
+	{ "fontlist",			R_FontList_f },
+	{ "screenshot",			R_ScreenShotTGA_f },
+	{ "screenshot_png",		R_ScreenShotPNG_f },
+	{ "screenshot_tga",		R_ScreenShotTGA_f },
+	{ "gfxinfo",			GfxInfo_f },
+	{ "gfxmeminfo",			GfxMemInfo_f },
+	//{ "r_we",				R_WorldEffect_f },
+	//{ "imagecacheinfo",		RE_RegisterImages_Info_f },
+	{ "modellist",			R_Modellist_f },
+	{ "modelist",			R_ModeList_f },
+	//{ "modelcacheinfo",		RE_RegisterModels_Info_f },
+	{ "minimize",			GLimp_Minimize },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
+
+
 #ifdef _WIN32
 #define SWAPINTERVAL_FLAGS CVAR_ARCHIVE
 #else
@@ -1234,6 +1267,8 @@ void R_Register( void )
 	r_stereo = ri->Cvar_Get( "r_stereo", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_greyscale = ri->Cvar_Get("r_greyscale", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	ri->Cvar_CheckRange(r_greyscale, 0, 1, qfalse);
+
+	r_externalGLSL = ri->Cvar_Get( "r_externalGLSL", "0", CVAR_LATCH );
 
 	r_hdr = ri->Cvar_Get( "r_hdr", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_floatLightmap = ri->Cvar_Get( "r_floatLightmap", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1383,8 +1418,8 @@ void R_Register( void )
 	r_aviMotionJpegQuality = ri->Cvar_Get("r_aviMotionJpegQuality", "90", CVAR_ARCHIVE);
 	r_screenshotJpegQuality = ri->Cvar_Get("r_screenshotJpegQuality", "90", CVAR_ARCHIVE);
 
-	r_maxpolys = ri->Cvar_Get( "r_maxpolys", va("%d", MAX_POLYS), 0);
-	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", va("%d", MAX_POLYVERTS), 0);
+	r_maxpolys = ri->Cvar_Get( "r_maxpolys", XSTRING( DEFAULT_MAX_POLYS ), 0);
+	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", XSTRING( DEFAULT_MAX_POLYVERTS ), 0 );
 
 /*
 Ghoul2 Insert Start
@@ -1413,20 +1448,8 @@ Ghoul2 Insert End
 
 	se_language = ri->Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
 
-	// make sure all the commands added here are also
-	// removed in R_Shutdown
-	ri->Cmd_AddCommand( "imagelist", R_ImageList_f );
-	ri->Cmd_AddCommand( "shaderlist", R_ShaderList_f );
-	ri->Cmd_AddCommand( "skinlist", R_SkinList_f );
-	ri->Cmd_AddCommand( "fontlist", R_FontList_f );
-	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
-	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri->Cmd_AddCommand( "screenshot", R_ScreenShotJPEG_f );
-	ri->Cmd_AddCommand( "screenshot_png", R_ScreenShotPNG_f );
-	ri->Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
-	ri->Cmd_AddCommand( "gfxinfo", GfxInfo_f );
-	ri->Cmd_AddCommand( "minimize", GLimp_Minimize );
-	ri->Cmd_AddCommand( "gfxmeminfo", GfxMemInfo_f );
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_AddCommand( commands[i].cmd, commands[i].func );
 }
 
 void R_InitQueries(void)
@@ -1499,13 +1522,8 @@ void R_Init( void ) {
 	R_ImageLoader_Init();
 	R_Register();
 
-	max_polys = r_maxpolys->integer;
-	if (max_polys < MAX_POLYS)
-		max_polys = MAX_POLYS;
-
-	max_polyverts = r_maxpolyverts->integer;
-	if (max_polyverts < MAX_POLYVERTS)
-		max_polyverts = MAX_POLYVERTS;
+	max_polys = (std::min)( r_maxpolys->integer, DEFAULT_MAX_POLYS );
+	max_polyverts = (std::min)( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
 	ptr = (byte*)ri->Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
@@ -1562,20 +1580,8 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
-	ri->Cmd_RemoveCommand ("modellist");
-	ri->Cmd_RemoveCommand ("screenshot");
-	ri->Cmd_RemoveCommand ("screenshot_png");
-	ri->Cmd_RemoveCommand ("screenshot_tga");
-	ri->Cmd_RemoveCommand ("imagelist");
-	ri->Cmd_RemoveCommand ("shaderlist");
-	ri->Cmd_RemoveCommand ("skinlist");
-	ri->Cmd_RemoveCommand ("fontlist");
-	ri->Cmd_RemoveCommand ("gfxinfo");
-	ri->Cmd_RemoveCommand("minimize");
-	ri->Cmd_RemoveCommand( "modelist" );
-	ri->Cmd_RemoveCommand( "shaderstate" );
-	ri->Cmd_RemoveCommand( "gfxmeminfo" );
-
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	if ( tr.registered ) {
 		R_IssuePendingRenderCommands();
