@@ -8433,7 +8433,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									gentity_t *player_ent = &g_entities[player_it];
 
-									if (player_ent && player_ent->client)
+									if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
 									{
 										AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
 
@@ -8497,7 +8497,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								gentity_t *player_ent = &g_entities[player_it];
 
-								if (player_ent && player_ent->client)
+								if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 							
@@ -8574,7 +8574,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								gentity_t *player_ent = &g_entities[player_it];
 
-								if (player_ent && player_ent->client)
+								if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -8600,7 +8600,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								gentity_t *player_ent = &g_entities[player_it];
 
-								if (player_ent && player_ent->client)
+								if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
