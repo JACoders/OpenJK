@@ -8411,7 +8411,7 @@ void G_RunFrame( int levelTime ) {
 								Jedi_Cloak(ent);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
@@ -8419,7 +8419,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								ent->client->pers.hunter_quest_messages++;
 								ent->client->pers.universe_quest_messages = 0;
-								ent->client->pers.guardian_timer = level.time + (ent->health/2);
+								ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 							}
 							else if (ent->client->pers.universe_quest_messages == 0)
 							{
@@ -8469,7 +8469,7 @@ void G_RunFrame( int levelTime ) {
 							healing_water(ent,200);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
@@ -8491,7 +8491,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Inner Area Damage!\"");
 						}
@@ -8500,7 +8500,7 @@ void G_RunFrame( int levelTime ) {
 							sleeping_flowers(ent,3000,700);
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Sleeping Flowers!\"");
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 5)
 						{
@@ -8534,7 +8534,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Ultra Slap of Death!\"");
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
@@ -8545,7 +8545,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
@@ -8567,7 +8567,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Outer Area Damage!\"");
 						}
@@ -8575,7 +8575,7 @@ void G_RunFrame( int levelTime ) {
 						{
 							earthquake(ent,2000,800,3000);
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Earthquake!\"");
 						}
@@ -8601,7 +8601,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Time Power!\"");
 						}
@@ -8688,7 +8688,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages = 0;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2);
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 					}
 
