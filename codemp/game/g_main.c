@@ -5399,12 +5399,12 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Hero... please help us!\"");
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								if (ent->client->pers.light_quest_messages > 11)
+								if (ent->client->pers.light_quest_messages > 8)
 								{
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn",14027,-673,-3134,-90);
 									ent->client->pers.light_quest_messages--;
 								}
-								else if (ent->client->pers.light_quest_messages > 6)
+								else if (ent->client->pers.light_quest_messages > 4)
 								{
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",14190,-673,-3134,-90);
 									ent->client->pers.light_quest_messages--;
@@ -5414,7 +5414,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",14111,-673,-3134,-90);
 									ent->client->pers.light_quest_messages--;
 								}
-								else
+								else if (ent->client->pers.light_quest_messages == 1 && ent->client->pers.universe_quest_objective_control == 1)
 								{
 									ent->client->pers.universe_quest_messages = 9;
 									ent->client->pers.light_quest_messages = 0;
@@ -5441,8 +5441,11 @@ void G_RunFrame( int levelTime ) {
 
 								if (ent->client->pers.universe_quest_messages != 4 && ent->client->pers.universe_quest_messages != 8 && ent->client->pers.universe_quest_messages != 9)
 									ent->client->pers.universe_quest_messages++;
-
-								ent->client->pers.universe_quest_timer = level.time + 1500;
+								
+								if (ent->client->pers.universe_quest_messages < 8)
+									ent->client->pers.universe_quest_timer = level.time + 3000;
+								else
+									ent->client->pers.universe_quest_timer = level.time + 1500;
 							}
 						}
 						else if (ent->client->pers.universe_quest_progress == 1 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_messages < 42 && ent->client->pers.universe_quest_objective_control > -1)
