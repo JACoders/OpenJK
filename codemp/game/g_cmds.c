@@ -2139,6 +2139,9 @@ qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *
 	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "poll %s", arg2 );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 
+	// zyk: now the vote poll will appear in chat
+	trap->SendServerCommand( -1, va("chat \"^3Poll System: ^7%s ^2Yes^3^1/No^7\"",arg2));
+
 	return qtrue;
 }
 
