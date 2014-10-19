@@ -3397,7 +3397,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.rightmove > 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.rightmove < 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
@@ -3498,14 +3498,14 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Special Power
 			if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
 				ent->client->pers.ultimate_power_user = 3;
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Free Warrior Power Up!\"", ent->client->pers.netname));
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Power Up!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
@@ -3565,7 +3565,7 @@ qboolean TryGrapple(gentity_t *ent)
 								found = 1;
 							}
 
-							if (found == 0)
+							if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
 							{
 								player_ent->client->pers.ultimate_power_user = ent->s.number;
 								player_ent->client->pers.ultimate_power_target = 10;
@@ -8137,7 +8137,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else if (Q_stricmp( arg1, "s" ) == 0)
 				{
 					if (ent->client->pers.rpg_class == 0)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Free Warrior Power Up: ^7increases damage and resistance to damage a bit. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Power Up: ^7increases damage and resistance to damage a bit. Attack with special melee + D to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 1)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Sleeping Flowers: ^7knocks down enemies for some seconds. Attack with special melee + D to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 2)

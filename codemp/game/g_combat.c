@@ -4773,7 +4773,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			float free_warrior_bonus_damage = 0.0;
 			// zyk: gets bonus damage if using Free Warrior Power Up
 			if (attacker->client->pers.ultimate_power_user == 3)
-				free_warrior_bonus_damage = 0.03;
+				free_warrior_bonus_damage = 0.04;
 
 			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.improvements_level) + free_warrior_bonus_damage));
 		}
@@ -4919,7 +4919,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			float free_warrior_bonus_resistance = 0.0;
 			// zyk: Free Warrior Power Up bonus resistance
 			if (targ->client->pers.ultimate_power_user == 3)
-				free_warrior_bonus_resistance = 0.03;
+				free_warrior_bonus_resistance = 0.04;
 
 			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.improvements_level) - free_warrior_bonus_resistance));
 		}

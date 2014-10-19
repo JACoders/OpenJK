@@ -4052,7 +4052,7 @@ void ultimate_power_events(gentity_t *ent)
 			static vec3_t forward;
 			vec3_t dir;
 
-			AngleVectors( g_entities[ent->client->pers.ultimate_power_user].r.currentAngles, forward, NULL, NULL );
+			AngleVectors( g_entities[ent->client->pers.ultimate_power_user].client->ps.viewangles, forward, NULL, NULL );
 
 			VectorNormalize(forward);
 
