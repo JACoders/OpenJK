@@ -4075,6 +4075,10 @@ void ultimate_power_events(gentity_t *ent)
 	{ // zyk: if Immunity Power runs out, set ultimate_power_user back to default value
 		ent->client->pers.ultimate_power_user = -1;
 	}
+	else if (ent && ent->client && ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 10000))
+	{ // zyk: Free Warrior Power Up runs out
+		ent->client->pers.ultimate_power_user = -1;
+	}
 }
 
 // zyk: tests if player already finished the first Universe Quest Second Act objective

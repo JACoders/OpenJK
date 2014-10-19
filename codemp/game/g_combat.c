@@ -2296,50 +2296,34 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			// zyk: make the chat message for each guardian the player defeats
 			if (light_quest_bitvalue == 4)
 			{
-				if (quest_player->client->pers.rpg_class == 5)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Well done... continue your quest... if you seek the power of light...\"");
 			}
 			else if (light_quest_bitvalue == 5)
 			{
-				if (quest_player->client->pers.rpg_class == 3)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Incredible! you are indeed a strong warrior...\"");
 			}
 			else if (light_quest_bitvalue == 6)
 			{
-				if (quest_player->client->pers.rpg_class == 1)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7You just defeated the power of forest! Amazing!\"");
 			}
 			else if (light_quest_bitvalue == 7)
 			{
-				if (quest_player->client->pers.rpg_class == 6)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7You must be quite intelligent to beat me.\"");
 			}
 			else if (light_quest_bitvalue == 8)
 			{
-				if (quest_player->client->pers.rpg_class == 0 && quest_player->client->pers.defeated_guardians & (1 << 11))
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Wow! You are fast and strong, you deserve the victory!\"");
 			}
 			else if (light_quest_bitvalue == 9)
 			{
-				if (quest_player->client->pers.rpg_class == 4)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7I cant believe it, you defeated the power of fire!\"");
 			}
 			else if (light_quest_bitvalue == 10)
 			{
-				if (quest_player->client->pers.rpg_class == 2)
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7You are indeed the chosen warrior... may the power of the wind guide you in your quest.\"");
 			}
 			else if (light_quest_bitvalue == 11)
 			{
-				if (quest_player->client->pers.rpg_class == 0 && quest_player->client->pers.defeated_guardians & (1 << 8))
-					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
 			}
 		}
@@ -4785,7 +4769,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: setting saber damage of Force User, weapon damage of Bounty Hunter and melee damage of Monk. Free Warrior gets a little more damage in all attacks
 		if (attacker->client->pers.rpg_class == 0)
-			damage = (int)ceil(damage * (1 + (0.04 * attacker->client->pers.improvements_level)));
+		{
+			float free_warrior_bonus_damage = 0.0;
+			// zyk: gets bonus damage if using Free Warrior Power Up
+			if (attacker->client->pers.ultimate_power_user == 3)
+				free_warrior_bonus_damage = 0.03;
+
+			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.improvements_level) + free_warrior_bonus_damage));
+		}
 		else if (attacker->client->pers.rpg_class == 1 && mod == MOD_SABER)
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.improvements_level)));
 		else if (attacker->client->pers.rpg_class == 2 && mod != MOD_SABER && mod != MOD_MELEE && mod != MOD_FORCE_DARK)
@@ -4925,7 +4916,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
-			damage = (int)ceil(damage * (1 - (0.04 * targ->client->pers.improvements_level)));
+			float free_warrior_bonus_resistance = 0.0;
+			// zyk: Free Warrior Power Up bonus resistance
+			if (targ->client->pers.ultimate_power_user == 3)
+				free_warrior_bonus_resistance = 0.03;
+
+			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.improvements_level) - free_warrior_bonus_resistance));
 		}
 		else if (targ->client->pers.rpg_class == 5 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
 		{ // zyk: Stealth Attacker damage resistance against DEMP2

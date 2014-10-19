@@ -621,7 +621,7 @@ typedef struct clientPersistant_s {
 
 	// zyk: bit flag, loaded in load_account()
 	// Possible bit values (1 << bit_value) are:
-	// 0 - Special Power
+	// 0 - Unused
 	// 1 - Bounty Hunter Upgrade - bought from the jawa seller
 	// 2 - Unused
 	// 3 - Unused

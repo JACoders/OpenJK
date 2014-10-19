@@ -3351,6 +3351,8 @@ extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void healing_water(gentity_t *ent, int heal_amount);
 extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance);
+extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
+extern void Jedi_Cloak( gentity_t *self );
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3392,7 +3394,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.rightmove > 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
@@ -3407,79 +3409,6 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
 			}
-			/* zyk: this power will be back in the future, for now the player will get Immunity Power
-			else if (ent->client->pers.universe_quest_counter & (1 << 1))
-			{ // zyk: uses Elemental Power
-				// zyk: if an elemental power is disabled, set to the next one
-				if (ent->client->pers.ultimate_power_user == 0 && ent->client->pers.player_settings & (1 << 16))
-					ent->client->pers.ultimate_power_user = 1;
-				if (ent->client->pers.ultimate_power_user == 1 && ent->client->pers.player_settings & (1 << 17))
-					ent->client->pers.ultimate_power_user = 2;
-				if (ent->client->pers.ultimate_power_user == 2 && ent->client->pers.player_settings & (1 << 18))
-					ent->client->pers.ultimate_power_user = 3;
-				if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.player_settings & (1 << 19))
-					ent->client->pers.ultimate_power_user = 0;
-
-				if (ent->client->pers.ultimate_power_user == 0 && !(ent->client->pers.player_settings & (1 << 16)))
-				{ // zyk: Healing Water
-					healing_water(ent,100);
-					ent->client->pers.ultimate_power_user = 1;
-					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
-				}
-				else if (ent->client->pers.ultimate_power_user == 1 && !(ent->client->pers.player_settings & (1 << 17)))
-				{
-					ent->client->pers.flame_thrower = level.time + 5000;
-					ent->client->pers.ultimate_power_user = 2;
-					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
-				}
-				else if (ent->client->pers.ultimate_power_user == 2 && !(ent->client->pers.player_settings & (1 << 18)))
-				{
-					earthquake(ent,2000,700,500);
-					ent->client->pers.ultimate_power_user = 3;
-					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
-				}
-				else if (ent->client->pers.ultimate_power_user == 3 && !(ent->client->pers.player_settings & (1 << 19)))
-				{
-					int i = 0;
-
-					for ( i = 0; i < level.num_entities; i++)
-					{
-						gentity_t *player_ent = &g_entities[i];
-
-						if (ent->s.number != i && player_ent && player_ent->client)
-						{
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-							if (distance < 1000)
-							{
-								int found = 0;
-
-								// zyk: allies will not be hit by this power
-								if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-								{
-									found = 1;
-								}
-
-								if (found == 0)
-								{
-									player_ent->client->pers.ultimate_power_user = ent->s.number;
-									player_ent->client->pers.ultimate_power_target = 10;
-									player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
-							
-									if (i < level.maxclients)
-										G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-								}
-							}
-						}
-					}
-
-					ent->client->pers.ultimate_power_user = 0;
-					trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-				}
-
-				ent->client->pers.ultimate_power_timer = level.time + 15000;
-			}
-			*/
 			else if (ent->client->pers.universe_quest_counter & (1 << 2))
 			{ // zyk: uses Chaos Power
 				int i = 0;
@@ -3564,6 +3493,90 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
+			}
+		}
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		{ // zyk: Special Power
+			if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
+				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				ent->client->pers.ultimate_power_user = 3;
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Free Warrior Power Up!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				sleeping_flowers(ent,4000,500);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				healing_water(ent,100);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				ent->client->pers.flame_thrower = level.time + 5000;
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				earthquake(ent,2000,700,500);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				Jedi_Cloak(ent);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				int i = 0;
+
+				for ( i = 0; i < level.num_entities; i++)
+				{
+					gentity_t *player_ent = &g_entities[i];
+
+					if (ent->s.number != i && player_ent && player_ent->client)
+					{
+						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+						if (distance < 1000)
+						{
+							int found = 0;
+
+							// zyk: allies will not be hit by this power
+							if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+							{
+								found = 1;
+							}
+
+							if (found == 0)
+							{
+								player_ent->client->pers.ultimate_power_user = ent->s.number;
+								player_ent->client->pers.ultimate_power_target = 10;
+								player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
+							
+								if (i < level.maxclients)
+									G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+							}
+						}
+					}
+				}
+
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 			}
 		}
 
