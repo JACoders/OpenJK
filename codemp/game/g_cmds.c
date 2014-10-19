@@ -4850,7 +4850,12 @@ void clean_guardians(gentity_t *ent)
 		this_ent = &g_entities[i];
 		if (this_ent && this_ent->client && this_ent->NPC && this_ent->client->pers.guardian_invoked_by_id != -1 && this_ent->client->pers.guardian_invoked_by_id == (ent-g_entities))
 		{
-			G_FreeEntity(this_ent);
+			this_ent->health = 0;
+			this_ent->client->ps.stats[STAT_HEALTH] = 0;
+			if (this_ent->die)
+			{
+				this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
+			}
 		}
 	}
 }
