@@ -2295,21 +2295,53 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 			// zyk: make the chat message for each guardian the player defeats
 			if (light_quest_bitvalue == 4)
+			{
+				if (quest_player->client->pers.rpg_class == 5)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Well done... continue your quest... if you seek the power of light...\"");
+			}
 			else if (light_quest_bitvalue == 5)
+			{
+				if (quest_player->client->pers.rpg_class == 3)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Incredible! you are indeed a strong warrior...\"");
+			}
 			else if (light_quest_bitvalue == 6)
+			{
+				if (quest_player->client->pers.rpg_class == 1)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7You just defeated the power of forest! Amazing!\"");
+			}
 			else if (light_quest_bitvalue == 7)
+			{
+				if (quest_player->client->pers.rpg_class == 6)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7You must be quite intelligent to beat me.\"");
+			}
 			else if (light_quest_bitvalue == 8)
+			{
+				if (quest_player->client->pers.rpg_class == 0 && quest_player->client->pers.defeated_guardians & (1 << 11))
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Wow! You are fast and strong, you deserve the victory!\"");
+			}
 			else if (light_quest_bitvalue == 9)
+			{
+				if (quest_player->client->pers.rpg_class == 4)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7I cant believe it, you defeated the power of fire!\"");
+			}
 			else if (light_quest_bitvalue == 10)
+			{
+				if (quest_player->client->pers.rpg_class == 2)
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7You are indeed the chosen warrior... may the power of the wind guide you in your quest.\"");
+			}
 			else if (light_quest_bitvalue == 11)
+			{
+				if (quest_player->client->pers.rpg_class == 0 && quest_player->client->pers.defeated_guardians & (1 << 8))
+					quest_player->client->pers.secrets_found |= (1 << 0);
 				trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
+			}
 		}
 
 		quest_player->client->pers.guardian_mode = 0;

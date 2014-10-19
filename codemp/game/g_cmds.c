@@ -7487,14 +7487,14 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.shield);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3\n", ent->client->pers.teamshield);
+					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.teamshield);
 				else
-					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3\n", ent->client->pers.teamshield);
+					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.teamshield);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.mind_control);
+					sprintf(message_content[8],"^039 - Mind Control: %d/1     ", ent->client->pers.mind_control);
 				else
-					sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.mind_control);
+					sprintf(message_content[8],"^639 - Mind Control: %d/1     ", ent->client->pers.mind_control);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
 					sprintf(message_content[0],"%s^055 - Force Power: %d/5\n",message_content[0], ent->client->pers.max_force_power_level);
@@ -7504,29 +7504,39 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				sprintf(message_content[1],"%s^356 - Improvements: %d/3\n",message_content[1], ent->client->pers.improvements_level);
 
 				if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
-					sprintf(message_content[2],"%s^3+  ^7- Light Power: ^2yes\n",message_content[2]);
+					sprintf(message_content[2],"%s^3l  ^7- Light Power: ^2yes\n",message_content[2]);
 				else
-					sprintf(message_content[2],"%s^3+  ^7- Light Power: ^1no\n",message_content[2]);
+					sprintf(message_content[2],"%s^3l  ^7- Light Power: ^1no\n",message_content[2]);
 
 				if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
-					sprintf(message_content[3],"%s^3x  ^1- Dark Power: ^2yes\n",message_content[3]);
+					sprintf(message_content[3],"%s^3d  ^1- Dark Power: ^2yes\n",message_content[3]);
 				else
-					sprintf(message_content[3],"%s^3x  ^1- Dark Power: ^1no\n",message_content[3]);
+					sprintf(message_content[3],"%s^3d  ^1- Dark Power: ^1no\n",message_content[3]);
 
 				if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
-					sprintf(message_content[4],"%s^3*  - Eternity Power: ^2yes\n",message_content[4]);
+					sprintf(message_content[4],"%s^3e  - Eternity Power: ^2yes\n",message_content[4]);
 				else
-					sprintf(message_content[4],"%s^3*  - Eternity Power: ^1no\n",message_content[4]);
+					sprintf(message_content[4],"%s^3e  - Eternity Power: ^1no\n",message_content[4]);
 
 				if (ent->client->pers.universe_quest_progress >= 8)
-					sprintf(message_content[5],"%s^3#  ^2- Universe Power: ^2yes\n",message_content[5]);
+					sprintf(message_content[5],"%s^3u  ^2- Universe Power: ^2yes\n",message_content[5]);
 				else
-					sprintf(message_content[5],"%s^3#  ^2- Universe Power: ^1no\n",message_content[5]);
+					sprintf(message_content[5],"%s^3u  ^2- Universe Power: ^1no\n",message_content[5]);
 
 				if (ent->client->pers.universe_quest_progress >= 15)
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[6]);
 				else
 					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[6]);
+
+				if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+					sprintf(message_content[7],"%s^3r  ^4- Resurrection Power: ^2yes\n",message_content[7]);
+				else
+					sprintf(message_content[7],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[7]);
+
+				if (ent->client->pers.secrets_found & (1 << 0))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^1no\n",message_content[8]);
 
 				for (i = 0; i < 9; i++)
 				{
@@ -8070,19 +8080,19 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 56)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Improvements:\n^7Free Warrior gets more damage and more resistance to damage\nForce User gets more saber damage and force regens faster\nBounty Hunter gets more gun damage, max ammo, credits in battle, jetpack fuel, seeker drone damage, sentry gun damage and health, and E-Web damage and health\nArmored Soldier gets more resistance to damage\nMonk gets more run speed, melee damage, melee attack speed and health resistance\nStealth Attacker gets more gun damage and more resistance to electric attacks\nDuelist gets more saber and melee damage\n\"") );
 				}
-				else if (Q_stricmp( arg1, "+" ) == 0)
+				else if (Q_stricmp( arg1, "l" ) == 0)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"^3Light Power: ^7Regens 1 hp per second. Regens shield if hp is full. You must finish ^5Light Quest ^7to have it\n\"") );
 				}
-				else if (Q_stricmp( arg1, "x" ) == 0)
+				else if (Q_stricmp( arg1, "d" ) == 0)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"^3Dark Power: ^7Increases damage by 15 per cent. You must finish ^1Dark Quest ^7to have it\n\"") );
 				}
-				else if (Q_stricmp( arg1, "*" ) == 0)
+				else if (Q_stricmp( arg1, "e" ) == 0)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"^3Eternity Power: ^7Absorbs 15 per cent of damage. You must finish the ^3Eternity Quest ^7to have it\n\"") );
 				}
-				else if (Q_stricmp( arg1, "#" ) == 0)
+				else if (Q_stricmp( arg1, "u" ) == 0)
 				{
 					trap->SendServerCommand( ent-g_entities, va("print \"^3Universe Power: ^7Increases your Max HP and Max Shield. You must defeat the ^2Guardian of Universe ^7to have it\n\"") );
 				}
@@ -8095,14 +8105,35 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else
 					{
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7keeps damaging enemies for some seconds\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Poison Mushrooms: ^7keeps damaging enemies for some seconds. Attack with special melee + A to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 1))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7protects you from other special powers\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Immunity Power: ^7protects you from other special powers. Attack with special melee + A to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 2))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7causes high damage, electrifies the enemies and throws them in the ground\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Chaos Power: ^7causes high damage, electrifies the enemies and throws them in the ground. Attack with special melee + A to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 3))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7paralyzes enemies for some seconds\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Time Power: ^7paralyzes enemies for some seconds. Attack with special melee + A to use this power\n\"") );
 					}
+				}
+				else if (Q_stricmp( arg1, "r" ) == 0)
+				{
+					trap->SendServerCommand( ent-g_entities, va("print \"^4Resurrection Power: ^7Allows you to resurrect at the same spot after dying if you dont press anything. Will not work if your body is desintegrated\n\"") );
+				}
+				else if (Q_stricmp( arg1, "s" ) == 0)
+				{
+					if (ent->client->pers.rpg_class == 0)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Free Warrior Power Up: ^7increases damage and resistance to damage a bit. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 1)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Sleeping Flowers: ^7knocks down enemies for some seconds. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 2)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Blowing Wind: ^7blows people away for some seconds. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 3)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Earthquake: ^7knocks people down causing damage. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 4)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Flaming Burst: ^7fires a flame burst for some seconds. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 5)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with special melee + D to use this power\n\"") );
+					else if (ent->client->pers.rpg_class == 6)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with special melee + D to use this power\n\"") );
 				}
 				else
 				{
@@ -9732,38 +9763,11 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 16))
 		{
-			sprintf(message,"%s\n^316 - Healing Water ^1OFF", message);
+			sprintf(message,"%s\n^316 - Special Power ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^316 - Healing Water ^2ON", message);
-		}
-
-		if (ent->client->pers.player_settings & (1 << 17))
-		{
-			sprintf(message,"%s\n^317 - Flame Burst ^1OFF", message);
-		}
-		else
-		{
-			sprintf(message,"%s\n^317 - Flame Burst ^2ON", message);
-		}
-
-		if (ent->client->pers.player_settings & (1 << 18))
-		{
-			sprintf(message,"%s\n^318 - Earthquake ^1OFF", message);
-		}
-		else
-		{
-			sprintf(message,"%s\n^318 - Earthquake ^2ON", message);
-		}
-
-		if (ent->client->pers.player_settings & (1 << 19))
-		{
-			sprintf(message,"%s\n^319 - Blowing Wind ^1OFF", message);
-		}
-		else
-		{
-			sprintf(message,"%s\n^319 - Blowing Wind ^2ON", message);
+			sprintf(message,"%s\n^316 - Special Power ^2ON", message);
 		}
 
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
@@ -9777,7 +9781,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		value = atoi(arg1);
 
-		if (value < 0 || value > 19)
+		if (value < 0 || value > 16)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"Invalid settings value.\n\"" );
 			return;
@@ -9930,19 +9934,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 16)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Healing Water %s\n\"", new_status) );
-		}
-		else if (value == 17)
-		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Flame Burst %s\n\"", new_status) );
-		}
-		else if (value == 18)
-		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Earthquake %s\n\"", new_status) );
-		}
-		else if (value == 19)
-		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Blowing Wind %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Special Power %s\n\"", new_status) );
 		}
 		return;
 	}
