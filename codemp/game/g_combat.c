@@ -2363,7 +2363,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		G_Sound(quest_player, CHAN_AUTO, G_SoundIndex("sound/chars/ragnos/misc/death3.mp3"));
 	}
 	else if (quest_player && quest_player->client->pers.guardian_mode == 15)
-	{ // zyk: defeated the Master of Evil
+	{ // zyk: defeated the Master of Death
 		quest_player->client->pers.universe_quest_messages = 3;
 		quest_player->client->pers.universe_quest_timer = level.time + 2000;
 		quest_player->client->pers.guardian_mode = 0;
