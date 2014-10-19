@@ -4775,6 +4775,9 @@ void G_RunFrame( int levelTime ) {
 					}
 				}
 
+				if (ent->client->pers.rpg_class == 2 && ent->client->pers.bounty_hunter_sentries > 0)
+					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+
 				if (level.quest_map > 0)
 				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now
 					if (level.quest_map == 1)

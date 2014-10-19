@@ -993,6 +993,12 @@ void turret_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
 	g_entities[self->genericValue3].client->ps.fd.sentryDeployed = qfalse;
 
+	// zyk: Bounty Hunter with Upgrade can place more sentries
+	if (g_entities[self->genericValue3].client->sess.amrpgmode == 2 && g_entities[self->genericValue3].client->pers.rpg_class == 2)
+	{
+		g_entities[self->genericValue3].client->pers.bounty_hunter_placed_sentries--;
+	}
+
 	//ExplodeDeath( self );
 	G_FreeEntity( self );
 }
@@ -1136,21 +1142,13 @@ void ItemUse_Sentry( gentity_t *ent )
 	{
 		sentry->health = 100 * (ent->client->pers.improvements_level + 2);
 
-		// zyk: validating quantity of sentry guns that the Bounty Hunter allows to spawn
-		if (ent->client->pers.secrets_found & (1 << 1))
+		// zyk: validating quantity of sentry guns that the Bounty Hunter can place
+		ent->client->pers.bounty_hunter_placed_sentries++;
+		ent->client->pers.bounty_hunter_sentries--;
+
+		if (ent->client->pers.bounty_hunter_placed_sentries < MAX_BOUNTY_HUNTER_SENTRIES)
 		{
-			gentity_t *this_ent = NULL;
-			int number_of_spawned_sentry_guns = 0;
-			for (sentry_guns_iterator = MAX_CLIENTS; sentry_guns_iterator < level.num_entities; sentry_guns_iterator++)
-			{
-				this_ent = &g_entities[sentry_guns_iterator];
-
-				if (this_ent && Q_stricmp(this_ent->classname, "sentryGun" ) == 0 && this_ent->s.owner == ent->s.number)
-					number_of_spawned_sentry_guns++;
-			}
-
-			if (number_of_spawned_sentry_guns < 5)
-				ent->client->ps.fd.sentryDeployed = qfalse;
+			ent->client->ps.fd.sentryDeployed = qfalse;
 		}
 	}
 }

@@ -4616,6 +4616,32 @@ void initialize_rpg_skills(gentity_t *ent)
 		
 		if (ent->client->pers.rpg_class == 2)
 		{ // zyk: modifying max ammo if the player is a Bounty Hunter
+			gentity_t *this_ent = NULL;
+			int sentry_guns_iterator = 0;
+
+			// zyk: Bounty Hunter starts with 5 sentries if he has the Upgrade
+			if (ent->client->pers.holdable_items_levels[2] > 0)
+			{
+				if (ent->client->pers.secrets_found & (1 << 1))
+					ent->client->pers.bounty_hunter_sentries = MAX_BOUNTY_HUNTER_SENTRIES;
+				else
+					ent->client->pers.bounty_hunter_sentries = 1;
+			}
+			else
+			{
+				ent->client->pers.bounty_hunter_sentries = 0;
+			}
+
+			ent->client->pers.bounty_hunter_placed_sentries = 0;
+
+			for (sentry_guns_iterator = MAX_CLIENTS; sentry_guns_iterator < level.num_entities; sentry_guns_iterator++)
+			{
+				this_ent = &g_entities[sentry_guns_iterator];
+
+				if (this_ent && Q_stricmp(this_ent->classname,"sentryGun") == 0 && this_ent->s.owner == ent->s.number)
+					ent->client->pers.bounty_hunter_placed_sentries++;
+			}
+
 			ent->client->ps.ammo[AMMO_BLASTER] += ent->client->ps.ammo[AMMO_BLASTER]/6 * ent->client->pers.improvements_level;
 			ent->client->ps.ammo[AMMO_POWERCELL] += ent->client->ps.ammo[AMMO_POWERCELL]/6 * ent->client->pers.improvements_level;
 			ent->client->ps.ammo[AMMO_METAL_BOLTS] += ent->client->ps.ammo[AMMO_METAL_BOLTS]/6 * ent->client->pers.improvements_level;
@@ -8485,6 +8511,8 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 10)
 		{
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+			if (ent->client->pers.rpg_class == 2 && ent->client->pers.bounty_hunter_sentries < MAX_BOUNTY_HUNTER_SENTRIES)
+				ent->client->pers.bounty_hunter_sentries++;
 		}
 		else if (value == 11)
 		{
@@ -8704,6 +8732,10 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	else if (value == 10 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SENTRY_GUN))
 	{
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_SENTRY_GUN);
+
+		if (ent->client->pers.rpg_class == 2 && ent->client->pers.bounty_hunter_sentries > 0)
+			ent->client->pers.bounty_hunter_sentries--;
+
 		sold = 1;
 	}
 	else if (value == 11 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SEEKER))

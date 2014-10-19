@@ -492,6 +492,9 @@ typedef struct clientSession_s {
 // zyk: max value of the skill counter to increase level up score of the rpg player
 #define MAX_SKILL_COUNTER 30000
 
+// zyk: max sentries a Bounty Hunter can have if he has the Upgrade
+#define MAX_BOUNTY_HUNTER_SENTRIES 5
+
 // zyk: max level a player can be in RPG Mode
 #define MAX_RPG_LEVEL 100
 
@@ -636,6 +639,12 @@ typedef struct clientPersistant_s {
 	// 15 - Stun Baton Upgrade
 	// 16 - Armored Soldier Upgrade
 	int secrets_found;
+
+	// zyk: amount of sentries the Bounty Hunter starts with
+	int bounty_hunter_sentries;
+
+	// zyk: amount of sentries placed in map
+	int bounty_hunter_placed_sentries;
 
 	int max_force_power_level; // zyk: force power skill level. Has 5 levels, each one giving 25 per cent of max force power cvar to the player
 	int max_force_power; // zyk: max force power the player can have based on max_force_power_level value
