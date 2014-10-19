@@ -646,6 +646,9 @@ typedef struct clientPersistant_s {
 	// zyk: amount of sentries placed in map
 	int bounty_hunter_placed_sentries;
 
+	// zyk: time to wait before resurrecting using Resurrection Power
+	int resurrection_timer;
+
 	int max_force_power_level; // zyk: force power skill level. Has 5 levels, each one giving 25 per cent of max force power cvar to the player
 	int max_force_power; // zyk: max force power the player can have based on max_force_power_level value
 

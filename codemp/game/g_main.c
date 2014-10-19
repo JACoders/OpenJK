@@ -4756,14 +4756,9 @@ void G_RunFrame( int levelTime ) {
 
 				if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 7)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
 				{ // zyk: Resurrection skill
-					if (ent->health < (-5 * sv_fps.integer)) // zyk: so the player doesnt take too long to resurrect
-						ent->health = (-5 * sv_fps.integer);
-					else
-					{
-						ent->health += 1;
-					}
+					ent->client->pers.resurrection_timer += (1000/sv_fps.integer);
 
-					if (ent->health == 1) // zyk: reload his account to set all skills back
+					if (ent->client->pers.resurrection_timer >= 3000) // zyk: reload his account to set all skills back
 					{
 						ent->r.contents = CONTENTS_BODY;
 						ent->client->ps.pm_type = PM_NORMAL;
