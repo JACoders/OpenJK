@@ -7569,7 +7569,26 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[7],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[7]);
 
-				if (ent->client->pers.secrets_found & (1 << 0))
+				if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+				else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
 				else
 					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^1no\n",message_content[8]);
