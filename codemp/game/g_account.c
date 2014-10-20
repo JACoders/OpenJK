@@ -1984,6 +1984,59 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize) {
 		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
 }
 
+void Cmd_NotCompleted_f(gentity_t *ent) {
+	int i, style, course;
+	char styleString[16] = {0};
+	char msg[128] = {0};
+	qboolean printed, found;
+
+	if (level.numCourses == 0) {
+		trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
+		return;
+	}
+
+	if (trap->Argc() > 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /ayy. This displays courses you have not completed on the current map.\n\"");
+		return;
+	}
+
+	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+		return;
+	}
+
+	trap->SendServerCommand(ent-g_entities, "print \"Courses not completed on this map:\n\"");
+
+	for (course=0; course<level.numCourses; course++) { //For each course
+		Q_strncpyz(msg, "", sizeof(msg));
+		printed = qfalse;
+		for (style = 0; style <= 8; style++) { //For each style
+			found = qfalse;
+			for (i=0; i<10; i++) {
+				if (HighScores[course][style][i].username && HighScores[course][style][i].username[0] && !Q_stricmp(HighScores[course][style][i].username, ent->client->pers.userName)) {
+					found = qtrue;
+					break;
+				}
+				else if (!HighScores[course][style][i].username || (HighScores[course][style][i].username && !HighScores[course][style][i].username[0])) {
+					found = qfalse;
+					break;
+				}
+			}
+			if (!found) {
+				if (!printed) {
+					Q_strcat(msg, sizeof(msg), va("^3%-12s:", level.courseName[course]));
+					printed = qtrue;
+				}
+				IntegerToRaceName(style, styleString, sizeof(styleString));
+				Q_strcat(msg, sizeof(msg), va(" ^5%-6s", styleString));
+			}
+		}
+		Q_strcat(msg, sizeof(msg), "\n");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+	}
+}
+
+
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16] = {0}, timeStr[32];

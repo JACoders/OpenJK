@@ -7110,6 +7110,7 @@ void Cmd_Stats_f( gentity_t *ent);
 void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
+void Cmd_NotCompleted_f( gentity_t *ent );
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -7214,6 +7215,9 @@ command_t commands[] = {
 	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
+
+	{ "notcompleted",		Cmd_NotCompleted_f,			CMD_NOINTERMISSION },
+
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
