@@ -150,11 +150,11 @@ static void BeginHack(int entityNum)
 	}
 	else { // we are not dueling but make those that are nonsolid
 		int i;
-		for (i = 0; i < level.maxclients; i++) {
+		for (i = 0; i < level.maxclients; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && 
-					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) {
+					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}

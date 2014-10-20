@@ -997,109 +997,65 @@ void G_RunMissile( gentity_t *ent ) {
 		}
 	}
 
-	if ( tr.fraction != 1) {
-		// never explode or bounce on sky
-		if ( tr.surfaceFlags & SURF_NOIMPACT ) {
-			// If grapple, reset owner
-			if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
-				ent->parent->client->hook = NULL;
-			}
-
-			if ((ent->s.weapon == WP_SABER && ent->isSaberEntity) || isKnockedSaber)
-			{
-				G_RunThink( ent );
-				return;
-			}
-			else if (ent->s.weapon != G2_MODEL_PART)
-			{
-				G_FreeEntity( ent );
-				return;
-			}
-		}
-
-#if 0 //will get stomped with missile impact event...
-		if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
-			(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
-		{ //player or NPC, try making a mark on him
-			/*
-			gentity_t *evEnt = G_TempEntity(ent->r.currentOrigin, EV_GHOUL2_MARK);
-
-			evEnt->s.owner = tr.entityNum; //the entity the mark should be placed on
-			evEnt->s.weapon = ent->s.weapon; //the weapon used (to determine mark type)
-			VectorCopy(ent->r.currentOrigin, evEnt->s.origin); //the point of impact
-
-			//origin2 gets the predicted trajectory-based position.
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, evEnt->s.origin2 );
-
-			//If they are the same, there will be problems.
-			if (VectorCompare(evEnt->s.origin, evEnt->s.origin2))
-			{
-				evEnt->s.origin2[2] += 2; //whatever, at least it won't mess up.
-			}
-			*/
-			//ok, let's try adding it to the missile ent instead (tempents bad!)
-			G_AddEvent(ent, EV_GHOUL2_MARK, 0);
-
-			//copy current pos to s.origin, and current projected traj to origin2
-			VectorCopy(ent->r.currentOrigin, ent->s.origin);
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
-
-			//the index for whoever we are hitting
-			ent->s.otherEntityNum = tr.entityNum;
-
-			if (VectorCompare(ent->s.origin, ent->s.origin2))
-			{
-				ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
-			}
-		}
-#else
-		if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
-			(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
-		{ //player or NPC, try making a mark on him
-			//copy current pos to s.origin, and current projected traj to origin2
-			VectorCopy(ent->r.currentOrigin, ent->s.origin);
-			BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
-
-			if (VectorCompare(ent->s.origin, ent->s.origin2))
-			{
-				ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
-			}
-		}
-#endif
-
-
-
-/*
-		{ //loda fixme
-			gentity_t *other = &g_entities[tr.entityNum];
-
-			if (other && other->r.contents & CONTENTS_LIGHTSABER)
-			{
-				gentity_t *otherOwner = &g_entities[other->r.ownerNum];
-				gentity_t *owner = &g_entities[ent->r.ownerNum];
-
-				if (owner->s.bolt1 && !otherOwner->s.bolt1) {//We are dueling/racing and they are not
-					G_RunThink( ent );
-					return;
-				}
-				if (!owner->s.bolt1 && otherOwner->s.bolt1) {//They are dueling/racing and we are not
-					G_RunThink( ent );
-					return;
-				}
-			}
-		}
-*/
-
-		G_MissileImpact( ent, &tr );
-
-		if (tr.entityNum == ent->s.otherEntityNum)
-		{ //if the impact event other and the trace ent match then it's ok to do the g2 mark
-			ent->s.trickedentindex = 1;
-		}
-
-		if ( ent->s.eType != ET_MISSILE && ent->s.weapon != G2_MODEL_PART )
+	if (tr.fraction != 1) { //Hit something maybe
+		qboolean skip = qfalse;
+		
+		gentity_t *other = &g_entities[tr.entityNum]; //Check to see if we hit a lightsaber and they are in another dimension, if so dont do the hit code..
+		if (other && other->r.contents & CONTENTS_LIGHTSABER)
 		{
-			return;		// exploded
+			gentity_t *otherOwner = &g_entities[other->r.ownerNum];
+			gentity_t *owner = &g_entities[ent->r.ownerNum];
+
+			if (owner->s.bolt1 && !otherOwner->s.bolt1)//We are dueling/racing and they are not
+				skip = qtrue;
+			else if (!owner->s.bolt1 && otherOwner->s.bolt1)//They are dueling/racing and we are not
+				skip = qtrue;
+		}
+	
+		if ( tr.fraction != 1 && !skip) {
+			// never explode or bounce on sky
+			if ( tr.surfaceFlags & SURF_NOIMPACT ) {
+				// If grapple, reset owner
+				if (ent->parent && ent->parent->client && ent->parent->client->hook == ent) {
+					ent->parent->client->hook = NULL;
+				}
+
+				if ((ent->s.weapon == WP_SABER && ent->isSaberEntity) || isKnockedSaber)
+				{
+					G_RunThink( ent );
+					return;
+				}
+				else if (ent->s.weapon != G2_MODEL_PART)
+				{
+					G_FreeEntity( ent );
+					return;
+				}
+			}
+
+			if (ent->s.weapon > WP_NONE && ent->s.weapon < WP_NUM_WEAPONS &&
+				(tr.entityNum < MAX_CLIENTS || g_entities[tr.entityNum].s.eType == ET_NPC))
+			{ //player or NPC, try making a mark on him
+				//copy current pos to s.origin, and current projected traj to origin2
+				VectorCopy(ent->r.currentOrigin, ent->s.origin);
+				BG_EvaluateTrajectory( &ent->s.pos, level.time, ent->s.origin2 );
+
+				if (VectorCompare(ent->s.origin, ent->s.origin2))
+				{
+					ent->s.origin2[2] += 2.0f; //whatever, at least it won't mess up.
+				}
+			}
+
+			G_MissileImpact( ent, &tr );
+
+			if (tr.entityNum == ent->s.otherEntityNum)
+			{ //if the impact event other and the trace ent match then it's ok to do the g2 mark
+				ent->s.trickedentindex = 1;
+			}
+
+			if ( ent->s.eType != ET_MISSILE && ent->s.weapon != G2_MODEL_PART )
+			{
+				return;		// exploded
+			}
 		}
 	}
 
