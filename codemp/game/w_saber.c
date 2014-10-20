@@ -5880,7 +5880,15 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		{
 			gentity_t *owner = &g_entities[incoming->r.ownerNum];
 
-			WP_SaberBlockNonRandom( self, incoming->r.currentOrigin, qtrue );
+			if (self->s.bolt1 && !owner->s.bolt1)//We are dueling/racing and they are not
+			{
+			}
+			else if (!self->s.bolt1 && owner->s.bolt1)//They are dueling/racing and we are not
+			{
+			}
+			else
+				WP_SaberBlockNonRandom( self, incoming->r.currentOrigin, qtrue ); //This is when a projectile is near, and we react to block it
+
 			if ( owner && owner->client && (!self->enemy || self->enemy->s.weapon != WP_SABER) )//keep enemy jedi over shooters
 			{
 				self->enemy = owner;

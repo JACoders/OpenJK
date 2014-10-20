@@ -3801,6 +3801,9 @@ void PM_SetSaberMove(short newMove)
 	int	anim = saberMoveData[newMove].animToUse;
 	int parts = SETANIM_TORSO;
 
+	//Either in here, or where this function is called: check if sabermove is a deflect projectile anim, and also check if that projectile belongs to someone in another dimension? if so .. cancel?
+	//Idea: for duels, could make duelers projectiles svf_singleclient and set singleclient to their opponent.. so they dont show up to non duelers so they cant predict them..? the saber anim cancel would still need to be done serverside tho..
+
 	if ( newMove == LS_READY || newMove == LS_A_FLIP_STAB || newMove == LS_A_FLIP_SLASH )
 	{//finished with a kata (or in a special move) reset attack counter
 		pm->ps->saberAttackChainCount = 0;
