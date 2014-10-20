@@ -376,7 +376,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap->Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
 	trap->Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
 
-	navCalculatePaths	= ( trap->Nav_Load( mapname.string, ckSum.integer ) == qfalse );
+	// navCalculatePaths	= ( trap->Nav_Load( mapname.string, ckSum.integer ) == qfalse );
+	// zyk: commented line above. Was taking a lot of time to load some maps, example mp/duel7 and mp/siege_desert in FFA Mode
+	// zyk: now it will always force calculating paths
+	navCalculatePaths = qtrue;
 
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
