@@ -6523,17 +6523,10 @@ void Cmd_Race_f(gentity_t *ent)
 		return;
 	}
 
-	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
-		trap->SendServerCommand(ent-g_entities, "print \"^5You can only use this command in spectate!\n\"");
-		return;
-	}
-
 	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed in this gametype!\n\"");
 		return;
 	}
-
-	//Must be in spectate to use?
 
 	if (ent->client->pers.raceMode) {//Toggle it
 		ent->client->pers.raceMode = qfalse;
@@ -6542,6 +6535,10 @@ void Cmd_Race_f(gentity_t *ent)
 	else {
 		ent->client->pers.raceMode = qtrue;
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled on.\n\"");
+	}
+
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
+		G_Kill( ent ); //stop abuse
 	}
 }
 

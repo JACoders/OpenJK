@@ -557,6 +557,7 @@ void Svcmd_Amgrantadmin_f(void)
 			trap->Argv(2, arg, sizeof(arg)); 
 			if (!Q_stricmp(arg, "none")) {
 				g_entities[clientid].r.svFlags &= ~SVF_JUNIORADMIN;
+				g_entities[clientid].r.svFlags &= ~SVF_FULLADMIN;
 			}
 		}
 
