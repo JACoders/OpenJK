@@ -3497,6 +3497,16 @@ qboolean TryGrapple(gentity_t *ent)
 
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
+
+			if (ent->client->pers.ultimate_power_timer > level.time)
+			{
+				gentity_t *te = NULL;
+
+				te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
+				te->s.time = level.time;
+				te->s.time2 = ent->client->pers.ultimate_power_timer - level.time;
+				te->s.owner = ent->client->ps.clientNum;
+			}
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Special Power
@@ -3524,7 +3534,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				ent->client->pers.flame_thrower = level.time + 5000;
+				ent->client->pers.flame_thrower = level.time + 7000;
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 			}
@@ -3580,6 +3590,16 @@ qboolean TryGrapple(gentity_t *ent)
 
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
+			}
+
+			if (ent->client->pers.ultimate_power_timer > level.time)
+			{
+				gentity_t *te = NULL;
+
+				te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
+				te->s.time = level.time;
+				te->s.time2 = ent->client->pers.ultimate_power_timer - level.time;
+				te->s.owner = ent->client->ps.clientNum;
 			}
 		}
 
