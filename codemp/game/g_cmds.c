@@ -6539,6 +6539,9 @@ void Cmd_Race_f(gentity_t *ent)
 
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
 		G_Kill( ent ); //stop abuse
+		ent->client->ps.persistant[PERS_SCORE] = 0;
+		ent->client->ps.persistant[PERS_KILLED] = 0;
+		ent->client->pers.enterTime = level.time; //reset scoreboard kills/deaths i guess... and time?
 	}
 }
 
