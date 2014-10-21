@@ -171,7 +171,7 @@ vec3 DeformPosition(const vec3 pos, const vec3 normal, const vec2 st)
 	}
 }
 
-vec3 DeformNormal( in const vec3 position, in const vec3 normal )
+vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 {
 	if ( u_DeformType != DEFORM_NORMALS )
 	{
