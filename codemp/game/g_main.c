@@ -502,6 +502,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	// zyk: initializing quest_note_id value
 	level.quest_note_id = -1;
+	level.universe_quest_note_id = -1;
 
 	// zyk: initializing quest_effect_id value
 	level.quest_effect_id = -1;

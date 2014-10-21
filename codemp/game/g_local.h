@@ -1321,6 +1321,9 @@ typedef struct level_locals_s {
 	// gets cleaned when the player gets the note
 	int quest_note_id;
 
+	// zyk: id of the note spawned in the fourth Universe Quest mission
+	int universe_quest_note_id;
+
 	// zyk: has the quest effect id of the fx_runner entity in the guardian area. Default -1.
 	// gets cleaned when the player arrives at it
 	int quest_effect_id;

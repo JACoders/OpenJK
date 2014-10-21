@@ -4959,7 +4959,10 @@ void load_note_model(int x,int y,int z)
 
 	zyk_spawn_entity(new_ent);
 
-	level.quest_note_id = new_ent->s.number;
+	if (x == 2780 && y == 3966 && z == 1411)
+		level.universe_quest_note_id = new_ent->s.number;
+	else
+		level.quest_note_id = new_ent->s.number;
 }
 
 // zyk: loads the crystal md3 model for the Universe Quest crystals
@@ -5010,6 +5013,12 @@ void clean_note_model()
 	{
 		G_FreeEntity(&g_entities[level.quest_note_id]);
 		level.quest_note_id = -1;
+	}
+
+	if (level.universe_quest_note_id != -1)
+	{
+		G_FreeEntity(&g_entities[level.universe_quest_note_id]);
+		level.universe_quest_note_id = -1;
 	}
 }
 
@@ -5156,7 +5165,7 @@ void choose_new_player(gentity_t *next_player)
 		}
 		else if (level.quest_map == 1 && next_player->client->pers.universe_quest_progress == 3)
 		{
-			if (level.quest_note_id == -1)
+			if (level.universe_quest_note_id == -1)
 				load_note_model(2780,3966,1411);
 
 			next_player->client->pers.universe_quest_objective_control = 4; // zyk: fourth Universe Quest objective
