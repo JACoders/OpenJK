@@ -1984,7 +1984,7 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize) {
 		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
 }
 
-void Cmd_nNotCompleted_f(gentity_t *ent) {
+void Cmd_NotCompleted_f(gentity_t *ent) {
 	int i, style, course;
 	char styleString[16] = {0};
 	char msg[128] = {0};
