@@ -1509,8 +1509,12 @@ static qboolean SV_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const 
 }
 
 static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
+	assert( ghoul2 && "invalid g2 handle" );
+
 	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
-	strcpy( fillBuf, tmp );
+	if ( tmp ) {
+		strcpy( fillBuf, tmp );
+	}
 }
 
 static int SV_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {
