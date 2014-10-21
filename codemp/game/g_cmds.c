@@ -5068,6 +5068,7 @@ void got_all_amulets(gentity_t *ent)
 }
 
 // zyk: used by the quest_get_new_player function to actually get the new player based on his quest settings
+extern int zyk_number_of_completed_quests(gentity_t *ent);
 void choose_new_player(gentity_t *next_player)
 {
 	int found = 0;
@@ -5103,7 +5104,7 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
 			found = 1;
-		else if (level.quest_map == 16 && next_player->client->pers.universe_quest_progress > 14 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+		else if (level.quest_map == 16 && ((next_player->client->pers.universe_quest_progress == 15 && zyk_number_of_completed_quests(next_player) == 3) || (next_player->client->pers.universe_quest_progress > 15 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
 			found = 1;
 		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < 15)))
 			found = 1;
@@ -7933,7 +7934,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 15)
 					{
-						strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7The chosen people are in ^3mp/duel7 ^7and called you through telepathy.\nSomething very serious is going on.\nGo there to find out what is happening.");
+						if (zyk_number_of_completed_quests(ent) < 3)
+							strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7Complete Light, Dark and Eternity Quests.");
+						else
+							strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7The chosen people are in ^3mp/duel7 ^7and called you through telepathy.\nSomething very serious is going on.\nGo there to find out what is happening.");
 					}
 					else if (ent->client->pers.universe_quest_progress == 16)
 					{
