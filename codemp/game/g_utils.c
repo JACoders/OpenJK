@@ -1559,6 +1559,21 @@ qboolean TryHeal(gentity_t *ent, gentity_t *target)
 	return qfalse;
 }
 
+// zyk: tests how many side quests completed by the player
+int zyk_number_of_completed_quests(gentity_t *ent)
+{
+	int number_of_completed_quests = 0;
+
+	if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
+		number_of_completed_quests++;
+	if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
+		number_of_completed_quests++;
+	if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+		number_of_completed_quests++;
+
+	return number_of_completed_quests;
+}
+
 /*
 ==============
 TryUse
@@ -1748,56 +1763,28 @@ void TryUse( gentity_t *ent )
 		{ // zyk: Third objective of Universe Quest
 			if (target->client->pers.universe_quest_objective_control == 0)
 			{ // zyk: Sage of Light
-				if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
-				{
-					ent->client->pers.universe_quest_messages = 4;
-				}
-				else if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.universe_quest_counter & (1 << 0)))
-				{
-					ent->client->pers.universe_quest_messages = 5;
-				}
-				else
-				{
-					ent->client->pers.universe_quest_messages = 6;
-				}
+				ent->client->pers.universe_quest_messages = 6;
 			}
 			else if (target->client->pers.universe_quest_objective_control == 1)
 			{ // zyk: Sage of Eternity
-				if (ent->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
-				{
-					ent->client->pers.universe_quest_messages = 7;
-				}
-				else if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.universe_quest_counter & (1 << 1)))
-				{
+				if (zyk_number_of_completed_quests(ent) >= 1 && !(ent->client->pers.universe_quest_counter & (1 << 1)))
+				{ // zyk: player completed one of the side quests but does not have the artifact yet
 					ent->client->pers.universe_quest_messages = 8;
 				}
-				else
-				{
+				else if (zyk_number_of_completed_quests(ent) >= 1)
+				{ // zyk: player completed one of the side quests and already has the artifact
 					ent->client->pers.universe_quest_messages = 9;
+				}
+				else
+				{ // zyk: player must complete a side quest to get the artifact
+					ent->client->pers.universe_quest_messages = 7;
 				}
 			}
 			else if (target->client->pers.universe_quest_objective_control == 2)
 			{ // zyk: Sage of Darkness
-				if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES)
-				{
-					ent->client->pers.universe_quest_messages = 10;
-				}
-				else if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.universe_quest_counter & (1 << 2)))
-				{
-					ent->client->pers.universe_quest_messages = 11;
-				}
-				else
-				{
-					ent->client->pers.universe_quest_messages = 12;
-				}
+				ent->client->pers.universe_quest_messages = 12;
 			}
 			ent->client->pers.universe_quest_timer = level.time + 500; // zyk: set level.time so messages dont take too much to appear
-			return;
-		}
-		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 2 && level.quest_map == 1)
-		{
-			trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7We will talk to you later. Please leave now, we must meditate.\"");
-			quest_get_new_player(ent);
 			return;
 		}
 		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 4 && ent->client->pers.universe_quest_objective_control == 5)

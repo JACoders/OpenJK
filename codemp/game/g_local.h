@@ -705,9 +705,9 @@ typedef struct clientPersistant_s {
 
 	// zyk: counter used in the artifacts objective, and in the amulets one, of the Universe Quest
 	// Possible bit values in artifacts objective:
-	// 0 - Light Quest artifact got with the Sage of Light
+	// 0 - Unused
 	// 1 - Eternity Quest artifact got with the Sage of Eternity
-	// 2 - Dark Quest artifact got with the Sage of Darkness
+	// 2 - Unused
 	// 3 - Artifact in yavin1b
 	// 4 - Artifact in t1_danger
 	// 5 - Artifact in t1_fatal

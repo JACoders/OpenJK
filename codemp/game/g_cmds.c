@@ -5064,7 +5064,7 @@ void choose_new_player(gentity_t *next_player)
 	int found = 0;
 	if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && !(next_player->client->pers.player_settings & (1 << 0)) && next_player->client->pers.can_play_quest == 0 && next_player->client->pers.connected == CON_CONNECTED && next_player->client->sess.sessionTeam != TEAM_SPECTATOR && next_player->inuse == qtrue)
 	{
-		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 0)) || !(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 2)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
+		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
 			found = 1;
 		else if (level.quest_map == 2 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
 			found = 1;
@@ -7855,7 +7855,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.universe_quest_progress == 1)
 						strcpy(universe_message, "^3\n2. The Rise of an Evil Force\n\n^7Talk to the sages at ^3kor2 ^7to know more about your quest.");
 					else if (ent->client->pers.universe_quest_progress == 2)
-						strcpy(universe_message, va("^3\n3. The Life-Force Artifacts\n\n^7Find the 10 artifacts in SP maps and talk to the sages at ^3yavin1b^7.\nCollected artifacts: ^3%d^7",number_of_artifacts(ent)));
+						strcpy(universe_message, va("^3\n3. The Life-Force Artifacts\n\n^7Find the 8 artifacts in SP maps and talk to the sages at ^3yavin1b^7.\nCollected artifacts: ^3%d^7",number_of_artifacts(ent)));
 					else if (ent->client->pers.universe_quest_progress == 3)
 						strcpy(universe_message, "^3\n4. In Search for Answers\n\n^7Go to ^3yavin1b ^7to talk to the sages about the mysterious voice you heard at the beginning of the quest.");
 					else if (ent->client->pers.universe_quest_progress == 4)
@@ -7863,7 +7863,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.universe_quest_progress == 5)
 						strcpy(universe_message, va("^3\n6. The Guardian Amulets\n\n^7Find the three guardian amulets at the City of the Merchants in ^3mp/siege_desert^7. Amulets collected: ^3%d^7.", number_of_amulets(ent)));
 					else if (ent->client->pers.universe_quest_progress == 6)
-						strcpy(universe_message, "^3\n7. The Decisive Battle\n\n^7Defeat the Master of Evil at ^3taspir1^7.");
+						strcpy(universe_message, "^3\n7. The Decisive Battle\n\n^7Defeat the ^1Master of Evil ^7at ^3taspir1^7.");
 					else if (ent->client->pers.universe_quest_progress == 7)
 						strcpy(universe_message, "^3\n8. The Guardian of Universe\n\n^7Defeat the ^2Guardian of Universe ^7at ^3mp/siege_korriban^7.");
 					else if (ent->client->pers.universe_quest_progress == 8)
@@ -7932,7 +7932,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 17)
 					{
-						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the Master of Death at ^3mp/duel7 ^7to get the Resurrection Power.");
+						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the ^1Master of Death ^7at ^3mp/duel7 ^7to get the Resurrection Power.");
 					}
 				}
 				else

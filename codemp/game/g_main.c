@@ -4108,7 +4108,7 @@ extern void save_account(gentity_t *ent);
 extern int number_of_artifacts(gentity_t *ent);
 void universe_quest_artifacts_checker(gentity_t *ent)
 {
-	if (number_of_artifacts(ent) == 10)
+	if (number_of_artifacts(ent) == 8)
 	{ // zyk: after collecting all artifacts, go to next objective
 		trap->SendServerCommand( -1, va("chat \"%s^7: I have all artifacts! Now I must go to ^3yavin1b ^7to know about the mysterious voice I heard when I begun this quest.\"", ent->client->pers.netname));
 
@@ -4785,7 +4785,7 @@ void G_RunFrame( int levelTime ) {
 					if (level.quest_map == 1)
 					{
 						if (ent->client->pers.universe_quest_progress == 8 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 0)) && ent->client->pers.universe_quest_timer < level.time)
-						{ // zyk: first objective of the Second Act of Universe Quest. Sages part
+						{ // zyk: ninth mission of Universe Quest. Sages part
 							gentity_t *npc_ent = NULL;
 
 							if (ent->client->pers.universe_quest_messages == 0)
@@ -4894,7 +4894,7 @@ void G_RunFrame( int levelTime ) {
 						}
 
 						if (ent->client->pers.universe_quest_progress == 3 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_objective_control == 4 && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > 2720 && (int) ent->client->ps.origin[0] < 2840 && (int) ent->client->ps.origin[1] > 3944 && (int) ent->client->ps.origin[1] < 3988 && (int) ent->client->ps.origin[2] == 1432)
-						{ // zyk: fourth Universe Quest objective, doesnt need player control like the third objective
+						{ // zyk: fourth Universe Quest objective
 							if (ent->client->pers.universe_quest_messages == 0)
 								trap->SendServerCommand( -1, va("chat \"%s^7: Where are the sages?\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 1)
@@ -4960,29 +4960,11 @@ void G_RunFrame( int levelTime ) {
 								npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",2780,3966,1583,0);
 							else if (ent->client->pers.universe_quest_messages == 2)
 								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",2780,3904,1583,0);
-							else if (ent->client->pers.universe_quest_messages == 4)
-							{
-								trap->SendServerCommand( -1, "chat \"^5Sage of Light: ^7Finish ^5Light Quest ^7and come back so I can give you an artifact...\"");
-
-								change_player = 1;
-							}
-							else if (ent->client->pers.universe_quest_messages == 5)
-							{
-								ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 3000;
-
-								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7Amazing, %s^7! Now receive an artifact...\"",ent->client->pers.netname));
-								ent->client->pers.universe_quest_counter |= (1 << 0);
-								save_account(ent);
-
-								universe_quest_artifacts_checker(ent);
-
-								change_player = 1;
-							}
 							else if (ent->client->pers.universe_quest_messages == 6)
 								trap->SendServerCommand( -1, "chat \"^5Sage of Light: ^7Your quest is very difficult, but at the end you will see it was worthy the effort...\"");
 							else if (ent->client->pers.universe_quest_messages == 7)
 							{
-								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Complete ^3Eternity Quest ^7and come back so I can give you one of the artifacts.\"");
+								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Complete one of the side quests and come back so I can give you an artifact.\"");
 
 								change_player = 1;
 							}
@@ -4990,7 +4972,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 3000;
 
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Well done, %s^7. Now I can give you one of the artifacts.\"",ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Well done, %s^7. Now I can give you the artifact.\"",ent->client->pers.netname));
 								ent->client->pers.universe_quest_counter |= (1 << 1);
 								save_account(ent);
 
@@ -4999,23 +4981,8 @@ void G_RunFrame( int levelTime ) {
 								change_player = 1;
 							}
 							else if (ent->client->pers.universe_quest_messages == 9)
-								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Never give up. The destiny of the Universe depends upon you.\"");
-							else if (ent->client->pers.universe_quest_messages == 10)
 							{
-								trap->SendServerCommand( -1, "chat \"^1Sage of Darkness: ^7Beat ^1Dark Quest ^7! Only then I will give you my artifact!\"");
-
-								change_player = 1;
-							}
-							else if (ent->client->pers.universe_quest_messages == 11)
-							{
-								ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 3000;
-
-								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7Not bad, %s^7! Now get this artifact and continue your quest!\"",ent->client->pers.netname));
-								ent->client->pers.universe_quest_counter |= (1 << 2);
-								save_account(ent);
-
-								universe_quest_artifacts_checker(ent);
-
+								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Never give up. The fate of the Universe depends upon you.\"");
 								change_player = 1;
 							}
 							else if (ent->client->pers.universe_quest_messages == 12)
@@ -5509,7 +5476,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 25)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He succeeded. He is now immortal and became the Master of Evil!\""));
 							else if (ent->client->pers.universe_quest_messages == 26)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7To achieve immortality, he divided his life force in 10 artifacts.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7To achieve immortality, he divided his life force in 8 artifacts.\""));
 							else if (ent->client->pers.universe_quest_messages == 27)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7They are hidden in different locations and protected by his soldiers.\""));
 							else if (ent->client->pers.universe_quest_messages == 28)
@@ -5527,20 +5494,10 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 34)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7You can visit us at yavin1b.\""));
 							else if (ent->client->pers.universe_quest_messages == 35)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7We have 3 of the artifacts, but we will give you with a condition.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7We have an artifact, but we will give you only after you complete one of the side quests.\""));
 							else if (ent->client->pers.universe_quest_messages == 36)
-								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7I will give my artifact after you finish the Light Quest.\""));
-							else if (ent->client->pers.universe_quest_messages == 37)
-								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7I will give my artifact after you finish the Dark Quest.\""));
-							else if (ent->client->pers.universe_quest_messages == 38)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7I will give my artifact after you finish the Eternity Quest.\""));
-							else if (ent->client->pers.universe_quest_messages == 39)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7These quests will give you some of the guardians powers.\""));
-							else if (ent->client->pers.universe_quest_messages == 40)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7You will need them to defeat the Master of Evil.\""));
-							else if (ent->client->pers.universe_quest_messages == 41)
 							{
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Now go, legendary hero! And good luck!\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Now go, legendary hero! Courage in your quest!\""));
 								
 								ent->client->pers.universe_quest_progress = 2;
 								
@@ -5882,27 +5839,15 @@ void G_RunFrame( int levelTime ) {
 							}
 							else if (ent->client->pers.universe_quest_messages == 6)
 							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7With your strength, you defeated the guardians of Light Quest.\""));
+								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7With your courage and hope, you defeated the Master of Evil and brought balance to the Universe once again.\""));
 							}
 							else if (ent->client->pers.universe_quest_messages == 7)
 							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7With your perception, you found all notes of Dark Quest.\""));
+								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7Now you will have the full strength of Universe Power.\""));
 							}
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7With your wisdom, you solved the riddles of Eternity Quest.\""));
-							}
-							else if (ent->client->pers.universe_quest_messages == 9)
-							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7With your courage and hope, you defeated the Master of Evil and brought balance to the Universe once again.\""));
-							}
-							else if (ent->client->pers.universe_quest_messages == 10)
-							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7Now you will have the full strength of Universe Power.\""));
-							}
-							else if (ent->client->pers.universe_quest_messages == 11)
-							{
-								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7Good. Now farewell... brave hero! May the power of the guardians guide you in your journey!\""));
+								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7Farewell... brave hero! May the power of the guardians guide you in your journey!\""));
 								
 								ent->client->pers.universe_quest_progress = 8;
 								ent->client->pers.universe_quest_messages = 0;
@@ -5915,7 +5860,7 @@ void G_RunFrame( int levelTime ) {
 								quest_get_new_player(ent);
 							}
 
-							if (ent->client->pers.universe_quest_messages > 4 && ent->client->pers.universe_quest_messages < 11)
+							if (ent->client->pers.universe_quest_messages > 4 && ent->client->pers.universe_quest_messages < 8)
 							{
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
