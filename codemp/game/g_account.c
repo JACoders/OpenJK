@@ -1996,7 +1996,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	}
 
 	if (trap->Argc() > 2) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /ayy. This displays courses you have not completed on the current map.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /notCompleted\n\"");
 		return;
 	}
 

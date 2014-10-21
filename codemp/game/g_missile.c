@@ -296,6 +296,10 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 	missile->parent = owner;
 	missile->r.ownerNum = owner->s.number;
 
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	missile->s.owner = owner->s.number;
+	//
+
 	if (altFire)
 	{
 		missile->s.eFlags |= EF_ALT_FIRING;
@@ -334,6 +338,10 @@ gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life
 	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	missile->parent = owner;
 	missile->r.ownerNum = owner->s.number;
+
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	missile->s.owner = owner->s.number;
+	//
 
 	if (altFire)
 		missile->s.eFlags |= EF_ALT_FIRING;
