@@ -1984,7 +1984,7 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize) {
 		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
 }
 
-void Cmd_NotCompleted_f(gentity_t *ent) {
+void Cmd_nNotCompleted_f(gentity_t *ent) {
 	int i, style, course;
 	char styleString[16] = {0};
 	char msg[128] = {0};
@@ -2005,7 +2005,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		return;
 	}
 
-	trap->SendServerCommand(ent-g_entities, "print \"Courses not completed on this map:\n\"");
+	trap->SendServerCommand(ent-g_entities, "print \"Courses where you are not in the top 10:\n\"");
 
 	for (course=0; course<level.numCourses; course++) { //For each course
 		Q_strncpyz(msg, "", sizeof(msg));
@@ -2024,7 +2024,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 			}
 			if (!found) {
 				if (!printed) {
-					Q_strcat(msg, sizeof(msg), va("^3%-12s:", level.courseName[course]));
+					Q_strcat(msg, sizeof(msg), va("^3%-12s", level.courseName[course]));
 					printed = qtrue;
 				}
 				IntegerToRaceName(style, styleString, sizeof(styleString));

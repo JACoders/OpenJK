@@ -5240,7 +5240,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	if (g_raceMode.integer) {
-		Q_strncpyz(buf, "   ^Defrag commands: ", sizeof(buf));
+		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
 		Q_strcat(buf, sizeof(buf), "dftop10 ");
 		Q_strcat(buf, sizeof(buf), "notcompleted ");
 		Q_strcat(buf, sizeof(buf), "best ");
