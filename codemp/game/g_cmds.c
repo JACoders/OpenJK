@@ -5213,8 +5213,6 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "login ");
 	Q_strcat(buf, sizeof(buf), "logout ");
 	Q_strcat(buf, sizeof(buf), "changepassword ");
-	Q_strcat(buf, sizeof(buf), "dftop10 ");
-	Q_strcat(buf, sizeof(buf), "best ");
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -5233,30 +5231,37 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
 		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
 	}
-	if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
-		Q_strcat(buf, sizeof(buf), "race ");
-	if (g_raceMode.integer && level.gametype == GT_FFA) {
-		Q_strcat(buf, sizeof(buf), "movementStyle ");
-		Q_strcat(buf, sizeof(buf), "rocketChange ");
-		Q_strcat(buf, sizeof(buf), "hide ");
-		Q_strcat(buf, sizeof(buf), "warpList ");
-		Q_strcat(buf, sizeof(buf), "warp ");
-		if (g_allowRaceTele.integer) {
-			Q_strcat(buf, sizeof(buf), "amTele ");
-			Q_strcat(buf, sizeof(buf), "amTelemark ");
-			if (g_allowRaceTele.integer > 1)
-				Q_strcat(buf, sizeof(buf), "noclip ");
-		}
-	}
 	if (g_allowSaberSwitch.integer) 
 		Q_strcat(buf, sizeof(buf), "saber ");
 	if (g_allowFlagThrow.integer) 
 		Q_strcat(buf, sizeof(buf), "throwFlag ");
 	if (g_tweakJetpack.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
-	if (g_raceMode.integer) 
-		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
+
+	if (g_raceMode.integer) {
+		Q_strncpyz(buf, "   ^Defrag commands: ", sizeof(buf));
+		Q_strcat(buf, sizeof(buf), "dftop10 ");
+		Q_strcat(buf, sizeof(buf), "notcompleted ");
+		Q_strcat(buf, sizeof(buf), "best ");
+		if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
+			Q_strcat(buf, sizeof(buf), "race ");
+		if (level.gametype == GT_FFA) {
+			Q_strcat(buf, sizeof(buf), "movementStyle ");
+			Q_strcat(buf, sizeof(buf), "rocketChange ");
+			Q_strcat(buf, sizeof(buf), "hide ");
+			Q_strcat(buf, sizeof(buf), "warpList ");
+			Q_strcat(buf, sizeof(buf), "warp ");
+			if (g_allowRaceTele.integer) {
+				Q_strcat(buf, sizeof(buf), "amTele ");
+				Q_strcat(buf, sizeof(buf), "amTelemark ");
+				if (g_allowRaceTele.integer > 1)
+					Q_strcat(buf, sizeof(buf), "noclip ");
+			}
+		}
+		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
+	}
 
 	Q_strncpyz(buf, "   ^3Emote commands: ", sizeof(buf));
 	if (!(g_emotesDisable.integer & (1 << E_BEG)))
