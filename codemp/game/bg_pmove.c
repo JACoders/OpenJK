@@ -172,6 +172,38 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
+/*
+int GetFixRoll(playerState_t *ps) {
+	//If we are dueling saber only and duels are SP damages and FFA is mp damages..
+		//return 0
+	//If we are dueling force and duels are MP damages and FFA is sp damages
+		//return 3 ?
+
+	//Problem: client does not know what damages are set..
+	//Would have to network this.. if we want to let servers do jk2 roll in NF duels, or shortroll in FF duels..
+
+	if (ps->duelInProgress) {
+#if _GAME
+		if (dueltypes[ps->clientNum] == 0) { //NF 
+			return 0;
+		}
+		else if (dueltypes[ps->clientNum] == 1) { //FF
+			return 3;
+		}
+#else
+		if (cg_dueltypes[ps->clientNum] == 0) { //NF 
+			return 0;
+		}
+		else if (cg_dueltypes[ps->clientNum] == 1) { //FF
+			return 3;
+		}
+#endif
+	}
+
+	return g_fixRoll.integer;
+}
+*/
+
 //rww - Get a pointer to the bgEntity by the index
 bgEntity_t *PM_BGEntForNum( int num )
 {

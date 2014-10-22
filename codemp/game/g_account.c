@@ -2000,12 +2000,11 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		return;
 	}
 
-	if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
-		trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
-		return;
-	}
-
 	if (trap->Argc() == 1) { //notcompleted
+		if (!ent->client->pers.userName || !ent->client->pers.userName[0]) {
+			trap->SendServerCommand(ent-g_entities, "print \"You must be logged in to use this command.\n\"");
+			return;
+		}
 		Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
 	}
 	else if (trap->Argc() == 2) { //notcompleted user
@@ -2047,8 +2046,10 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 				Q_strcat(msg, sizeof(msg), va(" ^5%-6s", styleString));
 			}
 		}
-		Q_strcat(msg, sizeof(msg), "\n");
-		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		if (printed) {
+			Q_strcat(msg, sizeof(msg), "\n");
+			trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		}
 	}
 }
 
