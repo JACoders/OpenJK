@@ -3046,6 +3046,7 @@ extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboole
 extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
 bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
 void		RE_InsertModelIntoHash(const char *name, model_t *mod);
+void ResetGhoul2RenderableSurfaceHeap();
 /*
 Ghoul2 Insert End
 */
