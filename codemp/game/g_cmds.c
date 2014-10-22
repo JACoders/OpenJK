@@ -5055,6 +5055,9 @@ void Cmd_Ammap_f(gentity_t *ent)
 	
 		gtype = atoi(gametype);
 
+		if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+			trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
+
 		trap->SendConsoleCommand( EXEC_APPEND, va("g_gametype %i\n", gtype));
 		trap->SendConsoleCommand( EXEC_APPEND, va("map %s\n", mapname));
 
@@ -6929,9 +6932,9 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
 			Q_strcat(buf, sizeof(buf), "   ^5Pseudo random weapon spread\n");
 		if (g_tweakWeapons.integer & ROCKET_MORTAR)
-			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher is replaced with mortar\n");
+			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with mortar\n");
 		else if (g_tweakWeapons.integer & ROCKET_REDEEMER)
-			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher is replaced with redeemer\n");
+			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with redeemer\n");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 

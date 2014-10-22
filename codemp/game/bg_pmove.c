@@ -3753,6 +3753,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 
 	if (pm->ps->groundEntityNum != ENTITYNUM_NONE)//Wut? this should be entitynum_none?
 		return;//only in air?
+	//hm... needs a slight delay after dash i guess... idk
 
 	if (pm->ps->weaponTime > 0)
 		return;

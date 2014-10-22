@@ -1986,7 +1986,7 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize) {
 
 void Cmd_NotCompleted_f(gentity_t *ent) {
 	int i, style, course;
-	char styleString[16] = {0};
+	char styleString[16] = {0}, username[16] = {0};
 	char msg[128] = {0};
 	qboolean printed, found;
 
@@ -1995,8 +1995,8 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		return;
 	}
 
-	if (trap->Argc() > 2) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /notCompleted\n\"");
+	if (trap->Argc() > 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /notCompleted <username (optional)>\n\"");
 		return;
 	}
 
@@ -2005,7 +2005,23 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		return;
 	}
 
-	trap->SendServerCommand(ent-g_entities, "print \"Courses where you are not in the top 10:\n\"");
+	if (trap->Argc() == 1) { //notcompleted
+		Q_strncpyz(username, ent->client->pers.userName, sizeof(username));
+	}
+	else if (trap->Argc() == 2) { //notcompleted user
+		char input[16];
+		trap->Argv(1, input, sizeof(input));
+		Q_strncpyz(username, input, sizeof(username));
+	}
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	if (trap->Argc() == 1)
+		trap->SendServerCommand(ent-g_entities, "print \"Courses where you are not in the top 10:\n\"");
+	else if (trap->Argc() == 2)
+		trap->SendServerCommand(ent-g_entities, va("print \"Courses where %s is not in the top 10:\n\"", username));
+
 
 	for (course=0; course<level.numCourses; course++) { //For each course
 		Q_strncpyz(msg, "", sizeof(msg));
@@ -2013,7 +2029,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		for (style = 0; style <= 8; style++) { //For each style
 			found = qfalse;
 			for (i=0; i<10; i++) {
-				if (HighScores[course][style][i].username && HighScores[course][style][i].username[0] && !Q_stricmp(HighScores[course][style][i].username, ent->client->pers.userName)) {
+				if (HighScores[course][style][i].username && HighScores[course][style][i].username[0] && !Q_stricmp(HighScores[course][style][i].username, username)) {
 					found = qtrue;
 					break;
 				}

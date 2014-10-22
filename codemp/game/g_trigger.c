@@ -1177,6 +1177,7 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 
 qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
+	//Make most of this hardcoded into racemode..? speed, knockback, debugmelee, stepslidefix, gravity, quakestyleteleport
 	if (!player->client)
 		return qfalse;
 	if (!player->client->ps.stats[STAT_RACEMODE])
@@ -1203,6 +1204,8 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 			}
 		}
 	}
+	//if (player->client->pers.haste && !(restrictions & (1 << 3))) //LODA FIXME, uncomment this once we upload new verisons of maps
+		//return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
 	if (g_speed.value != 250.0f)
 		return qfalse;
 	if (g_gravity.integer != 800)
