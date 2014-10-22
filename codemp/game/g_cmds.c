@@ -5679,6 +5679,8 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 		return;
 	if (BG_InRoll(&ent->client->ps, ent->s.legsAnim))//is this crashing? if ps is null or something?
 		return;
+	if (ent->client->pers.raceMode) //No emotes in racemode i guess
+		return;
 
 	if (freeze) { // Do the anim and freeze it, or cancel if already in it
 		if (ent->client->ps.legsAnim == anim) // Cancel the anim if already in it?
