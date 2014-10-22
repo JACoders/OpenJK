@@ -1013,10 +1013,13 @@ void G_RunMissile( gentity_t *ent ) {
 		{
 			gentity_t *otherOwner = &g_entities[other->r.ownerNum];
 			gentity_t *owner = &g_entities[ent->r.ownerNum];
-
+			/*
 			if (owner->s.bolt1 && !otherOwner->s.bolt1)//We are dueling/racing and they are not
 				skip = qtrue;
 			else if (!owner->s.bolt1 && otherOwner->s.bolt1)//They are dueling/racing and we are not
+				skip = qtrue;
+			*/
+			if (owner->s.bolt1 != otherOwner->s.bolt1) //Dont impact if its from another dimension
 				skip = qtrue;
 		}
 	

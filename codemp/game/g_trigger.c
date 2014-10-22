@@ -1453,6 +1453,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 }
 
 void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	int i;
+
 	if (!player->client)
 		return;
 	if (player->r.svFlags & SVF_BOT)
@@ -1476,6 +1478,19 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 		else
 			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+		
+		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+			if (!g_entities[i].inuse)
+				continue;
+			if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == player->client->ps.clientNum))
+			{
+				if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
+					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
+				else
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+			}
+		}
+
 		player->client->pers.stats.lastCheckpointTime = level.time; //For built in floodprotect
 	}
 }
