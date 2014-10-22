@@ -1107,8 +1107,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{
 				G_FreeEntity( ent );
 			}
-			if (i == 247)
-			{ // zyk: removing the trigger_hurt of the lava in Guardian of Universe arena
+			if (i >= 236 && i <= 238)
+			{ // zyk: removing the trigger_hurt from the lava in Guardian of Universe arena
 				G_FreeEntity( ent );
 			}
 		}
