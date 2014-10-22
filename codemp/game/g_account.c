@@ -1995,7 +1995,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 		return;
 	}
 
-	if (trap->Argc() > 3) {
+	if (trap->Argc() > 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /notCompleted <username (optional)>\n\"");
 		return;
 	}
