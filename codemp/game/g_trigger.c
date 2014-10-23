@@ -1461,6 +1461,8 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		return;
 	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
+	if (!player->client->pers.showCheckpoints)
+		return;
 
 	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
 		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
@@ -1474,9 +1476,16 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		else 
 			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
+		/*
 		if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 		else
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+			*/
+
+		if (player->client->pers.showCheckpoints == 1)
+			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
+		else if (player->client->pers.showCheckpoints == 2)
 			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
@@ -1484,9 +1493,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 				continue;
 			if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == player->client->ps.clientNum))
 			{
-				if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
+				//if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
+				if (level.clients[i].pers.showCheckpoints == 1)
 					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
-				else
+				else if (level.clients[i].pers.showCheckpoints == 2)
 					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
 			}
 		}

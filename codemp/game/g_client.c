@@ -2207,6 +2207,15 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.centerMuzzle = qtrue;
 	}
 
+	s = Info_ValueForKey( userinfo, "cg_checkpoints" );
+	if (atoi(s) < 1) {
+		client->pers.showCheckpoints = 1;
+	} else if (atoi(s) == 1) {
+		client->pers.showCheckpoints = 2;
+	} else if (atoi(s) > 1) {
+		client->pers.showCheckpoints = 0;
+	}
+
 	s = Info_ValueForKey( userinfo, "cg_noDamageNumbers" );
 	if ( !atoi( s ) ) {
 		client->pers.noDamageNumbers = qfalse;

@@ -682,6 +682,7 @@ typedef struct clientPersistant_s {
 	qboolean	backwardsRocket;
 	qboolean	noFollow;
 	qboolean	haste;
+	short		showCheckpoints; //0 = off, 1 = centerprint, 2 = chat
 
 
 	stats_t		stats;

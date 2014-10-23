@@ -881,6 +881,12 @@ void PM_StepSlideMove( qboolean gravity ) {
 
 			NEW_STEPSIZE = 48 - jumpHeight + 22;
 
+			//trap->SendServerCommand(-1, va("print \"new stepsize: %i, expected max end height: %i\n\"", NEW_STEPSIZE, NEW_STEPSIZE + (int)(pm->ps->origin[2] - pm->ps->fd.forceJumpZStart)));
+			
+			//This means that we can always clip things up to 48 units tall, if we are moving up when we hit it and from a bhop..
+			//It means we can sometimes clip things up to 70 units tall, if we hit it in right part of jump
+			//Should it be higher..? some of the things in q3 are 56 units tall..
+
 			//NEW_STEPSIZE = 46;
 			//Make stepsize equal to.. our current 48 - our current jumpheight ?
 		}
