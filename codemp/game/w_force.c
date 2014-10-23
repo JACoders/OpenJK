@@ -3609,6 +3609,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 				}
 
+				// zyk: Armored Soldier can resist Push and Pull if he has the Upgrade
+				if (push_list[x]->client->sess.amrpgmode == 2 && push_list[x]->client->pers.rpg_class == 3 && 
+					push_list[x]->client->pers.secrets_found & (1 << 16))
+				{
+					pushPower /= 4;
+					if (Q_irand(0,10) > 2)
+						canPullWeapon = qfalse;
+				}
+
 				pushPowerMod = pushPower;
 
 				if (push_list[x]->client->pers.cmd.forwardmove ||
@@ -3735,10 +3744,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 						if (BG_KnockDownable(&push_list[x]->client->ps) &&
 							dirLen <= (64*((modPowerLevel - otherPushPower)-1)))
 						{ //can only do a knockdown if fairly close
-							push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-							push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
-							push_list[x]->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
-							push_list[x]->client->ps.quickerGetup = qtrue;
+							// zyk: Armored Soldier will not be knocked down if he has the Upgrade
+							if (push_list[x]->client->sess.amrpgmode != 2 || push_list[x]->client->pers.rpg_class != 3 || 
+								!(push_list[x]->client->pers.secrets_found & (1 << 16)))
+							{
+								push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
+								push_list[x]->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+								push_list[x]->client->ps.quickerGetup = qtrue;
+							}
 						}
 						else if (push_list[x]->s.number < MAX_CLIENTS && push_list[x]->client->ps.m_iVehicleNum &&
 							dirLen <= 128.0f )

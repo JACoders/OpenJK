@@ -8440,7 +8440,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 39)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Armored Soldier Upgrade: ^7Armored Soldier gets an increase of the damage resistance by 5 per cent and cuts flame thrower fuel usage by half\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Armored Soldier Upgrade: ^7increases damage resistance by 5 per cent, cuts flame thrower fuel usage by half, resists to force Push and Pull and has less chance of losing gun to force pull\n\n\"");
 		}
 	}
 }
