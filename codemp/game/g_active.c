@@ -3469,13 +3469,13 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (ent->client->sess.amrpgmode == 2)
 	{
-		if (ent->client->pers.holdable_items_levels[7] == 2 && 
+		if (ent->client->pers.secrets_found & (1 << 0) && 
 			pmove.cmd.generic_cmd && 
 			pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
 			ent->client->pers.vehicle_cloak_timer < level.time &&
 			ent->client->ps.m_iVehicleNum
 			)
-		{ // zyk: RPG Mode Cloak Item 2/2 can cloak vehicles
+		{ // zyk: RPG Mode Cloak Item can cloak vehicles
 			if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
 			{
 				Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);

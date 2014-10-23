@@ -6272,7 +6272,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 48)
 	{
-		if (ent->client->pers.holdable_items_levels[1] < 2)
+		if (ent->client->pers.holdable_items_levels[1] < 1)
 		{
 			ent->client->pers.holdable_items_levels[1]++;
 			ent->client->pers.skillpoints--;
@@ -6328,7 +6328,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 52)
 	{
-		if (ent->client->pers.holdable_items_levels[5] < 2)
+		if (ent->client->pers.holdable_items_levels[5] < 1)
 		{
 			ent->client->pers.holdable_items_levels[5]++;
 			ent->client->pers.skillpoints--;
@@ -6342,7 +6342,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 53)
 	{
-		if (ent->client->pers.holdable_items_levels[6] < 2)
+		if (ent->client->pers.holdable_items_levels[6] < 1)
 		{
 			ent->client->pers.holdable_items_levels[6]++;
 			ent->client->pers.skillpoints--;
@@ -6356,7 +6356,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 54)
 	{
-		if (ent->client->pers.holdable_items_levels[7] < 2)
+		if (ent->client->pers.holdable_items_levels[7] < 1)
 		{
 			ent->client->pers.holdable_items_levels[7]++;
 			ent->client->pers.skillpoints--;
@@ -7657,9 +7657,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.holdable_items_levels[0]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message,"%s^048 - Bacta Canister: %d/2\n",message, ent->client->pers.holdable_items_levels[1]);
+					sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
 				else
-					sprintf(message,"%s^348 - Bacta Canister: %d/2\n",message, ent->client->pers.holdable_items_levels[1]);
+					sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
 					sprintf(message,"%s^049 - Sentry Gun: %d/1\n",message, ent->client->pers.holdable_items_levels[2]);
@@ -7677,19 +7677,19 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message,"%s^351 - E-Web: %d/1\n",message, ent->client->pers.holdable_items_levels[4]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message,"%s^052 - Big Bacta: %d/2\n",message, ent->client->pers.holdable_items_levels[5]);
+					sprintf(message,"%s^052 - Big Bacta: %d/1\n",message, ent->client->pers.holdable_items_levels[5]);
 				else
-					sprintf(message,"%s^352 - Big Bacta: %d/2\n",message, ent->client->pers.holdable_items_levels[5]);
+					sprintf(message,"%s^352 - Big Bacta: %d/1\n",message, ent->client->pers.holdable_items_levels[5]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message,"%s^053 - Force Field: %d/2\n",message, ent->client->pers.holdable_items_levels[6]);
+					sprintf(message,"%s^053 - Force Field: %d/1\n",message, ent->client->pers.holdable_items_levels[6]);
 				else
-					sprintf(message,"%s^353 - Force Field: %d/2\n",message, ent->client->pers.holdable_items_levels[6]);
+					sprintf(message,"%s^353 - Force Field: %d/1\n",message, ent->client->pers.holdable_items_levels[6]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6)
-					sprintf(message,"%s^054 - Cloak Item: %d/2\n",message, ent->client->pers.holdable_items_levels[7]);
+					sprintf(message,"%s^054 - Cloak Item: %d/1\n",message, ent->client->pers.holdable_items_levels[7]);
 				else
-					sprintf(message,"%s^354 - Cloak Item: %d/2\n",message, ent->client->pers.holdable_items_levels[7]);
+					sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.holdable_items_levels[7]);
 
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
 			}
@@ -7978,10 +7978,15 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				char stuff_message[1024];
 				strcpy(stuff_message,"");
 
-				if (ent->client->pers.secrets_found & (1 << 1))
-					strcpy(stuff_message,va("%s^3\nBounty Hunter Upgrade - ^2yes\n",stuff_message));
+				if (ent->client->pers.secrets_found & (1 << 0))
+					strcpy(stuff_message,va("%s^3\nHoldable Items Upgrade - ^2yes\n",stuff_message));
 				else
-					strcpy(stuff_message,va("%s^3\nBounty Hunter Upgrade - ^1no\n",stuff_message));
+					strcpy(stuff_message,va("%s^3\nHoldable Items Upgrade - ^1no\n",stuff_message));
+
+				if (ent->client->pers.secrets_found & (1 << 1))
+					strcpy(stuff_message,va("%s^3Bounty Hunter Upgrade - ^2yes\n",stuff_message));
+				else
+					strcpy(stuff_message,va("%s^3Bounty Hunter Upgrade - ^1no\n",stuff_message));
 
 				if (ent->client->pers.secrets_found & (1 << 7))
 					strcpy(stuff_message,va("%s^3Stealth Attacker Upgrade - ^2yes\n",stuff_message));
@@ -8130,7 +8135,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 47)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Binoculars: ^7this item allows you to see distant things better with its zoom.\n\"") );
 					if (i == 48)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Bacta Canister: ^7allows you to recover 25 HP. At level 2 recovers 75 HP\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Bacta Canister: ^7allows you to recover 25 HP\n\"") );
 					if (i == 49)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Sentry Gun: ^7after placed on the ground, shoots at any nearby enemy\n\"") );
 					if (i == 50)
@@ -8138,11 +8143,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 51)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3E-Web: ^7allows you to shoot at people with it, it has a good fire rate\n\"") );
 					if (i == 52)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Big Bacta: ^7allows you to recover 50 HP at level 1 and 150 HP at level 2\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Big Bacta: ^7allows you to recover 50 HP\n\"") );
 					if (i == 53)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Force Field: ^7a powerful shield that protects you from enemy attacks, it can resist a lot against any weapon. At level 2, the force field has double HP\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Force Field: ^7a powerful shield that protects you from enemy attacks, it can resist a lot against any weapon\n\"") );
 					if (i == 54)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloak Item: ^7makes you almost invisible to players and invisible to npcs. At level 2, also allows you to cloak your vehicle by pressing the Lightsaber Style key (default L)\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloak Item: ^7makes you almost invisible to players and invisible to npcs. Can cloak your vehicle by pressing the Lightsaber Style key (default L) if you have the Holdable Items Upgrade\n\"") );
 					if (i == 55)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Force Power: ^7increases the max force power you have. Necessary to allow you to use force powers and force-based skills\n\"") );
 					if (i == 56)
@@ -8284,7 +8289,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 8000 - Sell: 1500\n^316 - Flame Thrower Upgrade: ^7Buy: 5000 - Sell: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 8000 - Sell: 1500\n^316 - Flame Thrower Upgrade: ^7Buy: 5000 - Sell: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 2500 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -8442,6 +8447,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Armored Soldier Upgrade: ^7increases damage resistance by 5 per cent, cuts flame thrower fuel usage by half, resists to force Push and Pull and has less chance of losing gun to force pull\n\n\"");
 		}
+		else if (i == 40)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Holdable Items Upgrade: ^7Bacta and Big Bacta recovers more HP, Force Field resists more and Cloak Item will be able to cloak vehicles\n\n\"");
+		}
 	}
 }
 
@@ -8453,7 +8462,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[39] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,8000,5000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000};
+	int item_costs[40] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,8000,5000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,2500};
 
 	if (trap->Argc() == 1)
 	{
@@ -8464,7 +8473,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (value < 1 || value > 39)
+	if (value < 1 || value > 40)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;
@@ -8558,6 +8567,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	else if (value == 39 && ent->client->pers.secrets_found & (1 << 16))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You already have the Armored Soldier Upgrade.\n\"" );
+		return;
+	}
+	else if (value == 40 && ent->client->pers.secrets_found & (1 << 0))
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You already have the Holdable Items Upgrade.\n\"" );
 		return;
 	}
 
@@ -8731,6 +8745,10 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 39)
 		{
 			ent->client->pers.secrets_found |= (1 << 16);
+		}
+		else if (value == 40)
+		{
+			ent->client->pers.secrets_found |= (1 << 0);
 		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));

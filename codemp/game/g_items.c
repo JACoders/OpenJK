@@ -341,7 +341,7 @@ void CreateShield(gentity_t *ent)
 	else
 	{
 	// zyk: Force Field 2/2 in RPG Mode has double health
-		if (ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.holdable_items_levels[6] == 2)
+		if (ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.secrets_found & (1 << 0))
 		{
 			ent->health = SHIELD_HEALTH * 2;
 		}
@@ -1219,7 +1219,7 @@ static void MedPackGive(gentity_t *ent, int amount)
 void ItemUse_MedPack_Big(gentity_t *ent)
 {
 	// zyk: RPG Mode Big Bacta 2/2. Recover 150 HP
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.holdable_items_levels[5] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0))
 		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT * 3);
 	else
 		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT);
@@ -1228,7 +1228,7 @@ void ItemUse_MedPack_Big(gentity_t *ent)
 void ItemUse_MedPack(gentity_t *ent)
 {
 	// zyk: RPG Mode Bacta Canister 2/2. Recover 75 HP
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.holdable_items_levels[1] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0))
 		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT * 3);
 	else
 		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
