@@ -5679,8 +5679,10 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 		return;
 	if (BG_InRoll(&ent->client->ps, ent->s.legsAnim))//is this crashing? if ps is null or something?
 		return;
-	if (ent->client->pers.raceMode) //No emotes in racemode i guess
+	if (ent->client->pers.raceMode) {//No emotes in racemode i guess
+		trap->SendServerCommand(ent-g_entities, "print \"^7Emotes not allowed in racemode!\n\"");
 		return;
+	}
 
 	if (freeze) { // Do the anim and freeze it, or cancel if already in it
 		if (ent->client->ps.legsAnim == anim) // Cancel the anim if already in it?
@@ -6540,6 +6542,8 @@ void Cmd_Race_f(gentity_t *ent)
 
 	if (ent->client->pers.raceMode) {//Toggle it
 		ent->client->pers.raceMode = qfalse;
+		ent->client->pers.noFollow = qfalse;
+		ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled off.\n\"");
 	}
 	else {
