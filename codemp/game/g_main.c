@@ -3801,6 +3801,9 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	if (guardian_mode != 14)
 		zyk_NPC_Kill_f("all");
+
+	// zyyk: removing noclip from the player
+	ent->client->noclip = qfalse;
 }
 
 // zyk: Healing Water
@@ -6150,7 +6153,7 @@ void G_RunFrame( int levelTime ) {
 								quest_get_new_player(ent);
 							}
 
-							if ((ent->client->pers.universe_quest_messages == 0 && (int) ent->client->ps.origin[1] > 1145) || (ent->client->pers.universe_quest_messages > 0 && ent->client->pers.universe_quest_messages != 2))
+							if ((ent->client->pers.universe_quest_messages == 0 && (int) ent->client->ps.origin[1] > 1145 && (int) ent->client->ps.origin[2] < 100) || (ent->client->pers.universe_quest_messages > 0 && ent->client->pers.universe_quest_messages != 2))
 							{
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
