@@ -2523,7 +2523,8 @@ static qboolean PM_CheckJump( void )
 					//FIXME: have to be moving... make sure it's opposite the wall... or at least forward?
 					int wallWalkAnim = BOTH_WALL_FLIP_BACK1;
 					int parts = SETANIM_LEGS;
-					int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
+					// zyk: changed MASK so it will be possible to kickflip players or npcs
+					int contents = MASK_PLAYERSOLID;//MASK_SOLID;//CONTENTS_SOLID;
 					//qboolean kick = qtrue;
 					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 )
 					{
@@ -2583,12 +2584,11 @@ static qboolean PM_CheckJump( void )
 							BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 
 							//kick if jumping off an ent
-							/*
-							if ( kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC) )
+							if ( /*kick &&*/ traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC) )
 							{ //kick that thang!
+								// zyk: now it will be possible to kick players or npcs
 								pm->ps->forceKickFlip = traceEnt->s.number+1;
 							}
-							*/
 							pm->cmd.rightmove = pm->cmd.forwardmove= 0;
 						}
 					}
