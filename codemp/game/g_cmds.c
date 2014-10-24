@@ -649,7 +649,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
 
-	if (ent->client->ps.stats[STAT_RACEMODE]) {
+	if (ent->client->pers.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
@@ -657,6 +657,17 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
 		ent->client->pers.haste = qfalse;
 		//}
+		if (ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+			int i;
+			gentity_t *hit;
+			for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
+				hit = &g_entities[i];
+				if (hit-> inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
+					G_FreeEntity(hit);
+					//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
+				}
+			}
+		}
 	}
 
 	if (wasReset && print)
