@@ -3847,6 +3847,8 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 						player_ent->client->ps.velocity[2] += strength;
 						player_ent->client->ps.forceDodgeAnim = 0;
 						player_ent->client->ps.quickerGetup = qtrue;
+
+						G_Damage(player_ent,ent,ent,NULL,NULL,strength/10,0,MOD_UNKNOWN);
 					}
 
 					if (i < level.maxclients)

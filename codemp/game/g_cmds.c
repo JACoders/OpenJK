@@ -3541,7 +3541,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				earthquake(ent,2000,700,600);
+				earthquake(ent,2000,300,600);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
