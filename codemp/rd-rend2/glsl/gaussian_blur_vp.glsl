@@ -1,4 +1,4 @@
-varying vec2 var_TexCoords;
+out vec2 var_TexCoords;
 
 void main()
 {

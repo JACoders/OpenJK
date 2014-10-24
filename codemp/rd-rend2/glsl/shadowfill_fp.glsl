@@ -1,7 +1,9 @@
 uniform vec4  u_LightOrigin;
 uniform float u_LightRadius;
 
-varying vec3  var_Position;
+in vec3 var_Position;
+
+out vec4 out_Color;
 
 void main()
 {
@@ -16,7 +18,7 @@ void main()
 	comp = depth * bitSh;
 	comp.xyz = fract(comp.xyz);
 	comp -= comp.xxyz * bitMsk;
-	gl_FragColor = comp;
+	out_Color = comp;
  #endif
 
  #if 1
@@ -28,14 +30,14 @@ void main()
 	comp = depth * bitSh;
 	comp.xy = fract(comp.xy);
 	comp -= comp.xxy * bitMsk;
-	gl_FragColor = vec4(comp, 1.0);
+	out_Color = vec4(comp, 1.0);
  #endif
 
  #if 0
 	// 8 bit precision
-	gl_FragColor = vec4(depth, depth, depth, 1);
+	out_Color = vec4(depth, depth, depth, 1);
  #endif
 #else
-	gl_FragColor = vec4(0, 0, 0, 1);
+	out_Color = vec4(0, 0, 0, 1);
 #endif
 }

@@ -1,16 +1,17 @@
 uniform sampler2D u_TextureMap;
+uniform vec4 u_Color;
+uniform vec2 u_InvTexRes;
 
-uniform vec4      u_Color;
+in vec2 var_TexCoords;
 
-uniform vec2      u_InvTexRes;
-varying vec2      var_TexCoords;
+out vec4 out_Color;
 
-const vec3  LUMINANCE_VECTOR =   vec3(0.2125, 0.7154, 0.0721); //vec3(0.299, 0.587, 0.114);
+const vec3  LUMINANCE_VECTOR = vec3(0.2125, 0.7154, 0.0721); //vec3(0.299, 0.587, 0.114);
 
 vec3 GetValues(vec2 offset, vec3 current)
 {
-	vec3 minAvgMax;
-	vec2 tc = var_TexCoords + u_InvTexRes * offset; minAvgMax = texture2D(u_TextureMap, tc).rgb;
+	vec2 tc = var_TexCoords + u_InvTexRes * offset;
+	vec3 minAvgMax = texture(u_TextureMap, tc).rgb;
 
 #ifdef FIRST_PASS
 	float lumi = max(dot(LUMINANCE_VECTOR, minAvgMax), 0.000001);
@@ -18,7 +19,10 @@ vec3 GetValues(vec2 offset, vec3 current)
 	minAvgMax = vec3(loglumi * 0.05 + 0.5);
 #endif
 
-	return vec3(min(current.x, minAvgMax.x), current.y + minAvgMax.y, max(current.z, minAvgMax.z));
+	return vec3(
+		min(current.x, minAvgMax.x),
+		current.y + minAvgMax.y,
+		max(current.z, minAvgMax.z));
 }
 
 void main()
@@ -51,5 +55,5 @@ void main()
 	current.y *= 0.0625;
 #endif
 
-	gl_FragColor = vec4(current, 1.0f);
+	out_Color = vec4(current, 1.0f);
 }

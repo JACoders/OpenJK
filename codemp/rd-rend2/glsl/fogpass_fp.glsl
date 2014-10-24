@@ -1,16 +1,17 @@
-uniform vec4  u_Color;
+uniform vec4 u_Color;
 
-varying float var_Scale;
+in float var_Scale;
 
+out vec4 out_Color;
 out vec4 out_Glow;
 
 void main()
 {
-	gl_FragColor = u_Color;
-	gl_FragColor.a = sqrt(clamp(var_Scale, 0.0, 1.0));
+	out_Color.rgb = u_Color.rgb;
+	out_Color.a = sqrt(clamp(var_Scale, 0.0, 1.0));
 
 #if defined(USE_GLOW_BUFFER)
-	out_Glow = gl_FragColor;
+	out_Glow = out_Color;
 #else
 	out_Glow = vec4(0.0);
 #endif

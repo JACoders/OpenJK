@@ -1,38 +1,38 @@
-attribute vec3  attr_Position;
-attribute vec3  attr_Normal;
+in vec3 attr_Position;
+in vec3 attr_Normal;
 
-attribute vec2  attr_TexCoord0;
+in vec2 attr_TexCoord0;
 
 #if defined(USE_VERTEX_ANIMATION)
-attribute vec3  attr_Position2;
-attribute vec3  attr_Normal2;
+in vec3 attr_Position2;
+in vec3 attr_Normal2;
 #elif defined(USE_SKELETAL_ANIMATION)
-attribute vec4 attr_BoneIndexes;
-attribute vec4 attr_BoneWeights;
+in vec4 attr_BoneIndexes;
+in vec4 attr_BoneWeights;
 #endif
 
-uniform vec4    u_FogDistance;
-uniform vec4    u_FogDepth;
-uniform float   u_FogEyeT;
+uniform vec4 u_FogDistance;
+uniform vec4 u_FogDepth;
+uniform float u_FogEyeT;
 
 #if defined(USE_DEFORM_VERTEXES)
-uniform int    u_DeformType;
-uniform int    u_DeformFunc;
-uniform float  u_DeformParams[7];
+uniform int u_DeformType;
+uniform int u_DeformFunc;
+uniform float u_DeformParams[7];
 #endif
 
-uniform float   u_Time;
-uniform mat4    u_ModelViewProjectionMatrix;
+uniform float u_Time;
+uniform mat4 u_ModelViewProjectionMatrix;
 
 #if defined(USE_VERTEX_ANIMATION)
-uniform float   u_VertexLerp;
+uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4	u_BoneMatrices[20];
+uniform mat4 u_BoneMatrices[20];
 #endif
 
-uniform vec4  u_Color;
+uniform vec4 u_Color;
 
-varying float   var_Scale;
+out float var_Scale;
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )

@@ -1,72 +1,72 @@
-attribute vec3 attr_Position;
-attribute vec3 attr_Normal;
+in vec3 attr_Position;
+in vec3 attr_Normal;
 
 #if defined(USE_VERTEX_ANIMATION)
-attribute vec3 attr_Position2;
-attribute vec3 attr_Normal2;
+in vec3 attr_Position2;
+in vec3 attr_Normal2;
 #elif defined(USE_SKELETAL_ANIMATION)
-attribute vec4 attr_BoneIndexes;
-attribute vec4 attr_BoneWeights;
+in vec4 attr_BoneIndexes;
+in vec4 attr_BoneWeights;
 #endif
 
-attribute vec4 attr_Color;
-attribute vec2 attr_TexCoord0;
+in vec4 attr_Color;
+in vec2 attr_TexCoord0;
 
 #if defined(USE_LIGHTMAP) || defined(USE_TCGEN)
-attribute vec2 attr_TexCoord1;
+in vec2 attr_TexCoord1;
 #endif
 
-uniform vec4   u_DiffuseTexMatrix;
-uniform vec4   u_DiffuseTexOffTurb;
+uniform vec4 u_DiffuseTexMatrix;
+uniform vec4 u_DiffuseTexOffTurb;
 
 #if defined(USE_TCGEN) || defined(USE_RGBAGEN)
-uniform vec3   u_LocalViewOrigin;
+uniform vec3 u_LocalViewOrigin;
 #endif
 
 #if defined(USE_TCGEN)
-uniform int    u_TCGen0;
-uniform vec3   u_TCGen0Vector0;
-uniform vec3   u_TCGen0Vector1;
+uniform int u_TCGen0;
+uniform vec3 u_TCGen0Vector0;
+uniform vec3 u_TCGen0Vector1;
 #endif
 
 #if defined(USE_FOG)
-uniform vec4   u_FogDistance;
-uniform vec4   u_FogDepth;
-uniform float  u_FogEyeT;
-uniform vec4   u_FogColorMask;
+uniform vec4 u_FogDistance;
+uniform vec4 u_FogDepth;
+uniform float u_FogEyeT;
+uniform vec4 u_FogColorMask;
 #endif
 
 #if defined(USE_DEFORM_VERTEXES)
-uniform int    u_DeformType;
-uniform int    u_DeformFunc;
-uniform float  u_DeformParams[7];
-uniform float  u_Time;
+uniform int u_DeformType;
+uniform int u_DeformFunc;
+uniform float u_DeformParams[7];
+uniform float u_Time;
 #endif
 
-uniform mat4   u_ModelViewProjectionMatrix;
-uniform vec4   u_BaseColor;
-uniform vec4   u_VertColor;
+uniform mat4 u_ModelViewProjectionMatrix;
+uniform vec4 u_BaseColor;
+uniform vec4 u_VertColor;
 
 #if defined(USE_RGBAGEN)
-uniform int    u_ColorGen;
-uniform int    u_AlphaGen;
-uniform vec3   u_AmbientLight;
-uniform vec3   u_DirectedLight;
-uniform vec3   u_ModelLightDir;
-uniform float  u_PortalRange;
+uniform int u_ColorGen;
+uniform int u_AlphaGen;
+uniform vec3 u_AmbientLight;
+uniform vec3 u_DirectedLight;
+uniform vec3 u_ModelLightDir;
+uniform float u_PortalRange;
 #endif
 
 #if defined(USE_VERTEX_ANIMATION)
-uniform float  u_VertexLerp;
+uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4   u_BoneMatrices[20];
+uniform mat4 u_BoneMatrices[20];
 #endif
 
-varying vec2   var_DiffuseTex;
+out vec2 var_DiffuseTex;
 #if defined(USE_LIGHTMAP)
-varying vec2   var_LightTex;
+out vec2 var_LightTex;
 #endif
-varying vec4   var_Color;
+out vec4 var_Color;
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )

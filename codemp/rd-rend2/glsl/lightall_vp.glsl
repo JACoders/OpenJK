@@ -1,28 +1,28 @@
-attribute vec2 attr_TexCoord0;
+in vec2 attr_TexCoord0;
 #if defined(USE_LIGHTMAP) || defined(USE_TCGEN)
-attribute vec2 attr_TexCoord1;
+in vec2 attr_TexCoord1;
 #endif
-attribute vec4 attr_Color;
+in vec4 attr_Color;
 
-attribute vec3 attr_Position;
-attribute vec3 attr_Normal;
+in vec3 attr_Position;
+in vec3 attr_Normal;
 #if defined(USE_VERT_TANGENT_SPACE)
-attribute vec4 attr_Tangent;
+in vec4 attr_Tangent;
 #endif
 
 #if defined(USE_VERTEX_ANIMATION)
-attribute vec3 attr_Position2;
-attribute vec3 attr_Normal2;
+in vec3 attr_Position2;
+in vec3 attr_Normal2;
   #if defined(USE_VERT_TANGENT_SPACE)
-attribute vec4 attr_Tangent2;
+in vec4 attr_Tangent2;
   #endif
 #elif defined(USE_SKELETAL_ANIMATION)
-attribute vec4 attr_BoneIndexes;
-attribute vec4 attr_BoneWeights;
+in vec4 attr_BoneIndexes;
+in vec4 attr_BoneWeights;
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_LIGHT_VECTOR)
-attribute vec3 attr_LightDirection;
+in vec3 attr_LightDirection;
 #endif
 
 #if defined(USE_DELUXEMAP)
@@ -30,71 +30,70 @@ uniform vec4   u_EnableTextures; // x = normal, y = deluxe, z = specular, w = cu
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-uniform vec3   u_ViewOrigin;
+uniform vec3 u_ViewOrigin;
 #endif
 
 #if defined(USE_TCGEN)
-uniform int    u_TCGen0;
-uniform vec3   u_TCGen0Vector0;
-uniform vec3   u_TCGen0Vector1;
-uniform vec3   u_LocalViewOrigin;
+uniform int u_TCGen0;
+uniform vec3 u_TCGen0Vector0;
+uniform vec3 u_TCGen0Vector1;
+uniform vec3 u_LocalViewOrigin;
 #endif
 
 #if defined(USE_TCMOD)
-uniform vec4   u_DiffuseTexMatrix;
-uniform vec4   u_DiffuseTexOffTurb;
+uniform vec4 u_DiffuseTexMatrix;
+uniform vec4 u_DiffuseTexOffTurb;
 #endif
 
-uniform mat4   u_ModelViewProjectionMatrix;
-uniform vec4   u_BaseColor;
-uniform vec4   u_VertColor;
+uniform mat4 u_ModelViewProjectionMatrix;
+uniform vec4 u_BaseColor;
+uniform vec4 u_VertColor;
 
 #if defined(USE_MODELMATRIX)
-uniform mat4   u_ModelMatrix;
+uniform mat4 u_ModelMatrix;
 #endif
 
 #if defined(USE_VERTEX_ANIMATION)
-uniform float  u_VertexLerp;
+uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4   u_BoneMatrices[20];
+uniform mat4 u_BoneMatrices[20];
 #endif
 
 #if defined(USE_LIGHT_VECTOR)
-uniform vec4   u_LightOrigin;
-uniform float  u_LightRadius;
+uniform vec4 u_LightOrigin;
+uniform float u_LightRadius;
   #if defined(USE_FAST_LIGHT)
-uniform vec3   u_DirectedLight;
-uniform vec3   u_AmbientLight;
+uniform vec3 u_DirectedLight;
+uniform vec3 u_AmbientLight;
   #endif
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-uniform vec4  u_PrimaryLightOrigin;
+uniform vec4 u_PrimaryLightOrigin;
 uniform float u_PrimaryLightRadius;
 #endif
 
-varying vec4   var_TexCoords;
+out vec4 var_TexCoords;
+out vec4 var_Color;
+out vec3 var_N;
 
-varying vec4   var_Color;
-
-varying vec3 var_N;
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
   #if defined(USE_VERT_TANGENT_SPACE)
-varying vec4   var_Normal;
-varying vec4   var_Tangent;
-varying vec4   var_Bitangent;
-  #else
-varying vec3   var_Normal;
-varying vec3   var_ViewDir;
+out vec4 var_Normal;
+out vec4 var_Tangent;
+out vec4 var_Bitangent;
+  #else	 
+out vec3 var_Normal;
+out vec3 var_ViewDir;
   #endif
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-varying vec4   var_LightDir;
+out vec4 var_LightDir;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-varying vec4   var_PrimaryLightDir;
+out vec4 var_PrimaryLightDir;
 #endif
 
 #if defined(USE_TCGEN)
@@ -274,7 +273,7 @@ void main()
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 	vec3 viewDir = u_ViewOrigin - position;
   #if defined(USE_VERT_TANGENT_SPACE)
-	// store view direction in tangent space to save on varyings
+	// store view direction in tangent space to save on outs
 	var_Normal    = vec4(normal,    viewDir.x);
 	var_Tangent   = vec4(tangent,   viewDir.y);
 	var_Bitangent = vec4(bitangent, viewDir.z);

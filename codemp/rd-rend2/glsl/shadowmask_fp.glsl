@@ -6,17 +6,19 @@ uniform sampler2D u_ShadowMap2;
 uniform sampler2D u_ShadowMap3;
 #endif
 
-uniform mat4      u_ShadowMvp;
+uniform mat4 u_ShadowMvp;
 #if defined(USE_SHADOW_CASCADE)
-uniform mat4      u_ShadowMvp2;
-uniform mat4      u_ShadowMvp3;
+uniform mat4 u_ShadowMvp2;
+uniform mat4 u_ShadowMvp3;
 #endif
 
-uniform vec3   u_ViewOrigin;
-uniform vec4   u_ViewInfo; // zfar / znear, zfar
+uniform vec3 u_ViewOrigin;
+uniform vec4 u_ViewInfo; // zfar / znear, zfar
 
-varying vec2   var_DepthTex;
-varying vec3   var_ViewDir;
+in vec2 var_DepthTex;
+in vec3 var_ViewDir;
+
+out vec4 out_Color;
 
 // depth is GL_DEPTH_COMPONENT24
 // so the maximum error is 1.0 / 2^24
@@ -50,23 +52,23 @@ float PCF(const sampler2D shadowmap, const vec2 st, const float dist)
 	float cosr = cos(r) * scale;
 	mat2 rmat = mat2(cosr, sinr, -sinr, cosr);
 
-	mult =  step(dist, texture2D(shadowmap, st + rmat * vec2(-0.7055767, 0.196515)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(0.3524343, -0.7791386)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(0.2391056, 0.9189604)).r);
+	mult =  step(dist, texture(shadowmap, st + rmat * vec2(-0.7055767, 0.196515)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.3524343, -0.7791386)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.2391056, 0.9189604)).r);
   #if defined(USE_SHADOW_FILTER2)
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(-0.07580382, -0.09224417)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(0.5784913, -0.002528916)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(0.192888, 0.4064181)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(-0.6335801, -0.5247476)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(-0.5579782, 0.7491854)).r);
-	mult += step(dist, texture2D(shadowmap, st + rmat * vec2(0.7320465, 0.6317794)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.07580382, -0.09224417)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.5784913, -0.002528916)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.192888, 0.4064181)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.6335801, -0.5247476)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(-0.5579782, 0.7491854)).r);
+	mult += step(dist, texture(shadowmap, st + rmat * vec2(0.7320465, 0.6317794)).r);
 
 	mult *= 0.11111;
   #else
     mult *= 0.33333;
   #endif
 #else
-	mult = step(dist, texture2D(shadowmap, st).r);
+	mult = step(dist, texture(shadowmap, st).r);
 #endif
 		
 	return mult;
@@ -74,9 +76,9 @@ float PCF(const sampler2D shadowmap, const vec2 st, const float dist)
 
 float getLinearDepth(sampler2D depthMap, vec2 tex, float zFarDivZNear)
 {
-		float sampleZDivW = texture2D(depthMap, tex).r;
-		sampleZDivW -= DEPTH_MAX_ERROR;
-		return 1.0 / mix(zFarDivZNear, 1.0, sampleZDivW);
+	float sampleZDivW = texture(depthMap, tex).r;
+	sampleZDivW -= DEPTH_MAX_ERROR;
+	return 1.0 / mix(zFarDivZNear, 1.0, sampleZDivW);
 }
 
 void main()
@@ -128,5 +130,5 @@ void main()
 	}
 #endif
 		
-	gl_FragColor = vec4(vec3(result), 1.0);
+	out_Color = vec4(vec3(result), 1.0);
 }

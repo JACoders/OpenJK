@@ -1,16 +1,18 @@
 uniform sampler2D u_ShadowMap;
+uniform vec3 u_LightForward;
+uniform vec3 u_LightUp;
+uniform vec3 u_LightRight;
+uniform vec4 u_LightOrigin;
+uniform float u_LightRadius;
 
-uniform vec3      u_LightForward;
-uniform vec3      u_LightUp;
-uniform vec3      u_LightRight;
-uniform vec4      u_LightOrigin;
-uniform float     u_LightRadius;
-varying vec3      var_Position;
-varying vec3      var_Normal;
+in vec3 var_Position;
+in vec3 var_Normal;
+
+out vec4 out_Color;
 
 float sampleDistMap(sampler2D texMap, vec2 uv, float scale)
 {
-	vec3 distv = texture2D(texMap, uv).xyz;
+	vec3 distv = texture(texMap, uv).xyz;
 	return dot(distv, vec3(1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0)) * scale;
 }
 
@@ -93,6 +95,6 @@ void main()
 	intensity *= max(sign(lightDist - dist), 0.0);
 #endif
 		
-	gl_FragColor.rgb = vec3(0);
-	gl_FragColor.a = clamp(intensity, 0.0, 0.75);
+	out_Color.rgb = vec3(0.0);
+	out_Color.a = clamp(intensity, 0.0, 0.75);
 }

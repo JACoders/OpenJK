@@ -1,12 +1,12 @@
 uniform sampler2D u_TextureMap;
 uniform sampler2D u_LevelsMap;
+uniform vec4 u_Color;
+uniform vec2  u_AutoExposureMinMax;
+uniform vec3   u_ToneMinAvgMaxLinear;
 
-uniform vec4      u_Color;
+in vec2 var_TexCoords;
 
-uniform vec2      u_AutoExposureMinMax;
-uniform vec3      u_ToneMinAvgMaxLinear;
-
-varying vec2      var_TexCoords;
+out vec4 out_Color;
 
 const vec3  LUMINANCE_VECTOR =   vec3(0.2125, 0.7154, 0.0721); //vec3(0.299, 0.587, 0.114);
 
@@ -31,8 +31,8 @@ vec3 FilmicTonemap(vec3 x)
 
 void main()
 {
-	vec4 color = texture2D(u_TextureMap, var_TexCoords) * u_Color;
-	vec3 minAvgMax = texture2D(u_LevelsMap, var_TexCoords).rgb;
+	vec4 color = texture(u_TextureMap, var_TexCoords) * u_Color;
+	vec3 minAvgMax = texture(u_LevelsMap, var_TexCoords).rgb;
 	vec3 logMinAvgMaxLum = clamp(minAvgMax * 20.0 - 10.0, -u_AutoExposureMinMax.y, -u_AutoExposureMinMax.x);
 		
 	float avgLum = exp2(logMinAvgMaxLum.y);
@@ -44,5 +44,5 @@ void main()
 	vec3 fWhite = 1.0 / FilmicTonemap(vec3(u_ToneMinAvgMaxLinear.z - u_ToneMinAvgMaxLinear.x));
 	color.rgb = FilmicTonemap(color.rgb) * fWhite;
 	
-	gl_FragColor = clamp(color, 0.0, 1.0);
+	out_Color = clamp(color, 0.0, 1.0);
 }

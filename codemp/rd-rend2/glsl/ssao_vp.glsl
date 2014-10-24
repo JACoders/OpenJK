@@ -1,7 +1,7 @@
-attribute vec4 attr_Position;
-attribute vec4 attr_TexCoord0;
+in vec4 attr_Position;
+in vec4 attr_TexCoord0;
 
-varying vec2   var_ScreenTex;
+out vec2 var_ScreenTex;
 
 void main()
 {

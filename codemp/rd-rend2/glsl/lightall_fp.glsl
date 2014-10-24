@@ -26,54 +26,54 @@ uniform samplerCube u_CubeMap;
 
 #if defined(USE_NORMALMAP) || defined(USE_DELUXEMAP) || defined(USE_SPECULARMAP) || defined(USE_CUBEMAP)
 // y = deluxe, w = cube
-uniform vec4      u_EnableTextures;
+uniform vec4 u_EnableTextures;
 #endif
 
 #if defined(USE_LIGHT_VECTOR) && !defined(USE_FAST_LIGHT)
-uniform vec3      u_DirectedLight;
-uniform vec3      u_AmbientLight;
+uniform vec3 u_DirectedLight;
+uniform vec3 u_AmbientLight;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-uniform vec3  u_PrimaryLightColor;
-uniform vec3  u_PrimaryLightAmbient;
+uniform vec3 u_PrimaryLightColor;
+uniform vec3 u_PrimaryLightAmbient;
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-uniform vec4      u_NormalScale;
-uniform vec4      u_SpecularScale;
+uniform vec4 u_NormalScale;
+uniform vec4 u_SpecularScale;
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 #if defined(USE_CUBEMAP)
-uniform vec4      u_CubeMapInfo;
+uniform vec4 u_CubeMapInfo;
 #endif
 #endif
 
 
-varying vec4      var_TexCoords;
-
-varying vec4      var_Color;
+in vec4 var_TexCoords;
+in vec4 var_Color;
 
 #if (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT))
   #if defined(USE_VERT_TANGENT_SPACE)
-varying vec4   var_Normal;
-varying vec4   var_Tangent;
-varying vec4   var_Bitangent;
+in vec4 var_Normal;
+in vec4 var_Tangent;
+in vec4 var_Bitangent;
   #else
-varying vec3   var_Normal;
-varying vec3   var_ViewDir;
+in vec3 var_Normal;
+in vec3 var_ViewDir;
   #endif
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-varying vec4      var_LightDir;
+in vec4 var_LightDir;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-varying vec4      var_PrimaryLightDir;
+in vec4 var_PrimaryLightDir;
 #endif
 
+out vec4 out_Color;
 out vec4 out_Glow;
 
 #define EPSILON 0.00000001
@@ -82,9 +82,9 @@ out vec4 out_Glow;
 float SampleDepth(sampler2D normalMap, vec2 t)
 {
   #if defined(SWIZZLE_NORMALMAP)
-	return 1.0 - texture2D(normalMap, t).r;
+	return 1.0 - texture(normalMap, t).r;
   #else
-	return 1.0 - texture2D(normalMap, t).a;
+	return 1.0 - texture(normalMap, t).a;
   #endif
 }
 
@@ -267,13 +267,13 @@ void main()
 
 	L = var_LightDir.xyz;
   #if defined(USE_DELUXEMAP)
-	L += (texture2D(u_DeluxeMap, var_TexCoords.zw).xyz - vec3(0.5)) * u_EnableTextures.y;
+	L += (texture(u_DeluxeMap, var_TexCoords.zw).xyz - vec3(0.5)) * u_EnableTextures.y;
   #endif
 	float sqrLightDist = dot(L, L);
 #endif
 
 #if defined(USE_LIGHTMAP)
-	vec4 lightmapColor = texture2D(u_LightMap, var_TexCoords.zw);
+	vec4 lightmapColor = texture(u_LightMap, var_TexCoords.zw);
   #if defined(RGBM_LIGHTMAP)
 	lightmapColor.rgb *= lightmapColor.a;
   #endif
@@ -289,7 +289,7 @@ void main()
 	texCoords += offsetDir.xy * RayIntersectDisplaceMap(texCoords, offsetDir.xy, u_NormalMap);
 #endif
 
-	vec4 diffuse = texture2D(u_DiffuseMap, texCoords);
+	vec4 diffuse = texture(u_DiffuseMap, texCoords);
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
   #if defined(USE_LIGHTMAP)
@@ -308,9 +308,9 @@ void main()
 
   #if defined(USE_NORMALMAP)
     #if defined(SWIZZLE_NORMALMAP)
-	N.xy = texture2D(u_NormalMap, texCoords).ag - vec2(0.5);
+	N.xy = texture(u_NormalMap, texCoords).ag - vec2(0.5);
     #else
-	N.xy = texture2D(u_NormalMap, texCoords).rg - vec2(0.5);
+	N.xy = texture(u_NormalMap, texCoords).rg - vec2(0.5);
     #endif
 	N.xy *= u_NormalScale.xy;
 	N.z = sqrt(clamp((0.25 - N.x * N.x) - N.y * N.y, 0.0, 1.0));
@@ -324,7 +324,7 @@ void main()
 
   #if defined(USE_SHADOWMAP) 
 	vec2 shadowTex = gl_FragCoord.xy * r_FBufScale;
-	float shadowValue = texture2D(u_ShadowMap, shadowTex).r;
+	float shadowValue = texture(u_ShadowMap, shadowTex).r;
 
 	// surfaces not facing the light are always shadowed
 	shadowValue *= float(dot(var_Normal.xyz, var_PrimaryLightDir.xyz) > 0.0);
@@ -360,7 +360,7 @@ void main()
 	NE = clamp(dot(N, E), 0.0, 1.0);
 
   #if defined(USE_SPECULARMAP)
-	vec4 specular = texture2D(u_SpecularMap, texCoords);
+	vec4 specular = texture(u_SpecularMap, texCoords);
   #else
 	vec4 specular = vec4(1.0);
   #endif
@@ -404,7 +404,7 @@ void main()
     #endif
   #endif
 
-	gl_FragColor.rgb  = lightColor   * reflectance * (attenuation * NL);
+	out_Color.rgb  = lightColor   * reflectance * (attenuation * NL);
 
 #if 0
 	vec3 aSpecular = EnvironmentBRDF(gloss, NE, specular.rgb);
@@ -415,10 +415,10 @@ void main()
 	float hemiSpecularUp   = mix(hemiDiffuseUp, float(N.z >= 0.0), gloss);
 	float hemiSpecularDown = 1.0 - hemiSpecularUp;
 
-	gl_FragColor.rgb += ambientColor * 0.75 * (diffuse.rgb * hemiDiffuseUp   + aSpecular * hemiSpecularUp);
-	gl_FragColor.rgb += ambientColor * 0.25 * (diffuse.rgb * hemiDiffuseDown + aSpecular * hemiSpecularDown);
+	out_Color.rgb += ambientColor * 0.75 * (diffuse.rgb * hemiDiffuseUp   + aSpecular * hemiSpecularUp);
+	out_Color.rgb += ambientColor * 0.25 * (diffuse.rgb * hemiDiffuseDown + aSpecular * hemiSpecularDown);
 #else
-	gl_FragColor.rgb += ambientColor * (diffuse.rgb + specular.rgb);
+	out_Color.rgb += ambientColor * (diffuse.rgb + specular.rgb);
 #endif
 
   #if defined(USE_CUBEMAP)
@@ -430,9 +430,9 @@ void main()
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
 
-	vec3 cubeLightColor = textureCubeLod(u_CubeMap, R + parallax, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
+	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
 
-	gl_FragColor.rgb += cubeLightColor * reflectance;
+	out_Color.rgb += cubeLightColor * reflectance;
   #endif
 
   #if defined(USE_PRIMARY_LIGHT)
@@ -466,7 +466,7 @@ void main()
 	// enable when point lights are supported as primary lights
 	//lightColor *= CalcLightAttenuation(float(u_PrimaryLightDir.w > 0.0), u_PrimaryLightDir.w / sqrLightDist);
 
-	gl_FragColor.rgb += lightColor * reflectance * NL2;
+	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
 
 #else
@@ -475,13 +475,13 @@ void main()
 	lightColor *= lightmapColor.rgb;
   #endif
 
-    gl_FragColor.rgb = diffuse.rgb * lightColor;
+    out_Color.rgb = diffuse.rgb * lightColor;
 #endif
 	
-	gl_FragColor.a = diffuse.a * var_Color.a;
+	out_Color.a = diffuse.a * var_Color.a;
 
 #if defined(USE_GLOW_BUFFER)
-	out_Glow = gl_FragColor;
+	out_Glow = out_Color;
 #else
 	out_Glow = vec4(0.0);
 #endif

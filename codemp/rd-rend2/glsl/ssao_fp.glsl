@@ -1,8 +1,9 @@
 uniform sampler2D u_ScreenDepthMap;
+uniform vec4 u_ViewInfo; // zfar / znear, zfar
 
-uniform vec4   u_ViewInfo; // zfar / znear, zfar
+in vec2 var_ScreenTex;
 
-varying vec2   var_ScreenTex;
+out vec4 out_Color;
 
 vec2 poissonDisc[9] = vec2[9](
 vec2(-0.7055767, 0.196515),    vec2(0.3524343, -0.7791386),
@@ -39,7 +40,7 @@ mat2 randomRotation( const vec2 p )
 
 float getLinearDepth(sampler2D depthMap, const vec2 tex, const float zFarDivZNear)
 {
-		float sampleZDivW = texture2D(depthMap, tex).r;
+		float sampleZDivW = texture(depthMap, tex).r;
 		return 1.0 / mix(zFarDivZNear, 1.0, sampleZDivW);
 }
 
@@ -82,5 +83,5 @@ void main()
 {
 	float result = ambientOcclusion(u_ScreenDepthMap, var_ScreenTex, u_ViewInfo.x, u_ViewInfo.y);
 			
-	gl_FragColor = vec4(vec3(result), 1.0);
+	out_Color = vec4(vec3(result), 1.0);
 }
