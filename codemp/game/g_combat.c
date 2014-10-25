@@ -4783,7 +4783,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.improvements_level)));
 		else if (attacker->client->pers.rpg_class == 4 && mod == MOD_MELEE)
 		{
-			damage = damage * (1 + attacker->client->pers.improvements_level);
+			damage = damage * (1.0 + (attacker->client->pers.improvements_level*0.8));
 			is_a_monk = qtrue;
 		}
 		else if (attacker->client->pers.rpg_class == 5 && (mod == MOD_STUN_BATON || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || 
@@ -5873,7 +5873,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (targ->client->pers.rpg_class == 2 && targ->client->pers.secrets_found & (1 << 1))
 				bonus_resistance = 0.05;
 			else if (targ->client->pers.rpg_class == 4) // zyk: Monk damage resistance
-				bonus_resistance = 0.02 * (targ->client->pers.improvements_level + 1);
+				bonus_resistance = (0.03 * targ->client->pers.improvements_level);
 
 			take = (int)ceil(take * (1.0 - bonus_resistance - (0.1 * targ->client->pers.health_strength)));
 		}
