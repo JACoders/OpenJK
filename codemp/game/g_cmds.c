@@ -9839,11 +9839,15 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 14))
 		{
-			sprintf(message,"%s\n^314 - Mind Control ^1OFF", message);
+			sprintf(message,"%s\n^314 - Boss Battle Music ^1Custom", message);
+		}
+		else if (ent->client->pers.player_settings & (1 << 25))
+		{
+			sprintf(message,"%s\n^314 - Boss Battle Music ^3MP Duel", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^314 - Mind Control ^2ON", message);
+			sprintf(message,"%s\n^314 - Boss Battle Music ^2Hoth2 Action", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 15))
@@ -9887,7 +9891,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			return;
 		}
 
-		if (value != 8 && value != 15)
+		if (value != 8 && value != 14 && value != 15)
 		{
 			if (ent->client->pers.player_settings & (1 << value))
 			{
@@ -9898,6 +9902,25 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			{
 				ent->client->pers.player_settings |= (1 << value);
 				strcpy(new_status,"^1OFF^7");
+			}
+		}
+		else if (value == 14)
+		{
+			if (ent->client->pers.player_settings & (1 << 14))
+			{
+				ent->client->pers.player_settings &= ~(1 << 14);
+				ent->client->pers.player_settings |= (1 << 25);
+				strcpy(new_status,"^3MP Duel^7");
+			}
+			else if (ent->client->pers.player_settings & (1 << 25))
+			{
+				ent->client->pers.player_settings &= ~(1 << 25);
+				strcpy(new_status,"^2Hoth2 Action^7");
+			}
+			else
+			{
+				ent->client->pers.player_settings |= (1 << 14);
+				strcpy(new_status,"^1Custom^7");
 			}
 		}
 		else if (value == 15)
@@ -10020,7 +10043,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 14)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Mind Control %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Boss Battle Music %s\n\"", new_status) );
 		}
 		else if (value == 15)
 		{

@@ -3802,6 +3802,14 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	if (guardian_mode != 14)
 		zyk_NPC_Kill_f("all");
 
+	// zyk: boss battle music
+	if (ent->client->pers.player_settings & (1 << 14)) // Custom
+		trap->SetConfigstring( CS_MUSIC, "music/boss_custom.mp3" );
+	else if (ent->client->pers.player_settings & (1 << 25)) // MP Duel
+		trap->SetConfigstring( CS_MUSIC, "music/mp/duel.mp3" );
+	else // Hoth2 Action
+		trap->SetConfigstring( CS_MUSIC, "music/hoth2/hoth2_action.mp3" );
+
 	// zyyk: removing noclip from the player
 	ent->client->noclip = qfalse;
 }

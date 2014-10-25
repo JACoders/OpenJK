@@ -1339,6 +1339,9 @@ typedef struct level_locals_s {
 	// zyk: if npc is not stuck, set this as qtrue
 	qboolean validated_map_guardian;
 
+	// zyk: default map music. After a boss battle, resets music to this one
+	char default_map_music[128];
+
 	int initial_map_guardian_weapons;
 } level_locals_t;
 

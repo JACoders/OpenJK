@@ -1546,6 +1546,9 @@ void SP_worldspawn( void )
 	G_SpawnString( "music", "", &text );
 	trap->SetConfigstring( CS_MUSIC, text );
 
+	// zyk: setting default map music
+	strcpy(level.default_map_music,text);
+
 	G_SpawnString( "message", "", &text );
 	trap->SetConfigstring( CS_MESSAGE, text );				// map specific message
 
