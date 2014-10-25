@@ -78,6 +78,13 @@ typedef struct PlayerID_s {
 } PlayerID_t;
 */
 
+void getDateTime(int time, char * timeStr, size_t timeStrSize) {
+	time_t	timeGMT;
+	time -= 60*60*4; //EST timezone -4?
+	timeGMT = (time_t)time;
+	strftime( timeStr, timeStrSize, "%m/%d/%y %I:%M %p", gmtime( &timeGMT ) );
+}
+
 unsigned int ip_to_int (const char * ip) {
     unsigned v = 0;
     int i;
@@ -1157,7 +1164,6 @@ void Svcmd_AccountInfo_f(void)
 	char username[16], timeStr[64] = {0}, buf[MAX_STRING_CHARS-64] = {0};
 	int row = 0, lastlogin;
 	unsigned int lastip;
-	time_t	timeGMT;
 
 	if (trap->Argc() != 2) {
 		trap->Print( "Usage: /accountInfo <username>\n");
@@ -1207,8 +1213,7 @@ void Svcmd_AccountInfo_f(void)
 		return;
 	}
 
-	timeGMT = (time_t)lastlogin;
-	strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
 		Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
@@ -1382,7 +1387,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
-	time_t timeGMT;
 
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username>\n\"");
@@ -1470,8 +1474,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		realkdr = 0;
 	}
 
-	timeGMT = (time_t)lastlogin;
-	strftime( timeStr, sizeof( timeStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
@@ -1479,7 +1482,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
 	Q_strcat(buf, sizeof(buf), va("   ^5Race Scores: ^2%i\n", highscores)); //Loda fixme --
 	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
-	//Q_strcat(buf, sizeof(buf), va("  ^5Playtime / Lastlogin^3: ^2%i / %i\n", playtime, lastlogin);
 
 	//--find a way to rank player in defrag.. maybe when building every highscore table on mapload, increment number of points each player has in a new table..in database.. 
 	// make 1st places worth 10 points, 2nd place 9 points.. etc..? 
@@ -1715,7 +1717,6 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
     sqlite3_stmt * stmt;
 	int i, mstyle;
 	char mapName[40], courseName[40], info[1024] = {0}, dateStr[64] = {0};
-	time_t timeGMT;
 
 	trap->GetServerinfo(info, sizeof(info));
 	Q_strncpyz(mapName, Info_ValueForKey( info, "mapname" ), sizeof(mapName));
@@ -1770,8 +1771,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 					HighScores[i][style][rank].average = average;
 					HighScores[i][style][rank].style = style;
 
-					timeGMT = (time_t)end_time; //Maybe this should be done in the caching itself...but would also have to be done every racetime addition
-					strftime( dateStr, sizeof( dateStr ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &timeGMT ) );
+					getDateTime(end_time, dateStr, sizeof(dateStr));
 					Q_strncpyz(HighScores[i][style][rank].end_time, dateStr, sizeof(HighScores[i][style][rank].end_time));
 					rank++;
 				}
@@ -1848,7 +1848,6 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
     sqlite3_stmt * stmt;
 	int s, style, duration_ms = 0, i, course = -1;
 	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32], tempCourseName[32];
-	//time_t timeGMT;
 
 	if (trap->Argc() != 4 && trap->Argc() != 5) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /best <username> <full coursename> <style>.  Example: /best user mapname (coursename) style\n\"");
