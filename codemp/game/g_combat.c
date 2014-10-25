@@ -2056,12 +2056,6 @@ void G_AddPowerDuelLoserScore(int team, int score)
 	}
 }
 
-// zyk: stops the boss battle music and starts the default map music
-void zyk_play_default_music()
-{
-	trap->SetConfigstring( CS_MUSIC, G_NewString(level.default_map_music) );
-}
-
 /*
 ==================
 player_die
@@ -2187,8 +2181,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{ // zyk: rpg mode boss. Getting the quest player
 		quest_player = &g_entities[self->client->pers.guardian_invoked_by_id];
-
-		zyk_play_default_music();
 	}
 
 	// zyk: artifact holder of Universe Quest, set the player universe_quest_artifact_holder_id to -2 so he can get the artifact when he touches the force boon item
@@ -2396,8 +2388,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if (self->client->sess.amrpgmode == 2 && self->client->pers.guardian_mode > 0)
 	{ // zyk: player lost to a guardian
 		self->client->pers.guardian_mode = 0;
-
-		zyk_play_default_music();
 	}
 
 	//check player stuff

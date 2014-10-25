@@ -5288,6 +5288,9 @@ void quest_get_new_player(gentity_t *ent)
 
 	ent->client->pers.can_play_quest = 0;
 
+	// zyk: resets music when passing turn. Music could be the boss battle one
+	trap->SetConfigstring( CS_MUSIC, G_NewString(level.default_map_music) );
+
 	for (i = 0; i < level.maxclients; i++)
 	{ // zyk: verify if there is someone who is already playing a quest and is not in spectator mode
 		next_player = &g_entities[i];
