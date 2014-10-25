@@ -555,8 +555,13 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		Q_strcat(courseName, sizeof(courseName), va(" (%s)", message));
 	}
 
-	if (!CheckUserExists(username))
+	if (!CheckUserExists(username)) {//dont need? idk.. could remove if sql problems.. should never happen
+		G_SecurityLogPrintf( "ERROR: Race completed with invalid username!\n");
 		return;
+	}
+
+	if (average > topspeed)
+		average = topspeed; //need to sample speeds every clientframe.. but how to calculate average if client frames are not evenly spaced.. can use pml.msec ?
 
 	Q_strlwr(courseName);
 	Q_CleanStr(courseName);

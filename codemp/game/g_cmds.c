@@ -6699,7 +6699,6 @@ static qboolean LoadEnts(char *fileName) {
 	gentity_t *oldEnt;
 	gentity_t *newEnt;
 	int i, fLen, MAX_FILESIZE = 80*1024;
-	char info[1024] = {0};//, buf[80*1024];
 	fileHandle_t fh;
 	const char *token;
 	const char	*p;
