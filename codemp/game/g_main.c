@@ -517,6 +517,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.validated_map_guardian = qfalse;
 	level.initial_map_guardian_weapons = 0;
 
+	level.boss_battle_music_reset_timer = 0;
+
 	// zyk: getting mapname
 	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
 
@@ -4341,6 +4343,12 @@ void G_RunFrame( int levelTime ) {
 #ifdef _G_FRAME_PERFANAL
 	trap->PrecisionTimer_Start(&timer_ItemRun);
 #endif
+
+	if (level.boss_battle_music_reset_timer > 0 && level.boss_battle_music_reset_timer < level.time)
+	{
+		level.boss_battle_music_reset_timer = 0;
+		trap->SetConfigstring( CS_MUSIC, G_NewString(level.default_map_music) );
+	}
 
 	if (level.race_mode == 1 && level.race_start_timer < level.time)
 	{ // zyk: Race Mode. Tests if we should start the race

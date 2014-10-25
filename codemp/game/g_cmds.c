@@ -5286,10 +5286,6 @@ void quest_get_new_player(gentity_t *ent)
 	int i = 0;
 	gentity_t *next_player = NULL;
 
-	// zyk: resets music when passing turn. Music could be the boss battle one
-	if (ent->client->pers.can_play_quest == 1)
-		trap->SetConfigstring( CS_MUSIC, G_NewString(level.default_map_music) );
-
 	ent->client->pers.can_play_quest = 0;
 
 	for (i = 0; i < level.maxclients; i++)

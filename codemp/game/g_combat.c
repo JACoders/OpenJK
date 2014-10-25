@@ -2100,6 +2100,18 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if ( !attacker )
 		return;
 
+	// zyk: resetting boss battle music to default one if needed
+	if (self->client->pers.guardian_invoked_by_id != -1)
+	{
+		gentity_t *this_quest_player = &g_entities[self->client->pers.guardian_invoked_by_id];
+		if (this_quest_player->client->pers.guardian_mode > 0)
+			level.boss_battle_music_reset_timer = level.time + 1000;
+	}
+	else if (self->client->sess.amrpgmode == 2 && self->client->pers.guardian_mode > 0 && self->client->pers.can_play_quest == 1)
+	{
+		level.boss_battle_music_reset_timer = level.time + 1000;
+	}
+
 	if (self->client->pers.race_position > 0) // zyk: if a player dies during a race, he loses the race
 	{
 		self->client->pers.race_position = 0;

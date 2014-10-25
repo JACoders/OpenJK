@@ -1342,6 +1342,9 @@ typedef struct level_locals_s {
 	// zyk: default map music. After a boss battle, resets music to this one
 	char default_map_music[128];
 
+	// zyk: timer to reset boss song after battle ends
+	int boss_battle_music_reset_timer;
+
 	int initial_map_guardian_weapons;
 } level_locals_t;
 
