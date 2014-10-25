@@ -3856,7 +3856,7 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 						player_ent->client->ps.forceDodgeAnim = 0;
 						player_ent->client->ps.quickerGetup = qtrue;
 
-						G_Damage(player_ent,ent,ent,NULL,NULL,strength/10,0,MOD_UNKNOWN);
+						G_Damage(player_ent,ent,ent,NULL,NULL,strength/5,0,MOD_UNKNOWN);
 					}
 
 					if (i < level.maxclients)
@@ -8201,7 +8201,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 8)
 						{
-							earthquake(ent,2000,800,3000);
+							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 5000;
 
@@ -8537,7 +8537,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 8)
 						{
-							earthquake(ent,2000,800,3000);
+							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 
