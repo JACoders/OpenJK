@@ -1845,10 +1845,17 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					}
 				}
 
+				/*
 				if ( self->client->ps.weapon == WP_MELEE
 					&& self->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_2 )
 				{//2-handed lightning
 					//jackin' 'em up, Palpatine-style
+					dmg *= 2;
+				}
+				*/
+				// zyk: Lightning level 4 in RPG Mode causes double dmage
+				if (self->client->sess.amrpgmode == 2 && self->client->pers.force_powers_levels[13] > 3)
+				{
 					dmg *= 2;
 				}
 

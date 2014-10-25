@@ -5118,6 +5118,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	// zyk: lowered knockback. Default: knockback = damage
 	knockback = damage/2;
+	// zyk: Lightning level 4 in RPG Mode causes double dmage
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.force_powers_levels[13] > 3)
+	{
+		knockback *= 9;
+	}
+
 	if ( knockback > 200 ) {
 		knockback = 200;
 	}

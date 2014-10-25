@@ -4478,7 +4478,11 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
 		if (ent->client->pers.force_powers_levels[13] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
-		ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+
+		if (ent->client->pers.force_powers_levels[13] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+		else
+			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
 
 		// zyk: loading Grip value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && ent->client->pers.force_powers_levels[14] > 0)
@@ -5773,12 +5777,16 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 14)
 	{
-		if (ent->client->pers.force_powers_levels[13] < 3)
+		if (ent->client->pers.force_powers_levels[13] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
 			ent->client->pers.force_powers_levels[13]++;
-			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+
+			if (ent->client->pers.force_powers_levels[13] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7410,9 +7418,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message_content[3],"%s^513 - Team Heal: %d/3\n",message_content[3],ent->client->pers.force_powers_levels[12]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5)
-					sprintf(message_content[4],"%s^014 - Lightning: %d/3\n",message_content[4],ent->client->pers.force_powers_levels[13]);
+					sprintf(message_content[4],"%s^014 - Lightning: %d/4\n",message_content[4],ent->client->pers.force_powers_levels[13]);
 				else
-					sprintf(message_content[4],"%s^114 - Lightning: %d/3\n",message_content[4],ent->client->pers.force_powers_levels[13]);
+					sprintf(message_content[4],"%s^114 - Lightning: %d/4\n",message_content[4],ent->client->pers.force_powers_levels[13]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
 					sprintf(message_content[5],"%s^015 - Grip: %d/3\n",message_content[5],ent->client->pers.force_powers_levels[14]);
@@ -8067,7 +8075,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 13)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Team Heal: ^7restores some health to players near you\n\"" );
 					if (i == 14)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Lightning: ^7attacks with a powerful electric attack at players near you\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Lightning: ^7attacks with a powerful electric attack at players near you. At level 4, does more damage and pushes the enemy back\n\"" );
 					if (i == 15)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Grip: ^7attacks a player by holding and damaging him\n\"" );
 					if (i == 16)
