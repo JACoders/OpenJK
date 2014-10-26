@@ -325,6 +325,29 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 	}
 }
 
+// zyk: plays an animation from anims.h
+void Cmd_Emote_f( gentity_t *ent )
+{
+	char arg[MAX_TOKEN_CHARS] = {0};
+	int anim_id = -1;
+
+	if ( trap->Argc () < 2 ) {
+		trap->SendServerCommand( ent-g_entities, va("print \"Usage: emote <anim id between 0 and %d>\n\"",MAX_ANIMATIONS) );
+		return;
+	}
+
+	trap->Argv( 1, arg, sizeof( arg ) );
+	anim_id = atoi(arg);
+
+	if (anim_id < 0 || anim_id >= MAX_ANIMATIONS)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Usage: anim ID must be between 0 and %d>\n\"",MAX_ANIMATIONS) );
+		return;
+	}
+
+	G_SetAnim(ent, NULL, SETANIM_BOTH, anim_id, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART, 0);
+}
+
 void Cmd_Give_f( gentity_t *ent )
 {
 	char name[MAX_TOKEN_CHARS] = {0};
@@ -11522,6 +11545,7 @@ command_t commands[] = {
 	{ "down",				Cmd_DownSkill_f,			CMD_RPG|CMD_NOINTERMISSION },
 	{ "drop",				Cmd_Drop_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
+	{ "emote",				Cmd_Emote_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "entadd",				Cmd_EntAdd_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entedit",			Cmd_EntEdit_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entitysystem",		Cmd_EntitySystem_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
