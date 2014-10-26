@@ -519,6 +519,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
+	// zyk: if the default map music is empty (the map has no music) then set a default music
+	if (Q_stricmp(level.default_map_music, "") == 0)
+	{
+		strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
+	}
+
 	// zyk: getting mapname
 	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
 
