@@ -1077,6 +1077,9 @@ qboolean Team_GetLocationMsg(gentity_t *ent, char *loc, int loclen)
 {
 	gentity_t *best;
 
+	if (ent->client && ent->client->sess.sessionTeam == TEAM_SPECTATOR) //Dont do loc text if we are in spec..
+		return qfalse;
+
 	best = Team_GetLocation( ent );
 	
 	if (!best)
