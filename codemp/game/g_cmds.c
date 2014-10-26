@@ -6555,6 +6555,7 @@ void Cmd_Race_f(gentity_t *ent)
 		ent->client->pers.raceMode = qfalse;
 		ent->client->pers.noFollow = qfalse;
 		ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
+		ent->s.weapon = WP_SABER; //Dont drop our weapon
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled off.\n\"");
 	}
 	else {
