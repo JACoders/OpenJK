@@ -9864,6 +9864,10 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		{
 			sprintf(message,"%s\n^314 - Boss Battle Music ^1Custom", message);
 		}
+		else if (ent->client->pers.player_settings & (1 << 24))
+		{
+			sprintf(message,"%s\n^314 - Boss Battle Music ^7Korriban Action", message);
+		}
 		else if (ent->client->pers.player_settings & (1 << 25))
 		{
 			sprintf(message,"%s\n^314 - Boss Battle Music ^3MP Duel", message);
@@ -9932,6 +9936,12 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			if (ent->client->pers.player_settings & (1 << 14))
 			{
 				ent->client->pers.player_settings &= ~(1 << 14);
+				ent->client->pers.player_settings |= (1 << 24);
+				strcpy(new_status,"^7Korriban Action^7");
+			}
+			else if (ent->client->pers.player_settings & (1 << 24))
+			{
+				ent->client->pers.player_settings &= ~(1 << 24);
 				ent->client->pers.player_settings |= (1 << 25);
 				strcpy(new_status,"^3MP Duel^7");
 			}
