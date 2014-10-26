@@ -3822,6 +3822,14 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	// zyyk: removing noclip from the player
 	ent->client->noclip = qfalse;
+
+	// zyk: removing noclip from allies
+	if (ent->client->sess.ally1 != -1)
+		g_entities[ent->client->sess.ally1].client->noclip = qfalse;
+	if (ent->client->sess.ally2 != -1)
+		g_entities[ent->client->sess.ally2].client->noclip = qfalse;
+	if (ent->client->sess.ally3 != -1)
+		g_entities[ent->client->sess.ally3].client->noclip = qfalse;
 }
 
 // zyk: Healing Water
