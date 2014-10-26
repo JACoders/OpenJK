@@ -1804,6 +1804,7 @@ void TryUse( gentity_t *ent )
     if ( ((ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_HEALTHDISP)) || (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_AMMODISP))) &&
 		target && target->inuse && target->client && target->health > 0 /*&& OnSameTeam(ent, target)*/ && //make it so we can heal buddies in FFA even? lol
 		!ent->client->ps.stats[STAT_RACEMODE] && !target->client->ps.stats[STAT_RACEMODE] && !(ent->r.svFlags & SVF_BOT) &&
+		!ent->client->ps.duelInProgress && !target->client->ps.duelInProgress && 
 		(G_CanUseDispOn(target, HI_HEALTHDISP) || G_CanUseDispOn(target, HI_AMMODISP)) )
 	{ //a live target that's on my team, we can use him
 		if (G_CanUseDispOn(target, HI_HEALTHDISP) && (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_HEALTHDISP)))
