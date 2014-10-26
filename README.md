@@ -1,7 +1,7 @@
 # Zyk OpenJK Mod #
 
 
-This project is an OpenJK fork. Some years ago, I developed a mod called Zyk Mod. Now I am porting the code from this older project into this one. The idea is to create an account system with admin commands, a RPG level system, quests, and more. 
+This project is an OpenJK fork. Some years ago, I developed a mod called Zyk Mod. The code was ported the code from this older project into this one. This mod has an account system with admin commands, a RPG level system, quests, and more.
 
 
 # JACoders "OpenJK" project #
