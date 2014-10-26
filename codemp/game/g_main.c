@@ -8486,7 +8486,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 							
-									if (distance < 800)
+									if (distance < 700)
 									{
 										if (player_ent->client->jetPackOn)
 										{
@@ -8563,7 +8563,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-									if (distance < 1000)
+									if (distance < 900)
 									{
 										// zyk: set the player as being affected by Time Power
 										player_ent->client->pers.ultimate_power_target = 3;
@@ -8589,7 +8589,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-									if (distance < 1200)
+									if (distance < 1000)
 									{
 										if (player_ent->client->jetPackOn)
 										{
