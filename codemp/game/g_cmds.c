@@ -8352,7 +8352,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 8)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 10 per cent more damage in his starting weapons. Protects from stun baton 2/3 and 3/3 knock down and also from losing guns to force pull\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 20 per cent more damage in his starting weapons. Protects from stun baton 2/3 and 3/3 knock down and also from losing guns to force pull\n\n\"");
 		}
 		else if (i == 9)
 		{

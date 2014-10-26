@@ -4806,7 +4806,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			float stealth_attacker_bonus_damage = 0.0;
 			// zyk: Stealth Attacker Upgrade increases damage
 			if (attacker->client->pers.secrets_found & (1 << 7))
-				stealth_attacker_bonus_damage = 0.1;
+				stealth_attacker_bonus_damage = 0.2;
 
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level) + stealth_attacker_bonus_damage));
 		}
