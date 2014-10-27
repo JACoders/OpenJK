@@ -4481,7 +4481,11 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
 		if (ent->client->pers.force_powers_levels[10] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
-		ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+
+		if (ent->client->pers.force_powers_levels[10] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+		else
+			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
 
 		// zyk: loading Mind Trick value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && ent->client->pers.force_powers_levels[11] > 0)
@@ -5757,7 +5761,10 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
 			ent->client->pers.force_powers_levels[10]++;
-			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+			if (ent->client->pers.force_powers_levels[10] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7429,9 +7436,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message_content[0],"%s^510 - Heal: %d/3\n",message_content[0],ent->client->pers.force_powers_levels[9]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5)
-					sprintf(message_content[1],"%s^011 - Protect: %d/3\n",message_content[1],ent->client->pers.force_powers_levels[10]);
+					sprintf(message_content[1],"%s^011 - Protect: %d/4\n",message_content[1],ent->client->pers.force_powers_levels[10]);
 				else
-					sprintf(message_content[1],"%s^511 - Protect: %d/3\n",message_content[1],ent->client->pers.force_powers_levels[10]);
+					sprintf(message_content[1],"%s^511 - Protect: %d/4\n",message_content[1],ent->client->pers.force_powers_levels[10]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
 					sprintf(message_content[2],"%s^012 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.force_powers_levels[11]);
@@ -8095,7 +8102,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 10)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Heal: ^7recover some Health. Level 1 restores 5 hp, level 2 restores 10 hp and level 3 restores 25 hp\n\"" );
 					if (i == 11)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Protect: ^7decreases damage done to you by non-force power attacks\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Protect: ^7decreases damage done to you by non-force power attacks. At level 4 decreases force consumption when receiving damage\n\"" );
 					if (i == 12)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Mind Trick: ^7makes yourself invisible to the players affected by this force power. If you have Mind Control, you can also control a player or npc. Level 1 has a duration of 20 seconds, level 2 is 25 seconds and level 3 is 30 seconds\n\"" );
 					if (i == 13)

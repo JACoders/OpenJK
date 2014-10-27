@@ -5829,6 +5829,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			if (targ->client->ps.fd.forcePower)
 			{
+				float force_decrease_change = 1.0; // zyk: Protect 4/4 will make player lose less force
+
+				if (targ->client->sess.amrpgmode == 2 && targ->client->pers.force_powers_levels[10] == 4)
+					force_decrease_change = 0.5;
+
 				if (targ->client->forcePowerSoundDebounce < level.time)
 				{
 					G_PreDefSound(targ->client->ps.origin, PDSOUND_PROTECTHIT);
@@ -5838,17 +5843,17 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				// zyk: changed Force Protect code
 				if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_1)
 				{
-					targ->client->ps.fd.forcePower -= (int)ceil(take*0.5);
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.5*force_decrease_change);
 					take = (int)ceil(take*0.8);
 				}
 				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_2)
 				{
-					targ->client->ps.fd.forcePower -= (int)ceil(take*0.25);
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.25*force_decrease_change);
 					take = (int)ceil(take*0.6);
 				}
 				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_3)
 				{
-					targ->client->ps.fd.forcePower -= (int)ceil(take*0.125);
+					targ->client->ps.fd.forcePower -= (int)ceil(take*0.125*force_decrease_change);
 					take = (int)ceil(take*0.4);
 				}
 
