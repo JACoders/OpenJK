@@ -126,6 +126,7 @@ static void CleanStrin(char &string) {
 }
 */
 
+/*
 void DebugWriteToDB(char *entrypoint) {
 	sqlite3 * db;
     char * sql;
@@ -150,6 +151,7 @@ void DebugWriteToDB(char *entrypoint) {
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 }
+*/
 
 int CheckUserExists(char *username) {
 	sqlite3 * db;
@@ -181,7 +183,7 @@ int CheckUserExists(char *username) {
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 
-	DebugWriteToDB("CheckUserExists");
+	//DebugWriteToDB("CheckUserExists");
 
 	if (row == 0) {
 		return 0;
@@ -307,7 +309,7 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 		CALL_SQLITE (close(db));
 	}
 
-	DebugWriteToDB("G_AddDuel");
+	//DebugWriteToDB("G_AddDuel");
 }
 
 void AddRunToWebServer(RaceRecord_t record) 
@@ -490,7 +492,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 	else 
 		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
 
-	DebugWriteToDB("G_AddToDBFromFile");
+	//DebugWriteToDB("G_AddToDBFromFile");
 }
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
@@ -748,7 +750,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			//Shift every row after newRank down one
 			//Insert our new time into newRank spot
 
-	DebugWriteToDB("G_AddRaceTime");
+	//DebugWriteToDB("G_AddRaceTime");
 }
 
 //So the best way is to probably add every run as soon as its taken and not filter them.
@@ -888,7 +890,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	}	
 	CALL_SQLITE (close(db));
 
-	DebugWriteToDB("Cmd_ACLogin_f");
+	//DebugWriteToDB("Cmd_ACLogin_f");
 }
 
 void Cmd_ChangePassword_f( gentity_t *ent ) {
@@ -968,7 +970,7 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 	}	
 	CALL_SQLITE (close(db));
 
-	DebugWriteToDB("Cmd_ChangePassword_f");
+	//DebugWriteToDB("Cmd_ChangePassword_f");
 }
 
 void Svcmd_ChangePass_f(void)
@@ -1366,7 +1368,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 
-	DebugWriteToDB("Cmd_ACRegister_f");
+	//DebugWriteToDB("Cmd_ACRegister_f");
 }
 
 void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove login status.
@@ -1488,7 +1490,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
-	DebugWriteToDB("Cmd_Stats_f");
+	//DebugWriteToDB("Cmd_Stats_f");
 }
 
 //Search array list to find players row
@@ -1650,7 +1652,7 @@ void G_AddSimpleStatsToDB() {
 	else 
 		trap->Print("ERROR: Unable to insert previous map stats into database.\n");
 
-	DebugWriteToDB("G_AddSimpleStatToDB");
+	//DebugWriteToDB("G_AddSimpleStatToDB");
 }
 
 #if 0
@@ -1708,7 +1710,7 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	//loda fixme, maybe remake table or something.. ?
 	CALL_SQLITE (close(db));
 
-	DebugWriteToDB("CleanupLocalRun");
+	//DebugWriteToDB("CleanupLocalRun");
 }
 
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
@@ -1790,7 +1792,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	if (level.numCourses)
 		trap->Print("Highscores built for %s\n", mapName);
 
-	DebugWriteToDB("BuildMapHighscores");
+	//DebugWriteToDB("BuildMapHighscores");
 }
 
 void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
@@ -1846,7 +1848,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-	int s, style, duration_ms = 0, i, course = -1;
+	int s, style, duration_ms = 0, topspeed = 0, average = 0, i, course = -1;
 	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32], tempCourseName[32];
 
 	if (trap->Argc() != 4 && trap->Argc() != 5) {
@@ -1906,6 +1908,8 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 			if (!Q_stricmp(username, HighScores[course][style][i].username) && !Q_stricmp(courseNameFull, HighScores[course][style][i].coursename)) { //Its us, and right course
 				//trap->Print("Found In Highscore Cache\n");
 				duration_ms = HighScores[course][style][i].duration_ms;
+				topspeed = HighScores[course][style][i].topspeed;
+				average = HighScores[course][style][i].average;
 				break;
 			}
 			if (!HighScores[course][style][i].username[0])
@@ -1919,6 +1923,8 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseNameFull, PersonalBests[style][i].coursename)) { //Its us, and right course
 				//trap->Print("Found In My Cache\n");
 				duration_ms = PersonalBests[style][i].duration_ms;
+				topspeed = HighScores[course][style][i].topspeed;
+				average = HighScores[course][style][i].average;
 				break;
 			}
 			if (!PersonalBests[style][i].username[0])
@@ -1928,7 +1934,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 
 	if (!duration_ms) { //Not found in cache, so check db
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-		sql = "SELECT MIN(duration_ms) FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+		sql = "SELECT MIN(duration_ms), topspeed, average FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, courseNameFull, -1, SQLITE_STATIC));
@@ -1938,6 +1944,8 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 
 		if (s == SQLITE_ROW) {
 			duration_ms = sqlite3_column_int(stmt, 0);
+			topspeed = sqlite3_column_int(stmt, 1);
+			average = sqlite3_column_int(stmt, 2);
 		}
 		else if (s != SQLITE_DONE) {
 			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
@@ -1961,11 +1969,11 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 		Q_strncpyz(durationStr, va("%.3f", ((float)duration_ms * 0.001)), sizeof(durationStr));
 
 	if (duration_ms)
-		trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5.\n\"", durationStr));
+		trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5 with max ^3%i^5 and average ^3%i^5.\n\"", durationStr, topspeed, average));
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"^5 No results found.\n\"");
 
-	DebugWriteToDB("Cmd_PersonalBest_f");
+	//DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
 void TimeToString(int duration_ms, char *timeStr, size_t strSize) { 
@@ -2277,7 +2285,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 
-	DebugWriteToDB("Cmd_ACWhois_f");
+	//DebugWriteToDB("Cmd_ACWhois_f");
 }
 
 void InitGameAccountStuff( void ) { //Called every mapload , move the create table stuff to something that gets called every srvr start.. eh?
@@ -2311,7 +2319,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	G_AddToDBFromFile(); //Add last maps highscores
 	BuildMapHighscores();//Build highscores into memory from database
 
-	DebugWriteToDB("InitGameAccountStuff");
+	//DebugWriteToDB("InitGameAccountStuff");
 }
 
 void G_SpawnWarpLocationsFromCfg(void) //loda fixme
