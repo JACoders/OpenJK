@@ -215,6 +215,8 @@ void ShieldGoNotSolid(gentity_t *self)
 	self->s.eFlags |= EF_NODRAW;
 	// nextthink needs to have a large enough interval to avoid excess accumulation of Activate messages
 	self->nextthink = level.time + 200;
+	if (g_raceMode.integer) //sad hack ahoy
+		self->nextthink = level.time + 1000;
 	self->think = ShieldGoSolid;
 	self->takedamage = qfalse;
 	trap->LinkEntity((sharedEntity_t *)self);
@@ -242,7 +244,7 @@ void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 	else
 	{//let the person who dropped the shield through
-		if (self->parent && self->parent->s.number == other->s.number)
+		if ((self->parent && self->parent->s.number == other->s.number) || (other->client && other->client->pers.raceMode))
 		{
 			ShieldGoNotSolid(self);
 		}
