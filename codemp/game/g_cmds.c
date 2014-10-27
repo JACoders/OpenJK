@@ -451,9 +451,10 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	// zyk: this command can only be used in Admin-Only Mode
+	if (ent->client->sess.amrpgmode == 2)
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"Cannot noclip while in a guardian battle.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot noclip in RPG Mode.\n\"" );
 		return;
 	}
 
