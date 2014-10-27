@@ -1536,6 +1536,15 @@ void ForceGrip( gentity_t *self )
 		ForcePowerUsableOn(self, &g_entities[tr.entityNum], FP_GRIP) &&
 		(g_friendlyFire.integer || !OnSameTeam(self, &g_entities[tr.entityNum])) ) //don't grip someone who's still crippled
 	{
+		// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+		if (g_entities[tr.entityNum].client && g_entities[tr.entityNum].client->sess.amrpgmode == 2 && 
+			g_entities[tr.entityNum].client->pers.rpg_class == 3 && g_entities[tr.entityNum].client->pers.secrets_found & (1 << 16) && 
+			g_entities[tr.entityNum].client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,1) == 0)
+		{
+			g_entities[tr.entityNum].client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
+			return;
+		}
+
 		if (g_entities[tr.entityNum].s.number < MAX_CLIENTS && g_entities[tr.entityNum].client->ps.m_iVehicleNum)
 		{ //a player on a vehicle
 			gentity_t *vehEnt = &g_entities[g_entities[tr.entityNum].client->ps.m_iVehicleNum];
@@ -1891,6 +1900,13 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 							Jedi_Decloak( traceEnt );
 							traceEnt->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
 						}
+					}
+
+					// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+					if (traceEnt && traceEnt->client && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 3 && 
+						traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,3) == 0)
+					{
+						traceEnt->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
 					}
 				}
 			}
@@ -2840,6 +2856,15 @@ void ForceTelepathy(gentity_t *self)
 				return;
 			}
 
+			// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+			if (tricked_entity && tricked_entity->client && tricked_entity->client->sess.amrpgmode == 2 && 
+				tricked_entity->client->pers.rpg_class == 3 && tricked_entity->client->pers.secrets_found & (1 << 16) && 
+				tricked_entity->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,1) == 0)
+			{
+				tricked_entity->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
+				return;
+			}
+
 			if (!tricked_entity->NPC) // zyk: NPCs wont have the glowing head effect of mind trick because of how the game handles the tricked entities
 				WP_AddAsMindtricked(&self->client->ps.fd, tr.entityNum);
 
@@ -2936,6 +2961,15 @@ void ForceTelepathy(gentity_t *self)
 				// zyk: cant use Mind trick on guardians of RPG Mode
 				if (ent && ent->client && ent->client->pers.guardian_invoked_by_id != -1)
 				{
+					return;
+				}
+
+				// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+				if (ent && ent->client && ent->client->sess.amrpgmode == 2 && 
+					ent->client->pers.rpg_class == 3 && ent->client->pers.secrets_found & (1 << 16) && 
+					ent->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,1) == 0)
+				{
+					ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
 					return;
 				}
 
@@ -3450,6 +3484,14 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		{ // zyk: cannot push or pull allies if they dont allow it
 			if (self->client->sess.ally1 == ent->s.number || self->client->sess.ally2 == ent->s.number || self->client->sess.ally3 == ent->s.number)
 				continue;
+		}
+
+		// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 3 && 
+			ent->client->pers.secrets_found & (1 << 16) && ent->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,2) == 0)
+		{
+			ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
+			continue;
 		}
 
 		if ( ent->s.eType != ET_MISSILE )
