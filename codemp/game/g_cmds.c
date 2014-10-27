@@ -5756,11 +5756,12 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 	if (upgrade_value == 11)
 	{
-		if (ent->client->pers.force_powers_levels[10] < 3)
+		if (ent->client->pers.force_powers_levels[10] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
 			ent->client->pers.force_powers_levels[10]++;
+
 			if (ent->client->pers.force_powers_levels[10] < 4)
 				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
 			else
