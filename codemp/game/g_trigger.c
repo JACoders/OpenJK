@@ -1206,10 +1206,6 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	}
 	//if (player->client->pers.haste && !(restrictions & (1 << 3))) //LODA FIXME, uncomment this once we upload new verisons of maps
 		//return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
-	if (g_speed.value != 250.0f)
-		return qfalse;
-	if (g_gravity.integer != 800)
-		return qfalse;	
 	if (sv_cheats.integer)
 		return qfalse;
 	if (!g_stepSlideFix.integer)
