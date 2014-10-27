@@ -4051,6 +4051,10 @@ void ClientDisconnect( int clientNum ) {
 	// zyk: if player was fighting a guardian, allow other players to fight the guardian now
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
 	{
+		if (ent->client->pers.can_play_quest == 1)
+		{ // zyk: if this is the quest player, reset the boss battle music
+			level.boss_battle_music_reset_timer = level.time + 1000;
+		}
 		clean_guardians(ent);
 		ent->client->pers.guardian_mode = 0;
 	}

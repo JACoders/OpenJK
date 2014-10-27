@@ -5406,6 +5406,8 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	// zyk: if this player was playing a quest, find a new one to play quests in this map
 	if (ent->client->pers.can_play_quest == 1)
 	{
+		// zyk: if this is the quest player, reset the boss battle music
+		level.boss_battle_music_reset_timer = level.time + 1000;
 		quest_get_new_player(ent);
 	}
 
