@@ -534,8 +534,8 @@ void Svcmd_Amgrantadmin_f(void)
 		char arg[MAX_NETNAME];
 		int clientid = -1; 
 
-		if (trap->Argc() != 2 && trap->Argc() != 3) {
-			trap->Print( "Usage: /amGrantAdmin <client>.\n");
+		if (trap->Argc() != 3) {
+			trap->Print( "Usage: /amGrantAdmin <client> <level>.\n");
 			return; 
 		}
 
@@ -545,22 +545,23 @@ void Svcmd_Amgrantadmin_f(void)
 		if (clientid == -1 || clientid == -2)  
 			return;  
 
-		if (trap->Argc() == 2) {
+		trap->Argv(2, arg, sizeof(arg)); 
+		Q_strlwr(arg);
 
-			if (!(g_entities[clientid].r.svFlags & SVF_JUNIORADMIN) && !(g_entities[clientid].r.svFlags & SVF_FULLADMIN))
-			{
-				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
-				g_entities[clientid].r.svFlags |= SVF_JUNIORADMIN;
-			}
+		if (!Q_stricmp(arg, "none")) {
+			g_entities[clientid].r.svFlags &= ~SVF_JUNIORADMIN;
+			g_entities[clientid].r.svFlags &= ~SVF_FULLADMIN;
 		}
-		else if (trap->Argc() == 3) {
-			trap->Argv(2, arg, sizeof(arg)); 
-			if (!Q_stricmp(arg, "none")) {
-				g_entities[clientid].r.svFlags &= ~SVF_JUNIORADMIN;
-				g_entities[clientid].r.svFlags &= ~SVF_FULLADMIN;
-			}
+		else if (!Q_stricmp(arg, "junior")) {
+			g_entities[clientid].r.svFlags |= SVF_JUNIORADMIN;
+			g_entities[clientid].r.svFlags &= ~SVF_FULLADMIN;
+			trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
 		}
-
+		else if (!Q_stricmp(arg, "full")) {
+			g_entities[clientid].r.svFlags &= ~SVF_JUNIORADMIN;
+			g_entities[clientid].r.svFlags |= SVF_FULLADMIN;
+			trap->SendServerCommand( clientid, "print \"You have been granted Full admin privileges.\n\"" );
+		}
 }
 
 char *ConcatArgs( int start );
