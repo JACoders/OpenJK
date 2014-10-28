@@ -3779,6 +3779,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	static const int MIN_WJSPEED = 200;
 	static const int WJ_UPSPEED = 370;
 	static const float WJ_BOUNCEFACTOR = 0.5;//0.3?
+	static const int DASH_DELAY = 800;
 	trace_t trace;
 	vec3_t point;
 	vec3_t xyspeed;
@@ -3800,6 +3801,9 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		return;
 
 	if (pm->ps->stats[STAT_WJTIME] > 0)
+		return;
+
+	if (pm->ps->stats[STAT_DASHTIME] > (DASH_DELAY - 100))
 		return;
 
 	point[0] = pm->ps->origin[0];
