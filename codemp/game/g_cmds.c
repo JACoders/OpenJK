@@ -633,6 +633,18 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
+void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
+	int i;
+	gentity_t *hit;
+	for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
+		hit = &g_entities[i];
+		if (hit-> inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
+			G_FreeEntity(hit);
+			//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
+		}
+	}
+}
+
 void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
@@ -658,15 +670,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->pers.haste = qfalse;
 		//}
 		if (ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
-			int i;
-			gentity_t *hit;
-			for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
-				hit = &g_entities[i];
-				if (hit-> inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
-					G_FreeEntity(hit);
-					//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
-				}
-			}
+			DeletePlayerProjectiles(ent);
 		}
 	}
 

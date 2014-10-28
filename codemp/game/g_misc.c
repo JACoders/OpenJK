@@ -172,7 +172,7 @@ TELEPORTERS
 
 =================================================================================
 */
-
+void DeletePlayerProjectiles(gentity_t *ent);
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
@@ -235,6 +235,10 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		trap->LinkEntity ((sharedEntity_t *)player);
+	}
+
+	if (player->client->pers.raceMode && (player->client->pers.movementStyle == 7 || player->client->pers.movementStyle == 8)) { //Get rid of their rockets when they tele/noclip..?
+		DeletePlayerProjectiles(player);
 	}
 }
 
