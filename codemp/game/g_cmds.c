@@ -8327,7 +8327,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "weapons" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^317 - E11 Blaster Rifle: ^7Buy: 100 - Sell: 50\n^318 - Disruptor: ^7Buy: 120 - Sell: 60\n^319 - Repeater: ^7Buy: 150 - Sell: 70\n^320 - Rocket Launcher: ^7Buy: 200 - Sell: 100\n^321 - Bowcaster: ^7Buy: 110 - Sell: 50\n^322 - Blaster Pistol: ^7Buy: 90 - Sell: 45\n^323 - Flechette: ^7Buy: 170 - Sell: 90\n^324 - Concussion Rifle: ^7Buy: 300 - Sell: 150\n^332 - Stun Baton: ^7Buy: 20 - Sell: ^1no\n^336 - DEMP2: ^7Buy: 150 - Sell: ^1no\n^337 - Bryar Pistol: ^7Buy: 90 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^317 - E11 Blaster Rifle: ^7Buy: 100 - Sell: 50\n^318 - Disruptor: ^7Buy: 120 - Sell: 60\n^319 - Repeater: ^7Buy: 150 - Sell: 70\n^320 - Rocket Launcher: ^7Buy: 200 - Sell: 100\n^321 - Bowcaster: ^7Buy: 110 - Sell: 50\n^322 - Blaster Pistol: ^7Buy: 90 - Sell: 45\n^323 - Flechette: ^7Buy: 170 - Sell: 90\n^324 - Concussion Rifle: ^7Buy: 300 - Sell: 150\n^332 - Stun Baton: ^7Buy: 20 - Sell: ^1no\n^336 - DEMP2: ^7Buy: 150 - Sell: 90\n^337 - Bryar Pistol: ^7Buy: 90 - Sell: 45^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
@@ -8816,7 +8816,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[24] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,3000,50,60,70,100,50,45,90,150};
+	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,3000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,0,0,0,0,90,45,0,0,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -8827,7 +8827,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (value < 1 || value > 24)
+	if (items_costs[value-1] == 0)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;
@@ -8985,20 +8985,26 @@ void Cmd_Sell_f( gentity_t *ent ) {
 			ent->client->ps.weapon = WP_MELEE;
 		sold = 1;
 	}
-
+	else if (value == 36 && (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)))
+	{
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DEMP2);
+		if (ent->client->ps.weapon == WP_DEMP2)
+			ent->client->ps.weapon = WP_MELEE;
+		sold = 1;
+	}
+	else if (value == 37 && (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)))
+	{
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_OLD);
+		if (ent->client->ps.weapon == WP_BRYAR_OLD)
+			ent->client->ps.weapon = WP_MELEE;
+		sold = 1;
+	}
+			
 	if (sold == 1)
 	{
 		add_credits(ent,items_costs[value-1]);
 		save_account(ent);
-	}
-			
-	if (value == 8 || value == 9)
-	{
-		trap->SendServerCommand( ent-g_entities, va("chat \"^3Jawa Seller: ^7This item can't be sold, %s^7!\n\"",ent->client->pers.netname) );
-	}
-	else if (sold == 1)
-	{
-		trap->SendServerCommand( ent-g_entities, va("chat \"^3Jawa Seller: ^7Thanks %s^7! :D\n\"",ent->client->pers.netname) );
+		trap->SendServerCommand( ent-g_entities, va("chat \"^3Jawa Seller: ^7Thanks %s^7!\n\"",ent->client->pers.netname) );
 	}
 	else
 	{
