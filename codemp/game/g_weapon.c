@@ -2863,6 +2863,8 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	laserTrap->s.weapon = WP_TRIP_MINE;
 	laserTrap->s.pos.trType = TR_GRAVITY;
 	laserTrap->r.contents = MASK_SHOT;
+	if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
+		laserTrap->r.contents = CONTENTS_NONE;
 	laserTrap->parent = owner;
 	laserTrap->activator = owner;
 	laserTrap->r.ownerNum = owner->s.number;
