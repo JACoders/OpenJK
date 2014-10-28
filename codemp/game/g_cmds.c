@@ -8323,11 +8323,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "items" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 250 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 200 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 230 - Sell: 65\n^312 - Big Bacta: ^7Buy: 300 - Sell: 70\n^313 - Force Field: ^7Buy: 400 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 300 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: ^1no\n^335 - E-Web: ^7Buy: 150 - Sell: ^1no\n^338 - Binoculars: ^7Buy: 10 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 250 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 200 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 230 - Sell: 65\n^312 - Big Bacta: ^7Buy: 300 - Sell: 70\n^313 - Force Field: ^7Buy: 400 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 300 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: 20\n^335 - E-Web: ^7Buy: 150 - Sell: 30\n^338 - Binoculars: ^7Buy: 10 - Sell: 5^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "weapons" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^317 - E11 Blaster Rifle: ^7Buy: 100 - Sell: 50\n^318 - Disruptor: ^7Buy: 120 - Sell: 60\n^319 - Repeater: ^7Buy: 150 - Sell: 70\n^320 - Rocket Launcher: ^7Buy: 200 - Sell: 100\n^321 - Bowcaster: ^7Buy: 110 - Sell: 50\n^322 - Blaster Pistol: ^7Buy: 90 - Sell: 45\n^323 - Flechette: ^7Buy: 170 - Sell: 90\n^324 - Concussion Rifle: ^7Buy: 300 - Sell: 150\n^332 - Stun Baton: ^7Buy: 20 - Sell: ^1no\n^336 - DEMP2: ^7Buy: 150 - Sell: 90\n^337 - Bryar Pistol: ^7Buy: 90 - Sell: 45^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^317 - E11 Blaster Rifle: ^7Buy: 100 - Sell: 50\n^318 - Disruptor: ^7Buy: 120 - Sell: 60\n^319 - Repeater: ^7Buy: 150 - Sell: 70\n^320 - Rocket Launcher: ^7Buy: 200 - Sell: 100\n^321 - Bowcaster: ^7Buy: 110 - Sell: 50\n^322 - Blaster Pistol: ^7Buy: 90 - Sell: 45\n^323 - Flechette: ^7Buy: 170 - Sell: 90\n^324 - Concussion Rifle: ^7Buy: 300 - Sell: 150\n^332 - Stun Baton: ^7Buy: 20 - Sell: 10\n^336 - DEMP2: ^7Buy: 150 - Sell: 90\n^337 - Bryar Pistol: ^7Buy: 90 - Sell: 45^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
@@ -8816,7 +8816,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,3000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,0,0,0,0,90,45,0,0,0};
+	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,3000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -8985,6 +8985,23 @@ void Cmd_Sell_f( gentity_t *ent ) {
 			ent->client->ps.weapon = WP_MELEE;
 		sold = 1;
 	}
+	else if (value == 32 && (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_STUN_BATON)))
+	{
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_STUN_BATON);
+		if (ent->client->ps.weapon == WP_STUN_BATON)
+			ent->client->ps.weapon = WP_MELEE;
+		sold = 1;
+	}
+	else if (value == 34 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_MEDPAC))
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_MEDPAC);
+		sold = 1;
+	}
+	else if (value == 35 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_EWEB))
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_EWEB);
+		sold = 1;
+	}
 	else if (value == 36 && (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)))
 	{
 		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DEMP2);
@@ -8997,6 +9014,11 @@ void Cmd_Sell_f( gentity_t *ent ) {
 		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_OLD);
 		if (ent->client->ps.weapon == WP_BRYAR_OLD)
 			ent->client->ps.weapon = WP_MELEE;
+		sold = 1;
+	}
+	else if (value == 38 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_BINOCULARS))
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_BINOCULARS);
 		sold = 1;
 	}
 			
