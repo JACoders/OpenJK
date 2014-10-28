@@ -203,7 +203,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	// spit the player out
 	if ( !noAngles ) {
 		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-		if (g_quakeStyleTeleport.integer)
+		if (g_quakeStyleTeleport.integer && !player->client->pers.raceMode) //Eh.. ideally should be a spawnflag on the teleporter entity itself? dunno .. todo
 			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
 		else
 			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );

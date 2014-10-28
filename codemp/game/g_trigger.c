@@ -1204,15 +1204,15 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 			}
 		}
 	}
-	//if (player->client->pers.haste && !(restrictions & (1 << 3))) //LODA FIXME, uncomment this once we upload new verisons of maps
-		//return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
+	if (player->client->pers.haste && !(restrictions & (1 << 3))) 
+		return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
+	if ((player->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && !(restrictions & (1 << 4)))
+		return qfalse; //IF client has jetpack, and the course does not allow jetpack, dont count it.
 	if (sv_cheats.integer)
 		return qfalse;
 	if (!g_stepSlideFix.integer)
 		return qfalse;
 	if (g_jediVmerc.integer) //umm..
-		return qfalse;
-	if (g_quakeStyleTeleport.integer)
 		return qfalse;
 	if (g_debugMelee.integer >= 2)
 		return qfalse;
@@ -1221,8 +1221,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	if (sv_fps.integer != 20 && sv_fps.integer != 30)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;
 
-	//type of roll?
-	//dmflags fall dmg?, max falldmg?
+	//type of roll?  hardcode jk2roll into racemode ?
 	//g_forceClientUpdateRate?
 
 	return qtrue;

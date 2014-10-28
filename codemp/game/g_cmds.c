@@ -868,6 +868,8 @@ Cmd_Kill_f
 */
 void Cmd_Kill_f( gentity_t *ent ) {
 	G_Kill( ent );
+	if (ent->client && ent->client->pers.raceMode)
+		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
 }
 
 void Cmd_KillOther_f( gentity_t *ent )
@@ -5616,15 +5618,20 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 //Jetpack start
 static void Cmd_Jetpack_f(gentity_t *ent)
 {
-	if (!(g_startingItems.integer & (1 << HI_JETPACK))) {
-		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed. (jetpack).\n\"" );
+	if (ent->client->pers.raceMode) {
+		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed in racemode. (jetpack).\n\"" );
 		return;
 	}
 
 	if (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK))//Already have it
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
-	else if (!ent->client->ps.duelInProgress)//Dont have it, and not dueling
-		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); //Always get rid of it
+	else if (g_startingItems.integer & (1 << HI_JETPACK)) { //We dont have it, and we spawn with it.. i guess we should have it anyway
+		if (ent->client->ps.duelInProgress) {
+			trap->SendServerCommand( ent-g_entities, "print \"Command not allowed in duel. (jetpack).\n\"" );
+		}
+		else 
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+	}
 }
 //Jetpack end
 //[JAPRO - Serverside - All - Clanwhois Function - Start]
