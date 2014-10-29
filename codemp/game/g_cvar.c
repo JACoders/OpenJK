@@ -159,6 +159,12 @@ static void CVU_Jawarun(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }	
 
+static void CVU_GunRoll(void) {
+	g_gunRoll.integer ?
+		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
 //
 // Cvar table
 //

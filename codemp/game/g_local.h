@@ -180,7 +180,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_FORCECOMBO		(1<<15)	//option for only bhop mode
 #define JAPRO_CINFO_UNLAGGEDHITSCAN	(1<<16)	//allow unlagged hitscan
 #define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
-#define JAPRO_CINFO_UNUSED1			(1<<18)	//allow air control
+#define JAPRO_CINFO_GUNROLL			(1<<18)	//allow  gunroll
 #define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
 #define JAPRO_CINFO_UNUSED2			(1<<20) //Hl2 Aircontrol
 #define JAPRO_CINFO_UNUSED3			(1<<21) //Siege aircontrol
