@@ -212,6 +212,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define STUN_HEAL			(1<<18)
 #define ANTI_VEHICLE		(1<<19)
 #define REDUCE_SABERBLOCK	(1<<20)
+#define ALLOW_GUNROLL		(1<<21)
 
 
 //JAPRO - Serverside - Unlagged bitvalues

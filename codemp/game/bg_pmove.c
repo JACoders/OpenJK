@@ -4191,7 +4191,7 @@ static int PM_TryRoll( void )
 	}
 
 #ifdef _GAME
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!g_gunRoll.integer || pm->ps->stats[STAT_RACEMODE])) ||
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
 #else
 	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
 #endif

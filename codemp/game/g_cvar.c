@@ -132,6 +132,8 @@ static void CVU_TweakWeapons(void) {
 		(jcinfo.integer |= JAPRO_CINFO_LG) : (jcinfo.integer &= ~JAPRO_CINFO_LG);
 	(g_tweakWeapons.integer & STUN_SHOCKLANCE) ?
 		(jcinfo.integer |= JAPRO_CINFO_SHOCKLANCE) : (jcinfo.integer &= ~JAPRO_CINFO_SHOCKLANCE);
+	(g_tweakWeapons.integer & ALLOW_GUNROLL) ?
+		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
@@ -158,12 +160,6 @@ static void CVU_Jawarun(void) {
 		(jcinfo.integer |= JAPRO_CINFO_NOJAWARUN) : (jcinfo.integer &= ~JAPRO_CINFO_NOJAWARUN);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }	
-
-static void CVU_GunRoll(void) {
-	g_gunRoll.integer ?
-		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
-	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
 
 //
 // Cvar table
