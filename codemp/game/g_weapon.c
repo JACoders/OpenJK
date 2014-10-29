@@ -2871,8 +2871,7 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	VectorSet( laserTrap->r.mins, -LT_SIZE, -LT_SIZE, -LT_SIZE );
 	VectorSet( laserTrap->r.maxs, LT_SIZE, LT_SIZE, LT_SIZE );
 	laserTrap->clipmask = MASK_SHOT;
-	if (!g_raceMode.integer)
-		laserTrap->s.solid = 2; //sad quickfix to stop some possible abuse
+	laserTrap->s.solid = 2;
 	laserTrap->s.modelindex = G_ModelIndex( "models/weapons2/laser_trap/laser_trap_w.glm" );
 	laserTrap->s.modelGhoul2 = 1;
 	laserTrap->s.g2radius = 40;
@@ -2896,7 +2895,7 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	laserTrap->s.apos.trBase[PITCH] = rand()%360;
 	laserTrap->s.apos.trBase[ROLL] = rand()%360;
 
-	if (rand()%10 < 5)
+	if (rand()%10 < 5) //lol?
 	{
 		laserTrap->s.apos.trBase[YAW] = -laserTrap->s.apos.trBase[YAW];
 	}

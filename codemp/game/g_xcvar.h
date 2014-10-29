@@ -214,6 +214,7 @@ XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixLegDangle,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
+XCVAR_DEF( g_gunRoll,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )

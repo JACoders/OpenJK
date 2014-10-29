@@ -4190,7 +4190,11 @@ static int PM_TryRoll( void )
 		}
 	}
 
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) ||
+#ifdef _GAME
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!g_gunRoll.integer || pm->ps->stats[STAT_RACEMODE])) ||
+#else
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+#endif
 		PM_IsRocketTrooper() ||
 		BG_HasYsalamiri(pm->gametype, pm->ps) ||
 		(PM_GetMovePhysics() == 3) ||
