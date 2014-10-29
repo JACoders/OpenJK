@@ -3778,6 +3778,10 @@ void load_account(gentity_t *ent, qboolean change_mode)
 	account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
 	if (account_file != NULL)
 	{
+		// zyk: loading the account password
+		fscanf(account_file,"%s",content);
+		strcpy(ent->client->pers.password,content);
+
 		// zyk: loading the amrpgmode value
 		fscanf(account_file,"%s",content);
 		value = atoi(content);
@@ -4204,8 +4208,8 @@ void save_account(gentity_t *ent)
 			gclient_t *client;
 			client = ent->client;
 			account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
-			fprintf(account_file,"%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
-			client->sess.amrpgmode,client->pers.player_settings,client->pers.bitvalue,client->pers.level_up_score,client->pers.level,client->pers.skillpoints,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
+			fprintf(account_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
+			client->pers.password,client->sess.amrpgmode,client->pers.player_settings,client->pers.bitvalue,client->pers.level_up_score,client->pers.level,client->pers.skillpoints,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
 			,client->pers.force_powers_levels[3],client->pers.force_powers_levels[4],client->pers.force_powers_levels[5],client->pers.force_powers_levels[6],client->pers.force_powers_levels[7],client->pers.force_powers_levels[8]
 			,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
 			,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.stun_baton_level,client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
@@ -4227,10 +4231,11 @@ void save_account(gentity_t *ent)
 			strcpy(file_content,"");
 
 			account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
+			fscanf(account_file,"%s",content); // zyk: reads the password
 			fscanf(account_file,"%s",content); // zyk: reads the player mode
 			fscanf(account_file,"%s",content); // zyk: reads the player settings
 			fscanf(account_file,"%s",content); // zyk: reads the bitvalue
-			while (i < (NUMBER_OF_LINES - 3))
+			while (i < (NUMBER_OF_LINES - 4))
 			{
 				i++;
 				fscanf(account_file,"%s",content);
@@ -4239,7 +4244,7 @@ void save_account(gentity_t *ent)
 			fclose(account_file);
 
 			updated_account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
-			fprintf(account_file,"%d\n%d\n%d\n%s",ent->client->sess.amrpgmode,ent->client->pers.player_settings,ent->client->pers.bitvalue,file_content);
+			fprintf(account_file,"%s\n%d\n%d\n%d\n%s",ent->client->pers.password,ent->client->sess.amrpgmode,ent->client->pers.player_settings,ent->client->pers.bitvalue,file_content);
 			fclose(updated_account_file);
 		}
 		else if (ent->client->sess.amrpgmode == 0)
@@ -4248,7 +4253,7 @@ void save_account(gentity_t *ent)
 			new_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
 			if (new_file != NULL)
 			{
-				fprintf(new_file,"2\n0\n0\n0\n1\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n");
+				fprintf(new_file,"%s\n2\n0\n0\n0\n1\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n",ent->client->pers.password);
 				fclose(new_file);
 
 				// zyk: removing the pistol when creating account because player starts without any skill
@@ -4773,7 +4778,7 @@ void Cmd_NewAccount_f( gentity_t *ent ) {
 	strcpy(content,"");
 	if ( trap->Argc() != 3) 
 	{ 
-		trap->SendServerCommand( ent-g_entities, "print \"You must write a login and a password of your choice. Example: ^3/new test_login test_pass^7.\n\"" ); 
+		trap->SendServerCommand( ent-g_entities, "print \"You must write a login and a password of your choice. Example: ^3/new yourlogin yourpass^7.\n\"" ); 
 		return;
 	}
 	trap->Argv(1, arg1, sizeof( arg1 ));
@@ -4812,24 +4817,10 @@ void Cmd_NewAccount_f( gentity_t *ent ) {
 		i = fscanf(logins_file, "%s", content);
 		while (i != -1)
 		{
-			if (strstr(content,"_S_") != NULL)
-			{ // zyk: validation must occur on the lines that contains the account file names and in files that the login has the same size as the arg1
-				int j = 0;
-				char login_name[64];
-				strcpy(login_name,"");
-
-				for (j = 0; j < strlen(content); j++)
-				{
-					if (content[j] == '_' && content[j+1] == 'S' && content[j+2] == '_')
-					{
-						break;
-					}
-					strcpy(login_name,va("%s%c",login_name,content[j]));
-				}
-
-				// zyk: 0 means it is the same login as login_name, which is not a valid one
-				if (Q_stricmp( login_name, arg1 ) == 0)
-				{ // zyk: login already exists
+			if (Q_stricmp(content,"accounts.txt") != 0)
+			{ // zyk: validating login, which is the file name
+				if (Q_stricmp( content, va("%s.txt",arg1) ) == 0)
+				{ // zyk: if this login is the same as the one passed in arg1, then it already exists
 					fclose(logins_file);
 					trap->SendServerCommand( ent-g_entities, "print \"Login is used by another player.\n\"" );
 					return;
@@ -4840,7 +4831,8 @@ void Cmd_NewAccount_f( gentity_t *ent ) {
 		fclose(logins_file);
 	}
 
-	strcpy(ent->client->sess.filename, va("%s_S_%s",arg1,arg2));
+	strcpy(ent->client->sess.filename, arg1);
+	strcpy(ent->client->pers.password, arg2);
 
 	save_account(ent);
 
@@ -4860,9 +4852,12 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 	{
 		char arg1[MAX_STRING_CHARS];
 		char arg2[MAX_STRING_CHARS];
-		char filename[64];
+		char password[32];
 		int i = 0;
+		FILE *account_file;
 		gentity_t *player_ent = NULL;
+
+		strcpy(password,"");
 
 		if ( trap->Argc() != 3)
 		{ 
@@ -4879,28 +4874,45 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		trap->Argv(2, arg2, sizeof( arg2 ));
 
-		strcpy(filename, va("%s_S_%s",arg1,arg2));
-
 		for (i = 0; i < level.maxclients; i++)
 		{
 			player_ent = &g_entities[i];
-			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode > 0 && Q_stricmp(player_ent->client->sess.filename,filename) == 0)
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode > 0 && Q_stricmp(player_ent->client->sess.filename,arg1) == 0)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"There is already someone logged in this account.\n\"" );
 				return;
 			}
 		}
 
-		strcpy(ent->client->sess.filename, filename);
+		// zyk: validating login
+		account_file = fopen(va("accounts/%s.txt",arg1),"r");
+		if (account_file == NULL)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Login does not exist.\n\"" );
+			return;
+		}
+
+		// zyk: validating password
+		fscanf(account_file,"%s",password);
+		fclose(account_file);
+		if (strlen(password) != strlen(arg2) || Q_strncmp(password, arg2, strlen(password)) != 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"The password is incorrect.\n\"" );
+			return;
+		}
+
+		// zyk: valid login and password
+		strcpy(ent->client->sess.filename, arg1);
+		strcpy(ent->client->pers.password, arg2);
 
 		load_account(ent, qfalse);
 
 		if (ent->client->sess.amrpgmode == 1)
-			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2Admin-Only Mode^7. Now use command ^3/list^7.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2Admin-Only Mode^7. Use command ^3/list^7.\n\"" );
 		else if (ent->client->sess.amrpgmode == 2)
 		{
 			initialize_rpg_skills(ent);
-			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Now use command ^3/list^7.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Use command ^3/list^7.\n\"" );
 		}
 	}
 	else
@@ -9040,16 +9052,7 @@ Cmd_ChangePassword_f
 ==================
 */
 void Cmd_ChangePassword_f( gentity_t *ent ) {
-	int i = 0;
-	char new_content[1024];
-	char content[1024];
-	char login[64];
 	char arg1[1024];
-	FILE *account_file;
-	FILE *new_account_file;
-	strcpy(login,"");
-	strcpy(content,"");
-	strcpy(new_content,"");
 
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{
@@ -9063,15 +9066,6 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		return;
 	}
 
-	// zyk: gets the player login
-	for (i = 0; i < strlen(ent->client->sess.filename); i++)
-	{
-		if (ent->client->sess.filename[i] == '_' && ent->client->sess.filename[i+1] == 'S' && ent->client->sess.filename[i+2] == '_')
-			break;
-		else
-			sprintf(login,"%s%c",login,ent->client->sess.filename[i]);
-	}
-
 	// zyk: gets the new password
 	trap->Argv(1, arg1, sizeof( arg1 ));
 
@@ -9081,24 +9075,8 @@ void Cmd_ChangePassword_f( gentity_t *ent ) {
 		return;
 	}
 
-	account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
-
-	// zyk: reads the account file to save it in a new file
-	for (i = 0; i < NUMBER_OF_LINES; i++)
-	{
-		fscanf(account_file,"%s",content);
-		sprintf(new_content,"%s%s\n",new_content,content);
-	}
-
-	fclose(account_file);
-
-	new_account_file = fopen(va("accounts/%s_S_%s.txt",login,arg1),"w");
-	fprintf(new_account_file,"%s",new_content);
-	fclose(new_account_file);
-
-	remove(va("accounts/%s.txt",ent->client->sess.filename));
-
-	strcpy(ent->client->sess.filename,va("%s_S_%s",login,arg1));
+	strcpy(ent->client->pers.password,arg1);
+	save_account(ent);
 
 	trap->SendServerCommand( ent-g_entities, "print \"Your password was changed successfully.\n\"" );
 }

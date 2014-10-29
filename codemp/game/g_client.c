@@ -2666,7 +2666,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// zyk: initializing player_statuses value
 	client->pers.player_statuses = 0;
 
-	// zyk: setting player flags to reload his account if he is logged in
 	if (ent->client->sess.amrpgmode > 0)
 	{
 		// zyk: if the target goes to spec or something, then the server must choose another target

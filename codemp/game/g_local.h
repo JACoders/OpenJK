@@ -455,7 +455,7 @@ typedef struct clientSession_s {
 	// 1 - Admin-Only mode: in this mode, player can use admin commands if he has them
 	// 2 - RPG mode: in this mode, player can use admin commands and play the level system
 	int	amrpgmode; // zyk: saved in session so the player account can be loaded again in map changes
-	char filename[64]; // zyk: player account filename
+	char filename[32]; // zyk: player account filename
 
 	// zyk: used to set the ally ids. The allies dont receive damage from this player
 	int ally1;
@@ -472,7 +472,7 @@ typedef struct clientSession_s {
 #define	MAX_VOTE_COUNT		3
 
 // zyk: number of lines in the player account file
-#define NUMBER_OF_LINES 70
+#define NUMBER_OF_LINES 71
 
 // zyk: number of Light Quest guardians to be defeated 
 #define NUMBER_OF_GUARDIANS 9
@@ -540,6 +540,8 @@ typedef struct clientPersistant_s {
 	int level; // zyk: RPG mode level
 	int level_up_score; // zyk: RPG mode Level Up Score
 	int skillpoints; // zyk: RPG mode skillpoints
+
+	char password[32]; // zyk: account password
 
 	// zyk: turn on or off features of this player in his account file. It is a bit value attribute
 	// Possible bit values are:
