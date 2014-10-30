@@ -618,7 +618,10 @@ void P_DamageFeedback( gentity_t *player ) {
 		P_SetTwitchInfo(client);
 		player->pain_debounce_time = level.time + 700;
 		
-		G_AddEvent( player, EV_PAIN, player->health );
+		if (g_stopHealthESP.integer)
+			G_AddEvent( player, EV_PAIN, 50 ); //anti ESP here?
+		else
+			G_AddEvent( player, EV_PAIN, player->health ); //anti ESP here?
 		client->ps.damageEvent++;
 
 		if (client->damage_armor && !client->damage_blood)
@@ -2836,7 +2839,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
-	if (ent && ent->client && (ent->client->ps.stats[STAT_MOVEMENTSTYLE] >= 7) && ent->health > 0) {
+	if (ent && ent->client && ((ent->client->pers.movementStyle == 7) || (ent->client->pers.movementStyle == 8)) && ent->health > 0) {
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 2;

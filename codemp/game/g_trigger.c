@@ -1182,7 +1182,9 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
-	if ((player->client->ps.stats[STAT_MOVEMENTSTYLE] >= 7) && g_knockback.integer > 1000)
+	if (((player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && g_knockback.value != 1000.0f)
+		return qfalse;
+	if (((player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && g_weaponDamageScale.value != 1.0f)
 		return qfalse;
 	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 3 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 7 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 8) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
