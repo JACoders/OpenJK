@@ -1462,7 +1462,7 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		return;
 	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
-	if (trigger && trigger->spawnflags & 2) { //Instead of a checkpoint, make it reset their time (they went out of bounds or something)
+	if (player->client->pers.stats.startTime && trigger && trigger->spawnflags & 2) { //Instead of a checkpoint, make it reset their time (they went out of bounds or something)
 		player->client->pers.stats.startTime = 0;
 		if (player->client->pers.raceMode)
 			player->client->ps.duelTime = 0;

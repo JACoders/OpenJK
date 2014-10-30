@@ -3837,8 +3837,6 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 						
 			G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_STAND1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
 			G_SetAnim(challenged, &ent->client->pers.cmd, BOTH_STAND1, BOTH_STAND1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
-			ent->client->ps.weaponTime += 2000; //No attacking at start of duel?
-			challenged->client->ps.weaponTime += 2000; //No attacking at start of duel?
 					
 			if ( ent->client->ps.saberHolstered < 2 )
 			{
@@ -3876,7 +3874,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			ent->client->ps.fd.forceRageRecoveryTime = 0;
 			challenged->client->ps.fd.forceRageRecoveryTime = 0; //Get rid of rage recovery when duel starts!
 			
-			if (dueltypes[challenged->client->ps.clientNum] > 2) {
+			if (dueltypes[challenged->client->ps.clientNum] > 2) { //1 ?
 				int weapon = dueltypes[challenged->client->ps.clientNum] - 2;
 				if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons and ammo.
 					int i;
@@ -3896,6 +3894,9 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 					ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 				}
+
+				ent->client->ps.weaponTime = 3000; //No attacking at start of duel?
+				challenged->client->ps.weaponTime = 3000; //No attacking at start of duel?
 			}
 
 			Q_strncpyz(ent->client->pers.lastUserName, ent->client->pers.userName, sizeof(ent->client->pers.lastUserName));
