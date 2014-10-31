@@ -3786,6 +3786,9 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 			return;
 		}
 
+		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+		ent->client->ps.forceHandExtendTime = level.time + 1000; //Moved this up here
+
 //JAPRO - Serverside - Fullforce Duels + Duel Messages - Start
 		if (challenged->client->ps.duelIndex == ent->s.number && (challenged->client->ps.duelTime + 2000) >= level.time && 
 			(
@@ -3895,8 +3898,10 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 					challenged->client->ps.ammo[weaponData[weapon].ammoIndex] = 999; //gun duel ammo
 				}
 
-				ent->client->ps.weaponTime = 3000; //No attacking at start of duel?
-				challenged->client->ps.weaponTime = 3000; //No attacking at start of duel?
+				ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+				challenged->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+				ent->client->ps.forceHandExtendTime = level.time + 2000;
+				challenged->client->ps.forceHandExtendTime = level.time + 2000; //2 seconds of weaponlock at start of duel
 			}
 
 			Q_strncpyz(ent->client->pers.lastUserName, ent->client->pers.userName, sizeof(ent->client->pers.lastUserName));
@@ -3946,8 +3951,8 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 
 		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
 
-		ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
-		ent->client->ps.forceHandExtendTime = level.time + 1000;
+		//ent->client->ps.forceHandExtend = HANDEXTEND_DUELCHALLENGE;
+		//ent->client->ps.forceHandExtendTime = level.time + 1000; //Hmm.. move this up above so it dosnt overwrite attack pause
 
 		ent->client->ps.duelIndex = challenged->s.number;
 		ent->client->ps.duelTime = level.time + 2000;//Is this where the freeze comes from?

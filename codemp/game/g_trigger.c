@@ -1429,7 +1429,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		}
 		else {
 			//Q_strcat(courseName, sizeof(courseName), " ()");
-			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max ^3%-10i%s average ^3%-10i%s using ^3%-10s%s by ^%i%s\n\"",
+			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
 				c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
 		}
 		if (valid) {
