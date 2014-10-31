@@ -5962,6 +5962,35 @@ static void Cmd_EmotePoint_f(gentity_t *ent)
 	DoEmote(ent, BOTH_STAND5TOAIM, qtrue, qfalse);
 }
 
+static void Cmd_EmoteSaberFlip_f(gentity_t *ent)
+{
+	if (!ent->client || ent->client->ps.weapon != WP_SABER) //Dont allow if saber isnt out? eh
+		return;
+
+	if (g_emotesDisable.integer & (1 << E_SABERFLIP)) {
+		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
+		return;
+	}
+
+	if (ent->client->ps.fd.saberAnimLevel == SS_FAST || ent->client->ps.fd.saberAnimLevel == SS_MEDIUM || ent->client->ps.fd.saberAnimLevel == SS_STRONG) { //Get style, do specific anim
+		if (ent->client->ps.saberHolstered)
+			DoEmote(ent, BOTH_STAND1TO2, qfalse, qfalse);
+		else
+			DoEmote(ent, BOTH_STAND2TO1, qfalse, qfalse);
+	}
+	else if (ent->client->ps.fd.saberAnimLevel == SS_STAFF) {
+		if (ent->client->ps.saberHolstered)
+			DoEmote(ent, BOTH_S1_S7, qfalse, qfalse);
+		else
+			DoEmote(ent, BOTH_SHOWOFF_STAFF, qfalse, qfalse);
+	}
+	else if (ent->client->ps.fd.saberAnimLevel == SS_DUAL) {
+		DoEmote(ent, BOTH_SHOWOFF_FAST, qfalse, qfalse);
+	}
+
+	Cmd_ToggleSaber_f(ent);
+}
+
 static void Cmd_AmRun_f(gentity_t *ent)
 {
 	if (!ent->client)
@@ -7184,6 +7213,7 @@ command_t commands[] = {
 	{ "amcheer",			Cmd_EmoteCheer_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amcower",			Cmd_EmoteCower_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amdance",			Cmd_EmoteDance_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amflip",				Cmd_EmoteSaberFlip_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amforceteam",		Cmd_Amforceteam_f,			CMD_NOINTERMISSION },
 	{ "amfreeze",			Cmd_Amfreeze_f,				CMD_NOINTERMISSION },
 	{ "amgrantadmin",		Cmd_Amgrantadmin_f,			0 },

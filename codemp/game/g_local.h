@@ -299,6 +299,7 @@ typedef enum {
 	E_JAWARUN,
 	E_BERNIE,
 	E_SLEEP,
+	E_SABERFLIP,
 	E_ALL
 } emote_type_t;
 
