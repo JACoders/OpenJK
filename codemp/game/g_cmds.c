@@ -5330,6 +5330,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "amSit4 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT5)))
 		Q_strcat(buf, sizeof(buf), "amSit5 "); 
+	if (!(g_emotesDisable.integer & (1 << E_SLEEP)))
+		Q_strcat(buf, sizeof(buf), "amSleep "); 
 	if (!(g_emotesDisable.integer & (1 << E_SURRENDER)))
 		Q_strcat(buf, sizeof(buf), "amSurrender "); 
 	if (!(g_emotesDisable.integer & (1 << E_SMACK)))
@@ -5931,6 +5933,15 @@ static void Cmd_EmoteSit5_f(gentity_t *ent)
 		return;
 	}
 	DoEmote(ent, BOTH_SLEEP6STOP, qtrue, qtrue);
+}
+
+static void Cmd_EmoteSleep_f(gentity_t *ent)
+{
+	if (g_emotesDisable.integer & (1 << E_SLEEP)) {
+		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
+		return;
+	}
+	DoEmote(ent, BOTH_SLEEP1, qtrue, qtrue);
 }
 
 static void Cmd_EmoteDance_f(gentity_t *ent)
@@ -7198,6 +7209,7 @@ command_t commands[] = {
 	{ "amsit3",				Cmd_EmoteSit3_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsit4",				Cmd_EmoteSit4_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsit5",				Cmd_EmoteSit5_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amsleep",			Cmd_EmoteSleep_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsmack",			Cmd_EmoteSmack_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amstatus",			Cmd_Amstatus_f,				0 },
 	{ "amsurrender",		Cmd_EmoteSurrender_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE

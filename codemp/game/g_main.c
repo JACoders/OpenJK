@@ -1994,7 +1994,7 @@ void PrintStats(int gametype) //JAPRO STATS
 			continue;
 
 		cl = &level.clients[i];
-		if (cl->pers.netname[0]) //sad
+		if (cl->pers.netname[0] && !(cl->ps.pm_flags & PMF_FOLLOW)) //sad
 		{
 			char strName[MAX_NETNAME] = {0};
 			char strDG[32] = {0};
