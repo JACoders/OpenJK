@@ -4915,7 +4915,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{
 		// zyk: when player is in Hard Mode, he takes more damage
 		if (targ->client->pers.player_settings & (1 << 15))
-			damage = (int)ceil(damage * 1.5);
+			damage = (int)ceil(damage * 1.25);
 
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
 		{
