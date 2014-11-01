@@ -2141,6 +2141,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			attacker->client->pers.credits_modifier = self->client->pers.level;
 			attacker->client->pers.score_modifier = self->client->pers.level/50;
 		}
+		else if (self->NPC && self->client->NPC_class == CLASS_VEHICLE)
+		{ // zyk: vehicles will not give any score or credits
+			attacker->client->pers.credits_modifier = -10;
+			attacker->client->pers.score_modifier = -1;
+		}
 		else if (self->NPC && self->client->pers.guardian_invoked_by_id != -1)
 		{ // zyk: guardians give more score and credits
 			attacker->client->pers.credits_modifier = 190;
