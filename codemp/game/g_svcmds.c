@@ -485,7 +485,7 @@ void Svcmd_Say_f( void ) {
 	Q_strstrip( text, "\n\r", "  " );
 
 	//G_LogPrintf( "say: server: %s\n", text );
-	trap->SendServerCommand( -1, va("print \"server: %s\n\"", text ) );
+	trap->SendServerCommand( -1, va("chat \"Server: %s\n\"", text ) );
 }
 
 typedef struct svcmd_s {
