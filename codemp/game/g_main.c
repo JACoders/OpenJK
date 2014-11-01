@@ -4206,6 +4206,7 @@ extern void set_max_shield(gentity_t *ent);
 extern gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile);
 
 extern void initialize_rpg_skills(gentity_t *ent);
+extern void G_Kill( gentity_t *ent );
 
 void G_RunFrame( int levelTime ) {
 	int			i;
@@ -4820,6 +4821,10 @@ void G_RunFrame( int levelTime ) {
 
 				if (level.quest_map > 0)
 				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now
+					// zyk: fixing exploit in boss battles. If player is in a vehicle, kill the player
+					if (ent->client->pers.guardian_mode > 0 && ent->client->ps.m_iVehicleNum > 0)
+						G_Kill( ent );
+
 					if (level.quest_map == 1)
 					{
 						if (ent->client->pers.universe_quest_progress == 8 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 0)) && ent->client->pers.universe_quest_timer < level.time)
