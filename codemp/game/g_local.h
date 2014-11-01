@@ -705,7 +705,7 @@ typedef struct clientPersistant_s {
 	// zyk: Universe Quest progress of this player
 	int universe_quest_progress;
 
-	// zyk: counter used in the artifacts objective, and in the amulets one, of the Universe Quest
+	// zyk: counter used in some missions of Universe Quest
 	// Possible bit values in artifacts objective:
 	// 0 - Unused
 	// 1 - Eternity Quest artifact got with the Sage of Eternity
@@ -723,16 +723,18 @@ typedef struct clientPersistant_s {
 	// 1 - Amulet of Darkness
 	// 2 - Amulet of Eternity
 
-	// The Second Act can have permanent bit values with these possible values:
+	// The choosing mission can have permanent bit values with these possible values:
 	// 0 - Player chose to allow the sages to get into the Sacred Dimension
 	// 1 - Player chose to allow the guardians to get into the Sacred Dimension
 	// 2 - Player chose to allow the Master of Evil to get into the Sacred Dimension
 	// 3 - Player chose to allow the Guardian of Time to get into the Sacred Dimension
 	
-	// it can also have temporaty values with these possible values:
+	// Possible bit values in crystals objective:
 	// 0 - Player got the Crystal of Destiny
 	// 1 - Player got the Crystal of Truth
 	// 2 - Player got the Crystal of Time
+
+	// If player chose Challenge Mode in settings, sets a bit value 29
 	int universe_quest_counter;
 
 	// zyk: used to control some events in Universe Quest. In the quest_reborn_red npc, sets the player id who is playing the quest. In the player, sets how much quest_reborn_red npcs the player must kill to complete the first objective

@@ -3734,8 +3734,10 @@ void Cmd_AddBot_f( gentity_t *ent ) {
 // zyk: sets the Max HP a player can have in RPG Mode
 void set_max_health(gentity_t *ent)
 {
-	// zyk: Universe Power
-	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4)))
+	// zyk: Challenge Mode. Player completed it, so he will have a bonus of 50 HP
+	if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 29))
+		ent->client->pers.max_rpg_health = 200 + (ent->client->pers.level * 2);
+	else if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
 		ent->client->pers.max_rpg_health = 150 + (ent->client->pers.level * 2);
 	else
 		ent->client->pers.max_rpg_health = 100 + (ent->client->pers.level * 2);
@@ -9896,7 +9898,10 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 15))
 		{
-			sprintf(message,"%s\n^315 - Difficulty ^1Hard", message);
+			if (ent->client->pers.universe_quest_counter & (1 << 29))
+				sprintf(message,"%s\n^315 - Difficulty ^1Challenge", message);
+			else
+				sprintf(message,"%s\n^315 - Difficulty ^3Hard", message);
 		}
 		else
 		{
@@ -9929,9 +9934,9 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			return;
 		}
 
-		if (value == 0 && ent->client->pers.player_settings & (1 << value) && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{ // zyk: player can only activate quests again in Spectator Mode
-			trap->SendServerCommand( ent-g_entities, "print \"You can only activate RPG quests in Spectator Mode.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You can only turn RPG quests ON/OFF in Spectator Mode.\n\"" );
 			return;
 		}
 
@@ -9976,14 +9981,25 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		else if (value == 15)
 		{
 			if (ent->client->pers.player_settings & (1 << value))
-			{
+			{ // zyk: setting Normal Mode removes the Challenge Mode flag
 				ent->client->pers.player_settings &= ~(1 << value);
+				ent->client->pers.universe_quest_counter &= ~(1 << 29);
 				strcpy(new_status,"^2Normal^7");
 			}
 			else
 			{
 				ent->client->pers.player_settings |= (1 << value);
-				strcpy(new_status,"^1Hard^7");
+
+				if (ent->client->pers.defeated_guardians == 0 && ent->client->pers.hunter_quest_progress == 0 &&
+					ent->client->pers.eternity_quest_progress == 0 && ent->client->pers.universe_quest_progress == 0)
+				{ // zyk: player can only activate Challenge Mode if he did not complete any quest mission
+					ent->client->pers.universe_quest_counter |= (1 << 29);
+					strcpy(new_status,"^1Challenge^7");
+				}
+				else
+				{
+					strcpy(new_status,"^3Hard^7");
+				}
 			}
 		}
 		else

@@ -4131,7 +4131,14 @@ void first_second_act_objective(gentity_t *ent)
 	if (count == 3)
 	{
 		ent->client->pers.universe_quest_progress = 9;
-		ent->client->pers.universe_quest_counter = 0;
+
+		if (ent->client->pers.universe_quest_counter & (1 << 29))
+		{ // zyk: if player is in Challenge Mode, do not remove this bit value
+			ent->client->pers.universe_quest_counter = 0;
+			ent->client->pers.universe_quest_counter |= (1 << 29);
+		}
+		else
+			ent->client->pers.universe_quest_counter = 0;
 	}
 }
 
@@ -4144,7 +4151,14 @@ void universe_quest_artifacts_checker(gentity_t *ent)
 	{ // zyk: after collecting all artifacts, go to next objective
 		trap->SendServerCommand( -1, va("chat \"%s^7: I have all artifacts! Now I must go to ^3yavin1b ^7to know about the mysterious voice I heard when I begun this quest.\"", ent->client->pers.netname));
 
-		ent->client->pers.universe_quest_counter = 0;
+		if (ent->client->pers.universe_quest_counter & (1 << 29))
+		{ // zyk: if player is in Challenge Mode, do not remove this bit value
+			ent->client->pers.universe_quest_counter = 0;
+			ent->client->pers.universe_quest_counter |= (1 << 29);
+		}
+		else
+			ent->client->pers.universe_quest_counter = 0;
+
 		ent->client->pers.universe_quest_progress = 3;
 		ent->client->pers.universe_quest_timer = level.time + 1000;
 		ent->client->pers.universe_quest_objective_control = 4; // zyk: fourth Universe Quest objective
@@ -4169,7 +4183,13 @@ void universe_crystals_check(gentity_t *ent)
 	if (count == 3)
 	{
 		ent->client->pers.universe_quest_progress = 10;
-		ent->client->pers.universe_quest_counter = 0;
+		if (ent->client->pers.universe_quest_counter & (1 << 29))
+		{ // zyk: if player is in Challenge Mode, do not remove this bit value
+			ent->client->pers.universe_quest_counter = 0;
+			ent->client->pers.universe_quest_counter |= (1 << 29);
+		}
+		else
+			ent->client->pers.universe_quest_counter = 0;
 	}
 }
 
@@ -4979,7 +4999,13 @@ void G_RunFrame( int levelTime ) {
 							if (ent->client->pers.universe_quest_messages == 17)
 							{ // zyk: complete the objective
 								ent->client->pers.universe_quest_objective_control = -1;
-								ent->client->pers.universe_quest_counter = 0;
+								if (ent->client->pers.universe_quest_counter & (1 << 29))
+								{ // zyk: if player is in Challenge Mode, do not remove this bit value
+									ent->client->pers.universe_quest_counter = 0;
+									ent->client->pers.universe_quest_counter |= (1 << 29);
+								}
+								else
+									ent->client->pers.universe_quest_counter = 0;
 								ent->client->pers.universe_quest_progress = 4;
 								clean_note_model();
 								save_account(ent);
@@ -5348,7 +5374,13 @@ void G_RunFrame( int levelTime ) {
 							{
 								trap->SendServerCommand( -1, va("chat \"%s^7: Thanks! Don't worry, I will find them in ^3mp/siege_desert ^7and meet you all in taspir1.\"", ent->client->pers.netname));
 
-								ent->client->pers.universe_quest_counter = 0;
+								if (ent->client->pers.universe_quest_counter & (1 << 29))
+								{ // zyk: if player is in Challenge Mode, do not remove this bit value
+									ent->client->pers.universe_quest_counter = 0;
+									ent->client->pers.universe_quest_counter |= (1 << 29);
+								}
+								else
+									ent->client->pers.universe_quest_counter = 0;
 								ent->client->pers.universe_quest_progress = 5;
 								ent->client->pers.universe_quest_objective_control = -1;
 								ent->client->pers.universe_quest_messages = 0;
@@ -6189,6 +6221,10 @@ void G_RunFrame( int levelTime ) {
 							{
 								ent->client->pers.universe_quest_progress = 18;
 								save_account(ent);
+
+								if (ent->client->pers.universe_quest_counter & (1 << 29))
+									trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7Well done %s^7! You completed Challenge Mode!\"", ent->client->pers.netname));
+
 								quest_get_new_player(ent);
 							}
 
@@ -7599,7 +7635,13 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, va("chat \"^2Sage of Universe: ^7You must be aware that his soldiers are there and you will need to fight them. Now go, hero.\""));
 
 								ent->client->pers.universe_quest_progress = 6;
-								ent->client->pers.universe_quest_counter = 0;
+								if (ent->client->pers.universe_quest_counter & (1 << 29))
+								{ // zyk: if player is in Challenge Mode, do not remove this bit value
+									ent->client->pers.universe_quest_counter = 0;
+									ent->client->pers.universe_quest_counter |= (1 << 29);
+								}
+								else
+									ent->client->pers.universe_quest_counter = 0;
 								ent->client->pers.universe_quest_objective_control = -1;
 
 								save_account(ent);
@@ -7697,7 +7739,13 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, va("chat \"^2Guardian of Universe: ^7I will meet the other guardians in mp/siege_korriban. Farewell, %s^7.\"", ent->client->pers.netname));
 							
 								ent->client->pers.universe_quest_progress = 7;
-								ent->client->pers.universe_quest_counter = 0;
+								if (ent->client->pers.universe_quest_counter & (1 << 29))
+								{ // zyk: if player is in Challenge Mode, do not remove this bit value
+									ent->client->pers.universe_quest_counter = 0;
+									ent->client->pers.universe_quest_counter |= (1 << 29);
+								}
+								else
+									ent->client->pers.universe_quest_counter = 0;
 
 								save_account(ent);
 

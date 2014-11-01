@@ -2119,6 +2119,20 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		try_finishing_race();
 	}
 
+	if (self->client->sess.amrpgmode == 2 && self->client->pers.can_play_quest == 1 && self->client->pers.universe_quest_counter & (1 << 29))
+	{
+		self->client->pers.defeated_guardians = 0;
+		self->client->pers.hunter_quest_progress = 0;
+		self->client->pers.eternity_quest_progress = 0;
+		self->client->pers.universe_quest_progress = 0;
+		self->client->pers.universe_quest_counter = 0;
+		self->client->pers.player_settings &= ~(1 << 15);
+
+		save_account(self);
+
+		trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7%s^7! You died in the Challenge Mode! You lost all your quests!\n\"", self->client->pers.netname) );
+	}
+
 	// zyk: setting the credits_modifier and the bonus score for the RPG player
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{
@@ -4914,7 +4928,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{
 		// zyk: when player is in Hard Mode, he takes more damage
-		if (targ->client->pers.player_settings & (1 << 15))
+		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
 			damage = (int)ceil(damage * 1.25);
 
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
