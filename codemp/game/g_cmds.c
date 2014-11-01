@@ -11322,7 +11322,6 @@ Cmd_Silence_f
 ==================
 */
 void Cmd_Silence_f( gentity_t *ent ) {
-	gentity_t *target_ent;
 	int client_id = -1;
 	char   arg[MAX_STRING_CHARS];
 
