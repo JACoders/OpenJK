@@ -8459,7 +8459,7 @@ void G_RunFrame( int levelTime ) {
 						{
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Healing Water!\"");
 
-							healing_water(ent,200);
+							healing_water(ent,100);
 
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
@@ -8478,7 +8478,7 @@ void G_RunFrame( int levelTime ) {
 
 									if (distance < 300)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8514,7 +8514,7 @@ void G_RunFrame( int levelTime ) {
 											Jetpack_Off(player_ent);
 										}
 
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,400,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,300,0,MOD_UNKNOWN);
 
 										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
@@ -8554,7 +8554,7 @@ void G_RunFrame( int levelTime ) {
 
 									if (distance > 300)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8610,7 +8610,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-									if (distance < 1000)
+									if (distance < 900)
 									{
 										if (player_ent->client->jetPackOn)
 										{
@@ -8626,7 +8626,7 @@ void G_RunFrame( int levelTime ) {
 										player_ent->client->ps.quickerGetup = qtrue;
 										player_ent->client->ps.electrifyTime = level.time + 5000;
 
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,170,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8648,7 +8648,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									if (player_ent->client->pers.ultimate_power_target == 2)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,170,0,MOD_UNKNOWN);
 									}
 								}
 							}
@@ -8668,7 +8668,7 @@ void G_RunFrame( int levelTime ) {
 								{
 									if (player_ent->client->pers.ultimate_power_target == 2)
 									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,180,0,MOD_UNKNOWN);
+										G_Damage(player_ent,NULL,NULL,NULL,NULL,170,0,MOD_UNKNOWN);
 
 										player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 										player_ent->client->ps.forceHandExtendTime = level.time + 3000;
