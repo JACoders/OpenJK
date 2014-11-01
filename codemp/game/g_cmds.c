@@ -8461,7 +8461,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 29)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 30 seconds more. Allows placing more sentry guns\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 30 seconds more. Allows placing more sentry guns. Allows buying and selling from seller remotely, so no need to call him\n\n\"");
 		}
 		else if (i == 30)
 		{
@@ -8549,6 +8549,10 @@ void Cmd_Buy_f( gentity_t *ent ) {
 				break;
 			}
 		}
+
+		// zyk: Bounty Hunter Upgrade allows buying and selling without the need to call the jawa seller
+		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			found = 1;
 
 		if (found == 0)
 		{
@@ -8861,6 +8865,10 @@ void Cmd_Sell_f( gentity_t *ent ) {
 				break;
 			}
 		}
+
+		// zyk: Bounty Hunter Upgrade allows buying and selling without the need to call the jawa seller
+		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			found = 1;
 
 		if (found == 0)
 		{
