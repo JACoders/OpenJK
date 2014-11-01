@@ -512,7 +512,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	vec3_t		start, end;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
-	float		shotRange = 8192;
+	float		shotRange = 16384; // zyk: default 8192
 	int			ignore, traces;
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
@@ -672,7 +672,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	vec3_t		muzzle2;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
-	float		shotRange = 8192.0f;
+	float		shotRange = 16384.0f; // zyk: default 8192
 	int			i;
 	int			count, maxCount = 60;
 	int			traces = DISRUPTOR_ALT_TRACES;
