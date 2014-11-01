@@ -4711,27 +4711,33 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 	case FP_SABERTHROW:
 		break;
 	case FP_PROTECT:
-		if (self->client->ps.fd.forcePowerDebounce[forcePower] < level.time)
-		{
-			BG_ForcePowerDrain( &self->client->ps, forcePower, 1 );
-			if (self->client->ps.fd.forcePower < 1)
+		if (self->client->sess.amrpgmode < 2 || self->client->pers.force_powers_levels[10] < 4)
+		{ // zyk: Protect 4/4 does not have force debounce
+			if (self->client->ps.fd.forcePowerDebounce[forcePower] < level.time)
 			{
-				WP_ForcePowerStop(self, forcePower);
-			}
+				BG_ForcePowerDrain( &self->client->ps, forcePower, 1 );
+				if (self->client->ps.fd.forcePower < 1)
+				{
+					WP_ForcePowerStop(self, forcePower);
+				}
 
-			self->client->ps.fd.forcePowerDebounce[forcePower] = level.time + 300;
+				self->client->ps.fd.forcePowerDebounce[forcePower] = level.time + 300;
+			}
 		}
 		break;
 	case FP_ABSORB:
-		if (self->client->ps.fd.forcePowerDebounce[forcePower] < level.time)
-		{
-			BG_ForcePowerDrain( &self->client->ps, forcePower, 1 );
-			if (self->client->ps.fd.forcePower < 1)
+		if (self->client->sess.amrpgmode < 2 || self->client->pers.force_powers_levels[8] < 4)
+		{ // zyk: Absorb 4/4 does not have force debounce
+			if (self->client->ps.fd.forcePowerDebounce[forcePower] < level.time)
 			{
-				WP_ForcePowerStop(self, forcePower);
-			}
+				BG_ForcePowerDrain( &self->client->ps, forcePower, 1 );
+				if (self->client->ps.fd.forcePower < 1)
+				{
+					WP_ForcePowerStop(self, forcePower);
+				}
 
-			self->client->ps.fd.forcePowerDebounce[forcePower] = level.time + 600;
+				self->client->ps.fd.forcePowerDebounce[forcePower] = level.time + 600;
+			}
 		}
 		break;
 	default:
