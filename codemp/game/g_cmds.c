@@ -4768,6 +4768,19 @@ void initialize_rpg_skills(gentity_t *ent)
 
 /*
 ==================
+Cmd_DateTime_f
+==================
+*/
+void Cmd_DateTime_f( gentity_t *ent ) {
+	time_t current_time;
+
+	time(&current_time);
+	// zyk: shows current server date and time
+	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", ctime(&current_time)) ); 
+}
+
+/*
+==================
 Cmd_NewAccount_f
 ==================
 */
@@ -11588,6 +11601,7 @@ command_t commands[] = {
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
 	{ "changepassword",		Cmd_ChangePassword_f,		CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "creditgive",			Cmd_CreditGive_f,			CMD_RPG|CMD_NOINTERMISSION },
+	{ "datetime",			Cmd_DateTime_f,				CMD_NOINTERMISSION },
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Forward",	Cmd_BotMoveForward_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Left",	Cmd_BotMoveLeft_f,			CMD_CHEAT|CMD_ALIVE },
