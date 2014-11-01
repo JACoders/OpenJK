@@ -529,6 +529,8 @@ typedef struct clientPersistant_s {
 
 	// zyk: account system attributes
 
+	// zyk: Possible bit values are:
+	// 0 - Player is silenced
 	int player_statuses;
 
 	// zyk: point marked in map so player can teleport to this point

@@ -1712,6 +1712,10 @@ static void Cmd_Say_f( gentity_t *ent ) {
 	if ( trap->Argc () < 2 )
 		return;
 
+	// zyk: if player is silenced by an admin, he cannot say anything
+	if (ent->client->pers.player_statuses & (1 << 0))
+		return;
+
 	p = ConcatArgs( 1 );
 
 	if ( strlen( p ) >= MAX_SAY_TEXT ) {
@@ -11314,23 +11318,66 @@ void Cmd_EntRemove_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Silence_f
+==================
+*/
+void Cmd_Silence_f( gentity_t *ent ) {
+	gentity_t *target_ent;
+	int client_id = -1;
+	char   arg[MAX_STRING_CHARS];
+
+	if (!(ent->client->pers.bitvalue & (1 << 6)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( trap->Argc() < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a player name or ID.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg, sizeof( arg ) );
+	client_id = zyk_get_client( arg );
+
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->pers.player_statuses & (1 << 0))
+	{
+		g_entities[client_id].client->pers.player_statuses &= ~(1 << 0);
+		trap->SendServerCommand( -1, va("chat \"^3Admin System: ^7player %s^7 is no longer silenced!\n\"", g_entities[client_id].client->pers.netname) );
+	}
+	else
+	{
+		g_entities[client_id].client->pers.player_statuses |= (1 << 0);
+		trap->SendServerCommand( -1, va("chat \"^3Admin System: ^7player %s^7 is silenced!\n\"", g_entities[client_id].client->pers.netname) );
+	}
+}
+
+/*
+==================
 Cmd_AdminList_f
 ==================
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
 	char message[1024];
-	char message_content[7][150];
+	char message_content[8][150];
 	int i = 0;
 	strcpy(message,"");
 
 	if (trap->Argc() == 1)
 	{
-		while (i < 6)
+		while (i < 7)
 		{
 			strcpy(message_content[i],"");
 			i++;
 		}
-		message_content[6][0] = '\0';
+		message_content[7][0] = '\0';
 
 		if ((ent->client->pers.bitvalue & (1 << 0))) 
 		{
@@ -11386,7 +11433,16 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^1no\n",5));
 		}
 
-		for (i = 0; i < 6; i++)
+		if ((ent->client->pers.bitvalue & (1 << 6))) 
+		{
+			strcpy(message_content[6],va("^3 %d ^7- Silence: ^2yes\n",6));
+		}
+		else
+		{
+			strcpy(message_content[6],va("^3 %d ^7- Silence: ^1no\n",6));
+		}
+
+		for (i = 0; i < 7; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
@@ -11424,6 +11480,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == 5)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/entitysystem ^7to see the Entity System commands\n\n\"" );
+		}
+		else if (command_number == 6)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/silence <player name or ID> ^7to silence that player\n\n\"" );
 		}
 	}
 }
@@ -11464,13 +11524,13 @@ void Cmd_AdminUp_f( gentity_t *ent ) {
 		}
 		if (Q_stricmp (arg2, "all") == 0)
 		{ // zyk: if player wrote all, give all commands to the target player
-			for (i = 0; i < 6; i++)
+			for (i = 0; i < 7; i++)
 				g_entities[client_id].client->pers.bitvalue |= (1 << i);
 		}
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 6)
+			if (bitvaluecommand < 0 || bitvaluecommand >= 7)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -11529,7 +11589,7 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 6)
+			if (bitvaluecommand < 0 || bitvaluecommand >= 7)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -11653,6 +11713,7 @@ command_t commands[] = {
 	{ "settings",			Cmd_Settings_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
+	{ "silence",			Cmd_Silence_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "stuff",				Cmd_Stuff_f,				CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "team",				Cmd_Team_f,					CMD_NOINTERMISSION },
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
