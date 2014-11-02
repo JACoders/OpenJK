@@ -5472,6 +5472,879 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
 
+qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value)
+{
+	if (upgrade_value == 1)
+	{
+		if (ent->client->pers.force_powers_levels[0] < 5)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
+			ent->client->pers.force_powers_levels[0]++;
+			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jump ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+			
+	if (upgrade_value == 2)
+	{
+		if (ent->client->pers.force_powers_levels[1] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
+			ent->client->pers.force_powers_levels[1]++;
+			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Push ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 3)
+	{
+		if (ent->client->pers.force_powers_levels[2] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
+			ent->client->pers.force_powers_levels[2]++;
+			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Pull ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 4)
+	{
+		if (ent->client->pers.force_powers_levels[3] < 4)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
+			ent->client->pers.force_powers_levels[3]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Speed ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 5)
+	{
+		if (ent->client->pers.force_powers_levels[4] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+			ent->client->pers.force_powers_levels[4]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 6)
+	{
+		if (ent->client->pers.force_powers_levels[5] < 5)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)))
+			{
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
+				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+			}
+			ent->client->pers.force_powers_levels[5]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+			if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
+			{
+				ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
+			}
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Attack ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 7)
+	{
+		if (ent->client->pers.force_powers_levels[6] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
+			ent->client->pers.force_powers_levels[6]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Defense ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 8)
+	{
+		if (ent->client->pers.force_powers_levels[7] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
+			ent->client->pers.force_powers_levels[7]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Throw ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 9)
+	{
+		if (ent->client->pers.force_powers_levels[8] < 4)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
+			ent->client->pers.force_powers_levels[8]++;
+
+			if (ent->client->pers.force_powers_levels[8] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
+
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Absorb ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 10)
+	{
+		if (ent->client->pers.force_powers_levels[9] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
+			ent->client->pers.force_powers_levels[9]++;
+			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Heal ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 11)
+	{
+		if (ent->client->pers.force_powers_levels[10] < 4)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
+			ent->client->pers.force_powers_levels[10]++;
+
+			if (ent->client->pers.force_powers_levels[10] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Protect ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 12)
+	{
+		if (ent->client->pers.force_powers_levels[11] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
+			ent->client->pers.force_powers_levels[11]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Trick ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 13)
+	{
+		if (ent->client->pers.force_powers_levels[12] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
+			ent->client->pers.force_powers_levels[12]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Heal ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 14)
+	{
+		if (ent->client->pers.force_powers_levels[13] < 4)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
+			ent->client->pers.force_powers_levels[13]++;
+
+			if (ent->client->pers.force_powers_levels[13] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Lightning ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 15)
+	{
+		if (ent->client->pers.force_powers_levels[14] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
+			ent->client->pers.force_powers_levels[14]++;
+			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Grip ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 16)
+	{
+		if (ent->client->pers.force_powers_levels[15] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
+			ent->client->pers.force_powers_levels[15]++;
+			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 17)
+	{
+		if (ent->client->pers.force_powers_levels[16] < 4)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
+			ent->client->pers.force_powers_levels[16]++;
+
+			if (ent->client->pers.force_powers_levels[16] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+			else
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
+
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rage ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 18)
+	{
+		if (ent->client->pers.force_powers_levels[17] < 3)
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)))
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
+			ent->client->pers.force_powers_levels[17]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Energize ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 19)
+	{
+		if (ent->client->pers.stun_baton_level < 3)
+		{
+			ent->client->pers.stun_baton_level++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Stun Baton ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 20)
+	{
+		if (ent->client->pers.weapons_levels[0] < 2)
+		{
+			ent->client->pers.weapons_levels[0]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pistol ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 21)
+	{
+		if (ent->client->pers.weapons_levels[1] < 2)
+		{
+			ent->client->pers.weapons_levels[1]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E11 Blaster Rifle ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 22)
+	{
+		if (ent->client->pers.weapons_levels[2] < 2)
+		{
+			ent->client->pers.weapons_levels[2]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Disruptor ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 23)
+	{
+		if (ent->client->pers.weapons_levels[3] < 2)
+		{
+			ent->client->pers.weapons_levels[3]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bowcaster ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 24)
+	{
+		if (ent->client->pers.weapons_levels[4] < 2)
+		{
+			ent->client->pers.weapons_levels[4]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Repeater ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 25)
+	{
+		if (ent->client->pers.weapons_levels[5] < 2)
+		{
+			ent->client->pers.weapons_levels[5]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3DEMP2 ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 26)
+	{
+		if (ent->client->pers.weapons_levels[6] < 2)
+		{
+			ent->client->pers.weapons_levels[6]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Flechette ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 27)
+	{
+		if (ent->client->pers.weapons_levels[7] < 2)
+		{
+			ent->client->pers.weapons_levels[7]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rocket Launcher ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 28)
+	{
+		if (ent->client->pers.weapons_levels[8] < 2)
+		{
+			ent->client->pers.weapons_levels[8]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Concussion Rifle ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 29)
+	{
+		if (ent->client->pers.weapons_levels[9] < 2)
+		{
+			ent->client->pers.weapons_levels[9]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bryar Pistol ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 30)
+	{
+		if (ent->client->pers.melee_level < 3)
+		{
+			ent->client->pers.melee_level++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Melee ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 31)
+	{
+		if (ent->client->pers.starting_shield_level < 5)
+		{
+			ent->client->pers.starting_shield_level++;
+			set_max_shield(ent);
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Max Shield ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 32)
+	{
+		if (ent->client->pers.shield_strength < 4)
+		{
+			ent->client->pers.shield_strength++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Strength ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 33)
+	{
+		if (ent->client->pers.health_strength < 4)
+		{
+			ent->client->pers.health_strength++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Health Strength ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 34)
+	{
+		if (ent->client->pers.drain_shield < 1)
+		{
+			ent->client->pers.drain_shield++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain Shield ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 35)
+	{
+		if (ent->client->pers.jetpack_level < 3)
+		{
+			ent->client->pers.jetpack_level++;
+			if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
+				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jetpack ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 36)
+	{
+		if (ent->client->pers.playerhealth < 3)
+		{
+			ent->client->pers.playerhealth++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense Health ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 37)
+	{
+		if (ent->client->pers.shield < 3)
+		{
+			ent->client->pers.shield++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Heal ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 38)
+	{
+		if (ent->client->pers.teamshield < 3)
+		{
+			ent->client->pers.teamshield++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Shield Heal ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 39)
+	{
+		if (ent->client->pers.mind_control < 1)
+		{
+			ent->client->pers.mind_control++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Control ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 40)
+	{
+		if (ent->client->pers.ammo_levels[0] < 3)
+		{
+			ent->client->pers.ammo_levels[0]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pack ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 41)
+	{
+		if (ent->client->pers.ammo_levels[1] < 3)
+		{
+			ent->client->pers.ammo_levels[1]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Power Cell ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 42)
+	{
+		if (ent->client->pers.ammo_levels[2] < 3)
+		{
+			ent->client->pers.ammo_levels[2]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Metallic Bolts ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 43)
+	{
+		if (ent->client->pers.ammo_levels[3] < 3)
+		{
+			ent->client->pers.ammo_levels[3]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rockets ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 44)
+	{
+		if (ent->client->pers.ammo_levels[4] < 3)
+		{
+			ent->client->pers.ammo_levels[4]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Thermals ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 45)
+	{
+		if (ent->client->pers.ammo_levels[5] < 3)
+		{
+			ent->client->pers.ammo_levels[5]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Trip Mines ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 46)
+	{
+		if (ent->client->pers.ammo_levels[6] < 3)
+		{
+			ent->client->pers.ammo_levels[6]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Det Packs ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 47)
+	{
+		if (ent->client->pers.holdable_items_levels[0] < 1)
+		{
+			ent->client->pers.holdable_items_levels[0]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Binoculars ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 48)
+	{
+		if (ent->client->pers.holdable_items_levels[1] < 1)
+		{
+			ent->client->pers.holdable_items_levels[1]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bacta Canister ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 49)
+	{
+		if (ent->client->pers.holdable_items_levels[2] < 1)
+		{
+			ent->client->pers.holdable_items_levels[2]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sentry Gun ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 50)
+	{
+		if (ent->client->pers.holdable_items_levels[3] < 1)
+		{
+			ent->client->pers.holdable_items_levels[3]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Seeker Drone ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 51)
+	{
+		if (ent->client->pers.holdable_items_levels[4] < 1)
+		{
+			ent->client->pers.holdable_items_levels[4]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E-Web ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 52)
+	{
+		if (ent->client->pers.holdable_items_levels[5] < 1)
+		{
+			ent->client->pers.holdable_items_levels[5]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Big Bacta ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 53)
+	{
+		if (ent->client->pers.holdable_items_levels[6] < 1)
+		{
+			ent->client->pers.holdable_items_levels[6]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Field ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 54)
+	{
+		if (ent->client->pers.holdable_items_levels[7] < 1)
+		{
+			ent->client->pers.holdable_items_levels[7]++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Cloak Item ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 55)
+	{
+		if (ent->client->pers.max_force_power_level < 5)
+		{
+			ent->client->pers.max_force_power_level++;
+			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
+			ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Power ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	if (upgrade_value == 56)
+	{
+		if (ent->client->pers.improvements_level < 3)
+		{
+			ent->client->pers.improvements_level++;
+			ent->client->pers.skillpoints--;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Improvements ^7skill.\n\"" );
+			return qfalse;
+		}
+	}
+
+	return qtrue;
+}
+
 /*
 ==================
 Cmd_UpSkill_f
@@ -5480,6 +6353,7 @@ Cmd_UpSkill_f
 void Cmd_UpSkill_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be upgraded
 	int upgrade_value; // zyk: the integer value of arg1
+	qboolean is_upgraded = qfalse;
 		    
 	if ( trap->Argc() != 2) 
 	{ 
@@ -5603,873 +6477,10 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 	}
 
 	// zyk: the upgrade is done if it doesnt go above the maximum level of the skill
-	if (upgrade_value == 1)
-	{
-		if (ent->client->pers.force_powers_levels[0] < 5)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
-			ent->client->pers.force_powers_levels[0]++;
-			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jump ^7skill.\n\"" );
-			return;
-		}
-	}
-			
-	if (upgrade_value == 2)
-	{
-		if (ent->client->pers.force_powers_levels[1] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
-			ent->client->pers.force_powers_levels[1]++;
-			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Push ^7skill.\n\"" );
-			return;
-		}
-	}
+	is_upgraded = rpg_upgrade_skill(ent, upgrade_value);
 
-	if (upgrade_value == 3)
-	{
-		if (ent->client->pers.force_powers_levels[2] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
-			ent->client->pers.force_powers_levels[2]++;
-			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Pull ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 4)
-	{
-		if (ent->client->pers.force_powers_levels[3] < 4)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
-			ent->client->pers.force_powers_levels[3]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Speed ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 5)
-	{
-		if (ent->client->pers.force_powers_levels[4] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-			ent->client->pers.force_powers_levels[4]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 6)
-	{
-		if (ent->client->pers.force_powers_levels[5] < 5)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)))
-			{
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
-				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
-			}
-			ent->client->pers.force_powers_levels[5]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
-			if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
-			{
-				ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
-			}
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Attack ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 7)
-	{
-		if (ent->client->pers.force_powers_levels[6] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
-			ent->client->pers.force_powers_levels[6]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Defense ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 8)
-	{
-		if (ent->client->pers.force_powers_levels[7] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
-			ent->client->pers.force_powers_levels[7]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Saber Throw ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 9)
-	{
-		if (ent->client->pers.force_powers_levels[8] < 4)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
-			ent->client->pers.force_powers_levels[8]++;
-
-			if (ent->client->pers.force_powers_levels[8] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
-			else
-				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
-
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Absorb ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 10)
-	{
-		if (ent->client->pers.force_powers_levels[9] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
-			ent->client->pers.force_powers_levels[9]++;
-			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Heal ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 11)
-	{
-		if (ent->client->pers.force_powers_levels[10] < 4)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
-			ent->client->pers.force_powers_levels[10]++;
-
-			if (ent->client->pers.force_powers_levels[10] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
-			else
-				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Protect ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 12)
-	{
-		if (ent->client->pers.force_powers_levels[11] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
-			ent->client->pers.force_powers_levels[11]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Trick ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 13)
-	{
-		if (ent->client->pers.force_powers_levels[12] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
-			ent->client->pers.force_powers_levels[12]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Heal ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 14)
-	{
-		if (ent->client->pers.force_powers_levels[13] < 4)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
-			ent->client->pers.force_powers_levels[13]++;
-
-			if (ent->client->pers.force_powers_levels[13] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
-			else
-				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Lightning ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 15)
-	{
-		if (ent->client->pers.force_powers_levels[14] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
-			ent->client->pers.force_powers_levels[14]++;
-			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Grip ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 16)
-	{
-		if (ent->client->pers.force_powers_levels[15] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
-			ent->client->pers.force_powers_levels[15]++;
-			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 17)
-	{
-		if (ent->client->pers.force_powers_levels[16] < 4)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
-			ent->client->pers.force_powers_levels[16]++;
-
-			if (ent->client->pers.force_powers_levels[16] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
-			else
-				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
-
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rage ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 18)
-	{
-		if (ent->client->pers.force_powers_levels[17] < 3)
-		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
-			ent->client->pers.force_powers_levels[17]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Energize ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 19)
-	{
-		if (ent->client->pers.stun_baton_level < 3)
-		{
-			ent->client->pers.stun_baton_level++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Stun Baton ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 20)
-	{
-		if (ent->client->pers.weapons_levels[0] < 2)
-		{
-			ent->client->pers.weapons_levels[0]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pistol ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 21)
-	{
-		if (ent->client->pers.weapons_levels[1] < 2)
-		{
-			ent->client->pers.weapons_levels[1]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E11 Blaster Rifle ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 22)
-	{
-		if (ent->client->pers.weapons_levels[2] < 2)
-		{
-			ent->client->pers.weapons_levels[2]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Disruptor ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 23)
-	{
-		if (ent->client->pers.weapons_levels[3] < 2)
-		{
-			ent->client->pers.weapons_levels[3]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bowcaster ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 24)
-	{
-		if (ent->client->pers.weapons_levels[4] < 2)
-		{
-			ent->client->pers.weapons_levels[4]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Repeater ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 25)
-	{
-		if (ent->client->pers.weapons_levels[5] < 2)
-		{
-			ent->client->pers.weapons_levels[5]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3DEMP2 ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 26)
-	{
-		if (ent->client->pers.weapons_levels[6] < 2)
-		{
-			ent->client->pers.weapons_levels[6]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Flechette ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 27)
-	{
-		if (ent->client->pers.weapons_levels[7] < 2)
-		{
-			ent->client->pers.weapons_levels[7]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rocket Launcher ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 28)
-	{
-		if (ent->client->pers.weapons_levels[8] < 2)
-		{
-			ent->client->pers.weapons_levels[8]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Concussion Rifle ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 29)
-	{
-		if (ent->client->pers.weapons_levels[9] < 2)
-		{
-			ent->client->pers.weapons_levels[9]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bryar Pistol ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 30)
-	{
-		if (ent->client->pers.melee_level < 3)
-		{
-			ent->client->pers.melee_level++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Melee ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 31)
-	{
-		if (ent->client->pers.starting_shield_level < 5)
-		{
-			ent->client->pers.starting_shield_level++;
-			set_max_shield(ent);
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Max Shield ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 32)
-	{
-		if (ent->client->pers.shield_strength < 4)
-		{
-			ent->client->pers.shield_strength++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Strength ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 33)
-	{
-		if (ent->client->pers.health_strength < 4)
-		{
-			ent->client->pers.health_strength++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Health Strength ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 34)
-	{
-		if (ent->client->pers.drain_shield < 1)
-		{
-			ent->client->pers.drain_shield++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Drain Shield ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 35)
-	{
-		if (ent->client->pers.jetpack_level < 3)
-		{
-			ent->client->pers.jetpack_level++;
-			if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
-				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Jetpack ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 36)
-	{
-		if (ent->client->pers.playerhealth < 3)
-		{
-			ent->client->pers.playerhealth++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sense Health ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 37)
-	{
-		if (ent->client->pers.shield < 3)
-		{
-			ent->client->pers.shield++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Shield Heal ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 38)
-	{
-		if (ent->client->pers.teamshield < 3)
-		{
-			ent->client->pers.teamshield++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Team Shield Heal ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 39)
-	{
-		if (ent->client->pers.mind_control < 1)
-		{
-			ent->client->pers.mind_control++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Control ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 40)
-	{
-		if (ent->client->pers.ammo_levels[0] < 3)
-		{
-			ent->client->pers.ammo_levels[0]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Blaster Pack ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 41)
-	{
-		if (ent->client->pers.ammo_levels[1] < 3)
-		{
-			ent->client->pers.ammo_levels[1]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Power Cell ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 42)
-	{
-		if (ent->client->pers.ammo_levels[2] < 3)
-		{
-			ent->client->pers.ammo_levels[2]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Metallic Bolts ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 43)
-	{
-		if (ent->client->pers.ammo_levels[3] < 3)
-		{
-			ent->client->pers.ammo_levels[3]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Rockets ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 44)
-	{
-		if (ent->client->pers.ammo_levels[4] < 3)
-		{
-			ent->client->pers.ammo_levels[4]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Thermals ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 45)
-	{
-		if (ent->client->pers.ammo_levels[5] < 3)
-		{
-			ent->client->pers.ammo_levels[5]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Trip Mines ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 46)
-	{
-		if (ent->client->pers.ammo_levels[6] < 3)
-		{
-			ent->client->pers.ammo_levels[6]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Det Packs ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 47)
-	{
-		if (ent->client->pers.holdable_items_levels[0] < 1)
-		{
-			ent->client->pers.holdable_items_levels[0]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Binoculars ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 48)
-	{
-		if (ent->client->pers.holdable_items_levels[1] < 1)
-		{
-			ent->client->pers.holdable_items_levels[1]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Bacta Canister ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 49)
-	{
-		if (ent->client->pers.holdable_items_levels[2] < 1)
-		{
-			ent->client->pers.holdable_items_levels[2]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Sentry Gun ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 50)
-	{
-		if (ent->client->pers.holdable_items_levels[3] < 1)
-		{
-			ent->client->pers.holdable_items_levels[3]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Seeker Drone ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 51)
-	{
-		if (ent->client->pers.holdable_items_levels[4] < 1)
-		{
-			ent->client->pers.holdable_items_levels[4]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3E-Web ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 52)
-	{
-		if (ent->client->pers.holdable_items_levels[5] < 1)
-		{
-			ent->client->pers.holdable_items_levels[5]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Big Bacta ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 53)
-	{
-		if (ent->client->pers.holdable_items_levels[6] < 1)
-		{
-			ent->client->pers.holdable_items_levels[6]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Field ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 54)
-	{
-		if (ent->client->pers.holdable_items_levels[7] < 1)
-		{
-			ent->client->pers.holdable_items_levels[7]++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Cloak Item ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 55)
-	{
-		if (ent->client->pers.max_force_power_level < 5)
-		{
-			ent->client->pers.max_force_power_level++;
-			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
-			ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Force Power ^7skill.\n\"" );
-			return;
-		}
-	}
-
-	if (upgrade_value == 56)
-	{
-		if (ent->client->pers.improvements_level < 3)
-		{
-			ent->client->pers.improvements_level++;
-			ent->client->pers.skillpoints--;
-		}
-		else
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Improvements ^7skill.\n\"" );
-			return;
-		}
-	}
+	if (is_upgraded == qfalse)
+		return;
 
 	// zyk: saving the account file with the upgraded skill
 	save_account(ent);
@@ -10148,6 +10159,96 @@ void Cmd_Settings_f( gentity_t *ent ) {
 	}
 }
 
+void load_config(gentity_t *ent)
+{
+	FILE *config_file;
+	gclient_t *client;
+	char content[32];
+	int value = 0;
+	int i = 0;
+
+	strcpy(content,"");
+	client = ent->client;
+
+	if (client->pers.rpg_class == 0)
+		config_file = fopen(va("configs/%s_freewarrior.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 1)
+		config_file = fopen(va("configs/%s_forceuser.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 2)
+		config_file = fopen(va("configs/%s_bountyhunter.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 3)
+		config_file = fopen(va("configs/%s_armoredsoldier.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 4)
+		config_file = fopen(va("configs/%s_monk.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 5)
+		config_file = fopen(va("configs/%s_stealthattacker.txt",client->sess.filename),"r");
+	else if (client->pers.rpg_class == 6)
+		config_file = fopen(va("configs/%s_duelist.txt",client->sess.filename),"r");
+
+	if (config_file != NULL)
+	{
+		fscanf(config_file,"%s",content);
+		value = atoi(content);
+
+		if (client->pers.level >= value)
+		{ // zyk: only loads config if current level is at least the one read from the file
+		  // if the value is lower, it means the player reset his account. In this case, do not load anything
+			for (i = 1; i <= NUMBER_OF_SKILLS; i++)
+			{
+				fscanf(config_file,"%s",content);
+				value = atoi(content); // zyk: the skill levels the player has in this skill
+
+				while (value > 0)
+				{
+					rpg_upgrade_skill(ent, i);
+					value--;
+				}
+			}
+		}
+
+		fclose(config_file);
+	}
+}
+
+void save_config(gentity_t *ent)
+{
+	FILE *config_file;
+	gclient_t *client;
+	client = ent->client;
+
+	system("mkdir configs");
+
+	if (client->pers.rpg_class == 0)
+		config_file = fopen(va("configs/%s_freewarrior.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 1)
+		config_file = fopen(va("configs/%s_forceuser.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 2)
+		config_file = fopen(va("configs/%s_bountyhunter.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 3)
+		config_file = fopen(va("configs/%s_armoredsoldier.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 4)
+		config_file = fopen(va("configs/%s_monk.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 5)
+		config_file = fopen(va("configs/%s_stealthattacker.txt",client->sess.filename),"w");
+	else if (client->pers.rpg_class == 6)
+		config_file = fopen(va("configs/%s_duelist.txt",client->sess.filename),"w");
+
+	if (config_file != NULL)
+	{
+		fprintf(config_file,"%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
+		client->pers.level,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
+		,client->pers.force_powers_levels[3],client->pers.force_powers_levels[4],client->pers.force_powers_levels[5],client->pers.force_powers_levels[6],client->pers.force_powers_levels[7],client->pers.force_powers_levels[8]
+		,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
+		,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.stun_baton_level,client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
+		,client->pers.weapons_levels[4],client->pers.weapons_levels[5],client->pers.weapons_levels[6],client->pers.weapons_levels[7],client->pers.weapons_levels[8],client->pers.weapons_levels[9],client->pers.melee_level,client->pers.starting_shield_level,client->pers.shield_strength
+		,client->pers.health_strength,client->pers.drain_shield,client->pers.jetpack_level,client->pers.playerhealth,client->pers.shield,client->pers.teamshield,client->pers.mind_control,client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
+		,client->pers.ammo_levels[3],client->pers.ammo_levels[4],client->pers.ammo_levels[5],client->pers.ammo_levels[6],client->pers.holdable_items_levels[0],client->pers.holdable_items_levels[1],client->pers.holdable_items_levels[2],client->pers.holdable_items_levels[3]
+		,client->pers.holdable_items_levels[4],client->pers.holdable_items_levels[5],client->pers.holdable_items_levels[6],client->pers.holdable_items_levels[7],client->pers.max_force_power_level,client->pers.improvements_level);
+		
+		fclose(config_file);
+	}
+}
+
 /*
 ==================
 Cmd_RpgClass_f
@@ -10172,6 +10273,8 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
+
+	save_config(ent);
 
 	ent->client->pers.rpg_class = value;
 
@@ -10291,6 +10394,8 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	}
 
 	save_account(ent);
+
+	load_config(ent);
 
 	if (ent->client->pers.rpg_class == 1)
 	{ // zyk: Force User
