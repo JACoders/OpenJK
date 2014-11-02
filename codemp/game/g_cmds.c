@@ -10175,370 +10175,151 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 
 	ent->client->pers.rpg_class = value;
 
-	// zyk: resetting skills that are not allowed in this class
-	if (ent->client->pers.rpg_class == 1)
-	{ // zyk: Force User
-		for (i = 0; i < 7; i++)
+	// zyk: resetting skills
+	for (i = 0; i < 18; i++)
+	{
+		while (ent->client->pers.force_powers_levels[i] > 0)
 		{
-			while (ent->client->pers.ammo_levels[i] > 0)
-			{
-				ent->client->pers.ammo_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 10; i++)
-		{
-			while (ent->client->pers.weapons_levels[i] > 0)
-			{
-				ent->client->pers.weapons_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			while (ent->client->pers.holdable_items_levels[i] > 0)
-			{
-				ent->client->pers.holdable_items_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		while (ent->client->pers.jetpack_level > 0)
-		{
-			ent->client->pers.jetpack_level--;
+			ent->client->pers.force_powers_levels[i]--;
 			ent->client->pers.skillpoints++;
 		}
+	}
 
+	for (i = 0; i < 10; i++)
+	{
+		while (ent->client->pers.weapons_levels[i] > 0)
+		{
+			ent->client->pers.weapons_levels[i]--;
+			ent->client->pers.skillpoints++;
+		}
+	}
+
+	for (i = 0; i < 7; i++)
+	{
+		while (ent->client->pers.ammo_levels[i] > 0)
+		{
+			ent->client->pers.ammo_levels[i]--;
+			ent->client->pers.skillpoints++;
+		}
+	}
+
+	for (i = 0; i < 8; i++)
+	{
+		while (ent->client->pers.holdable_items_levels[i] > 0)
+		{
+			ent->client->pers.holdable_items_levels[i]--;
+			ent->client->pers.skillpoints++;
+		}
+	}
+
+	while (ent->client->pers.stun_baton_level > 0)
+	{
+		ent->client->pers.stun_baton_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.melee_level > 0)
+	{
+		ent->client->pers.melee_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.starting_shield_level > 0)
+	{
+		ent->client->pers.starting_shield_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.shield_strength > 0)
+	{
+		ent->client->pers.shield_strength--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.health_strength > 0)
+	{
+		ent->client->pers.health_strength--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.drain_shield > 0)
+	{
+		ent->client->pers.drain_shield--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.jetpack_level > 0)
+	{
+		ent->client->pers.jetpack_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.playerhealth > 0)
+	{
+		ent->client->pers.playerhealth--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.shield > 0)
+	{
+		ent->client->pers.shield--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.teamshield > 0)
+	{
+		ent->client->pers.teamshield--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.mind_control > 0)
+	{
+		ent->client->pers.mind_control--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.max_force_power_level > 0)
+	{
+		ent->client->pers.max_force_power_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	while (ent->client->pers.improvements_level > 0)
+	{
+		ent->client->pers.improvements_level--;
+		ent->client->pers.skillpoints++;
+	}
+
+	save_account(ent);
+
+	if (ent->client->pers.rpg_class == 1)
+	{ // zyk: Force User
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Force User.\n\"" );
 	}
 	else if (ent->client->pers.rpg_class == 2)
 	{ // zyk: Bounty Hunter
-		for (i = 0; i < 18; i++)
-		{
-			if (i != 4)
-			{
-				while (ent->client->pers.force_powers_levels[i] > 0)
-				{
-					ent->client->pers.force_powers_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		while (ent->client->pers.drain_shield > 0)
-		{
-			ent->client->pers.drain_shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.playerhealth > 0)
-		{
-			ent->client->pers.playerhealth--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.shield > 0)
-		{
-			ent->client->pers.shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.teamshield > 0)
-		{
-			ent->client->pers.teamshield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.mind_control > 0)
-		{
-			ent->client->pers.mind_control--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.max_force_power_level > 0)
-		{
-			ent->client->pers.max_force_power_level--;
-			ent->client->pers.skillpoints++;
-		}
-
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Bounty Hunter.\n\"" );
 	}
 	else if (ent->client->pers.rpg_class == 3)
 	{ // zyk: Armored Soldier
-		for (i = 0; i < 18; i++)
-		{
-			if (i != 4)
-			{
-				while (ent->client->pers.force_powers_levels[i] > 0)
-				{
-					ent->client->pers.force_powers_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			if (i != 0 && i != 1 && i != 3 && i != 4)
-			{
-				while (ent->client->pers.holdable_items_levels[i] > 0)
-				{
-					ent->client->pers.holdable_items_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		while (ent->client->pers.drain_shield > 0)
-		{
-			ent->client->pers.drain_shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.playerhealth > 0)
-		{
-			ent->client->pers.playerhealth--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.shield > 0)
-		{
-			ent->client->pers.shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.teamshield > 0)
-		{
-			ent->client->pers.teamshield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.mind_control > 0)
-		{
-			ent->client->pers.mind_control--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.max_force_power_level > 0)
-		{
-			ent->client->pers.max_force_power_level--;
-			ent->client->pers.skillpoints++;
-		}
-
 		trap->SendServerCommand( ent-g_entities, "print \"You are now an Armored Soldier.\n\"" );
 	}
 	else if (ent->client->pers.rpg_class == 4)
 	{ // zyk: Monk
-		for (i = 0; i < 18; i++)
-		{
-			if (i != 0 && i != 1 && i != 2 && i != 4 && i != 9 && i != 11 && i != 12 && i != 14 && i != 15 && i != 17)
-			{
-				while (ent->client->pers.force_powers_levels[i] > 0)
-				{
-					ent->client->pers.force_powers_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 7; i++)
-		{
-			while (ent->client->pers.ammo_levels[i] > 0)
-			{
-				ent->client->pers.ammo_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 10; i++)
-		{
-			while (ent->client->pers.weapons_levels[i] > 0)
-			{
-				ent->client->pers.weapons_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			while (ent->client->pers.holdable_items_levels[i] > 0)
-			{
-				ent->client->pers.holdable_items_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		while (ent->client->pers.jetpack_level > 0)
-		{
-			ent->client->pers.jetpack_level--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.mind_control > 0)
-		{
-			ent->client->pers.mind_control--;
-			ent->client->pers.skillpoints++;
-		}
-
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Monk.\n\"" );
 	}
 	else if (ent->client->pers.rpg_class == 5)
 	{ // zyk: Stealth Attacker
-		for (i = 0; i < 18; i++)
-		{
-			if (i != 4)
-			{
-				while (ent->client->pers.force_powers_levels[i] > 0)
-				{
-					ent->client->pers.force_powers_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 7; i++)
-		{
-			if (i != 1 && i != 2 && i != 5 && i != 6)
-			{
-				while (ent->client->pers.ammo_levels[i] > 0)
-				{
-					ent->client->pers.ammo_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 10; i++)
-		{
-			if (i != 2 && i != 4 && i != 5 && i != 8)
-			{
-				while (ent->client->pers.weapons_levels[i] > 0)
-				{
-					ent->client->pers.weapons_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			if (i != 0 && i != 3 && i != 7)
-			{
-				while (ent->client->pers.holdable_items_levels[i] > 0)
-				{
-					ent->client->pers.holdable_items_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		while (ent->client->pers.drain_shield > 0)
-		{
-			ent->client->pers.drain_shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.playerhealth > 0)
-		{
-			ent->client->pers.playerhealth--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.shield > 0)
-		{
-			ent->client->pers.shield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.teamshield > 0)
-		{
-			ent->client->pers.teamshield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.mind_control > 0)
-		{
-			ent->client->pers.mind_control--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.max_force_power_level > 0)
-		{
-			ent->client->pers.max_force_power_level--;
-			ent->client->pers.skillpoints++;
-		}
-
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Stealth Attacker.\n\"" );
 	}
 	else if (ent->client->pers.rpg_class == 6)
 	{ // zyk: Duelist
-		for (i = 0; i < 18; i++)
-		{
-			if (i > 10 && i != 13 && i != 14 && i != 15)
-			{
-				while (ent->client->pers.force_powers_levels[i] > 0)
-				{
-					ent->client->pers.force_powers_levels[i]--;
-					ent->client->pers.skillpoints++;
-				}
-			}
-		}
-
-		for (i = 0; i < 7; i++)
-		{
-			while (ent->client->pers.ammo_levels[i] > 0)
-			{
-				ent->client->pers.ammo_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 10; i++)
-		{
-			while (ent->client->pers.weapons_levels[i] > 0)
-			{
-				ent->client->pers.weapons_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			while (ent->client->pers.holdable_items_levels[i] > 0)
-			{
-				ent->client->pers.holdable_items_levels[i]--;
-				ent->client->pers.skillpoints++;
-			}
-		}
-
-		while (ent->client->pers.jetpack_level > 0)
-		{
-			ent->client->pers.jetpack_level--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.teamshield > 0)
-		{
-			ent->client->pers.teamshield--;
-			ent->client->pers.skillpoints++;
-		}
-
-		while (ent->client->pers.mind_control > 0)
-		{
-			ent->client->pers.mind_control--;
-			ent->client->pers.skillpoints++;
-		}
-
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Duelist.\n\"" );
 	}
 	else
-	{
+	{ // zyk: Free Warrior
 		trap->SendServerCommand( ent-g_entities, "print \"You are now a Free Warrior.\n\"" );
 	}
-
-	save_account(ent);
 }
 
 /*
