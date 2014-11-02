@@ -2283,7 +2283,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 		else if (the_old_player->client->pers.universe_quest_progress == 11)
 		{ // zyk: Battle for the Temple, soldier was defeated by the player
-			if (Q_stricmp( self->NPC_type, "quest_super_soldier" ) == 0 || Q_stricmp( self->NPC_type, "quest_reborn_boss" ) == 0)
+			if (Q_stricmp( self->NPC_type, "quest_super_soldier" ) == 0)
 			{
 				the_old_player->client->pers.universe_quest_objective_control--;
 
@@ -2293,9 +2293,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 					the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
 					the_old_player->client->pers.hunter_quest_messages = 40;
 				}
-				else if (the_old_player->client->pers.universe_quest_objective_control == 14)
+				else if (the_old_player->client->pers.universe_quest_objective_control == 11)
 				{ // zyk: after the player defeats some soldiers, Master of Evil will send more
-					the_old_player->client->pers.hunter_quest_messages = 15;
+					the_old_player->client->pers.hunter_quest_messages = 12;
 					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7More soldiers coming.\"");
 				}
 			}

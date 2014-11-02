@@ -6519,64 +6519,52 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.hunter_quest_messages == 4)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10212,8355,1593,-179);
 								else if (ent->client->pers.hunter_quest_messages == 5)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10212,8033,1593,-179);
-								else if (ent->client->pers.hunter_quest_messages == 6)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10212,8164,1593,-179);
-								else if (ent->client->pers.hunter_quest_messages == 7)
+								else if (ent->client->pers.hunter_quest_messages == 6)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9280,9246,1593,-179);
-								else if (ent->client->pers.hunter_quest_messages == 8)
+								else if (ent->client->pers.hunter_quest_messages == 7)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9528,9425,1593,-179);
-								else if (ent->client->pers.hunter_quest_messages == 9)
+								else if (ent->client->pers.hunter_quest_messages == 8)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9779,9426,1593,-179);
-								else if (ent->client->pers.hunter_quest_messages == 10)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10238,10031,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 11)
+								else if (ent->client->pers.hunter_quest_messages == 9)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9954,10016,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 12)
+								else if (ent->client->pers.hunter_quest_messages == 10)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9450,10524,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 13)
+								else if (ent->client->pers.hunter_quest_messages == 12)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9294,10583,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 15)
+								else if (ent->client->pers.hunter_quest_messages == 13)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9305,10418,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 16)
+								else if (ent->client->pers.hunter_quest_messages == 14)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9065,10415,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 17)
+								else if (ent->client->pers.hunter_quest_messages == 15)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",9069,10244,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 18)
+								else if (ent->client->pers.hunter_quest_messages == 16)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10094,9199,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 19)
+								else if (ent->client->pers.hunter_quest_messages == 17)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10139,9282,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 20)
+								else if (ent->client->pers.hunter_quest_messages == 18)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10199,9392,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 21)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10250,9486,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 22)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10298,9574,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 23)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10358,9686,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 24)
+								else if (ent->client->pers.hunter_quest_messages == 19)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10200,9777,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 25)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10284,8511,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 26)
+								else if (ent->client->pers.hunter_quest_messages == 20)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10220,8239,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 27)
+								else if (ent->client->pers.hunter_quest_messages == 21)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10123,8343,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 28)
+								else if (ent->client->pers.hunter_quest_messages == 22)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10026,8490,1800,-179);
 
 								if (npc_ent)
 									npc_ent->client->pers.universe_quest_objective_control = ent->s.number;
 
-								if (ent->client->pers.hunter_quest_messages < 14)
+								if (ent->client->pers.hunter_quest_messages < 11)
 								{
 									ent->client->pers.hunter_quest_messages++;
 									ent->client->pers.hunter_quest_timer = level.time + 1500;
 								}
-								else if (ent->client->pers.hunter_quest_messages > 14 && ent->client->pers.hunter_quest_messages < 29)
+								else if (ent->client->pers.hunter_quest_messages > 11 && ent->client->pers.hunter_quest_messages < 23)
 								{
 									ent->client->pers.hunter_quest_messages++;
-									ent->client->pers.hunter_quest_timer = level.time + 2500;
+									ent->client->pers.hunter_quest_timer = level.time + 2000;
 								}
 								else if (ent->client->pers.hunter_quest_messages == 40)
 								{ // zyk: completed the mission
