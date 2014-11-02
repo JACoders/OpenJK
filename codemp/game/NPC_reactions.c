@@ -211,8 +211,8 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 		return;
 	}
 
-	// zyk: Guardian of Resistance resists attack, he just takes the damage but will not have pain anim
-	if (self->client->pers.guardian_mode == 11)
+	// zyk: guardians resist attack, they just take the damage but will not have pain anim
+	if (self->client->pers.guardian_mode > 0)
 	{
 		return;
 	}
