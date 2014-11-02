@@ -5914,7 +5914,10 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				{
 					// zyk: Force User and Duelist classes in RPG Mode regens force faster
 					if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
-						self->client->ps.fd.forcePowerRegenDebounceTime = level.time + (g_forceRegenTime.integer/(self->client->pers.improvements_level + 1)) + (g_forceRegenTime.integer/10);
+					{
+						int rpg_force_regen_time = g_forceRegenTime.integer - (self->client->pers.improvements_level * 10);
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(rpg_force_regen_time, 1);
+					}
 					else
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 				}
