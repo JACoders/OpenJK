@@ -3782,8 +3782,43 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	player_yaw[1] = yaw;
 	player_yaw[2] = 0;
 
-	if (guardian_mode < 14)
-		zyk_TeleportPlayer(ent,player_origin,player_yaw);
+	zyk_TeleportPlayer(ent,player_origin,player_yaw);
+
+	// zyk: in the Master of Death battle, also teleport allies to places to prevent exploits
+	if (guardian_mode == 15)
+	{
+		if (ent->client->sess.ally1 != -1)
+		{
+			player_origin[0] = x;
+			player_origin[1] = y - 50;
+			player_origin[2] = z;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally1],player_origin,player_yaw);
+		}
+		if (ent->client->sess.ally2 != -1)
+		{
+			player_origin[0] = x - 50;
+			player_origin[1] = y;
+			player_origin[2] = z;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally2],player_origin,player_yaw);
+		}
+		if (ent->client->sess.ally3 != -1)
+		{
+			player_origin[0] = x + 50;
+			player_origin[1] = y;
+			player_origin[2] = z;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally3],player_origin,player_yaw);
+		}
+	}
+
 
 	if ((guardian_mode >= 1 && guardian_mode <= 7) || guardian_mode == 11 || guardian_mode >= 14)
 		npc_ent = Zyk_NPC_SpawnType(boss_name,gx,gy,gz,gyaw);
@@ -6210,7 +6245,7 @@ void G_RunFrame( int levelTime ) {
 						else if (ent->client->pers.universe_quest_progress == 17 && ent->client->pers.guardian_mode == 0 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time)
 						{ // zyk: Master of Death battle
 							if (ent->client->pers.universe_quest_messages == 1)
-								spawn_boss(ent,0,0,0,0,"master_of_death",471,1553,329,-90,15);
+								spawn_boss(ent,471,1195,-6,90,"master_of_death",471,1553,329,-90,15);
 							else if (ent->client->pers.universe_quest_messages == 3)
 								trap->SendServerCommand( -1, va("chat \"^1Master of Death^7: This can't be...\""));
 							else if (ent->client->pers.universe_quest_messages == 4)
@@ -7015,7 +7050,7 @@ void G_RunFrame( int levelTime ) {
 											this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
 									}
 
-									spawn_boss(ent,0,0,0,0,"guardian_of_chaos",-4228,-26946,393,0,14);
+									spawn_boss(ent,-3136,-26946,200,179,"guardian_of_chaos",-4228,-26946,393,0,14);
 								}
 								else if (ent->client->pers.universe_quest_messages == 20)
 								{
