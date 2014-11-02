@@ -4797,8 +4797,19 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = damage * 3;
 	}
 
+	// zyk: force Rage increases damage of attacks
+	if (attacker && attacker->client && attacker->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
+	{ // zyk: new Force Rage code
+		if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
+			damage = (int)ceil(damage * 1.05);
+		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
+			damage = (int)ceil(damage * 1.1);
+		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
+			damage = (int)ceil(damage * 1.15);
+	}
+
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
-	{ // zyk: setting saber damage of Force User, weapon damage of Bounty Hunter and melee damage of Monk. Free Warrior gets a little more damage in all attacks
+	{ // zyk: setting saber damage of Force User, weapon damage of Bounty Hunter and melee damage of Monk. Free Warrior gets a little more damage in all attacks		
 		if (attacker->client->pers.rpg_class == 0)
 		{
 			float free_warrior_bonus_damage = 0.0;
@@ -5091,14 +5102,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (targ && targ->client && mod != MOD_SABER)
 		{
 			return;
-		}
-	}
-
-	if ( !(dflags & DAMAGE_NO_PROTECTION) )
-	{//rage overridden by no_protection
-		if (targ && targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)))
-		{
-			damage *= 0.5;
 		}
 	}
 
