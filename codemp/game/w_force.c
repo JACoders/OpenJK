@@ -3663,7 +3663,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					push_list[x]->client->pers.secrets_found & (1 << 16))
 				{
 					pushPower /= 4;
-					if (Q_irand(0,10) > 2)
+					if (Q_irand(0,1) == 0)
 						canPullWeapon = qfalse;
 				}
 
