@@ -10393,9 +10393,9 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 		ent->client->pers.skillpoints++;
 	}
 
-	save_account(ent);
-
 	load_config(ent);
+
+	save_account(ent);
 
 	if (ent->client->pers.rpg_class == 1)
 	{ // zyk: Force User
