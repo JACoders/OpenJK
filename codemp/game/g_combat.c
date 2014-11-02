@@ -4842,7 +4842,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (attacker->client->pers.rpg_class == 6 && (mod == MOD_SABER || mod == MOD_MELEE))
 		{ // zyk: Duelist has higher damage in saber and melee
-			damage = (int)ceil(damage * (1.3 + (0.1 * attacker->client->pers.improvements_level)));
+			damage = (int)ceil(damage * (1.4 + (0.1 * attacker->client->pers.improvements_level)));
 		}
 	}
 
