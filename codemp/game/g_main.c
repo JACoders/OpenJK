@@ -1976,15 +1976,15 @@ void PrintStats(int gametype) //JAPRO STATS
 
 	if (gametype == GT_TEAM) {//tffa
 		if (showAccuracy)//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Accuracy     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Deaths   Suicides   Teamkills   Net   Accuracy   Name^7\n" );
 		else
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Deaths     Suicides     Teamkills     Net     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Deaths   Suicides   Teamkills   Net   Name^7\n" );
 	}
 	else {//ctf
 		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Name^7\n" );
 		else
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given     Damage Taken     Kills     Flag Caps     Returns     Carrier Kills     Accuracy     Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Accuracy   Name^7\n" );
 	}
 
 	for (i=0; i<MAX_CLIENTS; i++)
@@ -1999,6 +1999,8 @@ void PrintStats(int gametype) //JAPRO STATS
 			char strName[MAX_NETNAME] = {0};
 			char strDG[32] = {0};
 			char strDT[32] = {0};
+			char strDN[32] = {0};
+			char strDPD[32] = {0};
 			char strKills[32] = {0};
 			char accuracyStr[32] = {0};
 			float accuracy = 0;
@@ -2012,6 +2014,12 @@ void PrintStats(int gametype) //JAPRO STATS
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName)); //SORT PLAYERS BY PERS[RANK] ?
 			Com_sprintf(strDG, sizeof(strDG), "%i", cl->pers.stats.damageGiven);
 			Com_sprintf(strDT, sizeof(strDT), "%i", cl->pers.stats.damageTaken);
+			Com_sprintf(strDN, sizeof(strDN), "%i", cl->pers.stats.damageGiven - cl->pers.stats.damageTaken);
+			if (cl->ps.persistant[PERS_KILLED]) {
+				Com_sprintf(strDPD, sizeof(strDPD), "%i", (cl->pers.stats.damageGiven / cl->ps.persistant[PERS_KILLED])); //suicides?
+			}
+			else
+				Com_sprintf(strDPD, sizeof(strDPD), "%i", cl->pers.stats.damageGiven); //suicides?
 
 			if (gametype == GT_TEAM) {
 				char strDeaths[32] = {0};
@@ -2026,9 +2034,9 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strTK, sizeof(strTK), "%i", cl->pers.stats.teamKills);
 				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
 				if (showAccuracy)//Weps disabled?
-					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%-13s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-9s%-11s%-12s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 				else {
-					tmpMsg = va( "%-17s%-17s%-10s%-11s%-13s%-14s%-8s%s^7\n", strDG, strDT, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-9s%-11s%-12s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}
 			}
 			else {
@@ -2041,9 +2049,9 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
 				if (showAccuracy)
-					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%-13s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
+					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-12s%-10s%-16s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
 				else {
-					tmpMsg = va( "%-17s%-17s%-10s%-14s%-12s%-18s%s^7\n", strDG, strDT, strKills, strCaps, strReturns, strFlagKills, strName);
+					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-12s%-10s%-16s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName);
 				}
 			}
 

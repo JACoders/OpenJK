@@ -31,6 +31,10 @@ extern float PM_WalkableGroundDistance(void);
 extern qboolean PM_GroundSlideOkay( float zNormal );
 extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
 
+#ifdef _GAME
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+#endif
+
 pmove_t		*pm;
 pml_t		pml;
 
