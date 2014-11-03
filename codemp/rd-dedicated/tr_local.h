@@ -951,6 +951,7 @@ typedef struct trGlobals_s {
 
 	qboolean				worldMapLoaded;
 	world_t					*world;
+	char					worldDir[MAX_QPATH];		// ie: maps/tim_dm2 (copy of world_t::name sans extension but still includes the path)
 
 	const byte				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
 
@@ -1776,12 +1777,6 @@ typedef enum {
 	RC_VIDEOFRAME
 } renderCommand_t;
 
-
-// these are sort of arbitrary limits.
-// the limits apply to the sum of all scenes in a frame --
-// the main view, all the 3D icons, etc
-#define	MAX_POLYS		600
-#define	MAX_POLYVERTS	3000
 
 // all of the information needed by the back end must be
 // contained in a backEndData_t.

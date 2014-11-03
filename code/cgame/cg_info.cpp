@@ -69,14 +69,8 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 
 	int iYPixelsPerLine = cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f);
 
-	if( gi.Cvar_VariableIntegerValue("com_demo") )
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_DEMO_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
-	else
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
+	cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
+
 	// A hack to be able to count prisoners 
 	if (objectIndex==T2_RANCOR_OBJ5)
 	{
@@ -694,59 +688,19 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 
 				);
 	}
-	else
+
+	// the new JK2 stuff - force powers, etc...
+	//
+	gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
+	i=0;
+	var = strtok( s, " " );
+	while( var != NULL )
 	{
-		// will also need to do this for weapons
-		if( gi.Cvar_VariableIntegerValue("com_demo") )
-		{
-			gi.Cvar_VariableStringBuffer( "demo_playerwpns", s, sizeof(s) );
-			
-			*weaponBits = atoi(s);
-
-		}
-
+		/* While there are tokens in "s" */
+		loadForcePowerLevel[i++] = atoi(var);
+		/* Get next token: */
+		var = strtok( NULL, " " );
 	}
-
-    if( gi.Cvar_VariableIntegerValue("com_demo") )
-	{
-		// le Demo stuff...
-		// the new JK2 stuff - force powers, etc...
-		//
-		*forceBits = 0; // need to zero it out it might have already been set above if coming from a true
-						// map transition in the demo
-		gi.Cvar_VariableStringBuffer( "demo_playerfplvl", s, sizeof(s) );
-		int j=0;
-		var = strtok( s, " " );
-		while( var != NULL )
-		{
-			/* While there are tokens in "s" */
-			loadForcePowerLevel[j] = atoi(var);
-			if( loadForcePowerLevel[j] )
-			{
-				*forceBits |= (1<<j);
-			}
-			j++;
-			/* Get next token: */
-			var = strtok( NULL, " " );
-		}
-
-	}
-	else
-	{
-		// the new JK2 stuff - force powers, etc...
-		//
-		gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-		i=0;
-		var = strtok( s, " " );
-		while( var != NULL )
-		{
-			/* While there are tokens in "s" */
-			loadForcePowerLevel[i++] = atoi(var);
-			/* Get next token: */
-			var = strtok( NULL, " " );
-		}
-	}
-
 }
 
 /*
@@ -862,7 +816,7 @@ void CG_DrawInformation( void ) {
 		}
 	}
 
-	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"yavin1") || !strcmp(s,"demo")) )//special case for first map!
+	if ( g_eSavedGameJustLoaded != eFULL && !strcmp(s,"yavin1") )//special case for first map!
 	{
 		char	text[1024]={0};
 

@@ -772,6 +772,7 @@ static inline void R_EvaluateWireframeSurf(msurface_t *surf)
 	}
 }
 
+#if 0
 //see if any surfaces on the node are facing opposite directions
 //using plane normals. -rww
 static inline bool R_NodeHasOppositeFaces(mnode_t *node)
@@ -821,6 +822,7 @@ static inline bool R_NodeHasOppositeFaces(mnode_t *node)
 
 	return false;
 }
+#endif
 
 //recursively called for each node to go through the surfaces on that
 //node and generate the wireframe map. -rww

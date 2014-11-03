@@ -90,6 +90,7 @@ qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
 extern cvar_t	*r_Ghoul2AnimSmooth;
 extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 
+#if 0
 static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, const int boneNum)
 {
 	size_t i = 0;
@@ -105,6 +106,7 @@ static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, cons
 
 	return -1;
 }
+#endif
 
 const static mdxaBone_t		identityMatrix =
 {
@@ -4269,6 +4271,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #endif
  	for ( i = 0 ; i < mdxm->numSurfaces ; i++)
 	{
+		LL(surfInfo->flags);
 		LL(surfInfo->numChildren);
 		LL(surfInfo->parentIndex);
 

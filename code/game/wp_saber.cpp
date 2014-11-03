@@ -69,7 +69,7 @@ extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime )
 extern void CG_ChangeWeapon( int num );
 extern void CG_SaberDoWeaponHitMarks( gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale );
 extern void G_AngerAlert( gentity_t *self );
-extern void G_ReflectMissile(gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse);
+extern void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse );
 extern int G_CheckLedgeDive( gentity_t *self, float checkDist, const vec3_t checkVel, qboolean tryOpposite, qboolean tryPerp );
 extern void G_BounceMissile( gentity_t *ent, trace_t *trace );
 extern qboolean G_PointInBounds( const vec3_t point, const vec3_t mins, const vec3_t maxs );
@@ -11577,6 +11577,10 @@ void ForceLightning(gentity_t *self)
 
 void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, float dist, float dot, vec3_t impactPoint)
 {
+	
+	qboolean blockedWithSaber = qfalse;
+	qboolean blockedWithHand = qfalse;
+
 	if (traceEnt->NPC && traceEnt->NPC->scriptFlags & SCF_NO_FORCE)
 	{
 		return;
@@ -11646,6 +11650,7 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 				NPC_SetAnim(traceEnt, parts, BOTH_RESISTPUSH, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 				Jedi_PlayDeflectSound(traceEnt);
 				dmg = Q_irand(0, 1);
+				blockedWithHand = (dmg == 0) ? qtrue : qfalse;
 			}
 			else if (traceEnt->s.weapon == WP_SABER)
 			{//saber can block lightning
@@ -11670,6 +11675,7 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 					}
 					else
 					{
+						blockedWithSaber = qtrue;
 						//make them do a parry
 						traceEnt->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
 						int parryReCalcTime = Jedi_ReCalcParryTime(traceEnt, EVASION_PARRY);
@@ -11682,6 +11688,7 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 				}
 				else if (Q_irand(0, 1))
 				{//jedi less likely to be damaged
+					blockedWithSaber = qtrue;
 					dmg = 0;
 				}
 				else
@@ -11738,6 +11745,26 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 					npc_class == CLASS_SENTRY)
 				{
 					traceEnt->client->ps.powerups[PW_SHOCKED] = level.time + 4000;
+				}
+				else if (blockedWithSaber)
+				{
+					traceEnt->client->ps.powerups[PW_SHOCKED] = 0;
+					vec3_t	end, fwd, right, up;
+					VectorNegate(dir, fwd);
+					
+					//randomise direction a bit
+					MakeNormalVectors(fwd, right, up);
+					VectorMA(fwd, random(), right, fwd);
+					VectorMA(fwd, random(), up, fwd);
+					VectorNormalize(fwd);
+					
+					VectorMA( traceEnt->client->ps.saber[0].blade[0].muzzlePoint, traceEnt->client->ps.saber[0].blade[0].length*Q_flrand(0, 1), traceEnt->client->ps.saber[0].blade[0].muzzleDir, end );//FIXME: pick a random blade?
+					G_PlayEffect( G_EffectIndex("force/lightning"), end, fwd);
+				}
+				else if (blockedWithHand)
+				{
+					//probably play an effect on the hand.
+					traceEnt->client->ps.powerups[PW_SHOCKED] = 0;
 				}
 				else //short version
 				{

@@ -10734,7 +10734,6 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 					int max = Item_Multi_CountSettings(item);
 
 					if (key == A_MOUSE2 || key == A_MWHEELDOWN)
-					//if (key == A_MOUSE2)
 					{
 						current--;
 						if ( current < 0 ) 
@@ -10776,7 +10775,7 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 				{
 					int max = Item_Multi_CountSettings(item);
 
-					if (key == A_MOUSE2)
+					if (key == A_MOUSE2 || key == A_MWHEELDOWN)
 					{
 						item->value--;
 						if ( item->value < 0 ) 
@@ -11185,7 +11184,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 						item->cursorPos = 0;
 						g_editingField = qtrue;
 						g_editItem = item;
-						DC->setOverstrikeMode(qtrue);
+						//DC->setOverstrikeMode(qtrue);
 					}
 				} 
 //JLFACCEPT
@@ -11264,7 +11263,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 					item->cursorPos = 0;
 					g_editingField = qtrue;
 					g_editItem = item;
-					DC->setOverstrikeMode(qtrue);
+					//DC->setOverstrikeMode(qtrue);
 				} 
 				else 
 				{

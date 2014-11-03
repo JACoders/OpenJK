@@ -841,21 +841,17 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 		i = fLen;
 
-		while (i >= 0 && soundpath[i] != '\n')
-		{
-			if (soundpath[i] == 'f')
-			{
+		while (i >= 0 && soundpath[i] != '\n') {
+			if (soundpath[i] == 'f') {
 				isFemale = qtrue;
 				soundpath[i] = 0;
 			}
-
 			i--;
 		}
 
 		i = 0;
 
-		while (soundpath[i] && soundpath[i] != '\r' && soundpath[i] != '\n')
-		{
+		while (soundpath[i] && soundpath[i] != '\r' && soundpath[i] != '\n') {
 			i++;
 		}
 		soundpath[i] = 0;
@@ -873,7 +869,10 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 	}
 	else
 	{
-		isFemale = ci->gender == GENDER_FEMALE;
+		if ( cgs.gametype != GT_SIEGE )
+			isFemale = ci->gender == GENDER_FEMALE;
+		else
+			isFemale = qfalse;
 	}
 
 	trap->S_Shutup(qtrue);
@@ -1608,10 +1607,10 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	// Gender hints
 	if ( (v = Info_ValueForKey( configstring, "ds" )) )
 	{
-		if ( *v == 'm' )
-			newInfo.gender = GENDER_MALE;
-		else
+		if ( *v == 'f' )
 			newInfo.gender = GENDER_FEMALE;
+		else
+			newInfo.gender = GENDER_MALE;
 	}
 
 	// team task
@@ -6899,7 +6898,7 @@ int CG_HandleAppendedSkin(char *modelName)
 }
 
 //Create a temporary ghoul2 instance and get the gla name so we can try loading animation data and sounds.
-void BG_GetVehicleModelName(char *modelname, int len);
+void BG_GetVehicleModelName(char *modelName, const char *vehicleName, size_t len);
 void BG_GetVehicleSkinName(char *skinname, int len);
 
 void CG_CacheG2AnimInfo(char *modelName)
@@ -6915,7 +6914,7 @@ void CG_CacheG2AnimInfo(char *modelName)
 
 	if (modelName[0] == '$')
 	{ //it's a vehicle name actually, let's precache the whole vehicle
-		BG_GetVehicleModelName(useModel, sizeof( useModel ) );
+		BG_GetVehicleModelName(useModel, useModel, sizeof( useModel ) );
 		BG_GetVehicleSkinName(useSkin, sizeof( useSkin ) );
 		if ( useSkin[0] )
 		{ //use a custom skin
@@ -7077,7 +7076,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			//attach the handles for fx cgame-side
 			CG_RegisterVehicleAssets(cent->m_pVehicle);
 
-			BG_GetVehicleModelName(modelName, sizeof( modelName ) );
+			BG_GetVehicleModelName(modelName, modelName, sizeof( modelName ) );
 			if (cent->m_pVehicle->m_pVehicleInfo->skin &&
 				cent->m_pVehicle->m_pVehicleInfo->skin[0])
 			{ //use a custom skin
@@ -11207,7 +11206,7 @@ void CG_ResetPlayerEntity( centity_t *cent )
 		cent->pe.legs.pitchAngle = 0;
 		cent->pe.legs.pitching = qfalse;
 
-		memset( &cent->pe.torso, 0, sizeof( cent->pe.legs ) );
+		memset( &cent->pe.torso, 0, sizeof( cent->pe.torso ) );
 		cent->pe.torso.yawAngle = cent->rawAngles[YAW];
 		cent->pe.torso.yawing = qfalse;
 		cent->pe.torso.pitchAngle = cent->rawAngles[PITCH];

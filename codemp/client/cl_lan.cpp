@@ -130,6 +130,32 @@ int LAN_AddServer(int source, const char *name, const char *address) {
 	return -1;
 }
 
+int LAN_AddFavAddr( const char *address ) {
+	if ( cls.numfavoriteservers < MAX_OTHER_SERVERS ) {
+		netadr_t adr;
+		if ( !NET_StringToAdr( address, &adr ) ) {
+			return 2;
+		}
+		if ( adr.type == NA_BAD ) {
+			return 3;
+		}
+
+		for ( int i = 0; i < cls.numfavoriteservers; i++ ) {
+			if ( NET_CompareAdr( cls.favoriteServers[i].adr, adr ) ) {
+				return 0;
+			}
+		}
+		cls.favoriteServers[cls.numfavoriteservers].adr = adr;
+		Q_strncpyz( cls.favoriteServers[cls.numfavoriteservers].hostName, address,
+			sizeof(cls.favoriteServers[cls.numfavoriteservers].hostName) );
+		cls.favoriteServers[cls.numfavoriteservers].visible = qtrue;
+		cls.numfavoriteservers++;
+		return 1;
+	}
+
+	return -1;
+}
+
 /*
 ====================
 LAN_RemoveServer

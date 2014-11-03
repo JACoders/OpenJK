@@ -5,6 +5,7 @@
 #include "tr_WorldEffects.h"
 #include "qcommon/MiniHeap.h"
 #include "ghoul2/g2_local.h"
+#include <algorithm>
 
 glconfig_t	glConfig;
 glconfigExt_t glConfigExt;
@@ -150,9 +151,13 @@ cvar_t	*r_debugSort;
 
 cvar_t	*r_marksOnTriangleMeshes;
 
+// the limits apply to the sum of all scenes in a frame --
+// the main view, all the 3D icons, etc
+#define	DEFAULT_MAX_POLYS		600
+#define	DEFAULT_MAX_POLYVERTS	3000
 cvar_t	*r_maxpolys;
-int		max_polys;
 cvar_t	*r_maxpolyverts;
+int		max_polys;
 int		max_polyverts;
 
 cvar_t	*r_modelpoolmegs;
@@ -1055,7 +1060,7 @@ void GfxInfo_f( void )
 		else
 			ri->Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
 	}
-	ri->Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	ri->Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer ? 1 : 0] );
 	if (g_bTextureRectangleHack) ri->Printf( PRINT_ALL, "Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
@@ -1074,6 +1079,31 @@ void R_AtiHackToggle_f(void)
 {
 	g_bTextureRectangleHack = !g_bTextureRectangleHack;
 }
+
+typedef struct consoleCommand_s {
+	const char	*cmd;
+	xcommand_t	func;
+} consoleCommand_t;
+
+static consoleCommand_t	commands[] = {
+	{ "imagelist",			R_ImageList_f },
+	{ "shaderlist",			R_ShaderList_f },
+	{ "skinlist",			R_SkinList_f },
+	{ "fontlist",			R_FontList_f },
+	{ "screenshot",			R_ScreenShot_f },
+	{ "screenshot_png",		R_ScreenShotPNG_f },
+	{ "screenshot_tga",		R_ScreenShotTGA_f },
+	{ "gfxinfo",			GfxInfo_f },
+	{ "r_atihack",			R_AtiHackToggle_f },
+	{ "r_we",				R_WorldEffect_f },
+	{ "imagecacheinfo",		RE_RegisterImages_Info_f },
+	{ "modellist",			R_Modellist_f },
+	{ "modelist",			R_ModeList_f },
+	{ "modelcacheinfo",		RE_RegisterModels_Info_f },
+	{ "minimize",			GLimp_Minimize },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
 
 #ifdef _DEBUG
 #define MIN_PRIMITIVES -1
@@ -1095,7 +1125,6 @@ R_Register
 */
 void R_Register( void )
 {
-
 	//FIXME: lol badness
 	se_language = ri->Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
 	//
@@ -1220,8 +1249,8 @@ void R_Register( void )
 	r_shadows							= ri->Cvar_Get( "cg_shadows",						"1",						CVAR_NONE );
 	r_shadowRange						= ri->Cvar_Get( "r_shadowRange",					"1000",						CVAR_NONE );
 	r_marksOnTriangleMeshes				= ri->Cvar_Get( "r_marksOnTriangleMeshes",			"0",						CVAR_ARCHIVE );
-	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( MAX_POLYS ),		CVAR_NONE );
-	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( MAX_POLYVERTS ),	CVAR_NONE );
+	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( DEFAULT_MAX_POLYS ),		CVAR_NONE );
+	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( DEFAULT_MAX_POLYVERTS ),	CVAR_NONE );
 /*
 Ghoul2 Insert Start
 */
@@ -1256,24 +1285,8 @@ Ghoul2 Insert End
 	ri->Cvar_CheckRange( r_aviMotionJpegQuality, 10, 100, qtrue );
 	ri->Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
 
-	// make sure all the commands added here are also
-	// removed in R_Shutdown
-	ri->Cmd_AddCommand( "imagelist", R_ImageList_f );
-	ri->Cmd_AddCommand( "shaderlist", R_ShaderList_f );
-	ri->Cmd_AddCommand( "skinlist", R_SkinList_f );
-	ri->Cmd_AddCommand( "fontlist", R_FontList_f );
-	ri->Cmd_AddCommand( "screenshot", R_ScreenShot_f );
-	ri->Cmd_AddCommand( "screenshot_png", R_ScreenShotPNG_f );
-	ri->Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
-	ri->Cmd_AddCommand( "gfxinfo", GfxInfo_f );
-	ri->Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
-	ri->Cmd_AddCommand( "r_we", R_WorldEffect_f );
-	ri->Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f );
-	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
-	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f );
-	ri->Cmd_AddCommand( "minimize", GLimp_Minimize );
-
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_AddCommand( commands[i].cmd, commands[i].func );
 }
 
 
@@ -1336,13 +1349,8 @@ void R_Init( void ) {
 	R_NoiseInit();
 	R_Register();
 
-	max_polys = r_maxpolys->integer;
-	if (max_polys < MAX_POLYS)
-		max_polys = MAX_POLYS;
-
-	max_polyverts = r_maxpolyverts->integer;
-	if (max_polyverts < MAX_POLYVERTS)
-		max_polyverts = MAX_POLYVERTS;
+	max_polys = (std::min)( r_maxpolys->integer, DEFAULT_MAX_POLYS );
+	max_polyverts = (std::min)( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
 	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
@@ -1387,21 +1395,8 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 //	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
-	ri->Cmd_RemoveCommand ("imagelist");
-	ri->Cmd_RemoveCommand ("shaderlist");
-	ri->Cmd_RemoveCommand ("skinlist");
-	ri->Cmd_RemoveCommand ("fontlist");
-	ri->Cmd_RemoveCommand ("screenshot");
-	ri->Cmd_RemoveCommand ("screenshot_png");
-	ri->Cmd_RemoveCommand ("screenshot_tga");
-	ri->Cmd_RemoveCommand ("gfxinfo");
-	ri->Cmd_RemoveCommand ("r_atihack");
-	ri->Cmd_RemoveCommand ("r_we");
-	ri->Cmd_RemoveCommand ("imagecacheinfo");
-	ri->Cmd_RemoveCommand ("modellist");
-	ri->Cmd_RemoveCommand ("modelist");
-	ri->Cmd_RemoveCommand ("modelcacheinfo");
-	ri->Cmd_RemoveCommand ("minimize");
+	for ( size_t i = 0; i < numCommands; i++ )
+		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	if ( r_DynamicGlow && r_DynamicGlow->integer )
 	{

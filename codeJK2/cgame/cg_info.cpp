@@ -57,18 +57,7 @@ static void MissionPrint_Line(const int color, const int objectIndex, int &missi
 
 	int iYPixelsPerLine = cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f) * (cgi_Language_IsAsian() ? 1.2f : 1.0f );
 
-#ifndef __NO_JKA
-	if( gi.Cvar_VariableIntegerValue("com_demo") )
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_DEMO_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
-	else
-	{
-		cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-	}
-#else
 	cgi_SP_GetStringText( PACKAGE_OBJECTIVES<<8|objectIndex , finalText, sizeof(finalText) );
-#endif
 
 	pixelLen = cgi_R_Font_StrLenPixels(finalText, cgs.media.qhFontMedium, 1.0f);
 
@@ -395,7 +384,16 @@ void CG_DrawInformation( void ) {
 	// draw the dialog background
 	const char	*info	= CG_ConfigString( CS_SERVERINFO );
 	const char	*s		= Info_ValueForKey( info, "mapname" );
-	const qhandle_t	levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
+	qhandle_t	levelshot;
+
+	if (!strcmp(s,"bespin_undercity")) // this map has no levelshot
+		levelshot = cgi_R_RegisterShaderNoMip( "levelshots/kejim_post" );
+	else
+		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
+
+	if (!levelshot) {
+		levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+	}
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
 	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
@@ -411,7 +409,7 @@ void CG_DrawInformation( void ) {
 		CG_DrawPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, levelshot );
 	}
 
-	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"kejim_post") || !strcmp(s,"demo")) )//special case for first map!
+	if ( g_eSavedGameJustLoaded != eFULL && !strcmp(s,"kejim_post") )//special case for first map!
 	{
 		char	text[1024]={0};
 		cgi_SP_GetStringTextString( "INGAME_ALONGTIME", text, sizeof(text) );

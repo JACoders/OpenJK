@@ -2725,6 +2725,7 @@ static void CG_ScanForRocketLock( void )
 CG_ScanForCrosshairEntity
 =================
 */
+extern vec3_t g_crosshairWorldCoord;
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 extern float forcePushPullRadius[];
 static void CG_ScanForCrosshairEntity( qboolean scanAll ) 
@@ -2916,6 +2917,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	//draw crosshair at endpoint
 	CG_DrawCrosshair( trace.endpos );
 
+	VectorCopy( trace.endpos, g_crosshairWorldCoord );
 	g_crosshairEntNum = trace.entityNum;
 	g_crosshairEntDist = 4096*trace.fraction;
 

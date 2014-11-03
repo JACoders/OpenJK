@@ -1105,22 +1105,6 @@ static void CG_OffsetFighterView( void )
 }
 //======================================================================
 
-void CG_ZoomDown_f( void ) {
-	if ( cg.zoomed ) {
-		return;
-	}
-	cg.zoomed = qtrue;
-	cg.zoomTime = cg.time;
-}
-
-void CG_ZoomUp_f( void ) {
-	if ( !cg.zoomed ) {
-		return;
-	}
-	cg.zoomed = qfalse;
-	cg.zoomTime = cg.time;
-}
-
 /*
 ====================
 CG_CalcFov
@@ -2568,11 +2552,13 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.predictedPlayerState.forceHandExtend == HANDEXTEND_KNOCKDOWN || cg.predictedPlayerState.fallingToDeath ||
 			cg.predictedPlayerState.m_iVehicleNum || PM_InKnockDown(&cg.predictedPlayerState))
 		{
+#if 0
 			if (cg_fpls.integer && cg.predictedPlayerState.weapon == WP_SABER)
 			{ //force to first person for fpls
 				cg.renderingThirdPerson = 0;
 			}
 			else
+#endif
 			{
 				cg.renderingThirdPerson = 1;
 			}

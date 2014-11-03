@@ -1860,28 +1860,20 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
 		{
 			psAudioFile = "music/cinematic_1";
-			if ( Cvar_VariableIntegerValue("com_demo") )
-			{
-				hCrawl = re.RegisterShaderNoMip( "menu/video/tc_demo" );//demo version of text crawl
-			}
-			else
-			{
 #ifdef JK2_MODE
-				hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
-				if(!hCrawl)
-				{
-					// failed, so go back to english
-					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_0" );
-				}
-#else
-				hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%s",se_language->string) );
-				if (!hCrawl)
-				{
-					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_english" );//failed, so go back to english
-				}
-#endif
-
+			hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
+			if(!hCrawl)
+			{
+				// failed, so go back to english
+				hCrawl = re.RegisterShaderNoMip( "menu/video/tc_0" );
 			}
+#else
+			hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%s",se_language->string) );
+			if (!hCrawl)
+			{
+				hCrawl = re.RegisterShaderNoMip( "menu/video/tc_english" );//failed, so go back to english
+			}
+#endif
 			bits |= CIN_hold;
 		}
 		else
