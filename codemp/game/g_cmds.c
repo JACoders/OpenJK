@@ -7121,6 +7121,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Knocked down players are affected by push/pull\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)
 			Q_strcat(buf, sizeof(buf), "   ^5Lag compensation for force push/pull\n");
+		if (level.gametype >= GT_TEAM && g_fixTeamAbsorb.integer)
+			Q_strcat(buf, sizeof(buf), "   ^5Absorb does not give forcepoints if attacker is on same team\n");
 		if (g_fixGripAbsorb.integer)
 			Q_strcat(buf, sizeof(buf), "   ^5Force absorb does not gain forcepoints from grip\n");
 		if (g_jk2Grip.integer)
