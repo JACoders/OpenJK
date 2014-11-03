@@ -812,7 +812,7 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		return -1;
 	}
 
-	if (g_fixGripAbsorb.integer && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever
+	if (g_fixGripAbsorb.integer && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever.. why does this work
 		return -1;
 
 //[JAPRO - Serverside - Saber - Tweak force lightning - Start]
@@ -826,6 +826,7 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 			{
 				addTot = 1;
 			}
+
 			attacked->client->ps.fd.forcePower += addTot;
 			if (attacked->client->ps.fd.forcePower > 100)
 			{
@@ -870,9 +871,10 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 	addTot = (atForceSpent/3)*attacked->client->ps.fd.forcePowerLevel[FP_ABSORB];
 
 	if (addTot < 1 && atForceSpent >= 1)
-	{
 		addTot = 1;
-	}
+	if (g_fixTeamAbsorb.integer && OnSameTeam(attacked, attacker))
+		addTot = 0;
+
 	attacked->client->ps.fd.forcePower += addTot;
 	if (attacked->client->ps.fd.forcePower > attacked->client->ps.fd.forcePowerMax)
 	{

@@ -9460,18 +9460,16 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	}
 	*/
 
-
+	//JAPRO reduce saber block
 	if ( g_tweakWeapons.integer & REDUCE_SABERBLOCK && !projectile && !thrownSaber) {
 		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
 		const int theirLevel = G_SaberLevelForStance( attackStr );
 		const float diff = (float)(theirLevel - ourLevel); // range [0, 2]
 
 		if (diff >= 0) //Diff is positive if they are stronger than us.
-			return 0;
-
-
+			return 0; //Dont block if attacker style is equal or greater than ours
 	}
-
+	//end
 
 	if (self->client->ps.saberMove != LS_READY && !self->client->ps.saberBlocking)
 		return 0;

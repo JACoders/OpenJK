@@ -2841,9 +2841,12 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (ent && ent->client && ((ent->client->pers.movementStyle == 7) || (ent->client->pers.movementStyle == 8)) && ent->health > 0) {
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DISRUPTOR);
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 2;
+	}
+	else if (ent && ent->client && ent->client->pers.raceMode) {
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
+		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 	}
 
 

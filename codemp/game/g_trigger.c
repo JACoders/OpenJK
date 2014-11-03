@@ -1274,6 +1274,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
+	if (player->s.eType == ET_NPC)
+		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
@@ -1315,6 +1317,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 	if (!player->client)
 		return;
 	if (player->r.svFlags & SVF_BOT)
+		return;
+	if (player->s.eType == ET_NPC)
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT) 
 		return;
@@ -1459,6 +1463,8 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 	if (!player->client)
 		return;
 	if (player->r.svFlags & SVF_BOT)
+		return;
+	if (player->s.eType == ET_NPC)
 		return;
 	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;

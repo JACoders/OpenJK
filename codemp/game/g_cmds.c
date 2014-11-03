@@ -693,6 +693,14 @@ void Cmd_RaceNoclip_f( gentity_t *ent ) {
 }
 
 void Cmd_Noclip_f( gentity_t *ent ) {
+	if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
+		gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+		if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
+			trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (noclip) in ranked duels.\n\"") );
+			return; //Dont allow noclip in ranked duels ever
+		}
+	}
+
 	if (!sv_cheats.integer)
 	{
 		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
@@ -5314,6 +5322,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "amDance "); 
 	if (!(g_emotesDisable.integer & (1 << E_HUG)))
 		Q_strcat(buf, sizeof(buf), "amHug "); 
+	if (!(g_emotesDisable.integer & (1 << E_SABERFLIP)))
+		Q_strcat(buf, sizeof(buf), "amFlip "); 
 	if (!(g_emotesDisable.integer & (1 << E_NOISY)))
 		Q_strcat(buf, sizeof(buf), "amNoisy "); 
 	if (!(g_emotesDisable.integer & (1 << E_POINT)))
@@ -6060,10 +6070,14 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	if (style >= 0) {
 		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = style;
 		ent->client->pers.movementStyle = style;
-	}
-	if (style <= 6) {
-		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
-		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+
+		if (style == 7 || style == 8) {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
+		}
+		else {
+			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
+			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		}
 	}
 }
 
@@ -6178,6 +6192,14 @@ static void Cmd_Hide_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
+		if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
+			gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+			if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
+				trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (amtele) in ranked duels.\n\"") );
+				return; //Dont allow amtele in ranked duels ever..
+			}
+		}
+
 		if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK))) {
 				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {

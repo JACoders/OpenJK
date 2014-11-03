@@ -191,6 +191,7 @@ XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixWeaponForcePoints,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixProjectilePush,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixTeamAbsorb,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
 XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE,									qtrue )
