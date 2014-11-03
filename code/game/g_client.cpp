@@ -835,48 +835,6 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 
 			client->ps.forceGripEntityNum = client->ps.forceDrainEntityNum = ENTITYNUM_NONE;
 		}
-
-
-		// if we're in DEMO mode read in the forcepowers from the
-		// demo cvar, even though we already might have read in something from above
-		if(eSavedGameJustLoaded == eNO && gi.Cvar_VariableIntegerValue("com_demo") )
-		{
-			// the new JK2 stuff - force powers, etc...
-			//
-			gi.Cvar_VariableStringBuffer( "demo_playerfplvl", s, sizeof(s) );
-			int j=0;
-			var = strtok( s, " " );
-			while( var != NULL )
-			{
-				/* While there are tokens in "s" */
-				client->ps.forcePowerLevel[j] = atoi(var);
-				if( client->ps.forcePowerLevel[j] )
-				{
-					client->ps.forcePowersKnown |= (1 << j );
-				}
-				j++;
-			  /* Get next token: */
-			  var = strtok( NULL, " " );
-			}
-			assert (j==NUM_FORCE_POWERS);
-
-			client->ps.forceGripEntityNum = client->ps.forceDrainEntityNum = ENTITYNUM_NONE;
-
-			// now do weapons
-			gi.Cvar_VariableStringBuffer( "demo_playerwpns", s, sizeof(s) );
-			
-			client->ps.stats[STAT_WEAPONS] = atoi(s);
-
-			for(j=0 ; j<WP_NUM_WEAPONS ; j++ )
-			{
-				// if I've got the weapon
-				if( client->ps.stats[STAT_WEAPONS] & (1<<j) )
-				{	// give them max ammo
-					client->ps.ammo[weaponData[j].ammoIndex] = ammoData[weaponData[j].ammoIndex].max;
-				}
-			}
-
-		}
 	}
 }
 

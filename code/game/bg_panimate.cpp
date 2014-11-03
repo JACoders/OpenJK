@@ -48,6 +48,7 @@ extern cvar_t	*g_saberAnimSpeed;
 extern cvar_t	*g_saberAutoAim;
 extern cvar_t	*g_speederControlScheme;
 extern cvar_t	*g_saberNewControlScheme;
+extern cvar_t	*g_saberNewCombat;
 
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
 extern void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -544,525 +545,1044 @@ int PM_AnimLevelForSaberAnim( int anim )
 	return FORCE_LEVEL_0;
 }
 
-int PM_PowerLevelForSaberAnim( playerState_t *ps, int saberNum )
+int PM_PowerLevelForSaberAnim(playerState_t *ps, int saberNum)
 {
-	int anim = ps->torsoAnim;
-	int	animTimeElapsed = PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)anim ) - ps->torsoAnimTimer;
-	if ( anim >= BOTH_A1_T__B_ && anim <= BOTH_D1_B____ )
-	{
-		//FIXME: these two need their own style
-		if ( ps->saber[0].type == SABER_LANCE )
+	if (g_saberNewCombat->integer)
+	{ //new code
+		int anim = ps->torsoAnim;
+		int	animTimeElapsed = PM_AnimLength(g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)anim) - ps->torsoAnimTimer;
+		if (anim >= BOTH_A1_T__B_ && anim <= BOTH_D1_B____)
 		{
-			return FORCE_LEVEL_4;
+			//FIXME: these two need their own style
+			if (ps->saber[0].type == SABER_LANCE)
+			{
+				return FORCE_LEVEL_4;
+			}
+			else if (ps->saber[0].type == SABER_TRIDENT)
+			{
+				return FORCE_LEVEL_3;
+			}
+			return FORCE_LEVEL_1;
 		}
-		else if ( ps->saber[0].type == SABER_TRIDENT )
+		if (anim >= BOTH_A2_T__B_ && anim <= BOTH_D2_B____)
 		{
 			return FORCE_LEVEL_3;
 		}
-		return FORCE_LEVEL_1;
-	}
-	if ( anim >= BOTH_A2_T__B_ && anim <= BOTH_D2_B____ )
-	{
-		return FORCE_LEVEL_3;
-	}
-	if ( anim >= BOTH_A3_T__B_ && anim <= BOTH_D3_B____ )
-	{
-		return FORCE_LEVEL_5;
-	}
-	if ( anim >= BOTH_A4_T__B_ && anim <= BOTH_D4_B____ )
-	{//desann
-		return FORCE_LEVEL_5;
-	}
-	if ( anim >= BOTH_A5_T__B_ && anim <= BOTH_D5_B____ )
-	{//tavion
-		return FORCE_LEVEL_2;
-	}
-	if ( anim >= BOTH_A6_T__B_ && anim <= BOTH_D6_B____ )
-	{//dual
-		return FORCE_LEVEL_2;
-	}
-	if ( anim >= BOTH_A7_T__B_ && anim <= BOTH_D7_B____ )
-	{//staff
-		return FORCE_LEVEL_4;
-	}
-	if ( ( anim >= BOTH_P1_S1_T_ && anim <= BOTH_P1_S1_BR )
-		|| ( anim >= BOTH_P6_S6_T_ && anim <= BOTH_P6_S6_BR ) 
-		|| ( anim >= BOTH_P7_S7_T_ && anim <= BOTH_P7_S7_BR ) )
-	{//parries
-		switch ( ps->saberAnimLevel )
+		if (anim >= BOTH_A3_T__B_ && anim <= BOTH_D3_B____)
 		{
-		case SS_STRONG:
-		case SS_DESANN:
+			return FORCE_LEVEL_5;
+		}
+		if (anim >= BOTH_A4_T__B_ && anim <= BOTH_D4_B____)
+		{//desann
+			return FORCE_LEVEL_5;
+		}
+		if (anim >= BOTH_A5_T__B_ && anim <= BOTH_D5_B____)
+		{//tavion
+			return FORCE_LEVEL_2;
+		}
+		if (anim >= BOTH_A6_T__B_ && anim <= BOTH_D6_B____)
+		{//dual
+			return FORCE_LEVEL_2;
+		}
+		if (anim >= BOTH_A7_T__B_ && anim <= BOTH_D7_B____)
+		{//staff
+			return FORCE_LEVEL_4;
+		}
+		if ((anim >= BOTH_P1_S1_T_ && anim <= BOTH_P1_S1_BR)
+			|| (anim >= BOTH_P6_S6_T_ && anim <= BOTH_P6_S6_BR)
+			|| (anim >= BOTH_P7_S7_T_ && anim <= BOTH_P7_S7_BR))
+		{//parries
+			switch (ps->saberAnimLevel)
+			{
+			case SS_DESANN:
+			case SS_STRONG:
+				return FORCE_LEVEL_5;
+				break;
+			case SS_STAFF:
+				return FORCE_LEVEL_4;
+				break;
+			case SS_MEDIUM:
+				return FORCE_LEVEL_3;
+				break;
+			case SS_DUAL:
+			case SS_TAVION:
+				return FORCE_LEVEL_2;
+				break;
+			case SS_FAST:
+				return FORCE_LEVEL_1;
+				break;
+			default:
+				return FORCE_LEVEL_0;
+				break;
+			}
+		}
+		if ((anim >= BOTH_K1_S1_T_ && anim <= BOTH_K1_S1_BR)
+			|| (anim >= BOTH_K6_S6_T_ && anim <= BOTH_K6_S6_BR)
+			|| (anim >= BOTH_K7_S7_T_ && anim <= BOTH_K7_S7_BR))
+		{//knockaways
+			return FORCE_LEVEL_3;
+		}
+		if ((anim >= BOTH_V1_BR_S1 && anim <= BOTH_V1_B__S1)
+			|| (anim >= BOTH_V6_BR_S6 && anim <= BOTH_V6_B__S6)
+			|| (anim >= BOTH_V7_BR_S7 && anim <= BOTH_V7_B__S7))
+		{//knocked-away attacks
+			return FORCE_LEVEL_1;
+		}
+		if ((anim >= BOTH_H1_S1_T_ && anim <= BOTH_H1_S1_BR)
+			|| (anim >= BOTH_H6_S6_T_ && anim <= BOTH_H6_S6_BR)
+			|| (anim >= BOTH_H7_S7_T_ && anim <= BOTH_H7_S7_BR))
+		{//broken parries
+			return FORCE_LEVEL_0;
+		}
+		switch (anim)
+		{
+		case BOTH_A2_STABBACK1:
+			if (ps->torsoAnimTimer < 450)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_5;
 			break;
-		case SS_STAFF:
-			return FORCE_LEVEL_4;
+		case BOTH_ATTACK_BACK:
+			if (ps->torsoAnimTimer < 500)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
 			break;
-		case SS_MEDIUM:
-			return FORCE_LEVEL_3;
+		case BOTH_CROUCHATTACKBACK1:
+			if (ps->torsoAnimTimer < 800)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
 			break;
-		case SS_DUAL:
-		case SS_TAVION:
-			return FORCE_LEVEL_2;
+		case BOTH_BUTTERFLY_LEFT:
+		case BOTH_BUTTERFLY_RIGHT:
+		case BOTH_BUTTERFLY_FL1:
+		case BOTH_BUTTERFLY_FR1:
+			//FIXME: break up?
+			return FORCE_LEVEL_5;
 			break;
-		case SS_FAST:
-			return FORCE_LEVEL_1;
+		case BOTH_FJSS_TR_BL:
+		case BOTH_FJSS_TL_BR:
+			//FIXME: break up?
+			return FORCE_LEVEL_5;
 			break;
-		default:
+		case BOTH_K1_S1_T_:	//# knockaway saber top
+		case BOTH_K1_S1_TR:	//# knockaway saber top right
+		case BOTH_K1_S1_TL:	//# knockaway saber top left
+		case BOTH_K1_S1_BL:	//# knockaway saber bottom left
+		case BOTH_K1_S1_B_:	//# knockaway saber bottom
+		case BOTH_K1_S1_BR:	//# knockaway saber bottom right
+			//FIXME: break up?
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LUNGE2_B__T_:
+			if (ps->torsoAnimTimer < 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 150)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_FORCELEAP2_T__B_:
+			if (ps->torsoAnimTimer < 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 550)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_VS_ATR_S:
+		case BOTH_VS_ATL_S:
+		case BOTH_VT_ATR_S:
+		case BOTH_VT_ATL_S:
+			return FORCE_LEVEL_5;//???
+			break;
+		case BOTH_JUMPFLIPSLASHDOWN1:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 550)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_JUMPFLIPSTABDOWN:
+			if (ps->torsoAnimTimer <= 1200)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed <= 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_JUMPATTACK6:
+			/*
+			if (pm->ps)
+			{
+			if ( ( pm->ps->legsAnimTimer >= 1450
+			&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 400 )
+			||(pm->ps->legsAnimTimer >= 400
+			&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 1100 ) )
+			{//pretty much sideways
+			return FORCE_LEVEL_5;
+			}
+			}
+			*/
+			if ((ps->torsoAnimTimer >= 1450
+				&& animTimeElapsed >= 400)
+				|| (ps->torsoAnimTimer >= 400
+				&& animTimeElapsed >= 1100))
+			{//pretty much sideways
+				return FORCE_LEVEL_5;
+			}
 			return FORCE_LEVEL_0;
 			break;
+		case BOTH_JUMPATTACK7:
+			if (ps->torsoAnimTimer <= 1200)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_SPINATTACK6:
+			if (animTimeElapsed <= 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_SPINATTACK7:
+			if (ps->torsoAnimTimer <= 500)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 500)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_FORCELONGLEAP_ATTACK:
+			if (animTimeElapsed <= 200)
+			{//1st four frames of anim
+				return FORCE_LEVEL_5;
+			}
+			break;
+			/*
+			case BOTH_A7_KICK_F://these kicks attack, too
+			case BOTH_A7_KICK_B:
+			case BOTH_A7_KICK_R:
+			case BOTH_A7_KICK_L:
+			//FIXME: break up
+			return FORCE_LEVEL_5;
+			break;
+			*/
+		case BOTH_STABDOWN:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_5;
+			}
+			break;
+		case BOTH_STABDOWN_STAFF:
+			if (ps->torsoAnimTimer <= 850)
+			{//end of anim
+				return FORCE_LEVEL_5;
+			}
+			break;
+		case BOTH_STABDOWN_DUAL:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_5;
+			}
+			break;
+		case BOTH_A6_SABERPROTECT:
+			if (ps->torsoAnimTimer < 650)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A7_SOULCAL:
+			if (ps->torsoAnimTimer < 650)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 600)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A1_SPECIAL:
+			if (ps->torsoAnimTimer < 600)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A2_SPECIAL:
+			if (ps->torsoAnimTimer < 300)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A3_SPECIAL:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_FLIP_ATTACK7:
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_PULL_IMPALE_STAB:
+			if (ps->torsoAnimTimer < 1000)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_PULL_IMPALE_SWING:
+			if (ps->torsoAnimTimer < 500)//750 )
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 650)//600 )
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_ALORA_SPIN_SLASH:
+			if (ps->torsoAnimTimer < 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A6_FB:
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A6_LR:
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_A7_HILT:
+			return FORCE_LEVEL_0;
+			break;
+			//===SABERLOCK SUPERBREAKS START===========================================================================
+		case BOTH_LK_S_DL_T_SB_1_W:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_S_ST_S_SB_1_W:
+			if (ps->torsoAnimTimer < 300)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_S_DL_S_SB_1_W:
+		case BOTH_LK_S_S_S_SB_1_W:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_S_ST_T_SB_1_W:
+		case BOTH_LK_S_S_T_SB_1_W:
+			if (ps->torsoAnimTimer < 150)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_DL_T_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_DL_S_SB_1_W:
+		case BOTH_LK_DL_ST_S_SB_1_W:
+			if (animTimeElapsed < 1000)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_ST_T_SB_1_W:
+			if (ps->torsoAnimTimer < 950)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 650)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_S_S_SB_1_W:
+			if (saberNum != 0)
+			{//only right hand saber does damage in this suberbreak
+				return FORCE_LEVEL_0;
+			}
+			if (ps->torsoAnimTimer < 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 450)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_S_T_SB_1_W:
+			if (saberNum != 0)
+			{//only right hand saber does damage in this suberbreak
+				return FORCE_LEVEL_0;
+			}
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 150)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_DL_S_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_DL_T_SB_1_W:
+			//special suberbreak - doesn't kill, just kicks them backwards
+			return FORCE_LEVEL_0;
+			break;
+		case BOTH_LK_ST_ST_S_SB_1_W:
+		case BOTH_LK_ST_S_S_SB_1_W:
+			if (ps->torsoAnimTimer < 800)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 350)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_ST_T_SB_1_W:
+		case BOTH_LK_ST_S_T_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+			//===SABERLOCK SUPERBREAKS START===========================================================================
+		case BOTH_HANG_ATTACK:
+			//FIME: break up
+			if (ps->torsoAnimTimer < 1000)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			else
+			{//sweet spot
+				return FORCE_LEVEL_5;
+			}
+			break;
+		case BOTH_ROLL_STAB:
+			if (animTimeElapsed > 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else
+			{
+				return FORCE_LEVEL_5;
+			}
+			break;
 		}
-	}
-	if ( ( anim >= BOTH_K1_S1_T_ && anim <= BOTH_K1_S1_BR )
-		|| ( anim >= BOTH_K6_S6_T_ && anim <= BOTH_K6_S6_BR ) 
-		|| ( anim >= BOTH_K7_S7_T_ && anim <= BOTH_K7_S7_BR ) )
-	{//knockaways
-		return FORCE_LEVEL_3;
-	}
-	if ( ( anim >= BOTH_V1_BR_S1 && anim <= BOTH_V1_B__S1 )
-		|| ( anim >= BOTH_V6_BR_S6 && anim <= BOTH_V6_B__S6 ) 
-		|| ( anim >= BOTH_V7_BR_S7 && anim <= BOTH_V7_B__S7 ) )
-	{//knocked-away attacks
-		return FORCE_LEVEL_1;
-	}
-	if ( ( anim >= BOTH_H1_S1_T_ && anim <= BOTH_H1_S1_BR )
-		|| ( anim >= BOTH_H6_S6_T_ && anim <= BOTH_H6_S6_BR ) 
-		|| ( anim >= BOTH_H7_S7_T_ && anim <= BOTH_H7_S7_BR ) )
-	{//broken parries
 		return FORCE_LEVEL_0;
 	}
-	switch ( anim )
-	{
-	case BOTH_A2_STABBACK1:
-		if ( ps->torsoAnimTimer < 450 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 400 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_ATTACK_BACK:
-		if ( ps->torsoAnimTimer < 500 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_CROUCHATTACKBACK1:
-		if ( ps->torsoAnimTimer < 800 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_BUTTERFLY_LEFT:
-	case BOTH_BUTTERFLY_RIGHT:
-	case BOTH_BUTTERFLY_FL1:
-	case BOTH_BUTTERFLY_FR1:
-		//FIXME: break up?
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_FJSS_TR_BL:
-	case BOTH_FJSS_TL_BR:
-		//FIXME: break up?
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_K1_S1_T_:	//# knockaway saber top
-	case BOTH_K1_S1_TR:	//# knockaway saber top right
-	case BOTH_K1_S1_TL:	//# knockaway saber top left
-	case BOTH_K1_S1_BL:	//# knockaway saber bottom left
-	case BOTH_K1_S1_B_:	//# knockaway saber bottom
-	case BOTH_K1_S1_BR:	//# knockaway saber bottom right
-		//FIXME: break up?
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_LUNGE2_B__T_:
-		if ( ps->torsoAnimTimer < 400 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 150 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_FORCELEAP2_T__B_:
-		if ( ps->torsoAnimTimer < 400 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 550 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_VS_ATR_S:
-	case BOTH_VS_ATL_S:
-	case BOTH_VT_ATR_S:
-	case BOTH_VT_ATL_S:
-		return FORCE_LEVEL_3;//???
-		break;
-	case BOTH_JUMPFLIPSLASHDOWN1:
-		if ( ps->torsoAnimTimer <= 900 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 550 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_JUMPFLIPSTABDOWN:
-		if ( ps->torsoAnimTimer <= 1200 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed <= 250 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_JUMPATTACK6:
-		/*
-		if (pm->ps)
+	else
+	{ //old code
+		int anim = ps->torsoAnim;
+		int	animTimeElapsed = PM_AnimLength(g_entities[ps->clientNum].client->clientInfo.animFileIndex, (animNumber_t)anim) - ps->torsoAnimTimer;
+		if (anim >= BOTH_A1_T__B_ && anim <= BOTH_D1_B____)
 		{
+			//FIXME: these two need their own style
+			if (ps->saber[0].type == SABER_LANCE)
+			{
+				return FORCE_LEVEL_4;
+			}
+			else if (ps->saber[0].type == SABER_TRIDENT)
+			{
+				return FORCE_LEVEL_3;
+			}
+			return FORCE_LEVEL_1;
+		}
+		if (anim >= BOTH_A2_T__B_ && anim <= BOTH_D2_B____)
+		{
+			return FORCE_LEVEL_3;
+		}
+		if (anim >= BOTH_A3_T__B_ && anim <= BOTH_D3_B____)
+		{
+			return FORCE_LEVEL_5;
+		}
+		if (anim >= BOTH_A4_T__B_ && anim <= BOTH_D4_B____)
+		{//desann
+			return FORCE_LEVEL_5;
+		}
+		if (anim >= BOTH_A5_T__B_ && anim <= BOTH_D5_B____)
+		{//tavion
+			return FORCE_LEVEL_2;
+		}
+		if (anim >= BOTH_A6_T__B_ && anim <= BOTH_D6_B____)
+		{//dual
+			return FORCE_LEVEL_2;
+		}
+		if (anim >= BOTH_A7_T__B_ && anim <= BOTH_D7_B____)
+		{//staff
+			return FORCE_LEVEL_4;
+		}
+		if ((anim >= BOTH_P1_S1_T_ && anim <= BOTH_P1_S1_BR)
+			|| (anim >= BOTH_P6_S6_T_ && anim <= BOTH_P6_S6_BR)
+			|| (anim >= BOTH_P7_S7_T_ && anim <= BOTH_P7_S7_BR))
+		{//parries
+			switch (ps->saberAnimLevel)
+			{
+			case SS_STRONG:
+			case SS_DESANN:
+				return FORCE_LEVEL_3;
+				break;
+			case SS_TAVION:
+			case SS_STAFF:
+			case SS_DUAL:
+			case SS_MEDIUM:
+				return FORCE_LEVEL_2;
+				break;
+			case SS_FAST:
+				return FORCE_LEVEL_1;
+				break;
+			default:
+				return FORCE_LEVEL_0;
+				break;
+			}
+		}
+		if ((anim >= BOTH_K1_S1_T_ && anim <= BOTH_K1_S1_BR)
+			|| (anim >= BOTH_K6_S6_T_ && anim <= BOTH_K6_S6_BR)
+			|| (anim >= BOTH_K7_S7_T_ && anim <= BOTH_K7_S7_BR))
+		{//knockaways
+			return FORCE_LEVEL_3;
+		}
+		if ((anim >= BOTH_V1_BR_S1 && anim <= BOTH_V1_B__S1)
+			|| (anim >= BOTH_V6_BR_S6 && anim <= BOTH_V6_B__S6)
+			|| (anim >= BOTH_V7_BR_S7 && anim <= BOTH_V7_B__S7))
+		{//knocked-away attacks
+			return FORCE_LEVEL_1;
+		}
+		if ((anim >= BOTH_H1_S1_T_ && anim <= BOTH_H1_S1_BR)
+			|| (anim >= BOTH_H6_S6_T_ && anim <= BOTH_H6_S6_BR)
+			|| (anim >= BOTH_H7_S7_T_ && anim <= BOTH_H7_S7_BR))
+		{//broken parries
+			return FORCE_LEVEL_0;
+		}
+		switch (anim)
+		{
+		case BOTH_A2_STABBACK1:
+			if (ps->torsoAnimTimer < 450)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_ATTACK_BACK:
+			if (ps->torsoAnimTimer < 500)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_CROUCHATTACKBACK1:
+			if (ps->torsoAnimTimer < 800)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_BUTTERFLY_LEFT:
+		case BOTH_BUTTERFLY_RIGHT:
+		case BOTH_BUTTERFLY_FL1:
+		case BOTH_BUTTERFLY_FR1:
+			//FIXME: break up?
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_FJSS_TR_BL:
+		case BOTH_FJSS_TL_BR:
+			//FIXME: break up?
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_K1_S1_T_:	//# knockaway saber top
+		case BOTH_K1_S1_TR:	//# knockaway saber top right
+		case BOTH_K1_S1_TL:	//# knockaway saber top left
+		case BOTH_K1_S1_BL:	//# knockaway saber bottom left
+		case BOTH_K1_S1_B_:	//# knockaway saber bottom
+		case BOTH_K1_S1_BR:	//# knockaway saber bottom right
+			//FIXME: break up?
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_LUNGE2_B__T_:
+			if (ps->torsoAnimTimer < 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 150)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_FORCELEAP2_T__B_:
+			if (ps->torsoAnimTimer < 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 550)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_VS_ATR_S:
+		case BOTH_VS_ATL_S:
+		case BOTH_VT_ATR_S:
+		case BOTH_VT_ATL_S:
+			return FORCE_LEVEL_3;//???
+			break;
+		case BOTH_JUMPFLIPSLASHDOWN1:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 550)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_JUMPFLIPSTABDOWN:
+			if (ps->torsoAnimTimer <= 1200)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed <= 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_JUMPATTACK6:
+			/*
+			if (pm->ps)
+			{
 			if ( ( pm->ps->legsAnimTimer >= 1450
-					&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 400 ) 
-				||(pm->ps->legsAnimTimer >= 400
-					&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 1100 ) )
+			&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 400 )
+			||(pm->ps->legsAnimTimer >= 400
+			&& PM_AnimLength( g_entities[ps->clientNum].client->clientInfo.animFileIndex, BOTH_JUMPATTACK6 ) - pm->ps->legsAnimTimer >= 1100 ) )
+			{//pretty much sideways
+			return FORCE_LEVEL_3;
+			}
+			}
+			*/
+			if ((ps->torsoAnimTimer >= 1450
+				&& animTimeElapsed >= 400)
+				|| (ps->torsoAnimTimer >= 400
+				&& animTimeElapsed >= 1100))
 			{//pretty much sideways
 				return FORCE_LEVEL_3;
 			}
-		}
-		*/
-		if ( ( ps->torsoAnimTimer >= 1450
-				&& animTimeElapsed >= 400 )
-			||(ps->torsoAnimTimer >= 400
-				&& animTimeElapsed >= 1100 ) )
-		{//pretty much sideways
+			return FORCE_LEVEL_0;
+			break;
+		case BOTH_JUMPATTACK7:
+			if (ps->torsoAnimTimer <= 1200)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_3;
-		}
-		return FORCE_LEVEL_0;
-		break;
-	case BOTH_JUMPATTACK7:
-		if ( ps->torsoAnimTimer <= 1200 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 200 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_SPINATTACK6:
-		if ( animTimeElapsed <= 200 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_SPINATTACK7:
-		if ( ps->torsoAnimTimer <= 500 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 500 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_FORCELONGLEAP_ATTACK:
-		if ( animTimeElapsed <= 200 )
-		{//1st four frames of anim
+			break;
+		case BOTH_SPINATTACK6:
+			if (animTimeElapsed <= 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_3;
-		}
-		break;
-	/*
-	case BOTH_A7_KICK_F://these kicks attack, too
-	case BOTH_A7_KICK_B:
-	case BOTH_A7_KICK_R:
-	case BOTH_A7_KICK_L:
-		//FIXME: break up
-		return FORCE_LEVEL_3;
-		break;
-	*/
-	case BOTH_STABDOWN:
-		if ( ps->torsoAnimTimer <= 900 )
-		{//end of anim
+			break;
+		case BOTH_SPINATTACK7:
+			if (ps->torsoAnimTimer <= 500)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 500)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_3;
-		}
-		break;
-	case BOTH_STABDOWN_STAFF:
-		if ( ps->torsoAnimTimer <= 850 )
-		{//end of anim
+			break;
+		case BOTH_FORCELONGLEAP_ATTACK:
+			if (animTimeElapsed <= 200)
+			{//1st four frames of anim
+				return FORCE_LEVEL_3;
+			}
+			break;
+			/*
+			case BOTH_A7_KICK_F://these kicks attack, too
+			case BOTH_A7_KICK_B:
+			case BOTH_A7_KICK_R:
+			case BOTH_A7_KICK_L:
+			//FIXME: break up
 			return FORCE_LEVEL_3;
-		}
-		break;
-	case BOTH_STABDOWN_DUAL:
-		if ( ps->torsoAnimTimer <= 900 )
-		{//end of anim
+			break;
+			*/
+		case BOTH_STABDOWN:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_3;
+			}
+			break;
+		case BOTH_STABDOWN_STAFF:
+			if (ps->torsoAnimTimer <= 850)
+			{//end of anim
+				return FORCE_LEVEL_3;
+			}
+			break;
+		case BOTH_STABDOWN_DUAL:
+			if (ps->torsoAnimTimer <= 900)
+			{//end of anim
+				return FORCE_LEVEL_3;
+			}
+			break;
+		case BOTH_A6_SABERPROTECT:
+			if (ps->torsoAnimTimer < 650)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_3;
-		}
-		break;
-	case BOTH_A6_SABERPROTECT:
-		if ( ps->torsoAnimTimer < 650 )
-		{//end of anim
+			break;
+		case BOTH_A7_SOULCAL:
+			if (ps->torsoAnimTimer < 650)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 600)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A1_SPECIAL:
+			if (ps->torsoAnimTimer < 600)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A2_SPECIAL:
+			if (ps->torsoAnimTimer < 300)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A3_SPECIAL:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 200)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_FLIP_ATTACK7:
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_PULL_IMPALE_STAB:
+			if (ps->torsoAnimTimer < 1000)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_PULL_IMPALE_SWING:
+			if (ps->torsoAnimTimer < 500)//750 )
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 650)//600 )
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_ALORA_SPIN_SLASH:
+			if (ps->torsoAnimTimer < 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A6_FB:
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A6_LR:
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_3;
+			break;
+		case BOTH_A7_HILT:
 			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A7_SOULCAL:
-		if ( ps->torsoAnimTimer < 650 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 600 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A1_SPECIAL:
-		if ( ps->torsoAnimTimer < 600 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 200 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A2_SPECIAL:
-		if ( ps->torsoAnimTimer < 300 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 200 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A3_SPECIAL:
-		if ( ps->torsoAnimTimer < 700 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 200 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_FLIP_ATTACK7:
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_PULL_IMPALE_STAB:
-		if ( ps->torsoAnimTimer < 1000 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_PULL_IMPALE_SWING:
-		if ( ps->torsoAnimTimer < 500 )//750 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 650 )//600 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_ALORA_SPIN_SLASH:
-		if ( ps->torsoAnimTimer < 900 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 250 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A6_FB:
-		if ( ps->torsoAnimTimer < 250 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 250 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A6_LR:	
-		if ( ps->torsoAnimTimer < 250 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 250 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_3;
-		break;
-	case BOTH_A7_HILT:
-		return FORCE_LEVEL_0;
-		break;
-//===SABERLOCK SUPERBREAKS START===========================================================================
-	case BOTH_LK_S_DL_T_SB_1_W:
-		if ( ps->torsoAnimTimer < 700 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_S_ST_S_SB_1_W:
-		if ( ps->torsoAnimTimer < 300 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_S_DL_S_SB_1_W:
-	case BOTH_LK_S_S_S_SB_1_W:
-		if ( ps->torsoAnimTimer < 700 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 400 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_S_ST_T_SB_1_W:
-	case BOTH_LK_S_S_T_SB_1_W:
-		if ( ps->torsoAnimTimer < 150 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 400 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_DL_DL_T_SB_1_W:
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_DL_DL_S_SB_1_W:
-	case BOTH_LK_DL_ST_S_SB_1_W:
-		if ( animTimeElapsed < 1000 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_DL_ST_T_SB_1_W:
-		if ( ps->torsoAnimTimer < 950 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 650 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_DL_S_S_SB_1_W:
-		if ( saberNum != 0 )
-		{//only right hand saber does damage in this suberbreak
-			return FORCE_LEVEL_0;
-		}
-		if ( ps->torsoAnimTimer < 900 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 450 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_DL_S_T_SB_1_W:
-		if ( saberNum != 0 )
-		{//only right hand saber does damage in this suberbreak
-			return FORCE_LEVEL_0;
-		}
-		if ( ps->torsoAnimTimer < 250 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 150 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_ST_DL_S_SB_1_W:
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_ST_DL_T_SB_1_W:
-		//special suberbreak - doesn't kill, just kicks them backwards
-		return FORCE_LEVEL_0;
-		break;
-	case BOTH_LK_ST_ST_S_SB_1_W:
-	case BOTH_LK_ST_S_S_SB_1_W:
-		if ( ps->torsoAnimTimer < 800 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 350 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		return FORCE_LEVEL_5;
-		break;
-	case BOTH_LK_ST_ST_T_SB_1_W:
-	case BOTH_LK_ST_S_T_SB_1_W:
-		return FORCE_LEVEL_5;
-		break;
-//===SABERLOCK SUPERBREAKS START===========================================================================
-	case BOTH_HANG_ATTACK:
-		//FIME: break up
-		if ( ps->torsoAnimTimer < 1000 )
-		{//end of anim
-			return FORCE_LEVEL_0;
-		}
-		else if ( animTimeElapsed < 250 )
-		{//beginning of anim
-			return FORCE_LEVEL_0;
-		}
-		else
-		{//sweet spot
+			break;
+			//===SABERLOCK SUPERBREAKS START===========================================================================
+		case BOTH_LK_S_DL_T_SB_1_W:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
 			return FORCE_LEVEL_5;
-		}
-		break;
-	case BOTH_ROLL_STAB:
-		if ( animTimeElapsed > 400 )
-		{//end of anim
+			break;
+		case BOTH_LK_S_ST_S_SB_1_W:
+			if (ps->torsoAnimTimer < 300)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_S_DL_S_SB_1_W:
+		case BOTH_LK_S_S_S_SB_1_W:
+			if (ps->torsoAnimTimer < 700)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_S_ST_T_SB_1_W:
+		case BOTH_LK_S_S_T_SB_1_W:
+			if (ps->torsoAnimTimer < 150)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 400)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_DL_T_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_DL_S_SB_1_W:
+		case BOTH_LK_DL_ST_S_SB_1_W:
+			if (animTimeElapsed < 1000)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_ST_T_SB_1_W:
+			if (ps->torsoAnimTimer < 950)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 650)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_S_S_SB_1_W:
+			if (saberNum != 0)
+			{//only right hand saber does damage in this suberbreak
+				return FORCE_LEVEL_0;
+			}
+			if (ps->torsoAnimTimer < 900)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 450)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_DL_S_T_SB_1_W:
+			if (saberNum != 0)
+			{//only right hand saber does damage in this suberbreak
+				return FORCE_LEVEL_0;
+			}
+			if (ps->torsoAnimTimer < 250)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 150)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_DL_S_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_DL_T_SB_1_W:
+			//special suberbreak - doesn't kill, just kicks them backwards
 			return FORCE_LEVEL_0;
+			break;
+		case BOTH_LK_ST_ST_S_SB_1_W:
+		case BOTH_LK_ST_S_S_SB_1_W:
+			if (ps->torsoAnimTimer < 800)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 350)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			return FORCE_LEVEL_5;
+			break;
+		case BOTH_LK_ST_ST_T_SB_1_W:
+		case BOTH_LK_ST_S_T_SB_1_W:
+			return FORCE_LEVEL_5;
+			break;
+			//===SABERLOCK SUPERBREAKS START===========================================================================
+		case BOTH_HANG_ATTACK:
+			//FIME: break up
+			if (ps->torsoAnimTimer < 1000)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else if (animTimeElapsed < 250)
+			{//beginning of anim
+				return FORCE_LEVEL_0;
+			}
+			else
+			{//sweet spot
+				return FORCE_LEVEL_5;
+			}
+			break;
+		case BOTH_ROLL_STAB:
+			if (animTimeElapsed > 400)
+			{//end of anim
+				return FORCE_LEVEL_0;
+			}
+			else
+			{
+				return FORCE_LEVEL_3;
+			}
+			break;
 		}
-		else
-		{
-			return FORCE_LEVEL_3;
-		}
-		break;
+		return FORCE_LEVEL_0;
 	}
-	return FORCE_LEVEL_0;
 }
 
 qboolean PM_InAnimForSaberMove( int anim, int saberMove )
@@ -2060,10 +2580,18 @@ qboolean PM_SaberKataDone( int curmove = LS_NONE, int newmove = LS_NONE )
 			}
 		}
 	}
-	else 
+	else if ( g_saberNewCombat->integer ) //new code
 	{//FIXME: have chainAngle influence fast and medium chains as well?
-		if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_2 || pm->ps->saberAnimLevel == SS_DUAL)
+		if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_3 || pm->ps->saberAnimLevel == SS_DUAL)
 			&& pm->ps->saberAttackChainCount > Q_irand( 2, 5 ) )
+		{
+			return qtrue;
+		}
+	}
+	else //old code
+	{//FIXME: have chainAngle influence fast and medium chains as well?
+		if ((pm->ps->saberAnimLevel == FORCE_LEVEL_2 || pm->ps->saberAnimLevel == SS_DUAL)
+			&& pm->ps->saberAttackChainCount > Q_irand(2, 5))
 		{
 			return qtrue;
 		}
@@ -2152,10 +2680,22 @@ saberMoveName_t PM_PickBackStab( void )
 			return LS_A_BACK;
 		}
 	}
-	else if ( pm->ps->saberAnimLevel == FORCE_LEVEL_2 
-		|| pm->ps->saberAnimLevel == SS_DUAL )
+	else if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_3 
+		|| pm->ps->saberAnimLevel == SS_DUAL) && g_saberNewCombat->integer ) //new code
 	{//using medium attacks or dual sabers
 		if ( pm->ps->pm_flags & PMF_DUCKED )
+		{
+			return LS_A_BACK_CR;
+		}
+		else
+		{
+			return LS_A_BACK;
+		}
+	}
+	else if (pm->ps->saberAnimLevel == FORCE_LEVEL_2
+		|| pm->ps->saberAnimLevel == SS_DUAL) //old code
+	{//using medium attacks or dual sabers
+		if (pm->ps->pm_flags & PMF_DUCKED)
 		{
 			return LS_A_BACK_CR;
 		}
@@ -4520,14 +5060,28 @@ void PM_SaberStartTransAnim( int saberAnimLevel, int anim, float *animSpeed, gen
 		anim <= BOTH_T3_BL_TL ) ||
 		( anim >= BOTH_T5_BR__R && 
 		anim <= BOTH_T5_BL_TL ) )
-	{
-		if ( saberAnimLevel == FORCE_LEVEL_1 || saberAnimLevel == FORCE_LEVEL_5 )
-		{//FIXME: should not be necc for FORCE_LEVEL_1's
-			*animSpeed *= 1.5;
-		}
-		else if ( saberAnimLevel == FORCE_LEVEL_3 )
+	{ //what is this doing here exactly?
+		if ( g_saberNewCombat->integer ) //new code
 		{
-			*animSpeed *= 0.75;
+			if (saberAnimLevel == FORCE_LEVEL_1 /*|| saberAnimLevel == FORCE_LEVEL_5*/)
+			{//FIXME: should not be necc for FORCE_LEVEL_1's
+				*animSpeed *= 1.5;
+			}
+			else if (saberAnimLevel == FORCE_LEVEL_5) 
+			{ //both Desann and Strong styles suffer some transition speed penalty or something?
+				*animSpeed *= 0.75;
+			}
+		}
+		else //old code
+		{
+			if (saberAnimLevel == FORCE_LEVEL_1 || saberAnimLevel == FORCE_LEVEL_5)
+			{//FIXME: should not be necc for FORCE_LEVEL_1's
+				*animSpeed *= 1.5;
+			}
+			else if (saberAnimLevel == FORCE_LEVEL_3)
+			{
+				*animSpeed *= 0.75;
+			}
 		}
 	}
 }

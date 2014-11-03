@@ -45,6 +45,7 @@ static float	sabersCrossed;
 static int		saberHitEntity;
 static int		numVictims = 0;
 
+
 extern cvar_t	*g_sex;
 extern cvar_t	*g_timescale;
 extern cvar_t	*g_dismemberment;
@@ -68,7 +69,7 @@ extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime )
 extern void CG_ChangeWeapon( int num );
 extern void CG_SaberDoWeaponHitMarks( gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale );
 extern void G_AngerAlert( gentity_t *self );
-extern void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward );
+extern void G_ReflectMissile(gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse);
 extern int G_CheckLedgeDive( gentity_t *self, float checkDist, const vec3_t checkVel, qboolean tryOpposite, qboolean tryPerp );
 extern void G_BounceMissile( gentity_t *ent, trace_t *trace );
 extern qboolean G_PointInBounds( const vec3_t point, const vec3_t mins, const vec3_t maxs );
@@ -160,16 +161,20 @@ extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_saberDamageCapping;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_saberNewCombat;
-extern cvar_t	*g_saberLocksEnabled; //Dusty, new cvar, hopefully I declared it in g_main.cpp correctly
+extern cvar_t	*g_saberLocksEnabled; 
+extern cvar_t	*g_saberDmgScale;
 extern int g_crosshairEntNum;
 
 qboolean g_saberNoEffects = qfalse;
 qboolean g_noClashFlare = qfalse;
 int		g_saberFlashTime = 0;
-int		hitOwnerBreakLimit;
-int		hitOwnerRecoveryTime; //how long left to recover a defense point
-int		hitOwnerRecoveryInterval = 1500; //interval at which defense points are recovered, 1.5 seconds
-int		hitOwnerBreakCounter; //keeping track of how many strong attacks the defender blocks in a short time period
+
+//new variables - Dusty
+const int		hitOwnerRecoveryInterval = 1500; //interval at which defense points are recovered, 1.5 seconds
+/*extern int		hitOwnerBreakLimit; 
+extern int		hitOwnerRecoveryTime; //how long left to recover a defense point
+extern int		hitOwnerBreakCounter; //keeping track of how many strong attacks the defender blocks in a											//a short time period*/
+
 vec3_t	g_saberFlashPos = {0,0,0};
 
 int forcePowerDarkLight[NUM_FORCE_POWERS] = //0 == neutral
@@ -227,9 +232,9 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 float forceJumpHeight[NUM_FORCE_POWER_LEVELS] = 
 {
 	32,//normal jump (+stepheight+crouchdiff = 66)
-	96,//(+stepheight+crouchdiff = 130)
-	192,//(+stepheight+crouchdiff = 226)
-	384//(+stepheight+crouchdiff = 418)
+	96*1.25,//(+stepheight+crouchdiff = 130)
+	192*1.25,//(+stepheight+crouchdiff = 226)
+	384*1.25//(+stepheight+crouchdiff = 418) //384
 };
 
 float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] = 
@@ -237,7 +242,7 @@ float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] =
 	66,//normal jump (32+stepheight(18)+crouchdiff(24) = 74)
 	130,//(96+stepheight(18)+crouchdiff(24) = 138)
 	226,//(192+stepheight(18)+crouchdiff(24) = 234)
-	418//(384+stepheight(18)+crouchdiff(24) = 426)
+	418//(384+stepheight(18)+crouchdiff(24) = 426) //418
 };
 
 float forcePushPullRadius[NUM_FORCE_POWER_LEVELS] =
@@ -4579,7 +4584,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 if ( g_saberNewCombat->integer ) //new code start
 {
 	int stylePowerModifier = 0;
-	int	stylePowerLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum);
+	int	stylePowerLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum); //this here should account for special moves now correctly
 	
 	/*Power level base numbers instead of being 1,2, and 3 now are doubled. And Saber Offense is the main determinant.
 	Saber Offense -
@@ -4606,14 +4611,14 @@ if ( g_saberNewCombat->integer ) //new code start
 	case 4:
 		stylePowerModifier = 1;
 		break;
-	case 5:
+	case 5: //special attacks count as this in bg_panimate
 		stylePowerModifier = 2;
 		break;
 	}
 
 	if (PM_SaberInTransitionAny(ent->client->ps.saberMove)) // if in a transition that still counts as attacking for stronger styles, but this is so you're not as strong quite as a regular slash
 	{
-		stylePowerLevel -= 1;
+		stylePowerLevel -= 2;
 	}
 	if (ent->client->NPC_class == CLASS_SABER_DROID) //FIXME D: saber droids do their own thing... they need to be incorporated into this system I suppose?
 	{
@@ -4625,12 +4630,13 @@ if ( g_saberNewCombat->integer ) //new code start
 	}
 	
 	if (PM_SaberInSpecialAttack(ent->client->ps.saberMove)) //now for special moves
-	{
+	{ //special moves get a 2nd boost on top of the one in bg_panimate
 		entPowerLevel += 2;
-	}
+	} 
+	
 	//now for modifiers based on any enhancement powers active
 	if (!ent->s.number && (ent->client->ps.forcePowersActive&(1 << FP_SPEED)))
-	{
+	{ //min power bonus is +1, max bonus is +3
 		entPowerLevel += 1 * ent->client->ps.forcePowerLevel[FP_SPEED];
 	}
 
@@ -4641,9 +4647,9 @@ if ( g_saberNewCombat->integer ) //new code start
 			entPowerLevel -= 2;
 		}
 		else if (ent->client->ps.forcePowersActive & (1 << FP_RAGE))
-		{
+		{ //min power bonus is +2, max is +4, slightly more than Speed 3
 
-			entPowerLevel += ((ent->client->ps.forcePowerLevel[FP_RAGE] * 1) + 1);
+			entPowerLevel += ent->client->ps.forcePowerLevel[FP_RAGE] + 1;
 
 		}
 	}
@@ -4801,39 +4807,98 @@ else //Dusty, old code start.
 				//FIXME: more damage for higher attack power levels?
 				//		More damage based on length/color of saber?
 				//FIXME: Desann does double damage?
-				if ( g_saberRealisticCombat->integer )
+				if (g_saberNewCombat->integer) //new code
 				{
-					switch ( entPowerLevel )
+					float saberDmgMultiplier = g_saberDmgScale->value;
+
+					if (g_saberRealisticCombat->integer)
 					{
-					default:
-					case FORCE_LEVEL_3:
-						baseDamage = 10.0f;
-						break;
-					case FORCE_LEVEL_2:
-						baseDamage = 5.0f;
-						break;
-					case FORCE_LEVEL_0:
-					case FORCE_LEVEL_1:
-						baseDamage = 2.5f;
-						break;
+						switch ((ent->client->ps.saberAnimLevel))
+						{
+						default:
+						case FORCE_LEVEL_5:
+							baseDamage = 10.0f * saberDmgMultiplier;
+							break;
+						case FORCE_LEVEL_4: //Staff, medium, duals all do same damage
+						case FORCE_LEVEL_3:
+						case FORCE_LEVEL_2:
+							baseDamage = 5.0f * saberDmgMultiplier;
+							break;
+						case FORCE_LEVEL_0:
+						case FORCE_LEVEL_1: //FIXME: Fast damage is so low...
+							baseDamage = 2.5f * saberDmgMultiplier;
+							break;
+						}
 					}
-				}
-				else
-				{
-					if ( g_spskill->integer > 0
-						&& ent->s.number < MAX_CLIENTS
-						&& ( ent->client->ps.torsoAnim == BOTH_ROLL_STAB
+					else 
+					{
+						if (g_spskill->integer > 0
+							&& ent->s.number < MAX_CLIENTS
+							&& (ent->client->ps.torsoAnim == BOTH_ROLL_STAB
 							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK6
 							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK7
-							|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_ ) )
-					{//*sigh*, these anim do less damage since they're so easy to do
-						baseDamage = 2.5f;
+							|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_))
+						{//*sigh*, these anim do less damage since they're so easy to do
+							baseDamage = 2.5f;
+						}
+						else
+						{
+							switch ((ent->client->ps.saberAnimLevel))
+							{
+							default:
+							case FORCE_LEVEL_5:
+								baseDamage = 7.5f * saberDmgMultiplier;
+								break;
+							case FORCE_LEVEL_4: //Staff, medium, duals all do same damage
+							case FORCE_LEVEL_3:
+							case FORCE_LEVEL_2:
+								baseDamage = 5.0f * saberDmgMultiplier;
+								break;
+							case FORCE_LEVEL_0:
+							case FORCE_LEVEL_1: //FIXME: Fast damage is so low...
+								baseDamage = 2.5f * saberDmgMultiplier;
+								break;
+							}
+						}
+					}
+				}
+				else //old code
+				{
+					if (g_saberRealisticCombat->integer)
+					{
+						switch (entPowerLevel)
+						{
+						default:
+						case FORCE_LEVEL_3:
+							baseDamage = 10.0f;
+							break;
+						case FORCE_LEVEL_2:
+							baseDamage = 5.0f;
+							break;
+						case FORCE_LEVEL_0:
+						case FORCE_LEVEL_1:
+							baseDamage = 2.5f;
+							break;
+						}
 					}
 					else
 					{
-						baseDamage = 2.5f * (float)entPowerLevel;
+						if (g_spskill->integer > 0
+							&& ent->s.number < MAX_CLIENTS
+							&& (ent->client->ps.torsoAnim == BOTH_ROLL_STAB
+							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK6
+							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK7
+							|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_))
+						{//*sigh*, these anim do less damage since they're so easy to do
+							baseDamage = 2.5f;
+						}
+						else
+						{
+							baseDamage = 2.5f * (float)entPowerLevel;
+						}
 					}
 				}
+				
 			}
 			else
 			{//saber is transitioning, defending or idle, don't do as much damage
@@ -5170,7 +5235,7 @@ if ( g_saberNewCombat->integer ) //Dusty, new code start.
 		if ( hitOwner && hitOwner->client )
 		{
 			hitOwnerPowerLevel = 2 * hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
-			hitOwnerBreakLimit = hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+			hitOwner->breakLimit = hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
 		}
 }
 else
@@ -5266,12 +5331,12 @@ else
 						entDefending = qtrue;
 					}
 
-					if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
+					/*if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
 						|| ent->client->ps.torsoAnim == BOTH_A2_SPECIAL
 						|| ent->client->ps.torsoAnim == BOTH_A3_SPECIAL)
 					{//parry/block/break-parry bonus for single-style kata moves
 						entPowerLevel += 2;
-					}
+					}*/
 					if (entAttacking) //I'm removing all two-handed power bonuses, now it's purely for force power stuff - Dusty
 					{//add twoHanded bonus and breakParryBonus to entPowerLevel here
 						//This makes staff too powerful
@@ -5317,12 +5382,12 @@ else
 						hitOwnerDefending = qtrue;
 					}
 
-					if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
+					/*if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
 						|| hitOwner->client->ps.torsoAnim == BOTH_A2_SPECIAL
 						|| hitOwner->client->ps.torsoAnim == BOTH_A3_SPECIAL)
 					{//parry/block/break-parry bonus for single-style kata moves
 						hitOwnerPowerLevel += 2;
-					}
+					}*/
 					if (hitOwnerAttacking)
 					{//add twoHanded bonus and breakParryBonus to entPowerLevel here
 						/*if ((hitOwner->client->ps.saber[0].saberFlags&SFL_TWO_HANDED))
@@ -5364,11 +5429,11 @@ else
 						&& !Q_irand(0, g_saberLockRandomNess->integer)
 						&& (g_debugSaberLock->integer || forceLock
 						|| entPowerLevel == hitOwnerPowerLevel
-						|| (entPowerLevel > FORCE_LEVEL_2 && hitOwnerPowerLevel > FORCE_LEVEL_2)
-						|| (entPowerLevel < FORCE_LEVEL_3 && hitOwnerPowerLevel < FORCE_LEVEL_3 && hitOwner->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_2 && Q_irand(0, 3))
-						|| (entPowerLevel < FORCE_LEVEL_2 && hitOwnerPowerLevel < FORCE_LEVEL_3 && hitOwner->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_1 && Q_irand(0, 2))
-						|| (hitOwnerPowerLevel < FORCE_LEVEL_3 && entPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_2 && !Q_irand(0, 1))
-						|| (hitOwnerPowerLevel < FORCE_LEVEL_2 && entPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_1 && !Q_irand(0, 1)))
+						|| (entPowerLevel > 6 && hitOwnerPowerLevel > 6)
+						|| (entPowerLevel < 6 && hitOwnerPowerLevel < 6 && hitOwner->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_2 && Q_irand(0, 3))
+						|| (entPowerLevel < 4 && hitOwnerPowerLevel < 6 && hitOwner->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_1 && Q_irand(0, 2))
+						|| (hitOwnerPowerLevel < 6 && entPowerLevel < 6 && ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_2 && !Q_irand(0, 1))
+						|| (hitOwnerPowerLevel < 6 && entPowerLevel < 4 && ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_1 && !Q_irand(0, 1)))
 						&& WP_SabersCheckLock(ent, hitOwner))
 					{
 						collisionResolved = qtrue;
@@ -5379,9 +5444,9 @@ else
 						&& !Q_irand(0, g_saberLockRandomNess->integer * 3)
 						&& (g_debugSaberLock->integer || forceLock ||
 						((ent->client->ps.saberMove != LS_READY || (hitOwnerPowerLevel - ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand(-6, 0))
-						&& ((hitOwnerPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2) ||
-						(hitOwnerPowerLevel < FORCE_LEVEL_2 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_1) ||
-						(hitOwnerPowerLevel < FORCE_LEVEL_3 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_0 && !Q_irand(0, (hitOwnerPowerLevel - ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] + 1) * 2)))))
+						&& ((hitOwnerPowerLevel < 6 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2) ||
+						(hitOwnerPowerLevel < 4 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_1) ||
+						(hitOwnerPowerLevel < 6 && ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_0 && !Q_irand(0, (hitOwnerPowerLevel - ent->client->ps.forcePowerLevel[FP_SABER_DEFENSE] + 1) * 2)))))
 						&& WP_SabersCheckLock(hitOwner, ent))
 					{
 						collisionResolved = qtrue;
@@ -5394,16 +5459,16 @@ else
 							&& activeDefense
 							&& (g_debugSaberLock->integer || forceLock ||
 							((hitOwner->client->ps.saberMove != LS_READY || (entPowerLevel - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) < Q_irand(-6, 0))
-							&& ((entPowerLevel < FORCE_LEVEL_3 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2)
-							|| (entPowerLevel < FORCE_LEVEL_2 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_1)
-							|| (entPowerLevel < FORCE_LEVEL_3 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_0 && !Q_irand(0, (entPowerLevel - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] + 1) * 2)))))
+							&& ((entPowerLevel < 6 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2)
+							|| (entPowerLevel < 4 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_1)
+							|| (entPowerLevel < 6 && hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_0 && !Q_irand(0, (entPowerLevel - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] + 1) * 2)))))
 							&& WP_SabersCheckLock(ent, hitOwner))
 						{
 							collisionResolved = qtrue;
 						}
 						else if (saberHitFraction < 1.0f)
 						{//an actual collision
-							if ( (hitOwnerBreakCounter < hitOwnerBreakLimit) && activeDefense)
+							if ((hitOwner->breakCounter <= hitOwner->breakLimit) && activeDefense)
 							{//tired defenders cannot deflect
 								//based on angle of attack & angle of defensive saber, see if I should deflect off in another dir rather than bounce back
 								deflected = WP_GetSaberDeflectionAngle(ent, hitOwner);
@@ -5412,8 +5477,8 @@ else
 							}
 							if (entPowerLevel > hitOwnerPowerLevel)
 							{ //if the attack was strong add to the stagger/break counter here
-								hitOwnerBreakCounter += (entPowerLevel - hitOwnerPowerLevel);
-								hitOwnerRecoveryTime = level.time + hitOwnerRecoveryInterval;
+								hitOwner->breakCounter += (entPowerLevel - hitOwnerPowerLevel);
+								hitOwner->breakRecoveryTime = level.time + hitOwnerRecoveryInterval;
 							}
 							//base parry breaks on animation (saber attack level), not FP_SABER_OFFENSE
 							if (entPowerLevel < hitOwnerPowerLevel
@@ -5456,8 +5521,8 @@ else
 								}
 #endif
 							}
-							else if (!activeDefense//they're not defending i.e. not holding +block with auto-blocking turned on?
-								|| ( hitOwnerBreakCounter > hitOwnerBreakLimit //too tired to defend strong attacks
+							else if (!activeDefense//they're not defending i.e. not holding +block with auto-blocking turned off?
+								|| (hitOwner->breakCounter > hitOwner->breakLimit //too tired to defend strong attacks
 								&& hitOwnerPowerLevel < entPowerLevel))//they are defending, but their defense strength is lower than my attack...
 								/*|| (!deflected && Q_irand(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]PM_PowerLevelForSaberAnim( &hitOwner->client->ps )) > 0))*/
 								//^um what does that do anyway? Just add randomness?
@@ -6246,7 +6311,7 @@ else
 
 						VectorSubtract(g_entities[ent->client->ps.saberEntityNum].currentOrigin, hitEnt->currentOrigin, newDir);
 						VectorNormalize(newDir);
-						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir);
+						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir, FP_SABER_DEFENSE);
 					}
 					Jedi_PlayDeflectSound(hitOwner);
 					WP_SaberDrop(ent, &g_entities[ent->client->ps.saberEntityNum]);
@@ -6258,7 +6323,7 @@ else
 						vec3_t newDir;
 						VectorSubtract(g_entities[ent->client->ps.saberEntityNum].currentOrigin, hitEnt->currentOrigin, newDir);
 						VectorNormalize(newDir);
-						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir);
+						G_ReflectMissile(ent, &g_entities[ent->client->ps.saberEntityNum], newDir, FP_SABER_DEFENSE);
 					}
 					WP_SaberReturn(ent, &g_entities[ent->client->ps.saberEntityNum]);
 				}
@@ -6826,7 +6891,7 @@ void WP_SaberInFlightReflectCheck(gentity_t *self, usercmd_t *ucmd)
 					reflectAngle[PITCH] = Q_flrand(-90, 90);
 					AngleVectors(reflectAngle, forward, NULL, NULL);
 
-					G_ReflectMissile(self, missile_list[x], forward);
+					G_ReflectMissile(self, missile_list[x], forward, FP_SABER_DEFENSE);
 					//do an effect
 					VectorNormalize2(missile_list[x]->s.pos.trDelta, fx_dir);
 					G_PlayEffect("blaster/deflect", missile_list[x]->currentOrigin, fx_dir);
@@ -10115,7 +10180,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 							{
 								VectorScale(right, -1, right);
 							}
-							G_ReflectMissile(self, push_list[x], right);
+							G_ReflectMissile(self, push_list[x], right, pull ? FP_PULL : FP_PUSH);
 							//FIXME: isn't turning off!!!
 							WP_SaberDrop(push_list[x]->owner, push_list[x]);
 						}
@@ -10150,7 +10215,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 						}
 						if (dot >= 0)
 						{//it's heading towards me
-							G_ReflectMissile(self, push_list[x], forward);
+							G_ReflectMissile(self, push_list[x], forward, FP_PUSH);
 						}
 						else
 						{
@@ -12325,6 +12390,7 @@ qboolean WP_CheckForceDraineeStopMe(gentity_t *self, gentity_t *drainee)
 		&& level.time - (self->client->ps.forcePowerDebounce[FP_DRAIN]>self->client->ps.forcePowerLevel[FP_DRAIN] * 500)//at level 1, I always get at least 500ms of drain, at level 3 I get 1500ms
 		&& !Q_irand(0, 100 - (drainee->NPC->stats.evasion * 10) - (g_spskill->integer * 12)))
 	{//a jedi who broke free
+		
 		ForceThrow(drainee, qfalse);
 		//FIXME: I need to go into some pushed back anim...
 		WP_ForcePowerStop(self, FP_DRAIN);
@@ -13144,20 +13210,34 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 	return getLevel;
 }
 
-void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)
+void WP_BlockPointsRegenerate(gentity_t *self)
 {
-	if (g_saberNewCombat->integer) //you must be regening FP to regen block points
+	if (g_saberNewCombat->integer) //FIXME: you must be regening FP to regen block points?
 	{
-		if (hitOwnerBreakCounter)
+		if (self->breakCounter) //must have block points that need to be regained
 		{
-			if (level.time >= hitOwnerRecoveryTime)
+			if (level.time >= self->breakRecoveryTime)
 			{
-				hitOwnerBreakCounter -= 1;
-				hitOwnerRecoveryTime = level.time + hitOwnerRecoveryInterval;
+				self->breakCounter -= 1;
+				self->breakRecoveryTime = level.time + hitOwnerRecoveryInterval;
 			}
 		}
 	}
-	
+
+	if (self->NPC)
+	{
+		if (self->saberReactivateTime) //checking for stun after saber deactivation from Grip/Drain
+		{
+			if (level.time >= self->saberReactivateTime)
+			{
+				self->client->ps.SaberActivate();
+			}
+		}
+	}
+}
+
+void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)
+{
 	if (!self->client)
 	{
 		return;
@@ -14101,6 +14181,21 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 				&& !Q_irand(0, 100 - (gripEnt->NPC->stats.evasion * 8) - (g_spskill->integer * 20)))
 			{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
 				WP_ForceForceThrow(gripEnt);
+				
+				if (gripEnt->NPC->rank >= RANK_COMMANDER //saber reactivation AI here.
+					|| (gripEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
+				{ //tough guys reactivate their saber faster after being gripped
+					gripEnt->saberReactivateTime = 0;
+				}
+				else //if (gripEnt->NPC->rank >= RANK_LT_COMM)
+				{ //weaker/less skilled guys are stunned after a grip for longer
+					gripEnt->saberReactivateTime = level.time + 1000;
+				}
+				/*else
+				{
+					gripEnt->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
+				}*/
+				
 				//FIXME: I need to go into some pushed back anim...
 				WP_ForcePowerStop(self, FP_GRIP);
 				return;
@@ -14541,6 +14636,22 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 				{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
 					WP_ForceForceThrow(drainEnt);
 					//FIXME: I need to go into some pushed back anim...
+					
+					//saber reactivate time - same rules as for Grip
+					if (drainEnt->NPC->rank >= RANK_COMMANDER
+						|| (drainEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
+					{ //tough guys reactivate their saber faster after being gripped
+						drainEnt->saberReactivateTime = 0;
+					}
+					else /*if (drainEnt->NPC->rank >= RANK_LT_COMM)*/
+					{ //weaker/less skilled guys are stunned after a grip for longer
+						drainEnt->saberReactivateTime = level.time + 1000;
+					}
+					/*else
+					{
+						drainEnt->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
+					}*/
+					
 					WP_ForcePowerStop(self, FP_DRAIN);
 					//can't drain again for 2 seconds
 					self->client->ps.forcePowerDebounce[FP_DRAIN] = level.time + 4000;

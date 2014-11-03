@@ -43,6 +43,8 @@ extern void WP_SaberReflectCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_SaberUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd );
+extern void WP_BlockPointsRegenerate( gentity_t *self );
+
 extern gentity_t *SeekerAcquiresTarget ( gentity_t *ent, vec3_t pos );
 extern void FireSeeker( gentity_t *owner, gentity_t *target, vec3_t origin, vec3_t dir );
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
@@ -5276,6 +5278,8 @@ extern cvar_t	*g_skippingcin;
 	G_CheckClampUcmd( ent, ucmd );
 
 	WP_ForcePowersUpdate( ent, ucmd );
+
+	WP_BlockPointsRegenerate( ent );
 
 	//if we have the saber in hand, check for starting a block to reflect shots
 	if ( ent->s.number < MAX_CLIENTS//player

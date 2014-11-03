@@ -1244,7 +1244,11 @@ static void Jedi_CheckDecreaseSaberAnimLevel( void )
 }
 
 static qboolean Jedi_DecideKick( void )
-{
+{ 
+	if ( !enemy_in_striking_range )
+	{ //more distance checks before calls too, this is just some redundancy
+		return qfalse;
+	} 
 	if ( PM_InKnockDown( &NPC->client->ps ) )
 	{
 		return qfalse;
@@ -1547,7 +1551,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			}
 			else
 			{
-				if ( Jedi_DecideKick() )
+				if ( Jedi_DecideKick() && enemy_dist <= 16 )
 				{//let's try a kick
 					if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 						|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
@@ -1670,13 +1674,13 @@ static void Jedi_CombatDistance( int enemy_dist )
 				ForceAbsorb( NPC );
 				usedForce = qtrue;
 			}
-			else if ( (NPC->client->ps.forcePowersKnown&(1<<FP_RAGE)) != 0 
+			/*else if ( (NPC->client->ps.forcePowersKnown&(1<<FP_RAGE)) != 0 
 				&& (NPC->client->ps.forcePowersActive&(1<<FP_RAGE)) == 0
 				&& Q_irand( 0, 1 ) )
 			{
 				Jedi_Rage();
 				usedForce = qtrue;
-			}
+			}*/ //Why use Rage if we're so far away? Wastes HP.
 			//FIXME: what about things like mind tricks and force sight?
 		}
 		if ( enemy_dist > 384 )
@@ -1949,7 +1953,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 		if ( NPCInfo->stats.aggression < 4 )
 		{//back off and defend
 			if ( Jedi_DecideKick() )
-			{//let's try a kick
+			{//let's try a kick, only if enemy is at least in striking range by now
 				if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 					|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
 				{//kicked!
@@ -1978,10 +1982,12 @@ static void Jedi_CombatDistance( int enemy_dist )
 			//Move forward and back?
 		}
 	}
-	//if really really mad, rage!
+	//if really really mad, rage! But less likely if low HP, or if the enemy is far away.
 	if ( NPCInfo->stats.aggression > Q_irand( 5, 15 )
-		&& NPC->health < NPC->max_health*0.75f 
-		&& !Q_irand( 0, 2 ) )
+		&& ( NPC->health > NPC->max_health*0.5f || !Q_irand(0, 3) ) //if weak, only 25% chance
+		&& !( NPC->health < NPC->max_health*0.25f ) //never if less than 1/4 HP, "too weak"
+		&& !Q_irand( 0, 2 )
+		&& enemy_dist < 284 ) //can't be really far away
 	{
 		if ( (NPC->client->ps.forcePowersKnown&(1<<FP_RAGE)) != 0 
 			&& (NPC->client->ps.forcePowersActive&(1<<FP_RAGE)) == 0 )
@@ -4327,7 +4333,8 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				//FIXME: try to do this if health low or enemy back to a cliff?
 				if ( Jedi_DecideKick()//let's try a kick
 					&& ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE 
-						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue )!=LS_NONE) 
+						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue )!=LS_NONE
+					&& enemy_dist <= 16 ) // lets be close if we're kicking
 						)
 					)
 				{//kicked
@@ -4357,7 +4364,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				if ( !Q_irand( 0, 5 ) || !Jedi_Strafe( 300, 1000, 0, 1000, qfalse ) )
 				{//certain chance they will pick an alternative evasion
 					//if couldn't strafe, try a different kind of evasion...
-					if ( Jedi_DecideKick() && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE )
+					if ( Jedi_DecideKick() && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE && enemy_dist <= 16 )
 					{//kicked!
 						TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 					}
@@ -6553,9 +6560,11 @@ qboolean Jedi_CheckKataAttack( void )
 						if ( Q_irand( 0, g_spskill->integer+1 ) //50% chance on easy, 66% on medium, 75% on hard
 							&& !Q_irand( 0, 9 ) )//10% chance overall
 						{//base on skill level
+							if ( enemy_in_striking_range ) //need to actually be close to the enemy
+						{
 							ucmd.upmove = 0;
-							VectorClear( NPC->client->ps.moveDir );
-							if ( g_saberNewControlScheme->integer )
+							VectorClear(NPC->client->ps.moveDir);
+							if (g_saberNewControlScheme->integer)
 							{
 								ucmd.buttons |= BUTTON_FORCE_FOCUS;
 							}
@@ -6564,6 +6573,7 @@ qboolean Jedi_CheckKataAttack( void )
 								ucmd.buttons |= BUTTON_ALT_ATTACK;
 							}
 							return qtrue;
+						}
 						}
 					}
 				}

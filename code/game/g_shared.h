@@ -677,6 +677,11 @@ Ghoul2 Insert End
 	int			pushDebounceTime;
 	int			aimDebounceTime;
 	int			useDebounceTime;
+	//new variables
+	int			saberReactivateTime; //time after something deactivates a saber for AI to turn it back on
+	int			breakLimit;
+	int			breakRecoveryTime; //how long left to recover a defense point
+	int			breakCounter; //keeping track of how many strong attacks the defender blocks in a											//a short time period
 
 //Unions for miscellaneous fields used under very specific circumstances
 	union

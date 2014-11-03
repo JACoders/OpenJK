@@ -199,8 +199,16 @@ cvar_t	*g_saberDarkSideSaberColor;
 
 //new cvars - Dusty
 cvar_t	*g_saberNewCombat; 
-cvar_t	*g_char_forcepoints;
 cvar_t  *g_saberLocksEnabled;
+cvar_t	*g_saberDmgScale;
+cvar_t  *g_saberWalkAnims;
+
+cvar_t	*g_char_forcepoints;
+cvar_t	*g_char_ParryBonus;
+cvar_t	*g_char_BreakParryBonus;
+cvar_t	*g_char_ForceAffinity;
+cvar_t	*g_char_ForceFocus;
+cvar_t	*g_char_ForceSensitivity;
 
 
 // kef -- used with DebugTraceForNPC
@@ -645,7 +653,7 @@ void G_InitCvars( void ) {
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT );//makes collision more precise, increases damage
+	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_SAVEGAME | CVAR_CHEAT );//makes collision more precise, increases damage
 	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
 	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT );//0 = ignore probabilities, 1 = use probabilities
 	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
@@ -693,7 +701,8 @@ void G_InitCvars( void ) {
 	//new cvars yay - Dusty
 	g_saberNewCombat = gi.cvar("g_saberNewCombat", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberLocksEnabled = gi.cvar("g_saberLocksEnabled", "1", CVAR_ARCHIVE | CVAR_CHEAT);
-	g_char_forcepoints = gi.cvar("g_char_forcepoints", "100", CVAR_ARCHIVE | CVAR_CHEAT | CVAR_SAVEGAME );
+	g_saberDmgScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_char_forcepoints = gi.cvar("g_char_forcepoints", "100", CVAR_CHEAT | CVAR_SAVEGAME );
 }
 /*
 ============

@@ -2165,6 +2165,7 @@ typedef struct playerState_s {
 	int			saberLockTime;
 	int			saberLockEnemy;
 	int			saberStylesKnown;
+	
 #ifdef JK2_MODE
 	char		*saberModel;
 #endif
