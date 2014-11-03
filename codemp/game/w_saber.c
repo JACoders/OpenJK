@@ -3820,6 +3820,8 @@ static QINLINE int SaberSPStyle(gentity_t *self)
 	//Otherwise give us saberSpStyleDmg.integer damages .. ?
 }
 
+qboolean WP_SaberCanBlockSwing(int ourStr, int attackStr);
+
 static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBladeNum, vec3_t saberStart, vec3_t saberEnd, qboolean doInterpolate, int trMask, qboolean extrapolate )
 {
 	static trace_t tr;
@@ -4773,6 +4775,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		if (self->client && self->client->ps.stats[STAT_RACEMODE])//Racemode ppl shouldnt even be able to block other racemode ppls sabers
 			return qfalse;
 		if (otherOwner->client && otherOwner->client->ps.stats[STAT_RACEMODE])
+			return qfalse;
+		if (!SaberSPStyle(self) && WP_SaberCanBlockSwing(otherOwner->client->ps.fd.saberAnimLevel, attackStr)) //Skip block during swing maybe, only if MP dmgs are on ofc
 			return qfalse;
 
 		if ( otherOwner 
@@ -9383,20 +9387,39 @@ static int G_SaberLevelForStance( int stance ) {
 	return 0;
 }
 
+static int G_SaberPierceLevelForStance( int stance ) {
+	switch ( stance ) {
+	case SS_FAST:
+	case SS_DUAL:
+		return 1;
+	case SS_MEDIUM:
+	case SS_TAVION:
+	case SS_STAFF:
+		return 2;
+	case SS_STRONG:
+	case SS_DESANN:
+		return 3;
+	default:
+		break;
+	}
+	return 0;
+}
 
+qboolean WP_SaberCanBlockSwing(int ourStr, int attackStr) //If this returns false, we dont block the saber during our swing? (default true)
+{
+	//JAPRO reduce saber block
+	if (g_tweakWeapons.integer & REDUCE_SABERBLOCK) {
+		const int ourLevel = G_SaberPierceLevelForStance( ourStr );
+		const int theirLevel = G_SaberPierceLevelForStance( attackStr );
+		const int diff = theirLevel - ourLevel; // range [0, 2]
 
+		//trap->Print("Our strength: %i, Their Strength: %i\n", ourLevel, theirLevel);
 
-
-
-
-
-
-
-
-
-
-
-
+		if (diff >= 0) //Diff is positive if they are stronger than us.
+			return qfalse; //Dont block if attacker style is equal or greater than ours
+	}
+	return qtrue;
+}
 
 
 int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolean projectile, int attackStr)
@@ -9464,7 +9487,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	if ( g_tweakWeapons.integer & REDUCE_SABERBLOCK && !projectile && !thrownSaber) {
 		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
 		const int theirLevel = G_SaberLevelForStance( attackStr );
-		const float diff = (float)(theirLevel - ourLevel); // range [0, 2]
+		const int diff = theirLevel - ourLevel; // range [0, 2]
 
 		if (diff >= 0) //Diff is positive if they are stronger than us.
 			return 0; //Dont block if attacker style is equal or greater than ours
