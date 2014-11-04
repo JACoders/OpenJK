@@ -4359,11 +4359,47 @@ void ClientThink_real( gentity_t *ent ) {
 						faceKicked->client->ps.stats[STAT_HEALTH] > 0 &&
 						faceKicked->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN)
 					{
-						if (BG_KnockDownable(&faceKicked->client->ps) && Q_irand(1, 10) <= 3)
-						{ //only actually knock over sometimes, but always do velocity hit
-							faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-							faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
-							faceKicked->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+
+						if (BG_KnockDownable(&faceKicked->client->ps)) {
+							if (g_nonRandomKnockdown.integer < 1) { //Default, random knockdowns
+								if (Q_irand(1, 10) <= 3){
+									faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+									faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
+									faceKicked->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+								}
+							}
+							if (g_nonRandomKnockdown.integer == 1) { //forceDrainTime was unused technically, so hijack it for this.  forceHealTime is not accurate, its already 1000 ahead 
+								if ((faceKicked->client->ps.fd.forceDrainTime > level.time - 2000) || (faceKicked->client->ps.fd.forceHealTime > level.time - 1000)) { //drained/ healed recently?? Fixme
+									faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+									faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
+									faceKicked->client->ps.forceDodgeAnim = 0;
+								}
+							}
+							else if (g_nonRandomKnockdown.integer == 2) { //semi random... where u cant get 2 in a row.. and kd chance is increased for each kick u do thats not a KD
+								if ((Q_irand(1, 10) * faceKicked->client->noKnockdownStreak) > 9) { //Average one knockdown every ~3 kicks.. same as before..?  but with less variance?
+									faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+									faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
+									faceKicked->client->ps.forceDodgeAnim = 0;
+									faceKicked->client->noKnockdownStreak = 0;
+
+									//Streak:   Chance new        Chance old:
+									//0			0				  30% (always)
+									//1			10%
+									//2			60%
+									//3			70%
+									//4			80%
+									//5			90%
+									//6			90%
+									//7			90%
+									//8			90%
+									//9			90%
+									//10		100%
+								}
+								else
+									faceKicked->client->noKnockdownStreak++;
+							}
+							else if (g_nonRandomKnockdown.integer > 2) { //no KDs
+							}						
 						}
 
 //JAPRO - Serverside - Fix killcredit stuff - Start

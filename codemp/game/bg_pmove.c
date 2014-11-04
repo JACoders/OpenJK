@@ -5463,7 +5463,7 @@ qboolean PM_AdjustStandAnimForSlope( void )
 			client = g_entities[clientNum].client;
 		}
 	}
-	if (g_fixLegDangle.integer && client && client->pers.isJAPRO)
+	if (!g_LegDangle.integer && client && client->pers.isJAPRO)
 #else
 	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_LEGDANGLE)) // Loda fixme, maybe give clients option to choose? idk why they would want to..
 #endif

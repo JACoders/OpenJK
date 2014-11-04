@@ -138,7 +138,7 @@ static void CVU_TweakWeapons(void) {
 }
 
 static void CVU_LegDangle(void) {
-	g_LegDangle.integer ?
+	!g_LegDangle.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_LEGDANGLE) : (jcinfo.integer &= ~JAPRO_CINFO_LEGDANGLE);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }

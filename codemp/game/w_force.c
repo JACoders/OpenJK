@@ -1069,6 +1069,7 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 		duration = overrideAmt;
 		overrideAmt = 0;
 		self->client->ps.fd.forcePowersActive |= ( 1 << forcePower );
+		self->client->ps.fd.forceDrainTime = level.time;
 		//self->client->ps.activeForcePass = self->client->ps.fd.forcePowerLevel[FP_DRAIN];
 		break;
 	case FP_SEE:
@@ -1274,15 +1275,15 @@ void ForceTeamHeal( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		healthadd = 50;
+		healthadd = 50 * g_forceTeamHealScale.value;
 	}
 	else if (numpl == 2)
 	{
-		healthadd = 33;
+		healthadd = 33 * g_forceTeamHealScale.value;
 	}
 	else
 	{
-		healthadd = 25;
+		healthadd = 25 * g_forceTeamHealScale.value;
 	}
 
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_HEAL] = level.time + 2000;
@@ -1379,15 +1380,15 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		poweradd = 50;
+		poweradd = 50 * g_forceTeamEnergizeScale.value;
 	}
 	else if (numpl == 2)
 	{
-		poweradd = 33;
+		poweradd = 33 * g_forceTeamEnergizeScale.value;
 	}
 	else
 	{
-		poweradd = 25;
+		poweradd = 25 * g_forceTeamEnergizeScale.value;
 	}
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_FORCE] = level.time + 2000;
 
@@ -1999,7 +2000,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
-		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && self->client->ps.fd.forceDrainTime < level.time && traceEnt->client->ps.fd.forcePower )
+		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && /*self->client->ps.fd.forceDrainTime < level.time &&*/ traceEnt->client->ps.fd.forcePower )
 		{//an enemy or object
 			if (!traceEnt->client && traceEnt->s.eType == ET_NPC)
 			{ //g2animent

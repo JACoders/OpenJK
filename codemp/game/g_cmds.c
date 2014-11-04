@@ -6937,7 +6937,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage^3: ^2%s\n", (d_saberSPStyleDamage.integer) ? "SP" : "MP"));
 	if (d_saberSPStyleDamage.integer != g_saberDuelSPDamage.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in saber duels^3: ^2%s\n", (g_saberDuelSPDamage.integer) ? "SP" : "MP"));
-	if (d_saberSPStyleDamage.integer != g_forceDuelSPDamage.integer)
+	if ((d_saberSPStyleDamage.integer != g_forceDuelSPDamage.integer) && (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype < GT_TEAM))
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in force duels^3: ^2%s\n", (g_forceDuelSPDamage.integer) ? "SP" : "MP"));
 	if (!d_saberGhoul2Collision.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for lightsabers\n");
@@ -7086,6 +7086,12 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Floodprotected flipkick\n");
 	else if (g_flipKick.integer > 2)
 		Q_strcat(buf, sizeof(buf), "   ^5Flipkick enabled with JK2 style\n");
+	if (g_nonRandomKnockdown.integer == 1)
+		Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flipkick knockdowns\n");
+	else if (g_nonRandomKnockdown.integer == 2)
+		Q_strcat(buf, sizeof(buf), "   ^5Flipkick knockdown randomness has less variance\n");
+	if (g_nonRandomKnockdown.integer > 2)
+		Q_strcat(buf, sizeof(buf), "   ^5No flipkick knockdowns\n");
 	if (g_fixHighFPSAbuse.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed physics changed due to high FPS\n");
 	if (g_fixSlidePhysics.integer == 1)
@@ -7121,12 +7127,18 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Knocked down players are affected by push/pull\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)
 			Q_strcat(buf, sizeof(buf), "   ^5Lag compensation for force push/pull\n");
-		if (level.gametype >= GT_TEAM && g_fixTeamAbsorb.integer)
-			Q_strcat(buf, sizeof(buf), "   ^5Absorb does not give forcepoints if attacker is on same team\n");
 		if (g_fixGripAbsorb.integer)
 			Q_strcat(buf, sizeof(buf), "   ^5Force absorb does not gain forcepoints from grip\n");
 		if (g_jk2Grip.integer)
 			Q_strcat(buf, sizeof(buf), "   ^5JK2 1.02 style grip\n");
+		if (level.gametype >= GT_TEAM) {
+			if (g_fixTeamAbsorb.integer)
+				Q_strcat(buf, sizeof(buf), "   ^5Absorb does not give forcepoints if attacker is on same team\n");
+			if (g_forceTeamHealScale.value != 1.0f)
+				Q_strcat(buf, sizeof(buf), va("   ^5Team heal scale: ^2%.2f\n", g_forceTeamHealScale.value));
+			if (g_forceTeamEnergizeScale.value != 1.0f)
+				Q_strcat(buf, sizeof(buf), va("   ^5Team energize scale: ^2%.2f\n", g_forceTeamEnergizeScale.value));
+		}
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}
 	buf[0] = '\0';

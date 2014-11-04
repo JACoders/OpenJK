@@ -983,6 +983,7 @@ struct gclient_s {
 	int			csTimeLeft;						// JAPRO - Time left for client's CenterScreen
 	int			pmoveMsec;//Japro timers
 	int			lastBounceTime; //japro bounce trigger
+	int			noKnockdownStreak; //pseudo random knockdowns option
 	vec3_t		lastVelocity;
 
 	//Testunlagged
