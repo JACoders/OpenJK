@@ -7092,7 +7092,9 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Flipkick knockdown randomness has less variance\n");
 	else if (g_nonRandomKnockdown.integer == 3)
 		Q_strcat(buf, sizeof(buf), "   ^5Flipkick knockdown based on viewangle\n");
-	else if (g_nonRandomKnockdown.integer > 3)
+	else if (g_nonRandomKnockdown.integer == 4)
+		Q_strcat(buf, sizeof(buf), "   ^5Flipkick knockdown based on viewangle and random chance\n");
+	else if (g_nonRandomKnockdown.integer > 4)
 		Q_strcat(buf, sizeof(buf), "   ^5No flipkick knockdowns\n");
 	if (g_fixHighFPSAbuse.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed physics changed due to high FPS\n");

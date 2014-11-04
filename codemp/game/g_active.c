@@ -4362,7 +4362,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 						if (BG_KnockDownable(&faceKicked->client->ps)) {
 							if (g_nonRandomKnockdown.integer < 1) { //Default, random knockdowns
-								if (Q_irand(1, 10) <= 3){
+								if (Q_irand(1, 10) <= 3) {
 									faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 									faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
 									faceKicked->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
@@ -4402,6 +4402,8 @@ void ClientThink_real( gentity_t *ent ) {
 									vec3_t diffOrigin;
 									float diffAngle;
 
+									//this sortof breaks getting sidekicked in that kickbomb gk.. maybe only have it knockdown if diffOrigin[pitch] is small or something.
+
 									VectorSubtract(ent->client->ps.origin, faceKicked->client->ps.origin, diffOrigin);
 									vectoangles(diffOrigin, diffOrigin);
 									diffAngle = fabs(AngleDelta(faceKicked->client->ps.viewangles[YAW], diffOrigin[YAW]));
@@ -4416,8 +4418,28 @@ void ClientThink_real( gentity_t *ent ) {
 										faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
 										faceKicked->client->ps.forceDodgeAnim = 0;
 									}
-								}
-							else if (g_nonRandomKnockdown.integer > 3) { //no KDs
+							}
+							else if (g_nonRandomKnockdown.integer == 4) {
+									vec3_t diffOrigin;
+									float diffAngle;
+
+									//this sortof breaks getting sidekicked in that kickbomb gk.. maybe only have it knockdown if diffOrigin[pitch] is small or something.
+
+									VectorSubtract(ent->client->ps.origin, faceKicked->client->ps.origin, diffOrigin);
+									vectoangles(diffOrigin, diffOrigin);
+									diffAngle = fabs(AngleDelta(faceKicked->client->ps.viewangles[YAW], diffOrigin[YAW]));
+
+									//debug
+									trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+									trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+
+									if (Q_irand(1, 180) <= diffAngle) { //0 percent chance of KD aimed directly at them, 100 percent aimed completely away... whatever
+										faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+										faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
+										faceKicked->client->ps.forceDodgeAnim = 0; 
+									}
+							}
+							else if (g_nonRandomKnockdown.integer > 4) { //no KDs
 							}						
 						}
 
