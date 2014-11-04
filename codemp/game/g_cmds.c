@@ -7132,12 +7132,12 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		if (g_jk2Grip.integer)
 			Q_strcat(buf, sizeof(buf), "   ^5JK2 1.02 style grip\n");
 		if (level.gametype >= GT_TEAM) {
-			if (g_fixTeamAbsorb.integer)
-				Q_strcat(buf, sizeof(buf), "   ^5Absorb does not give forcepoints if attacker is on same team\n");
-			if (g_forceTeamHealScale.value != 1.0f)
-				Q_strcat(buf, sizeof(buf), va("   ^5Team heal scale: ^2%.2f\n", g_forceTeamHealScale.value));
-			if (g_forceTeamEnergizeScale.value != 1.0f)
-				Q_strcat(buf, sizeof(buf), va("   ^5Team energize scale: ^2%.2f\n", g_forceTeamEnergizeScale.value));
+			if (g_teamAbsorbScale.value != 1.0f)
+				Q_strcat(buf, sizeof(buf), va("   ^5Absorb team scale: ^2%.2f\n", g_teamAbsorbScale.value));
+			if (g_teamHealScale.value != 1.0f)
+				Q_strcat(buf, sizeof(buf), va("   ^5Team heal scale: ^2%.2f\n", g_teamHealScale.value));
+			if (g_teamEnergizeScale.value != 1.0f)
+				Q_strcat(buf, sizeof(buf), va("   ^5Team energize scale: ^2%.2f\n", g_teamEnergizeScale.value));
 		}
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}

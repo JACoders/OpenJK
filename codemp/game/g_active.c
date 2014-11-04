@@ -4368,7 +4368,7 @@ void ClientThink_real( gentity_t *ent ) {
 									faceKicked->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 								}
 							}
-							if (g_nonRandomKnockdown.integer == 1) { //forceDrainTime was unused technically, so hijack it for this.  forceHealTime is not accurate, its already 1000 ahead 
+							else if (g_nonRandomKnockdown.integer == 1) { //forceDrainTime was unused technically, so hijack it for this.  forceHealTime is not accurate, its already 1000 ahead 
 								if ((faceKicked->client->ps.fd.forceDrainTime > level.time - 2000) || (faceKicked->client->ps.fd.forceHealTime > level.time - 1000)) { //drained/ healed recently?? Fixme
 									faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 									faceKicked->client->ps.forceHandExtendTime = level.time + 1100;

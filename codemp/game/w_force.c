@@ -872,8 +872,8 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 
 	if (addTot < 1 && atForceSpent >= 1)
 		addTot = 1;
-	if (g_fixTeamAbsorb.integer && OnSameTeam(attacked, attacker))
-		addTot = 0;
+	if (OnSameTeam(attacked, attacker))
+		addTot *= g_teamAbsorbScale.value;
 
 	attacked->client->ps.fd.forcePower += addTot;
 	if (attacked->client->ps.fd.forcePower > attacked->client->ps.fd.forcePowerMax)
@@ -1275,15 +1275,15 @@ void ForceTeamHeal( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		healthadd = 50 * g_forceTeamHealScale.value;
+		healthadd = 50 * g_teamHealScale.value;
 	}
 	else if (numpl == 2)
 	{
-		healthadd = 33 * g_forceTeamHealScale.value;
+		healthadd = 33 * g_teamHealScale.value;
 	}
 	else
 	{
-		healthadd = 25 * g_forceTeamHealScale.value;
+		healthadd = 25 * g_teamHealScale.value;
 	}
 
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_HEAL] = level.time + 2000;
@@ -1380,15 +1380,15 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 	if (numpl == 1)
 	{
-		poweradd = 50 * g_forceTeamEnergizeScale.value;
+		poweradd = 50 * g_teamEnergizeScale.value;
 	}
 	else if (numpl == 2)
 	{
-		poweradd = 33 * g_forceTeamEnergizeScale.value;
+		poweradd = 33 * g_teamEnergizeScale.value;
 	}
 	else
 	{
-		poweradd = 25 * g_forceTeamEnergizeScale.value;
+		poweradd = 25 * g_teamEnergizeScale.value;
 	}
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_FORCE] = level.time + 2000;
 
