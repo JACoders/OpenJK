@@ -238,7 +238,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	}
 
 	if (player->client->pers.raceMode) {
-		player->client->ps.powerups[PW_YSALAMIRI] = 0; //Whatever.. can abuse some courses maybe without this..
+		//player->client->ps.powerups[PW_YSALAMIRI] = 0; //Fuck
 		if (player->client->pers.movementStyle == 7 || player->client->pers.movementStyle == 8) //Get rid of their rockets when they tele/noclip..?
 			DeletePlayerProjectiles(player);
 	}

@@ -4398,7 +4398,26 @@ void ClientThink_real( gentity_t *ent ) {
 								else
 									faceKicked->client->noKnockdownStreak++;
 							}
-							else if (g_nonRandomKnockdown.integer > 2) { //no KDs
+							else if (g_nonRandomKnockdown.integer == 3) {
+									vec3_t diffOrigin;
+									float diffAngle;
+
+									VectorSubtract(ent->client->ps.origin, faceKicked->client->ps.origin, diffOrigin);
+									vectoangles(diffOrigin, diffOrigin);
+									diffAngle = fabs(AngleDelta(faceKicked->client->ps.viewangles[YAW], diffOrigin[YAW]));
+
+									//debug
+									trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+									trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+
+									//Higher diffangle = Higher chance of KD.. or..?
+									if (diffAngle > 60.0f) {
+										faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+										faceKicked->client->ps.forceHandExtendTime = level.time + 1100;
+										faceKicked->client->ps.forceDodgeAnim = 0;
+									}
+								}
+							else if (g_nonRandomKnockdown.integer > 3) { //no KDs
 							}						
 						}
 
