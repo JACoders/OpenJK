@@ -9478,6 +9478,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 			return 0; //Dont block if attacker style is equal or greater than ours
 	}
 	//end
+	//Here if their attack is weaker than our style
 
 	if (self->client->ps.saberMove != LS_READY && !self->client->ps.saberBlocking)
 		return 0;

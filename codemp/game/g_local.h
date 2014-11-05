@@ -635,7 +635,8 @@ typedef struct {//JAPRO - Serverside - Stats
 	int topSpeed;
 	int lastCheckpointTime;//For checkpoint floodprotect
 
-
+	int	teamHealGiven;
+	int	teamEnergizeGiven;
 } stats_t;
 
 // client data that stays across multiple respawns, but is cleared

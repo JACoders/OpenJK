@@ -1963,7 +1963,7 @@ void PrintStats(int gametype) //JAPRO STATS
 {
 	int			i;
 	char		msg[1024-128] = {0};
-	qboolean	showAccuracy = qtrue;
+	qboolean	showAccuracy = qtrue, showTeamPowers = qtrue;
 	gclient_t	*cl;
 
 	if (gametype != GT_CTF && gametype != GT_TEAM)
@@ -1972,13 +1972,24 @@ void PrintStats(int gametype) //JAPRO STATS
 	if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))
 		showAccuracy = qfalse;
 
+	if ((g_forcePowerDisable.integer & (1<<FP_TEAM_HEAL)) && (g_forcePowerDisable.integer & (1<<FP_TEAM_FORCE))) //TE and TH are disabled
+		showTeamPowers = qfalse;
+
 	trap->SendServerCommand(-1, "print \"\n\"");
 
 	if (gametype == GT_TEAM) {//tffa
-		if (showAccuracy)//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Deaths   Suicides   Teamkills   Net   Accuracy   Name^7\n" );
-		else
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Deaths   Suicides   Teamkills   Net   Name^7\n" );
+		if (showAccuracy) {
+			if (showTeamPowers)
+				Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   THeal  TEnergize   Kills   Deaths   Suicides   TK   Net   Accuracy   Name^7\n" );
+			else
+				Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   Kills   Deaths   Suicides   TK   Net   Accuracy   Name^7\n" );
+		}
+		else {
+			if (showTeamPowers)
+				Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   THeal   TEnergize   Kills   Deaths   Suicides   TK   Net   Name^7\n" );
+			else
+				Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   Kills   Deaths   Suicides   TK   Net   Name^7\n" );
+		}
 	}
 	else {//ctf
 		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
@@ -2001,6 +2012,8 @@ void PrintStats(int gametype) //JAPRO STATS
 			char strDT[32] = {0};
 			char strDN[32] = {0};
 			char strDPD[32] = {0};
+			char strTH[32] = {0};
+			char strTE[32] = {0};
 			char strKills[32] = {0};
 			char accuracyStr[32] = {0};
 			float accuracy = 0;
@@ -2020,6 +2033,8 @@ void PrintStats(int gametype) //JAPRO STATS
 			}
 			else
 				Com_sprintf(strDPD, sizeof(strDPD), "%i", cl->pers.stats.damageGiven); //suicides?
+			Com_sprintf(strTH, sizeof(strTH), "%i", cl->pers.stats.teamHealGiven);
+			Com_sprintf(strTE, sizeof(strTE), "%i", cl->pers.stats.teamEnergizeGiven);
 
 			if (gametype == GT_TEAM) {
 				char strDeaths[32] = {0};
@@ -2033,10 +2048,17 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strSuicides, sizeof(strSuicides), "%i", cl->ps.fd.suicides);
 				Com_sprintf(strTK, sizeof(strTK), "%i", cl->pers.stats.teamKills);
 				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
-				if (showAccuracy)//Weps disabled?
-					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-9s%-11s%-12s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+				if (showAccuracy) {//Weps disabled?
+					if (showTeamPowers)
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-6s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+					else
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+				}
 				else {
-					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-9s%-11s%-12s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+					if (showTeamPowers)
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-6s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+					else
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}
 			}
 			else {
@@ -2049,9 +2071,9 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
 				if (showAccuracy)
-					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-12s%-10s%-16s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
+					tmpMsg = va( "%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
 				else {
-					tmpMsg = va( "%-15s%-15s%-13s%-12s%-8s%-12s%-10s%-16s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName);
+					tmpMsg = va( "%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName); //fixme, align this sometime
 				}
 			}
 

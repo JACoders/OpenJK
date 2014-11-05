@@ -1314,6 +1314,8 @@ void ForceTeamHeal( gentity_t *self )
 
 			WP_AddToClientBitflags(te, pl[i]);
 			//Now cramming it all into one event.. doing this many g_sound events at once was a Bad Thing.
+
+			self->client->pers.stats.teamHealGiven += healthadd;
 		}
 		i++;
 	}
@@ -1413,6 +1415,8 @@ void ForceTeamForceReplenish( gentity_t *self )
 
 		WP_AddToClientBitflags(te, pl[i]);
 		//Now cramming it all into one event.. doing this many g_sound events at once was a Bad Thing.
+
+		self->client->pers.stats.teamEnergizeGiven += poweradd;
 		
 		i++;
 	}
