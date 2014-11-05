@@ -4619,7 +4619,7 @@ static int PM_CorrectAllSolid( trace_t *trace ) {
 				if ( !trace->allsolid ) {
 					point[0] = pm->ps->origin[0];
 					point[1] = pm->ps->origin[1];
-					point[2] = pm->ps->origin[2] - 0.25;
+					point[2] = pm->ps->origin[2] - 0.25; //This causes nospeed ramps? guess not..
 
 					pm->trace (trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, pm->tracemask);
 					pml.groundTrace = *trace;
@@ -4839,6 +4839,21 @@ static void PM_GroundTrace( void ) {
 		// just hit the ground
 		if ( pm->debugLevel ) {
 			Com_Printf("%i:Land\n", c_pmove);
+		}
+
+		//trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
+		//trap->SendServerCommand( -1, va("cp \"Previous Z Vel: %f\nCurrent Z Vel: %f\"", pml.previous_velocity[2], pm->ps->velocity[2]));
+
+		//When we land, if our Z velocity is unusually low, its probably going to result in a nospeeded ramp
+		//If we compare our previous z velocity to our current z velocity, if they are close very, it probably messed up somehow..
+		//Since they should be very different since we just hit the ground.
+		//So if they are very close, its probably a missed ramp somehow.. so redo the clipvelocity thing here :/
+		//Ideally this could be debugged further back and fixed at the source of the problem..
+
+		if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->velocity[2]) < 0 && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
+			//trap->SendServerCommand( -1, "chat \"nospeed ramp fixed!\"");
+			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //sad hack
+
 		}
 		
 		PM_CrashLand();

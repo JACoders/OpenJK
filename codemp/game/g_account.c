@@ -845,7 +845,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 		return;
 	}
 
-	if ((count > 0) && lastip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
+	if ((count > 0) && lastip && ip && (lastip != ip)) { //IF lastip already tied to account, and lastIP (of attempted login username) does not match current IP, deny.?
 		trap->SendServerCommand(ent-g_entities, "print \"Your IP address already belongs to an account. You are only allowed one account.\n\"");
 		CALL_SQLITE (close(db));
 		return;
@@ -870,6 +870,9 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 		Q_strncpyz(ent->client->pers.userName, username, sizeof(ent->client->pers.userName));
 		trap->SendServerCommand(ent-g_entities, "print \"Login sucessful.\n\"");
+
+		if (!ip) //meh
+			ip = lastip;
 
 		sql = "UPDATE LocalAccount SET lastip = ?, lastlogin = ? WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));

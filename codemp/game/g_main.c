@@ -2050,13 +2050,13 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
 				if (showAccuracy) {//Weps disabled?
 					if (showTeamPowers)
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-6s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 					else
 						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 				}
 				else {
 					if (showTeamPowers)
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-6s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 					else
 						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}
