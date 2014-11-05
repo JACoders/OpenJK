@@ -4409,8 +4409,8 @@ void ClientThink_real( gentity_t *ent ) {
 									diffAngle = fabs(AngleDelta(faceKicked->client->ps.viewangles[YAW], diffOrigin[YAW]));
 
 									//debug
-									trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
-									trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+									//trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
+									//trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngle));
 
 									//Higher diffangle = Higher chance of KD.. or..?
 									if (diffAngle > 60.0f) {
@@ -4431,12 +4431,23 @@ void ClientThink_real( gentity_t *ent ) {
 
 									anglePitch = AngleNormalize180(diffOrigin[PITCH]); //maybe?
 
-									pitchScale = anglePitch / 90.0f;
+									
+									pitchScale = fabs(anglePitch / 90.0f);
+									//pitchScale *= pitchScale;
+
+									if (pitchScale < 0.9) //bit of a sad hack to stop headkicks from doing knockdown so much since they dont really have any yaw component, but also not giving advantage to fast doubletap scripts
+										pitchScale = 0;
+
+
+									//trap->Print("anglepitch: %.2f, pitchscale: %.1f, new pitchscale: %.1f", anglePitch, pitchScale, 1 - pitchScale);
+
 									pitchScale = 1 - pitchScale;
 
+							
+
 									//debug
-									trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f, pitch: %.1f, chance: %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngleYaw, anglePitch, (diffAngleYaw / 180) * pitchScale * 100));
-									trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f, pitch: %.1f, chance: %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngleYaw, anglePitch, (diffAngleYaw / 180) * pitchScale * 100));
+									//trap->SendServerCommand( ent-g_entities, va("cp \"Kick angle (given): %.1f, chance: %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngleYaw, (diffAngleYaw / 180.0f) * pitchScale * 100.0f));
+									//trap->SendServerCommand( faceKicked-g_entities, va("cp \"Kick angle (recieved): %.1f, chance: %.1f\n\n\n\n\n\n\n\n\n\n\n\n\"", diffAngleYaw, (diffAngleYaw / 180.0f) * pitchScale * 100.0f));
 
 									if (Q_irand(1, 180) <= (diffAngleYaw * pitchScale)) { //0 percent chance of KD aimed directly at them, 100 percent aimed completely away... whatever
 										faceKicked->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
