@@ -1042,7 +1042,9 @@ static qboolean CG_WeaponSelectable( int i ) {
 		return qfalse;
 	}
 
-	if (cg.predictedPlayerState.ammo[weaponData[i].ammoIndex] < weaponData[i].energyPerShot &&
+	// zyk: if autoswitch is 0, allow player do get any weapon even if out of ammo
+	if (cg_autoSwitch.integer != 0 && 
+		cg.predictedPlayerState.ammo[weaponData[i].ammoIndex] < weaponData[i].energyPerShot &&
 		cg.predictedPlayerState.ammo[weaponData[i].ammoIndex] < weaponData[i].altEnergyPerShot)
 	{
 		return qfalse;
@@ -1742,6 +1744,10 @@ The current weapon has just run out of ammo
 void CG_OutOfAmmoChange( int oldWeapon )
 {
 	int		i;
+
+	// zyk: if autoswitch is 0, allow player do get any weapon even if out of ammo
+	if (cg_autoSwitch.integer == 0)
+		return;
 
 	cg.weaponSelectTime = cg.time;
 

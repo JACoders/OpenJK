@@ -7473,12 +7473,14 @@ static void PM_Weapon( void )
 				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot)
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
 			  //regardless of if the player is attacking or not
+				/* zyk: now player can continue with the same weapon even if it has no ammo
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
 
 				if (pm->ps->weaponTime < 500)
 				{
 					pm->ps->weaponTime += 500;
 				}
+				*/
 				return;
 			}
 
@@ -7919,10 +7921,13 @@ static void PM_Weapon( void )
 			// Switch weapons
 			if (pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted)
 			{
-				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
-				if (pm->ps->weaponTime < 500)
-				{
-					pm->ps->weaponTime += 500;
+				if (pm->ps->weapon == WP_DET_PACK)
+				{ // zyk: now player can continue with the same weapon even if it has no ammo
+					PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
+					if (pm->ps->weaponTime < 500)
+					{
+						pm->ps->weaponTime += 500;
+					}
 				}
 			}
 			return;
