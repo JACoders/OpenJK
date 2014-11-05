@@ -4851,7 +4851,20 @@ static void PM_GroundTrace( void ) {
 		//Ideally this could be debugged further back and fixed at the source of the problem..
 
 		if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
-			//trap->SendServerCommand( -1, "chat \"nospeed ramp fixed!\"");
+#ifdef _GAME
+			{
+				int i;
+				gentity_t *specEnt = (gentity_t *)pm_entSelf;
+
+				trap->SendServerCommand( pm->ps->clientNum, "chat \"nospeed ramp corrected!\"");
+				for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+					if (!g_entities[i].inuse)
+						continue;
+					if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
+						trap->SendServerCommand(i, "chat \"nospeed ramp corrected!\"");
+				}
+			}
+#endif
 			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
 		}
 		
