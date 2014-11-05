@@ -4850,10 +4850,9 @@ static void PM_GroundTrace( void ) {
 		//So if they are very close, its probably a missed ramp somehow.. so redo the clipvelocity thing here :/
 		//Ideally this could be debugged further back and fixed at the source of the problem..
 
-		if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->velocity[2]) < 0 && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
+		if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
 			//trap->SendServerCommand( -1, "chat \"nospeed ramp fixed!\"");
-			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //sad hack
-
+			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
 		}
 		
 		PM_CrashLand();
