@@ -4876,7 +4876,7 @@ static void PM_GroundTrace( void ) {
 				else {
 					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
 				}
-				/*
+				
 #ifdef _GAME
 				{
 					int i;
@@ -4891,7 +4891,7 @@ static void PM_GroundTrace( void ) {
 					}
 				}			
 #endif
-				*/
+				
 
 			}
 
