@@ -4841,7 +4841,7 @@ static void PM_GroundTrace( void ) {
 			Com_Printf("%i:Land\n", c_pmove);
 		}
 
-		trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
+		//trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
 		//trap->SendServerCommand( -1, va("cp \"Previous Z Vel: %f\nCurrent Z Vel: %f\"", pml.previous_velocity[2], pm->ps->velocity[2]));
 
 		//When we land, if our Z velocity is unusually low, its probably going to result in a nospeeded ramp
@@ -4856,7 +4856,47 @@ static void PM_GroundTrace( void ) {
 		//Seems like a better solution
 
 		if (trace.plane.normal[0] != 0.0f || trace.plane.normal[1] != 0.0f || trace.plane.normal[2] != 1.0f) { //Its actually a ramp
-			if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
+			if (pm->ps->stats[STAT_RACEMODE] && !pml.clipped) {
+				if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Only change our xy speed if we hit a downramp in wsw
+					vec3_t oldVel, clipped_velocity, newVel;
+					float oldSpeed, newSpeed;
+
+					VectorCopy(pm->ps->velocity, oldVel);
+					oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
+
+					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+
+					VectorCopy(clipped_velocity, newVel);
+					newVel[2] = 0;
+					newSpeed = newVel[0] * newVel[0] + newVel[1] * newVel[1]; 
+
+					if (newSpeed > oldSpeed)
+						VectorCopy(clipped_velocity, pm->ps->velocity);
+				}
+				else {
+					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+				}
+				/*
+#ifdef _GAME
+				{
+					int i;
+					gentity_t *specEnt = (gentity_t *)pm_entSelf;
+
+					trap->SendServerCommand( pm->ps->clientNum, "chat \"^0nospeed ramp fixed!\"");
+					for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+						if (!g_entities[i].inuse)
+							continue;
+						if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
+							trap->SendServerCommand(i, "chat \"^0nospeed ramp fixed!\"");
+					}
+				}			
+#endif
+				*/
+
+			}
+
+#if 0
+			//if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
 				/*
 #ifdef _GAME
 				{
@@ -4873,8 +4913,9 @@ static void PM_GroundTrace( void ) {
 				}
 #endif
 				*/
-				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
-			}
+				//PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+			//}
+#endif
 		}
 		
 		PM_CrashLand();

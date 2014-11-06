@@ -1060,6 +1060,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 					else {
 						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
 					}
+					pml.clipped = qtrue; //nospeed ramp fix
 				}
 			}
 		}
@@ -1094,6 +1095,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 			else {
 				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
 			}
+			pml.clipped = qtrue; //nospeed ramp fix
 		}
 	}
 
