@@ -903,7 +903,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 	}
 
 	if ( PM_SlideMove( gravity ) == 0 ) {
-		return;		// we got exactly where we wanted to go first try	
+		return;		// we got exactly where we wanted to go first try, nospeed ramp returns here maybe	
 	}
 
 	pEnt = pm_entSelf;
@@ -964,7 +964,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 		if ( pm->debugLevel ) {
 			Com_Printf("%i:bend can't step\n", c_pmove);
 		}
-		return;		// can't step up
+		return;		// can't step up, nospeed ramp returns here maybe
 	}
 
 	stepSize = trace.endpos[2] - start_o[2];
@@ -973,6 +973,8 @@ void PM_StepSlideMove( qboolean gravity ) {
 	VectorCopy (start_v, pm->ps->velocity);
 
 	PM_SlideMove( gravity );
+
+	pml.clipped = qtrue; //nospeed ramp fix, if we made it to this point there wont be a nospeed ramp
 
 	// push down the final amount
 	VectorCopy (pm->ps->origin, down);
@@ -1060,7 +1062,6 @@ void PM_StepSlideMove( qboolean gravity ) {
 					else {
 						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
 					}
-					pml.clipped = qtrue; //nospeed ramp fix
 				}
 			}
 		}
@@ -1095,7 +1096,6 @@ void PM_StepSlideMove( qboolean gravity ) {
 			else {
 				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
 			}
-			pml.clipped = qtrue; //nospeed ramp fix
 		}
 	}
 

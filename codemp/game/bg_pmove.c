@@ -4892,7 +4892,6 @@ static void PM_GroundTrace( void ) {
 				}			
 #endif
 				
-
 			}
 
 #if 0
