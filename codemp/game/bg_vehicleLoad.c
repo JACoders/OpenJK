@@ -1400,8 +1400,15 @@ void BG_VehicleLoadParms( void )
 }
 
 int BG_VehicleGetIndex( const char *vehicleName )
-{
-	return (VEH_VehicleIndexForName( vehicleName ));
+{ // zyk: changed this code. If client-side, gets a vehicle index of a base jka vehicle so player does not get kicked from server
+	int vehIndex = VEH_VehicleIndexForName( vehicleName );
+
+#if defined( _CGAME )
+	if (vehIndex == VEHICLE_NONE)
+		vehIndex = VEH_VehicleIndexForName( "swoop_mp" );
+#endif
+
+	return vehIndex;
 }
 
 //We get the vehicle name passed in as modelname
