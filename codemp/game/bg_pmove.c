@@ -4841,7 +4841,7 @@ static void PM_GroundTrace( void ) {
 			Com_Printf("%i:Land\n", c_pmove);
 		}
 
-		//trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
+		trap->SendServerCommand( -1, va("cp \"Steep landed with z vel: %f\nnormal: %f, %f, %f\n\"", pm->ps->velocity[2], trace.plane.normal[0], trace.plane.normal[1], trace.plane.normal[2] ));
 		//trap->SendServerCommand( -1, va("cp \"Previous Z Vel: %f\nCurrent Z Vel: %f\"", pml.previous_velocity[2], pm->ps->velocity[2]));
 
 		//When we land, if our Z velocity is unusually low, its probably going to result in a nospeeded ramp
@@ -4850,22 +4850,31 @@ static void PM_GroundTrace( void ) {
 		//So if they are very close, its probably a missed ramp somehow.. so redo the clipvelocity thing here :/
 		//Ideally this could be debugged further back and fixed at the source of the problem..
 
-		if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
-#ifdef _GAME
-			{
-				int i;
-				gentity_t *specEnt = (gentity_t *)pm_entSelf;
+		//Have a pmove var "clipped" , set it to qfalse at start of every frame.
+		//When clipvelocity is called near "wsw rampjump", set clipped to qtrue.
+		//Right here, if clipped is qfalse, do a clipvelocity ?
+		//Seems like a better solution
 
-				trap->SendServerCommand( pm->ps->clientNum, "chat \"nospeed ramp corrected!\"");
-				for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
-					if (!g_entities[i].inuse)
-						continue;
-					if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
-						trap->SendServerCommand(i, "chat \"nospeed ramp corrected!\"");
+		if (trace.plane.normal[0] != 0.0f || trace.plane.normal[1] != 0.0f || trace.plane.normal[2] != 1.0f) { //Its actually a ramp
+			if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 6) && (pm->ps->velocity[2] > (pml.previous_velocity[2] * 1.05f)) && (pm->ps->velocity[2] < (pml.previous_velocity[2] / 1.05f))) {
+				/*
+#ifdef _GAME
+				{
+					int i;
+					gentity_t *specEnt = (gentity_t *)pm_entSelf;
+
+					trap->SendServerCommand( pm->ps->clientNum, "chat \"nospeed ramp corrected!\"");
+					for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
+						if (!g_entities[i].inuse)
+							continue;
+						if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == specEnt->client->ps.clientNum))
+							trap->SendServerCommand(i, "chat \"nospeed ramp corrected!\"");
+					}
 				}
-			}
 #endif
-			PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+				*/
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
+			}
 		}
 		
 		PM_CrashLand();
