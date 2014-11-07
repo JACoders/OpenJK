@@ -644,6 +644,9 @@ typedef struct {//JAPRO - Serverside - Stats
 typedef struct clientPersistant_s {
 	clientConnected_t	connected;	
 	usercmd_t	cmd;				// we would lose angles if not persistant
+
+	usercmd_t	lastCmd;			//eh
+
 	qboolean	localClient;		// true if "ip" info key is "localhost"
 	qboolean	initialSpawn;		// the first spawn should be at a cool location
 	qboolean	predictItemPickup;	// based on cg_predictItems userinfo

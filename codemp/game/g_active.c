@@ -4663,13 +4663,24 @@ void G_RunClient( gentity_t *ent ) {
 
 		// fill with seemingly valid data
 		ent->client->pers.cmd.serverTime = level.time;
-		ent->client->pers.cmd.buttons = 0;
-		ent->client->pers.cmd.forwardmove = ent->client->pers.cmd.rightmove = ent->client->pers.cmd.upmove = 0;
+
+		//ent->client->pers.cmd.buttons = 0;
+		//ent->client->pers.cmd.forwardmove = ent->client->pers.cmd.rightmove = ent->client->pers.cmd.upmove = 0;
+
+		ent->client->pers.cmd.buttons = ent->client->pers.lastCmd.buttons;
+		ent->client->pers.cmd.forwardmove = ent->client->pers.lastCmd.forwardmove;
+		ent->client->pers.cmd.rightmove = ent->client->pers.lastCmd.rightmove;
+		ent->client->pers.cmd.upmove = ent->client->pers.lastCmd.upmove;
+	
+		//Get rid of deadstops caused by lag..apparently this was really annoying for some people with bad net
+		//Still fixes the problem of lagging through triggers, or freezing midair etc..
 
 		ClientThink_real( ent );
 		return;
 	}
-	
+
+
+	ent->client->pers.lastCmd = ent->client->pers.cmd;
 
 	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
 		return;
