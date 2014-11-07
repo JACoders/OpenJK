@@ -12459,7 +12459,7 @@ void PmoveSingle (pmove_t *pmove) {
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
 	if (pm->ps->pm_type == PM_NORMAL) {
-		if (blocks.roof && pm->ps->origin[2] > (blocks.roof + 128)) { //sad hack until blockwallcreate.. only racemode?
+		if (blocks.roof && pm->ps->origin[2] > (blocks.roof + 128) && (pm->ps->velocity[2] > -128)) { //sad hack until blockwallcreate.. only racemode?
 			pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
 			pm->ps->velocity[2] = -128;
 		}
