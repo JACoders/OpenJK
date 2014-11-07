@@ -4876,7 +4876,7 @@ static void PM_GroundTrace( void ) {
 				else {
 					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //Not sure why wsw is acting weird here.. so i guess no speed ramps will still be a thing in wsw style :/
 				}
-				
+/*				
 #ifdef _GAME
 				{
 					int i;
@@ -4891,7 +4891,7 @@ static void PM_GroundTrace( void ) {
 					}
 				}			
 #endif
-				
+*/			
 			}
 
 #if 0
@@ -12457,6 +12457,11 @@ void PmoveSingle (pmove_t *pmove) {
 
 	else if (pm->ps->stats[STAT_RACEMODE])
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
+
+	if (blocks.roof && pm->ps->origin[2] > blocks.roof && pm->ps->velocity[2] > 0) //sad hack until blockwallcreate.. only racemode?
+		pm->ps->velocity[2] = 0;
+	else if (blocks.floor && pm->ps->origin[2] < blocks.floor && pm->ps->velocity[2] < 0)
+		pm->ps->velocity[2] = 0;
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{

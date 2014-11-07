@@ -1082,6 +1082,15 @@ typedef struct Warp_s {
 Warp_t	warpList[64];
 //japro
 
+//japro
+typedef struct Blocks_s {
+	int				floor;
+	int				roof;
+} Blocks_t;
+
+Blocks_t	blocks;
+//japro
+
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 

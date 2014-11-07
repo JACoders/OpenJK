@@ -141,6 +141,7 @@ G_InitGame
 */
 void InitGameAccountStuff(void);
 void G_SpawnWarpLocationsFromCfg(void);
+void G_SpawnBlocksFromCfg(void);//sad hack until blockwallcreate
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
@@ -338,6 +339,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//setup the warp functionality, and database stuff - japro
 	G_SpawnWarpLocationsFromCfg();
+	G_SpawnBlocksFromCfg(); //sad hack until blockwallcreate
 	InitGameAccountStuff();
 
 	// general initialization
