@@ -12458,10 +12458,16 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (pm->ps->stats[STAT_RACEMODE])
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
-	if (blocks.roof && pm->ps->origin[2] > blocks.roof && pm->ps->velocity[2] > 0) //sad hack until blockwallcreate.. only racemode?
-		pm->ps->velocity[2] = 0;
-	else if (blocks.floor && pm->ps->origin[2] < blocks.floor && pm->ps->velocity[2] < 0)
-		pm->ps->velocity[2] = 0;
+	if (pm->ps->pm_type == PM_NORMAL) {
+		if (blocks.roof && pm->ps->origin[2] > (blocks.roof + 128)) { //sad hack until blockwallcreate.. only racemode?
+			pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
+			pm->ps->velocity[2] = -128;
+		}
+		else if (blocks.roof && pm->ps->origin[2] > blocks.roof && pm->ps->velocity[2] > 0) //sad hack until blockwallcreate.. only racemode?
+			pm->ps->velocity[2] = 0;
+		else if (blocks.floor && pm->ps->origin[2] < blocks.floor && pm->ps->velocity[2] < 0)
+			pm->ps->velocity[2] = 0;
+	}
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{
