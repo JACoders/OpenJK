@@ -4619,7 +4619,7 @@ static int PM_CorrectAllSolid( trace_t *trace ) {
 				if ( !trace->allsolid ) {
 					point[0] = pm->ps->origin[0];
 					point[1] = pm->ps->origin[1];
-					point[2] = pm->ps->origin[2] - 0.25; //This causes nospeed ramps? guess not..
+					point[2] = pm->ps->origin[2] - 0.25;
 
 					pm->trace (trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, pm->tracemask);
 					pml.groundTrace = *trace;

@@ -983,8 +983,6 @@ void PM_StepSlideMove( qboolean gravity ) {
 
 	if ( pm->stepSlideFix )
 	{
-		//trap->Print("Ayy lmeo\n");
-
 		if ( pm->ps->clientNum < MAX_CLIENTS
 			&& trace.plane.normal[2] < MIN_WALK_NORMAL )
 		{//normal players cannot step up slopes that are too steep to walk on!

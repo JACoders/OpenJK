@@ -1311,7 +1311,7 @@ void TeamplayInfoMessage( gentity_t *ent ) {
 		if (player->inuse && player->client->sess.sessionTeam == team ) {
 
 			h = player->client->ps.stats[STAT_HEALTH];
-			a = player->client->ps.stats[STAT_ARMOR];
+			a = player->client->ps.stats[STAT_ARMOR] * 100 + player->client->ps.fd.forcePower;
 			if (h < 0) h = 0;
 			if (a < 0) a = 0;
 
