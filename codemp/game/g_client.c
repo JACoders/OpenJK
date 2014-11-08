@@ -2566,8 +2566,19 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		if ( g_antiFakePlayer.integer )
 		{// patched, check for > g_maxConnPerIP connections from same IP
 			int count=0, i=0;
+			char strIP[NET_ADDRSTRMAXLEN] = {0}; //not sure man..
+			char *p = NULL;
+
 			for ( i=0; i<sv_maxclients.integer; i++ )
 			{
+
+				Q_strncpyz(strIP, tmpIP, sizeof(strIP));
+				p = strchr(strIP, ':');
+				if (p) //loda - fix ip sometimes not printing in amstatus?
+					*p = 0;
+
+
+				//trap->Print("Theirs: %s, ours: %s\n", strIP, level.clients[i].sess.IP);
 				#if 0
 					if ( level.clients[i].pers.connected != CON_DISCONNECTED && i != clientNum )
 					{
@@ -2581,13 +2592,14 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
+					if ( CompareIPs( strIP, level.clients[i].sess.IP ) )
 						count++;
 				#endif
 			}
-			if ( count > g_maxConnPerIP.integer )
+			if ( count > g_maxConnPerIP.integer ) //>= ?
 			{
 			//	client->pers.connected = CON_DISCONNECTED;
+				//trap->Print("Too may connections\n");
 				return "Too many connections from the same IP";
 			}
 		}
