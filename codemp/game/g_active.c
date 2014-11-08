@@ -2708,48 +2708,56 @@ void ClientThink_real( gentity_t *ent ) {
 //		trap->Print("serverTime >>>>>\n" );
 	} 
 
-//sad hack
+
 #if 0
-	if (g_antiWarp.integer && client->sess.sessionTeam != TEAM_SPECTATOR && client->pers.raceMode) {
-		const int clientLag = level.time - ucmd->serverTime - (level.time - level.previousTime) - client->ps.ping; //70.. ?.. is this not working?  DOES NOT MAKE ANY SENSE
-		const int warp = client->pers.lastClientLag - clientLag; //Positive for lurching forward..? .. Does not fucking matter how clientLag is calculated.. there still should be no warp.
+//
+	if (!isNPC && client && client->sess.sessionTeam == TEAM_FREE && client->pers.raceMode) {
+		//trap->Print("k: %i\n", client->pers.cmd.angles[YAW] - client->pers.lastCmd.angles[YAW]);
+		if ((client->pers.cmd.angles[YAW] != client->pers.lastCmd.angles[YAW])) { //Clients aim has changed this frame, so run the tests
+			const int delta = client->pers.cmd.angles[YAW] - client->pers.lastCmd.angles[YAW];
+			const int AIM_SAMPLES = 64;
+			int i, total = 0, average, varianceTotal = 0;
 
-		if (g_antiWarp.integer == 1) {
-			if ((warp > 40) || (warp < -40)) {
-				client->ps.velocity[0] = 0;
-				client->ps.velocity[1] = 0;
-				client->ps.velocity[2] = 0;
-				if (level.time - client->pers.warpMessageTime > 2000) {
-					client->pers.warpMessageTime = level.time;
-					trap->SendServerCommand(ent-g_entities, va("print \"Antiwarp cheatprotect: Your client warped %ims!\n\"", warp)); 
-				}
-			}
-		}
-		else {
-			if (clientLag > 30) {  
-				ucmd->serverTime = level.time - 30;
-				if (level.time - client->pers.warpMessageTime > 2000) {
-					client->pers.warpMessageTime = level.time;
-					trap->SendServerCommand(ent-g_entities, va("print \"Your client was too far behind by %ims!\n\"", clientLag)); 
-					//trap->SendServerCommand(ent-g_entities, va("print \"ClientLag: %ims, Ping: %i, Diff1: %i\n\"", clientLag, client->ps.ping, client->lastCmdTime - level.time)); 
-				}
-			}
-			else if (clientLag < -30)  {
-				ucmd->serverTime = level.time + 30; 
-				if (level.time - client->pers.warpMessageTime > 2000) {
-					client->pers.warpMessageTime = level.time;
-					trap->SendServerCommand(ent-g_entities, va("print \"Your client was too far ahead by %ims!\n\"", -clientLag)); 
+			if (delta < 6500 && delta > -6500) { //who knows
 
-					//trap->SendServerCommand(ent-g_entities, va("print \"ClientLag: %ims, Ping: %i, Diff1: %i\n\"", clientLag, client->ps.ping, client->lastCmdTime - level.time)); 
+				client->pers.aimSamples[client->pers.aimCount % AIM_SAMPLES] = delta; //fuckign broken thing
+				client->pers.aimCount++;
+
+				for (i=0; i<AIM_SAMPLES; i++) {
+					total += client->pers.aimSamples[i];
 				}
+
+				average = total / AIM_SAMPLES;
+
+				for (i=0; i<AIM_SAMPLES;i++) {
+					varianceTotal += (client->pers.aimSamples[i] - average) * (client->pers.aimSamples[i] - average);
+				}
+
+				if (varianceTotal < 500) {
+					trap->SendServerCommand( ent-g_entities, "chat \"Yawspeed detected\n\"");
+				}
+
+				trap->Print("Variance: %i, average: %i, delta %i\n", varianceTotal, average, delta);
+
 			}
+
+			//Sometimes change is +-61536.. why?
+
+			//Goal: Detect a change in sensitivity by analyzing delta history
+			//If the lowest factor of delta changes, the sensitivity has changed?  But it does not guarnetee to find every sens change..
+
+			//well, mouse accel completely fucks this over... hmm?
+
+
 		}
-		client->pers.lastClientLag = clientLag;		
+
+		client->pers.lastCmd = client->pers.cmd;
 	}
+
+
 #endif
-//sad hack end
 
-
+//
 
 
 	if (isNPC && (ucmd->serverTime - client->ps.commandTime) < 1)
@@ -4678,7 +4686,6 @@ void G_RunClient( gentity_t *ent ) {
 		ClientThink_real( ent );
 		return;
 	}
-
 
 	ent->client->pers.lastCmd = ent->client->pers.cmd;
 

@@ -4777,8 +4777,6 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qfalse;
 		if (otherOwner->client && otherOwner->client->ps.stats[STAT_RACEMODE])
 			return qfalse;
-		if (!SaberSPStyle(self) && WP_SaberCanBlockSwing(otherOwner->client->ps.fd.saberAnimLevel, attackStr)) //Skip block during swing maybe, only if MP dmgs are on ofc
-			return qfalse;
 
 		if ( otherOwner 
 			&& otherOwner->client 
@@ -4787,6 +4785,10 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		}
 		else
 		{//hit an in-hand saber, do extra collision check against it
+
+			if (!SaberSPStyle(self) && WP_SaberCanBlockSwing(otherOwner->client->ps.fd.saberAnimLevel, attackStr)) //Skip block during swing maybe, only if MP dmgs are on ofc. JAPRO reduce saberblock
+				return qfalse;
+
 			if ( SaberSPStyle(self) )
 			{//use SP-style blade-collision test
 				if ( !WP_SabersIntersect( self, rSaberNum, rBladeNum, otherOwner, qfalse ) )
