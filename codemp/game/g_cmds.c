@@ -1851,15 +1851,29 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 	gentity_t *te;
 	char arg[MAX_TOKEN_CHARS];
 	char *s;
+	char content[MAX_TOKEN_CHARS];
 	int i = 0;
 
+	/* zyk: now the voice commands will be allowed in all gametypes
 	if (level.gametype < GT_TEAM)
 	{
 		return;
 	}
+	*/
+
+	strcpy(content,"");
 
 	if (trap->Argc() < 2)
 	{
+		// zuk: other gamemodes will show info of how to use the voice_cmd
+		if (level.gametype < GT_TEAM)
+		{
+			for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
+			{
+				strcpy(content,va("%s%s\n",content,bg_customSiegeSoundNames[i]));
+			}
+			trap->SendServerCommand( ent-g_entities, va("print \"Usage: /voice_cmd <arg>\nThe arg may be one of the following:\n %s\"",content) );
+		}
 		return;
 	}
 
@@ -1899,10 +1913,32 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 		return;
 	}
 
-	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
-	te->s.groundEntityNum = ent->s.number;
-	te->s.eventParm = G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
-	te->r.svFlags |= SVF_BROADCAST;
+	if (level.gametype >= GT_TEAM)
+	{
+		te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
+		te->s.groundEntityNum = ent->s.number;
+		te->s.eventParm = G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
+		te->r.svFlags |= SVF_BROADCAST;
+	}
+	else
+	{ // zyk: in other gamemodes that are not Team ones, just do a G_Sound call to each allied player
+		G_Sound(ent,CHAN_VOICE,G_SoundIndex(va("sound/chars/mp_generic_male/misc/%s.mp3",arg)));
+		if (ent->client->sess.ally1 != -1)
+		{
+			trap->SendServerCommand(ent->client->sess.ally1, va("chat \"%s: ^3*Voice Command*\"",ent->client->pers.netname));
+			G_Sound(&g_entities[ent->client->sess.ally1],CHAN_VOICE,G_SoundIndex(va("sound/chars/mp_generic_male/misc/%s.mp3",arg)));
+		}
+		if (ent->client->sess.ally2 != -1)
+		{
+			trap->SendServerCommand(ent->client->sess.ally2, va("chat \"%s: ^3*Voice Command*\"",ent->client->pers.netname));
+			G_Sound(&g_entities[ent->client->sess.ally2],CHAN_VOICE,G_SoundIndex(va("sound/chars/mp_generic_male/misc/%s.mp3",arg)));
+		}
+		if (ent->client->sess.ally3 != -1)
+		{
+			trap->SendServerCommand(ent->client->sess.ally3, va("chat \"%s: ^3*Voice Command*\"",ent->client->pers.netname));
+			G_Sound(&g_entities[ent->client->sess.ally3],CHAN_VOICE,G_SoundIndex(va("sound/chars/mp_generic_male/misc/%s.mp3",arg)));
+		}
+	}
 }
 
 
