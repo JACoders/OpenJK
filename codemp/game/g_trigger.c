@@ -1502,6 +1502,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 		else if (player->client->pers.showCheckpoints == 2)
 			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+		else if (player->client->pers.showCheckpoints == 3) {
+			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+		}
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
 			if (!g_entities[i].inuse)
@@ -1513,6 +1517,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 				else if (level.clients[i].pers.showCheckpoints == 2)
 					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+				else if (level.clients[i].pers.showCheckpoints == 3) {
+					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+				}
 			}
 		}
 

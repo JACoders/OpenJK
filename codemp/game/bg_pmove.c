@@ -187,22 +187,28 @@ static int GetFixRoll(playerState_t *ps) {
 	//Would have to network this.. if we want to let servers do jk2 roll in NF duels, or shortroll in FF duels..
 
 #if _GAME
+		if (ps->stats[STAT_RACEMODE])
+			return 3;
 		if (ps->duelInProgress) {
 			if (dueltypes[ps->clientNum] == 0) { //NF 
 				return 0;
 			}
-			else if (dueltypes[ps->clientNum] == 1) { //FF
+			if (dueltypes[ps->clientNum] == 1) { //FF
 				return 3;
 			}
 		}
 		return g_fixRoll.integer;
 #else
-		if (ps->duelInProgress) {
-			if (cg_dueltypes[ps->clientNum] == 1) { //NF 
-				return 0;
-			}
-			else if (cg_dueltypes[ps->clientNum] == 2) { //FF
+		if (cgs.isJAPro) {
+			if (ps->stats[STAT_RACEMODE])
 				return 3;
+			if (ps->duelInProgress) {
+				if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+					return 0;
+				}
+				if (cg_dueltypes[ps->clientNum] == 2) { //FF
+					return 3;
+				}
 			}
 		}
 		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))

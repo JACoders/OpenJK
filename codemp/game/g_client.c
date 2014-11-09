@@ -2212,7 +2212,9 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.showCheckpoints = 1;
 	} else if (atoi(s) == 1) {
 		client->pers.showCheckpoints = 2;
-	} else if (atoi(s) > 1) {
+	} else if (atoi(s) == 2) {
+		client->pers.showCheckpoints = 3;
+	} else if (atoi(s) > 2) {
 		client->pers.showCheckpoints = 0;
 	}
 
