@@ -551,9 +551,9 @@ void pas_fire( gentity_t *ent )
 	myOrg[2] += fwd[2]*16;
 
 	// zyk: changed sentry gun shotspeed from 2300 to 2800
-	// zyk: Bounty Hunter sentry gun can have more damage
-	if (ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.rpg_class == 2)
-		WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, (5 * (ent->parent->client->pers.improvements_level + 1)), 2800, MOD_SENTRY, ent );
+	// zyk: Bounty Hunter Upgrade makes sentry gun have more damage
+	if (ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.rpg_class == 2 && ent->parent->client->pers.secrets_found & (1 << 1))
+		WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, 15, 2800, MOD_SENTRY, ent );
 	else
 		WP_FireTurretMissile(&g_entities[ent->genericValue3], myOrg, fwd, qfalse, 10, 2800, MOD_SENTRY, ent );
 
@@ -1182,7 +1182,7 @@ void ItemUse_Seeker(gentity_t *ent)
 		ent->client->ps.eFlags |= EF_SEEKERDRONE;
 		// zyk: Bounty Hunter Upgrade increases seeker drone lifetime
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			ent->client->ps.droneExistTime = level.time + 90000;
+			ent->client->ps.droneExistTime = level.time + 80000;
 		else
 			ent->client->ps.droneExistTime = level.time + 60000; // zyk: the seeker drone lifetime, changed from 30000 to 60000
 		ent->client->ps.droneFireTime = level.time + 500;   // zyk: fire time of seeker drone changed from 1500 to 500
@@ -1715,14 +1715,14 @@ void EWebFire(gentity_t *owner, gentity_t *eweb)
 	VectorMA(p, -16.0f, d, bPoint);
 
 	//create the missile
-	missile = CreateMissile( bPoint, d, 1200.0f, 10000, owner, qfalse );
+	missile = CreateMissile( bPoint, d, 5000.0f, 10000, owner, qfalse ); // zyk: changed eweb missile velocity. Default 1200.0f
 
 	missile->classname = "generic_proj";
 	missile->s.weapon = WP_TURRET;
 
 	// zyk: Bounty Hunter EWeb has more damage
-	if (owner && owner->client && owner->client->sess.amrpgmode == 2 && owner->client->pers.rpg_class == 2)
-		missile->damage = (EWEB_MISSILE_DAMAGE/2) * (owner->client->pers.improvements_level + 1);
+	if (owner && owner->client && owner->client->sess.amrpgmode == 2 && owner->client->pers.rpg_class == 2 && owner->client->pers.secrets_found & (1 << 1))
+		missile->damage = EWEB_MISSILE_DAMAGE + 5;
 	else
 		missile->damage = EWEB_MISSILE_DAMAGE;
 

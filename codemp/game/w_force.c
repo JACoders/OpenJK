@@ -5103,14 +5103,18 @@ void SeekerDroneUpdate(gentity_t *self)
 
 				// zyk: changed shot speed from 2000 to 4000
 				// zyk: changed damage when a Bounty Hunter uses the seeker drone
-				if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2)
-					WP_FireGenericBlasterMissile(self, org, endir, qfalse, 10 * (self->client->pers.improvements_level + 1), 4000, MOD_BLASTER);
+				if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2 && self->client->pers.secrets_found & (1 << 1))
+					WP_FireGenericBlasterMissile(self, org, endir, qfalse, 25, 4000, MOD_BLASTER);
 				else
 					WP_FireGenericBlasterMissile(self, org, endir, 0, 15, 4000, MOD_BLASTER);
 
 				G_SoundAtLoc( org, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/fire.wav") );
 
-				self->client->ps.droneFireTime = level.time + Q_irand(400, 700);
+				// zyk: Bounty Hunter Upgrade has fast-shooting seeker drone
+				if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2 && self->client->pers.secrets_found & (1 << 1))
+					self->client->ps.droneFireTime = level.time + Q_irand(100, 200);
+				else
+					self->client->ps.droneFireTime = level.time + Q_irand(400, 700);
 			}
 		}
 	}
