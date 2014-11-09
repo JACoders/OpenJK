@@ -8177,7 +8177,7 @@ void G_RunFrame( int levelTime ) {
 								Jedi_Cloak(ent);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + 3000;
+							ent->client->pers.guardian_timer = level.time + 2000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
@@ -8221,7 +8221,7 @@ void G_RunFrame( int levelTime ) {
 							healing_water(ent,200);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + 3000;
+							ent->client->pers.guardian_timer = level.time + 2000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
@@ -8272,7 +8272,7 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + 3000;
+							ent->client->pers.guardian_timer = level.time + 2000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
