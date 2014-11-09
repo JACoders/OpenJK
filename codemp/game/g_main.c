@@ -408,6 +408,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("-1|-1|!") );
 	trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("-1") );
 
+	// zyk: registers Force Boon item so the artifacts in the quests will be shown properly
+	if (1)
+	{
+		gitem_t *this_item = BG_FindItemForPowerup(PW_FORCE_BOON);
+		RegisterItem(this_item);
+	}
+
 	SaveRegisteredItems();
 
 	//trap->Print ("-----------------------------------\n");
