@@ -232,6 +232,7 @@ XCVAR_DEF( g_juniorAdminPass,			"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_fullAdminPass,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_juniorAdminMsg,			"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //race also
 
 //JAPRO OTHER Gameplay
 XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
@@ -281,9 +282,11 @@ XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 XCVAR_DEF( g_showJumpSpot,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
-XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
 
 XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
 
 
 #undef XCVAR_DEF

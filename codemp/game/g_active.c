@@ -2757,9 +2757,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 #endif
 
-//
-
-
 	if (isNPC && (ucmd->serverTime - client->ps.commandTime) < 1)
 	{
 		ucmd->serverTime = client->ps.commandTime + 100;

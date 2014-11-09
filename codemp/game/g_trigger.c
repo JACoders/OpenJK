@@ -1443,7 +1443,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			p = strchr(strIP, ':');
 			if (p)
 				*p = 0;
-			if (player->client->pers.userName) {
+			if (player->client->pers.userName[0]) { //omg
 				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
 			}
 		}

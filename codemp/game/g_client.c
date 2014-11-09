@@ -2574,7 +2574,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 				Q_strncpyz(strIP, tmpIP, sizeof(strIP));
 				p = strchr(strIP, ':');
-				if (p) //loda - fix ip sometimes not printing in amstatus?
+				if (p)
 					*p = 0;
 
 
