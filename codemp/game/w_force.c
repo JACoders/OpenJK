@@ -1443,7 +1443,7 @@ void ForceGrip( gentity_t *self )
 		if (g_fixGetups.integer && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
 		{
 		}
-		else if (g_fixRoll.integer && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L)))
+		else if (g_fixRoll.integer && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L))) //ahh what the fuck.. i think this is the only case.. FF duels?
 		{
 		}
 		else 

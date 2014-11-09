@@ -3302,7 +3302,7 @@ void ClientThink_real( gentity_t *ent ) {
 					G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOn);
 				}
 
-				G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
+				//G_AddEvent(ent, EV_PRIVATE_DUEL, 2); //what the fuck why 2?
 
 				ent->client->ps.duelTime = 0;
 			}
@@ -3325,7 +3325,7 @@ void ClientThink_real( gentity_t *ent ) {
 					G_Sound(duelAgainst, CHAN_AUTO, duelAgainst->client->saber[1].soundOn);
 				}
 
-				G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 2);
+				//G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 2); //what?
 
 				duelAgainst->client->ps.duelTime = 0;
 			}

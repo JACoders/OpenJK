@@ -3809,14 +3809,26 @@ static QINLINE int SaberSPStyle(gentity_t *self)
 {
 	if (self->client && self->client->ps.duelInProgress) {
 		if (dueltypes[self->client->ps.clientNum] == 0)
-			return g_saberDuelSPDamage.integer;
+			return g_saberDuelSPDamage.integer; //NF duel gives us this
 		if (dueltypes[self->client->ps.clientNum] == 1)
-			return g_forceDuelSPDamage.integer;
+			return g_forceDuelSPDamage.integer; //FF duel gives us this
 	}
-	return d_saberSPStyleDamage.integer;
+	return d_saberSPStyleDamage.integer; //otherwise this
+}
 
-	//If we are dueling, and in dueltype saber, give us SP dmgs
-	//Otherwise give us saberSpStyleDmg.integer damages .. ?
+static QINLINE int SaberKickTweak(gentity_t *self)
+{
+	if (self->client && self->client->ps.duelInProgress) { //not sure how to go about this.. i guess only force saberkicktweak in saberonly SP duels?
+		if (dueltypes[self->client->ps.clientNum] == 0) {//nf duel
+			if (g_saberDuelSPDamage.integer)//sp dmgs
+				return 1;
+			else
+				return d_saberKickTweak.integer;
+		}
+		if (dueltypes[self->client->ps.clientNum] == 1) //ff duel
+			return d_saberKickTweak.integer;
+	}
+	return d_saberKickTweak.integer;
 }
 
 qboolean WP_SaberCanBlockSwing(int ourStr, int attackStr);
@@ -7556,7 +7568,7 @@ extern void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int m
 extern qboolean BG_InKnockDown( int anim );
 static qboolean G_KickDownable(gentity_t *ent)
 {
-	if (!d_saberKickTweak.integer)
+	if (!SaberKickTweak(ent))//(!d_saberKickTweak.integer)
 	{
 		return qtrue;
 	}
@@ -7627,7 +7639,7 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 		VectorMA( traceOrg, kickDist, kickDir, traceEnd );
 	}
 
-	if (d_saberKickTweak.integer)
+	if (SaberKickTweak(ent))//(d_saberKickTweak.integer)
 	{
 		JP_Trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 	}
@@ -7676,7 +7688,7 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 					hitEnt->client->ps.otherKillerTime = level.time + 10000;
 				}
 
-				if (d_saberKickTweak.integer)
+				if (SaberKickTweak(ent))//(d_saberKickTweak.integer)
 				{
 					G_Damage( hitEnt, ent, ent, kickDir, trace.endpos, kickDamage*0.2f, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 				}
@@ -8238,7 +8250,7 @@ void WP_SaberPositionUpdate( gentity_t *self, usercmd_t *ucmd )
 		return;
 	}
 
-	if ((BG_KickingAnim(self->client->ps.legsAnim) || (!d_saberKickTweak.integer && (self->client->ps.legsAnim == BOTH_JUMPATTACK7))))//JAPRO
+	if ((BG_KickingAnim(self->client->ps.legsAnim) || (!(SaberKickTweak(self)) /*!d_saberKickTweak.integer*/ && (self->client->ps.legsAnim == BOTH_JUMPATTACK7))))//JAPRO
 	{ //do some kick traces and stuff if we're in the appropriate anim
 		G_KickSomeMofos(self);
 	}

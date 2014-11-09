@@ -176,8 +176,8 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
-/*
-int GetFixRoll(playerState_t *ps) {
+
+static int GetFixRoll(playerState_t *ps) {
 	//If we are dueling saber only and duels are SP damages and FFA is mp damages..
 		//return 0
 	//If we are dueling force and duels are MP damages and FFA is sp damages
@@ -186,27 +186,35 @@ int GetFixRoll(playerState_t *ps) {
 	//Problem: client does not know what damages are set..
 	//Would have to network this.. if we want to let servers do jk2 roll in NF duels, or shortroll in FF duels..
 
-	if (ps->duelInProgress) {
 #if _GAME
-		if (dueltypes[ps->clientNum] == 0) { //NF 
-			return 0;
+		if (ps->duelInProgress) {
+			if (dueltypes[ps->clientNum] == 0) { //NF 
+				return 0;
+			}
+			else if (dueltypes[ps->clientNum] == 1) { //FF
+				return 3;
+			}
 		}
-		else if (dueltypes[ps->clientNum] == 1) { //FF
-			return 3;
-		}
+		return g_fixRoll.integer;
 #else
-		if (cg_dueltypes[ps->clientNum] == 0) { //NF 
-			return 0;
+		if (ps->duelInProgress) {
+			if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+				return 0;
+			}
+			else if (cg_dueltypes[ps->clientNum] == 2) { //FF
+				return 3;
+			}
 		}
-		else if (cg_dueltypes[ps->clientNum] == 1) { //FF
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))
+			return 1;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2))
+			return 2;
+		if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3))
 			return 3;
-		}
+		return 0;
 #endif
-	}
-
-	return g_fixRoll.integer;
 }
-*/
+
 
 //rww - Get a pointer to the bgEntity by the index
 bgEntity_t *PM_BGEntForNum( int num )
@@ -6065,6 +6073,13 @@ static void PM_Footsteps( void ) {
 //[JAPRO - Serverside + Clientside - Physics - Add roll types - Start]
 		
 		{
+
+			if ((GetFixRoll(pm->ps) > 1 && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps))) ||
+				((GetFixRoll(pm->ps) == 1) && (PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=30000)) ||
+				(PM_RunningAnim(pm->ps->legsAnim) && VectorLengthSquared(pm->ps->velocity)>=40000) )
+				rolled = PM_TryRoll();
+
+/*
 #ifdef _GAME
 			if ((g_fixRoll.integer > 1) && (PM_RunningAnim(pm->ps->legsAnim) || PM_CanRollFromSoulCal(pm->ps)))
 			{
@@ -6110,6 +6125,7 @@ static void PM_Footsteps( void ) {
 				rolled = PM_TryRoll();
 			}
 #endif
+			*/
 		}
 //[JAPRO - Serverside + Clientside - Physics - Add roll types - End]
 
@@ -9254,6 +9270,14 @@ void BG_CmdForRoll( playerState_t *ps, int anim, usercmd_t *pCmd )
 	{
 	case BOTH_ROLL_F:
 //[JAPRO - Serverside - Physics - Roll start/stop move - Start]
+
+		if (GetFixRoll(ps) > 2 && pCmd->forwardmove < 0)
+			break;
+		pCmd->forwardmove = 127;
+		pCmd->rightmove = 0;
+		break;
+
+		/*
 #ifdef _GAME
 		if (g_fixRoll.integer > 2 && pCmd->forwardmove < 0) 
 			break;
@@ -9267,6 +9291,8 @@ void BG_CmdForRoll( playerState_t *ps, int anim, usercmd_t *pCmd )
 		pCmd->rightmove = 0;
 		break;
 #endif
+		*/
+
 //[JAPRO - Serverside - Physics - Roll start/stop move - End]
 	case BOTH_ROLL_B:
 		pCmd->forwardmove = -127;
@@ -9538,11 +9564,16 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		}
 	}
 
+	/*
 #ifdef _GAME
 	if (g_fixRoll.integer > 2)//fixroll 3
 #else
 	if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL3) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL3))//fixroll3
 #endif
+	*/
+
+
+	if (GetFixRoll(ps) > 2)
 	{
 		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50.0f )
 		{ //can't roll unless you're able to move normally
@@ -9580,11 +9611,15 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			}
 		}
 	}
+/*
 #ifdef _GAME
 	else if (g_fixRoll.integer == 2)//fixroll 2
 #else
 	else if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL2) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL2))//fixroll2
 #endif
+	*/
+
+	else if (GetFixRoll(ps) == 2)
 	{
 		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 )
 		{ //can't roll unless you're able to move normally
@@ -9617,11 +9652,16 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			//Automatically slow down as the roll ends.
 		}
 	}
+
+/*
 #ifdef _GAME
 	else if (g_fixRoll.integer == 1)//fixroll 1
 #else
 	else if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FIXROLL1) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FIXROLL1))//fixroll1
 #endif
+*/
+
+	else if (GetFixRoll(ps) == 1)
 	{
 		if ( BG_InRoll( ps, ps->legsAnim ) && ps->speed > 50 )
 		{ //can't roll unless you're able to move normally
