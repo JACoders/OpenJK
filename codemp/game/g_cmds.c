@@ -3436,7 +3436,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: Immunity Power
 				ent->client->pers.ultimate_power_user = 1000;
-				ent->client->pers.ultimate_power_target_timer = level.time + 20000;
+				ent->client->pers.ultimate_power_target_timer = level.time + 25000;
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
 			}

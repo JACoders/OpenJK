@@ -4092,62 +4092,66 @@ void Player_FireFlameThrower( gentity_t *self )
 void ultimate_power_events(gentity_t *ent)
 {
 	// zyk: controlling Ultimate Power target events
-	if (ent && ent->client && ent->client->pers.ultimate_power_user != 1000 && ent->client->pers.ultimate_power_target_timer > level.time)
+	if (ent && ent->client)
 	{
-		if (ent->client->pers.ultimate_power_target == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-		{ // zyk: removes Time Power
-			ent->client->pers.ultimate_power_target = -1;
+		if (ent->client->pers.ultimate_power_user != 1000 && ent->client->pers.ultimate_power_target_timer > level.time)
+		{
+			if (ent->client->pers.ultimate_power_target == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
+			{ // zyk: removes Time Power
+				ent->client->pers.ultimate_power_target = -1;
+			}
+			else if (ent->client->pers.ultimate_power_target == 4 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
+			{ // zyk: Second Chaos Power hit
+				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
+
+				ent->client->pers.ultimate_power_target = 5;
+				ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+			}
+			else if (ent->client->pers.ultimate_power_target == 5 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
+			{ // zyk: Third Chaos Power hit
+				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
+
+				ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+				ent->client->ps.forceHandExtendTime = level.time + 2000;
+				ent->client->ps.velocity[2] += 600;
+				ent->client->ps.forceDodgeAnim = 0;
+				ent->client->ps.quickerGetup = qtrue;
+
+				ent->client->pers.ultimate_power_target = 0;
+			}
+			else if (ent->client->pers.ultimate_power_target == 10)
+			{ // zyk: being hit by Blowing Wind
+				static vec3_t forward;
+				vec3_t dir;
+
+				AngleVectors( g_entities[ent->client->pers.ultimate_power_user].client->ps.viewangles, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+
+				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+					VectorScale(forward,90.0,dir);
+				else
+					VectorScale(forward,25.0,dir);
+
+				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+			}
+			else if (ent->client->pers.ultimate_power_target >= 20 && ent->client->pers.ultimate_power_target < 30 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
+			{ // zyk: being hit by Poison Mushrooms
+				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,40,0,MOD_UNKNOWN);
+
+				ent->client->pers.ultimate_power_target++;
+				ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+			}
 		}
-		else if (ent->client->pers.ultimate_power_target == 4 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-		{ // zyk: Second Chaos Power hit
-			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
-
-			ent->client->pers.ultimate_power_target = 5;
-			ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+		else if (ent->client->pers.ultimate_power_user == 1000 && ent->client->pers.ultimate_power_target_timer < level.time)
+		{ // zyk: if Immunity Power runs out, set ultimate_power_user back to default value
+			ent->client->pers.ultimate_power_user = -1;
 		}
-		else if (ent->client->pers.ultimate_power_target == 5 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-		{ // zyk: Third Chaos Power hit
-			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
-
-			ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-			ent->client->ps.forceHandExtendTime = level.time + 2000;
-			ent->client->ps.velocity[2] += 600;
-			ent->client->ps.forceDodgeAnim = 0;
-			ent->client->ps.quickerGetup = qtrue;
-
-			ent->client->pers.ultimate_power_target = 0;
+	
+		if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_timer < (level.time + 1000))
+		{ // zyk: Free Warrior Power Up runs out
+			ent->client->pers.ultimate_power_user = -1;
 		}
-		else if (ent->client->pers.ultimate_power_target == 10)
-		{ // zyk: being hit by Blowing Wind
-			static vec3_t forward;
-			vec3_t dir;
-
-			AngleVectors( g_entities[ent->client->pers.ultimate_power_user].client->ps.viewangles, forward, NULL, NULL );
-
-			VectorNormalize(forward);
-
-			if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-				VectorScale(forward,90.0,dir);
-			else
-				VectorScale(forward,25.0,dir);
-
-			VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
-		}
-		else if (ent->client->pers.ultimate_power_target >= 20 && ent->client->pers.ultimate_power_target < 30 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-		{ // zyk: being hit by Poison Mushrooms
-			G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,40,0,MOD_UNKNOWN);
-
-			ent->client->pers.ultimate_power_target++;
-			ent->client->pers.ultimate_power_target_timer = level.time + 2000;
-		}
-	}
-	else if (ent && ent->client && ent->client->pers.ultimate_power_user == 1000 && ent->client->pers.ultimate_power_target_timer < level.time)
-	{ // zyk: if Immunity Power runs out, set ultimate_power_user back to default value
-		ent->client->pers.ultimate_power_user = -1;
-	}
-	else if (ent && ent->client && ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 10000))
-	{ // zyk: Free Warrior Power Up runs out
-		ent->client->pers.ultimate_power_user = -1;
 	}
 }
 
