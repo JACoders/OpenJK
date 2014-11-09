@@ -5112,7 +5112,7 @@ void SeekerDroneUpdate(gentity_t *self)
 
 				// zyk: Bounty Hunter Upgrade has fast-shooting seeker drone
 				if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2 && self->client->pers.secrets_found & (1 << 1))
-					self->client->ps.droneFireTime = level.time + Q_irand(100, 200);
+					self->client->ps.droneFireTime = level.time + Q_irand(200, 300);
 				else
 					self->client->ps.droneFireTime = level.time + Q_irand(400, 700);
 			}
