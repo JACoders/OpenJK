@@ -8361,8 +8361,6 @@ void G_RunFrame( int levelTime ) {
 
 								zyk_TeleportPlayer(player_ent,origin,angles);
 
-								G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/chars/ragnos/misc/confuse3.mp3"));
-
 								trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7The Void!\"");
 								ent->client->pers.hunter_quest_messages++;
 								ent->client->pers.guardian_timer = level.time + 1000;
