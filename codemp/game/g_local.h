@@ -679,6 +679,8 @@ typedef struct clientPersistant_s {
 	qboolean	chatting;
 	qboolean	raceMode;
 	qboolean	onlyBhop;
+	qboolean	noRoll;
+
 	int			startLag;
 	int			movementStyle;
 

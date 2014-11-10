@@ -2200,6 +2200,13 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			client->pers.onlyBhop = qfalse;
 	}
 
+	s = Info_ValueForKey( userinfo, "cg_noRoll" );
+	if ( atoi( s ) ) {
+			client->pers.noRoll = qtrue;
+	} else {
+			client->pers.noRoll = qfalse;
+	}
+
 	s = Info_ValueForKey( userinfo, "cg_centerMuzzle" );
 	if ( !atoi( s ) ) {
 		client->pers.centerMuzzle = qfalse;

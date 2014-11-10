@@ -4195,6 +4195,23 @@ static int PM_TryRoll( void )
 	int		anim = -1;
 	vec3_t fwd, right, traceto, mins, maxs, fwdAngles;
 
+#ifdef _GAME
+	    gclient_t *client = NULL;
+		{
+			int clientNum = pm->ps->clientNum;
+			if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+				client = g_entities[clientNum].client;
+			}
+		}
+
+		if (client && client->pers.noRoll)
+#else
+		if (cgs.isJAPro && cg_noRoll.integer)
+#endif
+		{
+			return 0;
+		}
+
 	if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
 		|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
 		|| PM_SaberInStart( pm->ps->saberMove ) )
