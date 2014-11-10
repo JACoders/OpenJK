@@ -5935,12 +5935,15 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 	float veclen;
 	gentity_t *te;
 
-	if (saberOwner && saberOwner->client && saberOwner->client->ps.saberAttackWound > level.time)
+	if (!saberOwner || !saberOwner->client)
+		return qfalse;
+
+	if (saberOwner->client->ps.saberAttackWound > level.time)
 	{
 		return qfalse;
 	}
 
-	if (saberOwner && saberOwner->client && ent && ent->client && (saberOwner->s.bolt1 != ent->s.bolt1))
+	if (ent && ent->client && (saberOwner->s.bolt1 != ent->s.bolt1))
 		return qfalse;
 	/*
 	{
@@ -5977,7 +5980,9 @@ static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *
 		{ //within range
 			trace_t tr;
 
-			JP_Trace(&tr, saberent->r.currentOrigin, NULL, NULL, ent->client->ps.origin, saberent->s.number, MASK_SHOT, qfalse, 0, 0);
+			//JP_Trace(&tr, saberent->r.currentOrigin, NULL, NULL, ent->client->ps.origin, saberent->s.number, MASK_SHOT, qfalse, 0, 0); //ayy, JP_Trace here fucks up saberblocking of saberthrows in force duels.
+			trap->Trace(&tr, saberent->r.currentOrigin, NULL, NULL, ent->client->ps.origin, saberent->s.number, MASK_SHOT, qfalse, 0, 0); //ayy, JP_Trace here fucks up saberblocking of saberthrows in force duels.
+			//I guess The BeginHack/EndHack stuff messues with ownerNum, so it thinks induel saberthrows are in different dimensions when they shouldnt be..?
 
 			if (tr.fraction == 1 || tr.entityNum == ent->s.number)
 			{ //Slice them
