@@ -1139,12 +1139,12 @@ void Svcmd_DeleteAccount_f(void)
 		sql = "DELETE FROM LocalAccount WHERE username = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (finalize(stmt));
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_DONE)
 			trap->Print( "Account deleted.\n");
 		else 
 			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
 	}
 	else 
 		trap->Print( "User does not exist, deleting highscores for username anyway.\n");
