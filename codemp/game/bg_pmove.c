@@ -202,7 +202,7 @@ float forceJumpHeight[NUM_FORCE_POWER_LEVELS] =
 	192,//(+stepheight+crouchdiff = 226)
 	384,//(+stepheight+crouchdiff = 418)
 	928, // zyk: added jump level 4, used in RPG mode
-	5120 // zyk: added jump level 5, used in RPG mode
+	6016 // zyk: added jump level 5, used in RPG mode
 };
 
 float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
@@ -211,8 +211,8 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	420,
 	590,
 	840,
-	880, // zyk: added jump level 4, used in RPG mode
-	896 // zyk: added jump level 5, used in RPG mode
+	860, // zyk: added jump level 4, used in RPG mode
+	880 // zyk: added jump level 5, used in RPG mode
 };
 
 //rww - Get a pointer to the bgEntity by the index
@@ -1766,7 +1766,7 @@ float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] =
 	226,//(192+stepheight(18)+crouchdiff(24) = 234)
 	418,//(384+stepheight(18)+crouchdiff(24) = 426)
 	970, // zyk: added jump level 4, used in RPG mode
-	5162 // zyk: added jump level 5, used in RPG mode
+	6058 // zyk: added jump level 5, used in RPG mode
 };
 
 void PM_GrabWallForJump( int anim )
