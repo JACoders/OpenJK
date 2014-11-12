@@ -3477,7 +3477,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
-				poison_mushrooms(ent,200,1200);
+				poison_mushrooms(ent,100,1000);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
@@ -3500,7 +3500,7 @@ qboolean TryGrapple(gentity_t *ent)
 					{
 						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-						if (distance < 500)
+						if (distance < 400)
 						{
 							int found = 0;
 
@@ -3550,7 +3550,7 @@ qboolean TryGrapple(gentity_t *ent)
 					if (ent->s.number != i && player_ent && player_ent->client)
 					{
 						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-						if (distance < 500)
+						if (distance < 400)
 						{
 							int found = 0;
 
@@ -3596,7 +3596,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				sleeping_flowers(ent,4000,500);
+				sleeping_flowers(ent,4000,400);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
 			}
@@ -3617,7 +3617,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				earthquake(ent,2000,300,600);
+				earthquake(ent,2000,300,500);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
@@ -3641,7 +3641,7 @@ qboolean TryGrapple(gentity_t *ent)
 					{
 						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-						if (distance < 1000)
+						if (distance < 900)
 						{
 							int found = 0;
 
@@ -3669,7 +3669,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 
 			if (ent->client->pers.ultimate_power_timer > level.time)
-			{
+			{ // zyk: displays the yellow bar below the screen
 				gentity_t *te = NULL;
 
 				te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
