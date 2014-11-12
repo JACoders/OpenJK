@@ -2472,7 +2472,7 @@ void ClientThink_real( gentity_t *ent ) {
 		// set speed
 		if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4)
 		{ // zyk: each Improvements level increases the Monk speed
-			client->ps.speed = 250.0 * (client->pers.improvements_level * 0.4 + 1);
+			client->ps.speed = 250.0 * (client->pers.improvements_level * 0.3 + 1);
 			client->ps.basespeed = client->ps.speed;
 		}
 		else
