@@ -1276,6 +1276,9 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		client->ps.torsoAnim = 0;
 		client->ps.torsoTimer = 0;
 
+		//client->ps.fd.forcePowersActive |= ( 1 << FP_SEE ); //spectator force sight wallhack
+		//client->ps.fd.forcePowerLevel[FP_SEE] = 2;
+
 		// set up for pmove
 		memset (&pmove, 0, sizeof(pmove));
 		pmove.ps = &client->ps;
@@ -1357,8 +1360,6 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 					StopFollowing(ent);
 			}
 		}
-
-
 	}
 }
 
@@ -4318,7 +4319,7 @@ void ClientThink_real( gentity_t *ent ) {
 //	G_VehicleAttachDroidUnit( ent );
 
 		// Did we kick someone in our pmove sequence?
-	if (client->ps.forceKickFlip && !client->pers.raceMode && !(client->ps.duelInProgress && dueltypes[ent->client->ps.clientNum] == 0))//Saber)
+	if (client->ps.forceKickFlip && !client->pers.raceMode)//Saber)
 	{
 		gentity_t *faceKicked = &g_entities[client->ps.forceKickFlip-1];
 
@@ -4729,6 +4730,10 @@ void SpectatorClientEndFrame( gentity_t *ent ) {
 				ent->client->ps.eFlags = cl->ps.eFlags;
 				ent->client->ps = cl->ps;
 				ent->client->ps.pm_flags |= PMF_FOLLOW;
+
+				//ent->client->ps.fd.forcePowersActive |= ( 1 << FP_SEE ); //spectator force sight wallhack
+				//ent->client->ps.fd.forcePowerLevel[FP_SEE] = 2;
+
 				return;
 			} else {
 				// drop them to free spectators unless they are dedicated camera followers

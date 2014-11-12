@@ -123,6 +123,9 @@ This abuses ownerNum to allow nonsolid duels
 */
 static void BeginHack(int entityNum)
 {
+
+	//If we are dueling, this makes everything thats not us, or them nonsolid... But it should also not make their saber nonsolid? rite? ahhh
+
 	// since we are in a duel, make everyone else nonsolid
 	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
 		int i;

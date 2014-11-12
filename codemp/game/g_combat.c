@@ -4992,10 +4992,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			if (OnSameTeam (targ, attacker))
 			{
+				/*
 				if ( !g_friendlyFire.integer )
 				{
 					return;
-				}
+				}*/
+				if (!g_friendlyFire.value) //JAPRO friendly fire scale
+					return;
+				damage *= g_friendlyFire.value;
 			}
 			else if (attacker && attacker->inuse &&
 				!attacker->client && attacker->activator &&

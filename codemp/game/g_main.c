@@ -1963,7 +1963,7 @@ qboolean ScoreIsTied( void ) {
 
 void PrintStats(int gametype) //JAPRO STATS
 {
-	int			i;
+	int			i, j = 0;
 	char		msg[1024-128] = {0};
 	qboolean	showAccuracy = qtrue, showTeamPowers = qtrue;
 	gclient_t	*cl;
@@ -2007,7 +2007,7 @@ void PrintStats(int gametype) //JAPRO STATS
 			continue;
 
 		cl = &level.clients[i];
-		if (cl->pers.netname[0] && !(cl->ps.pm_flags & PMF_FOLLOW)) //sad
+		if (cl->pers.netname[0] && /*!(cl->ps.pm_flags & PMF_FOLLOW) &&*/ cl->sess.sessionTeam != TEAM_SPECTATOR) //sad
 		{
 			char strName[MAX_NETNAME] = {0};
 			char strDG[32] = {0};
@@ -2018,7 +2018,12 @@ void PrintStats(int gametype) //JAPRO STATS
 			char strTE[32] = {0};
 			char strKills[32] = {0};
 			char accuracyStr[32] = {0};
+			char c[4] = S_COLOR_GREEN;
 			float accuracy = 0;
+
+			j++;
+			if (j%2)
+				Q_strncpyz( c, S_COLOR_YELLOW, sizeof(c) );
 
 			if (showAccuracy) {//Weps enabled?
 				if(cl->accuracy_shots) 
@@ -2052,15 +2057,15 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strNet, sizeof(strNet), "%i", (cl->ps.persistant[PERS_SCORE] - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides));
 				if (showAccuracy) {//Weps disabled?
 					if (showTeamPowers)
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s%-11s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 					else
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
+						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%-11s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, accuracyStr, strName);
 				}
 				else {
 					if (showTeamPowers)
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 					else
-						tmpMsg = va( "%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}
 			}
 			else {
@@ -2073,9 +2078,9 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
 				if (showAccuracy)
-					tmpMsg = va( "%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%-11s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
+					tmpMsg = va( "%s%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%-11s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
 				else {
-					tmpMsg = va( "%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%s^7\n", strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName); //fixme, align this sometime
+					tmpMsg = va( "%s%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName); //fixme, align this sometime
 				}
 			}
 

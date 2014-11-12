@@ -176,6 +176,36 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 	840
 };
 
+static int GetFlipkick(playerState_t *ps) {
+	//if (!ps) //?
+		//return;
+
+	#if _GAME
+		if (ps->duelInProgress) {
+			if (dueltypes[ps->clientNum] == 0) { //NF.. man this sucks.. fucks up JA+ nf duels
+				return 0;
+			}
+		}
+		return g_flipKick.integer;
+#else
+		if (cgs.isJAPro) {
+			if (ps->duelInProgress) {
+				if (cg_dueltypes[ps->clientNum] == 1) { //NF 
+					return 0;
+				}
+			}
+			if (cgs.jcinfo & JAPRO_CINFO_FLIPKICK) { 
+				if (cgs.jcinfo & JAPRO_CINFO_FIXSIDEKICK)
+					return 3;
+				return 2; //1 ans 2 are the same thing clientside...hmm
+			}
+		}
+		if (cgs.isJAPlus && (cgs.cinfo & JAPLUS_CINFO_FLIPKICK))
+			return 1;
+
+		return 0;
+#endif
+}
 
 static int GetFixRoll(playerState_t *ps) {
 	//If we are dueling saber only and duels are SP damages and FFA is mp damages..
@@ -2524,6 +2554,11 @@ static qboolean PM_CheckJump( void )
 //JAPRO - Serverside + Clientside - Re add flipkick sidekick - Start
 				int contents;// = MASK_SOLID;//MASK_PLAYERSOLID;
 
+				if (GetFlipkick(pm->ps) > 0)
+					contents = MASK_PLAYERSOLID;
+				else 
+					contents = MASK_SOLID;
+/*
 #ifdef _GAME
 				if (g_flipKick.integer > 0)
 					contents = MASK_PLAYERSOLID;//MASK_PLAYERSOLID;
@@ -2536,6 +2571,7 @@ static qboolean PM_CheckJump( void )
 				else 
 					contents = MASK_SOLID;//MASK_PLAYERSOLID; 
 #endif
+*/
 //JAPRO - Serverside + Clientside - Re add flipkick sidekick - End
 
 				VectorSet(mins, pm->mins[0],pm->mins[1],0);
@@ -2610,11 +2646,16 @@ static qboolean PM_CheckJump( void )
 						if ( doTrace && anim != BOTH_WALL_RUN_LEFT && anim != BOTH_WALL_RUN_RIGHT )
 						{
 							kickedEnt = PM_BGEntForNum(trace.entityNum);
+/*
 #ifdef _GAME
 							if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
 #else
 							if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
 #endif
+*/
+
+							if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC))
+
 							{
 								pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 							}
@@ -2798,6 +2839,11 @@ static qboolean PM_CheckJump( void )
 
 //JAPRO - Serverside + Clientside - Re add flipkick and flipkickable npcs- Start
 				kickedEnt = PM_BGEntForNum(trace.entityNum);
+
+				if (GetFlipkick(pm->ps) >= 1) {
+					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (kickedEnt->s.eType == ET_NPC)))
+
+/*
 #ifdef _GAME
 				if (g_flipKick.integer >= 1) {
 					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC)))
@@ -2805,6 +2851,8 @@ static qboolean PM_CheckJump( void )
 				if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
 					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC)))
 #endif
+*/
+
 //JAPRO - Serverside + Clientside - Re add flipkick and flipkickable npcs- End
 					{//there is a wall there
 						int parts = SETANIM_LEGS;
@@ -2832,11 +2880,15 @@ static qboolean PM_CheckJump( void )
 						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
+						if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC))
+
+/*
 #ifdef _GAME
 						if ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC))
 #else
 						if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
 #endif	
+*/
 						{
 							pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 						}
@@ -2904,11 +2956,15 @@ static qboolean PM_CheckJump( void )
 						pm->ps->fd.forceJumpSound = 1;
 						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
+						if (GetFlipkick(pm->ps) >= 1) {
+
+/*
 #ifdef _GAME
 						if (g_flipKick.integer >= 1) {
 #else
 						if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
 #endif
+*/
 							if (kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC))
 								pm->ps->forceKickFlip = traceEnt->s.number+1;
 						}
@@ -12261,11 +12317,16 @@ void PmoveSingle (pmove_t *pmove) {
 			pEnt->s.NPC_class != CLASS_VEHICLE) //don't bounce on vehicles
 		{ //this is actually an NPC, let's try to bounce of its head to make sure we can't just stand around on top of it.
 			if (pm->ps->velocity[2] < 270)
+
+
+				if (!GetFlipkick(pm->ps))
+/*
 #ifdef _GAME
 				if (!g_flipKick.integer)
 #else
 				if (!(cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK))
 #endif
+*/
 				{ //try forcing velocity up and also force him to jump
 					pm->ps->velocity[2] = 270; //seems reasonable
 					pm->cmd.upmove = 127;
