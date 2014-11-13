@@ -1012,6 +1012,27 @@ qboolean G_PowerDuelCheckFail(gentity_t *ent)
 	return qfalse;
 }
 
+static int GetTeamPlayers(int team) {
+	int i, count = 0;
+	gclient_t        *cl;
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients.. sv_maxclients? w/e
+		if (!g_entities[i].inuse)
+			continue;
+		cl = &level.clients[i];
+		if (team == TEAM_RED && cl->sess.sessionTeam == TEAM_RED) {
+			count++;
+		}
+		else if (team == TEAM_BLUE && cl->sess.sessionTeam == TEAM_BLUE) {
+			count++;
+		}
+		else if (team == TEAM_FREE && cl->sess.sessionTeam == TEAM_FREE) {
+			count++;
+		}
+	}
+	return count;
+}
+
 /*
 =================
 SetTeam
@@ -1075,6 +1096,10 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
 				return;
 			}
+			else if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer) {
+				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is full!\n\""));
+				return;
+			}
 			else
 			{
 				team = TEAM_RED;
@@ -1084,6 +1109,10 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			if(level.isLockedblue && !forcedToJoin)
 			{
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
+				return;
+			}
+			else if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer) {
+				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is full!\n\""));
 				return;
 			}
 			else
@@ -1109,12 +1138,18 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			{
 			*/
 				team = PickTeam( clientNum );
-				if(team == TEAM_BLUE && level.isLockedblue && !forcedToJoin) {
-					trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
+				if(team == TEAM_BLUE && !forcedToJoin) {
+					if (level.isLockedblue)
+						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
+					else if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer)
+						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is full!\n\""));
 					return;
 				}
-				else if(team == TEAM_RED && level.isLockedred && !forcedToJoin) {
-					trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
+				else if(team == TEAM_RED && !forcedToJoin) {
+					if (level.isLockedred)
+						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
+					else if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer)
+						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is full!\n\""));
 					return;
 				}
 			//}

@@ -309,6 +309,15 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 		CALL_SQLITE (close(db));
 	}
 
+	//Call function to add duel to webserver
+	//If adding duel to webserver fails... then what
+
+	//Ok, whenever we sucessfully add anything to the webserver, create a timestamp of the current time, and store that somewhere as X
+	//Then, each mapchange i guess.. retry adding any duels/races...accounts?  yeah accounts should have DateCreated k.. newer than X to the webserver
+	//But this could be a big amount of data.... especially with duel whoring!
+
+	//Is it feasible to get completely live update duels? in a background thread?
+
 	//DebugWriteToDB("G_AddDuel");
 }
 
@@ -447,6 +456,9 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 				break;
 		}
 		if (!TempRaceRecord[i].username[0])//see what happens if we move this up here..
+			break;
+
+		if (!TempRaceRecord[i].end_timeInt)//see what happens if we move this up here..
 			break;
 
 		if (!foundFaster) {
@@ -1090,11 +1102,12 @@ void Svcmd_Register_f(void)
 	localtime( &rawtime );
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, 0)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, 0)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
+	CALL_SQLITE (bind_int (stmt, 4, rawtime));
 
    //CALL_SQLITE_EXPECT (step (stmt), DONE);
 	
@@ -1350,12 +1363,13 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 		CALL_SQLITE (finalize(stmt));
 	}
 
-    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, playtime, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, 0, ?, ?)";
+    sql = "INSERT INTO LocalAccount (username, password, kills, deaths, suicides, captures, returns, created, lastlogin, lastip) VALUES (?, ?, 0, 0, 0, 0, 0, ?, ?, ?)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
     CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, password, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 3, rawtime));
-	CALL_SQLITE (bind_int64 (stmt, 4, ip));
+	CALL_SQLITE (bind_int (stmt, 4, rawtime));
+	CALL_SQLITE (bind_int64 (stmt, 5, ip));
     //CALL_SQLITE_EXPECT (step (stmt), DONE);
 
 	s = sqlite3_step(stmt);
@@ -1388,7 +1402,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, kills = 0, deaths = 0, suicides = 0, captures = 0, returns = 0, lastlogin = 0, playtime = 0, realdeaths, s, highscores = 0, i;
+	int row = 0, kills = 0, deaths = 0, suicides = 0, captures = 0, returns = 0, lastlogin = 0, realdeaths, s, highscores = 0, i;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
@@ -1403,7 +1417,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	Q_CleanStr(username);
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT kills, deaths, suicides, captures, returns, lastlogin, playtime FROM LocalAccount WHERE username = ?";
+	sql = "SELECT kills, deaths, suicides, captures, returns, lastlogin FROM LocalAccount WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	
@@ -1416,7 +1430,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 			captures = sqlite3_column_int(stmt, 3);
 			returns = sqlite3_column_int(stmt, 4);
 			lastlogin = sqlite3_column_int(stmt, 5);
-			playtime = sqlite3_column_int(stmt, 6);
             row++;
         }
         else if (s == SQLITE_DONE)
@@ -2299,19 +2312,19 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalAccount(id INTEGER PRIMARY KEY, username VARCHAR(16), password VARCHAR(16), kills UNSIGNED SMALLINT, deaths UNSIGNED SMALLINT, "
-		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INT, playtime UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
+		"suicides UNSIGNED SMALLINT, captures UNSIGNED SMALLINT, returns UNSIGNED SMALLINT, lastlogin UNSIGNED INTEGER, created UNSIGNED INTEGER, lastip UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
-		"average UNSIGNED SMALLINT, style UNSIGNED SMALLINT, end_time UNSIGNED INT)";
+		"average UNSIGNED SMALLINT, style UNSIGNED TINYINT, end_time UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, winner VARCHAR(16), loser VARCHAR(16), duration UNSIGNED SMALLINT, "
-		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INT)";
+		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INTEGER)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
