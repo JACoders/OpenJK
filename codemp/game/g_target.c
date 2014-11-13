@@ -579,6 +579,7 @@ void SP_target_location( gentity_t *self ) {
 				trap->Print( "Maximum target_locations hit (%d)\n", MAX_LOCATIONS );
 				didwarn = qtrue;
 			}
+			G_FreeEntity( self );
 			return;
 		}
 

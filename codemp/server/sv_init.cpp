@@ -897,6 +897,9 @@ static void SV_InitRef( void ) {
 #endif
 
 void SV_Init (void) {
+
+	time( &svs.startTime );
+
 	SV_AddOperatorCommands ();
 
 	// serverinfo vars

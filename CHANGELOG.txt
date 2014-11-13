@@ -138,7 +138,7 @@ Key: - removed, + added, * modified
 [MP] * CVar code in engine is more robust.  Protects against clients setting systeminfo cvars they should not etc.  More accurate warning messages when servers/vms/clients set cvars they should not.
 [SP] + Add modelscale and modelscale_vec support to misc_model_ghoul
 [MP] * gamecode: Fix teamoverlay not making you look dead in siege when in limbo
-[MP] + Add sv_blockJumpSelect cvar to help prevent use of modded clients using an exploit with FP_LEVIATHAN with old mods
+[MP] + Add sv_blockJumpSelect cvar to help prevent use of modded clients using an exploit with FP_LEVITATION with old mods
 [MP] * Fix exploit with usercmd bytes set to -128
 [SP/MP] + Add stopmusic command
 [SP] * Fix external lightmap support
