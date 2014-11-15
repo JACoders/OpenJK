@@ -309,7 +309,7 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
 	missile->target_ent = NULL;
 
-	if (owner->client && owner->client->pers.raceMode)
+	if (owner->client && owner->client->sess.raceMode)
 		missile->s.pos.trTime -= MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
 
 	SnapVector(org);

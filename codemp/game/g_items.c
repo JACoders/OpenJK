@@ -244,7 +244,7 @@ void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 	else
 	{//let the person who dropped the shield through
-		if ((self->parent && self->parent->s.number == other->s.number) || (other->client && other->client->pers.raceMode))
+		if ((self->parent && self->parent->s.number == other->s.number) || (other->client && other->client->sess.raceMode))
 		{
 			ShieldGoNotSolid(self);
 		}

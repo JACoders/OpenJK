@@ -59,7 +59,15 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.duelTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.siegeDesiredTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%s ", siegeClass ) );
-	Q_strcat( s, sizeof( s ), va( "%s", IP ) );
+	Q_strcat( s, sizeof( s ), va( "%s ", IP ) );
+
+	Q_strcat( s, sizeof( s ), va( "%u ", client->sess.ignore ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.sawMOTD ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.raceMode ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.movementStyle ) );
+
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.juniorAdmin ) );
+	Q_strcat( s, sizeof( s ), va( "%i", (int)client->sess.fullAdmin ) );
 
 	var = va( "session%i", client - level.clients );
 
@@ -77,12 +85,12 @@ void G_ReadSessionData( gclient_t *client )
 {
 	char			s[MAX_CVAR_VALUE_STRING] = {0};
 	const char		*var;
-	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader;
+	int			i=0, tempSessionTeam=0, tempSpectatorState, tempTeamLeader, tempSawMOTD, tempRaceMode, tempJRAdmin, tempFullAdmin;
 
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u",//[JAPRO - Serverside - All - Ignore]
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -97,12 +105,22 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.siegeDesiredTeam,
 		client->sess.siegeClass,
 		client->sess.IP,
-		client->sess.ignore//[JAPRO - Serverside - All - Ignore]
+		&client->sess.ignore, //[JAPRO - Serverside - All - Ignore]
+		&tempSawMOTD,
+		&tempRaceMode, 
+		&client->sess.movementStyle,
+		&tempJRAdmin,
+		&tempFullAdmin
 		);
 
 	client->sess.sessionTeam	= (team_t)tempSessionTeam;
 	client->sess.spectatorState	= (spectatorState_t)tempSpectatorState;
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
+	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
+	client->sess.raceMode		= (qboolean)tempRaceMode;
+
+	client->sess.juniorAdmin	= (qboolean)tempJRAdmin;
+	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
 
 	// convert back to spaces from unused chars, as session data is written that way.
 	for ( i=0; client->sess.siegeClass[i]; i++ )

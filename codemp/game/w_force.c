@@ -537,9 +537,9 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
 		return 0;
-	if (attacker && attacker->client && attacker->client->pers.raceMode)//not needed?
+	if (attacker && attacker->client && attacker->client->sess.raceMode)//not needed?
 		return 0;
-	if (other && other->client && other->client->pers.raceMode)//fix having forcepowers used on you when in racemode
+	if (other && other->client && other->client->sess.raceMode)//fix having forcepowers used on you when in racemode
 		return 0;
 
 //JAPRO - Serverside - Fullforce Duels - Start
@@ -663,7 +663,7 @@ qboolean WP_ForcePowerInUse( gentity_t *self, forcePowers_t forcePower )
 
 qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 {
-	if (self->client && self->client->pers.raceMode)
+	if (self->client && self->client->sess.raceMode)
 		return qfalse;
 
 	if (BG_HasYsalamiri(level.gametype, &self->client->ps))
@@ -3685,7 +3685,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					//Okay, dont do this is the owner of missile is in racemode. (rocketjump mode)
 					if (g_raceMode.integer) {
 						gentity_t *owner = &g_entities[push_list[x]->r.ownerNum];
-						if (owner->client && owner->client->pers.raceMode) {
+						if (owner->client && owner->client->sess.raceMode) {
 						}
 						else 
 							G_ReflectMissile( self, push_list[x], forward );

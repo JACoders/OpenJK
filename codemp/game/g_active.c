@@ -486,7 +486,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime ) {
 	float stepSize;
 	int NEW_STEPSIZE = STEPSIZE;
 
-	if (ent->client && (ent->client->pers.movementStyle == 3 || ent->client->pers.movementStyle == 4 || ent->client->pers.movementStyle == 6 || ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8)) {
+	if (ent->client && (ent->client->sess.movementStyle == 3 || ent->client->sess.movementStyle == 4 || ent->client->sess.movementStyle == 6 || ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8)) {
 		if (ent->client->ps.velocity[2] > 0 && ent->client->pers.cmd.upmove > 0) {
 			int jumpHeight = ent->client->ps.origin[2] - ent->client->ps.fd.forceJumpZStart;
 			//NEW_STEPSIZE = 46;
@@ -1344,11 +1344,11 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				other = &g_entities[client->sess.spectatorClient];
 				if (other && other->client) {
 					if (g_allowNoFollow.integer && other->client->pers.noFollow) {
-						if (ent->r.svFlags & SVF_FULLADMIN) {
+						if (ent->client->sess.fullAdmin) {
 							if (!(g_fullAdminLevel.integer & (1 << A_SEEHIDDEN)))
 								StopFollowing(ent);
 						}
-						else if (ent->r.svFlags & SVF_JUNIORADMIN) {
+						else if (ent->client->sess.juniorAdmin) {
 							if (!(g_juniorAdminLevel.integer & (1 << A_SEEHIDDEN)))
 								StopFollowing(ent);
 						}
@@ -1565,7 +1565,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 					break;
 				}
 
-				if (ent->client && ent->client->pers.raceMode)
+				if (ent->client && ent->client->sess.raceMode)
 					break;
 
 				if ( ent->s.eType != ET_PLAYER )
@@ -2791,8 +2791,11 @@ void ClientThink_real( gentity_t *ent ) {
 		ucmd->serverTime = (ucmd->serverTime + 4);
 
 	if (!client->ps.stats[STAT_RACEMODE] && g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) { //Ok,, this should be like every frame, right??
-		client->pers.movementStyle = g_movementStyle.integer;
+		client->sess.movementStyle = g_movementStyle.integer;
 		client->ps.stats[STAT_MOVEMENTSTYLE] = g_movementStyle.integer;
+	}
+	else {
+		client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;
 	}
 
 	//
@@ -2845,12 +2848,12 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	} // Godchat end
 
-	if (ent && ent->client && ((ent->client->pers.movementStyle == 7) || (ent->client->pers.movementStyle == 8)) && ent->health > 0) {
+	if (ent && ent->client && ((ent->client->sess.movementStyle == 7) || (ent->client->sess.movementStyle == 8)) && ent->health > 0) {
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_HEALTH] = ent->health = 100;
 		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 2;
 	}
-	else if (ent && ent->client && ent->client->pers.raceMode) {
+	else if (ent && ent->client && ent->client->sess.raceMode) {
 		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 	}
@@ -3217,10 +3220,10 @@ void ClientThink_real( gentity_t *ent ) {
 		// set speed
 
 		client->ps.speed = g_speed.value;
-		if (client->pers.raceMode || client->ps.stats[STAT_RACEMODE])
+		if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
 			client->ps.speed = 250.0f;
 		if (client->ps.stats[STAT_MOVEMENTSTYLE] == 2 || client->ps.stats[STAT_MOVEMENTSTYLE] == 3 || client->ps.stats[STAT_MOVEMENTSTYLE] == 4 || client->ps.stats[STAT_MOVEMENTSTYLE] == 6 || client->ps.stats[STAT_MOVEMENTSTYLE] == 7 || client->ps.stats[STAT_MOVEMENTSTYLE] == 8) {//qw is 320 too
-			if (client->pers.movementStyle == 2 || client->pers.movementStyle == 3 || client->pers.movementStyle == 4 || client->pers.movementStyle == 6 || client->pers.movementStyle == 7 || client->pers.movementStyle == 8) {  //loda double check idk...
+			if (client->sess.movementStyle == 2 || client->sess.movementStyle == 3 || client->sess.movementStyle == 4 || client->sess.movementStyle == 6 || client->sess.movementStyle == 7 || client->sess.movementStyle == 8) {  //loda double check idk...
 				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
 				if (client->pers.haste)
 					client->ps.speed *= 1.3;
@@ -3269,7 +3272,7 @@ void ClientThink_real( gentity_t *ent ) {
 				else
 				{
 					client->ps.gravity = g_gravity.value;
-					if (client->pers.raceMode || client->ps.stats[STAT_RACEMODE])
+					if (client->sess.raceMode || client->ps.stats[STAT_RACEMODE])
 						client->ps.gravity = 800.0f;
 				}
 			}
@@ -4319,7 +4322,7 @@ void ClientThink_real( gentity_t *ent ) {
 //	G_VehicleAttachDroidUnit( ent );
 
 		// Did we kick someone in our pmove sequence?
-	if (client->ps.forceKickFlip && !client->pers.raceMode)//Saber)
+	if (client->ps.forceKickFlip && !client->sess.raceMode)//Saber)
 	{
 		gentity_t *faceKicked = &g_entities[client->ps.forceKickFlip-1];
 
@@ -4327,7 +4330,7 @@ void ClientThink_real( gentity_t *ent ) {
 			(!faceKicked->client->ps.duelInProgress || faceKicked->client->ps.duelIndex == ent->s.number) &&
 			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number))
 		{
-			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->pers.raceMode && !faceKicked->client->noclip)
+			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->sess.raceMode && !faceKicked->client->noclip)
 			{//push them away and do pain
 				vec3_t oppDir;
 				int strength = (int)VectorNormalize2( client->ps.velocity, oppDir );

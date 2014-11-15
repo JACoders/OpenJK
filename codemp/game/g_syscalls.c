@@ -139,7 +139,7 @@ static void BeginHack(int entityNum)
 			}
 		}
 	} 
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].pers.raceMode) {
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
@@ -157,7 +157,7 @@ static void BeginHack(int entityNum)
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && 
-					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
@@ -184,7 +184,7 @@ static void EndHack(int entityNum) {
 			}
 		}
 	}
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].pers.raceMode) {
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
@@ -201,7 +201,7 @@ static void EndHack(int entityNum) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse &&
-					(ent->client->ps.duelInProgress || ent->client->pers.raceMode)) {
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) {
 					ent->r.ownerNum = saved[i];
 				}
 			}

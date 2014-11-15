@@ -119,6 +119,7 @@
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
 #define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
+
 typedef enum {
 	FOOTSTEP_STONEWALK,
 	FOOTSTEP_STONERUN,

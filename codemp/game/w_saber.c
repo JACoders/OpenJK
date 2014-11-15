@@ -7678,7 +7678,7 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 			G_Sound( ent, CHAN_AUTO, G_SoundIndex( va( "sound/weapons/melee/punch%d", Q_irand( 1, 4 ) ) ) );
 		}
 
-		if (hitEnt->client && hitEnt->client->pers.raceMode)
+		if (hitEnt->client && hitEnt->client->sess.raceMode)
 			return NULL;
 
 		if ( hitEnt->inuse )

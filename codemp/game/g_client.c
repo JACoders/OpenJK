@@ -2621,10 +2621,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		ClientDisconnect( clientNum );
 	}
 
-	//JAPRO - Serverside - Admin
-	ent->r.svFlags &= ~SVF_JUNIORADMIN; // prevent admin from being carried over to new players and bots
-	ent->r.svFlags &= ~SVF_FULLADMIN;
-
 	ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
 
 	// they can connect
@@ -2718,6 +2714,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	te = G_TempEntity( vec3_origin, EV_CLIENTJOIN );
 	te->r.svFlags |= SVF_BROADCAST;
 	te->s.eventParm = clientNum;
+
+	if (firstTime)
+		ent->client->sess.movementStyle = 1;//default to JKA style 
 
 	// for statistics
 //	client->areabits = areabits;
@@ -2865,8 +2864,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		G_AddPlayerLog(client->pers.netname, client->sess.IP, client->pers.guid);
 
 	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
-		client->pers.raceMode = qtrue;
-	if (client->pers.raceMode) 
+		client->sess.raceMode = qtrue;
+	if (client->sess.raceMode) 
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
@@ -2920,9 +2919,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 		ent->client->sess.sawMOTD = qtrue;
 	}
-
-	client->pers.movementStyle = 1;
-	client->ps.stats[STAT_MOVEMENTSTYLE] = 1;//Loda fixme, i want this to default to 1... so just do this here?
 
 	G_ClearClientLog(clientNum);
 }
@@ -3658,10 +3654,10 @@ void ClientSpawn(gentity_t *ent) {
 	}
 
 	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
-		client->pers.raceMode = qtrue;
-	else if (!g_raceMode.integer && client->pers.raceMode) 
-		client->pers.raceMode = qfalse;
-	if (client->pers.raceMode) 
+		client->sess.raceMode = qtrue;
+	else if (!g_raceMode.integer && client->sess.raceMode) 
+		client->sess.raceMode = qfalse;
+	if (client->sess.raceMode) 
 		client->ps.stats[STAT_RACEMODE] = 1;
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
@@ -3766,7 +3762,7 @@ void ClientSpawn(gentity_t *ent) {
 		}
 
 		if (level.gametype != GT_SIEGE) {
-			if (client->pers.raceMode) {
+			if (client->sess.raceMode) {
 				client->ps.stats[STAT_WEAPONS] = ( 1 << WP_MELEE);
 				client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR); //give them disruptor not pistol, since pistol fucks dyn crosshair/strafehelper 
 				client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
@@ -3888,7 +3884,7 @@ void ClientSpawn(gentity_t *ent) {
 		client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
 		client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
 //JAPRO - Serverside - Clan arena type spawn with items - Start
-		if (!client->pers.raceMode) {
+		if (!client->sess.raceMode) {
 			if (g_startingItems.integer & (1 << HI_SEEKER))
 				client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_SEEKER);
 			if (g_startingItems.integer & (1 << HI_SHIELD))
@@ -4132,7 +4128,6 @@ void ClientSpawn(gentity_t *ent) {
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 
-	client->ps.stats[STAT_MOVEMENTSTYLE] = client->pers.movementStyle;
 	client->pers.haste = qfalse; //reset this upon respawn i guess
 
 	client->ps.commandTime = level.time - 100;

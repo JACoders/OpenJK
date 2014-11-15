@@ -2063,7 +2063,7 @@ void PrintStats(int gametype) //JAPRO STATS
 				}
 				else {
 					if (showTeamPowers)
-						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-7s%-12s%-8s%-9s%-11s%-5s%-6s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
+						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-12s%-8s%-9s%-11s%-5s%-6s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strTH, strTE, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 					else
 						tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-9s%-11s%-5s%-6s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strDeaths, strSuicides, strTK, strNet, strName);
 				}

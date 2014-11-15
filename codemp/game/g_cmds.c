@@ -661,7 +661,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
 
-	if (ent->client->pers.raceMode) {
+	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
 		ent->client->ps.duelTime = 0;
 		ent->client->ps.stats[STAT_ONLYBHOP] = 0; //meh
@@ -669,7 +669,7 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0; //beh, only in racemode so wont fuck with ppl using amtele as checkpoints midcourse
 		ent->client->pers.haste = qfalse;
 		//}
-		if (ent->client->pers.movementStyle == 7 || ent->client->pers.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
+		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
 			DeletePlayerProjectiles(ent);
 		}
 	}
@@ -701,9 +701,9 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		}
 	}
 
-	if (!sv_cheats.integer)
+	if (!sv_cheats.integer && ent->client)
 	{
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_NOCLIP)))
 			{
@@ -713,7 +713,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
-				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+				else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
 					Cmd_RaceNoclip_f(ent);
 					return;
 				}
@@ -722,7 +722,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_NOCLIP)))
 			{
@@ -732,7 +732,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 					AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 					ResetPlayerTimers(ent, qtrue);
 				}
-				else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+				else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
 					Cmd_RaceNoclip_f(ent);
 					return;
 				}
@@ -749,7 +749,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 				ResetPlayerTimers(ent, qtrue);
 			}
-			else if (g_allowRaceTele.integer > 1 && ent->client->pers.raceMode) {
+			else if (g_allowRaceTele.integer > 1 && ent->client->sess.raceMode) {
 				Cmd_RaceNoclip_f(ent);
 				return;
 			}
@@ -876,7 +876,7 @@ Cmd_Kill_f
 */
 void Cmd_Kill_f( gentity_t *ent ) {
 	G_Kill( ent );
-	if (ent->client && ent->client->pers.raceMode)
+	if (ent->client && ent->client->sess.raceMode)
 		DeletePlayerProjectiles(ent); //Not sure how ppl could realisticly abuse this.. but might as well add it
 }
 
@@ -2011,7 +2011,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->pers.clanpass, other->client->pers.clanpass) || ent->client->pers.clanpass[0] == 0 || other->client->pers.clanpass[0] == 0)))//Idk
 		return;//Ignore it
-	if (mode == SAY_ADMIN && !(other->r.svFlags & SVF_FULLADMIN || other->r.svFlags & SVF_JUNIORADMIN) && ent != other)
+	if (mode == SAY_ADMIN && !(other->client->sess.fullAdmin || other->client->sess.juniorAdmin) && ent != other)
 		return;
 
 	if (ClientIsIgnored(other-g_entities, ent-g_entities)) {//Also make sure clanpass is set?
@@ -2629,13 +2629,13 @@ void Cmd_AmMapList_f(gentity_t *ent)
 	unsigned int		count = 0, baseMapCount = 0;
 	const unsigned int limit = 192, MAX_MAPS = 512;
 
-	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_LISTMAPS))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+	else if (ent->client && ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
 			return;
@@ -3801,7 +3801,7 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 	if (ent->client->ps.duelInProgress)
 		return;
 
-	if (ent->client->pers.raceMode)
+	if (ent->client->sess.raceMode)
 		return;
 
 	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
@@ -4420,6 +4420,9 @@ void Cmd_Amlogin_f(gentity_t *ent)
 
 	trap->Argv( 1, pass, sizeof( pass ) ); //Password
 
+	if (!ent->client)
+		return;
+
 	if (trap->Argc() == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: amLogin <password>\n\"" ); 
@@ -4427,7 +4430,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 	}
 	if (trap->Argc() == 2) 
 	{
-		if ( ent->r.svFlags & SVF_JUNIORADMIN || ent->r.svFlags & SVF_FULLADMIN)
+		if (ent->client->sess.juniorAdmin || ent->client->sess.fullAdmin)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"You are already logged in. Type in /amLogout to remove admin status.\n\"" ); 
 			return; 
@@ -4441,7 +4444,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 		{
 			if ( !Q_stricmp( "", g_fullAdminPass.string ) )//dunno
 				return;
-			ent->r.svFlags |= SVF_FULLADMIN;
+			ent->client->sess.fullAdmin = qtrue;
 			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with full admin privileges.\n\"");
 			if (Q_stricmp(g_fullAdminMsg.string, "" ))
 				trap->SendServerCommand( -1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_fullAdminMsg.string ));
@@ -4451,7 +4454,7 @@ void Cmd_Amlogin_f(gentity_t *ent)
 		{
 			if ( !Q_stricmp( "", g_juniorAdminPass.string ) )
 				return;
-			ent->r.svFlags |= SVF_JUNIORADMIN;
+			ent->client->sess.juniorAdmin = qtrue;
 			trap->SendServerCommand( ent-g_entities, "print \"^2You are now logged in with junior admin privileges.\n\"");
 			if (Q_stricmp(g_juniorAdminMsg.string, "" ))
 				trap->SendServerCommand( -1, va("print \"%s ^7%s\n\"", ent->client->pers.netname, g_juniorAdminMsg.string ));
@@ -4473,10 +4476,12 @@ Cmd_Amlogout_f
 */
 void Cmd_Amlogout_f(gentity_t *ent)
 {
-	if (ent->r.svFlags & SVF_FULLADMIN || ent->r.svFlags & SVF_JUNIORADMIN)
+	if (!ent->client)
+		return;
+	if (ent->client->sess.fullAdmin || ent->client->sess.juniorAdmin)
 	{ 
-		ent->r.svFlags &= ~SVF_FULLADMIN;
-		ent->r.svFlags &= ~SVF_JUNIORADMIN;
+		ent->client->sess.fullAdmin = qfalse;
+		ent->client->sess.juniorAdmin = qfalse;
 		trap->SendServerCommand( ent-g_entities, "print \"You are no longer an admin.\n\"");         
 	}
 }
@@ -4493,7 +4498,10 @@ void Cmd_Amlockteam_f(gentity_t *ent)
 {
 	char teamname[MAX_TEAMNAME];
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_LOCKTEAM)))
 			{
@@ -4501,7 +4509,7 @@ void Cmd_Amlockteam_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_LOCKTEAM)))
 			{
@@ -4605,7 +4613,10 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 		char teamname[MAX_TEAMNAME];
 		int  clientid = 0;//stfu compiler
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_FORCETEAM)))
 			{
@@ -4613,7 +4624,7 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_FORCETEAM)))
 			{
@@ -4653,7 +4664,8 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 					return; 
 				} 
 
-				if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+
+				if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
 				{
 					if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 						return;
@@ -4770,6 +4782,9 @@ void Cmd_Ampsay_f(gentity_t *ent)
 		char real_msg[MAX_STRING_CHARS];
 		char *msg = ConcatArgs(1); 
 
+		if (!ent->client)
+			return;
+
 		while(*msg)
 		{ 
 			if(msg[0] == '\\' && msg[1] == 'n')
@@ -4785,7 +4800,7 @@ void Cmd_Ampsay_f(gentity_t *ent)
 		}
 		real_msg[pos] = 0;
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_CSPRINT)))
 			{
@@ -4793,7 +4808,7 @@ void Cmd_Ampsay_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_CSPRINT)))
 			{
@@ -4832,7 +4847,10 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_FREEZE)))
 			{
@@ -4840,7 +4858,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_FREEZE)))
 			{
@@ -4869,7 +4887,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if( targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((g_entities[i].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[i].r.svFlags & SVF_JUNIORADMIN))
+					if ((targetplayer->client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && targetplayer->client->sess.juniorAdmin))
 						continue;
 					if (!targetplayer->client->pers.amfreeze)
 						targetplayer->client->pers.amfreeze = qtrue;
@@ -4888,7 +4906,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 
 				if(targetplayer->client && targetplayer->client->pers.connected)
 				{
-					if ((g_entities[i].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[i].r.svFlags & SVF_JUNIORADMIN))
+					if ((targetplayer->client->sess.fullAdmin) || (ent->client->sess.fullAdmin && targetplayer->client->sess.juniorAdmin))
 						continue;
 					if (targetplayer->client->pers.amfreeze)
 					{
@@ -4912,7 +4930,7 @@ void Cmd_Amfreeze_f(gentity_t *ent)
             return; 
         } 
 
-		if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -4955,7 +4973,10 @@ void Cmd_Amkick_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_ADMINKICK)))
 			{
@@ -4963,7 +4984,7 @@ void Cmd_Amkick_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINKICK)))
 			{
@@ -4991,7 +5012,7 @@ void Cmd_Amkick_f(gentity_t *ent)
 			return; 
         } 
 
-		if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5016,7 +5037,10 @@ void Cmd_Amban_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_ADMINBAN)))
 			{
@@ -5024,7 +5048,7 @@ void Cmd_Amban_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINBAN)))
 			{
@@ -5052,7 +5076,7 @@ void Cmd_Amban_f(gentity_t *ent)
 			return; 
         } 
 
-		if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+		if (g_entities[clientid].client && (g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5078,7 +5102,10 @@ void Cmd_Ammap_f(gentity_t *ent)
 		int		gtype;
 		char    mapname[MAX_MAPNAMELENGTH]; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_CHANGEMAP)))
 			{
@@ -5086,7 +5113,7 @@ void Cmd_Ammap_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_CHANGEMAP)))
 			{
@@ -5123,7 +5150,7 @@ void Cmd_Ammap_f(gentity_t *ent)
 	
 		gtype = atoi(gametype);
 
-		if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 			trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
 
 		trap->SendConsoleCommand( EXEC_APPEND, va("g_gametype %i\n", gtype));
@@ -5142,7 +5169,10 @@ void Cmd_Amvstr_f(gentity_t *ent)
 {
 		char   arg[MAX_STRING_CHARS]; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_VSTR)))
 			{
@@ -5150,7 +5180,7 @@ void Cmd_Amvstr_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_VSTR)))
 			{
@@ -5194,7 +5224,10 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 		char arg[MAX_NETNAME];
 		int clientid = -1; 
 
-		if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+		if (!ent->client)
+			return;
+
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_GRANTADMIN)))
 			{
@@ -5202,7 +5235,7 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 				return;
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		{
 			if (!(g_juniorAdminLevel.integer & (1 << A_GRANTADMIN)))
 			{
@@ -5228,7 +5261,10 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 		if (clientid == -1 || clientid == -2)  
 			return;  
 
-		if ((g_entities[clientid].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid].r.svFlags & SVF_JUNIORADMIN))
+		if (!g_entities[clientid].client)
+			return;
+
+		if ((g_entities[clientid].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid].client->sess.juniorAdmin))
 		{
 			if (g_entities[clientid].client->ps.clientNum != ent->client->ps.clientNum)
 				return;
@@ -5238,16 +5274,18 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 
 		if (trap->Argc() == 2) {
 
-			if (!(g_entities[clientid].r.svFlags & SVF_JUNIORADMIN) && !(g_entities[clientid].r.svFlags & SVF_FULLADMIN))
+			if (!(g_entities[clientid].client->sess.juniorAdmin) && !(g_entities[clientid].client->sess.fullAdmin))
 			{
 				trap->SendServerCommand( clientid, "print \"You have been granted Junior admin privileges.\n\"" );
-				g_entities[clientid].r.svFlags |= SVF_JUNIORADMIN;
+				g_entities[clientid].client->sess.juniorAdmin = qtrue;
+				g_entities[clientid].client->sess.fullAdmin = qfalse;
 			}
 		}
 		else if (trap->Argc() == 3) {
 			trap->Argv(2, arg, sizeof(arg)); 
 			if (!Q_stricmp(arg, "none")) {
-				g_entities[clientid].r.svFlags &= ~SVF_JUNIORADMIN;
+				g_entities[clientid].client->sess.fullAdmin = qfalse;
+				g_entities[clientid].client->sess.juniorAdmin = qfalse;
 			}
 		}
 
@@ -5392,80 +5430,80 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	Q_strncpyz(buf, "   ^3Admin commands: ", sizeof(buf));
-	if (!(ent->r.svFlags & SVF_FULLADMIN) && !(ent->r.svFlags & SVF_JUNIORADMIN))
+	if (!(ent->client->sess.fullAdmin) && !(ent->client->sess.juniorAdmin))
 		Q_strcat(buf, sizeof(buf), "you are not an administrator on this server.\n");
 	else {
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINTELE))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINTELE))) 
 			Q_strcat(buf, sizeof(buf), "amTele "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) 
 			Q_strcat(buf, sizeof(buf), "amTele "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_TELEMARK))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_TELEMARK))) 
 			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_TELEMARK))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_TELEMARK))) 
 			Q_strcat(buf, sizeof(buf), "amTeleMark "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FREEZE))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_FREEZE))) 
 			Q_strcat(buf, sizeof(buf), "amFreeze "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_FREEZE))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_FREEZE))) 
 			Q_strcat(buf, sizeof(buf), "amFreeze "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINBAN))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINBAN))) 
 			Q_strcat(buf, sizeof(buf), "amBan "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINBAN))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINBAN))) 
 			Q_strcat(buf, sizeof(buf), "amBan "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_ADMINKICK))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_ADMINKICK))) 
 			Q_strcat(buf, sizeof(buf), "amKick "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK))) 
 			Q_strcat(buf, sizeof(buf), "amKick "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NPC))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_NPC))) 
 			Q_strcat(buf, sizeof(buf), "NPC "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_NPC))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_NPC))) 
 			Q_strcat(buf, sizeof(buf), "NPC "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_NOCLIP))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_NOCLIP))) 
 			Q_strcat(buf, sizeof(buf), "Noclip "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_NOCLIP))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_NOCLIP))) 
 			Q_strcat(buf, sizeof(buf), "Noclip "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_GRANTADMIN))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_GRANTADMIN))) 
 			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_GRANTADMIN))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_GRANTADMIN))) 
 			Q_strcat(buf, sizeof(buf), "amGrantAdmin "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CHANGEMAP))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_CHANGEMAP))) 
 			Q_strcat(buf, sizeof(buf), "amMap "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_CHANGEMAP))) 
 			Q_strcat(buf, sizeof(buf), "amMap "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LISTMAPS))) 
 			Q_strcat(buf, sizeof(buf), "amListMaps ");  
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) 
 			Q_strcat(buf, sizeof(buf), "amListMaps ");
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_CSPRINT))) 
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_CSPRINT))) 
 			Q_strcat(buf, sizeof(buf), "amPsay "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_FORCETEAM))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_FORCETEAM))) 
 			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_FORCETEAM))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_FORCETEAM))) 
 			Q_strcat(buf, sizeof(buf), "amForceTeam "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOCKTEAM))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LOCKTEAM))) 
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LOCKTEAM))) 
 			Q_strcat(buf, sizeof(buf), "amLockTeam "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_LOOKUP))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_LOOKUP))) 
 			Q_strcat(buf, sizeof(buf), "amLookup "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_LOOKUP))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_LOOKUP))) 
 			Q_strcat(buf, sizeof(buf), "amLookup "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_VSTR))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_VSTR))) 
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
 			Q_strcat(buf, sizeof(buf), "amStatus "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
 			Q_strcat(buf, sizeof(buf), "amStatus "); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename"); 
-		if ((ent->r.svFlags & SVF_FULLADMIN) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
 			Q_strcat(buf, sizeof(buf), "dfRefresh "); 
-		if ((ent->r.svFlags & SVF_JUNIORADMIN) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) 
 			Q_strcat(buf, sizeof(buf), "dfRefresh"); 
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 		buf[0] = '\0';
@@ -5485,13 +5523,16 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 	char             msg[1024-128] = {0};
 	gclient_t        *cl;
 
-	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_STATUS))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amStatus).\n\"" );
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << A_STATUS))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amStatus).\n\"" );
 			return;
@@ -5532,15 +5573,15 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 			p = strchr(strIP, ':');
 			if (p) //loda - fix ip sometimes not printing in amstatus?
 				*p = 0;
-			if (g_entities[i].r.svFlags & SVF_FULLADMIN)
+			if (cl->sess.fullAdmin)
 				Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
-			else if (g_entities[i].r.svFlags & SVF_JUNIORADMIN)
+			else if (cl->sess.juniorAdmin)
 				Q_strncpyz(strAdmin, "^3Junior^7", sizeof(strAdmin));
 			else
 				Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));
 
 			if (g_raceMode.integer) {
-				Q_strncpyz(strRace, (cl->pers.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+				Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
 
 				Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
 
@@ -5597,13 +5638,16 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 	fileHandle_t f;
 	qboolean multiple = qfalse;
 
-	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_LOOKUP))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << A_LOOKUP))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
 			return;
@@ -5671,7 +5715,7 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 //Jetpack start
 static void Cmd_Jetpack_f(gentity_t *ent)
 {
-	if (ent->client->pers.raceMode) {
+	if (ent->client->sess.raceMode) {
 		trap->SendServerCommand( ent-g_entities, "print \"Command not allowed in racemode. (jetpack).\n\"" );
 		return;
 	}
@@ -5756,7 +5800,7 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 		return;
 	if (BG_InRoll(&ent->client->ps, ent->s.legsAnim))//is this crashing? if ps is null or something?
 		return;
-	if (ent->client->pers.raceMode) {//No emotes in racemode i guess
+	if (ent->client->sess.raceMode) {//No emotes in racemode i guess
 		trap->SendServerCommand(ent-g_entities, "print \"^7Emotes not allowed in racemode!\n\"");
 		return;
 	}
@@ -6076,7 +6120,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
-	if (!ent->client->pers.raceMode) {
+	if (!ent->client->sess.raceMode) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
 		return;
 	}
@@ -6103,8 +6147,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 
 	if (style >= 0) {
-		ent->client->ps.stats[STAT_MOVEMENTSTYLE] = style;
-		ent->client->pers.movementStyle = style;
+		ent->client->sess.movementStyle = style;
 
 		if (style == 7 || style == 8) {
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
@@ -6136,7 +6179,7 @@ static void Cmd_BackwardsRocket_f(gentity_t *ent)
 		return;
 	}
 
-	if (!ent->client->pers.raceMode) {
+	if (!ent->client->sess.raceMode) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
 		return;
 	}
@@ -6166,28 +6209,28 @@ static void Cmd_Hide_f(gentity_t *ent)
 		return;
 	}
 
-		if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+		if (ent->client->sess.fullAdmin) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_NOFOLLOW))) {
-				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
 				}
-				else if (!ent->client->pers.raceMode || !g_allowNoFollow.integer) {
+				else if (!ent->client->sess.raceMode || !g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
 				}
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 			if (!(g_juniorAdminLevel.integer & (1 << A_NOFOLLOW))) {
-				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
 				}
-				else if (!ent->client->pers.raceMode || !g_allowNoFollow.integer) {
+				else if (!ent->client->sess.raceMode || !g_allowNoFollow.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide).\n\"" );
 					ent->client->pers.noFollow = qfalse;
 					return;
@@ -6195,12 +6238,12 @@ static void Cmd_Hide_f(gentity_t *ent)
 			}
 		}
 		else {//Not logged in
-			if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
+			if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowNoFollow.integer) {
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (hide) outside of racemode.\n\"" );
 				ent->client->pers.noFollow = qfalse;
 				return;
 			}
-			else if (!g_allowNoFollow.integer || !ent->client->pers.raceMode) {
+			else if (!g_allowNoFollow.integer || !ent->client->sess.raceMode) {
 				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (hide).\n\"" );
 				ent->client->pers.noFollow = qfalse;
 				return;
@@ -6209,7 +6252,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 
 	ent->client->pers.noFollow = (qboolean)!ent->client->pers.noFollow;
 
-	if (ent->client->pers.raceMode && g_allowNoFollow.integer > 1) {
+	if (ent->client->sess.raceMode && g_allowNoFollow.integer > 1) {
 		if (ent->client->pers.noFollow) {
 			ent->r.svFlags |= SVF_SINGLECLIENT;
 			ent->r.singleClient = ent->s.number;
@@ -6227,6 +6270,9 @@ static void Cmd_Hide_f(gentity_t *ent)
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
+		if (!ent->client)
+			return;
+		
 		if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
 			gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
 			if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
@@ -6235,32 +6281,32 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 			}
 		}
 
-		if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+		if (ent->client->sess.fullAdmin) {//Logged in as full admin
 			if (!(g_fullAdminLevel.integer & (1 << A_TELEMARK))) {
-				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
 					return;
 				}
-				else if (ent->client->pers.raceMode && !g_allowRaceTele.integer) {
+				else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
 					return;
 				}
 			}
 		}
-		else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 			if (!(g_juniorAdminLevel.integer & (1 << A_TELEMARK))) {
-				if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
 					return;
 				}
-				else if (ent->client->pers.raceMode && !g_allowRaceTele.integer) {
+				else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
 					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark).\n\"" );
 					return;
 				}
 			}
 		}
 		else {//Not logged in
-			if (!ent->client->pers.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+			if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTelemark) outside of racemode.\n\"" );
 				return;
 			}
@@ -6354,7 +6400,7 @@ void Cmd_Warp_f(gentity_t *ent)
 	char enteredWarpName[MAX_NETNAME];
 	vec3_t	angles = {0, 0, 0}, origin = {0, 0, 0};
 
-	if (!ent->client || !ent->client->pers.raceMode) {
+	if (!ent->client || !ent->client->sess.raceMode) {
 		trap->SendServerCommand( ent-g_entities, "print \"You can only use this command in racemode!\n\"" );
 		return;
 	}
@@ -6392,11 +6438,14 @@ void Cmd_Amtele_f(gentity_t *ent)
 	vec3_t	angles = {0, 0, 0}, origin;
 	qboolean droptofloor = qfalse, race = qfalse;
 
-	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if (ent->client->pers.raceMode && g_allowRaceTele.integer)
+			if (ent->client->sess.raceMode && g_allowRaceTele.integer)
 				Cmd_RaceTele_f(ent);
 			else if (g_raceMode.integer && g_allowRaceTele.integer)
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
@@ -6405,11 +6454,11 @@ void Cmd_Amtele_f(gentity_t *ent)
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE)))
 		{
-			if (ent->client->pers.raceMode && g_allowRaceTele.integer)
+			if (ent->client->sess.raceMode && g_allowRaceTele.integer)
 				Cmd_RaceTele_f(ent);
 			else if (g_raceMode.integer && g_allowRaceTele.integer)
 				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
@@ -6420,7 +6469,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 	}
 	else  //Not logged in
 	{
-		if (ent->client->pers.raceMode && g_allowRaceTele.integer)
+		if (ent->client->sess.raceMode && g_allowRaceTele.integer)
 			Cmd_RaceTele_f(ent);
 		else if (g_raceMode.integer && g_allowRaceTele.integer)
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amTele) outside of racemode.\n\"" );
@@ -6429,7 +6478,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		return;	
 	}
 
-	if (ent->client->pers.raceMode) {
+	if (ent->client->sess.raceMode) {
 		droptofloor = qtrue;
 		race = qtrue;
 	}
@@ -6478,7 +6527,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2 || clientid2 == -1 || clientid2 == -2)  
 			return; 
 
-		if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{
@@ -6540,7 +6589,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 
 		else//Amtele other player to origin
 		{
-			if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
+			if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
 			{	
 				if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 				{
@@ -6573,7 +6622,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		if (clientid1 == -1 || clientid1 == -2)
 			return;
 
-		if ((g_entities[clientid1].r.svFlags & SVF_FULLADMIN) || (ent->r.svFlags & SVF_JUNIORADMIN && g_entities[clientid1].r.svFlags & SVF_JUNIORADMIN))//He has admin
+		if (g_entities[clientid1].client && (g_entities[clientid1].client->sess.fullAdmin) || (ent->client->sess.juniorAdmin && g_entities[clientid1].client->sess.juniorAdmin))//He has admin
 		{	
 			if (g_entities[clientid1].client->ps.clientNum != ent->client->ps.clientNum)//Hes not me
 			{
@@ -6607,8 +6656,11 @@ void Cmd_Amrename_f(gentity_t *ent)
 	int		clientid = -1; 
 	char	arg[MAX_STRING_CHARS];
 	char	userinfo[MAX_INFO_STRING]; 
+
+	if (!ent->client)
+		return;
    
-	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	if (ent->client->sess.fullAdmin)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_RENAME)))
 		{
@@ -6616,7 +6668,7 @@ void Cmd_Amrename_f(gentity_t *ent)
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_RENAME)))
 		{
@@ -6658,7 +6710,7 @@ void Cmd_Race_f(gentity_t *ent)
 
 	if (g_raceMode.integer < 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed!\n\"");
-		ent->client->pers.raceMode = qfalse;
+		ent->client->sess.raceMode = qfalse;
 		return;
 	}
 
@@ -6667,15 +6719,15 @@ void Cmd_Race_f(gentity_t *ent)
 		return;
 	}
 
-	if (ent->client->pers.raceMode) {//Toggle it
-		ent->client->pers.raceMode = qfalse;
+	if (ent->client->sess.raceMode) {//Toggle it
+		ent->client->sess.raceMode = qfalse;
 		ent->client->pers.noFollow = qfalse;
 		ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
 		ent->s.weapon = WP_SABER; //Dont drop our weapon
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled off.\n\"");
 	}
 	else {
-		ent->client->pers.raceMode = qtrue;
+		ent->client->sess.raceMode = qtrue;
 		trap->SendServerCommand(ent-g_entities, "print \"^5Race mode toggled on.\n\"");
 	}
 

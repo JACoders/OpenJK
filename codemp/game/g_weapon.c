@@ -2105,7 +2105,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	//
 	vec3_t temp;
 
-	if (ent->client && ent->client->pers.raceMode)
+	if (ent->client && ent->client->sess.raceMode)
 		q3style = qtrue;
 
 	if ( altFire )
@@ -4161,7 +4161,7 @@ void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRi
 
 	if (weapontype > WP_NONE && weapontype < WP_NUM_WEAPONS)
 	{	// Use the table to generate the muzzlepoint;
-		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT && (ent->client->pers.centerMuzzle || ent->client->pers.raceMode)) //Also centerMuzzle for racemode rocketjump styles
+		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT && (ent->client->pers.centerMuzzle || ent->client->sess.raceMode)) //Also centerMuzzle for racemode rocketjump styles
 		{
 			switch (weapontype)
 			{
@@ -5037,7 +5037,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 
 	if (ent->client && ent->client->pers.amfreeze)
 		return;
-	if (ent->client && ent->client->pers.raceMode && !((ent->client->pers.movementStyle == 7) || (ent->client->pers.movementStyle == 8)))
+	if (ent->client && ent->client->sess.raceMode && !((ent->client->sess.movementStyle == 7) || (ent->client->sess.movementStyle == 8)))
 		return;	
 
 	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
@@ -5181,7 +5181,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_ROCKET_LAUNCHER:
-			if (g_tweakWeapons.integer & ROCKET_MORTAR && altFire && ent->client && !ent->client->pers.raceMode)//JAPRO - Mortar
+			if (g_tweakWeapons.integer & ROCKET_MORTAR && altFire && ent->client && !ent->client->sess.raceMode)//JAPRO - Mortar
 				WP_FireMortar(ent);
 			else
 				WP_FireRocket( ent, altFire );

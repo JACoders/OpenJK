@@ -480,7 +480,7 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	if (self->client->ps.duelInProgress)//gun duel
 		return;
 
-	if (self->client->pers.raceMode)//racemode
+	if (self->client->sess.raceMode)//racemode
 		return;
 
 	if ((g_rabbit.integer > 1) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
@@ -591,7 +591,7 @@ void TossClientItems( gentity_t *self ) {
 	if (self->client->ps.duelInProgress)//gun duel
 		return;
 
-	if (self->client->pers.raceMode)//racemode
+	if (self->client->sess.raceMode)//racemode
 		return;
 
 	// drop the weapon if not a gauntlet or machinegun
@@ -4633,11 +4633,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			return;
 	}
 
-	if (attacker && attacker->client && attacker->client->pers.raceMode && !((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)))
+	if (attacker && attacker->client && attacker->client->sess.raceMode && !((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)))
 		return;
-	if (attacker && attacker->client && attacker->client->pers.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && targ->client && (targ != attacker))
+	if (attacker && attacker->client && attacker->client->sess.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && targ->client && (targ != attacker))
 		return;
-	if (targ && targ->client && targ->client->pers.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT && mod != MOD_CRUSH && mod != MOD_LAVA && (damage != Q3_INFINITE))
+	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT && mod != MOD_CRUSH && mod != MOD_LAVA && (damage != Q3_INFINITE))
 		return;
 	//if (targ && targ->client && targ->client->pers.raceMode && mod != MOD_TRIGGER_HURT && mod != MOD_LAVA && mod != MOD_CRUSH)
 		//return;

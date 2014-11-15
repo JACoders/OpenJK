@@ -1531,9 +1531,9 @@ void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
 		return;
 	if (!other->client->pers.userName[0])
 		return;
-	if (self->client->pers.raceMode)
+	if (self->client->sess.raceMode)
 		return;
-	if (other->client->pers.raceMode) //EH?
+	if (other->client->sess.raceMode) //EH?
 		return;
 
 	Q_strncpyz(userName, self->client->pers.userName, sizeof(userName));
@@ -2191,13 +2191,13 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 }
 
 void Cmd_DFRefresh_f(gentity_t *ent) {
-	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (!(g_fullAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfRefresh).\n\"" );
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+	else if (ent->client && ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (!(g_juniorAdminLevel.integer & (1 << A_BUILDHIGHSCORES))) {
 			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (dfRefresh).\n\"" );
 			return;
@@ -2221,11 +2221,11 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
     sqlite3_stmt * stmt;
 	int s;
 
-	if (ent->r.svFlags & SVF_FULLADMIN) {//Logged in as full admin
+	if (ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
 			admin = qtrue;
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN) {//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (g_juniorAdminLevel.integer & (1 << A_WHOIS))
 			admin = qtrue;
 	}

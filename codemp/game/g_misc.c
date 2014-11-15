@@ -203,7 +203,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	// spit the player out
 	if ( !noAngles ) {
 		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-		if (g_quakeStyleTeleport.integer && !player->client->pers.raceMode) //Eh.. ideally should be a spawnflag on the teleporter entity itself? dunno .. todo
+		if (g_quakeStyleTeleport.integer && !player->client->sess.raceMode) //Eh.. ideally should be a spawnflag on the teleporter entity itself? dunno .. todo
 			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
 		else
 			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
@@ -237,9 +237,9 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		trap->LinkEntity ((sharedEntity_t *)player);
 	}
 
-	if (player->client->pers.raceMode) {
+	if (player->client->sess.raceMode) {
 		//player->client->ps.powerups[PW_YSALAMIRI] = 0; //Fuck
-		if (player->client->pers.movementStyle == 7 || player->client->pers.movementStyle == 8) //Get rid of their rockets when they tele/noclip..?
+		if (player->client->sess.movementStyle == 7 || player->client->sess.movementStyle == 8) //Get rid of their rockets when they tele/noclip..?
 			DeletePlayerProjectiles(player);
 	}
 }

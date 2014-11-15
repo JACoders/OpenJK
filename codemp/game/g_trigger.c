@@ -171,7 +171,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	}
 
 	if (ent->spawnflags & 4096) {
-		if (activator && activator->client && activator->client->pers.raceMode)
+		if (activator && activator->client && activator->client->sess.raceMode)
 			return;
 	}
 
@@ -385,7 +385,9 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 //	}
 
 //JAPRO - Serverside - Allow/disallow use button/trigger for duelers - Start
-	if (other->client->ps.duelInProgress && !g_allowUseInDuel.integer)//Loda fixme, make this spawnflags 5 for button? or should it block all triggers?
+	if (other->client->ps.duelInProgress && (g_allowUseInDuel.integer >= 2))//Loda fixme, make this spawnflags 5 for button? or should it block all triggers?
+		return;
+	if ((self->spawnflags & 4) && other->client->ps.duelInProgress && !g_allowUseInDuel.integer)
 		return;
 //JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
 
@@ -1340,7 +1342,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		else 
 			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
-		if (player->r.svFlags & SVF_FULLADMIN)
+		if (player->client->sess.fullAdmin)
 			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > -10): %i\"", diffLag));
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
@@ -1470,7 +1472,7 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		return;
 	if (player->client->pers.stats.startTime && trigger && trigger->spawnflags & 2) { //Instead of a checkpoint, make it reset their time (they went out of bounds or something)
 		player->client->pers.stats.startTime = 0;
-		if (player->client->pers.raceMode)
+		if (player->client->sess.raceMode)
 			player->client->ps.duelTime = 0;
 		trap->SendServerCommand( player-g_entities, "cp \"Timer reset\n\n\n\n\n\n\n\n\n\n\""); //Send message?
 		return;

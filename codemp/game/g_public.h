@@ -40,8 +40,8 @@
 #define SVF_NO_EXTRA_SOUNDS		0x40000000	// No extra or jedi sounds
 
 //JAPRO - Serverside - Admin - Start
-#define SVF_JUNIORADMIN			0x00010000	// client has admin privs
-#define SVF_FULLADMIN			0x00200000
+//#define SVF_JUNIORADMIN			0x00010000	// client has admin privs
+//#define SVF_FULLADMIN			0x00200000
 //JAPRO - Serverside - Admin - End
 
 //rww - ghoul2 trace flags

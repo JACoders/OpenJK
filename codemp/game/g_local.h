@@ -602,13 +602,18 @@ typedef struct clientSession_s {
 	char		siegeClass[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
+	char		IP[NET_ADDRSTRMAXLEN];
 
 //[JAPRO - Serverside - All - Ignore - Start]
 	unsigned int  ignore;      // contains bits of all clients to be ignored, 0 - no one ignored, 0xFFFFFFFF - ignore all
 	qboolean	  sawMOTD;	   // japro has the client been shown the MOTD?
-//[JAPRO - Serverside - All - Ignore - End]
 
-	char		IP[NET_ADDRSTRMAXLEN];
+	qboolean	raceMode;
+	int			movementStyle;
+
+	qboolean	juniorAdmin;
+	qboolean	fullAdmin;
+//[JAPRO - Serverside - All - Ignore - End]
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -677,12 +682,12 @@ typedef struct clientPersistant_s {
 	//int			aimCount;
 
 	qboolean	chatting;
-	qboolean	raceMode;
+	//qboolean	raceMode; //move this to session data
 	qboolean	onlyBhop;
 	qboolean	noRoll;
 
 	int			startLag;
-	int			movementStyle;
+	//int			movementStyle; //move this to session data
 
 	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
 

@@ -4178,7 +4178,10 @@ void Cmd_NPC_f( gentity_t *ent )
 {
 	char	cmd[1024];
 
-	if (ent->r.svFlags & SVF_FULLADMIN)//Logged in as full admin
+	if (!ent->client)
+		return;
+
+	if (ent->client->sess.fullAdmin)//Logged in as full admin
 	{
 		if (!(g_fullAdminLevel.integer & (1 << A_NPC)))
 		{
@@ -4186,7 +4189,7 @@ void Cmd_NPC_f( gentity_t *ent )
 			return;
 		}
 	}
-	else if (ent->r.svFlags & SVF_JUNIORADMIN)//Logged in as junior admin
+	else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 	{
 		if (!(g_juniorAdminLevel.integer & (1 << A_NPC)))
 		{
