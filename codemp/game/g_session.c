@@ -118,7 +118,6 @@ void G_ReadSessionData( gclient_t *client )
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
 	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
 	client->sess.raceMode		= (qboolean)tempRaceMode;
-
 	client->sess.juniorAdmin	= (qboolean)tempJRAdmin;
 	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
 

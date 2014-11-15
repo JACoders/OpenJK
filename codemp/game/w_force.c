@@ -550,7 +550,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 			//// yes both players are dueling -- with each other? 
 			if ( dueltypes[attacker->client->ps.clientNum] == 1 && other->s.number == attacker->client->ps.duelIndex ) {
 				//force duel
-				return 1;
+				//return 1; //wonderful, im a retard
 			}
 			else
 				//normal & melee duel
