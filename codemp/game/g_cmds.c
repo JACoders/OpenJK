@@ -1865,7 +1865,7 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 
 	if (trap->Argc() < 2)
 	{
-		// zuk: other gamemodes will show info of how to use the voice_cmd
+		// zyk: other gamemodes will show info of how to use the voice_cmd
 		if (level.gametype < GT_TEAM)
 		{
 			for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
@@ -8131,9 +8131,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					strcpy(stuff_message,va("%s^3Impact Reducer - ^1no\n",stuff_message));
 
 				if (ent->client->pers.secrets_found & (1 << 10))
-					strcpy(stuff_message,va("%s^3Flame Thrower Upgrade - ^2yes\n",stuff_message));
+					strcpy(stuff_message,va("%s^3Flame Thrower - ^2yes\n",stuff_message));
 				else
-					strcpy(stuff_message,va("%s^3Flame Thrower Upgrade - ^1no\n",stuff_message));
+					strcpy(stuff_message,va("%s^3Flame Thrower - ^1no\n",stuff_message));
 
 				if (ent->client->pers.secrets_found & (1 << 11))
 					strcpy(stuff_message,va("%s^3Power Cell Weapons Upgrade - ^2yes\n",stuff_message));
@@ -8209,7 +8209,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 18)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Team Energize: ^7restores some force power to players near you. If Improvements skill is at least at level 1, regens blaster pack and power cell ammo of the target players\n\"" );
 					if (i == 19)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Stun Baton: ^7attacks someone with a small electric charge. Has %d damage. Level 2 causes double damage and knocks down the enemy (does not work for Force User or Monk). Level 3 causes triple damage, decloaks enemies and fires the flame thrower when using alternate fire (does not work for Force User or Monk). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects\n\"", zyk_stun_baton_damage.integer));
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Stun Baton: ^7attacks someone with a small electric charge. Has %d damage. Level 2 does double damage and knocks down the enemy (does not work for Force User, Monk or Duelist). Level 3 does triple damage and decloaks enemies. Can fire the flame thrower when using alternate fire (does not work for Force User, Monk or Duelist). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects\n\"", zyk_stun_baton_damage.integer));
 					if (i == 20)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pistol: ^7the popular Star Wars pistol used by Han Solo, Leia and other people in the movies. Normal fire is a single laser shot, alternate fire allows you to fire a powerful charged shot. The pistol laser causes %d damage. The charged shot causes a lot more damage depending on how much it was charged. At level 2 causes 25 per cent more damage\n\"", zyk_blaster_pistol_damage.integer));
 					if (i == 21)
@@ -8421,7 +8421,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 8000 - Sell: 1500\n^316 - Flame Thrower Upgrade: ^7Buy: 5000 - Sell: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 2500 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 7000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 2500 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -8485,7 +8485,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 16)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Flame Thrower Upgrade: ^7reduces flame thrower fuel usage to 50 per cent\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Flame Thrower: ^7gives you the flame thrower. To use it, get stun baton and use alternate fire\n\n\"");
 		}
 		else if (i == 17)
 		{
@@ -8594,7 +8594,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[40] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,8000,5000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,2500};
+	int item_costs[40] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,2500};
 
 	if (trap->Argc() == 1)
 	{
@@ -8667,7 +8667,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	}
 	else if (value == 16 && ent->client->pers.secrets_found & (1 << 10))
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"You already have the Flame Thrower Upgrade.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"You already have the Flame Thrower.\n\"" );
 		return;
 	}
 	else if (value == 25 && ent->client->pers.secrets_found & (1 << 11))
@@ -8910,7 +8910,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,3000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0};
+	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0};
 
 	if (trap->Argc() == 1)
 	{

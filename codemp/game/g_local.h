@@ -606,9 +606,9 @@ typedef struct clientPersistant_s {
 	int teamshield; // zyk: teamshield heal level. Used in RPG mode
 
 	int drain_shield; // zyk: drain shield level. Used in RPG mode
-	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect, if in level 3, deactivates cloak, causes triple damage and fires the flame thrower with alternate fire
+	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect. If in level 3, deactivates cloak and does triple damage
 	
-	int flame_thrower; // zyk: used by stun baton level 3 skill. Its the flame thrower timer
+	int flame_thrower; // zyk: used by stun baton. Its the flame thrower timer
 
 	int mind_control; // zyk: mind control skill level. Used in RPG mode
 	
@@ -635,7 +635,7 @@ typedef struct clientPersistant_s {
 	// 7 - Stealth Attacker Upgrade
 	// 8 - Unused
 	// 9 - Impact Reducer
-	// 10 - Flame Thrower Upgrade
+	// 10 - Flame Thrower
 	// 11 - Power Cell Weapons Upgrade
 	// 12 - Blaster Pack Weapons Upgrade
 	// 13 - Metal Bolts Weapons Upgrade

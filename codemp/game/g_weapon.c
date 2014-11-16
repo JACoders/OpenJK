@@ -3416,20 +3416,17 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 	trap->Trace ( &tr, muzzleStun, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 	// zyk: starts flamethrower
-	if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 3 && alt_fire == qtrue && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ((!(ent->client->pers.secrets_found & (1 << 10)) && ent->client->ps.cloakFuel >= 4) || (ent->client->pers.secrets_found & (1 << 10) && ent->client->ps.cloakFuel >= 1)))
+	if (ent->client && ent->client->sess.amrpgmode == 2 && alt_fire == qtrue && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && 
+		ent->client->pers.rpg_class != 6 && ent->client->pers.secrets_found & (1 << 10) && ent->client->ps.cloakFuel > 0)
 	{
-		int flame_thrower_fuel_usage = 4;
+		int flame_thrower_fuel_usage = 2;
 		G_Sound( ent, CHAN_WEAPON, G_SoundIndex("sound/effects/fireout.mp3") );
 
 		ent->client->pers.flame_thrower = level.time + 1500;
-
-		// zyk: decreases flame thrower fuel usage
-		if (ent->client->pers.secrets_found & (1 << 10))
-			flame_thrower_fuel_usage = flame_thrower_fuel_usage/2;
 		
 		// zyk: Armored Soldier Upgrade spends less flame thrower fuel
 		if (ent->client->pers.rpg_class == 3 && ent->client->pers.secrets_found & (1 << 16))
-			flame_thrower_fuel_usage = flame_thrower_fuel_usage/2;
+			flame_thrower_fuel_usage = 1;
 
 		ent->client->ps.cloakFuel -= flame_thrower_fuel_usage;
 	}
