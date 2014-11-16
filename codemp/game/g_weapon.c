@@ -3523,8 +3523,8 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					}
 
 					tr_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-					tr_ent->client->ps.forceHandExtendTime = level.time + 500;
-					tr_ent->client->ps.velocity[2] += 300;
+					tr_ent->client->ps.forceHandExtendTime = level.time + 300;
+					tr_ent->client->ps.velocity[2] += 200;
 					tr_ent->client->ps.forceDodgeAnim = 0;
 					tr_ent->client->ps.quickerGetup = qtrue;
 				}
