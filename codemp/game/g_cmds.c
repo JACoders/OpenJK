@@ -3472,6 +3472,10 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 	}
 	*/
 
+	if (ent->client->lastSaberAttackCycleTime > level.time + 100)
+		return;
+	ent->client->lastSaberAttackCycleTime = level.time;
+
 	if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
 	{ //no cycling for akimbo
 		if ( WP_SaberCanTurnOffSomeBlades( &ent->client->saber[1] ) )

@@ -1079,7 +1079,7 @@ gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel ) {
 	gentity_t		*e;
 	vec3_t		snapped;
 
-	e = G_Spawn(qtrue);
+	e = G_Spawn(qfalse);
 
 	e->s.eType = ET_EVENTS + event;
 	e->inuse = qtrue;

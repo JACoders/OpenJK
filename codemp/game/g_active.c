@@ -2938,8 +2938,8 @@ void ClientThink_real( gentity_t *ent ) {
 				}
 			}
 			else if (client->emote_freeze)
-			{
-				if (client->pers.cmd.forwardmove ||	client->pers.cmd.rightmove || client->pers.cmd.upmove || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->buttons & BUTTON_ATTACK || client->buttons & BUTTON_ALT_ATTACK)
+			{ //unfreeze if we are being gripped i guess rite
+				if (client->ps.fd.forceGripCripple || client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->buttons & BUTTON_ATTACK || client->buttons & BUTTON_ALT_ATTACK)
 				{
 					client->emote_freeze = qfalse;
 					client->ps.saberCanThrow = qtrue;

@@ -992,6 +992,7 @@ struct gclient_s {
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
+	int			lastSaberAttackCycleTime;
 	qboolean	emote_freeze;//JAPRO - Amfreeze Anim
 	int			lastUpdateFrame; // JAPRO - Smooth clients loda
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
