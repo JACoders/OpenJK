@@ -2563,6 +2563,8 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
+qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean siegeOverride);
+qboolean G_SaberModelSetup(gentity_t *ent);
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -2611,7 +2613,20 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!(client->ps.pm_flags & PMF_FOLLOW))
 	{
-		if (level.gametype == GT_SIEGE &&
+		if (g_forceSaberStyle.integer >= SS_FAST && g_forceSaberStyle.integer <= SS_TAVION) { //single style
+			if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || client->saber[1].model[0]) { //If saber1 doesnt match kyle, or saber2.. set them to single saber
+				char userinfo[MAX_INFO_STRING];
+				
+				trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
+				G_SetSaber(ent, 0, "kyle", qfalse);
+				G_SetSaber(ent, 1, "none", qfalse);
+				trap->SetUserinfo(ent-g_entities, userinfo);
+				ClientUserinfoChanged(ent-g_entities);
+				G_SaberModelSetup(ent);
+			}
+			client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = g_forceSaberStyle.integer;
+		}
+		else if (level.gametype == GT_SIEGE &&
 			client->siegeClass != -1 &&
 			bgSiegeClasses[client->siegeClass].saberStance)
 		{ //the class says we have to use this stance set.
