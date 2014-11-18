@@ -4259,6 +4259,8 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
+			if ((ent->client->ps.fd.saberAnimLevel == SS_STAFF || ent->client->ps.fd.saberAnimLevel == SS_DUAL) && (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 200)) //style dependant..? ent->client->ps.fd.saberAnimLevel
+				break;
 			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 50)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
