@@ -379,9 +379,9 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 	char	buf[MAX_TMP_RACELOG_SIZE] = {0}, empty[8] = {0};//eh
 	char*	pch;
 	sqlite3 * db;
-	char * sql;
+	char* sql;
 	sqlite3_stmt * stmt;
-	RaceRecord_t	TempRaceRecord[1024]; //Max races per map to count i gues..?
+	RaceRecord_t	TempRaceRecord[1024] = {0}; //Max races per map to count i gues..? should this be zeroed?
 	qboolean good = qfalse, foundFaster = qfalse;
 
 	fLen = trap->FS_Open(TEMP_RACE_LOG, &f, FS_READ);
@@ -458,7 +458,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 		if (!TempRaceRecord[i].username[0])//see what happens if we move this up here..
 			break;
 
-		if (!TempRaceRecord[i].end_timeInt)//see what happens if we move this up here..
+		if (TempRaceRecord[i].end_timeInt <= 0)
 			break;
 
 		if (!foundFaster) {
@@ -470,11 +470,11 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 
 			CALL_SQLITE (bind_text (stmt, 1, TempRaceRecord[place].username, -1, SQLITE_STATIC));
 			CALL_SQLITE (bind_text (stmt, 2, TempRaceRecord[place].coursename, -1, SQLITE_STATIC));
-			CALL_SQLITE (bind_int (stmt, 3, TempRaceRecord[place].duration_ms));
-			CALL_SQLITE (bind_int (stmt, 4, TempRaceRecord[place].topspeed));
-			CALL_SQLITE (bind_int (stmt, 5, TempRaceRecord[place].average));
-			CALL_SQLITE (bind_int (stmt, 6, TempRaceRecord[place].style));
-			CALL_SQLITE (bind_int (stmt, 7, TempRaceRecord[place].end_timeInt));
+			CALL_SQLITE (bind_int64 (stmt, 3, TempRaceRecord[place].duration_ms));
+			CALL_SQLITE (bind_int64 (stmt, 4, TempRaceRecord[place].topspeed));
+			CALL_SQLITE (bind_int64 (stmt, 5, TempRaceRecord[place].average));
+			CALL_SQLITE (bind_int64 (stmt, 6, TempRaceRecord[place].style));
+			CALL_SQLITE (bind_int64 (stmt, 7, TempRaceRecord[place].end_timeInt));
 
 			//CALL_SQLITE_EXPECT (step (stmt), DONE);
 			s = sqlite3_step(stmt);
