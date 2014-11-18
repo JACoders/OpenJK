@@ -6889,8 +6889,10 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (g_fastWeaponSwitch.integer)
+	if (g_fastWeaponSwitch.integer == 1)
 		pm->ps->weaponTime += 25;
+	else if (g_fastWeaponSwitch.integer > 1 && weapon == WP_SABER) //fix saber switch glitch if we want
+		pm->ps->weaponTime += 1250;
 	else
 		pm->ps->weaponTime += 250;
 #else

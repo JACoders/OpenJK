@@ -3472,10 +3472,6 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 	}
 	*/
 
-	if (ent->client->lastSaberAttackCycleTime > level.time + 100)
-		return;
-	ent->client->lastSaberAttackCycleTime = level.time;
-
 	if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
 	{ //no cycling for akimbo
 		if ( WP_SaberCanTurnOffSomeBlades( &ent->client->saber[1] ) )
@@ -5154,8 +5150,8 @@ void Cmd_Ammap_f(gentity_t *ent)
 	
 		gtype = atoi(gametype);
 
-		if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-			trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
+		//if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+		trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
 
 		trap->SendConsoleCommand( EXEC_APPEND, va("g_gametype %i\n", gtype));
 		trap->SendConsoleCommand( EXEC_APPEND, va("map %s\n", mapname));

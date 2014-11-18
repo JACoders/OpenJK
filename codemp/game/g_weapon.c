@@ -2105,8 +2105,11 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	//
 	vec3_t temp;
 
-	if (ent->client && ent->client->sess.raceMode)
+	if (ent->client && ent->client->sess.raceMode) {
 		q3style = qtrue;
+		damage = 100; //force default dmg/vel for racers
+		vel = 900;
+	}
 
 	if ( altFire )
 		vel *= 0.5f;

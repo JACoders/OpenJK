@@ -4040,6 +4040,9 @@ void ClientThink_real( gentity_t *ent ) {
 		case 0:
 			break;
 		case GENCMD_SABERSWITCH:
+			if (ent->client->lastSaberActivateTime > level.time - 150)
+				break;
+			ent->client->lastSaberActivateTime = level.time;
 			Cmd_ToggleSaber_f(ent);
 			break;
 		case GENCMD_ENGAGE_DUEL:
@@ -4218,21 +4221,39 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
+			if (ent->client->lastSaberAttackCycleTime > level.time - 150)
+				break;
+			ent->client->lastSaberAttackCycleTime = level.time;
 			Cmd_SaberAttackCycle_f(ent);
 			break;
 		case GENCMD_TAUNT:
+			if (ent->client->lastTauntTime > level.time - 500)
+				break;
+			ent->client->lastTauntTime = level.time;
 			G_SetTauntAnim( ent, TAUNT_TAUNT );
 			break;
 		case GENCMD_BOW:
+			if (ent->client->lastTauntTime > level.time - 500)
+				break;
+			ent->client->lastTauntTime = level.time;
 			G_SetTauntAnim( ent, TAUNT_BOW );
 			break;
 		case GENCMD_MEDITATE:
+			if (ent->client->lastTauntTime > level.time - 500)
+				break;
+			ent->client->lastTauntTime = level.time;
 			G_SetTauntAnim( ent, TAUNT_MEDITATE );
 			break;
 		case GENCMD_FLOURISH:
+			if (ent->client->lastTauntTime > level.time - 500)
+				break;
+			ent->client->lastTauntTime = level.time;
 			G_SetTauntAnim( ent, TAUNT_FLOURISH );
 			break;
 		case GENCMD_GLOAT:
+			if (ent->client->lastTauntTime > level.time - 500)
+				break;
+			ent->client->lastTauntTime = level.time;
 			G_SetTauntAnim( ent, TAUNT_GLOAT );
 			break;
 		default:
