@@ -45,6 +45,9 @@ void G_WriteClientSessionData( gclient_t *client )
 			IP[i] = 1;
 	}
 
+	if (!IP[0])
+		Q_strncpyz( IP, "IP", sizeof( IP ) ); //sad hack. i think this is what was messing up session data.. since scanf was skipping right past it
+
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorNum ) );

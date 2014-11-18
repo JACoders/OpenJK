@@ -590,6 +590,72 @@ void Svcmd_Say_f( void ) {
 	trap->SendServerCommand( -1, va("print \"server: %s\n\"", text ) );
 }
 
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_T;
+
+static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{"Nonrandom DEMP2"},//1
+	{"Increased DEMP2 primary damage"},//2
+	{"Decreased disruptor alt damage"},//3
+	{"Nonrandom bowcaster spread"},//4
+	{"Increased repeater alt damage"},//5
+	{"Nonrandom flechette primary spread"},//6
+	{"Decreased flechette alt damage"},//7
+	{"Nonrandom flechette alt spread"},//8
+	{"Increased concussion rifle alt damage"},//9
+	{"Removed projectile knockback"},//10
+	{"Stun baton lightning gun"},//11
+	{"Stun baton shocklance"},//12
+	{"Projectile gravity"},//13
+	{"Allow center muzzle"},//14
+	{"Pseudo random weapon spread"},//15
+	{"Rocket alt fire mortar"},//16
+	{"Rocket alt fire redeemer"},//17
+	{"Infinite ammo"},//18
+	{"Stun baton heal gun"},//19
+	{"Weapons can damage vehicles"},//20
+	{"Reduced saberblock for MP damages"},//21
+	{"Allow gunroll"},//22
+	{"Fast weaponswitch"},//22
+	{"Fixed saberswitch"}//23
+};
+static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
+
+void Svcmd_ToggleTweakWeapons_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_WEAPON_TWEAKS; i++ ) {
+			if ( (g_tweakWeapons.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, weaponTweaks[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, weaponTweaks[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_WEAPON_TWEAKS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_WEAPON_TWEAKS ) {
+			trap->Print( "tweakWeapons: Invalid range: %i [0, %i]\n", index, MAX_WEAPON_TWEAKS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_tweakWeapons", va( "%i", (1 << index) ^ (g_tweakWeapons.integer & mask ) ) );
+		trap->Cvar_Update( &g_tweakWeapons );
+
+		trap->Print( "%s %s^7\n", weaponTweaks[index].string, ((g_tweakWeapons.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 typedef struct svcmd_s {
 	const char	*name;
 	void		(*func)(void);
@@ -628,7 +694,7 @@ svcmd_t svcmds[] = {
 	{ "checkspawns",				G_CheckSpawns,						qfalse },
 
 	{ "clearIP",					Svcmd_ClearIP_f,					qfalse },
-	{ "DBInfo",						Svcmd_DBInfo_f,					qfalse },
+	{ "DBInfo",						Svcmd_DBInfo_f,						qfalse },
 	{ "deleteAccount",				Svcmd_DeleteAccount_f,				qfalse },
 
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
@@ -640,7 +706,8 @@ svcmd_t svcmds[] = {
 
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "say",						Svcmd_Say_f,						qtrue },
-	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse }
+	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
+	{ "tweakweapons",				Svcmd_ToggleTweakWeapons_f,			qfalse }
 };
 static const size_t numsvcmds = ARRAY_LEN( svcmds );
 

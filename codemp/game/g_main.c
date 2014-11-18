@@ -1995,9 +1995,9 @@ void PrintStats(int gametype) //JAPRO STATS
 	}
 	else {//ctf
 		if ((g_weaponDisable.integer > (1<<WP_CONCUSSION)) && (g_startingWeapons.integer == 8))//Weps disabled?
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Name^7\n" );
 		else
-			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Damage Given   Damage Taken   Net Damage   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Accuracy   Name^7\n" );
+			Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"Dmg Given   Dmg Taken   Net Dmg   Dmg/Death   Kills   Flag Caps   Returns   Carrier Kills   Accuracy   Name^7\n" );
 	}
 
 	for (i=0; i<MAX_CLIENTS; i++)
@@ -2078,9 +2078,9 @@ void PrintStats(int gametype) //JAPRO STATS
 				Com_sprintf(strReturns, sizeof(strReturns), "%i", cl->pers.teamState.flagrecovery);	
 				Com_sprintf(strFlagKills, sizeof(strFlagKills), "%i", cl->pers.teamState.fragcarrier);
 				if (showAccuracy)
-					tmpMsg = va( "%s%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s%-11s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
+					tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-12s%-10s%-16s%-11s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, accuracyStr, strName);
 				else {
-					tmpMsg = va( "%s%-12s%-12s%-10s%-9s%-8s%-12s%-10s%-16s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName); //fixme, align this sometime
+					tmpMsg = va( "%s%-12s%-12s%-10s%-12s%-8s%-12s%-10s%-16s^7%s^7\n", c, strDG, strDT, strDN, strDPD, strKills, strCaps, strReturns, strFlagKills, strName); //fixme, align this sometime
 				}
 			}
 

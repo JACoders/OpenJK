@@ -640,7 +640,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 		if (fpDisabled & (1 << FP_SABER_OFFENSE))
 			final_Powers[FP_SABER_OFFENSE] = 1;
 		if (fpDisabled & (1 << FP_SABER_DEFENSE))
-			final_Powers[FP_SABER_DEFENSE] = 1;
+			final_Powers[FP_SABER_DEFENSE] = 0; //should this be 0..
 //[JAPRO - Serverside - Saber - Fix Block/attack Level defaulting to highest - End]
 	}
 
