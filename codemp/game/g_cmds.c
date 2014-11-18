@@ -7106,6 +7106,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Increased concussion rifle alt damage\n");
 		if (g_tweakWeapons.integer & PROJECTILE_KNOCKBACK)
 			Q_strcat(buf, sizeof(buf), "   ^5Removed knockback from most projectiles\n");
+		if (g_tweakWeapons.integer & STUN_HEAL)
+			Q_strcat(buf, sizeof(buf), "   ^5Heal gun stun baton\n");
 		if (g_tweakWeapons.integer & STUN_LG)
 			Q_strcat(buf, sizeof(buf), "   ^5Lightning gun stun baton\n");
 		if (g_tweakWeapons.integer & STUN_SHOCKLANCE)

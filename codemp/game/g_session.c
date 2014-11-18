@@ -72,6 +72,8 @@ void G_WriteClientSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 
 	trap->Cvar_Set( var, s );
+
+	trap->Print("WRITING: %s, Session: %s\n", var, s);
 }
 
 /*
@@ -89,6 +91,8 @@ void G_ReadSessionData( gclient_t *client )
 
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
+
+	trap->Print("READING: %s, Session: %s\n", var, s);
 
 	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
@@ -118,8 +122,8 @@ void G_ReadSessionData( gclient_t *client )
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
 	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
 	client->sess.raceMode		= (qboolean)tempRaceMode;
-	client->sess.juniorAdmin	= (qboolean)tempJRAdmin;
-	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
+	client->sess.juniorAdmin	= qfalse;//(qboolean)tempJRAdmin;
+	client->sess.fullAdmin		= qfalse;//(qboolean)tempFullAdmin;
 
 	// convert back to spaces from unused chars, as session data is written that way.
 	for ( i=0; client->sess.siegeClass[i]; i++ )
