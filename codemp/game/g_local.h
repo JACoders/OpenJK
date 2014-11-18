@@ -213,6 +213,8 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ANTI_VEHICLE		(1<<19)
 #define REDUCE_SABERBLOCK	(1<<20)
 #define ALLOW_GUNROLL		(1<<21)
+#define FAST_WEAPONSWITCH	(1<<22)
+#define FIXED_SABERSWITCH	(1<<23)
 
 
 //JAPRO - Serverside - Unlagged bitvalues
@@ -1002,6 +1004,9 @@ struct gclient_s {
 	int			pmoveMsec;//Japro timers
 	int			lastBounceTime; //japro bounce trigger
 	int			noKnockdownStreak; //pseudo random knockdowns option
+
+	int			genCmdDebounce[8];
+
 	vec3_t		lastVelocity;
 
 	//Testunlagged
@@ -1017,6 +1022,27 @@ struct gclient_s {
 		int		lightningDebounce;
 	} force;
 };
+
+
+typedef enum {
+	GENCMD_DELAY_SABER,
+	GENCMD_DELAY_SABERSWITCH,
+	GENCMD_DELAY_TAUNT,
+	GENCMD_DELAY_EMOTE,
+	GENCMD_DELAY_DUEL,
+	GENCMD_DELAY_HEAL,
+	GENCMD_DELAY_SPEED,
+	GENCMD_DELAY_TRICK,
+	GENCMD_DELAY_RAGE,
+	GENCMD_DELAY_PROTECT,
+	GENCMD_DELAY_ABSORB,
+	GENCMD_DELAY_SEEING,
+	GENCMD_DELAY_BINOCS,
+	GENCMD_DELAY_ZOOM,
+	GENCMD_DELAY_JETPACK,
+	GENCMD_DELAY_EWEB,
+	GENCMD_DELAY_CLOAK
+} genCmdType_t;
 
 //Interest points
 

@@ -4025,27 +4025,29 @@ void ClientThink_real( gentity_t *ent ) {
 		pmove.checkDuelLoss = 0;
 	}
 
-	if (pmove.cmd.generic_cmd &&
-		(pmove.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
+	//if (pmove.cmd.generic_cmd && (pmove.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
+	if (pmove.cmd.generic_cmd)
 	{
-		ent->client->lastGenCmd = pmove.cmd.generic_cmd;
-		if (pmove.cmd.generic_cmd != GENCMD_FORCE_THROW &&
-			pmove.cmd.generic_cmd != GENCMD_FORCE_PULL)
-		{ //these are the only two where you wouldn't care about a delay between
-			ent->client->lastGenCmdTime = level.time + 300; //default 100ms debounce between issuing the same command.
-		}
+		//ent->client->lastGenCmd = pmove.cmd.generic_cmd;
+		//if (pmove.cmd.generic_cmd != GENCMD_FORCE_THROW && pmove.cmd.generic_cmd != GENCMD_FORCE_PULL)
+		//{ //these are the only two where you wouldn't care about a delay between
+		//	ent->client->lastGenCmdTime = level.time + 300; //default 100ms debounce between issuing the same command.
+		//}
 
 		switch(pmove.cmd.generic_cmd)
 		{
 		case 0:
 			break;
 		case GENCMD_SABERSWITCH:
-			if (ent->client->lastSaberActivateTime > level.time - 150)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABER] > level.time - 250)
 				break;
-			ent->client->lastSaberActivateTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_SABER] = level.time;
 			Cmd_ToggleSaber_f(ent);
 			break;
 		case GENCMD_ENGAGE_DUEL:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_DUEL] > level.time - 50)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_DUEL] = level.time;
 			if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{//already in a duel, made it a taunt command
 			}
@@ -4055,9 +4057,15 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_FORCE_HEAL:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_HEAL] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_HEAL] = level.time;
 			ForceHeal(ent);
 			break;
 		case GENCMD_FORCE_SPEED:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SPEED] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_SPEED] = level.time;
 			ForceSpeed(ent, 0);
 			break;
 		case GENCMD_FORCE_THROW:
@@ -4067,24 +4075,39 @@ void ClientThink_real( gentity_t *ent ) {
 			ForceThrow(ent, qtrue);
 			break;
 		case GENCMD_FORCE_DISTRACT:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TRICK] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_TRICK] = level.time;
 			ForceTelepathy(ent);
 			break;
 		case GENCMD_FORCE_RAGE:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_RAGE] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_RAGE] = level.time;
 			ForceRage(ent);
 			break;
 		case GENCMD_FORCE_PROTECT:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_PROTECT] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_PROTECT] = level.time;
 			ForceProtect(ent);
 			break;
 		case GENCMD_FORCE_ABSORB:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_ABSORB] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_ABSORB] = level.time;
 			ForceAbsorb(ent);
 			break;
 		case GENCMD_FORCE_HEALOTHER:
-			ForceTeamHeal(ent);
+			ForceTeamHeal(ent); //Only need to debounce powers that you can toggle i guess, since these are debounced when you 'activate' them
 			break;
 		case GENCMD_FORCE_FORCEPOWEROTHER:
 			ForceTeamForceReplenish(ent);
 			break;
 		case GENCMD_FORCE_SEEING:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SEEING] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_SEEING] = level.time;
 			ForceSeeing(ent);
 			break;
 		case GENCMD_USE_SEEKER:
@@ -4124,6 +4147,9 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_USE_ELECTROBINOCULARS:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_BINOCS] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_BINOCS] = level.time;
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_BINOCULARS)) &&
 				G_ItemUsable(&ent->client->ps, HI_BINOCULARS) )
 			{
@@ -4139,6 +4165,9 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_ZOOM:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_ZOOM] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_ZOOM] = level.time;
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_BINOCULARS)) &&
 				G_ItemUsable(&ent->client->ps, HI_BINOCULARS) )
 			{
@@ -4163,6 +4192,9 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_USE_JETPACK:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_JETPACK] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_JETPACK] = level.time;
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) &&
 				G_ItemUsable(&ent->client->ps, HI_JETPACK) )
 			{
@@ -4199,6 +4231,9 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_USE_EWEB:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_EWEB] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_EWEB] = level.time;
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_EWEB)) &&
 				G_ItemUsable(&ent->client->ps, HI_EWEB) )
 			{
@@ -4207,6 +4242,9 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_USE_CLOAK:
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_CLOAK] > level.time - 300)
+				break;
+			ent->client->genCmdDebounce[GENCMD_DELAY_CLOAK] = level.time;
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_CLOAK)) &&
 				G_ItemUsable(&ent->client->ps, HI_CLOAK) )
 			{
@@ -4221,39 +4259,39 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
-			if (ent->client->lastSaberAttackCycleTime > level.time - 150)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 50)
 				break;
-			ent->client->lastSaberAttackCycleTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
 			Cmd_SaberAttackCycle_f(ent);
 			break;
 		case GENCMD_TAUNT:
-			if (ent->client->lastTauntTime > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
 				break;
-			ent->client->lastTauntTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_TAUNT );
 			break;
 		case GENCMD_BOW:
-			if (ent->client->lastTauntTime > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 500)
 				break;
-			ent->client->lastTauntTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] = level.time;
 			G_SetTauntAnim( ent, TAUNT_BOW );
 			break;
 		case GENCMD_MEDITATE:
-			if (ent->client->lastTauntTime > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 500)
 				break;
-			ent->client->lastTauntTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] = level.time;
 			G_SetTauntAnim( ent, TAUNT_MEDITATE );
 			break;
 		case GENCMD_FLOURISH:
-			if (ent->client->lastTauntTime > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
 				break;
-			ent->client->lastTauntTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_FLOURISH );
 			break;
 		case GENCMD_GLOAT:
-			if (ent->client->lastTauntTime > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
 				break;
-			ent->client->lastTauntTime = level.time;
+			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_GLOAT );
 			break;
 		default:

@@ -6889,10 +6889,10 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (g_fastWeaponSwitch.integer == 1)
-		pm->ps->weaponTime += 25;
-	else if (g_fastWeaponSwitch.integer > 1 && weapon == WP_SABER) //fix saber switch glitch if we want
+	if ((g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) //fix saber switch glitch if we want
 		pm->ps->weaponTime += 1250;
+	else if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
+		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;
 #else
@@ -7846,7 +7846,7 @@ static void PM_Weapon( void )
 		//this is so that my holster-view-weapon-when-hand-extend stuff works.
 		pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (g_fastWeaponSwitch.integer)
+	if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
 		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;

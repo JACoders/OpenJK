@@ -774,7 +774,7 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
     char * sql;
     sqlite3_stmt * stmt;
     int row = 0, s, count = 0, i;
-	unsigned int ip, lastip;
+	unsigned int ip, lastip = 0;
 	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
 	char *p = NULL;
 	gclient_t	*cl;
@@ -2397,7 +2397,7 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 void G_SpawnBlocksFromCfg(void) //loda fixme
 {
 	fileHandle_t f;	
-	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_BLOCKS = 64, args = 1, row = 0, value = 0;  //use max num warps idk
+	int		fLen = 0, i, MAX_FILESIZE = 4096, MAX_NUM_BLOCKS = 64, args = 1, row = 0;  //use max num warps idk
 	char	filename[MAX_QPATH+4] = {0}, info[1024] = {0}, buf[4096] = {0}, type[64] = {0};//eh
 	char*	pch;
 
@@ -2433,7 +2433,6 @@ void G_SpawnBlocksFromCfg(void) //loda fixme
 		if ((args % 2) == 1)
 			Q_strncpyz(type, pch, sizeof(type));
 		else if ((args %2) == 0) {
-			value = atoi(pch);
 			if (!Q_stricmp(type, "floor"))
 				blocks.floor = atoi(pch);
 			else if (!Q_stricmp(type, "roof"))

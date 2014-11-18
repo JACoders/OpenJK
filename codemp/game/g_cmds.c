@@ -7059,12 +7059,14 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber defense level capped at^3: ^2%i\n", g_maxSaberDefense.integer));
 	if ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && !d_saberSPStyleDamage.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber block for MP style damage\n");
+	if (g_tweakWeapons.integer & FIXED_SABERSWITCH)
+		Q_strcat(buf, sizeof(buf), "   ^5Fixed saber switch swing\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes
 	if (g_weaponDisable.integer < (1<<WP_CONCUSSION) || g_startingWeapons.integer > (1<<WP_BRYAR_PISTOL)) { // Weapons are enabled?
 		Q_strncpyz(buf, " ^3Weapon Changes:\n", sizeof(buf));
-		if (g_fastWeaponSwitch.integer)
+		if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
 			Q_strcat(buf, sizeof(buf), "   ^5Fast weapon switch\n");
 		if (d_projectileGhoul2Collision.integer == 0)
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles and hitscan\n");
