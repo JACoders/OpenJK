@@ -3394,16 +3394,17 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 
 	//Shove us backwards for half a second
 	//VectorMA( ent->client->ps.velocity, -200, forward, ent->client->ps.velocity );
-	if (shove)
+	if (shove) {
 		VectorMA( ent->client->ps.velocity, shove, forward, ent->client->ps.velocity );
-	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
-	if ( (ent->client->ps.pm_flags&PMF_DUCKED) )
-	{//hunkered down
-		ent->client->ps.pm_time = 100;
-	}
-	else
-	{
-		ent->client->ps.pm_time = 250;
+		ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
+		if ( (ent->client->ps.pm_flags&PMF_DUCKED) )
+		{//hunkered down
+			ent->client->ps.pm_time = 100;
+		}
+		else
+		{
+			ent->client->ps.pm_time = 250;
+		}
 	}
 //	ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK|PMF_TIME_NOFRICTION;
 	//FIXME: only if on ground?  So no "rocket jump"?  Or: (see next FIXME)
