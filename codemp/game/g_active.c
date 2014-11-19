@@ -4977,7 +4977,7 @@ void ClientEndFrame( gentity_t *ent ) {
 		//G_PredictPlayerMove( ent, (float)frames / sv_fps.integer );
 		G_PredictPlayerStepSlideMove( ent, (float)frames / sv_fps.integer );
 		// save network bandwidth
-		SnapVector( ent->s.pos.trBase );
+		SnapVector( ent->s.pos.trBase ); //is this wallbug???
 	}
 //unlagged - smooth clients #1 - japro
 

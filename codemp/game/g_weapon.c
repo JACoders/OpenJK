@@ -3385,6 +3385,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	qboolean	hitDodged = qfalse;
 	vec3_t shot_mins, shot_maxs;
 	int			i;
+	const int   shove = -400 * g_selfDamageScale.integer;
 
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - Start]
 	if (g_tweakWeapons.integer & CONC_ALT_DAM)
@@ -3392,7 +3393,9 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - End]
 
 	//Shove us backwards for half a second
-	VectorMA( ent->client->ps.velocity, -200, forward, ent->client->ps.velocity );
+	//VectorMA( ent->client->ps.velocity, -200, forward, ent->client->ps.velocity );
+	if (shove)
+		VectorMA( ent->client->ps.velocity, shove, forward, ent->client->ps.velocity );
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 	if ( (ent->client->ps.pm_flags&PMF_DUCKED) )
 	{//hunkered down

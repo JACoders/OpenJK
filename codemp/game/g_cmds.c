@@ -5804,6 +5804,10 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 		trap->SendServerCommand(ent-g_entities, "print \"^7Emotes not allowed in racemode!\n\"");
 		return;
 	}
+	if (level.gametype != GT_FFA) {
+		trap->SendServerCommand(ent-g_entities, "print \"^7Emotes not allowed in this gametype!\n\"");
+		return;
+	}
 
 	if (freeze) { // Do the anim and freeze it, or cancel if already in it
 		if (ent->client->ps.legsAnim == anim) // Cancel the anim if already in it?
