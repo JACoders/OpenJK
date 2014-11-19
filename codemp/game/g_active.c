@@ -2565,6 +2565,7 @@ once for each server frame, which makes for smooth demo recording.
 */
 qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean siegeOverride);
 qboolean G_SaberModelSetup(gentity_t *ent);
+
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -2613,18 +2614,60 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!(client->ps.pm_flags & PMF_FOLLOW))
 	{
-		if (g_forceSaberStyle.integer >= SS_FAST && g_forceSaberStyle.integer <= SS_TAVION) { //single style
-			if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || client->saber[1].model[0]) { //If saber1 doesnt match kyle, or saber2.. set them to single saber
-				char userinfo[MAX_INFO_STRING];
+		if (g_forceSaberStyle.integer && (ent->s.eType == ET_PLAYER) && !client->sess.raceMode && (client->sess.sessionTeam != TEAM_SPECTATOR)) { //single style
+
+			if ((g_forceSaberStyle.integer & SABER_BLUE_ONLY) || (g_forceSaberStyle.integer & SABER_YELLOW_ONLY) || (g_forceSaberStyle.integer & SABER_RED_ONLY) || 
+				(g_forceSaberStyle.integer & SABER_DESANN_ONLY) || (g_forceSaberStyle.integer & SABER_TAVION_ONLY) || (g_forceSaberStyle.integer & SABER_DESANN_REPLACE))
+			{
+				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || (client->saber[1].model && client->saber[1].model[0])) { //If saber1 doesnt match kyle, or saber2.. set them to single saber
+					char userinfo[MAX_INFO_STRING] = {0};
 				
-				trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
-				G_SetSaber(ent, 0, "kyle", qfalse);
-				G_SetSaber(ent, 1, "none", qfalse);
-				trap->SetUserinfo(ent-g_entities, userinfo);
-				ClientUserinfoChanged(ent-g_entities);
-				G_SaberModelSetup(ent);
+					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
+					G_SetSaber(ent, 0, "kyle", qfalse);
+					G_SetSaber(ent, 1, "none", qfalse);
+					trap->SetUserinfo(ent-g_entities, userinfo);
+					ClientUserinfoChanged(ent-g_entities);
+					G_SaberModelSetup(ent);
+				}
+				if (g_forceSaberStyle.integer & SABER_BLUE_ONLY) 
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_FAST;
+				else if (g_forceSaberStyle.integer & SABER_YELLOW_ONLY) 
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_MEDIUM;
+				else if (g_forceSaberStyle.integer & SABER_RED_ONLY) 
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_STRONG;
+				else if (g_forceSaberStyle.integer & SABER_DESANN_ONLY) 
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DESANN;
+				else if (g_forceSaberStyle.integer & SABER_TAVION_ONLY) 
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_TAVION;
+				else if (g_forceSaberStyle.integer & SABER_DESANN_REPLACE) { //dumb hack but temporary maybe
+					if (client->ps.fd.saberAnimLevel != SS_FAST && client->ps.fd.saberAnimLevel != SS_DESANN)
+						client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DESANN;
+				}
 			}
-			client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = g_forceSaberStyle.integer;
+			else if (g_forceSaberStyle.integer & SABER_STAFF_ONLY) {
+				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_STAFF) || (client->saber[1].model && client->saber[1].model[0])) { //If saber1 doesnt match staff, or saber2.. set them to single saber
+					char userinfo[MAX_INFO_STRING] = {0};
+				
+					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
+					G_SetSaber(ent, 0, "dual_1", qfalse);
+					G_SetSaber(ent, 1, "none", qfalse);
+					trap->SetUserinfo(ent-g_entities, userinfo);
+					ClientUserinfoChanged(ent-g_entities);
+					G_SaberModelSetup(ent);
+				}
+			}
+			else if (g_forceSaberStyle.integer & SABER_DUAL_ONLY) {
+				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || Q_stricmp(client->saber[1].model, DEFAULT_SABER_MODEL)) { //If saber1 or 2 dosnt match kyle..
+					char userinfo[MAX_INFO_STRING] = {0};
+				
+					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
+					G_SetSaber(ent, 0, "kyle", qfalse);
+					G_SetSaber(ent, 1, "kyle", qfalse);
+					trap->SetUserinfo(ent-g_entities, userinfo);
+					ClientUserinfoChanged(ent-g_entities);
+					G_SaberModelSetup(ent);
+				}
+			}
 		}
 		else if (level.gametype == GT_SIEGE &&
 			client->siegeClass != -1 &&

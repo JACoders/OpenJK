@@ -4316,6 +4316,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else//Normal blue swing
 					dmg = 10;//was 35
 			}
+			else { //tavion, desann
+				if (self->client->ps.saberMove == LS_A_BACK)//Red Backslash
+					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
+				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Red DBS
+					dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
+			}
 
 			attackStr = self->client->ps.fd.saberAnimLevel;
 		}
