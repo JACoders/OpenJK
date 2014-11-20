@@ -4260,7 +4260,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (g_spinRedDFA.integer && self->client->ps.saberMove == LS_A_JUMP_T__B_)//Red DFA
 					dmg = G_GetAttackDamage(self, 2, 50, 0.65f);
 				else if (!g_spinRedDFA.integer && self->client->ps.saberMove == LS_A_JUMP_T__B_)//Red DFA
-					dmg = G_GetAttackDamage(self, 2, 80, 0.65f);
+					dmg = G_GetAttackDamage(self, 2, 100, 0.65f);
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
 					dmg = 20;
 				else//Regular swing

@@ -2614,7 +2614,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!(client->ps.pm_flags & PMF_FOLLOW))
 	{
-		if (g_forceSaberStyle.integer && (ent->s.eType == ET_PLAYER) && !client->sess.raceMode && (client->sess.sessionTeam != TEAM_SPECTATOR)) { //single style
+		if (g_forceSaberStyle.integer && (ent->s.weapon == WP_SABER) && (ent->s.eType == ET_PLAYER) && !client->sess.raceMode && (client->sess.sessionTeam != TEAM_SPECTATOR)) { //single style
 
 			if ((g_forceSaberStyle.integer & SABER_BLUE_ONLY) || (g_forceSaberStyle.integer & SABER_YELLOW_ONLY) || (g_forceSaberStyle.integer & SABER_RED_ONLY) || 
 				(g_forceSaberStyle.integer & SABER_DESANN_ONLY) || (g_forceSaberStyle.integer & SABER_TAVION_ONLY) || (g_forceSaberStyle.integer & SABER_DESANN_REPLACE))
