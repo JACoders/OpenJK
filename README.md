@@ -43,6 +43,7 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 ## Dependencies ##
 
+* SDL2 (2.0.3+) (Only on non-Windows platforms)
 * OpenGL
 * OpenAL (included on Windows)
 * libpng (included on Windows)
