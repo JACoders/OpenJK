@@ -532,6 +532,18 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
 	}
 
+	// zyk: initializing battle type variables
+	level.battle_type = 0;
+	if (1)
+	{
+		int battle_type_iterator = 0;
+
+		for (battle_type_iterator = 0; battle_type_iterator < MAX_CLIENTS; battle_type_iterator++)
+		{
+			level.battle_type_players[battle_type_iterator] = 0;
+		}
+	}
+
 	// zyk: getting mapname
 	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
 
@@ -4428,7 +4440,7 @@ void G_RunFrame( int levelTime ) {
 #endif
 
 	if (level.boss_battle_music_reset_timer > 0 && level.boss_battle_music_reset_timer < level.time)
-	{
+	{ // zyk: resets music to default one
 		level.boss_battle_music_reset_timer = 0;
 		trap->SetConfigstring( CS_MUSIC, G_NewString(level.default_map_music) );
 	}

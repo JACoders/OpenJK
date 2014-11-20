@@ -2100,6 +2100,31 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if ( !attacker )
 		return;
 
+	// zyk: if a battle type is active, removes this player from the battle_type_players
+	if (level.battle_type > 0)
+	{
+		int player_it = 0;
+		int last_survivor_index = -1;
+		int number_of_players = 0;
+
+		level.battle_type_players[self->s.number] = 0;
+
+		for (player_it = 0; player_it < MAX_CLIENTS; player_it++)
+		{
+			if (level.battle_type_players[player_it] == 1)
+			{
+				last_survivor_index = player_it;
+				number_of_players++;
+			}
+		}
+
+		if (number_of_players == 1)
+		{ // zyk: the last survivor wins
+			g_entities[last_survivor_index].client->ps.stats[STAT_ARMOR] = g_entities[last_survivor_index].client->ps.stats[STAT_MAX_HEALTH];
+			trap->SendServerCommand( -1, va("cp \"^7%s ^7Wins!\"", g_entities[last_survivor_index].client->pers.netname));
+		}
+	}
+
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{
@@ -4762,6 +4787,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			return;
 		}
+	}
+
+	if (level.battle_type > 0)
+	{ // zyk: Battle Type is active. Damage is done only between players that are both in this mode or both not in it
+		if (attacker && attacker->client && targ && targ->client && !attacker->NPC && !targ->NPC && level.battle_type_players[attacker->s.number] != level.battle_type_players[targ->s.number])
+			return;
 	}
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)

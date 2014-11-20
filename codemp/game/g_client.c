@@ -4110,6 +4110,22 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->pers.bitvalue = 0;
 	ent->client->pers.player_statuses = 0;
 
+	// zyk: if a battle type is active, removes this player from the battle_type_players
+	if (level.battle_type > 0)
+	{
+		int number_of_players = 0;
+		level.battle_type_players[ent->s.number] = 0;
+
+		for (i = 0; i < MAX_CLIENTS; i++)
+		{
+			if (level.battle_type_players[i] == 1)
+				number_of_players++;
+		}
+
+		if (number_of_players == 0)
+			level.battle_type = 0;
+	}
+
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation
 		gentity_t *objectiveItem = &g_entities[ent->client->holdingObjectiveItem];

@@ -10936,7 +10936,8 @@ Cmd_Jetpack_f
 ==================
 */
 void Cmd_Jetpack_f( gentity_t *ent ) {
-	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && 
+	if ((level.battle_type != 1 || level.battle_type_players[ent->s.number] == 0) && 
+		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && 
 		(ent->client->sess.amrpgmode < 2 || ent->client->pers.jetpack_level > 0))
 	{ // zyk: gets jetpack if player does not have it. RPG players need jetpack skill to get it
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
@@ -11542,6 +11543,69 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_BattleType_f
+==================
+*/
+void Cmd_BattleType_f( gentity_t *ent ) {
+	if (level.battle_type_players[ent->s.number] == 1)
+	{
+		int i = 0;
+		int number_of_players = 0;
+		level.battle_type_players[ent->s.number] = 0;
+
+		for (i = 0; i < MAX_CLIENTS; i++)
+		{
+			if (level.battle_type_players[i] == 1)
+				number_of_players++;
+		}
+
+		if (number_of_players == 0)
+			level.battle_type = 0;
+
+		trap->SendServerCommand( -1, va("print \"%s^7 left the FPS Battle.\n\"",ent->client->pers.netname) );
+	}
+	else
+	{
+		level.battle_type = 1;
+		level.battle_type_players[ent->s.number] = 1;
+
+		// zyk: if player is logged in his account, logs him out
+		if (ent->client->sess.amrpgmode > 0)
+		{
+			Cmd_LogoutAccount_f(ent);
+		}
+
+		// zyk: setting the default stuff that this player has in the battle
+		ent->client->ps.stats[STAT_ARMOR] = 0;
+		ent->client->ps.fd.forcePowersKnown = 0;
+		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = 0;
+		ent->client->ps.fd.forcePowersActive = 0;
+		ent->client->ps.fd.forcePowerMax = 0;
+		ent->client->ps.fd.forcePower = 0;
+
+		ent->client->ps.stats[STAT_WEAPONS] = 0;
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_NONE) | (1 << WP_MELEE);
+		ent->client->ps.weapon = WP_MELEE;
+
+		if (ent->client->jetPackOn)
+			Jetpack_Off(ent);
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_NONE);
+
+		ent->client->ps.ammo[AMMO_BLASTER] = 0;
+		ent->client->ps.ammo[AMMO_POWERCELL] = 0;
+		ent->client->ps.ammo[AMMO_METAL_BOLTS] = 0;
+		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		ent->client->ps.ammo[AMMO_THERMAL] = 0;
+		ent->client->ps.ammo[AMMO_TRIPMINE] = 0;
+		ent->client->ps.ammo[AMMO_DETPACK] = 0;
+
+		trap->SendServerCommand( -1, va("print \"%s^7 joined the FPS Battle.\n\"",ent->client->pers.netname) );
+	}
+}
+
+/*
+==================
 Cmd_EntitySystem_f
 ==================
 */
@@ -11587,6 +11651,7 @@ command_t commands[] = {
 	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
 	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },
 	{ "answer",				Cmd_Answer_f,				CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "battletype",			Cmd_BattleType_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "bountyquest",		Cmd_BountyQuest_f,			CMD_RPG|CMD_NOINTERMISSION },
 	{ "buy",				Cmd_Buy_f,					CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "callseller",			Cmd_CallSeller_f,			CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },

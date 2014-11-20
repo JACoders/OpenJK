@@ -1351,7 +1351,17 @@ typedef struct level_locals_s {
 	// zyk: timer to reset boss song after battle ends
 	int boss_battle_music_reset_timer;
 
+	// zyk: allows guardian of map to get his weapons back
 	int initial_map_guardian_weapons;
+
+	// zyk: starts with default value 0.
+	// Possible values are:
+	// 0 - Default value. No custom battle happening
+	// 1 - FPS Battle. In this battle type, the last player alive wins
+	int battle_type;
+
+	// zyk: sets which players are participating in the battle type set in the battle_type variable
+	int battle_type_players[MAX_CLIENTS];
 } level_locals_t;
 
 
