@@ -4313,10 +4313,18 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			break;
 		case GENCMD_SABERATTACKCYCLE:
-			if ((ent->client->ps.fd.saberAnimLevel == SS_STAFF || ent->client->ps.fd.saberAnimLevel == SS_DUAL) && (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 200)) //style dependant..? ent->client->ps.fd.saberAnimLevel
-				break;
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
-				break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
+			if (ent->client->saber[0].singleBladeStyle) { //Staff or half staff
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //style dependant..? ent->client->ps.fd.saberAnimLevel
+					break;
+			}
+			else if (ent->client->saber[1].model && ent->client->saber[1].model[0]) {//Duals or half duals
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //style dependant..? ent->client->ps.fd.saberAnimLevel
+					break;
+			}
+			else { //Single
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 50) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
+					break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
+			}
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
 			Cmd_SaberAttackCycle_f(ent);
 			break;
