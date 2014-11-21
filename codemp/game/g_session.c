@@ -125,7 +125,7 @@ void G_ReadSessionData( gclient_t *client )
 	client->sess.teamLeader		= (qboolean)tempTeamLeader;
 	client->sess.sawMOTD		= (qboolean)tempSawMOTD;
 	client->sess.raceMode		= (qboolean)tempRaceMode;
-	client->sess.juniorAdmin	= qfalse;//(qboolean)tempJRAdmin;
+	client->sess.juniorAdmin	= (qboolean)tempJRAdmin; //lets see if this works now
 	client->sess.fullAdmin		= qfalse;//(qboolean)tempFullAdmin;
 
 	// convert back to spaces from unused chars, as session data is written that way.
