@@ -129,7 +129,7 @@ static void BeginHack(int entityNum)
 	// since we are in a duel, make everyone else nonsolid
 	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
 		int i;
-		for (i = 0; i < level.num_entities; i++) {
+		for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
 			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
@@ -141,7 +141,7 @@ static void BeginHack(int entityNum)
 	} 
 	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
 		int i;
-		for (i = 0; i < level.num_entities; i++) {
+		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
@@ -153,6 +153,15 @@ static void BeginHack(int entityNum)
 	}
 	else { // we are not dueling but make those that are nonsolid
 		int i;
+
+		gentity_t *saber = &g_entities[entityNum];
+		if (saber->inuse) {
+			gentity_t *thrower = &g_entities[saber->r.ownerNum];
+			if (thrower->client && thrower->client->ps.duelInProgress) {
+				return;
+			}
+		}
+
 		for (i = 0; i < level.maxclients; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
@@ -197,6 +206,15 @@ static void EndHack(int entityNum) {
 	}
 	else {
 		int i;
+
+		gentity_t *saber = &g_entities[entityNum];
+		if (saber->inuse) {
+			gentity_t *thrower = &g_entities[saber->r.ownerNum];
+			if (thrower->client && thrower->client->ps.duelInProgress) {
+				return;
+			}
+		}
+
 		for (i = 0; i < level.maxclients; i++) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
