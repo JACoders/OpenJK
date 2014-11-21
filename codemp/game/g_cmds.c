@@ -7458,17 +7458,17 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 		else if (trap->Argc() == 2)
 		{
 			char message[1024];
-			char message_content[10][100];
+			char message_content[12][100];
 			char arg1[MAX_STRING_CHARS];
 			int i = 0;
 			strcpy(message,"");
 				
-			while (i < 9)
+			while (i < 11)
 			{
 				strcpy(message_content[i],"");
 				i++;
 			}
-			message_content[9][0] = '\0';
+			message_content[11][0] = '\0';
 			i = 0;
 
 			trap->Argv(1, arg1, sizeof( arg1 ));
@@ -7665,77 +7665,77 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.shield);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.teamshield);
+					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3\n", ent->client->pers.teamshield);
 				else
-					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.teamshield);
+					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3\n", ent->client->pers.teamshield);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6)
-					sprintf(message_content[8],"^039 - Mind Control: %d/1     ", ent->client->pers.mind_control);
+					sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.mind_control);
 				else
-					sprintf(message_content[8],"^639 - Mind Control: %d/1     ", ent->client->pers.mind_control);
+					sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.mind_control);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
-					sprintf(message_content[0],"%s^055 - Force Power: %d/5\n",message_content[0], ent->client->pers.max_force_power_level);
+					sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.max_force_power_level);
 				else
-					sprintf(message_content[0],"%s^555 - Force Power: %d/5\n",message_content[0], ent->client->pers.max_force_power_level);
+					sprintf(message_content[9],"^555 - Force Power: %d/5\n", ent->client->pers.max_force_power_level);
 
-				sprintf(message_content[1],"%s^356 - Improvements: %d/3\n",message_content[1], ent->client->pers.improvements_level);
+				sprintf(message_content[10],"^356 - Improvements: %d/3\n", ent->client->pers.improvements_level);
 
 				if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
-					sprintf(message_content[2],"%s^3l  ^7- Light Power: ^2yes\n",message_content[2]);
+					sprintf(message_content[0],"%s^3l  ^7- Light Power: ^2yes\n",message_content[0]);
 				else
-					sprintf(message_content[2],"%s^3l  ^7- Light Power: ^1no\n",message_content[2]);
+					sprintf(message_content[0],"%s^3l  ^7- Light Power: ^1no\n",message_content[0]);
 
 				if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
-					sprintf(message_content[3],"%s^3d  ^1- Dark Power: ^2yes\n",message_content[3]);
+					sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^2yes\n",message_content[1]);
 				else
-					sprintf(message_content[3],"%s^3d  ^1- Dark Power: ^1no\n",message_content[3]);
+					sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^1no\n",message_content[1]);
 
 				if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
-					sprintf(message_content[4],"%s^3e  - Eternity Power: ^2yes\n",message_content[4]);
+					sprintf(message_content[2],"%s^3e  - Eternity Power: ^2yes\n",message_content[2]);
 				else
-					sprintf(message_content[4],"%s^3e  - Eternity Power: ^1no\n",message_content[4]);
+					sprintf(message_content[2],"%s^3e  - Eternity Power: ^1no\n",message_content[2]);
 
 				if (ent->client->pers.universe_quest_progress >= 8)
-					sprintf(message_content[5],"%s^3u  ^2- Universe Power: ^2yes\n",message_content[5]);
+					sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^2yes\n",message_content[3]);
 				else
-					sprintf(message_content[5],"%s^3u  ^2- Universe Power: ^1no\n",message_content[5]);
+					sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^1no\n",message_content[3]);
 
 				if (ent->client->pers.universe_quest_progress >= 15)
-					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[4]);
 				else
-					sprintf(message_content[6],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[6]);
+					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[4]);
 
 				if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
-					sprintf(message_content[7],"%s^3r  ^4- Resurrection Power: ^2yes\n",message_content[7]);
+					sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^2yes\n",message_content[5]);
 				else
-					sprintf(message_content[7],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[7]);
+					sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[5]);
 
 				if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
 					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^2yes\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else
-					sprintf(message_content[8],"%s^3s  ^6- Special Power: ^1no\n",message_content[8]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^1no\n",message_content[6]);
 
-				for (i = 0; i < 9; i++)
+				for (i = 0; i < 11; i++)
 				{
 					sprintf(message,"%s%s",message,message_content[i]);
 				}
