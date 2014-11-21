@@ -1218,8 +1218,8 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Repeater Orb Dmg - Start]
 	if (g_tweakWeapons.integer & REPEATER_ALT_DAM) {
-		missile->damage = REPEATER_ALT_DAMAGE + 10;
-		missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE + 10;
+		missile->damage *= (7.0f/6.0f);
+		missile->splashDamage *= (7.0f/6.0f);
 	}
 	else {
 		missile->damage = REPEATER_ALT_DAMAGE;
@@ -1792,8 +1792,8 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 
 //[JAPRO - Serverside - Weapons - Tweak weapons Nerf Alt Flechette Dmg - Start]
 	if (g_tweakWeapons.integer & FLECHETTE_ALT_DAM) {
-		missile->damage = FLECHETTE_ALT_DAMAGE - 10;
-		missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM - 10;
+		missile->damage *= (5.0f/6.0f);
+		missile->splashDamage *= (5.0f/6.0f);
 	}
 	else {
 		missile->damage = FLECHETTE_ALT_DAMAGE;
@@ -3389,7 +3389,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - Start]
 	if (g_tweakWeapons.integer & CONC_ALT_DAM)
-		damage = CONC_ALT_DAMAGE + 25;
+		damage *= 2.0f;
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - End]
 
 	//Shove us backwards for half a second

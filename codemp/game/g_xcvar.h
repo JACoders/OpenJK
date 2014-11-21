@@ -176,7 +176,7 @@ XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_saberDuelSPDamage,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceDuelSPDamage,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceSaberStyle,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_saberDisable,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO FORCE
 XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )

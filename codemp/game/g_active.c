@@ -2614,62 +2614,58 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!(client->ps.pm_flags & PMF_FOLLOW))
 	{
-		if (g_forceSaberStyle.integer && (ent->s.weapon == WP_SABER) && (ent->s.eType == ET_PLAYER) && !client->sess.raceMode && (client->sess.sessionTeam != TEAM_SPECTATOR)) { //single style
+		qboolean forceSingle = qfalse;
+		qboolean changeStyle = qfalse;
+		if (g_saberDisable.integer && (ent->s.weapon == WP_SABER) && (ent->s.eType == ET_PLAYER) && !client->sess.raceMode && (client->sess.sessionTeam != TEAM_SPECTATOR)) { //single style
 
-			if ((g_forceSaberStyle.integer & SABER_BLUE_ONLY) || (g_forceSaberStyle.integer & SABER_YELLOW_ONLY) || (g_forceSaberStyle.integer & SABER_RED_ONLY) || 
-				(g_forceSaberStyle.integer & SABER_DESANN_ONLY) || (g_forceSaberStyle.integer & SABER_TAVION_ONLY) || (g_forceSaberStyle.integer & SABER_DESANN_REPLACE))
-			{
-				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || (client->saber[1].model && client->saber[1].model[0])) { //If saber1 doesnt match kyle, or saber2.. set them to single saber
-					char userinfo[MAX_INFO_STRING] = {0};
-				
-					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
-					G_SetSaber(ent, 0, "kyle", qfalse);
-					G_SetSaber(ent, 1, "none", qfalse);
-					trap->SetUserinfo(ent-g_entities, userinfo);
-					ClientUserinfoChanged(ent-g_entities);
-					G_SaberModelSetup(ent);
-				}
-				if (g_forceSaberStyle.integer & SABER_BLUE_ONLY) 
-					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_FAST;
-				else if (g_forceSaberStyle.integer & SABER_YELLOW_ONLY) 
-					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_MEDIUM;
-				else if (g_forceSaberStyle.integer & SABER_RED_ONLY) 
-					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_STRONG;
-				else if (g_forceSaberStyle.integer & SABER_DESANN_ONLY) 
-					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DESANN;
-				else if (g_forceSaberStyle.integer & SABER_TAVION_ONLY) 
-					client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_TAVION;
-				else if (g_forceSaberStyle.integer & SABER_DESANN_REPLACE) { //dumb hack but temporary maybe
-					if (client->ps.fd.saberAnimLevel != SS_FAST && client->ps.fd.saberAnimLevel != SS_DESANN)
-						client->ps.fd.saberAnimLevel = client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DESANN;
-				}
+			//trap->Print("AnimLevel: %i, DrawLevel: %i, Baselevel: %i\n", ent->client->ps.fd.saberAnimLevel, ent->client->ps.fd.saberDrawAnimLevel, ent->client->ps.fd.saberAnimLevelBase);
+
+			if (g_saberDisable.integer & SABERSTYLE_DESANN) { //Force Desann
+				client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_DESANN;
 			}
-			else if (g_forceSaberStyle.integer & SABER_STAFF_ONLY) {
-				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_STAFF) || (client->saber[1].model && client->saber[1].model[0])) { //If saber1 doesnt match staff, or saber2.. set them to single saber
-					char userinfo[MAX_INFO_STRING] = {0};
-				
-					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
-					G_SetSaber(ent, 0, "dual_1", qfalse);
-					G_SetSaber(ent, 1, "none", qfalse);
-					trap->SetUserinfo(ent-g_entities, userinfo);
-					ClientUserinfoChanged(ent-g_entities);
-					G_SaberModelSetup(ent);
-				}
+			else if (g_saberDisable.integer & SABERSTYLE_TAVION) { //Force Tavion
+				client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_TAVION;
 			}
-			else if (g_forceSaberStyle.integer & SABER_DUAL_ONLY) {
-				if (Q_stricmp(client->saber[0].model, DEFAULT_SABER_MODEL) || Q_stricmp(client->saber[1].model, DEFAULT_SABER_MODEL)) { //If saber1 or 2 dosnt match kyle..
-					char userinfo[MAX_INFO_STRING] = {0};
-				
-					trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
-					G_SetSaber(ent, 0, "kyle", qfalse);
-					G_SetSaber(ent, 1, "kyle", qfalse);
-					trap->SetUserinfo(ent-g_entities, userinfo);
-					ClientUserinfoChanged(ent-g_entities);
-					G_SaberModelSetup(ent);
-				}
+			else if (client->ps.fd.saberAnimLevel == SS_FAST) {
+				if (g_saberDisable.integer & SABERSTYLE_BLUE) //No blue
+					changeStyle = qtrue;
 			}
+			else if (client->ps.fd.saberAnimLevel == SS_MEDIUM) {
+				if (g_saberDisable.integer & SABERSTYLE_YELLOW) //No yellow
+					changeStyle = qtrue;
+			}
+			else if (client->ps.fd.saberAnimLevel == SS_STRONG) {
+				if (g_saberDisable.integer & SABERSTYLE_RED) //No red
+					changeStyle = qtrue;
+			}
+			else if (client->ps.fd.saberAnimLevel == SS_DUAL) {
+				if (g_saberDisable.integer & SABERSTYLE_DUAL) //No duals
+					forceSingle = qtrue;
+			}
+			else if (client->ps.fd.saberAnimLevel == SS_STAFF) {
+				if (g_saberDisable.integer & SABERSTYLE_STAFF) //No staff
+					forceSingle = qtrue;
+			}
+		
+			if (forceSingle) {
+				char userinfo[MAX_INFO_STRING] = {0};
+
+				trap->GetUserinfo(ent-g_entities, userinfo, sizeof(userinfo));
+				G_SetSaber(ent, 0, "kyle", qfalse);
+				G_SetSaber(ent, 1, "none", qfalse);
+				trap->SetUserinfo(ent-g_entities, userinfo);
+				ClientUserinfoChanged(ent-g_entities);
+				G_SaberModelSetup(ent);
+
+				Cmd_SaberAttackCycle_f(ent);
+			}
+			else if (changeStyle) {
+				Cmd_SaberAttackCycle_f(ent);
+			}	
 		}
-		else if (level.gametype == GT_SIEGE &&
+		
+		if (!forceSingle && !changeStyle &&
+			level.gametype == GT_SIEGE &&
 			client->siegeClass != -1 &&
 			bgSiegeClasses[client->siegeClass].saberStance)
 		{ //the class says we have to use this stance set.

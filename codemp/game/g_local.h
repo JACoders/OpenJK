@@ -217,14 +217,13 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define FIXED_SABERSWITCH	(1<<23)
 
 
-#define SABER_BLUE_ONLY (1<<0)//blue only
-#define SABER_YELLOW_ONLY (1<<1)//yellow only
-#define SABER_RED_ONLY (1<<2) //red only
-#define SABER_STAFF_ONLY (1<<3)//staff only
-#define SABER_DUAL_ONLY (1<<4) //duals only
-#define SABER_DESANN_ONLY (1<<5)// desann only
-#define SABER_TAVION_ONLY (1<<6)//tavion only
-#define SABER_DESANN_REPLACE (1<<7)//replace yellow with desann
+#define SABERSTYLE_BLUE (1<<0)//blue only
+#define SABERSTYLE_YELLOW (1<<1)//yellow only
+#define SABERSTYLE_RED (1<<2) //red only
+#define SABERSTYLE_DUAL (1<<3) //duals only
+#define SABERSTYLE_STAFF (1<<4)//staff only
+#define SABERSTYLE_DESANN (1<<5)// desann only
+#define SABERSTYLE_TAVION (1<<6)//tavion only
 
 
 //JAPRO - Serverside - Unlagged bitvalues

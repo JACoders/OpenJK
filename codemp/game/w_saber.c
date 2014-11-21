@@ -4251,8 +4251,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 			else if (self->client->ps.fd.saberAnimLevel == SS_STRONG)//Red Style 
 			{
-				if (self->client->ps.saberMove == LS_A_T2B)
-					dmg = G_GetAttackDamage(self, 30, 65, 0.65f);
+				if (self->client->ps.saberMove == LS_A_T2B) //this is a vert i think?
+					dmg = G_GetAttackDamage(self, 30, 70, 0.65f);
 				else if (self->client->ps.saberMove == LS_A_BACK)//Red Backslash
 					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Red DBS
@@ -4264,7 +4264,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
 					dmg = 20;
 				else//Regular swing
-					dmg = G_GetAttackDamage(self, 30, 80, 0.65f);
+					dmg = G_GetAttackDamage(self, 30, 85, 0.65f);
 			}
 			else if (self->client->ps.fd.saberAnimLevel == SS_MEDIUM)//Yellow Style
 			{

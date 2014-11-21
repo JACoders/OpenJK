@@ -1779,7 +1779,8 @@ saberMoveName_t PM_SaberAirLungeAttackMove( void )
 	{
 		return LS_A_T2B;//LS_NONE;
 	}
-
+	
+	//maybe fix jk2 lunge with duals here idk
 	VectorCopy( pm->ps->viewangles, fwdAngles );
 	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
 	//do the lunge
