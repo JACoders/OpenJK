@@ -4093,13 +4093,13 @@ void ClientThink_real( gentity_t *ent ) {
 		case 0:
 			break;
 		case GENCMD_SABERSWITCH:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABER] > level.time - 250)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABER] > level.time - 300)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABER] = level.time;
 			Cmd_ToggleSaber_f(ent);
 			break;
 		case GENCMD_ENGAGE_DUEL:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_DUEL] > level.time - 50)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_DUEL] > level.time - 100)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_DUEL] = level.time;
 			if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
@@ -4315,37 +4315,37 @@ void ClientThink_real( gentity_t *ent ) {
 		case GENCMD_SABERATTACKCYCLE:
 			if ((ent->client->ps.fd.saberAnimLevel == SS_STAFF || ent->client->ps.fd.saberAnimLevel == SS_DUAL) && (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 200)) //style dependant..? ent->client->ps.fd.saberAnimLevel
 				break;
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 50)
-				break;
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
+				break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
 			Cmd_SaberAttackCycle_f(ent);
 			break;
 		case GENCMD_TAUNT:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 1000)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_TAUNT );
 			break;
 		case GENCMD_BOW:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 1000)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] = level.time;
 			G_SetTauntAnim( ent, TAUNT_BOW );
 			break;
 		case GENCMD_MEDITATE:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] > level.time - 1000)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_EMOTE] = level.time;
 			G_SetTauntAnim( ent, TAUNT_MEDITATE );
 			break;
 		case GENCMD_FLOURISH:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 1000)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_FLOURISH );
 			break;
 		case GENCMD_GLOAT:
-			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 500)
+			if (ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] > level.time - 1000)
 				break;
 			ent->client->genCmdDebounce[GENCMD_DELAY_TAUNT] = level.time;
 			G_SetTauntAnim( ent, TAUNT_GLOAT );

@@ -1531,6 +1531,9 @@ qboolean PM_CanBackstab(void)
 	vec3_t trmins = {-15, -15, -8};
 	vec3_t trmaxs = {15, 15, 8};
 
+	//if (g_easyBackStab.integer) //easybackslash
+		//return qtrue;
+
 	VectorCopy(pm->ps->viewangles, flatAng);
 	flatAng[PITCH] = 0;
 
@@ -1779,8 +1782,7 @@ saberMoveName_t PM_SaberAirLungeAttackMove( void )
 	{
 		return LS_A_T2B;//LS_NONE;
 	}
-	
-	//maybe fix jk2 lunge with duals here idk
+
 	VectorCopy( pm->ps->viewangles, fwdAngles );
 	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
 	//do the lunge
