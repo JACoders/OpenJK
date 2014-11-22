@@ -2844,13 +2844,10 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (g_fixHighFPSAbuse.integer && msec < 5)
 		ucmd->serverTime = (ucmd->serverTime + 4);
 
-	if (!client->ps.stats[STAT_RACEMODE] && g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) { //Ok,, this should be like every frame, right??
+	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;
-		client->ps.stats[STAT_MOVEMENTSTYLE] = g_movementStyle.integer;
 	}
-	else {
-		client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;
-	}
+	client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;
 
 	//
 	// check for exiting intermission
