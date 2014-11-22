@@ -1216,14 +1216,13 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 //[JAPRO - Serverside - Weapons - Add inheritance to repeater alt fire]
 	gentity_t *missile = CreateMissileInheritance( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
 
+	missile->damage = REPEATER_ALT_DAMAGE;
+	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
+
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Repeater Orb Dmg - Start]
 	if (g_tweakWeapons.integer & REPEATER_ALT_DAM) {
 		missile->damage *= (7.0f/6.0f);
 		missile->splashDamage *= (7.0f/6.0f);
-	}
-	else {
-		missile->damage = REPEATER_ALT_DAMAGE;
-		missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
 	}
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Repeater Orb Dmg - End]
 
@@ -1790,14 +1789,13 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 
 	missile->bounceCount = 50;
 
+	missile->damage = FLECHETTE_ALT_DAMAGE;
+	missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
+
 //[JAPRO - Serverside - Weapons - Tweak weapons Nerf Alt Flechette Dmg - Start]
 	if (g_tweakWeapons.integer & FLECHETTE_ALT_DAM) {
-		missile->damage *= (5.0f/6.0f);
-		missile->splashDamage *= (5.0f/6.0f);
-	}
-	else {
-		missile->damage = FLECHETTE_ALT_DAMAGE;
-		missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
+		missile->damage *= 0.85f;
+		missile->splashDamage *= 0.85f;
 	}
 //[JAPRO - Serverside - Weapons - Tweak weapons Nerf Alt Flechette Dmg - End]
 
