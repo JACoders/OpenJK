@@ -4450,7 +4450,7 @@ void ClientThink_real( gentity_t *ent ) {
 			(!faceKicked->client->ps.duelInProgress || faceKicked->client->ps.duelIndex == ent->s.number) &&
 			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number))
 		{
-			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->sess.raceMode && !faceKicked->client->noclip)
+			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && (!g_fixFlipKick.integer || ent->client->lastKickedBy < level.time - 200) && !faceKicked->client->sess.raceMode && !faceKicked->client->noclip)
 			{//push them away and do pain
 				vec3_t oppDir;
 				int strength = (int)VectorNormalize2( client->ps.velocity, oppDir );
@@ -4458,6 +4458,8 @@ void ClientThink_real( gentity_t *ent ) {
 				strength *= 0.05 * g_flipKickDamageScale.value;
 
 				VectorScale( oppDir, -1, oppDir );
+
+				faceKicked->client->lastKickedBy = level.time;
 
 //JAPRO - Serverside - New flipkick damage options - Start
 				if (g_flipKick.integer < 2)

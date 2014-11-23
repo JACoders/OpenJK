@@ -1023,6 +1023,7 @@ struct gclient_s {
 	int			lastGenCmdTime;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
+	int			lastKickedBy;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
 	int			lastSaberActivateTime;
 	int			lastSaberAttackCycleTime;
