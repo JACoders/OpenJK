@@ -4455,24 +4455,26 @@ void ClientThink_real( gentity_t *ent ) {
 				vec3_t oppDir;
 				int strength = (int)VectorNormalize2( client->ps.velocity, oppDir );
 
-				strength *= 0.05 * g_flipKickDamageScale.value;
+				strength *= 0.05;
 
 				VectorScale( oppDir, -1, oppDir );
 
 				faceKicked->client->lastKickedBy = level.time;
 
 //JAPRO - Serverside - New flipkick damage options - Start
-				if (g_flipKick.integer < 2)
-					G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, strength, DAMAGE_NO_ARMOR, MOD_MELEE );//default flipkick dmg
-				else if (g_flipKick.integer == 2)
+				if (g_flipKick.integer < 2 && g_flipKickDamageScale.value)
+					G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, (strength * g_flipKickDamageScale.value), DAMAGE_NO_ARMOR, MOD_MELEE );//default flipkick dmg
+				else if (g_flipKick.integer == 2 && g_flipKickDamageScale.value)
 				{
-					if (strength > (10 * g_flipKickDamageScale.value))
+					//int damageStrength = strength; //Revert this and use damageStrength here if we want to have flipkick knockback strength "random" i.e. give slight advantage to wait 2 kick scripters..
+					if (strength > 10)
 					{
-						strength = 20 * g_flipKickDamageScale.value;
+						strength = 20;
 					}
-					G_Damage( faceKicked, ent, ent, 0, 0, strength, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg
+					G_Damage( faceKicked, ent, ent, 0, 0, (strength * g_flipKickDamageScale.value), DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg
 				}
-				else G_Damage( faceKicked, ent, ent, 0, 0, 20, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
+				else if (g_flipKickDamageScale.value)
+					G_Damage( faceKicked, ent, ent, 0, 0, 20, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
 
 				if (g_fixKillCredit.integer) {//JAPRO - Serverside - fix flipkick not giving killcredit..?
 					faceKicked->client->ps.otherKillerTime = level.time + 2000;
@@ -4601,7 +4603,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 						faceKicked->client->ps.velocity[0] = oppDir[0]*(strength*40);
 						faceKicked->client->ps.velocity[1] = oppDir[1]*(strength*40);
-						faceKicked->client->ps.velocity[2] = 200;
+						faceKicked->client->ps.velocity[2] = 200; //something here might be different than ja+? how tell..
 					}
 				}
 				G_Sound( faceKicked, CHAN_AUTO, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );

@@ -157,7 +157,7 @@ static void BeginHack(int entityNum)
 		gentity_t *saber = &g_entities[entityNum];
 		if (saber->inuse) {
 			gentity_t *thrower = &g_entities[saber->r.ownerNum];
-			if (thrower->client && thrower->client->ps.duelInProgress) {
+			if (thrower->client && thrower->client->ps.duelInProgress) { //&& dueltypes[thrower->client->ps.clientNum] != 0. nvm.. this dosnt happen in nf battles
 				return;
 			}
 		}
