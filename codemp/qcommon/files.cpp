@@ -515,7 +515,9 @@ qboolean FS_CreatePath (char *OSPath) {
 
 	// Skip creation of the root directory as it will always be there
 	ofs = strchr( path, PATH_SEP );
-	ofs++;
+	if ( ofs ) {
+		ofs++;
+	}
 
 	for (; ofs != NULL && *ofs ; ofs++) {
 		if (*ofs == PATH_SEP) {
@@ -1319,7 +1321,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// from every pk3 file..
 
 						// The x86.dll suffixes are needed in order for sv_pure to continue to
-						// work on non-x86/windows systems... 
+						// work on non-x86/windows systems...
 
 						l = strlen( filename );
 						if ( !(pak->referenced & FS_GENERAL_REF)) {
