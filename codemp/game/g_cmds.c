@@ -8413,7 +8413,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "items" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 250 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 200 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 230 - Sell: 65\n^312 - Big Bacta: ^7Buy: 300 - Sell: 70\n^313 - Force Field: ^7Buy: 400 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 300 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: 20\n^335 - E-Web: ^7Buy: 150 - Sell: 30\n^338 - Binoculars: ^7Buy: 10 - Sell: 5^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 250 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 200 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 230 - Sell: 65\n^312 - Big Bacta: ^7Buy: 300 - Sell: 70\n^313 - Force Field: ^7Buy: 400 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 300 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: 20\n^335 - E-Web: ^7Buy: 150 - Sell: 30\n^338 - Binoculars: ^7Buy: 10 - Sell: 5\n^341 - Jetpack: ^7Buy: 50 - Sell: ^1no\n^342 - Cloak Item: ^7Buy: 50 - Sell: 20\n^343 - Force Boon: ^7Buy: 200 - Sell: 50^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "weapons" ) == 0)
 		{
@@ -8583,6 +8583,18 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Holdable Items Upgrade: ^7Bacta and Big Bacta recovers more HP, Force Field resists more and Cloak Item will be able to cloak vehicles\n\n\"");
 		}
+		else if (i == 41)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Jetpack: ^7allows the player to fly. Jump and press Use Key to use it\n\n\"");
+		}
+		else if (i == 42)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Cloak Item: ^7allows the player to cloak himself\n\n\"");
+		}
+		else if (i == 43)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Boon: ^7allows the player to regenerate force faster\n\n\"");
+		}
 	}
 }
 
@@ -8594,7 +8606,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[40] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,2500};
+	int item_costs[43] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,2500,50,50,200};
 
 	if (trap->Argc() == 1)
 	{
@@ -8605,7 +8617,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (value < 1 || value > 40)
+	if (value < 1 || value > 43)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;
@@ -8638,17 +8650,17 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	}
 
 	// zyk: class validations. Some items require certain conditions to be bought
-	if (ent->client->pers.rpg_class == 1 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38)))
+	if (ent->client->pers.rpg_class == 1 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Force User can't buy this item.\n\"" );
 		return;
 	}
-	else if (ent->client->pers.rpg_class == 4 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38)))
+	else if (ent->client->pers.rpg_class == 4 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Monk can't buy this item.\n\"" );
 		return;
 	}
-	else if (ent->client->pers.rpg_class == 6 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38)))
+	else if (ent->client->pers.rpg_class == 6 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Duelist can't buy this item.\n\"" );
 		return;
@@ -8886,6 +8898,18 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 0);
 		}
+		else if (value == 41)
+		{
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+		}
+		else if (value == 42)
+		{
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_CLOAK);
+		}
+		else if (value == 43)
+		{
+			ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 60000;
+		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
 
@@ -8910,7 +8934,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[40] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0};
+	int items_costs[43] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50};
 
 	if (trap->Argc() == 1)
 	{
@@ -8921,7 +8945,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (items_costs[value-1] == 0)
+	if (value < 1 || value > 43 || items_costs[value-1] == 0)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;
@@ -9117,6 +9141,16 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	else if (value == 38 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_BINOCULARS))
 	{
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_BINOCULARS);
+		sold = 1;
+	}
+	else if (value == 42 && ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_CLOAK))
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_CLOAK);
+		sold = 1;
+	}
+	else if (value == 43 && ent->client->ps.powerups[PW_FORCE_BOON])
+	{
+		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		sold = 1;
 	}
 			
