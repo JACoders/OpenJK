@@ -3289,6 +3289,13 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 			ent->client->ps.duelInProgress = qtrue;
 			challenged->client->ps.duelInProgress = qtrue;
 
+			// zyk: reset hp and shield of both players
+			ent->health = 100;
+			ent->client->ps.stats[STAT_ARMOR] = 100;
+
+			challenged->health = 100;
+			challenged->client->ps.stats[STAT_ARMOR] = 100;
+
 			ent->client->ps.duelTime = level.time + 2000;
 			challenged->client->ps.duelTime = level.time + 2000;
 
