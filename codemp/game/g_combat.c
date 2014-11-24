@@ -4840,11 +4840,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
-	{ // zyk: setting saber damage of Force User, weapon damage of Bounty Hunter and melee damage of Monk. Free Warrior gets a little more damage in all attacks		
+	{ // zyk: bonus damage of each RPG class
 		if (attacker->client->pers.rpg_class == 0)
 		{
 			float free_warrior_bonus_damage = 0.0;
-			// zyk: gets bonus damage if using Free Warrior Power Up
+			// zyk: gets bonus damage if using Power Up
 			if (attacker->client->pers.ultimate_power_user == 3)
 				free_warrior_bonus_damage = 0.04;
 
@@ -4869,11 +4869,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (attacker->client->pers.secrets_found & (1 << 7))
 				stealth_attacker_bonus_damage = 0.2;
 
-			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level) + stealth_attacker_bonus_damage));
+			damage = (int)ceil(damage * (1.15 + (0.15 * attacker->client->pers.improvements_level) + stealth_attacker_bonus_damage));
 		}
 		else if (attacker->client->pers.rpg_class == 6 && (mod == MOD_SABER || mod == MOD_MELEE))
 		{ // zyk: Duelist has higher damage in saber and melee
-			damage = (int)ceil(damage * (1.4 + (0.1 * attacker->client->pers.improvements_level)));
+			damage = (int)ceil(damage * (1.2 + (0.2 * attacker->client->pers.improvements_level)));
 		}
 	}
 
