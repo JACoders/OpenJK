@@ -2657,10 +2657,24 @@ void ClientThink_real( gentity_t *ent ) {
 				ClientUserinfoChanged(ent-g_entities);
 				G_SaberModelSetup(ent);
 
-				Cmd_SaberAttackCycle_f(ent);
+				if (g_saberDisable.integer & SABERSTYLE_DESANN)
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_DESANN;
+				else if (g_saberDisable.integer & SABERSTYLE_TAVION)
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_TAVION;
+				else if (client->ps.fd.saberAnimLevel == SS_DUAL)
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_FAST;
+				else if (client->ps.fd.saberAnimLevel == SS_STAFF)
+					client->ps.fd.saberAnimLevel = client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevelBase = SS_MEDIUM;
+
+				if ((g_saberDisable.integer & SABERSTYLE_RED) && (client->ps.fd.saberAnimLevel == SS_STRONG))
+					Cmd_SaberAttackCycle_f(ent);
+				else if ((g_saberDisable.integer & SABERSTYLE_YELLOW) && (client->ps.fd.saberAnimLevel == SS_MEDIUM))
+					Cmd_SaberAttackCycle_f(ent);
+				else if ((g_saberDisable.integer & SABERSTYLE_BLUE) && (client->ps.fd.saberAnimLevel == SS_FAST))
+					Cmd_SaberAttackCycle_f(ent);
 			}
 			else if (changeStyle) {
-				Cmd_SaberAttackCycle_f(ent);
+				Cmd_SaberAttackCycle_f(ent); //meh, could still be cleaned up but w/e .. only buggs out a lil bit at spawn when changing from duals/staff -> single and a single style is disabled?
 			}	
 		}
 		

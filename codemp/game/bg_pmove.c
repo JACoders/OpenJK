@@ -4106,7 +4106,7 @@ static void PM_WalkMove( void ) {
 #ifdef _GAME
 		if ((g_fixSlidePhysics.integer == 1) && (pm->ps->clientNum >= MAX_CLIENTS)) { //Fix slide physics for NPCS (inbasejka, npcs will accel to ~340 on slick surfaces for no reason)
 		}
-		else if (g_fixSlidePhysics.integer == 2 && !pm->ps->stats[STAT_RACEMODE]) { //Fix Slide Physics for everything not in racemode
+		else if (g_fixSlidePhysics.integer > 1 && !pm->ps->stats[STAT_RACEMODE]) { //Fix Slide Physics for everything not in racemode
 		}
 		else
 #endif
