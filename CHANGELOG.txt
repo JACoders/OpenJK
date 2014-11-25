@@ -144,3 +144,4 @@ Key: - removed, + added, * modified
 [SP] * Fix external lightmap support
 [MP] + Add external lightmap support from SP
 [SP/MP] * General buffer safety cleanup
+[SP/MP] * Fix stencil shadows not working if a model has more than 500 vertexes.
