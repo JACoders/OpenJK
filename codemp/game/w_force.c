@@ -3974,7 +3974,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				Touch_Button( push_list[x], self, NULL );
 				continue;
 			}
-			else if (ent->s.eType == ET_ITEM)
+			else if (push_list[x]->s.eType == ET_ITEM)
 			{ // zyk: now it will be possible to push/pull items
 				float dirLen = 0;
 
