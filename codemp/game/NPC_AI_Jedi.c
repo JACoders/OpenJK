@@ -4420,6 +4420,9 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			// zyk: activates his saber
 			WP_ActivateSaber(NPCS.NPC);
 		}
+		else if (NPCS.client->ps.weapon == WP_SABER && !NPCS.client->ps.saberEntityNum)
+		{ // zyk: npc has saber but it is dropped, continue with it until he gets saber back
+		}
 		else
 		{
 			if ( enemy_dist < 128 )
