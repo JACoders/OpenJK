@@ -912,6 +912,7 @@ void Cmd_KillOther_f( gentity_t *ent )
 	G_Kill( otherEnt );
 }
 
+#if 0
 gentity_t *G_GetDuelWinner(gclient_t *client)
 {
 	gclient_t *wCl;
@@ -929,6 +930,7 @@ gentity_t *G_GetDuelWinner(gclient_t *client)
 
 	return NULL;
 }
+#endif
 
 /*
 =================
@@ -4284,8 +4286,8 @@ void Cmd_Saber_f(gentity_t *ent)
 		return;
 	}
 
-	if (level.time - ent->client->ps.footstepTime < 1000 
-		|| level.time - ent->client->ps.forceHandExtendTime < 1000 
+	if (level.time - ent->client->ps.footstepTime < 750 
+		|| level.time - ent->client->ps.forceHandExtendTime < 750 
 		|| ent->client->ps.saberMove != LS_READY 
 		|| ent->client->ps.saberInFlight) {
 		trap->SendServerCommand( ent-g_entities, "print \"You must be idle to use this command (saber).\n\"" );

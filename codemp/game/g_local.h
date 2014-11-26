@@ -1321,7 +1321,7 @@ int G_ItemUsable(playerState_t *ps, int forcedUse);
 void Cmd_ToggleSaber_f(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent, int dueltype);
 
-gentity_t *G_GetDuelWinner(gclient_t *client);
+//gentity_t *G_GetDuelWinner(gclient_t *client);
 
 //
 // g_items.c
