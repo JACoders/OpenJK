@@ -4262,14 +4262,14 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (!g_spinRedDFA.integer && self->client->ps.saberMove == LS_A_JUMP_T__B_)//Red DFA
 					dmg = G_GetAttackDamage(self, 2, 100*g_redDamageScale.value, 0.65f);
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
-					dmg = 20;
+					dmg = 20*g_redDamageScale.value;
 				else//Regular swing
 					dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 85*g_redDamageScale.value, 0.65f);
 			}
 			else if (self->client->ps.fd.saberAnimLevel == SS_MEDIUM)//Yellow Style
 			{
 				if (self->client->ps.saberMove == LS_A_FLIP_STAB || self->client->ps.saberMove == LS_A_FLIP_SLASH)//Yellow DFA and something else?
-					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
+					dmg = G_GetAttackDamage(self, 2, 50*g_yellowDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK)//Yellow Backslash
 					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Yellow DBS
@@ -4284,23 +4284,23 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_BUTTERFLY_LEFT)//Switched from Left staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
-				else if (self->client->ps.saberMove == LS_BUTTERFLY_RIGHT)//Switched from  right staff dfa
+				else if (self->client->ps.saberMove == LS_BUTTERFLY_RIGHT)//Switched from right staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
-				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//Switched from  back staff dfa
+				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//Switched from back staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
-				else if (self->client->ps.saberMove == LS_A_T2B)
+				else if (self->client->ps.saberMove == LS_A_T2B) //now what is this
 					dmg = 30;
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
-					dmg = 20;
+					dmg = 20*g_yellowDamageScale.value;
 				else//Normal yellow swing
-					dmg = 40;
+					dmg = 40*g_yellowDamageScale.value;
 			}
 			else if (self->client->ps.fd.saberAnimLevel == SS_FAST)//Blue Style
 			{
 				if (self->client->ps.saberMove == LS_A_LUNGE)//Blue Lunge
-					dmg = G_GetAttackDamage(self, 20, 40, 0.3f);
+					dmg = G_GetAttackDamage(self, 20*g_blueDamageScale.value, 40*g_blueDamageScale.value, 0.3f);
 				else if (self->client->ps.saberMove == LS_A_BACKSTAB)//Blue Backstab
-					dmg = G_GetAttackDamage(self, 2, 25, 0.5f);
+					dmg = G_GetAttackDamage(self, 2, 25*g_blueDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK)//Switched from dual backslash
 					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Switched from dual DBS
@@ -4312,9 +4312,9 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_JUMPATTACK_DUAL)//Swithced from forward dual butterfly
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
-					dmg = 20;
+					dmg = 20*g_blueDamageScale.value;
 				else//Normal blue swing
-					dmg = 10;//was 35
+					dmg = 10*g_blueDamageScale.value;//was 35
 			}
 			else { //tavion, desann
 				if (self->client->ps.saberMove == LS_A_BACK)//Red Backslash
