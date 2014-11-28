@@ -3238,6 +3238,20 @@ void ClientThink_real( gentity_t *ent ) {
 		if (pmove.cmd.generic_cmd != GENCMD_FORCE_THROW &&
 			pmove.cmd.generic_cmd != GENCMD_FORCE_PULL)
 		{ //these are the only two where you wouldn't care about a delay between
+			if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0) && 
+				pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.m_iVehicleNum
+				)
+			{ // zyk: RPG Mode Cloak Item can cloak vehicles
+				if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
+				{
+					Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+				}
+				else
+				{
+					Jedi_Decloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+				}
+			}
+
 			ent->client->lastGenCmdTime = level.time + 300; //default 100ms debounce between issuing the same command.
 		}
 
@@ -3465,27 +3479,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
 		client->fireHeld = qfalse;		// for grapple
-	}
-
-	if (ent->client->sess.amrpgmode == 2)
-	{
-		if (ent->client->pers.secrets_found & (1 << 0) && 
-			pmove.cmd.generic_cmd && 
-			pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
-			ent->client->pers.vehicle_cloak_timer < level.time &&
-			ent->client->ps.m_iVehicleNum
-			)
-		{ // zyk: RPG Mode Cloak Item can cloak vehicles
-			if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
-			{
-				Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);
-			}
-			else
-			{
-				Jedi_Decloak(&g_entities[ent->client->ps.m_iVehicleNum]);
-			}
-			ent->client->pers.vehicle_cloak_timer = level.time + 1000;
-		}
 	}
 
 	// use the snapped origin for linking so it matches client predicted versions

@@ -3856,8 +3856,6 @@ void load_account(gentity_t *ent, qboolean change_mode)
 				ent->client->sess.amrpgmode = 2;
 		}
 
-		ent->client->pers.vehicle_cloak_timer = 0;
-
 		// zyk: initializing mind control attributes used in RPG mode
 		ent->client->pers.being_mind_controlled = -1;
 		ent->client->pers.mind_control = 0;

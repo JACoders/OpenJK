@@ -589,8 +589,6 @@ typedef struct clientPersistant_s {
 	int weapons_levels[10]; // zyk: RPG mode level of each weapon excluding saber, melee and stun baton
 	int holdable_items_levels[8]; // zyk: RPG mode level of each Holdable Item
 
-	int vehicle_cloak_timer; // zyk: debounce timer used by the Cloak Item 2/2 skill in RPG Mode
-
 	int starting_shield_level; // zyk: RPG mode Max Shield skill level
 
 	int max_rpg_health; // zyk: max health the player can have in RPG Mode. This is set to STAT_MAX_HEALTH for RPG players
