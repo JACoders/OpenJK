@@ -3238,17 +3238,55 @@ void ClientThink_real( gentity_t *ent ) {
 		if (pmove.cmd.generic_cmd != GENCMD_FORCE_THROW &&
 			pmove.cmd.generic_cmd != GENCMD_FORCE_PULL)
 		{ //these are the only two where you wouldn't care about a delay between
-			if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0) && 
-				pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.m_iVehicleNum
-				)
-			{ // zyk: RPG Mode Cloak Item can cloak vehicles
-				if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
-				{
-					Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+			if (ent->client->sess.amrpgmode == 2)
+			{
+				if (ent->client->pers.secrets_found & (1 << 0) && pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.m_iVehicleNum)
+				{ // zyk: RPG Mode Cloak Item can cloak vehicles
+					if (!g_entities[ent->client->ps.m_iVehicleNum].client->ps.powerups[PW_CLOAKED])
+					{
+						Jedi_Cloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+					}
+					else
+					{
+						Jedi_Decloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+					}
 				}
-				else
-				{
-					Jedi_Decloak(&g_entities[ent->client->ps.m_iVehicleNum]);
+
+				if (ent->client->pers.secrets_found & (1 << 2) && pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
+					ent->client->ps.weapon == WP_MELEE && ent->client->pers.unique_skill_timer < level.time)
+				{ // zyk: Unique Skill, used by some RPG classes
+					if (ent->client->pers.rpg_class == 1)
+					{ // zyk: Force User
+						if (ent->client->ps.fd.forcePower >= zyk_max_force_power.integer)
+						{
+							ent->client->ps.fd.forcePower -= zyk_max_force_power.integer;
+
+							ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 10000;
+
+							ent->client->pers.unique_skill_timer = level.time + 30000;
+						}
+					}
+					else if (ent->client->pers.rpg_class == 4)
+					{ // zyk: Monk
+						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+						{
+							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+							ent->client->pers.unique_skill_timer = level.time + 20000;
+						}
+					}
+					else if (ent->client->pers.rpg_class == 6)
+					{ // zyk: Duelist
+						ForceAbsorb(ent);
+						ForceProtect(ent);
+						ForceSeeing(ent);
+						ForceSpeed(ent, 0);
+						ForceHeal(ent);
+
+						ent->client->pers.unique_skill_timer = level.time + 40000;
+					}
 				}
 			}
 

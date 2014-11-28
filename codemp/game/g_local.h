@@ -584,6 +584,9 @@ typedef struct clientPersistant_s {
 	// 6 - Duelist
 	int rpg_class;
 
+	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
+	int unique_skill_timer;
+
 	int force_powers_levels[18]; // zyk: RPG mode level of each force power
 	int ammo_levels[7]; // zyk: RPG mode level of each type of ammo
 	int weapons_levels[10]; // zyk: RPG mode level of each weapon excluding saber, melee and stun baton
@@ -625,7 +628,7 @@ typedef struct clientPersistant_s {
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
 	// 1 - Bounty Hunter Upgrade - bought from the jawa seller
-	// 2 - Unused
+	// 2 - Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 3 - Unused
 	// 4 - Unused
 	// 5 - Unused
