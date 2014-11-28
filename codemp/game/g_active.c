@@ -3252,10 +3252,10 @@ void ClientThink_real( gentity_t *ent ) {
 					}
 				}
 
-				if (ent->client->pers.secrets_found & (1 << 2) && pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
+				if (pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
 					ent->client->ps.weapon == WP_MELEE && ent->client->pers.unique_skill_timer < level.time)
 				{ // zyk: Unique Skill, used by some RPG classes
-					if (ent->client->pers.rpg_class == 1)
+					if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 					{ // zyk: Force User
 						if (ent->client->ps.fd.forcePower >= zyk_max_force_power.integer)
 						{
@@ -3266,7 +3266,7 @@ void ClientThink_real( gentity_t *ent ) {
 							ent->client->pers.unique_skill_timer = level.time + 30000;
 						}
 					}
-					else if (ent->client->pers.rpg_class == 4)
+					else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
 					{ // zyk: Monk
 						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
 						{
@@ -3277,7 +3277,7 @@ void ClientThink_real( gentity_t *ent ) {
 							ent->client->pers.unique_skill_timer = level.time + 20000;
 						}
 					}
-					else if (ent->client->pers.rpg_class == 6)
+					else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
 					{ // zyk: Duelist
 						ForceAbsorb(ent);
 						ForceProtect(ent);

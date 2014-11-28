@@ -4393,9 +4393,16 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 		{
 			ent->client->pers.skill_counter = 0;
 
-			// zyk: if player is a Force User, Monk or Duelist and is at least at level 10, gives him the Unique Skill
-			if (ent->client->pers.level >= 10 && (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6))
-				ent->client->pers.secrets_found |= (1 << 2);
+			// zyk: if player is a Force User, Monk or Duelist and he is at least at level 10, gives him the Unique Skill
+			if (ent->client->pers.level >= 10)
+			{
+				if (ent->client->pers.rpg_class == 1)
+					ent->client->pers.secrets_found |= (1 << 2);
+				else if (ent->client->pers.rpg_class == 4)
+					ent->client->pers.secrets_found |= (1 << 3);
+				else if (ent->client->pers.rpg_class == 6)
+					ent->client->pers.secrets_found |= (1 << 4);
+			}
 
 			rpg_score(ent);
 		}
@@ -7747,9 +7754,13 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^1no\n",message_content[6]);
 
-				if (ent->client->pers.secrets_found & (1 << 2) && (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6))
+				if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (!(ent->client->pers.secrets_found & (1 << 2)) && (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6))
+				else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
+					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+				else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
+					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+				else if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6)
 					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^1no\n",message_content[7]);
 				else
 					sprintf(message_content[7],"%s^0#  ^0- Unique Skill: no\n",message_content[7]);

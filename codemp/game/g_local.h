@@ -628,9 +628,9 @@ typedef struct clientPersistant_s {
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
 	// 1 - Bounty Hunter Upgrade - bought from the jawa seller
-	// 2 - Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 3 - Unused
-	// 4 - Unused
+	// 2 - Force User Unique Skill - got after player reaches level 10 and fills the skill counter once
+	// 3 - Monk Unique Skill - got after player reaches level 10 and fills the skill counter once
+	// 4 - Duelist Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 5 - Unused
 	// 6 - Unused
 	// 7 - Stealth Attacker Upgrade
