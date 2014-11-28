@@ -1536,8 +1536,11 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
 		return;
 
-	if (trigger->spawnflags & 2)
+	if (trigger->spawnflags & 2) {
+		if (!player->client->pers.haste)
+			G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
 		player->client->pers.haste = qtrue;
+	}
 	else 
 		player->client->ps.stats[STAT_ONLYBHOP] = 1;
 }
