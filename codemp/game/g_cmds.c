@@ -3437,6 +3437,7 @@ extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void healing_water(gentity_t *ent, int heal_amount);
 extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance);
+extern void blowing_wind(gentity_t *ent, int distance, int duration);
 extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
 extern void Jedi_Cloak( gentity_t *self );
 qboolean TryGrapple(gentity_t *ent)
@@ -3484,7 +3485,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Poison Mushrooms
-				poison_mushrooms(ent,100,1000);
+				poison_mushrooms(ent,100,900);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
@@ -3638,38 +3639,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				int i = 0;
-
-				for ( i = 0; i < level.num_entities; i++)
-				{
-					gentity_t *player_ent = &g_entities[i];
-
-					if (ent->s.number != i && player_ent && player_ent->client)
-					{
-						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-						if (distance < 900)
-						{
-							int found = 0;
-
-							// zyk: allies will not be hit by this power
-							if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-							{
-								found = 1;
-							}
-
-							if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-							{
-								player_ent->client->pers.ultimate_power_user = ent->s.number;
-								player_ent->client->pers.ultimate_power_target = 10;
-								player_ent->client->pers.ultimate_power_target_timer = level.time + 5000;
-							
-								if (i < level.maxclients)
-									G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-							}
-						}
-					}
-				}
+				blowing_wind(ent,800,5000);
 
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));

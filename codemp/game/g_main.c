@@ -3942,6 +3942,43 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	}
 }
 
+// zyk: Blowing Wind
+void blowing_wind(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+
+	for ( i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{
+					player_ent->client->pers.ultimate_power_user = ent->s.number;
+					player_ent->client->pers.ultimate_power_target = 10;
+					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+							
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+				}
+			}
+		}
+	}
+}
+
 // zyk: Sleeping Flowers
 void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 {
@@ -8007,55 +8044,14 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 7)
 				{ // zyk: Guardian of Wind
-					int blowing_wind_duration = ((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/2) + 1000;
-
-					if (ent->client->pers.guardian_timer < (level.time - blowing_wind_duration))
+					if (ent->client->pers.guardian_timer < level.time)
 					{
-						ent->client->pers.hunter_quest_messages = 0;
+						int blowing_wind_duration = ((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/2) + 1000;
+
+						blowing_wind(ent,2500,blowing_wind_duration);
+
 						ent->client->pers.guardian_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
-					}
-					else if (ent->client->pers.guardian_timer < level.time)
-					{ // zyk: uses blowing wind ability
-						if (ent->client->pers.hunter_quest_messages == 0)
-						{
-							int player_iterator = 0;
-
-							for ( player_iterator = 0; player_iterator < level.maxclients; player_iterator++)
-							{
-								gentity_t *player_ent = &g_entities[player_iterator];
-							
-								G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-							}
-
-							ent->client->pers.hunter_quest_messages = 1;
-							trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
-						}
-						else
-						{
-							int player_iterator = 0;
-							static	vec3_t	forward;
-							vec3_t dir;
-
-							AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
-
-							VectorNormalize(forward);
-
-							for ( player_iterator = 0; player_iterator < level.maxclients; player_iterator++)
-							{
-								gentity_t *player_ent = &g_entities[player_iterator];
-
-								if (player_ent->client->pers.ultimate_power_user != 1000)
-								{
-									// zyk: player on floor needs more scale
-									if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-										VectorScale(forward,80.0,dir);
-									else
-										VectorScale(forward,25.0,dir);
-
-									VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
-								}
-							}
-						}
+						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 8)
@@ -8200,38 +8196,12 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
-							if (ent->client->pers.guardian_timer < (level.time - 5000))
-							{
-								ent->client->pers.hunter_quest_messages++;
-								ent->client->pers.universe_quest_messages = 0;
-								ent->client->pers.guardian_timer = level.time + 2000;
-							}
-							else if (ent->client->pers.universe_quest_messages == 0)
-							{
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							blowing_wind(ent,3000,5000);
 
-								G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Blowing Wind!\"");
 
-								ent->client->pers.universe_quest_messages = 1;
-								trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Blowing Wind!\"");
-							}
-							else
-							{
-								static	vec3_t	forward;
-								vec3_t dir;
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-
-								AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
-
-								VectorNormalize(forward);
-
-								if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-									VectorScale(forward,90.0,dir);
-								else
-									VectorScale(forward,25.0,dir);
-
-								VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
-							}
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 5000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
@@ -8500,52 +8470,12 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
-							if (ent->client->pers.guardian_timer < (level.time - 5000))
-							{
-								ent->client->pers.hunter_quest_messages++;
-								ent->client->pers.universe_quest_messages = 0;
-								ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
-							}
-							else if (ent->client->pers.universe_quest_messages == 0)
-							{
-								int player_it = 0;
+							blowing_wind(ent,2000,5000);
 
-								for (player_it = 0; player_it < level.maxclients; player_it++)
-								{
-									gentity_t *player_ent = &g_entities[player_it];
+							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Blowing Wind!\"");
 
-									if (player_ent && player_ent->client)
-										G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-								}
-
-								ent->client->pers.universe_quest_messages = 1;
-								trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Blowing Wind!\"");
-							}
-							else
-							{
-								static	vec3_t	forward;
-								vec3_t dir;
-								int player_it = 0;
-
-								for (player_it = 0; player_it < level.maxclients; player_it++)
-								{
-									gentity_t *player_ent = &g_entities[player_it];
-
-									if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
-									{
-										AngleVectors( ent->r.currentAngles, forward, NULL, NULL );
-
-										VectorNormalize(forward);
-
-										if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-											VectorScale(forward,90.0,dir);
-										else
-											VectorScale(forward,25.0,dir);
-
-										VectorAdd(player_ent->client->ps.velocity, dir, player_ent->client->ps.velocity);
-									}
-								}
-							}
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
