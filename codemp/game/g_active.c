@@ -3310,7 +3310,7 @@ void ClientThink_real( gentity_t *ent ) {
 												if (!player_ent->NPC && player_ent->client->jetPackOn)
 												{ //disable jetpack temporarily
 													Jetpack_Off(player_ent);
-													player_ent->client->jetPackToggleTime = level.time + 5000;
+													player_ent->client->jetPackToggleTime = level.time + 7000;
 												}
 												else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
 												{ // zyk: DEMP2 also disables npc jetpack
@@ -3318,8 +3318,8 @@ void ClientThink_real( gentity_t *ent ) {
 												}
 
 												if (player_ent->client->ps.fd.forcePowerMax > 0)
-												{ // zyk: sets ysalamiri in force users
-													player_ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 5000;
+												{ // zyk: disables force regen
+													player_ent->client->ps.powerups[PW_QUAD] = level.time + 7000;
 												}
 
 												// zyk: this ability also damages the enemy
