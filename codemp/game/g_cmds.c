@@ -3440,6 +3440,7 @@ extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance
 extern void blowing_wind(gentity_t *ent, int distance, int duration);
 extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
 extern void time_power(gentity_t *ent, int distance, int duration);
+extern void chaos_power(gentity_t *ent, int distance, int first_damage);
 extern void Jedi_Cloak( gentity_t *self );
 qboolean TryGrapple(gentity_t *ent)
 {
@@ -3499,61 +3500,14 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 2))
 			{ // zyk: uses Chaos Power
-				int i = 0;
-
-				for (i = 0; i < level.num_entities; i++)
-				{
-					gentity_t *player_ent = &g_entities[i];
-					
-					if (ent->s.number != i && player_ent && player_ent->client && !player_ent->client->ps.duelInProgress)
-					{
-						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-						if (distance < 400)
-						{
-							int found = 0;
-
-							// zyk: allies will not be hit by this power
-							if (i < level.maxclients && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-							{
-								found = 1;
-							}
-
-							if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-							{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
-								player_ent->client->pers.ultimate_power_user = ent->s.number;
-								player_ent->client->pers.ultimate_power_target = 4;
-								player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
-
-								if (player_ent->client->jetPackOn)
-								{
-									Jetpack_Off(player_ent);
-								}
-
-								// zyk: First Chaos Power hit
-								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								player_ent->client->ps.forceHandExtendTime = level.time + 5000;
-								player_ent->client->ps.velocity[2] += 150;
-								player_ent->client->ps.forceDodgeAnim = 0;
-								player_ent->client->ps.quickerGetup = qtrue;
-								player_ent->client->ps.electrifyTime = level.time + 5000;
-
-								G_Damage(player_ent,ent,ent,NULL,NULL,80,0,MOD_UNKNOWN);
-							}
-						}
-					}
-				}
-
+				chaos_power(ent,400,80);
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
-
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 3))
 			{ // zyk: uses Time Power
 				time_power(ent,400,6000);
-
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
-
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
 
