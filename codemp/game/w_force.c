@@ -1802,6 +1802,7 @@ void ForceLightning( gentity_t *self )
 	WP_ForcePowerStart( self, FP_LIGHTNING, 2000 ); // zyk: changed lightning duration from 500 to 2000
 }
 
+extern void Boba_FlyStop( gentity_t *self );
 void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t impactPoint )
 {
 	self->client->dangerTime = level.time;
@@ -1822,7 +1823,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			if (traceEnt->client->noLightningTime >= level.time)
 			{ //give them power and don't hurt them.
 				traceEnt->client->ps.fd.forcePower++;
-				// zyk: changed the code below so we can use the cvar cm_FORCE_POWER_MAX instead of hardcoded 100 force power max
+				// zyk: changed the code below so we can use the cvar zyk_FORCE_POWER_MAX instead of hardcoded 100 force power max
 				if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->ps.fd.forcePower > traceEnt->client->pers.max_force_power)
 					traceEnt->client->ps.fd.forcePower = traceEnt->client->pers.max_force_power;
 				else if (traceEnt->client->sess.amrpgmode < 2 && traceEnt->client->ps.fd.forcePower > zyk_max_force_power.integer)
@@ -1909,10 +1910,22 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					}
 
 					// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
-					if (traceEnt && traceEnt->client && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 3 && 
-						traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,3) == 0)
+					if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 3 && 
+						traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,4) == 0)
 					{
 						traceEnt->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
+					}
+					else
+					{
+						if (!traceEnt->NPC && traceEnt->client->jetPackOn)
+						{ //disable jetpack temporarily
+							Jetpack_Off(traceEnt);
+							traceEnt->client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
+						}
+						else if (traceEnt->NPC && traceEnt->client->NPC_class == CLASS_BOBAFETT)
+						{ // zyk: also disables npc jetpack
+							Boba_FlyStop(traceEnt);
+						}
 					}
 				}
 			}

@@ -3313,7 +3313,7 @@ void ClientThink_real( gentity_t *ent ) {
 													player_ent->client->jetPackToggleTime = level.time + 7000;
 												}
 												else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
-												{ // zyk: DEMP2 also disables npc jetpack
+												{ // zyk: also disables npc jetpack
 													Boba_FlyStop(player_ent);
 												}
 
