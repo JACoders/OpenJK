@@ -8342,7 +8342,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nThis skill requires some force power\nForce User: uses Force Boon\nMonk: increases resistance to damage\nDuelist: uses some force powers at the same time\n\"") );
+					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nThis skill requires some force power\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: uses some force powers at the same time\n\"") );
 				}
 				else
 				{

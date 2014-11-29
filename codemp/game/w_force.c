@@ -5877,6 +5877,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 			{
 				if ( self->client->ps.powerups[PW_FORCE_BOON] )
 					WP_ForcePowerRegenerate( self, 6 );
+				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1 && self->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+					WP_ForcePowerRegenerate( self, 5 ); // zyk: Force User in RPG Mode regenerates force faster when using his Unique Skill
 				else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
 					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 				else
