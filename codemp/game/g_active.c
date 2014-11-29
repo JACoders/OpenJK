@@ -1963,6 +1963,7 @@ If "g_synchronousClients 1" is set, this will be called exactly
 once for each server frame, which makes for smooth demo recording.
 ==============
 */
+extern void Boba_FlyStop( gentity_t *self );
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -3257,9 +3258,9 @@ void ClientThink_real( gentity_t *ent ) {
 				{ // zyk: Unique Skill, used by some RPG classes
 					if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 					{ // zyk: Force User
-						if (ent->client->ps.fd.forcePower >= zyk_max_force_power.integer)
+						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
 						{
-							ent->client->ps.fd.forcePower -= zyk_max_force_power.integer;
+							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
 							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
@@ -3272,20 +3273,62 @@ void ClientThink_real( gentity_t *ent ) {
 						{
 							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
-							ent->client->pers.unique_skill_timer = level.time + 20000;
+							ent->client->pers.unique_skill_timer = level.time + 25000;
 						}
 					}
 					else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
 					{ // zyk: Duelist
-						ForceAbsorb(ent);
-						ForceProtect(ent);
-						ForceSeeing(ent);
-						ForceSpeed(ent, 0);
-						ForceHeal(ent);
+						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+						{
+							int player_it = 0;
 
-						ent->client->pers.unique_skill_timer = level.time + 40000;
+							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+							for (player_it = 0; player_it < level.num_entities; player_it++)
+							{
+								gentity_t *player_ent = &g_entities[player_it];
+
+								if (ent->s.number != player_it && player_ent && player_ent->client)
+								{
+									int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+									if (player_distance < 300)
+									{
+										int found = 0;
+
+										// zyk: allies will not be hit by this power
+										if (player_it < level.maxclients && (ent->client->sess.ally1 == player_it || ent->client->sess.ally2 == player_it || ent->client->sess.ally3 == player_it))
+										{
+											found = 1;
+										}
+
+										if (found == 0)
+										{
+											if (!player_ent->NPC && player_ent->client->jetPackOn)
+											{ //disable jetpack temporarily
+												Jetpack_Off(player_ent);
+												player_ent->client->jetPackToggleTime = level.time + 10000;
+											}
+											else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
+											{ // zyk: DEMP2 also disables npc jetpack
+												Boba_FlyStop(player_ent);
+											}
+
+											if (player_ent->client->ps.fd.forcePowerMax > 0)
+											{
+												player_ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 10000;
+											}
+										}
+									}
+								}
+							}
+
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+							ent->client->pers.unique_skill_timer = level.time + 35000;
+						}
 					}
 				}
 			}
