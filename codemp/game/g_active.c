@@ -3253,82 +3253,91 @@ void ClientThink_real( gentity_t *ent ) {
 					}
 				}
 
-				if (pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && 
-					ent->client->ps.weapon == WP_MELEE && ent->client->pers.unique_skill_timer < level.time)
+				if (pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.weapon == WP_MELEE)
 				{ // zyk: Unique Skill, used by some RPG classes
-					if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
-					{ // zyk: Force User
-						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
-						{
-							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
-
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
-
-							ent->client->pers.unique_skill_timer = level.time + 30000;
-						}
-					}
-					else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
-					{ // zyk: Monk
-						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
-						{
-							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
-
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
-
-							ent->client->pers.unique_skill_timer = level.time + 25000;
-						}
-					}
-					else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
-					{ // zyk: Duelist
-						if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
-						{
-							int player_it = 0;
-
-							ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
-
-							for (player_it = 0; player_it < level.num_entities; player_it++)
+					if (ent->client->pers.unique_skill_timer < level.time)
+					{
+						if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
+						{ // zyk: Force User
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
 							{
-								gentity_t *player_ent = &g_entities[player_it];
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
-								if (ent->s.number != player_it && player_ent && player_ent->client)
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+								ent->client->pers.unique_skill_timer = level.time + 30000;
+							}
+						}
+						else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
+						{ // zyk: Monk
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							{
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								ent->client->pers.unique_skill_timer = level.time + 25000;
+							}
+						}
+						else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
+						{ // zyk: Duelist
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							{
+								int player_it = 0;
+
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+								for (player_it = 0; player_it < level.num_entities; player_it++)
 								{
-									int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+									gentity_t *player_ent = &g_entities[player_it];
 
-									if (player_distance < 300)
+									if (ent->s.number != player_it && player_ent && player_ent->client)
 									{
-										int found = 0;
+										int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
-										// zyk: allies will not be hit by this power
-										if (player_it < level.maxclients && (ent->client->sess.ally1 == player_it || ent->client->sess.ally2 == player_it || ent->client->sess.ally3 == player_it))
+										if (player_distance < 300)
 										{
-											found = 1;
-										}
+											int found = 0;
 
-										if (found == 0)
-										{
-											if (!player_ent->NPC && player_ent->client->jetPackOn)
-											{ //disable jetpack temporarily
-												Jetpack_Off(player_ent);
-												player_ent->client->jetPackToggleTime = level.time + 10000;
-											}
-											else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
-											{ // zyk: DEMP2 also disables npc jetpack
-												Boba_FlyStop(player_ent);
-											}
-
-											if (player_ent->client->ps.fd.forcePowerMax > 0)
+											// zyk: allies will not be hit by this power
+											if (player_it < level.maxclients && (ent->client->sess.ally1 == player_it || ent->client->sess.ally2 == player_it || ent->client->sess.ally3 == player_it))
 											{
-												player_ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 10000;
+												found = 1;
+											}
+
+											if (found == 0)
+											{
+												if (!player_ent->NPC && player_ent->client->jetPackOn)
+												{ //disable jetpack temporarily
+													Jetpack_Off(player_ent);
+													player_ent->client->jetPackToggleTime = level.time + 10000;
+												}
+												else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
+												{ // zyk: DEMP2 also disables npc jetpack
+													Boba_FlyStop(player_ent);
+												}
+
+												if (player_ent->client->ps.fd.forcePowerMax > 0)
+												{ // zyk: sets ysalamiri in force users
+													player_ent->client->ps.powerups[PW_YSALAMIRI] = level.time + 10000;
+												}
+
+												// zyk: this ability also damages the enemy
+												G_Damage(player_ent,ent,ent,NULL,NULL,50,0,MOD_UNKNOWN);
 											}
 										}
 									}
 								}
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+								ent->client->pers.unique_skill_timer = level.time + 35000;
 							}
-
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
-
-							ent->client->pers.unique_skill_timer = level.time + 35000;
 						}
+					}
+					else
+					{ // zyk: still in cooldown time, shows the time left in chat
+						trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time)/1000)));
 					}
 				}
 			}
