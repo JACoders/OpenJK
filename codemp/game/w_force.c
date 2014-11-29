@@ -3886,7 +3886,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				}
 				else
 				{
-					G_ReflectMissile( self, push_list[x], forward );
+					// zyk: do not push missiles coming from allies
+					if (self->client->sess.ally1 != push_list[x]->r.ownerNum && self->client->sess.ally2 != push_list[x]->r.ownerNum &&
+						self->client->sess.ally3 != push_list[x]->r.ownerNum)
+					{
+						G_ReflectMissile( self, push_list[x], forward );
+					}
 				}
 			}
 			else if ( !Q_stricmp( "func_static", push_list[x]->classname ) )
