@@ -264,6 +264,7 @@ XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( sv_maxTeamSize,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixVote,					"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )//latch cuz of calculateRanks? not sure man
 
 //JAPRO RACE / ACCOUNTS
 XCVAR_DEF( g_raceMode,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

@@ -1131,6 +1131,14 @@ void CalculateRanks( void ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
 
+			if (g_fixVote.integer) {
+				if ( level.clients[i].pers.connected == CON_CONNECTED ) {
+					if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
+						level.numRealVotingClients++;
+					}
+				}
+			}
+
 			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{
 				if (level.clients[i].sess.sessionTeam != TEAM_SPECTATOR)
@@ -2830,14 +2838,19 @@ void CheckVote( void ) {
 		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 	}
 	else {
-		if ( level.voteYes > level.numVotingClients/2 ) {
+		int numClients = level.numVotingClients;
+		if (g_fixVote.integer) {
+			numClients = level.numRealVotingClients;
+		}
+
+		if ( level.voteYes > numClients/2 ) {
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
 
 		// same behavior as a timeout
-		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
+		else if ( level.voteNo >= (numClients+1)/2 )
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 
 		else // still waiting for a majority

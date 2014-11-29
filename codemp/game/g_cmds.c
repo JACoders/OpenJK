@@ -2819,8 +2819,27 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	// not allowed to vote at all
 	if ( !g_allowVote.integer ) {
-		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
-		return;
+		if (ent->client->sess.fullAdmin)//Logged in as full admin
+		{
+			if (!(g_fullAdminLevel.integer & (1 << A_CALLVOTE)))
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLockTeam).\n\"" );
+				return;
+			}
+		}
+		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
+		{
+			if (!(g_juniorAdminLevel.integer & (1 << A_CALLVOTE)))
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLockTeam).\n\"" );
+				return;
+			}
+		}
+		else//Not logged in
+		{
+			trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
+			return;
+		}
 	}
 
 	// vote in progress

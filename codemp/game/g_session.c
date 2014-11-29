@@ -128,6 +128,9 @@ void G_ReadSessionData( gclient_t *client )
 	client->sess.juniorAdmin	= (qboolean)tempJRAdmin; //lets see if this works now
 	client->sess.fullAdmin		= (qboolean)tempFullAdmin;
 
+	if (client->sess.movementStyle == 0)
+		client->sess.movementStyle = 1;//Sad fucking hack to stop it defaulting to siege if player never joined game previous round.. Dunno man
+
 	// convert back to spaces from unused chars, as session data is written that way.
 	for ( i=0; client->sess.siegeClass[i]; i++ )
 	{

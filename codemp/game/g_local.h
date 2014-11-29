@@ -279,7 +279,8 @@ typedef enum {
 	A_WHOIS,
 	A_LOOKUP,
 	A_NOFOLLOW,
-	A_SEEHIDDEN
+	A_SEEHIDDEN,
+	A_CALLVOTE
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates
@@ -1270,6 +1271,7 @@ typedef struct level_locals_s {
 
 	char		courseName[24][32];//japro defrag	
 	int			numCourses;
+	int			numRealVotingClients; //fixed vote checking
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;
