@@ -4055,6 +4055,38 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	}
 }
 
+// zyk: Time Power
+void time_power(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+					
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					player_ent->client->pers.ultimate_power_target = 3;
+					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -8302,15 +8334,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-							if (distance < 1600)
-							{
-								// zyk: set the player as being affected by Time Power
-								player_ent->client->pers.ultimate_power_target = 3;
-								player_ent->client->pers.ultimate_power_target_timer = level.time + 6000;
-							}
+							time_power(ent,1600,6000);
 
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 5000;
@@ -8596,24 +8620,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							int player_it = 0;
-
-							for (player_it = 0; player_it < level.maxclients; player_it++)
-							{
-								gentity_t *player_ent = &g_entities[player_it];
-
-								if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
-								{
-									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-									if (distance < 900)
-									{
-										// zyk: set the player as being affected by Time Power
-										player_ent->client->pers.ultimate_power_target = 3;
-										player_ent->client->pers.ultimate_power_target_timer = level.time + 6000;
-									}
-								}
-							}
+							time_power(ent,900,6000);
 
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
