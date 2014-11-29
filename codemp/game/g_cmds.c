@@ -2819,6 +2819,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	// not allowed to vote at all
 	if ( !g_allowVote.integer ) {
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
+		return;
+	}
+
+	if ((g_fullAdminLevel.integer & (1 << A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << A_CALLVOTE))) { //Admin only voting mode
 		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
 			if (!(g_fullAdminLevel.integer & (1 << A_CALLVOTE)))
@@ -2843,13 +2848,13 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// vote in progress
-	else if ( level.voteTime ) {
+	if ( level.voteTime ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "VOTEINPROGRESS" ) ) );
 		return;
 	}
 
 	// can't vote as a spectator, except in (power)duel
-	else if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
+	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR && !g_fixVote.integer) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
 		return;
 	}

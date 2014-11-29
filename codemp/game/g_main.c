@@ -2843,7 +2843,7 @@ void CheckVote( void ) {
 			numClients = level.numRealVotingClients;
 		}
 
-		if ( level.voteYes > numClients/2 ) {
+		if ( level.voteYes > numClients/2 ) { //this means we cant pass a vote by ourselves.. ok..? dunno man
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
