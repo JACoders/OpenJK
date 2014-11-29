@@ -2871,35 +2871,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (!Q_stricmp(arg1, "g_gametype")) {
-		if (g_votesDisable.integer & VOTE_GAMETYPE)
-			return;
-	}
-	else if (!Q_stricmp(arg1, "map")) {
-		if (g_votesDisable.integer & VOTE_MAP)
-			return;
-	}
-	else if ((!Q_stricmp(arg1, "clientkick")) || (!Q_stricmp(arg1, "kick"))) {
-		if (g_votesDisable.integer & VOTE_KICK)
-			return;
-	}
-	else if (!Q_stricmp(arg1, "nextmap")) {
-		if (g_votesDisable.integer & VOTE_NEXTMAP)
-			return;
-	}
-	else if (!Q_stricmp(arg1, "timelimit")) {
-		if (g_votesDisable.integer & VOTE_TIMELIMIT)
-			return;
-	}
-	else if (!Q_stricmp( arg1, "fraglimit")) {
-		if (g_votesDisable.integer & VOTE_FRAGLIMIT)
-			return;
-	}
-	else if (!Q_stricmp( arg1, "capturelimit")) {
-		if (g_votesDisable.integer & VOTE_CAPTURELIMIT)
-			return;
-	}
-
 	// check for invalid votes
 	for ( i=0; i<validVoteStringsSize; i++ ) {
 		if ( !(g_allowVote.integer & (1<<i)) )

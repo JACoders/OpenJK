@@ -1122,6 +1122,7 @@ void CalculateRanks( void ) {
 	level.numNonSpectatorClients = 0;
 	level.numPlayingClients = 0;
 	level.numVotingClients = 0;		// don't count bots
+	level.numRealVotingClients = 0;
 
 	for ( i = 0; i < ARRAY_LEN(level.numteamVotingClients); i++ ) {
 		level.numteamVotingClients[i] = 0;
