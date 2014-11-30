@@ -1919,8 +1919,11 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					{
 						if (!traceEnt->NPC && traceEnt->client->jetPackOn)
 						{ //disable jetpack temporarily
-							Jetpack_Off(traceEnt);
-							traceEnt->client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
+							if (traceEnt->client->sess.amrpgmode != 2 || traceEnt->client->pers.rpg_class != 5 || !(traceEnt->client->pers.secrets_found & (1 << 7)))
+							{ // zyk: do not disable jetpack of Stealth Attacker with Upgrade
+								Jetpack_Off(traceEnt);
+								traceEnt->client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
+							}
 						}
 						else if (traceEnt->NPC && traceEnt->client->NPC_class == CLASS_BOBAFETT)
 						{ // zyk: also disables npc jetpack
