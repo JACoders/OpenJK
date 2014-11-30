@@ -1346,7 +1346,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 		AddTournamentQueue( client );
 
 	// clear votes if going to spectator (specs can't vote)
-	if ( team == TEAM_SPECTATOR )
+	if (team == TEAM_SPECTATOR && !g_fixVote.integer)
 		G_ClearVote( ent );
 	// also clear team votes if switching red/blue or going to spec
 	G_ClearTeamVote( ent, oldTeam );
@@ -2997,7 +2997,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 	}
 	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
-		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
+		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR && !g_fixVote.integer) {
 			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
 			return;
 		}
