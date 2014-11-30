@@ -1725,3 +1725,15 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep ) {
 	else
 		return s;
 }
+
+qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	return ( bits[index / bitsPerByte] & (1 << (index % bitsPerByte)) ) ? qtrue : qfalse;
+}
+
+void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	bits[index / bitsPerByte] |= (1 << (index % bitsPerByte));
+}
+
+void Q_RemoveFromBitflags( uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	bits[index / bitsPerByte] &= ~(1 << (index % bitsPerByte));
+}
