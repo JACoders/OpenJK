@@ -1110,13 +1110,6 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 	self->r.broadcastClients[0] = 0u;
 	self->r.broadcastClients[1] = 0u;
 
-	if ( self->client->pers.adminData.isGhost ) {
-		self->r.svFlags |= SVF_BROADCASTCLIENTS;
-	}
-	else {
-		self->r.svFlags &= ~SVF_BROADCASTCLIENTS;
-	}
-
 	for ( i = 0, other = g_entities; i < MAX_CLIENTS; i++, other++ ) {
 		qboolean send = qfalse;
 		float dist;
@@ -1130,16 +1123,6 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 		if ( other == self ) {
 			// we are always sent to ourselves anyway, this is purely an optimisation
 			continue;
-		}
-
-		if ( self->client->pers.adminData.isGhost ) {
-			if ( other->client->pers.adminUser /*&& AM_HasPrivilege( other, PRIV_GHOST )*/ ) {
-				send = qtrue;
-			}
-			else {
-				// do not send if we are a ghost and they can't see us
-				continue;
-			}
 		}
 
 		VectorSubtract( &self->client->ps.origin, &other->client->ps.origin, &angles );
