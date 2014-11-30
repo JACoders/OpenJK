@@ -1538,7 +1538,8 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 
 	if (trigger->spawnflags & 2) {
 		if (!player->client->pers.haste)
-			G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
+			G_Sound( player, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3") );
+			//G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
 		player->client->pers.haste = qtrue;
 	}
 	else 
