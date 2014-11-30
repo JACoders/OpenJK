@@ -2593,7 +2593,9 @@ void CG_NextInventory_f( void )
 
 		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect])) 
 		{	
-			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
+			if(!in_camera) {
+				cgi_S_StartSound(NULL, 0, CHAN_AUTO, cgs.media.selectSound2);
+			}
 			SetInventoryTime();
 			return;
 		}
@@ -2647,7 +2649,9 @@ void CG_PrevInventory_f( void )
 		
 		if ( CG_InventorySelectable( cg.inventorySelect ) && (inv_icons[cg.inventorySelect])) 
 		{	
-			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
+			if(!in_camera) {
+				cgi_S_StartSound(NULL, 0, CHAN_AUTO, cgs.media.selectSound2);
+			}
 			SetInventoryTime();
 			return;
 		}
@@ -3244,7 +3248,9 @@ void CG_NextForcePower_f( void )
 
 		if (ForcePower_Valid(cg.forcepowerSelect))	// Does he have the force power?
 		{
-			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
+			if(!in_camera) {
+				cgi_S_StartSound(NULL, 0, CHAN_AUTO, cgs.media.selectSound2);
+			}
 			return;
 		}
 	}
@@ -3286,7 +3292,9 @@ void CG_PrevForcePower_f( void )
 
 		if (ForcePower_Valid(cg.forcepowerSelect))	// Does he have the force power?
 		{
-			cgi_S_StartSound (NULL, 0, CHAN_AUTO, cgs.media.selectSound2 );
+			if(!in_camera) {
+				cgi_S_StartSound(NULL, 0, CHAN_AUTO, cgs.media.selectSound2);
+			}
 			return;
 		}
 	}
