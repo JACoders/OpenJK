@@ -953,15 +953,19 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 
 		byBlank = new byte[bySize];
 		pbRawScreenShot = SCR_TempRawImage_ReadFromFile(va("levelshots/%s.tga",psMapName), &iWidth, &iHeight, byBlank, qtrue);	// qtrue = vert flip
-		for (int y = 0; y < iHeight; y++)
+		
+		if (pbRawScreenShot)
 		{
-			for (int x = 0; x < iWidth; x++)
+			for (int y = 0; y < iHeight; y++)
 			{
-				src = pbRawScreenShot + 4 * (y * iWidth + x);
-				dst = pbRawScreenShot + 3 * (y * iWidth + x);
-				dst[0] = src[0];
-				dst[1] = src[1];
-				dst[2] = src[2];
+				for (int x = 0; x < iWidth; x++)
+				{
+					src = pbRawScreenShot + 4 * (y * iWidth + x);
+					dst = pbRawScreenShot + 3 * (y * iWidth + x);
+					dst[0] = src[0];
+					dst[1] = src[1];
+					dst[2] = src[2];
+				}
 			}
 		}
 	}
