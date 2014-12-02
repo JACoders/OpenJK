@@ -5839,9 +5839,6 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 
 #define MIN_SABER_SLICE_RETURN_DISTANCE 30
 
-#define SABER_THROWN_HIT_DAMAGE 30
-#define SABER_THROWN_RETURN_HIT_DAMAGE 5
-
 void thrownSaberTouch (gentity_t *saberent, gentity_t *other, trace_t *trace);
 
 static QINLINE qboolean CheckThrownSaberDamaged(gentity_t *saberent, gentity_t *saberOwner, gentity_t *ent, int dist, int returning, qboolean noDCheck)
@@ -6649,7 +6646,7 @@ qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t 
 
 	saberent->parent = saberOwner;
 
-	saberent->damage = SABER_THROWN_HIT_DAMAGE;
+	saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
 	saberent->methodOfDeath = MOD_SABER;
 	saberent->splashMethodOfDeath = MOD_SABER;
 	saberent->s.solid = 2;
@@ -8661,7 +8658,7 @@ nextStep:
 				saberent->nextthink = level.time + FRAMETIME;
 				saberent->think = saberFirstThrown;
 
-				saberent->damage = SABER_THROWN_HIT_DAMAGE;
+				saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
 				saberent->methodOfDeath = MOD_SABER;
 				saberent->splashMethodOfDeath = MOD_SABER;
 				saberent->s.solid = 2;

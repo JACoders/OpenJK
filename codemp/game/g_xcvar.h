@@ -200,5 +200,6 @@ XCVAR_DEF( zyk_tripmine_damage,	"100",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,		
 XCVAR_DEF( zyk_tripmine_splash_damage,	"105",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_detpack_damage,	"100",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_detpack_splash_damage,	"200",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_saber_throw_damage,	"30",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF
