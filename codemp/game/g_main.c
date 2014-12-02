@@ -2835,8 +2835,17 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) {
-		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
+		if (g_fixVote.integer) {
+			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
+				trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
+				level.voteExecuteTime = level.time + level.voteExecuteDelay;
+			}
+			else
+				trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+		}
+		else //Fail if it expires and not fixvote
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 	}
 	else {
 		int numClients = level.numVotingClients;
@@ -2844,7 +2853,7 @@ void CheckVote( void ) {
 			numClients = level.numRealVotingClients;
 		}
 
-		if ( level.voteYes > numClients/2 ) { //this means we cant pass a vote by ourselves.. ok..? dunno man
+		if ( level.voteYes > numClients/2 ) {
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
