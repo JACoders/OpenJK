@@ -153,7 +153,7 @@ typedef struct
 	vehFieldType_t	type;
 } vehField_t;
 
-vehField_t vehWeaponFields[NUM_VWEAP_PARMS] = 
+vehField_t vehWeaponFields[NUM_VWEAP_PARMS] =
 {
 	{"name", VWFOFS(name), VF_LSTRING},	//unique name of the vehicle
 	{"projectile", VWFOFS(bIsProjectile), VF_BOOL},	//traceline or entity?
@@ -199,7 +199,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 		if ( vehWeaponFields[i].name && !Q_stricmp( vehWeaponFields[i].name, parmName ) )
 		{
 			// found it
-			switch( vehWeaponFields[i].type ) 
+			switch( vehWeaponFields[i].type )
 			{
 			case VF_INT:
 				*(int *)(b+vehWeaponFields[i].ofs) = atoi(value);
@@ -217,7 +217,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 					(*(char **)(b+vehWeaponFields[i].ofs)) = G_NewString( value );
 #endif
 				}
-				
+
 				break;
 			case VF_VECTOR:
 				_iFieldsRead = sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
@@ -345,7 +345,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 
 	vehWeapon = &g_vehWeaponInfo[numVehicleWeapons];
 	// look for the right vehicle weapon
-	while ( p ) 
+	while ( p )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
@@ -354,14 +354,14 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 			return qfalse;
 		}
 
-		if ( !Q_stricmp( token, vehWeaponName ) ) 
+		if ( !Q_stricmp( token, vehWeaponName ) )
 		{
 			break;
 		}
 
 		SkipBracedSection( &p );
 	}
-	if ( !p ) 
+	if ( !p )
 	{
 		COM_EndParseSession(  );
 		return qfalse;
@@ -374,25 +374,25 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		return VEH_WEAPON_NONE;
 	}
 
-	if ( Q_stricmp( token, "{" ) != 0 ) 
+	if ( Q_stricmp( token, "{" ) != 0 )
 	{
 		COM_EndParseSession(  );
 		return VEH_WEAPON_NONE;
 	}
-	
+
 	// parse the vehWeapon info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		SkipRestOfLine( &p );
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle Weapon '%s'\n", vehWeaponName );
 			COM_EndParseSession(  );
 			return VEH_WEAPON_NONE;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
@@ -466,7 +466,7 @@ int VEH_VehWeaponIndexForName( const char *vehWeaponName )
 	return vw;
 }
 
-vehField_t vehicleFields[] = 
+vehField_t vehicleFields[] =
 {
 	{"name", VFOFS(name), VF_LSTRING},	//unique name of the vehicle
 
@@ -504,7 +504,7 @@ vehField_t vehicleFields[] =
 	{"friction", VFOFS(friction), VF_FLOAT},		//how much velocity is cut on its own
 	{"maxSlope", VFOFS(maxSlope), VF_FLOAT},		//the max slope that it can go up with control
 	{"speedDependantTurning", VFOFS(speedDependantTurning), VF_BOOL},//vehicle turns faster the faster it's going
-	
+
 	//durability stats
 	{"mass", VFOFS(mass), VF_INT},			//for momentum and impact force (player mass is 10)
 	{"armor", VFOFS(armor), VF_INT},			//total points of damage it can take
@@ -597,7 +597,7 @@ vehField_t vehicleFields[] =
 	//sound to play when out of ammo (plays default "no ammo" sound if none specified)
 	{"weap1SoundNoAmmo", VFOFS(weapon[0].soundNoAmmo), VF_SOUND_CLIENT},//sound to play when try to fire weapon 1 with no ammo
 	{"weap2SoundNoAmmo", VFOFS(weapon[1].soundNoAmmo), VF_SOUND_CLIENT},//sound to play when try to fire weapon 2 with no ammo
-	
+
 	// Which weapon a muzzle fires (has to match one of the weapons this vehicle has).
 	{"weapMuzzle1", VFOFS(weapMuzzle[0]), VF_WEAPON},
 	{"weapMuzzle2", VFOFS(weapMuzzle[1]), VF_WEAPON},
@@ -665,7 +665,7 @@ vehField_t vehicleFields[] =
 	{"turret1AIRange", VFOFS(turret[0].fAIRange), VF_FLOAT},
 	{"turret1PassengerNum", VFOFS(turret[0].passengerNum), VF_INT},//which number passenger can control this turret
 	{"turret1GunnerViewTag", VFOFS(turret[0].gunnerViewTag), VF_LSTRING},
-	
+
 	//Turret 2
 	{"turret2Weap", VFOFS(turret[1].iWeapon), VF_WEAPON},
 	{"turret2Delay", VFOFS(turret[1].iDelay), VF_INT},
@@ -689,7 +689,7 @@ vehField_t vehicleFields[] =
 	{"turret2GunnerViewTag", VFOFS(turret[1].gunnerViewTag), VF_LSTRING},
 //===END TURRETS===========================================================================
 	//terminating entry
-	{0, -1, VF_INT}
+	{0, SIZE_MAX, VF_INT}
 };
 
 stringID_table_t VehicleTable[VH_NUM_VEHICLES+1] =
@@ -773,7 +773,7 @@ void BG_VehicleSetDefaults( vehicleInfo_t *vehicle )
 	vehicle->pitchLimit = VEH_DEFAULT_PITCH_LIMIT;		//how far it can pitch forward or backward
 	vehicle->braking = VEH_DEFAULT_BRAKING;				//when pressing on decelerator (backwards)
 	vehicle->turningSpeed = VEH_DEFAULT_TURNING_SPEED;	//how quickly you can turn
-	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving	
+	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving
 	vehicle->traction = VEH_DEFAULT_TRACTION;			//how much your command input affects velocity
 	vehicle->friction = VEH_DEFAULT_FRICTION;			//how much velocity is cut on its own
 	vehicle->maxSlope = VEH_DEFAULT_MAX_SLOPE;			//the max slope that it can go up with control
@@ -874,12 +874,12 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 	Q_strncpyz( value, pValue, sizeof(value) );
 
 	// Loop through possible parameters
-	for ( i = 0; vehicleFields[i].ofs != -1; i++ )
+	for ( i = 0; vehicleFields[i].ofs != SIZE_MAX; i++ )
 	{
 		if ( !Q_stricmp( vehicleFields[i].name, parmName ) )
 		{
 			// found it
-			switch( vehicleFields[i].type ) 
+			switch( vehicleFields[i].type )
 			{
 			case VF_IGNORE:
 				break;
@@ -899,7 +899,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 					(*(char **)(b+vehicleFields[i].ofs)) = G_NewString( value );
 #endif
 				}
-				
+
 				break;
 			case VF_VECTOR:
 				_iFieldsRead = sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
@@ -996,7 +996,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 			break;
 		}
 	}
-	if ( vehicleFields[i].ofs == -1 )
+	if ( vehicleFields[i].ofs == SIZE_MAX )
 	{
         return qfalse;
 	}
@@ -1027,7 +1027,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	vehicleInfo_t	*vehicle = NULL;
 
 	// Load the vehicle parms if no vehicles have been loaded yet.
-	if ( numVehicles == 0 ) 
+	if ( numVehicles == 0 )
 	{
 		BG_VehicleLoadParms();
 	}
@@ -1043,7 +1043,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 
 	vehicle = &g_vehicleInfo[numVehicles];
 	// look for the right vehicle
-	while ( p ) 
+	while ( p )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
@@ -1052,7 +1052,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 			return VEHICLE_NONE;
 		}
 
-		if ( !Q_stricmp( token, vehicleName ) ) 
+		if ( !Q_stricmp( token, vehicleName ) )
 		{
 			break;
 		}
@@ -1073,26 +1073,26 @@ int VEH_LoadVehicle( const char *vehicleName )
 		return VEHICLE_NONE;
 	}
 
-	if ( Q_stricmp( token, "{" ) != 0 ) 
+	if ( Q_stricmp( token, "{" ) != 0 )
 	{
 		COM_EndParseSession(  );
 		return VEHICLE_NONE;
 	}
-	
+
 	BG_VehicleSetDefaults( vehicle );
 	// parse the vehicle info block
-	while ( 1 ) 
+	while ( 1 )
 	{
 		SkipRestOfLine( &p );
 		token = COM_ParseExt( &p, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle '%s'\n", vehicleName );
 			COM_EndParseSession(  );
 			return VEHICLE_NONE;
 		}
 
-		if ( !Q_stricmp( token, "}" ) ) 
+		if ( !Q_stricmp( token, "}" ) )
 		{
 			break;
 		}
@@ -1418,7 +1418,7 @@ int VEH_VehicleIndexForName( const char *vehicleName )
 	}
 	//we have room for another one, load it up and return the index
 	//HMM... should we not even load the .veh file until we want to?
-	v = VEH_LoadVehicle( vehicleName ); 
+	v = VEH_LoadVehicle( vehicleName );
  	if ( v == VEHICLE_NONE )
 	{
 		Com_Printf( S_COLOR_RED"ERROR: Could not find Vehicle %s!\n", vehicleName );
@@ -1426,7 +1426,7 @@ int VEH_VehicleIndexForName( const char *vehicleName )
 	return v;
 }
 
-void BG_VehWeaponLoadParms( void ) 
+void BG_VehWeaponLoadParms( void )
 {
 	int			len, totallen, vehExtFNLen, mainBlockLen, fileCnt, i;
 	char		*holdChar, *marker;
@@ -1455,12 +1455,12 @@ void BG_VehWeaponLoadParms( void )
 #else
 	tempReadBuffer = (char *)gi.Malloc( MAX_VEH_WEAPON_DATA_SIZE, TAG_G_ALLOC, qtrue );
 #endif
-	
+
 	// NOTE: Not use TempAlloc anymore...
 	//Make ABSOLUTELY CERTAIN that BG_Alloc/etc. is not used before
-	//the subsequent BG_TempFree or the pool will be screwed. 
+	//the subsequent BG_TempFree or the pool will be screwed.
 
-	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
 		vehExtFNLen = strlen( holdChar );
 
@@ -1473,7 +1473,7 @@ void BG_VehWeaponLoadParms( void )
 		len = gi.FS_FOpenFile(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 #endif
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			Com_Printf( "error reading file\n" );
 		}
@@ -1492,7 +1492,7 @@ void BG_VehWeaponLoadParms( void )
 			{
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 
 			if ( totallen + len >= MAX_VEH_WEAPON_DATA_SIZE ) {
@@ -1517,7 +1517,7 @@ void BG_VehWeaponLoadParms( void )
 #endif
 }
 
-void BG_VehicleLoadParms( void ) 
+void BG_VehicleLoadParms( void )
 {//HMM... only do this if there's a vehicle on the level?
 	int			len, totallen, vehExtFNLen, mainBlockLen, fileCnt, i;
 //	const char	*filename = "ext_data/vehicles.dat";
@@ -1547,12 +1547,12 @@ void BG_VehicleLoadParms( void )
 #else
 	tempReadBuffer = (char *)gi.Malloc( MAX_VEHICLE_DATA_SIZE, TAG_G_ALLOC, qtrue );
 #endif
-	
+
 	// NOTE: Not use TempAlloc anymore...
 	//Make ABSOLUTELY CERTAIN that BG_Alloc/etc. is not used before
-	//the subsequent BG_TempFree or the pool will be screwed. 
+	//the subsequent BG_TempFree or the pool will be screwed.
 
-	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
 		vehExtFNLen = strlen( holdChar );
 
@@ -1565,7 +1565,7 @@ void BG_VehicleLoadParms( void )
 		len = gi.FS_FOpenFile(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 #endif
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			Com_Printf( "error reading file\n" );
 		}
@@ -1584,7 +1584,7 @@ void BG_VehicleLoadParms( void )
 			{
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 
 			if ( totallen + len >= MAX_VEHICLE_DATA_SIZE ) {
@@ -1607,7 +1607,7 @@ void BG_VehicleLoadParms( void )
 #else
 	gi.Free(tempReadBuffer);	tempReadBuffer = NULL;
 #endif
-	
+
 	numVehicles = 1;//first one is null/default
 	//set the first vehicle to default data
 	BG_VehicleSetDefaults( &g_vehicleInfo[VEHICLE_BASE] );
@@ -1634,13 +1634,13 @@ void BG_GetVehicleModelName(char *modelname)
 	char *vehName = &modelname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(modelname[0] == '$');
-	
+
 	if (vIndex == VEHICLE_NONE)
 	{
 		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
 	}
 
-    strcpy(modelname, g_vehicleInfo[vIndex].model);	
+    strcpy(modelname, g_vehicleInfo[vIndex].model);
 }
 
 void BG_GetVehicleSkinName(char *skinname)
@@ -1648,20 +1648,20 @@ void BG_GetVehicleSkinName(char *skinname)
 	char *vehName = &skinname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(skinname[0] == '$');
-	
+
 	if (vIndex == VEHICLE_NONE)
 	{
 		Com_Error(ERR_DROP, "BG_GetVehicleSkinName:  couldn't find vehicle %s", vehName);
 	}
 
-    if ( !g_vehicleInfo[vIndex].skin 
+    if ( !g_vehicleInfo[vIndex].skin
 		|| !g_vehicleInfo[vIndex].skin[0] )
 	{
 		skinname[0] = 0;
 	}
 	else
 	{
-		strcpy(skinname, g_vehicleInfo[vIndex].skin);	
+		strcpy(skinname, g_vehicleInfo[vIndex].skin);
 	}
 }
 

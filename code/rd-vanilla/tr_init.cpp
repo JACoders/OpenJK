@@ -280,7 +280,7 @@ void R_Splash()
 	pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 
 	extern void	RB_SetGL2D (void);
-	RB_SetGL2D();	
+	RB_SetGL2D();
 	if (pImage )
 	{//invalid paths?
 		GL_Bind( pImage );
@@ -331,7 +331,7 @@ static void InitOpenGL( void )
 	//
 
 	if ( glConfig.vidWidth == 0 )
-	{		
+	{
 		GLimp_Init();
 		// print info the first time only
 		// set default state
@@ -507,9 +507,9 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 }
 
 /*
-================== 
+==================
 R_TakeScreenshot
-================== 
+==================
 */
 void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	byte *allbuf, *buffer;
@@ -566,11 +566,11 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	ri.Z_Free(allbuf);
 }
 
-/* 
-================== 
+/*
+==================
 R_TakeScreenshotPNG
-================== 
-*/  
+==================
+*/
 void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) {
 	byte *buffer=NULL;
 	size_t offset=0;
@@ -581,11 +581,11 @@ void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) 
 	ri.Z_Free( buffer );
 }
 
-/* 
-================== 
+/*
+==================
 R_TakeScreenshotJPEG
-================== 
-*/  
+==================
+*/
 void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName ) {
 	byte *buffer;
 	size_t offset = 0, memcount;
@@ -602,11 +602,11 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 	ri.Z_Free(buffer);
 }
 
-/* 
-================== 
+/*
+==================
 R_ScreenshotFilename
-================== 
-*/  
+==================
+*/
 void R_ScreenshotFilename( char *buf, int bufSize, const char *ext ) {
 	time_t rawtime;
 	char timeStr[32] = {0}; // should really only reach ~19 chars
@@ -686,8 +686,8 @@ static void R_LevelShot( void ) {
 	Com_Printf ("Wrote %s\n", checkname );
 }
 
-/* 
-================== 
+/*
+==================
 R_ScreenShotTGA_f
 
 screenshot
@@ -696,7 +696,7 @@ screenshot [levelshot]
 screenshot [filename]
 
 Doesn't print the pacifier message if there is a second arg
-================== 
+==================
 */
 void R_ScreenShotTGA_f (void) {
 	char checkname[MAX_OSPATH] = {0};
@@ -719,7 +719,7 @@ void R_ScreenShotTGA_f (void) {
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".tga" );
 
 		if ( ri.FS_FileExists( checkname ) ) {
-			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
+			Com_Printf( "ScreenShot: Couldn't create a file\n");
 			return;
  		}
 	}
@@ -730,8 +730,8 @@ void R_ScreenShotTGA_f (void) {
 		Com_Printf( "Wrote %s\n", checkname );
 }
 
-/* 
-================== 
+/*
+==================
 R_ScreenShotPNG_f
 
 screenshot
@@ -740,7 +740,7 @@ screenshot [levelshot]
 screenshot [filename]
 
 Doesn't print the pacifier message if there is a second arg
-================== 
+==================
 */
 void R_ScreenShotPNG_f (void) {
 	char checkname[MAX_OSPATH] = {0};
@@ -763,7 +763,7 @@ void R_ScreenShotPNG_f (void) {
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".png" );
 
 		if ( ri.FS_FileExists( checkname ) ) {
-			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
+			Com_Printf( "ScreenShot: Couldn't create a file\n");
 			return;
  		}
 	}
@@ -772,7 +772,7 @@ void R_ScreenShotPNG_f (void) {
 
 	if ( !silent )
 		Com_Printf( "Wrote %s\n", checkname );
-} 
+}
 
 void R_ScreenShot_f (void) {
 	char checkname[MAX_OSPATH] = {0};
@@ -885,7 +885,7 @@ GfxInfo_f
 */
 extern bool g_bTextureRectangleHack;
 
-void GfxInfo_f( void ) 
+void GfxInfo_f( void )
 {
 	const char *enablestrings[] =
 	{
@@ -903,7 +903,7 @@ void GfxInfo_f( void )
 		"noborder "
 	};
 
-	const char *tc_table[] = 
+	const char *tc_table[] =
 	{
 		"None",
 		"GL_S3_s3tc",
@@ -1057,7 +1057,7 @@ void R_FogDistance_f(void)
 	}
 
 	distance = atof(ri.Cmd_Argv(1));
-	if (distance < 1.0) 
+	if (distance < 1.0)
 	{
 		distance = 1.0;
 	}
@@ -1112,8 +1112,8 @@ void R_FogColor_f(void)
 	tr.world->fogs[tr.world->globalFog].parms.color[0] = atof(ri.Cmd_Argv(1));
 	tr.world->fogs[tr.world->globalFog].parms.color[1] = atof(ri.Cmd_Argv(2));
 	tr.world->fogs[tr.world->globalFog].parms.color[2] = atof(ri.Cmd_Argv(3));
-	tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( atof(ri.Cmd_Argv(1)) * tr.identityLight, 
-			                          atof(ri.Cmd_Argv(2)) * tr.identityLight, 
+	tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( atof(ri.Cmd_Argv(1)) * tr.identityLight,
+			                          atof(ri.Cmd_Argv(2)) * tr.identityLight,
 			                          atof(ri.Cmd_Argv(3)) * tr.identityLight, 1.0 );
 }
 
@@ -1135,7 +1135,7 @@ void R_FogColor_f(void)
 R_Register
 ===============
 */
-void R_Register( void ) 
+void R_Register( void )
 {
 	//
 	// latched and archived variables
@@ -1150,7 +1150,7 @@ void R_Register( void )
 	r_ext_compiled_vertex_array = ri.Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_env_add = ri.Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_filter_anisotropic = ri.Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
- 
+
 	r_DynamicGlow = ri.Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE );
 	r_DynamicGlowPasses = ri.Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_ARCHIVE );
 	r_DynamicGlowDelta  = ri.Cvar_Get( "r_DynamicGlowDelta", "0.8f", CVAR_ARCHIVE );
@@ -1183,7 +1183,7 @@ void R_Register( void )
 	r_subdivisions = ri.Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
 	ri.Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
 	r_intensity = ri.Cvar_Get ("r_intensity", "1", CVAR_LATCH|CVAR_ARCHIVE );
-	
+
 	//
 	// temporary latched variables that can only change over a restart
 	//
@@ -1364,7 +1364,7 @@ R_Init
 ===============
 */
 extern void R_InitWorldEffects();
-void R_Init( void ) {	
+void R_Init( void ) {
 	int	err;
 	int i;
 
@@ -1425,10 +1425,10 @@ void R_Init( void ) {
 	backEndData = (backEndData_t *) Hunk_Alloc( sizeof( backEndData_t ), qtrue );
 	R_InitNextFrame();
 
-	const color4ub_t	color = {0xff, 0xff, 0xff, 0xff};
-	for(i=0;i<MAX_LIGHT_STYLES;i++)
-	{
-		RE_SetLightStyle(i, *(int*)color);
+	const color4ub_t color = {0xff, 0xff, 0xff, 0xff};
+	for ( i = 0; i < MAX_LIGHT_STYLES; i++ ) {
+		byteAlias_t *ba = (byteAlias_t *)&color;
+		RE_SetLightStyle( i, ba->i );
 	}
 
 	InitOpenGL();
@@ -1455,7 +1455,7 @@ RE_Shutdown
 ===============
 */
 extern void R_ShutdownWorldEffects(void);
-void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {	
+void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 	// Need this temporarily.
 #ifdef _WIN32
@@ -1471,7 +1471,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	ri.Cmd_RemoveCommand ("r_atihack");
 	ri.Cmd_RemoveCommand ("screenshot");
 	ri.Cmd_RemoveCommand ("screenshot_png");
-	ri.Cmd_RemoveCommand ("screenshot_tga");	
+	ri.Cmd_RemoveCommand ("screenshot_tga");
 	ri.Cmd_RemoveCommand ("gfxinfo");
 	ri.Cmd_RemoveCommand ("r_fogDistance");
 	ri.Cmd_RemoveCommand ("r_fogColor");
@@ -1557,7 +1557,8 @@ void RE_GetLightStyle(int style, color4ub_t color)
 		return;
 	}
 
-	*(int *)color = *(int *)styleColors[style];
+	byteAlias_t *baDest = (byteAlias_t *)&color, *baSource = (byteAlias_t *)&styleColors[style];
+	baDest->i = baSource->i;
 }
 
 void RE_SetLightStyle(int style, int color)
@@ -1568,9 +1569,9 @@ void RE_SetLightStyle(int style, int color)
 		return;
 	}
 
-	if (*(int*)styleColors[style] != color)
-	{
-		*(int *)styleColors[style] = color;
+	byteAlias_t *ba = (byteAlias_t *)&styleColors[style];
+	if ( ba->i != color) {
+		ba->i = color;
 		styleUpdated[style] = true;
 	}
 }
@@ -1675,7 +1676,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	memset( &re, 0, sizeof( re ) );
 
 	if ( apiVersion != REF_API_VERSION ) {
-		ri.Printf(PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n", 
+		ri.Printf(PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n",
 			REF_API_VERSION, apiVersion );
 		return NULL;
 	}

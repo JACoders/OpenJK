@@ -70,7 +70,7 @@ int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const in
 	// didn't find it
 	return -1;
 }
-			
+
 //=========================================================================================
 //// Public Bolt Routines
 int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist, const int surfNum)
@@ -97,7 +97,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 		}
 	}
 
-	// we have a surface 
+	// we have a surface
 	// look through entire list - see if it's already there first
 	for(size_t i=0; i<bltlist.size(); i++)
 	{
@@ -111,7 +111,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 	tempBolt.surfaceNumber = surfNum;
 	tempBolt.surfaceType = G2SURFACEFLAG_GENERATED;
@@ -130,7 +130,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 	boltInfo_t			tempBolt;
-	int					flags;
+	uint32_t			flags;
 
 	assert(G2_MODEL_OK(ghlInfo));
 
@@ -165,7 +165,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		 		return i;
 			}
 		}
-	
+
 		// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 		tempBolt.surfaceNumber = surfNum;
 		tempBolt.boneNumber = -1;
@@ -227,7 +227,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing bone of that name, or an empty slot. Lets add an entry
 	tempBolt.boneNumber = x;
 	tempBolt.surfaceNumber = -1;

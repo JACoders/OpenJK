@@ -49,14 +49,14 @@ namespace ratl
 
 
 // this is private to the set, but you have no access to it, soooo..
-	
+
 class tree_node
 {
 	int		mParent;
 	int		mLeft;
 	int		mRight;
 public:
- 	enum 
+ 	enum
 	{
 		RED_BIT			= 0x40000000, // to save space we are putting the red bool in a high bit
 										// this is in the parent only
@@ -226,7 +226,7 @@ private:
     ////////////////////////////////////////////////////////////////////////////////////
 	int			insert_internal(const TTValue &key, int &at)
 	{
-		// If At Is A NULL_NODE, We Have Found A Leaf.  
+		// If At Is A NULL_NODE, We Have Found A Leaf.
 		//----------------------------------------------
 		if (at==tree_node::NULL_NODE)
 		{
@@ -239,7 +239,7 @@ private:
 
 
 		int		nxtChild;						// The Child We Will Eventually Add Underneath
-		int		altChild;						// The "other" Child
+		//int		altChild;						// The "other" Child
 		bool	nxtRotateLeft;
 		int		excessRedChild;					// If The Insert Results In An Excess Red Child, This Will Be It
 
@@ -258,7 +258,7 @@ private:
 				link_left(at,mLastAdd);//T::node(mPool[at]).set_left(mLastAdd);			// If mLeft Of The Current Node Is NULL, We Must Have Added DIRECTLY Below nAt
 			}
 			nxtChild = T::node(mPool[at]).left();
-			altChild = T::node(mPool[at]).right();
+			//altChild = T::node(mPool[at]).right();
 			nxtRotateLeft = false;
 		}
 		else if (mPool[at] < key)
@@ -272,7 +272,7 @@ private:
 				link_right(at,mLastAdd); // T::node(mPool[at]).set_right(mLastAdd);			// If mRight Of The Current Node Is NULL, We Must Have Added DIRECTLY Below nAt
 			}
 			nxtChild = T::node(mPool[at]).right();
-			altChild = T::node(mPool[at]).left();
+			//altChild = T::node(mPool[at]).left();
 			nxtRotateLeft = true;
 		}
 
@@ -284,23 +284,23 @@ private:
 			return tree_node::NULL_NODE;
 		}
 
-		
+
 		// If The Add Resulted In An Excess Red Child, We Need To Change Colors And Rotate
-		//---------------------------------------------------------------------------------		
+		//---------------------------------------------------------------------------------
 		if (excessRedChild!=tree_node::NULL_NODE)
 		{
 			// If Both Childeren Are Red, Just Switch And Be Done
 			//----------------------------------------------------
-			if (T::node(mPool[at]).right()!=tree_node::NULL_NODE && 
-				T::node(mPool[at]).left()!=tree_node::NULL_NODE && 
-				T::node(mPool[T::node(mPool[at]).right()]).red() && 
+			if (T::node(mPool[at]).right()!=tree_node::NULL_NODE &&
+				T::node(mPool[at]).left()!=tree_node::NULL_NODE &&
+				T::node(mPool[T::node(mPool[at]).right()]).red() &&
 				T::node(mPool[T::node(mPool[at]).left()]).red())
 			{
 				set_colors(T::node(mPool[at]), true, false);
 			}
 			else
 			{
-				int	excessRedChildCompare = 
+				int	excessRedChildCompare =
 					(nxtRotateLeft)?(T::node(mPool[nxtChild]).right()):(T::node(mPool[nxtChild]).left());
 				if (excessRedChild==excessRedChildCompare)
 				{
@@ -328,15 +328,15 @@ private:
 				set_colors(T::node(mPool[at]), false, true);
 			}
 		}
-		
+
 		if (T::node(mPool[at]).red())
 		{
-			if (T::node(mPool[at]).left()!=tree_node::NULL_NODE && 
+			if (T::node(mPool[at]).left()!=tree_node::NULL_NODE &&
 				T::node(mPool[T::node(mPool[at]).left()]).red())
 			{
 				return T::node(mPool[at]).left();
 			}
-			if (T::node(mPool[at]).right()!=tree_node::NULL_NODE && 
+			if (T::node(mPool[at]).right()!=tree_node::NULL_NODE &&
 				T::node(mPool[T::node(mPool[at]).right()]).red())
 			{
 				return T::node(mPool[at]).right();
@@ -437,8 +437,8 @@ private:
 		{
 			parent_successor=successor;
 			successor = T::node(mPool[successor]).left();
-		} 
-		
+		}
+
 		int	successor_right = T::node(mPool[successor]).right();
 
 
@@ -473,8 +473,8 @@ private:
 			}
 		}
 
-		link_left(at,tree_node::NULL_NODE);		
-		link_right(at,successor_right);		
+		link_left(at,tree_node::NULL_NODE);
+		link_right(at,successor_right);
 
 		at=successor;
 		int a=T::node(mPool[at]).right();
@@ -560,7 +560,7 @@ private:
 		{
 			// If Both X and Y are Empty, Or Both Are Red
 			//--------------------------------------------
-			if ((x==tree_node::NULL_NODE || !T::node(mPool[x]).red()) && 
+			if ((x==tree_node::NULL_NODE || !T::node(mPool[x]).red()) &&
 				(y==tree_node::NULL_NODE || !T::node(mPool[y]).red()))
 			{
 				bool	atWasRed = T::node(mPool[at]).red();		// Remember what mPool[at] WAS
@@ -629,7 +629,7 @@ private:
     ////////////////////////////////////////////////////////////////////////////////////
 	int			front(int at) const
 	{
-		if (at!=tree_node::NULL_NODE && 
+		if (at!=tree_node::NULL_NODE &&
 			T::node(mPool[at]).left()!=tree_node::NULL_NODE)
 		{
 			return front(T::node(mPool[at]).left());
@@ -759,7 +759,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void alloc_key(const TTValue &key)
 	{
-		
+
 		//fixme handle duplicates more sensibly?
 		assert(!full());
 		mLastAdd = mPool.alloc(key);			// Grab A New One
@@ -770,7 +770,7 @@ public:
 	// Allocs an item, when filled, call insert_alloced
     ////////////////////////////////////////////////////////////////////////////////////
 	TTValue & alloc_key()
-	{		
+	{
 		assert(!full());
 		mLastAdd = mPool.alloc();			// Grab A New One
 		T::node(mPool[mLastAdd]).init();	// Initialize Our Data And Color
@@ -796,7 +796,7 @@ public:
 
 	void insert_alloced_key()
 	{
-		assert(mLastAdd>=0&&mLastAdd<CAPACITY);		
+		assert(mLastAdd>=0&&mLastAdd<CAPACITY);
 		assert(!IS_MULTI || find_index(mPool[mLastAdd])!=tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		insert_internal(mPool[mLastAdd],mRoot);
@@ -807,7 +807,7 @@ public:
 
 	int index_of_alloced_key() const
 	{
-		assert(mLastAdd>=0&&mLastAdd<CAPACITY);		
+		assert(mLastAdd>=0&&mLastAdd<CAPACITY);
 		return mLastAdd;
 	}
     ////////////////////////////////////////////////////////////////////////////////////
@@ -867,7 +867,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void insert(const TTValue &key)
 	{
-		
+
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		alloc_key(key);
@@ -879,7 +879,7 @@ public:
 	// Allocs an item, when filled, call insert_alloced
     ////////////////////////////////////////////////////////////////////////////////////
 	TTValue & alloc()
-	{		
+	{
 		return tree_base<T, IS_MULTI>::alloc_key();
 	}
 
@@ -930,14 +930,14 @@ public:
 		set_base<TStorageTraits,IS_MULTI>*	mOwner;
 
 	public:
-		iterator(set_base<TStorageTraits,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+		iterator(set_base<TStorageTraits,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) :
+			mOwner(owner),
+			mLoc(loc)
 		{
 		}
-		iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+		iterator(const iterator &o) :
+			mOwner(o.mOwner),
+			mLoc(o.mLoc)
 		{
 		}
 
@@ -948,28 +948,28 @@ public:
 		}
 
 		iterator	operator++()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->next(mLoc);
 			return *this;
 		}
 		iterator	operator++(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			iterator old(*this);
 			mLoc=mOwner->next(mLoc);
 			return old;
 		}
 
 		iterator	operator--()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->previous(mLoc);
 			return *this;
 		}
 		iterator	operator--(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			iterator old(*this);
 			mLoc=mOwner->previous(mLoc);
 			return old;
@@ -978,15 +978,15 @@ public:
 		bool	operator!=(const iterator p) const	{return (mLoc!=p.mLoc || mOwner!=p.mOwner);}
 		bool	operator==(const iterator p) const 	{return (mLoc==p.mLoc && mOwner==p.mOwner);}
 
-		const TTValue &	operator*() const				
+		const TTValue &	operator*() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->index_to_key(mLoc);
 		}
-		const TTValue *	operator->() const				
+		const TTValue *	operator->() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return &mOwner->index_to_key(mLoc);
 		}
@@ -1000,19 +1000,19 @@ public:
 		const set_base<TStorageTraits,IS_MULTI>*		mOwner;
 
 	public:
-		const_iterator(const set_base<TStorageTraits,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+		const_iterator(const set_base<TStorageTraits,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) :
+			mOwner(owner),
+			mLoc(loc)
 		{
 		}
-		const_iterator(const const_iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+		const_iterator(const const_iterator &o) :
+			mOwner(o.mOwner),
+			mLoc(o.mLoc)
 		{
 		}
-		const_iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+		const_iterator(const iterator &o) :
+			mOwner(o.mOwner),
+			mLoc(o.mLoc)
 		{
 		}
 		void operator=(const const_iterator &o)
@@ -1028,28 +1028,28 @@ public:
 
 
 		const_iterator	operator++()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->next(mLoc);
 			return *this;
 		}
 		const_iterator	operator++(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			const_iterator old(*this);
 			mLoc=mOwner->next(mLoc);
 			return old;
 		}
 
 		const_iterator	operator--()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->previous(mLoc);
 			return *this;
 		}
 		const_iterator	operator--(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			const_iterator old(*this);
 			mLoc=mOwner->previous(mLoc);
 			return old;
@@ -1060,15 +1060,15 @@ public:
 		bool	operator!=(const iterator p) const	{return (mLoc!=p.mLoc || mOwner!=p.mOwner);}
 		bool	operator==(const iterator p) const 	{return (mLoc==p.mLoc && mOwner==p.mOwner);}
 
-		const TTValue &	operator*() const				
+		const TTValue &	operator*() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->index_to_key(mLoc);
 		}
-		const TTValue *	operator->() const				
+		const TTValue *	operator->() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return &mOwner->index_to_key(mLoc);
 		}
@@ -1081,7 +1081,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TTValue &key)
 	{
-		return iterator(this,find_index(key));		
+		return iterator(this,find_index(key));
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1089,7 +1089,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, tree_base<T, IS_MULTI>::front());	
+		return iterator(this, tree_base<T, IS_MULTI>::front());
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1113,7 +1113,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	find(const TTValue &key) const
 	{
-		return const_iterator(this, find_index(key));		
+		return const_iterator(this, find_index(key));
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1121,7 +1121,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, tree_base<T, IS_MULTI>::front());	
+		return const_iterator(this, tree_base<T, IS_MULTI>::front());
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1244,7 +1244,7 @@ public:
 		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
-		tree_base<K,IS_MULTI>::insert_alloced_key();		
+		tree_base<K,IS_MULTI>::insert_alloced_key();
 		assert(check_validity());
 		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key(),value);
 	}
@@ -1254,11 +1254,11 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TVTValue &insert(const TKTValue &key)
 	{
-		
+
 		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
-		tree_base<K,IS_MULTI>::insert_alloced_key();		
+		tree_base<K,IS_MULTI>::insert_alloced_key();
 
 		int idx=tree_base<K,IS_MULTI>::index_of_alloced_key();
 		assert(check_validity());
@@ -1270,11 +1270,11 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TRatlNew *insert_raw(const TKTValue &key)
 	{
-		
+
 		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
-		tree_base<K,IS_MULTI>::insert_alloced_key();		
+		tree_base<K,IS_MULTI>::insert_alloced_key();
 		assert(check_validity());
 		return mValues.alloc_raw(tree_base<K,IS_MULTI>::index_of_alloced_key());
 	}
@@ -1283,7 +1283,7 @@ public:
 	// After calling alloc_key*, you may call this to alloc the value
     ////////////////////////////////////////////////////////////////////////////////////
 	TVTValue &alloc_value()
-	{		
+	{
 		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key());
 		return mValues[tree_base<K,IS_MULTI>::index_of_alloced_key()];
 	}
@@ -1333,12 +1333,12 @@ public:
 		map_base<K,V, IS_MULTI>*	mOwner;
 
 	public:
-		iterator(map_base<K,V, IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mLoc(loc),	
+		iterator(map_base<K,V, IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) :
+			mLoc(loc),
 			mOwner(owner)
 		{
 		}
-		iterator(const iterator &o) : 
+		iterator(const iterator &o) :
 			mLoc(o.mLoc),
 			mOwner(o.mOwner)
 		{
@@ -1351,28 +1351,28 @@ public:
 		}
 
 		iterator	operator++()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->next(mLoc);
 			return *this;
 		}
 		iterator	operator++(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			iterator old(*this);
 			mLoc=mOwner->next(mLoc);
 			return old;
 		}
 
 		iterator	operator--()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->previous(mLoc);
 			return *this;
 		}
 		iterator	operator--(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			iterator old(*this);
 			mLoc=mOwner->previous(mLoc);
 			return old;
@@ -1381,27 +1381,27 @@ public:
 		bool	operator!=(const iterator &p) const	{return (mLoc!=p.mLoc || mOwner!=p.mOwner);}
 		bool	operator==(const iterator &p) const 	{return (mLoc==p.mLoc && mOwner==p.mOwner);}
 
-		TVTValue &	operator*() const				
+		TVTValue &	operator*() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->mValues[mLoc];
 		}
-		const TKTValue &	key() const				
+		const TKTValue &	key() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->index_to_key(mLoc);
-		}		
-		TVTValue &	value() const				
+		}
+		TVTValue &	value() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->mValues[mLoc];
 		}
-		TVTValue *	operator->() const				
+		TVTValue *	operator->() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return &mOwner->mValues[mLoc];
 		}
@@ -1414,19 +1414,19 @@ public:
 		const map_base<K,V,IS_MULTI>*		mOwner;
 
 	public:
-		const_iterator(const map_base<K,V,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+		const_iterator(const map_base<K,V,IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) :
+			mOwner(owner),
+			mLoc(loc)
 		{
 		}
-		const_iterator(const const_iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+		const_iterator(const const_iterator &o) :
+			mOwner(o.mOwner),
+			mLoc(o.mLoc)
 		{
 		}
-		const_iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+		const_iterator(const iterator &o) :
+			mOwner(o.mOwner),
+			mLoc(o.mLoc)
 		{
 		}
 		void operator=(const const_iterator &o)
@@ -1442,28 +1442,28 @@ public:
 
 
 		const_iterator	operator++()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->next(mLoc);
 			return *this;
 		}
 		const_iterator	operator++(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			const_iterator old(*this);
 			mLoc=mOwner->next(mLoc);
 			return old;
 		}
 
 		const_iterator	operator--()		//prefix
-		{	
-			assert(mOwner);	
+		{
+			assert(mOwner);
 			mLoc=mOwner->previous(mLoc);
 			return *this;
 		}
 		const_iterator	operator--(int)		//postfix
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			const_iterator old(*this);
 			mLoc=mOwner->previous(mLoc);
 			return old;
@@ -1474,27 +1474,27 @@ public:
 		bool	operator!=(const iterator &p) const	{return (mLoc!=p.mLoc || mOwner!=p.mOwner);}
 		bool	operator==(const iterator &p) const 	{return (mLoc==p.mLoc && mOwner==p.mOwner);}
 
-		const TVTValue &	operator*() const				
+		const TVTValue &	operator*() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->mValues[mLoc];
 		}
-		const TKTValue &	key() const				
+		const TKTValue &	key() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->index_to_key(mLoc);
-		}		
-		const TVTValue &	value() const				
+		}
+		const TVTValue &	value() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return mOwner->mValues[mLoc];
 		}
-		const TVTValue *	operator->() const				
+		const TVTValue *	operator->() const
 		{
-			assert(mOwner);	
+			assert(mOwner);
 			assert(mLoc>=0&&mLoc<CAPACITY); // deferencing end()?
 			return &mOwner->mValues[mLoc];
 		}
@@ -1507,7 +1507,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TKTValue &key)
 	{
-		return iterator(this,tree_base<K, IS_MULTI>::find_index(key));		
+		return iterator(this,tree_base<K, IS_MULTI>::find_index(key));
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1515,7 +1515,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, tree_base<K,IS_MULTI>::front());	
+		return iterator(this, tree_base<K,IS_MULTI>::front());
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1539,7 +1539,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	find(const TKTValue &key) const
 	{
-		return const_iterator(this, find_index(key));		
+		return const_iterator(this, find_index(key));
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1547,7 +1547,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, tree_base<K,IS_MULTI>::front());	
+		return const_iterator(this, tree_base<K,IS_MULTI>::front());
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////

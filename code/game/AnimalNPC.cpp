@@ -190,7 +190,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	/************************************************************************************/
 
 	//Client sets ucmds and such for speed alterations
-	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
+	float speedInc, speedIdleDec, speedIdle, /*speedIdleAccel, */speedMin, speedMax;
 	float fWalkSpeedMax;
 	int		curTime;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
@@ -225,7 +225,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	speedMax = pVeh->m_pVehicleInfo->speedMax;
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
-	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
+	//speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
 
@@ -273,7 +273,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 	if ( parentPS->speed || parentPS->groundEntityNum == ENTITYNUM_NONE  ||
 		 pVeh->m_ucmd.forwardmove || pVeh->m_ucmd.upmove > 0 )
-	{ 
+	{
 		if ( pVeh->m_ucmd.forwardmove > 0 && speedInc )
 		{
 			parentPS->speed += speedInc;
@@ -320,7 +320,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 		//pVeh->m_ucmd.rightmove = 0;
 
-		/*if ( !pVeh->m_pVehicleInfo->strafePerc 
+		/*if ( !pVeh->m_pVehicleInfo->strafePerc
 			|| (!g_speederControlScheme->value && !parent->s.number) )
 		{//if in a strafe-capable vehicle, clear strafing unless using alternate control scheme
 			pVeh->m_ucmd.rightmove = 0;
@@ -359,8 +359,8 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	/*	BEGIN	Here is where make sure the vehicle is properly oriented.	BEGIN	*/
 	/********************************************************************************/
 	bgEntity_t *parent = pVeh->m_pParentEntity;
-	playerState_t *parentPS, *riderPS;
-	
+	playerState_t /**parentPS, */*riderPS;
+
 #ifdef _JK2MP
 	bgEntity_t *rider = NULL;
 	if (parent->s.owner != ENTITYNUM_NONE)
@@ -394,7 +394,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	parentPS = parent->playerState;
 	riderPS = rider->playerState;
 #else
-	parentPS = &parent->client->ps;
+	//parentPS = &parent->client->ps;
 	riderPS = &rider->client->ps;
 #endif
 
@@ -437,7 +437,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	else
 	{
 		float turnSpeed = pVeh->m_pVehicleInfo->turningSpeed;
-		if ( !pVeh->m_pVehicleInfo->turnWhenStopped 
+		if ( !pVeh->m_pVehicleInfo->turnWhenStopped
 			&& !parentPS->speed )//FIXME: or !pVeh->m_ucmd.forwardmove?
 		{//can't turn when not moving
 			//FIXME: or ramp up to max turnSpeed?
@@ -597,29 +597,29 @@ static void AnimalTailSwipe(Vehicle_t* pVeh, gentity_t *parent, gentity_t *pilot
 */
 static void AnimateVehicle( Vehicle_t *pVeh )
 {
-	animNumber_t	Anim = BOTH_VT_IDLE; 
+	animNumber_t	Anim = BOTH_VT_IDLE;
 	int				iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 	gentity_t *		pilot = (gentity_t *)pVeh->m_pPilot;
 	gentity_t *		parent = (gentity_t *)pVeh->m_pParentEntity;
-	playerState_t *	pilotPS;
-	playerState_t *	parentPS;
+	//playerState_t *	pilotPS;
+	//playerState_t *	parentPS;
 	float			fSpeedPercToMax;
 
 #ifdef _JK2MP
 	pilotPS = (pilot)?(pilot->playerState):(0);
 	parentPS = parent->playerState;
 #else
-	pilotPS = (pilot)?(&pilot->client->ps):(0);
-	parentPS = &parent->client->ps;
+	//pilotPS = (pilot)?(&pilot->client->ps):(0);
+	//parentPS = &parent->client->ps;
 #endif
 
 	// We're dead (boarding is reused here so I don't have to make another variable :-).
-	if ( parent->health <= 0 ) 
+	if ( parent->health <= 0 )
 	{
 		if ( pVeh->m_iBoarding != -999 )	// Animate the death just once!
 		{
 			pVeh->m_iBoarding = -999;
-			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD; 
+			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
 
 			// FIXME! Why do you keep repeating over and over!!?!?!? Bastard!
 			//Vehicle_SetAnim( parent, SETANIM_LEGS, BOTH_VT_DEATH1, iFlags, iBlend );
@@ -700,7 +700,7 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// Percentage of maximum speed relative to current speed.
 	//float fSpeed = VectorLength( client->ps.velocity );
-	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax; 
+	fSpeedPercToMax = parent->client->ps.speed / pVeh->m_pVehicleInfo->speedMax;
 
 
 	// Going in reverse...
@@ -746,15 +746,15 @@ static void AnimateRiders( Vehicle_t *pVeh )
 	gentity_t *pilot = (gentity_t *)pVeh->m_pPilot;
 	gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
 	playerState_t *pilotPS;
-	playerState_t *parentPS;
+	//playerState_t *parentPS;
 	float fSpeedPercToMax;
 
 #ifdef _JK2MP
 	pilotPS = pVeh->m_pPilot->playerState;
-	parentPS = pVeh->m_pPilot->playerState;
+	//parentPS = pVeh->m_pPilot->playerState;
 #else
 	pilotPS = &pVeh->m_pPilot->client->ps;
-	parentPS = &pVeh->m_pParentEntity->client->ps;
+	//parentPS = &pVeh->m_pParentEntity->client->ps;
 #endif
 
 	// Boarding animation.
@@ -808,7 +808,7 @@ static void AnimateRiders( Vehicle_t *pVeh )
 		// Put Away Saber When It Is Not Active
 		//--------------------------------------
 #ifndef _JK2MP
-		if (HasWeapon && 
+		if (HasWeapon &&
 			(pVeh->m_pPilot->s.number>=MAX_CLIENTS || (cg.weaponSelectTime+500)<cg.time) &&
 			(pilotPS->weapon==WP_SABER && (Turbo || !pilotPS->SaberActive())))
 		{
@@ -829,7 +829,7 @@ static void AnimateRiders( Vehicle_t *pVeh )
 		{
 			return;
 		}
-#else		
+#else
 		if (pilotPS->torsoAnim>=BOTH_VT_ATL_S && pilotPS->torsoAnim<=BOTH_VT_ATF_G)
 		{
 			float		bodyCurrent	  = 0.0f;
@@ -862,7 +862,7 @@ static void AnimateRiders( Vehicle_t *pVeh )
 			}
 			WeaponPose = (pVeh->m_ulFlags&VEH_SABERINLEFTHAND)?(WPOSE_SABERLEFT):(WPOSE_SABERRIGHT);
 		}
-		
+
 
  		if (Attacking && WeaponPose)
 		{// Attack!
@@ -883,12 +883,12 @@ static void AnimateRiders( Vehicle_t *pVeh )
 				if (pVeh->m_pPilot->enemy)
 				{
 					vec3_t	toEnemy;
-					float	toEnemyDistance;
+					//float	toEnemyDistance;
 					vec3_t	actorRight;
 					float	actorRightDot;
 
 					VectorSubtract(pVeh->m_pPilot->currentOrigin, pVeh->m_pPilot->enemy->currentOrigin, toEnemy);
-					toEnemyDistance = VectorNormalize(toEnemy);
+					/*toEnemyDistance = */VectorNormalize(toEnemy);
 
 					AngleVectors(pVeh->m_pParentEntity->currentAngles, 0, actorRight, 0);
 					actorRightDot = DotProduct(toEnemy, actorRight);

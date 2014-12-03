@@ -237,8 +237,8 @@ static void G_DynamicMusicUpdate( void )
 	int			danger = 0;
 	int			battle = 0;
 	int			entTeam;
-	qboolean	dangerNear = qfalse;
-	qboolean	suspicious = qfalse;
+	//qboolean	dangerNear = qfalse;
+	//qboolean	suspicious = qfalse;
 	qboolean	LOScalced = qfalse, clearLOS = qfalse;
 
 	//FIXME: intro and/or other cues? (one-shot music sounds)
@@ -297,14 +297,14 @@ static void G_DynamicMusicUpdate( void )
 
 	//enemy-based
 	VectorCopy( player->currentOrigin, center );
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = center[i] - radius;
 		maxs[i] = center[i] + radius;
 	}
-	
+
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = entityList[ e ];
 		if ( !ent || !ent->inuse )
@@ -401,7 +401,7 @@ static void G_DynamicMusicUpdate( void )
 			{
 				clearLOS = G_ClearLOS( player, player->client->renderInfo.eyePoint, ent );
 			}
-			if ( !clearLOS ) 
+			if ( !clearLOS )
 			{//can't see them directly
 				continue;
 			}
@@ -434,10 +434,10 @@ static void G_DynamicMusicUpdate( void )
 				switch ( level.alertEvents[alert].level )
 				{
 				case AEL_DISCOVERED:
-					dangerNear = qtrue;
+					//dangerNear = qtrue;
 					break;
 				case AEL_SUSPICIOUS:
-					suspicious = qtrue;
+					//suspicious = qtrue;
 					break;
 				case AEL_MINOR:
 					//distraction = qtrue;
@@ -466,7 +466,7 @@ static void G_DynamicMusicUpdate( void )
 			//level.dmDebounceTime = level.time + 3000 + 1000*battle;
 		}
 	}
-	else 
+	else
 	{
 		if ( level.dmDebounceTime > level.time )
 		{//not ready to switch yet
@@ -557,7 +557,7 @@ void G_FindTeams( void ) {
 //				continue;
 			if(!PInUse(j))
 				continue;
-			
+
 			e2=&g_entities[j];
 			if (!e2->team)
 				continue;
@@ -655,24 +655,24 @@ void G_InitCvars( void ) {
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
-	
+
 	gi.cvar( "newTotalSecrets", "0", CVAR_ROM );
 	gi.cvar_set("newTotalSecrets", "0");//used to carry over the count from SP_target_secret to ClientBegin
 	//g_iscensored = gi.cvar( "ui_iscensored", "0", CVAR_ARCHIVE|CVAR_ROM|CVAR_INIT|CVAR_CHEAT|CVAR_NORESTART );
 
 	g_speederControlScheme = gi.cvar( "g_speederControlScheme", "2", CVAR_ARCHIVE );//2 is default, 1 is alternate
 
-	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_skin_head = gi.cvar( "g_char_skin_head", "head_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_skin_torso = gi.cvar( "g_char_skin_torso", "torso_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_skin_legs = gi.cvar( "g_char_skin_legs", "lower_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_color_red = gi.cvar( "g_char_color_red", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_color_green = gi.cvar( "g_char_color_green", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_char_color_blue = gi.cvar( "g_char_color_blue", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_saber = gi.cvar( "g_saber", "single_1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_saber2 = gi.cvar( "g_saber2", "", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_saber_color = gi.cvar( "g_saber_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
-	g_saber2_color = gi.cvar( "g_saber2_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );	
+	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_skin_head = gi.cvar( "g_char_skin_head", "head_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_skin_torso = gi.cvar( "g_char_skin_torso", "torso_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_skin_legs = gi.cvar( "g_char_skin_legs", "lower_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_color_red = gi.cvar( "g_char_color_red", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_color_green = gi.cvar( "g_char_color_green", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_char_color_blue = gi.cvar( "g_char_color_blue", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_saber = gi.cvar( "g_saber", "single_1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_saber2 = gi.cvar( "g_saber2", "", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_saber_color = gi.cvar( "g_saber_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	g_saber2_color = gi.cvar( "g_saber2_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_saberDarkSideSaberColor = gi.cvar( "g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE );	//when you turn evil, it turns your saber red!
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
@@ -696,7 +696,7 @@ InitGame
 // I'm just declaring a global here which I need to get at in NAV_GenerateSquadPaths for deciding if pre-calc'd
 //	data is valid, and this saves changing the proto of G_SpawnEntitiesFromString() to include a checksum param which
 //	may get changed anyway if a new nav system is ever used. This way saves messing with g_local.h each time -slc
-int giMapChecksum;	
+int giMapChecksum;
 SavedGameJustLoaded_e g_eSavedGameJustLoaded;
 qboolean g_qbLoadTransition = qfalse;
 void InitGame(  const char *mapname, const char *spawntarget, int checkSum, const char *entities, int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition )
@@ -758,7 +758,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	WP_SaberLoadParms();
 	//Set up NPC init data
 	NPC_InitGame();
-	
+
 	TIMER_Clear();
 	Rail_Reset();
 	Troop_Reset();
@@ -804,7 +804,7 @@ ShutdownGame
 void ShutdownGame( void )
 {
 	// write all the client session data so we can get it back
-	G_WriteSessionData(); 
+	G_WriteSessionData();
 
 	// Destroy the Game Interface.
 	IGameInterface::Destroy();
@@ -965,7 +965,7 @@ FUNCTIONS CALLED EVERY FRAME
 ========================================================================
 */
 
-static void G_CheckTasksCompleted (gentity_t *ent) 
+static void G_CheckTasksCompleted (gentity_t *ent)
 {
 	if ( Q3_TaskIDPending( ent, TID_CHAN_VOICE ) )
 	{
@@ -1036,13 +1036,13 @@ G_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
-void G_RunThink (gentity_t *ent) 
+void G_RunThink (gentity_t *ent)
 {
-	if ( (ent->nextthink <= 0) || (ent->nextthink > level.time) ) 
+	if ( (ent->nextthink <= 0) || (ent->nextthink > level.time) )
 	{
 		goto runicarus;
 	}
-		
+
 	ent->nextthink = 0;
 	if ( ent->e_ThinkFunc == thinkF_NULL )	// actually you don't need this since I check for it in the next function -slc
 	{
@@ -1087,7 +1087,7 @@ static void G_Animate ( gentity_t *self )
 				int junk;
 
 				// I guess query ghoul2 to find out what the current frame is and see if we are done.
-				gi.G2API_GetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone, 
+				gi.G2API_GetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone,
 									(cg.time?cg.time:level.time), &frame, &junk, &junk, &junk, &junk2, NULL );
 
 				// It NEVER seems to get to what you'd think the last frame would be, so I'm doing this to try and catch when the animation has stopped
@@ -1121,8 +1121,8 @@ static void G_Animate ( gentity_t *self )
 	if ( self->ghoul2.size())
 	{
 		self->s.frame = self->endFrame;
-		
-		gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone, 
+
+		gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone,
 									self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, -1, -1 );
 		return;
 	}
@@ -1277,7 +1277,7 @@ static void G_CheckEndLevelTimers( gentity_t *ent )
 //rww - RAGDOLL_BEGIN
 class CGameRagDollUpdateParams : public CRagDollUpdateParams
 {
-	void EffectorCollision(const SRagDollEffectorCollision &data) 
+	void EffectorCollision(const SRagDollEffectorCollision &data)
 	{
 		//Com_Printf("Effector Collision at (%f %f %f)\n",data.effectorPosition[0],data.effectorPosition[1],data.effectorPosition[2]);
 		vec3_t effectorPosDif;
@@ -1306,11 +1306,11 @@ class CGameRagDollUpdateParams : public CRagDollUpdateParams
 		hasEffectorData = qtrue;
 		return;
 	}
-	void RagDollBegin() 
+	void RagDollBegin()
 	{
 		return;
 	}
-	virtual void RagDollSettled() 
+	virtual void RagDollSettled()
 	{
 		return;
 	}
@@ -1318,9 +1318,9 @@ class CGameRagDollUpdateParams : public CRagDollUpdateParams
 	{
 		return;
 	}
-	
+
 #ifdef _DEBUG
-	void DebugLine(vec3_t p1,vec3_t p2,int color,bool bbox) 
+	void DebugLine(vec3_t p1,vec3_t p2,int color,bool bbox)
 	{
 		if (!bbox)
 		{
@@ -1513,7 +1513,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 			vec3_t boltPoints[5];
 			vec3_t trStart, trEnd;
 			vec3_t tAng;
-			qboolean deathDone = qfalse;
+			//qboolean deathDone = qfalse;
 			trace_t tr;
 			mdxaBone_t boltMatrix;
 
@@ -1521,7 +1521,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 
 			if (ent->client->ps.legsAnimTimer <= 0)
 			{ //Looks like the death anim is done playing
-				deathDone = qtrue;
+				//deathDone = qtrue;
 			}
 
 			//if (deathDone)
@@ -1608,7 +1608,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 	{ //We're in a ragdoll state, so make the call to keep our positions updated and whatnot.
 		CRagDollParams tParms;
 		CGameRagDollUpdateParams tuParms;
-	
+
 		ragAnim = G_RagAnimForPositioning(ent);
 
 		/*
@@ -1640,10 +1640,10 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 		}
 #endif
 
-		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) ); 
-		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) ); 
-		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "thoracic", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) ); 
-		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) ); 
+		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) );
+		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) );
+		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "thoracic", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) );
+		gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 100, (cg.time?cg.time:level.time) );
 
 		VectorCopy(G2Angles, tParms.angles);
 		VectorCopy(usedOrg, tParms.position);
@@ -1877,31 +1877,29 @@ int navTime = 0;
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-	int			msec;
 	int			ents_inuse=0; // someone's gonna be pissed I put this here...
 #if	AI_TIMERS
 	AITime = 0;
 	navTime = 0;
 #endif//	AI_TIMERS
-	
+
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
-	msec = level.time - level.previousTime;
-	
+
 	//ResetTeamCounters();
 	NAV::DecayDangerSenses();
 	Rail_Update();
 	Troop_Update();
 	Pilot_Update();
 
-	
+
 	if (player && gi.WE_IsShaking(player->currentOrigin))
 	{
  	  	CGCam_Shake(0.45f, 100);
 	}
 
-	
+
 	AI_UpdateGroups();
 
 
@@ -1912,7 +1910,7 @@ void G_RunFrame( int levelTime ) {
 
 	//Run the frame for all entities
 //	for ( i = 0, ent = &g_entities[0]; i < globals.num_entities ; i++, ent++)
-	for ( i = 0; i < globals.num_entities ; i++) 
+	for ( i = 0; i < globals.num_entities ; i++)
 	{
 //		if ( !ent->inuse )
 //			continue;
@@ -1969,19 +1967,19 @@ void G_RunFrame( int levelTime ) {
 		}
 		G_CheckSpecialPersistentEvents( ent );
 
-		if ( ent->s.eType == ET_MISSILE ) 
+		if ( ent->s.eType == ET_MISSILE )
 		{
 			G_RunMissile( ent );
 			continue;
 		}
 
-		if ( ent->s.eType == ET_ITEM ) 
+		if ( ent->s.eType == ET_ITEM )
 		{
 			G_RunItem( ent );
 			continue;
 		}
 
-		if ( ent->s.eType == ET_MOVER ) 
+		if ( ent->s.eType == ET_MOVER )
 		{
 			// FIXME string comparison in per-frame thinks wut???
 			if ( ent->model && Q_stricmp( "models/test/mikeg/tie_fighter.md3", ent->model ) == 0 )
@@ -1993,7 +1991,7 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		//The player
-		if ( i == 0 ) 
+		if ( i == 0 )
 		{
 			// decay batteries if the goggles are active
 			if ( cg.zoomMode == 1 && ent->client->ps.batteryCharge > 0 )
@@ -2038,7 +2036,7 @@ void G_RunFrame( int levelTime ) {
 
 	// perform final fixups on the player
 	ent = &g_entities[0];
-	if ( ent->inuse ) 
+	if ( ent->inuse )
 	{
 		ClientEndFrame( ent );
 	}
@@ -2100,7 +2098,7 @@ extern int delayedShutDown;
 extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
-{ 
+{
 	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
 }
 
