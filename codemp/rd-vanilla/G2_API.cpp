@@ -287,7 +287,7 @@ qboolean G2API_OverrideServerWithClientData(CGhoul2Info_v& ghoul2, int modelInde
 static size_t GetSizeOfGhoul2Info ( const CGhoul2Info& g2Info )
 {
 	size_t size = 0;
-	
+
 	// This is pretty ugly, but we don't want to save everything in the CGhoul2Info object.
 	size += offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
 
@@ -310,7 +310,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 {
 	char *base = buffer;
 	size_t blockSize;
-	
+
 	// Oh the ugliness...
 	blockSize = offsetof (CGhoul2Info, mTransformedVertsArray) - offsetof (CGhoul2Info, mModelindex);
 	memcpy (buffer, &g2Info.mModelindex, blockSize);
@@ -327,7 +327,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 	// Bones vector + size
 	*(int *)buffer = g2Info.mBlist.size();
 	buffer += sizeof (int);
-	
+
 	blockSize = g2Info.mBlist.size() * sizeof (boneInfo_t);
 	memcpy (buffer, g2Info.mBlist.data(), g2Info.mBlist.size() * sizeof (boneInfo_t));
 	buffer += blockSize;
@@ -335,7 +335,7 @@ static size_t SerializeGhoul2Info ( char *buffer, const CGhoul2Info& g2Info )
 	// Bolts vector + size
 	*(int *)buffer = g2Info.mBltlist.size();
 	buffer += sizeof (int);
-	
+
 	blockSize = g2Info.mBltlist.size() * sizeof (boltInfo_t);
 	memcpy (buffer, g2Info.mBltlist.data(), g2Info.mBltlist.size() * sizeof (boltInfo_t));
 	buffer += blockSize;
@@ -418,7 +418,7 @@ public:
 
 	size_t GetSerializedSize() const
 	{
-		size_t size = 0;	
+		size_t size = 0;
 
 		size += sizeof (int); // size of mFreeIndecies linked list
 		size += mFreeIndecies.size() * sizeof (int);
@@ -493,7 +493,7 @@ public:
 			buffer += sizeof (int);
 
 			mInfos[i].resize (count);
-			
+
 			for ( size_t j = 0; j < count; j++ )
 			{
 				buffer += DeserializeGhoul2Info (buffer, mInfos[i][j]);
@@ -583,7 +583,7 @@ public:
 		assert((handle&G2_INDEX_MASK)>=0&&(handle&G2_INDEX_MASK)<MAX_G2_MODELS); //junk handle
 		assert(mIds[handle&G2_INDEX_MASK]==handle); // not a valid handle, could be old or garbage
 		assert(!(handle<=0||(handle&G2_INDEX_MASK)<0||(handle&G2_INDEX_MASK)>=MAX_G2_MODELS||mIds[handle&G2_INDEX_MASK]!=handle));
-		
+
 		return mInfos[handle&G2_INDEX_MASK];
 	}
 	const vector<CGhoul2Info> &Get(int handle) const
@@ -648,7 +648,10 @@ void RestoreGhoul2InfoArray()
 			return;
 		}
 
-		size_t read = singleton->Deserialize ((const char *)data, size);
+#ifdef _DEBUG
+		size_t read =
+#endif
+			singleton->Deserialize ((const char *)data, size);
 		Z_Free ((void *)data);
 
 		assert (read == size);
@@ -659,7 +662,10 @@ void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
 	void *data = Z_Malloc (size, TAG_GHOUL2);
-	size_t written = singleton->Serialize ((char *)data);
+#ifdef _DEBUG
+	size_t written =
+#endif
+		singleton->Serialize ((char *)data);
 
 	assert (written == size);
 

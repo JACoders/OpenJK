@@ -619,7 +619,7 @@ int G2_IsSurfaceRendered(CGhoul2Info *ghlInfo, const char *surfaceName, surfaceI
 		while (surfNum != -1)
 		{
 			const mdxmSurface_t		*parentSurf;
-			int						parentFlags;
+			int						parentFlags = 0;
 			const mdxmSurfHierarchy_t		*parentSurfInfo;
 
 			parentSurfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surfNum]);

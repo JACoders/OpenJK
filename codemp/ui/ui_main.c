@@ -8452,7 +8452,7 @@ static qhandle_t UI_FeederItemImage(float feederID, int index) {
 	}
 	else if (feederID == FEEDER_Q3HEADS)
 	{
-		int actual;
+		int actual = 0;
 		UI_SelectedTeamHead(index, &actual);
 		index = actual;
 
@@ -8708,7 +8708,7 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 
 	if (feederID == FEEDER_Q3HEADS)
 	{
-		int actual;
+		int actual = 0;
 		UI_SelectedTeamHead(index, &actual);
 		uiInfo.q3SelectedHead = index;
 		trap->Cvar_Set("ui_selectedModelIndex", va("%i", index));

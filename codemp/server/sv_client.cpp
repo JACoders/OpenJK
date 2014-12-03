@@ -123,6 +123,10 @@ static qboolean SV_IsBanned( netadr_t *from, qboolean isexception )
 	int index;
 	serverBan_t *curban;
 
+	if ( !serverBansCount ) {
+		return qfalse;
+	}
+
 	if ( !isexception )
 	{
 		// If this is a query for a ban, first check whether the client is excepted

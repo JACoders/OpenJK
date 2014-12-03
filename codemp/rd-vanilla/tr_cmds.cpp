@@ -69,7 +69,8 @@ void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 	cmdList = &backEndData->commands;
 	assert(cmdList); // bk001205
 	// add an end-of-list command
-	*(int *)(cmdList->cmds + cmdList->used) = RC_END_OF_LIST;
+	byteAlias_t *ba = (byteAlias_t *)&cmdList->cmds[cmdList->used];
+	ba->ui = RC_END_OF_LIST;
 
 	// clear it out, in case this is a sync and not a buffer flip
 	cmdList->used = 0;

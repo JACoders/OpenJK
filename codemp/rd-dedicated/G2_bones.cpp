@@ -938,8 +938,8 @@ qboolean G2_Pause_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char 
 		// are we pausing or un pausing?
 		if (blist[index].pauseTime)
 		{
-			int		startFrame, endFrame, flags;
-			float	currentFrame, animSpeed;
+			int		startFrame = 0, endFrame = 0, flags = 0;
+			float	currentFrame = 0.0f, animSpeed = 1.0f;
 
 			// figure out what frame we are on now
 			G2_Get_Bone_Anim(ghlInfo, blist, boneName, blist[index].pauseTime, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, NULL, 0);

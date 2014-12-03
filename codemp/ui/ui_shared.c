@@ -1167,7 +1167,7 @@ qboolean Script_SetItemColorCvar(itemDef_t *item, char **args)
 	char	*colorCvarName,*holdBuf,*holdVal;
 	char cvarBuf[1024];
 	const char *name;
-	vec4_t color;
+	vec4_t color = { 0.0f };
 	int i;
 	vec4_t *out;
 
@@ -1897,8 +1897,7 @@ transition3		lfvscr		(min extent) (max extent) (fovx,y)  20 25
 */
 qboolean Script_Transition3(itemDef_t *item, char **args)
 {
-	const char *name;
-	const char *value;
+	const char *name = NULL, *value = NULL;
 	float minx, miny, minz, maxx, maxy, maxz, fovtx, fovty;
 	int time;
 	float amt;
@@ -1956,7 +1955,9 @@ qboolean Script_Transition3(itemDef_t *item, char **args)
 			}
 		}
 	}
-	Com_Printf(S_COLOR_YELLOW"WARNING: Script_Transition2: error parsing '%s'\n", name );
+	if ( name ) {
+		Com_Printf( S_COLOR_YELLOW "WARNING: Script_Transition2: error parsing '%s'\n", name );
+	}
 	return qtrue;
 }
 #endif
@@ -5901,7 +5902,7 @@ void Item_OwnerDraw_Paint(itemDef_t *item) {
 
 		if ( item->cvarFlags & (CVAR_ENABLE | CVAR_DISABLE) && !Item_EnableShowViaCvar( item, CVAR_ENABLE ) )
 			memcpy( color, parent->disableColor, sizeof( vec4_t ) );
-	
+
 		if (item->text) {
 			Item_Text_Paint(item);
 				if (item->text[0]) {
