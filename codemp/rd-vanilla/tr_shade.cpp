@@ -596,9 +596,11 @@ static void ProjectDlightTexture2( void ) {
 			colorTemp[1] = Q_ftol(floatColor[1] * modulate);
 			colorTemp[2] = Q_ftol(floatColor[2] * modulate);
 			colorTemp[3] = 255;
-			colorArray[numIndexes]=*(unsigned int *)colorTemp;
-			colorArray[numIndexes+1]=*(unsigned int *)colorTemp;
-			colorArray[numIndexes+2]=*(unsigned int *)colorTemp;
+
+			byteAlias_t *ba = (byteAlias_t *)&colorTemp;
+			colorArray[numIndexes + 0] = ba->ui;
+			colorArray[numIndexes + 1] = ba->ui;
+			colorArray[numIndexes + 2] = ba->ui;
 
 			hitIndexes[numIndexes] = numIndexes;
 			hitIndexes[numIndexes+1] = numIndexes+1;
@@ -1085,7 +1087,8 @@ static void RB_FogPass( void ) {
 	fog = tr.world->fogs + tess.fogNum;
 
 	for ( i = 0; i < tess.numVertexes; i++ ) {
-		* ( int * )&tess.svars.colors[i] = fog->colorInt;
+		byteAlias_t *ba = (byteAlias_t *)&tess.svars.colors[i];
+		ba->i = fog->colorInt;
 	}
 
 	RB_CalcFogTexCoords( ( float * ) tess.svars.texcoords[0] );
@@ -1195,7 +1198,9 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			break;
 		case CGEN_CONST:
 			for ( i = 0; i < tess.numVertexes; i++ ) {
-				*(int *)tess.svars.colors[i] = *(int *)pStage->constantColor;
+				byteAlias_t *baDest = (byteAlias_t *)&tess.svars.colors[i],
+					*baSource = (byteAlias_t *)&pStage->constantColor;
+				baDest->i = baSource->i;
 			}
 			break;
 		case CGEN_VERTEX:
@@ -1241,7 +1246,8 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 				fog = tr.world->fogs + tess.fogNum;
 
 				for ( i = 0; i < tess.numVertexes; i++ ) {
-					* ( int * )&tess.svars.colors[i] = fog->colorInt;
+					byteAlias_t *ba = (byteAlias_t *)&tess.svars.colors[i];
+					ba->i = fog->colorInt;
 				}
 			}
 			break;
@@ -1263,7 +1269,9 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 		case CGEN_LIGHTMAPSTYLE:
 			for ( i = 0; i < tess.numVertexes; i++ )
 			{
-				*(unsigned *)&colors[i] = *(unsigned *)styleColors[pStage->lightmapStyle];
+				byteAlias_t *baDest = (byteAlias_t *)&tess.svars.colors[i],
+					*baSource = (byteAlias_t *)&styleColors[pStage->lightmapStyle];
+				baDest->i = baSource->i;
 			}
 			break;
 	}
