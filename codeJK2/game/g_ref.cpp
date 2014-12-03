@@ -85,7 +85,7 @@ void TAG_Init( void )
 		}
 
 		refTag_v::iterator		rti;
-		
+
 		//Delete all tags within the owner's scope
 		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); rti++ )
 		{
@@ -168,7 +168,7 @@ reference_tag_t	*TAG_Find( const char *owner, const char *name )
 		Q_strlwr( (char *) tempName );	//NOTENOTE: For case insensitive searches on a map
 
 		rti = tagOwner->tagMap.find( tempName );
-		
+
 		if ( rti == tagOwner->tagMap.end() )
 			return NULL;
 	}
@@ -186,7 +186,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 {
 	reference_tag_t	*tag = new reference_tag_t;
 	VALIDATEP( tag );
-	
+
 	//Copy the information
 	VectorCopy( origin, tag->origin );
 	VectorCopy( angles, tag->angles );
@@ -219,7 +219,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 	}
 
 	tagOwner_t	*tagOwner = TAG_FindOwner( owner );
-	
+
 	//If the owner is valid, add this tag to it
 	if VALID( tagOwner )
 	{
@@ -300,7 +300,7 @@ int	TAG_GetAngles( const char *owner, const char *name, vec3_t angles )
 	VALIDATEB( tag );
 
 	VectorCopy( tag->angles, angles );
-	
+
 	return true;
 }
 
@@ -354,12 +354,12 @@ If you target a ref_tag at an entity, that will set the ref_tag's
 angles toward that entity.
 
 If you set the ref_tag's ownername to the ownername of an entity,
-it makes that entity is the owner of the ref_tag.  This means 
+it makes that entity is the owner of the ref_tag.  This means
 that the owner, and only the owner, may refer to that tag.
 
 Tags may not have the same name as another tag with the same
 owner.  However, tags with different owners may have the same
-name as one another.  In this way, scripts can generically 
+name as one another.  In this way, scripts can generically
 refer to tags by name, and their owners will automatically
 specifiy which tag is being referred to.
 
@@ -370,8 +370,6 @@ target		- use to point the tag at something for angles
 
 void ref_link ( gentity_t *ent )
 {
-	reference_tag_t	*tag;
-
 	if ( ent->target )
 	{
 		//TODO: Find the target and set our angles to that direction
@@ -384,7 +382,7 @@ void ref_link ( gentity_t *ent )
 			VectorSubtract( target->s.origin, ent->s.origin, dir );
 			VectorNormalize( dir );
 			vectoangles( dir, ent->s.angles );
-			
+
 			//FIXME: Does pitch get flipped?
 		}
 		else
@@ -392,9 +390,9 @@ void ref_link ( gentity_t *ent )
 			gi.Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)\n", ent->targetname, ent->target );
 		}
 	}
-	
+
 	//Add the tag
-	tag = TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
+	TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
 
 	//Delete immediately, cannot be refered to as an entity again
 	//NOTE: this means if you wanted to link them in a chain for, say, a path, you can't

@@ -210,19 +210,19 @@ gitem_t	*FindItemForWeapon( weapon_t weapon ) {
 }
 
 //----------------------------------------------
-gitem_t	*FindItemForInventory( int inv ) 
+gitem_t	*FindItemForInventory( int inv )
 {
 	int		i;
 	gitem_t	*it;
 
 	// Now just check for any other kind of item.
-	for ( i = 1 ; i < bg_numItems ; i++ ) 
+	for ( i = 1 ; i < bg_numItems ; i++ )
 	{
 		it = &bg_itemlist[i];
 
 		if ( it->giType == IT_HOLDABLE )
 		{
-			if ( it->giTag == inv ) 
+			if ( it->giTag == inv )
 			{
 				return it;
 			}
@@ -239,13 +239,13 @@ FindItemForWeapon
 
 ===============
 */
-gitem_t	*FindItemForAmmo( ammo_t ammo ) 
+gitem_t	*FindItemForAmmo( ammo_t ammo )
 {
 	int		i;
 
-	for ( i = 1 ; i < bg_numItems ; i++ ) 
+	for ( i = 1 ; i < bg_numItems ; i++ )
 	{
-		if ( bg_itemlist[i].giType == IT_AMMO && bg_itemlist[i].giTag == ammo ) 
+		if ( bg_itemlist[i].giType == IT_AMMO && bg_itemlist[i].giTag == ammo )
 		{
 			return &bg_itemlist[i];
 		}
@@ -294,8 +294,8 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 
 	case IT_WEAPON:
 		// See if we already have this weapon.
-		if ( !(ps->stats[ STAT_WEAPONS ] & ( 1 << item->giTag ))) 
-		{			
+		if ( !(ps->stats[ STAT_WEAPONS ] & ( 1 << item->giTag )))
+		{
 			// Don't have this weapon yet, so pick it up.
 			return qtrue;
 		}
@@ -304,7 +304,7 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 		if ( ps->ammo[weaponData[item->giTag].ammoIndex] >= ammoData[weaponData[item->giTag].ammoIndex].max )
 		{
 			// full, so don't grab the item
-			return qfalse; 
+			return qfalse;
 		}
 
 		return qtrue; // could use more of this type of ammo, so grab the item
@@ -336,7 +336,7 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 				break;
 			}
 
-			if ( ps->ammo[ item->giTag ] >= ammoData[item->giTag].max )	// checkme			
+			if ( ps->ammo[ item->giTag ] >= ammoData[item->giTag].max )	// checkme
 			{
 				return qfalse;		// can't hold any more
 			}
@@ -368,7 +368,7 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 
 	case IT_BATTERY:
 		// don't pick up if already at max
-		if ( ps->batteryCharge >= MAX_BATTERIES ) 
+		if ( ps->batteryCharge >= MAX_BATTERIES )
 		{
 			return qfalse;
 		}
@@ -377,7 +377,7 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 	case IT_HOLOCRON:
 		// pretty lame but for now you can always pick these up
 		return qtrue;
-		
+
 
 	case IT_HOLDABLE:
 		if ( item->giTag >= INV_ELECTROBINOCULARS && item->giTag <= INV_SENTRY )
@@ -389,6 +389,10 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 			}
 		}
 		return qtrue;
+
+	default:
+		assert( !"BG_CanItemBeGrabbed: invalid item" );
+		break;
 	}
 
 	return qfalse;
@@ -421,20 +425,20 @@ void EvaluateTrajectory( const trajectory_t *tr, int atTime, vec3_t result ) {
 		VectorMA( tr->trBase, phase, tr->trDelta, result );
 		break;
 	case TR_LINEAR_STOP:
-		if ( atTime > tr->trTime + tr->trDuration ) 
+		if ( atTime > tr->trTime + tr->trDuration )
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
 		//old totally linear
 		deltaTime = ( atTime - tr->trTime ) * 0.001F;	// milliseconds to seconds
-		if ( deltaTime < 0 ) 
+		if ( deltaTime < 0 )
 		{//going past the total duration
 			deltaTime = 0;
 		}
 		VectorMA( tr->trBase, deltaTime, tr->trDelta, result );
 		break;
 	case TR_NONLINEAR_STOP:
-		if ( atTime > tr->trTime + tr->trDuration ) 
+		if ( atTime > tr->trTime + tr->trDuration )
 		{
 			atTime = tr->trTime + tr->trDuration;
 		}
@@ -486,7 +490,7 @@ void EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t result 
 		VectorScale( tr->trDelta, phase, result );
 		break;
 	case TR_LINEAR_STOP:
-		if ( atTime > tr->trTime + tr->trDuration ) 
+		if ( atTime > tr->trTime + tr->trDuration )
 		{
 			VectorClear( result );
 			return;
@@ -548,11 +552,11 @@ and after local prediction on the client
 void PlayerStateToEntityState( playerState_t *ps, entityState_t *s ) {
 	int		i;
 
-	if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR ) 
+	if ( ps->pm_type == PM_INTERMISSION || ps->pm_type == PM_SPECTATOR )
 	{
 		s->eType = ET_INVISIBLE;
-	} 
-	/*else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH ) 
+	}
+	/*else if ( ps->stats[STAT_HEALTH] <= GIB_HEALTH )
 	{
 		s->eType = ET_INVISIBLE;
 	} */
@@ -586,7 +590,7 @@ void PlayerStateToEntityState( playerState_t *ps, entityState_t *s ) {
 	// new sabre stuff
 	s->saberActive = ps->saberActive;
 	s->saberInFlight = ps->saberInFlight;
-	
+
 	s->vehicleModel = ps->vehicleModel;
 
 	s->weapon = ps->weapon;
@@ -622,14 +626,14 @@ void PlayerStateToEntityState( playerState_t *ps, entityState_t *s ) {
 		side = DotProduct (ps->velocity, right);
 		sign = side < 0 ? -1 : 1;
 		side = fabs(side);
-		
+
 		value = 2;	// g_rollangle->value;
 
 		if (side < 200 /* g_rollspeed->value */ )
 			side = side * value / 200; // g_rollspeed->value;
 		else
 			side = value;
-		
+
 		s->angles[ROLL] = (int)(side*sign * 4);
 	}
 #endif
@@ -644,7 +648,7 @@ Items can be picked up without actually touching their physical bounds
 ============
 */
 qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTime ) {
-	vec3_t		origin;
+	vec3_t origin = { 0.0f };
 
 	EvaluateTrajectory( &item->pos, atTime, origin );
 

@@ -97,7 +97,7 @@ CNode *CNode::Create( vec3_t position, int flags, int radius, int ID )
 	CNode	*node = new CNode;
 
 	VectorCopy( position, node->m_position );
-	
+
 	node->m_flags = flags;
 	node->m_ID = ID;
 	node->m_radius = radius;
@@ -138,7 +138,7 @@ void CNode::AddEdge( int ID, int cost, int flags )
 			}
 		}
 	}
-	
+
 	edge_t	edge;
 
 	edge.ID		= ID;
@@ -280,7 +280,7 @@ unsigned char CNode::GetEdgeFlags( int edgeNum )
 
 		count++;
 	}
-	
+
 	return 0;
 }
 
@@ -591,7 +591,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 	}
 
 	int numNodes = GetInt( file );
-	
+
 	for ( int i = 0; i < numNodes; i++ )
 	{
 		CNode	*node = CNode::Create();
@@ -609,9 +609,9 @@ bool CNavigator::Load( const char *filename, int checksum )
 	gi.FS_Read( &failedEdges, sizeof( failedEdges ), file );
 	for ( int j = 0; j < MAX_FAILED_EDGES; j++ )
 	{
-		m_edgeLookupMap.insert(pair<int, int>(failedEdges[j].startID, j));		
+		m_edgeLookupMap.insert(pair<int, int>(failedEdges[j].startID, j));
 	}
-		
+
 
 	gi.FS_FCloseFile( file );
 
@@ -678,7 +678,7 @@ int CNavigator::AddRawPoint( vec3_t point, int flags, int radius )
 		Com_Error( ERR_DROP, "Error adding node!\n" );
 		return -1;
 	}
-	
+
 	//TODO: Validate the position
 	//TODO: Correct stuck waypoints
 
@@ -730,7 +730,7 @@ void CNavigator::SetEdgeCost( int ID1, int ID2, int cost )
 	{//they want us to calc it
 		//FIXME: can we just remember this instead of recalcing every time?
 		vec3_t	pos1, pos2;
-		
+
 		node1->GetPosition( pos1 );
 		node2->GetPosition( pos2 );
 		cost = Distance( pos1, pos2 );
@@ -800,15 +800,13 @@ void CNavigator::CalculatePath( CNode *node )
 		pathList->Push( new CEdge( nextNode->GetID(), nextNode->GetID(), node->GetEdgeCost(i) ) );
 	}
 
-	float				minDist;
-	CEdge				*test;	
+	CEdge *test;
 
 	//Now flood fill all the others
 	while ( !pathList->Empty() )
 	{
-		minDist = Q3_INFINITE;			
 		test	 = pathList->Pop();
-		
+
 		CNode	*testNode = m_nodes[ (*test).m_first ];
 		assert( testNode );
 
@@ -851,27 +849,27 @@ void CNavigator::CalculatePaths( bool	recalc )
 #endif
 #if _HARD_CONNECT
 #else
-#endif	
+#endif
 	int i;
 
-	for ( i = 0; i < m_nodes.size(); i++ )
+	for ( i = 0; i < (int)m_nodes.size(); i++ )
 	{
 		//Allocate the needed memory
 		m_nodes[i]->InitRanks( m_nodes.size() );
 	}
 
-	for ( i = 0; i < m_nodes.size(); i++ )
+	for ( i = 0; i < (int)m_nodes.size(); i++ )
 	{
 		CalculatePath( m_nodes[i] );
 	}
-	
+
 #ifndef FINAL_BUILD
 	if ( pathsCalculated )
 	{
 		gi.Printf( S_COLOR_CYAN"%s recalced paths in %d ms\n", (NPC!=NULL?NPC->targetname:"NULL"), gi.Milliseconds()-startTime );
 	}
 #endif
-	
+
 	if(!recalc)	//Mike says doesn't need to happen on recalc
 	{
 		CP_FindCombatPointWaypoints();
@@ -901,11 +899,11 @@ void CNavigator::ShowNodes( void )
 
 		showRadius = qfalse;
 		if( NAVDEBUG_showRadius )
-		{	
+		{
 			dist = DistanceSquared( g_entities[0].currentOrigin, position );
 			radius = (*ni)->GetRadius();
 			// if player within node radius or 256, draw radius (sometimes the radius is really small, so we check for 256 to catch everything)
-			if( (dist <= radius*radius) || dist <= 65536 ) 
+			if( (dist <= radius*radius) || dist <= 65536 )
 			{
 				showRadius = qtrue;
 			}
@@ -1092,7 +1090,7 @@ void CNavigator::HardConnect( int first, int second )
 	end->GetPosition( p2 );
 
 	trace_t	trace;
-	
+
 	int		flags = EFLAG_NONE;
 
 	gi.trace( &trace, p1, wpMins, wpMaxs, p2, ENTITYNUM_NONE, MASK_SOLID|CONTENTS_BOTCLIP|CONTENTS_MONSTERCLIP, G2_NOCOLLIDE, 0 );
@@ -1127,7 +1125,7 @@ int CNavigator::TestNodePath( gentity_t *ent, int okToHitEntNum, vec3_t position
 	//Check the path
 	if ( NAV_ClearPathToPoint( ent, ent->mins, ent->maxs, position, clipmask, okToHitEntNum ) == false )
 		return false;
-	
+
 	return true;
 }
 
@@ -1154,7 +1152,7 @@ int	CNavigator::TestBestFirst( gentity_t *ent, int lastID, int flags )
 	if ( lastID == NODE_NONE )
 		return NODE_NONE;
 
-	if ( lastID >= m_nodes.size() )
+	if ( lastID >= (int)m_nodes.size() )
 		return NODE_NONE;
 
 	//Get the info
@@ -1166,7 +1164,7 @@ int	CNavigator::TestBestFirst( gentity_t *ent, int lastID, int flags )
 
 	node->GetPosition( nodePos );
 
-	//Setup our last node as our root, and search for a closer one according to its edges	
+	//Setup our last node as our root, and search for a closer one according to its edges
 	int bestNode = ( TestNodePath( ent, ENTITYNUM_NONE, nodePos, qtrue ) ) ? lastID : NODE_NONE;
 	float bestDist = ( bestNode == NODE_NONE ) ? Q3_INFINITE : DistanceSquared( ent->currentOrigin, nodePos );
 
@@ -1199,7 +1197,7 @@ int	CNavigator::TestBestFirst( gentity_t *ent, int lastID, int flags )
 			{
 				SetCheckedNode(testNode->GetID(),ent->s.number,CHECKED_FAILED);
 			}
-		}	
+		}
 	}
 
 	return bestNode;
@@ -1234,7 +1232,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 		//Must be within our radius range
 		if ( dist > (float) ( radius * radius ) )
 			continue;
-		
+
 		nodeList_t				nChain;
 		nodeChain_l::iterator	nci;
 
@@ -1262,9 +1260,9 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 				nodeChain.insert( nci, nChain );
 				collected = nodeChain.size();
 				added = true;
-				
+
 				//If we've hit our collection limit, throw off the oldest one
-				if ( nodeChain.size() > maxCollect )
+				if ( (int)nodeChain.size() > maxCollect )
 				{
 					nodeChain.pop_back();
 				}
@@ -1274,7 +1272,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 		}
 
 		//Otherwise, always pad out the collection if possible so we don't miss anything
-		if ( ( added == false ) && ( nodeChain.size() < maxCollect ) )
+		if ( ( added == false ) && ( (int)nodeChain.size() < maxCollect ) )
 		{
 			nChain.nodeID = (*ni)->GetID();
 			nChain.distance = dist;
@@ -1340,9 +1338,9 @@ int CNavigator::GetBestPathBetweenEnts( gentity_t *ent, gentity_t *goal, int fla
 			}
 			//okay, since we only have to do this once, let's check to see if this node is even usable (could help us short-circuit a whole loop of the dest nodes)
 			radius	= node->GetRadius();
-			
+
 			//If we're not within the known clear radius of this node OR out of Z height range...
-			if ( (*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->currentOrigin[2] ) >= MAX_Z_DELTA ) )
+			if ( (signed)(*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->currentOrigin[2] ) >= MAX_Z_DELTA ) )
 			{
 				//We're not *within* this node, so check clear path, etc.
 
@@ -1430,9 +1428,9 @@ int CNavigator::GetBestPathBetweenEnts( gentity_t *ent, gentity_t *goal, int fla
 					continue;
 				}
 				radius	= node2->GetRadius();
-				
+
 				//If we're not within the known clear radius of this node OR out of Z height range...
-				if ( (*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->currentOrigin[2] ) >= MAX_Z_DELTA ) )
+				if ( (signed)(*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->currentOrigin[2] ) >= MAX_Z_DELTA ) )
 				{
 					//We're not *within* this node, so check clear path, etc.
 
@@ -1521,18 +1519,18 @@ int CNavigator::GetNearestNode( gentity_t *ent, int lastID, int flags, int targe
 		node->GetPosition( position );
 
 		radius	= node->GetRadius();
-		
+
 		if ( NodeFailed( ent, (*nci).nodeID ) )
 		{
 			continue;
 		}
 		//Are we within the known clear radius of this node?
-		if ( (*nci).distance < (radius*radius) )
+		if ( (signed)(*nci).distance < (radius*radius) )
 		{
 			//Do a z-difference sanity check
 			if ( fabs( position[2] - ent->currentOrigin[2] ) < MAX_Z_DELTA )
 			{
-				//Found one		
+				//Found one
 				return (*nci).nodeID;
 			}
 		}
@@ -1599,18 +1597,18 @@ ShowPath
 */
 
 void CNavigator::ShowPath( int start, int end )
-{	
+{
 	//Validate the start position
-	if ( ( start < 0 ) || ( start >= m_nodes.size() ) )
+	if ( ( start < 0 ) || ( start >= (int)m_nodes.size() ) )
 		return;
 
 	//Validate the end position
-	if ( ( end < 0 ) || ( end >= m_nodes.size() ) )
+	if ( ( end < 0 ) || ( end >= (int)m_nodes.size() ) )
 		return;
 
 	CNode	*startNode	= m_nodes[ start ];
 	CNode	*endNode	= m_nodes[ end ];
-	
+
 	CNode	*moveNode = startNode;
 	CNode	*testNode = NULL;
 
@@ -1623,7 +1621,7 @@ void CNavigator::ShowPath( int start, int end )
 	while ( moveNode != endNode )
 	{
 		bestNode = GetBestNode( moveNode->GetID(), end );
-		
+
 		//Some nodes may be fragmented
 		if ( bestNode == -1 )
 		{
@@ -1637,7 +1635,7 @@ void CNavigator::ShowPath( int start, int end )
 		//Get their origins
 		moveNode->GetPosition( startPos );
 		testNode->GetPosition( endPos );
-		
+
 		//Draw the edge
 		CG_DrawEdge( startPos, endPos, EDGE_PATH );
 
@@ -1834,25 +1832,25 @@ void CNavigator::ClearAllFailedEdges( void )
 }
 
 int CNavigator::EdgeFailed( int startID, int endID )
-{	
+{
 	//OPTIMIZED WAY  (bjg 01/02)
 	//find in lookup map
 	pair <EdgeMultimapIt, EdgeMultimapIt> findValue;
-	findValue = m_edgeLookupMap.equal_range(startID);	
-	while ( findValue.first != findValue.second ) 
+	findValue = m_edgeLookupMap.equal_range(startID);
+	while ( findValue.first != findValue.second )
 	{
 		if( failedEdges[findValue.first->second].endID == endID)
-		{	
-			return findValue.first->second;		
+		{
+			return findValue.first->second;
 		}
 		++findValue.first;
 	}
-	findValue = m_edgeLookupMap.equal_range(endID);	
-	while ( findValue.first != findValue.second ) 
+	findValue = m_edgeLookupMap.equal_range(endID);
+	while ( findValue.first != findValue.second )
 	{
 		if( failedEdges[findValue.first->second].endID == startID)
-		{	
-			return findValue.first->second;		
+		{
+			return findValue.first->second;
 		}
 		++findValue.first;
 	}
@@ -1909,7 +1907,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 	}
 
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 	{
 #ifndef FINAL_BUILD
 		gi.Printf( S_COLOR_RED"NAV ERROR: tried to fail invalid waypoint %d\n", startID );
@@ -1919,7 +1917,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 	}
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 	{
 #ifndef FINAL_BUILD
 		gi.Printf( S_COLOR_RED"NAV ERROR: tried to fail invalid waypoint %d\n", endID );
@@ -1972,7 +1970,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 				}
 			}
 			*/
-			
+
 			//Remember who needed it
 			failedEdges[j].entID = entID;
 
@@ -2145,7 +2143,7 @@ qboolean CNavigator::RouteBlocked( int startID, int testEdgeID, int endID, int r
 	{//Neighbors, checked out, all clear
 		return qfalse;
 	}
-	
+
 	//Okay, first edge is clear, now check rest of route!
 	end	= m_nodes[ endID ];
 	nextID = testEdgeID;
@@ -2197,7 +2195,7 @@ qboolean CNavigator::RouteBlocked( int startID, int testEdgeID, int endID, int r
 				allEdgesFailed = qfalse;
 			}
 		}
-		
+
 		if ( allEdgesFailed )
 		{
 			//This route has no clear way of getting to end
@@ -2224,11 +2222,11 @@ int CNavigator::GetBestNodeAltRoute( int startID, int endID, int *pathCost, int 
 		return WAYPOINT_NONE;
 
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Is it the same node?
@@ -2336,11 +2334,11 @@ GetBestNode
 int CNavigator::GetBestNode( int startID, int endID, int rejectID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	if ( startID == endID )
@@ -2403,7 +2401,7 @@ GetNodePosition
 int CNavigator::GetNodePosition( int nodeID, vec3_t out )
 {
 	//Validate the number
-	if ( ( nodeID < 0 ) || ( nodeID >= m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >= (int)m_nodes.size() ) )
 		return false;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2421,7 +2419,7 @@ GetNodeNumEdges
 
 int CNavigator::GetNodeNumEdges( int nodeID )
 {
-	if ( ( nodeID < 0 ) || ( nodeID >=  m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >= (int)m_nodes.size() ) )
 		return -1;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2439,7 +2437,7 @@ GetNodeEdge
 
 int CNavigator::GetNodeEdge( int nodeID, int edge )
 {
-	if ( ( nodeID < 0 ) || ( nodeID >=  m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >=  (int)m_nodes.size() ) )
 		return -1;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2458,11 +2456,11 @@ Connected
 bool CNavigator::Connected( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return false;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return false;
 
 	if ( startID == endID )
@@ -2495,11 +2493,11 @@ GetPathCost
 unsigned int CNavigator::GetPathCost( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	CNode	*startNode	= m_nodes[ startID ];
@@ -2510,7 +2508,7 @@ unsigned int CNavigator::GetPathCost( int startID, int endID )
 	}
 
 	CNode	*endNode	= m_nodes[ endID ];
-	
+
 	CNode	*moveNode = startNode;
 
 	int		bestNode;
@@ -2535,7 +2533,7 @@ unsigned int CNavigator::GetPathCost( int startID, int endID )
 			if ( edgeID == endID )
 			{
 				return pathCost + moveNode->GetEdgeCost( i );
-			}	
+			}
 
 			testRank = endNode->GetRank( edgeID );
 
@@ -2572,11 +2570,11 @@ GetEdgeCost
 unsigned int CNavigator::GetEdgeCost( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	CNode	*start	= m_nodes[startID];
@@ -2594,7 +2592,7 @@ GetProjectedNode
 int CNavigator::GetProjectedNode( vec3_t origin, int nodeID )
 {
 	//Validate the start position
-	if ( ( nodeID < 0 ) || ( nodeID >= m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >= (int)m_nodes.size() ) )
 		return NODE_NONE;
 
 	CNode	*node = m_nodes[nodeID];
@@ -2641,7 +2639,7 @@ int CNavigator::GetProjectedNode( vec3_t origin, int nodeID )
 //////////////////////////////////////////////////////////////////
 // Helper pop_mHeap algorithm class
 //////////////////////////////////////////////////////////////////
-class NodeTotalGreater 
+class NodeTotalGreater
 {
 public:
    bool operator()( CEdge * first, CEdge * second ) const {
@@ -2680,7 +2678,7 @@ CEdge* CPriorityQueue::Find(int npNum)
 // Remove Node And Resort
 //////////////////////////////////////////////////////////////////
 CEdge* CPriorityQueue::Pop()
-{  
+{
    CEdge *edge = mHeap.front();
 
    //pop_mHeap will move the node at the front to the position N
@@ -2700,7 +2698,7 @@ CEdge* CPriorityQueue::Pop()
 // Add New Node And Resort
 //////////////////////////////////////////////////////////////////
 void CPriorityQueue::Push(CEdge* theEdge )
-{    
+{
    //Pushes the node onto the back of the mHeap
    mHeap.push_back( theEdge );
 
@@ -2712,7 +2710,7 @@ void CPriorityQueue::Push(CEdge* theEdge )
 // Find The Node In Question And Resort mHeap Around It
 //////////////////////////////////////////////////////////////////
 void CPriorityQueue::Update( CEdge* edge )
-{  
+{
    for(vector<CEdge*>::iterator i=mHeap.begin(); i!=mHeap.end(); i++)
    {
       if( (*i)->m_first == edge->m_first )

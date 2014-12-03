@@ -62,6 +62,8 @@ void CG_RunLightStyles (void)
 
 	for (i=0,ls=cl_lightstyle ; i<MAX_LIGHT_STYLES ; i++, ls++)
 	{
+		byteAlias_t *ba = (byteAlias_t *)&ls->value;
+
 		if (!ls->length)
 		{
 			ls->value[0] = ls->value[1] = ls->value[2] = ls->value[3] = 255;
@@ -80,7 +82,7 @@ void CG_RunLightStyles (void)
 			ls->value[2] = ls->map[ofs%ls->length][2];
 			ls->value[3] = 255; //ls->map[ofs%ls->length][3];
 		}
-		trap_R_SetLightStyle(i, *(int*)ls->value);
+		trap_R_SetLightStyle( i, ba->i );
 	}
 }
 

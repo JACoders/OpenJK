@@ -246,14 +246,14 @@ void SP_fx_runner( gentity_t *ent )
 		return;
 	}
 
-	// Try and associate an effect file, unfortunately we won't know if this worked or not 
+	// Try and associate an effect file, unfortunately we won't know if this worked or not
 	//	until the CGAME trys to register it...
 	ent->fxID = G_EffectIndex( ent->fxFile );
 
 	ent->s.eType = ET_MOVER;
 
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
-	ent->e_ThinkFunc = thinkF_fx_runner_link; 
+	ent->e_ThinkFunc = thinkF_fx_runner_link;
 	ent->nextthink = level.time + 400;
 
 	// Save our position and link us up!
@@ -273,7 +273,7 @@ This world effect will spawn snow globally into the level.
 */
 //----------------------------------------------------------
 void SP_CreateSnow( gentity_t *ent )
-{ 
+{
 	char	temp[256];
 
 	G_SpawnInt( "count", "1000", &ent->count );
@@ -297,7 +297,7 @@ This world effect will spawn rain globally into the level.
 */
 //----------------------------------------------------------
 void SP_CreateRain( gentity_t *ent )
-{ 
+{
 	char	temp[256];
 
 	G_SpawnInt( "count", "500", &ent->count );
@@ -336,10 +336,10 @@ void fx_explosion_trail_think( gentity_t *ent )
 
 	EvaluateTrajectory( &ent->s.pos, level.time, origin );
 
-	gi.trace( &tr, ent->currentOrigin, vec3_origin, vec3_origin, origin, 
+	gi.trace( &tr, ent->currentOrigin, vec3_origin, vec3_origin, origin,
 				ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask, G2_RETURNONHIT, 10 );
 
-	if ( tr.fraction < 1.0f ) 
+	if ( tr.fraction < 1.0f )
 	{
 		// never explode or bounce on sky
 		if ( !( tr.surfaceFlags & SURF_NOIMPACT ))
@@ -459,7 +459,7 @@ void fx_explosion_trail_link( gentity_t *ent )
 		VectorSubtract( target->s.origin, ent->s.origin, dir );
 		VectorNormalize( dir );
 	}
-	else 
+	else
 	{
 		// we are assuming that we have angles, but there are no checks to verify this
 		AngleVectors( ent->s.angles, dir, NULL, NULL );
@@ -522,7 +522,7 @@ void SP_fx_explosion_trail( gentity_t *ent )
 	}
 
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
-	ent->e_ThinkFunc = thinkF_fx_explosion_trail_link; 
+	ent->e_ThinkFunc = thinkF_fx_explosion_trail_link;
 	ent->nextthink = level.time + 500;
 
 	// Save our position and link us up!
@@ -549,7 +549,7 @@ void fx_target_beam_set_debounce( gentity_t *self )
 	{
 		self->e_UseFunc = useF_NULL;
 	}
-	else 
+	else
 	{
 		self->attackDebounceTime = level.time + FRAMETIME + Q_irand( -self->random, self->random );
 	}
@@ -560,18 +560,15 @@ void fx_target_beam_fire( gentity_t *ent )
 {
 	trace_t		trace;
 	vec3_t		dir, org, end;
-	int			ignore;
 	qboolean	open;
 
 	if ( !ent->enemy || !ent->enemy->inuse )
 	{//info_null most likely
-		ignore = ent->s.number;
 		ent->enemy = NULL;
 		VectorCopy( ent->s.origin2, org );
 	}
 	else
 	{
-		ignore = ent->enemy->s.number;
 		VectorCopy( ent->enemy->currentOrigin, org );
 	}
 
@@ -674,7 +671,6 @@ void fx_target_beam_link( gentity_t *ent )
 {
 	gentity_t	*target = NULL;
 	vec3_t		dir;
-	float		len;
 
 	target = G_Find( target, FOFS(targetname), ent->target );
 
@@ -692,9 +688,9 @@ void fx_target_beam_link( gentity_t *ent )
 		G_SetEnemy( ent, target );
 	}
 	VectorSubtract( target->s.origin, ent->s.origin, dir );//er, does it ever use dir?
-	len = VectorNormalize( dir );//er, does it use len or dir?
+	VectorNormalize( dir );//er, does it use len or dir?
 	vectoangles( dir, ent->s.angles );//er, does it use s.angles?
-	
+
 	VectorCopy( target->s.origin, ent->s.origin2 );
 
 	if ( ent->spawnflags & 1 )

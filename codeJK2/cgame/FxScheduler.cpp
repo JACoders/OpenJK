@@ -46,7 +46,7 @@ void CMediaHandles::operator=(const CMediaHandles &that )
 {
 	mMediaList.clear();
 
-	for ( int i = 0; i < that.mMediaList.size(); i++ )
+	for ( size_t i = 0; i < that.mMediaList.size(); i++ )
 	{
 		mMediaList.push_back( that.mMediaList[i] );
 	}
@@ -54,7 +54,7 @@ void CMediaHandles::operator=(const CMediaHandles &that )
 
 //------------------------------------------------------
 CFxScheduler::CFxScheduler()
-{ 
+{
 	memset( &mEffectTemplates, 0, sizeof( mEffectTemplates ));
 }
 
@@ -123,7 +123,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 				{
 					delete mEffectTemplates[i].mPrimitives[j];
 				}
-			} 
+			}
 
 			mEffectTemplates[i].mInUse = false;
 		}
@@ -157,7 +157,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 
 //------------------------------------------------------
 // RegisterEffect
-//	Attempt to open the specified effect file, if 
+//	Attempt to open the specified effect file, if
 //	file read succeeds, parse the file.
 //
 // Input:
@@ -200,7 +200,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
 	TEffectID::iterator itr;
-	
+
 	itr = mEffectIDs.find( sfile );
 
 	if ( itr != mEffectIDs.end() )
@@ -243,7 +243,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	}
 
 	// If we'll overflow our buffer, bail out--not a particularly elegant solution
-	if (len >= sizeof(data) - 1 )
+	if (len >= (int)sizeof(data) - 1 )
 	{
 		theFxHelper.CloseFile( fh );
 		return 0;
@@ -266,7 +266,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 
 //------------------------------------------------------
 // ParseEffect
-//	Starts at ground zero, using each group header to 
+//	Starts at ground zero, using each group header to
 //	determine which kind of effect we are working with.
 //	Then we call the appropriate function to parse the
 //	specified effect group.
@@ -347,7 +347,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 //------------------------------------------------------
 // AddPrimitiveToEffect
 //	Takes a primitive and attaches it to the effect.
-//	
+//
 // Input:
 //	Effect template that we tack the primitive on to
 //	Primitive to add to the effect template
@@ -374,9 +374,9 @@ void CFxScheduler::AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate
 // GetNewEffectTemplate
 //	Finds an unused effect template and returns it to the
 //	caller.
-//	
+//
 // Input:
-//	pointer to an id that will be filled in, 
+//	pointer to an id that will be filled in,
 //	file name-- should be NULL when requesting a copy
 //
 // Return:
@@ -417,7 +417,7 @@ SEffectTemplate *CFxScheduler::GetNewEffectTemplate( int *id, const char *file )
 // GetEffectCopy
 //	Returns a copy of the desired effect so that it can
 //	easily be modified run-time.
-//	
+//
 // Input:
 //	file-- the name of the effect file that you want a copy of
 //	newHandle-- will actually be the returned handle to the new effect
@@ -435,7 +435,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( const char *file, int *newHandle )
 // GetEffectCopy
 //	Returns a copy of the desired effect so that it can
 //	easily be modified run-time.
-//	
+//
 // Input:
 //	fxHandle-- the handle to the effect that you want a copy of
 //	newHandle-- will actually be the returned handle to the new effect
@@ -482,7 +482,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( int fxHandle, int *newHandle )
 //------------------------------------------------------
 // GetPrimitiveCopy
 //	Helper function that returns a copy of the desired primitive
-//	
+//
 // Input:
 //	fxHandle - the pointer to the effect copy you want to override
 //	componentName - name of the component to find
@@ -524,7 +524,7 @@ static void ReportPlayEffectError(int id)
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Applies a default up
 //	axis.
-//	
+//
 // Input:
 //	Effect file id and the origin
 //
@@ -547,7 +547,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin )
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Takes a fwd vector
 //	and builds a right and up vector
-//	
+//
 // Input:
 //	Effect file id, the origin, and a fwd vector
 //
@@ -569,7 +569,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward )
 // PlayEffect
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Uses the specified axis
-//	
+//
 // Input:
 //	Effect file name, the origin, and axis.
 //	Optional boltInfo (defaults to -1)
@@ -596,7 +596,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 #ifndef FINAL_BUILD
 	if ( mEffectIDs[sfile] == 0 )
 	{
-		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", sfile );		
+		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", sfile );
 	}
 #endif
 
@@ -607,7 +607,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 // PlayEffect
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Uses the specified axis
-//	
+//
 // Input:
 //	Effect file name, the origin, and axis.
 //	Optional boltInfo (defaults to -1)
@@ -628,7 +628,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID )
 #ifndef FINAL_BUILD
 	if ( id == 0 )
 	{
-		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );		
+		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );
 	}
 #endif
 
@@ -647,7 +647,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID )
 	}
 
 	// Don't bother scheduling the effect if the system is currently frozen
- 
+
 	// Get the effect.
 	fx = &mEffectTemplates[id];
 
@@ -713,9 +713,9 @@ void CFxScheduler::PlayEffect( const char *file, int clientID )
 // CreateEffect
 //	Creates the specified fx taking into account the
 //	multitude of different ways it could be spawned.
-//	
+//
 // Input:
-//	template used to build the effect, desired effect origin, 
+//	template used to build the effect, desired effect origin,
 //	desired orientation and how late the effect is so that
 //	it can be moved to the correct spot
 //
@@ -782,7 +782,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, int clientID, int delay
 	case Line:
 	//---------
 
-		FX_AddLine( clientID, org, 
+		FX_AddLine( clientID, org,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
@@ -798,7 +798,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, int clientID, int delay
 						fx->mLengthStart.GetVal(), fx->mLengthEnd.GetVal(), fx->mLengthParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
-						fx->mMin, fx->mMax, fx->mElasticity.GetVal(), 
+						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 						fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), flags );
 		break;
@@ -816,7 +816,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, int clientID, int delay
 	case Light:
 	//---------
 
-		// don't much care if the light stays bolted...so just add it.  
+		// don't much care if the light stays bolted...so just add it.
 		if ( clientID >= 0 && clientID < ENTITYNUM_WORLD )
 		{
 			// ..um, ok.....
@@ -867,7 +867,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, int clientID, int delay
 // PlayEffect
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Uses the specified axis
-//	
+//
 // Input:
 //	Effect id, the origin, and axis.
 //	Optional boltInfo (defaults to -1)
@@ -1037,7 +1037,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Applies a default up
 //	axis.
-//	
+//
 // Input:
 //	Effect file name and the origin
 //
@@ -1056,7 +1056,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin )
 #ifndef FINAL_BUILD
 	if ( mEffectIDs[sfile] == 0 )
 	{
-		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );		
+		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );
 	}
 #endif
 }
@@ -1066,7 +1066,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin )
 //	Handles scheduling an effect so all the components
 //	happen at the specified time.  Takes a forward vector
 //	and uses this to complete the axis field.
-//	
+//
 // Input:
 //	Effect file name, the origin, and a forward vector
 //
@@ -1085,7 +1085,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward )
 #ifndef FINAL_BUILD
 	if ( mEffectIDs[sfile] == 0 )
 	{
-		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );		
+		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );
 	}
 #endif
 }
@@ -1095,7 +1095,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward )
 //	Handles determining if a scheduled effect should
 //	be created or not.  If it should it handles converting
 //	the template effect into a real one.
-//	
+//
 // Input:
 //	none
 //
@@ -1121,7 +1121,7 @@ void CFxScheduler::AddScheduledEffects( void )
 		{
 			if ( (*itr)->mClientID >= 0 )
 			{
-				CreateEffect( (*itr)->mpTemplate, (*itr)->mClientID, 
+				CreateEffect( (*itr)->mpTemplate, (*itr)->mClientID,
 								theFxHelper.mTime - (*itr)->mStartTime );
 			}
 			else if ((*itr)->mBoltNum == -1)
@@ -1129,20 +1129,20 @@ void CFxScheduler::AddScheduledEffects( void )
 				if ( (*itr)->mEntNum != -1 )
 				{
 					// Find out where the entity currently is
-					CreateEffect( (*itr)->mpTemplate, 
-								cg_entities[(*itr)->mEntNum].lerpOrigin, (*itr)->mAxis, 
+					CreateEffect( (*itr)->mpTemplate,
+								cg_entities[(*itr)->mEntNum].lerpOrigin, (*itr)->mAxis,
 								theFxHelper.mTime - (*itr)->mStartTime );
 				}
 				else
 				{
-					CreateEffect( (*itr)->mpTemplate, 
-								(*itr)->mOrigin, (*itr)->mAxis, 
+					CreateEffect( (*itr)->mpTemplate,
+								(*itr)->mOrigin, (*itr)->mAxis,
 								theFxHelper.mTime - (*itr)->mStartTime );
 				}
 			}
 			else
 			{
-			
+
 				mdxaBone_t 		boltMatrix;
 
 				doesBoltExist=qfalse;
@@ -1177,7 +1177,7 @@ void CFxScheduler::AddScheduledEffects( void )
 							}
 						}
 					}
-				
+
 					oldModelNum = (*itr)->mModelNum;
 					oldEntNum = (*itr)->mEntNum;
 					oldBoltIndex = (*itr)->mBoltNum;
@@ -1186,8 +1186,8 @@ void CFxScheduler::AddScheduledEffects( void )
 				// only do this if we found the bolt
 				if (doesBoltExist)
 				{
-					CreateEffect( (*itr)->mpTemplate, 
-									origin, axis, 
+					CreateEffect( (*itr)->mpTemplate,
+									origin, axis,
 									theFxHelper.mTime - (*itr)->mStartTime );
 				}
 			}
@@ -1208,9 +1208,9 @@ void CFxScheduler::AddScheduledEffects( void )
 // CreateEffect
 //	Creates the specified fx taking into account the
 //	multitude of different ways it could be spawned.
-//	
+//
 // Input:
-//	template used to build the effect, desired effect origin, 
+//	template used to build the effect, desired effect origin,
 //	desired orientation and how late the effect is so that
 //	it can be moved to the correct spot
 //
@@ -1258,7 +1258,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	{
 		float x, y;
 		float width, height;
-		
+
 		x = DEG2RAD( random() * 360.0f );
 		y = DEG2RAD( random() * 180.0f );
 
@@ -1270,7 +1270,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		VectorAdd( org, temp, org );
 
 		if ( fx->mSpawnFlags & FX_AXIS_FROM_SPHERE )
-		{ 
+		{
 			// well, we will now override the axis at the users request
 			VectorNormalize2( temp, ax[0] );
 			MakeNormalVectors( ax[0], ax[1], ax[2] );
@@ -1288,7 +1288,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		VectorAdd( org, temp, org );
 
 		if ( fx->mSpawnFlags & FX_AXIS_FROM_SPHERE )
-		{ 
+		{
 			vec3_t up={0,0,1};
 
 			// well, we will now override the axis at the users request
@@ -1312,7 +1312,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		// Velocity calculations
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_VEL_IS_ABSOLUTE )
-		{  
+		{
 			VectorSet( vel, fx->mVelX.GetVal(), fx->mVelY.GetVal(), fx->mVelZ.GetVal() );
 		}
 		else
@@ -1325,7 +1325,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		// Acceleration calculations
 		//-------------------------------------
 		if ( fx->mSpawnFlags & FX_ACCEL_IS_ABSOLUTE )
-		{ 
+		{
 			VectorSet( accel, fx->mAccelX.GetVal(), fx->mAccelY.GetVal(), fx->mAccelZ.GetVal() );
 		}
 		else
@@ -1338,8 +1338,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		// Gravity is completely decoupled from acceleration since it is __always__ absolute
 		// NOTE: I only effect Z ( up/down in the Quake world )
 		accel[2] += fx->mGravity.GetVal();
-	
-		// There may be a lag between when the effect should be created and when it actually gets created.  
+
+		// There may be a lag between when the effect should be created and when it actually gets created.
 		//	Since we know what the discrepancy is, we can attempt to compensate...
 		if ( lateTime > 0 )
 		{
@@ -1350,7 +1350,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 			VectorMA( vel, ftime, accel, vel );
 
 			// Predict the new position
-			for ( int i = 0 ; i < 3 ; i++ ) 
+			for ( int i = 0 ; i < 3 ; i++ )
 			{
 				org[i] = org[i] + ftime * vel[i] + time2 * vel[i];
 			}
@@ -1371,7 +1371,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 				// we also do this pre-trace as opposed to post trace since we may have to render an impact effect
 				//	and we will want the normal at the exact endpos...
 				if ( fx->mSpawnFlags & FX_CHEAP_ORG2_CALC )
-				{ 
+				{
 					VectorSet( org2, fx->mOrigin2X.GetVal(), fx->mOrigin2Y.GetVal(), fx->mOrigin2Z.GetVal() );
 					VectorAdd( org2, temp, temp );
 				}
@@ -1443,12 +1443,12 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	case Particle:
 	//---------
 
-		FX_AddParticle( org, vel, accel, 
+		FX_AddParticle( org, vel, accel,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
 						fx->mRotation.GetVal(), fx->mRotationDelta.GetVal(),
-						fx->mMin, fx->mMax, fx->mElasticity.GetVal(), 
+						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 						fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), fx->mFlags );
 		break;
@@ -1457,7 +1457,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	case Line:
 	//---------
 
-		FX_AddLine( org, org2, 
+		FX_AddLine( org, org2,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
@@ -1473,7 +1473,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 						fx->mLengthStart.GetVal(), fx->mLengthEnd.GetVal(), fx->mLengthParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
-						fx->mMin, fx->mMax, fx->mElasticity.GetVal(), 
+						fx->mMin, fx->mMax, fx->mElasticity.GetVal(),
 						fx->mDeathFxHandles.GetHandle(), fx->mImpactFxHandles.GetHandle(),
 						fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), fx->mFlags );
 		break;
@@ -1482,7 +1482,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	case Electricity:
 	//----------------
 
-		FX_AddElectricity( org, org2, 
+		FX_AddElectricity( org, org2,
 						fx->mSizeStart.GetVal(), fx->mSizeEnd.GetVal(), fx->mSizeParm.GetVal(),
 						fx->mAlphaStart.GetVal(), fx->mAlphaEnd.GetVal(), fx->mAlphaParm.GetVal(),
 						sRGB, eRGB, fx->mRGBParm.GetVal(),
@@ -1507,17 +1507,17 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	//---------
 
 		// for chunk angles, you don't really need much control over the end result...you just want variation..
-		VectorSet( ang, 
-					fx->mAngle1.GetVal(), 
-					fx->mAngle2.GetVal(), 
+		VectorSet( ang,
+					fx->mAngle1.GetVal(),
+					fx->mAngle2.GetVal(),
 					fx->mAngle3.GetVal() );
 
 		vectoangles( ax[0], temp );
 		VectorAdd( ang, temp, ang );
 
-		VectorSet( angDelta, 
-					fx->mAngle1Delta.GetVal(), 
-					fx->mAngle2Delta.GetVal(), 
+		VectorSet( angDelta,
+					fx->mAngle1Delta.GetVal(),
+					fx->mAngle2Delta.GetVal(),
 					fx->mAngle3Delta.GetVal() );
 
 		emitterModel = fx->mMediaHandles.GetHandle();
@@ -1541,8 +1541,8 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 		// I'm calling this function ( at least for now ) because it handles projecting
 		//	the decal mark onto the surfaces properly.  This is especially important for large marks.
 		// The downside is that it's much less flexible....
-		CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0], fx->mRotation.GetVal(), 
-			sRGB[0], sRGB[1], sRGB[2], fx->mAlphaStart.GetVal(), 
+		CG_ImpactMark( fx->mMediaHandles.GetHandle(), org, ax[0], fx->mRotation.GetVal(),
+			sRGB[0], sRGB[1], sRGB[2], fx->mAlphaStart.GetVal(),
 			qtrue, fx->mSizeStart.GetVal(), qfalse );
 		break;
 
@@ -1577,7 +1577,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	//---------
 	case FxRunner:
 	//---------
-		
+
 		PlayEffect( fx->mPlayFxHandles.GetHandle(), org, ax );
 		break;
 
@@ -1603,7 +1603,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t a
 	case ScreenFlash:
 	//--------------
 
-		FX_AddFlash( org, 
+		FX_AddFlash( org,
 					sRGB, eRGB, fx->mRGBParm.GetVal(),
 					fx->mLife.GetVal(), fx->mMediaHandles.GetHandle(), fx->mFlags );
 		break;
