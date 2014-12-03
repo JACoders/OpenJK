@@ -83,7 +83,7 @@ extern vec3_t		playerMaxs;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Defines 
+// Defines
 ////////////////////////////////////////////////////////////////////////////////////////
 #define		NAV_VERSION						1.3f
 #define		NEIGHBORING_DIST				200.0f
@@ -133,7 +133,7 @@ namespace NAV
 		MAX_NONWP_NEIGHBORS = 1,
 
 
-		// Human Sized 
+		// Human Sized
 		//-------------
 		SC_MEDIUM_RADIUS	= 20,
 		SC_MEDIUM_HEIGHT	= 60,
@@ -553,7 +553,7 @@ public:
 		{
 			return false;
 		}
-		
+
 
 		// If The Actor Is Too Big, This Is Not A Valid Edge For Him
 		//-----------------------------------------------------------
@@ -571,10 +571,10 @@ public:
 			{
 				// Can The Actor Navigate Through The Breakable Entity?
 				//------------------------------------------------------
-				if ((mActor) && 
-					(mActor->NPC) && 
+				if ((mActor) &&
+					(mActor->NPC) &&
 					(mActor->NPC->aiFlags&NPCAI_NAV_THROUGH_BREAKABLES) &&
-					(Edge.BlockingBreakable()) && 
+					(Edge.BlockingBreakable()) &&
 					(G_EntIsBreakable(Edge.mEntityNum, mActor))
 					)
 				{
@@ -641,7 +641,7 @@ public:
 			{//clear it
 				Edge.mFlags.clear_bit(CWayEdge::WE_BLOCKING_BREAK);
 			}
-			//NOTE: if this fails with the SC_LARGE size 
+			//NOTE: if this fails with the SC_LARGE size
 		}
 
 		return (Edge.mFlags.get_bit(CWayEdge::WE_VALID));
@@ -773,7 +773,7 @@ char				mLocStringB[256] = {0};
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 TAlertList&			GetAlerts(gentity_t* actor)
 {
@@ -854,10 +854,10 @@ bool		ViewNavTrace(const CVec3& a, const CVec3& b)
 ////////////////////////////////////////////////////////////////////////////////////////
 // Helper Function : Move Trace
 ////////////////////////////////////////////////////////////////////////////////////////
-bool		MoveTrace(const CVec3& Start, const CVec3& Stop, const CVec3& Mins, const CVec3& Maxs, 
-					  int IgnoreEnt=0, 
-					  bool CheckForDoNotEnter=false, 
-					  bool RetryIfStartInDoNotEnter=true, 
+bool		MoveTrace(const CVec3& Start, const CVec3& Stop, const CVec3& Mins, const CVec3& Maxs,
+					  int IgnoreEnt=0,
+					  bool CheckForDoNotEnter=false,
+					  bool RetryIfStartInDoNotEnter=true,
 					  bool IgnoreAllEnts=false,
 					  int OverrideContents=0)
 {
@@ -983,7 +983,7 @@ bool			NAV::GoTo(gentity_t* actor, TNodeHandle target, float MaxDangerLevel)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::GoTo(gentity_t* actor, gentity_t* target, float MaxDangerLevel)
 {
@@ -1058,7 +1058,7 @@ bool			NAV::GoTo(gentity_t* actor, gentity_t* target, float MaxDangerLevel)
 		}
 	}
 
-	// No Waypoint Near 
+	// No Waypoint Near
 	//------------------
 	else
 	{
@@ -1069,7 +1069,7 @@ bool			NAV::GoTo(gentity_t* actor, gentity_t* target, float MaxDangerLevel)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::GoTo(gentity_t* actor, const vec3_t& position, float MaxDangerLevel)
 {
@@ -1134,7 +1134,7 @@ bool			NAV::GoTo(gentity_t* actor, const vec3_t& position, float MaxDangerLevel)
 		}
 	}
 
-	// No Waypoint Near 
+	// No Waypoint Near
 	//------------------
 	else
 	{
@@ -1154,7 +1154,7 @@ void	stupid_print(const char* data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::LoadFromFile(const char *filename, int checksum)
 {
@@ -1202,7 +1202,7 @@ bool			NAV::LoadFromFile(const char *filename, int checksum)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge )
 {
@@ -1264,10 +1264,10 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 
 	// Well, It' Can't Go, But Possibly If We Hit An Entity And Remove That Entity, We Can Go?
 	//-----------------------------------------------------------------------------------------
-	if (!CanGo && 
-		!mMoveTrace.startsolid && 
-		EntHit!=ENTITYNUM_WORLD && 
-		EntHit!=ENTITYNUM_NONE && 
+	if (!CanGo &&
+		!mMoveTrace.startsolid &&
+		EntHit!=ENTITYNUM_WORLD &&
+		EntHit!=ENTITYNUM_NONE &&
 		(&g_entities[EntHit])!=0)
 	{
 		gentity_t*	ent		= &g_entities[EntHit];
@@ -1292,7 +1292,7 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 			at.mFlags.set_bit(CWayEdge::WE_BLOCKING_WALL);
 		}
 		else if (
-			!Q_stricmp("func_glass", ent->classname) || 
+			!Q_stricmp("func_glass", ent->classname) ||
 			!Q_stricmp("func_breakable", ent->classname) ||
 			!Q_stricmp("misc_model_breakable", ent->classname))
 		{
@@ -1409,7 +1409,7 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 					eemiter->push_back(atHandle);
 				}
 				else
-				{	
+				{
 #ifndef FINAL_BUILD
 					assert("Max Edges Perh Handle Reached, Unable To Add To Edge Map!"==0);
 					gi.Printf("WARNING: Too many nav edges pass through entity %d (%s)\n", EntHit, g_entities[EntHit].targetname);
@@ -1436,7 +1436,7 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 					// Try Target
 					//------------
 					owner = G_Find(owner, FOFS(target), ent->targetname);
-					if (owner && 
+					if (owner &&
 						(!Q_stricmp("trigger_multiple", owner->classname) || !Q_stricmp("trigger_once", owner->classname)))
 					{
 						at.mOwnerNum = owner->s.number;
@@ -1446,7 +1446,7 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 						// Try Target2
 						//-------------
 						owner = G_Find(owner, FOFS(target2), ent->targetname);
-						if (owner && 
+						if (owner &&
 							(!Q_stricmp("trigger_multiple", owner->classname) || !Q_stricmp("trigger_once", owner->classname)))
 						{
 							at.mOwnerNum = owner->s.number;
@@ -1503,7 +1503,7 @@ bool			NAV::TestEdge( TNodeHandle NodeA, TNodeHandle NodeB, qboolean IsDebugEdge
 	return CanGo;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 {
@@ -1540,11 +1540,11 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			{
 				NPCs.set_bit(curEnt);
 				ent->lastMoveTime = ent->contents;
-				ent->contents = 0;	
+				ent->contents = 0;
 				gi.linkentity(ent);
 			}
 
-				
+
 
 			// Is This Ent "Start Off" or "Start Open"?
 			//------------------------------------------
@@ -1568,7 +1568,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			else if (!Q_stricmp("func_wall", ent->classname) ||	!Q_stricmp("func_usable", ent->classname))
 			{
 				Walls.set_bit(curEnt);
-				ent->contents = ent->spawnContents;	
+				ent->contents = ent->spawnContents;
 				gi.linkentity(ent);
 			}
 		}
@@ -1586,7 +1586,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 	Triang->finish(mUser);
 	delete Triang;
 */
-	mCells.fill_cells_nodes(NAV::CELL_RANGE);	
+	mCells.fill_cells_nodes(NAV::CELL_RANGE);
 
 
 
@@ -1597,11 +1597,15 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 	//====================================================================================
 	CWayNode*		at;
 	int				atHandle;
+#ifdef _DEBUG
 	const char*		atNameStr;
+#endif // _DEBUG
 	int				tgtNum;
 	int				tgtHandle;
 	hstring			tgtName;
+#ifdef _DEBUG
 	const char*		tgtNameStr;
+#endif // _DEBUG
 
 	CWayEdge		atToTgt;
 	CVec3			atFloor;
@@ -1646,7 +1650,9 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 
 		at				= &(*nodeIter);
 		atHandle		= (nodeIter.index());
+#ifdef _DEBUG
 		atNameStr		= (at->mName.empty())?(mLocStringA):(at->mName.c_str());
+#endif // _DEBUG
 
 		// Connect To Hand Designed Targets
 		//----------------------------------
@@ -1659,7 +1665,9 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			{
 				continue;
 			}
+#ifdef _DEBUG
 			tgtNameStr	= tgtName.c_str();
+#endif // _DEBUG
 
 			// Clear The Name In The Array, So Save Is Not Corrupted
 			//-------------------------------------------------------
@@ -1671,9 +1679,10 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			nameFinder	= mNodeNames.find(tgtName);
 			if (nameFinder==mNodeNames.end())
 			{
-#ifndef FINAL_BUILD
-				gi.Printf(S_COLOR_YELLOW"WARNING: nav unable to locate target (%s) from node (%s)\n", tgtNameStr, atNameStr);
-#endif
+#ifdef _DEBUG
+				gi.Printf( S_COLOR_YELLOW "WARNING: nav unable to locate target (%s) from node (%s)\n", tgtNameStr,
+					atNameStr );
+#endif // _DEBUG
 				continue;
 			}
 
@@ -1704,7 +1713,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 						mGraph.get_edge(edge).mFlags.set_bit(CWayEdge::WE_DESIGNERPLACED);
 						continue;
 					}
-					
+
 					// Setup The Edge
 					//----------------
 					mUser.setup_edge(atToTgt, atHandle, tgtHandle, false, mGraph.get_node(atHandle), mGraph.get_node(tgtHandle), false);
@@ -1727,7 +1736,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 
 		// If It Is A Combat Or Goal Nav, Try To "Auto Connect" To A Few Nearby Way Points
 		//---------------------------------------------------------------------------------
-		if (!at->mFlags.get_bit(CWayNode::WN_NOAUTOCONNECT) && 
+		if (!at->mFlags.get_bit(CWayNode::WN_NOAUTOCONNECT) &&
 			(at->mType==NAV::PT_COMBATNODE || at->mType==NAV::PT_GOALNODE))
 		{
 			// Get The List Of Nodes For This Cell Of The Map
@@ -1874,9 +1883,9 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 		// Cycle through the different sizes, starting with the largest
 		//--------------------------------------------------------------
 		bool	CanGo		= false;
-		bool	IsDebugEdge = 
-			(g_nav1->string[0] && g_nav2->string[0] && 
-			(!Q_stricmp(*(a.mName), g_nav1->string) || !Q_stricmp(*(b.mName), g_nav1->string)) && 
+		bool	IsDebugEdge =
+			(g_nav1->string[0] && g_nav2->string[0] &&
+			(!Q_stricmp(*(a.mName), g_nav1->string) || !Q_stricmp(*(b.mName), g_nav1->string)) &&
 			(!Q_stricmp(*(a.mName), g_nav2->string) || !Q_stricmp(*(b.mName), g_nav2->string)));
 
 		// For debugging a connection between two known points:
@@ -1975,15 +1984,18 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 		CWayEdge& at = mGraph.get_edge((*ToBeRemoved)[RemIndex]);
 		if (at.mFlags.get_bit(CWayEdge::WE_DESIGNERPLACED))
 		{
+#ifdef _DEBUG
 			hstring		aHstr = mGraph.get_node(at.mNodeA).mName;
 			hstring		bHstr = mGraph.get_node(at.mNodeB).mName;
+#endif // _DEBUG
 
 			mGraph.get_node(at.mNodeA).mPoint.ToStr(mLocStringA);
 			mGraph.get_node(at.mNodeB).mPoint.ToStr(mLocStringB);
 
-#ifndef FINAL_BUILD
-			gi.Printf( S_COLOR_RED"ERROR: Nav connect failed: %s@%s <-> %s@%s\n", aHstr.c_str(), mLocStringA, bHstr.c_str(), mLocStringB);
-#endif
+#ifdef _DEBUG
+			gi.Printf( S_COLOR_RED "ERROR: Nav connect failed: %s@%s <-> %s@%s\n", aHstr.c_str(), mLocStringA,
+				bHstr.c_str(), mLocStringB );
+#endif // _DEBUG
 			delayedShutDown = level.time + 100;
 		}
 		mGraph.remove_edge(at.mNodeA, at.mNodeB);
@@ -2066,7 +2078,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 
 	// PHASE V: SCAN NODES AND FILL CELLS
 	//===================================
-	mCells.fill_cells_edges(NAV::CELL_RANGE);	
+	mCells.fill_cells_edges(NAV::CELL_RANGE);
 
 
 	// PHASE VI: SCAN ALL ENTITIES AND RE OPEN / TURN THEM OFF
@@ -2104,7 +2116,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			//--------------------------------------
 			else if (NPCs.get_bit(curEnt))
 			{
-				ent->contents = ent->lastMoveTime;	
+				ent->contents = ent->lastMoveTime;
 				ent->lastMoveTime = 0;
 				gi.linkentity(ent);
 			}
@@ -2136,7 +2148,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::DecayDangerSenses()
 {
@@ -2163,7 +2175,7 @@ void			NAV::DecayDangerSenses()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::RegisterDangerSense(gentity_t* actor, int alertEventIndex)
 {
@@ -2247,7 +2259,7 @@ void			NAV::RegisterDangerSense(gentity_t* actor, int alertEventIndex)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::WayEdgesNowClear(gentity_t* ent)
 {
@@ -2278,7 +2290,7 @@ void			NAV::WayEdgesNowClear(gentity_t* ent)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::SpawnedPoint(gentity_t* ent, NAV::EPointType type)
 {
@@ -2390,7 +2402,7 @@ void			NAV::SpawnedPoint(gentity_t* ent, NAV::EPointType type)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::GetNearestNode(gentity_t* ent, bool forceRecalcNow, NAV::TNodeHandle goal)
 {
@@ -2405,12 +2417,12 @@ NAV::TNodeHandle		NAV::GetNearestNode(gentity_t* ent, bool forceRecalcNow, NAV::
 		{
 			ent->lastWaypoint	= ent->waypoint;
 		}
-		ent->waypoint		= 
+		ent->waypoint		=
 			GetNearestNode(
-			ent->currentOrigin, 
-			ent->waypoint, 
-			goal, 
-			ent->s.number, 
+			ent->currentOrigin,
+			ent->waypoint,
+			goal,
+			ent->s.number,
 			(ent->client && ent->client->moveType==MT_FLYSWIM));
 		ent->noWaypointTime = level.time + 1000;	// Don't Erase This Result For 5 Seconds
 	}
@@ -2419,7 +2431,7 @@ NAV::TNodeHandle		NAV::GetNearestNode(gentity_t* ent, bool forceRecalcNow, NAV::
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::GetNearestNode(const vec3_t& position, NAV::TNodeHandle previous, NAV::TNodeHandle goal, int ignoreEnt, bool allowZOffset)
 {
@@ -2600,7 +2612,7 @@ NAV::TNodeHandle		NAV::GetNearestNode(const vec3_t& position, NAV::TNodeHandle p
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::ChooseRandomNeighbor(NAV::TNodeHandle NodeHandle)
 {
@@ -2616,7 +2628,7 @@ NAV::TNodeHandle		NAV::ChooseRandomNeighbor(NAV::TNodeHandle NodeHandle)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::ChooseRandomNeighbor(TNodeHandle NodeHandle, const vec3_t& position, float maxDistance)
 {
@@ -2652,7 +2664,7 @@ NAV::TNodeHandle		NAV::ChooseRandomNeighbor(TNodeHandle NodeHandle, const vec3_t
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::ChooseClosestNeighbor(NAV::TNodeHandle NodeHandle, const vec3_t& position)
 {
@@ -2682,7 +2694,7 @@ NAV::TNodeHandle		NAV::ChooseClosestNeighbor(NAV::TNodeHandle NodeHandle, const 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::ChooseFarthestNeighbor(NAV::TNodeHandle NodeHandle, const vec3_t& position)
 {
@@ -2712,7 +2724,7 @@ NAV::TNodeHandle		NAV::ChooseFarthestNeighbor(NAV::TNodeHandle NodeHandle, const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 NAV::TNodeHandle		NAV::ChooseFarthestNeighbor(gentity_t* actor, const vec3_t& target, float maxSafeDot)
 {
@@ -2780,7 +2792,7 @@ NAV::TNodeHandle		NAV::ChooseFarthestNeighbor(gentity_t* actor, const vec3_t& ta
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	NAV::FindPath(gentity_t* actor, NAV::TNodeHandle target, float MaxDangerLevel)
 {
@@ -2890,10 +2902,10 @@ bool	NAV::FindPath(gentity_t* actor, NAV::TNodeHandle target, float MaxDangerLev
 	CVec3	At(actor->currentOrigin);
 	float	AtTime	= level.time;
 	float	AtSpeed = actor->NPC->stats.runSpeed;
-	if (!(actor->NPC->scriptFlags&SCF_RUNNING) && 
+	if (!(actor->NPC->scriptFlags&SCF_RUNNING) &&
 		((actor->NPC->scriptFlags&SCF_WALKING) ||
-		 (actor->NPC->aiFlags&NPCAI_WALKING) || 
-		 (ucmd.buttons&BUTTON_WALKING)		
+		 (actor->NPC->aiFlags&NPCAI_WALKING) ||
+		 (ucmd.buttons&BUTTON_WALKING)
 		))
 	{
 		AtSpeed	= actor->NPC->stats.walkSpeed;
@@ -2919,7 +2931,7 @@ bool	NAV::FindPath(gentity_t* actor, NAV::TNodeHandle target, float MaxDangerLev
 	// Copy The Search Results Into The Path
 	//---------------------------------------
 	{
-		SPathPoint	PPoint;
+		SPathPoint PPoint = {};
 		puser.mPath.clear();
 		for (mSearch.path_begin(); !mSearch.path_end() && !puser.mPath.full(); mSearch.path_inc())
 		{
@@ -2960,7 +2972,7 @@ bool	NAV::FindPath(gentity_t* actor, NAV::TNodeHandle target, float MaxDangerLev
 	int numEdges = (puser.mPath.size()-1);
 
 
-	// Trim Out Backtracking Edges 
+	// Trim Out Backtracking Edges
 	//-----------------------------
 	for (int edge=0; edge<numEdges; edge++)
 	{
@@ -3046,7 +3058,7 @@ bool	NAV::FindPath(gentity_t* actor, NAV::TNodeHandle target, float MaxDangerLev
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::SafePathExists(const CVec3& startVec, const CVec3& stopVec, const CVec3& danger, float dangerDistSq)
 {
@@ -3157,7 +3169,7 @@ bool			NAV::SafePathExists(const CVec3& startVec, const CVec3& stopVec, const CV
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 float			NAV::EstimateCostToGoal(const vec3_t& position, TNodeHandle Goal)
 {
@@ -3169,7 +3181,7 @@ float			NAV::EstimateCostToGoal(const vec3_t& position, TNodeHandle Goal)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 float			NAV::EstimateCostToGoal(TNodeHandle Start, TNodeHandle Goal)
 {
@@ -3182,7 +3194,7 @@ float			NAV::EstimateCostToGoal(TNodeHandle Start, TNodeHandle Goal)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::OnSamePoint(gentity_t* actor, gentity_t* target)
 {
@@ -3190,7 +3202,7 @@ bool			NAV::OnSamePoint(gentity_t* actor, gentity_t* target)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::InSameRegion(gentity_t* actor, gentity_t* target)
 {
@@ -3225,7 +3237,7 @@ bool			NAV::InSameRegion(gentity_t* actor, gentity_t* target)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::InSameRegion(gentity_t* actor, const vec3_t& position)
 {
@@ -3261,7 +3273,7 @@ bool			NAV::InSameRegion(gentity_t* actor, const vec3_t& position)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::InSameRegion(NAV::TNodeHandle A, NAV::TNodeHandle B)
 {
@@ -3301,7 +3313,7 @@ bool			NAV::InSameRegion(NAV::TNodeHandle A, NAV::TNodeHandle B)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::OnNeighboringPoints(TNodeHandle A, TNodeHandle B)
 {
@@ -3315,9 +3327,9 @@ bool			NAV::OnNeighboringPoints(TNodeHandle A, TNodeHandle B)
 		return false;
 	}
 	int edgeNum = mGraph.get_edge_across(A, B);
-	if (edgeNum && 
-		!mGraph.get_edge(edgeNum).mFlags.get_bit(CWayEdge::WE_JUMPING) && 
-		!mGraph.get_edge(edgeNum).mFlags.get_bit(CWayEdge::WE_FLYING) && 
+	if (edgeNum &&
+		!mGraph.get_edge(edgeNum).mFlags.get_bit(CWayEdge::WE_JUMPING) &&
+		!mGraph.get_edge(edgeNum).mFlags.get_bit(CWayEdge::WE_FLYING) &&
 		 mGraph.get_edge(edgeNum).mDistance<SAFE_NEIGHBORINGPOINT_DIST)
 	{
 		return true;
@@ -3326,7 +3338,7 @@ bool			NAV::OnNeighboringPoints(TNodeHandle A, TNodeHandle B)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::OnNeighboringPoints(gentity_t* actor, gentity_t* target)
 {
@@ -3345,7 +3357,7 @@ bool			NAV::OnNeighboringPoints(gentity_t* actor, gentity_t* target)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::OnNeighboringPoints(gentity_t* actor, const vec3_t& position)
 {
@@ -3424,7 +3436,7 @@ bool			NAV::InSafeRadius(CVec3 at, TNodeHandle atNode, TNodeHandle targetNode)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::FindPath(gentity_t* actor, gentity_t* target, float MaxDangerLevel)
 {
@@ -3448,7 +3460,7 @@ bool			NAV::FindPath(gentity_t* actor, gentity_t* target, float MaxDangerLevel)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::FindPath(gentity_t* actor, const vec3_t& position, float MaxDangerLevel)
 {
@@ -3456,7 +3468,7 @@ bool			NAV::FindPath(gentity_t* actor, const vec3_t& position, float MaxDangerLe
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 const vec3_t&	NAV::NextPosition(gentity_t* actor)
 {
@@ -3467,7 +3479,7 @@ const vec3_t&	NAV::NextPosition(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::NextPosition(gentity_t* actor, CVec3& Position)
 {
@@ -3478,7 +3490,7 @@ bool			NAV::NextPosition(gentity_t* actor, CVec3& Position)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::NextPosition(gentity_t* actor, CVec3& Position, float& SlowingRadius, bool& Fly, bool& Jump)
 {
@@ -3609,7 +3621,7 @@ bool			NAV::UpdatePath(gentity_t* actor, TNodeHandle target, float MaxDangerLeve
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool			NAV::HasPath(gentity_t* actor, TNodeHandle target)
 {
@@ -3635,7 +3647,7 @@ bool			NAV::HasPath(gentity_t* actor, TNodeHandle target)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 float			NAV::PathDangerLevel(gentity_t* actor)
 {
@@ -3729,7 +3741,7 @@ float			NAV::PathDangerLevel(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 int				NAV::PathNodesRemaining(gentity_t* actor)
 {
@@ -3743,7 +3755,7 @@ int				NAV::PathNodesRemaining(gentity_t* actor)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 const vec3_t&	NAV::GetNodePosition(TNodeHandle NodeHandle)
 {
@@ -3762,7 +3774,7 @@ const vec3_t&	NAV::GetNodePosition(TNodeHandle NodeHandle)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::GetNodePosition(TNodeHandle NodeHandle, vec3_t& position)
 {
@@ -3802,7 +3814,7 @@ unsigned int		NAV::ClassifyEntSize(gentity_t* ent)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void			NAV::ShowDebugInfo(const vec3_t& PlayerPosition, int PlayerWaypoint)
 {
@@ -3896,7 +3908,7 @@ void			NAV::ShowDebugInfo(const vec3_t& PlayerPosition, int PlayerWaypoint)
 			CWayNode& b		= mGraph.get_node(at.mNodeB);
 			CVec3	AvePos	= a.mPoint + b.mPoint;
 			AvePos *= 0.5f;
-            
+
 			if (AvePos.Dist2(PlayerPosition)<(500.0f*500.0f) && gi.inPVS(PlayerPosition, AvePos.v))
 			{
 				if (mUser.is_valid(at))
@@ -4022,8 +4034,8 @@ void			NAV::ShowStats()
 		sizeof(mSteerUserIndex)+
 		sizeof(mEntityAlertList));
 
-	mGraph.ProfilePrint("TOTAL :  (KiloBytes): (%5.3f)  MeggaBytes(%3.3f)", 
-			((float)(totalBytes)/1024.0f), 
+	mGraph.ProfilePrint("TOTAL :  (KiloBytes): (%5.3f)  MeggaBytes(%3.3f)",
+			((float)(totalBytes)/1024.0f),
 			((float)(totalBytes)/1048576.0f)
 			);
 	mGraph.ProfilePrint("");
@@ -4106,10 +4118,10 @@ void			STEER::Activate(gentity_t* actor)
 	suser.mRadius		= RadiusFromBounds(actor->mins, actor->maxs);
 	suser.mMaxForce		= 150.0f;		//STEER_TODO: Get From actor Somehow
 	suser.mMass			= 1.0f;			//STEER_TODO: Get From actor Somehow
-	if (!(actor->NPC->scriptFlags&SCF_RUNNING) && 
+	if (!(actor->NPC->scriptFlags&SCF_RUNNING) &&
 		((actor->NPC->scriptFlags&SCF_WALKING) ||
-		 (actor->NPC->aiFlags&NPCAI_WALKING) || 
-		 (ucmd.buttons&BUTTON_WALKING)		
+		 (actor->NPC->aiFlags&NPCAI_WALKING) ||
+		 (ucmd.buttons&BUTTON_WALKING)
 		))
 	{
 		suser.mMaxSpeed	= actor->NPC->stats.walkSpeed;
@@ -4135,7 +4147,7 @@ void			STEER::Activate(gentity_t* actor)
 	gentity_t*	neighbor = 0;
 
 	int	numFound = gi.EntitiesInBox(Mins.v, Maxs.v, EntityList, MAX_GENTITIES);
-	for (int i=0; i<numFound; i++) 
+	for (int i=0; i<numFound; i++)
 	{
 		neighbor = EntityList[i];
 		assert(neighbor!=0);
@@ -4154,7 +4166,7 @@ void			STEER::Activate(gentity_t* actor)
 	suser.mSteering.Clear();
 	suser.mNewtons		= 0.0f;
 
-	VectorClear(actor->client->ps.moveDir);	
+	VectorClear(actor->client->ps.moveDir);
 				actor->client->ps.speed = 0;
 
 
@@ -4255,11 +4267,11 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 //======================================================
 		actor->NPC->aiFlags |= NPCAI_NO_SLOWDOWN;
 
-		VectorCopy(MoveDir.v,	
+		VectorCopy(MoveDir.v,
 			actor->client->ps.moveDir);
 			actor->client->ps.speed		= suser.mSpeed;
 
-		VectorCopy(Angles.v,	
+		VectorCopy(Angles.v,
 			actor->NPC->lastPathAngles);
 			actor->NPC->desiredPitch	= 0.0f;
 			actor->NPC->desiredYaw		= AngleNormalize360(Angles[YAW]);
@@ -4323,7 +4335,7 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 
 // PHASE IV - UPDATE BLOCKING INFORMATION
 //========================================
-		if		(suser.mBlocked) 
+		if		(suser.mBlocked)
 		{
 			// If Not Previously Blocked, Record The Start Time And Any Entites Involved
 			//---------------------------------------------------------------------------
@@ -4342,7 +4354,7 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 			}
 			VectorCopy(suser.mBlockedTgtPosition.v, actor->NPC->blockedTargetPosition);
 		}
-		else 
+		else
 		{
 			// Nothing Blocking, So Turn Off The Blocked Stuff If It Is There
 			//----------------------------------------------------------------
@@ -4376,12 +4388,12 @@ void			STEER::DeActivate(gentity_t* actor, usercmd_t* ucmd)
 			{
 				// Ok, Well, How About Jumping To The Last Waypoint We Had That Was Valid
 				//------------------------------------------------------------------------
-				if ((STEER::HasBeenBlockedFor(actor, 8000)) && 
-					(!actor->waypoint || Distance(NAV::GetNodePosition(actor->waypoint), actor->currentOrigin)>150.0f) && 
+				if ((STEER::HasBeenBlockedFor(actor, 8000)) &&
+					(!actor->waypoint || Distance(NAV::GetNodePosition(actor->waypoint), actor->currentOrigin)>150.0f) &&
 					(actor->lastWaypoint))
 				{
 					if (player &&
-						(STEER::HasBeenBlockedFor(actor, 15000)) && 
+						(STEER::HasBeenBlockedFor(actor, 15000)) &&
 						!gi.inPVS(player->currentOrigin, NAV::GetNodePosition(actor->lastWaypoint)) &&
 						!gi.inPVS(player->currentOrigin, actor->currentOrigin) &&
 						!G_CheckInSolidTeleport(NAV::GetNodePosition(actor->lastWaypoint), actor)
@@ -4459,13 +4471,13 @@ bool			STEER::SafeToGoTo(gentity_t* actor, const vec3_t& targetPosition, int tar
 	{
 		// Are Both Actor And Target In Safe Radius?
 		//-------------------------------------------
-		if (NAV::OnNeighboringPoints(actorNode, targetNode) &&  
-			NAV::InSafeRadius(actor->currentOrigin, actorNode,  targetNode) && 
+		if (NAV::OnNeighboringPoints(actorNode, targetNode) &&
+			NAV::InSafeRadius(actor->currentOrigin, actorNode,  targetNode) &&
 			NAV::InSafeRadius(targetPosition,		targetNode, actorNode))
 		{
 			return true;
 		}
-		
+
 		// If Close Enough, We May Be Able To Go Anyway, So Try A Trace
 		//--------------------------------------------------------------
 		if (actorToTargetDistance<400.0f)//250.0f)
@@ -4516,7 +4528,7 @@ bool			STEER::GoTo(gentity_t* actor,  gentity_t* target, float reachedRadius, bo
 		return true;
 	}
 
-	// If Within Reached Radius, Just Stop Right Here 
+	// If Within Reached Radius, Just Stop Right Here
 	//------------------------------------------------
 	if (STEER::Reached(actor, target->currentOrigin, reachedRadius, (actor->client && actor->client->moveType==MT_FLYSWIM)))
 	{
@@ -4546,7 +4558,7 @@ bool			STEER::GoTo(gentity_t* actor,  gentity_t* target, float reachedRadius, bo
 			STEER::Blocked(actor, target);					// Collision Detected
 		}
 	}
-	
+
 	if (NAVDEBUG_showEnemyPath)
 	{
 		CG_DrawEdge(actor->currentOrigin, target->currentOrigin, EDGE_FOLLOWPOS);
@@ -4559,7 +4571,7 @@ bool			STEER::GoTo(gentity_t* actor,  gentity_t* target, float reachedRadius, bo
 ////////////////////////////////////////////////////////////////////////////////////
 bool			STEER::GoTo(gentity_t* actor, const vec3_t& position, float reachedRadius, bool avoidCollisions)
 {
-	// If Within Reached Radius, Just Stop Right Here 
+	// If Within Reached Radius, Just Stop Right Here
 	//------------------------------------------------
 	if (STEER::Reached(actor, position, reachedRadius, (actor->client && actor->client->moveType==MT_FLYSWIM)))
 	{
@@ -4586,7 +4598,7 @@ bool			STEER::GoTo(gentity_t* actor, const vec3_t& position, float reachedRadius
 			STEER::Blocked(actor, position);					// Collision Detected
 		}
 	}
-	
+
 	if (NAVDEBUG_showEnemyPath)
 	{
 		CVec3	Dumb(position);
@@ -4628,7 +4640,7 @@ void			STEER::Blocked(gentity_t* actor, const vec3_t& target)
 bool			STEER::HasBeenBlockedFor(gentity_t* actor, int duration)
 {
 	return (
-		(actor->NPC->aiFlags&NPCAI_BLOCKED) && 
+		(actor->NPC->aiFlags&NPCAI_BLOCKED) &&
 		(level.time - actor->NPC->blockedDebounceTime)>duration
 		);
 }
@@ -4739,7 +4751,7 @@ float			STEER::Seek(gentity_t* actor, const CVec3& pos, float slowingDistance, f
 ////////////////////////////////////////////////////////////////////////////////////
 // Flee
 //
-// Similar to seek, except there is no concept of a slowing distance.  Adds the 
+// Similar to seek, except there is no concept of a slowing distance.  Adds the
 // position vectors instead of subtracting them to obtain a desired velocity away
 // from the target.
 //
@@ -4945,7 +4957,7 @@ float			STEER::Cohesion(gentity_t* actor, float Scale)
 
 	if (!suser.mNeighbors.empty())
 	{
-		CVec3	AvePosition;
+		CVec3 AvePosition( 0.0f, 0.0f, 0.0f );
 		for (int i=0; i<suser.mNeighbors.size(); i++)
 		{
 			AvePosition += CVec3(suser.mNeighbors[i]->currentOrigin);
@@ -5107,7 +5119,7 @@ float			STEER::FollowLeader(gentity_t* actor, gentity_t* leader, float dist)
 		{
 			FollowPosition = mMoveTrace.endpos;
 			FollowPosition += (LeaderDirection * suser.mRadius);
-			
+
 			VectorCopy(FollowPosition.v, leader->followPos);
 			leader->followPosWaypoint = NAV::GetNearestNode(leader->followPos, leader->waypoint, 0, leader->s.number);
 		}
@@ -5119,9 +5131,9 @@ float			STEER::FollowLeader(gentity_t* actor, gentity_t* leader, float dist)
 		}
 		float	SpeedScale	= (1.0f - (LeaderSpeed / MaxSpeed));
 
-		leader->followPosRecalcTime = 
-			(level.time) + 
-			(Q_irand(50, 500)) + 
+		leader->followPosRecalcTime =
+			(level.time) +
+			(Q_irand(50, 500)) +
 			(SpeedScale * Q_irand(3000, 8000)) +
 			((!actor->enemy && !leader->enemy)?(Q_irand(8000, 15000)):(0));
 	}
@@ -5159,7 +5171,7 @@ bool		TestCollision(gentity_t* actor, SSteerUser& suser, const CVec3& ProjectVel
 
 		// Doors Are Always Safe
 		//-----------------------
-		if (g_entities[mMoveTrace.entityNum].classname && 
+		if (g_entities[mMoveTrace.entityNum].classname &&
 			Q_stricmp(g_entities[mMoveTrace.entityNum].classname, "func_door")==0)
 		{
 			Safe = true;
@@ -5225,7 +5237,7 @@ bool		TestCollision(gentity_t* actor, SSteerUser& suser, const CVec3& ProjectVel
 				}
 			}
 
-			// Ok, He's Just Standing There...  
+			// Ok, He's Just Standing There...
 			//---------------------------------
 			else
 			{
@@ -5324,7 +5336,7 @@ bool		TestCollision(gentity_t* actor, SSteerUser& suser, const CVec3& ProjectVel
 	if (NAVDEBUG_showCollision)
 	{
 		CVec3	Prj((Side==Side_None)?(suser.mProjectFwd):(suser.mProjectSide));
-	
+
 		if (Safe)
 		{
 			CG_DrawEdge(suser.mPosition.v,	Prj.v,				EDGE_IMPACT_SAFE);		// WHITE LINE

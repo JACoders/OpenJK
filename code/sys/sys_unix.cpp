@@ -419,12 +419,14 @@ qboolean Sys_Mkdir( const char *path )
 	return qtrue;
 }
 
-char *Sys_Cwd( void )
-{
+char *Sys_Cwd( void ) {
 	static char cwd[MAX_OSPATH];
 
-	getcwd( cwd, sizeof( cwd ) - 1 );
-	cwd[MAX_OSPATH-1] = 0;
+	if ( getcwd( cwd, (int)sizeof(cwd) - 1 ) == NULL ) {
+		cwd[0] = '\0';
+	}
+	//TODO: determine cause of failure via errno
+	cwd[MAX_OSPATH - 1] = '\0';
 
 	return cwd;
 }
@@ -513,7 +515,7 @@ Sys_DefaultHomePath
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
-    
+
 	if( !*homePath && com_homepath != NULL )
 	{
 		if( ( p = getenv( "HOME" ) ) != NULL )
@@ -521,21 +523,21 @@ char *Sys_DefaultHomePath(void)
 			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
 			Q_strcat(homePath, sizeof(homePath),
                      "Library/Application Support/");
-            
+
 			if(com_homepath->string[0])
 				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
 			else
 				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
 		}
 	}
-    
+
 	return homePath;
 }
 #else
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
-    
+
 	if( !*homePath && com_homepath != NULL )
 	{
 		if( ( p = getenv( "XDG_DATA_HOME" ) ) != NULL )
@@ -560,7 +562,7 @@ char *Sys_DefaultHomePath(void)
 			return homePath;
 		}
 	}
-    
+
 	return homePath;
 }
 #endif
@@ -573,7 +575,7 @@ char *Sys_ConsoleInput(void)
     struct timeval timeout;
 
     return NULL;
-    
+
 	if (!stdin_active)
 		return NULL;
 

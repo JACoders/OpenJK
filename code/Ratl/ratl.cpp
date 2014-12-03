@@ -81,7 +81,7 @@ void	ratl_base::load(hfile& file)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// A Profile Print Function 
+// A Profile Print Function
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(FINAL_BUILD)
 void	ratl_base::ProfilePrint(const char * format, ...)
@@ -124,14 +124,14 @@ namespace str
 {
 	void	to_upper(char *dest)
 	{
-		for (int i=0; i<len(dest);i++)
+		for (size_t i=0; i<len(dest);i++)
 		{
 			dest[i] = (char)(toupper(dest[i]));
 		}
 	}
 	void	to_lower(char *dest)
 	{
-		for (int i=0; i<len(dest);i++)
+		for (size_t i=0; i<len(dest);i++)
 		{
 			dest[i] = (char)(tolower(dest[i]));
 		}

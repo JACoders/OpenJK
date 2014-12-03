@@ -296,29 +296,29 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	/*	BEGIN	Here is where we move the vehicle (forward or back or whatever). BEGIN	*/
 	/************************************************************************************/
 	//Client sets ucmds and such for speed alterations
-	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
+	float speedInc, speedIdleDec, speedIdle, /*speedIdleAccel, */speedMin, speedMax;
 	playerState_t *parentPS;
-	playerState_t *pilotPS = NULL;
+	//playerState_t *pilotPS = NULL;
 	int	curTime;
 
 #ifdef _JK2MP
 	parentPS = pVeh->m_pParentEntity->playerState;
 	if (pVeh->m_pPilot)
 	{
-		pilotPS = pVeh->m_pPilot->playerState;
+		//pilotPS = pVeh->m_pPilot->playerState;
 	}
 #else
 	parentPS = &pVeh->m_pParentEntity->client->ps;
 	if (pVeh->m_pPilot)
 	{
-		pilotPS = &pVeh->m_pPilot->client->ps;
+		//pilotPS = &pVeh->m_pPilot->client->ps;
 	}
 #endif
 
 
 	// If we're flying, make us accelerate at 40% (about half) acceleration rate, and restore the pitch
-	// to origin (straight) position (at 5% increments). 
-	if ( pVeh->m_ulFlags & VEH_FLYING ) 
+	// to origin (straight) position (at 5% increments).
+	if ( pVeh->m_ulFlags & VEH_FLYING )
 	{
 		speedInc = pVeh->m_pVehicleInfo->acceleration * pVeh->m_fTimeModifier * 0.4f;
 	}
@@ -419,7 +419,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	// Slide Breaking
 	if (pVeh->m_ulFlags&VEH_SLIDEBREAKING)
 	{
-		if (pVeh->m_ucmd.forwardmove>=0 
+		if (pVeh->m_ucmd.forwardmove>=0
 #ifndef _JK2MP
 			|| ((level.time - pVeh->m_pParentEntity->lastMoveTime)>500)
 #endif
@@ -430,9 +430,9 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		parentPS->speed = 0;
 	}
 	else if (
-		(curTime > pVeh->m_iTurboTime) && 
-		!(pVeh->m_ulFlags&VEH_FLYING) && 
-		pVeh->m_ucmd.forwardmove<0 && 
+		(curTime > pVeh->m_iTurboTime) &&
+		!(pVeh->m_ulFlags&VEH_FLYING) &&
+		pVeh->m_ucmd.forwardmove<0 &&
 		fabs(pVeh->m_vOrientation[ROLL])>25.0f)
 	{
 		pVeh->m_ulFlags |= VEH_SLIDEBREAKING;
@@ -458,12 +458,12 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
-	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
+	//speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
 	if ( parentPS->speed || parentPS->groundEntityNum == ENTITYNUM_NONE  ||
 		 pVeh->m_ucmd.forwardmove || pVeh->m_ucmd.upmove > 0 )
-	{ 
+	{
 		if ( pVeh->m_ucmd.forwardmove > 0 && speedInc )
 		{
 			parentPS->speed += speedInc;
@@ -499,7 +499,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	}
 	else
 	{
-		if ( !pVeh->m_pVehicleInfo->strafePerc 
+		if ( !pVeh->m_pVehicleInfo->strafePerc
 #ifdef _JK2MP
 			|| (0 && pVeh->m_pParentEntity->s.number < MAX_CLIENTS) )
 #else
@@ -554,9 +554,9 @@ void ProcessOrientCommands( Vehicle_t *pVeh )
 	/*	BEGIN	Here is where make sure the vehicle is properly oriented.	BEGIN	*/
 	/********************************************************************************/
 	playerState_t *riderPS;
-	playerState_t *parentPS;
 
 #ifdef _JK2MP
+	playerState_t *parentPS;
 	float angDif;
 
 	if (pVeh->m_pPilot)
@@ -567,7 +567,7 @@ void ProcessOrientCommands( Vehicle_t *pVeh )
 	{
 		riderPS = pVeh->m_pParentEntity->playerState;
 	}
-	parentPS = pVeh->m_pParentEntity->playerState;
+	//parentPS = pVeh->m_pParentEntity->playerState;
 
 	//pVeh->m_vOrientation[YAW] = 0.0f;//riderPS->viewangles[YAW];
 	angDif = AngleSubtract(pVeh->m_vOrientation[YAW], riderPS->viewangles[YAW]);
@@ -606,15 +606,15 @@ void ProcessOrientCommands( Vehicle_t *pVeh )
 	{
 		riderPS = &rider->client->ps;
 	}
-	parentPS = &pVeh->m_pParentEntity->client->ps;
+	//parentPS = &pVeh->m_pParentEntity->client->ps;
 
 	if (pVeh->m_ulFlags & VEH_FLYING)
 	{
 		pVeh->m_vOrientation[YAW] += pVeh->m_vAngularVelocity;
 	}
 	else if (
-		(pVeh->m_ulFlags & VEH_SLIDEBREAKING) ||	// No Angles Control While Out Of Control 
-		(pVeh->m_ulFlags & VEH_OUTOFCONTROL) 		// No Angles Control While Out Of Control 
+		(pVeh->m_ulFlags & VEH_SLIDEBREAKING) ||	// No Angles Control While Out Of Control
+		(pVeh->m_ulFlags & VEH_OUTOFCONTROL) 		// No Angles Control While Out Of Control
 		)
 	{
 		// Any ability to change orientation?
@@ -676,10 +676,10 @@ extern void G_StartMatrixEffect( gentity_t *ent, int meFlags = 0, int length = 1
 void AnimateRiders( Vehicle_t *pVeh )
 {
 	animNumber_t Anim = BOTH_VS_IDLE;
-	float fSpeedPercToMax;
+	//float fSpeedPercToMax;
 	int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 	playerState_t *pilotPS;
-	playerState_t *parentPS;
+	//playerState_t *parentPS;
 	int curTime;
 
 
@@ -734,7 +734,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 			// Set the animation, which won't be interrupted until it's completed.
 			// TODO: But what if he's killed? Should the animation remain persistant???
 			iFlags = SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD;
-			
+
 #ifdef _JK2MP
 			BG_SetAnim(pVeh->m_pPilot->playerState, bgAllAnims[pVeh->m_pPilot->localAnimIndex].anims,
 				SETANIM_BOTH, Anim, iFlags, iBlend);
@@ -789,10 +789,10 @@ void AnimateRiders( Vehicle_t *pVeh )
 
 #ifdef _JK2MP
 	pilotPS = pVeh->m_pPilot->playerState;
-	parentPS = pVeh->m_pPilot->playerState;
+	//parentPS = pVeh->m_pPilot->playerState;
 #else
 	pilotPS = &pVeh->m_pPilot->client->ps;
-	parentPS = &pVeh->m_pParentEntity->client->ps;
+	//parentPS = &pVeh->m_pParentEntity->client->ps;
 #endif
 
 #ifndef _JK2MP//SP
@@ -805,7 +805,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 #endif
 
 	// Percentage of maximum speed relative to current speed.
-	fSpeedPercToMax = parentPS->speed / pVeh->m_pVehicleInfo->speedMax;
+	//fSpeedPercToMax = parentPS->speed / pVeh->m_pVehicleInfo->speedMax;
 
 /*	// Going in reverse...
 #ifdef _JK2MP
@@ -828,7 +828,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 			G_RemoveWeaponModels(pVeh->m_pPilot);
 		}
 	}
-	else 
+	else
 */
 	{
 		bool		HasWeapon	= ((pilotPS->weapon != WP_NONE) && (pilotPS->weapon != WP_MELEE));
@@ -854,7 +854,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 		// Put Away Saber When It Is Not Active
 		//--------------------------------------
 #ifndef _JK2MP
-		if (HasWeapon && 
+		if (HasWeapon &&
 			(pVeh->m_pPilot->s.number>=MAX_CLIENTS || (cg.weaponSelectTime+500)<cg.time) &&
 			(Turbo || (pilotPS->weapon==WP_SABER && !pilotPS->SaberActive())))
 		{
@@ -876,7 +876,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 		{
 			return;
 		}
-#else		
+#else
 		if (pilotPS->torsoAnim>=BOTH_VS_ATL_S && pilotPS->torsoAnim<=BOTH_VS_ATF_G)
 		{
 			float		bodyCurrent	  = 0.0f;
@@ -909,13 +909,13 @@ void AnimateRiders( Vehicle_t *pVeh )
 			}
 			WeaponPose = (pVeh->m_ulFlags&VEH_SABERINLEFTHAND)?(WPOSE_SABERLEFT):(WPOSE_SABERRIGHT);
 		}
-		
+
 
  		if (Attacking && WeaponPose)
 		{// Attack!
 			iBlend	= 100;
  			iFlags	= SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART;
-	
+
 			// Auto Aiming
 			//===============================================
 			if (!Left && !Right)		// Allow player strafe keys to override
@@ -924,12 +924,12 @@ void AnimateRiders( Vehicle_t *pVeh )
 				if (pVeh->m_pPilot->enemy)
 				{
 					vec3_t	toEnemy;
-					float	toEnemyDistance;
+					//float	toEnemyDistance;
 					vec3_t	actorRight;
 					float	actorRightDot;
 
 					VectorSubtract(pVeh->m_pPilot->currentOrigin, pVeh->m_pPilot->enemy->currentOrigin, toEnemy);
-					toEnemyDistance = VectorNormalize(toEnemy);
+					/*toEnemyDistance = */VectorNormalize(toEnemy);
 
 					AngleVectors(pVeh->m_pParentEntity->currentAngles, 0, actorRight, 0);
 					actorRightDot = DotProduct(toEnemy, actorRight);
@@ -944,7 +944,7 @@ void AnimateRiders( Vehicle_t *pVeh )
 						Right = Left = false;
 					}
 				}
-				else 
+				else
 #endif
 				if (pilotPS->weapon==WP_SABER && !Left && !Right)
 				{
