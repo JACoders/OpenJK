@@ -1113,7 +1113,7 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 	for ( i = 0, other = g_entities; i < MAX_CLIENTS; i++, other++ ) {
 		qboolean send = qfalse;
 		float dist;
-		vector3 angles;
+		vec3_t angles;
 
 		if ( !other->inuse || other->client->pers.connected != CON_CONNECTED ) {
 			// no need to compute visibility for non-connected clients
@@ -1125,14 +1125,14 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 			continue;
 		}
 
-		VectorSubtract( &self->client->ps.origin, &other->client->ps.origin, &angles );
-		dist = VectorLengthSquared( &angles );
-		vectoangles( &angles, &angles );
+		VectorSubtract( self->client->ps.origin, other->client->ps.origin, angles );
+		dist = VectorLengthSquared( angles );
+		vectoangles( angles, angles );
 
 		// broadcast jedi master to everyone if we are in distance/field of view
 		if ( level.gametype == GT_JEDIMASTER && self->client->ps.isJediMaster ) {
 			if ( dist < maxJediMasterDistance
-				&& InFieldOfVision( &other->client->ps.viewangles, maxJediMasterFOV, &angles ) )
+				&& InFieldOfVision( other->client->ps.viewangles, maxJediMasterFOV, angles ) )
 			{
 				send = qtrue;
 			}
@@ -1141,7 +1141,7 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 		// broadcast this client to everyone using force sight if we are in distance/field of view
 		if ( (other->client->ps.fd.forcePowersActive & (1 << FP_SEE)) ) {
 			if ( dist < maxForceSightDistance
-				&& InFieldOfVision( &other->client->ps.viewangles, maxForceSightFOV, &angles ) )
+				&& InFieldOfVision( other->client->ps.viewangles, maxForceSightFOV, angles ) )
 			{
 				send = qtrue;
 			}
