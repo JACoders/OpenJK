@@ -2817,14 +2817,19 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	char			arg2[MAX_CVAR_VALUE_STRING] = {0};
 	voteString_t	*vote = NULL;
 
+	// not allowed to vote at all
+	if ( !g_allowVote.integer ) {
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
+		return;
+	}
+
 	if (g_fixVote.integer && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a vote be called within 10 mins of map load
 		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote at this time.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
 
-	// not allowed to vote at all
-	if ( !g_allowVote.integer ) {
-		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
+	if (g_fixVote.integer && level.lastVoteTime && (level.lastVoteTime > (level.time - 1000*60*5))) {
+		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote at this time.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
 
@@ -2969,6 +2974,8 @@ validVote:
 	level.voteTime = level.time;
 	level.voteYes = 1;
 	level.voteNo = 0;
+
+	level.lastVoteTime = level.time;
 
 	for ( i=0; i<level.maxclients; i++ ) {
 		level.clients[i].mGameFlags &= ~PSG_VOTED;

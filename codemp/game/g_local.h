@@ -1272,6 +1272,7 @@ typedef struct level_locals_s {
 	char		courseName[24][32];//japro defrag	
 	int			numCourses;
 	int			numRealVotingClients; //fixed vote checking
+	int			lastVoteTime;
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;
