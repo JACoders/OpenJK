@@ -137,7 +137,7 @@ void NAVNEW_PushBlocker( gentity_t *self, gentity_t *blocker, vec3_t right, qboo
 	{
 		leftSucc = 0.0f;
 	}
-	
+
 	if ( leftSucc >= 1.0f )
 	{//it's clear, shove him that way
 		VectorScale( right, -moveamt, blocker->client->pushVec );
@@ -155,7 +155,7 @@ void NAVNEW_PushBlocker( gentity_t *self, gentity_t *blocker, vec3_t right, qboo
 		{
 			rightSucc = 0.0f;
 		}
-		
+
 		if ( leftSucc == 0.0f && rightSucc == 0.0f )
 		{//both sides failed
 			if ( d_patched->integer )
@@ -252,7 +252,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 	float yaw = vectoyaw( blocked_dir );
 
 	//Get the avoid radius
-	float avoidRadius = sqrt( ( blocker->maxs[0] * blocker->maxs[0] ) + ( blocker->maxs[1] * blocker->maxs[1] ) ) + 
+	float avoidRadius = sqrt( ( blocker->maxs[0] * blocker->maxs[0] ) + ( blocker->maxs[1] * blocker->maxs[1] ) ) +
 						sqrt( ( self->maxs[0] * self->maxs[0] ) + ( self->maxs[1] * self->maxs[1] ) );
 
 	//See if we're inside our avoidance radius
@@ -287,7 +287,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 	AngleVectors( avoidAngles, avoidRight_dir, NULL, NULL );
 
 	VectorMA( self->currentOrigin, blocked_dist, avoidRight_dir, block_pos );
-		
+
 	gi.trace( &tr, self->currentOrigin, mins, self->maxs, block_pos, self->s.number, self->clipmask|CONTENTS_BOTCLIP, G2_NOCOLLIDE, 0 );
 
 	if ( !tr.allsolid && !tr.startsolid )
@@ -313,7 +313,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 	AngleVectors( avoidAngles, avoidLeft_dir, NULL, NULL );
 
 	VectorMA( self->currentOrigin, blocked_dist, avoidLeft_dir, block_pos );
-		
+
 	gi.trace( &tr, self->currentOrigin, mins, self->maxs, block_pos, self->s.number, self->clipmask|CONTENTS_BOTCLIP, G2_NOCOLLIDE, 0 );
 
 	if ( !tr.allsolid && !tr.startsolid )
@@ -337,7 +337,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 		return qfalse;
 	}
 
-	if ( rightSucc*blocked_dist >= avoidRadius || leftSucc*blocked_dist >= avoidRadius ) 
+	if ( rightSucc*blocked_dist >= avoidRadius || leftSucc*blocked_dist >= avoidRadius )
 	{//the traces hit something, but got a relatively good distance
 		if ( rightSucc >= leftSucc )
 		{//favor the right, all things being equal
@@ -363,7 +363,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 NAVNEW_Bypass
 -------------------------
 */
-qboolean NAVNEW_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, float blocked_dist, vec3_t movedir, qboolean setBlockedInfo ) 
+qboolean NAVNEW_Bypass( gentity_t *self, gentity_t *blocker, vec3_t blocked_dir, float blocked_dist, vec3_t movedir, qboolean setBlockedInfo )
 {
 	//Draw debug info if requested
 	if ( NAVDEBUG_showCollision )
@@ -434,7 +434,7 @@ qboolean NAVNEW_ResolveEntityCollision( gentity_t *self, gentity_t *blocker, vec
 	//Make sure an actual collision is going to happen
 //	if ( NAVNEW_PredictCollision( self, blocker, movedir, blocked_dir ) == qfalse )
 //		return qtrue;
-	
+
 	//First, attempt to walk around the blocker or shove him out of the way
 	if ( NAVNEW_Bypass( self, blocker, blocked_dir, blocked_dist, movedir, setBlockedInfo ) )
 		return qtrue;
@@ -515,7 +515,7 @@ qboolean NAVNEW_AvoidCollision( gentity_t *self, gentity_t *goal, navInfo_t &inf
 			return qfalse;
 
 		VectorCopy( movedir, info.direction );
-		
+
 		return qtrue;
 	}
 	else
@@ -572,7 +572,7 @@ qboolean NAVNEW_TestNodeConnectionBlocked( int wp1, int wp2, gentity_t *ignoreEn
 	mins[2] += STEPSIZE;
 	//don't let box get inverted
 	if ( mins[2] > maxs[2] )
-	{	
+	{
 		mins[2] = maxs[2];
 	}
 
@@ -596,7 +596,7 @@ int	NAVNEW_MoveToGoal( gentity_t *self, navInfo_t &info )
 	vec3_t		origin;
 	navInfo_t	tempInfo;
 	qboolean	setBlockedInfo = qtrue;
-	qboolean	inBestWP, inGoalWP, goalWPFailed = qfalse;
+	qboolean	inGoalWP;
 	int			numTries = 0;
 
 	memcpy( &tempInfo, &info, sizeof( tempInfo ) );
@@ -641,7 +641,7 @@ int	NAVNEW_MoveToGoal( gentity_t *self, navInfo_t &info )
 
 	while( !foundClearPath )
 	{
-		inBestWP = inGoalWP = qfalse;
+		/*inBestWP = */inGoalWP = qfalse;
 		/*
 		bestNode = navigator.GetBestNodeAltRoute( self->waypoint, self->NPC->goalEntity->waypoint, bestNode );
 		*/
@@ -655,7 +655,7 @@ int	NAVNEW_MoveToGoal( gentity_t *self, navInfo_t &info )
 		//NOTE: shouldn't be necc. now
 		/*
 		int oldBestNode = bestNode;
-		bestNode = NAV_TestBestNode( self, self->waypoint, bestNode, qtrue );//, self->NPC->goalEntity->waypoint );// 
+		bestNode = NAV_TestBestNode( self, self->waypoint, bestNode, qtrue );//, self->NPC->goalEntity->waypoint );//
 		//NOTE: Guaranteed to return something
 		if ( bestNode != oldBestNode )
 		{//we were blocked somehow
@@ -765,7 +765,7 @@ int	NAVNEW_MoveToGoal( gentity_t *self, navInfo_t &info )
 				}
 				else
 				{//try going for our waypoint this time
-					goalWPFailed = qtrue;
+					//goalWPFailed = qtrue;
 					inGoalWP = qfalse;
 				}
 			}
@@ -790,7 +790,7 @@ int	NAVNEW_MoveToGoal( gentity_t *self, navInfo_t &info )
 					goto failed;
 				}
 			}
-			else 
+			else
 			{//we headed for *our* waypoint and couldn't get to it
 				if ( d_altRoutes->integer )
 				{
@@ -873,7 +873,7 @@ failed:
 		VectorSubtract( origin, self->currentOrigin, info.direction );
 		VectorNormalize( info.direction );
 	}
-	
+
 	goto finish;
 	*/
 }

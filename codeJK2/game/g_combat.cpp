@@ -110,7 +110,7 @@ Toss the weapon and powerups for the killed player
 */
 extern gentity_t *WP_DropThermal( gentity_t *ent );
 extern qboolean WP_SaberLose( gentity_t *self, vec3_t throwDir );
-gentity_t *TossClientItems( gentity_t *self ) 
+gentity_t *TossClientItems( gentity_t *self )
 {
 	gentity_t	*dropped = NULL;
 	gitem_t		*item = NULL;
@@ -139,7 +139,7 @@ gentity_t *TossClientItems( gentity_t *self )
 		self->s.weapon = WP_NONE;
 
 		if ( weapon == WP_THERMAL && self->client->ps.torsoAnim == BOTH_ATTACK10 )
-		{//we were getting ready to throw the thermal, drop it! 
+		{//we were getting ready to throw the thermal, drop it!
 			self->client->ps.weaponChargeTime = level.time - FRAMETIME;//so it just kind of drops it
 			dropped = WP_DropThermal( self );
 		}
@@ -162,7 +162,7 @@ gentity_t *TossClientItems( gentity_t *self )
 				dropped->count = 0;//no ammo
 			}
 			else
-			{//FIXME: base this on the NPC's actual amount of ammo he's used up... 
+			{//FIXME: base this on the NPC's actual amount of ammo he's used up...
 				switch ( weapon )
 				{
 				case WP_BRYAR_PISTOL:
@@ -211,17 +211,17 @@ gentity_t *TossClientItems( gentity_t *self )
 				&& weapon != WP_TRIP_MINE
 				&& weapon != WP_DET_PACK )
 			{
-				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL, NULL, 0, 0);
+				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 				dropped->s.radius = 10;
 			}
 		}
 	}
 //	else if (( self->client->NPC_class == CLASS_SENTRY ) || ( self->client->NPC_class == CLASS_PROBE )) // Looks dumb, Steve told us to take it out.
 //	{
-//		item = FindItemForAmmo( AMMO_BLASTER ); 
+//		item = FindItemForAmmo( AMMO_BLASTER );
 //		Drop_Item( self, item, 0, qtrue );
 //	}
-	else if ( self->client->NPC_class == CLASS_MARK1 ) 
+	else if ( self->client->NPC_class == CLASS_MARK1 )
 	{
 
 		if (Q_irand( 1, 2 )>1)
@@ -234,7 +234,7 @@ gentity_t *TossClientItems( gentity_t *self )
 		}
 		Drop_Item( self, item, 0, qtrue );
 	}
-	else if ( self->client->NPC_class == CLASS_MARK2 ) 
+	else if ( self->client->NPC_class == CLASS_MARK2 )
 	{
 
 		if (Q_irand( 1, 2 )>1)
@@ -286,7 +286,7 @@ ExplodeDeath
 //FIXME: all hacked up...
 
 //void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );
-void ExplodeDeath( gentity_t *self ) 
+void ExplodeDeath( gentity_t *self )
 {
 //	gentity_t	*tent;
 	vec3_t		forward;
@@ -309,7 +309,7 @@ void ExplodeDeath( gentity_t *self )
 //		CG_SurfaceExplosion( self->currentOrigin, forward, 20.0f, 12.0f, ((self->spawnflags&4)==qfalse) );	//FIXME: This needs to be consistent to all exploders!
 //		G_Sound(self, self->sounds );
 //	}
-	
+
 	if(self->splashDamage > 0 && self->splashRadius > 0)
 	{
 		gentity_t *attacker = self;
@@ -317,27 +317,27 @@ void ExplodeDeath( gentity_t *self )
 		{
 			attacker = self->owner;
 		}
-		G_RadiusDamage( self->currentOrigin, attacker, self->splashDamage, self->splashRadius, 
+		G_RadiusDamage( self->currentOrigin, attacker, self->splashDamage, self->splashRadius,
 				attacker, MOD_UNKNOWN );
 	}
 
 	ObjectDie( self, self, self, 20, 0 );
 }
 
-void ExplodeDeath_Wait( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc ) 
+void ExplodeDeath_Wait( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc )
 {
 	self->e_DieFunc = dieF_NULL;
 	self->nextthink = level.time + Q_irand(100, 500);
 	self->e_ThinkFunc = thinkF_ExplodeDeath;
 }
 
-void ExplodeDeath( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc ) 
+void ExplodeDeath( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc )
 {
 	self->currentOrigin[2] += 16; // me bad for hacking this.  should either do it in the effect file or make a custom explode death??
 	ExplodeDeath( self );
 }
 
-void GoExplodeDeath( gentity_t *self, gentity_t *other, gentity_t *activator) 
+void GoExplodeDeath( gentity_t *self, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(self,BSET_USE);
 
@@ -493,7 +493,7 @@ void G_AlertTeam( gentity_t *victim, gentity_t *attacker, float radius, float so
 			//NOTE: this allows sound alerts to still go through doors/PVS if the teammate is within 128 of the victim...
 			if ( soundDist <= 0 || distSq > sndDistSq )
 			{//out of sound range
-				if ( !InFOV( victim, radiusEnts[i], radiusEnts[i]->NPC->stats.hfov, radiusEnts[i]->NPC->stats.vfov ) 
+				if ( !InFOV( victim, radiusEnts[i], radiusEnts[i]->NPC->stats.hfov, radiusEnts[i]->NPC->stats.vfov )
 					||  !NPC_ClearLOS( radiusEnts[i], victim->currentOrigin ) )
 				{//out of FOV or no LOS
 					continue;
@@ -587,8 +587,8 @@ void DeathFX( gentity_t *ent )
 		effectPos[2] += 50;
 		G_PlayEffect( "probeexplosion1", effectPos );
 		break;
-		
-	case CLASS_ATST: 
+
+	case CLASS_ATST:
 		AngleVectors( ent->currentAngles, NULL, right, NULL );
 		VectorMA( ent->currentOrigin, 20, right, effectPos );
 		effectPos[2] += 180;
@@ -749,8 +749,8 @@ void G_MakeTeamVulnerable( void )
 		return;
 	}
 
-//	for ( i = 0; i < globals.num_entities ; i++, ent++) 
-	for ( i = 0; i < globals.num_entities ; i++) 
+//	for ( i = 0; i < globals.num_entities ; i++, ent++)
+	for ( i = 0; i < globals.num_entities ; i++)
 	{
 		if(!PInUse(i))
 			continue;
@@ -827,7 +827,7 @@ qboolean G_JediInRoom( vec3_t from )
 //		if ( !ent )
 //		{
 //			continue;
-//		}		
+//		}
 		ent = &g_entities[i];
 		if ( !ent->NPC )
 		{
@@ -870,16 +870,16 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 		return qfalse;
 	}
 
-	if ( ent->client 
-		&& ( ent->client->NPC_class == CLASS_R2D2 
-			|| ent->client->NPC_class == CLASS_R5D2 
+	if ( ent->client
+		&& ( ent->client->NPC_class == CLASS_R2D2
+			|| ent->client->NPC_class == CLASS_R5D2
 			|| ent->client->NPC_class == CLASS_GONK
 			|| ent->client->NPC_class == CLASS_MOUSE
 			|| ent->client->NPC_class == CLASS_SEEKER
 			|| ent->client->NPC_class == CLASS_INTERROGATOR
 			|| ent->client->NPC_class == CLASS_SENTRY
 			|| ent->client->NPC_class == CLASS_PROBE ) )
-	{//we don't care about per-surface hit-locations or dismemberment for these guys 
+	{//we don't care about per-surface hit-locations or dismemberment for these guys
 		return qfalse;
 	}
 
@@ -971,8 +971,8 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 		return(qfalse);
 	}
 
-	//FIXME: check the hitLoc and hitDir against the cap tag for the place 
-	//where the split will be- if the hit dir is roughly perpendicular to 
+	//FIXME: check the hitLoc and hitDir against the cap tag for the place
+	//where the split will be- if the hit dir is roughly perpendicular to
 	//the direction of the cap, then the split is allowed, otherwise we
 	//hit it at the wrong angle and should not dismember...
 	int	actualTime = (cg.time?cg.time:level.time);
@@ -987,7 +987,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
 			if (ent->kneeLBolt>=0)
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->kneeLBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->kneeLBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1000,7 +1000,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			{
 				if (ent->kneeRBolt>=0)
 				{
-					gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->kneeRBolt, 
+					gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->kneeRBolt,
 									&boltMatrix, angles, ent->currentOrigin,
 									actualTime, NULL, ent->s.modelScale );
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1093,7 +1093,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
 			if (ent->handRBolt>=0)
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->handRBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->handRBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1115,7 +1115,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
 			if (ent->handLBolt>=0)
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->handLBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->handLBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1137,7 +1137,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
 			if (ent->footRBolt>=0)
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->footRBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->footRBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1159,7 +1159,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
 			if (ent->footLBolt>=0)
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->footLBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, ent->footLBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1251,7 +1251,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 						mdxaBone_t	boltMatrix;
 						vec3_t	tagOrg, tagDir, angles;
 						VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
-						gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, tagBolt, 
+						gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, tagBolt,
 										&boltMatrix, angles, ent->currentOrigin,
 										actualTime, NULL, ent->s.modelScale );
 						gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, tagOrg );
@@ -1325,7 +1325,7 @@ int G_GetHitLocation ( gentity_t *target, vec3_t ppoint )
 
 	VectorMA(point, hdist - tradius, dir, point);
 	//now a point on the surface of a cylinder with a radius of tradius
-*/	
+*/
 	VectorSubtract(point, tcenter, point_dir);
 	VectorNormalize(point_dir);
 
@@ -1598,11 +1598,11 @@ void LimbThink( gentity_t *ent )
 
 	// trace a line from the previous position to the current position,
 	// ignoring interactions with the missile owner
-	gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, 
+	gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin,
 		ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask, G2_NOCOLLIDE, 0 );
 
 	VectorCopy( tr.endpos, ent->currentOrigin );
-	if ( tr.startsolid ) 
+	if ( tr.startsolid )
 	{
 		tr.fraction = 0;
 	}
@@ -1610,7 +1610,7 @@ void LimbThink( gentity_t *ent )
 
 	gi.linkentity( ent );
 
-	if ( tr.fraction != 1 ) 
+	if ( tr.fraction != 1 )
 	{
 		G_BounceMissile( ent, &tr );
 		if ( ent->s.pos.trType == TR_STATIONARY )
@@ -1625,9 +1625,9 @@ void LimbThink( gentity_t *ent )
 			}
 			else
 			{//lay flat
-				if ( ent->owner 
-					&& ent->owner->client 
-					&& ent->owner->client->NPC_class == CLASS_PROTOCOL 
+				if ( ent->owner
+					&& ent->owner->client
+					&& ent->owner->client->NPC_class == CLASS_PROTOCOL
 					&& ent->count == BOTH_DISMEMBER_TORSO1 )
 				{
 					if ( ent->currentAngles[0] > 0 || ent->currentAngles[0] < -180 )
@@ -1682,7 +1682,7 @@ void LimbThink( gentity_t *ent )
 	}
 }
 
-float hitLocHealthPercentage[HL_MAX] = 
+float hitLocHealthPercentage[HL_MAX] =
 {
 	0.0f,	//HL_NONE = 0,
 	0.05f,	//HL_FOOT_RT,
@@ -1709,7 +1709,7 @@ float hitLocHealthPercentage[HL_MAX] =
 	0.0f	//HL_GENERIC6
 };
 
-char *hitLocName[HL_MAX] = 
+char *hitLocName[HL_MAX] =
 {
 	"none",	//HL_NONE = 0,
 	"right foot",	//HL_FOOT_RT,
@@ -1780,9 +1780,9 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 	case HL_CHEST_LT:
 	case HL_BACK_RT:
 		//NOTE: hand falls through
-		if ( ent->locationDamage[HL_ARM_LT] >= Q3_INFINITE 
-			|| ent->locationDamage[HL_CHEST_LT] >= Q3_INFINITE 
-			|| ent->locationDamage[HL_BACK_RT] >= Q3_INFINITE 
+		if ( ent->locationDamage[HL_ARM_LT] >= Q3_INFINITE
+			|| ent->locationDamage[HL_CHEST_LT] >= Q3_INFINITE
+			|| ent->locationDamage[HL_BACK_RT] >= Q3_INFINITE
 			|| ent->locationDamage[HL_WAIST] >= Q3_INFINITE )
 		{
 			return qtrue;
@@ -1800,9 +1800,9 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 	case HL_CHEST_RT:
 	case HL_BACK_LT:
 		//NOTE: hand falls through
-		if ( ent->locationDamage[HL_ARM_RT] >= Q3_INFINITE 
-			|| ent->locationDamage[HL_CHEST_RT] >= Q3_INFINITE 
-			|| ent->locationDamage[HL_BACK_LT] >= Q3_INFINITE 
+		if ( ent->locationDamage[HL_ARM_RT] >= Q3_INFINITE
+			|| ent->locationDamage[HL_CHEST_RT] >= Q3_INFINITE
+			|| ent->locationDamage[HL_BACK_LT] >= Q3_INFINITE
 			|| ent->locationDamage[HL_WAIST] >= Q3_INFINITE )
 		{
 			return qtrue;
@@ -1830,9 +1830,9 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 	}
 }
 
-static qboolean G_Dismember( gentity_t *ent, vec3_t point, 
-				 const char *limbBone, const char *rotateBone, char *limbName, 
-				 char *limbCapName, char *stubCapName, char *limbTagName, char *stubTagName, 
+static qboolean G_Dismember( gentity_t *ent, vec3_t point,
+				 const char *limbBone, const char *rotateBone, char *limbName,
+				 char *limbCapName, char *stubCapName, char *limbTagName, char *stubTagName,
 				 int limbAnim, float limbRollBase, float limbPitchBase,
 				 int damage, int hitLoc )
 {
@@ -1898,7 +1898,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		//FIXME: screws up origin
 		animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 		//play the proper dismember anim on the limb
-		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame - 1, 
+		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame - 1,
 							animations[limbAnim].numFrames + animations[limbAnim].firstFrame - 1,
 							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time);
 	}
@@ -1912,7 +1912,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		//FIXME: screws up origin
 		animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 		//play the proper dismember anim on the limb
-		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame, 
+		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame,
 							animations[limbAnim].numFrames + animations[limbAnim].firstFrame,
 							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time, -1, -1 );
 	}
@@ -1929,7 +1929,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 			vec3_t	angles;
 
 			VectorSet( angles, 0, ent->currentAngles[YAW], 0 );
-			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, newBolt, 
+			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, newBolt,
 							&boltMatrix, angles, ent->currentOrigin,
 							actualTime, NULL, ent->s.modelScale );
 			gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, limb->s.origin );
@@ -1941,7 +1941,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 			newBolt = gi.G2API_AddBolt( &ent->ghoul2[0], limbBone );
 			if ( newBolt != -1 )
 			{
-				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, newBolt, 
+				gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, newBolt,
 								&boltMatrix, angles, ent->currentOrigin,
 								actualTime, NULL, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, POSITIVE_X, limbF );
@@ -2080,7 +2080,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	VectorSet( limb->s.angles2, limbPitchBase, 0, limbRollBase );
 	VectorCopy( limbAngles, limb->s.apos.trBase );
 	/*
-	//old way- just set an angle... 
+	//old way- just set an angle...
 	limb->s.apos.trBase[0] += limbPitchBase;
 	limb->s.apos.trBase[1] = ent->client->ps.viewangles[1];
 	limb->s.apos.trBase[2] += limbRollBase;
@@ -2120,7 +2120,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	//preserve scale so giants don't have tiny limbs
 	VectorCopy( ent->s.modelScale, limb->s.modelScale );
 
-	//mark ent as dismembered	
+	//mark ent as dismembered
 	ent->locationDamage[hitLoc] = Q3_INFINITE;//mark this limb as gone
 	ent->client->dismembered = qtrue;
 
@@ -2171,7 +2171,7 @@ static qboolean G_Dismemberable( gentity_t *self, int hitLoc )
 
 			//check probability of this happening on this npc
 			if ( floor((Q_flrand( 1, 100 )*g_dismemberProbabilities->value)) > dismemberProb*2.0f )//probabilities seemed really really low, had to crank them up
-			{	
+			{
 				return qfalse;
 			}
 		}
@@ -2211,11 +2211,11 @@ extern cvar_t	*g_iscensored;
 	if ( !g_iscensored->integer && ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
 #endif
 	{//FIXME: don't do strcmps here
-		if ( G_StandardHumanoid( self->NPC_type ) 
+		if ( G_StandardHumanoid( self->NPC_type )
 			&& (force||g_dismemberProbabilities->value>0.0f||G_Dismemberable2( self, hitLoc )) )
 		{//either it's a forced dismemberment or we're using probabilities (which are checked before this) or we've done enough damage to this location
-			//FIXME: check the hitLoc and hitDir against the cap tag for the place 
-			//where the split will be- if the hit dir is roughly perpendicular to 
+			//FIXME: check the hitLoc and hitDir against the cap tag for the place
+			//where the split will be- if the hit dir is roughly perpendicular to
 			//the direction of the cap, then the split is allowed, otherwise we
 			//hit it at the wrong angle and should not dismember...
 			char	*limbBone = NULL, *rotateBone = NULL, *limbName = NULL, *limbCapName = NULL, *stubCapName = NULL, *limbTagName = NULL, *stubTagName = NULL;
@@ -2368,7 +2368,7 @@ extern cvar_t	*g_iscensored;
 			}
 			if ( doDismemberment )
 			{
-				return G_Dismember( self, point, limbBone, rotateBone, limbName, 
+				return G_Dismember( self, point, limbBone, rotateBone, limbName,
 					limbCapName, stubCapName, limbTagName, stubTagName,
 					anim, limbRollBase, limbPitchBase, damage, hitLoc );
 			}
@@ -2900,13 +2900,13 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 	case BOTH_DEAD1:
 	case BOTH_DEATH2:			//# Second Death anim
 	case BOTH_DEAD2:
-	case BOTH_DEATH8:			//# 
+	case BOTH_DEATH8:			//#
 	case BOTH_DEAD8:
-	case BOTH_DEATH13:			//# 
+	case BOTH_DEATH13:			//#
 	case BOTH_DEAD13:
-	case BOTH_DEATH14:			//# 
+	case BOTH_DEATH14:			//#
 	case BOTH_DEAD14:
-	case BOTH_DEATH16:			//# 
+	case BOTH_DEATH16:			//#
 	case BOTH_DEAD16:
 	case BOTH_DEADBACKWARD1:		//# First thrown backward death finished pose
 	case BOTH_DEADBACKWARD2:		//# Second thrown backward death finished pose
@@ -2926,9 +2926,9 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 		deathAnim = BOTH_DEADFLOP2;
 		break;
 		*/
-	case BOTH_DEATH10:			//# 
+	case BOTH_DEATH10:			//#
 	case BOTH_DEAD10:
-	case BOTH_DEATH15:			//# 
+	case BOTH_DEATH15:			//#
 	case BOTH_DEAD15:
 	case BOTH_DEADFORWARD1:		//# First thrown forward death finished pose
 	case BOTH_DEADFORWARD2:		//# Second thrown forward death finished pose
@@ -2954,18 +2954,18 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 	case BOTH_DEAD5:				//# Fifth Death finished pose
 	case BOTH_DEAD6:				//# Sixth Death finished pose
 	case BOTH_DEAD7:				//# Seventh Death finished pose
-	case BOTH_DEAD9:				//# 
+	case BOTH_DEAD9:				//#
 	case BOTH_DEAD11:			//#
-	case BOTH_DEAD12:			//# 
-	case BOTH_DEAD17:			//# 
-	case BOTH_DEAD18:			//# 
-	case BOTH_DEAD19:			//# 
-	case BOTH_DEAD20:			//# 
-	case BOTH_DEAD21:			//# 
-	case BOTH_DEAD22:			//# 
-	case BOTH_DEAD23:			//# 
-	case BOTH_DEAD24:			//# 
-	case BOTH_DEAD25:			//# 
+	case BOTH_DEAD12:			//#
+	case BOTH_DEAD17:			//#
+	case BOTH_DEAD18:			//#
+	case BOTH_DEAD19:			//#
+	case BOTH_DEAD20:			//#
+	case BOTH_DEAD21:			//#
+	case BOTH_DEAD22:			//#
+	case BOTH_DEAD23:			//#
+	case BOTH_DEAD24:			//#
+	case BOTH_DEAD25:			//#
 	case BOTH_LYINGDEAD1:		//# Killed lying down death finished pose
 	case BOTH_STUMBLEDEAD1:		//# Stumble forward death finished pose
 	case BOTH_FALLDEAD1LAND:		//# Fall forward and splat death finished pose
@@ -2974,18 +2974,18 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 	case BOTH_DEATH5:			//# Fifth Death anim
 	case BOTH_DEATH6:			//# Sixth Death anim
 	case BOTH_DEATH7:			//# Seventh Death anim
-	case BOTH_DEATH9:			//# 
+	case BOTH_DEATH9:			//#
 	case BOTH_DEATH11:			//#
-	case BOTH_DEATH12:			//# 
-	case BOTH_DEATH17:			//# 
-	case BOTH_DEATH18:			//# 
-	case BOTH_DEATH19:			//# 
-	case BOTH_DEATH20:			//# 
-	case BOTH_DEATH21:			//# 
-	case BOTH_DEATH22:			//# 
-	case BOTH_DEATH23:			//# 
-	case BOTH_DEATH24:			//# 
-	case BOTH_DEATH25:			//# 
+	case BOTH_DEATH12:			//#
+	case BOTH_DEATH17:			//#
+	case BOTH_DEATH18:			//#
+	case BOTH_DEATH19:			//#
+	case BOTH_DEATH20:			//#
+	case BOTH_DEATH21:			//#
+	case BOTH_DEATH22:			//#
+	case BOTH_DEATH23:			//#
+	case BOTH_DEATH24:			//#
+	case BOTH_DEATH25:			//#
 	case BOTH_DEATHFORWARD1:		//# First Death in which they get thrown forward
 	case BOTH_DEATHFORWARD2:		//# Second Death in which they get thrown forward
 	case BOTH_DEATHFORWARD3:		//# Second Death in which they get thrown forward
@@ -3129,7 +3129,7 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 				{
 					deathAnim = BOTH_DEATH6;//chest right: spin
 				}
-				else 
+				else
 				{
 					//TEMP HACK: play spinny deaths less often
 					if ( Q_irand( 0, 1 ) )
@@ -3251,7 +3251,7 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 				{
 					deathAnim = BOTH_DEATH15;//chest: roll backward
 				}
-				else 
+				else
 				{
 					if ( !Q_irand( 0, 1 ) )
 					{
@@ -3353,7 +3353,7 @@ int G_CheckLedgeDive( gentity_t *self, float checkDist, vec3_t checkVel, qboolea
 			G_Throw( self, fallRightDir, 85 );
 			self->client->ps.velocity[2] = 100;
 		}
-		else 
+		else
 		{
 			VectorScale( fallRightDir, -1, fallRightDir );
 			fallDist = G_CheckForLedge( self, fallRightDir, checkDist );
@@ -3385,7 +3385,7 @@ extern void AI_DeleteSelfFromGroup( gentity_t *self );
 extern void AI_GroupMemberKilled( gentity_t *self );
 extern qboolean FlyingCreature( gentity_t *ent );
 extern void G_DrivableATSTDie( gentity_t *self );
-void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int dflags, int hitLoc ) 
+void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int dflags, int hitLoc )
 {
 	int			anim;
 	int			contents;
@@ -3488,12 +3488,12 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 		else
 		{
-			if ( (hitLoc != HL_HAND_RT 
+			if ( (hitLoc != HL_HAND_RT
 				|| self->client->dismembered
 				|| meansOfDeath != MOD_SABER )//if might get hand cut off, leave saber in hand
 				&& holdingSaber
-				&& ( Q_irand( 0, 1 ) 
-					|| meansOfDeath == MOD_EXPLOSIVE 
+				&& ( Q_irand( 0, 1 )
+					|| meansOfDeath == MOD_EXPLOSIVE
 					|| meansOfDeath == MOD_REPEATER_ALT
 					|| meansOfDeath == MOD_FLECHETTE_ALT
 					|| meansOfDeath == MOD_ROCKET
@@ -3580,12 +3580,12 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 						lastInGroup = qfalse;
 					}
 				}
-				if ( !attacker->s.number 
+				if ( !attacker->s.number
 					&& holdingSaber
-					&& meansOfDeath == MOD_SABER 
-					&& attacker->client 
-					&& attacker->client->ps.weapon == WP_SABER 
-					&& !attacker->client->ps.saberInFlight 
+					&& meansOfDeath == MOD_SABER
+					&& attacker->client
+					&& attacker->client->ps.weapon == WP_SABER
+					&& !attacker->client->ps.saberInFlight
 					&& (d_slowmodeath->integer > 2||lastInGroup) )//either slow mo death level 3 (any jedi) or 2 and I was the last jedi in the room
 				{//Matrix!
 					G_StartMatrixEffect( self );
@@ -3593,11 +3593,11 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			}
 			else
 			{//all player-saber kills
-				if ( !attacker->s.number 
-					&& meansOfDeath == MOD_SABER 
-					&& attacker->client 
-					&& attacker->client->ps.weapon == WP_SABER 
-					&& !attacker->client->ps.saberInFlight 
+				if ( !attacker->s.number
+					&& meansOfDeath == MOD_SABER
+					&& attacker->client
+					&& attacker->client->ps.weapon == WP_SABER
+					&& !attacker->client->ps.saberInFlight
 					&& (d_slowmodeath->integer > 4||lastInGroup||holdingSaber))//either slow mo death level 5 (any enemy) or 4 and I was the last in my group or I'm a saber user
 				{//Matrix!
 					G_StartMatrixEffect( self );
@@ -3633,18 +3633,18 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		G_MakeTeamVulnerable();
 	}
 
-	if ( attacker && attacker->client) 
+	if ( attacker && attacker->client)
 	{
-		if ( attacker == self || OnSameTeam (self, attacker ) ) 
+		if ( attacker == self || OnSameTeam (self, attacker ) )
 		{
 			AddScore( attacker, -1 );
-		} 
-		else 
+		}
+		else
 		{
 			AddScore( attacker, 1 );
 		}
-	} 
-	else 
+	}
+	else
 	{
 		AddScore( self, -1 );
 	}
@@ -3652,9 +3652,9 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	// if client is in a nodrop area, don't drop anything
 	contents = gi.pointcontents( self->currentOrigin, -1 );
 	if ( !holdingSaber
-		//&& self->s.number != 0 
-		&& !( contents & CONTENTS_NODROP ) 
-		&& meansOfDeath != MOD_SNIPER 
+		//&& self->s.number != 0
+		&& !( contents & CONTENTS_NODROP )
+		&& meansOfDeath != MOD_SNIPER
 		&& (!self->client||self->client->NPC_class!=CLASS_GALAKMECH))
 	{
 		TossClientItems( self );
@@ -3717,17 +3717,17 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		self->maxs[2] = -8;
 	}
 	self->clipmask&=~(CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP);//so dead NPC can fly off ledges
-	
+
 	//FACING==========================================================
 	if ( attacker && self->s.number == 0 )
 	{
 		self->client->ps.stats[STAT_DEAD_YAW] = AngleNormalize180( self->client->ps.viewangles[YAW] );
 	}
-	self->currentAngles[PITCH] = 0; 
+	self->currentAngles[PITCH] = 0;
 	self->currentAngles[ROLL] = 0;
 	if ( self->NPC )
 	{
-		self->NPC->desiredYaw = 0; 
+		self->NPC->desiredYaw = 0;
 		self->NPC->desiredPitch = 0;
 		self->NPC->confusionTime = 0;
 		self->NPC->charmedTime = 0;
@@ -3908,11 +3908,11 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				{
 					float	thrown, dot;
 					vec3_t	throwdir, forward;
-					
+
 					AngleVectors(self->currentAngles, forward, NULL, NULL);
 					thrown = VectorNormalize2(self->client->ps.velocity, throwdir);
 					dot = DotProduct(forward, throwdir);
-					if ( thrown > 100 ) 
+					if ( thrown > 100 )
 					{
 						if ( dot > 0.3 )
 						{//falling forward
@@ -3956,7 +3956,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 								}
 							}
 						}
-						else if ( dot < -0.3 ) 
+						else if ( dot < -0.3 )
 						{
 							if ( thrown >= 250 && !Q_irand( 0, 3 ) )
 							{
@@ -3991,7 +3991,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 									break;
 								}
 							}
-							if ( PM_HasAnimation( self, anim ) ) 
+							if ( PM_HasAnimation( self, anim ) )
 							{
 								self->client->ps.gravity *= 0.8;
 								self->client->ps.friction = 0;
@@ -4003,7 +4003,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 							else
 							{
 								anim = -1;
-							} 
+							}
 						}
 						else
 						{//falling to one of the sides
@@ -4027,7 +4027,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 		if ( anim == -1 )
 		{
-			if ( meansOfDeath == MOD_ELECTROCUTE 
+			if ( meansOfDeath == MOD_ELECTROCUTE
 				|| (meansOfDeath == MOD_CRUSH && self->s.eFlags&EF_FORCE_GRIPPED) )
 			{//electrocuted or choked to death
 				anim = BOTH_DEATH17;
@@ -4059,14 +4059,14 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				self->NPC->timeOfDeath = level.time + 10000;
 			}
 		}
-		
+
 		else if ( meansOfDeath == MOD_SNIPER )
 		{
 			gentity_t	*tent;
 			vec3_t		spot;
 
 			VectorCopy( self->currentOrigin, spot );
-			
+
 			self->flags |= FL_DISINTEGRATED;
 			self->svFlags |= SVF_BROADCAST;
 			tent = G_TempEntity( spot, EV_DISINTEGRATION );
@@ -4095,9 +4095,9 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				self->NPC->timeOfDeath = level.time + 2000;
 			}
 		}
-		else 
+		else
 		{
-			if ( hitLoc == HL_HEAD 
+			if ( hitLoc == HL_HEAD
 				&& !(dflags&DAMAGE_RADIUS)
 				&& meansOfDeath!=MOD_REPEATER_ALT
 				&& meansOfDeath!=MOD_FLECHETTE_ALT
@@ -4117,7 +4117,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					G_SoundOnEnt( self, CHAN_VOICE, "*jump1.wav" );
 				}
 			}
-			else 
+			else
 			{
 				if ( (self->client->ps.eFlags&EF_FORCE_GRIPPED) )
 				{//killed while gripped - no loud scream
@@ -4191,16 +4191,16 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	{
 		deathScript = qtrue;
 	}
-	
+
 	if ( self->NPC && (self->NPC->scriptFlags&SCF_FFDEATH) )
 	{
-		if ( G_ActivateBehavior( self, BSET_FFDEATH ) )  
+		if ( G_ActivateBehavior( self, BSET_FFDEATH ) )
 		{//FIXME: should running this preclude running the normal deathscript?
 			deathScript = qtrue;
 		}
 		G_UseTargets2( self, self, self->target4 );
 	}
-	
+
 	if ( !deathScript && !(self->svFlags&SVF_KILLED_SELF) )
 	{
 		//Should no longer run scripts
@@ -4214,7 +4214,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 	// Set pending objectives to failed
 	OBJ_SetPendingObjectives(self);
-	
+
 	gi.linkentity (self);
 
 	self->bounceCount = -1; // This is a cheap hack for optimizing the pointcontents check in deadthink
@@ -4279,7 +4279,7 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t
 	else
 	{
 		// play an apropriate pain sound
-		if ( level.time > self->painDebounceTime && !(self->flags & FL_GODMODE) ) 
+		if ( level.time > self->painDebounceTime && !(self->flags & FL_GODMODE) )
 		{//first time hit this frame and not in godmode
 			self->client->ps.damageEvent++;
 			if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
@@ -4324,10 +4324,11 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, vec3_t
 							G_StartMatrixEffect( self );
 						}
 					}
-					if ( parts == SETANIM_BOTH && damage > 30 || (self->painDebounceTime>level.time&&damage>10))
+					if ( parts == SETANIM_BOTH && (damage > 30 || (self->painDebounceTime > level.time
+						&& damage > 10)) )
 					{//took a lot of damage in 1 hit //or took 2 hits in quick succession
 						self->aimDebounceTime = level.time + self->client->ps.torsoAnimTimer;
-						self->client->ps.pm_time = self->client->ps.torsoAnimTimer; 
+						self->client->ps.pm_time = self->client->ps.torsoAnimTimer;
 						self->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
 					}
 					self->client->ps.weaponTime = self->client->ps.torsoAnimTimer;
@@ -4407,7 +4408,7 @@ int CheckArmor (gentity_t *ent, int damage, int dflags)
 		//Always round up
 		if (damage == 1)
 		{
-			if ( client->ps.stats[STAT_ARMOR] > 0 ) 
+			if ( client->ps.stats[STAT_ARMOR] > 0 )
 				client->ps.stats[STAT_ARMOR] -= save;
 
 			return 0;
@@ -4452,9 +4453,9 @@ void G_Knockdown( gentity_t *self, gentity_t *attacker, vec3_t pushDir, float st
 		}
 		G_CheckLedgeDive( self, 72, pushDir, qfalse, qfalse );
 
-		if ( !PM_SpinningSaberAnim( self->client->ps.legsAnim ) 
-			&& !PM_FlippingAnim( self->client->ps.legsAnim ) 
-			&& !PM_RollingAnim( self->client->ps.legsAnim ) 
+		if ( !PM_SpinningSaberAnim( self->client->ps.legsAnim )
+			&& !PM_FlippingAnim( self->client->ps.legsAnim )
+			&& !PM_RollingAnim( self->client->ps.legsAnim )
 			&& !PM_InKnockDown( &self->client->ps ) )
 		{
 			int knockAnim = BOTH_KNOCKDOWN1;//default knockdown
@@ -4609,7 +4610,7 @@ void G_ApplyKnockback( gentity_t *targ, vec3_t newDir, float knockback )
 
 	// set the timer so that the other client can't cancel
 	// out the movement immediately
-	if ( targ->client && !targ->client->ps.pm_time ) 
+	if ( targ->client && !targ->client->ps.pm_time )
 	{
 		int		t;
 
@@ -4655,7 +4656,7 @@ static int G_CheckForLedge( gentity_t *self, vec3_t fallCheckDir, float checkDis
 
 static void G_FriendlyFireReaction( gentity_t *self, gentity_t *other, int dflags )
 {
-	if ( (!player->client->ps.viewEntity || other->s.number != player->client->ps.viewEntity)) 
+	if ( (!player->client->ps.viewEntity || other->s.number != player->client->ps.viewEntity))
 	{//hit by a teammate
 		if ( other != self->enemy && self != other->enemy )
 		{//we weren't already enemies
@@ -4681,7 +4682,7 @@ static void G_FriendlyFireReaction( gentity_t *self, gentity_t *other, int dflag
 	}
 }
 
-float damageModifier[HL_MAX] = 
+float damageModifier[HL_MAX] =
 {
 	1.0f,	//HL_NONE,
 	0.25f,	//HL_FOOT_RT,
@@ -4793,7 +4794,7 @@ void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod
 
 qboolean G_NonLocationSpecificDamage( int meansOfDeath )
 {
-	if ( meansOfDeath == MOD_EXPLOSIVE 
+	if ( meansOfDeath == MOD_EXPLOSIVE
 		|| meansOfDeath == MOD_REPEATER_ALT
 		|| meansOfDeath == MOD_FLECHETTE_ALT
 		|| meansOfDeath == MOD_ROCKET
@@ -4838,7 +4839,7 @@ dflags		these flags are used to control how T_Damage works
 ============
 */
 
-void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod, int hitLoc ) 
+void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod, int hitLoc )
 {
 	gclient_t	*client;
 	int			take;
@@ -4927,11 +4928,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = 0;
 	}
 
-	if ( dir == NULL ) 
+	if ( dir == NULL )
 	{
 		dflags |= DAMAGE_NO_KNOCKBACK;
-	} 
-	else 
+	}
+	else
 	{
 		VectorNormalize2( dir, newDir );
 	}
@@ -4958,7 +4959,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if ( client->ps.stats[STAT_ARMOR] > 0 )
 		{//shields are up
 			dflags &= ~DAMAGE_NO_ARMOR;//always affect armor
-			if ( mod == MOD_ELECTROCUTE 
+			if ( mod == MOD_ELECTROCUTE
 				|| mod == MOD_DEMP2
 				|| mod == MOD_DEMP2_ALT )
 			{//shield protects us from this
@@ -4967,12 +4968,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else
 		{//shields down
-			if ( mod == MOD_MELEE 
+			if ( mod == MOD_MELEE
 				|| (mod == MOD_CRUSH && attacker && attacker->client) )
 			{//Galak takes no impact damage
 				return;
 			}
-			if ( (dflags & DAMAGE_RADIUS) 
+			if ( (dflags & DAMAGE_RADIUS)
 				|| mod == MOD_REPEATER_ALT
 				|| mod == MOD_FLECHETTE_ALT
 				|| mod == MOD_ROCKET
@@ -5022,7 +5023,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{
 		knockback *= 2;
 	}
-	
+
 	if ( knockback > 200 ) {
 		knockback = 200;
 	}
@@ -5031,7 +5032,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{
 		knockback = 0;
 	}
-	else if ( targ->flags & FL_NO_KNOCKBACK ) 
+	else if ( targ->flags & FL_NO_KNOCKBACK )
 	{
 		knockback = 0;
 	}
@@ -5044,18 +5045,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		knockback = 0;
 	}
 	// figure momentum add, even if the damage won't be taken
-	if ( knockback && !(dflags&DAMAGE_DEATH_KNOCKBACK) ) //&& targ->client 
+	if ( knockback && !(dflags&DAMAGE_DEATH_KNOCKBACK) ) //&& targ->client
 	{
 		G_ApplyKnockback( targ, newDir, knockback );
 		G_CheckKnockdown( targ, attacker, newDir, dflags, mod );
 	}
 
 	// check for godmode, completely getting out of the damage
-	if ( targ->flags & FL_GODMODE && !(dflags&DAMAGE_NO_PROTECTION) ) 
+	if ( targ->flags & FL_GODMODE && !(dflags&DAMAGE_NO_PROTECTION) )
 	{
-		if ( targ->client 
-			&& attacker->client 
-			&& targ->client->playerTeam == attacker->client->playerTeam 
+		if ( targ->client
+			&& attacker->client
+			&& targ->client->playerTeam == attacker->client->playerTeam
 			&& (!targ->NPC || !targ->NPC->charmedTime) )
 		{//complain, but don't turn on them
 			G_FriendlyFireReaction( targ, attacker, dflags );
@@ -5065,14 +5066,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	// Check for team damage
 	/*
-	if ( targ != attacker && !(dflags&DAMAGE_IGNORE_TEAM) && OnSameTeam (targ, attacker)  ) 
+	if ( targ != attacker && !(dflags&DAMAGE_IGNORE_TEAM) && OnSameTeam (targ, attacker)  )
 	{//on same team
-		if ( !targ->client ) 
+		if ( !targ->client )
 		{//a non-player object should never take damage from an ent on the same team
 			return;
 		}
 
-		if ( attacker->client && attacker->client->playerTeam == targ->noDamageTeam ) 
+		if ( attacker->client && attacker->client->playerTeam == targ->noDamageTeam )
 		{//NPC or player shot an object on his own team
 			return;
 		}
@@ -5190,7 +5191,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 	}
-	if ( take || (dflags&DAMAGE_NO_DAMAGE) ) 
+	if ( take || (dflags&DAMAGE_NO_DAMAGE) )
 	{
 		if ( !targ->client || !attacker->client )
 		{
@@ -5208,7 +5209,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 			}
 		}
-		else 
+		else
 		{//two clients
 			team_t		targTeam = TEAM_FREE;
 			team_t		attackerTeam = TEAM_FREE;
@@ -5281,7 +5282,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 					}
 				}
 				//2) NPCs don't take any damage from player during combat
-				else 
+				else
 				{//an NPC
 					if ( ((dflags & DAMAGE_RADIUS)) && !(dflags&DAMAGE_IGNORE_TEAM) )
 					{//An NPC got hit by player and this is during combat or it was slash damage
@@ -5305,7 +5306,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 						if ( targ->health < 1 )
 						{
 							G_ActivateBehavior( targ, BSET_DEATH );
-							
+
 							targ->health = 1;
 						}
 					}
@@ -5314,7 +5315,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 						if ( targ->health < 1 )
 						{
 							G_ActivateBehavior( targ, BSET_DEATH );
-							
+
 							targ->health = 1;
 						}
 					}
@@ -5327,7 +5328,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 						}
 					}
 				}
-				
+
 				if ( yellAtAttacker )
 				{
 					if ( !targ->NPC || !targ->NPC->charmedTime )
@@ -5342,7 +5343,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			targ->client->ps.stats[STAT_HEALTH] = targ->health;
 			g_lastClientDamaged = targ;
 		}
-			
+
 		//TEMP HACK FOR PLAYER LOOK AT ENEMY CODE
 		//FIXME: move this to a player pain func?
 		if ( targ->s.number == 0 )
@@ -5381,9 +5382,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{//he was surrendering, goes down with one hit
 			targ->health = 0;
 		}
-		if ( targ->health <= 0 ) 
+		if ( targ->health <= 0 )
 		{
-			if ( knockback && (dflags&DAMAGE_DEATH_KNOCKBACK) )//&& targ->client 
+			if ( knockback && (dflags&DAMAGE_DEATH_KNOCKBACK) )//&& targ->client
 			{//only do knockback on death
 				if ( mod == MOD_FLECHETTE )
 				{//special case because this is shotgun-ish damage, we need to multiply the knockback
@@ -5421,7 +5422,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 			GEntity_DieFunc( targ, inflictor, attacker, take, mod, dflags, hitLoc );
 		}
-		else 
+		else
 		{
 			GEntity_PainFunc( targ, inflictor, attacker, point, take, mod, hitLoc );
 			if ( targ->s.number == 0 )
@@ -5460,7 +5461,7 @@ qboolean CanDamage (gentity_t *targ, vec3_t origin) {
 	if (( tr.fraction == 1.0 && !(targ->contents & MASK_SOLID)) || tr.entityNum == targ->s.number ) // if we also test the entitynum's we can bust up bbrushes better!
 		return qtrue;
 
-	// this should probably check in the plane of projection, 
+	// this should probably check in the plane of projection,
 	// rather than in world coordinate, and also include Z
 	VectorCopy (midpoint, dest);
 	dest[0] += 15.0;
@@ -5550,7 +5551,7 @@ void G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, float ra
 
 		points = damage * ( 1.0 - dist / radius );
 
-		if (CanDamage (ent, origin)) 
+		if (CanDamage (ent, origin))
 		{//FIXME: still do a little damage in in PVS and close?
 			if ( ent->svFlags & (SVF_GLASS_BRUSH|SVF_BBRUSH) )
 			{

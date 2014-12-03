@@ -115,7 +115,9 @@ void G_ReadSessionData( gclient_t *client ) {
 	var = va( "session%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i", &client->sess.sessionTeam );
+	int tmp;
+	sscanf( s, "%i", &tmp );
+	client->sess.sessionTeam = (team_t)tmp;
 
 	var = va( "sessionobj%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
@@ -124,11 +126,11 @@ void G_ReadSessionData( gclient_t *client ) {
 	var++;
 	for (i=0;i< MAX_OBJECTIVES; i++)
 	{
-		sscanf( var, "%i %i", 
+		sscanf( var, "%i %i",
 			&client->sess.mission_objectives[i].display,
 			&client->sess.mission_objectives[i].status);
 			var+=4;
-	}	
+	}
 
 	var = va( "missionstats%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );

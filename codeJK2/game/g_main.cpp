@@ -190,8 +190,6 @@ static void G_DynamicMusicUpdate( void )
 	int			danger = 0;
 	int			battle = 0;
 	int			entTeam;
-	qboolean	dangerNear = qfalse;
-	qboolean	suspicious = qfalse;
 	qboolean	LOScalced = qfalse, clearLOS = qfalse;
 
 	//FIXME: intro and/or other cues? (one-shot music sounds)
@@ -205,8 +203,8 @@ static void G_DynamicMusicUpdate( void )
 		return;
 	}
 
-	if ( !player->client 
-		|| player->client->pers.teamState.state != TEAM_ACTIVE 
+	if ( !player->client
+		|| player->client->pers.teamState.state != TEAM_ACTIVE
 		|| level.time - player->client->pers.enterTime < 100 )
 	{//player hasn't spawned yet
 		return;
@@ -252,14 +250,14 @@ static void G_DynamicMusicUpdate( void )
 
 	//enemy-based
 	VectorCopy( player->currentOrigin, center );
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = center[i] - radius;
 		maxs[i] = center[i] + radius;
 	}
-	
+
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = entityList[ e ];
 		if ( !ent || !ent->inuse )
@@ -356,7 +354,7 @@ static void G_DynamicMusicUpdate( void )
 			{
 				clearLOS = G_ClearLOS( player, player->client->renderInfo.eyePoint, ent );
 			}
-			if ( !clearLOS ) 
+			if ( !clearLOS )
 			{//can't see them directly
 				continue;
 			}
@@ -389,10 +387,10 @@ static void G_DynamicMusicUpdate( void )
 				switch ( level.alertEvents[alert].level )
 				{
 				case AEL_DISCOVERED:
-					dangerNear = qtrue;
+					//dangerNear = qtrue;
 					break;
 				case AEL_SUSPICIOUS:
-					suspicious = qtrue;
+					//suspicious = qtrue;
 					break;
 				case AEL_MINOR:
 					//distraction = qtrue;
@@ -421,7 +419,7 @@ static void G_DynamicMusicUpdate( void )
 			//level.dmDebounceTime = level.time + 3000 + 1000*battle;
 		}
 	}
-	else 
+	else
 	{
 		if ( level.dmDebounceTime > level.time )
 		{//not ready to switch yet
@@ -506,7 +504,7 @@ void G_FindTeams( void ) {
 //				continue;
 			if(!PInUse(j))
 				continue;
-			
+
 			e2=&g_entities[j];
 			if (!e2->team)
 				continue;
@@ -578,7 +576,7 @@ void G_InitCvars( void ) {
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", CVAR_CHEAT );
-	
+
 	gi.cvar( "newTotalSecrets", "0", CVAR_ROM );
 	gi.cvar_set("newTotalSecrets", "0");//used to carry over the count from SP_target_secret to ClientBegin
 	g_iscensored = gi.cvar( "ui_iscensored", "0", CVAR_ARCHIVE|CVAR_ROM|CVAR_INIT|CVAR_CHEAT|CVAR_NORESTART );
@@ -594,7 +592,7 @@ InitGame
 // I'm just declaring a global here which I need to get at in NAV_GenerateSquadPaths for deciding if pre-calc'd
 //	data is valid, and this saves changing the proto of G_SpawnEntitiesFromString() to include a checksum param which
 //	may get changed anyway if a new nav system is ever used. This way saves messing with g_local.h each time -slc
-int giMapChecksum;	
+int giMapChecksum;
 SavedGameJustLoaded_e g_eSavedGameJustLoaded;
 qboolean g_qbLoadTransition = qfalse;
 #ifndef FINAL_BUILD
@@ -652,7 +650,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 	//Set up NPC init data
 	NPC_InitGame();
-	
+
 	TIMER_Clear();
 
 	//
@@ -692,7 +690,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	}
 	else
 	{//loaded
-		//FIXME: if this is from a loadgame, it needs to be sure to write this 
+		//FIXME: if this is from a loadgame, it needs to be sure to write this
 		//out whenever you do a savegame since the edges and routes are dynamic...
 		//OR: always do a navigator.CheckBlockedEdges() on map startup after nav-load/calc-paths
 		navigator.pathsCalculated = qtrue;//just to be safe?  Does this get saved out?  No... assumed
@@ -871,7 +869,7 @@ FUNCTIONS CALLED EVERY FRAME
 ========================================================================
 */
 
-static void G_CheckTasksCompleted (gentity_t *ent) 
+static void G_CheckTasksCompleted (gentity_t *ent)
 {
 	if ( Q3_TaskIDPending( ent, TID_CHAN_VOICE ) )
 	{
@@ -942,7 +940,7 @@ G_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
-void G_RunThink (gentity_t *ent) 
+void G_RunThink (gentity_t *ent)
 {
 	float	thinktime;
 
@@ -957,16 +955,16 @@ void G_RunThink (gentity_t *ent)
 	*/
 
 	thinktime = ent->nextthink;
-	if ( thinktime <= 0 ) 
+	if ( thinktime <= 0 )
 	{
 		goto runicarus;
 	}
-	
-	if ( thinktime > level.time ) 
+
+	if ( thinktime > level.time )
 	{
 		goto runicarus;
 	}
-	
+
 	ent->nextthink = 0;
 	if ( ent->e_ThinkFunc == thinkF_NULL )	// actually you don't need this if I check for it in the next function -slc
 	{
@@ -1012,7 +1010,7 @@ void G_Animate ( gentity_t *self )
 				int junk;
 
 				// I guess query ghoul2 to find out what the current frame is and see if we are done.
-				gi.G2API_GetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone, 
+				gi.G2API_GetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone,
 									(cg.time?cg.time:level.time), &frame, &junk, &junk, &junk, &junk2, NULL );
 
 				// It NEVER seems to get to what you'd think the last frame would be, so I'm doing this to try and catch when the animation has stopped
@@ -1046,8 +1044,8 @@ void G_Animate ( gentity_t *self )
 	if ( self->ghoul2.size())
 	{
 		self->s.frame = self->endFrame;
-		
-		gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone, 
+
+		gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone,
 									self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_FREEZE, 1.0f, cg.time, -1, -1 );
 		return;
 	}
@@ -1199,7 +1197,7 @@ void G_CheckEndLevelTimers( gentity_t *ent )
 }
 
 void NAV_CheckCalcPaths( void )
-{	
+{
 	if ( navCalcPathTime && navCalcPathTime < level.time )
 	{//first time we've ever loaded this map...
 		//clear all the failed edges
@@ -1207,7 +1205,7 @@ void NAV_CheckCalcPaths( void )
 
 		//Calculate all paths
 		NAV_CalculatePaths( level.mapname, giMapChecksum );
-		
+
 		navigator.CalculatePaths();
 
 #ifndef FINAL_BUILD
@@ -1215,7 +1213,7 @@ void NAV_CheckCalcPaths( void )
 		{
 			gi.Printf( S_COLOR_RED"Not saving .nav file due to fatal nav errors\n" );
 		}
-		else 
+		else
 #endif
 		if ( navigator.Save( level.mapname, giMapChecksum ) == qfalse )
 		{
@@ -1242,21 +1240,20 @@ extern int delayedShutDown;
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-	int			msec;
 	int			ents_inuse=0; // someone's gonna be pissed I put this here...
 #if	AI_TIMERS
 	AITime = 0;
 	navTime = 0;
 #endif//	AI_TIMERS
-	
+
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
-	msec = level.time - level.previousTime;
-	
+	//msec = level.time - level.previousTime;
+
 	NAV_CheckCalcPaths();
 	//ResetTeamCounters();
-	
+
 	AI_UpdateGroups();
 
 	if ( d_altRoutes->integer )
@@ -1266,18 +1263,18 @@ void G_RunFrame( int levelTime ) {
 	navigator.ClearCheckedNodes();
 
 	//remember last waypoint, clear current one
-//	for ( i = 0, ent = &g_entities[0]; i < globals.num_entities ; i++, ent++) 
-	for ( i = 0; i < globals.num_entities ; i++) 
+//	for ( i = 0, ent = &g_entities[0]; i < globals.num_entities ; i++, ent++)
+	for ( i = 0; i < globals.num_entities ; i++)
 	{
 //		if ( !ent->inuse )
 //			continue;
 
 		if(!PInUse(i))
 			continue;
-		
+
 		ent = &g_entities[i];
-	
-		if ( ent->waypoint != WAYPOINT_NONE 
+
+		if ( ent->waypoint != WAYPOINT_NONE
 			&& ent->noWaypointTime < level.time )
 		{
 			ent->lastWaypoint = ent->waypoint;
@@ -1294,7 +1291,7 @@ void G_RunFrame( int levelTime ) {
 
 	//Run the frame for all entities
 //	for ( i = 0, ent = &g_entities[0]; i < globals.num_entities ; i++, ent++)
-	for ( i = 0; i < globals.num_entities ; i++) 
+	for ( i = 0; i < globals.num_entities ; i++)
 	{
 //		if ( !ent->inuse )
 //			continue;
@@ -1348,19 +1345,19 @@ void G_RunFrame( int levelTime ) {
 		}
 		G_CheckSpecialPersistentEvents( ent );
 
-		if ( ent->s.eType == ET_MISSILE ) 
+		if ( ent->s.eType == ET_MISSILE )
 		{
 			G_RunMissile( ent );
 			continue;
 		}
 
-		if ( ent->s.eType == ET_ITEM ) 
+		if ( ent->s.eType == ET_ITEM )
 		{
 			G_RunItem( ent );
 			continue;
 		}
 
-		if ( ent->s.eType == ET_MOVER ) 
+		if ( ent->s.eType == ET_MOVER )
 		{
 			if ( ent->model && Q_stricmp( "models/test/mikeg/tie_fighter.md3", ent->model ) == 0 )
 			{
@@ -1371,7 +1368,7 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		//The player
-		if ( i == 0 ) 
+		if ( i == 0 )
 		{
 			// decay batteries if the goggles are active
 			if ( cg.zoomMode == 1 && ent->client->ps.batteryCharge > 0 )
@@ -1415,7 +1412,7 @@ void G_RunFrame( int levelTime ) {
 
 	// perform final fixups on the player
 	ent = &g_entities[0];
-	if ( ent->inuse ) 
+	if ( ent->inuse )
 	{
 		ClientEndFrame( ent );
 	}
@@ -1477,7 +1474,7 @@ void G_RunFrame( int levelTime ) {
 extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
-{ 
+{
 	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
 }
 
