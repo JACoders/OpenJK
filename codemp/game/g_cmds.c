@@ -7039,6 +7039,14 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in saber duels^3: ^2%s\n", (g_saberDuelSPDamage.integer) ? "SP" : "MP"));
 	if ((d_saberSPStyleDamage.integer != g_forceDuelSPDamage.integer) && (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype < GT_TEAM))
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in force duels^3: ^2%s\n", (g_forceDuelSPDamage.integer) ? "SP" : "MP"));
+	if (g_saberDamageScale.value != 1.0f)
+		Q_strcat(buf, sizeof(buf), va("   ^Saber damage scale: ^2%.2f\n", g_saberDamageScale.value));
+	if (g_blueDamageScale.value != 1.0f)
+		Q_strcat(buf, sizeof(buf), va("   ^Blue damage scale: ^2%.2f\n", g_blueDamageScale.value));
+	if (g_yellowDamageScale.value != 1.0f)
+		Q_strcat(buf, sizeof(buf), va("   ^Yellow damage scale: ^2%.2f\n", g_yellowDamageScale.value));
+	if (g_redDamageScale.value != 1.0f)
+		Q_strcat(buf, sizeof(buf), va("   ^Red damage scale: ^2%.2f\n", g_redDamageScale.value));
 	if (!d_saberGhoul2Collision.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for lightsabers\n");
 	if (d_saberBoxTraceSize.integer)
