@@ -2838,7 +2838,7 @@ void CheckVote( void ) {
 	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
 		if (g_fixVote.integer) {
 			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
-				trap->SendServerCommand( -1, va("print \"%s (%s), command will be executed in #i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+				trap->SendServerCommand( -1, va("print \"%s (%s), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 				level.voteExecuteTime = level.time + level.voteExecuteDelay;
 			}
 			else {

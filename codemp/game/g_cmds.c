@@ -2835,7 +2835,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (g_fixVote.integer && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*60*0.5))) { //Dont let a vote be called within 30sec of mapload ever
+	if (g_fixVote.integer && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*30))) { //Dont let a vote be called within 30sec of mapload ever
 		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote within 30 seconds of map load.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
