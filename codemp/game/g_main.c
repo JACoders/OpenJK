@@ -2841,8 +2841,10 @@ void CheckVote( void ) {
 				trap->SendServerCommand( -1, va("print \"%s (%s), command will be executed in #i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 				level.voteExecuteTime = level.time + level.voteExecuteDelay;
 			}
-			else
+			else {
 				trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+				level.lastVoteFailTime = level.time;
+			}
 		}
 		else //Fail if it expires and not fixvote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
@@ -2860,8 +2862,10 @@ void CheckVote( void ) {
 		}
 
 		// same behavior as a timeout
-		else if ( level.voteNo >= (numClients+1)/2 )
+		else if ( level.voteNo >= (numClients+1)/2 ) {
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+			level.lastVoteFailTime = level.time;
+		}
 
 		else // still waiting for a majority
 			return;

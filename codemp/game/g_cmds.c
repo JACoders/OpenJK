@@ -2786,6 +2786,17 @@ qboolean G_VoteWarmup( gentity_t *ent, int numArgs, const char *arg1, const char
 	return qtrue;
 }
 
+qboolean G_VoteTeamSize( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+	int ts = Com_Clampi( 0, 32, atof( arg2 ) ); //uhhh... k
+
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, ts );
+
+	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
 typedef struct voteString_s {
 	const char	*string;
 	const char	*aliases;	// space delimited list of aliases, will always show the real vote string
@@ -2808,6 +2819,7 @@ static voteString_t validVoteStrings[] = {
 	{	"map_restart",			"restart",			G_VoteMapRestart,		0,		GTB_ALL,								qtrue,			"<optional delay>" },
 	{	"nextmap",				NULL,				G_VoteNextmap,			0,		GTB_ALL,								qtrue,			NULL },
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
+	{	"sv_maxteamsize",		"teamsize",			G_VoteTeamSize,			1,		GTB_TEAM|GTB_SIEGE|GTB_CTY,				qtrue,			"<num>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -2823,13 +2835,13 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (g_fixVote.integer && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a vote be called within 10 mins of map load
-		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote at this time.\n\"" );//print to wait X more minutes..seconds?
+	if (g_fixVote.integer && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*60*0.5))) { //Dont let a vote be called within 30sec of mapload ever
+		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote within 30 seconds of map load.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
 
-	if (g_fixVote.integer && level.lastVoteTime && (level.lastVoteTime > (level.time - 1000*60*5))) {
-		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote at this time.\n\"" );//print to wait X more minutes..seconds?
+	if (g_fixVote.integer && level.lastVoteFailTime && (level.lastVoteFailTime > (level.time - 1000*60*3))) { //Dont let a vote be called right away if a vote has just failed..
+		trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
 
@@ -2878,6 +2890,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	// filter ; \n \r
 	if ( Q_strchrs( arg1, ";\r\n" ) || Q_strchrs( arg2, ";\r\n" ) ) {
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		return;
+	}
+
+	if (g_fixVote.integer && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > 1000*60) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
+		trap->SendServerCommand( ent-g_entities, "print \"The server just changed to this map, you are not allowed to vote for a new one yet.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	}
 
@@ -2975,8 +2992,6 @@ validVote:
 	level.voteYes = 1;
 	level.voteNo = 0;
 
-	level.lastVoteTime = level.time;
-
 	for ( i=0; i<level.maxclients; i++ ) {
 		level.clients[i].mGameFlags &= ~PSG_VOTED;
 		level.clients[i].pers.vote = 0;
@@ -2998,6 +3013,7 @@ Cmd_Vote_f
 */
 void Cmd_Vote_f( gentity_t *ent ) {
 	char		msg[64] = {0};
+	int i;
 
 	if ( !level.voteTime ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEINPROG")) );
@@ -3012,6 +3028,43 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR && !g_fixVote.integer) {
 			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
 			return;
+		}
+	}
+
+	if (g_fixVote.integer) { //Dont let ppl with same IP have more than 1 vote
+		char ourIP[NET_ADDRSTRMAXLEN] = {0};
+		char *n = NULL;
+		gclient_t	*cl;
+
+		Q_strncpyz(ourIP, ent->client->sess.IP, sizeof(ourIP));
+		n = strchr(ourIP, ':');
+		if (n)
+			*n = 0;
+
+		for (i=0; i<MAX_CLIENTS; i++)
+		{//Build a list of clients
+			char *tmpMsg = NULL;
+			if (!g_entities[i].inuse)
+				continue;
+
+			cl = &level.clients[i];
+			if (cl->pers.netname[0])
+			{
+				char theirIP[NET_ADDRSTRMAXLEN] = {0};
+				char *p = NULL;
+
+				Q_strncpyz(theirIP, cl->sess.IP, sizeof(theirIP));
+				p = strchr(theirIP, ':');
+				if (p) //loda - fix ip sometimes not printing in amstatus?
+					*p = 0;
+
+				if (!Q_stricmp( theirIP, ourIP)) {
+					if ( cl->mGameFlags & PSG_VOTED ) {
+						trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEALREADY")) );
+						return;
+					}
+				}
+			}
 		}
 	}
 
@@ -7040,13 +7093,13 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	if ((d_saberSPStyleDamage.integer != g_forceDuelSPDamage.integer) && (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype < GT_TEAM))
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber style damage in force duels^3: ^2%s\n", (g_forceDuelSPDamage.integer) ? "SP" : "MP"));
 	if (g_saberDamageScale.value != 1.0f)
-		Q_strcat(buf, sizeof(buf), va("   ^Saber damage scale: ^2%.2f\n", g_saberDamageScale.value));
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber damage scale: ^2%.2f\n", g_saberDamageScale.value));
 	if (g_blueDamageScale.value != 1.0f)
-		Q_strcat(buf, sizeof(buf), va("   ^Blue damage scale: ^2%.2f\n", g_blueDamageScale.value));
+		Q_strcat(buf, sizeof(buf), va("   ^5Blue damage scale: ^2%.2f\n", g_blueDamageScale.value));
 	if (g_yellowDamageScale.value != 1.0f)
-		Q_strcat(buf, sizeof(buf), va("   ^Yellow damage scale: ^2%.2f\n", g_yellowDamageScale.value));
+		Q_strcat(buf, sizeof(buf), va("   ^5Yellow damage scale: ^2%.2f\n", g_yellowDamageScale.value));
 	if (g_redDamageScale.value != 1.0f)
-		Q_strcat(buf, sizeof(buf), va("   ^Red damage scale: ^2%.2f\n", g_redDamageScale.value));
+		Q_strcat(buf, sizeof(buf), va("   ^5Red damage scale: ^2%.2f\n", g_redDamageScale.value));
 	if (!d_saberGhoul2Collision.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for lightsabers\n");
 	if (d_saberBoxTraceSize.integer)

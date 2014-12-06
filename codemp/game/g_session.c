@@ -76,7 +76,7 @@ void G_WriteClientSessionData( gclient_t *client )
 
 	trap->Cvar_Set( var, s );
 
-	trap->Print("WRITING: %s, Session: %s\n", var, s);
+	//trap->Print("WRITING: %s, Session: %s\n", var, s);
 }
 
 /*
@@ -95,7 +95,7 @@ void G_ReadSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	trap->Print("READING: %s, Session: %s\n", var, s);
+	//trap->Print("READING: %s, Session: %s\n", var, s);
 
 	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
