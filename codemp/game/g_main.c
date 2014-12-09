@@ -636,7 +636,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "hoth3") == 0)
 	{
+		int i = 0;
+		gentity_t *ent;
+
 		level.quest_map = 20;
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			ent = &g_entities[i];
+			if (Q_stricmp( ent->targetname, "end_level") == 0)
+			{ // zyk: remove the map change entity
+				G_FreeEntity( ent );
+			}
+		}
 
 		zyk_create_info_player_deathmatch(-1908,562,992,-90);
 		zyk_create_info_player_deathmatch(-1907,356,801,-90);
@@ -789,6 +801,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			}
 			if (Q_stricmp( ent->target, "field_counter3") == 0)
 			{
+				G_FreeEntity( ent );
+			}
+			if (Q_stricmp( ent->targetname, "end_level") == 0)
+			{ // zyk: remove the map change entity
 				G_FreeEntity( ent );
 			}
 		}
