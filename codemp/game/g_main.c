@@ -7456,7 +7456,6 @@ void G_RunFrame( int levelTime ) {
 								{
 									npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",11234,8416,1700,90);
 									ent->client->pers.universe_quest_messages = 1;
-									trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7Remember hero. If you are in the void, go straight forward...\"");
 									if (npc_ent)
 										npc_ent->client->pers.universe_quest_messages = -2000;
 								}
@@ -8362,6 +8361,13 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
+							poison_mushrooms(ent,100,1500);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Poison Mushrooms!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 3000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 7)
+						{
 							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -8374,7 +8380,7 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 7)
+						else if (ent->client->pers.hunter_quest_messages == 8)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
 							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -8389,7 +8395,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 8)
+						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
 							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
@@ -8397,7 +8403,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Earthquake!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 9)
+						else if (ent->client->pers.hunter_quest_messages == 10)
 						{
 							time_power(ent,1600,6000);
 
@@ -8406,7 +8412,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Time Power!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 10)
+						else if (ent->client->pers.hunter_quest_messages == 11)
 						{
 							vec3_t origin, angles;
 
@@ -8423,70 +8429,14 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 11)
-						{
-							if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
-							{ // zyk: if guardian has less than half hp, uses The Void ability
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-								vec3_t origin, angles;
-
-								origin[0] = -1915.0f;
-								origin[1] = -26945.0f;
-								origin[2] = -1000.0f;
-								angles[0] = 0.0f;
-								angles[1] = -179.0f;
-								angles[2] = 0.0f;
-
-								zyk_TeleportPlayer(player_ent,origin,angles);
-
-								trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7The Void!\"");
-								ent->client->pers.hunter_quest_messages++;
-								ent->client->pers.guardian_timer = level.time + 1000;
-								ent->client->pers.light_quest_messages = 1;
-							}
-							else
-							{
-								ent->client->pers.hunter_quest_messages++;
-								ent->client->pers.guardian_timer = level.time + 3000;
-							}
-						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
-							if (ent->client->pers.light_quest_messages == 1)
-							{ // zyk: player must escape from The Void so Guardian of Chaos can use Chaos Power ability
-								gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+							chaos_power(ent,1600,440);
 
-								if ((int) player_ent->client->ps.origin[0] < -5000)
-								{ // zyk: player escaped from the void, return to the battle arena
-									vec3_t origin, angles;
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
 
-									origin[0] = -1915.0f;
-									origin[1] = -26945.0f;
-									origin[2] = 200.0f;
-									angles[0] = 0.0f;
-									angles[1] = -179.0f;
-									angles[2] = 0.0f;
-
-									zyk_TeleportPlayer(player_ent,origin,angles);
-
-									ent->client->pers.light_quest_messages = 0;
-									ent->client->pers.guardian_timer = level.time + 5000;
-								}
-								else if (ent->health > 0)
-								{ // zyk: while player is in the void, takes damage
-									G_Damage(player_ent,NULL,NULL,NULL,NULL,((int)ceil((ent->client->ps.stats[STAT_MAX_HEALTH]*1.5)/ent->health)),0,MOD_UNKNOWN);
-									ent->client->pers.guardian_timer = level.time + 1000;
-								}
-							}
-							else
-							{
-								chaos_power(ent,1600,440);
-
-								trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
-
-								ent->client->pers.hunter_quest_messages = 0;
-								ent->client->pers.guardian_timer = level.time + 5000;
-							}
+							ent->client->pers.hunter_quest_messages = 0;
+							ent->client->pers.guardian_timer = level.time + 5000;
 						}
 					}
 
