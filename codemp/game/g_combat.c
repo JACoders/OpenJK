@@ -2593,8 +2593,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					if (attacker != self  && attacker->client)//JAPRO STATS
 						attacker->client->pers.stats.teamKills++;
 				}
-				else if (level.gametype != GT_FFA) //we selfkilled
-					AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA i guess, sure
+				else if (level.gametype != GT_FFA && (level.gametype != GT_CTF || !g_fixCTFScores.integer)) //we selfkilled
+					AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA or CTF i guess, sure
 
 			}
 			if (level.gametype == GT_JEDIMASTER)
