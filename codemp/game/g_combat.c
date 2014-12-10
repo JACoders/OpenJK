@@ -4923,6 +4923,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		// zyk: Guardian of Darkness used his Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
 			damage = (int)ceil(damage*1.15);
+
+		// zyk: Guardian of Resistance used his Ultra Strength. Increase damage
+		if (attacker->client->pers.guardian_mode == 11 && attacker->client->pers.light_quest_messages == 1)
+			damage = (int)ceil(damage*1.12);
 	}
 
 	// zyk: attacker is the Guardian of Map. If he is using his special ability, increase damage

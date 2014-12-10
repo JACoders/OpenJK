@@ -3871,6 +3871,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->client->pers.guardian_invoked_by_id = ent-g_entities;
 		npc_ent->client->pers.guardian_weapons_backup = npc_ent->client->ps.stats[STAT_WEAPONS];
 		npc_ent->client->pers.hunter_quest_messages = 0;
+		npc_ent->client->pers.light_quest_messages = 0;
 		npc_ent->client->pers.guardian_timer = level.time + 5000;
 		npc_ent->client->pers.guardian_mode = guardian_mode;
 	}
@@ -8225,6 +8226,12 @@ void G_RunFrame( int levelTime ) {
 						ent->flags |= FL_SHIELDED;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Resistance!\"");
 					}
+
+					if (ent->client->pers.light_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/4))
+					{ // zyk: after losing 3/4 HP, uses his special ability
+						ent->client->pers.light_quest_messages = 1;
+						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Strength!\"");
+					}
 				}
 				else if (ent->client->pers.guardian_mode == 12)
 				{ // zyk: Master of Evil
@@ -8459,7 +8466,7 @@ void G_RunFrame( int levelTime ) {
 							zyk_TeleportPlayer(ent,origin,angles);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + 2000;
+							ent->client->pers.guardian_timer = level.time + 3000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
