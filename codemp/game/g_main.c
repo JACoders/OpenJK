@@ -1048,8 +1048,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		int i = 0;
 		gentity_t *ent;
 
-		level.quest_map = 11;
-
 		for (i = 0; i < level.num_entities; i++)
 		{
 			ent = &g_entities[i];
@@ -1123,6 +1121,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		Zyk_NPC_SpawnType("alora_dual",-10423,-992,2417,0);
 		zyk_create_info_player_deathmatch(286,-2859,345,92);
 		zyk_create_info_player_deathmatch(190,-2834,345,90);
+	}
+	else if (Q_stricmp(zyk_mapname, "mp/duel5") == 0 && g_gametype.integer == GT_FFA)
+	{
+		level.quest_map = 11;
 	}
 	else if (Q_stricmp(zyk_mapname, "mp/duel7") == 0 && g_gametype.integer == GT_FFA)
 	{
@@ -4205,7 +4207,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4259,7 +4261,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4314,7 +4316,7 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4359,7 +4361,7 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4377,6 +4379,51 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
 					player_ent->client->pers.ultimate_power_target = 500;
 					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+				}
+			}
+		}
+	}
+}
+
+// zyk: Ultra Flame
+void ultra_flame(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					gentity_t *new_ent = G_Spawn();
+
+					zyk_set_entity_field(new_ent,"classname","fx_runner");
+					zyk_set_entity_field(new_ent,"spawnflags","4");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+
+					new_ent->s.modelindex = G_EffectIndex( "env/flame_jet" );
+
+					zyk_spawn_entity(new_ent);
+
+					new_ent->splashDamage = damage;
+					new_ent->splashRadius = 90;
+					new_ent->nextthink = level.time + 1000;
 				}
 			}
 		}
@@ -6205,7 +6252,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 11)
 					{   
-						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 9)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > 2642 && (int) ent->client->ps.origin[0] < 2842 && (int) ent->client->ps.origin[1] > -125 && (int) ent->client->ps.origin[1] < 75 && (int) ent->client->ps.origin[2] >= -3815 && (int) ent->client->ps.origin[2] <= -3807)
+						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 9)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -100 && (int) ent->client->ps.origin[0] < 100 && (int) ent->client->ps.origin[1] > -95 && (int) ent->client->ps.origin[1] < 105 && (int) ent->client->ps.origin[2] == -375)
 						{
 							if (ent->client->pers.light_quest_timer < level.time)
 							{
@@ -6213,7 +6260,7 @@ void G_RunFrame( int levelTime ) {
 									trap->SendServerCommand( -1, va("chat \"^1Guardian of Fire: ^7I am the Guardian of Fire, %s^7! Now you will feel my fire burning!\"",ent->client->pers.netname));
 								else if (ent->client->pers.light_quest_messages == 1)
 								{
-									spawn_boss(ent,2742,-25,-3808,0,"guardian_boss_6",3059,-25,-3808,179,6);
+									spawn_boss(ent,0,5,-374,-90,"guardian_boss_6",0,-269,-374,90,6);
 								}
 								ent->client->pers.light_quest_messages++;
 								ent->client->pers.light_quest_timer = level.time + 3000;
@@ -8377,6 +8424,7 @@ void G_RunFrame( int levelTime ) {
 				else if (ent->client->pers.guardian_mode == 6)
 				{ // zyk: Guardian of Fire
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
+
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: fire ability
 						if (ent->client->pers.flame_thrower < level.time)
@@ -8389,6 +8437,13 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->client->pers.flame_thrower < (level.time + 100))
 							ent->client->pers.guardian_timer = level.time + 15000;
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						ultra_flame(ent,3000,120);
+						trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Ultra Flame!\"");
+						ent->client->pers.light_quest_timer = level.time + 12000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 7)
