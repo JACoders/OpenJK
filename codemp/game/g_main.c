@@ -4034,7 +4034,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	}
 }
 
-// zyk: Poison Mushrooms skill. Used by Guardian of Forest and the player
+// zyk: Poison Mushrooms
 void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
 	int i = 0;
@@ -4146,6 +4146,38 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 					player_ent->client->ps.electrifyTime = level.time + 5000;
 
 					G_Damage(player_ent,ent,ent,NULL,NULL,first_damage,0,MOD_UNKNOWN);
+				}
+			}
+		}
+	}
+}
+
+// zyk: Inner Area Damage
+void inner_area_damage(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 				}
 			}
 		}
@@ -6899,7 +6931,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 4)
 									trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7And by choosing us, we will give you a new power.\"");
 								else if (ent->client->pers.universe_quest_messages == 5)
-									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Poison Mushrooms^7. Choose wisely, hero.\"");
+									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Inner Area Damage^7. Choose wisely, hero.\"");
 								else if (ent->client->pers.universe_quest_messages == 6)
 									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Hero, by choosing us...\"");
 								else if (ent->client->pers.universe_quest_messages == 7)
@@ -7273,7 +7305,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 24)
 								{
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
-										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Poison Mushrooms ^7now. This will really be useful to you.\"");
+										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Inner Area Damage ^7now. This will really be useful to you.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
 										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Immunity Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
@@ -8478,22 +8510,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
-							int player_it = 0;
-
-							for (player_it = 0; player_it < level.maxclients; player_it++)
-							{
-								gentity_t *player_ent = &g_entities[player_it];
-
-								if (player_ent && player_ent->client)
-								{
-									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-									if (distance < 300)
-									{
-										G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
-									}
-								}
-							}
+							inner_area_damage(ent,400,200);
 
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;

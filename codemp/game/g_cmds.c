@@ -3435,6 +3435,7 @@ extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 #endif
 
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
+extern void inner_area_damage(gentity_t *ent, int distance, int damage);
 extern void healing_water(gentity_t *ent, int heal_amount);
 extern void earthquake(gentity_t *ent, int stun_time, int strength, int distance);
 extern void blowing_wind(gentity_t *ent, int distance, int duration);
@@ -3486,10 +3487,10 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.rightmove < 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
-			{ // zyk: Poison Mushrooms
-				poison_mushrooms(ent,100,900);
+			{ // zyk: Inner Area Damage
+				inner_area_damage(ent,400,200);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1))
 			{ // zyk: Immunity Power
