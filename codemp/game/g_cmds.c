@@ -3524,7 +3524,7 @@ qboolean TryGrapple(gentity_t *ent)
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Special Power
-			if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
+			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
 				ent->client->pers.ultimate_power_user = 3;
@@ -7630,7 +7630,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[5]);
 
-				if (ent->client->pers.rpg_class == 0 && ((ent->client->pers.defeated_guardians & (1 << 8) && ent->client->pers.defeated_guardians & (1 << 11)) || 
+				if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
