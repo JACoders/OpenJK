@@ -5273,7 +5273,7 @@ void choose_new_player(gentity_t *next_player)
 			}
 			else if (level.quest_map == 13 && !(next_player->client->pers.defeated_guardians & (1 << 5)))
 			{ // zyk: Guardian of Earth
-				load_effect(-380,1578,4751,0,"env/btend");
+				load_effect(-2149,-4187,3645,0,"env/btend");
 			}
 			else if (level.quest_map == 10 && !(next_player->client->pers.defeated_guardians & (1 << 6)))
 			{ // zyk: Guardian of Forest

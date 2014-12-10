@@ -3872,6 +3872,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->client->pers.guardian_weapons_backup = npc_ent->client->ps.stats[STAT_WEAPONS];
 		npc_ent->client->pers.hunter_quest_messages = 0;
 		npc_ent->client->pers.light_quest_messages = 0;
+		npc_ent->client->pers.light_quest_timer = level.time + 7000;
 		npc_ent->client->pers.guardian_timer = level.time + 5000;
 		npc_ent->client->pers.guardian_mode = guardian_mode;
 	}
@@ -4233,6 +4234,61 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 					healing_water(ent,damage);
+				}
+			}
+		}
+	}
+}
+
+// zyk: Rock Fall
+void rock_fall(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *effect_ent = &g_entities[i];
+
+		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
+		{ // zyk: cleans the models/effects spawned in quests
+			G_FreeEntity(effect_ent);
+		}
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					gentity_t *new_ent = G_Spawn();
+
+					zyk_set_entity_field(new_ent,"classname","fx_runner");
+					zyk_set_entity_field(new_ent,"spawnflags","4");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+
+					new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
+
+					zyk_spawn_entity(new_ent);
+
+					new_ent->splashDamage = damage;
+					new_ent->splashRadius = 100;
+					new_ent->nextthink = level.time + 1000;
 				}
 			}
 		}
@@ -6223,7 +6279,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 13)
 					{
-						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 5)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -480 && (int) ent->client->ps.origin[0] < -280 && (int) ent->client->ps.origin[1] > 1478 && (int) ent->client->ps.origin[1] < 1678 && (int) ent->client->ps.origin[2] == 4760)
+						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 5)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -2249 && (int) ent->client->ps.origin[0] < -2049 && (int) ent->client->ps.origin[1] > -4287 && (int) ent->client->ps.origin[1] < -4087 && (int) ent->client->ps.origin[2] == 3644)
 						{
 							if (ent->client->pers.light_quest_timer < level.time)
 							{
@@ -6231,7 +6287,7 @@ void G_RunFrame( int levelTime ) {
 									trap->SendServerCommand( -1, va("chat \"^3Guardian of Earth: ^7I am the Guardian of Earth, %s^7! Try to defeat my strength and power!\"",ent->client->pers.netname));
 								else if (ent->client->pers.light_quest_messages == 1)
 								{
-									spawn_boss(ent,-380,1578,4761,-90,"guardian_boss_2",-380,1335,4761,90,2);
+									spawn_boss(ent,-2149,-4187,3645,90,"guardian_boss_2",-2149,-4037,3645,-90,2);
 								}
 								ent->client->pers.light_quest_messages++;
 								ent->client->pers.light_quest_timer = level.time + 3000;
@@ -8120,9 +8176,16 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: uses earthquake ability
-						earthquake(ent,2000,((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/20),800);
+						earthquake(ent,2000,((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/20),3000);
 						ent->client->pers.guardian_timer = level.time + 3000 + ent->health;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Earthquake!\"");
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						rock_fall(ent,2000,50);
+						ent->client->pers.light_quest_timer = level.time + 10000;
+						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rock Fall!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 3)
