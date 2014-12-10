@@ -4334,8 +4334,8 @@ void ultimate_power_events(gentity_t *ent)
 			ent->client->pers.ultimate_power_user = -1;
 		}
 	
-		if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_timer < (level.time + 1000))
-		{ // zyk: Free Warrior Power Up runs out
+		if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_timer < level.time)
+		{ // zyk: Power Up runs out
 			ent->client->pers.ultimate_power_user = -1;
 		}
 	}

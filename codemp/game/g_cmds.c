@@ -3434,6 +3434,17 @@ extern void DismembermentByNum(gentity_t *self, int num);
 extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
 #endif
 
+// zyk: displays the yellow bar that shows the power duration
+void display_yellow_bar(gentity_t *ent, int duration)
+{
+	gentity_t *te = NULL;
+
+	te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
+	te->s.time = level.time;
+	te->s.time2 = duration;
+	te->s.owner = ent->client->ps.clientNum;
+}
+
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void inner_area_damage(gentity_t *ent, int distance, int damage);
 extern void healing_water(gentity_t *ent, int heal_amount);
@@ -3497,6 +3508,9 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.ultimate_power_user = 1000;
 				ent->client->pers.ultimate_power_target_timer = level.time + 25000;
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
+
+				display_yellow_bar(ent,25000);
+
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 2))
@@ -3511,16 +3525,6 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
-
-			if (ent->client->pers.ultimate_power_timer > level.time)
-			{
-				gentity_t *te = NULL;
-
-				te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
-				te->s.time = level.time;
-				te->s.time2 = ent->client->pers.ultimate_power_timer - level.time;
-				te->s.owner = ent->client->ps.clientNum;
-			}
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Special Power
@@ -3529,6 +3533,9 @@ qboolean TryGrapple(gentity_t *ent)
 			{
 				ent->client->pers.ultimate_power_user = 3;
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
+
+				display_yellow_bar(ent,30000);
+
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Power Up!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
@@ -3573,16 +3580,6 @@ qboolean TryGrapple(gentity_t *ent)
 
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-			}
-
-			if (ent->client->pers.ultimate_power_timer > level.time)
-			{ // zyk: displays the yellow bar below the screen
-				gentity_t *te = NULL;
-
-				te = G_TempEntity( ent->client->ps.origin, EV_LOCALTIMER );
-				te->s.time = level.time;
-				te->s.time2 = ent->client->pers.ultimate_power_timer - level.time;
-				te->s.owner = ent->client->ps.clientNum;
 			}
 		}
 
