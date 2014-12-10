@@ -4422,7 +4422,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 					zyk_spawn_entity(new_ent);
 
 					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 90;
+					new_ent->splashRadius = 50;
 					new_ent->nextthink = level.time + 1000;
 				}
 			}
@@ -8453,7 +8453,7 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 						{
-							dome_of_doom(ent,1000,180);
+							dome_of_doom(ent,1000,150);
 
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Doom.\"");
 						}

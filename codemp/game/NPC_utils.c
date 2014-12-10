@@ -1116,6 +1116,10 @@ qboolean NPC_ValidEnemy( gentity_t *ent )
 	if (ent->client && (!NPCS.NPC->enemy || NPCS.NPC->enemy != ent) && ent->client->ps.powerups[PW_CLOAKED])
 		return qfalse;
 
+	// zyk: bosses have preference to attack the quest player and his allies
+	if (NPCS.NPC->client->pers.guardian_invoked_by_id != -1 && ent->client && NPCS.NPC->client->pers.guardian_mode != ent->client->pers.guardian_mode)
+		return qfalse;
+
 	//Must be an NPC
 	if ( ent->client == NULL )
 	{
