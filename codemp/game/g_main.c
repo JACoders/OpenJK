@@ -4430,6 +4430,43 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Hurricane
+void hurricane(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+
+	for ( i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{
+					player_ent->client->pers.ultimate_power_user = ent->s.number;
+					player_ent->client->pers.ultimate_power_target = 80;
+					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+							
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -4572,6 +4609,28 @@ void ultimate_power_events(gentity_t *ent)
 
 				ent->client->pers.ultimate_power_target++;
 				ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+			}
+			else if (ent->client->pers.ultimate_power_target >= 80 && ent->client->pers.ultimate_power_target < 440)
+			{ // zyk: being hit by Hurricane
+				static vec3_t forward;
+				vec3_t blow_dir, dir;
+
+				VectorSet(blow_dir,-70,(ent->client->pers.ultimate_power_target - 79 - 180),0);
+
+				AngleVectors(blow_dir, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+
+				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+					VectorScale(forward,50.0,dir);
+				else
+					VectorScale(forward,25.0,dir);
+
+				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+
+				ent->client->pers.ultimate_power_target+=4;
+				if (ent->client->pers.ultimate_power_target == 440)
+					ent->client->pers.ultimate_power_target = 80;
 			}
 		}
 		else if (ent->client->pers.ultimate_power_user == 1000 && ent->client->pers.ultimate_power_target_timer < level.time)
@@ -8456,6 +8515,14 @@ void G_RunFrame( int levelTime ) {
 
 						ent->client->pers.guardian_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
 						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						hurricane(ent,500,5000);
+
+						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Hurricane!\"");
+						ent->client->pers.light_quest_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 8)
