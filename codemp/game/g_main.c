@@ -4185,6 +4185,60 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Water Splash. Damages the targets and heals the user
+void water_splash(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *effect_ent = &g_entities[i];
+
+		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
+		{ // zyk: cleans the models/effects spawned in quests
+			G_FreeEntity(effect_ent);
+		}
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					gentity_t *new_ent = G_Spawn();
+
+					zyk_set_entity_field(new_ent,"classname","fx_runner");
+					zyk_set_entity_field(new_ent,"spawnflags","0");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+
+					new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
+
+					zyk_spawn_entity(new_ent);
+
+					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
+					healing_water(ent,damage);
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -8045,19 +8099,19 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->pers.guardian_mode == 1)
 				{ // zyk: Guardian of Water
 					if (ent->client->pers.guardian_timer < level.time)
-					{ // zyk: healing ability. If guardian is at water, heals more hp
+					{ // zyk: healing ability. Uses it when in water
 						if ((int)ent->client->ps.origin[2] < 321)
 						{
 							healing_water(ent,500);
-							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Ultra Healing Water!\"");
+							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Healing Water!\"");
 						}
 						else
 						{
-							healing_water(ent,100);
-							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Healing Water!\"");
+							water_splash(ent,400,100);
+							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Water Splash!\"");
 						}
 
-						ent->client->pers.guardian_timer = level.time + 15000;
+						ent->client->pers.guardian_timer = level.time + 12000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 2)

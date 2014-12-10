@@ -5154,6 +5154,10 @@ void choose_new_player(gentity_t *next_player)
 			{
 				G_FreeEntity(&g_entities[j]);
 			}
+			else if (&g_entities[j] && Q_stricmp(g_entities[j].targetname, "zyk_quest_models") == 0)
+			{ // zyk: cleans the models/effects spawned in quests
+				G_FreeEntity(&g_entities[j]);
+			}
 		}
 
 		// zyk: setting the attributes depending on the quests this player must complete in this map
