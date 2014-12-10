@@ -4795,6 +4795,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			return;
 	}
 
+	if (attacker && attacker->client && targ && targ->client && !attacker->NPC && !targ->NPC)
+	{ // zyk: in a boss battle, non-quest players cannot hit quest players and vice-versa
+		if (attacker->client->sess.amrpgmode == 2 && attacker->client->pers.guardian_mode > 0 && 
+			(targ->client->sess.amrpgmode != 2 || targ->client->pers.guardian_mode == 0))
+		{
+			return;
+		}
+
+		if (targ->client->sess.amrpgmode == 2 && targ->client->pers.guardian_mode > 0 && 
+			(attacker->client->sess.amrpgmode != 2 || attacker->client->pers.guardian_mode == 0))
+		{
+			return;
+		}
+	}
+
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)
 	{ // zyk: player in RPG mode, with duals or staff, has a better damage depending on Saber Attack level
 		if (attacker->client->saber[0].saberFlags&SFL_TWO_HANDED || (attacker->client->saber[0].model[0] && attacker->client->saber[1].model[0]))
