@@ -7017,6 +7017,10 @@ static void UI_RunMenuScript(char **args)
 		{
 			UI_ClampMaxPlayers();
 		}
+		else if ( Q_stricmp( name, "LaunchSP" ) == 0 )
+		{
+			// TODO for MAC_PORT
+		}
 		else
 		{
 			Com_Printf("unknown UI script %s\n", name);
