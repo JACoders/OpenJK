@@ -8534,8 +8534,8 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (ent->client->pers.hunter_quest_messages == 1 && ent->client->pers.guardian_timer < level.time)
 					{
-						if ((ent->health + 2) < ent->client->ps.stats[STAT_MAX_HEALTH])
-							ent->health += 2;
+						if ((ent->health + 5) < ent->client->ps.stats[STAT_MAX_HEALTH])
+							ent->health += 5;
 						else
 							ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 

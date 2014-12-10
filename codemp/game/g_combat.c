@@ -4922,7 +4922,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		// zyk: Guardian of Darkness used his Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
-			damage = (int)ceil(damage*1.15);
+			damage = (int)ceil(damage*1.2);
 
 		// zyk: Guardian of Resistance used his Ultra Strength. Increase damage
 		if (attacker->client->pers.guardian_mode == 11 && attacker->client->pers.light_quest_messages == 1)
@@ -4960,7 +4960,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		// zyk: Guardian of Eternity used his Eternity Power. Decrease damage taken
 		if (targ->client->pers.guardian_mode == 10 && targ->client->pers.hunter_quest_messages == 1)
-			damage = (int)ceil(damage*0.85);
+			damage = (int)ceil(damage*0.8);
 	}
 
 	if (targ && targ->client && targ->NPC)
