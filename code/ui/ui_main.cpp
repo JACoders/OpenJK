@@ -1485,6 +1485,10 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ResetCharacterListBoxes();
 		}
+		else if ( Q_stricmp( name, "LaunchMP" ) == 0 )
+		{
+			// TODO for MAC_PORT, will only be valid for non-JK2 mode
+		}
 		else
 		{
 			Com_Printf("unknown UI script %s\n", name);
