@@ -1226,7 +1226,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (restricts.integer & (1<<5)) {//RESTRICT PLUGIN
 		if (!player->client->pers.validPlugin) {
-			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires a newer client plugin version!\n\n\n\n\n\n\n\n\n\n\"");
+			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires a\nnewer client plugin version!\n\n\n\n\n\n\n\n\n\n\"");
 			return qfalse;
 		}
 	}
