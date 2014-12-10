@@ -8453,7 +8453,7 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 						{
-							dome_of_doom(ent,1000,200);
+							dome_of_doom(ent,1000,180);
 
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Doom.\"");
 						}
@@ -8475,7 +8475,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.guardian_timer < level.time)
 					{
-						slow_motion(ent,400,12000);
+						slow_motion(ent,600,12000);
 						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Slow Motion!\"");
 						ent->client->pers.guardian_timer = level.time + 12000;
 					}
@@ -8500,7 +8500,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						ultra_flame(ent,3000,120);
+						ultra_flame(ent,3000,100);
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Ultra Flame!\"");
 						ent->client->pers.light_quest_timer = level.time + 12000;
 					}
@@ -8519,7 +8519,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						hurricane(ent,500,5000);
+						hurricane(ent,700,5000);
 
 						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Hurricane!\"");
 						ent->client->pers.light_quest_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];

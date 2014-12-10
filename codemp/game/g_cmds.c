@@ -3499,7 +3499,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Inner Area Damage
-				inner_area_damage(ent,400,200);
+				inner_area_damage(ent,400,400);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 			}
