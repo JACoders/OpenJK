@@ -2469,31 +2469,34 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (!client->ps.m_iVehicleNum &&
 		(!ent->NPC || ent->s.NPC_class != CLASS_VEHICLE)) //if riding a vehicle it will manage our speed and such
 	{
+		float zyk_player_speed = g_speed.value;
+
 		// set speed
 		// set speed
 		if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4)
 		{ // zyk: each Improvements level increases the Monk speed
-			client->ps.speed = 250.0 * (client->pers.improvements_level * 0.3 + 1);
-			client->ps.basespeed = client->ps.speed;
+			zyk_player_speed *= (client->pers.improvements_level * 0.3 + 1);
 		}
-		else
+
+		//Check for a siege class speed multiplier
+		if (level.gametype == GT_SIEGE &&
+			client->siegeClass != -1)
 		{
-			client->ps.speed = g_speed.value;
-
-			//Check for a siege class speed multiplier
-			if (level.gametype == GT_SIEGE &&
-				client->siegeClass != -1)
-			{
-				client->ps.speed *= bgSiegeClasses[client->siegeClass].speed;
-			}
-
-			if (client->bodyGrabIndex != ENTITYNUM_NONE)
-			{ //can't go nearly as fast when dragging a body around
-				client->ps.speed *= 0.2f;
-			}
-
-			client->ps.basespeed = client->ps.speed;
+			zyk_player_speed *= bgSiegeClasses[client->siegeClass].speed;
 		}
+
+		if (client->bodyGrabIndex != ENTITYNUM_NONE)
+		{ //can't go nearly as fast when dragging a body around
+			zyk_player_speed *= 0.2f;
+		}
+
+		if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 500)
+		{ // zyk: hit by Slow Motion power. Decrease speed
+			zyk_player_speed /= 2;
+		}
+
+		client->ps.speed = zyk_player_speed;
+		client->ps.basespeed = zyk_player_speed;
 	}
 
 	if ( !ent->NPC || !(ent->NPC->aiFlags&NPCAI_CUSTOM_GRAVITY) )

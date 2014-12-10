@@ -4350,6 +4350,39 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Slow Motion
+void slow_motion(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					player_ent->client->pers.ultimate_power_target = 500;
+					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -8332,6 +8365,13 @@ void G_RunFrame( int levelTime ) {
 						ent->NPC->stats.walkSpeed *= 2;
 						ent->NPC->stats.runSpeed *= 2;
 						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Ultra Speed!\"");
+					}
+
+					if (ent->client->pers.guardian_timer < level.time)
+					{
+						slow_motion(ent,400,12000);
+						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Slow Motion!\"");
+						ent->client->pers.guardian_timer = level.time + 12000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 6)
