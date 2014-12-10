@@ -773,13 +773,16 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
-    int row = 0, s, count = 0, i;
+    int row = 0, s, count = 0, i, key;
 	unsigned int ip, lastip = 0;
-	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0};
+	char username[16], enteredPassword[16], password[16], strIP[NET_ADDRSTRMAXLEN] = {0}, enteredKey[32];
 	char *p = NULL;
 	gclient_t	*cl;
 
-	if (trap->Argc() != 3) {
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 3 && trap->Argc() != 4) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /login <username> <password>\n\"");
 		return;
 	}
@@ -791,6 +794,16 @@ void Cmd_ACLogin_f( gentity_t *ent ) { //loda fixme show lastip ? or use lastip 
 
 	trap->Argv(1, username, sizeof(username));
 	trap->Argv(2, enteredPassword, sizeof(password));
+
+	trap->Argv(3, enteredKey, sizeof(enteredKey));
+	key = atoi(enteredKey);
+	if (key) {
+		//trap->Print("Client logged in with key: %i\n", key);
+		if (key == ent->client->pers.cmd.serverTime % 256)
+			ent->client->pers.validPlugin = qtrue;
+		else
+			ent->client->pers.validPlugin = qfalse;
+	}
 
 	Q_strlwr(username);
 	Q_CleanStr(username);

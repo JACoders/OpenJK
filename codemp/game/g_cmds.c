@@ -2834,11 +2834,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE" ) ) );
 		return;
 	}
-
+	
 	if (g_fixVote.integer && (level.startTime > (level.time - 1000*30))) { //Dont let a vote be called within 30sec of mapload ever
 		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote within 30 seconds of map load.\n\"" );//print to wait X more minutes..seconds?
 		return;
-	}
+	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
 	if (g_fixVote.integer && level.lastVoteFailTime && (level.lastVoteFailTime > (level.time - 1000*60*3))) { //Dont let a vote be called right away if a vote has just failed..
 		trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?

@@ -699,7 +699,7 @@ typedef struct clientPersistant_s {
 	qboolean	noRoll;
 
 	int			startLag;
-	//int			movementStyle; //move this to session data
+	//int		movementStyle; //move this to session data
 
 	char		saber1[MAX_QPATH], saber2[MAX_QPATH];
 
@@ -713,6 +713,7 @@ typedef struct clientPersistant_s {
 	qboolean	noFollow;
 	qboolean	haste;
 	short		showCheckpoints; //0 = off, 1 = centerprint, 2 = chat
+	qboolean	validPlugin;
 
 
 	stats_t		stats;
@@ -1700,6 +1701,7 @@ void Svcmd_BotList_f( void );
 void BotInterbreedEndMatch( void );
 qboolean G_DoesMapSupportGametype(const char *mapname, int gametype);
 const char *G_RefreshNextMap(int gametype, qboolean forced);
+const char *G_GetDefaultMap(int gametype);
 void G_LoadArenas( void );
 
 // w_force.c / w_saber.c
