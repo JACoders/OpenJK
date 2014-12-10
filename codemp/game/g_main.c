@@ -4295,6 +4295,61 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Dome of Doom
+void dome_of_doom(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *effect_ent = &g_entities[i];
+
+		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
+		{ // zyk: cleans the models/effects spawned in quests
+			G_FreeEntity(effect_ent);
+		}
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (ent->s.number != i && player_ent && player_ent->client)
+		{
+			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+			if (player_distance < distance)
+			{
+				int found = 0;
+
+				// zyk: allies will not be hit by this power
+				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
+				{
+					found = 1;
+				}
+
+				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+					gentity_t *new_ent = G_Spawn();
+
+					zyk_set_entity_field(new_ent,"classname","fx_runner");
+					zyk_set_entity_field(new_ent,"spawnflags","4");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+
+					new_ent->s.modelindex = G_EffectIndex( "env/dome" );
+
+					zyk_spawn_entity(new_ent);
+
+					new_ent->splashDamage = damage;
+					new_ent->splashRadius = 300;
+					new_ent->nextthink = level.time + 1500;
+				}
+			}
+		}
+	}
+}
+
 // zyk: fires the Boba Fett flame thrower
 void Player_FireFlameThrower( gentity_t *self )
 {
@@ -8256,6 +8311,14 @@ void G_RunFrame( int levelTime ) {
 							Jedi_Cloak(ent);
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking.\"");
 						}
+
+						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+						{
+							dome_of_doom(ent,1000,200);
+
+							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Doom.\"");
+						}
+
 						ent->client->pers.guardian_timer = level.time + 10000;
 					}
 				}
