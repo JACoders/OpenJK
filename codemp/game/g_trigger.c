@@ -1224,7 +1224,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (sv_fps.integer != 20 && sv_fps.integer != 30)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;
-	if (restricts.integer & (1<<5)) {//RESTRICT PLUGIN
+	if (sv_pluginKey.integer > 0) {//RESTRICT PLUGIN
 		if (!player->client->pers.validPlugin && player->client->pers.userName[0]) { //Meh.. only do this if they are logged in to keep the print colors working right i guess..
 			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires a\nnewer client plugin version!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
 			return qfalse;

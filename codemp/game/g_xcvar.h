@@ -201,7 +201,7 @@ XCVAR_DEF( g_teamEnergizeScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO GUNS
 XCVAR_DEF( g_tweakWeapons,				"0",			CVU_TweakWeapons,	CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_startingWeapons,			"8",			NULL,				CVAR_ARCHIVE,									qtrue )//Start with saber only default, fall back to melee if no saberattack
+XCVAR_DEF( g_startingWeapons,			"8",			NULL,				CVAR_ARCHIVE,									qtrue ) //Start with saber only default, fall back to melee if no saberattack
 XCVAR_DEF( g_weaponDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileVelocityScale,	"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_selfDamageScale,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -271,6 +271,7 @@ XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
 XCVAR_DEF( sv_webServerPath,			"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
 XCVAR_DEF( sv_webServerPassword,		"",				NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( sv_pluginKey,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 //JAPRO LOGGING
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
