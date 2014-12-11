@@ -3453,6 +3453,11 @@ extern void blowing_wind(gentity_t *ent, int distance, int duration);
 extern void sleeping_flowers(gentity_t *ent, int stun_time, int distance);
 extern void time_power(gentity_t *ent, int distance, int duration);
 extern void chaos_power(gentity_t *ent, int distance, int first_damage);
+extern void water_splash(gentity_t *ent, int distance, int damage);
+extern void ultra_flame(gentity_t *ent, int distance, int damage);
+extern void rock_fall(gentity_t *ent, int distance, int damage);
+extern void dome_of_doom(gentity_t *ent, int distance, int damage);
+extern void hurricane(gentity_t *ent, int distance, int duration);
 extern void Jedi_Cloak( gentity_t *self );
 qboolean TryGrapple(gentity_t *ent)
 {
@@ -3495,7 +3500,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.rightmove < 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Inner Area Damage
@@ -3526,8 +3531,63 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 			}
 		}
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		{ // zyk: Special Power 1
+			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				ent->client->pers.ultimate_power_user = 3;
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+
+				display_yellow_bar(ent,30000);
+
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Power Up!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				poison_mushrooms(ent,100,600);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				water_splash(ent,400,100);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				ultra_flame(ent,400,60);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				rock_fall(ent,500,50);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				dome_of_doom(ent,500,100);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			{
+				hurricane(ent,600,5000);
+				ent->client->pers.ultimate_power_timer = level.time + 30000;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
+			}
+		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.ultimate_power_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
-		{ // zyk: Special Power
+		{ // zyk: Special Power 2
 			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
@@ -7633,27 +7693,27 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 
 				if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else
-					sprintf(message_content[6],"%s^3s  ^6- Special Power: ^1no\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^1no\n",message_content[6]);
 
 				if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
@@ -8241,13 +8301,13 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else
 					{
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Poison Mushrooms: ^7keeps damaging enemies for some seconds. Attack with special melee + A to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages all enemies nearby. Attack with S + special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 1))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Immunity Power: ^7protects you from other special powers. Attack with special melee + A to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Immunity Power: ^7protects you from other special powers. Attack S + with special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 2))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Chaos Power: ^7causes high damage, electrifies the enemies and throws them in the ground. Attack with special melee + A to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Chaos Power: ^7causes high damage, electrifies the enemies and throws them in the ground. Attack with S + special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 3))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Time Power: ^7paralyzes enemies for some seconds. Attack with special melee + A to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Time Power: ^7paralyzes enemies for some seconds. Attack with S + special melee to use this power\n\"") );
 					}
 				}
 				else if (Q_stricmp( arg1, "r" ) == 0)
@@ -8257,19 +8317,19 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else if (Q_stricmp( arg1, "s" ) == 0)
 				{
 					if (ent->client->pers.rpg_class == 0)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Power Up: ^7increases damage and resistance to damage a bit. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Power Up: ^7increases damage and resistance to damage a bit. Attack with D + special melee to use this power\n\n\"") );
 					else if (ent->client->pers.rpg_class == 1)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Sleeping Flowers: ^7knocks down enemies for some seconds. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Sleeping Flowers: ^7knocks down enemies for some seconds. Attack with D + special melee to use this power\n^3Poison Mushrooms: ^7keep damaging the enemies for some time. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 2)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Blowing Wind: ^7blows people away for some seconds. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Blowing Wind: ^7blows people away for some seconds. Attack with D + special melee to use this power\n^3Hurricane: ^7makes enemies fly up like if they were inside a tornado. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 3)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Earthquake: ^7knocks people down causing damage. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Earthquake: ^7knocks people down causing damage. Attack with D + special melee to use this power\n^3Rockfall: ^7rocks keep falling at the enemies. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 4)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Flaming Burst: ^7fires a flame burst for some seconds. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Flaming Burst: ^7fires a flame burst for some seconds. Attack with D + special melee to use this power\n^3Ultra Flame: ^7a flame jet appears at the enemies and damages them. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 5)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with D + special melee to use this power\n^3Water Splash: ^7damages enemies, draining their hp and healing you. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 6)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with special melee + D to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with D + special melee to use this power\n^3Dome of Doom: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{

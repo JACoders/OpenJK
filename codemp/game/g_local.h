@@ -801,7 +801,7 @@ typedef struct clientPersistant_s {
 	int guardian_weapons_backup;
 
 	// zyk: player id that is fighting this guardian
-	int guardian_invoked_by_id; 
+	int guardian_invoked_by_id;
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -1363,6 +1363,12 @@ typedef struct level_locals_s {
 
 	// zyk: sets which players are participating in the battle type set in the battle_type variable
 	int battle_type_players[MAX_CLIENTS];
+
+	// zyk: each index has the effect id. The value is the owner of the effect used in Special Powers
+	int special_power_effects[ENTITYNUM_MAX_NORMAL];
+
+	// zyk: timer to remove each effect used in Special Powers
+	int special_power_effects_timer[ENTITYNUM_MAX_NORMAL];
 } level_locals_t;
 
 

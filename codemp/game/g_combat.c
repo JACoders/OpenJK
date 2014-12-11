@@ -6274,7 +6274,11 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			}
 			else
 			{
-				G_Damage (ent, NULL, attacker, dir, origin, (int)points, DAMAGE_RADIUS, mod);
+				// zyk: if it is an effect used by special power, then attacker must be the owner of the effect. Also, do not hit the owner
+				if (attacker && ent && level.special_power_effects[attacker->s.number] != -1 && level.special_power_effects[attacker->s.number] != ent->s.number)
+					G_Damage (ent, &g_entities[level.special_power_effects[attacker->s.number]], &g_entities[level.special_power_effects[attacker->s.number]], dir, origin, (int)points, DAMAGE_RADIUS, mod);
+				else if (!attacker || level.special_power_effects[attacker->s.number] == -1)
+					G_Damage (ent, NULL, attacker, dir, origin, (int)points, DAMAGE_RADIUS, mod);
 			}
 
 			if (ent && ent->client && roastPeople && missile &&

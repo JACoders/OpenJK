@@ -536,11 +536,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.battle_type = 0;
 	if (1)
 	{
-		int battle_type_iterator = 0;
+		int zyk_iterator = 0;
 
-		for (battle_type_iterator = 0; battle_type_iterator < MAX_CLIENTS; battle_type_iterator++)
+		for (zyk_iterator = 0; zyk_iterator < MAX_CLIENTS; zyk_iterator++)
 		{
-			level.battle_type_players[battle_type_iterator] = 0;
+			level.battle_type_players[zyk_iterator] = 0;
+		}
+
+		for (zyk_iterator = 0; zyk_iterator < ENTITYNUM_MAX_NORMAL; zyk_iterator++)
+		{
+			level.special_power_effects[zyk_iterator] = -1;
+			level.special_power_effects_timer[zyk_iterator] = 0;
 		}
 	}
 
@@ -3924,7 +3930,7 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -3971,7 +3977,7 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4008,7 +4014,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4047,7 +4053,7 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4084,7 +4090,7 @@ void time_power(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 			if (player_distance < distance)
@@ -4116,7 +4122,7 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && !player_ent->client->ps.duelInProgress)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4165,7 +4171,7 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client)
+		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4195,16 +4201,6 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 	for (i = 0; i < level.num_entities; i++)
 	{
-		gentity_t *effect_ent = &g_entities[i];
-
-		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
-		{ // zyk: cleans the models/effects spawned in quests
-			G_FreeEntity(effect_ent);
-		}
-	}
-
-	for (i = 0; i < level.num_entities; i++)
-	{
 		gentity_t *player_ent = &g_entities[i];
 
 		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
@@ -4227,7 +4223,6 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","0");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
@@ -4236,6 +4231,9 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 					healing_water(ent,damage);
+
+					level.special_power_effects[new_ent->s.number] = ent->s.number;
+					level.special_power_effects_timer[new_ent->s.number] = level.time + 3000;
 				}
 			}
 		}
@@ -4249,16 +4247,6 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 
 	for (i = 0; i < level.num_entities; i++)
 	{
-		gentity_t *effect_ent = &g_entities[i];
-
-		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
-		{ // zyk: cleans the models/effects spawned in quests
-			G_FreeEntity(effect_ent);
-		}
-	}
-
-	for (i = 0; i < level.num_entities; i++)
-	{
 		gentity_t *player_ent = &g_entities[i];
 
 		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
@@ -4281,7 +4269,6 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
@@ -4291,6 +4278,9 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 					new_ent->splashDamage = damage;
 					new_ent->splashRadius = 100;
 					new_ent->nextthink = level.time + 1000;
+
+					level.special_power_effects[new_ent->s.number] = ent->s.number;
+					level.special_power_effects_timer[new_ent->s.number] = level.time + 8000;
 				}
 			}
 		}
@@ -4304,16 +4294,6 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 
 	for (i = 0; i < level.num_entities; i++)
 	{
-		gentity_t *effect_ent = &g_entities[i];
-
-		if (effect_ent && Q_stricmp(effect_ent->targetname, "zyk_quest_models") == 0)
-		{ // zyk: cleans the models/effects spawned in quests
-			G_FreeEntity(effect_ent);
-		}
-	}
-
-	for (i = 0; i < level.num_entities; i++)
-	{
 		gentity_t *player_ent = &g_entities[i];
 
 		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
@@ -4336,7 +4316,6 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "env/dome" );
@@ -4346,6 +4325,9 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 					new_ent->splashDamage = damage;
 					new_ent->splashRadius = 300;
 					new_ent->nextthink = level.time + 1500;
+
+					level.special_power_effects[new_ent->s.number] = ent->s.number;
+					level.special_power_effects_timer[new_ent->s.number] = level.time + 10000;
 				}
 			}
 		}
@@ -4414,7 +4396,6 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_models");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "env/flame_jet" );
@@ -4424,6 +4405,9 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 					new_ent->splashDamage = damage;
 					new_ent->splashRadius = 50;
 					new_ent->nextthink = level.time + 1000;
+
+					level.special_power_effects[new_ent->s.number] = ent->s.number;
+					level.special_power_effects_timer[new_ent->s.number] = level.time + 120000;
 				}
 			}
 		}
@@ -4553,6 +4537,16 @@ void Player_FireFlameThrower( gentity_t *self )
 			G_Damage( traceEnt, self, self, self->client->ps.viewangles, tr.endpos, 1, DAMAGE_NO_KNOCKBACK|DAMAGE_IGNORE_TEAM, MOD_LAVA );
 		}
 		e++;
+	}
+}
+
+// zyk: clear effects of some special powers
+void clear_special_power_effect(gentity_t *ent)
+{
+	if (level.special_power_effects[ent->s.number] != -1 && level.special_power_effects_timer[ent->s.number] < level.time)
+	{ 
+		level.special_power_effects[ent->s.number] = -1;
+		ent->think = G_FreeEntity;
 	}
 }
 
@@ -5113,6 +5107,8 @@ void G_RunFrame( int levelTime ) {
 			}
 			continue;
 		}
+
+		clear_special_power_effect(ent);
 
 		if ( i < MAX_CLIENTS )
 		{
@@ -8379,7 +8375,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						rock_fall(ent,2000,40);
 						ent->client->pers.light_quest_timer = level.time + 10000;
-						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rock Fall!\"");
+						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rockfall!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 3)
