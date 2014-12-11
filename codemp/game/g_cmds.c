@@ -10841,11 +10841,16 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 			if (swoop_number < max_racers)
 			{
 				// zyk: teleporting player to the swoop area
-				TeleportPlayer( ent, origin, yaw);
+				zyk_TeleportPlayer( ent, origin, yaw);
 
 				ent->client->pers.race_position = swoop_number + 1;
 
-				NPC_SpawnType(ent,"swoop",NULL,qtrue);
+				this_ent = NPC_SpawnType(ent,"swoop",NULL,qtrue);
+				if (this_ent)
+				{ // zyk: setting the vehicle hover height and hover strength
+					this_ent->m_pVehicle->m_pVehicleInfo->hoverHeight = 40.0;
+					this_ent->m_pVehicle->m_pVehicleInfo->hoverStrength = 40.0;
+				}
 
 				level.race_start_timer = level.time + 15000; // zyk: race will start 15 seconds after the last player who joined the race
 				level.race_mode = 1;
