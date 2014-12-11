@@ -7146,7 +7146,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles and hitscan\n");
 		else if (d_projectileGhoul2Collision.integer > 1)
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles\n");
-		if (g_selfDamageScale.integer != 0.5)
+		if (g_selfDamageScale.integer != 0.5f)
 			Q_strcat(buf, sizeof(buf), va("   ^5Self damage scale: ^2%.2f\n", g_selfDamageScale.value));
 		if (g_fullInheritance.integer && g_projectileInheritance.value)
 			Q_strcat(buf, sizeof(buf), va("   ^5Full projectile inheritance: ^2%.2f%\n", g_projectileInheritance.value * 100.0f));
