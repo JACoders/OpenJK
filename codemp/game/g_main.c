@@ -4242,7 +4242,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	}
 }
 
-// zyk: Rock Fall
+// zyk: Rockfall
 void rock_fall(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
@@ -8377,7 +8377,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						rock_fall(ent,2000,50);
+						rock_fall(ent,2000,40);
 						ent->client->pers.light_quest_timer = level.time + 10000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rock Fall!\"");
 					}
@@ -8453,7 +8453,7 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 						{
-							dome_of_doom(ent,1000,150);
+							dome_of_doom(ent,1200,120);
 
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Doom.\"");
 						}
@@ -8484,6 +8484,21 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Fire
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
 
+					// zyk: take him back if he falls
+					if (ent->client->ps.origin[2] < -600)
+					{
+						vec3_t origin;
+						vec3_t yaw;
+
+						origin[0] = 0.0f;
+						origin[1] = -269.0f;
+						origin[2] = -374.0f;
+						yaw[0] = 0.0f;
+						yaw[1] = 90.0f;
+						yaw[2] = 0.0f;
+						zyk_TeleportPlayer( ent, origin, yaw );
+					}
+
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: fire ability
 						if (ent->client->pers.flame_thrower < level.time)
@@ -8500,9 +8515,9 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						ultra_flame(ent,3000,100);
+						ultra_flame(ent,4000,60);
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Ultra Flame!\"");
-						ent->client->pers.light_quest_timer = level.time + 12000;
+						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 7)

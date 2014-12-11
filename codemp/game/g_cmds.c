@@ -3548,7 +3548,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 			{
-				healing_water(ent,100);
+				healing_water(ent,120);
 				ent->client->pers.ultimate_power_timer = level.time + 30000;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 			}
