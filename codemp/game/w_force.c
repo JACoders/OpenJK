@@ -5372,6 +5372,7 @@ qboolean G_SpecialRollGetup(gentity_t *self)
 }
 
 extern void rpg_skill_counter(gentity_t *ent, int amount);
+extern char *zyk_rpg_class(gentity_t *ent);
 void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 {
 	int			i, holo, holoregen;
@@ -5854,20 +5855,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 							strcpy(player_type,"Admin-Only Player");
 						else if (g_entities[client_id].client->sess.amrpgmode == 2)
 						{
-							if (g_entities[client_id].client->pers.rpg_class == 0)
-								strcpy(player_type,"Free Warrior");
-							else if (g_entities[client_id].client->pers.rpg_class == 1)
-								strcpy(player_type,"Force User");
-							else if (g_entities[client_id].client->pers.rpg_class == 2)
-								strcpy(player_type,"Bounty Hunter");
-							else if (g_entities[client_id].client->pers.rpg_class == 3)
-								strcpy(player_type,"Armored Soldier");
-							else if (g_entities[client_id].client->pers.rpg_class == 4)
-								strcpy(player_type,"Monk");
-							else if (g_entities[client_id].client->pers.rpg_class == 5)
-								strcpy(player_type,"Stealth Attacker");
-							else if (g_entities[client_id].client->pers.rpg_class == 6)
-								strcpy(player_type,"Duelist");
+							strcpy(player_type,zyk_rpg_class(&g_entities[client_id]));
 
 							// zyk: calculating the max armor of this player
 							client_max_armor = g_entities[client_id].client->pers.max_rpg_shield;

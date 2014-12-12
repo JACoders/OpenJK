@@ -4847,11 +4847,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
 	{ // zyk: new Force Rage code
 		if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
-			damage = (int)ceil(damage * 1.05);
+			damage = (int)ceil(damage * 1.04);
 		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
-			damage = (int)ceil(damage * 1.1);
+			damage = (int)ceil(damage * 1.08);
 		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
-			damage = (int)ceil(damage * 1.15);
+			damage = (int)ceil(damage * 1.12);
 	}
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
@@ -4889,6 +4889,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 6 && (mod == MOD_SABER || mod == MOD_MELEE))
 		{ // zyk: Duelist has higher damage in saber and melee
 			damage = (int)ceil(damage * (1.2 + (0.2 * attacker->client->pers.improvements_level)));
+		}
+		else if (attacker->client->pers.rpg_class == 7)
+		{ // zyk: Force Gunner bonus damage
+			damage = (int)ceil(damage * (1.0 + (0.07 * attacker->client->pers.improvements_level)));
 		}
 	}
 
@@ -4992,7 +4996,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
-	{
+	{ // zyk: damage resistance of each class
 		// zyk: when player is in Hard Mode, he takes more damage
 		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
 			damage = (int)ceil(damage * 1.25);
@@ -5022,6 +5026,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				return;
 
 			damage = (int)ceil(damage * (1 - (0.25 * targ->client->pers.improvements_level)));
+		}
+		else if (targ->client->pers.rpg_class == 7) // zyk: Force Gunner damage resistance
+		{
+			damage = (int)ceil(damage * (1.0 - (0.07 * targ->client->pers.improvements_level)));
 		}
 	}
 

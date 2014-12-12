@@ -4367,6 +4367,13 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 	}
 }
 
+// zyk: Ultra Speed
+void ultra_speed(gentity_t *ent, int duration)
+{
+	ent->client->pers.ultimate_power_target = 501;
+	ent->client->pers.ultimate_power_target_timer = level.time + duration;
+}
+
 // zyk: Ultra Flame
 void ultra_flame(gentity_t *ent, int distance, int damage)
 {
@@ -8461,19 +8468,18 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Agility
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
 
-					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+					if (ent->client->pers.light_quest_timer < level.time)
 					{ // zyk: after losing half HP, uses his special ability
-						ent->client->pers.hunter_quest_messages = 1;
-						ent->NPC->stats.walkSpeed *= 2;
-						ent->NPC->stats.runSpeed *= 2;
+						ultra_speed(ent,10000);
 						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Ultra Speed!\"");
+						ent->client->pers.light_quest_timer = level.time + 12000;
 					}
 
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						slow_motion(ent,600,12000);
 						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Slow Motion!\"");
-						ent->client->pers.guardian_timer = level.time + 12000;
+						ent->client->pers.guardian_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 6)

@@ -2464,6 +2464,16 @@ void ClientThink_real( gentity_t *ent ) {
 
 			//ent->client->ps.speed = ent->client->ps.basespeed = NPC_GetRunSpeed( ent );
 		}
+
+		if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 500)
+		{ // zyk: hit by Slow Motion power. Decrease speed
+			client->ps.speed /= 2;
+		}
+		else if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 501)
+		{ // zyk: using Ultra Speed. Increase speed
+			client->ps.speed *= 2;
+		}
+
 		client->ps.basespeed = client->ps.speed;
 	}
 	else if (!client->ps.m_iVehicleNum &&
@@ -2493,6 +2503,10 @@ void ClientThink_real( gentity_t *ent ) {
 		if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 500)
 		{ // zyk: hit by Slow Motion power. Decrease speed
 			zyk_player_speed /= 2;
+		}
+		else if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 501)
+		{ // zyk: using Ultra Speed. Increase speed
+			zyk_player_speed *= 2;
 		}
 
 		client->ps.speed = zyk_player_speed;
