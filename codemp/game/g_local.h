@@ -582,7 +582,12 @@ typedef struct clientPersistant_s {
 	// 4 - Monk
 	// 5 - Stealth Attacker
 	// 6 - Duelist
+	// 7 - Force Gunner
+	// 8 - Magic Master
 	int rpg_class;
+
+	// zyk: current power selected by Magic Master to use
+	int current_magic_power;
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;

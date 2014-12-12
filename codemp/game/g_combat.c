@@ -2453,7 +2453,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 
 		// zyk: RPG players lose credits if they die
-		remove_credits(self, self->client->pers.level);
+		remove_credits(self, 10);
 		save_account(self);
 	}
 
@@ -4904,6 +4904,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 7)
 		{ // zyk: Force Gunner bonus damage
 			damage = (int)ceil(damage * (1.0 + (0.07 * attacker->client->pers.improvements_level)));
+		}
+		else if (attacker->client->pers.rpg_class == 7 && mod == MOD_MELEE)
+		{ // zyk: Magic Master bonus melee damage
+			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level)));
 		}
 	}
 

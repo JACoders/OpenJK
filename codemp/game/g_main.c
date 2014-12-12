@@ -5262,6 +5262,10 @@ void G_RunFrame( int levelTime ) {
 					{ // zyk: Bounty Hunter can have a more efficient jetpack
 						jetpack_debounce_amount -= ((ent->client->pers.jetpack_level * 3) + (ent->client->pers.improvements_level * 2));
 					}
+					else if (ent->client->pers.rpg_class == 8)
+					{ // zyk: Magic Master has the best jetpack
+						jetpack_debounce_amount = 4 - ent->client->pers.improvements_level;
+					}
 					else
 					{
 						jetpack_debounce_amount -= (ent->client->pers.jetpack_level * 3);
