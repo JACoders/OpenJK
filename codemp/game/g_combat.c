@@ -2078,6 +2078,7 @@ extern void saberBackToOwner(gentity_t *saberent);
 extern void quest_get_new_player(gentity_t *ent);
 extern void try_finishing_race();
 extern void save_account(gentity_t *ent);
+extern void remove_credits(gentity_t *ent, int credits);
 void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	gentity_t	*ent;
 	int			anim;
@@ -2444,9 +2445,16 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		quest_player->client->pers.guardian_mode = 0;
 	}
 	
-	if (self->client->sess.amrpgmode == 2 && self->client->pers.guardian_mode > 0)
-	{ // zyk: player lost to a guardian
-		self->client->pers.guardian_mode = 0;
+	if (self->client->sess.amrpgmode == 2)
+	{ 
+		if (self->client->pers.guardian_mode > 0)
+		{ // zyk: player lost to a guardian
+			self->client->pers.guardian_mode = 0;
+		}
+
+		// zyk: RPG players lose credits if they die
+		remove_credits(self, self->client->pers.level);
+		save_account(self);
 	}
 
 	//check player stuff
