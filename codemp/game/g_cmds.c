@@ -3505,7 +3505,7 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.magic_power > 0 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.magic_power > 1 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0))
 			{ // zyk: Inner Area Damage
@@ -3528,7 +3528,7 @@ qboolean TryGrapple(gentity_t *ent)
 				time_power(ent,400,6000);
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 			}
-			ent->client->pers.magic_power--;
+			ent->client->pers.magic_power -= 2;
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.magic_power > 0 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Special Power 1
