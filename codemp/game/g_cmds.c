@@ -2797,6 +2797,19 @@ qboolean G_VoteTeamSize( gentity_t *ent, int numArgs, const char *arg1, const ch
 	return qtrue;
 }
 
+qboolean G_VoteVSTR( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+	char vstr[64] = {0};
+
+	Q_strncpyz( vstr, arg2, sizeof( vstr ) );
+	//clean the string?
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, vstr );
+
+	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
 typedef struct voteString_s {
 	const char	*string;
 	const char	*aliases;	// space delimited list of aliases, will always show the real vote string
@@ -2820,6 +2833,7 @@ static voteString_t validVoteStrings[] = {
 	{	"nextmap",				NULL,				G_VoteNextmap,			0,		GTB_ALL,								qtrue,			NULL },
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 	{	"sv_maxteamsize",		"teamsize",			G_VoteTeamSize,			1,		GTB_TEAM|GTB_SIEGE|GTB_CTY,				qtrue,			"<num>" },
+	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -2964,7 +2978,14 @@ validVote:
 
 	level.votingGametype = qfalse;
 
-	level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
+	if (g_fixVote.integer) {
+		if (!Q_stricmp(arg1, "map") || !Q_stricmp(arg1, "g_gametype"))
+			level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
+		else 
+			level.voteExecuteDelay = vote->voteDelay ? 3000 : 0;
+	}
+	else
+		level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
 
 	// there is still a vote to be executed, execute it and store the new vote
 	if ( level.voteExecuteTime ) {

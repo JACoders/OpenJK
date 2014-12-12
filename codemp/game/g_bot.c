@@ -638,6 +638,18 @@ void G_CheckMinimumPlayers( void ) {
 	humanplayers = G_CountHumanPlayers( -1 );
 	botplayers = G_CountBotPlayers(	-1 );
 
+	if ( (humanplayers + botplayers) < bot_minplayers.integer //bot_maxbots from raz0r
+		&& (!bot_maxbots.integer || (humanplayers + botplayers) < bot_maxbots.integer) ) {
+		G_AddRandomBot( -1 );
+	}
+	else if ( ((humanplayers + botplayers) > bot_minplayers.integer && botplayers)
+		|| (botplayers > bot_maxbots.integer && botplayers && bot_maxbots.integer) ) {
+		// try to remove spectators first
+		if ( !G_RemoveRandomBot( TEAM_SPECTATOR ) )
+			G_RemoveRandomBot( -1 );
+	}
+
+	/*
 	if ((humanplayers+botplayers) < minplayers)
 	{
 		G_AddRandomBot(-1);
@@ -650,7 +662,7 @@ void G_CheckMinimumPlayers( void ) {
 			// just remove the bot that is playing
 			G_RemoveRandomBot(-1);
 		}
-	}
+	}*/
 
 	/*
 	if (level.gametype >= GT_TEAM) {
@@ -1053,6 +1065,7 @@ void Svcmd_AddBot_f( void ) {
 	char			altname[MAX_TOKEN_CHARS];
 	char			string[MAX_TOKEN_CHARS];
 	char			team[MAX_TOKEN_CHARS];
+	int				botplayers;
 
 	// are bots enabled?
 	if ( !trap->Cvar_VariableIntegerValue( "bot_enable" ) ) {
@@ -1063,6 +1076,12 @@ void Svcmd_AddBot_f( void ) {
 	trap->Argv( 1, name, sizeof( name ) );
 	if ( !name[0] ) {
 		trap->Print( "Usage: Addbot <botname> [skill 1-5] [team] [msec delay] [altname]\n" );
+		return;
+	}
+
+	botplayers = G_CountBotPlayers(	-1 );
+
+	if (botplayers >= bot_maxbots.integer) {
 		return;
 	}
 
