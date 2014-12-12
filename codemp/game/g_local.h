@@ -498,6 +498,9 @@ typedef struct clientSession_s {
 // zyk: max level a player can be in RPG Mode
 #define MAX_RPG_LEVEL 100
 
+// zyk: max magic power a player can have
+#define MAX_MAGIC_POWER 10
+
 // zyk: max jetpack fuel the player can have
 #define MAX_JETPACK_FUEL 10000
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
@@ -750,18 +753,43 @@ typedef struct clientPersistant_s {
 	int universe_quest_messages;
 	int universe_quest_timer;
 
-	// zyk: controls the Ultimate Power. Set in the player who uses it
-	// also sets the player id who is using Blowing Wind in the target player
-	int ultimate_power_user;
+	// zyk: bitvalue. Sets the power this player is using or the power that is affecting this player
+	// Possible values are:
+	// 0 - using Immunity Power
+	// 1 - hit by Chaos Power
+	// 2 - hit by Time Power
+	// 3 - using Ultra Strength
+	// 4 - hit by Poison Mushrooms
+	// 5 - hit by Hurricane
+	// 6 - hit by Slow Motion
+	// 7 - using Ultra Resistance
+	// 8 - hit by Blowing Wind
+	// 9 - using Ultra Speed
+	int quest_power_status;
 
-	// zyk: set in the target player to control events that happen to him when hit by Ultimate Power
-	int ultimate_power_target;
+	// zyk: powers that hits the target player more than once need a hit counter
+	int quest_power_hit_counter;
 
-	// zyk: timer used by the Ultimate Power
-	int ultimate_power_timer;
+	// zyk: timers of the quest powers used by this player
+	int quest_power1_timer;
+	int quest_power2_timer;
+	int quest_power3_timer;
 
-	// zyk: timer used in the target of the Ultimate Power
-	int ultimate_power_target_timer;
+	// zyk: timers used by the quest powers hitting this player
+	int quest_target1_timer;
+	int quest_target2_timer;
+	int quest_target3_timer;
+	int quest_target4_timer;
+	int quest_target5_timer;
+	int quest_target6_timer;
+
+	// zyk: player ids which are hitting the target player
+	int quest_power_user1_id;
+	int quest_power_user2_id;
+	int quest_power_user3_id;
+
+	// zyk: magic power, required to use Special Powers
+	int magic_power;
 
 	// zyk: controls the timed events in Light Quest
 	int light_quest_messages;

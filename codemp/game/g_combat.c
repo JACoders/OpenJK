@@ -2125,6 +2125,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 	}
 
+	// zyk: remove any quest_power status from this player
+	self->client->pers.quest_power_status = 0;
+
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{
@@ -4859,8 +4862,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (attacker->client->pers.rpg_class == 0)
 		{
 			float free_warrior_bonus_damage = 0.0;
-			// zyk: gets bonus damage if using Power Up
-			if (attacker->client->pers.ultimate_power_user == 3)
+			// zyk: gets bonus damage if using Ultra Strength
+			if (attacker->client->pers.quest_power_status & (1 << 3))
 				free_warrior_bonus_damage = 0.04;
 
 			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.improvements_level) + free_warrior_bonus_damage));
@@ -5013,8 +5016,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
 			float free_warrior_bonus_resistance = 0.0;
-			// zyk: Free Warrior Power Up bonus resistance
-			if (targ->client->pers.ultimate_power_user == 3)
+			// zyk: Ultra Resistance bonus resistance
+			if (targ->client->pers.quest_power_status & (1 << 7))
 				free_warrior_bonus_resistance = 0.04;
 
 			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.improvements_level) - free_warrior_bonus_resistance));

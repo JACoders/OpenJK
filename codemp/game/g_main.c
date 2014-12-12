@@ -3944,7 +3944,7 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
 				{
 					if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
 					{ // zyk: player can only be hit if he is on floor
@@ -3991,11 +3991,11 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
 				{
-					player_ent->client->pers.ultimate_power_user = ent->s.number;
-					player_ent->client->pers.ultimate_power_target = 10;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+					player_ent->client->pers.quest_power_user3_id = ent->s.number;
+					player_ent->client->pers.quest_power_status |= (1 << 8);
+					player_ent->client->pers.quest_target6_timer = level.time + duration;
 							
 					if (i < level.maxclients)
 						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
@@ -4028,7 +4028,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
 				{
 					player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 					player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
@@ -4067,11 +4067,12 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, the target is protected by Immunity Power
-					player_ent->client->pers.ultimate_power_user = ent->s.number;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
-					player_ent->client->pers.ultimate_power_target = 20;
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
+					player_ent->client->pers.quest_power_user2_id = ent->s.number;
+					player_ent->client->pers.quest_power_status |= (1 << 4);
+					player_ent->client->pers.quest_target3_timer = level.time + 1000;
+					player_ent->client->pers.quest_power_hit_counter = 10;
 
 					if (i < level.maxclients)
 						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
@@ -4103,10 +4104,10 @@ void time_power(gentity_t *ent, int distance, int duration)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
-					player_ent->client->pers.ultimate_power_target = 3;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
+					player_ent->client->pers.quest_power_status |= (1 << 2);
+					player_ent->client->pers.quest_target2_timer = level.time + duration;
 				}
 			}
 		}
@@ -4136,11 +4137,12 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
-					player_ent->client->pers.ultimate_power_user = ent->s.number;
-					player_ent->client->pers.ultimate_power_target = 4;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
+					player_ent->client->pers.quest_power_user1_id = ent->s.number;
+					player_ent->client->pers.quest_power_status |= (1 << 1);
+					player_ent->client->pers.quest_power_hit_counter = 1;
+					player_ent->client->pers.quest_target1_timer = level.time + 1000;
 
 					if (player_ent->client->jetPackOn)
 					{
@@ -4185,13 +4187,34 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
 					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 				}
 			}
 		}
 	}
+}
+
+// zyk: Ultra Strength. Increases damage and resistance to damage
+void ultra_strength(gentity_t *ent, int duration)
+{
+	ent->client->pers.quest_power_status |= (1 << 3);
+	ent->client->pers.quest_power2_timer = level.time + duration;
+}
+
+// zyk: Ultra Resistance. Increases resistance to damage
+void ultra_resistance(gentity_t *ent, int duration)
+{
+	ent->client->pers.quest_power_status |= (1 << 7);
+	ent->client->pers.quest_power3_timer = level.time + duration;
+}
+
+// zyk: Immunity Power. Becomes immune against other special powers
+void immunity_power(gentity_t *ent, int duration)
+{
+	ent->client->pers.quest_power_status |= (1 << 0);
+	ent->client->pers.quest_power1_timer = level.time + duration;
 }
 
 // zyk: Water Splash. Damages the targets and heals the user
@@ -4217,8 +4240,8 @@ void water_splash(gentity_t *ent, int distance, int damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
 					gentity_t *new_ent = G_Spawn();
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
@@ -4263,8 +4286,8 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
 					gentity_t *new_ent = G_Spawn();
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
@@ -4310,8 +4333,8 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
 					gentity_t *new_ent = G_Spawn();
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
@@ -4357,10 +4380,10 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
-					player_ent->client->pers.ultimate_power_target = 500;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
+					player_ent->client->pers.quest_power_status |= (1 << 6);
+					player_ent->client->pers.quest_target5_timer = level.time + duration;
 				}
 			}
 		}
@@ -4370,8 +4393,8 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 // zyk: Ultra Speed
 void ultra_speed(gentity_t *ent, int duration)
 {
-	ent->client->pers.ultimate_power_target = 501;
-	ent->client->pers.ultimate_power_target_timer = level.time + duration;
+	ent->client->pers.quest_power_status |= (1 << 9);
+	ent->client->pers.quest_power3_timer = level.time + duration;
 }
 
 // zyk: Ultra Flame
@@ -4397,8 +4420,8 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
-				{ // zyk: if ultimate_power_user is 1000, target is protected by Immunity Power
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
+				{
 					gentity_t *new_ent = G_Spawn();
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
@@ -4444,11 +4467,11 @@ void hurricane(gentity_t *ent, int distance, int duration)
 					found = 1;
 				}
 
-				if (found == 0 && player_ent->client->pers.ultimate_power_user != 1000)
+				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
 				{
-					player_ent->client->pers.ultimate_power_user = ent->s.number;
-					player_ent->client->pers.ultimate_power_target = 80;
-					player_ent->client->pers.ultimate_power_target_timer = level.time + duration;
+					player_ent->client->pers.quest_power_status |= (1 << 5);
+					player_ent->client->pers.quest_power_hit_counter = -179;
+					player_ent->client->pers.quest_target4_timer = level.time + duration;
 							
 					if (i < level.maxclients)
 						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
@@ -4557,28 +4580,27 @@ void clear_special_power_effect(gentity_t *ent)
 	}
 }
 
-// zyk: controls Ultimate Power target events
-void ultimate_power_events(gentity_t *ent)
+// zyk: controls the quest powers stuff
+void quest_power_events(gentity_t *ent)
 {
-	// zyk: controlling Ultimate Power target events
-	if (ent && ent->client)
+	if (ent && ent->client && ent->health > 0)
 	{
-		if (ent->client->pers.ultimate_power_user != 1000 && ent->client->pers.ultimate_power_target_timer > level.time)
-		{
-			if (ent->client->pers.ultimate_power_target == 3 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-			{ // zyk: removes Time Power
-				ent->client->pers.ultimate_power_target = -1;
-			}
-			else if (ent->client->pers.ultimate_power_target == 4 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-			{ // zyk: Second Chaos Power hit
-				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
+		if (ent->client->pers.quest_power_status & (1 << 0) && ent->client->pers.quest_power1_timer < level.time)
+		{ // zyk: Immunity Power
+			ent->client->pers.quest_power_status &= ~(1 << 0);
+		}
 
-				ent->client->pers.ultimate_power_target = 5;
-				ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+		if (ent->client->pers.quest_power_status & (1 << 1))
+		{ // zyk: Chaos Power
+			if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target1_timer < level.time)
+			{
+				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
+				ent->client->pers.quest_power_hit_counter--;
+				ent->client->pers.quest_target1_timer = level.time + 1000;
 			}
-			else if (ent->client->pers.ultimate_power_target == 5 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-			{ // zyk: Third Chaos Power hit
-				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,80,0,MOD_UNKNOWN);
+			else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target1_timer < level.time)
+			{
+				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
 
 				ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 				ent->client->ps.forceHandExtendTime = level.time + 2000;
@@ -4586,37 +4608,37 @@ void ultimate_power_events(gentity_t *ent)
 				ent->client->ps.forceDodgeAnim = 0;
 				ent->client->ps.quickerGetup = qtrue;
 
-				ent->client->pers.ultimate_power_target = 0;
+				ent->client->pers.quest_power_status &= ~(1 << 1);
 			}
-			else if (ent->client->pers.ultimate_power_target == 10)
-			{ // zyk: being hit by Blowing Wind
-				static vec3_t forward;
-				vec3_t dir;
+		}
 
-				AngleVectors( g_entities[ent->client->pers.ultimate_power_user].client->ps.viewangles, forward, NULL, NULL );
+		if (ent->client->pers.quest_power_status & (1 << 3) && ent->client->pers.quest_power2_timer < level.time)
+		{ // zyk: Ultra Strength
+			ent->client->pers.quest_power_status &= ~(1 << 3);
+		}
 
-				VectorNormalize(forward);
-
-				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-					VectorScale(forward,90.0,dir);
-				else
-					VectorScale(forward,25.0,dir);
-
-				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+		if (ent->client->pers.quest_power_status & (1 << 4))
+		{ // zyk: Poison Mushrooms
+			if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target3_timer < level.time)
+			{
+				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user2_id],&g_entities[ent->client->pers.quest_power_user2_id],NULL,NULL,40,0,MOD_UNKNOWN);
+				ent->client->pers.quest_power_hit_counter--;
+				ent->client->pers.quest_target3_timer = level.time + 1000;
 			}
-			else if (ent->client->pers.ultimate_power_target >= 20 && ent->client->pers.ultimate_power_target < 30 && ent->client->pers.ultimate_power_target_timer < (level.time + 1000))
-			{ // zyk: being hit by Poison Mushrooms
-				G_Damage(ent,&g_entities[ent->client->pers.ultimate_power_user],&g_entities[ent->client->pers.ultimate_power_user],NULL,NULL,40,0,MOD_UNKNOWN);
-
-				ent->client->pers.ultimate_power_target++;
-				ent->client->pers.ultimate_power_target_timer = level.time + 2000;
+			else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target3_timer < level.time)
+			{
+				ent->client->pers.quest_power_status &= ~(1 << 4);
 			}
-			else if (ent->client->pers.ultimate_power_target >= 80 && ent->client->pers.ultimate_power_target < 440)
-			{ // zyk: being hit by Hurricane
+		}
+
+		if (ent->client->pers.quest_power_status & (1 << 5))
+		{ // zyk: Hurricane
+			if (ent->client->pers.quest_target4_timer > level.time)
+			{
 				static vec3_t forward;
 				vec3_t blow_dir, dir;
 
-				VectorSet(blow_dir,-70,(ent->client->pers.ultimate_power_target - 79 - 180),0);
+				VectorSet(blow_dir,-70,ent->client->pers.quest_power_hit_counter,0);
 
 				AngleVectors(blow_dir, forward, NULL, NULL );
 
@@ -4629,19 +4651,53 @@ void ultimate_power_events(gentity_t *ent)
 
 				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
 
-				ent->client->pers.ultimate_power_target+=4;
-				if (ent->client->pers.ultimate_power_target == 440)
-					ent->client->pers.ultimate_power_target = 80;
+				ent->client->pers.quest_power_hit_counter += 4;
+				if (ent->client->pers.quest_power_hit_counter >= 180)
+					ent->client->pers.quest_power_hit_counter = -179;
+			}
+			else
+			{
+				ent->client->pers.quest_power_status &= ~(1 << 5);
 			}
 		}
-		else if (ent->client->pers.ultimate_power_user == 1000 && ent->client->pers.ultimate_power_target_timer < level.time)
-		{ // zyk: if Immunity Power runs out, set ultimate_power_user back to default value
-			ent->client->pers.ultimate_power_user = -1;
+
+		if (ent->client->pers.quest_power_status & (1 << 6) && ent->client->pers.quest_target5_timer < level.time)
+		{ // zyk: Slow Motion
+			ent->client->pers.quest_power_status &= ~(1 << 6);
 		}
-	
-		if (ent->client->pers.ultimate_power_user == 3 && ent->client->pers.ultimate_power_timer < level.time)
-		{ // zyk: Power Up runs out
-			ent->client->pers.ultimate_power_user = -1;
+
+		if (ent->client->pers.quest_power_status & (1 << 7) && ent->client->pers.quest_power3_timer < level.time)
+		{ // zyk: Ultra Resistance
+			ent->client->pers.quest_power_status &= ~(1 << 7);
+		}
+
+		if (ent->client->pers.quest_power_status & (1 << 8))
+		{ // zyk: Blowing Wind
+			if (ent->client->pers.quest_target6_timer > level.time)
+			{
+				static vec3_t forward;
+				vec3_t dir;
+
+				AngleVectors( g_entities[ent->client->pers.quest_power_user3_id].client->ps.viewangles, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+
+				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+					VectorScale(forward,90.0,dir);
+				else
+					VectorScale(forward,25.0,dir);
+
+				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+			}
+			else
+			{
+				ent->client->pers.quest_power_status &= ~(1 << 8);
+			}
+		}
+
+		if (ent->client->pers.quest_power_status & (1 << 9) && ent->client->pers.quest_power3_timer < level.time)
+		{ // zyk: Ultra Speed
+			ent->client->pers.quest_power_status &= ~(1 << 9);
 		}
 	}
 }
@@ -5319,7 +5375,7 @@ void G_RunFrame( int levelTime ) {
 				}
 			}
 
-			ultimate_power_events(ent);
+			quest_power_events(ent);
 
 			if (ent->client->sess.amrpgmode == 2 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ // zyk: RPG Mode skills and quests actions. Must be done if player is not at Spectator Mode
@@ -8344,7 +8400,7 @@ void G_RunFrame( int levelTime ) {
 			WP_SaberPositionUpdate(ent, &ent->client->pers.cmd);
 			WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
 
-			ultimate_power_events(ent);
+			quest_power_events(ent);
 
 			// zyk: quest guardians special abilities
 			if (ent->client->pers.guardian_invoked_by_id != -1 && ent->health > 0)
@@ -8898,7 +8954,7 @@ void G_RunFrame( int levelTime ) {
 							{
 								gentity_t *player_ent = &g_entities[player_it];
 
-								if (player_ent && player_ent->client && player_ent->client->pers.ultimate_power_user != 1000)
+								if (player_ent && player_ent->client && !(player_ent->client->pers.quest_power_status & (1 << 0)))
 								{
 									int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 							

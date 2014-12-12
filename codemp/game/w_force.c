@@ -706,7 +706,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 	}
 
 	// zyk: Time Power affected players cannot use force powers
-	if (self->client->pers.ultimate_power_target == 3)
+	if (self->client->pers.quest_power_status & (1 << 2))
 	{
 		return qfalse;
 	}

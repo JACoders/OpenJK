@@ -2221,8 +2221,8 @@ void ClientThink_real( gentity_t *ent ) {
 				client->ps.pm_type = PM_NORMAL;
 			}
 
-			if (client->pers.ultimate_power_target == 3)
-			{ // zyk: player was hit by Time Power
+			if (client->pers.quest_power_status & (1 << 2) && client->pers.quest_target2_timer > level.time)
+			{ // zyk: player hit by Time Power
 				if (ent->client->jetPackOn)
 				{
 					Jetpack_Off(ent);
@@ -2233,9 +2233,9 @@ void ClientThink_real( gentity_t *ent ) {
 					Cmd_ToggleSaber_f(ent);
 				}
 			}
-			else if (client->pers.ultimate_power_target == -1)
+			else if (client->pers.quest_power_status & (1 << 2) && client->pers.quest_target2_timer <= level.time)
 			{ // zyk: Time Power is over
-				client->pers.ultimate_power_target = 0;
+				client->pers.quest_power_status &= ~(1 << 2);
 				client->ps.pm_type = PM_NORMAL;
 			}
 		}
@@ -2465,11 +2465,12 @@ void ClientThink_real( gentity_t *ent ) {
 			//ent->client->ps.speed = ent->client->ps.basespeed = NPC_GetRunSpeed( ent );
 		}
 
-		if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 500)
+		if (client->pers.quest_power_status & (1 << 6))
 		{ // zyk: hit by Slow Motion power. Decrease speed
 			client->ps.speed /= 2;
 		}
-		else if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 501)
+		
+		if (client->pers.quest_power_status & (1 << 9))
 		{ // zyk: using Ultra Speed. Increase speed
 			client->ps.speed *= 2;
 		}
@@ -2500,11 +2501,12 @@ void ClientThink_real( gentity_t *ent ) {
 			zyk_player_speed *= 0.2f;
 		}
 
-		if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 500)
+		if (client->pers.quest_power_status & (1 << 6))
 		{ // zyk: hit by Slow Motion power. Decrease speed
 			zyk_player_speed /= 2;
 		}
-		else if (client->pers.ultimate_power_target_timer > level.time && client->pers.ultimate_power_target == 501)
+		
+		if (client->pers.quest_power_status & (1 << 9))
 		{ // zyk: using Ultra Speed. Increase speed
 			zyk_player_speed *= 2;
 		}

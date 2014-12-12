@@ -3754,11 +3754,8 @@ void ClientSpawn(gentity_t *ent) {
 	// zyk: initializing flame thrower timer
 	ent->client->pers.flame_thrower = 0;
 
-	// zyk: initializing Ultimate Power attributes
-	ent->client->pers.ultimate_power_user = 0;
-	ent->client->pers.ultimate_power_target = 0;
-	ent->client->pers.ultimate_power_timer = 0;
-	ent->client->pers.ultimate_power_target_timer = 0;
+	// zyk: initializing Quest Power attributes
+	ent->client->pers.quest_power_status = 0;
 
 	// zyk: now we use this attribute as the real fuel and then scale and set it to the jetpackFuel above
 	client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
