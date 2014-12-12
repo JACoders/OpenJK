@@ -7299,7 +7299,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 4)
 									trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7And by choosing us, we will give you a new power.\"");
 								else if (ent->client->pers.universe_quest_messages == 5)
-									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Inner Area Damage^7. Choose wisely, hero.\"");
+									trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7It is the ^2Dome of Doom^7. Choose wisely, hero.\"");
 								else if (ent->client->pers.universe_quest_messages == 6)
 									trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Hero, by choosing us...\"");
 								else if (ent->client->pers.universe_quest_messages == 7)
@@ -7673,7 +7673,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 24)
 								{
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
-										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Inner Area Damage ^7now. This will really be useful to you.\"");
+										trap->SendServerCommand( -1, "chat \"^2Sage of Universe: ^7Receive the ^2Dome of Doom ^7now. This will really be useful to you.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
 										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Immunity Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
@@ -8511,14 +8511,14 @@ void G_RunFrame( int levelTime ) {
 						if (!ent->client->ps.powerups[PW_CLOAKED])
 						{
 							Jedi_Cloak(ent);
-							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking.\"");
+							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking!\"");
 						}
 
 						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
 						{
-							dome_of_doom(ent,1200,120);
+							dome_of_doom(ent,1400,70);
 
-							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Doom.\"");
+							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
 						}
 
 						ent->client->pers.guardian_timer = level.time + 10000;

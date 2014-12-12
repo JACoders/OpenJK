@@ -588,7 +588,7 @@ typedef struct clientPersistant_s {
 
 	// zyk: current power selected by Magic Master to use
 	// 0 - No power selected
-	// 1 - Magic Fist
+	// 1 - Inner Area Damage
 	// 2 - Healing Water
 	// 3 - Water Splash
 	// 4 - Earthquake
@@ -596,7 +596,7 @@ typedef struct clientPersistant_s {
 	// 6 - Sleeping Flowers
 	// 7 - Poison Mushrooms
 	// 8 - Cloaking
-	// 9 - Dome of Doom
+	// 9 - Dome of Damage
 	// 10 - Ultra Speed
 	// 11 - Slow Motion
 	// 12 - Flame Burst

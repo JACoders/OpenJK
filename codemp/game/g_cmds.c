@@ -3506,7 +3506,13 @@ qboolean TryGrapple(gentity_t *ent)
 
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.forwardmove > 0)
 		{ // zyk: Magic Master special powers
-			if (ent->client->pers.current_magic_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 1)
+			{
+				inner_area_damage(ent,400,50);
+				ent->client->pers.magic_power -= 1;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
+			}
+			else if (ent->client->pers.current_magic_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 15)
 			{
 				ultra_strength(ent,30000);
@@ -3543,11 +3549,11 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.current_magic_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
-				dome_of_doom(ent,500,100);
-				ent->client->pers.magic_power -= 28;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
+				dome_of_doom(ent,500,40);
+				ent->client->pers.magic_power -= 25;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.current_magic_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
@@ -3626,10 +3632,10 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 30)
-			{ // zyk: Inner Area Damage
-				inner_area_damage(ent,400,400);
+			{ // zyk: Dome of Doom
+				dome_of_doom(ent,500,100);
 				ent->client->pers.magic_power -= 30;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 30)
 			{ // zyk: Immunity Power
@@ -3690,11 +3696,11 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
-				dome_of_doom(ent,500,100);
-				ent->client->pers.magic_power -= 28;
-				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
+				dome_of_doom(ent,500,40);
+				ent->client->pers.magic_power -= 25;
+				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
@@ -8472,7 +8478,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else
 					{
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages all enemies nearby. Attack with S + special melee to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Dome of Doom: ^7a more powerful version of Dome of Damage. Attack with S + special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 1))
 							trap->SendServerCommand( ent-g_entities, va("print \"^3Immunity Power: ^7protects you from other special powers. Attack S + with special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 2))
@@ -8500,7 +8506,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 5)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with D + special melee to use this power\n^3Water Splash: ^7damages enemies, draining their hp and healing you. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 6)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with D + special melee to use this power\n^3Dome of Doom: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with D + special melee to use this power\n^3Dome of Damage: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power\n\"") );
 				}

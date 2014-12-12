@@ -3368,7 +3368,7 @@ void ClientThink_real( gentity_t *ent ) {
 						if (ent->client->pers.current_magic_power == 0)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7None\"");
 						else if (ent->client->pers.current_magic_power == 1)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Magic Fist\"");
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Inner Area Damage\"");
 						else if (ent->client->pers.current_magic_power == 2)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Healing Water\"");
 						else if (ent->client->pers.current_magic_power == 3)
@@ -3384,7 +3384,7 @@ void ClientThink_real( gentity_t *ent ) {
 						else if (ent->client->pers.current_magic_power == 8)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Cloaking\"");
 						else if (ent->client->pers.current_magic_power == 9)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Dome of Doom\"");
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Dome of Damage\"");
 						else if (ent->client->pers.current_magic_power == 10)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Speed\"");
 						else if (ent->client->pers.current_magic_power == 11)
