@@ -7085,7 +7085,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	//Global, important changes
 	Q_strncpyz(buf, " ^3Global Changes:\n", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Server tickrate^3: ^2%i\n", sv_fps.integer));
-	Q_strcat(buf, sizeof(buf), va("   ^5Force regen time (BaseJKA 'sv_fps 20' equivalent)^3: ^2%i\n", g_forceRegenTime.integer - (1000/20)));
+	//Q_strcat(buf, sizeof(buf), va("   ^5Force regen time (BaseJKA 'sv_fps 20' equivalent)^3: ^2%i\n", g_forceRegenTime.integer - (1000/20))); //slightly off.. even ojk fps30/regen50 is not exactly base fps20/regen0
+	Q_strcat(buf, sizeof(buf), va("   ^5Force regen time: ^2%i\n", g_forceRegenTime.integer));
 	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No"));
 	if (!(dmflags.integer & DF_NO_FALLING) && g_maxFallDmg.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Fall damage capped at^3: ^2%i\n", g_maxFallDmg.integer));
