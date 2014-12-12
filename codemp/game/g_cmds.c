@@ -3505,138 +3505,153 @@ qboolean TryGrapple(gentity_t *ent)
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 
 		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && ent->client->pers.magic_power > 1 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress >= 15 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
 		{
-			if (ent->client->pers.universe_quest_counter & (1 << 0))
+			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 15)
 			{ // zyk: Inner Area Damage
 				inner_area_damage(ent,400,400);
+				ent->client->pers.magic_power -= 15;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 1))
+			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 15)
 			{ // zyk: Immunity Power
 				immunity_power(ent,25000);
 				display_yellow_bar(ent,25000);
+				ent->client->pers.magic_power -= 15;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 2))
+			else if (ent->client->pers.universe_quest_counter & (1 << 2) && ent->client->pers.magic_power >= 25)
 			{ // zyk: uses Chaos Power
 				chaos_power(ent,400,80);
+				ent->client->pers.magic_power -= 25;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 3))
+			else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 20)
 			{ // zyk: uses Time Power
 				time_power(ent,400,6000);
+				ent->client->pers.magic_power -= 20;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 			}
-			ent->client->pers.magic_power -= 2;
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.magic_power > 0 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		else if (ent->client->sess.amrpgmode == 2 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Special Power 1
 			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 5)
 			{
 				ultra_strength(ent,30000);
 				display_yellow_bar(ent,30000);
-
+				ent->client->pers.magic_power -= 5;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				poison_mushrooms(ent,100,600);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				water_splash(ent,400,100);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 9)
 			{
 				ultra_flame(ent,400,60);
+				ent->client->pers.magic_power -= 9;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				rock_fall(ent,500,50);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 12)
 			{
 				dome_of_doom(ent,500,100);
+				ent->client->pers.magic_power -= 12;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 11)
 			{
 				hurricane(ent,600,5000);
+				ent->client->pers.magic_power -= 11;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 8)
 			{
 				slow_motion(ent,400,15000);
+				ent->client->pers.magic_power -= 8;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
 			}
-			ent->client->pers.magic_power--;
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.magic_power > 0 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
+		else if (ent->client->sess.amrpgmode == 2 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Special Power 2
 			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 5)
 			{
 				ultra_resistance(ent,30000);
 				display_yellow_bar(ent,30000);
-
+				ent->client->pers.magic_power -= 5;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				sleeping_flowers(ent,4000,400);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				healing_water(ent,120);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 11)
 			{
 				ent->client->pers.flame_thrower = level.time + 7000;
+				ent->client->pers.magic_power -= 11;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				earthquake(ent,2000,300,500);
+				ent->client->pers.magic_power -= 10;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
 				Jedi_Cloak(ent);
+				ent->client->pers.magic_power -= 1;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 9)
 			{
 				blowing_wind(ent,800,5000);
+				ent->client->pers.magic_power -= 9;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 8)
 			{
 				ultra_speed(ent,15000);
+				ent->client->pers.magic_power -= 8;
 				trap->SendServerCommand( -1, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
 			}
-			ent->client->pers.magic_power--;
 		}
 
 		return qtrue;
@@ -4363,9 +4378,9 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 int zyk_max_magic_power(gentity_t *ent)
 {
 	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
-		return (MAX_MAGIC_POWER * 2);
+		return (ent->client->pers.level * 2);
 	else
-		return MAX_MAGIC_POWER;
+		return ent->client->pers.level;
 }
 
 // zyk: initialize RPG skills of this player
