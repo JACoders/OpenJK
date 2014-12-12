@@ -3358,6 +3358,50 @@ void ClientThink_real( gentity_t *ent ) {
 					{ // zyk: still in cooldown time, shows the time left in chat
 						trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time)/1000)));
 					}
+
+					if (ent->client->pers.rpg_class == 8)
+					{ // zyk: Magic Master can choose his power here
+						ent->client->pers.current_magic_power++;
+						if (ent->client->pers.current_magic_power == 18)
+							ent->client->pers.current_magic_power = 0;
+
+						if (ent->client->pers.current_magic_power == 0)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7None\"");
+						else if (ent->client->pers.current_magic_power == 1)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Magic Fist\"");
+						else if (ent->client->pers.current_magic_power == 2)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Healing Water\"");
+						else if (ent->client->pers.current_magic_power == 3)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Water Splash\"");
+						else if (ent->client->pers.current_magic_power == 4)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Earthquake\"");
+						else if (ent->client->pers.current_magic_power == 5)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Rockfall\"");
+						else if (ent->client->pers.current_magic_power == 6)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Sleeping Flowers\"");
+						else if (ent->client->pers.current_magic_power == 7)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Poison Mushrooms\"");
+						else if (ent->client->pers.current_magic_power == 8)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Cloaking\"");
+						else if (ent->client->pers.current_magic_power == 9)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Dome of Doom\"");
+						else if (ent->client->pers.current_magic_power == 10)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Speed\"");
+						else if (ent->client->pers.current_magic_power == 11)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Slow Motion\"");
+						else if (ent->client->pers.current_magic_power == 12)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Flame Burst\"");
+						else if (ent->client->pers.current_magic_power == 13)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Flame\"");
+						else if (ent->client->pers.current_magic_power == 14)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Blowing Wind\"");
+						else if (ent->client->pers.current_magic_power == 15)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Hurricane\"");
+						else if (ent->client->pers.current_magic_power == 16)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Resistance\"");
+						else if (ent->client->pers.current_magic_power == 17)
+							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Strength\"");
+					}
 				}
 			}
 

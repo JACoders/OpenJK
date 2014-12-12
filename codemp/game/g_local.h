@@ -587,6 +587,24 @@ typedef struct clientPersistant_s {
 	int rpg_class;
 
 	// zyk: current power selected by Magic Master to use
+	// 0 - No power selected
+	// 1 - Magic Fist
+	// 2 - Healing Water
+	// 3 - Water Splash
+	// 4 - Earthquake
+	// 5 - Rockfall
+	// 6 - Sleeping Flowers
+	// 7 - Poison Mushrooms
+	// 8 - Cloaking
+	// 9 - Dome of Doom
+	// 10 - Ultra Speed
+	// 11 - Slow Motion
+	// 12 - Flame Burst
+	// 13 - Ultra Flame
+	// 14 - Blowing Wind
+	// 15 - Hurricane
+	// 16 - Ultra Resistance
+	// 17 - Ultra Strength
 	int current_magic_power;
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
