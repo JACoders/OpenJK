@@ -587,7 +587,6 @@ typedef struct clientPersistant_s {
 	int rpg_class;
 
 	// zyk: current power selected by Magic Master to use
-	// 0 - No power selected
 	// 1 - Inner Area Damage
 	// 2 - Healing Water
 	// 3 - Water Splash
@@ -786,6 +785,9 @@ typedef struct clientPersistant_s {
 	// 8 - hit by Blowing Wind
 	// 9 - using Ultra Speed
 	int quest_power_status;
+
+	// zyk: cooldown between quest power uses
+	int quest_power_usage_timer;
 
 	// zyk: powers that hits the target player more than once need a hit counter
 	int quest_power_hit_counter;

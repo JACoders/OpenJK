@@ -4867,14 +4867,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: bonus damage of each RPG class
+		// zyk: gets bonus damage if using Ultra Strength
+		if (attacker->client->pers.quest_power_status & (1 << 3))
+			damage = (int)ceil(damage * 1.07);
+
 		if (attacker->client->pers.rpg_class == 0)
 		{
-			float free_warrior_bonus_damage = 0.0;
-			// zyk: gets bonus damage if using Ultra Strength
-			if (attacker->client->pers.quest_power_status & (1 << 3))
-				free_warrior_bonus_damage = 0.04;
-
-			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.improvements_level) + free_warrior_bonus_damage));
+			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.improvements_level)));
 		}
 		else if (attacker->client->pers.rpg_class == 1 && mod == MOD_SABER)
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.improvements_level)));
@@ -5016,6 +5015,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
 			damage = (int)ceil(damage * 1.25);
 
+		// zyk: Ultra Resistance bonus resistance
+		if (targ->client->pers.quest_power_status & (1 << 7))
+			damage = (int)ceil(damage * 0.93);
+
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
 		{
 			float armored_soldier_bonus_resistance = 0.0;
@@ -5027,12 +5030,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
-			float free_warrior_bonus_resistance = 0.0;
-			// zyk: Ultra Resistance bonus resistance
-			if (targ->client->pers.quest_power_status & (1 << 7))
-				free_warrior_bonus_resistance = 0.04;
-
-			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.improvements_level) - free_warrior_bonus_resistance));
+			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.improvements_level)));
 		}
 		else if (targ->client->pers.rpg_class == 5 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
 		{ // zyk: Stealth Attacker damage resistance against DEMP2

@@ -4437,7 +4437,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 					new_ent->nextthink = level.time + 1000;
 
 					level.special_power_effects[new_ent->s.number] = ent->s.number;
-					level.special_power_effects_timer[new_ent->s.number] = level.time + 120000;
+					level.special_power_effects_timer[new_ent->s.number] = level.time + 90000;
 				}
 			}
 		}

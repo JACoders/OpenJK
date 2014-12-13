@@ -3363,11 +3363,9 @@ void ClientThink_real( gentity_t *ent ) {
 					{ // zyk: Magic Master can choose his power here
 						ent->client->pers.current_magic_power++;
 						if (ent->client->pers.current_magic_power == 18)
-							ent->client->pers.current_magic_power = 0;
+							ent->client->pers.current_magic_power = 1;
 
-						if (ent->client->pers.current_magic_power == 0)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7None\"");
-						else if (ent->client->pers.current_magic_power == 1)
+						if (ent->client->pers.current_magic_power == 1)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Inner Area Damage\"");
 						else if (ent->client->pers.current_magic_power == 2)
 							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Healing Water\"");
