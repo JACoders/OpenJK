@@ -144,7 +144,7 @@ static void BeginHack(int entityNum)
 		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || ent->s.eType == ET_MOVER)) {
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
@@ -198,7 +198,7 @@ static void EndHack(int entityNum) {
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || ent->s.eType == ET_MOVER)) {
 					ent->r.ownerNum = saved[i];
 				}
 			}
