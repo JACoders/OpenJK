@@ -3604,10 +3604,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.current_magic_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 27)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
 			{
 				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 27;
+				ent->client->pers.magic_power -= 23;
 				ent->client->pers.quest_power_usage_timer = level.time + 4000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 			}
@@ -3628,10 +3628,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.current_magic_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 22;
+				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 			}
@@ -3786,10 +3786,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 27)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
 			{
 				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 27;
+				ent->client->pers.magic_power -= 23;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 			}
@@ -3810,10 +3810,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 22;
+				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 			}
