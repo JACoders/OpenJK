@@ -8692,14 +8692,14 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking!\"");
 						}
 
-						if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-						{
-							dome_of_doom(ent,1400,50);
-
-							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
-						}
-
 						ent->client->pers.guardian_timer = level.time + 10000;
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						dome_of_doom(ent,1500,45);
+						trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
+						ent->client->pers.light_quest_timer = level.time + ent->health + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 5)
