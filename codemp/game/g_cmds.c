@@ -3508,7 +3508,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{ // zyk: Magic Master special powers
 			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 2)
 			{
-				inner_area_damage(ent,400,80);
+				inner_area_damage(ent,400,90);
 				ent->client->pers.magic_power -= 2;
 				ent->client->pers.quest_power_usage_timer = level.time + 2000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
@@ -3620,10 +3620,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.current_magic_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 2)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
 				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 2;
+				ent->client->pers.magic_power -= 1;
 				ent->client->pers.quest_power_usage_timer = level.time + 1500;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}
@@ -3648,7 +3648,7 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 12 && 
 			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Magic Master Spray Attack
-			int fist_dmg = 20;
+			int fist_dmg = 14;
 			int count = 12;
 			gentity_t	*missile;
 			vec3_t origin;
@@ -3694,7 +3694,7 @@ qboolean TryGrapple(gentity_t *ent)
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 3 && 
 			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Magic Master Charged Attack
-			int fist_dmg = 20;
+			int fist_dmg = 14;
 			int count = 3;
 			gentity_t	*missile;
 			vec3_t origin, dir, forward;
@@ -3887,10 +3887,10 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 2)
+				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
 				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 2;
+				ent->client->pers.magic_power -= 1;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}

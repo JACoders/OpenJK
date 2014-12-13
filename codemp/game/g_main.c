@@ -6323,7 +6323,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 22)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He then...fought us...and we couldn't stand against his power.\""));
 							else if (ent->client->pers.universe_quest_messages == 23)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^We flee from him, and he got the guardian amulets.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7We flee from him, and he got the guardian amulets.\""));
 							else if (ent->client->pers.universe_quest_messages == 24)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7With his new power, he sealed the Guardian of Universe!\""));
 							else if (ent->client->pers.universe_quest_messages == 25)

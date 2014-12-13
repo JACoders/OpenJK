@@ -3569,7 +3569,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
 			ent->client->pers.current_magic_power == 0 && ent->client->pers.magic_power > 0)
 		{ // zyk: Magic Master has Magic Fist power
-			int fist_dmg = 20;
+			int fist_dmg = 14;
 			vec3_t origin, dir, zyk_forward;
 			gentity_t *missile = NULL;
 
