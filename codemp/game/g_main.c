@@ -4861,19 +4861,24 @@ void quest_power_events(gentity_t *ent)
 		{ // zyk: Blowing Wind
 			if (ent->client->pers.quest_target6_timer > level.time)
 			{
-				static vec3_t forward;
-				vec3_t dir;
+				gentity_t *blowing_wind_user = &g_entities[ent->client->pers.quest_power_user3_id];
 
-				AngleVectors( g_entities[ent->client->pers.quest_power_user3_id].client->ps.viewangles, forward, NULL, NULL );
+				if (blowing_wind_user && blowing_wind_user->client)
+				{
+					static vec3_t forward;
+					vec3_t dir;
 
-				VectorNormalize(forward);
+					AngleVectors( blowing_wind_user->client->ps.viewangles, forward, NULL, NULL );
 
-				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-					VectorScale(forward,90.0,dir);
-				else
-					VectorScale(forward,25.0,dir);
+					VectorNormalize(forward);
 
-				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+					if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+						VectorScale(forward,90.0,dir);
+					else
+						VectorScale(forward,25.0,dir);
+
+					VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+				}
 			}
 			else
 			{
