@@ -5896,6 +5896,10 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					WP_ForcePowerRegenerate( self, 5 ); // zyk: Force User in RPG Mode regenerates force faster when using his Unique Skill
 				else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
 					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
+				else if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
+					WP_ForcePowerRegenerate( self, (1 + self->client->pers.improvements_level) ); // zyk: Force User and Duelist classes regen force faster
+				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 7)
+					WP_ForcePowerRegenerate( self, 2); // zyk: Force Gunner regens force a bit faster
 				else
 					WP_ForcePowerRegenerate( self, 0 );
 			}
@@ -5933,14 +5937,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 				else
 				{
-					// zyk: Force User and Duelist classes in RPG Mode regens force faster
-					if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
-					{
-						int rpg_force_regen_time = g_forceRegenTime.integer - (self->client->pers.improvements_level * 10);
-						self->client->ps.fd.forcePowerRegenDebounceTime += max(rpg_force_regen_time, 1);
-					}
-					else
-						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
+					self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 				}
 			}
 		}
