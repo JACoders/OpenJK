@@ -6107,7 +6107,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 7)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Legend says that a hero with great power would save the Guardian Sages and fight against the Master of Evil.\""));
 							else if (ent->client->pers.universe_quest_messages == 8)
-								trap->SendServerCommand( -1, va("chat \"%s^7: Maybe...but i cant be this legendary hero...\"", ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"%s^7: But i can't be this legendary hero...\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 9)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7You are! You saved us, the Brotherhood of Guardian Sages.\""));
 							else if (ent->client->pers.universe_quest_messages == 10)
@@ -6119,15 +6119,15 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 13)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7I am the Sage of Eternity...I am the follower of the Guardian of Eternity.\""));
 							else if (ent->client->pers.universe_quest_messages == 14)
-								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7Together, we keep the knowledge about the balance of life in the Guardian's power.\""));
+								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7Together, we have the knowledge about the guardians powers.\""));
 							else if (ent->client->pers.universe_quest_messages == 15)
 								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7With our strength... we should protect the three guardian amulets.\""));
 							else if (ent->client->pers.universe_quest_messages == 16)
 								trap->SendServerCommand( -1, va("chat \"%s^7: Guardian amulets?\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 17)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7They have the essence of the guardians power.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7They have the essence of the guardians powers.\""));
 							else if (ent->client->pers.universe_quest_messages == 18)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7But we couldnt stand against the rise of an evil force.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7But we couldn't stand against the rise of an evil force.\""));
 							else if (ent->client->pers.universe_quest_messages == 19)
 								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7We had an apprentice called Thor.\""));
 							else if (ent->client->pers.universe_quest_messages == 20)
@@ -6135,21 +6135,21 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 21)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7We had no other choice but to ask him to leave the Brotherhood...\""));
 							else if (ent->client->pers.universe_quest_messages == 22)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He then...fought us...and we couldnt stand against his power.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He then...fought us...and we couldn't stand against his power.\""));
 							else if (ent->client->pers.universe_quest_messages == 23)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Instead of killing us, he stunned us to get the guardian amulets.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^We flee from him, and he got the guardian amulets.\""));
 							else if (ent->client->pers.universe_quest_messages == 24)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Then, he went in a quest to seal the most powerful guardian. The Guardian of Universe!\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7With his new power, he sealed the Guardian of Universe!\""));
 							else if (ent->client->pers.universe_quest_messages == 25)
-								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He succeeded. He is now immortal and became the Master of Evil!\""));
+								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7He is now immortal and became the Master of Evil!\""));
 							else if (ent->client->pers.universe_quest_messages == 26)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7To achieve immortality, he divided his life force in 8 artifacts.\""));
 							else if (ent->client->pers.universe_quest_messages == 27)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7They are hidden in different locations and protected by his soldiers.\""));
 							else if (ent->client->pers.universe_quest_messages == 28)
-								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7You must find the artifacts and the guardian amulets.\""));
+								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7You must find the artifacts, and the amulets, which he left somewhere, because he no longer needed them.\""));
 							else if (ent->client->pers.universe_quest_messages == 29)
-								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7Then take them to taspir1, where Thor resides now.\""));
+								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7Then take them to taspir1, where he resides now.\""));
 							else if (ent->client->pers.universe_quest_messages == 30)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7You cannot refuse it! We really need your help.\""));
 							else if (ent->client->pers.universe_quest_messages == 31)
