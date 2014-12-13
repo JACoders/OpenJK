@@ -180,6 +180,9 @@ typedef enum { qfalse=0, qtrue } qboolean;
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 #else // not using MSVC
 
+	#if !defined(__STDC_MACRO_LIMITS)
+	#define __STDC_MACRO_LIMITS
+	#endif
 	#include <stdint.h>
 
 	#define Q_vsnprintf vsnprintf
