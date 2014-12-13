@@ -3651,8 +3651,11 @@ qboolean TryGrapple(gentity_t *ent)
 			int fist_dmg = 20;
 			int count = 12;
 			gentity_t	*missile;
+			vec3_t origin;
 			int i;
 			int angle_value = ent->client->ps.viewangles[1];
+
+			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
 			for (i = 0; i < count; i++ )
 			{
@@ -3668,7 +3671,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 				VectorNormalize(forward);
 					
-				missile = CreateMissile( ent->client->ps.origin, forward, 5000.0, 10000, ent, qfalse);
+				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
 
 				missile->classname = "bowcaster_proj";
 				missile->s.weapon = WP_BOWCASTER;
@@ -3686,6 +3689,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 
 			ent->client->pers.magic_power -= 12;
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 3 && 
 			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
@@ -3693,9 +3697,10 @@ qboolean TryGrapple(gentity_t *ent)
 			int fist_dmg = 20;
 			int count = 3;
 			gentity_t	*missile;
-			vec3_t dir, forward;
+			vec3_t origin, dir, forward;
 			int i;
 
+			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
 			AngleVectors( dir, forward, NULL, NULL );
@@ -3704,7 +3709,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 			for (i = 0; i < count; i++ )
 			{
-				missile = CreateMissile( ent->client->ps.origin, forward, 5000.0, 10000, ent, qfalse);
+				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
 
 				missile->classname = "bowcaster_proj";
 				missile->s.weapon = WP_BOWCASTER;
@@ -3722,6 +3727,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 
 			ent->client->pers.magic_power -= 3;
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
 
 		// zyk: Ultimate Power

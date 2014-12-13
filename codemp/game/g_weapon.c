@@ -3570,7 +3570,15 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			ent->client->pers.current_magic_power == 0 && ent->client->pers.magic_power > 0)
 		{ // zyk: Magic Master has Magic Fist power
 			int fist_dmg = 20;
-			gentity_t *missile = CreateMissile( muzzle, forward, 5000.0, 10000, ent, qfalse);
+			vec3_t origin, dir, zyk_forward;
+			gentity_t *missile = NULL;
+
+			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+			AngleVectors( dir, zyk_forward, NULL, NULL );
+
+			missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
 
 			missile->classname = "bowcaster_proj";
 			missile->s.weapon = WP_BOWCASTER;
@@ -3587,6 +3595,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			missile->bounceCount = 0;
 
 			ent->client->pers.magic_power--;
+
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
 		}
 
 		VectorCopy(ent->client->ps.origin, muzzlePunch);
