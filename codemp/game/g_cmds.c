@@ -3645,8 +3645,8 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 		}
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && 
-			ent->client->pers.magic_power >= 12 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 12 && 
+			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Magic Master Spray Attack
 			int fist_dmg = 20;
 			int count = 12;
@@ -3687,8 +3687,8 @@ qboolean TryGrapple(gentity_t *ent)
 
 			ent->client->pers.magic_power -= 12;
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && 
-				 ent->client->pers.magic_power >= 3 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 3 && 
+			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Magic Master Charged Attack
 			int fist_dmg = 20;
 			int count = 3;
