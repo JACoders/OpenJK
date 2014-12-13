@@ -2854,11 +2854,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
 
-	if (g_fixVote.integer && level.lastVoteFailTime && (level.lastVoteFailTime > (level.time - 1000*60*3))) { //Dont let a vote be called right away if a vote has just failed..
-		trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
-		return;
-	}
-
 	if ((g_fullAdminLevel.integer & (1 << A_CALLVOTE)) || (g_juniorAdminLevel.integer & (1 << A_CALLVOTE))) { //Admin only voting mode
 		if (ent->client->sess.fullAdmin)//Logged in as full admin
 		{
@@ -2894,6 +2889,50 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
 		return;
 	}
+
+	if (g_fixVote.integer) {
+		char ourIP[NET_ADDRSTRMAXLEN] = {0};
+		char *p = NULL;
+		int j;
+
+		Q_strncpyz(ourIP, ent->client->sess.IP, sizeof(ourIP));
+		p = strchr(ourIP, ':');
+		if (p)
+			*p = 0;
+
+		//trap->Print("Checking if client can vote: his ip is %s\n", ourIP);
+
+		//Check if we are allowed to call vote
+		for (j=0; j<voteFloodProtectSize; j++) {
+			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].lastVoteTime);
+			if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
+				//trap->Print("Found clients IP in array!\n");
+				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*60*2))) {
+					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
+					//trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
+					trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
+					return;
+				}
+				break;
+			}
+			else if (!voteFloodProtect[j].ip[0]) {
+				//trap->Print("Finished array search without finding clients IP! They have not failed a vote yet!\n");
+				break;
+			}
+		}
+
+		//trap->Print("Client is allowed to call vote!\n");
+
+		//We are allowed to call a vote if we get here
+		Q_strncpyz(level.callVoteIP, ourIP, sizeof(level.callVoteIP));
+	}
+
+	/*
+	if (g_fixVote.integer && level.lastVoteFailTime && (level.lastVoteFailTime > (level.time - 1000*60*3))) { //Dont let a vote be called right away if a vote has just failed..
+		trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
+		return;
+	}
+	*/
 
 	// make sure it is a valid command to vote on
 	numArgs = trap->Argc();

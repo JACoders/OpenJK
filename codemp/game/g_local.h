@@ -1146,6 +1146,15 @@ typedef struct Blocks_s {
 Blocks_t	blocks;
 //japro
 
+//japro
+typedef struct VoteFloodProtect_s {
+	char				ip[NET_ADDRSTRMAXLEN];
+	int					lastVoteTime;
+} VoteFloodProtect_t;
+#define		voteFloodProtectSize 64
+VoteFloodProtect_t	voteFloodProtect[voteFloodProtectSize];//32 courses, 9 styles, 10 spots on highscore list
+//japro
+
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
@@ -1196,6 +1205,7 @@ typedef struct level_locals_s {
 	int			voteYes;
 	int			voteNo;
 	int			numVotingClients;		// set by CalculateRanks
+	char		callVoteIP[NET_ADDRSTRMAXLEN]; //japro g_fixvote
 
 	qboolean	votingGametype;
 	int			votingGametypeTo;
@@ -1273,7 +1283,7 @@ typedef struct level_locals_s {
 	char		courseName[24][32];//japro defrag	
 	int			numCourses;
 	int			numRealVotingClients; //fixed vote checking
-	int			lastVoteFailTime;
+	//int			lastVoteFailTime;
 //JAPRO - Serverside - Amlockteam - End
 
 	int         frameStartTime;

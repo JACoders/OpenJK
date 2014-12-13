@@ -2768,6 +2768,30 @@ void G_KickAllBots(void)
 	}
 }
 
+void SetFailedCallVoteIP(char *ClientIP) {
+	int i;
+
+	if (!ClientIP[0]) {
+		//trap->Print("Empty client ip bug!\n");
+		return;
+	}
+
+	//trap->Print("Client failed a vote! Setting his IP in the array!\n");
+	for (i=0; i<voteFloodProtectSize; i++) { //Set
+		if (!Q_stricmp(voteFloodProtect[i].ip, ClientIP)) { //Found us in the array, so update our votetime
+			voteFloodProtect[i].lastVoteTime = level.time;
+			//trap->Print("Found client in the array, updating his vote fail time\n");
+			break;
+		}
+		if (!voteFloodProtect[i].ip[0]) { //Not found our IP in array, add it
+			Q_strncpyz(voteFloodProtect[i].ip, ClientIP, sizeof(voteFloodProtect[i].ip));
+			voteFloodProtect[i].lastVoteTime = level.time;
+			//trap->Print("Client not in array, adding him and his IP( %s, %i)\n", voteFloodProtect[i].ip, voteFloodProtect[i].lastVoteTime);
+			break;
+		}
+	}
+}
+
 /*
 ==================
 CheckVote
@@ -2844,7 +2868,8 @@ void CheckVote( void ) {
 			}
 			else {
 				trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-				level.lastVoteFailTime = level.time;
+				//level.lastVoteFailTime = level.time;
+				SetFailedCallVoteIP(level.callVoteIP);
 			}
 		}
 		else //Fail if it expires and not fixvote
@@ -2865,7 +2890,8 @@ void CheckVote( void ) {
 		// same behavior as a timeout
 		else if ( level.voteNo >= (numClients+1)/2 ) {
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-			level.lastVoteFailTime = level.time;
+			//level.lastVoteFailTime = level.time;
+			SetFailedCallVoteIP(level.callVoteIP);
 		}
 
 		else // still waiting for a majority
