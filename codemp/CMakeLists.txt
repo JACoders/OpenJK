@@ -35,7 +35,7 @@ if(BuildMPEngine OR BuildMPDed)
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
 	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
 	set(MPBotlibIncludeDirectories ${MPDir})
-	set(MPBotlibHeaderFiles
+	set(MPBotlibBotlibFiles
 		"${MPDir}/botlib/aasfile.h"
 		"${MPDir}/botlib/be_aas.h"
 		"${MPDir}/botlib/be_aas_bsp.h"
@@ -62,8 +62,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/botlib/be_ea.h"
 		"${MPDir}/botlib/be_interface.h"
 		"${MPDir}/botlib/botlib.h"
-		"${MPDir}/qcommon/cm_public.h"
-		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/botlib/l_crc.h"
 		"${MPDir}/botlib/l_libvar.h"
 		"${MPDir}/botlib/l_log.h"
@@ -72,16 +70,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/botlib/l_script.h"
 		"${MPDir}/botlib/l_struct.h"
 		"${MPDir}/botlib/l_utils.h"
-		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/qcommon/q_platform.h"
-		"${MPDir}/qcommon/qcommon.h"
-		"${MPDir}/qcommon/qfiles.h"
-		"${MPDir}/server/server.h"
-		"${MPDir}/game/surfaceflags.h"
-		"${MPDir}/qcommon/tags.h"
-		)
-	source_group("Header Files" FILES ${MPBotlibHeaderFiles})
-	set(MPBotlibSourceFiles
+
 		"${MPDir}/botlib/be_aas_bspq3.cpp"
 		"${MPDir}/botlib/be_aas_cluster.cpp"
 		"${MPDir}/botlib/be_aas_debug.cpp"
@@ -111,9 +100,34 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/botlib/l_script.cpp"
 		"${MPDir}/botlib/l_struct.cpp"
 		)
-	source_group("Source Files" FILES ${MPBotlibSourceFiles})
+	source_group("botlib" FILES ${MPBotlibBotlibFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibBotlibFiles})
 
-	add_library(${MPBotLib} STATIC ${MPBotlibHeaderFiles} ${MPBotlibSourceFiles})
+	set(MPBotlibGameFiles
+		"${MPDir}/game/surfaceflags.h"
+		)
+	source_group("game" FILES ${MPBotlibGameFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibGameFiles})
+
+	set(MPBotlibCommonFiles
+		"${MPDir}/qcommon/cm_public.h"
+		"${MPDir}/qcommon/disablewarnings.h"
+		"${MPDir}/qcommon/q_shared.h"
+		"${MPDir}/qcommon/q_platform.h"
+		"${MPDir}/qcommon/qcommon.h"
+		"${MPDir}/qcommon/qfiles.h"
+		"${MPDir}/qcommon/tags.h"
+		)
+	source_group("common" FILES ${MPBotlibCommonFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonFiles})
+	
+	set(MPBotlibServerFiles
+		"${MPDir}/server/server.h"
+		)
+	source_group("server" FILES ${MPBotlibServerFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibServerFiles})
+
+	add_library(${MPBotLib} STATIC ${MPBotlibFiles})
 	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
 	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
 	set_target_properties(${MPBotLib} PROPERTIES PROJECT_LABEL "Bot Library")
