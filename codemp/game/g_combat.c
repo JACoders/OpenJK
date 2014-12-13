@@ -4902,9 +4902,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (attacker->client->pers.rpg_class == 7)
 		{ // zyk: Force Gunner bonus damage
-			damage = (int)ceil(damage * (1.0 + (0.07 * attacker->client->pers.improvements_level)));
+			damage = (int)ceil(damage * (1.0 + (0.08 * attacker->client->pers.improvements_level)));
 		}
-		else if (attacker->client->pers.rpg_class == 7 && mod == MOD_MELEE)
+		else if (attacker->client->pers.rpg_class == 8 && mod == MOD_MELEE)
 		{ // zyk: Magic Master bonus melee damage
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level)));
 		}
@@ -5042,7 +5042,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 7) // zyk: Force Gunner damage resistance
 		{
-			damage = (int)ceil(damage * (1.0 - (0.07 * targ->client->pers.improvements_level)));
+			damage = (int)ceil(damage * (1.0 - (0.08 * targ->client->pers.improvements_level)));
 		}
 	}
 

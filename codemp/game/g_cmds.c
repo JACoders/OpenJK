@@ -3506,7 +3506,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.forwardmove > 0)
 		{ // zyk: Magic Master special powers
-			ent->client->pers.quest_power_usage_timer = level.time + 4000;
+			ent->client->pers.quest_power_usage_timer = level.time + 3000;
 
 			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 1)
 			{
