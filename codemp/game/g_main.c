@@ -4767,128 +4767,144 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 }
 
 // zyk: controls the quest powers stuff
+extern void initialize_rpg_skills(gentity_t *ent);
 void quest_power_events(gentity_t *ent)
 {
-	if (ent && ent->client && ent->health > 0)
+	if (ent && ent->client)
 	{
-		if (ent->client->pers.quest_power_status & (1 << 0) && ent->client->pers.quest_power1_timer < level.time)
-		{ // zyk: Immunity Power
-			ent->client->pers.quest_power_status &= ~(1 << 0);
-		}
-
-		if (ent->client->pers.quest_power_status & (1 << 1))
-		{ // zyk: Chaos Power
-			if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target1_timer < level.time)
-			{
-				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
-				ent->client->pers.quest_power_hit_counter--;
-				ent->client->pers.quest_target1_timer = level.time + 1000;
+		if (ent->health > 0)
+		{
+			if (ent->client->pers.quest_power_status & (1 << 0) && ent->client->pers.quest_power1_timer < level.time)
+			{ // zyk: Immunity Power
+				ent->client->pers.quest_power_status &= ~(1 << 0);
 			}
-			else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target1_timer < level.time)
-			{
-				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
 
-				ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-				ent->client->ps.forceHandExtendTime = level.time + 2000;
-				ent->client->ps.velocity[2] += 600;
-				ent->client->ps.forceDodgeAnim = 0;
-				ent->client->ps.quickerGetup = qtrue;
+			if (ent->client->pers.quest_power_status & (1 << 1))
+			{ // zyk: Chaos Power
+				if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target1_timer < level.time)
+				{
+					G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
+					ent->client->pers.quest_power_hit_counter--;
+					ent->client->pers.quest_target1_timer = level.time + 1000;
+				}
+				else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target1_timer < level.time)
+				{
+					G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
 
-				ent->client->pers.quest_power_status &= ~(1 << 1);
+					ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+					ent->client->ps.forceHandExtendTime = level.time + 2000;
+					ent->client->ps.velocity[2] += 600;
+					ent->client->ps.forceDodgeAnim = 0;
+					ent->client->ps.quickerGetup = qtrue;
+
+					ent->client->pers.quest_power_status &= ~(1 << 1);
+				}
 			}
-		}
 
-		if (ent->client->pers.quest_power_status & (1 << 3) && ent->client->pers.quest_power2_timer < level.time)
-		{ // zyk: Ultra Strength
-			ent->client->pers.quest_power_status &= ~(1 << 3);
-		}
-
-		if (ent->client->pers.quest_power_status & (1 << 4))
-		{ // zyk: Poison Mushrooms
-			if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target3_timer < level.time)
-			{
-				G_Damage(ent,&g_entities[ent->client->pers.quest_power_user2_id],&g_entities[ent->client->pers.quest_power_user2_id],NULL,NULL,40,0,MOD_UNKNOWN);
-				ent->client->pers.quest_power_hit_counter--;
-				ent->client->pers.quest_target3_timer = level.time + 1000;
+			if (ent->client->pers.quest_power_status & (1 << 3) && ent->client->pers.quest_power2_timer < level.time)
+			{ // zyk: Ultra Strength
+				ent->client->pers.quest_power_status &= ~(1 << 3);
 			}
-			else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target3_timer < level.time)
-			{
-				ent->client->pers.quest_power_status &= ~(1 << 4);
+
+			if (ent->client->pers.quest_power_status & (1 << 4))
+			{ // zyk: Poison Mushrooms
+				if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target3_timer < level.time)
+				{
+					G_Damage(ent,&g_entities[ent->client->pers.quest_power_user2_id],&g_entities[ent->client->pers.quest_power_user2_id],NULL,NULL,40,0,MOD_UNKNOWN);
+					ent->client->pers.quest_power_hit_counter--;
+					ent->client->pers.quest_target3_timer = level.time + 1000;
+				}
+				else if (ent->client->pers.quest_power_hit_counter == 0 && ent->client->pers.quest_target3_timer < level.time)
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 4);
+				}
 			}
-		}
 
-		if (ent->client->pers.quest_power_status & (1 << 5))
-		{ // zyk: Hurricane
-			if (ent->client->pers.quest_target4_timer > level.time)
-			{
-				static vec3_t forward;
-				vec3_t blow_dir, dir;
-
-				VectorSet(blow_dir,-70,ent->client->pers.quest_power_hit_counter,0);
-
-				AngleVectors(blow_dir, forward, NULL, NULL );
-
-				VectorNormalize(forward);
-
-				if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-					VectorScale(forward,50.0,dir);
-				else
-					VectorScale(forward,25.0,dir);
-
-				VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
-
-				ent->client->pers.quest_power_hit_counter += 4;
-				if (ent->client->pers.quest_power_hit_counter >= 180)
-					ent->client->pers.quest_power_hit_counter = -179;
-			}
-			else
-			{
-				ent->client->pers.quest_power_status &= ~(1 << 5);
-			}
-		}
-
-		if (ent->client->pers.quest_power_status & (1 << 6) && ent->client->pers.quest_target5_timer < level.time)
-		{ // zyk: Slow Motion
-			ent->client->pers.quest_power_status &= ~(1 << 6);
-		}
-
-		if (ent->client->pers.quest_power_status & (1 << 7) && ent->client->pers.quest_power3_timer < level.time)
-		{ // zyk: Ultra Resistance
-			ent->client->pers.quest_power_status &= ~(1 << 7);
-		}
-
-		if (ent->client->pers.quest_power_status & (1 << 8))
-		{ // zyk: Blowing Wind
-			if (ent->client->pers.quest_target6_timer > level.time)
-			{
-				gentity_t *blowing_wind_user = &g_entities[ent->client->pers.quest_power_user3_id];
-
-				if (blowing_wind_user && blowing_wind_user->client)
+			if (ent->client->pers.quest_power_status & (1 << 5))
+			{ // zyk: Hurricane
+				if (ent->client->pers.quest_target4_timer > level.time)
 				{
 					static vec3_t forward;
-					vec3_t dir;
+					vec3_t blow_dir, dir;
 
-					AngleVectors( blowing_wind_user->client->ps.viewangles, forward, NULL, NULL );
+					VectorSet(blow_dir,-70,ent->client->pers.quest_power_hit_counter,0);
+
+					AngleVectors(blow_dir, forward, NULL, NULL );
 
 					VectorNormalize(forward);
 
 					if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-						VectorScale(forward,90.0,dir);
+						VectorScale(forward,50.0,dir);
 					else
 						VectorScale(forward,25.0,dir);
 
 					VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+
+					ent->client->pers.quest_power_hit_counter += 4;
+					if (ent->client->pers.quest_power_hit_counter >= 180)
+						ent->client->pers.quest_power_hit_counter = -179;
+				}
+				else
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 5);
 				}
 			}
-			else
-			{
-				ent->client->pers.quest_power_status &= ~(1 << 8);
+
+			if (ent->client->pers.quest_power_status & (1 << 6) && ent->client->pers.quest_target5_timer < level.time)
+			{ // zyk: Slow Motion
+				ent->client->pers.quest_power_status &= ~(1 << 6);
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 7) && ent->client->pers.quest_power3_timer < level.time)
+			{ // zyk: Ultra Resistance
+				ent->client->pers.quest_power_status &= ~(1 << 7);
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 8))
+			{ // zyk: Blowing Wind
+				if (ent->client->pers.quest_target6_timer > level.time)
+				{
+					gentity_t *blowing_wind_user = &g_entities[ent->client->pers.quest_power_user3_id];
+
+					if (blowing_wind_user && blowing_wind_user->client)
+					{
+						static vec3_t forward;
+						vec3_t dir;
+
+						AngleVectors( blowing_wind_user->client->ps.viewangles, forward, NULL, NULL );
+
+						VectorNormalize(forward);
+
+						if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+							VectorScale(forward,90.0,dir);
+						else
+							VectorScale(forward,25.0,dir);
+
+						VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+					}
+				}
+				else
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 8);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 9) && ent->client->pers.quest_power3_timer < level.time)
+			{ // zyk: Ultra Speed
+				ent->client->pers.quest_power_status &= ~(1 << 9);
 			}
 		}
-
-		if (ent->client->pers.quest_power_status & (1 << 9) && ent->client->pers.quest_power3_timer < level.time)
-		{ // zyk: Ultra Speed
-			ent->client->pers.quest_power_status &= ~(1 << 9);
+		else if (!ent->NPC && ent->client->pers.quest_power_status & (1 << 10) && ent->client->pers.quest_power1_timer < level.time && 
+				!(ent->client->ps.eFlags & EF_DISINTEGRATION)) 
+		{ // zyk: Resurrection Power
+			ent->r.contents = CONTENTS_BODY;
+			ent->client->ps.pm_type = PM_NORMAL;
+			ent->client->ps.fallingToDeath = 0;
+			ent->client->noCorpse = qtrue;
+			ent->client->ps.eFlags &= ~EF_NODRAW;
+			ent->client->ps.eFlags2 &= ~EF2_HELD_BY_MONSTER;
+			initialize_rpg_skills(ent);
+			ent->client->pers.quest_power_status &= ~(1 << 10);
 		}
 	}
 }
@@ -5002,7 +5018,6 @@ extern void set_max_health(gentity_t *ent);
 extern void set_max_shield(gentity_t *ent);
 extern gentity_t *load_effect(int x,int y,int z, int spawnflags, char *fxFile);
 
-extern void initialize_rpg_skills(gentity_t *ent);
 extern void G_Kill( gentity_t *ent );
 
 void G_RunFrame( int levelTime ) {
@@ -5601,22 +5616,6 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->pers.flame_thrower > level.time)
 				{ // zyk: fires the flame thrower
 					Player_FireFlameThrower(ent);
-				}
-
-				if (ent->health < 1 && ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 7)) && !(ent->client->ps.eFlags & EF_DISINTEGRATION))
-				{ // zyk: Resurrection skill
-					ent->client->pers.resurrection_timer += (1000/sv_fps.integer);
-
-					if (ent->client->pers.resurrection_timer >= 3000) // zyk: reload his account to set all skills back
-					{
-						ent->r.contents = CONTENTS_BODY;
-						ent->client->ps.pm_type = PM_NORMAL;
-						ent->client->ps.fallingToDeath = 0;
-						ent->client->noCorpse = qtrue;
-						ent->client->ps.eFlags &= ~EF_NODRAW;
-						ent->client->ps.eFlags2 &= ~EF2_HELD_BY_MONSTER;
-						initialize_rpg_skills(ent);
-					}
 				}
 
 				if (ent->client->pers.rpg_class == 2 && ent->client->pers.bounty_hunter_sentries > 0)

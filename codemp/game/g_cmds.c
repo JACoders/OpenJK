@@ -4877,8 +4877,6 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.sense_health_timer = 0;
 
-		ent->client->pers.resurrection_timer = 0;
-
 		ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.max_force_power_level);
 		ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;

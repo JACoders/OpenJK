@@ -674,9 +674,6 @@ typedef struct clientPersistant_s {
 	// zyk: amount of sentries placed in map
 	int bounty_hunter_placed_sentries;
 
-	// zyk: time to wait before resurrecting using Resurrection Power
-	int resurrection_timer;
-
 	int max_force_power_level; // zyk: force power skill level. Has 5 levels, each one giving 25 per cent of max force power cvar to the player
 	int max_force_power; // zyk: max force power the player can have based on max_force_power_level value
 
@@ -775,16 +772,17 @@ typedef struct clientPersistant_s {
 
 	// zyk: bitvalue. Sets the power this player is using or the power that is affecting this player
 	// Possible values are:
-	// 0 - using Immunity Power
-	// 1 - hit by Chaos Power
-	// 2 - hit by Time Power
-	// 3 - using Ultra Strength
-	// 4 - hit by Poison Mushrooms
-	// 5 - hit by Hurricane
-	// 6 - hit by Slow Motion
-	// 7 - using Ultra Resistance
-	// 8 - hit by Blowing Wind
-	// 9 - using Ultra Speed
+	//  0 - using Immunity Power
+	//  1 - hit by Chaos Power
+	//  2 - hit by Time Power
+	//  3 - using Ultra Strength
+	//  4 - hit by Poison Mushrooms
+	//  5 - hit by Hurricane
+	//  6 - hit by Slow Motion
+	//  7 - using Ultra Resistance
+	//  8 - hit by Blowing Wind
+	//  9 - using Ultra Speed
+	// 10 - using Resurrection Power
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
