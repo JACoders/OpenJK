@@ -3506,10 +3506,10 @@ qboolean TryGrapple(gentity_t *ent)
 
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.forwardmove > 0)
 		{ // zyk: Magic Master special powers
-			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 1)
+			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 2)
 			{
-				inner_area_damage(ent,400,60);
-				ent->client->pers.magic_power -= 1;
+				inner_area_damage(ent,400,80);
+				ent->client->pers.magic_power -= 2;
 				ent->client->pers.quest_power_usage_timer = level.time + 2000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 			}
@@ -3643,6 +3643,85 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + 2000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
 			}
+		}
+
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && 
+			ent->client->pers.magic_power >= 12 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
+		{ // zyk: Magic Master Spray Attack
+			int fist_dmg = 20;
+			int count = 12;
+			gentity_t	*missile;
+			int i;
+			int angle_value = ent->client->ps.viewangles[1];
+
+			for (i = 0; i < count; i++ )
+			{
+				vec3_t dir, forward;
+
+				angle_value += 30;
+				if (angle_value >= 180)
+					angle_value -= 359;
+
+				VectorSet(dir, 0, angle_value, 0);
+
+				AngleVectors( dir, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+					
+				missile = CreateMissile( ent->client->ps.origin, forward, 5000.0, 10000, ent, qfalse);
+
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
+
+				VectorSet( missile->r.maxs, 2, 2, 2 );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				missile->damage = fist_dmg;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
+			}
+
+			ent->client->pers.magic_power -= 12;
+		}
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && 
+				 ent->client->pers.magic_power >= 3 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		{ // zyk: Magic Master Charged Attack
+			int fist_dmg = 20;
+			int count = 3;
+			gentity_t	*missile;
+			vec3_t dir, forward;
+			int i;
+
+			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+			AngleVectors( dir, forward, NULL, NULL );
+
+			VectorNormalize(forward);
+
+			for (i = 0; i < count; i++ )
+			{
+				missile = CreateMissile( ent->client->ps.origin, forward, 5000.0, 10000, ent, qfalse);
+
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
+
+				VectorSet( missile->r.maxs, 2, 2, 2 );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				missile->damage = fist_dmg;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
+			}
+
+			ent->client->pers.magic_power -= 3;
 		}
 
 		// zyk: Ultimate Power
@@ -4810,7 +4889,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: setting rpg control attributes
 		ent->client->pers.unique_skill_timer = 0;
 
-		ent->client->pers.current_magic_power = 1;
+		ent->client->pers.current_magic_power = 0;
 
 		ent->client->pers.quest_power_usage_timer = 0;
 

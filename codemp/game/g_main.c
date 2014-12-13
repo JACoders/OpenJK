@@ -413,6 +413,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	{
 		gitem_t *this_item = BG_FindItemForPowerup(PW_FORCE_BOON);
 		RegisterItem(this_item);
+
+		// zyk: also registers Bowcaster so players can see Magic Fist
+		this_item = BG_FindItemForWeapon(WP_BOWCASTER);
+		RegisterItem(this_item);
 	}
 
 	SaveRegisteredItems();
@@ -4675,7 +4679,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->pers.current_magic_power++;
 			if (ent->client->pers.current_magic_power == 18)
-				ent->client->pers.current_magic_power = 1;
+				ent->client->pers.current_magic_power = 0;
 		} while (magic_master_has_this_power(ent) == qfalse);
 	}
 	else
@@ -4683,12 +4687,16 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->pers.current_magic_power--;
-			if (ent->client->pers.current_magic_power == 0)
+			if (ent->client->pers.current_magic_power == -1)
 				ent->client->pers.current_magic_power = 17;
 		} while (magic_master_has_this_power(ent) == qfalse);
 	}
 
-	if (ent->client->pers.current_magic_power == 1)
+	if (ent->client->pers.current_magic_power == 0)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Magic Fist          ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+	}
+	else if (ent->client->pers.current_magic_power == 1)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Inner Area Damage   ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
 	}

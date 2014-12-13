@@ -587,6 +587,7 @@ typedef struct clientPersistant_s {
 	int rpg_class;
 
 	// zyk: current power selected by Magic Master to use
+	// 0 - Magic Fist
 	// 1 - Inner Area Damage
 	// 2 - Healing Water
 	// 3 - Water Splash

@@ -3566,6 +3566,29 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	}
 	else
 	{
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
+			ent->client->pers.current_magic_power == 0 && ent->client->pers.magic_power > 0)
+		{ // zyk: Magic Master has Magic Fist power
+			int fist_dmg = 20;
+			gentity_t *missile = CreateMissile( muzzle, forward, 5000.0, 10000, ent, qfalse);
+
+			missile->classname = "bowcaster_proj";
+			missile->s.weapon = WP_BOWCASTER;
+
+			VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
+			VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+			missile->damage = fist_dmg;
+			missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+			missile->methodOfDeath = MOD_MELEE;
+			missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+			// we don't want it to bounce
+			missile->bounceCount = 0;
+
+			ent->client->pers.magic_power--;
+		}
+
 		VectorCopy(ent->client->ps.origin, muzzlePunch);
 		muzzlePunch[2] += ent->client->ps.viewheight-6;
 	}
@@ -4565,6 +4588,12 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 		} else {
 			ent->client->accuracy_shots++;
 		}
+	}
+
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
+		ent->client->pers.current_magic_power == 0 && ent->s.weapon == WP_MELEE)
+	{ // zyk: Magic Master can shoot from his hands
+		ent->client->accuracy_shots++;
 	}
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )

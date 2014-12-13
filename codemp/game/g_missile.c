@@ -460,7 +460,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	{
 		vec3_t fwd;
 		gentity_t *this_npc = NULL;
-		int is_guardian_of_wind = 0;
+		int cannot_deflect = 0;
 
 		if (ent->r.ownerNum >= MAX_CLIENTS)
 			this_npc = &g_entities[ent->r.ownerNum];
@@ -468,10 +468,16 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		// zyk: Guardian of Wind can hit anyone with his blaster shots
 		if (this_npc && this_npc->client && this_npc->client->pers.guardian_mode == 7)
 		{
-			is_guardian_of_wind = 1;
+			cannot_deflect = 1;
 		}
 
-		if (is_guardian_of_wind == 0)
+		// zyk: Magic Fist can hit anything!
+		if (ent->s.weapon == WP_BOWCASTER && ent->methodOfDeath == MOD_MELEE)
+		{
+			cannot_deflect = 1;
+		}
+
+		if (cannot_deflect == 0)
 		{
 			if (other->client)
 			{
