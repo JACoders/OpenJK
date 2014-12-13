@@ -1964,6 +1964,7 @@ once for each server frame, which makes for smooth demo recording.
 ==============
 */
 extern void Boba_FlyStop( gentity_t *self );
+extern int zyk_max_magic_power(gentity_t *ent);
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -3366,39 +3367,39 @@ void ClientThink_real( gentity_t *ent ) {
 							ent->client->pers.current_magic_power = 1;
 
 						if (ent->client->pers.current_magic_power == 1)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Inner Area Damage\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Inner Area Damage   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 2)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Healing Water\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Healing Water   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 3)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Water Splash\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Water Splash   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 4)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Earthquake\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Earthquake   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 5)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Rockfall\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Rockfall   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 6)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Sleeping Flowers\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Sleeping Flowers   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 7)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Poison Mushrooms\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Poison Mushrooms   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 8)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Cloaking\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Cloaking   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 9)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Dome of Damage\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Dome of Damage   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 10)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Speed\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Ultra Speed   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 11)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Slow Motion\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Slow Motion   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 12)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Flame Burst\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Flame Burst   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 13)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Flame\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Ultra Flame   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 14)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Blowing Wind\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Blowing Wind   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 15)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Hurricane\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Hurricane   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 16)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Resistance\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Ultra Resistance   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 						else if (ent->client->pers.current_magic_power == 17)
-							trap->SendServerCommand( ent->s.number, "chat \"^3Current Power: ^7Ultra Strength\"");
+							trap->SendServerCommand( ent->s.number, va("chat \"^3Current Power: ^7Ultra Strength   ^3MP: ^7%d/%d\"",ent->client->pers.current_magic_power,zyk_max_magic_power(ent)));
 					}
 				}
 			}

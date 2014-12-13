@@ -4310,7 +4310,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	}
 }
 
-// zyk: Dome of Doom
+// zyk: Dome of Doom/Dome of Damage
 void dome_of_doom(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
@@ -8514,9 +8514,9 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking!\"");
 						}
 
-						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+						if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 						{
-							dome_of_doom(ent,1400,70);
+							dome_of_doom(ent,1400,50);
 
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
 						}

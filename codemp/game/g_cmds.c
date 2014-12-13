@@ -3553,7 +3553,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
-				dome_of_doom(ent,500,40);
+				dome_of_doom(ent,500,35);
 				ent->client->pers.magic_power -= 25;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 			}
@@ -3704,7 +3704,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
-				dome_of_doom(ent,500,40);
+				dome_of_doom(ent,500,35);
 				ent->client->pers.magic_power -= 25;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 			}
@@ -4515,7 +4515,7 @@ int zyk_max_magic_power(gentity_t *ent)
 		max_factor = 2;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
-		return ((ent->client->pers.level * max_factor) + 20 + (10 * ent->client->pers.improvements_level));
+		return ((ent->client->pers.level * max_factor) + 10 + (30 * ent->client->pers.improvements_level));
 	else
 		return (ent->client->pers.level * max_factor);
 }
