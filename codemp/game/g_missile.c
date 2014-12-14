@@ -427,19 +427,30 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->methodOfDeath != MOD_TURBLAST)
 		{
 			vec3_t fwd;
+			int cannot_deflect = 0;
 
-			if (trace)
+			// zyk: Magic Fist can hit anything!
+			if (ent->s.weapon == WP_BOWCASTER && ent->methodOfDeath == MOD_MELEE)
 			{
-				VectorCopy(trace->plane.normal, fwd);
-			}
-			else
-			{ //oh well
-				AngleVectors(other->r.currentAngles, fwd, NULL, NULL);
+				cannot_deflect = 1;
 			}
 
-			G_DeflectMissile(other, ent, fwd);
-			G_MissileBounceEffect(ent, ent->r.currentOrigin, fwd);
-			return;
+			if (cannot_deflect == 0)
+			{
+
+				if (trace)
+				{
+					VectorCopy(trace->plane.normal, fwd);
+				}
+				else
+				{ //oh well
+					AngleVectors(other->r.currentAngles, fwd, NULL, NULL);
+				}
+
+				G_DeflectMissile(other, ent, fwd);
+				G_MissileBounceEffect(ent, ent->r.currentOrigin, fwd);
+				return;
+			}
 		}
 	}
 

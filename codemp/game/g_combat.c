@@ -4793,7 +4793,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	int			take, asave = 0, subamt = 0, knockback;
 	float		famt = 0, hamt = 0, shieldAbsorbed = 0;
 	int			check_shield = 1; // zyk: tests if damage can be absorbed by shields
-	qboolean	is_a_monk = qfalse; // zyk: will be qtrue if attacker is a RPG Mode Monk
+	qboolean	can_damage_heavy_things = qfalse; // zyk: will be qtrue if attacker is a RPG Mode Monk using melee or a Magic Master using Magic Fist
 
 	if (!targ)
 		return;
@@ -4889,7 +4889,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 4 && mod == MOD_MELEE)
 		{
 			damage = damage * (1.0 + (attacker->client->pers.improvements_level*0.8));
-			is_a_monk = qtrue;
+			can_damage_heavy_things = qtrue;
 		}
 		else if (attacker->client->pers.rpg_class == 5 && (mod == MOD_STUN_BATON || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || 
 			     mod == MOD_REPEATER || mod == MOD_REPEATER_ALT || mod == MOD_REPEATER_ALT_SPLASH || mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT || 
@@ -4914,6 +4914,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 8 && mod == MOD_MELEE)
 		{ // zyk: Magic Master bonus melee damage
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level)));
+			if (inflictor && inflictor->s.weapon == WP_BOWCASTER)
+				can_damage_heavy_things = qtrue;
 		}
 	}
 
@@ -5138,7 +5140,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			mod != MOD_TELEFRAG &&
 			mod != MOD_TRIGGER_HURT)
 		{
-			if ( mod != MOD_MELEE || (is_a_monk == qfalse && !G_HeavyMelee( attacker ) ))
+			if ( mod != MOD_MELEE || (can_damage_heavy_things == qfalse && !G_HeavyMelee( attacker ) ))
 			{ //let classes with heavy melee ability damage heavy wpn dmg doors with fists
 				return;
 			}
@@ -5153,7 +5155,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			mod == MOD_BRYAR_PISTOL_ALT ||
 			mod == MOD_MELEE)
 		{ //these don't damage bbrushes.. ever
-			if ( mod != MOD_MELEE || (is_a_monk == qfalse && !G_HeavyMelee( attacker )) )
+			if ( mod != MOD_MELEE || (can_damage_heavy_things == qfalse && !G_HeavyMelee( attacker )) )
 			{ //let classes with heavy melee ability damage breakable brushes with fists
 				return;
 			}
