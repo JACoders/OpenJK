@@ -4026,12 +4026,7 @@ void Cmd_AddBot_f( gentity_t *ent ) {
 // zyk: sets the Max HP a player can have in RPG Mode
 void set_max_health(gentity_t *ent)
 {
-	// zyk: Challenge Mode. Player completed it, so he will have a bonus of 50 HP
-	if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 29))
-		ent->client->pers.max_rpg_health = 200 + (ent->client->pers.level * 2);
-	else
-		ent->client->pers.max_rpg_health = 100 + (ent->client->pers.level * 2);
-
+	ent->client->pers.max_rpg_health = 100 + (ent->client->pers.level * 2);
 	ent->client->ps.stats[STAT_MAX_HEALTH] = ent->client->pers.max_rpg_health;
 }
 
@@ -4646,6 +4641,10 @@ int zyk_max_magic_power(gentity_t *ent)
 
 	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
 		max_factor = 2;
+
+	// zyk: Challenge Mode. If player completed all quests, give more MP
+	if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 29))
+		max_factor += 1;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
 		return ((ent->client->pers.level * max_factor) + 10 + (30 * ent->client->pers.improvements_level));
