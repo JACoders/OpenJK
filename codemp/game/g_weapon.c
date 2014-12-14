@@ -3573,7 +3573,11 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			vec3_t origin, dir, zyk_forward;
 			gentity_t *missile = NULL;
 
-			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+			else
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+
 			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
 			AngleVectors( dir, zyk_forward, NULL, NULL );

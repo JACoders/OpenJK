@@ -3655,7 +3655,10 @@ qboolean TryGrapple(gentity_t *ent)
 			int i;
 			int angle_value = ent->client->ps.viewangles[1];
 
-			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+			else
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
 			for (i = 0; i < count; i++ )
 			{
@@ -3700,7 +3703,11 @@ qboolean TryGrapple(gentity_t *ent)
 			vec3_t origin, dir, forward;
 			int i;
 
-			VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+			else
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			
 			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
 			AngleVectors( dir, forward, NULL, NULL );
