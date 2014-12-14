@@ -2938,7 +2938,16 @@ void fx_runner_link( gentity_t *ent )
 
 		// Let's get to work right now!
 		ent->think = fx_runner_think;
-		ent->nextthink = level.time + 200; // wait a small bit, then start working
+		// zyk: Rockfall power. Starts the effect imediately but damages a bit later
+		if (Q_stricmp(ent->targetname, "zyk_quest_effect_rockfall") == 0)
+		{
+			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
+			ent->nextthink = level.time + 1500;
+		}
+		else
+		{
+			ent->nextthink = level.time + 200; // wait a small bit, then start working
+		}
 	}
 
 	// make us useable if we can be targeted

@@ -3541,7 +3541,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
 			{
-				ultra_flame(ent,400,55);
+				ultra_flame(ent,400,50);
 				ent->client->pers.magic_power -= 21;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
@@ -3549,7 +3549,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
 			{
-				rock_fall(ent,500,50);
+				rock_fall(ent,500,55);
 				ent->client->pers.magic_power -= 18;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
@@ -3812,7 +3812,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
 			{
-				ultra_flame(ent,400,55);
+				ultra_flame(ent,400,50);
 				ent->client->pers.magic_power -= 21;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
@@ -3820,7 +3820,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
 			{
-				rock_fall(ent,500,50);
+				rock_fall(ent,500,55);
 				ent->client->pers.magic_power -= 18;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));

@@ -6253,8 +6253,16 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 	}
 
 	for ( i = 0 ; i < 3 ; i++ ) {
-		mins[i] = origin[i] - radius;
-		maxs[i] = origin[i] + radius;
+		if (i == 2 && attacker && Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0)
+		{ // zyk: Rockfall quest power calculates the bounding box in a different way
+			mins[i] = origin[i] - radius;
+			maxs[i] = origin[i] + radius + 1000;
+		}
+		else
+		{
+			mins[i] = origin[i] - radius;
+			maxs[i] = origin[i] + radius;
+		}
 	}
 
 	numListedEntities = trap->EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
@@ -6269,12 +6277,19 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 
 		// find the distance from the edge of the bounding box
 		for ( i = 0 ; i < 3 ; i++ ) {
-			if ( origin[i] < ent->r.absmin[i] ) {
-				v[i] = ent->r.absmin[i] - origin[i];
-			} else if ( origin[i] > ent->r.absmax[i] ) {
-				v[i] = origin[i] - ent->r.absmax[i];
-			} else {
+			if (i == 2 && attacker && Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0)
+			{ // zyk: Rockfall quest power will consider only the distance in x and y axis
 				v[i] = 0;
+			}
+			else
+			{
+				if ( origin[i] < ent->r.absmin[i] ) {
+					v[i] = ent->r.absmin[i] - origin[i];
+				} else if ( origin[i] > ent->r.absmax[i] ) {
+					v[i] = origin[i] - ent->r.absmax[i];
+				} else {
+					v[i] = 0;
+				}
 			}
 		}
 

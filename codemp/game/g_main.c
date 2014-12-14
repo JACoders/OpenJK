@@ -4296,6 +4296,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","4");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_rockfall");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
@@ -4304,7 +4305,6 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 
 					new_ent->splashDamage = damage;
 					new_ent->splashRadius = 100;
-					new_ent->nextthink = level.time + 1000;
 
 					level.special_power_effects[new_ent->s.number] = ent->s.number;
 					level.special_power_effects_timer[new_ent->s.number] = level.time + 8000;
@@ -4437,7 +4437,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 					zyk_spawn_entity(new_ent);
 
 					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 45;
+					new_ent->splashRadius = 35;
 					new_ent->nextthink = level.time + 1000;
 
 					level.special_power_effects[new_ent->s.number] = ent->s.number;
