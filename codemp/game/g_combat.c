@@ -6258,6 +6258,11 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			mins[i] = origin[i] - radius;
 			maxs[i] = origin[i] + radius + 1000;
 		}
+		else if (i == 2 && attacker && Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0)
+		{ // zyk: Dome of Damage/Dome of Doom quest power calculates the bounding box in a different way
+			mins[i] = origin[i] - 20;
+			maxs[i] = origin[i] + radius - 150;
+		}
 		else
 		{
 			mins[i] = origin[i] - radius;

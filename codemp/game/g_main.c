@@ -4250,6 +4250,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","0");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_watersplash");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
@@ -4343,6 +4344,7 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 					zyk_set_entity_field(new_ent,"spawnflags","4");
+					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_dome");
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
 					new_ent->s.modelindex = G_EffectIndex( "env/dome" );
@@ -4350,8 +4352,8 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 					zyk_spawn_entity(new_ent);
 
 					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 300;
-					new_ent->nextthink = level.time + 1500;
+					new_ent->splashRadius = 290;
+					new_ent->nextthink = level.time + 1400;
 
 					level.special_power_effects[new_ent->s.number] = ent->s.number;
 					level.special_power_effects_timer[new_ent->s.number] = level.time + 10000;
