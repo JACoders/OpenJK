@@ -1218,20 +1218,21 @@ static void MedPackGive(gentity_t *ent, int amount)
 
 void ItemUse_MedPack_Big(gentity_t *ent)
 {
-	// zyk: RPG Mode Big Bacta 2/2. Recover 150 HP
+	// zyk: RPG Mode Big Bacta. Recover 150 HP
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0))
 		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT * 3);
 	else
 		MedPackGive(ent, MAX_MEDPACK_BIG_HEAL_AMOUNT);
 }
 
+extern int zyk_max_magic_power(gentity_t *ent);
 void ItemUse_MedPack(gentity_t *ent)
 {
-	// zyk: RPG Mode Bacta Canister 2/2. Recover 75 HP
+	// zyk: RPG Mode Bacta Canister. Recover 75 HP
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0))
-		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT * 3);
-	else
-		MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
+		ent->client->pers.magic_power = zyk_max_magic_power(ent);
+	
+	MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
 }
 
 #define JETPACK_TOGGLE_TIME			1000

@@ -6739,7 +6739,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->pers.rpg_class == 8 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 55)))
+	if (ent->client->pers.rpg_class == 8 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 47) || (upgrade_value >= 49 && upgrade_value <= 55)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Magic Master class doesn't allow this skill.\n\"" );
 		return;
@@ -8096,7 +8096,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.holdable_items_levels[0]);
 					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7)
 					sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
 				else
 					sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
@@ -8785,7 +8785,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 12)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Big Bacta: ^7recovers 50 HP. If player has Big Bacta 2/2 skill, recovers 150 HP\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Big Bacta: ^7recovers 50 HP\n\n\"");
 		}
 		else if (i == 13)
 		{
@@ -8873,7 +8873,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 34)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bacta Canister: ^7recovers 25 HP. If player has bacta canister 2/2 skill, recovers 75 HP\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bacta Canister: ^7recovers 25 HP\n\n\"");
 		}
 		else if (i == 35)
 		{
@@ -8897,7 +8897,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 40)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Holdable Items Upgrade: ^7Bacta and Big Bacta recovers more HP, Force Field resists more and Cloak Item will be able to cloak vehicles\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Holdable Items Upgrade: ^7Bacta Canister recovers all Magic Power, Big Bacta recovers more HP, Force Field resists more and Cloak Item will be able to cloak vehicles\n\n\"");
 		}
 		else if (i == 41)
 		{
@@ -8910,6 +8910,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		else if (i == 43)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Boon: ^7allows the player to regenerate force faster\n\n\"");
+		}
+		else if (i == 44)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Magic Potion: ^7recovers all Magic Power\n\n\"");
 		}
 	}
 }

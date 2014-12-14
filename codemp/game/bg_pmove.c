@@ -6295,6 +6295,10 @@ rest:
 #define BOWCASTER_CHARGE_UNIT	200.0f	// bowcaster charging gives us one more unit every 200ms--if you change this, you'll have to do the same in g_weapon
 #define BRYAR_CHARGE_UNIT		200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in g_weapon
 
+#if defined( _GAME )
+extern int zyk_max_magic_power(gentity_t *ent);
+#endif
+
 int PM_ItemUsable(playerState_t *ps, int forcedUse)
 {
 	vec3_t fwd, fwdorg, dest, pos;
@@ -6302,6 +6306,9 @@ int PM_ItemUsable(playerState_t *ps, int forcedUse)
 	vec3_t mins, maxs;
 	vec3_t trtest;
 	trace_t tr;
+#if defined( _GAME )
+	gentity_t *item_user = &g_entities[ps->clientNum];
+#endif
 
 	// zyk: moved this condition here so we can test if we can use cloak in vehicles
 	if (!forcedUse)
@@ -6332,6 +6339,29 @@ int PM_ItemUsable(playerState_t *ps, int forcedUse)
 	switch (forcedUse)
 	{
 	case HI_MEDPAC:
+#if defined( _GAME )
+		if (item_user && item_user->client && item_user->client->sess.amrpgmode == 2 && item_user->client->pers.secrets_found & (1 << 0))
+		{ // zyk: bacta canister with holdable items upgrade. Must allow even with max health to regen MP
+			if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] && item_user->client->pers.magic_power == zyk_max_magic_power(item_user))
+				return 0;
+
+			return 1;
+		}
+		else
+		{
+			if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH])
+			{
+				return 0;
+			}
+			if (ps->stats[STAT_HEALTH] <= 0 ||
+				(ps->eFlags & EF_DEAD))
+			{
+				return 0;
+			}
+
+			return 1;
+		}
+#endif
 	case HI_MEDPAC_BIG:
 		if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH])
 		{
