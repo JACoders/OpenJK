@@ -3018,7 +3018,7 @@ validVote:
 	level.votingGametype = qfalse;
 
 	if (g_fixVote.integer) {
-		if (!Q_stricmp(arg1, "map") || !Q_stricmp(arg1, "g_gametype"))
+		if (!Q_stricmp(arg1, "map"))
 			level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
 		else 
 			level.voteExecuteDelay = vote->voteDelay ? 3000 : 0;
