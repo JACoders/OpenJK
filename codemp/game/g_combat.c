@@ -4938,7 +4938,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{
 		if (attacker->client->pers.guardian_mode == 12 || attacker->client->pers.guardian_mode == 13 || attacker->client->pers.guardian_mode == 15 || attacker->client->pers.universe_quest_artifact_holder_id != -1)
 		{ // zyk: these quest npcs have bonus damage
-			damage = (int)ceil(damage*1.2);
+			damage = (int)ceil(damage*1.15);
 		}
 	}
 
