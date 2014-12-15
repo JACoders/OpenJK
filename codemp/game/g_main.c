@@ -8711,7 +8711,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						dome_of_doom(ent,1500,45);
+						dome_of_doom(ent,1500,40);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
 						ent->client->pers.light_quest_timer = level.time + ent->health + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
 					}
@@ -9021,6 +9021,34 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{
+							water_splash(ent,800,100);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 3000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 8)
+						{
+							rock_fall(ent,1200,55);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Rockfall!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 3000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 9)
+						{
+							ultra_flame(ent,1400,50);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ultra Flame!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 3000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 10)
+						{
+							dome_of_doom(ent,1500,40);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Dome of Damage!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + 3000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 11)
+						{
 							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -9033,7 +9061,7 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 8)
+						else if (ent->client->pers.hunter_quest_messages == 12)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
 							gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -9048,7 +9076,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 9)
+						else if (ent->client->pers.hunter_quest_messages == 13)
 						{
 							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
@@ -9056,7 +9084,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Earthquake!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 10)
+						else if (ent->client->pers.hunter_quest_messages == 14)
 						{
 							time_power(ent,1600,6000);
 
@@ -9065,7 +9093,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Time Power!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 11)
+						else if (ent->client->pers.hunter_quest_messages == 15)
 						{
 							vec3_t origin, angles;
 
@@ -9082,7 +9110,7 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 12)
+						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
 							chaos_power(ent,1600,440);
 
