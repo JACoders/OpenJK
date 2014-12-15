@@ -2863,17 +2863,17 @@ void CheckVote( void ) {
 	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
 		if (g_fixVote.integer) {
 			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
-				trap->SendServerCommand( -1, va("print \"%s (%s), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+				trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 				level.voteExecuteTime = level.time + level.voteExecuteDelay;
 			}
 			else {
-				trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+				trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 				//level.lastVoteFailTime = level.time;
 				SetFailedCallVoteIP(level.callVoteIP);
 			}
 		}
 		else //Fail if it expires and not fixvote
-			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+			trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 	}
 	else {
 		int numClients = level.numVotingClients;
@@ -2883,13 +2883,13 @@ void CheckVote( void ) {
 
 		if ( level.voteYes > numClients/2 ) {
 			// execute the command, then remove the vote
-			trap->SendServerCommand( -1, va("print \"%s (%s), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+			trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
 
 		// same behavior as a timeout
 		else if ( level.voteNo >= (numClients+1)/2 ) {
-			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+			trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 			//level.lastVoteFailTime = level.time;
 			SetFailedCallVoteIP(level.callVoteIP);
 		}

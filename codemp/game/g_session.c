@@ -70,7 +70,10 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.movementStyle ) );
 
 	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.juniorAdmin ) );
-	Q_strcat( s, sizeof( s ), va( "%i", (int)client->sess.fullAdmin ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.fullAdmin ) );
+
+	Q_strcat( s, sizeof( s ), va( "%i ", (int)client->sess.sayteammod ) );
+	Q_strcat( s, sizeof( s ), va( "%s", (int)client->sess.clanpass ) );
 
 	var = va( "session%i", client - level.clients );
 
@@ -97,7 +100,7 @@ void G_ReadSessionData( gclient_t *client )
 
 	//trap->Print("READING: %s, Session: %s\n", var, s);
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i",//[JAPRO - Serverside - All - Ignore]
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s %u %i %i %i %i %i %i %s",//[JAPRO - Serverside - All - Ignore]
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -117,7 +120,9 @@ void G_ReadSessionData( gclient_t *client )
 		&tempRaceMode, 
 		&client->sess.movementStyle,
 		&tempJRAdmin,
-		&tempFullAdmin
+		&tempFullAdmin,
+		&client->sess.sayteammod,
+		client->sess.clanpass
 		);
 
 	client->sess.sessionTeam	= (team_t)tempSessionTeam;

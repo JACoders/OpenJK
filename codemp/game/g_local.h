@@ -625,6 +625,10 @@ typedef struct clientSession_s {
 
 	qboolean	juniorAdmin;
 	qboolean	fullAdmin;
+
+	char		clanpass[32];//Japro - Serverside Clanpass
+	int			sayteammod;//0 = normal, 1 = clan, 2 = admin
+
 //[JAPRO - Serverside - All - Ignore - End]
 } clientSession_t;
 
@@ -686,8 +690,8 @@ typedef struct clientPersistant_s {
 	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
 	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
 	float		telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
-	char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
-	int			sayteammod;//0 = normal, 1 = clan, 2 = admin
+	//char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
+	//int			sayteammod;//0 = normal, 1 = clan, 2 = admin
 	int			lastChatTime;//godchat fuck idk why im doing this
 
 	//int			aimSamples[64];//japro anti yawspeed?

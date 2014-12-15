@@ -2011,7 +2011,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 		return;
 	}
 
-	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->pers.clanpass, other->client->pers.clanpass) || ent->client->pers.clanpass[0] == 0 || other->client->pers.clanpass[0] == 0)))//Idk
+	if (mode == SAY_CLAN && ((Q_stricmp(ent->client->sess.clanpass, other->client->sess.clanpass) || ent->client->sess.clanpass[0] == 0 || other->client->sess.clanpass[0] == 0)))//Idk
 		return;//Ignore it
 	if (mode == SAY_ADMIN && !(other->client->sess.fullAdmin || other->client->sess.juniorAdmin) && ent != other)
 		return;
@@ -2067,9 +2067,9 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	//}
 
 	if (mode == SAY_TEAM) {
-		if (ent->client->pers.sayteammod == 1)//clanpass
+		if (ent->client->sess.sayteammod == 1)//clanpass
 			mode = SAY_CLAN;
-		if (ent->client->pers.sayteammod == 2)//clanpass
+		if (ent->client->sess.sayteammod == 2)//clanpass
 			mode = SAY_ADMIN;
 	}
 
@@ -3045,7 +3045,7 @@ validVote:
 	}
 	Q_strstrip( level.voteStringClean, "\"\n\r", NULL );
 
-	trap->SendServerCommand( -1, va( "print \"%s^7 %s (%s)\n\"", ent->client->pers.netname, G_GetStringEdString( "MP_SVGAME", "PLCALLEDVOTE" ), level.voteStringClean ) );
+	trap->SendServerCommand( -1, va( "print \"%s^7 %s (%s^7)\n\"", ent->client->pers.netname, G_GetStringEdString( "MP_SVGAME", "PLCALLEDVOTE" ), level.voteStringClean ) );
 
 	// start the voting, the caller automatically votes yes
 	level.voteTime = level.time;
@@ -3061,7 +3061,9 @@ validVote:
 	ent->client->pers.vote = 1;
 
 	trap->SetConfigstring( CS_VOTE_TIME,	va( "%i", level.voteTime ) );
-	trap->SetConfigstring( CS_VOTE_STRING,	level.voteDisplayString );	
+	//trap->SetConfigstring( CS_VOTE_STRING,	level.voteDisplayString );	
+	trap->SetConfigstring( CS_VOTE_STRING,	va("%s^7", level.voteDisplayString) );	 //dunno why this has to be done here..
+
 	trap->SetConfigstring( CS_VOTE_YES,		va( "%i", level.voteYes ) );
 	trap->SetConfigstring( CS_VOTE_NO,		va( "%i", level.voteNo ) );	
 }
@@ -3128,8 +3130,6 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		}
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
-
 	ent->client->mGameFlags |= PSG_VOTED;
 
 	trap->Argv( 1, msg, sizeof( msg ) );
@@ -3138,10 +3138,12 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		level.voteYes++;
 		ent->client->pers.vote = 1;
 		trap->SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
+		trap->SendServerCommand( ent-g_entities, va("print \"%s (Yes)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
 	} else {
 		level.voteNo++;
 		ent->client->pers.vote = 2;
 		trap->SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
+		trap->SendServerCommand( ent-g_entities, va("print \"%s (No)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
 	}
 
 	// a majority will be determined in CheckVote, which will also account
@@ -4505,7 +4507,7 @@ void Cmd_Clanpass_f(gentity_t *ent)
 		return; 
 	}
 	if (trap->Argc() == 2) {
-		Q_strncpyz( ent->client->pers.clanpass, pass, sizeof(ent->client->pers.clanpass) );
+		Q_strncpyz( ent->client->sess.clanpass, pass, sizeof(ent->client->sess.clanpass) );
 	}
 }
 
@@ -4521,11 +4523,11 @@ void Cmd_SayTeamMod_f(gentity_t *ent)//clanpass
 	}
 	if (trap->Argc() == 2) {
 		if (!Q_stricmp(type, "normal"))
-			ent->client->pers.sayteammod = 0;
+			ent->client->sess.sayteammod = 0;
 		else if (!Q_stricmp(type, "clan"))
-			ent->client->pers.sayteammod = 1;
+			ent->client->sess.sayteammod = 1;
 		else if (!Q_stricmp(type, "admin"))
-			ent->client->pers.sayteammod = 2;
+			ent->client->sess.sayteammod = 2;
 	}
 }
 
@@ -5871,9 +5873,9 @@ void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in peopl
 	if (trap->Argc() > 1)//Clanwhois <clanpass>
 		trap->Argv(1, clanPass, sizeof(clanPass));
 	else {//Clanwhois
-		if (!ent->client->pers.clanpass[0])//Normal clanwhois, and we have no clanpass
+		if (!ent->client->sess.clanpass[0])//Normal clanwhois, and we have no clanpass
 			return;
-		Q_strncpyz(clanPass, ent->client->pers.clanpass, sizeof(clanPass));
+		Q_strncpyz(clanPass, ent->client->sess.clanpass, sizeof(clanPass));
 	}
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
@@ -5881,7 +5883,7 @@ void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in peopl
 		if (!g_entities[i].inuse)
 			continue;
 		cl = &level.clients[i];
-		if (cl->pers.netname[0] && !Q_stricmp(clanPass, cl->pers.clanpass)) { // && cl->pers.userName[0] ?
+		if (cl->pers.netname[0] && !Q_stricmp(clanPass, cl->sess.clanpass)) { // && cl->pers.userName[0] ?
 			char strNum[12] = {0};
 			char strName[MAX_NETNAME] = {0};
 
