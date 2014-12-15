@@ -5749,17 +5749,17 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 2)
 								trap->SendServerCommand( -1, va("chat \"%s^7: Ok, let's see what they want from me.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 3)
-								trap->SendServerCommand( -1, va("chat \"^3Note^7: %s^7, We wanted to say this before but we couldn't.\"", ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"^3Note^7: %s^7, we have some information for you.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 4)
 								trap->SendServerCommand( -1, va("chat \"^3Note^7: We left yavin1b to find out what happened to the ^2Sage of Universe^7!\""));
 							else if (ent->client->pers.universe_quest_messages == 5)
 								trap->SendServerCommand( -1, va("chat \"%s^7: Sage of Universe?\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 6)
-								trap->SendServerCommand( -1, va("chat \"^3Note^7: Somehow he got the amulet of Universe, about which we forgot to tell you before.\""));
+								trap->SendServerCommand( -1, va("chat \"^3Note^7: Ha has the amulet of Universe, about which we did not tell you before.\""));
 							else if (ent->client->pers.universe_quest_messages == 7)
 								trap->SendServerCommand( -1, va("chat \"^3Note^7: Forgive us for that, please.\""));
 							else if (ent->client->pers.universe_quest_messages == 8)
-								trap->SendServerCommand( -1, va("chat \"%s^7: So there is a fourth sage and his amulet\"", ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"%s^7: So there is a fourth sage and his amulet.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 9)
 								trap->SendServerCommand( -1, va("chat \"^3Note^7: We believe that the sage is hidden in t3_hevil, but we are not sure.\""));
 							else if (ent->client->pers.universe_quest_messages == 10)
@@ -5773,7 +5773,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 14)
 								trap->SendServerCommand( -1, va("chat \"^3Note^7: Good luck, %s^7.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 15)
-								trap->SendServerCommand( -1, va("chat \"%s^7: Maybe the Sage of Universe has more info about the guardian amulets\"", ent->client->pers.netname));
+								trap->SendServerCommand( -1, va("chat \"%s^7: Maybe the Sage of Universe has more info about the guardian amulets.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 16)
 								trap->SendServerCommand( -1, va("chat \"%s^7: I hope that he is really in ^3t3_hevil^7.\"", ent->client->pers.netname));
 
