@@ -8924,6 +8924,9 @@ void G_RunFrame( int levelTime ) {
 						else
 							Jedi_Cloak(ent);
 
+						immunity_power(ent,25000);
+						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Immunity Power!\"");
+
 						ent->client->pers.guardian_timer = level.time + 40000;
 					}
 				}
