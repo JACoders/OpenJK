@@ -1802,6 +1802,9 @@ void TryUse( gentity_t *ent )
 					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You must be indeed the hero of the legend that the sages told about! Here, accept the Amulet of Eternity as a reward.\"");
 					ent->client->pers.universe_quest_messages = 40;
 					ent->client->pers.universe_quest_counter |= (1 << 2);
+					
+					// zyk: reset this value so the player can talk to the other quest_jawa npcs who got the other amulets
+					ent->client->pers.universe_quest_objective_control = -6;
 
 					save_account(ent);
 					got_all_amulets(ent);
