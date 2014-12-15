@@ -1081,7 +1081,7 @@ void Svcmd_AddBot_f( void ) {
 
 	botplayers = G_CountBotPlayers(	-1 );
 
-	if (botplayers >= bot_maxbots.integer) {
+	if (bot_maxbots.integer && botplayers >= bot_maxbots.integer) {
 		return;
 	}
 
