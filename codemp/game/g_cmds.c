@@ -3508,6 +3508,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{ // zyk: Magic Master special powers
 			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 2)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				inner_area_damage(ent,400,90);
 				ent->client->pers.magic_power -= 2;
 				ent->client->pers.quest_power_usage_timer = level.time + 2000;
@@ -3516,6 +3517,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_strength(ent,30000);
 				display_yellow_bar(ent,30000);
 				ent->client->pers.magic_power -= 10;
@@ -3525,6 +3527,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				poison_mushrooms(ent,100,600);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3533,6 +3536,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				water_splash(ent,400,100);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3541,6 +3545,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_flame(ent,400,50);
 				ent->client->pers.magic_power -= 21;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3549,6 +3554,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				rock_fall(ent,500,55);
 				ent->client->pers.magic_power -= 18;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3557,6 +3563,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				dome_of_doom(ent,500,35);
 				ent->client->pers.magic_power -= 25;
 				ent->client->pers.quest_power_usage_timer = level.time + 5000;
@@ -3565,6 +3572,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				hurricane(ent,600,5000);
 				ent->client->pers.magic_power -= 22;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3573,6 +3581,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				slow_motion(ent,400,15000);
 				ent->client->pers.magic_power -= 17;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3581,6 +3590,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_resistance(ent,30000);
 				display_yellow_bar(ent,30000);
 				ent->client->pers.magic_power -= 10;
@@ -3590,6 +3600,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				sleeping_flowers(ent,3500,400);
 				ent->client->pers.magic_power -= 25;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
@@ -3598,6 +3609,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				healing_water(ent,120);
 				ent->client->pers.magic_power -= 28;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3606,6 +3618,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ent->client->pers.flame_thrower = level.time + 7000;
 				ent->client->pers.magic_power -= 23;
 				ent->client->pers.quest_power_usage_timer = level.time + 4000;
@@ -3614,6 +3627,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				earthquake(ent,2000,300,500);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3622,6 +3636,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				Jedi_Cloak(ent);
 				ent->client->pers.magic_power -= 1;
 				ent->client->pers.quest_power_usage_timer = level.time + 1500;
@@ -3630,6 +3645,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				blowing_wind(ent,800,5000);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3638,6 +3654,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.current_magic_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_speed(ent,15000);
 				ent->client->pers.magic_power -= 17;
 				ent->client->pers.quest_power_usage_timer = level.time + 2000;
@@ -3694,28 +3711,28 @@ qboolean TryGrapple(gentity_t *ent)
 			ent->client->pers.magic_power -= 12;
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 3 && 
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 2 && 
 			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Magic Master Charged Attack
-			int fist_dmg = 14;
+			int fist_dmg = 12;
 			int count = 3;
 			gentity_t	*missile;
 			vec3_t origin, dir, forward;
 			int i;
 
-			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
-			else
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
-			
-			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
-
-			AngleVectors( dir, forward, NULL, NULL );
-
-			VectorNormalize(forward);
-
 			for (i = 0; i < count; i++ )
 			{
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 8 + (i * 2));
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
+			
+				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+				AngleVectors( dir, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+
 				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
 
 				missile->classname = "bowcaster_proj";
@@ -3733,7 +3750,7 @@ qboolean TryGrapple(gentity_t *ent)
 				missile->bounceCount = 0;
 			}
 
-			ent->client->pers.magic_power -= 3;
+			ent->client->pers.magic_power -= 2;
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
 
@@ -3742,6 +3759,7 @@ qboolean TryGrapple(gentity_t *ent)
 		{
 			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 30)
 			{ // zyk: Dome of Doom
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				dome_of_doom(ent,500,90);
 				ent->client->pers.magic_power -= 30;
 				if (ent->client->pers.rpg_class == 8)
@@ -3752,6 +3770,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 30)
 			{ // zyk: Immunity Power
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				immunity_power(ent,25000);
 				display_yellow_bar(ent,25000);
 				ent->client->pers.magic_power -= 30;
@@ -3763,6 +3782,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 2) && ent->client->pers.magic_power >= 50)
 			{ // zyk: uses Chaos Power
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				chaos_power(ent,400,80);
 				ent->client->pers.magic_power -= 50;
 				if (ent->client->pers.rpg_class == 8)
@@ -3773,6 +3793,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 40)
 			{ // zyk: uses Time Power
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				time_power(ent,400,6000);
 				ent->client->pers.magic_power -= 40;
 				if (ent->client->pers.rpg_class == 8)
@@ -3787,6 +3808,7 @@ qboolean TryGrapple(gentity_t *ent)
 			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 15)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_strength(ent,30000);
 				display_yellow_bar(ent,30000);
 				ent->client->pers.magic_power -= 15;
@@ -3796,6 +3818,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				poison_mushrooms(ent,100,600);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3804,6 +3827,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				water_splash(ent,400,100);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3812,6 +3836,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_flame(ent,400,50);
 				ent->client->pers.magic_power -= 21;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3820,6 +3845,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				rock_fall(ent,500,55);
 				ent->client->pers.magic_power -= 18;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3828,6 +3854,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				dome_of_doom(ent,500,35);
 				ent->client->pers.magic_power -= 25;
 				ent->client->pers.quest_power_usage_timer = level.time + 9000;
@@ -3836,6 +3863,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				hurricane(ent,600,5000);
 				ent->client->pers.magic_power -= 22;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
@@ -3844,6 +3872,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				slow_motion(ent,400,15000);
 				ent->client->pers.magic_power -= 17;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
@@ -3855,6 +3884,7 @@ qboolean TryGrapple(gentity_t *ent)
 			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 15)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_resistance(ent,30000);
 				display_yellow_bar(ent,30000);
 				ent->client->pers.magic_power -= 15;
@@ -3864,6 +3894,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				sleeping_flowers(ent,3500,400);
 				ent->client->pers.magic_power -= 25;
 				ent->client->pers.quest_power_usage_timer = level.time + 10000;
@@ -3872,6 +3903,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				healing_water(ent,120);
 				ent->client->pers.magic_power -= 28;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3880,6 +3912,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ent->client->pers.flame_thrower = level.time + 7000;
 				ent->client->pers.magic_power -= 23;
 				ent->client->pers.quest_power_usage_timer = level.time + 8000;
@@ -3888,6 +3921,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				earthquake(ent,2000,300,500);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
@@ -3896,6 +3930,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				Jedi_Cloak(ent);
 				ent->client->pers.magic_power -= 1;
 				ent->client->pers.quest_power_usage_timer = level.time + 3000;
@@ -3904,6 +3939,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				blowing_wind(ent,800,5000);
 				ent->client->pers.magic_power -= 20;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
@@ -3912,6 +3948,7 @@ qboolean TryGrapple(gentity_t *ent)
 			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
+				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				ultra_speed(ent,15000);
 				ent->client->pers.magic_power -= 17;
 				ent->client->pers.quest_power_usage_timer = level.time + 7000;
