@@ -1216,16 +1216,14 @@ int SpectatorFind(gentity_t *self)
 {
 	int i;
 
-	for ( i = 0; i < level.numConnectedClients; i ++ )
-	{
+	for (i = 0; i < level.numConnectedClients; i ++) {
 		gentity_t *ent = &g_entities[level.sortedClients[i]];
 		float	  dist;
 		vec3_t	  angles;
+		trace_t		tr;
 
-		if ( ent == self ) {
+		if (ent == self)
 			continue;
-		}
-
 		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
 			continue;
 
@@ -1233,18 +1231,14 @@ int SpectatorFind(gentity_t *self)
 		dist = VectorLengthSquared ( angles );
 		vectoangles ( angles, angles );
 
-		// Out of range
-		if ( dist > 4096*4096 ) {
+		if (dist > 8192*8192) // Out of range
 			continue;
-		}
-		
-		// Not in our FOV
-		if ( !InFieldOfVision ( self->client->ps.viewangles, 30, angles ) ) {
+		if (!InFieldOfVision(self->client->ps.viewangles, 30, angles)) // Not in our FOV
 			continue;
-		}
 
-		// Not in line of sight?
-			//break;
+		JP_Trace( &tr, self->client->ps.origin, NULL, NULL, ent->client->ps.origin, self->s.number, MASK_SOLID, qfalse, 0, 0 );
+		if (tr.fraction != 1.0) //if not line of sight
+			continue;
 
 		// Return the first guy that fits the requirements
 		return level.sortedClients[i];

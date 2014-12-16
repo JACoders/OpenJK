@@ -5664,6 +5664,130 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 	}
 }
 //Jetpack end
+
+
+void SpotIcon( gentity_t *ent, vec3_t origin ) {
+	gentity_t *plum;
+
+	plum = G_TempEntity( origin, EV_SCOREPLUM );
+	// only send this temp entity to a single client
+	plum->r.svFlags |= SVF_SINGLECLIENT;
+	plum->r.singleClient = ent->s.number;
+	//
+	plum->s.otherEntityNum = ent->s.number;
+	plum->s.time = 0;
+	plum->s.eventParm = 1;
+}
+
+
+static void Cmd_Spot_f(gentity_t *ent) {
+	int i, best = -1;
+	vec3_t headlevel;
+
+	if (level.gametype < GT_TEAM)
+		return;
+
+	if (ent->client->lastSpotTime > level.time)
+		return;
+
+	ent->client->lastSpotTime = level.time + 250;
+
+	VectorCopy(ent->client->ps.origin, headlevel);
+	headlevel[2] += ent->client->ps.viewheight;
+
+	//float closeness = 0, lastCloseness = 0;
+	//vec3_t viewangles;
+
+	//VectorCopy(ent->client->ps.viewangles, viewangles);
+	//for (i=0; i<2; i++) {
+		//viewangles[i] = AngleMod(viewangles[i]);
+	//}
+
+	for (i=0; i<level.numConnectedClients; i++) {
+		gentity_t *hit = &g_entities[level.sortedClients[i]];
+		float	  dist;
+		vec3_t	  angles;
+		trace_t		tr;
+		//int j;
+
+		if (!hit->inuse)
+			continue;
+		if (hit == ent)
+			continue;
+
+		if (hit->client->sess.sessionTeam == ent->client->sess.sessionTeam) //Only spot enemies
+			continue;
+
+		//
+		VectorSubtract( hit->client->ps.origin, headlevel, angles );
+		dist = VectorLengthSquared ( angles );
+		vectoangles ( angles, angles );
+
+		if (dist > 8192*8192) // Out of range
+			continue;
+		//
+		
+		JP_Trace( &tr, headlevel, NULL, NULL, hit->client->ps.origin, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
+		if (tr.fraction != 1.0) //if not line of sight
+			continue;
+		/*
+		for (j=0; j<2; j++) {
+			angles[j] = AngleMod(angles[j]);
+		}
+		closeness = DotProduct(angles, viewangles);
+
+		trap->Print("Closeness: %f\n", closeness);
+
+		if (closeness > lastCloseness)
+			best = i;
+
+		lastCloseness = closeness;
+		*/
+
+		if (!InFieldOfVision(ent->client->ps.viewangles, 30, angles)) // Not in our FOV
+			continue;
+
+		best = i;
+		break;
+	}
+
+	if (best >= 0) { //Valid target
+		gentity_t *target = &g_entities[level.sortedClients[best]];
+		gentity_t *te;
+
+		if (!target->client)
+			return;
+
+		ent->client->lastSpotTime = level.time + 1000;
+
+		//trap->Print("Target is %s\n", target->client->pers.netname);
+
+		//Remove old spot icons that we created? not feasible
+
+		for (i=0; i<level.numConnectedClients; i++) {
+			gentity_t *teammate = &g_entities[level.sortedClients[i]];
+
+			if (!teammate->inuse)
+				continue;
+
+			if (teammate->client->sess.sessionTeam == ent->client->sess.sessionTeam)
+				SpotIcon(teammate, target->client->ps.origin);
+
+			trap->SendServerCommand( teammate-g_entities, "cp \"^1!\n\n\n\n\n\n\n\n\n\n\"");
+		}
+
+		/*
+		te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
+		te->s.groundEntityNum = ent->s.number;
+		te->s.eventParm = G_SoundIndex("*spot_troops");
+		te->r.svFlags |= SVF_BROADCAST;
+		*/
+
+	}
+
+}
+
+
 //[JAPRO - Serverside - All - Clanwhois Function - Start]
 /*
 =================
@@ -7404,6 +7528,8 @@ command_t commands[] = {
 	{ "serverconfig",		Cmd_ServerConfig_f,			0 },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_NOINTERMISSION|CMD_CHEAT }, //wow really??
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
+
+	{ "spot",				Cmd_Spot_f,					CMD_NOINTERMISSION|CMD_ALIVE },
 
 	{ "stats",				Cmd_Stats_f,				CMD_NOINTERMISSION },
 

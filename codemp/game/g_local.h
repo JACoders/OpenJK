@@ -1026,15 +1026,9 @@ struct gclient_s {
 	//fallen duelist
 	qboolean	iAmALoser;
 
-	int			lastGenCmd;
-	int			lastGenCmdTime;
-
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
 	int			lastKickedBy;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
-	int			lastSaberActivateTime;
-	int			lastSaberAttackCycleTime;
-	int			lastTauntTime;
 	qboolean	emote_freeze;//JAPRO - Amfreeze Anim
 	int			lastUpdateFrame; // JAPRO - Smooth clients loda
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
@@ -1044,6 +1038,7 @@ struct gclient_s {
 	int			noKnockdownStreak; //pseudo random knockdowns option
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
+	int			lastSpotTime;
 
 	vec3_t		lastVelocity;
 
