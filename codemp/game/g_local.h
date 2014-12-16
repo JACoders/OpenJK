@@ -280,7 +280,8 @@ typedef enum {
 	A_LOOKUP,
 	A_NOFOLLOW,
 	A_SEEHIDDEN,
-	A_CALLVOTE
+	A_CALLVOTE,
+	A_KILLVOTE
 } admin_type_t;
 
 //JAPRO - Serverside - Emote bitrates

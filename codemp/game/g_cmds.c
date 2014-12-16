@@ -2622,6 +2622,29 @@ int compcstr(const void * a, const void * b) {
 	return strcmp(aa, bb);
 }
 
+static qboolean CheckAdminCmd(gentity_t *ent, int command, char *commandString) {
+	if (!ent || !ent->client)
+		return qfalse;
+
+	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
+		if (!(g_fullAdminLevel.integer & (1 << command))) {
+			trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (%s).\n\"", commandString ));
+			return qfalse;
+		}
+	}
+	else if (ent->client && ent->client->sess.juniorAdmin) {//Logged in as junior admin
+		if (!(g_juniorAdminLevel.integer & (1 << command))) {
+			trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (%s).\n\"", commandString));
+			return qfalse;
+		}
+	}
+	else {//Not logged in
+		trap->SendServerCommand( ent-g_entities, va("print \"You must be logged in to use this command (%s).\n\"", commandString) );
+		return qfalse;
+	}
+	return qtrue;
+}
+
 void Cmd_AmMapList_f(gentity_t *ent)
 {
 	char				unsortedMaps[4096], buf[512] = {0};
@@ -2631,22 +2654,8 @@ void Cmd_AmMapList_f(gentity_t *ent)
 	unsigned int		count = 0, baseMapCount = 0;
 	const unsigned int limit = 192, MAX_MAPS = 512;
 
-	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
-		if (!(g_fullAdminLevel.integer & (1 << A_LISTMAPS))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
-			return;
-		}
-	}
-	else if (ent->client && ent->client->sess.juniorAdmin) {//Logged in as junior admin
-		if (!(g_juniorAdminLevel.integer & (1 << A_LISTMAPS))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amListMaps).\n\"" );
-			return;
-		}
-	}
-	else {//Not logged in
-		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amListMaps).\n\"" );
+	if (!CheckAdminCmd(ent, A_LISTMAPS, "amListMaps"))
 		return;
-	}
 
 	numMaps = trap->FS_GetFileList( "maps", ".bsp", unsortedMaps, sizeof(unsortedMaps) );
 	if (numMaps) {
@@ -4531,7 +4540,6 @@ void Cmd_SayTeamMod_f(gentity_t *ent)//clanpass
 	}
 }
 
-
 //[JAPRO - Serverside - All - Amlogin Function - Start]
 /*
 =================
@@ -4625,27 +4633,8 @@ void Cmd_Amlockteam_f(gentity_t *ent)
 		if (!ent->client)
 			return;
 
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_LOCKTEAM)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLockTeam).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_LOCKTEAM)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLockTeam).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command.\n\"" );
+		if (!CheckAdminCmd(ent, A_LOCKTEAM, "amLockTeam"))
 			return;
-		}
 
 		if (level.gametype >= GT_TEAM || level.gametype == GT_FFA)
 		{
@@ -4737,30 +4726,8 @@ void Cmd_Amforceteam_f(gentity_t *ent)
 		char teamname[MAX_TEAMNAME];
 		int  clientid = 0;//stfu compiler
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_FORCETEAM, "amForceTeam"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_FORCETEAM)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amForceTeam).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_FORCETEAM)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amForceTeam).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amForceTeam).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 3) 
         { 
@@ -4906,7 +4873,7 @@ void Cmd_Ampsay_f(gentity_t *ent)
 		char real_msg[MAX_STRING_CHARS];
 		char *msg = ConcatArgs(1); 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_CSPRINT, "amPsay"))
 			return;
 
 		while(*msg)
@@ -4923,28 +4890,6 @@ void Cmd_Ampsay_f(gentity_t *ent)
 			msg++;                         // increase the msg pointer 
 		}
 		real_msg[pos] = 0;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_CSPRINT)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amPsay).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_CSPRINT)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amPsay).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amPsay).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() < 2) 
 		{ 
@@ -4971,30 +4916,8 @@ void Cmd_Amfreeze_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_FREEZE, "amFreeze"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_FREEZE)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amFreeze).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_FREEZE)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amFreeze).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amFreeze).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 2) 
         { 
@@ -5097,30 +5020,8 @@ void Cmd_Amkick_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_ADMINKICK, "amKick"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_ADMINKICK)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amKick).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINKICK)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amKick).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amKick).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 2) 
         { 
@@ -5161,30 +5062,8 @@ void Cmd_Amban_f(gentity_t *ent)
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_ADMINBAN, "amBan"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_ADMINBAN)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amBan).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINBAN)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amBan).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amBan).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 2) 
         { 
@@ -5224,32 +5103,10 @@ void Cmd_Ammap_f(gentity_t *ent)
 {
 		char    gametype[2]; 
 		int		gtype;
-		char    mapname[MAX_MAPNAMELENGTH]; 
+		char    mapname[MAX_MAPNAMELENGTH];
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_CHANGEMAP, "amMap"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_CHANGEMAP)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amMap).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_CHANGEMAP)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amMap).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amMap).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 3) 
 		{ 
@@ -5293,30 +5150,8 @@ void Cmd_Amvstr_f(gentity_t *ent)
 {
 		char   arg[MAX_STRING_CHARS]; 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_VSTR, "amVstr"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_VSTR)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amVstr).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_VSTR)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amVstr).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amVstr).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 2) 
 		{ 
@@ -5337,6 +5172,32 @@ void Cmd_Amvstr_f(gentity_t *ent)
 }
 //[JAPRO - Serverside - All - Amvstr Function - End]
 
+
+//amkillvote from raz0r start
+static void Cmd_Amkillvote_f( gentity_t *ent ) {
+
+	if (!CheckAdminCmd(ent, A_KILLVOTE, "amKillVote"))
+		return;
+
+	if (level.voteTime) //there is a vote in progress
+		trap->SendServerCommand( -1, "print \"" S_COLOR_RED "Vote has been killed!\n\"" );
+
+	//Overkill, but it's a surefire way to kill the vote =]
+	level.voteExecuteTime = 0;
+	level.votingGametype = qfalse;
+	level.votingGametypeTo = level.gametype;
+	level.voteTime = 0;
+
+	level.voteDisplayString[0] = '\0';
+	level.voteString[0] = '\0';
+
+	trap->SetConfigstring( CS_VOTE_TIME, "" );
+	trap->SetConfigstring( CS_VOTE_STRING, "" );
+	trap->SetConfigstring( CS_VOTE_YES, "" );
+	trap->SetConfigstring( CS_VOTE_NO, "" );
+}
+//amkillvote end
+
 //[JAPRO - Serverside - All - Amgrantadmin Function - Start]
 /*
 =================
@@ -5348,30 +5209,8 @@ void Cmd_Amgrantadmin_f(gentity_t *ent)
 		char arg[MAX_NETNAME];
 		int clientid = -1; 
 
-		if (!ent->client)
+		if (!CheckAdminCmd(ent, A_GRANTADMIN, "amGrantAdmin"))
 			return;
-
-		if (ent->client->sess.fullAdmin)//Logged in as full admin
-		{
-			if (!(g_fullAdminLevel.integer & (1 << A_GRANTADMIN)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amGrantAdmin).\n\"" );
-				return;
-			}
-		}
-		else if (ent->client->sess.juniorAdmin)//Logged in as junior admin
-		{
-			if (!(g_juniorAdminLevel.integer & (1 << A_GRANTADMIN)))
-			{
-				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amGrantAdmin).\n\"" );
-				return;
-			}
-		}
-		else//Not logged in
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amGrantAdmin).\n\"" );
-			return;
-		}
 
 		if (trap->Argc() != 2 && trap->Argc() != 3) 
 		{ 
@@ -5577,6 +5416,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amKick "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_ADMINKICK))) 
 			Q_strcat(buf, sizeof(buf), "amKick "); 
+		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_KILLVOTE))) 
+			Q_strcat(buf, sizeof(buf), "amKillVote ");  
+		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_KILLVOTE))) 
+			Q_strcat(buf, sizeof(buf), "amKillVote ");  
 		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_NPC))) 
 			Q_strcat(buf, sizeof(buf), "NPC "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_NPC))) 
@@ -5647,25 +5490,8 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 	char             msg[1024-128] = {0};
 	gclient_t        *cl;
 
-	if (!ent->client)
+	if (!CheckAdminCmd(ent, A_STATUS, "amStatus"))
 		return;
-
-	if (ent->client->sess.fullAdmin) {//Logged in as full admin
-		if (!(g_fullAdminLevel.integer & (1 << A_STATUS))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amStatus).\n\"" );
-			return;
-		}
-	}
-	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
-		if (!(g_juniorAdminLevel.integer & (1 << A_STATUS))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amStatus).\n\"" );
-			return;
-		}
-	}
-	else {//Not logged in
-		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amStatus).\n\"" );
-		return;
-	}
 
 	if (g_raceMode.integer)
 		Q_strcat( msg, sizeof( msg ), S_COLOR_CYAN"ID   IP                Plugin    Admin       Race    Style    Hidden    Name^7\n" );
@@ -5762,25 +5588,8 @@ static void Cmd_Amlookup_f( gentity_t *ent )
 	fileHandle_t f;
 	qboolean multiple = qfalse;
 
-	if (!ent->client)
+	if (!CheckAdminCmd(ent, A_LOOKUP, "amLookup"))
 		return;
-
-	if (ent->client->sess.fullAdmin) {//Logged in as full admin
-		if (!(g_fullAdminLevel.integer & (1 << A_LOOKUP))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
-			return;
-		}
-	}
-	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
-		if (!(g_juniorAdminLevel.integer & (1 << A_LOOKUP))) {
-			trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (amLookup).\n\"" );
-			return;
-		}
-	}
-	else {//Not logged in
-		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (amLookup).\n\"" );
-		return;
-	}
 
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amLookup <client>\n\"" );
@@ -6377,6 +6186,11 @@ static void Cmd_Hide_f(gentity_t *ent)
 				return;
 			}
 		}
+
+	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+		trap->SendServerCommand(ent-g_entities, "print \"Hide status updated: timer reset.\n\"");
+		ResetPlayerTimers(ent, qtrue);
+	}
 
 	ent->client->pers.noFollow = (qboolean)!ent->client->pers.noFollow;
 
@@ -7488,6 +7302,7 @@ command_t commands[] = {
 	{ "amhug",				Cmd_EmoteHug_f,				CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "aminfo",				Cmd_Aminfo_f,				0 },
 	{ "amkick",				Cmd_Amkick_f,				0 },
+	{ "amkillvote",			Cmd_Amkillvote_f,			0 },
 	{ "amlistmaps",			Cmd_AmMapList_f,			CMD_NOINTERMISSION },
 	{ "amlockteam",			Cmd_Amlockteam_f,			CMD_NOINTERMISSION },
 	{ "amlogin",			Cmd_Amlogin_f,				0 },

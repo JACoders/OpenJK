@@ -1230,6 +1230,10 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 			return qfalse;
 		}
 	}
+	if (player->client->pers.noFollow) {
+		//trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid if you are hidden!\n\n\n\n\n\n\n\n\n\n\""); //move this to start trigger
+		return qfalse;
+	}
 
 
 	//type of roll?  hardcode jk2roll into racemode ?
@@ -1315,6 +1319,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 		if (!player->client->pers.userName[0]) //In racemode but not logged in
 			trap->SendServerCommand(player-g_entities, "cp \"^3Warning: You are not logged in!\n\n\n\n\n\n\n\n\n\n\"");
+		else if (player->client->pers.noFollow)
+			trap->SendServerCommand( player-g_entities, "cp \"^3Warning: times are not valid if you are hidden!\n\n\n\n\n\n\n\n\n\n\""); //Since times wont be saved if they arnt logged in anyway
 	}
 }
 
