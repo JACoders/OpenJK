@@ -5684,6 +5684,9 @@ static void Cmd_Spot_f(gentity_t *ent) {
 	int i, best = -1;
 	vec3_t headlevel;
 
+	if (!g_allowSpotting.integer)
+		return;
+
 	if (level.gametype < GT_TEAM)
 		return;
 
@@ -5753,7 +5756,7 @@ static void Cmd_Spot_f(gentity_t *ent) {
 
 	if (best >= 0) { //Valid target
 		gentity_t *target = &g_entities[level.sortedClients[best]];
-		gentity_t *te;
+		//gentity_t *te;
 
 		if (!target->client)
 			return;
