@@ -7893,7 +7893,7 @@ void G_RunFrame( int levelTime ) {
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
 										trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Immunity Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
-										trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Now, you will become my instrument of conquest. Get this ^1Chaos Power^7. Destroy all the weak!\"");
+										trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Now, you will become my instrument of conquest. Get this ^1Chaos Power^7.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 3))
 										trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7As I told you, you will now receive the Time Power. Use it wisely, hero.\"");
 								}
@@ -8396,13 +8396,13 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 207)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7The guardians told us about the arrival of a hero here that would be able to save the Guardian of Universe.\""));
 							else if (ent->client->pers.universe_quest_messages == 208)
-								trap->SendServerCommand( -1, va("chat \"^2Sage of Universe: ^7It is there in the Prophecy of Universe.\""));
+								trap->SendServerCommand( -1, va("chat \"^2Sage of Universe: ^7It is your destiny.\""));
 							else if (ent->client->pers.universe_quest_messages == 209)
 								trap->SendServerCommand( -1, va("chat \"%s^7: It is more complicated than I thought.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 210)
 								trap->SendServerCommand( -1, va("chat \"^1Sage of Darkness: ^7Yes %s^7, but it is the truth.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 211)
-								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7The prophecy says that if the hero fails to defeat the Master of Evil, the entire Universe is doomed!\""));
+								trap->SendServerCommand( -1, va("chat \"^5Sage of Light: ^7If the hero fails to defeat the Master of Evil, the entire Universe is doomed!\""));
 							else if (ent->client->pers.universe_quest_messages == 212)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7But if the hero succeeds, then the Universe will be in balance once again.\""));
 							else if (ent->client->pers.universe_quest_messages == 213)
@@ -8427,7 +8427,7 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, va("chat \"%s^7: Thanks for your help. Now I will go there to put an end to this.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 223)
 							{
-								trap->SendServerCommand( -1, va("chat \"^2Sage of Universe: ^7You must be aware that his soldiers are there and you will need to fight them. Now go, hero.\""));
+								trap->SendServerCommand( -1, va("chat \"^2Sage of Universe: ^7You must be aware that his soldiers are there and you will need to fight them. Courage, hero!\""));
 
 								ent->client->pers.universe_quest_progress = 6;
 								if (ent->client->pers.universe_quest_counter & (1 << 29))
