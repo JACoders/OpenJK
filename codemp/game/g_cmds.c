@@ -5671,6 +5671,7 @@ void SpotIcon( gentity_t *ent, vec3_t origin ) {
 
 	plum = G_TempEntity( origin, EV_SCOREPLUM );
 	// only send this temp entity to a single client
+	plum->r.svFlags |= SVF_BROADCAST;
 	plum->r.svFlags |= SVF_SINGLECLIENT;
 	plum->r.singleClient = ent->s.number;
 	//
@@ -5773,10 +5774,10 @@ static void Cmd_Spot_f(gentity_t *ent) {
 			if (!teammate->inuse)
 				continue;
 
-			if (teammate->client->sess.sessionTeam == ent->client->sess.sessionTeam)
+			if (teammate->client->sess.sessionTeam == ent->client->sess.sessionTeam) {
 				SpotIcon(teammate, target->client->ps.origin);
-
-			trap->SendServerCommand( teammate-g_entities, "cp \"^1!\n\n\n\n\n\n\n\n\n\n\"");
+				trap->SendServerCommand( teammate-g_entities, "cp \"^1!\n\n\n\n\n\n\n\n\n\n\"");
+			}
 		}
 
 		/*
