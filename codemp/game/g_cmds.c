@@ -3760,7 +3760,7 @@ qboolean TryGrapple(gentity_t *ent)
 			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 30)
 			{ // zyk: Dome of Doom
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				dome_of_doom(ent,500,90);
+				dome_of_doom(ent,550,80);
 				ent->client->pers.magic_power -= 30;
 				if (ent->client->pers.rpg_class == 8)
 					ent->client->pers.quest_power_usage_timer = level.time + 8000;
