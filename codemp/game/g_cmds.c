@@ -3662,8 +3662,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 		}
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 8 && 
-			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 8 && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Magic Master Spray Attack
 			int fist_dmg = 14;
 			int count = 12;
@@ -3711,8 +3710,7 @@ qboolean TryGrapple(gentity_t *ent)
 			ent->client->pers.magic_power -= 8;
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 2 && 
-			!(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 2 && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Magic Master Charged Attack
 			int fist_dmg = 12;
 			int count = 3;
