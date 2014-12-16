@@ -4363,6 +4363,30 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Ultra Drain
+void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent,"classname","fx_runner");
+	zyk_set_entity_field(new_ent,"spawnflags","4");
+	zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_drain");
+	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)ent->client->ps.origin[0],(int)ent->client->ps.origin[1],(int)ent->client->ps.origin[2]));
+
+	new_ent->s.modelindex = G_EffectIndex( "misc/possession" );
+
+	zyk_spawn_entity(new_ent);
+	
+	new_ent->splashDamage = damage;
+	new_ent->splashRadius = radius;
+	new_ent->nextthink = level.time + 1000;
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+
+	G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+}
+
 // zyk: Slow Motion
 void slow_motion(gentity_t *ent, int distance, int duration)
 {
@@ -8881,6 +8905,9 @@ void G_RunFrame( int levelTime ) {
 
 						if (!ent->client->ps.powerups[PW_CLOAKED])
 							Jedi_Cloak(ent);
+
+						ultra_drain(ent,450,70,8000);
+						trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Ultra Drain!\"");
 
 						ent->client->pers.guardian_timer = level.time + 25000;
 					}
