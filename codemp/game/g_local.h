@@ -1039,6 +1039,7 @@ struct gclient_s {
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
 	int			lastSpotTime;
+	int			lastSpottedTime;
 
 	vec3_t		lastVelocity;
 

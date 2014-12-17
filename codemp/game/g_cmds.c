@@ -5694,6 +5694,9 @@ static void Cmd_Spot_f(gentity_t *ent) {
 	if (ent->client->lastSpotTime > level.time)
 		return;
 
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
+		return;
+
 	ent->client->lastSpotTime = level.time + 250;
 
 	VectorCopy(ent->client->ps.origin, headlevel);
@@ -5718,8 +5721,9 @@ static void Cmd_Spot_f(gentity_t *ent) {
 			continue;
 		if (hit == ent)
 			continue;
-
 		if (hit->client->sess.sessionTeam == ent->client->sess.sessionTeam) //Only spot enemies
+			continue;
+		if (hit->client->lastSpottedTime > level.time - 3000)
 			continue;
 
 		//
@@ -5761,6 +5765,8 @@ static void Cmd_Spot_f(gentity_t *ent) {
 
 		if (!target->client)
 			return;
+
+		target->client->lastSpottedTime = level.time;
 
 		ent->client->lastSpotTime = level.time + 1000;
 
