@@ -637,7 +637,7 @@ void TossClientItems( gentity_t *self ) {
 	}
 
 	// drop all the powerups if not in teamplay
-	if ( level.gametype != GT_TEAM && level.gametype != GT_SIEGE ) {
+	if ( (level.gametype != GT_TEAM || g_rabbit.integer) && level.gametype != GT_SIEGE ) {
 		angle = 45;
 		for ( i = 1 ; i < PW_NUM_POWERUPS ; i++ ) {
 			if ( self->client->ps.powerups[ i ] > level.time ) {
@@ -2631,7 +2631,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					}
 				}
 			}
-			else if ((level.gametype == GT_FFA) && g_rabbit.integer)//rabbit points
+			else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)//rabbit points
 			{
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
 					AddScore( attacker, self->r.currentOrigin, 1 ); 
@@ -2717,7 +2717,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	// Add team bonuses
-	if (level.gametype != GT_FFA)//Rabbit, meh
+	if (level.gametype == GT_CTF)//Rabbit, meh
 		Team_FragBonuses(self, inflictor, attacker);
 
 	// if I committed suicide, the flag does not fall, it returns.
@@ -4628,7 +4628,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
 		return;
 
-	if (level.gametype == GT_FFA && !g_friendlyFire.integer && g_rabbit.integer) {
+	if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && !g_friendlyFire.integer && g_rabbit.integer) {
 		if (attacker && attacker->client && !attacker->client->ps.powerups[PW_NEUTRALFLAG] && targ && targ->client && !targ->client->ps.powerups[PW_NEUTRALFLAG])
 			return;
 	}

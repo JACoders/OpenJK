@@ -600,7 +600,7 @@ void Team_ResetFlags( void ) {
 		Team_ResetFlag( TEAM_RED );
 		Team_ResetFlag( TEAM_BLUE );
 	}
-	else if ((level.gametype == GT_FFA) && g_rabbit.integer)
+	else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)
 		Team_ResetFlag( TEAM_FREE );
 }
 
@@ -680,7 +680,7 @@ void Team_CaptureFlagSound( gentity_t *ent, int team ) {
 
 void Team_ReturnFlag( int team ) {
 	Team_ReturnFlagSound(Team_ResetFlag(team), team);
-	if( team == TEAM_FREE ) {
+	if( level.gametype != GT_CTF ) {
 		//PrintMsg(NULL, "The flag has returned!\n" );
 	}
 	else { //flag should always have team in normal CTF
@@ -964,7 +964,7 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	//PrintMsg (NULL, "%s" S_COLOR_WHITE " got the %s flag!\n",
 	//	other->client->pers.netname, TeamName(team));
-	if (team == TEAM_FREE) {
+	if (level.gametype != GT_CTF) { //changed this from team == team_free
 		trap->SendServerCommand( -1, va("print \"%s^7 is now the rabbit!\n\"", other->client->pers.netname ));
 		if (g_rabbit.integer > 1)
 			other->client->ps.stats[STAT_WEAPONS] = (1 << WP_DISRUPTOR);
@@ -1019,7 +1019,7 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	}
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		if ((level.gametype == GT_FFA) && g_rabbit.integer)
+		if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)
 			return Team_TouchEnemyFlag( ent, other, team );
 		else 
 			return Team_TouchOurFlag( ent, other, team );

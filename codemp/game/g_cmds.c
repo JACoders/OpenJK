@@ -7215,7 +7215,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	}
 
 	//CTF changes
-	if (level.gametype == GT_CTF || (level.gametype == GT_FFA && g_rabbit.integer)) {// CTF Settings
+	if (level.gametype == GT_CTF || ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)) {// CTF Settings
 		Q_strncpyz(buf, " ^3CTF Changes:\n", sizeof(buf));
 		if (g_flagDrag.value)
 			Q_strcat(buf, sizeof(buf), va("   ^5Flag Drag: ^2%.3f\n", g_flagDrag.value));
@@ -7332,7 +7332,7 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 
 	if (level.gametype == GT_CTF) {
 	}
-	else if ((level.gametype == GT_FFA) && g_rabbit.integer) {
+	else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer) {
 	}
 	else return;
 	

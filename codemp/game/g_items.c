@@ -2724,7 +2724,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if (((level.gametype == GT_CTF || level.gametype == GT_CTY) || ((level.gametype == GT_FFA) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if (((level.gametype == GT_CTF || level.gametype == GT_CTY) || ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
@@ -2956,7 +2956,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 	}
 
 	
-	if (level.gametype != GT_FFA || !g_rabbit.integer) {
+	if ((level.gametype != GT_FFA && level.gametype != GT_TEAM) || !g_rabbit.integer) {
 		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
 			if (ent->item->giType != IT_WEAPON) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
 				G_FreeEntity( ent );
