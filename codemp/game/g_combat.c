@@ -483,7 +483,7 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	if (self->client->sess.raceMode)//racemode
 		return;
 
-	if ((g_rabbit.integer > 1) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
+	if ((g_rabbit.integer == 2) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
 		return;
 
 	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
@@ -609,7 +609,7 @@ void TossClientItems( gentity_t *self ) {
 			weapon = WP_NONE;
 		}
 	}
-	if (weapon == WP_DISRUPTOR && g_rabbit.integer > 1) {
+	if (weapon == WP_DISRUPTOR && (g_rabbit.integer == 2)) {
 		weapon = WP_NONE;
 	}
 
@@ -4628,7 +4628,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
 		return;
 
-	if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && !g_friendlyFire.integer && g_rabbit.integer) {
+	if ((level.gametype == GT_FFA) && !g_friendlyFire.integer && g_rabbit.integer) {
 		if (attacker && attacker->client && !attacker->client->ps.powerups[PW_NEUTRALFLAG] && targ && targ->client && !targ->client->ps.powerups[PW_NEUTRALFLAG])
 			return;
 	}

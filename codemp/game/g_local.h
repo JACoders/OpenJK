@@ -905,6 +905,7 @@ struct gclient_s {
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
 	int			timeResidual;
+	int			timeResidualBig; //for rabbit score increments
 
 	char		*areabits;
 

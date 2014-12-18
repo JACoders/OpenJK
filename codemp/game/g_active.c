@@ -1423,6 +1423,17 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			client->csTimeLeft--;
 		}
 	}
+
+	client->timeResidualBig += msec;
+
+	while ( client->timeResidualBig >= 5000 ) 
+	{
+		client->timeResidualBig -= 5000;
+
+		if ((g_rabbit.integer == 3) && client->ps.powerups[PW_NEUTRALFLAG]) {
+			AddScore( ent, ent->r.currentOrigin, 1 );
+		}
+	}
 }
 
 /*
