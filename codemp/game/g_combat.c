@@ -2261,7 +2261,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			trap->SendServerCommand( -1, va("chat \"^3Spooky voice^7: I am going away, since I am not welcome here...\""));
 			player_ent->client->pers.universe_quest_artifact_holder_id = -1;
 
-			quest_get_new_player(player_ent);
+			// zyk: fixed bug in which a boss battle would kill this npc and pass quest turn
+			if (player_ent->client->pers.guardian_mode == 0)
+				quest_get_new_player(player_ent);
 		}
 	}
 	else if (self->client->pers.universe_quest_objective_control > -1 && self->NPC)
