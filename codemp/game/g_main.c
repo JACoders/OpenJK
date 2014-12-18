@@ -3923,6 +3923,8 @@ void healing_water(gentity_t *ent, int heal_amount)
 		ent->health += heal_amount;
 	else
 		ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+	G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
 }
 
 // zyk: Earthquake
@@ -4117,6 +4119,9 @@ void time_power(gentity_t *ent, int distance, int duration)
 				{
 					player_ent->client->pers.quest_power_status |= (1 << 2);
 					player_ent->client->pers.quest_target2_timer = level.time + duration;
+
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/electric_beam_lp.wav"));
 				}
 			}
 		}
@@ -4212,6 +4217,9 @@ void ultra_strength(gentity_t *ent, int duration)
 {
 	ent->client->pers.quest_power_status |= (1 << 3);
 	ent->client->pers.quest_power2_timer = level.time + duration;
+
+	if (ent->s.number < level.maxclients)
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/ambience/thunder1.mp3"));
 }
 
 // zyk: Ultra Resistance. Increases resistance to damage
@@ -4219,6 +4227,9 @@ void ultra_resistance(gentity_t *ent, int duration)
 {
 	ent->client->pers.quest_power_status |= (1 << 7);
 	ent->client->pers.quest_power3_timer = level.time + duration;
+
+	if (ent->s.number < level.maxclients)
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/enlightenment.mp3"));
 }
 
 // zyk: Immunity Power. Becomes immune against other special powers
@@ -4226,6 +4237,8 @@ void immunity_power(gentity_t *ent, int duration)
 {
 	ent->client->pers.quest_power_status |= (1 << 0);
 	ent->client->pers.quest_power1_timer = level.time + duration;
+	if (ent->s.number < level.maxclients)
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3"));
 }
 
 // zyk: Water Splash. Damages the targets and heals the user
@@ -4270,6 +4283,9 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 					level.special_power_effects[new_ent->s.number] = ent->s.number;
 					level.special_power_effects_timer[new_ent->s.number] = level.time + 3000;
+
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
 				}
 			}
 		}
@@ -4425,6 +4441,9 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 				{
 					player_ent->client->pers.quest_power_status |= (1 << 6);
 					player_ent->client->pers.quest_target5_timer = level.time + duration;
+
+					if (i < level.maxclients)
+						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
 				}
 			}
 		}
@@ -4436,6 +4455,9 @@ void ultra_speed(gentity_t *ent, int duration)
 {
 	ent->client->pers.quest_power_status |= (1 << 9);
 	ent->client->pers.quest_power3_timer = level.time + duration;
+
+	if (ent->s.number < level.maxclients)
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
 }
 
 // zyk: Ultra Flame
