@@ -2607,7 +2607,8 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 
 		if (Q_stricmp(ent->targetname, "zyk_quest_artifact") == 0 && ent->item->giType == IT_POWERUP && ent->item->giTag == PW_FORCE_BOON)
 		{
-			if (other->client->pers.can_play_quest == 1 && other->client->pers.universe_quest_artifact_holder_id != -1)
+			if (other->client->pers.can_play_quest == 1 && other->client->pers.guardian_mode == 0 && 
+				other->client->pers.universe_quest_artifact_holder_id != -1)
 			{ // zyk: player got the artifact in Universe Quest
 				trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", other->client->pers.netname));
 				other->client->pers.universe_quest_counter |= (1 << other->client->pers.universe_quest_artifact_holder_id);
@@ -2622,6 +2623,11 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 			}
 			else
 			{ // zyk: this is not the quest player. Only the quest player can get the artifact
+
+				// zyk: if he is in a guardian battle and tries to get artifact, do not allow it
+				if (other->client->pers.guardian_mode > 0)
+					ent->targetname = NULL;
+
 				return;
 			}
 		}
