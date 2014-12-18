@@ -391,7 +391,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 		return;
 //JAPRO - Serverside - Allow/disallow use button/trigger for duelers - End
 
-	if (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer)
+	if ((self->spawnflags & 4) && (other->client->ps.powerups[PW_NEUTRALFLAG] && g_rabbit.integer))
 		return;
 
 	if ( self->spawnflags & 1 )
