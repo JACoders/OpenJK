@@ -6784,6 +6784,11 @@ void Cmd_Race_f(gentity_t *ent)
 	if (!ent->client)
 		return;
 
+	if (ent->client->ps.powerups[PW_NEUTRALFLAG] || ent->client->ps.powerups[PW_REDFLAG] || ent->client->ps.powerups[PW_BLUEFLAG]) {
+		//trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed!\n\"");
+		return;
+	}
+
 	if (g_raceMode.integer < 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"^5This command is not allowed!\n\"");
 		ent->client->sess.raceMode = qfalse;

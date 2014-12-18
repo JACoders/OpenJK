@@ -1159,7 +1159,7 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 		return;
 	}
 
-	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT ) {
+	if ( activator->client->ps.pm_type != PM_NORMAL && activator->client->ps.pm_type != PM_FLOAT && activator->client->ps.pm_type != PM_FREEZE) { //freeze too?
 		return;
 	}
 
@@ -1289,7 +1289,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->s.eType == ET_NPC)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
@@ -1335,7 +1335,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		return;
 	if (player->s.eType == ET_NPC)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT) 
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE) 
 		return;
 
 	multi_trigger(trigger, player);
@@ -1481,7 +1481,7 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		return;
 	if (player->s.eType == ET_NPC)
 		return;
-	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+	if  (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 	if (player->client->pers.stats.startTime && trigger && trigger->spawnflags & 2) { //Instead of a checkpoint, make it reset their time (they went out of bounds or something)
 		player->client->pers.stats.startTime = 0;
@@ -1546,7 +1546,7 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *player) {//JAPRO OnlyBhop
 	if (!player->client)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 
 	if (trigger->spawnflags & 2) {
@@ -1555,10 +1555,7 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			//G_AddEvent( player, EV_ITEM_PICKUP, 98 ); //100 shield sound i guess, Now why wont the boon sound work?
 		player->client->pers.haste = qtrue;
 	}
-	else 
-		player->client->ps.stats[STAT_ONLYBHOP] = 1;
-
-	if (trigger->spawnflags & 4) { //Reset flags
+	else if (trigger->spawnflags & 4) { //Reset flags
 		if (player->client->ps.powerups[PW_NEUTRALFLAG]) {		// only happens in One Flag CTF
 			Team_ReturnFlag( TEAM_FREE );
 			player->client->ps.powerups[PW_NEUTRALFLAG] = 0;
@@ -1572,12 +1569,14 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 			player->client->ps.powerups[PW_BLUEFLAG] = 0;
 		}
 	}
+	else 
+		player->client->ps.stats[STAT_ONLYBHOP] = 1;
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
 	if (!player->client)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 
 	player->client->ps.stats[STAT_ONLYBHOP] = 0;
@@ -1590,7 +1589,7 @@ void NewPush(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Tim
 
 	if (!player->client)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT)
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE)
 		return;
 	if (player->client->lastBounceTime > level.time - 500)
 		return;
