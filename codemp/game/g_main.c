@@ -5878,7 +5878,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
 
-									ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+									ent->client->pers.universe_quest_artifact_holder_id = 3;
 								}
 							}
 
@@ -5893,23 +5893,6 @@ void G_RunFrame( int levelTime ) {
 
 							if (change_player == 1)
 								quest_get_new_player(ent);
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 3);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 2)
@@ -6018,7 +6001,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
-									ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+									ent->client->pers.universe_quest_artifact_holder_id = 9;
 								}
 							}
 
@@ -6027,23 +6010,6 @@ void G_RunFrame( int levelTime ) {
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
 							}
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 9);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 6)
@@ -6075,7 +6041,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
-									ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+									ent->client->pers.universe_quest_artifact_holder_id = 6;
 								}
 							}
 
@@ -6084,23 +6050,6 @@ void G_RunFrame( int levelTime ) {
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
 							}
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 6);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 7)
@@ -6776,29 +6725,12 @@ void G_RunFrame( int levelTime ) {
 								npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 
 								npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
-								ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+								ent->client->pers.universe_quest_artifact_holder_id = 5;
 							}
 							trap->SendServerCommand( -1, va("chat \"%s^7: I sense the presence of an artifact here.\"", ent->client->pers.netname));
 						
 							ent->client->pers.universe_quest_messages++;
 							ent->client->pers.universe_quest_timer = level.time + 5000;
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 5);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 14)
@@ -8170,7 +8102,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
-									ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+									ent->client->pers.universe_quest_artifact_holder_id = 4;
 								}
 							}
 
@@ -8179,23 +8111,6 @@ void G_RunFrame( int levelTime ) {
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
 							}
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 4);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 20)
@@ -8229,7 +8144,7 @@ void G_RunFrame( int levelTime ) {
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
-									ent->client->pers.universe_quest_artifact_holder_id = npc_ent-g_entities;
+									ent->client->pers.universe_quest_artifact_holder_id = 7;
 								}
 							}
 
@@ -8238,23 +8153,6 @@ void G_RunFrame( int levelTime ) {
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
 							}
-						}
-
-						if (ent->client->pers.universe_quest_artifact_holder_id == -2 && ent->client->pers.can_play_quest == 1 && ent->client->ps.powerups[PW_FORCE_BOON])
-						{ // zyk: player got the artifact, save it to his account
-							trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", ent->client->pers.netname));
-							ent->client->pers.universe_quest_artifact_holder_id = -1;
-							ent->client->pers.universe_quest_counter |= (1 << 7);
-							save_account(ent);
-
-							universe_quest_artifacts_checker(ent);
-
-							quest_get_new_player(ent);
-						}
-						else if (ent->client->pers.universe_quest_artifact_holder_id > -1 && ent->client->pers.can_play_quest == 1)
-						{ // zyk: setting the force boon time in the artifact holder npc so it doesnt run out
-							if (&g_entities[ent->client->pers.universe_quest_artifact_holder_id] && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id != -1 && g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
-								g_entities[ent->client->pers.universe_quest_artifact_holder_id].client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
 						}
 					}
 					else if (level.quest_map == 24)
@@ -8621,6 +8519,11 @@ void G_RunFrame( int levelTime ) {
 			WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
 
 			quest_power_events(ent);
+
+			if (ent->client->pers.universe_quest_artifact_holder_id != -1 && ent->health > 0 && ent->client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
+			{ // zyk: artifact holder npcs. Keep their artifact (force boon) active
+				ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 1000;
+			}
 
 			// zyk: quest guardians special abilities
 			if (ent->client->pers.guardian_invoked_by_id != -1 && ent->health > 0)

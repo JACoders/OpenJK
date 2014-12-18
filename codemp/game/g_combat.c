@@ -633,6 +633,14 @@ void TossClientItems( gentity_t *self ) {
 				if ( drop->count < 1 ) {
 					drop->count = 1;
 				}
+
+				// zyk: artifact holder npc died. Set a targetname in this artifact
+				if (self->NPC && self->client->pers.universe_quest_artifact_holder_id != -1 && 
+					drop->item->giType == IT_POWERUP && drop->item->giTag == PW_FORCE_BOON)
+				{
+					drop->targetname = "zyk_quest_artifact";
+				}
+
 				angle += 45;
 			}
 		}
@@ -2255,8 +2263,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 			quest_get_new_player(player_ent);
 		}
-		else 
-			g_entities[self->client->pers.universe_quest_artifact_holder_id].client->pers.universe_quest_artifact_holder_id = -2;
 	}
 	else if (self->client->pers.universe_quest_objective_control > -1 && self->NPC)
 	{ // zyk: Universe Quest objective verification

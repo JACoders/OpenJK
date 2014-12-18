@@ -2548,6 +2548,9 @@ qboolean CheckItemCanBePickedUpByNPC( gentity_t *item, gentity_t *pickerupper )
 Touch_Item
 ===============
 */
+extern void save_account(gentity_t *ent);
+extern void universe_quest_artifacts_checker(gentity_t *ent);
+extern void quest_get_new_player(gentity_t *ent);
 void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	int			respawn;
 	qboolean	predict;
@@ -2600,6 +2603,27 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		else if (other->client->pers.rpg_class == 6 && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO || ent->item->giType == IT_HOLDABLE))
 		{
 			return;
+		}
+
+		if (Q_stricmp(ent->targetname, "zyk_quest_artifact") == 0 && ent->item->giType == IT_POWERUP && ent->item->giTag == PW_FORCE_BOON)
+		{
+			if (other->client->pers.can_play_quest == 1 && other->client->pers.universe_quest_artifact_holder_id != -1)
+			{ // zyk: player got the artifact in Universe Quest
+				trap->SendServerCommand( -1, va("chat \"%s^7: This is one of the artifacts!\"", other->client->pers.netname));
+				other->client->pers.universe_quest_counter |= (1 << other->client->pers.universe_quest_artifact_holder_id);
+				other->client->pers.universe_quest_artifact_holder_id = -1;
+				save_account(other);
+
+				universe_quest_artifacts_checker(other);
+
+				ent->targetname = NULL; // zyk: nullify so in this case the quest system does not free this entity
+
+				quest_get_new_player(other);
+			}
+			else
+			{ // zyk: this is not the quest player. Only the quest player can get the artifact
+				return;
+			}
 		}
 	}
 
