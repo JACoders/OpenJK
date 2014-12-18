@@ -3934,7 +3934,8 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -3981,7 +3982,8 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4018,7 +4020,8 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4057,7 +4060,8 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4095,7 +4099,8 @@ void time_power(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 			if (player_distance < distance)
@@ -4127,7 +4132,8 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4177,7 +4183,8 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4230,7 +4237,8 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4277,7 +4285,8 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4324,7 +4333,8 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4396,7 +4406,8 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4436,7 +4447,8 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
@@ -4483,7 +4495,8 @@ void hurricane(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && (i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
 
