@@ -2075,6 +2075,22 @@ void G_AddPowerDuelLoserScore(int team, int score)
 }
 
 /*
+static int TeamWithRabbit(void) { //japro ayy
+	gclient_t	*cl;
+	int i;
+
+	for (i=0;  i<level.numPlayingClients; i++) {
+		cl = &level.clients[level.sortedClients[i]];
+
+		if (cl->ps.powerups[PW_NEUTRALFLAG] && !cl->sess.sessionTeam != TEAM_SPECTATOR) {
+			return cl->sess.sessionTeam;
+		}
+	}
+	return -1; //No rabbit
+}
+*/	
+
+/*
 ==================
 player_die
 ==================

@@ -1557,6 +1557,21 @@ void Use_target_restrict_on(gentity_t *trigger, gentity_t *other, gentity_t *pla
 	}
 	else 
 		player->client->ps.stats[STAT_ONLYBHOP] = 1;
+
+	if (trigger->spawnflags & 4) { //Reset flags
+		if (player->client->ps.powerups[PW_NEUTRALFLAG]) {		// only happens in One Flag CTF
+			Team_ReturnFlag( TEAM_FREE );
+			player->client->ps.powerups[PW_NEUTRALFLAG] = 0;
+		}
+		else if (player->client->ps.powerups[PW_REDFLAG]) {		// only happens in standard CTF
+			Team_ReturnFlag( TEAM_RED );
+			player->client->ps.powerups[PW_REDFLAG] = 0;
+		}
+		else if (player->client->ps.powerups[PW_BLUEFLAG]) {	// only happens in standard CTF
+			Team_ReturnFlag( TEAM_BLUE );
+			player->client->ps.powerups[PW_BLUEFLAG] = 0;
+		}
+	}
 }
 
 void Use_target_restrict_off( gentity_t *trigger, gentity_t *other, gentity_t *player ) {//JAPRO OnlyBhop
