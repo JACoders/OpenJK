@@ -8736,7 +8736,7 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 8)
 				{ // zyk: Guardian of Light
-					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Light Power!\"");
@@ -8753,7 +8753,7 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 9)
 				{ // zyk: Guardian of Darkness
-					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Dark Power!\"");
@@ -8761,7 +8761,7 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 10)
 				{ // zyk: Guardian of Eternity
-					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Eternity Power!\"");
