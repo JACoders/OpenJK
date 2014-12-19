@@ -202,6 +202,7 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
+#if 0
 #ifdef _WIN32
 void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
 void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
@@ -263,6 +264,7 @@ PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
 PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
 PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
 PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
+#endif
 #endif
 
 void RE_SetLightStyle(int style, int color);
@@ -1305,10 +1307,6 @@ void R_Init( void ) {
 	memset( &tr, 0, sizeof( tr ) );
 	memset( &backEnd, 0, sizeof( backEnd ) );
 	memset( &tess, 0, sizeof( tess ) );
-
-#ifdef _WIN32
-	tr.wv = (WinVars_t *)ri->GetWinVars();
-#endif
 
 //	Swap_Init();
 

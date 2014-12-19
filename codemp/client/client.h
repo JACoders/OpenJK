@@ -385,9 +385,7 @@ extern	cvar_t	*cl_allowAltEnter;
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
-#ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
-#endif
 
 extern  cvar_t  *cl_lanForcePackets;
 

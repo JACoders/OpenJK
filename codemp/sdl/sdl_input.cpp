@@ -19,8 +19,6 @@ static cvar_t *in_joystickThreshold = NULL;
 static cvar_t *in_joystickNo        = NULL;
 static cvar_t *in_joystickUseAnalog = NULL;
 
-static int vidRestartTime = 0;
-
 static SDL_Window *SDL_window = NULL;
 
 #define CTRL(a) ((a)-'a'+1)
@@ -624,24 +622,6 @@ static void IN_ProcessEvents( void )
 			case SDL_WINDOWEVENT:
 				switch( e.window.event )
 				{
-					case SDL_WINDOWEVENT_RESIZED:
-						{
-							char width[32], height[32];
-							if (!Cvar_VariableIntegerValue("r_restartOnResize"))
-								break;
-							Com_sprintf( width, sizeof( width ), "%d", e.window.data1 );
-							Com_sprintf( height, sizeof( height ), "%d", e.window.data2 );
-							Cvar_Set( "r_customwidth", width );
-							Cvar_Set( "r_customheight", height );
-							Cvar_Set( "r_mode", "-1" );
-
-							// Wait until user stops dragging for 1 second, so
-							// we aren't constantly recreating the GL context while
-							// he tries to drag...
-							vidRestartTime = Sys_Milliseconds( ) + Cvar_VariableIntegerValue("r_resizeDelay");
-						}
-						break;
-
 					case SDL_WINDOWEVENT_MINIMIZED:    Cvar_SetValue( "com_minimized", 1 ); break;
 					case SDL_WINDOWEVENT_RESTORED:
 					case SDL_WINDOWEVENT_MAXIMIZED:    Cvar_SetValue( "com_minimized", 0 ); break;
@@ -887,13 +867,6 @@ void IN_Frame (void) {
 	}
 	else
 		IN_ActivateMouse( );
-
-	// In case we had to delay actual restart of video system
-	if( ( vidRestartTime != 0 ) && ( vidRestartTime < Sys_Milliseconds( ) ) )
-	{
-		vidRestartTime = 0;
-		Cbuf_AddText( "vid_restart\n" );
-	}
 }
 
 /*

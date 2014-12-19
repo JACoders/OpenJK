@@ -4,11 +4,7 @@
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
 
-#ifdef _WIN32
-	#include "qgl.h"
-#else
-	#include "../sdl/sdl_qgl.h"
-#endif
+#include "../sdl/sdl_qgl.h"
 
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
@@ -925,10 +921,6 @@ typedef struct backEndState_s {
 
 #define NUM_SCRATCH_IMAGES 16
 
-#ifdef _WIN32
-	#include "../win32/win_local.h"
-#endif
-
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
@@ -1036,10 +1028,6 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 struct glconfigExt_t

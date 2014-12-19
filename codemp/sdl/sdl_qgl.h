@@ -337,27 +337,24 @@
 #define qglVertexPointer glVertexPointer
 #define qglViewport glViewport
 
-extern void (APIENTRYP qglActiveTextureARB) (GLenum texture);
-extern void (APIENTRYP qglClientActiveTextureARB) (GLenum texture);
-extern void (APIENTRYP qglMultiTexCoord2fARB) (GLenum target, GLfloat s, GLfloat t);
+extern PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
+extern PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
+extern PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
 
-extern void (APIENTRYP qglCombinerParameterfvNV) (GLenum pname,const GLfloat *params);
-extern void (APIENTRYP qglCombinerParameterivNV) (GLenum pname,const GLint *params);
-extern void (APIENTRYP qglCombinerParameterfNV) (GLenum pname,GLfloat param);
-extern void (APIENTRYP qglCombinerParameteriNV) (GLenum pname,GLint param);
-extern void (APIENTRYP qglCombinerInputNV) (GLenum stage,GLenum portion,GLenum variable,GLenum input,GLenum mapping,
-		GLenum componentUsage);
-extern void (APIENTRYP qglCombinerOutputNV) (GLenum stage,GLenum portion,GLenum abOutput,GLenum cdOutput,GLenum sumOutput,
-		GLenum scale, GLenum bias,GLboolean abDotProduct,GLboolean cdDotProduct,
-		GLboolean muxSum);
+extern PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
+extern PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
+extern PFNGLCOMBINERPARAMETERFNVPROC qglCombinerParameterfNV;
+extern PFNGLCOMBINERPARAMETERINVPROC qglCombinerParameteriNV;
+extern PFNGLCOMBINERINPUTNVPROC qglCombinerInputNV;
+extern PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
 
-extern void (APIENTRYP qglFinalCombinerInputNV) (GLenum variable,GLenum input,GLenum mapping,GLenum componentUsage);
-extern void (APIENTRYP qglGetCombinerInputParameterfvNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLfloat *params);
-extern void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLint *params);
-extern void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
-extern void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
-extern void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-extern void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
+extern PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
+extern PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
+extern PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
 
 extern PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
 extern PFNGLBINDPROGRAMARBPROC qglBindProgramARB;
@@ -379,8 +376,8 @@ extern PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB;
 extern PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB;
 extern PFNGLISPROGRAMARBPROC qglIsProgramARB;
 
-extern void ( * qglLockArraysEXT)( int, int);
-extern void ( * qglUnlockArraysEXT) ( void );
+extern PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
+extern PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
 
 #define GL_TEXTURE_RECTANGLE_EXT GL_TEXTURE_RECTANGLE_ARB
 

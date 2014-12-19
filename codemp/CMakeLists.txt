@@ -329,21 +329,11 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 
-	if(WIN32)
-		set(MPEngineAndDedWin32Files
-			"${MPDir}/win32/win_local.h"
-			"${MPDir}/win32/win_shared.cpp"
-			"${MPDir}/sys/snapvector.cpp"
-			)
-		source_group("win32" FILES ${MPEngineAndDedWin32Files})
-		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
-	else(WIN32)
-		set(MPEngineAndDedSysFiles
-			"${MPDir}/sys/snapvector.cpp"
-			)
-		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
-		source_group("sys" FILES ${MPEngineAndDedSysFiles})
-	endif(WIN32)
+	set(MPEngineAndDedSysFiles
+		"${MPDir}/sys/snapvector.cpp"
+		)
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
+	source_group("sys" FILES ${MPEngineAndDedSysFiles})
 endif(BuildMPEngine OR BuildMPDed)
 
 #        Engine/Executable (jamp.exe)
@@ -381,11 +371,11 @@ if(BuildMPEngine)
 		endif(UseInternalOpenAL)
 	endif()
 
-	if(NOT WIN32)
+	#if(NOT WIN32)
 		find_package(SDL2 REQUIRED)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
 		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
+	#endif(NOT WIN32)
 
 	# EAX is Windows-Only (right?)
 	if(WIN32)
@@ -491,36 +481,35 @@ if(BuildMPEngine)
 	source_group("mp3code" FILES ${MPEngineMp3Files})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
 
+	set(MPEngineSysFiles
+		"${MPDir}/sdl/sdl_input.cpp"
+		"${MPDir}/sdl/sdl_qgl.h"
+		"${MPDir}/sdl/sdl_snd.cpp"
+		"${MPDir}/sys/sys_loadlib.h"
+		"${MPDir}/sys/sys_local.h"
+		"${MPDir}/sys/sys_main.cpp"
+		)
+
 	if(WIN32)
 		set(MPEngineWin32Files
-			"${MPDir}/win32/glw_win.h"
 			"${MPDir}/win32/icon.ico"
 			"${MPDir}/win32/resource.h"
-			"${MPDir}/win32/win_input.cpp"
-			"${MPDir}/win32/win_main.cpp"
-			"${MPDir}/win32/win_snd.cpp"
-			"${MPDir}/win32/win_syscon.cpp"
-			"${MPDir}/win32/win_wndproc.cpp"
 			"${MPDir}/win32/openjk.rc"
 			)
-		source_group("win32" FILES ${MPEngineWin32Files})
-		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
+
+		set(MPEngineSysFiles
+			${MPEngineSysFiles}
+			"${MPDir}/sys/sys_win32.cpp")
 	else(WIN32)
 		set(MPEngineSysFiles
-			"${MPDir}/sdl/sdl_input.cpp"
-			"${MPDir}/sdl/sdl_qgl.h"
-			"${MPDir}/sdl/sdl_snd.cpp"
-			"${MPDir}/sys/sys_loadlib.h"
-			"${MPDir}/sys/sys_local.h"
-			"${MPDir}/sys/sys_main.cpp"
+			${MPEngineSysFiles}
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
-		source_group("sys" FILES ${MPEngineSysFiles})
-		set(MPEngineFiles ${MPEngineFiles} ${MPEngineSysFiles})
 	endif(WIN32)
 
-	# todo: windows resources
+	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSysFiles})
+	source_group("sys" FILES ${MPEngineSysFiles})
 
 	if(MakeApplicationBundles)
 		set(MACOSX_BUNDLE_BUNDLE_NAME ${MPEngine})
@@ -598,11 +587,18 @@ if(BuildMPDed)
 	set(MPDedFiles ${MPDedFiles} ${MPDedNullFiles})
 	if(WIN32)
 		set(MPDedWin32Files
-			"${MPDir}/win32/win_main_ded.cpp"
 			"${MPDir}/win32/openjkded.rc"
 			)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
+
+		set(MPDedSysFiles
+			"${MPDir}/sys/sys_main.cpp"
+			"${MPDir}/sys/sys_win32.cpp"
+			)
+		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
+		source_group("sys" FILES ${MPDedSysFiles})
+		set(MPDedFiles ${MPDedFiles} ${MPDedSysFiles})
 	else(WIN32)
 		set(MPDedSysFiles
 			"${MPDir}/sys/sys_main.cpp"

@@ -147,31 +147,19 @@ else()
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${ZLIB_LIBRARY})
 endif()
 
-if(NOT WIN32)
-	find_package(OpenGL REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
+find_package(OpenGL REQUIRED)
+set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
 
-	set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
-	find_package(SDL2 REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${SDL2_LIBRARY})
-endif(NOT WIN32)
+set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
+find_package(SDL2 REQUIRED)
+set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
+set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${SDL2_LIBRARY})
 
-
-if(WIN32)
-	set(MPVanillaRendererWin32Files
-		"${MPDir}/win32/win_gamma.cpp"
-		"${MPDir}/win32/win_glimp.cpp"
-		"${MPDir}/win32/win_qgl.cpp")
-	source_group("win32" FILES ${MPVanillaRendererWin32Files})
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererWin32Files})
-else(WIN32)
-	set(MPVanillaRendererSysFiles
-		"${MPDir}/sdl/sdl_glimp.cpp")
-	source_group("sys" FILES ${MPVanillaRendererSysFiles})
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererSysFiles})
-endif(WIN32)
+set(MPVanillaRendererSysFiles
+	"${MPDir}/sdl/sdl_glimp.cpp")
+source_group("sys" FILES ${MPVanillaRendererSysFiles})
+set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererSysFiles})
 
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OpenJKLibDir})
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
