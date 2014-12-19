@@ -70,13 +70,3 @@ int Z_MemSize( memtag_t eTag ) {
 void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 	ri->Z_MorphMallocTag( pvBuffer, eDesiredTag );
 }
-
-#ifndef _WIN32
-void Sys_SetEnv(const char *name, const char *value)
-{
-	if(value && *value)
-		setenv(name, value, 1);
-	else
-		unsetenv(name);
-}
-#endif

@@ -1,6 +1,7 @@
 // Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
 #include "client/client.h" // hi i'm bad
+#include "sys/sys_local.h"
 
 ////////////////////////////////////////////////
 //
@@ -168,12 +169,10 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
-		#ifdef _WIN32
 		if (gbMemFreeupOccured)
 		{
-			Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
+			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
 		}
-		#endif
 
 		if (bZeroit) {
 			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );

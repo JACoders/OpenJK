@@ -4,12 +4,7 @@
 #include "sdl_qgl.h"
 #include "sys/sys_local.h"
 
-static float displayAspect;
-cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
-cvar_t *r_allowResize; // make window resizable
-cvar_t *r_sdlDriver;
-
-typedef enum
+enum rserr_t
 {
 	RSERR_OK,
 
@@ -17,34 +12,36 @@ typedef enum
 	RSERR_INVALID_MODE,
 
 	RSERR_UNKNOWN
-} rserr_t;
+};
 
 static SDL_Window *screen = NULL;
 static SDL_GLContext opengl_context;
+static float displayAspect;
+
+cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
+cvar_t *r_allowResize; // make window resizable
+cvar_t *r_sdlDriver;
 
 bool g_bTextureRectangleHack = false;
 
-void (APIENTRYP qglActiveTextureARB) (GLenum texture);
-void (APIENTRYP qglClientActiveTextureARB) (GLenum texture);
-void (APIENTRYP qglMultiTexCoord2fARB) (GLenum target, GLfloat s, GLfloat t);
+PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
+PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
+PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
 
-void (APIENTRYP qglCombinerParameterfvNV) (GLenum pname,const GLfloat *params);
-void (APIENTRYP qglCombinerParameterivNV) (GLenum pname,const GLint *params);
-void (APIENTRYP qglCombinerParameterfNV) (GLenum pname,GLfloat param);
-void (APIENTRYP qglCombinerParameteriNV) (GLenum pname,GLint param);
-void (APIENTRYP qglCombinerInputNV) (GLenum stage,GLenum portion,GLenum variable,GLenum input,GLenum mapping,
-		GLenum componentUsage);
-void (APIENTRYP qglCombinerOutputNV) (GLenum stage,GLenum portion,GLenum abOutput,GLenum cdOutput,GLenum sumOutput,
-		GLenum scale, GLenum bias,GLboolean abDotProduct,GLboolean cdDotProduct,
-		GLboolean muxSum);
+PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
+PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
+PFNGLCOMBINERPARAMETERFNVPROC qglCombinerParameterfNV;
+PFNGLCOMBINERPARAMETERINVPROC qglCombinerParameteriNV;
+PFNGLCOMBINERINPUTNVPROC qglCombinerInputNV;
+PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
 
-void (APIENTRYP qglFinalCombinerInputNV) (GLenum variable,GLenum input,GLenum mapping,GLenum componentUsage);
-void (APIENTRYP qglGetCombinerInputParameterfvNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLint *params);
-void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
+PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
+PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
+PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
+PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
+PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
+PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
+PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
 
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
 PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
@@ -66,8 +63,8 @@ PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
 PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
 PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
 
-void ( * qglLockArraysEXT)( int, int);
-void ( * qglUnlockArraysEXT) ( void );
+PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
+PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
 
 /*
 ===============
@@ -185,7 +182,6 @@ GLimp_SetMode
 */
 static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
-	const char *glstring;
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
 	//int samples;
@@ -441,8 +437,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		return RSERR_UNKNOWN;
 	}
 
-	glstring = (char *) qglGetString (GL_RENDERER);
-	Com_Printf( "GL_RENDERER: %s\n", glstring );
+	Com_Printf( "GL_RENDERER: %s\n", (char *) qglGetString (GL_RENDERER) );
 
 	return RSERR_OK;
 }
@@ -754,8 +749,8 @@ static void GLimp_InitExtensions( void )
 		if ( r_ext_compiled_vertex_array->integer )
 		{
 			Com_Printf ("...using GL_EXT_compiled_vertex_array\n" );
-			qglLockArraysEXT = ( void ( APIENTRY * )( int, int ) ) SDL_GL_GetProcAddress( "glLockArraysEXT" );
-			qglUnlockArraysEXT = ( void ( APIENTRY * )( void ) ) SDL_GL_GetProcAddress( "glUnlockArraysEXT" );
+			qglLockArraysEXT = ( PFNGLLOCKARRAYSEXTPROC ) SDL_GL_GetProcAddress( "glLockArraysEXT" );
+			qglUnlockArraysEXT = ( PFNGLUNLOCKARRAYSEXTPROC ) SDL_GL_GetProcAddress( "glUnlockArraysEXT" );
 			if (!qglLockArraysEXT || !qglUnlockArraysEXT) {
 				Com_Error (ERR_FATAL, "bad getprocaddress");
 			}
@@ -953,8 +948,6 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 
 void 		GLimp_Init( void )
 {
-	ri->Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
-	ri->Cvar_Get( "r_resizeDelay", "1000", CVAR_ARCHIVE );
 	r_allowSoftwareGL = ri->Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 	r_sdlDriver = ri->Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
 	r_allowResize = ri->Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
@@ -1064,9 +1057,7 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 		table[2][i] = ( ( ( Uint16 ) blue[i] ) << 8 ) | blue[i];
 	}
 
-#ifdef _WIN32
-#include <windows.h>
-
+#if defined(_WIN32)
 	// Win2K and newer put this odd restriction on gamma ramps...
 	{
 		OSVERSIONINFO	vinfo;
@@ -1080,12 +1071,10 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 			{
 				for( i = 0 ; i < 128 ; i++ )
 				{
-					if( table[ j ] [ i] > ( ( 128 + i ) << 8 ) )
-						table[ j ][ i ] = ( 128 + i ) << 8;
+					table[j][i] = min(table[j][i], (128 + i) << 8);
 				}
 
-				if( table[ j ] [127 ] > 254 << 8 )
-					table[ j ][ 127 ] = 254 << 8;
+				table[j][127] = min(table[j][127], 254 << 8);
 			}
 		}
 	}

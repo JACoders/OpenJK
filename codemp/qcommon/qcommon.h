@@ -1002,14 +1002,6 @@ sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
 
-#ifdef _WIN32
-	#include <windows.h>
-	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
-	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
-	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
-	#define Sys_LibraryError() "unknown"
-#endif // linux and mac use SDL in SDL_loadlibrary.h
-
 // general development dll loading for virtual machine testing
 void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
 void	* QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
@@ -1028,7 +1020,6 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 int		Sys_Milliseconds2(void);
-void 	Sys_SetEnv(const char *name, const char *value);
 
 extern "C" void	Sys_SnapVector( float *v );
 

@@ -14,6 +14,10 @@
 #endif
 #include "minizip/unzip.h"
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 // for rmdir
 #if defined (_MSC_VER)
 	#include <direct.h>

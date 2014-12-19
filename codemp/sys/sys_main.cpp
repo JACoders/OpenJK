@@ -1,23 +1,145 @@
+#if !defined(_WIN32)
 #include <dlfcn.h>
+#include <unistd.h>
 #ifdef DEDICATED
 #include <sys/fcntl.h>
 #endif
-#include "qcommon/q_shared.h"
+#endif
 #include "qcommon/qcommon.h"
 
 #include "sys_loadlib.h"
-#ifdef DEDICATED
-#include "unix_local.h"
-#else
 #include "sys_local.h"
-#endif
-
-#if defined(MACOS_X) || defined(__linux__) || defined(__FreeBSD_kernel__)
-	#include <unistd.h>
-#endif
 
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
+
+/*
+========================================================================
+
+EVENT LOOP
+
+========================================================================
+*/
+
+#define	MAX_QUED_EVENTS		256
+#define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
+
+sysEvent_t	eventQue[MAX_QUED_EVENTS];
+int			eventHead, eventTail;
+byte		sys_packetReceived[MAX_MSGLEN];
+
+sysEvent_t Sys_GetEvent( void ) {
+	sysEvent_t	ev;
+	char		*s;
+	msg_t		netmsg;
+	netadr_t	adr;
+
+	// return if we have data
+	if ( eventHead > eventTail ) {
+		eventTail++;
+		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
+	}
+
+	// check for console commands
+	s = Sys_ConsoleInput();
+	if ( s ) {
+		char	*b;
+		int		len;
+
+		len = strlen( s ) + 1;
+		b = (char *)Z_Malloc( len,TAG_EVENT,qfalse );
+		strcpy( b, s );
+		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
+	}
+
+	// check for network packets
+	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
+	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
+		netadr_t		*buf;
+		int				len;
+
+		// copy out to a seperate buffer for qeueing
+		len = sizeof( netadr_t ) + netmsg.cursize;
+		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
+		*buf = adr;
+		memcpy( buf+1, netmsg.data, netmsg.cursize );
+		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
+	}
+
+	// return if we have data
+	if ( eventHead > eventTail ) {
+		eventTail++;
+		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
+	}
+
+	// create an empty event to return
+
+	memset( &ev, 0, sizeof( ev ) );
+	ev.evTime = Sys_Milliseconds();
+
+	return ev;
+}
+
+/*
+================
+Sys_QueEvent
+
+A time of 0 will get the current time
+Ptr should either be null, or point to a block of data that can
+be freed by the game later.
+================
+*/
+void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
+	sysEvent_t	*ev;
+
+	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
+
+	// bk000305 - was missing
+	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
+	  Com_Printf("Sys_QueEvent: overflow\n");
+	  // we are discarding an event, but don't leak memory
+	  if ( ev->evPtr ) {
+	    Z_Free( ev->evPtr );
+	  }
+	  eventTail++;
+	}
+
+	eventHead++;
+
+	if ( time == 0 ) {
+		time = Sys_Milliseconds();
+	}
+
+	ev->evTime = time;
+	ev->evType = type;
+	ev->evValue = value;
+	ev->evValue2 = value2;
+	ev->evPtrLength = ptrLength;
+	ev->evPtr = ptr;
+}
+
+/*
+==================
+Sys_GetClipboardData
+==================
+*/
+char *Sys_GetClipboardData( void ) {
+#ifdef DEDICATED
+	return NULL;
+#else
+	if ( !SDL_HasClipboardText() )
+		return NULL;
+
+	char *cbText = SDL_GetClipboardText();
+	size_t len = strlen( cbText ) + 1;
+
+	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
+	Q_strncpyz( buf, cbText, len );
+
+	SDL_free( cbText );
+	return buf;
+#endif
+}
 
 /*
 =================
@@ -95,43 +217,15 @@ void Sys_Print( const char *msg ) {
 	Conbuf_AppendText( msg );
 }
 
-/*
-=================
-Sys_In_Restart_f
-=================
-*/
-void Sys_In_Restart_f( void )
-{
-#ifdef DEDICATED
-    IN_Shutdown();
-	IN_Init();
-#else
-	IN_Restart( );
-#endif
-}
-
-void	Sys_Init (void) {
-	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
-	Cvar_Set( "username", Sys_GetCurrentUser( ) );
-}
-
 void Sys_Exit( int ex ) __attribute__((noreturn));
 void Sys_Exit( int ex ) {
 #ifndef DEDICATED
 	SDL_Quit( );
 #endif
 
-#ifdef NDEBUG // regular behavior
-    // We can't do this
-    //  as long as GL DLL's keep installing with atexit...
-    exit(ex);
-    //_exit(ex);
-#else
     // Give me a backtrace on error exits.
     assert( ex == 0 );
     exit(ex);
-#endif
 }
 
 void Sys_Error( const char *error, ... )
@@ -143,7 +237,6 @@ void Sys_Error( const char *error, ... )
 	Q_vsnprintf (string, sizeof(string), error, argptr);
 	va_end (argptr);
 
-	//Sys_ErrorDialog( string );
 	Sys_Print( string );
 
 	Sys_Exit( 3 );
@@ -155,9 +248,10 @@ void Sys_Quit (void) {
 	Com_ShutdownZoneMemory();
 	Com_ShutdownHunkMemory();
 
-#ifdef DEDICATED
+#if defined(DEDICATED) && !defined(_WIN32)
 	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
 #endif
+
     Sys_Exit(0);
 }
 
@@ -281,6 +375,14 @@ void *Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ..
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
+	if (!Sys_UnpackDLL(filename))
+	{
+		if ( com_developer->integer )
+			Com_Printf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
+
+		return NULL;
+	}
+
 #if 0
 	libHandle = Sys_LoadLibrary( filename );
 #endif
@@ -396,6 +498,14 @@ void *Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) )
 	char	filename[MAX_OSPATH];
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
+
+	if (!Sys_UnpackDLL(filename))
+	{
+		if ( com_developer->integer )
+			Com_Printf( "Sys_LoadGameDll: Failed to unpack %s from PK3.\n", filename );
+
+		return NULL;
+	}
 
 #if 0
 	libHandle = Sys_LoadLibrary( filename );
@@ -559,12 +669,6 @@ int main ( int argc, char* argv[] )
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
-	// done before Com/Sys_Init since we need this for error output
-	//Sys_CreateConsole();
-
-	// no abort/retry/fail errors
-	//SetErrorMode (SEM_FAILCRITICALERRORS);
-
 	// get the initial time base
 	Sys_Milliseconds();
 
@@ -596,14 +700,14 @@ int main ( int argc, char* argv[] )
 
 	NET_Init();
 
-#ifdef DEDICATED
+#if defined(DEDICATED) && !defined(_WIN32)
     fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
 #else
 	// hide the early console since we've reached the point where we
 	// have a working graphics subsystems
 	if (!com_dedicated->integer && !com_viewlog->integer)
 	{
-		Sys_ShowConsole(0, qfalse);
+		//Sys_ShowConsole(0, qfalse);
 	}
 #endif
 
@@ -613,6 +717,11 @@ int main ( int argc, char* argv[] )
 #if defined __linux__ && defined DEDICATED
         Sys_ConfigureFPU();//FIXME: what's this for?
 #endif
+
+		if ( com_minimized->integer || com_dedicated->integer ) {
+			Sys_Sleep( 5 );
+		}
+
 		// make sure mouse and joystick are only called once a frame
 		IN_Frame();
 

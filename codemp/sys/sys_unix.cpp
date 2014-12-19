@@ -15,18 +15,17 @@
 #include "qcommon/q_shared.h"
 #include "sys_local.h"
 
-#ifndef DEDICATED
-	#include <SDL.h>
-#endif
-
-#define	MAX_QUED_EVENTS		256
-#define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
-
 qboolean stdin_active = qtrue;
 qboolean stdinIsATTY = qfalse;
 
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
+
+void	Sys_Init (void) {
+	Cmd_AddCommand ("in_restart", IN_Restart);
+	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
+	Cvar_Set( "username", Sys_GetCurrentUser( ) );
+}
 
 /*
 ================
@@ -71,14 +70,6 @@ int Sys_Milliseconds2( void )
     return Sys_Milliseconds(false);
 }
 
-void Sys_SetEnv(const char *name, const char *value)
-{
-	if(value && *value)
-		setenv(name, value, 1);
-	else
-		unsetenv(name);
-}
-
 /*
 ==================
 Sys_RandomBytes
@@ -117,29 +108,6 @@ char *Sys_GetCurrentUser( void )
 	return p->pw_name;
 }
 
-/*
-==================
-Sys_GetClipboardData
-==================
-*/
-char *Sys_GetClipboardData( void ) {
-#ifdef DEDICATED
-	return NULL;
-#else
-	if ( !SDL_HasClipboardText() )
-		return NULL;
-
-	char *cbText = SDL_GetClipboardText();
-	size_t len = strlen( cbText ) + 1;
-
-	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
-	Q_strncpyz( buf, cbText, len );
-
-	SDL_free( cbText );
-	return buf;
-#endif
-}
-
 #define MEM_THRESHOLD 96*1024*1024
 
 /*
@@ -172,73 +140,6 @@ Sys_Dirname
 const char *Sys_Dirname( char *path )
 {
 	return dirname( path );
-}
-
-/*
-========================================================================
-
-EVENT LOOP
-
-========================================================================
-*/
-
-#define	MAX_QUED_EVENTS		256
-#define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
-
-sysEvent_t	eventQue[MAX_QUED_EVENTS];
-int			eventHead, eventTail;
-byte		sys_packetReceived[MAX_MSGLEN];
-
-sysEvent_t Sys_GetEvent( void ) {
-	sysEvent_t	ev;
-	char		*s;
-	msg_t		netmsg;
-	netadr_t	adr;
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// check for console commands
-	s = Sys_ConsoleInput();
-	if ( s ) {
-		char	*b;
-		int		len;
-
-		len = strlen( s ) + 1;
-		b = (char *)Z_Malloc( len,TAG_EVENT,qfalse );
-		strcpy( b, s );
-		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
-	}
-
-	// check for network packets
-	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
-	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
-		netadr_t		*buf;
-		int				len;
-
-		// copy out to a seperate buffer for qeueing
-		len = sizeof( netadr_t ) + netmsg.cursize;
-		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
-		*buf = adr;
-		memcpy( buf+1, netmsg.data, netmsg.cursize );
-		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
-	}
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// create an empty event to return
-
-	memset( &ev, 0, sizeof( ev ) );
-	ev.evTime = Sys_Milliseconds();
-
-	return ev;
 }
 
 /*
@@ -607,44 +508,6 @@ char *Sys_ConsoleInput(void)
 	return text;
 }
 
-/*
-================
-Sys_QueEvent
-
-A time of 0 will get the current time
-Ptr should either be null, or point to a block of data that can
-be freed by the game later.
-================
-*/
-void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
-	sysEvent_t	*ev;
-
-	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
-
-	// bk000305 - was missing
-	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-	  Com_Printf("Sys_QueEvent: overflow\n");
-	  // we are discarding an event, but don't leak memory
-	  if ( ev->evPtr ) {
-	    Z_Free( ev->evPtr );
-	  }
-	  eventTail++;
-	}
-
-	eventHead++;
-
-	if ( time == 0 ) {
-		time = Sys_Milliseconds();
-	}
-
-	ev->evTime = time;
-	ev->evType = type;
-	ev->evValue = value;
-	ev->evValue2 = value2;
-	ev->evPtrLength = ptrLength;
-	ev->evPtr = ptr;
-}
-
 void Sys_SetProcessorAffinity( void ) {
 #if defined(__linux__)
 	uint32_t cores;
@@ -668,4 +531,9 @@ void Sys_SetProcessorAffinity( void ) {
 #elif defined(MACOS_X)
 	//TODO: Apple's APIs for this are weird but exist on a per-thread level. Good enough for us.
 #endif
+}
+
+bool Sys_UnpackDLL(const char *name)
+{
+	return true;
 }

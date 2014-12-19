@@ -1272,7 +1272,7 @@ void Com_Init( char *commandLine ) {
 		com_dedicated->modified = qfalse;
 		if ( !com_dedicated->integer ) {
 			CL_Init();
-			Sys_ShowConsole( com_viewlog->integer, qfalse );
+			//Sys_ShowConsole( com_viewlog->integer, qfalse );
 		}
 
 		// set com_frameTime so that if a map is started on the
@@ -1476,7 +1476,7 @@ void Com_Frame( void ) {
 		// if "viewlog" has been modified, show or hide the log console
 		if ( com_viewlog->modified ) {
 			if ( !com_dedicated->value ) {
-				Sys_ShowConsole( com_viewlog->integer, qfalse );
+				//Sys_ShowConsole( com_viewlog->integer, qfalse );
 			}
 			com_viewlog->modified = qfalse;
 		}
@@ -1528,11 +1528,11 @@ void Com_Frame( void ) {
 			com_dedicated->modified = qfalse;
 			if ( !com_dedicated->integer ) {
 				CL_Init();
-				Sys_ShowConsole( com_viewlog->integer, qfalse );
+				//Sys_ShowConsole( com_viewlog->integer, qfalse );
 				CL_StartHunkUsers();	//fire up the UI!
 			} else {
 				CL_Shutdown();
-				Sys_ShowConsole( 1, qtrue );
+				//Sys_ShowConsole( 1, qtrue );
 			}
 		}
 
