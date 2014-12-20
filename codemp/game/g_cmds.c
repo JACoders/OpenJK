@@ -3507,7 +3507,7 @@ qboolean TryGrapple(gentity_t *ent)
 
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.forwardmove > 0)
 		{ // zyk: Magic Master special powers
-			if (ent->client->pers.current_magic_power == 1 && ent->client->pers.magic_power >= 2)
+			if (ent->client->pers.selected_special_power == 1 && ent->client->pers.magic_power >= 2)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				inner_area_damage(ent,400,90);
@@ -3515,7 +3515,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+			else if (ent->client->pers.selected_special_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3525,7 +3525,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+			else if (ent->client->pers.selected_special_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3534,7 +3534,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+			else if (ent->client->pers.selected_special_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3543,7 +3543,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+			else if (ent->client->pers.selected_special_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3552,7 +3552,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+			else if (ent->client->pers.selected_special_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3561,7 +3561,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+			else if (ent->client->pers.selected_special_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3570,7 +3570,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+			else if (ent->client->pers.selected_special_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3579,7 +3579,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
+			else if (ent->client->pers.selected_special_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3588,7 +3588,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+			else if (ent->client->pers.selected_special_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3598,7 +3598,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+			else if (ent->client->pers.selected_special_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3607,7 +3607,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+			else if (ent->client->pers.selected_special_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3616,7 +3616,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+			else if (ent->client->pers.selected_special_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3625,7 +3625,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+			else if (ent->client->pers.selected_special_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3634,7 +3634,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+			else if (ent->client->pers.selected_special_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3643,7 +3643,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+			else if (ent->client->pers.selected_special_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3652,7 +3652,7 @@ qboolean TryGrapple(gentity_t *ent)
 				ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.current_magic_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
+			else if (ent->client->pers.selected_special_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
@@ -3663,7 +3663,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 		}
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 8 && ent->client->pers.cmd.rightmove > 0)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 4 && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Magic Master Spray Attack
 			int fist_dmg = 14;
 			int count = 12;
@@ -3708,7 +3708,7 @@ qboolean TryGrapple(gentity_t *ent)
 				missile->bounceCount = 0;
 			}
 
-			ent->client->pers.magic_power -= 8;
+			ent->client->pers.magic_power -= 4;
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->pers.magic_power >= 2 && ent->client->pers.cmd.rightmove < 0)
@@ -4935,7 +4935,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: setting rpg control attributes
 		ent->client->pers.unique_skill_timer = 0;
 
-		ent->client->pers.current_magic_power = 0;
+		ent->client->pers.selected_special_power = 0;
 
 		ent->client->pers.quest_power_usage_timer = 0;
 

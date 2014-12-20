@@ -605,7 +605,7 @@ typedef struct clientPersistant_s {
 	// 15 - Hurricane
 	// 16 - Ultra Resistance
 	// 17 - Ultra Strength
-	int current_magic_power;
+	int selected_special_power;
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;

@@ -3567,7 +3567,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	else
 	{
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-			ent->client->pers.current_magic_power == 0 && ent->client->pers.magic_power > 0)
+			ent->client->pers.selected_special_power == 0 && ent->client->pers.magic_power > 0)
 		{ // zyk: Magic Master has Magic Fist power
 			int fist_dmg = 14;
 			vec3_t origin, dir, zyk_forward;
@@ -4605,7 +4605,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 	}
 
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-		ent->client->pers.current_magic_power == 0 && ent->s.weapon == WP_MELEE)
+		ent->client->pers.selected_special_power == 0 && ent->s.weapon == WP_MELEE)
 	{ // zyk: Magic Master can shoot from his hands
 		ent->client->accuracy_shots++;
 	}
