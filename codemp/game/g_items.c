@@ -17,13 +17,7 @@
   movers and respawn appropriately.
 */
 
-
-#define	RESPAWN_ARMOR		60 // zyk: default 20
 #define	RESPAWN_TEAM_WEAPON	30
-#define	RESPAWN_HEALTH		60 // zyk: default 30
-#define	RESPAWN_AMMO		60 // zyk: default 40
-#define	RESPAWN_HOLDABLE	60
-#define	RESPAWN_MEGAHEALTH	90 // zyk: default 120
 #define	RESPAWN_POWERUP		90 // zyk: default 120
 
 // Item Spawn flags
@@ -54,7 +48,7 @@ int adjustRespawnTime(float preRespawnTime, int itemType, int itemTag)
 			itemTag == WP_TRIP_MINE ||
 			itemTag == WP_DET_PACK)
 		{ //special case for these, use ammo respawn rate
-			respawnTime = RESPAWN_AMMO;
+			respawnTime = zyk_ammo_respawn_time.integer;
 		}
 	}
 
@@ -2198,7 +2192,7 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 	G_LogWeaponItem(other->s.number, ent->item->giTag);
 
-	return adjustRespawnTime(RESPAWN_HOLDABLE, ent->item->giType, ent->item->giTag);
+	return adjustRespawnTime(zyk_holdable_item_respawn_time.integer, ent->item->giType, ent->item->giTag);
 }
 
 
@@ -2332,7 +2326,7 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 		Add_Ammo (other, ent->item->giTag, (int)ceil(quantity*0.5)); // zyk: changed from quantity to half of quantity
 	}
 
-	return adjustRespawnTime(RESPAWN_AMMO, ent->item->giType, ent->item->giTag);
+	return adjustRespawnTime(zyk_ammo_respawn_time.integer, ent->item->giType, ent->item->giTag);
 }
 
 //======================================================================
@@ -2420,10 +2414,10 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	other->client->ps.stats[STAT_HEALTH] = other->health;
 
 	if ( ent->item->quantity == 100 ) {		// mega health respawns slow
-		return RESPAWN_MEGAHEALTH;
+		return zyk_holdable_item_respawn_time.integer;
 	}
 
-	return adjustRespawnTime(RESPAWN_HEALTH, ent->item->giType, ent->item->giTag);
+	return adjustRespawnTime(zyk_health_respawn_time.integer, ent->item->giType, ent->item->giTag);
 }
 
 //======================================================================
@@ -2449,7 +2443,7 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other )
 			other->client->ps.stats[STAT_ARMOR] = other->client->pers.max_rpg_shield;
 		}
 
-		return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
+		return adjustRespawnTime(zyk_shield_respawn_time.integer, ent->item->giType, ent->item->giTag);
 	}
 	else if (other->client->sess.amrpgmode < 2 && other->client->ps.stats[STAT_ARMOR] < (other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag))
 	{ // zyk: player who is not in RPG Mode
@@ -2459,7 +2453,7 @@ int Pickup_Armor( gentity_t *ent, gentity_t *other )
 			other->client->ps.stats[STAT_ARMOR] = other->client->ps.stats[STAT_MAX_HEALTH] * ent->item->giTag;
 		}
 
-		return adjustRespawnTime(RESPAWN_ARMOR, ent->item->giType, ent->item->giTag);
+		return adjustRespawnTime(zyk_shield_respawn_time.integer, ent->item->giType, ent->item->giTag);
 	}
 	else
 	{
