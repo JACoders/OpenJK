@@ -7070,7 +7070,6 @@ static void Cmd_MapEnts_f(gentity_t *self)
 }
 #endif
 
-
 //[JAPRO - Serverside - All - Serverconfig - Start]
 void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make standardized
 {

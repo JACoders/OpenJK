@@ -1285,6 +1285,10 @@ typedef struct level_locals_s {
 	char		courseName[24][32];//japro defrag	
 	int			numCourses;
 	int			numRealVotingClients; //fixed vote checking
+
+	vec3_t		neutralFlagOrigin; //so we can toggle rabbit without restarting map and reparsing entity list i guess!
+	qboolean	neutralFlag;
+
 	//int			lastVoteFailTime;
 //JAPRO - Serverside - Amlockteam - End
 

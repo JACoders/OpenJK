@@ -162,7 +162,7 @@ XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowFlagThrow,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixCTFScores,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixFlagHitbox,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_rabbit,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_rabbit,					"0",			G_UpdateRabbitCvar,	CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE,									qtrue )

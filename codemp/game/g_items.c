@@ -2955,16 +2955,20 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	
-	if ((level.gametype != GT_FFA && level.gametype != GT_TEAM) || !g_rabbit.integer) {
-		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
-			if (ent->item->giType != IT_WEAPON) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+	//Check if we should remove the rabbit flag.
+
+	if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
+		if (ent->item->giType != IT_WEAPON) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+			if (level.gametype == GT_FFA || level.gametype == GT_TEAM) {
+				VectorCopy(ent->s.origin, level.neutralFlagOrigin);
+				level.neutralFlag = qtrue;
+			}
+			if (!g_rabbit.integer || (level.gametype != GT_FFA && level.gametype != GT_TEAM)) {
 				G_FreeEntity( ent );
 				return;
 			}
 		}
 	}
-	
 
 	VectorSet (ent->r.mins, -8, -8, -0);
 	VectorSet (ent->r.maxs, 8, 8, 16);
