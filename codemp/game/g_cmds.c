@@ -3663,57 +3663,59 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 		}
 
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
+			ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= 4)
+		{ // zyk: Magic Fist Spray Attack
+			int fist_dmg = 14;
+			int count = 12;
+			gentity_t	*missile;
+			vec3_t origin;
+			int i;
+			int angle_value = ent->client->ps.viewangles[1];
+
+			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+			else
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+
+			for (i = 0; i < count; i++ )
+			{
+				vec3_t dir, forward;
+
+				angle_value += 30;
+				if (angle_value >= 180)
+					angle_value -= 359;
+
+				VectorSet(dir, 0, angle_value, 0);
+
+				AngleVectors( dir, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+					
+				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
+
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
+
+				VectorSet( missile->r.maxs, 2, 2, 2 );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				missile->damage = fist_dmg;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
+			}
+
+			ent->client->pers.magic_power -= 4;
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+		}
+
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
 		{ // zyk: Magic Master special powers
-			if (ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= 4)
-			{ // zyk: Magic Fist Spray Attack
-				int fist_dmg = 14;
-				int count = 12;
-				gentity_t	*missile;
-				vec3_t origin;
-				int i;
-				int angle_value = ent->client->ps.viewangles[1];
-
-				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
-				else
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
-
-				for (i = 0; i < count; i++ )
-				{
-					vec3_t dir, forward;
-
-					angle_value += 30;
-					if (angle_value >= 180)
-						angle_value -= 359;
-
-					VectorSet(dir, 0, angle_value, 0);
-
-					AngleVectors( dir, forward, NULL, NULL );
-
-					VectorNormalize(forward);
-					
-					missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-					missile->classname = "bowcaster_proj";
-					missile->s.weapon = WP_BOWCASTER;
-
-					VectorSet( missile->r.maxs, 2, 2, 2 );
-					VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-					missile->damage = fist_dmg;
-					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-					missile->methodOfDeath = MOD_MELEE;
-					missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-					// we don't want it to bounce
-					missile->bounceCount = 0;
-				}
-
-				ent->client->pers.magic_power -= 4;
-				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-			}
-			else if (ent->client->pers.selected_right_special_power == 1 && ent->client->pers.magic_power >= 2)
+			if (ent->client->pers.selected_right_special_power == 1 && ent->client->pers.magic_power >= 2)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				inner_area_damage(ent,400,90);
@@ -3869,50 +3871,52 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 		}
 
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
+			ent->client->pers.cmd.rightmove < 0 && ent->client->pers.selected_left_special_power == 0 && ent->client->pers.magic_power >= 2)
+		{ // zyk: Magic Fist Charged Attack
+			int fist_dmg = 12;
+			int count = 3;
+			gentity_t	*missile;
+			vec3_t origin, dir, forward;
+			int i;
+
+			for (i = 0; i < count; i++ )
+			{
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 8 + (i * 2));
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
+			
+				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+				AngleVectors( dir, forward, NULL, NULL );
+
+				VectorNormalize(forward);
+
+				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
+
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
+
+				VectorSet( missile->r.maxs, 2, 2, 2 );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				missile->damage = fist_dmg;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
+			}
+
+			ent->client->pers.magic_power -= 2;
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+		}
+
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
 		{ // zyk: Magic Master special powers
-			if (ent->client->pers.selected_left_special_power == 0 && ent->client->pers.magic_power >= 2)
-			{ // zyk: Magic Fist Charged Attack
-				int fist_dmg = 12;
-				int count = 3;
-				gentity_t	*missile;
-				vec3_t origin, dir, forward;
-				int i;
-
-				for (i = 0; i < count; i++ )
-				{
-					if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 8 + (i * 2));
-					else
-						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
-			
-					VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
-
-					AngleVectors( dir, forward, NULL, NULL );
-
-					VectorNormalize(forward);
-
-					missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-					missile->classname = "bowcaster_proj";
-					missile->s.weapon = WP_BOWCASTER;
-
-					VectorSet( missile->r.maxs, 2, 2, 2 );
-					VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-					missile->damage = fist_dmg;
-					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-					missile->methodOfDeath = MOD_MELEE;
-					missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-					// we don't want it to bounce
-					missile->bounceCount = 0;
-				}
-
-				ent->client->pers.magic_power -= 2;
-				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-			}
-			else if (ent->client->pers.selected_left_special_power == 1 && ent->client->pers.magic_power >= 2)
+			if (ent->client->pers.selected_left_special_power == 1 && ent->client->pers.magic_power >= 2)
 			{
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 				inner_area_damage(ent,400,90);
