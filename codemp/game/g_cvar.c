@@ -161,11 +161,36 @@ static void CVU_Jawarun(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }	
 
+
+static void RemoveRabbit(void) {
+	int i;
+	gclient_t	*cl;
+	gentity_t	*ent;
+
+	Team_ReturnFlag(TEAM_FREE);
+
+	for (i=0;  i<level.numPlayingClients; i++) {
+		cl = &level.clients[level.sortedClients[i]];
+
+		cl->ps.powerups[PW_NEUTRALFLAG] = 0;
+	}
+
+	for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
+		ent = &g_entities[i];
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType != IT_WEAPON)) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+			G_FreeEntity( ent );
+			return;
+		}
+	}
+}
+
 qboolean G_CallSpawn( gentity_t *ent );
 void G_UpdateRabbitCvar( void ) {
 	if (g_rabbit.integer) { //
 		gentity_t	*ent;
 		int i;
+
+		RemoveRabbit(); //Delete the current flag first
 
 		if (level.neutralFlag) {
 			ent = G_Spawn(qtrue);
@@ -179,25 +204,7 @@ void G_UpdateRabbitCvar( void ) {
 		//trap->Print("Rabbit turning on!\n");
 	}
 	else {
-		int i;
-		gclient_t	*cl;
-		gentity_t	*ent;
-
-		Team_ReturnFlag(TEAM_FREE);
-
-		for (i=0;  i<level.numPlayingClients; i++) {
-			cl = &level.clients[level.sortedClients[i]];
-
-			cl->ps.powerups[PW_NEUTRALFLAG] = 0;
-		}
-
-		for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
-			ent = &g_entities[i];
-			if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType != IT_WEAPON)) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
-				G_FreeEntity( ent );
-				return;
-			}
-		}
+		RemoveRabbit();
 		//trap->Print("Rabbit turning off!\n");
 	}
 }
