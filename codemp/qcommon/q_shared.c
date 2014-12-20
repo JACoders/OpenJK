@@ -636,7 +636,7 @@ qboolean COM_ParseString( const char **data, const char **s )
 	*s = COM_ParseExt( data, qfalse );
 	if ( s[0] == 0 )
 	{
-		Com_Printf("unexpected EOF\n");
+		Com_Printf("COM_ParseString unexpected EOF\n");
 		return qtrue;
 	}
 	return qfalse;
@@ -654,7 +654,7 @@ qboolean COM_ParseInt( const char **data, int *i )
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 )
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "COM_ParseInt unexpected EOF\n" );
 		return qtrue;
 	}
 
@@ -674,7 +674,7 @@ qboolean COM_ParseFloat( const char **data, float *f )
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 )
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "COM_ParseFloat unexpected EOF\n" );
 		return qtrue;
 	}
 
