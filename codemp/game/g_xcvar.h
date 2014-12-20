@@ -218,7 +218,7 @@ XCVAR_DEF( zyk_earthquake_cooldown,	"7000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTA
 XCVAR_DEF( zyk_cloaking_cooldown,	"3000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_blowing_wind_cooldown,	"8000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ultra_speed_cooldown,	"7000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_dome_of_doom_cooldown,	"15000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_ultra_drain_cooldown,	"15000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_immunity_power_cooldown,	"14000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_chaos_power_cooldown,	"20000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_time_power_cooldown,	"18000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )

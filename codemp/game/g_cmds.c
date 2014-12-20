@@ -3463,6 +3463,7 @@ extern void ultra_speed(gentity_t *ent, int duration);
 extern void ultra_strength(gentity_t *ent, int duration);
 extern void ultra_resistance(gentity_t *ent, int duration);
 extern void immunity_power(gentity_t *ent, int duration);
+extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
 extern void Jedi_Cloak( gentity_t *self );
 qboolean TryGrapple(gentity_t *ent)
 {
@@ -3755,23 +3756,23 @@ qboolean TryGrapple(gentity_t *ent)
 		// zyk: Ultimate Power
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.universe_quest_progress >= 15 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
 		{
-			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 30)
-			{ // zyk: Dome of Doom
+			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 40)
+			{ // zyk: Ultra Drain
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				dome_of_doom(ent,550,80);
-				ent->client->pers.magic_power -= 30;
+				ultra_drain(ent,450,70,8000);
+				ent->client->pers.magic_power -= 40;
 				if (ent->client->pers.rpg_class == 8)
-					ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_doom_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				else
-					ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_doom_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Doom!\"", ent->client->pers.netname));
+					ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_drain_cooldown.integer;
+				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Drain!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 30)
+			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 35)
 			{ // zyk: Immunity Power
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				immunity_power(ent,25000);
 				display_yellow_bar(ent,25000);
-				ent->client->pers.magic_power -= 30;
+				ent->client->pers.magic_power -= 35;
 				if (ent->client->pers.rpg_class == 8)
 					ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				else
@@ -3789,11 +3790,11 @@ qboolean TryGrapple(gentity_t *ent)
 					ent->client->pers.quest_power_usage_timer = level.time + zyk_chaos_power_cooldown.integer;
 				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
 			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 40)
+			else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 45)
 			{ // zyk: uses Time Power
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 				time_power(ent,400,6000);
-				ent->client->pers.magic_power -= 40;
+				ent->client->pers.magic_power -= 45;
 				if (ent->client->pers.rpg_class == 8)
 					ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
 				else
@@ -8653,7 +8654,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else
 					{
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							trap->SendServerCommand( ent-g_entities, va("print \"^3Dome of Doom: ^7a more powerful version of Dome of Damage. Attack with S + special melee to use this power\n\"") );
+							trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Drain: ^7damages enemies in the area and recovers your hp. Attack with S + special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 1))
 							trap->SendServerCommand( ent-g_entities, va("print \"^3Immunity Power: ^7protects you from other special powers. Attack S + with special melee to use this power\n\"") );
 						else if (ent->client->pers.universe_quest_counter & (1 << 2))
