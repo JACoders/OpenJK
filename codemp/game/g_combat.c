@@ -6339,7 +6339,11 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							}
 						}
 
-						G_Damage (ent, quest_power_user, quest_power_user, dir, origin, (int)points, DAMAGE_RADIUS, mod);
+						// zyk: target will not be knocked back by Rockfall
+						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0)
+							G_Damage (ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
+						else
+							G_Damage (ent, quest_power_user, quest_power_user, dir, origin, (int)points, DAMAGE_RADIUS, mod);
 					}
 				}
 				else if (!attacker || level.special_power_effects[attacker->s.number] == -1)
