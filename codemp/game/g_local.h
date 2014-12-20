@@ -607,6 +607,12 @@ typedef struct clientPersistant_s {
 	// 17 - Ultra Strength
 	int selected_special_power;
 
+	// zyk: same as above but selects power to be used with A + melee kata
+	int selected_left_special_power;
+
+	// zyk: same as above but selects power to be used with D + melee kata
+	int selected_right_special_power;
+
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;
 

@@ -1966,6 +1966,8 @@ once for each server frame, which makes for smooth demo recording.
 extern void Boba_FlyStop( gentity_t *self );
 extern int zyk_max_magic_power(gentity_t *ent);
 extern void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power);
+extern void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power);
+extern void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power);
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -3366,13 +3368,30 @@ void ClientThink_real( gentity_t *ent ) {
 						zyk_show_magic_master_powers(ent, qtrue);
 					}
 				}
-
-				if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE)
+				else if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
-					if (ent->client->pers.rpg_class == 8)
-					{ // zyk: Magic Master can choose his power here
-						zyk_show_magic_master_powers(ent, qfalse);
-					}
+					// zyk: Magic Master can choose his power here
+					zyk_show_magic_master_powers(ent, qfalse);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_SPEED && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_left_magic_master_powers(ent, qtrue);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_SEEING && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_left_magic_master_powers(ent, qfalse);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_HEAL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_right_magic_master_powers(ent, qtrue);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_PROTECT && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_right_magic_master_powers(ent, qfalse);
 				}
 			}
 
