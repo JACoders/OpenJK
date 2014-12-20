@@ -3916,6 +3916,27 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		g_entities[ent->client->sess.ally3].client->noclip = qfalse;
 }
 
+// zyk: tests if the target can be hit by the attacker gun/saber damage, force power or special power
+qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target)
+{
+	if (attacker && attacker->client && target && target->client && !attacker->NPC && !target->NPC)
+	{ // zyk: in a boss battle, non-quest players cannot hit quest players and vice-versa
+		if (attacker->client->sess.amrpgmode == 2 && attacker->client->pers.guardian_mode > 0 && 
+			(target->client->sess.amrpgmode != 2 || target->client->pers.guardian_mode == 0))
+		{
+			return qfalse;
+		}
+
+		if (target->client->sess.amrpgmode == 2 && target->client->pers.guardian_mode > 0 && 
+			(attacker->client->sess.amrpgmode != 2 || attacker->client->pers.guardian_mode == 0))
+		{
+			return qfalse;
+		}
+	}
+
+	return qtrue;
+}
+
 // zyk: Healing Water
 void healing_water(gentity_t *ent, int heal_amount)
 {
@@ -3936,7 +3957,7 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -3984,7 +4005,7 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4022,7 +4043,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4062,7 +4083,7 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4101,7 +4122,7 @@ void time_power(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4137,7 +4158,7 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4188,7 +4209,7 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4250,7 +4271,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4301,7 +4322,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4349,7 +4370,7 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4422,7 +4443,7 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4469,7 +4490,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
@@ -4517,7 +4538,7 @@ void hurricane(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && 
+		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
 			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
 		{
 			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);

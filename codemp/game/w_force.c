@@ -528,10 +528,16 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 }
 
 extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
-
+extern qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target);
 int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forcePower)
 {
 	if (other && other->client && BG_HasYsalamiri(level.gametype, &other->client->ps))
+	{
+		return 0;
+	}
+
+	// zyk: cannot hit players in boss battles and vice-versa
+	if (zyk_can_hit_target(attacker, other) == qfalse)
 	{
 		return 0;
 	}

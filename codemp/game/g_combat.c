@@ -4796,6 +4796,7 @@ vec3_t gPainPoint;
 
 extern void Jedi_Decloak( gentity_t *self );
 extern void Boba_FlyStop( gentity_t *self );
+extern qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target);
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
 	int			take, asave = 0, subamt = 0, knockback;
@@ -4821,20 +4822,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			return;
 	}
 
-	if (attacker && attacker->client && targ && targ->client && !attacker->NPC && !targ->NPC)
-	{ // zyk: in a boss battle, non-quest players cannot hit quest players and vice-versa
-		if (attacker->client->sess.amrpgmode == 2 && attacker->client->pers.guardian_mode > 0 && 
-			(targ->client->sess.amrpgmode != 2 || targ->client->pers.guardian_mode == 0))
-		{
-			return;
-		}
-
-		if (targ->client->sess.amrpgmode == 2 && targ->client->pers.guardian_mode > 0 && 
-			(attacker->client->sess.amrpgmode != 2 || attacker->client->pers.guardian_mode == 0))
-		{
-			return;
-		}
-	}
+	if (zyk_can_hit_target(attacker, targ) == qfalse)
+		return;
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)
 	{ // zyk: player in RPG mode, with duals or staff, has a better damage depending on Saber Attack level
@@ -6341,7 +6330,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0)
 						{ // zyk: Ultra Drain heals the power user
-							if (quest_power_user && quest_power_user->client)
+							if (quest_power_user && quest_power_user->client && zyk_can_hit_target(quest_power_user, ent) == qtrue)
 							{
 								if (quest_power_user->health < quest_power_user->client->ps.stats[STAT_MAX_HEALTH])
 									quest_power_user->health += (int)points;
