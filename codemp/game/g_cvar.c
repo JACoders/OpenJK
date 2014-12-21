@@ -101,6 +101,12 @@ static void CVU_SpinBackslash(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+static void CVU_EasyBackslash(void) {
+	g_easyBackslash.integer ?
+		(jcinfo.integer |= JAPRO_CINFO_EASYBACKSLASH) : (jcinfo.integer &= ~JAPRO_CINFO_EASYBACKSLASH);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
 static void CVU_SpinRDFA(void) {
 	g_spinRedDFA.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_REDDFA) : (jcinfo.integer &= ~JAPRO_CINFO_REDDFA);

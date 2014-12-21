@@ -1531,27 +1531,79 @@ qboolean PM_CanBackstab(void)
 	vec3_t trmins = {-15, -15, -8};
 	vec3_t trmaxs = {15, 15, 8};
 
-	//if (g_easyBackStab.integer) //easybackslash
-		//return qtrue;
-
-	VectorCopy(pm->ps->viewangles, flatAng);
-	flatAng[PITCH] = 0;
-
-	AngleVectors(flatAng, fwd, 0, 0);
-
-	back[0] = pm->ps->origin[0] - fwd[0]*BACK_STAB_DISTANCE;
-	back[1] = pm->ps->origin[1] - fwd[1]*BACK_STAB_DISTANCE;
-	back[2] = pm->ps->origin[2] - fwd[2]*BACK_STAB_DISTANCE;
-
-	pm->trace(&tr, pm->ps->origin, trmins, trmaxs, back, pm->ps->clientNum, MASK_PLAYERSOLID);
-
-	if (tr.fraction != 1.0 && tr.entityNum >= 0 && tr.entityNum < ENTITYNUM_NONE)
+#ifdef _GAME
+	if (g_easyBackslash.integer) //easybackslash
 	{
-		bgEntity_t *bgEnt = PM_BGEntForNum(tr.entityNum);
+		gclient_t	*cl;
+		int i;
+		vec3_t diff = {0};
 
-		if (bgEnt && (bgEnt->s.eType == ET_PLAYER || bgEnt->s.eType == ET_NPC))
+		for (i=0;  i<level.numPlayingClients; i++) {
+			cl = &level.clients[level.sortedClients[i]];
+			
+			if (cl->ps.pm_type == PM_DEAD)
+				continue;
+			if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+				continue;
+			if (cl->ps.clientNum == pm->ps->clientNum)
+				continue;
+
+			VectorSubtract(cl->ps.origin, pm->ps->origin, diff);
+
+			if (VectorLengthSquared(diff) < BACK_STAB_DISTANCE*BACK_STAB_DISTANCE)
+				return qtrue;
+
+		}
+	}
+#else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FIXROLL3))
+	{
+		int i;
+		centity_t *cent;
+		vec3_t diff = {0};
+
+		for (i = 0; i < MAX_CLIENTS; i++) {
+			cent = &cg_entities[i];
+
+			if (!cent)
+				continue;
+			if (i == cg.clientNum) //&& !(((cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR) && (cg.predictedPlayerState.pm_flags & PMF_FOLLOW)) && (i == cg.snap->ps.clientNum))   )
+				continue;
+			if (i == cg.snap->ps.clientNum)
+				continue;
+			if (cent->currentState.eFlags & EF_DEAD)
+				continue;
+			if (cent->currentState.eType != ET_PLAYER)
+				continue;
+
+			VectorSubtract(cent->currentState.origin, pm->ps->origin, diff);
+
+			if (VectorLengthSquared(diff) < BACK_STAB_DISTANCE*BACK_STAB_DISTANCE)
+				return qtrue;
+		}
+	}
+#endif
+	else
+	{
+		VectorCopy(pm->ps->viewangles, flatAng);
+		flatAng[PITCH] = 0;
+
+		AngleVectors(flatAng, fwd, 0, 0);
+
+		back[0] = pm->ps->origin[0] - fwd[0]*BACK_STAB_DISTANCE;
+		back[1] = pm->ps->origin[1] - fwd[1]*BACK_STAB_DISTANCE;
+		back[2] = pm->ps->origin[2] - fwd[2]*BACK_STAB_DISTANCE;
+
+		pm->trace(&tr, pm->ps->origin, trmins, trmaxs, back, pm->ps->clientNum, MASK_PLAYERSOLID);
+
+		if (tr.fraction != 1.0 && tr.entityNum >= 0 && tr.entityNum < ENTITYNUM_NONE)
 		{
-			return qtrue;
+			bgEntity_t *bgEnt = PM_BGEntForNum(tr.entityNum);
+
+			if (bgEnt && (bgEnt->s.eType == ET_PLAYER || bgEnt->s.eType == ET_NPC))
+			{
+				return qtrue;
+			}
 		}
 	}
 

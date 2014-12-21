@@ -2821,16 +2821,14 @@ gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle ) {
 	return LaunchItem( item, ent->s.pos.trBase, velocity );
 }
 
-gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, float angle ) {
+gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, qboolean forced ) {
 	vec3_t	velocity;
 	vec3_t	angles;
 
 	VectorCopy( ent->s.apos.trBase, angles );
 	
-	if (angle == -1)
+	if (forced) //Conced by nitron thermal or something.. dont let people just aim straight up or down to avoid the effects of this
 		angles[PITCH] = 0;
-	else
-		angles[YAW] += angle;
 
 	AngleVectors( angles, velocity, NULL, NULL );
 

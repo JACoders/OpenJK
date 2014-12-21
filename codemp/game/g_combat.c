@@ -5183,7 +5183,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				gitem_t		*item;
 
 				item = BG_FindItemForPowerup( PW_REDFLAG );
-				thrown = Drop_Flag( targ, item, -1 );
+				thrown = Drop_Flag( targ, item, qtrue );
 				thrown->count = ( targ->client->ps.powerups[PW_REDFLAG] - level.time ) / 1000;
 				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
 				if ( thrown->count < 1 ) {
@@ -5198,7 +5198,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				gitem_t		*item;
 
 				item = BG_FindItemForPowerup( PW_BLUEFLAG );
-				thrown = Drop_Flag( targ, item, -1 );
+				thrown = Drop_Flag( targ, item, qtrue );
 				thrown->count = ( targ->client->ps.powerups[PW_BLUEFLAG] - level.time ) / 1000;
 				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
 				if ( thrown->count < 1 ) {
@@ -5213,7 +5213,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				gitem_t		*item;
 
 				item = BG_FindItemForPowerup( PW_NEUTRALFLAG );
-				thrown = Drop_Flag( targ, item, -1 );
+				thrown = Drop_Flag( targ, item, qtrue );
 				thrown->count = ( targ->client->ps.powerups[PW_NEUTRALFLAG] - level.time ) / 1000;
 				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
 				if ( thrown->count < 1 ) {

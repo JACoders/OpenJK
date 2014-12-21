@@ -182,7 +182,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
 #define JAPRO_CINFO_GUNROLL			(1<<18)	//allow  gunroll
 #define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
-#define JAPRO_CINFO_UNUSED2			(1<<20) //Hl2 Aircontrol
+#define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //Hl2 Aircontrol
 #define JAPRO_CINFO_UNUSED3			(1<<21) //Siege aircontrol
 #define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
@@ -1369,7 +1369,7 @@ void RespawnItem( gentity_t *ent );
 void ResetItem( gentity_t *ent ); //PushPullItems
 
 gentity_t *Drop_Item( gentity_t *ent, gitem_t *item, float angle );
-gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, float angle );
+gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, qboolean forced );
 gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity );
 void G_SpawnItem (gentity_t *ent, gitem_t *item);
 void FinishSpawningItem( gentity_t *ent );

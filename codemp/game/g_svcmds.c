@@ -125,6 +125,7 @@ static void UpdateIPBans( void ) {
 	trap->Cvar_Set( "g_banIPs", iplist_final );
 }
 
+
 /*
 =================
 G_FilterPacket
