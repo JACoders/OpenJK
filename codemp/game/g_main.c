@@ -9227,7 +9227,7 @@ void G_RunFrame( int levelTime ) {
 						if (!ent->client->ps.powerups[PW_CLOAKED])
 							Jedi_Cloak(ent);
 
-						ultra_drain(ent,450,70,8000);
+						ultra_drain(ent,450,60,8000);
 						trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Ultra Drain!\"");
 
 						ent->client->pers.guardian_timer = level.time + 25000;

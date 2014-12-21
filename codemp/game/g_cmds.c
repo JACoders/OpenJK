@@ -4076,7 +4076,7 @@ qboolean TryGrapple(gentity_t *ent)
 			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 40)
 			{ // zyk: Ultra Drain
 				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				ultra_drain(ent,450,70,8000);
+				ultra_drain(ent,450,60,8000);
 				ent->client->pers.magic_power -= 40;
 				if (ent->client->pers.rpg_class == 8)
 					ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
