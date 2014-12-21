@@ -3664,9 +3664,8 @@ qboolean TryGrapple(gentity_t *ent)
 		}
 
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
-			ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= 4)
+			ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
 		{ // zyk: Magic Fist Spray Attack
-			int count = 12;
 			gentity_t	*missile;
 			vec3_t origin;
 			int i;
@@ -3677,11 +3676,12 @@ qboolean TryGrapple(gentity_t *ent)
 			else
 				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-			for (i = 0; i < count; i++ )
+			for (i = 0; i < zyk_fist_spray_count.integer; i++ )
 			{
 				vec3_t dir, forward;
 
-				angle_value += 30;
+				angle_value += (360/zyk_fist_spray_count.integer);
+
 				if (angle_value >= 180)
 					angle_value -= 359;
 
@@ -3708,7 +3708,7 @@ qboolean TryGrapple(gentity_t *ent)
 				missile->bounceCount = 0;
 			}
 
-			ent->client->pers.magic_power -= 4;
+			ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 		}
 
