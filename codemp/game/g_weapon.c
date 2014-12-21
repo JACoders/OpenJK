@@ -2421,10 +2421,17 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	bolt->s.loopSound = G_SoundIndex( "sound/weapons/thermal/thermloop.wav" );
 	bolt->s.loopIsSoundset = qfalse;
 
-	bolt->damage = TD_DAMAGE;
+	if (g_tweakWeapons.integer & IMPACT_NITRON) {
+		bolt->damage = 10 * g_weaponDamageScale.integer;
+		bolt->splashDamage = 10 * g_weaponDamageScale.integer;
+		bolt->splashRadius = TD_SPLASH_RAD;//128
+	}
+	else {
+		bolt->damage = TD_DAMAGE;
+		bolt->splashDamage = TD_SPLASH_DAM;
+		bolt->splashRadius = TD_SPLASH_RAD;
+	}
 	bolt->dflags = 0;
-	bolt->splashDamage = TD_SPLASH_DAM;
-	bolt->splashRadius = TD_SPLASH_RAD;
 
 	bolt->s.eType = ET_MISSILE;
 	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;

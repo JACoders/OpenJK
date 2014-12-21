@@ -188,7 +188,6 @@ qboolean G_CallSpawn( gentity_t *ent );
 void G_UpdateRabbitCvar( void ) {
 	if (g_rabbit.integer) { //
 		gentity_t	*ent;
-		int i;
 
 		RemoveRabbit(); //Delete the current flag first
 

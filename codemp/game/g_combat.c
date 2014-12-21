@@ -2649,20 +2649,32 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			}
 			else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)//rabbit points
 			{
+				int carrier_bonus, killed_carrier, killed_other;
+				if (level.gametype == GT_TEAM) {
+					carrier_bonus = 2;
+					killed_carrier = 2;
+					killed_other = 1;
+				}
+				else {
+					carrier_bonus = 1;
+					killed_carrier = 2;
+					killed_other = 0;
+				}
 				if (self->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed flag carrier
-					AddScore( attacker, self->r.currentOrigin, 1 ); 
+					AddScore( attacker, self->r.currentOrigin, killed_carrier ); 
 					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
 				else if (attacker->client->ps.powerups[PW_NEUTRALFLAG]) {//I killed while holding flag
-					AddScore( attacker, self->r.currentOrigin, 2 ); 
+					AddScore( attacker, self->r.currentOrigin, carrier_bonus ); 
 					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
 				}
 				else {
 					G_AddSimpleStat(attacker, self, 1);
 					attacker->client->pers.stats.kills++;//JAPRO STATS
-					//AddScore( attacker, self->r.currentOrigin, 1 ); //we dont care about other kills? just rabbit?
+					if (killed_other)
+						AddScore( attacker, self->r.currentOrigin, killed_other ); //we dont care about other kills? just rabbit?
 				}
 			}
 			else
@@ -5163,7 +5175,55 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage *= g_selfDamageScale.value;
 	}
 
+	if (g_tweakWeapons.integer & IMPACT_NITRON && (mod == MOD_THERMAL /*|| mod == MOD_THERMAL_SPLASH*/)) {
+		if (targ && targ->client) {
+			if (targ->client->ps.powerups[PW_REDFLAG])
+			{
+				gentity_t	*thrown;
+				gitem_t		*item;
 
+				item = BG_FindItemForPowerup( PW_REDFLAG );
+				thrown = Drop_Flag( targ, item, -1 );
+				thrown->count = ( targ->client->ps.powerups[PW_REDFLAG] - level.time ) / 1000;
+				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
+				if ( thrown->count < 1 ) {
+					thrown->count = 1;
+				}
+				targ->client->ps.powerups[ PW_REDFLAG ] = 0;
+				targ->client->lastThrowTime = level.time;
+			}
+			else if (targ->client->ps.powerups[PW_BLUEFLAG])
+			{
+				gentity_t	*thrown;
+				gitem_t		*item;
+
+				item = BG_FindItemForPowerup( PW_BLUEFLAG );
+				thrown = Drop_Flag( targ, item, -1 );
+				thrown->count = ( targ->client->ps.powerups[PW_BLUEFLAG] - level.time ) / 1000;
+				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
+				if ( thrown->count < 1 ) {
+					thrown->count = 1;
+				}
+				targ->client->ps.powerups[ PW_BLUEFLAG ] = 0;
+				targ->client->lastThrowTime = level.time;
+			}
+			else if (targ->client->ps.powerups[PW_NEUTRALFLAG])
+			{
+				gentity_t	*thrown;
+				gitem_t		*item;
+
+				item = BG_FindItemForPowerup( PW_NEUTRALFLAG );
+				thrown = Drop_Flag( targ, item, -1 );
+				thrown->count = ( targ->client->ps.powerups[PW_NEUTRALFLAG] - level.time ) / 1000;
+				thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
+				if ( thrown->count < 1 ) {
+					thrown->count = 1;
+				}
+				targ->client->ps.powerups[ PW_NEUTRALFLAG ] = 0;
+				targ->client->lastThrowTime = level.time;
+			}
+		}
+	}
 
 	if (mod == MOD_STUN_BATON && g_tweakWeapons.integer & STUN_HEAL) {
 		//if (damage < 1 && damage >= 0)

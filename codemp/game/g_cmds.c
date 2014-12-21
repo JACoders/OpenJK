@@ -3147,12 +3147,20 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		level.voteYes++;
 		ent->client->pers.vote = 1;
 		trap->SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
-		trap->SendServerCommand( ent-g_entities, va("print \"%s (Yes)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+
+		if (g_fixVote.integer > 1)
+			trap->SendServerCommand( -1, va("print \"%s^7 voted yes.\n\"", ent->client->pers.netname) );
+		else
+			trap->SendServerCommand( ent-g_entities, va("print \"%s (Yes)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+
 	} else {
 		level.voteNo++;
 		ent->client->pers.vote = 2;
 		trap->SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
-		trap->SendServerCommand( ent-g_entities, va("print \"%s (No)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+		if (g_fixVote.integer > 1)
+			trap->SendServerCommand( -1, va("print \"%s^7 voted no.\n\"", ent->client->pers.netname) );
+		else
+			trap->SendServerCommand( ent-g_entities, va("print \"%s (No)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
 	}
 
 	// a majority will be determined in CheckVote, which will also account
@@ -7331,9 +7339,6 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 //[JAPRO - Serverside - All - Serverconfig - End]
 
 void Cmd_Throwflag_f( gentity_t *ent ) {
-	gentity_t	*thrown;
-	gitem_t		*item;
-
 	if (level.gametype == GT_CTF) {
 	}
 	else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer) {
@@ -7345,11 +7350,13 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 
 	if (ent->client->ps.powerups[PW_REDFLAG])
 	{
+		gentity_t	*thrown;
+		gitem_t		*item;
+
 		item = BG_FindItemForPowerup( PW_REDFLAG );
 		thrown = Drop_Flag( ent, item, 0 );
 		thrown->count = ( ent->client->ps.powerups[PW_REDFLAG] - level.time ) / 1000;
 		thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
-		ent->client->lastThrowTime = level.time;
 		if ( thrown->count < 1 ) {
 			thrown->count = 1;
 		}
@@ -7358,11 +7365,13 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 	}
 	else if (ent->client->ps.powerups[PW_BLUEFLAG])
 	{
+		gentity_t	*thrown;
+		gitem_t		*item;
+
 		item = BG_FindItemForPowerup( PW_BLUEFLAG );
 		thrown = Drop_Flag( ent, item, 0 );
 		thrown->count = ( ent->client->ps.powerups[PW_BLUEFLAG] - level.time ) / 1000;
 		thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
-		ent->client->lastThrowTime = level.time;
 		if ( thrown->count < 1 ) {
 			thrown->count = 1;
 		}
@@ -7371,11 +7380,13 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 	}
 	else if (ent->client->ps.powerups[PW_NEUTRALFLAG])
 	{
+		gentity_t	*thrown;
+		gitem_t		*item;
+
 		item = BG_FindItemForPowerup( PW_NEUTRALFLAG );
 		thrown = Drop_Flag( ent, item, 0 );
 		thrown->count = ( ent->client->ps.powerups[PW_NEUTRALFLAG] - level.time ) / 1000;
 		thrown->r.contents = CONTENTS_TRIGGER|CONTENTS_CORPSE;
-		ent->client->lastThrowTime = level.time;
 		if ( thrown->count < 1 ) {
 			thrown->count = 1;
 		}

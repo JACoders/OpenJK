@@ -2826,7 +2826,11 @@ gentity_t *Drop_Flag( gentity_t *ent, gitem_t *item, float angle ) {
 	vec3_t	angles;
 
 	VectorCopy( ent->s.apos.trBase, angles );
-	angles[YAW] += angle;
+	
+	if (angle == -1)
+		angles[PITCH] = 0;
+	else
+		angles[YAW] += angle;
 
 	AngleVectors( angles, velocity, NULL, NULL );
 
