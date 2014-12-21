@@ -9007,7 +9007,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 8)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Special Powers: ^7this class can use any of the Light Quest special powers. Use Saber Style key to choose a power and attack with W + melee kata to use it\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Special Powers: ^7this class can use any of the Light Quest special powers. Use Saber Style key to choose a power and attack with W + melee kata to use it. Use Speed and Sense keys to choose power to use with A + melee kata. Use Heal and Protect keys to choose power to use with D + melee kata\n\"") );
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
