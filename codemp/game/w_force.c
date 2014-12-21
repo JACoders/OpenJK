@@ -5651,11 +5651,12 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				else if (self->client->ps.stats[STAT_RACEMODE])
 					self->client->ps.fd.forcePowerRegenDebounceTime += 25;//Hardcoded regentime of 25ms for racers.. idk.. 25 is lowest you can go without horribly broken cartwheel climb
 				else {
-					if (self->client->ps.duelInProgress)
+					if (self->client->ps.duelInProgress) {
 						if (dueltypes[self->client->ps.clientNum] == 0)//NF Duel
 							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_saberDuelForceRegenTime.integer, 1);
 						else if (dueltypes[self->client->ps.clientNum] == 1)//FF Duel
 							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceDuelForceRegenTime.integer, 1);
+					}
 					else
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 				}
