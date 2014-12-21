@@ -7088,6 +7088,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	Q_strcat(buf, sizeof(buf), va("   ^5Server tickrate^3: ^2%i\n", sv_fps.integer));
 	//Q_strcat(buf, sizeof(buf), va("   ^5Force regen time (BaseJKA 'sv_fps 20' equivalent)^3: ^2%i\n", g_forceRegenTime.integer - (1000/20))); //slightly off.. even ojk fps30/regen50 is not exactly base fps20/regen0
 	Q_strcat(buf, sizeof(buf), va("   ^5Force regen time: ^2%i\n", g_forceRegenTime.integer));
+	if (g_saberDuelForceRegenTime.integer != g_forceRegenTime.integer)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber Duel Force regen time: ^2%i\n", g_saberDuelForceRegenTime.integer));
+	if (g_forceDuelForceRegenTime.integer != g_forceRegenTime.integer)
+		Q_strcat(buf, sizeof(buf), va("   ^5Force Duel Force regen time: ^2%i\n", g_forceDuelForceRegenTime.integer));
 	Q_strcat(buf, sizeof(buf), va("   ^5Location based damage^3: ^2%s\n", (g_locationBasedDamage.integer) ? "Yes" : "No"));
 	if (!(dmflags.integer & DF_NO_FALLING) && g_maxFallDmg.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Fall damage capped at^3: ^2%i\n", g_maxFallDmg.integer));
@@ -7169,7 +7173,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles and hitscan\n");
 		else if (d_projectileGhoul2Collision.integer > 1)
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles\n");
-		if (g_selfDamageScale.integer != 0.5f)
+		if (g_selfDamageScale.value != 0.5f)
 			Q_strcat(buf, sizeof(buf), va("   ^5Self damage scale: ^2%.2f\n", g_selfDamageScale.value));
 		if (g_fullInheritance.integer && g_projectileInheritance.value)
 			Q_strcat(buf, sizeof(buf), va("   ^5Full projectile inheritance: ^2%.2f%\n", g_projectileInheritance.value * 100.0f));
