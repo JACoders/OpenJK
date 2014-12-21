@@ -3666,7 +3666,6 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
 			ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= 4)
 		{ // zyk: Magic Fist Spray Attack
-			int fist_dmg = 14;
 			int count = 12;
 			gentity_t	*missile;
 			vec3_t origin;
@@ -3700,7 +3699,7 @@ qboolean TryGrapple(gentity_t *ent)
 				VectorSet( missile->r.maxs, 2, 2, 2 );
 				VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-				missile->damage = fist_dmg;
+				missile->damage = zyk_magic_fist_damage.integer;
 				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 				missile->methodOfDeath = MOD_MELEE;
 				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -3874,7 +3873,6 @@ qboolean TryGrapple(gentity_t *ent)
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
 			ent->client->pers.cmd.rightmove < 0 && ent->client->pers.selected_left_special_power == 0 && ent->client->pers.magic_power >= 2)
 		{ // zyk: Magic Fist Charged Attack
-			int fist_dmg = 12;
 			int count = 3;
 			gentity_t	*missile;
 			vec3_t origin, dir, forward;
@@ -3901,7 +3899,7 @@ qboolean TryGrapple(gentity_t *ent)
 				VectorSet( missile->r.maxs, 2, 2, 2 );
 				VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-				missile->damage = fist_dmg;
+				missile->damage = zyk_magic_fist_damage.integer;
 				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 				missile->methodOfDeath = MOD_MELEE;
 				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;

@@ -3569,7 +3569,6 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
 			ent->client->pers.selected_special_power == 0 && ent->client->pers.magic_power > 0)
 		{ // zyk: Magic Master has Magic Fist power
-			int fist_dmg = 14;
 			vec3_t origin, dir, zyk_forward;
 			gentity_t *missile = NULL;
 
@@ -3590,7 +3589,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
 			VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-			missile->damage = fist_dmg;
+			missile->damage = zyk_magic_fist_damage.integer;
 			missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 			missile->methodOfDeath = MOD_MELEE;
 			missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
