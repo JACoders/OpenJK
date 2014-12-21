@@ -7212,27 +7212,27 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 10)
 									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: We no longer have our powers since the sacred dimension was open.\""));
 								else if (ent->client->pers.universe_quest_messages == 11)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: In fact, there is no True Guardian. We thought this menace would not happen...\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Even the True Guardian is powerless against this menace...\""));
 								else if (ent->client->pers.universe_quest_messages == 12)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: So we said that to you to make you feel better about the fate of the universe...\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Only you can defeat her...\""));
 								else if (ent->client->pers.universe_quest_messages == 13)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: But we were wrong about that. Forgive us.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Forgive us for that.\""));
 								else if (ent->client->pers.universe_quest_messages == 14)
-									trap->SendServerCommand( -1, va("chat \"%s^7: I understand. So I have to face him alone.\"", ent->client->pers.netname));
+									trap->SendServerCommand( -1, va("chat \"%s^7: I understand. So I have to face her alone.\"", ent->client->pers.netname));
 								else if (ent->client->pers.universe_quest_messages == 15)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Master of Death cannot die. But there is a way to make him vulnerable.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Master of Death cannot die. But there is a way to make her vulnerable.\""));
 								else if (ent->client->pers.universe_quest_messages == 16)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The prophecy of time says we chosen people must sacrifice our lifes...\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The prophecy of time says we chosen people must add our life force into the Amulet of Time...\""));
 								else if (ent->client->pers.universe_quest_messages == 17)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: After that the link between us and the amulet of time will be completely broken and the amulet will disappear.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: After that, although our lives will be sacrificed, the life force will break the Master of Death invulnerability.\""));
 								else if (ent->client->pers.universe_quest_messages == 18)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The power released in this event will break the invulnerability of the Master of Death.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: Then you will be able to fight her.\""));
 								else if (ent->client->pers.universe_quest_messages == 19)
 									trap->SendServerCommand( -1, va("chat \"%s^7: That is a terrible sacrifice! Is there any other way instead?\"", ent->client->pers.netname));
 								else if (ent->client->pers.universe_quest_messages == 20)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: That is the only way.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: This is the only way.\""));
 								else if (ent->client->pers.universe_quest_messages == 21)
-									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Age of the Guardians is over. You will be the last to have the guardian powers.\""));
+									trap->SendServerCommand( -1, va("chat \"^7Guardian of Time^7: The Guardians Age is over. You will be the last to have the guardian powers.\""));
 								else if (ent->client->pers.universe_quest_messages == 22)
 									trap->SendServerCommand( -1, va("chat \"%s^7: Thank you my friends. I will not forget you.\"", ent->client->pers.netname));
 								else if (ent->client->pers.universe_quest_messages == 23)
