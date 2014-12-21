@@ -5870,7 +5870,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^1%d\nShield: ^2%d^3/^2%d\n^7Force: ^5%d^3/^5%d\n^7Type: %s\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], client_armor, client_max_armor, g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax, player_type) );
 					}
 				}
-				self->client->pers.sense_health_timer = level.time + 5000; // zyk: show health each 5 seconds
+				self->client->pers.sense_health_timer = level.time + 3000; // zyk: show health each 5 seconds
 			}
 		}
 		if ( (self->client->ps.fd.forcePowersActive&( 1 << i )) )
