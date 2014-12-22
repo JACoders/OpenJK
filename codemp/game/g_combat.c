@@ -5191,6 +5191,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 				targ->client->ps.powerups[ PW_REDFLAG ] = 0;
 				targ->client->lastThrowTime = level.time;
+				G_Sound( targ, CHAN_AUTO, G_SoundIndex("sound/interface/weapon_deselect.mp3") );
 			}
 			else if (targ->client->ps.powerups[PW_BLUEFLAG])
 			{
@@ -5206,6 +5207,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 				targ->client->ps.powerups[ PW_BLUEFLAG ] = 0;
 				targ->client->lastThrowTime = level.time;
+				G_Sound( targ, CHAN_AUTO, G_SoundIndex("sound/interface/weapon_deselect.mp3") );
 			}
 			else if (targ->client->ps.powerups[PW_NEUTRALFLAG])
 			{
@@ -5221,6 +5223,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				}
 				targ->client->ps.powerups[ PW_NEUTRALFLAG ] = 0;
 				targ->client->lastThrowTime = level.time;
+				G_Sound( targ, CHAN_AUTO, G_SoundIndex("sound/interface/weapon_deselect.mp3") );
 			}
 		}
 	}

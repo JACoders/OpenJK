@@ -2916,7 +2916,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].lastVoteTime);
 			if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 				//trap->Print("Found clients IP in array!\n");
-				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*60*2))) {
+				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*60*3))) {
 					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 					//trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
 					trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
@@ -2935,13 +2935,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		//We are allowed to call a vote if we get here
 		Q_strncpyz(level.callVoteIP, ourIP, sizeof(level.callVoteIP));
 	}
-
-	/*
-	if (g_fixVote.integer && level.lastVoteFailTime && (level.lastVoteFailTime > (level.time - 1000*60*3))) { //Dont let a vote be called right away if a vote has just failed..
-		trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
-		return;
-	}
-	*/
 
 	// make sure it is a valid command to vote on
 	numArgs = trap->Argc();

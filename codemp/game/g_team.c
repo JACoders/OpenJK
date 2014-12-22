@@ -993,10 +993,8 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 		cl->pers.stats.startTimeFlag = 0;
 
 	if (g_fixCTFScores.integer) {
-		if (team == TEAM_RED && teamgame.redStatus == FLAG_ATBASE && teamgame.blueStatus != FLAG_ATBASE) { //Red flag was "egrabbed".
-			AddScore(other, ent->r.currentOrigin, 5);
-		}
-		else if (team == TEAM_BLUE && teamgame.blueStatus == FLAG_ATBASE && teamgame.redStatus != FLAG_ATBASE) { //Blue flag was "egrabbed"
+		if ((team == TEAM_RED && teamgame.redStatus == FLAG_ATBASE && teamgame.blueStatus != FLAG_ATBASE) || 
+			(team == TEAM_BLUE && teamgame.blueStatus == FLAG_ATBASE && teamgame.redStatus != FLAG_ATBASE)) { //Flag was "egrabbed".
 			AddScore(other, ent->r.currentOrigin, 5);
 		}
 	}
