@@ -11,6 +11,7 @@
 glconfig_t	glConfig;
 glconfigExt_t glConfigExt;
 glstate_t	glState;
+
 static void GfxInfo_f( void );
 
 cvar_t	*r_verbose;
@@ -281,6 +282,444 @@ void R_Splash()
 }
 
 /*
+** GLW_CheckForExtension
+
+  Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
+*/
+bool GL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
+
+static void GLW_InitTextureCompression( void )
+{
+	bool newer_tc, old_tc;
+
+	// Check for available tc methods.
+	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
+	old_tc = GL_CheckForExtension("GL_S3_s3tc");
+
+	if ( old_tc )
+	{
+		Com_Printf ("...GL_S3_s3tc available\n" );
+	}
+
+	if ( newer_tc )
+	{
+		Com_Printf ("...GL_EXT_texture_compression_s3tc available\n" );
+	}
+
+	if ( !r_ext_compressed_textures->value )
+	{
+		// Compressed textures are off
+		glConfig.textureCompression = TC_NONE;
+		Com_Printf ("...ignoring texture compression\n" );
+	}
+	else if ( !old_tc && !newer_tc )
+	{
+		// Requesting texture compression, but no method found
+		glConfig.textureCompression = TC_NONE;
+		Com_Printf ("...no supported texture compression method found\n" );
+		Com_Printf (".....ignoring texture compression\n" );
+	}
+	else
+	{
+		// some form of supported texture compression is avaiable, so see if the user has a preference
+		if ( r_ext_preferred_tc_method->integer == TC_NONE )
+		{
+			// No preference, so pick the best
+			if ( newer_tc )
+			{
+				Com_Printf ("...no tc preference specified\n" );
+				Com_Printf (".....using GL_EXT_texture_compression_s3tc\n" );
+				glConfig.textureCompression = TC_S3TC_DXT;
+			}
+			else
+			{
+				Com_Printf ("...no tc preference specified\n" );
+				Com_Printf (".....using GL_S3_s3tc\n" );
+				glConfig.textureCompression = TC_S3TC;
+			}
+		}
+		else
+		{
+			// User has specified a preference, now see if this request can be honored
+			if ( old_tc && newer_tc )
+			{
+				// both are avaiable, so we can use the desired tc method
+				if ( r_ext_preferred_tc_method->integer == TC_S3TC )
+				{
+					Com_Printf ("...using preferred tc method, GL_S3_s3tc\n" );
+					glConfig.textureCompression = TC_S3TC;
+				}
+				else
+				{
+					Com_Printf ("...using preferred tc method, GL_EXT_texture_compression_s3tc\n" );
+					glConfig.textureCompression = TC_S3TC_DXT;
+				}
+			}
+			else
+			{
+				// Both methods are not available, so this gets trickier
+				if ( r_ext_preferred_tc_method->integer == TC_S3TC )
+				{
+					// Preferring to user older compression
+					if ( old_tc )
+					{
+						Com_Printf ("...using GL_S3_s3tc\n" );
+						glConfig.textureCompression = TC_S3TC;
+					}
+					else
+					{
+						// Drat, preference can't be honored
+						Com_Printf ("...preferred tc method, GL_S3_s3tc not available\n" );
+						Com_Printf (".....falling back to GL_EXT_texture_compression_s3tc\n" );
+						glConfig.textureCompression = TC_S3TC_DXT;
+					}
+				}
+				else
+				{
+					// Preferring to user newer compression
+					if ( newer_tc )
+					{
+						Com_Printf ("...using GL_EXT_texture_compression_s3tc\n" );
+						glConfig.textureCompression = TC_S3TC_DXT;
+					}
+					else
+					{
+						// Drat, preference can't be honored
+						Com_Printf ("...preferred tc method, GL_EXT_texture_compression_s3tc not available\n" );
+						Com_Printf (".....falling back to GL_S3_s3tc\n" );
+						glConfig.textureCompression = TC_S3TC;
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
+===============
+GLimp_InitExtensions
+===============
+*/
+extern bool g_bDynamicGlowSupported;
+static void GLimp_InitExtensions( void )
+{
+	if ( !r_allowExtensions->integer )
+	{
+		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
+		g_bDynamicGlowSupported = false;
+		ri->Cvar_Set( "r_DynamicGlow","0" );
+		return;
+	}
+
+	Com_Printf ("Initializing OpenGL extensions\n" );
+
+	// Select our tc scheme
+	GLW_InitTextureCompression();
+
+	// GL_EXT_texture_env_add
+	glConfig.textureEnvAddAvailable = qfalse;
+	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
+	{
+		if ( r_ext_texture_env_add->integer )
+		{
+			glConfig.textureEnvAddAvailable = qtrue;
+			Com_Printf ("...using GL_EXT_texture_env_add\n" );
+		}
+		else
+		{
+			glConfig.textureEnvAddAvailable = qfalse;
+			Com_Printf ("...ignoring GL_EXT_texture_env_add\n" );
+		}
+	}
+	else
+	{
+		Com_Printf ("...GL_EXT_texture_env_add not found\n" );
+	}
+
+	// GL_EXT_texture_filter_anisotropic
+	glConfig.maxTextureFilterAnisotropy = 0;
+	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
+	{
+		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
+		Com_Printf ("...GL_EXT_texture_filter_anisotropic available\n" );
+
+		if ( r_ext_texture_filter_anisotropic->integer > 1 )
+		{
+			Com_Printf ("...using GL_EXT_texture_filter_anisotropic\n" );
+		}
+		else
+		{
+			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
+		}
+		ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
+		{
+			ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		}
+	}
+	else
+	{
+		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
+		ri->Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+	}
+
+	// GL_EXT_clamp_to_edge
+	glConfig.clampToEdgeAvailable = qtrue;
+	Com_Printf ("...using GL_EXT_texture_edge_clamp\n" );
+
+	// GL_ARB_multitexture
+	qglMultiTexCoord2fARB = NULL;
+	qglActiveTextureARB = NULL;
+	qglClientActiveTextureARB = NULL;
+	if ( GL_CheckForExtension( "GL_ARB_multitexture" ) )
+	{
+		if ( r_ext_multitexture->integer )
+		{
+			qglMultiTexCoord2fARB = ( PFNGLMULTITEXCOORD2FARBPROC ) ri->GL_GetProcAddress( "glMultiTexCoord2fARB" );
+			qglActiveTextureARB = ( PFNGLACTIVETEXTUREARBPROC ) ri->GL_GetProcAddress( "glActiveTextureARB" );
+			qglClientActiveTextureARB = ( PFNGLCLIENTACTIVETEXTUREARBPROC ) ri->GL_GetProcAddress( "glClientActiveTextureARB" );
+
+			if ( qglActiveTextureARB )
+			{
+				qglGetIntegerv( GL_MAX_TEXTURE_UNITS_ARB, &glConfig.maxActiveTextures );
+
+				if ( glConfig.maxActiveTextures > 1 )
+				{
+					Com_Printf ("...using GL_ARB_multitexture\n" );
+				}
+				else
+				{
+					qglMultiTexCoord2fARB = NULL;
+					qglActiveTextureARB = NULL;
+					qglClientActiveTextureARB = NULL;
+					Com_Printf ("...not using GL_ARB_multitexture, < 2 texture units\n" );
+				}
+			}
+		}
+		else
+		{
+			Com_Printf ("...ignoring GL_ARB_multitexture\n" );
+		}
+	}
+	else
+	{
+		Com_Printf ("...GL_ARB_multitexture not found\n" );
+	}
+
+	// GL_EXT_compiled_vertex_array
+	qglLockArraysEXT = NULL;
+	qglUnlockArraysEXT = NULL;
+	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
+	{
+		if ( r_ext_compiled_vertex_array->integer )
+		{
+			Com_Printf ("...using GL_EXT_compiled_vertex_array\n" );
+			qglLockArraysEXT = ( PFNGLLOCKARRAYSEXTPROC ) ri->GL_GetProcAddress( "glLockArraysEXT" );
+			qglUnlockArraysEXT = ( PFNGLUNLOCKARRAYSEXTPROC ) ri->GL_GetProcAddress( "glUnlockArraysEXT" );
+			if (!qglLockArraysEXT || !qglUnlockArraysEXT) {
+				Com_Error (ERR_FATAL, "bad getprocaddress");
+			}
+		}
+		else
+		{
+			Com_Printf ("...ignoring GL_EXT_compiled_vertex_array\n" );
+		}
+	}
+	else
+	{
+		Com_Printf ("...GL_EXT_compiled_vertex_array not found\n" );
+	}
+
+	bool bNVRegisterCombiners = false;
+	// Register Combiners.
+	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
+	{
+		// NOTE: This extension requires multitexture support (over 2 units).
+		if ( glConfig.maxActiveTextures >= 2 )
+		{
+			bNVRegisterCombiners = true;
+			// Register Combiners function pointer address load.	- AReis
+			// NOTE: VV guys will _definetly_ not be able to use regcoms. Pixel Shaders are just as good though :-)
+			// NOTE: Also, this is an nVidia specific extension (of course), so fragment shaders would serve the same purpose
+			// if we needed some kind of fragment/pixel manipulation support.
+			qglCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNVPROC)ri->GL_GetProcAddress( "glCombinerParameterfvNV" );
+			qglCombinerParameterivNV = (PFNGLCOMBINERPARAMETERIVNVPROC)ri->GL_GetProcAddress( "glCombinerParameterivNV" );
+			qglCombinerParameterfNV = (PFNGLCOMBINERPARAMETERFNVPROC)ri->GL_GetProcAddress( "glCombinerParameterfNV" );
+			qglCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINVPROC)ri->GL_GetProcAddress( "glCombinerParameteriNV" );
+			qglCombinerInputNV = (PFNGLCOMBINERINPUTNVPROC)ri->GL_GetProcAddress( "glCombinerInputNV" );
+			qglCombinerOutputNV = (PFNGLCOMBINEROUTPUTNVPROC)ri->GL_GetProcAddress( "glCombinerOutputNV" );
+			qglFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNVPROC)ri->GL_GetProcAddress( "glFinalCombinerInputNV" );
+			qglGetCombinerInputParameterfvNV	= (PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC)ri->GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
+			qglGetCombinerInputParameterivNV	= (PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC)ri->GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
+			qglGetCombinerOutputParameterfvNV = (PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC)ri->GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
+			qglGetCombinerOutputParameterivNV = (PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC)ri->GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
+			qglGetFinalCombinerInputParameterfvNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC)ri->GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
+			qglGetFinalCombinerInputParameterivNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC)ri->GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
+
+			// Validate the functions we need.
+			if ( !qglCombinerParameterfvNV || !qglCombinerParameterivNV || !qglCombinerParameterfNV || !qglCombinerParameteriNV || !qglCombinerInputNV ||
+				 !qglCombinerOutputNV || !qglFinalCombinerInputNV || !qglGetCombinerInputParameterfvNV || !qglGetCombinerInputParameterivNV ||
+				 !qglGetCombinerOutputParameterfvNV || !qglGetCombinerOutputParameterivNV || !qglGetFinalCombinerInputParameterfvNV || !qglGetFinalCombinerInputParameterivNV )
+			{
+				bNVRegisterCombiners = false;
+				qglCombinerParameterfvNV = NULL;
+				qglCombinerParameteriNV = NULL;
+				Com_Printf ("...GL_NV_register_combiners failed\n" );
+			}
+		}
+		else
+		{
+			bNVRegisterCombiners = false;
+			Com_Printf ("...ignoring GL_NV_register_combiners\n" );
+		}
+	}
+	else
+	{
+		bNVRegisterCombiners = false;
+		Com_Printf ("...GL_NV_register_combiners not found\n" );
+	}
+
+	// NOTE: Vertex and Fragment Programs are very dependant on each other - this is actually a
+	// good thing! So, just check to see which we support (one or the other) and load the shared
+	// function pointers. ARB rocks!
+
+	// Vertex Programs.
+	bool bARBVertexProgram = false;
+	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
+	{
+		bARBVertexProgram = true;
+	}
+	else
+	{
+		bARBVertexProgram = false;
+		Com_Printf ("...GL_ARB_vertex_program not found\n" );
+	}
+
+	// Fragment Programs.
+	bool bARBFragmentProgram = false;
+	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
+	{
+		bARBFragmentProgram = true;
+	}
+	else
+	{
+		bARBFragmentProgram = false;
+		Com_Printf ("...GL_ARB_fragment_program not found\n" );
+	}
+
+	// If we support one or the other, load the shared function pointers.
+	if ( bARBVertexProgram || bARBFragmentProgram )
+	{
+		qglProgramStringARB					= (PFNGLPROGRAMSTRINGARBPROC)  ri->GL_GetProcAddress("glProgramStringARB");
+		qglBindProgramARB					= (PFNGLBINDPROGRAMARBPROC)    ri->GL_GetProcAddress("glBindProgramARB");
+		qglDeleteProgramsARB				= (PFNGLDELETEPROGRAMSARBPROC) ri->GL_GetProcAddress("glDeleteProgramsARB");
+		qglGenProgramsARB					= (PFNGLGENPROGRAMSARBPROC)    ri->GL_GetProcAddress("glGenProgramsARB");
+		qglProgramEnvParameter4dARB			= (PFNGLPROGRAMENVPARAMETER4DARBPROC)    ri->GL_GetProcAddress("glProgramEnvParameter4dARB");
+		qglProgramEnvParameter4dvARB		= (PFNGLPROGRAMENVPARAMETER4DVARBPROC)   ri->GL_GetProcAddress("glProgramEnvParameter4dvARB");
+		qglProgramEnvParameter4fARB			= (PFNGLPROGRAMENVPARAMETER4FARBPROC)    ri->GL_GetProcAddress("glProgramEnvParameter4fARB");
+		qglProgramEnvParameter4fvARB		= (PFNGLPROGRAMENVPARAMETER4FVARBPROC)   ri->GL_GetProcAddress("glProgramEnvParameter4fvARB");
+		qglProgramLocalParameter4dARB		= (PFNGLPROGRAMLOCALPARAMETER4DARBPROC)  ri->GL_GetProcAddress("glProgramLocalParameter4dARB");
+		qglProgramLocalParameter4dvARB		= (PFNGLPROGRAMLOCALPARAMETER4DVARBPROC) ri->GL_GetProcAddress("glProgramLocalParameter4dvARB");
+		qglProgramLocalParameter4fARB		= (PFNGLPROGRAMLOCALPARAMETER4FARBPROC)  ri->GL_GetProcAddress("glProgramLocalParameter4fARB");
+		qglProgramLocalParameter4fvARB		= (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC) ri->GL_GetProcAddress("glProgramLocalParameter4fvARB");
+		qglGetProgramEnvParameterdvARB		= (PFNGLGETPROGRAMENVPARAMETERDVARBPROC) ri->GL_GetProcAddress("glGetProgramEnvParameterdvARB");
+		qglGetProgramEnvParameterfvARB		= (PFNGLGETPROGRAMENVPARAMETERFVARBPROC) ri->GL_GetProcAddress("glGetProgramEnvParameterfvARB");
+		qglGetProgramLocalParameterdvARB	= (PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC) ri->GL_GetProcAddress("glGetProgramLocalParameterdvARB");
+		qglGetProgramLocalParameterfvARB	= (PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC) ri->GL_GetProcAddress("glGetProgramLocalParameterfvARB");
+		qglGetProgramivARB					= (PFNGLGETPROGRAMIVARBPROC)     ri->GL_GetProcAddress("glGetProgramivARB");
+		qglGetProgramStringARB				= (PFNGLGETPROGRAMSTRINGARBPROC) ri->GL_GetProcAddress("glGetProgramStringARB");
+		qglIsProgramARB						= (PFNGLISPROGRAMARBPROC)        ri->GL_GetProcAddress("glIsProgramARB");
+
+		// Validate the functions we need.
+		if ( !qglProgramStringARB || !qglBindProgramARB || !qglDeleteProgramsARB || !qglGenProgramsARB ||
+			 !qglProgramEnvParameter4dARB || !qglProgramEnvParameter4dvARB || !qglProgramEnvParameter4fARB ||
+             !qglProgramEnvParameter4fvARB || !qglProgramLocalParameter4dARB || !qglProgramLocalParameter4dvARB ||
+             !qglProgramLocalParameter4fARB || !qglProgramLocalParameter4fvARB || !qglGetProgramEnvParameterdvARB ||
+             !qglGetProgramEnvParameterfvARB || !qglGetProgramLocalParameterdvARB || !qglGetProgramLocalParameterfvARB ||
+             !qglGetProgramivARB || !qglGetProgramStringARB || !qglIsProgramARB )
+		{
+			bARBVertexProgram = false;
+			bARBFragmentProgram = false;
+			qglGenProgramsARB = NULL;	//clear ptrs that get checked
+			qglProgramEnvParameter4fARB = NULL;
+			Com_Printf ("...ignoring GL_ARB_vertex_program\n" );
+			Com_Printf ("...ignoring GL_ARB_fragment_program\n" );
+		}
+	}
+
+	// Figure out which texture rectangle extension to use.
+	bool bTexRectSupported = false;
+	if ( Q_stricmpn( glConfig.vendor_string, "ATI Technologies",16 )==0
+		&& Q_stricmpn( glConfig.version_string, "1.3.3",5 )==0
+		&& glConfig.version_string[5] < '9' ) //1.3.34 and 1.3.37 and 1.3.38 are broken for sure, 1.3.39 is not
+	{
+		g_bTextureRectangleHack = true;
+	}
+
+	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
+	{
+		bTexRectSupported = true;
+	}
+
+	// Find out how many general combiners they have.
+	#define GL_MAX_GENERAL_COMBINERS_NV       0x854D
+	GLint iNumGeneralCombiners = 0;
+	if(bNVRegisterCombiners)
+		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
+
+	// Only allow dynamic glows/flares if they have the hardware
+	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
+		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
+	{
+		g_bDynamicGlowSupported = true;
+		// this would overwrite any achived setting gwg
+		// ri->Cvar_Set( "r_DynamicGlow", "1" );
+	}
+	else
+	{
+		g_bDynamicGlowSupported = false;
+		ri->Cvar_Set( "r_DynamicGlow","0" );
+	}
+}
+
+// Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
+static const char *TruncateGLExtensionsString (const char *extensionsString, int maxExtensions)
+{
+	const char *p = extensionsString;
+	const char *q;
+	int numExtensions = 0;
+	size_t extensionsLen = strlen (extensionsString);
+
+	char *truncatedExtensions;
+
+	while ( (q = strchr (p, ' ')) != NULL && numExtensions <= maxExtensions )
+	{
+		p = q + 1;
+		numExtensions++;
+	}
+
+	if ( q != NULL )
+	{
+		// We still have more extensions. We'll call this the end
+
+		extensionsLen = p - extensionsString - 1;
+	}
+
+	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
+	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
+
+	return truncatedExtensions;
+}
+
+/*
 ** InitOpenGL
 **
 ** This function is responsible for initializing a valid OpenGL subsystem.  This
@@ -306,6 +745,26 @@ static void InitOpenGL( void )
 		memset(&glConfig, 0, sizeof(glConfig));
 
 		window_t *window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+
+		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
+
+		// get our config strings
+		glConfig.vendor_string = (const char *)qglGetString (GL_VENDOR);
+		glConfig.renderer_string = (const char *)qglGetString (GL_RENDERER);
+		glConfig.version_string = (const char *)qglGetString (GL_VERSION);
+		glConfig.extensions_string = (const char *)qglGetString (GL_EXTENSIONS);
+
+		glConfigExt.originalExtensionString = glConfig.extensions_string;
+		glConfig.extensions_string = TruncateGLExtensionsString(glConfigExt.originalExtensionString, 128);
+
+		// OpenGL driver constants
+		qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
+
+		// stubbed or broken drivers may have reported 0...
+		glConfig.maxTextureSize = max(0, glConfig.maxTextureSize);
+
+		// initialize extensions
+		GLimp_InitExtensions( );
 
 		// print info the first time only
 		GL_SetDefaultState();
@@ -834,14 +1293,6 @@ void GL_SetDefaultState( void )
 	qglDisable( GL_BLEND );
 }
 
-
-/*
-================
-GfxInfo_f
-================
-*/
-extern bool g_bTextureRectangleHack;
-
 /*
 ================
 R_PrintLongString
@@ -864,6 +1315,12 @@ void R_PrintLongString(const char *string) {
 	}
 }
 
+/*
+================
+GfxInfo_f
+================
+*/
+extern bool g_bTextureRectangleHack;
 void GfxInfo_f( void )
 {
 	const char *enablestrings[] =
