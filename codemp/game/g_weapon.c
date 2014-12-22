@@ -1656,6 +1656,219 @@ static void WP_FlechetteMainFire( gentity_t *ent, int seed )
 	}
 }
 
+void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
+{
+	static const int STAKE_SIZE = 2;
+
+	G_SetOrigin( stake, endpos );
+	VectorCopy( normal, stake->pos1 );
+
+	VectorClear( stake->s.apos.trDelta );
+	// This will orient the object to face in the direction of the normal
+	VectorCopy( normal, stake->s.pos.trDelta );
+	//VectorScale( normal, -1, ent->s.pos.trDelta );
+	stake->s.pos.trTime = level.time;
+	
+	
+	//This does nothing, cg_missile makes assumptions about direction of travel controlling angles
+	vectoangles( normal, stake->s.apos.trBase );
+	VectorClear( stake->s.apos.trDelta );
+	stake->s.apos.trType = TR_STATIONARY;
+	VectorCopy( stake->s.apos.trBase, stake->s.angles );
+	VectorCopy( stake->s.angles, stake->r.currentAngles );
+	
+	//G_Sound( stake, CHAN_WEAPON, G_SoundIndex( "sound/weapons/laser_trap/stick.wav" ) );
+
+	//add draw line flag
+	VectorCopy( normal, stake->movedir );
+	stake->think = 0;
+	stake->nextthink = level.time + 50;//delay the activation
+	stake->touch = touch_NULL;
+
+	//shove the box through the wall
+	VectorSet( stake->r.mins, -STAKE_SIZE*2, -STAKE_SIZE*2, -STAKE_SIZE*2 );
+	VectorSet( stake->r.maxs, STAKE_SIZE*2, STAKE_SIZE*2, STAKE_SIZE*2 );
+
+	//so that the owner can blow it up with projectiles
+	//stake->r.svFlags |= SVF_OWNERNOTSHARED;
+
+	stake->r.ownerNum = 32;
+}
+
+void touchStake( gentity_t *stake, gentity_t *other, trace_t *trace )
+{
+	if (other && other->s.number < ENTITYNUM_WORLD)
+	{ //just explode if we hit any entity. This way we don't have things happening like tripmines floating
+	  //in the air after getting stuck to a moving door
+		if ( stake->activator != other )
+		{
+			stake->touch = 0;
+			stake->nextthink = level.time + FRAMETIME;
+			stake->think = laserTrapExplode;
+			VectorCopy(trace->plane.normal, stake->s.pos.trDelta);
+		}
+	}
+	else
+	{
+		stake->touch = 0;
+		if (trace->entityNum != ENTITYNUM_NONE)
+		{
+			stake->enemy = &g_entities[trace->entityNum];
+		}
+		stakeStick(stake, trace->endpos, trace->plane.normal);
+	}
+}
+
+void StakeThink(gentity_t *stake)
+{ //laser trap think
+	stake->nextthink = level.time + 50;
+	G_RunObject(stake);
+}
+
+void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
+{ //create a laser trap entity
+	static const int STAKE_SIZE = 2;
+
+	stake->classname = "laserTrap";
+	//stake->flags |= FL_BOUNCE_HALF;
+	stake->s.eFlags |= EF_MISSILE_STICK;
+	//stake->splashDamage = 0;
+	//stake->splashRadius = 0;
+	stake->damage = 20;
+	stake->methodOfDeath = MOD_FLECHETTE;
+	//stake->splashMethodOfDeath = MOD_TRIP_MINE_SPLASH;
+	stake->s.eType = ET_GENERAL;
+	stake->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	stake->s.weapon = WP_TRIP_MINE;
+	stake->s.pos.trType = TR_LINEAR;
+	stake->r.contents = MASK_SHOT;
+	//if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
+		//stake->r.contents = CONTENTS_NONE;
+	stake->parent = owner;
+	stake->activator = owner;
+	stake->r.ownerNum = owner->s.number;
+	VectorSet( stake->r.mins, -STAKE_SIZE, -STAKE_SIZE, -STAKE_SIZE );
+	VectorSet( stake->r.maxs, STAKE_SIZE, STAKE_SIZE, STAKE_SIZE );
+	stake->clipmask = MASK_SHOT;
+	stake->s.solid = 2;
+	stake->s.modelindex = G_ModelIndex( "models/weapons2/merr_sonn/projectile.md3" );
+	//stake->s.g2radius = 40;
+
+	stake->s.genericenemyindex = owner->s.number+MAX_GENTITIES;
+
+	stake->health = 100;
+
+	stake->s.time = 0;
+
+	stake->s.pos.trTime = level.time;		// move a bit on the very first frame
+	VectorCopy( start, stake->s.pos.trBase );
+	SnapVector( stake->s.pos.trBase );			// save net bandwidth
+	
+	SnapVector( stake->s.pos.trDelta );			// save net bandwidth
+	VectorCopy (start, stake->r.currentOrigin);
+
+	stake->s.apos.trType = TR_LINEAR;
+	stake->s.apos.trTime = level.time;
+	stake->s.apos.trBase[YAW] = rand()%360;
+	stake->s.apos.trBase[PITCH] = rand()%360;
+	stake->s.apos.trBase[ROLL] = rand()%360;
+
+	if (rand()%10 < 5) //lol?
+	{
+		stake->s.apos.trBase[YAW] = -stake->s.apos.trBase[YAW];
+	}
+
+	VectorCopy( start, stake->pos2 );
+	stake->touch = touchStake;
+	stake->think = StakeThink;
+	stake->nextthink = level.time + 50;
+}
+
+static void WP_FireStakeGun( gentity_t *ent ) 
+{
+	gentity_t	*stake;
+	gentity_t	*found = NULL;
+	vec3_t		dir, start;
+	int			trapcount = 0;
+	int			foundLaserTraps[MAX_GENTITIES];
+	int			trapcount_org;
+	int			lowestTimeStamp;
+	int			removeMe;
+	int			i;
+
+	foundLaserTraps[0] = ENTITYNUM_NONE;
+
+	VectorCopy( forward, dir );
+	VectorCopy( muzzle, start );
+
+	stake = G_Spawn(qtrue);
+	
+	//limit to 10 placed at any one time
+	//see how many there are now
+	while ( (found = G_Find( found, FOFS(classname), "laserTrap" )) != NULL )
+	{
+		if ( found->parent != ent )
+		{
+			continue;
+		}
+		foundLaserTraps[trapcount++] = found->s.number;
+	}
+	//now remove first ones we find until there are only 9 left
+	found = NULL;
+	trapcount_org = trapcount;
+	lowestTimeStamp = level.time;
+	while ( trapcount > 9 )
+	{
+		removeMe = -1;
+		for ( i = 0; i < trapcount_org; i++ )
+		{
+			if ( foundLaserTraps[i] == ENTITYNUM_NONE )
+			{
+				continue;
+			}
+			found = &g_entities[foundLaserTraps[i]];
+			if ( stake && found->setTime < lowestTimeStamp )
+			{
+				removeMe = i;
+				lowestTimeStamp = found->setTime;
+			}
+		}
+		if ( removeMe != -1 )
+		{
+			//remove it... or blow it?
+			if ( &g_entities[foundLaserTraps[removeMe]] == NULL )
+			{
+				break;
+			}
+			else
+			{
+				G_FreeEntity( &g_entities[foundLaserTraps[removeMe]] );
+			}
+			foundLaserTraps[removeMe] = ENTITYNUM_NONE;
+			trapcount--;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	//now make the new one
+	CreateStake( stake, start, ent );
+
+	//set player-created-specific fields
+	stake->setTime = level.time;//remember when we placed it
+
+
+	//move it
+	stake->s.pos.trType = TR_LINEAR;
+
+	VectorScale( dir, 2048, stake->s.pos.trDelta );
+
+
+	trap->LinkEntity((sharedEntity_t *)stake);
+}
+
 //---------------------------------------------------------
 void prox_mine_think( gentity_t *ent )
 //---------------------------------------------------------
@@ -1858,7 +2071,10 @@ static void WP_FireFlechette( gentity_t *ent, qboolean altFire, int seed )
 	}
 	else
 	{
-		WP_FlechetteMainFire( ent, seed );
+		if (g_tweakWeapons.integer & STAKE_GUN)
+			WP_FireStakeGun( ent );
+		else
+			WP_FlechetteMainFire( ent, seed );
 	}
 }
 
