@@ -112,8 +112,8 @@
 #define JAPRO_CINFO_SHOCKLANCE		(1<<17)	//shocklance
 #define JAPRO_CINFO_GUNROLL			(1<<18)	//allow grun roll
 #define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
-#define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //Hl2 Aircontrol
-#define JAPRO_CINFO_UNUSED3			(1<<21) //Siege aircontrol
+#define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //No aim backslash
+#define JAPRO_CINFO_UNUSED3			(1<<21) //unused
 #define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa

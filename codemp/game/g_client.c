@@ -3662,6 +3662,8 @@ void ClientSpawn(gentity_t *ent) {
 	else
 		client->ps.stats[STAT_RACEMODE] = 0;
 
+	client->savedJumpLevel = 0;//rabbit
+
 	if ( level.gametype != GT_HOLOCRON 
 		&& level.gametype != GT_JEDIMASTER 
 		&& !HasSetSaberOnly()

@@ -2868,6 +2868,16 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 	client->ps.stats[STAT_MOVEMENTSTYLE] = client->sess.movementStyle;
 
+	if (g_rabbit.integer && client->ps.powerups[PW_NEUTRALFLAG]) {
+		if (client->ps.fd.forcePowerLevel[FP_LEVITATION] > 1) {
+			client->savedJumpLevel = client->ps.fd.forcePowerLevel[FP_LEVITATION];
+			client->ps.fd.forcePowerLevel[FP_LEVITATION] = 1;
+		}
+	}
+	else if (client->savedJumpLevel) {
+		client->ps.fd.forcePowerLevel[FP_LEVITATION] = client->savedJumpLevel;
+	}
+
 	//
 	// check for exiting intermission
 	//

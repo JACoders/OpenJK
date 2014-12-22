@@ -1556,7 +1556,7 @@ qboolean PM_CanBackstab(void)
 		}
 	}
 #else
-	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FIXROLL3))
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_EASYBACKSLASH))
 	{
 		int i;
 		centity_t *cent;
