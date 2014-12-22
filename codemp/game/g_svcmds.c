@@ -111,7 +111,7 @@ static void UpdateIPBans( void ) {
 			if ( m.b[j] != 0xFF )
 				Q_strcat( ip, sizeof( ip ), "*" );
 			else
-				Q_strcat( ip, sizeof( ip ), va( "%i", (int)b.c[j] ) );
+				Q_strcat( ip, sizeof( ip ), va( "%i", b.b[j] ) );
 			Q_strcat( ip, sizeof( ip ), (j<3) ? "." : " " );
 		}
 		if ( strlen( iplist_final )+strlen( ip ) < MAX_CVAR_VALUE_STRING )
