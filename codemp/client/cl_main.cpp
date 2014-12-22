@@ -2413,9 +2413,9 @@ void CL_InitRef( void ) {
 	ri.CGVMLoaded = CGVMLoaded;
 	ri.CGVM_RagCallback = CGVM_RagCallback;
 
-    ri.IN_Init = IN_Init;
-    ri.IN_Shutdown = IN_Shutdown;
-    ri.IN_Restart = IN_Restart;
+    ri.WIN_Init = WIN_Init;
+    ri.WIN_Shutdown = WIN_Shutdown;
+    ri.WIN_Present = WIN_Present;
 
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;

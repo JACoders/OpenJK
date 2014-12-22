@@ -1,11 +1,12 @@
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
+
+#include <algorithm>
 #include "../rd-common/tr_common.h"
 #include "tr_WorldEffects.h"
 #include "qcommon/MiniHeap.h"
 #include "ghoul2/g2_local.h"
-#include <algorithm>
 
 glconfig_t	glConfig;
 glconfigExt_t glConfigExt;
@@ -15,15 +16,12 @@ static void GfxInfo_f( void );
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
-cvar_t	*r_displayRefresh;
-
 cvar_t	*r_detailTextures;
 
 cvar_t	*r_znear;
 
 cvar_t	*r_skipBackEnd;
 
-cvar_t	*r_ignorehwgamma;
 cvar_t	*r_measureOverdraw;
 
 cvar_t	*r_inGameVideo;
@@ -91,10 +89,6 @@ cvar_t	*r_DynamicGlowHeight;
 cvar_t	*r_ignoreGLErrors;
 cvar_t	*r_logFile;
 
-cvar_t	*r_stencilbits;
-cvar_t	*r_depthbits;
-cvar_t	*r_colorbits;
-cvar_t	*r_stereo;
 cvar_t	*r_primitives;
 cvar_t	*r_texturebits;
 cvar_t	*r_texturebitslm;
@@ -105,7 +99,6 @@ cvar_t	*r_uiFullScreen;
 cvar_t	*r_shadows;
 cvar_t	*r_shadowRange;
 cvar_t	*r_flares;
-cvar_t	*r_mode;
 cvar_t	*r_nobind;
 cvar_t	*r_singleShader;
 cvar_t	*r_colorMipLevels;
@@ -115,7 +108,6 @@ cvar_t	*r_showsky;
 cvar_t	*r_shownormals;
 cvar_t	*r_finish;
 cvar_t	*r_clear;
-cvar_t	*r_swapInterval;
 cvar_t	*r_markcount;
 cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
@@ -129,12 +121,7 @@ cvar_t	*r_portalOnly;
 cvar_t	*r_subdivisions;
 cvar_t	*r_lodCurveError;
 
-cvar_t	*r_fullscreen = 0;
-cvar_t	*r_noborder;
-cvar_t	*r_centerWindow;
 
-cvar_t	*r_customwidth;
-cvar_t	*r_customheight;
 
 cvar_t	*r_overBrightBits;
 cvar_t	*r_mapOverBrightBits;
@@ -202,73 +189,51 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
-#if 0
-#ifdef _WIN32
-void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
-void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
-void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
+PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
+PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
+PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
 
-void ( APIENTRY * qglLockArraysEXT)( GLint, GLint);
-void ( APIENTRY * qglUnlockArraysEXT) ( void );
+PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
+PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
+PFNGLCOMBINERPARAMETERFNVPROC qglCombinerParameterfNV;
+PFNGLCOMBINERPARAMETERINVPROC qglCombinerParameteriNV;
+PFNGLCOMBINERINPUTNVPROC qglCombinerInputNV;
+PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
 
+PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
+PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
+PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
+PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
+PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
+PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
+PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
 
-// Declare Register Combiners function pointers.
-PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
-PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV = NULL;
-PFNGLCOMBINERPARAMETERFNV				qglCombinerParameterfNV = NULL;
-PFNGLCOMBINERPARAMETERINV				qglCombinerParameteriNV = NULL;
-PFNGLCOMBINERINPUTNV					qglCombinerInputNV = NULL;
-PFNGLCOMBINEROUTPUTNV					qglCombinerOutputNV = NULL;
-PFNGLFINALCOMBINERINPUTNV				qglFinalCombinerInputNV = NULL;
-PFNGLGETCOMBINERINPUTPARAMETERFVNV		qglGetCombinerInputParameterfvNV = NULL;
-PFNGLGETCOMBINERINPUTPARAMETERIVNV		qglGetCombinerInputParameterivNV = NULL;
-PFNGLGETCOMBINEROUTPUTPARAMETERFVNV		qglGetCombinerOutputParameterfvNV = NULL;
-PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV = NULL;
-PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV = NULL;
-PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV = NULL;
+PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
+PFNGLBINDPROGRAMARBPROC qglBindProgramARB;
+PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB;
+PFNGLGENPROGRAMSARBPROC qglGenProgramsARB;
+PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB;
+PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB;
+PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB;
+PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB;
+PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB;
+PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB;
+PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB;
+PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB;
+PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB;
+PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB;
+PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB;
+PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB;
+PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB;
+PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB;
+PFNGLISPROGRAMARBPROC qglIsProgramARB;
 
-// Declare Pixel Format function pointers.
-PFNWGLGETPIXELFORMATATTRIBIVARBPROC		qwglGetPixelFormatAttribivARB = NULL;
-PFNWGLGETPIXELFORMATATTRIBFVARBPROC		qwglGetPixelFormatAttribfvARB = NULL;
-PFNWGLCHOOSEPIXELFORMATARBPROC			qwglChoosePixelFormatARB = NULL;
+PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
+PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
 
-// Declare Pixel Buffer function pointers.
-PFNWGLCREATEPBUFFERARBPROC				qwglCreatePbufferARB = NULL;
-PFNWGLGETPBUFFERDCARBPROC				qwglGetPbufferDCARB = NULL;
-PFNWGLRELEASEPBUFFERDCARBPROC			qwglReleasePbufferDCARB = NULL;
-PFNWGLDESTROYPBUFFERARBPROC				qwglDestroyPbufferARB = NULL;
-PFNWGLQUERYPBUFFERARBPROC				qwglQueryPbufferARB = NULL;
-
-// Declare Render-Texture function pointers.
-PFNWGLBINDTEXIMAGEARBPROC				qwglBindTexImageARB = NULL;
-PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB = NULL;
-PFNWGLSETPBUFFERATTRIBARBPROC			qwglSetPbufferAttribARB = NULL;
-
-// Declare Vertex and Fragment Program function pointers.
-PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
-PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
-PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB = NULL;
-PFNGLGENPROGRAMSARBPROC qglGenProgramsARB = NULL;
-PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB = NULL;
-PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB = NULL;
-PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB = NULL;
-PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB = NULL;
-PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB = NULL;
-PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB = NULL;
-PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB = NULL;
-PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
-PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
-PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
-PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
-#endif
-#endif
+bool g_bTextureRectangleHack = false;
 
 void RE_SetLightStyle(int style, int color);
-
 void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal );
 
 void R_Splash()
@@ -312,7 +277,7 @@ void R_Splash()
 		qglVertex2f(x2, y2);
 	qglEnd();
 
-	GLimp_EndFrame();
+	ri->WIN_Present(NULL);
 }
 
 /*
@@ -338,7 +303,10 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
-		GLimp_Init();
+		memset(&glConfig, 0, sizeof(glConfig));
+
+		window_t *window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+
 		// print info the first time only
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
@@ -392,73 +360,6 @@ void GL_CheckErrors( void ) {
     }
 
     Com_Error( ERR_FATAL, "GL_CheckErrors: %s", s );
-}
-
-/*
-** R_GetModeInfo
-*/
-typedef struct vidmode_s
-{
-    const char *description;
-    int         width, height;
-} vidmode_t;
-
-const vidmode_t r_vidModes[] = {
-    { "Mode  0: 320x240",		320,	240 },
-    { "Mode  1: 400x300",		400,	300 },
-    { "Mode  2: 512x384",		512,	384 },
-    { "Mode  3: 640x480",		640,	480 },
-    { "Mode  4: 800x600",		800,	600 },
-    { "Mode  5: 960x720",		960,	720 },
-    { "Mode  6: 1024x768",		1024,	768 },
-    { "Mode  7: 1152x864",		1152,	864 },
-    { "Mode  8: 1280x1024",		1280,	1024 },
-    { "Mode  9: 1600x1200",		1600,	1200 },
-    { "Mode 10: 2048x1536",		2048,	1536 },
-    { "Mode 11: 856x480 (wide)", 856,	 480 },
-    { "Mode 12: 2400x600(surround)",2400,600 }
-};
-static const int	s_numVidModes = ( sizeof( r_vidModes ) / sizeof( r_vidModes[0] ) );
-
-qboolean R_GetModeInfo( int *width, int *height, int mode ) {
-	const vidmode_t	*vm;
-
-    if ( mode < -1 ) {
-        return qfalse;
-	}
-	if ( mode >= s_numVidModes ) {
-		return qfalse;
-	}
-
-	if ( mode == -1 ) {
-		*width = r_customwidth->integer;
-		*height = r_customheight->integer;
-		return qtrue;
-	}
-
-	vm = &r_vidModes[mode];
-
-    *width  = vm->width;
-    *height = vm->height;
-
-    return qtrue;
-}
-
-/*
-** R_ModeList_f
-*/
-static void R_ModeList_f( void )
-{
-	int i;
-
-	ri->Printf( PRINT_ALL, "\n" );
-	ri->Printf( PRINT_ALL, "Mode -2: Use desktop resolution\n" );
-	ri->Printf( PRINT_ALL, "Mode -1: Use r_customWidth and r_customHeight variables\n" );
-	for ( i = 0; i < s_numVidModes; i++ )
-	{
-		ri->Printf( PRINT_ALL, "%s\n", r_vidModes[i].description );
-	}
-	ri->Printf( PRINT_ALL, "\n" );
 }
 
 /*
@@ -988,6 +889,9 @@ void GfxInfo_f( void )
 		"GL_EXT_texture_compression_s3tc",
 	};
 
+	int fullscreen = ri->Cvar_VariableIntegerValue("r_fullscreen");
+	int noborder = ri->Cvar_VariableIntegerValue("r_noborder");
+
 	ri->Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	ri->Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	ri->Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
@@ -996,7 +900,11 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	ri->Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
 	ri->Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
-	ri->Printf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:", r_mode->integer, glConfig.vidWidth, glConfig.vidHeight, r_fullscreen->integer == 0 ? noborderstrings[r_noborder->integer == 1] : noborderstrings[0] ,fsstrings[r_fullscreen->integer == 1] );
+	ri->Printf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:",
+				ri->Cvar_VariableIntegerValue("r_mode"),
+				glConfig.vidWidth, glConfig.vidHeight,
+				fullscreen == 0 ? noborderstrings[noborder == 1] : noborderstrings[0],
+				fsstrings[fullscreen == 1] );
 	if ( glConfig.displayFrequency )
 	{
 		ri->Printf( PRINT_ALL, "%d\n", glConfig.displayFrequency );
@@ -1068,8 +976,10 @@ void GfxInfo_f( void )
 	if ( r_finish->integer ) {
 		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );
 	}
-	if ( r_displayRefresh ->integer ) {
-		ri->Printf( PRINT_ALL, "Display refresh set to %d\n", r_displayRefresh->integer );
+
+	int displayRefresh = ri->Cvar_VariableIntegerValue("r_displayRefresh");
+	if ( displayRefresh ) {
+		ri->Printf( PRINT_ALL, "Display refresh set to %d\n", displayRefresh);
 	}
 	if (tr.world)
 	{
@@ -1100,9 +1010,7 @@ static consoleCommand_t	commands[] = {
 	{ "r_we",				R_WorldEffect_f },
 	{ "imagecacheinfo",		RE_RegisterImages_Info_f },
 	{ "modellist",			R_Modellist_f },
-	{ "modelist",			R_ModeList_f },
 	{ "modelcacheinfo",		RE_RegisterModels_Info_f },
-	{ "minimize",			GLimp_Minimize },
 };
 
 static const size_t numCommands = ARRAY_LEN( commands );
@@ -1113,12 +1021,6 @@ static const size_t numCommands = ARRAY_LEN( commands );
 #define MIN_PRIMITIVES 0
 #endif
 #define MAX_PRIMITIVES 3
-
-#ifdef _WIN32
-#define SWAPINTERVAL_FLAGS CVAR_ARCHIVE
-#else
-#define SWAPINTERVAL_FLAGS CVAR_ARCHIVE | CVAR_LATCH
-#endif
 
 /*
 ===============
@@ -1155,26 +1057,14 @@ void R_Register( void )
 	r_detailTextures					= ri->Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_texturebits						= ri->Cvar_Get( "r_texturebits",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_texturebitslm						= ri->Cvar_Get( "r_texturebitslm",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_colorbits							= ri->Cvar_Get( "r_colorbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_stereo							= ri->Cvar_Get( "r_stereo",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_stencilbits						= ri->Cvar_Get( "r_stencilbits",					"8",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_depthbits							= ri->Cvar_Get( "r_depthbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_overBrightBits					= ri->Cvar_Get( "r_overBrightBits",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_mapOverBrightBits					= ri->Cvar_Get( "r_mapOverBrightBits",				"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ignorehwgamma						= ri->Cvar_Get( "r_ignorehwgamma",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_mode								= ri->Cvar_Get( "r_mode",							"4",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_fullscreen						= ri->Cvar_Get( "r_fullscreen",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_noborder							= ri->Cvar_Get( "r_noborder",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_centerWindow						= ri->Cvar_Get( "r_centerWindow",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_customwidth						= ri->Cvar_Get( "r_customwidth",					"1600",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_customheight						= ri->Cvar_Get( "r_customheight",					"1024",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_simpleMipMaps						= ri->Cvar_Get( "r_simpleMipMaps",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_vertexLight						= ri->Cvar_Get( "r_vertexLight",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_uiFullScreen						= ri->Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
 	r_subdivisions						= ri->Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
 	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
-	r_displayRefresh					= ri->Cvar_Get( "r_displayRefresh",					"0",						CVAR_LATCH );
-	ri->Cvar_CheckRange( r_displayRefresh, 0, 240, qtrue );
+	
 	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
 	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
 	r_singleShader						= ri->Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
@@ -1194,7 +1084,6 @@ void R_Register( void )
 //	r_dlightBacks						= ri->Cvar_Get( "r_dlightBacks",					"1",						CVAR_CHEAT );
 	r_finish							= ri->Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE );
 	r_textureMode						= ri->Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_NEAREST",	CVAR_ARCHIVE );
-	r_swapInterval						= ri->Cvar_Get( "r_swapInterval",					"0",						SWAPINTERVAL_FLAGS );
 	r_markcount							= ri->Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE );
 	r_gamma								= ri->Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE );
 	r_facePlaneCull						= ri->Cvar_Get( "r_facePlaneCull",					"1",						CVAR_ARCHIVE );
@@ -1445,7 +1334,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 	// shut down platform specific OpenGL stuff
 	if ( destroyWindow ) {
-		GLimp_Shutdown();
+		ri->WIN_Shutdown();
 	}
 
 	tr.registered = qfalse;

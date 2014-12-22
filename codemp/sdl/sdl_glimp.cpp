@@ -1,8 +1,8 @@
 #include <SDL.h>
 #include "qcommon/qcommon.h"
-#include "../rd-vanilla/tr_local.h"
-#include "sdl_qgl.h"
+#include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
+#include "sdl_qgl.h"
 
 enum rserr_t
 {
@@ -19,52 +19,91 @@ static SDL_GLContext opengl_context;
 static float displayAspect;
 
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
-cvar_t *r_allowResize; // make window resizable
 cvar_t *r_sdlDriver;
 
-bool g_bTextureRectangleHack = false;
+// Window cvars
+cvar_t	*r_fullscreen = 0;
+cvar_t	*r_noborder;
+cvar_t	*r_centerWindow;
+cvar_t	*r_customwidth;
+cvar_t	*r_customheight;
+cvar_t	*r_swapInterval;
+cvar_t	*r_stereo;
+cvar_t	*r_mode;
+cvar_t	*r_displayRefresh;
 
-PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
-PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
-PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
+// Window render surface cvars
+cvar_t	*r_stencilbits;
+cvar_t	*r_depthbits;
+cvar_t	*r_colorbits;
+cvar_t	*r_ignorehwgamma;
 
-PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
-PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
-PFNGLCOMBINERPARAMETERFNVPROC qglCombinerParameterfNV;
-PFNGLCOMBINERPARAMETERINVPROC qglCombinerParameteriNV;
-PFNGLCOMBINERINPUTNVPROC qglCombinerInputNV;
-PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
+/*
+** R_GetModeInfo
+*/
+typedef struct vidmode_s
+{
+    const char *description;
+    int         width, height;
+} vidmode_t;
 
-PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
-PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
-PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
-PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
-PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
-PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
-PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
+const vidmode_t r_vidModes[] = {
+    { "Mode  0: 320x240",		320,	240 },
+    { "Mode  1: 400x300",		400,	300 },
+    { "Mode  2: 512x384",		512,	384 },
+    { "Mode  3: 640x480",		640,	480 },
+    { "Mode  4: 800x600",		800,	600 },
+    { "Mode  5: 960x720",		960,	720 },
+    { "Mode  6: 1024x768",		1024,	768 },
+    { "Mode  7: 1152x864",		1152,	864 },
+    { "Mode  8: 1280x1024",		1280,	1024 },
+    { "Mode  9: 1600x1200",		1600,	1200 },
+    { "Mode 10: 2048x1536",		2048,	1536 },
+    { "Mode 11: 856x480 (wide)", 856,	 480 },
+    { "Mode 12: 2400x600(surround)",2400,600 }
+};
+static const int	s_numVidModes = ( sizeof( r_vidModes ) / sizeof( r_vidModes[0] ) );
 
-PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
-PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
-PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB = NULL;
-PFNGLGENPROGRAMSARBPROC qglGenProgramsARB = NULL;
-PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB = NULL;
-PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB = NULL;
-PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB = NULL;
-PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB = NULL;
-PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB = NULL;
-PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB = NULL;
-PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB = NULL;
-PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
-PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
-PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
-PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
+qboolean R_GetModeInfo( int *width, int *height, int mode ) {
+	const vidmode_t	*vm;
 
-PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
-PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
+    if ( mode < -1 ) {
+        return qfalse;
+	}
+	if ( mode >= s_numVidModes ) {
+		return qfalse;
+	}
+
+	if ( mode == -1 ) {
+		*width = r_customwidth->integer;
+		*height = r_customheight->integer;
+		return qtrue;
+	}
+
+	vm = &r_vidModes[mode];
+
+    *width  = vm->width;
+    *height = vm->height;
+
+    return qtrue;
+}
+
+/*
+** R_ModeList_f
+*/
+static void R_ModeList_f( void )
+{
+	int i;
+
+	Com_Printf( "\n" );
+	Com_Printf( "Mode -2: Use desktop resolution\n" );
+	Com_Printf( "Mode -1: Use r_customWidth and r_customHeight variables\n" );
+	for ( i = 0; i < s_numVidModes; i++ )
+	{
+		Com_Printf( "%s\n", r_vidModes[i].description );
+	}
+	Com_Printf( "\n" );
+}
 
 /*
 ===============
@@ -78,7 +117,7 @@ void GLimp_Minimize(void)
 	SDL_MinimizeWindow( screen );
 }
 
-void GLimp_EndFrame( void )
+void WIN_Present( window_t *window )
 {
 	SDL_GL_SwapWindow(screen);
 }
@@ -169,7 +208,7 @@ static bool GLimp_DetectAvailableModes(void)
 	{
 		buf[ strlen( buf ) - 1 ] = 0;
 		Com_Printf( "Available modes: '%s'\n", buf );
-		ri->Cvar_Set( "r_availableModes", buf );
+		Cvar_Set( "r_availableModes", buf );
 	}
 
 	return true;
@@ -180,21 +219,23 @@ static bool GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, int mode, qboolean fullscreen, qboolean noborder)
 {
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
 	//int samples;
 	int i = 0;
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+	Uint32 flags = SDL_WINDOW_SHOWN;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
 	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
-	Com_Printf( "Initializing OpenGL display\n");
+	if ( graphicsApi == GRAPHICS_API_OPENGL )
+	{
+		flags |= SDL_WINDOW_OPENGL;
+	}
 
-	if ( r_allowResize->integer && !fullscreen )
-		flags |= SDL_WINDOW_RESIZABLE;
+	Com_Printf( "Initializing display\n");
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -220,30 +261,30 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		// use desktop video resolution
 		if( desktopMode.h > 0 )
 		{
-			glConfig.vidWidth = desktopMode.w;
-			glConfig.vidHeight = desktopMode.h;
+			glConfig->vidWidth = desktopMode.w;
+			glConfig->vidHeight = desktopMode.h;
 		}
 		else
 		{
-			glConfig.vidWidth = 640;
-			glConfig.vidHeight = 480;
+			glConfig->vidWidth = 640;
+			glConfig->vidHeight = 480;
 			Com_Printf( "Cannot determine display resolution, assuming 640x480\n" );
 		}
 
 		//glConfig.windowAspect = (float)glConfig.vidWidth / (float)glConfig.vidHeight;
 	}
-	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, /*&glConfig.windowAspect,*/ mode ) )
+	else if ( !R_GetModeInfo( &glConfig->vidWidth, &glConfig->vidHeight, /*&glConfig.windowAspect,*/ mode ) )
 	{
 		Com_Printf( " invalid mode\n" );
 		return RSERR_INVALID_MODE;
 	}
-	Com_Printf( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
+	Com_Printf( " %d %d\n", glConfig->vidWidth, glConfig->vidHeight);
 
 	// Center window
 	if( r_centerWindow->integer && !fullscreen )
 	{
-		x = ( desktopMode.w / 2 ) - ( glConfig.vidWidth / 2 );
-		y = ( desktopMode.h / 2 ) - ( glConfig.vidHeight / 2 );
+		x = ( desktopMode.w / 2 ) - ( glConfig->vidWidth / 2 );
+		y = ( desktopMode.h / 2 ) - ( glConfig->vidHeight / 2 );
 	}
 
 	// Destroy existing state if it exists
@@ -256,7 +297,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	if( screen != NULL )
 	{
 		SDL_GetWindowPosition( screen, &x, &y );
-		ri->Printf( PRINT_DEVELOPER, "Existing window at %dx%d before being destroyed\n", x, y );
+		Com_DPrintf( "Existing window at %dx%d before being destroyed\n", x, y );
 		SDL_DestroyWindow( screen );
 		screen = NULL;
 	}
@@ -264,14 +305,14 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	if( fullscreen )
 	{
 		flags |= SDL_WINDOW_FULLSCREEN;
-		glConfig.isFullscreen = qtrue;
+		glConfig->isFullscreen = qtrue;
 	}
 	else
 	{
 		if( noborder )
 			flags |= SDL_WINDOW_BORDERLESS;
 
-		glConfig.isFullscreen = qfalse;
+		glConfig->isFullscreen = qfalse;
 	}
 
 	colorBits = r_colorbits->value;
@@ -286,158 +327,174 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	stencilBits = r_stencilbits->value;
 	//samples = r_ext_multisample->value;
 
-	for (i = 0; i < 16; i++)
+	if ( graphicsApi == GRAPHICS_API_OPENGL )
 	{
-		int testColorBits, testDepthBits, testStencilBits;
-
-		// 0 - default
-		// 1 - minus colorBits
-		// 2 - minus depthBits
-		// 3 - minus stencil
-		if ((i % 4) == 0 && i)
+		for (i = 0; i < 16; i++)
 		{
-			// one pass, reduce
-			switch (i / 4)
+			int testColorBits, testDepthBits, testStencilBits;
+
+			// 0 - default
+			// 1 - minus colorBits
+			// 2 - minus depthBits
+			// 3 - minus stencil
+			if ((i % 4) == 0 && i)
 			{
-				case 2 :
-					if (colorBits == 24)
-						colorBits = 16;
-					break;
-				case 1 :
-					if (depthBits == 24)
-						depthBits = 16;
-					else if (depthBits == 16)
-						depthBits = 8;
-				case 3 :
-					if (stencilBits == 24)
-						stencilBits = 16;
-					else if (stencilBits == 16)
-						stencilBits = 8;
+				// one pass, reduce
+				switch (i / 4)
+				{
+					case 2 :
+						if (colorBits == 24)
+							colorBits = 16;
+						break;
+					case 1 :
+						if (depthBits == 24)
+							depthBits = 16;
+						else if (depthBits == 16)
+							depthBits = 8;
+					case 3 :
+						if (stencilBits == 24)
+							stencilBits = 16;
+						else if (stencilBits == 16)
+							stencilBits = 8;
+				}
 			}
-		}
 
-		testColorBits = colorBits;
-		testDepthBits = depthBits;
-		testStencilBits = stencilBits;
+			testColorBits = colorBits;
+			testDepthBits = depthBits;
+			testStencilBits = stencilBits;
 
-		if ((i % 4) == 3)
-		{ // reduce colorBits
+			if ((i % 4) == 3)
+			{ // reduce colorBits
+				if (testColorBits == 24)
+					testColorBits = 16;
+			}
+
+			if ((i % 4) == 2)
+			{ // reduce depthBits
+				if (testDepthBits == 24)
+					testDepthBits = 16;
+				else if (testDepthBits == 16)
+					testDepthBits = 8;
+			}
+
+			if ((i % 4) == 1)
+			{ // reduce stencilBits
+				if (testStencilBits == 24)
+					testStencilBits = 16;
+				else if (testStencilBits == 16)
+					testStencilBits = 8;
+				else
+					testStencilBits = 0;
+			}
+
 			if (testColorBits == 24)
-				testColorBits = 16;
-		}
-
-		if ((i % 4) == 2)
-		{ // reduce depthBits
-			if (testDepthBits == 24)
-				testDepthBits = 16;
-			else if (testDepthBits == 16)
-				testDepthBits = 8;
-		}
-
-		if ((i % 4) == 1)
-		{ // reduce stencilBits
-			if (testStencilBits == 24)
-				testStencilBits = 16;
-			else if (testStencilBits == 16)
-				testStencilBits = 8;
+				perChannelColorBits = 8;
 			else
-				testStencilBits = 0;
-		}
+				perChannelColorBits = 4;
 
-		if (testColorBits == 24)
-			perChannelColorBits = 8;
-		else
-			perChannelColorBits = 4;
+			SDL_GL_SetAttribute( SDL_GL_RED_SIZE, perChannelColorBits );
+			SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, perChannelColorBits );
+			SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, perChannelColorBits );
+			SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, testDepthBits );
+			SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, testStencilBits );
 
-#ifdef __sgi /* Fix for SGIs grabbing too many bits of color */
-		if (perChannelColorBits == 4)
-			perChannelColorBits = 0; /* Use minimum size for 16-bit color */
+			/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
+			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );*/
 
-		/* Need alpha or else SGIs choose 36+ bit RGB mode */
-		SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
-#endif
-
-		SDL_GL_SetAttribute( SDL_GL_RED_SIZE, perChannelColorBits );
-		SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, perChannelColorBits );
-		SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, perChannelColorBits );
-		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, testDepthBits );
-		SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, testStencilBits );
-
-		/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
-		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );*/
-
-		if(r_stereo->integer)
-		{
-			glConfig.stereoEnabled = qtrue;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
-		}
-		else
-		{
-			glConfig.stereoEnabled = qfalse;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
-		}
-
-		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-		// If not allowing software GL, demand accelerated
-		if( !r_allowSoftwareGL->integer )
-			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
-
-		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
-				glConfig.vidWidth, glConfig.vidHeight, flags ) ) == NULL )
-		{
-			ri->Printf( PRINT_DEVELOPER, "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
-			continue;
-		}
-
-		if( fullscreen )
-		{
-			SDL_DisplayMode mode;
-
-			switch( testColorBits )
+			if(r_stereo->integer)
 			{
-				case 16: mode.format = SDL_PIXELFORMAT_RGB565; break;
-				case 24: mode.format = SDL_PIXELFORMAT_RGB24;  break;
-				default: ri->Printf( PRINT_DEVELOPER, "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
+				glConfig->stereoEnabled = qtrue;
+				SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
+			}
+			else
+			{
+				glConfig->stereoEnabled = qfalse;
+				SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
 			}
 
-			mode.w = glConfig.vidWidth;
-			mode.h = glConfig.vidHeight;
-			mode.refresh_rate = glConfig.displayFrequency = ri->Cvar_VariableIntegerValue( "r_displayRefresh" );
-			mode.driverdata = NULL;
+			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
-			if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
+			// If not allowing software GL, demand accelerated
+			if( !r_allowSoftwareGL->integer )
+				SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+
+			if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
+					glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
 			{
-				ri->Printf( PRINT_DEVELOPER, "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
+				Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 				continue;
 			}
+
+			if( fullscreen )
+			{
+				SDL_DisplayMode mode;
+
+				switch( testColorBits )
+				{
+					case 16: mode.format = SDL_PIXELFORMAT_RGB565; break;
+					case 24: mode.format = SDL_PIXELFORMAT_RGB24;  break;
+					default: Com_DPrintf( "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
+				}
+
+				mode.w = glConfig->vidWidth;
+				mode.h = glConfig->vidHeight;
+				mode.refresh_rate = glConfig->displayFrequency = r_displayRefresh->integer;
+				mode.driverdata = NULL;
+
+				if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
+				{
+					Com_DPrintf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
+					continue;
+				}
+			}
+
+			SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
+
+			if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+			{
+				Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
+				continue;
+			}
+
+			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+
+			glConfig->colorBits = testColorBits;
+			glConfig->depthBits = testDepthBits;
+			glConfig->stencilBits = testStencilBits;
+
+			Com_Printf( "Using %d color bits, %d depth, %d stencil display.\n",
+					glConfig->colorBits, glConfig->depthBits, glConfig->stencilBits );
+			break;
 		}
-
-		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-
-        if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+	}
+	else
+	{
+		// Just create a regular window
+		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
+				glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
 		{
-			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
-			continue;
+			Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 		}
-
-		SDL_GL_SetSwapInterval( r_swapInterval->integer );
-
-		glConfig.colorBits = testColorBits;
-		glConfig.depthBits = testDepthBits;
-		glConfig.stencilBits = testStencilBits;
-
-		Com_Printf( "Using %d color bits, %d depth, %d stencil display.\n",
-				glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
-		break;
+		else
+		{
+			if( fullscreen )
+			{
+				if( SDL_SetWindowDisplayMode( screen, NULL ) < 0 )
+				{
+					Com_DPrintf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
+				}
+				else
+				{
+					SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
+				}
+			}
+		}
 	}
 
 	if (!GLimp_DetectAvailableModes())
 	{
 		return RSERR_UNKNOWN;
 	}
-
-	Com_Printf( "GL_RENDERER: %s\n", (char *) qglGetString (GL_RENDERER) );
 
 	return RSERR_OK;
 }
@@ -447,7 +504,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 GLimp_StartDriverAndSetMode
 ===============
 */
-static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qboolean noborder)
+static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, int mode, qboolean fullscreen, qboolean noborder)
 {
 	rserr_t err;
 
@@ -471,7 +528,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		}
 
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
-		ri->Cvar_Set( "r_sdlDriver", driverName );
+		Cvar_Set( "r_sdlDriver", driverName );
 	}
 
 	if (SDL_GetNumVideoDisplays() <= 0)
@@ -479,15 +536,15 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		Com_Error( ERR_FATAL, "SDL_GetNumVideoDisplays() FAILED (%s)", SDL_GetError() );
 	}
 
-	if (fullscreen && ri->Cvar_VariableIntegerValue( "in_nograb" ) )
+	if (fullscreen && Cvar_VariableIntegerValue( "in_nograb" ) )
 	{
 		Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
-		ri->Cvar_Set( "r_fullscreen", "0" );
+		Cvar_Set( "r_fullscreen", "0" );
 		r_fullscreen->modified = qfalse;
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(mode, fullscreen, noborder);
+	err = GLimp_SetMode(glConfig, graphicsApi, mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -513,6 +570,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
   Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
 */
 
+#if 0
 bool GL_CheckForExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
@@ -521,6 +579,7 @@ bool GL_CheckForExtension(const char *ext)
 	ptr += strlen(ext);
 	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
 }
+
 
 static void GLW_InitTextureCompression( void )
 {
@@ -628,6 +687,7 @@ static void GLW_InitTextureCompression( void )
 		}
 	}
 }
+#endif
 
 /*
 ===============
@@ -635,13 +695,14 @@ GLimp_InitExtensions
 ===============
 */
 extern bool g_bDynamicGlowSupported;
+#if 0
 static void GLimp_InitExtensions( void )
 {
 	if ( !r_allowExtensions->integer )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		ri->Cvar_Set( "r_DynamicGlow","0" );
+		Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
@@ -686,16 +747,16 @@ static void GLimp_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+			Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		ri->Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -913,9 +974,10 @@ static void GLimp_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		ri->Cvar_Set( "r_DynamicGlow","0" );
+		Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
+#endif
 
 // Truncates the GL extensions string by only allowing up to 'maxExtensions' extensions in the string.
 static const char *TruncateGLExtensionsString (const char *extensionsString, int maxExtensions)
@@ -940,32 +1002,50 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 		extensionsLen = p - extensionsString - 1;
 	}
 
-	truncatedExtensions = (char *)ri->Hunk_Alloc (extensionsLen + 1, h_low);
+	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
 	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
 
 	return truncatedExtensions;
 }
 
-void 		GLimp_Init( void )
-{
-	r_allowSoftwareGL = ri->Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
-	r_sdlDriver = ri->Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
-	r_allowResize = ri->Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
+#ifdef _WIN32
+#define SWAPINTERVAL_FLAGS (CVAR_ARCHIVE)
+#else
+#define SWAPINTERVAL_FLAGS (CVAR_ARCHIVE | CVAR_LATCH)
+#endif
 
-	/*	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
-	{
-		Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
-		Cvar_Set( "r_picmap", "1" );
-		Cvar_Set( "r_texturebits", "0" );
-		Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
-		Cvar_Set( "r_fullscreen", "0" );
-		Cvar_Set( "r_centerWindow", "0" );
-		Cvar_Set( "com_abnormalExit", "0" );
-		}*/
+window_t *WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
+{
+	Cmd_AddCommand("modelist", R_ModeList_f);
+	Cmd_AddCommand("minimize", GLimp_Minimize);
+
+	r_allowSoftwareGL	= Cvar_Get( "r_allowSoftwareGL",	"0",		CVAR_LATCH );
+	r_sdlDriver			= Cvar_Get( "r_sdlDriver",			"",			CVAR_ROM );
+
+	// Window cvars
+	r_fullscreen		= Cvar_Get( "r_fullscreen",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_noborder			= Cvar_Get( "r_noborder",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_centerWindow		= Cvar_Get( "r_centerWindow",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_customwidth		= Cvar_Get( "r_customwidth",		"1600",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_customheight		= Cvar_Get( "r_customheight",		"1024",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		SWAPINTERVAL_FLAGS );
+	r_stereo			= Cvar_Get( "r_stereo",				"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_mode				= Cvar_Get( "r_mode",				"4",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_displayRefresh	= Cvar_Get( "r_displayRefresh",		"0",		CVAR_LATCH );
+	Cvar_CheckRange( r_displayRefresh, 0, 240, qtrue );
+
+	// Window render surface cvars
+	r_stencilbits		= Cvar_Get( "r_stencilbits",		"8",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_depthbits			= Cvar_Get( "r_depthbits",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_colorbits			= Cvar_Get( "r_colorbits",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_ignorehwgamma		= Cvar_Get( "r_ignorehwgamma",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Create the window and set up the context
-	if(GLimp_StartDriverAndSetMode(r_mode->integer, (qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer))
+	if(GLimp_StartDriverAndSetMode(glConfig, api, r_mode->integer,
+									(qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer))
 		goto success;
+
+	// TODO: Reimplement. We need a fallback plan if creating the window fails
 
 	// Try again, this time in a platform specific "safe mode"
 	/* Sys_GLimpSafeInit( );
@@ -990,33 +1070,37 @@ success:
 	// This values force the UI to disable driver selection
 	//	glConfig.driverType = GLDRV_ICD;
 	//	glConfig.hardwareType = GLHW_GENERIC;
-	glConfig.deviceSupportsGamma = (qboolean)(!r_ignorehwgamma->integer &&
+	glConfig->deviceSupportsGamma = (qboolean)(!r_ignorehwgamma->integer &&
 		SDL_SetWindowBrightness( screen, 1.0f ) >= 0);
 
+#if 0
+	Com_Printf( "GL_RENDERER: %s\n", (char *) qglGetString (GL_RENDERER) );
+
 	// get our config strings
-    glConfig.vendor_string = (const char *) qglGetString (GL_VENDOR);
-	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
-	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
-	glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
-	
+    glConfig->vendor_string = (const char *) qglGetString (GL_VENDOR);
+	glConfig->renderer_string = (const char *) qglGetString (GL_RENDERER);
+	glConfig->version_string = (const char *) qglGetString (GL_VERSION);
+	glConfig->extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
+
 	glConfigExt.originalExtensionString = glConfig.extensions_string;
 	glConfig.extensions_string = TruncateGLExtensionsString (glConfigExt.originalExtensionString, 128);
 
 	// OpenGL driver constants
-	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
+	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig->maxTextureSize );
 	// stubbed or broken drivers may have reported 0...
-	if ( glConfig.maxTextureSize <= 0 )
-	{
-		glConfig.maxTextureSize = 0;
-	}
+	glConfig->maxTextureSize = max(0, glConfig->maxTextureSize);
+#endif
 
 	// initialize extensions
-	GLimp_InitExtensions( );
+//	GLimp_InitExtensions( );
 
-	ri->Cvar_Get( "r_availableModes", "", CVAR_ROM );
+	Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
-	ri->IN_Init( screen );
+	IN_Init( screen );
+
+	// TODO: Probably should return something here at some point
+	return NULL;
 }
 
 /*
@@ -1024,30 +1108,30 @@ success:
 GLimp_Shutdown
 ===============
 */
-void 		GLimp_Shutdown( void )
+void WIN_Shutdown( void )
 {
-	ri->IN_Shutdown();
+	Cmd_RemoveCommand("modelist");
+	Cmd_RemoveCommand("minimize");
+
+	IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
-
-	Com_Memset( &glConfig, 0, sizeof( glConfig ) );
-	Com_Memset( &glState, 0, sizeof( glState ) );
 }
 
-void		GLimp_EnableLogging( qboolean enable )
+void GLimp_EnableLogging( qboolean enable )
 {
 }
 
-void 		GLimp_LogComment( char *comment )
+void GLimp_LogComment( char *comment )
 {
 }
 
-void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
+void GLimp_SetGamma( glconfig_t *glConfig, unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
 {
 	Uint16 table[3][256];
 	int i, j;
 
-	if( !glConfig.deviceSupportsGamma || r_ignorehwgamma->integer > 0 )
+	if( !glConfig->deviceSupportsGamma || r_ignorehwgamma->integer > 0 )
 		return;
 
 	for (i = 0; i < 256; i++)
@@ -1066,7 +1150,7 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 		GetVersionEx( &vinfo );
 		if( vinfo.dwMajorVersion >= 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT )
 		{
-			ri->Printf( PRINT_DEVELOPER, "performing gamma clamp.\n" );
+			Com_DPrintf( "performing gamma clamp.\n" );
 			for( j = 0 ; j < 3 ; j++ )
 			{
 				for( i = 0 ; i < 128 ; i++ )

@@ -2,6 +2,12 @@
 
 #include "../qcommon/qcommon.h"
 
+typedef struct glconfig_s glconfig_t;
+
+window_t *	WIN_Init( graphicsApi_t api, glconfig_t *glConfig );
+void		WIN_Present( window_t *window );
+void		WIN_Shutdown( void );
+
 void 		IN_Init( void *windowData );
 void 		IN_Frame (void);
 void 		IN_Shutdown( void );

@@ -1530,10 +1530,10 @@ const void	*RB_DrawSurfs( const void *data ) {
 	{
 		// Copy the normal scene to texture.
 		qglDisable( GL_TEXTURE_2D );
-		qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.sceneImage );
-		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, 0, 0, 0, 0, glConfig.vidWidth, glConfig.vidHeight );
-		qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+		qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage );
+		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+		qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 		qglEnable( GL_TEXTURE_2D );
 
 		// Just clear colors, but leave the depth buffer intact so we can 'share' it.
@@ -1549,10 +1549,10 @@ const void	*RB_DrawSurfs( const void *data ) {
 
 		// Copy the glow scene to texture.
 		qglDisable( GL_TEXTURE_2D );
-		qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.screenGlow );
-		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, 0, 0, 0, 0, glConfig.vidWidth, glConfig.vidHeight );
-		qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+		qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.screenGlow );
+		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+		qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 		qglEnable( GL_TEXTURE_2D );
 
 		// Resize the viewport to the blur texture size.
@@ -1567,10 +1567,10 @@ const void	*RB_DrawSurfs( const void *data ) {
 
 		// Copy the finished glow scene back to texture.
 		qglDisable( GL_TEXTURE_2D );
-		qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.blurImage );
-		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
-		qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+		qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.blurImage );
+		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
+		qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 		qglEnable( GL_TEXTURE_2D );
 
 		// Set the viewport back to normal.
@@ -1757,7 +1757,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 
     GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
-    GLimp_EndFrame();
+    ri->WIN_Present(NULL);
 
 	backEnd.projection2D = qfalse;
 
@@ -1949,21 +1949,21 @@ static inline void RB_BlurGlowTexture()
 	GLuint uiTex = tr.screenGlow;
 
 	qglActiveTextureARB( GL_TEXTURE3_ARB );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 
 	qglActiveTextureARB( GL_TEXTURE2_ARB );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 
 	qglActiveTextureARB( GL_TEXTURE1_ARB );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 
 	qglActiveTextureARB(GL_TEXTURE0_ARB );
 	qglDisable( GL_TEXTURE_2D );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 
 	/////////////////////////////////////////////////////////
 	// Draw the blur passes (each pass blurs it more, increasing the blur radius ).
@@ -1994,24 +1994,24 @@ static inline void RB_BlurGlowTexture()
 			uiTex = tr.blurImage;
 			qglActiveTextureARB( GL_TEXTURE3_ARB );
 			qglDisable( GL_TEXTURE_2D );
-			qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-			qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+			qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+			qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 			qglActiveTextureARB( GL_TEXTURE2_ARB );
 			qglDisable( GL_TEXTURE_2D );
-			qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-			qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+			qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+			qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 			qglActiveTextureARB( GL_TEXTURE1_ARB );
 			qglDisable( GL_TEXTURE_2D );
-			qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-			qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+			qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+			qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 			qglActiveTextureARB(GL_TEXTURE0_ARB );
 			qglDisable( GL_TEXTURE_2D );
-			qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-			qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
+			qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+			qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
 
 			// Copy the current image over.
-			qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, uiTex );
-			qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
+			qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, uiTex );
+			qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
 		}
 
 		// Draw the fullscreen quad.
@@ -2029,8 +2029,8 @@ static inline void RB_BlurGlowTexture()
 			qglVertex2f( backEnd.viewParms.viewportWidth, 0 );
 		qglEnd();
 
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.blurImage );
-		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.blurImage );
+		qglCopyTexSubImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, 0, 0, 0, 0, backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
 
 		// Increase the texel offsets.
 		// NOTE: This is possibly the most important input to the effect. Even by using an exponential function I've been able to
@@ -2043,16 +2043,16 @@ static inline void RB_BlurGlowTexture()
 
 	// Disable multi-texturing.
 	qglActiveTextureARB( GL_TEXTURE3_ARB );
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 
 	qglActiveTextureARB( GL_TEXTURE2_ARB );
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 
 	qglActiveTextureARB( GL_TEXTURE1_ARB );
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 
 	qglActiveTextureARB(GL_TEXTURE0_ARB );
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 	qglEnable( GL_TEXTURE_2D );
 
 	qglDisable( GL_VERTEX_PROGRAM_ARB );
@@ -2088,13 +2088,13 @@ static inline void RB_DrawGlowOverlay()
 	GL_State(0);
 
 	qglDisable( GL_TEXTURE_2D );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
 
 	// For debug purposes.
 	if ( r_DynamicGlow->integer != 2 )
 	{
 		// Render the normal scene texture.
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.sceneImage );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage );
 		qglBegin(GL_QUADS);
 			qglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 			qglTexCoord2f( 0, glConfig.vidHeight );
@@ -2124,7 +2124,7 @@ static inline void RB_DrawGlowOverlay()
 	qglEnable( GL_BLEND );
 
 	// Now additively render the glow texture.
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.blurImage );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.blurImage );
 	qglBegin(GL_QUADS);
 		qglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 		qglTexCoord2f( 0, r_DynamicGlowHeight->integer );
@@ -2140,7 +2140,7 @@ static inline void RB_DrawGlowOverlay()
 		qglVertex2f( glConfig.vidWidth, 0 );
 	qglEnd();
 
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 	qglEnable( GL_TEXTURE_2D );
 	qglBlendFunc( GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR );
 	qglDisable( GL_BLEND );
@@ -2150,7 +2150,7 @@ static inline void RB_DrawGlowOverlay()
 /*	else
 	{
 		int iTexWidth = glConfig.vidWidth, iTexHeight = glConfig.vidHeight;
-		if ( GL_TEXTURE_RECTANGLE_EXT == GL_TEXTURE_RECTANGLE_NV )
+		if ( GL_TEXTURE_RECTANGLE_ARB == GL_TEXTURE_RECTANGLE_NV )
 		{
 			iTexWidth = r_DynamicGlowWidth->integer;
 			iTexHeight = r_DynamicGlowHeight->integer;
@@ -2158,14 +2158,14 @@ static inline void RB_DrawGlowOverlay()
 
 		qglActiveTextureARB( GL_TEXTURE1_ARB );
 		qglDisable( GL_TEXTURE_2D );
-		qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.screenGlow );
+		qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.screenGlow );
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 
 		qglActiveTextureARB(GL_TEXTURE0_ARB );
 		qglDisable( GL_TEXTURE_2D );
-		qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-		qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.sceneImage );
+		qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+		qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage );
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
 		qglBegin(GL_QUADS);
@@ -2189,11 +2189,11 @@ static inline void RB_DrawGlowOverlay()
 
 		qglActiveTextureARB( GL_TEXTURE1_ARB );
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+		qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 
 		qglActiveTextureARB(GL_TEXTURE0_ARB );
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+		qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 		qglEnable( GL_TEXTURE_2D );
 	}*/
 

@@ -3,10 +3,8 @@
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
-
-#include "../sdl/sdl_qgl.h"
-
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "qgl.h"
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
@@ -1379,14 +1377,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
+static QINLINE void	GLimp_LogComment( char *comment ) {}
 
 /*
 ====================================================================

@@ -27,7 +27,6 @@ if(BuildMPRdVanilla)
 	add_subdirectory("${MPDir}/rd-vanilla")
 endif(BuildMPRdVanilla)
 
-
 #    Common things between Engine and Dedicated Server
 if(BuildMPEngine OR BuildMPDed)
 
@@ -482,6 +481,7 @@ if(BuildMPEngine)
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
 
 	set(MPEngineSysFiles
+		"${MPDir}/sdl/sdl_glimp.cpp"
 		"${MPDir}/sdl/sdl_input.cpp"
 		"${MPDir}/sdl/sdl_qgl.h"
 		"${MPDir}/sdl/sdl_snd.cpp"
