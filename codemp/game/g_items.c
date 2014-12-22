@@ -505,6 +505,7 @@ void ItemUse_Binoculars(gentity_t *ent)
 		// zyk: if this RPG player is a Bounty Hunter and has the Bounty Hunter Upgrade, activate the Thermal Vision
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
 		{
+			ent->client->pers.thermal_vision = qtrue;
 			ent->client->ps.fd.forcePowersActive |= (1 << FP_SEE);
 		}
 	}
@@ -516,6 +517,7 @@ void ItemUse_Binoculars(gentity_t *ent)
 		// zyk: if this RPG player is a Bounty Hunter and has the Bounty Hunter Upgrade, deactivate the Thermal Vision
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
 		{
+			ent->client->pers.thermal_vision = qfalse;
 			ent->client->ps.fd.forcePowersActive &= ~(1 << FP_SEE);
 		}
 	}

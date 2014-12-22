@@ -616,6 +616,9 @@ typedef struct clientPersistant_s {
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;
 
+	// zyk: when a bounty hunter is using the thermal vision, it is set to qtrue
+	qboolean thermal_vision;
+
 	int force_powers_levels[18]; // zyk: RPG mode level of each force power
 	int ammo_levels[7]; // zyk: RPG mode level of each type of ammo
 	int weapons_levels[10]; // zyk: RPG mode level of each weapon excluding saber, melee and stun baton

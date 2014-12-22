@@ -6062,8 +6062,19 @@ void G_RunFrame( int levelTime ) {
 					Player_FireFlameThrower(ent);
 				}
 
-				if (ent->client->pers.rpg_class == 2 && ent->client->pers.bounty_hunter_sentries > 0)
-					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+				if (ent->client->pers.rpg_class == 2)
+				{
+					// zyk: if the bounty hunter still has sentries, give the item to him
+					if (ent->client->pers.bounty_hunter_sentries > 0)
+						ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+
+					// zyk: if the bounty hunter stops using binoculars, stop the thermal vision
+					if (ent->client->pers.thermal_vision == qtrue && ent->client->ps.zoomMode == 0)
+					{
+						ent->client->pers.thermal_vision = qfalse;
+						ent->client->ps.fd.forcePowersActive &= ~(1 << FP_SEE);
+					}
+				}
 
 				if (level.quest_map > 0)
 				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now

@@ -5252,6 +5252,8 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: setting rpg control attributes
 		ent->client->pers.unique_skill_timer = 0;
 
+		ent->client->pers.thermal_vision = qfalse;
+
 		ent->client->pers.selected_special_power = 0;
 		ent->client->pers.selected_left_special_power = 0;
 		ent->client->pers.selected_right_special_power = 0;
