@@ -6022,6 +6022,9 @@ void quest_get_new_player(gentity_t *ent)
 
 	ent->client->pers.can_play_quest = 0;
 
+	if (zyk_allow_quests.integer != 1)
+		return;
+
 	for (i = 0; i < level.maxclients; i++)
 	{ // zyk: verify if there is someone who is already playing a quest and is not in spectator mode
 		next_player = &g_entities[i];
@@ -8492,7 +8495,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "quests" ) == 0)
 			{
-				trap->SendServerCommand(ent-g_entities, "print \"\n^3RPG Mode Quests\n\n^2/list universe: ^7Universe Quest (Main Quest)\n\n^2/list light: ^7Light Quest\n^2/list dark: ^7Dark Quest\n^2/list eternity: ^7Eternity Quest\n\n^3/list bounty: ^7The Bounty Hunter quest\n^3/list guardian: ^7The Guardian Quest\n\n\"");
+				if (zyk_allow_quests.integer == 1)
+					trap->SendServerCommand(ent-g_entities, "print \"\n^3RPG Mode Quests\n\n^2/list universe: ^7Universe Quest (Main Quest)\n\n^2/list light: ^7Light Quest\n^2/list dark: ^7Dark Quest\n^2/list eternity: ^7Eternity Quest\n\n^3/list bounty: ^7The Bounty Hunter quest\n^3/list guardian: ^7The Guardian Quest\n\n\"");
+				else
+					trap->SendServerCommand(ent-g_entities, "print \"\n^3RPG Mode Quests\n\n^1Quests are not allowed in this server^7\n\n\"");
 			}
 			else if (Q_stricmp( arg1, "light" ) == 0)
 			{

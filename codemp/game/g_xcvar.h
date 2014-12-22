@@ -228,5 +228,6 @@ XCVAR_DEF( zyk_ultra_drain_cooldown,	"18000",			NULL,				CVAR_ARCHIVE|CVAR_NORES
 XCVAR_DEF( zyk_immunity_power_cooldown,	"15000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_chaos_power_cooldown,	"20000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_time_power_cooldown,	"18000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_allow_quests,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF
