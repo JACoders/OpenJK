@@ -1125,3 +1125,13 @@ inline int Round(float value)
 // Persistent data store API
 bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
+
+// Graphics API
+typedef struct window_s window_t;
+typedef enum graphicsApi_e
+{
+	GRAPHICS_API_GENERIC,
+
+	// Only OpenGL needs special treatment..
+	GRAPHICS_API_OPENGL,
+} graphicsApi_t;
