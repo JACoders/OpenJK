@@ -992,10 +992,19 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	else 
 		cl->pers.stats.startTimeFlag = 0;
 
-	Team_SetFlagStatus( team, FLAG_TAKEN );
-
-	if (!g_allowFlagThrow.integer && (g_rabbit.integer != 2))
+	if (g_fixCTFScores.integer) {
+		if (team == TEAM_RED && teamgame.redStatus == FLAG_ATBASE && teamgame.blueStatus != FLAG_ATBASE) { //Red flag was "egrabbed".
+			AddScore(other, ent->r.currentOrigin, 5);
+		}
+		else if (team == TEAM_BLUE && teamgame.blueStatus == FLAG_ATBASE && teamgame.redStatus != FLAG_ATBASE) { //Blue flag was "egrabbed"
+			AddScore(other, ent->r.currentOrigin, 5);
+		}
+	}
+	else if (!g_allowFlagThrow.integer && (g_rabbit.integer != 2)) {
 		AddScore(other, ent->r.currentOrigin, CTF_FLAG_BONUS);
+	}
+
+	Team_SetFlagStatus( team, FLAG_TAKEN );
 
 	cl->pers.teamState.flagsince = level.time;
 	Team_TakeFlagSound( ent, team );
