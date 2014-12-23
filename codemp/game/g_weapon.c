@@ -1825,7 +1825,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 
 	foundLaserTraps[0] = ENTITYNUM_NONE;
 
-	stake = G_Spawn(qtrue);
+	stake = G_Spawn(qfalse);
 	
 	//limit to 10 placed at any one time
 	//see how many there are now
