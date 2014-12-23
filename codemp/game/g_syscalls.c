@@ -144,10 +144,23 @@ static void BeginHack(int entityNum)
 		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || (ent->s.eType == ET_MOVER && (!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat"))))) {
+
+				if (ent->inuse &&
+					(ent->s.eType == ET_PLAYER) ||
+					(ent->s.eType == ET_NPC) ||
+					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
+					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap") || !Q_stricmp(ent->classname, "stuckStake"))))
+				{
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
+
+
+
+				//if (!Q_stricmp(ent->classname, "laserTrap") || (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || (ent->s.eType == ET_MOVER && (!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))))) {
+					//saved[i] = ent->r.ownerNum;
+					//ent->r.ownerNum = entityNum;
+				//}
 			}
 		}
 	}
@@ -198,7 +211,12 @@ static void EndHack(int entityNum) {
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || (ent->s.eType == ET_MOVER && (!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat"))))) {
+				if (ent->inuse &&
+					(ent->s.eType == ET_PLAYER) ||
+					(ent->s.eType == ET_NPC) ||
+					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
+					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap") || !Q_stricmp(ent->classname, "stuckStake"))))
+				{
 					ent->r.ownerNum = saved[i];
 				}
 			}

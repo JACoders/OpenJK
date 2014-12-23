@@ -1656,10 +1656,10 @@ static void WP_FlechetteMainFire( gentity_t *ent, int seed )
 	}
 }
 
+#define STAKE_SIZE				3.0f
+
 void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 {
-	static const int STAKE_SIZE = 2;
-
 	G_SetOrigin( stake, endpos );
 	VectorCopy( normal, stake->pos1 );
 
@@ -1668,7 +1668,6 @@ void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 	VectorCopy( normal, stake->s.pos.trDelta );
 	//VectorScale( normal, -1, ent->s.pos.trDelta );
 	stake->s.pos.trTime = level.time;
-	
 	
 	//This does nothing, cg_missile makes assumptions about direction of travel controlling angles
 	vectoangles( normal, stake->s.apos.trBase );
@@ -1681,8 +1680,8 @@ void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 
 	//add draw line flag
 	VectorCopy( normal, stake->movedir );
-	stake->think = 0;
-	stake->nextthink = level.time + 50;//delay the activation
+	stake->think = NULL;
+	stake->nextthink = -1;
 	stake->touch = touch_NULL;
 
 	//shove the box through the wall
@@ -1692,29 +1691,54 @@ void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 	//so that the owner can blow it up with projectiles
 	//stake->r.svFlags |= SVF_OWNERNOTSHARED;
 
-	stake->r.ownerNum = 32;
+	stake->r.ownerNum = 32; //sad hack to make it solid to us.. hm
+
+	trap->LinkEntity((sharedEntity_t *)stake);
 }
+
+/*
+void stakeHitPlayer( gentity_t *self )
+{
+	vec3_t v;
+	self->takedamage = qfalse;
+
+	//if (self->activator)
+		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, MOD_TRIP_MINE_SPLASH );
+
+	G_AddEvent( self, EV_MISSILE_MISS, 0);
+
+	//VectorCopy(self->s.pos.trDelta, v);
+	//Explode outward from the surface
+
+	//G_PlayEffect(EFFECT_EXPLOSION_TRIPMINE, self->r.currentOrigin, self->s.pos.trDelta);
+
+	self->think = G_FreeEntity;
+	self->nextthink = level.time;
+}
+*/
 
 void touchStake( gentity_t *stake, gentity_t *other, trace_t *trace )
 {
-	if (other && other->s.number < ENTITYNUM_WORLD)
-	{ //just explode if we hit any entity. This way we don't have things happening like tripmines floating
-	  //in the air after getting stuck to a moving door
-		if ( stake->activator != other )
-		{
-			stake->touch = 0;
-			stake->nextthink = level.time + FRAMETIME;
-			stake->think = laserTrapExplode;
+	if (other && other->s.number < ENTITYNUM_WORLD) { //just explode if we hit any entity.
+		if ( stake->activator != other ) {
+			//stake->touch = 0;
+			//stake->nextthink = level.time + FRAMETIME;
+			//stake->think = stakeHitPlayer;
 			VectorCopy(trace->plane.normal, stake->s.pos.trDelta);
+
+			G_Damage( other, NULL, NULL, forward, trace->endpos, 50, DAMAGE_NO_KNOCKBACK, MOD_FLECHETTE ); //y the fuck wont this do dmg if i give it an attacker
+			G_AddEvent( stake, EV_MISSILE_HIT, 0); //does not work
+
+			stake->think = G_FreeEntity;
+			stake->nextthink = level.time;
+
+
 		}
 	}
-	else
-	{
+	else {
 		stake->touch = 0;
 		if (trace->entityNum != ENTITYNUM_NONE)
-		{
 			stake->enemy = &g_entities[trace->entityNum];
-		}
 		stakeStick(stake, trace->endpos, trace->plane.normal);
 	}
 }
@@ -1727,14 +1751,16 @@ void StakeThink(gentity_t *stake)
 
 void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 { //create a laser trap entity
-	static const int STAKE_SIZE = 2;
+	vec3_t aim;
 
-	stake->classname = "laserTrap";
+	vectoangles(forward, aim);
+
+	stake->classname = "stuckStake";
 	//stake->flags |= FL_BOUNCE_HALF;
 	stake->s.eFlags |= EF_MISSILE_STICK;
-	//stake->splashDamage = 0;
-	//stake->splashRadius = 0;
-	stake->damage = 20;
+	stake->splashDamage = 220;
+	stake->splashRadius = 220;
+	stake->damage = 200;
 	stake->methodOfDeath = MOD_FLECHETTE;
 	//stake->splashMethodOfDeath = MOD_TRIP_MINE_SPLASH;
 	stake->s.eType = ET_GENERAL;
@@ -1750,17 +1776,23 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	VectorSet( stake->r.mins, -STAKE_SIZE, -STAKE_SIZE, -STAKE_SIZE );
 	VectorSet( stake->r.maxs, STAKE_SIZE, STAKE_SIZE, STAKE_SIZE );
 	stake->clipmask = MASK_SHOT;
-	stake->s.solid = 2;
-	stake->s.modelindex = G_ModelIndex( "models/weapons2/merr_sonn/projectile.md3" );
+	stake->s.solid = SOLID_BBOX;
+		
+	//stake->spawnflags |= 4;
+
+	//stake->s.modelindex = G_ModelIndex( "models/weapons2/laser_trap/laser_trap_w.glm" );
+	//stake->s.modelGhoul2 = 1;
 	//stake->s.g2radius = 40;
 
-	stake->s.genericenemyindex = owner->s.number+MAX_GENTITIES;
+	stake->s.modelindex = G_ModelIndex( "models/weapons2/merr_sonn/projectile.md3" );
+
+	stake->s.genericenemyindex = 32;//owner->s.number+MAX_GENTITIES;
 
 	stake->health = 100;
 
 	stake->s.time = 0;
 
-	stake->s.pos.trTime = level.time;		// move a bit on the very first frame
+	stake->s.pos.trTime = level.time;		// move a bit on the very first frame?
 	VectorCopy( start, stake->s.pos.trBase );
 	SnapVector( stake->s.pos.trBase );			// save net bandwidth
 	
@@ -1769,14 +1801,9 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 
 	stake->s.apos.trType = TR_LINEAR;
 	stake->s.apos.trTime = level.time;
-	stake->s.apos.trBase[YAW] = rand()%360;
-	stake->s.apos.trBase[PITCH] = rand()%360;
-	stake->s.apos.trBase[ROLL] = rand()%360;
 
-	if (rand()%10 < 5) //lol?
-	{
-		stake->s.apos.trBase[YAW] = -stake->s.apos.trBase[YAW];
-	}
+	stake->s.apos.trDelta[ROLL] = 90;
+	VectorCopy(aim, stake->s.apos.trBase);
 
 	VectorCopy( start, stake->pos2 );
 	stake->touch = touchStake;
@@ -1788,7 +1815,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 {
 	gentity_t	*stake;
 	gentity_t	*found = NULL;
-	vec3_t		dir, start;
+	vec3_t		start;
 	int			trapcount = 0;
 	int			foundLaserTraps[MAX_GENTITIES];
 	int			trapcount_org;
@@ -1798,73 +1825,50 @@ static void WP_FireStakeGun( gentity_t *ent )
 
 	foundLaserTraps[0] = ENTITYNUM_NONE;
 
-	VectorCopy( forward, dir );
-	VectorCopy( muzzle, start );
-
 	stake = G_Spawn(qtrue);
 	
 	//limit to 10 placed at any one time
 	//see how many there are now
-	while ( (found = G_Find( found, FOFS(classname), "laserTrap" )) != NULL )
-	{
+	while ( (found = G_Find( found, FOFS(classname), "laserTrap" )) != NULL ) {
 		if ( found->parent != ent )
-		{
 			continue;
-		}
 		foundLaserTraps[trapcount++] = found->s.number;
 	}
 	//now remove first ones we find until there are only 9 left
 	found = NULL;
 	trapcount_org = trapcount;
 	lowestTimeStamp = level.time;
-	while ( trapcount > 9 )
-	{
+	while ( trapcount > 9 ) {
 		removeMe = -1;
-		for ( i = 0; i < trapcount_org; i++ )
-		{
+		for ( i = 0; i < trapcount_org; i++ ) {
 			if ( foundLaserTraps[i] == ENTITYNUM_NONE )
-			{
 				continue;
-			}
 			found = &g_entities[foundLaserTraps[i]];
-			if ( stake && found->setTime < lowestTimeStamp )
-			{
+			if ( stake && found->setTime < lowestTimeStamp ) {
 				removeMe = i;
 				lowestTimeStamp = found->setTime;
 			}
 		}
-		if ( removeMe != -1 )
-		{
+		if ( removeMe != -1 ) {
 			//remove it... or blow it?
 			if ( &g_entities[foundLaserTraps[removeMe]] == NULL )
-			{
 				break;
-			}
 			else
-			{
 				G_FreeEntity( &g_entities[foundLaserTraps[removeMe]] );
-			}
 			foundLaserTraps[removeMe] = ENTITYNUM_NONE;
 			trapcount--;
 		}
-		else
-		{
-			break;
-		}
+		else break;
 	}
 
-	//now make the new one
-	CreateStake( stake, start, ent );
+	VectorMA(muzzle, STAKE_SIZE*4, forward, start);//Start the stake ahead of us a bit so we cant get ourselves stuck into a wall with it
+	CreateStake(stake, start, ent); //now make the new one
 
-	//set player-created-specific fields
 	stake->setTime = level.time;//remember when we placed it
-
 
 	//move it
 	stake->s.pos.trType = TR_LINEAR;
-
-	VectorScale( dir, 2048, stake->s.pos.trDelta );
-
+	VectorScale( forward, 2048, stake->s.pos.trDelta );
 
 	trap->LinkEntity((sharedEntity_t *)stake);
 }
@@ -3087,8 +3091,8 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	laserTrap->s.weapon = WP_TRIP_MINE;
 	laserTrap->s.pos.trType = TR_GRAVITY;
 	laserTrap->r.contents = MASK_SHOT;
-	if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
-		laserTrap->r.contents = CONTENTS_NONE;
+	//if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
+		//laserTrap->r.contents = CONTENTS_NONE;
 	laserTrap->parent = owner;
 	laserTrap->activator = owner;
 	laserTrap->r.ownerNum = owner->s.number;
