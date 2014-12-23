@@ -9069,7 +9069,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						dome_of_doom(ent,1500,40);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
-						ent->client->pers.light_quest_timer = level.time + ent->health + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
+						ent->client->pers.light_quest_timer = level.time + ent->health + 2000 + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 5)
