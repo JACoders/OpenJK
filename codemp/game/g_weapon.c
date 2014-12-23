@@ -1757,8 +1757,8 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->s.eType = ET_GENERAL;
 	stake->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	stake->s.weapon = WP_TRIP_MINE;
-	stake->s.pos.trType = TR_LINEAR;
-	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+	//stake->s.pos.trType = TR_LINEAR;
+	//if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
 		stake->s.pos.trType = TR_GRAVITY;
 	stake->r.contents = MASK_SHOT;
 	//if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
@@ -1871,7 +1871,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 	stake->setTime = level.time;//remember when we placed it
 
 	//move it
-	VectorScale( forward, 2048*g_projectileVelocityScale.value, stake->s.pos.trDelta );
+	VectorScale( forward, 3072*g_projectileVelocityScale.value, stake->s.pos.trDelta );
 
 	trap->LinkEntity((sharedEntity_t *)stake);
 }
