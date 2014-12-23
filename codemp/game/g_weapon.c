@@ -1684,6 +1684,8 @@ void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 	stake->nextthink = -1;
 	stake->touch = touch_NULL;
 
+	//stake->splashMethodOfDeath = MOD_TRIP_MINE_SPLASH;
+
 	//shove the box through the wall
 	VectorSet( stake->r.mins, -STAKE_SIZE*2, -STAKE_SIZE*2, -STAKE_SIZE*2 );
 	VectorSet( stake->r.maxs, STAKE_SIZE*2, STAKE_SIZE*2, STAKE_SIZE*2 );
@@ -1696,43 +1698,36 @@ void stakeStick( gentity_t *stake, vec3_t endpos, vec3_t normal )
 	trap->LinkEntity((sharedEntity_t *)stake);
 }
 
-/*
-void stakeHitPlayer( gentity_t *self )
+void stakeExplode( gentity_t *self )
 {
-	vec3_t v;
 	self->takedamage = qfalse;
 
-	//if (self->activator)
-		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, MOD_TRIP_MINE_SPLASH );
+	VectorNormalize(self->s.pos.trDelta);
 
+	if (self->activator)
+		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, MOD_TRIP_MINE_SPLASH/*MOD_LT_SPLASH*/ );
 	G_AddEvent( self, EV_MISSILE_MISS, 0);
 
-	//VectorCopy(self->s.pos.trDelta, v);
-	//Explode outward from the surface
-
-	//G_PlayEffect(EFFECT_EXPLOSION_TRIPMINE, self->r.currentOrigin, self->s.pos.trDelta);
+	G_PlayEffect(EFFECT_EXPLOSION_DETPACK, self->r.currentOrigin, self->s.pos.trDelta);
 
 	self->think = G_FreeEntity;
 	self->nextthink = level.time;
 }
-*/
+
+
+void stakeDamagedExplode( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath )
+{
+	self->enemy = attacker;
+	self->think = stakeExplode;
+	self->nextthink = level.time + FRAMETIME;
+	self->takedamage = qfalse;
+}
 
 void touchStake( gentity_t *stake, gentity_t *other, trace_t *trace )
 {
 	if (other && other->s.number < ENTITYNUM_WORLD) { //just explode if we hit any entity.
 		if ( stake->activator != other ) {
-			//stake->touch = 0;
-			//stake->nextthink = level.time + FRAMETIME;
-			//stake->think = stakeHitPlayer;
-			VectorCopy(trace->plane.normal, stake->s.pos.trDelta);
-
-			G_Damage( other, NULL, NULL, forward, trace->endpos, 50, DAMAGE_NO_KNOCKBACK, MOD_FLECHETTE ); //y the fuck wont this do dmg if i give it an attacker
-			G_AddEvent( stake, EV_MISSILE_HIT, 0); //does not work
-
-			stake->think = G_FreeEntity;
-			stake->nextthink = level.time;
-
-
+			stakeExplode(stake);
 		}
 	}
 	else {
@@ -1758,11 +1753,6 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->classname = "laserTrap";
 	//stake->flags |= FL_BOUNCE_HALF;
 	stake->s.eFlags |= EF_MISSILE_STICK;
-	stake->splashDamage = 220;
-	stake->splashRadius = 220;
-	stake->damage = 200;
-	stake->methodOfDeath = MOD_FLECHETTE;
-	//stake->splashMethodOfDeath = MOD_TRIP_MINE_SPLASH;
 	stake->s.eType = ET_GENERAL;
 	stake->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	stake->s.weapon = WP_TRIP_MINE;
@@ -1777,6 +1767,15 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	VectorSet( stake->r.maxs, STAKE_SIZE, STAKE_SIZE, STAKE_SIZE );
 	stake->clipmask = MASK_SHOT;
 	stake->s.solid = SOLID_BBOX;
+
+	stake->splashDamage = 75;
+	stake->splashRadius = 128;
+	stake->damage = 75;
+	stake->methodOfDeath = MOD_TRIP_MINE_SPLASH;
+
+	stake->takedamage = qtrue;
+	stake->health = 10;
+	stake->die = stakeDamagedExplode;
 		
 	//stake->spawnflags |= 4;
 
@@ -1788,9 +1787,9 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 
 	stake->s.genericenemyindex = 32;//owner->s.number+MAX_GENTITIES;
 
-	stake->health = 100;
+	//stake->health = 100;
 
-	stake->s.time = 0;
+	//stake->s.time = 0;
 
 	stake->s.pos.trTime = level.time;		// move a bit on the very first frame?
 	VectorCopy( start, stake->s.pos.trBase );
@@ -1861,6 +1860,8 @@ static void WP_FireStakeGun( gentity_t *ent )
 		else break;
 	}
 
+	//ent->client->numStakes = trapcount;
+
 	VectorMA(muzzle, STAKE_SIZE*6, forward, start);//Start the stake ahead of us a bit so we cant get ourselves stuck into a wall with it
 	CreateStake(stake, start, ent); //now make the new one
 
@@ -1871,6 +1872,23 @@ static void WP_FireStakeGun( gentity_t *ent )
 	VectorScale( forward, 2048, stake->s.pos.trDelta );
 
 	trap->LinkEntity((sharedEntity_t *)stake);
+}
+
+static void WP_ExplodeStakes( gentity_t *ent ) 
+{
+	gentity_t	*found = NULL;
+	//Is there a faster way of doing this
+	while ( (found = G_Find( found, FOFS(classname), "laserTrap" )) != NULL ) {
+		if ( found->parent != ent )
+			continue;
+		found->think = stakeExplode;
+		stakeExplode(found);
+	}
+
+	//ent->client->numStakes = 0;
+
+	//uhh..
+	//could maybe make this faster by keeping trakc of how many stakes we have in the world that are ours, and loop through ingane eneities blowing them up, but break after we reach the count
 }
 
 //---------------------------------------------------------
@@ -2070,8 +2088,10 @@ static void WP_FireFlechette( gentity_t *ent, qboolean altFire, int seed )
 {
 	if ( altFire )
 	{
-		//WP_FlechetteProxMine( ent );
-		WP_FlechetteAltFire(ent, seed);
+		if (g_tweakWeapons.integer & STAKE_GUN)
+			WP_ExplodeStakes( ent );
+		else
+			WP_FlechetteAltFire(ent, seed);
 	}
 	else
 	{

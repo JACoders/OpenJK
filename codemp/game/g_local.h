@@ -1039,6 +1039,7 @@ struct gclient_s {
 	int			pmoveMsec;//Japro timers
 	int			lastBounceTime; //japro bounce trigger
 	int			noKnockdownStreak; //pseudo random knockdowns option
+	//int			numStakes;
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
 	int			lastSpotTime;
