@@ -5656,6 +5656,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_saberDuelForceRegenTime.integer, 1);
 						else if (dueltypes[self->client->ps.clientNum] == 1)//FF Duel
 							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceDuelForceRegenTime.integer, 1);
+						else 
+							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 					}
 					else
 						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);

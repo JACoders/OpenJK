@@ -8726,8 +8726,10 @@ if (pm->ps->duelInProgress)
 #ifdef _GAME
 		if (g_tweakWeapons.integer & INFINITE_AMMO)
 			amount = 0;
-		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && g_tweakWeapons.integer & ROCKET_MORTAR && !pm->ps->stats[STAT_RACEMODE])
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
 			amount = 1;//JAPRO mortar meh
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & STAKE_GUN)
+			amount = 0;//Detonating stakes shouldnt take ammo
 		else
 #endif
 		amount = weaponData[pm->ps->weapon].altEnergyPerShot;
@@ -8737,6 +8739,8 @@ if (pm->ps->duelInProgress)
 #ifdef _GAME
 		if (g_tweakWeapons.integer & INFINITE_AMMO)
 			amount = 0;
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & STAKE_GUN)
+			amount = 5;//5 ammo per stake? eh
 		else
 #endif
 		amount = weaponData[pm->ps->weapon].energyPerShot;
