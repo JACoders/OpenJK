@@ -1755,7 +1755,7 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 
 	vectoangles(forward, aim);
 
-	stake->classname = "stuckStake";
+	stake->classname = "laserTrap";
 	//stake->flags |= FL_BOUNCE_HALF;
 	stake->s.eFlags |= EF_MISSILE_STICK;
 	stake->splashDamage = 220;
@@ -1861,7 +1861,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 		else break;
 	}
 
-	VectorMA(muzzle, STAKE_SIZE*4, forward, start);//Start the stake ahead of us a bit so we cant get ourselves stuck into a wall with it
+	VectorMA(muzzle, STAKE_SIZE*6, forward, start);//Start the stake ahead of us a bit so we cant get ourselves stuck into a wall with it
 	CreateStake(stake, start, ent); //now make the new one
 
 	stake->setTime = level.time;//remember when we placed it

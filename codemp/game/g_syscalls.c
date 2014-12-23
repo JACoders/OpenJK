@@ -149,18 +149,11 @@ static void BeginHack(int entityNum)
 					(ent->s.eType == ET_PLAYER) ||
 					(ent->s.eType == ET_NPC) ||
 					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
-					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap") || !Q_stricmp(ent->classname, "stuckStake"))))
+					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap"))))
 				{
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
-
-
-
-				//if (!Q_stricmp(ent->classname, "laserTrap") || (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC || (ent->s.eType == ET_MOVER && (!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))))) {
-					//saved[i] = ent->r.ownerNum;
-					//ent->r.ownerNum = entityNum;
-				//}
 			}
 		}
 	}
@@ -215,7 +208,7 @@ static void EndHack(int entityNum) {
 					(ent->s.eType == ET_PLAYER) ||
 					(ent->s.eType == ET_NPC) ||
 					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
-					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap") || !Q_stricmp(ent->classname, "stuckStake"))))
+					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap"))))
 				{
 					ent->r.ownerNum = saved[i];
 				}
