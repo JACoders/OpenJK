@@ -1705,7 +1705,7 @@ void stakeExplode( gentity_t *self )
 	VectorNormalize(self->s.pos.trDelta);
 
 	if (self->activator)
-		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, MOD_TRIP_MINE_SPLASH/*MOD_LT_SPLASH*/ );
+		G_RadiusDamage( self->r.currentOrigin, self->activator, self->splashDamage, self->splashRadius, self, self, self->methodOfDeath/*MOD_LT_SPLASH*/ );
 	G_AddEvent( self, EV_MISSILE_MISS, 0);
 
 	G_PlayEffect(EFFECT_EXPLOSION_DETPACK, self->r.currentOrigin, self->s.pos.trDelta);
@@ -1727,7 +1727,8 @@ void touchStake( gentity_t *stake, gentity_t *other, trace_t *trace )
 {
 	if (other && other->s.number < ENTITYNUM_WORLD) { //just explode if we hit any entity.
 		if ( stake->activator != other ) {
-			stakeExplode(stake);
+			stake->think = stakeExplode;
+			stake->nextthink = level.time;
 		}
 	}
 	else {
@@ -1757,6 +1758,8 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->r.svFlags = SVF_USE_CURRENT_ORIGIN;
 	stake->s.weapon = WP_TRIP_MINE;
 	stake->s.pos.trType = TR_LINEAR;
+	if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+		stake->s.pos.trType = TR_GRAVITY;
 	stake->r.contents = MASK_SHOT;
 	//if (g_raceMode.integer) //Sad hack.. quickfix to stop tripmine abuse
 		//stake->r.contents = CONTENTS_NONE;
@@ -1868,8 +1871,7 @@ static void WP_FireStakeGun( gentity_t *ent )
 	stake->setTime = level.time;//remember when we placed it
 
 	//move it
-	stake->s.pos.trType = TR_LINEAR;
-	VectorScale( forward, 2048, stake->s.pos.trDelta );
+	VectorScale( forward, 2048*g_projectileVelocityScale.value, stake->s.pos.trDelta );
 
 	trap->LinkEntity((sharedEntity_t *)stake);
 }
@@ -1882,7 +1884,7 @@ static void WP_ExplodeStakes( gentity_t *ent )
 		if ( found->parent != ent )
 			continue;
 		found->think = stakeExplode;
-		stakeExplode(found);
+		found->nextthink = level.time;
 	}
 
 	//ent->client->numStakes = 0;
