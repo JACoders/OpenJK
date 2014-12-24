@@ -3567,7 +3567,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	else
 	{
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-			ent->client->pers.selected_special_power == 0 && ent->client->pers.magic_power > 0)
+			ent->client->pers.selected_special_power == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
 		{ // zyk: Magic Master has Magic Fist power
 			vec3_t origin, dir, zyk_forward;
 			gentity_t *missile = NULL;
@@ -3597,7 +3597,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			// we don't want it to bounce
 			missile->bounceCount = 0;
 
-			ent->client->pers.magic_power--;
+			ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
 
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
 		}
