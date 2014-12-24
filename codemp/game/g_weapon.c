@@ -2595,7 +2595,7 @@ void thermalThinkStandard(gentity_t *ent)
 		return;
 	}
 
-	if (ent->bounceCount == 1) {
+	if ((g_tweakWeapons.integer & IMPACT_NITRON) && ent->bounceCount == 1) {
 		VectorClear(ent->s.pos.trDelta);
 		ent->s.pos.trType = TR_STATIONARY;
 	}
@@ -2675,9 +2675,9 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	bolt->s.loopIsSoundset = qfalse;
 
 	if (g_tweakWeapons.integer & IMPACT_NITRON) {
-		bolt->damage = 10 * g_weaponDamageScale.integer;
+		bolt->damage = 60 * g_weaponDamageScale.integer;
 		bolt->splashDamage = 10 * g_weaponDamageScale.integer;
-		bolt->splashRadius = TD_SPLASH_RAD;//128
+		bolt->splashRadius = 96;//128
 	}
 	else {
 		bolt->damage = TD_DAMAGE;
