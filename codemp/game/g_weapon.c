@@ -2675,7 +2675,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	bolt->s.loopIsSoundset = qfalse;
 
 	if (g_tweakWeapons.integer & IMPACT_NITRON) {
-		bolt->damage = 60 * g_weaponDamageScale.integer;
+		bolt->damage = 40 * g_weaponDamageScale.integer;
 		bolt->splashDamage = 10 * g_weaponDamageScale.integer;
 		bolt->splashRadius = 96;//128
 	}
