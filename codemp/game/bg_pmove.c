@@ -8308,7 +8308,8 @@ if (pm->ps->duelInProgress)
 		{
 			// enough energy to fire this weapon?
 			if (pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].energyPerShot &&
-				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot) 
+				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot &&
+				(!((g_tweakWeapons.integer & STAKE_GUN) & (pm->ps->weapon != WP_FLECHETTE))))
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
 			  //regardless of if the player is attacking or not
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
@@ -8791,6 +8792,8 @@ if (pm->ps->duelInProgress)
 					addTime = 1500;
 				else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
 					addTime = 3000;
+				else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & IMPACT_NITRON))
+					addTime = 2000;
 				else
 #endif
 					addTime = weaponData[pm->ps->weapon].altFireTime;
@@ -8804,6 +8807,8 @@ if (pm->ps->duelInProgress)
 				addTime = 1500;
 			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
 				addTime = 50;
+			else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & IMPACT_NITRON))
+				addTime = 2000;
 			else
 #endif
 			addTime = weaponData[pm->ps->weapon].fireTime;

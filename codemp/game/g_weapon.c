@@ -1533,7 +1533,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 
 	JP_Trace( &tr, start, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0);
 
-	missile = G_Spawn(qtrue);
+	missile = G_Spawn(qfalse);
 	G_SetOrigin(missile, tr.endpos);
 	//In SP the impact actually travels as a missile based on the trace fraction, but we're
 	//just going to be instant. -rww
@@ -2595,7 +2595,13 @@ void thermalThinkStandard(gentity_t *ent)
 		return;
 	}
 
-	G_RunObject(ent);
+	if (ent->bounceCount == 1) {
+		VectorClear(ent->s.pos.trDelta);
+		ent->s.pos.trType = TR_STATIONARY;
+	}
+
+	if (!(g_tweakWeapons.integer & IMPACT_NITRON))
+		G_RunObject(ent);
 	ent->nextthink = level.time;
 }
 
@@ -2606,11 +2612,11 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	gentity_t	*bolt;
 	vec3_t		dir, start;
 	float chargeAmount = 1.0f; // default of full charge
-	
+
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	bolt = G_Spawn(qtrue);
+	bolt = G_Spawn(qfalse);
 	
 	bolt->physicsObject = qtrue;
 
@@ -2641,6 +2647,11 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	else if ( chargeAmount < TD_MIN_CHARGE )
 	{
 		chargeAmount = TD_MIN_CHARGE;
+	}
+
+	if (g_tweakWeapons.integer & IMPACT_NITRON) {
+		chargeAmount = 0.7f;
+		altFire = qfalse;
 	}
 
 	// normal ones bounce, alt ones explode on impact
@@ -2691,6 +2702,8 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	VectorCopy( start, bolt->pos2 );
 
 	bolt->bounceCount = -5;
+	if (g_tweakWeapons.integer & IMPACT_NITRON)
+		bolt->bounceCount = 2;
 
 	return bolt;
 }
@@ -3173,7 +3186,7 @@ void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire )
 	VectorCopy( forward, dir );
 	VectorCopy( muzzle, start );
 
-	laserTrap = G_Spawn(qtrue);
+	laserTrap = G_Spawn(qfalse);
 	
 	//limit to 10 placed at any one time
 	//see how many there are now
@@ -3423,7 +3436,7 @@ void drop_charge (gentity_t *self, vec3_t start, vec3_t dir)
 
 	VectorNormalize (dir);
 
-	bolt = G_Spawn(qtrue);
+	bolt = G_Spawn(qfalse);
 	bolt->classname = "detpack";
 	bolt->nextthink = level.time + FRAMETIME;
 	bolt->think = G_RunObject;
