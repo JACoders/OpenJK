@@ -2650,7 +2650,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	}
 
 	if (g_tweakWeapons.integer & IMPACT_NITRON) {
-		chargeAmount = 0.7f;
+		chargeAmount = 0.9f;
 		altFire = qfalse;
 	}
 
