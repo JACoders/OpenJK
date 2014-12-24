@@ -3498,777 +3498,538 @@ qboolean TryGrapple(gentity_t *ent)
 	G_SetAnim(ent, &ent->client->pers.cmd, SETANIM_BOTH, BOTH_KYLE_GRAB, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0);
 	if (ent->client->ps.torsoAnim == BOTH_KYLE_GRAB)
 	{ //providing the anim set succeeded..
+		int use_this_power = 0; // zyk: if > 0, sets the power this RPG player can use now
+
 		ent->client->ps.torsoTimer += 500; //make the hand stick out a little longer than it normally would
 		if (ent->client->ps.legsAnim == ent->client->ps.torsoAnim)
 		{
 			ent->client->ps.legsTimer = ent->client->ps.torsoTimer;
 		}
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
+		
+		if (ent->client->sess.amrpgmode == 2)
+		{ // zyk: if this is a RPG player, tests if he can use a special power
+			if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)))
+			{ // zyk: Magic Master has his own way of choosing a power
+				if (ent->client->pers.cmd.forwardmove > 0)
+				{ // zyk: Special Power Up direction
+					use_this_power = ent->client->pers.selected_special_power;
+				}
+				else if (ent->client->pers.cmd.rightmove > 0)
+				{ // zyk: Special Power Right direction
+					use_this_power = ent->client->pers.selected_right_special_power;
+				}
+				else if (ent->client->pers.cmd.rightmove < 0)
+				{ // zyk: Special Power Left direction
+					use_this_power = ent->client->pers.selected_left_special_power;
+				}
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.forwardmove > 0)
-		{ // zyk: Magic Master special powers
-			if (ent->client->pers.selected_special_power == 1 && ent->client->pers.magic_power >= 2)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				inner_area_damage(ent,400,90);
-				ent->client->pers.magic_power -= 2;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
+				// zyk: can use the power if he beat a specific light quest boss
+				if (use_this_power == 17 && !(ent->client->pers.defeated_guardians & (1 << 11) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 7 && !(ent->client->pers.defeated_guardians & (1 << 6) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 3 && !(ent->client->pers.defeated_guardians & (1 << 4) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 13 && !(ent->client->pers.defeated_guardians & (1 << 9) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 5 && !(ent->client->pers.defeated_guardians & (1 << 5) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 9 && !(ent->client->pers.defeated_guardians & (1 << 7) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 15 && !(ent->client->pers.defeated_guardians & (1 << 10) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 11 && !(ent->client->pers.defeated_guardians & (1 << 8) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 16 && !(ent->client->pers.defeated_guardians & (1 << 11) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 6 && !(ent->client->pers.defeated_guardians & (1 << 6) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 2 && !(ent->client->pers.defeated_guardians & (1 << 4) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 12 && !(ent->client->pers.defeated_guardians & (1 << 9) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 4 && !(ent->client->pers.defeated_guardians & (1 << 5) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 8 && !(ent->client->pers.defeated_guardians & (1 << 7) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 14 && !(ent->client->pers.defeated_guardians & (1 << 10) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
+				else if (use_this_power == 10 && !(ent->client->pers.defeated_guardians & (1 << 8) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+				{
+					use_this_power = 0;
+				}
 			}
-			else if (ent->client->pers.selected_special_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
+			else if (!(ent->client->pers.player_settings & (1 << 16)))
 			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_strength(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
+				// zyk: each class can use a different set of powers
+				if (ent->client->pers.cmd.rightmove > 0)
+				{ // zyk: Special Power Right direction
+					// zyk: can use the power if he beat a specific light quest boss
+					if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+						ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Ultra Resistance
+						use_this_power = 16;
+					}
+					else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Sleeping Flowers
+						use_this_power = 6;
+					}
+					else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Healing Water
+						use_this_power = 2;
+					}
+					else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Flame Burst
+						use_this_power = 12;
+					}
+					else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Earthquake
+						use_this_power = 4;
+					}
+					else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Cloaking
+						use_this_power = 8;
+					}
+					else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Blowing Wind
+						use_this_power = 14;
+					}
+					else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Ultra Speed
+						use_this_power = 10;
+					}
+				}
+				else if (ent->client->pers.cmd.rightmove < 0)
+				{ // zyk: Special Power Left direction
+					// zyk: can use the power if he beat a specific light quest boss
+					if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+						ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Ultra Strength
+						use_this_power = 17;
+					}
+					else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Poison Mushrooms
+						use_this_power = 7;
+					}
+					else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Water Splash
+						use_this_power = 3;
+					}
+					else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Ultra Flame
+						use_this_power = 13;
+					}
+					else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Rockfall
+						use_this_power = 5;
+					}
+					else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Dome of Damage
+						use_this_power = 9;
+					}
+					else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Hurricane
+						use_this_power = 15;
+					}
+					else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{ // zyk: Slow Motion
+						use_this_power = 11;
+					}
+				}
 			}
-			else if (ent->client->pers.selected_special_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				poison_mushrooms(ent,100,600);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				water_splash(ent,400,100);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_flame(ent,400,50);
-				ent->client->pers.magic_power -= 21;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				rock_fall(ent,500,55);
-				ent->client->pers.magic_power -= 18;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				dome_of_doom(ent,500,35);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				hurricane(ent,600,5000);
-				ent->client->pers.magic_power -= 22;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				slow_motion(ent,400,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_resistance(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				sleeping_flowers(ent,3500,400);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				healing_water(ent,120);
-				ent->client->pers.magic_power -= 28;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 23;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				earthquake(ent,2000,300,500);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 1;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_special_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_speed(ent,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
-			}
-		}
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
-			ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
-		{ // zyk: Magic Fist Spray Attack
-			gentity_t	*missile;
-			vec3_t origin;
-			int i;
-			int angle_value = ent->client->ps.viewangles[1];
+			if (ent->client->pers.cmd.forwardmove < 0 && ent->client->pers.universe_quest_progress >= 15 && 
+				ent->client->pers.quest_power_usage_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+			{ // zyk: Ultimate Power
+				if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 40)
+				{ // zyk: Ultra Drain
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
+					ultra_drain(ent,450,60,8000);
+					ent->client->pers.magic_power -= 40;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_drain_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Drain!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 35)
+				{ // zyk: Immunity Power
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
+					immunity_power(ent,25000);
+					display_yellow_bar(ent,25000);
+					ent->client->pers.magic_power -= 35;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_immunity_power_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.universe_quest_counter & (1 << 2) && ent->client->pers.magic_power >= 50)
+				{ // zyk: uses Chaos Power
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
+					chaos_power(ent,400,80);
+					ent->client->pers.magic_power -= 50;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_chaos_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_chaos_power_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
+				}
+				else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 45)
+				{ // zyk: uses Time Power
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
+					time_power(ent,400,6000);
+					ent->client->pers.magic_power -= 45;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_time_power_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
+				}
+			}
+			else if (ent->client->pers.quest_power_usage_timer < level.time && use_this_power > 0)
+			{ // zyk: Special Power
+				if (use_this_power == 1 && ent->client->pers.magic_power >= 2)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					inner_area_damage(ent,400,90);
+					ent->client->pers.magic_power -= 2;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_inner_area_damage_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 17 && ent->client->pers.magic_power >= 10)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					ultra_strength(ent,30000);
+					display_yellow_bar(ent,30000);
+					ent->client->pers.magic_power -= 10;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_strength_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 7 && ent->client->pers.magic_power >= 20)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					poison_mushrooms(ent,100,600);
+					ent->client->pers.magic_power -= 20;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_poison_mushrooms_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 3 && ent->client->pers.magic_power >= 20)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					water_splash(ent,400,100);
+					ent->client->pers.magic_power -= 20;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_water_splash_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 13 && ent->client->pers.magic_power >= 21)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					ultra_flame(ent,400,50);
+					ent->client->pers.magic_power -= 21;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_flame_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 5 && ent->client->pers.magic_power >= 18)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					rock_fall(ent,500,55);
+					ent->client->pers.magic_power -= 18;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_rockfall_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 9 && ent->client->pers.magic_power >= 25)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					dome_of_doom(ent,500,35);
+					ent->client->pers.magic_power -= 25;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_damage_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 15 && ent->client->pers.magic_power >= 22)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					hurricane(ent,600,5000);
+					ent->client->pers.magic_power -= 22;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_hurricane_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 11 && ent->client->pers.magic_power >= 17)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					slow_motion(ent,400,15000);
+					ent->client->pers.magic_power -= 17;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_slow_motion_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 16 && ent->client->pers.magic_power >= 10)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					ultra_resistance(ent,30000);
+					display_yellow_bar(ent,30000);
+					ent->client->pers.magic_power -= 10;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_resistance_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 6 && ent->client->pers.magic_power >= 25)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					sleeping_flowers(ent,3500,400);
+					ent->client->pers.magic_power -= 25;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 2 && ent->client->pers.magic_power >= 28)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					healing_water(ent,120);
+					ent->client->pers.magic_power -= 28;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_water_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 12 && ent->client->pers.magic_power >= 23)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					ent->client->pers.flame_thrower = level.time + 7000;
+					ent->client->pers.magic_power -= 23;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_flame_burst_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 4 && ent->client->pers.magic_power >= 20)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					earthquake(ent,2000,300,500);
+					ent->client->pers.magic_power -= 20;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 8 && ent->client->pers.magic_power >= 1)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					Jedi_Cloak(ent);
+					ent->client->pers.magic_power -= 1;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_cloaking_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 14 && ent->client->pers.magic_power >= 20)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					blowing_wind(ent,800,5000);
+					ent->client->pers.magic_power -= 20;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_blowing_wind_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
+				}
+				else if (use_this_power == 10 && ent->client->pers.magic_power >= 17)
+				{
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+					ultra_speed(ent,15000);
+					ent->client->pers.magic_power -= 17;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)))
+			{ // zyk: Magic Master Charged Attack and Spray Attack
+				if (ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && 
+					ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
+				{ // zyk: Magic Fist Spray Attack
+					gentity_t	*missile;
+					vec3_t origin;
+					int i;
+					int angle_value = ent->client->ps.viewangles[1];
 
-			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
-			else
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+					if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+					else
+						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-			for (i = 0; i < zyk_fist_spray_count.integer; i++ )
-			{
-				vec3_t dir, forward;
+					for (i = 0; i < zyk_fist_spray_count.integer; i++ )
+					{
+						vec3_t dir, forward;
 
-				angle_value += (360/zyk_fist_spray_count.integer);
+						angle_value += (360/zyk_fist_spray_count.integer);
 
-				if (angle_value >= 180)
-					angle_value -= 359;
+						if (angle_value >= 180)
+							angle_value -= 359;
 
-				VectorSet(dir, 0, angle_value, 0);
+						VectorSet(dir, 0, angle_value, 0);
 
-				AngleVectors( dir, forward, NULL, NULL );
+						AngleVectors( dir, forward, NULL, NULL );
 
-				VectorNormalize(forward);
+						VectorNormalize(forward);
 					
-				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
+						missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
 
-				missile->classname = "bowcaster_proj";
-				missile->s.weapon = WP_BOWCASTER;
+						missile->classname = "bowcaster_proj";
+						missile->s.weapon = WP_BOWCASTER;
 
-				VectorSet( missile->r.maxs, 2, 2, 2 );
-				VectorScale( missile->r.maxs, -1, missile->r.mins );
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-				missile->damage = zyk_magic_fist_damage.integer;
-				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-				missile->methodOfDeath = MOD_MELEE;
-				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+						missile->damage = zyk_magic_fist_damage.integer;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-				// we don't want it to bounce
-				missile->bounceCount = 0;
-			}
+						// we don't want it to bounce
+						missile->bounceCount = 0;
+					}
 
-			ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
-			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-		}
+					ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
+					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+				}
+				else if (ent->client->pers.cmd.rightmove < 0 && ent->client->pers.selected_left_special_power == 0 && ent->client->pers.magic_power >= 2)
+				{ // zyk: Magic Fist Charged Attack
+					int count = 3;
+					gentity_t	*missile;
+					vec3_t origin, dir, forward;
+					int i;
 
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
-		{ // zyk: Magic Master special powers
-			if (ent->client->pers.selected_right_special_power == 1 && ent->client->pers.magic_power >= 2)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				inner_area_damage(ent,400,90);
-				ent->client->pers.magic_power -= 2;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_strength(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				poison_mushrooms(ent,100,600);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				water_splash(ent,400,100);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_flame(ent,400,50);
-				ent->client->pers.magic_power -= 21;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				rock_fall(ent,500,55);
-				ent->client->pers.magic_power -= 18;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				dome_of_doom(ent,500,35);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				hurricane(ent,600,5000);
-				ent->client->pers.magic_power -= 22;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				slow_motion(ent,400,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_resistance(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				sleeping_flowers(ent,3500,400);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				healing_water(ent,120);
-				ent->client->pers.magic_power -= 28;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 23;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				earthquake(ent,2000,300,500);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 1;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_right_special_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_speed(ent,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
-			}
-		}
-
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && 
-			ent->client->pers.cmd.rightmove < 0 && ent->client->pers.selected_left_special_power == 0 && ent->client->pers.magic_power >= 2)
-		{ // zyk: Magic Fist Charged Attack
-			int count = 3;
-			gentity_t	*missile;
-			vec3_t origin, dir, forward;
-			int i;
-
-			for (i = 0; i < count; i++ )
-			{
-				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 8 + (i * 2));
-				else
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
+					for (i = 0; i < count; i++ )
+					{
+						if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+							VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 8 + (i * 2));
+						else
+							VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
 			
-				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+						VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
-				AngleVectors( dir, forward, NULL, NULL );
+						AngleVectors( dir, forward, NULL, NULL );
 
-				VectorNormalize(forward);
+						VectorNormalize(forward);
 
-				missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
+						missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
 
-				missile->classname = "bowcaster_proj";
-				missile->s.weapon = WP_BOWCASTER;
+						missile->classname = "bowcaster_proj";
+						missile->s.weapon = WP_BOWCASTER;
 
-				VectorSet( missile->r.maxs, 2, 2, 2 );
-				VectorScale( missile->r.maxs, -1, missile->r.mins );
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-				missile->damage = zyk_magic_fist_damage.integer;
-				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-				missile->methodOfDeath = MOD_MELEE;
-				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+						missile->damage = zyk_magic_fist_damage.integer;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-				// we don't want it to bounce
-				missile->bounceCount = 0;
-			}
+						// we don't want it to bounce
+						missile->bounceCount = 0;
+					}
 
-			ent->client->pers.magic_power -= 2;
-			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-		}
-
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
-		{ // zyk: Magic Master special powers
-			if (ent->client->pers.selected_left_special_power == 1 && ent->client->pers.magic_power >= 2)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				inner_area_damage(ent,400,90);
-				ent->client->pers.magic_power -= 2;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 17 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_strength(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 7 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				poison_mushrooms(ent,100,600);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 3 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				water_splash(ent,400,100);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 13 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_flame(ent,400,50);
-				ent->client->pers.magic_power -= 21;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 5 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				rock_fall(ent,500,55);
-				ent->client->pers.magic_power -= 18;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 9 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				dome_of_doom(ent,500,35);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 15 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				hurricane(ent,600,5000);
-				ent->client->pers.magic_power -= 22;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 11 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				slow_motion(ent,400,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 16 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 10)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_resistance(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 10;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 6 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				sleeping_flowers(ent,3500,400);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 2 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				healing_water(ent,120);
-				ent->client->pers.magic_power -= 28;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 12 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 23;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 4 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				earthquake(ent,2000,300,500);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 8 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 1;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 14 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.selected_left_special_power == 10 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_speed(ent,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
-			}
-		}
-
-		// zyk: Ultimate Power
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && ent->client->pers.universe_quest_progress >= 15 && !(ent->client->pers.player_settings & (1 << 5)) && ent->client->pers.cmd.forwardmove < 0)
-		{
-			if (ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= 40)
-			{ // zyk: Ultra Drain
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				ultra_drain(ent,450,60,8000);
-				ent->client->pers.magic_power -= 40;
-				if (ent->client->pers.rpg_class == 8)
-					ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				else
-					ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_drain_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Drain!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= 35)
-			{ // zyk: Immunity Power
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				immunity_power(ent,25000);
-				display_yellow_bar(ent,25000);
-				ent->client->pers.magic_power -= 35;
-				if (ent->client->pers.rpg_class == 8)
-					ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				else
-					ent->client->pers.quest_power_usage_timer = level.time + zyk_immunity_power_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 2) && ent->client->pers.magic_power >= 50)
-			{ // zyk: uses Chaos Power
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				chaos_power(ent,400,80);
-				ent->client->pers.magic_power -= 50;
-				if (ent->client->pers.rpg_class == 8)
-					ent->client->pers.quest_power_usage_timer = level.time + (zyk_chaos_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				else
-					ent->client->pers.quest_power_usage_timer = level.time + zyk_chaos_power_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= 45)
-			{ // zyk: uses Time Power
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
-				time_power(ent,400,6000);
-				ent->client->pers.magic_power -= 45;
-				if (ent->client->pers.rpg_class == 8)
-					ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
-				else
-					ent->client->pers.quest_power_usage_timer = level.time + zyk_time_power_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
-			}
-		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove < 0)
-		{ // zyk: Special Power 1
-			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 15)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_strength(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 15;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_strength_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				poison_mushrooms(ent,100,600);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_poison_mushrooms_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				water_splash(ent,400,100);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_water_splash_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 21)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_flame(ent,400,50);
-				ent->client->pers.magic_power -= 21;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_flame_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 18)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				rock_fall(ent,500,55);
-				ent->client->pers.magic_power -= 18;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_rockfall_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				dome_of_doom(ent,500,35);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_damage_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 22)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				hurricane(ent,600,5000);
-				ent->client->pers.magic_power -= 22;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_hurricane_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				slow_motion(ent,400,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_slow_motion_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
-			}
-		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.quest_power_usage_timer < level.time && !(ent->client->pers.player_settings & (1 << 16)) && ent->client->pers.cmd.rightmove > 0)
-		{ // zyk: Special Power 2
-			if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-				ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 15)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_resistance(ent,30000);
-				display_yellow_bar(ent,30000);
-				ent->client->pers.magic_power -= 15;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_resistance_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 25)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				sleeping_flowers(ent,3500,400);
-				ent->client->pers.magic_power -= 25;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 28)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				healing_water(ent,120);
-				ent->client->pers.magic_power -= 28;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_water_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 23)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ent->client->pers.flame_thrower = level.time + 7000;
-				ent->client->pers.magic_power -= 23;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_flame_burst_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				earthquake(ent,2000,300,500);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 1)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				Jedi_Cloak(ent);
-				ent->client->pers.magic_power -= 1;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_cloaking_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 20)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				blowing_wind(ent,800,5000);
-				ent->client->pers.magic_power -= 20;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_blowing_wind_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
-			}
-			else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-				     ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS) && ent->client->pers.magic_power >= 17)
-			{
-				ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-				ultra_speed(ent,15000);
-				ent->client->pers.magic_power -= 17;
-				ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
-				trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
+					ent->client->pers.magic_power -= 2;
+					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+				}
 			}
 		}
 
