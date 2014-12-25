@@ -341,7 +341,12 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		ent->think = multi_trigger_run;
 		ent->nextthink = level.time + ent->delay;
 		ent->painDebounceTime = level.time;
-		
+#if 1
+		if (activator->client && activator->client->sess.raceMode)
+			ent->nextthink = level.time; //No delay for triggers in racemode to prevent advantages from player interference... does this have bad side effects?
+		//This can still be griefed by ppl just spamming the trigger to fuck its "wait" time up?
+#endif
+
 	}
 	else
 	{

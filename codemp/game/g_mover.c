@@ -870,6 +870,7 @@ void LockDoors(gentity_t *const ent)
 Use_BinaryMover
 ================
 */
+//extern float forceJumpHeight[NUM_FORCE_POWER_LEVELS]; //great
 void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
 	if ( !ent->use )
@@ -895,6 +896,69 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		return;
 	}
 
+#if 1
+	if (activator->client->sess.raceMode) { //Turn this ele into a jumppad instead mayBeeeee
+		float height, time, strength;
+
+		//No good way to get bottom origin of the mover..? Could be weird geometry... so just assume the top of the ele model in starting position is the "bottom" of the ele.
+		/*
+		float jumpHeight;
+			
+		switch (activator->client->sess.movementStyle)
+		{
+			case 0://Siege
+			case 1://JKA
+			case 2://QW
+				jumpHeight = forceJumpHeight[activator->client->ps.fd.forcePowerLevel[FP_LEVITATION]];
+				break;
+			case 3://CPM
+			case 4://Q3
+				jumpHeight = 64;//whatever
+				break;
+			case 5://PJK
+				jumpHeight = forceJumpHeight[activator->client->ps.fd.forcePowerLevel[FP_LEVITATION]];
+				break;
+			case 6://WSW
+				jumpHeight = 72;//whatever
+				break;
+			case 7://RJQ3
+			case 8://RJCPM
+				jumpHeight = 260;//whatever
+				break;
+			default:
+				jumpHeight = 0;
+				break;
+		}
+		*/
+
+		//ent->damage = 0; //Temp
+
+		//trap->Print("Ele starting height: %.2f, Our Height: %.2f\n", ent->r.absmax[2], activator->client->ps.origin[2]); //Lets assume the ele starts there...
+
+		if (activator->client->ps.origin[2] > ent->r.absmax[2] + 96 /*jumpHeight*/) { //We are already more than higher than where the ele starts, so forget it..
+			return;
+		}
+		
+		//trap->Print("Client activator: %s, angle = %.2f %.2f %.2f", activator->client->pers.netname, ent->s.angles[0],ent->s.angles[1],ent->s.angles[2]);
+		//VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
+
+		height = ent->pos2[2] - ent->pos1[2] + 64; //Send them up a lil higher just to be safe
+		time = sqrt(height / (.5f * g_gravity.value));
+		if (!time)
+			return;
+		strength = (height / time) * 2.0f;
+
+		activator->client->ps.velocity[0] = activator->client->ps.velocity[1] = 0; //reset our xyspeed... meh
+		if (strength > activator->client->ps.velocity[2]); //Only apply the jumppad if it would speed them up
+			activator->client->ps.velocity[2] = strength;
+	
+
+		//trap->Print("Height: %.2f, time: %.2fstrength: %.2f\n", height, time, strength);
+
+		return;
+	}
+#endif
+
 	G_ActivateBehavior(ent,BSET_USE);
 
 	ent->enemy = other;
@@ -909,7 +973,6 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		Use_BinaryMover_Go(ent);
 	}
 }
-
 
 
 /*
@@ -1089,6 +1152,8 @@ Touch_DoorTrigger
 void Touch_DoorTrigger( gentity_t *ent, gentity_t *other, trace_t *trace ) 
 {
 	gentity_t *relockEnt = NULL;
+
+	//JAPRO LODA FIXME FOR DOORS THAT DONT HAVE TRIGGER MULTIPLES, DITCH THE DELAY HERE IF OTHER IS IN RACEMODE??????
 
 	if ( other->client && other->client->sess.sessionTeam == TEAM_SPECTATOR ) 
 	{
@@ -1433,6 +1498,7 @@ void SP_func_door (gentity_t *ent)
 	abs_movedir[2] = fabs( ent->movedir[2] );
 	VectorSubtract( ent->r.maxs, ent->r.mins, size );
 	distance = DotProduct( abs_movedir, size ) - lip;
+
 	VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
 
 	// if "start_open", reverse position 1 and 2
