@@ -483,18 +483,21 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 			return qfalse;
 		}
 
-		if (!SDL_GetNumVideoDrivers())
+		driverName = SDL_GetCurrentVideoDriver();
+
+		if (!driverName)
 		{
-			Com_Printf( "SDL_GetNumVideoDrivers( ) FAILED (%s)\n",
-					SDL_GetError());
+			Com_Error( ERR_FATAL, "No video driver initialized" );
 			return qfalse;
 		}
 
-		//
-		// TODO: Prompt the user to choose a specific video driver.
-		driverName = SDL_GetVideoDriver( 0 );
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
 		ri.Cvar_Set( "r_sdlDriver", driverName );
+	}
+
+	if (SDL_GetNumVideoDisplays() <= 0)
+	{
+		Com_Error( ERR_FATAL, "SDL_GetNumVideoDisplays() FAILED (%s)", SDL_GetError() );
 	}
 
 	if (fullscreen && ri.Cvar_VariableIntegerValue( "in_nograb" ) )
