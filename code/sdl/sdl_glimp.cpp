@@ -5,8 +5,6 @@
 #include "sdl_qgl.h"
 #include "../sys/sys_local.h"
 
-//static SDL_Window *window = NULL;
-
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
@@ -204,7 +202,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	int colorBits, depthBits, stencilBits;
 	//int samples;
 	int i = 0;
-	//SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
@@ -214,19 +211,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	if ( r_allowResize->integer && !fullscreen )
 		flags |= SDL_WINDOW_RESIZABLE;
-
-	/*icon = SDL_CreateRGBSurfaceFrom(
-			(void *)CLIENT_WINDOW_ICON.pixel_data,
-			CLIENT_WINDOW_ICON.width,
-			CLIENT_WINDOW_ICON.height,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
-#ifdef Q3_LITTLE_ENDIAN
-			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-			0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
-#endif
-			);*/
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -446,7 +430,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		}
 
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-		//SDL_SetWindowIcon( screen, icon );
 
 		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 		{
@@ -464,8 +447,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 				glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
 		break;
 	}
-
-	/*SDL_FreeSurface( icon );*/
 
 	if (!GLimp_DetectAvailableModes())
 	{
