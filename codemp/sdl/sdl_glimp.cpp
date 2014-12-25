@@ -430,11 +430,15 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 
-        if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
 		}
+
+		qglClearColor( 0, 0, 0, 1 );
+		qglClear( GL_COLOR_BUFFER_BIT );
+		SDL_GL_SwapWindow( screen );
 
 		SDL_GL_SetSwapInterval( r_swapInterval->integer );
 
