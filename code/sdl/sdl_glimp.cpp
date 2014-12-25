@@ -122,7 +122,7 @@ GLimp_DetectAvailableModes
 */
 static bool GLimp_DetectAvailableModes(void)
 {
-	int i;
+	int i, j;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
 	SDL_Rect modes[ 128 ];
 	int numModes = 0;
@@ -153,6 +153,17 @@ static bool GLimp_DetectAvailableModes(void)
 		if( windowMode.format != mode.format )
 			continue;
 
+		// SDL can give the same resolution with different refresh rates.
+		// Only list resolution once.
+		for( j = 0; j < numModes; j++ )
+		{
+			if( mode.w == modes[ j ].w && mode.h == modes[ j ].h )
+				break;
+		}
+		
+		if( j != numModes )
+			continue;
+
 		modes[ numModes ].w = mode.w;
 		modes[ numModes ].h = mode.h;
 		numModes++;
@@ -168,7 +179,7 @@ static bool GLimp_DetectAvailableModes(void)
 		if( strlen( newModeString ) < (int)sizeof( buf ) - strlen( buf ) )
 			Q_strcat( buf, sizeof( buf ), newModeString );
 		else
-			Com_Printf( "Skipping mode %ux%x, buffer too small\n", modes[ i ].w, modes[ i ].h );
+			Com_Printf( "Skipping mode %ux%u, buffer too small\n", modes[ i ].w, modes[ i ].h );
 	}
 
 	if( *buf )
