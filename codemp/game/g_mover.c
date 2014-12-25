@@ -897,7 +897,8 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	}
 
 #if 1
-	if (activator->client->sess.raceMode) { //Turn this ele into a jumppad instead mayBeeeee
+	if (activator->client->sess.raceMode && ((ent->pos2[2] - ent->pos1[2]) > 0)) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
+	{ //Turn this ele into a jumppad instead mayBeeeee
 		float height, time, strength;
 
 		//No good way to get bottom origin of the mover..? Could be weird geometry... so just assume the top of the ele model in starting position is the "bottom" of the ele.
@@ -933,15 +934,11 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 
 		//ent->damage = 0; //Temp
 
-		//trap->Print("Ele starting height: %.2f, Our Height: %.2f\n", ent->r.absmax[2], activator->client->ps.origin[2]); //Lets assume the ele starts there...
+		//trap->Print("assumed ele starting height: %.2f, pos1: %2f, pos2: %2f, Our Height: %.2f\n", ent->r.absmax[2], ent->pos1[2], ent->pos2[2], activator->client->ps.origin[2]); //Lets assume the ele starts there...
 
-		if (activator->client->ps.origin[2] > ent->r.absmax[2] + 96 /*jumpHeight*/) { //We are already more than higher than where the ele starts, so forget it..
+		if (activator->client->ps.origin[2] > ent->r.absmax[2] + 96 /*jumpHeight*/) //We are already more than higher than where the ele starts, so forget it..
 			return;
-		}
 		
-		//trap->Print("Client activator: %s, angle = %.2f %.2f %.2f", activator->client->pers.netname, ent->s.angles[0],ent->s.angles[1],ent->s.angles[2]);
-		//VectorMA( ent->pos1, distance, ent->movedir, ent->pos2 );
-
 		height = ent->pos2[2] - ent->pos1[2] + 64; //Send them up a lil higher just to be safe
 		time = sqrt(height / (.5f * g_gravity.value));
 		if (!time)
@@ -952,7 +949,6 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		if (strength > activator->client->ps.velocity[2]); //Only apply the jumppad if it would speed them up
 			activator->client->ps.velocity[2] = strength;
 	
-
 		//trap->Print("Height: %.2f, time: %.2fstrength: %.2f\n", height, time, strength);
 
 		return;
