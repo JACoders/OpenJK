@@ -627,6 +627,15 @@ void TossClientItems( gentity_t *self ) {
 				if ( !item ) {
 					continue;
 				}
+
+				// zyk: RPG players cannot drop force enlightments because they are now used as the effect when using Special Powers
+				if (item->giType == IT_POWERUP && 
+					(item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || item->giTag == PW_FORCE_ENLIGHTENED_DARK) && 
+					self->client->sess.amrpgmode == 2)
+				{
+					continue;
+				}
+
 				drop = Drop_Item( self, item, angle );
 				// decide how many seconds it has left
 				drop->count = ( self->client->ps.powerups[ i ] - level.time ) / 1000;
