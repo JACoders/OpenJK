@@ -9394,7 +9394,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							ultra_flame(ent,1400,50);
+							ultra_flame(ent,1800,50);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
@@ -9589,7 +9589,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							ultra_flame(ent,700,50);
+							ultra_flame(ent,1000,50);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 1000;
