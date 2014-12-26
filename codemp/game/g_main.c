@@ -3926,7 +3926,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		g_entities[ent->client->sess.ally3].client->noclip = qfalse;
 }
 
-// zyk: tests if the target can be hit by the attacker gun/saber damage, force power or special power
+// zyk: tests if the target player can be hit by the attacker gun/saber damage, force power or special power
 qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target)
 {
 	if (attacker && attacker->client && target && target->client && !attacker->NPC && !target->NPC)
@@ -3945,6 +3945,34 @@ qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target)
 	}
 
 	return qtrue;
+}
+
+// zyk: tests if the target entity can be hit by the attacker special power
+qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance)
+{
+	if (attacker->s.number != i && target && target->client && target->health > 0 && zyk_can_hit_target(attacker, target) == qtrue && 
+		(i > MAX_CLIENTS || (target->client->pers.connected == CON_CONNECTED && target->client->sess.sessionTeam != TEAM_SPECTATOR)))
+	{ // zyk: target is a player or npc that can be hit by the attacker
+		int player_distance = (int)Distance(attacker->client->ps.origin,target->client->ps.origin);
+
+		if (player_distance > min_distance && player_distance < max_distance)
+		{
+			int is_ally = 0;
+
+			if (i < level.maxclients && !attacker->NPC && 
+				(attacker->client->sess.ally1 == i || attacker->client->sess.ally2 == i || attacker->client->sess.ally3 == i))
+			{ // zyk: allies will not be hit by this power
+				is_ally = 1;
+			}
+
+			if (is_ally == 0 && !(target->client->pers.quest_power_status & (1 << 0)))
+			{ // zyk: target cannot be attacker ally and cannot be using Immunity Power
+				return qtrue;
+			}
+		}
+	}
+
+	return qfalse;
 }
 
 // zyk: Healing Water
@@ -3967,40 +3995,23 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+			{ // zyk: player can only be hit if he is on floor
+				player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+				player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
+				player_ent->client->ps.velocity[2] += strength;
+				player_ent->client->ps.forceDodgeAnim = 0;
+				player_ent->client->ps.quickerGetup = qtrue;
 
-			if (player_distance < distance)
+				G_Damage(player_ent,ent,ent,NULL,NULL,strength/5,0,MOD_UNKNOWN);
+			}
+
+			if (i < level.maxclients)
 			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
-					{ // zyk: player can only be hit if he is on floor
-						player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-						player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
-						player_ent->client->ps.velocity[2] += strength;
-						player_ent->client->ps.forceDodgeAnim = 0;
-						player_ent->client->ps.quickerGetup = qtrue;
-
-						G_Damage(player_ent,ent,ent,NULL,NULL,strength/5,0,MOD_UNKNOWN);
-					}
-
-					if (i < level.maxclients)
-					{
-						G_ScreenShake(player_ent->client->ps.origin, player_ent,  10.0f, 4000, qtrue); 
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/stone_break1.mp3"));
-					}
-				}
+				G_ScreenShake(player_ent->client->ps.origin, player_ent,  10.0f, 4000, qtrue); 
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/stone_break1.mp3"));
 			}
 		}
 	}
@@ -4015,31 +4026,14 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-			if (player_distance < distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_user3_id = ent->s.number;
-					player_ent->client->pers.quest_power_status |= (1 << 8);
-					player_ent->client->pers.quest_target6_timer = level.time + duration;
+			player_ent->client->pers.quest_power_user3_id = ent->s.number;
+			player_ent->client->pers.quest_power_status |= (1 << 8);
+			player_ent->client->pers.quest_target6_timer = level.time + duration;
 							
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
 	}
 }
@@ -4053,33 +4047,16 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+			player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
+			player_ent->client->ps.velocity[2] += 150;
+			player_ent->client->ps.forceDodgeAnim = 0;
+			player_ent->client->ps.quickerGetup = qtrue;
 
-			if (player_distance < distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-					player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
-					player_ent->client->ps.velocity[2] += 150;
-					player_ent->client->ps.forceDodgeAnim = 0;
-					player_ent->client->ps.quickerGetup = qtrue;
-
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
 		}
 	}
 }
@@ -4093,32 +4070,15 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			player_ent->client->pers.quest_power_user2_id = ent->s.number;
+			player_ent->client->pers.quest_power_status |= (1 << 4);
+			player_ent->client->pers.quest_target3_timer = level.time + 1000;
+			player_ent->client->pers.quest_power_hit_counter = 10;
 
-			if (player_distance > min_distance && player_distance < max_distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_user2_id = ent->s.number;
-					player_ent->client->pers.quest_power_status |= (1 << 4);
-					player_ent->client->pers.quest_target3_timer = level.time + 1000;
-					player_ent->client->pers.quest_power_hit_counter = 10;
-
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
 		}
 	}
 }
@@ -4132,29 +4092,13 @@ void time_power(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-			if (player_distance < distance)
-			{
-				int found = 0;
+			player_ent->client->pers.quest_power_status |= (1 << 2);
+			player_ent->client->pers.quest_target2_timer = level.time + duration;
 
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_status |= (1 << 2);
-					player_ent->client->pers.quest_target2_timer = level.time + duration;
-
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/electric_beam_lp.wav"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/electric_beam_lp.wav"));
 		}
 	}
 }
@@ -4168,44 +4112,27 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			player_ent->client->pers.quest_power_user1_id = ent->s.number;
+			player_ent->client->pers.quest_power_status |= (1 << 1);
+			player_ent->client->pers.quest_power_hit_counter = 1;
+			player_ent->client->pers.quest_target1_timer = level.time + 1000;
 
-			if (player_distance < distance)
+			if (player_ent->client->jetPackOn)
 			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_user1_id = ent->s.number;
-					player_ent->client->pers.quest_power_status |= (1 << 1);
-					player_ent->client->pers.quest_power_hit_counter = 1;
-					player_ent->client->pers.quest_target1_timer = level.time + 1000;
-
-					if (player_ent->client->jetPackOn)
-					{
-						Jetpack_Off(player_ent);
-					}
-
-					// zyk: First Chaos Power hit
-					player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-					player_ent->client->ps.forceHandExtendTime = level.time + 5000;
-					player_ent->client->ps.velocity[2] += 150;
-					player_ent->client->ps.forceDodgeAnim = 0;
-					player_ent->client->ps.quickerGetup = qtrue;
-					player_ent->client->ps.electrifyTime = level.time + 5000;
-
-					G_Damage(player_ent,ent,ent,NULL,NULL,first_damage,0,MOD_UNKNOWN);
-				}
+				Jetpack_Off(player_ent);
 			}
+
+			// zyk: First Chaos Power hit
+			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+			player_ent->client->ps.forceHandExtendTime = level.time + 5000;
+			player_ent->client->ps.velocity[2] += 150;
+			player_ent->client->ps.forceDodgeAnim = 0;
+			player_ent->client->ps.quickerGetup = qtrue;
+			player_ent->client->ps.electrifyTime = level.time + 5000;
+
+			G_Damage(player_ent,ent,ent,NULL,NULL,first_damage,0,MOD_UNKNOWN);
 		}
 	}
 }
@@ -4219,26 +4146,9 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-			if (player_distance < distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
-				}
-			}
+			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 		}
 	}
 }
@@ -4281,44 +4191,27 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			gentity_t *new_ent = G_Spawn();
 
-			if (player_distance < distance)
-			{
-				int found = 0;
+			zyk_set_entity_field(new_ent,"classname","fx_runner");
+			zyk_set_entity_field(new_ent,"spawnflags","0");
+			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_watersplash");
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
+			new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
 
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					gentity_t *new_ent = G_Spawn();
+			zyk_spawn_entity(new_ent);
 
-					zyk_set_entity_field(new_ent,"classname","fx_runner");
-					zyk_set_entity_field(new_ent,"spawnflags","0");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_watersplash");
-					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
+			healing_water(ent,damage);
 
-					new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
+			level.special_power_effects[new_ent->s.number] = ent->s.number;
+			level.special_power_effects_timer[new_ent->s.number] = level.time + 3000;
 
-					zyk_spawn_entity(new_ent);
-
-					G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
-					healing_water(ent,damage);
-
-					level.special_power_effects[new_ent->s.number] = ent->s.number;
-					level.special_power_effects_timer[new_ent->s.number] = level.time + 3000;
-
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
 		}
 	}
 }
@@ -4332,41 +4225,24 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			gentity_t *new_ent = G_Spawn();
 
-			if (player_distance < distance)
-			{
-				int found = 0;
+			zyk_set_entity_field(new_ent,"classname","fx_runner");
+			zyk_set_entity_field(new_ent,"spawnflags","4");
+			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_rockfall");
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
+			new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
 
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					gentity_t *new_ent = G_Spawn();
+			zyk_spawn_entity(new_ent);
 
-					zyk_set_entity_field(new_ent,"classname","fx_runner");
-					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_rockfall");
-					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+			new_ent->splashDamage = damage;
+			new_ent->splashRadius = 100;
 
-					new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
-
-					zyk_spawn_entity(new_ent);
-
-					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 100;
-
-					level.special_power_effects[new_ent->s.number] = ent->s.number;
-					level.special_power_effects_timer[new_ent->s.number] = level.time + 8000;
-				}
-			}
+			level.special_power_effects[new_ent->s.number] = ent->s.number;
+			level.special_power_effects_timer[new_ent->s.number] = level.time + 8000;
 		}
 	}
 }
@@ -4380,42 +4256,25 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			gentity_t *new_ent = G_Spawn();
 
-			if (player_distance < distance)
-			{
-				int found = 0;
+			zyk_set_entity_field(new_ent,"classname","fx_runner");
+			zyk_set_entity_field(new_ent,"spawnflags","4");
+			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_dome");
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
+			new_ent->s.modelindex = G_EffectIndex( "env/dome" );
 
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					gentity_t *new_ent = G_Spawn();
+			zyk_spawn_entity(new_ent);
 
-					zyk_set_entity_field(new_ent,"classname","fx_runner");
-					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_dome");
-					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+			new_ent->splashDamage = damage;
+			new_ent->splashRadius = 290;
+			new_ent->nextthink = level.time + 1400;
 
-					new_ent->s.modelindex = G_EffectIndex( "env/dome" );
-
-					zyk_spawn_entity(new_ent);
-
-					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 290;
-					new_ent->nextthink = level.time + 1400;
-
-					level.special_power_effects[new_ent->s.number] = ent->s.number;
-					level.special_power_effects_timer[new_ent->s.number] = level.time + 10000;
-				}
-			}
+			level.special_power_effects[new_ent->s.number] = ent->s.number;
+			level.special_power_effects_timer[new_ent->s.number] = level.time + 10000;
 		}
 	}
 }
@@ -4453,30 +4312,13 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			player_ent->client->pers.quest_power_status |= (1 << 6);
+			player_ent->client->pers.quest_target5_timer = level.time + duration;
 
-			if (player_distance < distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_status |= (1 << 6);
-					player_ent->client->pers.quest_target5_timer = level.time + duration;
-
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
 		}
 	}
 }
@@ -4500,41 +4342,24 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+			gentity_t *new_ent = G_Spawn();
 
-			if (player_distance < distance)
-			{
-				int found = 0;
+			zyk_set_entity_field(new_ent,"classname","fx_runner");
+			zyk_set_entity_field(new_ent,"spawnflags","4");
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
 
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
+			new_ent->s.modelindex = G_EffectIndex( "env/flame_jet" );
 
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					gentity_t *new_ent = G_Spawn();
+			zyk_spawn_entity(new_ent);
 
-					zyk_set_entity_field(new_ent,"classname","fx_runner");
-					zyk_set_entity_field(new_ent,"spawnflags","4");
-					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
+			new_ent->splashDamage = damage;
+			new_ent->splashRadius = 35;
+			new_ent->nextthink = level.time + 1000;
 
-					new_ent->s.modelindex = G_EffectIndex( "env/flame_jet" );
-
-					zyk_spawn_entity(new_ent);
-
-					new_ent->splashDamage = damage;
-					new_ent->splashRadius = 35;
-					new_ent->nextthink = level.time + 1000;
-
-					level.special_power_effects[new_ent->s.number] = ent->s.number;
-					level.special_power_effects_timer[new_ent->s.number] = level.time + 90000;
-				}
-			}
+			level.special_power_effects[new_ent->s.number] = ent->s.number;
+			level.special_power_effects_timer[new_ent->s.number] = level.time + 90000;
 		}
 	}
 }
@@ -4548,31 +4373,14 @@ void hurricane(gentity_t *ent, int distance, int duration)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (ent->s.number != i && player_ent && player_ent->client && player_ent->health > 0 && zyk_can_hit_target(ent, player_ent) == qtrue && 
-			(i > MAX_CLIENTS || (player_ent->client->pers.connected == CON_CONNECTED && player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance) == qtrue)
 		{
-			int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-			if (player_distance < distance)
-			{
-				int found = 0;
-
-				// zyk: allies will not be hit by this power
-				if (i < level.maxclients && !ent->NPC && (ent->client->sess.ally1 == i || ent->client->sess.ally2 == i || ent->client->sess.ally3 == i))
-				{
-					found = 1;
-				}
-
-				if (found == 0 && !(player_ent->client->pers.quest_power_status & (1 << 0)))
-				{
-					player_ent->client->pers.quest_power_status |= (1 << 5);
-					player_ent->client->pers.quest_power_hit_counter = -179;
-					player_ent->client->pers.quest_target4_timer = level.time + duration;
+			player_ent->client->pers.quest_power_status |= (1 << 5);
+			player_ent->client->pers.quest_power_hit_counter = -179;
+			player_ent->client->pers.quest_target4_timer = level.time + duration;
 							
-					if (i < level.maxclients)
-						G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
-				}
-			}
+			if (i < level.maxclients)
+				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
 	}
 }
