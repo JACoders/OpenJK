@@ -530,12 +530,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
-	// zyk: if the default map music is empty (the map has no music) then set a default music
-	if (Q_stricmp(level.default_map_music, "") == 0)
-	{
-		strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
-	}
-
 	// zyk: initializing battle type variables
 	level.battle_type = 0;
 	if (1)
@@ -1229,6 +1223,22 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		zyk_create_info_player_deathmatch(2597,7403,1817,90);
 		zyk_create_info_player_deathmatch(2397,7403,1817,90);
 		zyk_create_info_player_deathmatch(2797,7403,1817,90);
+	}
+
+	if (Q_stricmp(level.default_map_music, "") == 0)
+	{ // zyk: if the default map music is empty (the map has no music) then set a default music
+		if (level.quest_map == 1)
+			strcpy(level.default_map_music,"music/yavin1/swamp_explore.mp3");
+		else if (level.quest_map == 7)
+			strcpy(level.default_map_music,"music/t2_rogue/narshaada_explore.mp3");
+		else if (level.quest_map == 10)
+			strcpy(level.default_map_music,"music/yavin2/yavtemp2_explore.mp3");
+		else if (level.quest_map == 13)
+			strcpy(level.default_map_music,"music/t1_fatal/tunnels_explore.mp3");
+		else if (level.quest_map == 15)
+			strcpy(level.default_map_music,"music/t2_wedge/besplat_explore.mp3");
+		else
+			strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
 	}
 }
 
