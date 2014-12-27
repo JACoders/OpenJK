@@ -8308,8 +8308,11 @@ if (pm->ps->duelInProgress)
 		{
 			// enough energy to fire this weapon?
 			if (pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].energyPerShot &&
-				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot &&
-				(!((g_tweakWeapons.integer & STAKE_GUN) & (pm->ps->weapon != WP_FLECHETTE))))
+				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot
+#ifdef _GAME 
+				&& (!((g_tweakWeapons.integer & STAKE_GUN) & (pm->ps->weapon != WP_FLECHETTE)))
+#endif
+				)
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
 			  //regardless of if the player is attacking or not
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
@@ -12593,6 +12596,7 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (pm->ps->stats[STAT_RACEMODE])
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 
+#ifdef _GAME
 	if (pm->ps->pm_type == PM_NORMAL) {
 		if (blocks.roof && pm->ps->origin[2] > (blocks.roof + 128) && (pm->ps->velocity[2] > -128)) { //sad hack until blockwallcreate.. only racemode?
 			pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
@@ -12603,6 +12607,7 @@ void PmoveSingle (pmove_t *pmove) {
 		else if (blocks.floor && pm->ps->origin[2] < blocks.floor && pm->ps->velocity[2] < 0)
 			pm->ps->velocity[2] = 0;
 	}
+#endif
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{

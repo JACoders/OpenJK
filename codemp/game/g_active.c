@@ -2651,7 +2651,11 @@ void ClientThink_real( gentity_t *ent ) {
 				if (g_saberDisable.integer & SABERSTYLE_STAFF) //No staff
 					forceSingle = qtrue;
 			}
-		
+
+			if ((g_saberDisable.integer & SABERSTYLE_STAFF) && (g_saberDisable.integer & SABERSTYLE_DUAL) && (Q_stricmp(client->pers.saber1, "kyle") || Q_stricmp(client->pers.saber2, "none"))) {//No staff or duel.. force single kyle saber if not already.
+				forceSingle = qtrue;
+			}
+
 			if (forceSingle) {
 				char userinfo[MAX_INFO_STRING] = {0};
 

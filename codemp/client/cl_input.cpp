@@ -858,7 +858,9 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
 
+#if 1
 	int		left, right;
+#endif
 
 	//
 	// adjust for speed key / running
@@ -903,9 +905,14 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	cmd->upmove = ClampChar( up );
 
 #if 1
-	if (cl_test->integer && left == 127 && right == 0) {
+	if (cl_test->integer == 1 && left == 127 && right == 0) {
 		cmd->rightmove = 127;
 	}
+	if (cl_test->integer == 2 && left == 127 && right == 0 && forward == 127) {
+		cmd->rightmove = 127;
+		cmd->forwardmove = 0;
+	}
+
 #endif
 }
 

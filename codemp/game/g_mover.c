@@ -897,8 +897,8 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	}
 
 #if 1
-	if (activator->client->sess.raceMode && ((ent->pos2[2] - ent->pos1[2]) > 0)) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
-	{ //Turn this ele into a jumppad instead mayBeeeee
+	if (activator->client->sess.raceMode && (!other || !(other->spawnflags & 4)) && ((ent->pos2[2] - ent->pos1[2]) > 0)) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
+	{ //Turn this ele into a jumppad.  Also only do this if the trigger was not a use button
 		float height, time, strength;
 
 		//No good way to get bottom origin of the mover..? Could be weird geometry... so just assume the top of the ele model in starting position is the "bottom" of the ele.

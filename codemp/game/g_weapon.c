@@ -1771,9 +1771,9 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->clipmask = MASK_SHOT;
 	stake->s.solid = SOLID_BBOX;
 
-	stake->splashDamage = 75;
+	stake->splashDamage = 60;
 	stake->splashRadius = 128;
-	stake->damage = 75;
+	stake->damage = 60;
 	stake->methodOfDeath = MOD_TRIP_MINE_SPLASH;
 
 	stake->takedamage = qtrue;
