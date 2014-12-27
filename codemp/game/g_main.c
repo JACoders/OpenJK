@@ -4191,6 +4191,35 @@ void immunity_power(gentity_t *ent, int duration)
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/boon.mp3"));
 }
 
+void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetname, char *spawnflags, char *effect_path, int start_time, int damage, int radius, int duration)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent,"classname","fx_runner");
+	zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
+	zyk_set_entity_field(new_ent,"targetname",targetname);
+	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
+
+	new_ent->s.modelindex = G_EffectIndex( effect_path );
+
+	zyk_spawn_entity(new_ent);
+
+	if (damage > 0)
+		new_ent->splashDamage = damage;
+
+	if (radius > 0)
+		new_ent->splashRadius = radius;
+
+	if (start_time > 0) 
+		new_ent->nextthink = level.time + start_time;
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+
+	if (Q_stricmp(targetname, "zyk_quest_effect_drain") == 0)
+		G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+}
+
 // zyk: Water Splash. Damages the targets and heals the user
 void water_splash(gentity_t *ent, int distance, int damage)
 {
@@ -4202,22 +4231,10 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
 		{
-			gentity_t *new_ent = G_Spawn();
-
-			zyk_set_entity_field(new_ent,"classname","fx_runner");
-			zyk_set_entity_field(new_ent,"spawnflags","0");
-			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_watersplash");
-			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
-
-			new_ent->s.modelindex = G_EffectIndex( "world/waterfall3" );
-
-			zyk_spawn_entity(new_ent);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_watersplash", "0", "world/waterfall3", 0, 0, 0, 3000);
 
 			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 			healing_water(ent,damage);
-
-			level.special_power_effects[new_ent->s.number] = ent->s.number;
-			level.special_power_effects_timer[new_ent->s.number] = level.time + 3000;
 
 			if (i < level.maxclients)
 				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
@@ -4236,22 +4253,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
 		{
-			gentity_t *new_ent = G_Spawn();
-
-			zyk_set_entity_field(new_ent,"classname","fx_runner");
-			zyk_set_entity_field(new_ent,"spawnflags","4");
-			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_rockfall");
-			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->r.currentOrigin[0],(int)player_ent->r.currentOrigin[1],(int)player_ent->r.currentOrigin[2]));
-
-			new_ent->s.modelindex = G_EffectIndex( "env/rockfall_noshake" );
-
-			zyk_spawn_entity(new_ent);
-
-			new_ent->splashDamage = damage;
-			new_ent->splashRadius = 100;
-
-			level.special_power_effects[new_ent->s.number] = ent->s.number;
-			level.special_power_effects_timer[new_ent->s.number] = level.time + 8000;
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_rockfall", "4", "env/rockfall_noshake", 0, damage, 100, 8000);
 		}
 	}
 }
@@ -4267,23 +4269,7 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
 		{
-			gentity_t *new_ent = G_Spawn();
-
-			zyk_set_entity_field(new_ent,"classname","fx_runner");
-			zyk_set_entity_field(new_ent,"spawnflags","4");
-			zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_dome");
-			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->r.currentOrigin[0],(int)player_ent->r.currentOrigin[1],(int)player_ent->r.currentOrigin[2]));
-
-			new_ent->s.modelindex = G_EffectIndex( "env/dome" );
-
-			zyk_spawn_entity(new_ent);
-
-			new_ent->splashDamage = damage;
-			new_ent->splashRadius = 290;
-			new_ent->nextthink = level.time + 1400;
-
-			level.special_power_effects[new_ent->s.number] = ent->s.number;
-			level.special_power_effects_timer[new_ent->s.number] = level.time + 10000;
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_dome", "4", "env/dome", 1400, damage, 290, 10000);
 		}
 	}
 }
@@ -4291,25 +4277,7 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 // zyk: Ultra Drain
 void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
 {
-	gentity_t *new_ent = G_Spawn();
-
-	zyk_set_entity_field(new_ent,"classname","fx_runner");
-	zyk_set_entity_field(new_ent,"spawnflags","4");
-	zyk_set_entity_field(new_ent,"targetname","zyk_quest_effect_drain");
-	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)ent->client->ps.origin[0],(int)ent->client->ps.origin[1],(int)ent->client->ps.origin[2]));
-
-	new_ent->s.modelindex = G_EffectIndex( "misc/possession" );
-
-	zyk_spawn_entity(new_ent);
-	
-	new_ent->splashDamage = damage;
-	new_ent->splashRadius = radius;
-	new_ent->nextthink = level.time + 1000;
-
-	level.special_power_effects[new_ent->s.number] = ent->s.number;
-	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
-
-	G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_drain", "4", "misc/possession", 1000, damage, radius, duration);
 }
 
 // zyk: Slow Motion
@@ -4353,22 +4321,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
 		{
-			gentity_t *new_ent = G_Spawn();
-
-			zyk_set_entity_field(new_ent,"classname","fx_runner");
-			zyk_set_entity_field(new_ent,"spawnflags","4");
-			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)player_ent->client->ps.origin[0],(int)player_ent->client->ps.origin[1],(int)player_ent->client->ps.origin[2]));
-
-			new_ent->s.modelindex = G_EffectIndex( "env/flame_jet" );
-
-			zyk_spawn_entity(new_ent);
-
-			new_ent->splashDamage = damage;
-			new_ent->splashRadius = 35;
-			new_ent->nextthink = level.time + 1000;
-
-			level.special_power_effects[new_ent->s.number] = ent->s.number;
-			level.special_power_effects_timer[new_ent->s.number] = level.time + 90000;
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_flame", "4", "env/flame_jet", 1000, damage, 35, 90000);
 		}
 	}
 }
