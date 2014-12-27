@@ -3798,7 +3798,7 @@ qboolean TryGrapple(gentity_t *ent)
 				else if (use_this_power == 13 && ent->client->pers.magic_power >= zyk_ultra_flame_mp_cost.integer)
 				{
 					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-					ultra_flame(ent,400,50);
+					ultra_flame(ent,500,50);
 					ent->client->pers.magic_power -= zyk_ultra_flame_mp_cost.integer;
 					if (ent->client->pers.rpg_class == 8)
 						ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.improvements_level)/4.0));
