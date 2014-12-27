@@ -1030,15 +1030,17 @@ struct gclient_s {
 	qboolean	iAmALoser;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
-	int			lastKickedBy;
+	int			lastKickedByTime;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
 	qboolean	emote_freeze;//JAPRO - Amfreeze Anim
 	int			lastUpdateFrame; // JAPRO - Smooth clients loda
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
-	int			csTimeLeft;						// JAPRO - Time left for client's CenterScreen
+	short		csTimeLeft;						// JAPRO - Time left for client's CenterScreen
 	int			pmoveMsec;//Japro timers
 	int			lastBounceTime; //japro bounce trigger
-	int			noKnockdownStreak; //pseudo random knockdowns option
+	short		noKnockdownStreak; //pseudo random knockdowns option
+	short		totalDamage;
+	int			lastDamageTime;
 	//int			numStakes;
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
