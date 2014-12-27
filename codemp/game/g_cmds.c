@@ -4752,19 +4752,20 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 
 int zyk_max_magic_power(gentity_t *ent)
 {
-	int max_factor = 1;
+	int bonus_mp = 0;
+	int max_mp = ent->client->pers.level * 2;
 
 	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
-		max_factor = 2;
+		bonus_mp += 100;
 
 	// zyk: Challenge Mode. If player completed all quests, give more MP
 	if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 29))
-		max_factor += 1;
+		bonus_mp += 100;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
-		return ((ent->client->pers.level * max_factor) + 30 + (40 * ent->client->pers.improvements_level));
+		return (max_mp + bonus_mp + 50 + (50 * ent->client->pers.improvements_level));
 	else
-		return (ent->client->pers.level * max_factor);
+		return (max_mp + bonus_mp);
 }
 
 // zyk: initialize RPG skills of this player
