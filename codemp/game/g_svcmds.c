@@ -455,7 +455,7 @@ void Svcmd_GiveAdmin_f ( void )
 
 	if (g_entities[client_id].client->sess.amrpgmode > 0)
 	{
-		g_entities[client_id].client->pers.bitvalue |= (1 << 2);
+		g_entities[client_id].client->pers.bitvalue |= (1 << ADM_GIVEADM);
 		save_account(&g_entities[client_id]);
 		trap->Print("GiveAdmin saved successfully.\n");
 	}

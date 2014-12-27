@@ -445,7 +445,7 @@ argv(0) noclip
 void Cmd_Noclip_f( gentity_t *ent ) {
 	char *msg = NULL;
 
-	if (!(ent->client->pers.bitvalue & (1 << 1)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_NOCLIP)))
 	{ // zyk: noclip admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -9794,7 +9794,7 @@ void Cmd_Teleport_f( gentity_t *ent )
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
 
-	if (!(ent->client->pers.bitvalue & (1 << 3)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_TELE)))
 	{ // zyk: teleport admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -9835,7 +9835,7 @@ void Cmd_Teleport_f( gentity_t *ent )
 				return;
 			}
 
-			if (g_entities[client_id].client->sess.amrpgmode > 0 && g_entities[client_id].client->pers.bitvalue & (1 << 4) && !(g_entities[client_id].client->pers.player_settings & (1 << 13)))
+			if (g_entities[client_id].client->sess.amrpgmode > 0 && g_entities[client_id].client->pers.bitvalue & (1 << ADM_ADMPROTECT) && !(g_entities[client_id].client->pers.player_settings & (1 << 13)))
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
 				return;
@@ -9873,7 +9873,7 @@ void Cmd_Teleport_f( gentity_t *ent )
 			return;
 		}
 
-		if (g_entities[client1_id].client->sess.amrpgmode > 0 && g_entities[client1_id].client->pers.bitvalue & (1 << 4) && !(g_entities[client1_id].client->pers.player_settings & (1 << 13)))
+		if (g_entities[client1_id].client->sess.amrpgmode > 0 && g_entities[client1_id].client->pers.bitvalue & (1 << ADM_ADMPROTECT) && !(g_entities[client1_id].client->pers.player_settings & (1 << 13)))
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
 			return;
@@ -9891,7 +9891,7 @@ void Cmd_Teleport_f( gentity_t *ent )
 			return;
 		}
 
-		if (g_entities[client2_id].client->sess.amrpgmode > 0 && g_entities[client2_id].client->pers.bitvalue & (1 << 4) && !(g_entities[client2_id].client->pers.player_settings & (1 << 13)))
+		if (g_entities[client2_id].client->sess.amrpgmode > 0 && g_entities[client2_id].client->pers.bitvalue & (1 << ADM_ADMPROTECT) && !(g_entities[client2_id].client->pers.player_settings & (1 << 13)))
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
 			return;
@@ -11439,7 +11439,7 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
 
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11501,7 +11501,7 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 	char arg4[MAX_STRING_CHARS];
 	char arg5[MAX_STRING_CHARS];
 
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11582,7 +11582,7 @@ void Cmd_EntNear_f( gentity_t *ent ) {
 	char message[1024];
 	gentity_t *this_ent = NULL;
 
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11616,7 +11616,7 @@ void Cmd_EntList_f( gentity_t *ent ) {
 
 	strcpy(message,"");
 
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11656,7 +11656,7 @@ void Cmd_EntRemove_f( gentity_t *ent ) {
 	char   arg1[MAX_STRING_CHARS];
 	char   arg2[MAX_STRING_CHARS];
 
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11736,7 +11736,7 @@ void Cmd_Silence_f( gentity_t *ent ) {
 	int client_id = -1;
 	char   arg[MAX_STRING_CHARS];
 
-	if (!(ent->client->pers.bitvalue & (1 << 6)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_SILENCE)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
@@ -11904,7 +11904,7 @@ Cmd_AdminUp_f
 ==================
 */
 void Cmd_AdminUp_f( gentity_t *ent ) {
-	if (ent->client->pers.bitvalue & (1 << 2))
+	if (ent->client->pers.bitvalue & (1 << ADM_GIVEADM))
 	{
 		char	arg1[MAX_STRING_CHARS];
 		char	arg2[MAX_STRING_CHARS];
@@ -11934,13 +11934,13 @@ void Cmd_AdminUp_f( gentity_t *ent ) {
 		}
 		if (Q_stricmp (arg2, "all") == 0)
 		{ // zyk: if player wrote all, give all commands to the target player
-			for (i = 0; i < 7; i++)
+			for (i = 0; i < ADM_NUM_CMDS; i++)
 				g_entities[client_id].client->pers.bitvalue |= (1 << i);
 		}
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 7)
+			if (bitvaluecommand < 0 || bitvaluecommand >= ADM_NUM_CMDS)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -11964,7 +11964,7 @@ Cmd_AdminDown_f
 ==================
 */
 void Cmd_AdminDown_f( gentity_t *ent ) {
-	if (ent->client->pers.bitvalue & (1 << 2))
+	if (ent->client->pers.bitvalue & (1 << ADM_GIVEADM))
 	{
 		char	arg1[MAX_STRING_CHARS];
 		char	arg2[MAX_STRING_CHARS];
@@ -11999,7 +11999,7 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= 7)
+			if (bitvaluecommand < 0 || bitvaluecommand >= ADM_GIVEADM)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -12086,7 +12086,7 @@ Cmd_EntitySystem_f
 ==================
 */
 void Cmd_EntitySystem_f( gentity_t *ent ) {
-	if (!(ent->client->pers.bitvalue & (1 << 5)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;

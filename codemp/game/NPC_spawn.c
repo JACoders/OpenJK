@@ -4806,7 +4806,7 @@ void Cmd_NPC_f( gentity_t *ent )
 	int player_it = 0;
 	gentity_t *this_ent = NULL;
 
-	if (!(ent->client->pers.bitvalue & (1 << 0)))
+	if (!(ent->client->pers.bitvalue & (1 << ADM_NPC)))
 	{ // zyk: npc admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;

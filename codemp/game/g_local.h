@@ -471,6 +471,18 @@ typedef struct clientSession_s {
 #define MAX_NETNAME			36
 #define	MAX_VOTE_COUNT		3
 
+// zyk: admin bit values
+typedef enum {
+	ADM_NPC,
+	ADM_NOCLIP,
+	ADM_GIVEADM,
+	ADM_TELE,
+	ADM_ADMPROTECT,
+	ADM_ENTITYSYSTEM,
+	ADM_SILENCE,
+	ADM_NUM_CMDS
+} zyk_admin_t;
+
 // zyk: number of lines in the player account file
 #define NUMBER_OF_LINES 71
 
