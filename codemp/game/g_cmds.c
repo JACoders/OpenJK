@@ -11776,83 +11776,83 @@ Cmd_AdminList_f
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
 	char message[1024];
-	char message_content[8][150];
+	char message_content[ADM_NUM_CMDS + 1][150];
 	int i = 0;
 	strcpy(message,"");
 
 	if (trap->Argc() == 1)
 	{
-		while (i < 7)
+		while (i < ADM_NUM_CMDS)
 		{
 			strcpy(message_content[i],"");
 			i++;
 		}
-		message_content[7][0] = '\0';
+		message_content[ADM_NUM_CMDS][0] = '\0';
 
-		if ((ent->client->pers.bitvalue & (1 << 0))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_NPC))) 
 		{
-			strcpy(message_content[0],va("^3 %d ^7- NPC: ^2yes\n",0));
+			strcpy(message_content[0],va("^3 %d ^7- NPC: ^2yes\n",ADM_NPC));
 		}
 		else
 		{
-			strcpy(message_content[0],va("^3 %d ^7- NPC: ^1no\n",0));
+			strcpy(message_content[0],va("^3 %d ^7- NPC: ^1no\n",ADM_NPC));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 1))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_NOCLIP))) 
 		{
-			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^2yes\n",1));
+			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^2yes\n",ADM_NOCLIP));
 		}
 		else
 		{
-			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^1no\n",1));
+			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^1no\n",ADM_NOCLIP));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 2))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_GIVEADM))) 
 		{
-			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^2yes\n",2));
+			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^2yes\n",ADM_GIVEADM));
 		}
 		else
 		{
-			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^1no\n",2));
+			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^1no\n",ADM_GIVEADM));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 3))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_TELE))) 
 		{
-			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^2yes\n",3));
+			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^2yes\n",ADM_TELE));
 		}
 		else
 		{
-			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^1no\n",3));
+			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^1no\n",ADM_TELE));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 4))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_ADMPROTECT))) 
 		{
-			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^2yes\n",4));
+			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^2yes\n",ADM_ADMPROTECT));
 		}
 		else
 		{
-			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^1no\n",4));
+			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^1no\n",ADM_ADMPROTECT));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 5))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM))) 
 		{
-			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^2yes\n",5));
+			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^2yes\n",ADM_ENTITYSYSTEM));
 		}
 		else
 		{
-			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^1no\n",5));
+			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^1no\n",ADM_ENTITYSYSTEM));
 		}
 
-		if ((ent->client->pers.bitvalue & (1 << 6))) 
+		if ((ent->client->pers.bitvalue & (1 << ADM_SILENCE))) 
 		{
-			strcpy(message_content[6],va("^3 %d ^7- Silence: ^2yes\n",6));
+			strcpy(message_content[6],va("^3 %d ^7- Silence: ^2yes\n",ADM_SILENCE));
 		}
 		else
 		{
-			strcpy(message_content[6],va("^3 %d ^7- Silence: ^1no\n",6));
+			strcpy(message_content[6],va("^3 %d ^7- Silence: ^1no\n",ADM_SILENCE));
 		}
 
-		for (i = 0; i < 7; i++)
+		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
@@ -11867,31 +11867,31 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		trap->Argv( 1,  arg1, sizeof( arg1 ) );
 		command_number = atoi(arg1);
 
-		if (command_number == 0)
+		if (command_number == ADM_NPC)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/npc spawn <name> ^7to spawn a npc. Use ^3/npc spawn vehicle <name> to spawn a vehicle. Use ^3/npc kill all ^7to kill all npcs\n\n\"" );
 		}
-		else if (command_number == 1)
+		else if (command_number == ADM_NOCLIP)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/noclip ^7to toggle noclip\n\n\"" );
 		}
-		else if (command_number == 2)
+		else if (command_number == ADM_GIVEADM)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nThis flag allows admins to give or remove admin commands from a player with ^3/adminup <name> <command number> ^7and ^3/admindown <name> <command number>^7\n\n\"" );
 		}
-		else if (command_number == 3)
+		else if (command_number == ADM_TELE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nThis command can be ^3/teleport^7 or ^3/tele^7. Use ^3/teleport point ^7to mark a spot in map, then use ^3/teleport ^7to go there. Use ^3/teleport <player name or ID> ^7to teleport to a player. Use ^3/teleport <player name or ID> <player name or ID> ^7to teleport a player to another. Use ^3/teleport <x> <y> <z> ^7to teleport to coordinates\n\n\"" );
 		}
-		else if (command_number == 4)
+		else if (command_number == ADM_ADMPROTECT)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nWith this flag, a player can use Admin Protect option in /settings to protect himself from admin commands\n\n\"" );
 		}
-		else if (command_number == 5)
+		else if (command_number == ADM_ENTITYSYSTEM)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/entitysystem ^7to see the Entity System commands\n\n\"" );
 		}
-		else if (command_number == 6)
+		else if (command_number == ADM_SILENCE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/silence <player name or ID> ^7to silence that player\n\n\"" );
 		}
