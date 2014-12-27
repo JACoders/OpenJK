@@ -1550,6 +1550,12 @@ qboolean PM_CanBackstab(void)
 
 			VectorSubtract(cl->ps.origin, pm->ps->origin, diff);
 
+			//trap->Print("Diff: %.0f\n", diff[2]);
+			//Height restrictions: If we are more than 48 above them, cancel. if we are more than 32 below them, cancel
+
+			if ((diff[2] > 32) || (diff[2] < -48)) //Dont let them bs above or below us.
+				continue;
+
 			if (VectorLengthSquared(diff) < BACK_STAB_DISTANCE*BACK_STAB_DISTANCE)
 				return qtrue;
 
