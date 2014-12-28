@@ -10551,7 +10551,10 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			if (ent->client->pers.player_settings & (1 << value))
 			{ // zyk: setting Normal Mode removes the Challenge Mode flag
 				ent->client->pers.player_settings &= ~(1 << value);
-				ent->client->pers.universe_quest_counter &= ~(1 << 29);
+
+				if (ent->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+					ent->client->pers.universe_quest_counter &= ~(1 << 29);
+
 				strcpy(new_status,"^2Normal^7");
 			}
 			else
