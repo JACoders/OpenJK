@@ -5505,15 +5505,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1) { //JAPRO - Serverside - Damage numbers  - Start
 		int i;
 
+		if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 7) {
+			if (attacker->client->lastDamageTime < level.time - 3000) //This attack of theirs is within 500ms of a previous attack.
+				attacker->client->totalDamage = take; //Reset the damage counter
+			else //Set their new dmg print as cumulitave damage.
+				attacker->client->totalDamage += take;
+			attacker->client->lastDamageTime = level.time;
+		}
+
 		if (!attacker->client->pers.noDamageNumbers) {
 			if (g_damageNumbers.integer == 1 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 6) 
 				trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take, targ->client->pers.netname));
 			if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5) {
-				if (attacker->client->lastDamageTime < level.time - 3000) //This attack of theirs is within 500ms of a previous attack.
-					attacker->client->totalDamage = take; //Reset the damage counter
-				else //Set their new dmg print as cumulitave damage.
-					attacker->client->totalDamage += take;
-				attacker->client->lastDamageTime = level.time;
 				trap->SendServerCommand( attacker-g_entities, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", attacker->client->totalDamage));
 			}
 			if (g_damageNumbers.integer == 4)
@@ -5529,13 +5532,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				if (!g_entities[i].inuse)
 					continue;
 				if ((level.clients[i].sess.sessionTeam == TEAM_SPECTATOR) && (level.clients[i].ps.pm_flags & PMF_FOLLOW) && (level.clients[i].sess.spectatorClient == attacker->client->ps.clientNum)) {
-					trap->SendServerCommand( i, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", take));
 					if (!level.clients[i].pers.noDamageNumbers) {
-						if (attacker->client->lastDamageTime < level.time - 3000) //This attack of theirs is within 500ms of a previous attack.
-							attacker->client->totalDamage = take; //Reset the damage counter
-						else //Set their new dmg print as cumulitave damage.
-							attacker->client->totalDamage += take;
-						attacker->client->lastDamageTime = level.time;
 						trap->SendServerCommand( i, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", attacker->client->totalDamage));
 					}
 				}

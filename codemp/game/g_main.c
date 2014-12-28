@@ -2792,6 +2792,24 @@ void SetFailedCallVoteIP(char *ClientIP) {
 	}
 }
 
+static void VotePassed( void ) {
+	gentity_t *ent;
+	int i;
+
+	trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+	level.voteExecuteTime = level.time + level.voteExecuteDelay;
+
+	if (level.voteExecuteDelay > 5000) {
+		for (i = 0; i < level.numConnectedClients; i++) {
+			gentity_t *ent = &g_entities[level.sortedClients[i]];
+
+			gentity_t *te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC );
+			te->s.time = level.voteExecuteTime;
+			te->s.owner = ent->s.number;
+		}
+	}
+}
+
 /*
 ==================
 CheckVote
@@ -2863,8 +2881,7 @@ void CheckVote( void ) {
 	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
 		if (g_fixVote.integer) {
 			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
-				trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
-				level.voteExecuteTime = level.time + level.voteExecuteDelay;
+				VotePassed();
 			}
 			else {
 				trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
@@ -2882,9 +2899,7 @@ void CheckVote( void ) {
 		}
 
 		if ( level.voteYes > numClients/2 ) {
-			// execute the command, then remove the vote
-			trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
-			level.voteExecuteTime = level.time + level.voteExecuteDelay;
+			VotePassed(); // execute the command, then remove the vote
 		}
 
 		// same behavior as a timeout

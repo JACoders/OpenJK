@@ -132,7 +132,7 @@ static void BeginHack(int entityNum)
 		for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
 			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC) || ((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap")))) {
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
@@ -193,7 +193,7 @@ static void EndHack(int entityNum) {
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC)) {
+				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC) || ((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap")))) {
 					ent->r.ownerNum = saved[i];
 				}
 			}

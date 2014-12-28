@@ -7344,6 +7344,9 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 		return;
 	}
 
+	if (g_entities[bs->client].client->pers.amfreeze) //No AI if we are frozen
+		return;
+
 	if (g_newBotAITarget.integer < 0)
 		closestID = ScanForEnemies(bs); //This has been modified to take health into account, and ignore FOV, mindtrick, etc, when newBotAI is being used.
 	else {
