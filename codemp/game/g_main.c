@@ -9068,40 +9068,54 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
+							immunity_power(ent,ent->health);
+							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Immunity Power!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 7)
+						{
+							ultra_drain(ent,450,60,8000);
+							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Ultra Drain!\""));
+							ent->client->pers.hunter_quest_messages++;
+							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 8)
+						{
 							poison_mushrooms(ent,100,500);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Poison Mushrooms!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 7)
+						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
 							water_splash(ent,500,100);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 8)
+						else if (ent->client->pers.hunter_quest_messages == 10)
 						{
 							rock_fall(ent,600,55);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Deaths: ^7Rockfall!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 9)
+						else if (ent->client->pers.hunter_quest_messages == 11)
 						{
 							ultra_flame(ent,1000,50);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 10)
+						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
 							dome_of_doom(ent,800,40);
 							trap->SendServerCommand( -1, va("chat \"^1Master of Death: ^7Dome of Damage!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 11)
+						else if (ent->client->pers.hunter_quest_messages == 13)
 						{
 							if (ent->client->pers.flame_thrower < level.time)
 							{
@@ -9112,7 +9126,7 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 12)
+						else if (ent->client->pers.hunter_quest_messages == 14)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
 							int player_it = 0;
 
@@ -9136,7 +9150,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Outer Area Damage!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 13)
+						else if (ent->client->pers.hunter_quest_messages == 15)
 						{
 							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
@@ -9144,7 +9158,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Earthquake!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 14)
+						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
 							time_power(ent,900,6000);
 
@@ -9153,7 +9167,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Time Power!\"");
 						}
-						else if (ent->client->pers.hunter_quest_messages == 15)
+						else if (ent->client->pers.hunter_quest_messages == 17)
 						{
 							chaos_power(ent,900,350);
 
