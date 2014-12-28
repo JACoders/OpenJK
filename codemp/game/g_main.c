@@ -4733,7 +4733,13 @@ void quest_power_events(gentity_t *ent)
 			{ // zyk: Poison Mushrooms
 				if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target3_timer < level.time)
 				{
-					G_Damage(ent,&g_entities[ent->client->pers.quest_power_user2_id],&g_entities[ent->client->pers.quest_power_user2_id],NULL,NULL,40,0,MOD_UNKNOWN);
+					gentity_t *poison_mushrooms_user = &g_entities[ent->client->pers.quest_power_user2_id];
+
+					if (poison_mushrooms_user && poison_mushrooms_user->client)
+					{
+						G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,40,0,MOD_UNKNOWN);
+					}
+
 					ent->client->pers.quest_power_hit_counter--;
 					ent->client->pers.quest_target3_timer = level.time + 1000;
 				}
