@@ -6220,6 +6220,7 @@ qboolean CanDamage (gentity_t *targ, vec3_t origin) {
 G_RadiusDamage
 ============
 */
+extern qboolean npcs_on_same_team(gentity_t *attacker, gentity_t *target);
 qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, float radius,
 					 gentity_t *ignore, gentity_t *missile, int mod) {
 	float		points, dist;
@@ -6336,6 +6337,13 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 					if (!ent->client || ent->client->sess.amrpgmode != 2 || ((ent->client->sess.amrpgmode == 2 || ent->client->pers.guardian_invoked_by_id != -1) && !(ent->client->pers.quest_power_status & (1 << 0))))
 					{ // zyk: can only hit if this player or boss is not using Immunity Power
 						gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
+
+						// zyk: if the power user and the target are allies (player or npc), then do not hit
+						if (quest_power_user && quest_power_user->client && ent && ent->client &&
+							(OnSameTeam(quest_power_user, ent) == qtrue || npcs_on_same_team(quest_power_user, ent) == qtrue))
+						{
+							continue;
+						}
 
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0)
 						{ // zyk: Ultra Drain heals the power user

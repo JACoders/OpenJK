@@ -3947,6 +3947,16 @@ qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target)
 	return qtrue;
 }
 
+qboolean npcs_on_same_team(gentity_t *attacker, gentity_t *target)
+{
+	if (attacker->NPC && target->NPC && attacker->client->playerTeam == target->client->playerTeam)
+	{
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 // zyk: tests if the target entity can be hit by the attacker special power
 qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance, qboolean hit_breakable)
 {
@@ -3962,6 +3972,11 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 			if (i < level.maxclients && !attacker->NPC && 
 				(attacker->client->sess.ally1 == i || attacker->client->sess.ally2 == i || attacker->client->sess.ally3 == i))
 			{ // zyk: allies will not be hit by this power
+				is_ally = 1;
+			}
+
+			if (OnSameTeam(attacker, target) == qtrue || npcs_on_same_team(attacker, target) == qtrue)
+			{ // zyk: if one of them is npc, also check for allies
 				is_ally = 1;
 			}
 
