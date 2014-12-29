@@ -832,7 +832,8 @@ void CG_DrawInformation( void ) {
 	else
 	{
 		CG_DrawLoadingScreen(levelshot, s);
-		cgi_UI_MenuPaintAll();
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "loadscreen" ), qtrue );
+		//cgi_UI_MenuPaintAll();
 	}
 
 	CG_LoadBar();
