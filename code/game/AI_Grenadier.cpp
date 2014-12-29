@@ -507,8 +507,13 @@ void NPC_BSGrenadier_Attack( void )
 	enemyDist = DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin );
 
 	//See if we should switch to melee attack
-	if ( enemyDist < 16384 && (!NPC->enemy->client||NPC->enemy->client->ps.weapon != WP_SABER||(!NPC->enemy->client->ps.SaberActive())) )//128
-	{//enemy is close and not using saber
+	if ( (enemyDist < 16384 
+		&& (!NPC->enemy->client||NPC->enemy->client->ps.weapon != WP_SABER||(!NPC->enemy->client->ps.SaberActive())))
+		||
+		(enemyDist < 4096 //64 squared
+		&& Q_irand(0,1)))//50% chance to throw a punch if player is super close
+		// 50% chance if enemy very close to use melee on saber wielding enemy
+	{//enemy is close and not using saber or very close and random chance
 		if ( NPC->client->ps.weapon == WP_THERMAL )
 		{//grenadier
 			trace_t	trace;

@@ -361,9 +361,12 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->NPC->scriptFlags |= (SCF_DONT_FLEE|SCF_IGNORE_ALERTS);
 		ent->NPC->ignorePain = qtrue;
 	}
-	if ( Q_stricmp( "chewie", ent->NPC_type ) )
+	if ( !Q_stricmp( "chewie", ent->NPC_type )
+		|| ent->client->NPC_class == CLASS_GRAN
+		|| ent->client->NPC_class == CLASS_TRANDOSHAN )
 	{
 		//in case chewie ever loses his gun...
+		//or if Trando or Gran want to get rough
 		ent->NPC->aiFlags |= NPCAI_HEAVY_MELEE;
 	}
 	//==================
@@ -603,13 +606,14 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 					NPCInfo->scriptFlags |= SCF_PILOT;
 
 					ST_ClearTimers( ent );
-					if ( ent->NPC->rank >= RANK_COMMANDER )
-					{//commanders use alt-fire
-						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					if ( ent->NPC->rank >= RANK_COMMANDER 
+						&& ent->client->NPC_class == CLASS_IMPERIAL )
+					{//imp commanders and rodians with E11s use alt-fire
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 					}
-					if ( !Q_stricmp( "rodian2", ent->NPC_type ) )
+					if ( ent->client->NPC_class == CLASS_RODIAN )
 					{
-						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 					}
 					break;
 				}
@@ -1070,7 +1074,14 @@ void NPC_Begin (gentity_t *ent)
 			}
 			else
 			{
-				ent->NPC->stats.health += ent->NPC->stats.health/4 * g_spskill->integer; // 100% on easy, 125% on medium, 150% on hard
+				if (ent->client->playerTeam == TEAM_PLAYER)
+				{ //good guys lose health for difficulty, don't gain
+					ent->NPC->stats.health = (ent->NPC->stats.health * 1.5) - (ent->NPC->stats.health / 4 * g_spskill->integer); // 150% on easy, 125% on medium, 100% on hard
+				}
+				else
+				{ //bad guys get health bonuses
+					ent->NPC->stats.health += ent->NPC->stats.health / 4 * g_spskill->integer; // 100% on easy, 125% on medium, 150% on hard
+				}
 			}
 		}
 		

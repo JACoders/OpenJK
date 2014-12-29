@@ -28,7 +28,7 @@ void WP_Melee( gentity_t *ent )
 	gentity_t	*tr_ent;
 	trace_t		tr;
 	vec3_t		mins, maxs, end;
-	int			damage = ent->s.number ? (g_spskill->integer*2)+1 : 3;
+	int			damage = ent->s.number ? 5 : 5;
 	float		range = ent->s.number ? 64 : 32;
 
 	VectorMA( muzzle, range, forwardVec, end );
@@ -47,14 +47,11 @@ void WP_Melee( gentity_t *ent )
 
 	if ( ent->client && !PM_DroidMelee( ent->client->NPC_class ) )
 	{
-		if ( ent->s.number || ent->alt_fire )
+		if (ent->client->ps.torsoAnim == BOTH_MELEE2)
 		{
-			damage *= Q_irand( 2, 3 );
+			damage = 7;
 		}
-		else
-		{
-			damage *= Q_irand( 1, 2 );
-		}
+		//else damage = 5
 	}
 
 	if ( tr_ent && tr_ent->takedamage )

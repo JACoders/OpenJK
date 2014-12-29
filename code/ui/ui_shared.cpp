@@ -5413,7 +5413,9 @@ static const char *g_bindCommands[] = {
 	"weapon 8",
 	"weapon 9",
 	"weapprev",
-	"zoom"
+	"zoom",
+	"weapon",
+	"give weapon_melee"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)

@@ -111,6 +111,7 @@ extern qboolean G_TryingCartwheel( gentity_t *self, usercmd_t *cmd );
 extern qboolean G_TryingSpecial( gentity_t *self, usercmd_t *cmd );
 extern qboolean G_TryingJumpAttack( gentity_t *self, usercmd_t *cmd );
 extern qboolean G_TryingJumpForwardAttack( gentity_t *self, usercmd_t *cmd );
+extern qboolean WP_ForcePowerUsable(gentity_t *self, forcePowers_t forcePower, int overrideAmt);
 extern void WP_SaberSwingSound( gentity_t *ent, int saberNum, swingType_t swingType );
 extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel );
 extern qboolean WP_SaberStyleValidForSaber( gentity_t *ent, int saberAnimLevel );
@@ -142,6 +143,7 @@ extern cvar_t	*g_debugMelee;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
+extern cvar_t	*g_autoRoll;
 
 static void PM_SetWaterLevelAtPoint( vec3_t org, int *waterlevel, int *watertype );
 
@@ -3496,12 +3498,9 @@ static void PM_CrashLandDamage( int damage )
 			damage = 1000;
 			dflags |= DAMAGE_DIE_ON_IMPACT;
 		}
-		else
+		else if ( !(pm->gent->flags&FL_NO_IMPACT_DMG) )
 		{
 			damage = PM_DamageForDelta( damage );
-
-			if ( (pm->gent->flags&FL_NO_IMPACT_DMG) )
-				return;
 		}
 
 		if ( damage )
@@ -3771,8 +3770,9 @@ static qboolean PM_TryRoll( void )
 			return qfalse;
 		}
 	}
-	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (!cg.renderingThirdPerson || cg.zoomMode) )
+	if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && (cg.renderingThirdPerson || cg.zoomMode) )
 	{//player can't do this in 1st person
+		// now you can - Dusty ;)
 		return qfalse;
 	}
 	if ( !pm->gent )
@@ -8358,9 +8358,10 @@ static void PM_Footsteps( void )
 			&& ( !PM_InRollIgnoreTimer( pm->ps )||(!pm->ps->legsAnimTimer&&pm->cmd.upmove<0) ) )//not in a roll (or you just finished one and you're still holding crouch)
 		{
 			qboolean rolled = qfalse;
-			if ( PM_RunningAnim( pm->ps->legsAnim ) 
+			if ( ((PM_RunningAnim( pm->ps->legsAnim ) 
 				|| pm->ps->legsAnim == BOTH_FORCEHEAL_START
-				|| PM_CanRollFromSoulCal( pm->ps )) 
+				|| PM_CanRollFromSoulCal( pm->ps )) && 
+				(g_autoRoll->integer || pm->cmd.buttons&BUTTON_USE)))
 			{//roll!
 				rolled = PM_TryRoll();
 			}
@@ -11058,13 +11059,19 @@ qboolean PM_PickAutoMultiKick( qboolean allowSingles )
 
 qboolean PM_SaberThrowable( void )
 {
+	//player gets to kick if holding use
+	if ( (pm->cmd.buttons&BUTTON_USE) )
+	{
+		return qfalse;
+	}
+
 	//ugh, hard-coding this is bad...
 	if ( pm->ps->saberAnimLevel == SS_STAFF )
 	{
 		return qfalse;
 	}
 	
-	if ( !(pm->ps->saber[0].saberFlags&SFL_NOT_THROWABLE) )
+	if (!(pm->ps->saber[0].saberFlags&SFL_NOT_THROWABLE) && !(pm->cmd.buttons&BUTTON_USE))
 	{//yes, this saber is always throwable
 		return qtrue;
 	}
@@ -11094,14 +11101,18 @@ qboolean PM_SaberThrowable( void )
 
 qboolean PM_CheckAltKickAttack( void )
 {
-	if ( (pm->cmd.buttons&BUTTON_ALT_ATTACK) 
+	if ( ((pm->cmd.buttons&BUTTON_ALT_ATTACK) 
 		&& (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) ||PM_SaberInReturn(pm->ps->saberMove))
 		&& (!PM_FlippingAnim(pm->ps->legsAnim)||pm->ps->legsAnimTimer<=250)
-		&& (!PM_SaberThrowable()) 
+		//&& PM_SaberThrowable()
+		&& (!WP_ForcePowerUsable(pm->gent, FP_SABERTHROW, 20)) //make sure saber throw is disabled before trying to kick
 		&& pm->ps->SaberActive()
 		&& !(pm->ps->saber[0].saberFlags&SFL_NO_KICKS)//okay to do kicks with this saber
-		&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_KICKS) )//okay to do kicks with this saber
+		&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_KICKS) )//okay to do kicks with the 2nd saber
 		)
+		|| ((pm->cmd.buttons&BUTTON_ALT_ATTACK)	
+		&& !(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD)
+		&& pm->cmd.buttons&BUTTON_USE))
 	{
 		return qtrue;
 	}
@@ -13304,6 +13315,7 @@ Generates weapon events and modifes the weapon counter
 static void PM_Weapon( void ) 
 {
 	int			addTime, amount, trueCount = 1;
+	int			punch = 0;
 	qboolean	delayed_fire = qfalse;
 
 	if ( (pm->ps->eFlags&EF_HELD_BY_WAMPA) )
@@ -13646,10 +13658,17 @@ static void PM_Weapon( void )
 				{
 					if ( PM_DroidMelee( pm->gent->client->NPC_class ) )
 					{
-						if ( rand() & 1 )
-							PM_SetAnim(pm,SETANIM_BOTH,BOTH_MELEE1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
+						if (punch == 0)
+						{
+							PM_SetAnim(pm, SETANIM_BOTH, BOTH_MELEE1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+							punch = 1;
+						}
 						else
-							PM_SetAnim(pm,SETANIM_BOTH,BOTH_MELEE2,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
+						{
+							PM_SetAnim(pm, SETANIM_BOTH, BOTH_MELEE2, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+							punch = 0;
+						}
+							
 					}
 					else
 					{
@@ -13931,8 +13950,8 @@ static void PM_Weapon( void )
 			addTime = weaponData[pm->ps->weapon].fireTime;
 		}
 	}
-	else if ( (pm->ps->weapon == WP_MELEE && (pm->ps->clientNum>=MAX_CLIENTS||!g_debugMelee->integer) )
-		|| pm->ps->weapon == WP_TUSKEN_STAFF 
+	else if ( /*(pm->ps->weapon == WP_MELEE && (pm->ps->clientNum>=MAX_CLIENTS||!g_debugMelee->integer) ) //will commenting this fix firetime discrepancy for melee with kungfu?
+		||*/ pm->ps->weapon == WP_TUSKEN_STAFF 
 		|| (pm->ps->weapon == WP_TUSKEN_RIFLE&&!(pm->cmd.buttons&BUTTON_ALT_ATTACK))  )
 	{
 		PM_AddEvent( EV_FIRE_WEAPON );

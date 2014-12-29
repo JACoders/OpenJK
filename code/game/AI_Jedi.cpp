@@ -2423,6 +2423,10 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 				allowCartWheels = qfalse;
 			}
 		}
+		if (self->client->ps.forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_1)
+		{ //can't do no-handed cartwheels without a bit of force jumping ability
+			allowCartWheels = qfalse;
+		}
 
 		if ( PM_SaberInAttack( self->client->ps.saberMove )
 			|| PM_SaberInStart( self->client->ps.saberMove ) )

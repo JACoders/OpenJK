@@ -928,7 +928,14 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 	case WP_MELEE:
 	case WP_TUSKEN_STAFF:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
-		ent->NPC->burstSpacing = 1000;//attackdebounce
+		if (ent->NPC->aiFlags & NPCAI_HEAVY_MELEE)
+		{ //heavy melee guys punch a bit slower
+			ent->NPC->burstSpacing = 1000;//attackdebounce
+		}
+		else
+		{ //regular melee guys punch faster but weaker
+			ent->NPC->burstSpacing = 500;//attackdebounce
+		}
 		break;
 
 	case WP_ATST_MAIN:

@@ -200,8 +200,9 @@ cvar_t	*g_saberDarkSideSaberColor;
 //new cvars - Dusty
 cvar_t	*g_saberNewCombat; 
 cvar_t  *g_saberLocksEnabled;
-cvar_t	*g_saberDmgScale;
+cvar_t	*g_saberDamageScale;
 cvar_t  *g_saberWalkAnims;
+cvar_t  *g_autoRoll;
 
 cvar_t	*g_char_forcepoints;
 cvar_t	*g_char_ParryBonus;
@@ -701,8 +702,9 @@ void G_InitCvars( void ) {
 	//new cvars yay - Dusty
 	g_saberNewCombat = gi.cvar("g_saberNewCombat", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberLocksEnabled = gi.cvar("g_saberLocksEnabled", "1", CVAR_ARCHIVE | CVAR_CHEAT);
-	g_saberDmgScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
 	g_char_forcepoints = gi.cvar("g_char_forcepoints", "100", CVAR_CHEAT | CVAR_SAVEGAME );
+	g_autoRoll = gi.cvar("g_autoRoll", "1", CVAR_ARCHIVE );
 }
 /*
 ============

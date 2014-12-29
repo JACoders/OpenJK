@@ -4988,22 +4988,51 @@ void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time )
 
 extern qboolean PM_SpinningSaberAnim( int anim );
 extern float saberAnimSpeedMod[NUM_FORCE_POWER_LEVELS];
-void PM_SaberStartTransAnim( int saberAnimLevel, int anim, float *animSpeed, gentity_t *gent )
+void PM_SaberStartTransAnim(int saberAnimLevel, int anim, float *animSpeed, gentity_t *gent)
 {
-	if ( anim >= BOTH_A1_T__B_ && anim <= BOTH_ROLL_STAB )
+	if (g_saberNewCombat->integer) //new code
 	{
-		if ( g_saberAnimSpeed->value != 1.0f )
+		if ( anim == BOTH_V1_BL_S1 
+			|| anim == BOTH_V1_BR_S1
+			|| anim == BOTH_V1_TL_S1
+			|| anim == BOTH_V1_TR_S1
+			|| anim == BOTH_V1_T__S1
+			|| (anim >= BOTH_V6_BL_S6 && anim <= BOTH_V7__R_S7) )
+		{ //we're in a broken attack
+			//speed up recovery from broken attacks based on SO level
+			*animSpeed = saberAnimSpeedMod[gent->client->ps.forcePowerLevel[FP_SABER_OFFENSE]];
+		}
+		if (g_saberAnimSpeed->value != 1.0f)
 		{
 			*animSpeed *= g_saberAnimSpeed->value;
 		}
-		else if ( gent && gent->client && gent->client->ps.weapon == WP_SABER )
+		else if (gent && gent->client && gent->client->ps.weapon == WP_SABER)
 		{
-			if ( gent->client->ps.saber[0].animSpeedScale != 1.0f )
+			if (gent->client->ps.saber[0].animSpeedScale != 1.0f)
 			{
 				*animSpeed *= gent->client->ps.saber[0].animSpeedScale;
 			}
-			if ( gent->client->ps.dualSabers
-				&& gent->client->ps.saber[1].animSpeedScale != 1.0f )
+			if (gent->client->ps.dualSabers
+				&& gent->client->ps.saber[1].animSpeedScale != 1.0f)
+			{
+				*animSpeed *= gent->client->ps.saber[1].animSpeedScale;
+			}
+		}
+	}
+	else //old code
+	{
+		if (g_saberAnimSpeed->value != 1.0f)
+		{
+			*animSpeed *= g_saberAnimSpeed->value;
+		}
+		else if (gent && gent->client && gent->client->ps.weapon == WP_SABER)
+		{
+			if (gent->client->ps.saber[0].animSpeedScale != 1.0f)
+			{
+				*animSpeed *= gent->client->ps.saber[0].animSpeedScale;
+			}
+			if (gent->client->ps.dualSabers
+				&& gent->client->ps.saber[1].animSpeedScale != 1.0f)
 			{
 				*animSpeed *= gent->client->ps.saber[1].animSpeedScale;
 			}

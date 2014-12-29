@@ -44,6 +44,7 @@ extern void WP_SaberUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_BlockPointsRegenerate( gentity_t *self );
+extern void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd);
 
 extern gentity_t *SeekerAcquiresTarget ( gentity_t *ent, vec3_t pos );
 extern void FireSeeker( gentity_t *owner, gentity_t *target, vec3_t origin, vec3_t dir );
@@ -1292,7 +1293,25 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 						magnitude = 0;
 					}
 
-					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					if( (!Q_stricmp(self->NPC_type, "rosh_penin") ||
+						!Q_stricmp(self->NPC_type, "rosh_penin_noforce")) &&
+						!Q_stricmp(level.mapname, "yavin1b") )
+					{
+						// This is a small little fix I implemented over a matter of 3 commits due to bugs/etc.
+						// There is an EXTREMELY frustrating bug on yavin1b where Rosh can take enough damage from howlers to the point
+						// where, during one section where he jumps over a stream, he can suffer falling damage and die. So the player
+						// would be forced to repeat the level over and over again.
+						// Despite it being clearly a jump, the scripters for the level somehow forgot to add a cushion brush on
+						// the landing zone where Rosh would be, (fucking woglodytes that Raven outsourced the levels to, I swear...)
+						// resulting in a very weird and unnatural death. So it didn't make any sense. So I did the nasty thing and did
+						// it through code.
+						// This could also probably explain why Rosh suddenly dies for NO reason whatsoever in rare occasions on Jedi
+						// Master/Jedi Knight mode at the start of the level. --eezstreet
+					}
+					else
+					{
+						G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					}
 				}
 			}
 		}
@@ -5264,11 +5283,21 @@ extern cvar_t	*g_skippingcin;
 	WP_BlockPointsRegenerate( ent );
 
 	//if we have the saber in hand, check for starting a block to reflect shots
-	if ( ent->s.number < MAX_CLIENTS//player
-		|| ( ent->NPC && G_JediInNormalAI( ent ) ) )//NPC jedi not in a special AI mode
+	if ((ent->s.number < MAX_CLIENTS//player 
+		|| (ent->NPC && G_JediInNormalAI(ent)))) //NPC jedi not in a special AI mode
 	{
-		WP_SaberStartMissileBlockCheck( ent, ucmd  );
+		if (ent->client->ps.weapon == WP_SABER)
+		{
+			WP_SaberStartMissileBlockCheck(ent, ucmd);
+		}
 	}
+
+	if (ent->NPC && ent->client->ps.weapon == WP_MELEE)
+	{//we may be a melee force user, use a check for explosives and saber throws
+		Jedi_MeleeEvasionDefense(ent, ucmd);
+	}
+		
+
 
 	// Update the position of the saber, and check to see if we're throwing it
 	if ( client->ps.saberEntityNum != ENTITYNUM_NONE )
