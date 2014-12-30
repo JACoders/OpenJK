@@ -6889,9 +6889,9 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if ((g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) //fix saber switch glitch if we want
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) //fix saber switch glitch if we want
 		pm->ps->weaponTime += 1250;
-	else if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
+	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FAST_WEAPONSWITCH))
 		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;
@@ -7846,7 +7846,7 @@ static void PM_Weapon( void )
 		//this is so that my holster-view-weapon-when-hand-extend stuff works.
 		pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FAST_WEAPONSWITCH))
 		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;
@@ -9220,7 +9220,7 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 			pmove->cmd.upmove <= 0 && !pmove->cmd.forwardmove && !pmove->cmd.rightmove*/)
 		{
 			// We just pressed the alt-fire key
-			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD )
+			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD && pmove->ps->pm_type != PM_NOCLIP)
 			{
 				// not already zooming, so do it now
 				pmove->ps->zoomMode = 1;

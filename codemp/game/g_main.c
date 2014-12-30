@@ -2796,10 +2796,11 @@ static void VotePassed( void ) {
 	gentity_t *ent;
 	int i;
 
+	//trap->Print("Delay is %i\n", level.voteExecuteDelay);
 	trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 	level.voteExecuteTime = level.time + level.voteExecuteDelay;
 
-	if (level.voteExecuteDelay > 5000) {
+	if (level.voteExecuteDelay >= 5000) {
 		for (i = 0; i < level.numConnectedClients; i++) {
 			gentity_t *ent = &g_entities[level.sortedClients[i]];
 

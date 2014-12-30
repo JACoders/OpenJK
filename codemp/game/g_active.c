@@ -4838,7 +4838,7 @@ void G_RunClient( gentity_t *ent ) {
 		ent->client->pers.cmd.rightmove = ent->client->pers.lastCmd.rightmove;
 		ent->client->pers.cmd.upmove = ent->client->pers.lastCmd.upmove;
 	
-		//Get rid of deadstops caused by lag..apparently this was really annoying for some people with bad net
+		//Get rid of deadstops caused by lag (set their upmove to their last upmove) ..apparently this was really annoying for some people with bad net
 		//Still fixes the problem of lagging through triggers, or freezing midair etc..
 
 		ClientThink_real( ent );

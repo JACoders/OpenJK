@@ -555,6 +555,14 @@ void WriteToTmpRaceLog(char *string, size_t stringSize) {
 	}
 }
 
+/*
+void PrintCompletedRace(qboolean valid, char *netname, char *username, int rank, char *removeduser) {//JAPRO Timers
+	trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
+		c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
+
+}
+*/
+
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char		string[1024] = {0}, info[1024] = {0}, courseName[40];

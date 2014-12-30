@@ -4425,11 +4425,17 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	{
 	case HL_FOOT_RT:
 	case HL_FOOT_LT:
-		*damage *= 0.5;
+		if (g_locationBasedDamage.integer == 2)
+			*damage *= 0.6;
+		else
+			*damage *= 0.5;
 		break;
 	case HL_LEG_RT:
 	case HL_LEG_LT:
-		*damage *= 0.7;
+		if (g_locationBasedDamage.integer == 2)
+			*damage *= 0.8;
+		else
+			*damage *= 0.7;
 		break;
 	case HL_WAIST:
 	case HL_BACK_RT:
@@ -4442,12 +4448,15 @@ void G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		break; //normal damage
 	case HL_ARM_RT:
 	case HL_ARM_LT:
-		*damage *= 0.85;
+		if (g_locationBasedDamage.integer == 2)
+			*damage *= 0.95;
+		else
+			*damage *= 0.85;
 		break;
 	case HL_HAND_RT:
 	case HL_HAND_LT:
 		if (g_locationBasedDamage.integer == 2)//JAPRO - Serverside - Change location based damage to not give such low dmg for hand hits as it is pretty random wether you are awarded torso or hand hit.
-			*damage *= 0.85;
+			*damage *= 0.9;
 		else
 			*damage *= 0.6;
 		break;

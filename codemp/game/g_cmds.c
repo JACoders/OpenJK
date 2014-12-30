@@ -5320,6 +5320,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
 			Q_strcat(buf, sizeof(buf), "race ");
 		if (level.gametype == GT_FFA) {
+			Q_strcat(buf, sizeof(buf), "jump ");
 			Q_strcat(buf, sizeof(buf), "movementStyle ");
 			Q_strcat(buf, sizeof(buf), "rocketChange ");
 			Q_strcat(buf, sizeof(buf), "hide ");
@@ -5332,7 +5333,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 					Q_strcat(buf, sizeof(buf), "noclip ");
 			}
 		}
-		Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
+		if (g_movementStyle.integer == 6 || level.gametype == GT_FFA)
+			Q_strcat(buf, sizeof(buf), "+button13 (dodge/dash/walljump)");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 	}
 
@@ -6231,13 +6233,52 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 	}
 }
 
+static void Cmd_JumpChange_f(gentity_t *ent) 
+{
+	char jLevel[32];
+	int level;
+
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /jump <level>\n\"" );
+		return;
+	}
+
+	if (!ent->client->sess.raceMode) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	trap->Argv(1, jLevel, sizeof(jLevel));
+	level = atoi(jLevel);
+
+	if (level > 0 && level < 4) {
+		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = level;
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap->SendServerCommand( ent-g_entities, va("print \"Jumplevel updated (%i): timer reset.\n\"", level ));
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else
+			trap->SendServerCommand( ent-g_entities, va("print \"Jumplevel updated (%i).\n\"", level ));
+	}
+	else
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /jump <level>\n\"" );
+}
+
 static void Cmd_BackwardsRocket_f(gentity_t *ent)
 {
 	if (!ent->client)
 		return;
 
 	if (trap->Argc() != 1) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /rocketChange\n\"" );
 		return;
 	}
 
@@ -6277,7 +6318,7 @@ static void Cmd_Hide_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 1) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /noFollow\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /hide\n\"" );
 		return;
 	}
 
@@ -7517,6 +7558,8 @@ command_t commands[] = {
 	{ "hide",				Cmd_Hide_f,					CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "ignore",				Cmd_Ignore_f,				0 },//[JAPRO - Serverside - All - Ignore]
 	{ "jetpack",			Cmd_Jetpack_f,				CMD_NOINTERMISSION|CMD_ALIVE },
+
+	{ "jump",				Cmd_JumpChange_f,			CMD_NOINTERMISSION|CMD_ALIVE},
 
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
