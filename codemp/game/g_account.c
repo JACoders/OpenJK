@@ -2265,7 +2265,18 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	}
 
-	trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Nickname\n\"");
+	if (admin) {
+		if (g_raceMode.integer)
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Race  Style  Jump  Hidden  Nickame\n\"");
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Nickname\n\"");
+	}
+	else {
+		if (g_raceMode.integer)
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Race  Style  Jump  Hidden  Nickname\n\"");
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Nickname\n\"");
+	}
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
@@ -2277,9 +2288,63 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			char strName[MAX_NETNAME] = {0};
 			char strUser[16] = {0};
 
+			char strIP[NET_ADDRSTRMAXLEN] = {0};
+			char strAdmin[32] = {0};
+			char strPlugin[32] = {0};
+			char strRace[32] = {0};
+			char strHidden[32] = {0};
+			char strStyle[32] = {0};
+			char jumpLevel[32] = {0};
+			char *p = NULL;
+
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Q_strncpyz( strUser, cl->pers.userName, sizeof(strUser));	
+			Q_strncpyz(jumpLevel, va("%i", cl->ps.fd.forcePowerLevel[FP_LEVITATION]), sizeof(jumpLevel));
+
+			if (admin) {
+				p = strchr(strIP, ':');
+				if (p) //loda - fix ip sometimes not printing in amstatus?
+					*p = 0;
+				if (cl->sess.fullAdmin)
+					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
+				else if (cl->sess.juniorAdmin)
+					Q_strncpyz(strAdmin, "^3Junior^7", sizeof(strAdmin));
+				else
+					Q_strncpyz(strAdmin, "^7None^7", sizeof(strAdmin));
+			}
+
+			if (g_raceMode.integer) {
+				Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+
+				Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
+
+				if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+					Q_strncpyz(strStyle, "^7^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+					Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+					Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+					Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+					Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 4)
+					Q_strncpyz(strStyle, "^7q3^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 5)
+					Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
+					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
+					Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
+				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+					Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
+			}
+
+			if (g_entities[i].r.svFlags & SVF_BOT)
+				Q_strncpyz(strPlugin, "^7Bot^7", sizeof(strPlugin));
+			else
+				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
 			if (admin && !strUser[0]) { //No username means not logged in, so check if they have an account tied to their ip
 				char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -2310,10 +2375,26 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				CALL_SQLITE (reset (stmt));
 				CALL_SQLITE (clear_bindings (stmt));
 
-				tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+				//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+
+				 //Admin prints
+				if (g_raceMode.integer)
+					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+					tmpMsg = va( "%-2s^3%-18s%-18s^7%-12s%-11s%-10s%-11s%-6s%-12s%s^7\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+				else
+					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+					tmpMsg = va( "%-2s^3%-18s%-18s^7%-12s%-11s%s^7\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
 			}
-			else
-				tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
+			else {//Not admin
+				if (g_raceMode.integer)
+					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+					tmpMsg = va( "%-2s^7%-18s^7%-12s%-10s%-11s%-6s%-12s%s^7\n", strNum, strUser, strPlugin, strRace, strStyle, jumpLevel, strHidden, strName);
+				else
+					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
+					tmpMsg = va( "%-2s^7%-18s^7%-12s%s^7\n", strNum, strUser, strPlugin, strName);
+
+				//tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
+			}
 			
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));

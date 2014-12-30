@@ -5463,10 +5463,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_VSTR))) 
 			Q_strcat(buf, sizeof(buf), "amVstr "); 
-		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
-			Q_strcat(buf, sizeof(buf), "amStatus "); 
-		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
-			Q_strcat(buf, sizeof(buf), "amStatus "); 
+		//if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_STATUS))) 
+			//Q_strcat(buf, sizeof(buf), "amStatus "); 
+		//else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_STATUS))) 
+			//Q_strcat(buf, sizeof(buf), "amStatus "); 
 		if ((ent->client->sess.fullAdmin) && (g_fullAdminLevel.integer & (1 << A_RENAME))) 
 			Q_strcat(buf, sizeof(buf), "amRename "); 
 		else if ((ent->client->sess.juniorAdmin) && (g_juniorAdminLevel.integer & (1 << A_RENAME))) 
@@ -5487,6 +5487,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 }
 //[JAPRO - Serverside - All - Aminfo Function - End]
 //[JAPRO - Serverside - All - Amstatus Function - Start]
+/*
 static void Cmd_Amstatus_f( gentity_t *ent )
 {//Display list of players + clientNum + IP + admin
 	int              i;
@@ -5580,6 +5581,7 @@ static void Cmd_Amstatus_f( gentity_t *ent )
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
 //[JAPRO - Serverside - All - Amstatus Function - End]
+*/
 
 static void Cmd_Amlookup_f( gentity_t *ent )
 {//Display list of players + clientNum + IP + admin
@@ -7511,7 +7513,7 @@ command_t commands[] = {
 	{ "amsit5",				Cmd_EmoteSit5_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsleep",			Cmd_EmoteSleep_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsmack",			Cmd_EmoteSmack_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
-	{ "amstatus",			Cmd_Amstatus_f,				0 },
+	//{ "amstatus",			Cmd_Amstatus_f,				0 },
 	{ "amsurrender",		Cmd_EmoteSurrender_f,		CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt",			Cmd_EmoteTaunt_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amtaunt2",			Cmd_EmoteTaunt2_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
@@ -7611,7 +7613,7 @@ command_t commands[] = {
 	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 
-	{ "whois",				Cmd_ACWhois_f,				CMD_NOINTERMISSION },
+	{ "whois",				Cmd_ACWhois_f,				0 },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 
