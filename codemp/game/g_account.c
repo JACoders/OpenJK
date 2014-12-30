@@ -2287,7 +2287,6 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			char strNum[12] = {0};
 			char strName[MAX_NETNAME] = {0};
 			char strUser[16] = {0};
-
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
 			char strAdmin[32] = {0};
 			char strPlugin[32] = {0};
@@ -2299,7 +2298,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
-			Q_strncpyz( strUser, cl->pers.userName, sizeof(strUser));	
+			Com_sprintf(strUser, sizeof(strUser), "^2%s^7", cl->pers.userName);
+			Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
+			//Q_strncpyz(strUser, cl->pers.userName, sizeof(strUser));	
 			Q_strncpyz(jumpLevel, va("%i", cl->ps.fd.forcePowerLevel[FP_LEVITATION]), sizeof(jumpLevel));
 
 			if (admin) {
@@ -2346,54 +2347,43 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			else
 				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
-			if (admin && !strUser[0]) { //No username means not logged in, so check if they have an account tied to their ip
-				char strIP[NET_ADDRSTRMAXLEN] = {0};
-				char *p = NULL;
-				unsigned int ip;
+			if (admin) { //No username means not logged in, so check if they have an account tied to their ip
+				if (!strUser[0]) {
+					unsigned int ip;
 
-				Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
-				p = strchr(strIP, ':');
-				if (p) //loda - fix ip sometimes not printing
-					*p = 0;
-				ip = ip_to_int(strIP);
+					ip = ip_to_int(strIP);
 
-				CALL_SQLITE (bind_int64 (stmt, 1, ip));
+					CALL_SQLITE (bind_int64 (stmt, 1, ip));
 
-				s = sqlite3_step(stmt);
+					s = sqlite3_step(stmt);
 
-				if (s == SQLITE_ROW) {
-					if (ip)
-						Q_strncpyz(strUser, (char*)sqlite3_column_text(stmt, 0), sizeof(strUser));
+					if (s == SQLITE_ROW) {
+						if (ip)
+							//Q_strncpyz(strUser, (char*)sqlite3_column_text(stmt, 0), sizeof(strUser));
+							Com_sprintf(strUser, sizeof(strUser), "^3%s^7", (char*)sqlite3_column_text(stmt, 0));
+					}
+					else if (s != SQLITE_DONE) {
+						fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+						CALL_SQLITE (finalize(stmt));
+						CALL_SQLITE (close(db));
+						return;
+					}
+
+					CALL_SQLITE (reset (stmt));
+					CALL_SQLITE (clear_bindings (stmt));
 				}
-				else if (s != SQLITE_DONE) {
-					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-					CALL_SQLITE (finalize(stmt));
-					CALL_SQLITE (close(db));
-					return;
-				}
 
-				CALL_SQLITE (reset (stmt));
-				CALL_SQLITE (clear_bindings (stmt));
-
-				//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
-
-				 //Admin prints
+				//Admin prints
 				if (g_raceMode.integer)
-					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
-					tmpMsg = va( "%-2s^3%-18s%-18s^7%-12s%-11s%-10s%-11s%-6s%-12s%s^7\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+					tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
 				else
-					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
-					tmpMsg = va( "%-2s^3%-18s%-18s^7%-12s%-11s%s^7\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
+					tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
 			}
 			else {//Not admin
 				if (g_raceMode.integer)
-					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
-					tmpMsg = va( "%-2s^7%-18s^7%-12s%-10s%-11s%-6s%-12s%s^7\n", strNum, strUser, strPlugin, strRace, strStyle, jumpLevel, strHidden, strName);
+					tmpMsg = va( "%-2s%-22s%-12s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strPlugin, strRace, strStyle, jumpLevel, strHidden, strName);
 				else
-					//tmpMsg = va("%-2s ^3%-18s^7%s\n", strNum, strUser, strName);
-					tmpMsg = va( "%-2s^7%-18s^7%-12s%s^7\n", strNum, strUser, strPlugin, strName);
-
-				//tmpMsg = va("%-2s ^7%-18s^7%s\n", strNum, strUser, strName);
+					tmpMsg = va( "%-2s%-22s%-12s%s\n", strNum, strUser, strPlugin, strName);
 			}
 			
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
