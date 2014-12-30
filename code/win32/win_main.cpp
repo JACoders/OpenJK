@@ -681,6 +681,23 @@ successful:
 	return retVal;
 }
 
+static const char *GetErrorString( DWORD error ) {
+	static char buf[MAX_STRING_CHARS];
+	buf[0] = '\0';
+
+	if ( error ) {
+		LPVOID lpMsgBuf;
+		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
+		if ( bufLen ) {
+			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof( buf ) ) );
+			LocalFree( lpMsgBuf );
+		}
+	}
+	return buf;
+}
+
 /*
 =================
 Sys_GetGameAPI
@@ -705,18 +722,15 @@ void *Sys_GetGameAPI (void *parms)
 	game_library = Sys_RetrieveDLL(gamename);
 	if(!game_library)
 	{
-		char *buf;
-
-		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL );
-
 		Com_Printf( "LoadLibrary(\"%s\") failed\n", gamename);
-		Com_Printf( "...reason: '%s'\n", buf );
+		Com_Printf( "...reason: '%s'\n", GetErrorString( GetLastError() ) );
 		Com_Error( ERR_FATAL, "Couldn't load game" );
 	}
 
 	GetGameAPI = (void *(*)(void *))GetProcAddress (game_library, "GetGameAPI");
 	if (!GetGameAPI)
 	{
+		Com_Printf( "Sys_GetGameAPI: Entry point not found in %s. Failed with system error code 0x%X.\n", gamename, GetLastError() );
 		Sys_UnloadGame ();		
 		return NULL;
 	}
@@ -738,6 +752,11 @@ void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)
 	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
 	*entryPoint = (intptr_t (*)(int,...))GetProcAddress( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
+#ifdef JK2_MODE
+		Com_Printf( "Sys_LoadCgame: CGame Entry point not found in jk2game" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", GetLastError() );
+#else
+		Com_Printf( "Sys_LoadCgame: CGame Entry point not found in jagame" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", GetLastError() );
+#endif
 		FreeLibrary( game_library );
 		return NULL;
 	}
