@@ -37,6 +37,12 @@ else()
 	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" OFF)
 endif()
 
+if(WIN32 OR APPLE)
+	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" ON)
+else()
+	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" OFF)
+endif()
+
 if(APPLE)
 	option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 else()
@@ -190,6 +196,10 @@ endif()
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
+endif()
+
+if(UseInternalJPEG)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_JPEG")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
