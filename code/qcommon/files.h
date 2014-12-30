@@ -25,7 +25,11 @@ This file is part of Jedi Academy.
    Structures local to the files_* modules.
 */
 
+#ifdef USE_INTERNAL_ZLIB
 #include "zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
 #include "minizip/unzip.h"
 
 #define MAX_ZPATH			256

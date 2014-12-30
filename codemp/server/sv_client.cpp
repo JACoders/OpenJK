@@ -2,7 +2,13 @@
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
+
+#ifdef USE_INTERNAL_ZLIB
 #include "zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
+
 #include "server/sv_gameapi.h"
 
 static void SV_CloseDownload( client_t *cl );
