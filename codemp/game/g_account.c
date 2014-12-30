@@ -2300,8 +2300,9 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 			Com_sprintf(strUser, sizeof(strUser), "^2%s^7", cl->pers.userName);
 			Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
-			//Q_strncpyz(strUser, cl->pers.userName, sizeof(strUser));	
-			Q_strncpyz(jumpLevel, va("%i", cl->ps.fd.forcePowerLevel[FP_LEVITATION]), sizeof(jumpLevel));
+
+			if (cl->sess.sessionTeam != TEAM_SPECTATOR)
+				Q_strncpyz(jumpLevel, va("%i", cl->ps.fd.forcePowerLevel[FP_LEVITATION]), sizeof(jumpLevel));
 
 			if (admin) {
 				p = strchr(strIP, ':');
@@ -2316,30 +2317,34 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			}
 
 			if (g_raceMode.integer) {
-				Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
-
-				Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
-
-				if (cl->sess.sessionTeam == TEAM_SPECTATOR)
+				if (cl->sess.sessionTeam == TEAM_SPECTATOR) {
 					Q_strncpyz(strStyle, "^7^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
-					Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
-					Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
-					Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 3)
-					Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 4)
-					Q_strncpyz(strStyle, "^7q3^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 5)
-					Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
-					Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
-					Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
-				else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
-					Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
+					Q_strncpyz(strRace, "^7^7", sizeof(strRace));
+					Q_strncpyz(strHidden, "^7^7", sizeof(strHidden));
+				}
+				else {
+					Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
+					Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
+
+					if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+						Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+						Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+						Q_strncpyz(strStyle, "^7qw^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+						Q_strncpyz(strStyle, "^7cpm^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 4)
+						Q_strncpyz(strStyle, "^7q3^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 5)
+						Q_strncpyz(strStyle, "^7pjk^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 6)
+						Q_strncpyz(strStyle, "^7wsw^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 7)
+						Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+						Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
+				}
 			}
 
 			if (g_entities[i].r.svFlags & SVF_BOT)
