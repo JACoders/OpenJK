@@ -2353,7 +2353,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
 			if (admin) { //No username means not logged in, so check if they have an account tied to their ip
-				if (!strUser[0]) {
+				if (!cl->pers.userName[0]) {
 					unsigned int ip;
 
 					ip = ip_to_int(strIP);
