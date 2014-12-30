@@ -3,7 +3,12 @@
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
+
+#ifdef USE_INTERNAL_ZLIB
 #include "zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
 
 static char hiddenCvarVal[128];
 

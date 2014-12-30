@@ -202,6 +202,10 @@ if(UseInternalJPEG)
 	set(SharedDefines ${SharedDefines} "USE_INTERNAL_JPEG")
 endif()
 
+if(UseInternalZlib)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
+endif()
+
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
 if(NOT MSVC)
