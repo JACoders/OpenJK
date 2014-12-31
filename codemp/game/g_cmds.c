@@ -660,6 +660,8 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.startTimeFlag = 0;
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
+	ent->client->ps.stats[STAT_JUMPTIME] = 0;
+	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
 
 	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
@@ -1437,6 +1439,8 @@ void StopFollowing( gentity_t *ent ) {
 	ent->client->ps.eFlags &= ~EF_DISINTEGRATION;
 	for ( i=0; i<PW_NUM_POWERUPS; i++ )
 		ent->client->ps.powerups[i] = 0;
+
+	SetClientViewAngle( ent, ent->client->ps.viewangles ); //Fix viewangles getting fucked up when we stop spectating someone?
 }
 
 /*
