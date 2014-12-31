@@ -114,6 +114,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	set(SPRDVanillaMainFiles
 		"${SPDir}/rd-vanilla/glext.h"
 		"${SPDir}/rd-vanilla/qgl.h"
+		"${SPDir}/rd-vanilla/tr_arb.cpp"
 		"${SPDir}/rd-vanilla/tr_backend.cpp"
 		"${SPDir}/rd-vanilla/tr_bsp.cpp"
 		"${SPDir}/rd-vanilla/tr_cmds.cpp"

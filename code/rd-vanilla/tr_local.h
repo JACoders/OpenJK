@@ -1025,6 +1025,7 @@ typedef struct {
 
 	vec3_t					sunLight;			// from the sky shader for this level
 	vec3_t					sunDirection;
+	int						sunSurfaceLight;	// from the sky shader for this level
 	vec3_t					sunAmbient;			// from the sky shader	(only used for John's terrain system)
 
 
@@ -1373,6 +1374,11 @@ shader_t	*R_FindShader( const char *name, const int *lightmapIndex, const byte *
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 void		R_InitShaders( void );
 void		R_ShaderList_f( void );
+
+//
+// tr_arb.c
+//
+void ARB_InitGlowShaders( void );
 
 
 /*
@@ -1813,10 +1819,7 @@ extern	backEndData_t	*backEndData;
 void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );
 
-void R_InitCommandBuffers( void );
-void R_ShutdownCommandBuffers( void );
-
-void R_SyncRenderThread( void );
+void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 

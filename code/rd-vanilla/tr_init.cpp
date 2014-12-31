@@ -450,6 +450,8 @@ static void R_ModeList_f( void )
 	int i;
 
 	ri.Printf( PRINT_ALL, "\n" );
+	ri.Printf( PRINT_ALL, "Mode -2: Use desktop resolution\n" );
+	ri.Printf( PRINT_ALL, "Mode -1: Use r_customWidth and r_customHeight variables\n" );
 	for ( i = 0; i < s_numVidModes; i++ )
 	{
 		ri.Printf( PRINT_ALL, "%s\n", r_vidModes[i].description );
@@ -857,7 +859,7 @@ void GL_SetDefaultState( void )
 
 /*
 ================
-R_LongString
+R_PrintLongString
 
 Workaround for ri.Printf's 1024 characters buffer limit.
 ================
@@ -1397,7 +1399,7 @@ void R_Init( void ) {
 		tr.sinTable[i]		= sin( DEG2RAD( i * 360.0f / ( ( float ) ( FUNCTABLE_SIZE - 1 ) ) ) );
 		tr.squareTable[i]	= ( i < FUNCTABLE_SIZE/2 ) ? 1.0f : -1.0f;
 		tr.sawToothTable[i] = (float)i / FUNCTABLE_SIZE;
-		tr.inverseSawToothTable[i] = 1.0 - tr.sawToothTable[i];
+		tr.inverseSawToothTable[i] = 1.0f - tr.sawToothTable[i];
 
 		if ( i < FUNCTABLE_SIZE / 2 )
 		{
@@ -1415,7 +1417,6 @@ void R_Init( void ) {
 			tr.triangleTable[i] = -tr.triangleTable[i-FUNCTABLE_SIZE/2];
 		}
 	}
-
 	R_InitFogTable();
 
 	R_ImageLoader_Init();
@@ -1430,7 +1431,6 @@ void R_Init( void ) {
 		byteAlias_t *ba = (byteAlias_t *)&color;
 		RE_SetLightStyle( i, ba->i );
 	}
-
 	InitOpenGL();
 
 	R_InitImages();
@@ -1517,8 +1517,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 			// Release the blur texture.
 			qglDeleteTextures( 1, &tr.blurImage );
 		}
-//		R_SyncRenderThread();
-		R_ShutdownCommandBuffers();
 		if (destroyWindow)
 		{
 			R_DeleteTextures();	// only do this for vid_restart now, not during things like map load
@@ -1545,7 +1543,7 @@ Touch all images to make sure they are resident
 =============
 */
 void	RE_EndRegistration( void ) {
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 }
 
 

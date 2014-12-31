@@ -28,6 +28,13 @@ This file is part of Jedi Academy.
 #include "../rd-common/tr_common.h"
 #include "../qcommon/sstring.h"
 #include <png.h>
+#ifdef _MSC_VER
+#pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
+#include <map>
+#ifdef _MSC_VER
+#pragma warning (pop)
+#endif
 
 
 static byte			 s_intensitytable[256];
@@ -63,6 +70,8 @@ textureMode_t modes[] = {
 	{"GL_NEAREST_MIPMAP_LINEAR", GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST},
 	{"GL_LINEAR_MIPMAP_LINEAR", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR}
 };
+
+static const size_t numTextureModes = ARRAY_LEN(modes);
 
 /*
 ================
@@ -113,20 +122,20 @@ GL_TextureMode
 ===============
 */
 void GL_TextureMode( const char *string ) {
-	int		i;
+	size_t	i;
 	image_t	*glt;
 
-	for ( i=0 ; i< 6 ; i++ ) {
+	for ( i = 0; i < numTextureModes ; i++ ) {
 		if ( !Q_stricmp( modes[i].name, string ) ) {
 			break;
 		}
 	}
 
-	if ( i == 6 ) {
+	if ( i == numTextureModes ) {
 		ri.Printf (PRINT_ALL, "bad filter name\n");
-		for ( i=0 ; i< 6 ; i++ ) {
-			ri.Printf( PRINT_ALL, "%s\n",modes[i].name);
-			}
+		for ( i = 0; i < numTextureModes ; i++ ) {
+			ri.Printf( PRINT_ALL, "%s\n", modes[i].name);
+		}
 		return;
 	}
 
@@ -136,7 +145,7 @@ void GL_TextureMode( const char *string ) {
 	// If the level they requested is less than possible, set the max possible...
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
-		ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy );
 	}
 
 	// change all the existing mipmap texture objects
@@ -807,26 +816,19 @@ static void GL_ResetBinds(void)
 //
 void R_Images_DeleteLightMaps(void)
 {
-	qboolean bEraseOccured = qfalse;
-
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
-	{			
-		bEraseOccured = qfalse;
-
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* empty */)
+	{
 		image_t *pImage = (*itImage).second;
-		
+
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-			itImage = AllocatedImages.erase(itImage);
-#else
-            AllocatedImages_t::iterator itTemp = itImage;
-            itImage++;
-            AllocatedImages.erase(itTemp);
-#endif
 
-			bEraseOccured = qtrue;
+			AllocatedImages.erase(itImage++);
+		}
+		else
+		{
+			++itImage;
 		}
 	}
 
@@ -836,12 +838,12 @@ void R_Images_DeleteLightMaps(void)
 // special function currently only called by Dissolve code...
 //
 void R_Images_DeleteImage(image_t *pImage)
-{		
+{
 	// Even though we supply the image handle, we need to get the corresponding iterator entry...
 	//
 	AllocatedImages_t::iterator itImage = AllocatedImages.find(pImage->imgName);
 	if (itImage != AllocatedImages.end())
-	{		
+	{
 		R_Images_DeleteImageContents(pImage);
 		AllocatedImages.erase(itImage);
 	}
@@ -854,9 +856,9 @@ void R_Images_DeleteImage(image_t *pImage)
 // called only at app startup, vid_restart, app-exit
 //
 void R_Images_Clear(void)
-{		
+{
 	image_t *pImage;
-	//	int iNumImages = 
+	//	int iNumImages =
 	   				  R_Images_StartIteration();
 	while ( (pImage = R_Images_GetNextIteration()) != NULL)
 	{
@@ -894,10 +896,10 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 {
 	//ri.Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd():\n");
 
-	qboolean bEraseOccured = qfalse;
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
-	{			
-		bEraseOccured = qfalse;
+	qboolean imageDeleted = qtrue;
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* blank */)
+	{
+		qboolean bEraseOccured = qfalse;
 
 		image_t *pImage = (*itImage).second;
 
@@ -910,15 +912,16 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//ri.Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-				itImage = AllocatedImages.erase(itImage);
-#else
-                AllocatedImages_t::iterator itTemp = itImage;
-                itImage++;
-                AllocatedImages.erase(itTemp);
-#endif
-                bEraseOccured = qtrue;
+
+				AllocatedImages.erase(itImage++);
+				bEraseOccured = qtrue;
+				imageDeleted = qtrue;
 			}
+		}
+
+		if ( !bEraseOccured )
+		{
+			++itImage;
 		}
 	}
 
@@ -926,18 +929,18 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 
 	GL_ResetBinds();
 
-	return bEraseOccured;
+	return imageDeleted;
 }
 
 
 
-// returns image_t struct if we already have this, else NULL. No disk-open performed 
+// returns image_t struct if we already have this, else NULL. No disk-open performed
 //	(important for creating default images).
 //
 // This is called by both R_FindImageFile and anything that creates default images...
 //
 static image_t *R_FindImageFile_NoLoad(const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode )
-{	
+{
 	if (!name) {
 		return NULL;
 	}
@@ -949,7 +952,7 @@ static image_t *R_FindImageFile_NoLoad(const char *name, qboolean mipmap, qboole
 	//
 	AllocatedImages_t::iterator itAllocatedImage = AllocatedImages.find(pName);
 	if (itAllocatedImage != AllocatedImages.end())
-	{	
+	{
 		image_t *pImage = (*itAllocatedImage).second;
 
 		// the white image can be used with any set of parms, but other mismatches are errors...
@@ -1101,43 +1104,6 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 }
 
 
-
-// EF dlight image creation code
-/*
-================
-R_CreateDlightImage
-================
-*/
-/*
-#define	DLIGHT_SIZE	16
-static void R_CreateDlightImage( void ) {
-	int		x,y;
-	byte	data[DLIGHT_SIZE][DLIGHT_SIZE][4];
-	int		b;
-
-	// make a centered inverse-square falloff blob for dynamic lighting
-	for (x=0 ; x<DLIGHT_SIZE ; x++) {
-		for (y=0 ; y<DLIGHT_SIZE ; y++) {
-			float	d;
-
-			d = ( DLIGHT_SIZE/2 - 0.5 - x ) * ( DLIGHT_SIZE/2 - 0.5 - x ) +
-				( DLIGHT_SIZE/2 - 0.5 - y ) * ( DLIGHT_SIZE/2 - 0.5 - y );
-			b = 4000 / d;
-			if (b > 255) {
-				b = 255;
-			} else if ( b < 75 ) {
-				b = 0;
-			}
-			data[y][x][0] = 
-			data[y][x][1] = 
-			data[y][x][2] = 255;
-			data[y][x][3] = b/8;			
-		}
-	}
-	tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP );
-}
-*/
-// Holomatch dlight image creation code
 /*
 ================
 R_CreateDlightImage
@@ -1228,7 +1194,7 @@ void R_InitFogTable( void ) {
 	int		i;
 	float	d;
 	float	exp;
-	
+
 	exp = 0.5;
 
 	for ( i = 0 ; i < FOG_TABLE_SIZE ; i++ ) {
@@ -1258,7 +1224,7 @@ float	R_FogFactor( float s, float t ) {
 		return 0;
 	}
 	if ( t < 31.0/32 ) {
-		s *= (t - 1.0/32) / (30.0/32);
+		s *= (t - 1.0f/32.0f) / (30.0f/32.0f);
 	}
 
 	// we need to leave a lot of clamp range
@@ -1291,10 +1257,10 @@ static void R_CreateFogImage( void ) {
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
 		for (y=0 ; y<FOG_T ; y++) {
-			d = R_FogFactor( ( x + 0.5 ) / FOG_S, ( y + 0.5 ) / FOG_T );
+			d = R_FogFactor( ( x + 0.5f ) / FOG_S, ( y + 0.5f ) / FOG_T );
 
-			data[(y*FOG_S+x)*4+0] = 
-			data[(y*FOG_S+x)*4+1] = 
+			data[(y*FOG_S+x)*4+0] =
+			data[(y*FOG_S+x)*4+1] =
 			data[(y*FOG_S+x)*4+2] = 255;
 			data[(y*FOG_S+x)*4+3] = 255*d;
 		}
@@ -1537,7 +1503,7 @@ R_DeleteTextures
 //
 void R_DeleteTextures( void ) {
 
-	R_Images_Clear();	
+	R_Images_Clear();
 	GL_ResetBinds();
 }
 
