@@ -1390,6 +1390,11 @@ static float LodErrorForVolume( vec3_t local, float radius ) {
 	vec3_t		world;
 	float		d;
 
+	// never let it go negative
+	if ( r_lodCurveError->value < 0 ) {
+		return 0;
+	}
+
 	world[0] = local[0] * backEnd.ori.axis[0][0] + local[1] * backEnd.ori.axis[1][0] +
 		local[2] * backEnd.ori.axis[2][0] + backEnd.ori.origin[0];
 	world[1] = local[0] * backEnd.ori.axis[0][1] + local[1] * backEnd.ori.axis[1][1] +

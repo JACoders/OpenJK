@@ -1703,7 +1703,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				{
 					vec4_t color;
 					Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
-					color[3] = rgba[3];
+					color[3] = rgba ? rgba[3] : 1.0f;
 					RE_SetColor( color );
 				}
 			}
@@ -1757,7 +1757,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			break;
 		}
 	}
-	//let it remember the old color //RE_SetColor(NULL);;
+	//let it remember the old color //RE_SetColor(NULL);
 #else
 	static qboolean gbInShadow = qfalse;	// MUST default to this
 	float				fox, foy, fx, fy;
@@ -1897,7 +1897,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					{
 						vec4_t color;
 						Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
-						color[3] = rgba[3];
+						color[3] = rgba ? rgba[3] : 1.0f;
 						RE_SetColor( color );
 					}
 					break;
@@ -1949,7 +1949,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			break;
 		}
 	}
-	//let it remember the old color //RE_SetColor(NULL);;
+	//let it remember the old color //RE_SetColor(NULL);
 #endif
 }
 
