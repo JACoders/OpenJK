@@ -136,6 +136,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/rd-vanilla/tr_shade_calc.cpp"
 		"${SPDir}/rd-vanilla/tr_shader.cpp"
 		"${SPDir}/rd-vanilla/tr_shadows.cpp"
+		"${SPDir}/rd-vanilla/tr_skin.cpp"
 		"${SPDir}/rd-vanilla/tr_sky.cpp"
 		"${SPDir}/rd-vanilla/tr_stl.cpp"
 		"${SPDir}/rd-vanilla/tr_stl.h"
