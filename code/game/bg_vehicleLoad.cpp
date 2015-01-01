@@ -130,7 +130,7 @@ typedef enum {
 	VF_IGNORE,
 	VF_INT,
 	VF_FLOAT,
-	VF_LSTRING,	// string on disk, pointer in memory, TAG_LEVEL
+	VF_STRING,	// string on disk, pointer in memory
 	VF_VECTOR,
 	VF_BOOL,
 	VF_VEHTYPE,
@@ -153,9 +153,9 @@ typedef struct
 	vehFieldType_t	type;
 } vehField_t;
 
-vehField_t vehWeaponFields[NUM_VWEAP_PARMS] =
+vehField_t vehWeaponFields[] =
 {
-	{"name", VWFOFS(name), VF_LSTRING},	//unique name of the vehicle
+	{"name", VWFOFS(name), VF_STRING},	//unique name of the vehicle
 	{"projectile", VWFOFS(bIsProjectile), VF_BOOL},	//traceline or entity?
 	{"hasGravity", VWFOFS(bHasGravity), VF_BOOL},	//if a projectile, drops
 	{"ionWeapon", VWFOFS(bIonWeapon), VF_BOOL},	//disables ship shields and sends them out of control
@@ -182,10 +182,12 @@ vehField_t vehWeaponFields[NUM_VWEAP_PARMS] =
 	{"explodeOnExpire", VWFOFS(bExplodeOnExpire), VF_BOOL},	//when iLifeTime is up, explodes rather than simply removing itself
 };
 
+static const size_t numVehWeaponFields = ARRAY_LEN( vehWeaponFields );
+
 static vehField_t *FindVehWeaponParm( const char *parmName )
 {
 	size_t i;
-	for ( i = 0; i<NUM_VWEAP_PARMS; i++ )
+	for ( i = 0; i<numVehWeaponFields; i++ )
 	{
 		if ( vehWeaponFields[i].name && !Q_stricmp( vehWeaponFields[i].name, parmName ) )
 			return &vehWeaponFields[i];
@@ -219,7 +221,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 	case VF_FLOAT:
 		*(float *)(b+vehWeaponField->ofs) = atof(value);
 		break;
-	case VF_LSTRING:	// string on disk, pointer in memory, TAG_LEVEL
+	case VF_STRING:	// string on disk, pointer in memory
 		if (!*(char **)(b+vehWeaponField->ofs))
 		{ //just use 1024 bytes in case we want to write over the string
 #ifdef _JK2MP
@@ -237,6 +239,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		if (_iFieldsRead!=3)
 		{
 			Com_Printf (S_COLOR_YELLOW"BG_ParseVehWeaponParm: VEC3 sscanf() failed to read 3 floats ('angle' key bug?)\n");
+			VectorClear( vec );
 		}
 		((float *)(b+vehWeaponField->ofs))[0] = vec[0];
 		((float *)(b+vehWeaponField->ofs))[1] = vec[1];
@@ -470,7 +473,7 @@ int VEH_VehWeaponIndexForName( const char *vehWeaponName )
 
 vehField_t vehicleFields[] =
 {
-	{"name", VFOFS(name), VF_LSTRING},	//unique name of the vehicle
+	{"name", VFOFS(name), VF_STRING},	//unique name of the vehicle
 
 	//general data
 	{"type", VFOFS(type), VF_VEHTYPE},	//what kind of vehicle
@@ -517,11 +520,11 @@ vehField_t vehicleFields[] =
 	{"surfDestruction", VFOFS(surfDestruction), VF_INT},
 
 	//visuals & sounds
-	{"model", VFOFS(model), VF_LSTRING},			//what model to use - if make it an NPC's primary model, don't need this?
-	{"skin", VFOFS(skin), VF_LSTRING},				//what skin to use - if make it an NPC's primary model, don't need this?
+	{"model", VFOFS(model), VF_STRING},			//what model to use - if make it an NPC's primary model, don't need this?
+	{"skin", VFOFS(skin), VF_STRING},				//what skin to use - if make it an NPC's primary model, don't need this?
 	{"g2radius", VFOFS(g2radius), VF_INT},			//render radius (really diameter, but...) for the ghoul2 model
 	{"riderAnim", VFOFS(riderAnim), VF_ANIM},		//what animation the rider uses
-	{"droidNPC", VFOFS(droidNPC), VF_LSTRING},		//NPC to attach to *droidunit tag (if it exists in the model)
+	{"droidNPC", VFOFS(droidNPC), VF_STRING},		//NPC to attach to *droidunit tag (if it exists in the model)
 
 #ifdef _JK2MP
 	{"radarIcon", VFOFS(radarIconHandle), VF_SHADER_NOMIP},		//what icon to show on radar in MP
@@ -651,8 +654,8 @@ vehField_t vehicleFields[] =
 	{"turret1Delay", VFOFS(turret[0].iDelay), VF_INT},
 	{"turret1AmmoMax", VFOFS(turret[0].iAmmoMax), VF_INT},
 	{"turret1AmmoRechargeMS", VFOFS(turret[0].iAmmoRechargeMS), VF_INT},
-	{"turret1YawBone", VFOFS(turret[0].yawBone), VF_LSTRING},
-	{"turret1PitchBone", VFOFS(turret[0].pitchBone), VF_LSTRING},
+	{"turret1YawBone", VFOFS(turret[0].yawBone), VF_STRING},
+	{"turret1PitchBone", VFOFS(turret[0].pitchBone), VF_STRING},
 	{"turret1YawAxis", VFOFS(turret[0].yawAxis), VF_INT},
 	{"turret1PitchAxis", VFOFS(turret[0].pitchAxis), VF_INT},
 	{"turret1ClampYawL", VFOFS(turret[0].yawClampLeft), VF_FLOAT},	//how far the turret is allowed to turn left
@@ -666,15 +669,15 @@ vehField_t vehicleFields[] =
 	{"turret1AILead", VFOFS(turret[0].bAILead), VF_BOOL},
 	{"turret1AIRange", VFOFS(turret[0].fAIRange), VF_FLOAT},
 	{"turret1PassengerNum", VFOFS(turret[0].passengerNum), VF_INT},//which number passenger can control this turret
-	{"turret1GunnerViewTag", VFOFS(turret[0].gunnerViewTag), VF_LSTRING},
+	{"turret1GunnerViewTag", VFOFS(turret[0].gunnerViewTag), VF_STRING},
 
 	//Turret 2
 	{"turret2Weap", VFOFS(turret[1].iWeapon), VF_WEAPON},
 	{"turret2Delay", VFOFS(turret[1].iDelay), VF_INT},
 	{"turret2AmmoMax", VFOFS(turret[1].iAmmoMax), VF_INT},
 	{"turret2AmmoRechargeMS", VFOFS(turret[1].iAmmoRechargeMS), VF_INT},
-	{"turret2YawBone", VFOFS(turret[1].yawBone), VF_LSTRING},
-	{"turret2PitchBone", VFOFS(turret[1].pitchBone), VF_LSTRING},
+	{"turret2YawBone", VFOFS(turret[1].yawBone), VF_STRING},
+	{"turret2PitchBone", VFOFS(turret[1].pitchBone), VF_STRING},
 	{"turret2YawAxis", VFOFS(turret[1].yawAxis), VF_INT},
 	{"turret2PitchAxis", VFOFS(turret[1].pitchAxis), VF_INT},
 	{"turret2ClampYawL", VFOFS(turret[1].yawClampLeft), VF_FLOAT},	//how far the turret is allowed to turn left
@@ -688,10 +691,8 @@ vehField_t vehicleFields[] =
 	{"turret2AILead", VFOFS(turret[1].bAILead), VF_BOOL},
 	{"turret2AIRange", VFOFS(turret[1].fAIRange), VF_FLOAT},
 	{"turret2PassengerNum", VFOFS(turret[1].passengerNum), VF_INT},//which number passenger can control this turret
-	{"turret2GunnerViewTag", VFOFS(turret[1].gunnerViewTag), VF_LSTRING},
+	{"turret2GunnerViewTag", VFOFS(turret[1].gunnerViewTag), VF_STRING},
 //===END TURRETS===========================================================================
-	//terminating entry
-	{NULL, 0, VF_IGNORE}
 };
 
 static const size_t numVehicleFields = ARRAY_LEN( vehicleFields );
@@ -905,7 +906,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 	case VF_FLOAT:
 		*(float *)(b+vehField->ofs) = atof(value);
 		break;
-	case VF_LSTRING:	// string on disk, pointer in memory, TAG_LEVEL
+	case VF_STRING:	// string on disk, pointer in memory
 		if (!*(char **)(b+vehField->ofs))
 		{ //just use 128 bytes in case we want to write over the string
 #ifdef _JK2MP
@@ -923,6 +924,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 		if (_iFieldsRead!=3)
 		{
 			Com_Printf (S_COLOR_YELLOW"BG_ParseVehicleParm: VEC3 sscanf() failed to read 3 floats ('angle' key bug?)\n");
+			VectorClear( vec );
 		}
 		((float *)(b+vehField->ofs))[0] = vec[0];
 		((float *)(b+vehField->ofs))[1] = vec[1];
