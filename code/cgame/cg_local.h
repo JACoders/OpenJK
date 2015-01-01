@@ -1209,6 +1209,9 @@ void	cgi_UI_MenuCloseAll(void);
 void	cgi_UI_String_Init(void);
 int		cgi_UI_GetMenuItemInfo(const char *menuFile,const char *itemName,int *x,int *y,int *w,int *h,vec4_t color,qhandle_t *background);
 int		cgi_UI_GetMenuInfo(char *menuFile,int *x,int *y,int *w,int *h);
+void	cgi_UI_Menu_Paint( void *menu, qboolean force );
+void	*cgi_UI_GetMenuByName( const char *menu );
+
 
 void	SetWeaponSelectTime(void);
 

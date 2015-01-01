@@ -50,7 +50,6 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 typedef struct
 {
-//*** IMPORTANT!!! *** the number of variables in the vehWeaponStats_t struct (including all elements of arrays) must be reflected by NUM_VWEAP_PARMS!!!
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
 	qboolean	bIsProjectile;	//traceline or entity?
@@ -78,8 +77,6 @@ typedef struct
 	int		iLifeTime;	//removes itself after this amount of time
 	qboolean	bExplodeOnExpire;	//when iLifeTime is up, explodes rather than simply removing itself
 } vehWeaponInfo_t;
-//NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
-#define NUM_VWEAP_PARMS	25
 
 #define	VWFOFS(x) offsetof(vehWeaponInfo_t, x)
 

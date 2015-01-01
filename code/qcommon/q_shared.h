@@ -2532,6 +2532,7 @@ typedef struct parseData_s
 {
 	char	fileName[MAX_QPATH];			// Name of current file being read in
 	int		com_lines;						// Number of lines read in
+	int		com_tokenline;
 	const char	*bufferStart;					// Start address of buffer holding data that was read in
 	const char	*bufferCurrent;					// Where data is currently being parsed from buffer
 } parseData_t;

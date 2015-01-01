@@ -744,7 +744,7 @@ static void InitOpenGL( void )
 	{
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window_t *window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		window_t window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 
@@ -1355,7 +1355,7 @@ void GfxInfo_f( void )
 	R_PrintLongString( glConfigExt.originalExtensionString );
 	ri->Printf( PRINT_ALL, "\n");
 	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
-	ri->Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
+	ri->Printf( PRINT_ALL, "GL_MAX_TEXTURE_UNITS_ARB: %d\n", glConfig.maxActiveTextures );
 	ri->Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
 	ri->Printf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:",
 				ri->Cvar_VariableIntegerValue("r_mode"),

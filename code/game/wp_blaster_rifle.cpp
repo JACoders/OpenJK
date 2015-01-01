@@ -32,7 +32,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 //---------------------------------------------------------
 {
 	int velocity	= BLASTER_VELOCITY;
-	int	damage		= altFire ? weaponData[WP_BLASTER].damage : weaponData[WP_BLASTER].damage;
+	int	damage		= altFire ? weaponData[WP_BLASTER].altDamage : weaponData[WP_BLASTER].damage;
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{

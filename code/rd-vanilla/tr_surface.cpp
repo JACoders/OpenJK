@@ -49,16 +49,10 @@ RB_CheckOverflow
 ==============
 */
 void RB_CheckOverflow( int verts, int indexes ) {
-	if ( tess.shader == tr.shadowShader ) {
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES/2
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
-	} else
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
+	if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
+		&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
+		return;
+	}
 
 	RB_EndSurface();
 
@@ -1395,6 +1389,11 @@ void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 static float LodErrorForVolume( vec3_t local, float radius ) {
 	vec3_t		world;
 	float		d;
+
+	// never let it go negative
+	if ( r_lodCurveError->value < 0 ) {
+		return 0;
+	}
 
 	world[0] = local[0] * backEnd.ori.axis[0][0] + local[1] * backEnd.ori.axis[1][0] +
 		local[2] * backEnd.ori.axis[2][0] + backEnd.ori.origin[0];
