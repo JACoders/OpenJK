@@ -1648,8 +1648,6 @@ static void CG_DrawBatteryCharge( void )
 CG_DrawHUD
 ================
 */
-extern void *cgi_UI_GetMenuByName( const char *menu );
-extern void cgi_UI_Menu_Paint( void *menu, qboolean force );
 static void CG_DrawHUD( centity_t *cent )
 {
 	int value;

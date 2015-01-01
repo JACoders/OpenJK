@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_syswm.h>
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
@@ -155,7 +156,7 @@ GLimp_DetectAvailableModes
 */
 static bool GLimp_DetectAvailableModes(void)
 {
-	int i;
+	int i, j;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
 	SDL_Rect modes[ 128 ];
 	int numModes = 0;
@@ -186,6 +187,17 @@ static bool GLimp_DetectAvailableModes(void)
 		if( windowMode.format != mode.format )
 			continue;
 
+		// SDL can give the same resolution with different refresh rates.
+		// Only list resolution once.
+		for( j = 0; j < numModes; j++ )
+		{
+			if( mode.w == modes[ j ].w && mode.h == modes[ j ].h )
+				break;
+		}
+		
+		if( j != numModes )
+			continue;
+
 		modes[ numModes ].w = mode.w;
 		modes[ numModes ].h = mode.h;
 		numModes++;
@@ -201,7 +213,7 @@ static bool GLimp_DetectAvailableModes(void)
 		if( strlen( newModeString ) < (int)sizeof( buf ) - strlen( buf ) )
 			Q_strcat( buf, sizeof( buf ), newModeString );
 		else
-			Com_Printf( "Skipping mode %ux%x, buffer too small\n", modes[ i ].w, modes[ i ].h );
+			Com_Printf( "Skipping mode %ux%u, buffer too small\n", modes[ i ].w, modes[ i ].h );
 	}
 
 	if( *buf )
@@ -570,7 +582,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 #define SWAPINTERVAL_FLAGS (CVAR_ARCHIVE | CVAR_LATCH)
 #endif
 
-window_t *WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
+window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 {
 	Cmd_AddCommand("modelist", R_ModeList_f);
 	Cmd_AddCommand("minimize", GLimp_Minimize);
@@ -634,8 +646,27 @@ success:
 	// This depends on SDL_INIT_VIDEO, hence having it here
 	IN_Init( screen );
 
-	// TODO: Probably should return something here at some point
-	return NULL;
+	// window_t is only really useful for Windows if the renderer wants to create a D3D context.
+	window_t window = {};
+
+#if defined(_WIN32)
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+
+	if ( SDL_GetWindowWMInfo(screen, &info) )
+	{	
+		switch(info.subsystem) {
+			case SDL_SYSWM_WINDOWS:
+				window.handle = info.info.win.window;
+				break;
+
+			default:
+				break;
+		}
+	}
+#endif
+
+	return window;
 }
 
 /*

@@ -5,8 +5,6 @@
 #include "sdl_qgl.h"
 #include "../sys/sys_local.h"
 
-//static SDL_Window *window = NULL;
-
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
@@ -122,7 +120,7 @@ GLimp_DetectAvailableModes
 */
 static bool GLimp_DetectAvailableModes(void)
 {
-	int i;
+	int i, j;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
 	SDL_Rect modes[ 128 ];
 	int numModes = 0;
@@ -153,6 +151,17 @@ static bool GLimp_DetectAvailableModes(void)
 		if( windowMode.format != mode.format )
 			continue;
 
+		// SDL can give the same resolution with different refresh rates.
+		// Only list resolution once.
+		for( j = 0; j < numModes; j++ )
+		{
+			if( mode.w == modes[ j ].w && mode.h == modes[ j ].h )
+				break;
+		}
+		
+		if( j != numModes )
+			continue;
+
 		modes[ numModes ].w = mode.w;
 		modes[ numModes ].h = mode.h;
 		numModes++;
@@ -168,7 +177,7 @@ static bool GLimp_DetectAvailableModes(void)
 		if( strlen( newModeString ) < (int)sizeof( buf ) - strlen( buf ) )
 			Q_strcat( buf, sizeof( buf ), newModeString );
 		else
-			Com_Printf( "Skipping mode %ux%x, buffer too small\n", modes[ i ].w, modes[ i ].h );
+			Com_Printf( "Skipping mode %ux%u, buffer too small\n", modes[ i ].w, modes[ i ].h );
 	}
 
 	if( *buf )
@@ -193,7 +202,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	int colorBits, depthBits, stencilBits;
 	//int samples;
 	int i = 0;
-	//SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
@@ -203,19 +211,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	if ( r_allowResize->integer && !fullscreen )
 		flags |= SDL_WINDOW_RESIZABLE;
-
-	/*icon = SDL_CreateRGBSurfaceFrom(
-			(void *)CLIENT_WINDOW_ICON.pixel_data,
-			CLIENT_WINDOW_ICON.width,
-			CLIENT_WINDOW_ICON.height,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
-#ifdef Q3_LITTLE_ENDIAN
-			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-			0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
-#endif
-			);*/
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -435,13 +430,16 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		}
 
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-		//SDL_SetWindowIcon( screen, icon );
 
 		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
 		}
+
+		qglClearColor( 0, 0, 0, 1 );
+		qglClear( GL_COLOR_BUFFER_BIT );
+		SDL_GL_SwapWindow( screen );
 
 		SDL_GL_SetSwapInterval( r_swapInterval->integer );
 
@@ -453,8 +451,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 				glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
 		break;
 	}
-
-	/*SDL_FreeSurface( icon );*/
 
 	if (!GLimp_DetectAvailableModes())
 	{
@@ -487,18 +483,21 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 			return qfalse;
 		}
 
-		if (!SDL_GetNumVideoDrivers())
+		driverName = SDL_GetCurrentVideoDriver();
+
+		if (!driverName)
 		{
-			Com_Printf( "SDL_GetNumVideoDrivers( ) FAILED (%s)\n",
-					SDL_GetError());
+			Com_Error( ERR_FATAL, "No video driver initialized" );
 			return qfalse;
 		}
 
-		//
-		// TODO: Prompt the user to choose a specific video driver.
-		driverName = SDL_GetVideoDriver( 0 );
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
 		ri.Cvar_Set( "r_sdlDriver", driverName );
+	}
+
+	if (SDL_GetNumVideoDisplays() <= 0)
+	{
+		Com_Error( ERR_FATAL, "SDL_GetNumVideoDisplays() FAILED (%s)", SDL_GetError() );
 	}
 
 	if (fullscreen && ri.Cvar_VariableIntegerValue( "in_nograb" ) )

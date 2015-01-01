@@ -25,16 +25,10 @@ RB_CheckOverflow
 ==============
 */
 void RB_CheckOverflow( int verts, int indexes ) {
-	if ( tess.shader == tr.shadowShader ) {
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES/2
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
-	} else
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
+	if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
+		&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
+		return;
+	}
 
 	RB_EndSurface();
 

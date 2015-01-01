@@ -1482,9 +1482,9 @@ void SP_worldspawn( void )
 
 	G_SpawnString( "gravity", "800", &text );
 	trap->Cvar_Set( "g_gravity", text );
+	trap->Cvar_Update( &g_gravity );
 
 	G_SpawnString( "enableBreath", "0", &text );
-	trap->Cvar_Set( "g_enableBreath", text );
 
 	G_SpawnString( "soundSet", "default", &text );
 	trap->SetConfigstring( CS_GLOBAL_AMBIENT_SET, text );
@@ -1501,6 +1501,7 @@ void SP_worldspawn( void )
 	trap->SetConfigstring( CS_WARMUP, "" );
 	if ( g_restarted.integer ) {
 		trap->Cvar_Set( "g_restarted", "0" );
+		trap->Cvar_Update( &g_restarted );
 		level.warmupTime = 0;
 	}
 	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype != GT_SIEGE ) { // Turn it on

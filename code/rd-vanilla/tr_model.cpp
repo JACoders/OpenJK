@@ -264,11 +264,8 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 		int iLoadedModelBytes	=	GetModelDataAllocSize();
 		const int iMaxModelBytes=	r_modelpoolmegs->integer * 1024 * 1024;
 
-		qboolean bEraseOccured = qfalse;
-		for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end() && ( bDeleteEverythingNotUsedThisLevel || iLoadedModelBytes > iMaxModelBytes ); bEraseOccured?itModel:++itModel)
-		{			
-			bEraseOccured = qfalse;
-
+		for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end() && ( bDeleteEverythingNotUsedThisLevel || iLoadedModelBytes > iMaxModelBytes ); )
+		{
 			CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
 			qboolean bDeleteThis = qfalse;
@@ -297,17 +294,13 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 					bAtLeastoneModelFreed = qtrue;
 				}
+				CachedModels->erase(itModel++);
 
-#ifdef _WIN32
-				itModel = CachedModels->erase(itModel);
-#else
-                CachedModels_t::iterator itTemp = itModel;
-                itModel++;
-                CachedModels->erase(itTemp);
-#endif
-				bEraseOccured = qtrue;
-
-				iLoadedModelBytes = GetModelDataAllocSize();				
+				iLoadedModelBytes = GetModelDataAllocSize();
+			}
+			else
+			{
+				++itModel;
 			}
 		}
 	}
@@ -346,20 +339,19 @@ void RE_RegisterModels_Info_f( void )
 
 static void RE_RegisterModels_DeleteAll(void)
 {
+	if(!CachedModels) {
+		return;	//argh!
+	}
+
 	for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end(); )
 	{
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
 		if (CachedModel.pModelDiskImage) {
-			Z_Free(CachedModel.pModelDiskImage);					
+			Z_Free(CachedModel.pModelDiskImage);
 		}
-#ifdef _WIN32
-		itModel = CachedModels->erase(itModel);	
-#else
-        CachedModels_t::iterator itTemp = itModel;
-        itModel++;
-        CachedModels->erase(itTemp);
-#endif
+
+		CachedModels->erase(itModel++);
 	}
 
 	extern void RE_AnimationCFGs_DeleteAll(void);
@@ -633,7 +625,7 @@ Ghoul2 Insert End
 	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
 
 	// make sure the render thread is stopped
-	//R_SyncRenderThread();
+	R_IssuePendingRenderCommands(); //
 
 	int iLODStart = 0;
 	if (strstr (name, ".md3")) {
@@ -989,9 +981,10 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 
 	*glconfigOut = glConfig;
 
+	R_IssuePendingRenderCommands();
+
 	tr.viewCluster = -1;		// force markleafs to regenerate
 
-	R_SyncRenderThread();
 
 	RE_ClearScene();
 

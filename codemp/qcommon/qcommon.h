@@ -1127,7 +1127,11 @@ bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
 
 // Graphics API
-typedef struct window_s window_t;
+typedef struct window_s
+{
+	void *handle; // OS-dependent window handle
+} window_t;
+
 typedef enum graphicsApi_e
 {
 	GRAPHICS_API_GENERIC,
@@ -1135,3 +1139,10 @@ typedef enum graphicsApi_e
 	// Only OpenGL needs special treatment..
 	GRAPHICS_API_OPENGL,
 } graphicsApi_t;
+
+typedef struct windowCreateOptions_s
+{
+	int openglMajorVersion;
+	int openglMinorVersion;
+	bool openglCoreContext;
+} windowCreateOptions_t;
