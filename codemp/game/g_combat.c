@@ -5536,7 +5536,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 
-		if (g_damageNumbers.integer == 7) {
+		if (g_damageNumbers.integer && g_damageNumbers.integer != 3 && g_damageNumbers.integer != 6) {
 			for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
 				if (!g_entities[i].inuse)
 					continue;

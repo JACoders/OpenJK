@@ -774,12 +774,16 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 				return;
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
 			target->client->noclip = !target->client->noclip;
+			if (target->client->sess.raceMode)
+				AmTeleportPlayer( target, target->client->ps.origin, target->client->ps.viewangles, qtrue, qtrue ); //Good
 			ResetPlayerTimers(target, qtrue);
 			return;
 		}
 		if (trap->Argc() == 1) {
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 			ent->client->noclip = !ent->client->noclip;
+			if (ent->client->sess.raceMode)
+				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 			ResetPlayerTimers(ent, qtrue);
 			return;
 		}
@@ -6219,15 +6223,9 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 
 	style = RaceNameToInteger(mStyle);
 
-	if (style < 0 || style > 8) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
-		return;
-	}
-	else
-		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
-
 	if (style >= 0) {
 		ent->client->sess.movementStyle = style;
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
 		if (style == 7 || style == 8) {
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
@@ -6236,7 +6234,10 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
 			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 		}
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
+	else
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -6267,6 +6268,7 @@ static void Cmd_JumpChange_f(gentity_t *ent)
 
 	if (level > 0 && level < 4) {
 		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = level;
+		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
 			trap->SendServerCommand( ent-g_entities, va("print \"Jumplevel updated (%i): timer reset.\n\"", level ));
 			ResetPlayerTimers(ent, qtrue);

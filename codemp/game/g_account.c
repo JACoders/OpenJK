@@ -10,6 +10,7 @@
 #define LOCAL_DB_PATH "japro/data.db"
 #define GLOBAL_DB_PATH sv_globalDBPath.string
 #define MAX_TMP_RACELOG_SIZE 80 * 1024
+#define	NUM_MOVEMENTSTYLES 8
 
 #define CALL_SQLITE(f) {                                        \
         int i;                                                  \
@@ -1431,7 +1432,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     char * sql;
     sqlite3_stmt * stmt;
 	char username[16];
-	int row = 0, kills = 0, deaths = 0, suicides = 0, captures = 0, returns = 0, lastlogin = 0, realdeaths, s, highscores = 0, i;
+	int row = 0, kills = 0, deaths = 0, suicides = 0, captures = 0, returns = 0, lastlogin = 0, realdeaths, s, highscores = 0, i, course, style, numGolds = 0, numSilvers = 0, numBronzes = 0;
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
@@ -1470,6 +1471,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     }
 	CALL_SQLITE (finalize(stmt));
 
+	/*
 	sql = "SELECT COUNT(*) FROM LocalRun WHERE username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
@@ -1484,6 +1486,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		return;
 	}
 	CALL_SQLITE (finalize(stmt));
+	*/
 	CALL_SQLITE (close(db));
 
 	for (i = 0; i < 256; i++) { //size of UserStats?.. Live update stats feature
@@ -1523,11 +1526,23 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 
 	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
+	//For each course-style, find the #1 rank.  If it matches username, add to count.
+	for (course = 0; course < level.numCourses; course++) { //For each course
+		for (style = 0; style <= NUM_MOVEMENTSTYLES; style++) { //For each style...0 = siege, 8 = rjcpm
+			if (!Q_stricmp(HighScores[course][style][0].username, username))
+				numGolds++;
+			else if (!Q_stricmp(HighScores[course][style][1].username, username))
+				numSilvers++;
+			else if (!Q_stricmp(HighScores[course][style][2].username, username))
+				numBronzes++;
+		}
+	}
+
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
 	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
-	Q_strcat(buf, sizeof(buf), va("   ^5Race Scores: ^2%i\n", highscores)); //Loda fixme --
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Golds / Silvers / Bronzes: ^2%i / %i / %i\n", numGolds, numSilvers, numBronzes));
 	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 
 	//--find a way to rank player in defrag.. maybe when building every highscore table on mapload, increment number of points each player has in a new table..in database.. 
@@ -1776,7 +1791,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
 		if (level.courseName[i][0])
 			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-		for (mstyle = 0; mstyle < 9; mstyle++) { //9 movement styles. 0-7
+		for (mstyle = 0; mstyle <= NUM_MOVEMENTSTYLES; mstyle++) { //9 movement styles. 0-8
 			int rank = 0;
 
 			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //Place 1
@@ -2082,7 +2097,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	for (course=0; course<level.numCourses; course++) { //For each course
 		Q_strncpyz(msg, "", sizeof(msg));
 		printed = qfalse;
-		for (style = 0; style <= 8; style++) { //For each style
+		for (style = 0; style <= NUM_MOVEMENTSTYLES; style++) { //For each style
 			found = qfalse;
 			for (i=0; i<10; i++) {
 				if (HighScores[course][style][i].username && HighScores[course][style][i].username[0] && !Q_stricmp(HighScores[course][style][i].username, username)) {
@@ -2298,7 +2313,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
-			Com_sprintf(strUser, sizeof(strUser), "^2%s^7", cl->pers.userName);
+			Com_sprintf(strUser, sizeof(strUser), "^7%s^7", cl->pers.userName);
 			Q_strncpyz(strIP, cl->sess.IP, sizeof(strIP));
 
 			if (cl->sess.sessionTeam != TEAM_SPECTATOR)
