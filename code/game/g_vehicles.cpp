@@ -803,8 +803,8 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		{// Riding means you get WP_NONE
 			ent->client->ps.stats[ STAT_WEAPONS ] |= (1<<WP_NONE);
 		}
-		if ( ent->client->ps.weapon != WP_SABER
-			&& ent->client->ps.weapon != WP_BLASTER )
+		if ( (ent->client->ps.weapon != WP_SABER
+			&& ent->client->ps.weapon != WP_BLASTER) || !(pVeh->m_pVehicleInfo->type == VH_ANIMAL || pVeh->m_pVehicleInfo->type == VH_SPEEDER))
 		{//switch to weapon none?
 			if (ent->s.number<MAX_CLIENTS)
 			{
