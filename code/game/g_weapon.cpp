@@ -672,9 +672,13 @@ void WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWeaponIn
 		// HUGE HORRIBLE HACK
 		if (ent->owner && ent->owner->s.number==0)
 		{
-			missile->damage			*= 20.0f;
-			missile->splashDamage	*= 20.0f;
-			missile->splashRadius	*= 20.0f; 
+			//Should only be for speeders - mainly for t2_trip
+			if (ent->m_pVehicle->m_pVehicleInfo && ent->m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER)
+			{
+				missile->damage			*= 20.0f;
+				missile->splashDamage	*= 20.0f;
+				missile->splashRadius	*= 20.0f;
+			}
 		}
 
 		//FIXME: externalize some of these properties?
