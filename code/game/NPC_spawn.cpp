@@ -1620,7 +1620,6 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		newent->m_pVehicle->m_pParentEntity = newent;
 		newent->m_pVehicle->m_pVehicleInfo->Initialize( newent->m_pVehicle );
 		newent->client->NPC_class = CLASS_VEHICLE;
-
 	}
 	else
 	{
@@ -4084,9 +4083,8 @@ static void NPC_Spawn_f(void)
 	NPCspawner->e_ThinkFunc = thinkF_G_FreeEntity;
 	NPCspawner->nextthink = level.time + FRAMETIME;
 	
-
 	char	*npc_type = gi.argv( 2 );
-	if (!npc_type )
+	if (!npc_type || !npc_type[0] )
 	{
 		gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn [NPC type (from NCPCs.cfg)]\n" );
 		return;
@@ -4096,7 +4094,7 @@ static void NPC_Spawn_f(void)
 	{//spawning a vehicle
 		isVehicle = qtrue;
 		npc_type = gi.argv( 3 );
-		if (!npc_type )
+		if (!npc_type || !npc_type[0] )
 		{
 			gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn vehicle [NPC type (from NCPCs.cfg)]\n" );
 			return;
@@ -4156,6 +4154,10 @@ static void NPC_Spawn_f(void)
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_Jedi( NPCspawner );
+	}
+	else if ( isVehicle )
+	{
+		SP_NPC_Vehicle( NPCspawner );
 	}
 	else
 	{
