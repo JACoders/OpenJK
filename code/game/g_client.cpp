@@ -1216,6 +1216,11 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 				{
 					Com_sprintf( strTemp, 128, "*muzzle%d", i + 1 );
 					ent->m_pVehicle->m_iMuzzleTag[i] = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], strTemp );
+					if ( ent->m_pVehicle->m_iMuzzleTag[i] == -1 )
+					{//ergh, try *flash?
+						Com_sprintf( strTemp, 128, "*flash%d", i + 1 );
+						ent->m_pVehicle->m_iMuzzleTag[i] = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], strTemp );
+					}
 				}
 			}
 			else if ( ent->client->NPC_class == CLASS_HOWLER )
