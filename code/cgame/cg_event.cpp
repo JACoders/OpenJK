@@ -705,12 +705,24 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MISSILE_HIT:
 		DEBUGNAME("EV_MISSILE_HIT");
-		CG_MissileHitPlayer( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		if ( CG_VehicleWeaponImpact( cent ) )
+		{
+		}
+		else
+		{
+			CG_MissileHitPlayer( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		}
 		break;
 
 	case EV_MISSILE_MISS:
 		DEBUGNAME("EV_MISSILE_MISS");
-		CG_MissileHitWall( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		if ( CG_VehicleWeaponImpact( cent ) )
+		{
+		}
+		else
+		{
+			CG_MissileHitWall( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		}
 		break;
 
 	case EV_BMODEL_SOUND:

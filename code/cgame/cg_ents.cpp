@@ -1117,7 +1117,54 @@ static void CG_Missile( centity_t *cent ) {
 		VectorCopy( s1->angles, cent->lerpAngles );
 	}
 
-	if ( cent->gent->alt_fire )
+	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iShotFX != NULL_FX || g_vehWeaponInfo[s1->otherEntityNum2].iModel != NULL_HANDLE) )
+	{
+		vec3_t forward;
+		
+		if (s1->eFlags & EF_USE_ANGLEDELTA)
+		{
+			AngleVectors(cent->currentState.angles, forward, 0, 0);
+		}
+		else
+		{
+			if ( VectorNormalize2( cent->gent->s.pos.trDelta, forward ) == 0.0f )
+			{
+				if ( VectorNormalize2( s1->pos.trDelta, forward ) == 0.0f )
+				{
+					forward[2] = 1.0f;
+				}
+			}
+		}
+		
+		// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
+		int dif = cg.time - cent->gent->s.pos.trTime;
+		
+		if ( dif < 75 )
+		{
+			if ( dif < 0 )
+			{
+				dif = 0;
+			}
+			
+			float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
+			
+			VectorScale( forward, scale, forward );
+		}
+		
+		theFxScheduler.PlayEffect(g_vehWeaponInfo[s1->otherEntityNum2].iShotFX, cent->lerpOrigin, forward);
+		if ( g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound )
+		{
+			vec3_t	velocity;
+			EvaluateTrajectoryDelta( &cent->currentState.pos, cg.time, velocity );
+			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound );
+		}
+		//add custom model
+		if ( g_vehWeaponInfo[s1->otherEntityNum2].iModel == NULL_HANDLE )
+		{
+			return;
+		}
+	}
+	else if ( cent->gent->alt_fire )
 	{
 		// add trails
 		if ( weapon->alt_missileTrailFunc )  
@@ -1173,7 +1220,9 @@ Ghoul2 Insert End
 	ent.skinNum = cg.clientFrame & 1;
 	ent.renderfx = /*weapon->missileRenderfx | */RF_NOSHADOW;
 
-	if ( cent->gent->alt_fire )
+	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iModel != NULL_HANDLE))
+		ent.hModel = g_vehWeaponInfo[s1->otherEntityNum2].iModel;
+	else if ( cent->gent->alt_fire )
 		ent.hModel = weapon->alt_missileModel;
 	else
 		ent.hModel = weapon->missileModel;

@@ -2890,6 +2890,17 @@ void CG_MissileStick( centity_t *cent, int weapon, vec3_t position )
 	}
 }
 
+qboolean CG_VehicleWeaponImpact( centity_t *cent )
+{//see if this is a missile entity that's owned by a vehicle and should do a special, overridden impact effect
+	if (cent->currentState.otherEntityNum2
+		&& g_vehWeaponInfo[cent->currentState.otherEntityNum2].iImpactFX)
+	{//missile is from a special vehWeapon
+		theFxScheduler.PlayEffect(g_vehWeaponInfo[cent->currentState.otherEntityNum2].iImpactFX, cent->lerpOrigin, cent->gent->pos1);
+		return qtrue;
+	}
+	return qfalse;
+}
+
 /*
 =================
 CG_MissileHitWall

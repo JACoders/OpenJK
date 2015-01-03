@@ -1166,6 +1166,8 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 
 void CG_DrawTargetBeam( vec3_t start, vec3_t end, vec3_t norm, const char *beamFx, const char *impactFx );
 
+qboolean CG_VehicleWeaponImpact( centity_t *cent );
+
 
 /*
 Ghoul2 Insert Start
