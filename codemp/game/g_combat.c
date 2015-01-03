@@ -6347,7 +6347,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0)
 						{ // zyk: Ultra Drain heals the power user
-							if (quest_power_user && quest_power_user->client && zyk_can_hit_target(quest_power_user, ent) == qtrue)
+							if (quest_power_user && quest_power_user->client && quest_power_user->health > 0 && zyk_can_hit_target(quest_power_user, ent) == qtrue)
 							{
 								if (quest_power_user->health < quest_power_user->client->ps.stats[STAT_MAX_HEALTH])
 									quest_power_user->health += (int)points;
