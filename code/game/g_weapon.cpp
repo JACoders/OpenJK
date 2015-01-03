@@ -746,6 +746,7 @@ void WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWeaponIn
 			missile->owner = ent;
 		}
 		missile->s.otherEntityNum = ent->s.number;
+		missile->s.otherEntityNum2 = (vehWeapon-&g_vehWeaponInfo[0]);
 
 		if ( vehWeapon->iLifeTime )
 		{//expire after a time
