@@ -81,8 +81,11 @@ cvar_t	*cg_demoRecordMsg;//JAPRO ENGINE
 cvar_t	*m_repeatDelay;//JAPRO ENGINE
 cvar_t	*m_repeat;//JAPRO ENGINE
 
+#ifdef TESTY
 cvar_t	*cl_test;//JAPRO ENGINE
 cvar_t	*cl_testAngle;//JAPRO ENGINE
+#endif
+cvar_t	*cl_idrive; //JAPRO ENGINE
 
 cvar_t	*cl_autolodscale;
 

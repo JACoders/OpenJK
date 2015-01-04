@@ -718,6 +718,7 @@ typedef struct clientPersistant_s {
 	int			duelStartTime;
 	qboolean	backwardsRocket;
 	qboolean	noFollow;
+	qboolean	practice;
 	qboolean	haste;
 	short		showCheckpoints; //0 = off, 1 = centerprint, 2 = chat
 	qboolean	validPlugin;

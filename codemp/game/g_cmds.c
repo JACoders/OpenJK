@@ -3037,9 +3037,15 @@ validVote:
 		level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
 
 	// there is still a vote to be executed, execute it and store the new vote
-	if ( level.voteExecuteTime ) {
-		level.voteExecuteTime = 0;
-		trap->SendConsoleCommand( EXEC_APPEND, va( "%s\n", level.voteString ) );
+	if (level.voteExecuteTime ) { //bad idea
+		if (g_fixVote.integer) {
+			trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
+			return;
+		}
+		else {
+			level.voteExecuteTime = 0;
+			trap->SendConsoleCommand( EXEC_APPEND, va( "%s\n", level.voteString ) );
+		}
 	}
 
 	// pass the args onto vote-specific handlers for parsing/filtering
@@ -6393,6 +6399,91 @@ static void Cmd_Hide_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"You can be spectated now.\n\"");
 }
 
+static void Cmd_Launch_f(gentity_t *ent)
+{
+	int speed;
+	char input[32];
+	vec3_t fwdAngles, jumpFwd;
+	const int clampSpeed = 25000;
+
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /launch <speed>\n\"" );
+		return;
+	}
+
+	if (!ent->client->pers.practice) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in practice mode to use this command!\n\"");
+		return;
+	}
+
+	if (!ent->client->sess.raceMode) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in race mode to use this command!\n\""); //Should never happen since cant be in practice w/o racemode? or... w/e
+		return;
+	}
+
+	trap->Argv(1, input, sizeof(input));
+	speed = atoi(input);
+
+	if (speed > clampSpeed)
+		speed = clampSpeed;
+	else if (speed < -clampSpeed)
+		speed = -clampSpeed;
+
+	VectorCopy( ent->client->ps.viewangles, fwdAngles );
+	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
+	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
+	VectorScale( jumpFwd, speed, ent->client->ps.velocity );
+	ent->client->ps.velocity[2] = 270; //Hmm?
+	//PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+
+	//PM_AddEvent( EV_JUMP );
+	ent->client->ps.fd.forceJumpSound = 1;
+	//ent->client->pers.cmd.upmove = 0;
+}
+
+static void Cmd_Practice_f(gentity_t *ent)
+{
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 1) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /practice\n\"" );
+		return;
+	}
+
+	if (!ent->client->sess.raceMode) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be in race mode to use this command!\n\""); //Should never happen since cant be in practice w/o racemode? or... w/e
+		return;
+	}
+
+	if (VectorLength(ent->client->ps.velocity)) {
+		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
+		return;
+	}
+
+	ent->client->pers.practice = (qboolean)!ent->client->pers.practice; //toggle it
+
+	if (ent->client->pers.practice) {
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap->SendServerCommand(ent-g_entities, "print \"Practice mode enabled: timer reset.\n\"");
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else 
+			trap->SendServerCommand(ent-g_entities, "print \"Practice mode enabled.\n\"");
+	}
+	else {
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap->SendServerCommand(ent-g_entities, "print \"Practice mode disabled: timer reset.\n\"");
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"Practice mode disabled.\n\"");
+	}
+}
+
 //[JAPRO - Serverside - All - Amtelemark Function - Start]
 void Cmd_Amtelemark_f(gentity_t *ent)
 {
@@ -6853,6 +6944,7 @@ void Cmd_Race_f(gentity_t *ent)
 	if (ent->client->sess.raceMode) {//Toggle it
 		ent->client->sess.raceMode = qfalse;
 		ent->client->pers.noFollow = qfalse;
+		ent->client->pers.practice = qfalse;
 		ent->r.svFlags &= ~SVF_SINGLECLIENT; //ehh?
 		ent->s.weapon = WP_SABER; //Dont drop our weapon
 		Cmd_ForceChanged_f(ent);//Make sure their jump level is valid.. if leaving racemode :S
@@ -7573,6 +7665,9 @@ command_t commands[] = {
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_ALIVE },
 //	{ "kylesmash",			TryGrapple,					0 },
+
+	{ "launch",				Cmd_Launch_f,				CMD_NOINTERMISSION|CMD_ALIVE},
+
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 
 	{ "login",				Cmd_ACLogin_f,				CMD_NOINTERMISSION },
@@ -7581,7 +7676,6 @@ command_t commands[] = {
 	{ "mapents",			Cmd_MapEnts_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 	{ "modversion",			Cmd_ModVersion_f,			0 },
 	{ "move",				Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
-	{ "movementstyle",		Cmd_MovementStyle_f,		CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "noclip",				Cmd_Noclip_f,				CMD_NOINTERMISSION },//change for admin?
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 
@@ -7590,6 +7684,7 @@ command_t commands[] = {
 	{ "npc",				Cmd_NPC_f,					0 },//removed cheat for admin //meh let us npc kill all from spec
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
+	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION|CMD_ALIVE},
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},

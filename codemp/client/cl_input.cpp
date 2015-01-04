@@ -470,7 +470,8 @@ float CL_KeyState( kbutton_t *key ) {
 		} else {
 			msec += com_frameTime - key->downtime;
 		}
-		key->downtime = com_frameTime;
+		if (!cl_idrive->integer)
+			key->downtime = com_frameTime; //Not sure what the fuck this is doing here, downtime is supposed to store time of when the key was pressed, not the most recent time its been held down..
 	}
 
 #if 0
@@ -858,10 +859,6 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	int		movespeed;
 	int		forward, side, up;
 
-#if 1
-	int		left, right;
-#endif
-
 	//
 	// adjust for speed key / running
 	// the walking flag is to keep animations consistant
@@ -878,42 +875,97 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	forward = 0;
 	side = 0;
 	up = 0;
-	if ( in_strafe.active ) {
-		side += movespeed * CL_KeyState (&in_right);
-		side -= movespeed * CL_KeyState (&in_left);
+
+	if (cl_idrive->integer && !cl_test->integer) {
+		float s1, s2;
+
+		if (in_strafe.active) {
+			s1 = CL_KeyState (&in_right);
+			s2 = CL_KeyState (&in_left);
+			if (s1 && s2) {
+				if (in_right.downtime > in_left.downtime)
+					s2 = 0;
+				if (in_right.downtime < in_left.downtime)
+					s1 = 0;
+			}
+			side += movespeed * s1;
+			side -= movespeed * s2;
+		}
+
+		s1 = CL_KeyState (&in_moveright);
+		s2 = CL_KeyState (&in_moveleft);
+		if (s1 && s2) {
+			if (in_moveright.downtime > in_moveleft.downtime)
+				s2 = 0;
+			if (in_moveright.downtime < in_moveleft.downtime)
+				s1 = 0;
+		}
+		side += movespeed * s1;
+		side -= movespeed * s2;
+
+		s1 = CL_KeyState (&in_up);
+		s2 = CL_KeyState (&in_down);
+		if (s1 && s2) {
+			if (in_up.downtime > in_down.downtime)
+				s2 = 0;
+			if (in_up.downtime < in_down.downtime)
+				s1 = 0;
+		}
+		up += movespeed * s1;
+		up -= movespeed * s2;
+	
+		s1 = CL_KeyState (&in_forward);
+		s2 = CL_KeyState (&in_back);
+		if (s1 && s2) {
+			if (in_forward.downtime > in_back.downtime)
+				s2 = 0;
+			if (in_forward.downtime < in_back.downtime)
+				s1 = 0;
+		}
+		forward += movespeed * s1;
+		forward -= movespeed * s2;		
+
+		cmd->forwardmove = ClampChar( forward );
+		cmd->rightmove = ClampChar( side );
+		cmd->upmove = ClampChar( up );
 	}
+	else {
+		int left, right;
 
-	side += movespeed * CL_KeyState (&in_moveright);
-#if 1
-	left = side;
+		if ( in_strafe.active ) {
+			side += movespeed * CL_KeyState (&in_right);
+			side -= movespeed * CL_KeyState (&in_left);
+		}
+
+		side += movespeed * CL_KeyState (&in_moveright);
+#if TESTY
+		left = side;
 #endif
-	side -= movespeed * CL_KeyState (&in_moveleft);
-#if 1
-	right = -side;
+		side -= movespeed * CL_KeyState (&in_moveleft);
+#if TESTY
+		right = -side;
 #endif
 
-	//Com_Printf( "R: %i / L: %i / side: %i\n", left, right, side );
+		up += movespeed * CL_KeyState (&in_up);
+		up -= movespeed * CL_KeyState (&in_down);
 
-	up += movespeed * CL_KeyState (&in_up);
-	up -= movespeed * CL_KeyState (&in_down);
+		forward += movespeed * CL_KeyState (&in_forward);
+		forward -= movespeed * CL_KeyState (&in_back);
+	
+		cmd->forwardmove = ClampChar( forward );
+		cmd->rightmove = ClampChar( side );
+		cmd->upmove = ClampChar( up );
 
-	forward += movespeed * CL_KeyState (&in_forward);
-	forward -= movespeed * CL_KeyState (&in_back);
-
-	cmd->forwardmove = ClampChar( forward );
-	cmd->rightmove = ClampChar( side );
-	cmd->upmove = ClampChar( up );
-
-#if 1
-	if (cl_test->integer == 1 && left == 127 && right == 0) {
-		cmd->rightmove = 127;
+#if TESTY
+		if (cl_test->integer == 1 && left == 127 && right == 0) {
+			cmd->rightmove = 127;
+		}
+		if (cl_test->integer == 2 && left == 127 && right == 0 && forward == 127) {
+			cmd->rightmove = 127;
+			cmd->forwardmove = 0;
+		}
+#endif
 	}
-	if (cl_test->integer == 2 && left == 127 && right == 0 && forward == 127) {
-		cmd->rightmove = 127;
-		cmd->forwardmove = 0;
-	}
-
-#endif
 }
 
 /*
@@ -1224,7 +1276,7 @@ void CL_FinishMove( usercmd_t *cmd ) {
 		cl.cgameViewAngleForceTime = 0;
 	}
 
-#if 1
+#if TESTY
 	if (cl_test->integer && cl_testAngle->value && cl_testAngle->value < 90.0f && cl_testAngle->value > -90.0f) {
 		cl.viewangles[YAW] -= cl_testAngle->value; //JAPRO ENGINE
 	}
@@ -1413,8 +1465,8 @@ qboolean CL_ReadyToSendPacket( void ) {
 	// check for exceeding cl_maxpackets
 	if ( cl_maxpackets->integer < 15 ) {
 		Cvar_Set( "cl_maxpackets", "15" );
-	} else if ( cl_maxpackets->integer > 125 ) { //JAPRO ENGINE
-		Cvar_Set( "cl_maxpackets", "125" );
+	} else if ( cl_maxpackets->integer > 500 ) { //JAPRO ENGINE
+		Cvar_Set( "cl_maxpackets", "500" );
 	}
 	oldPacketNum = (clc.netchan.outgoingSequence - 1) & PACKET_MASK;
 	delta = cls.realtime -  cl.outPackets[ oldPacketNum ].p_realtime;
@@ -1724,8 +1776,9 @@ void CL_InitInput( void ) {
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
 
-#if 1
+#if TESTY
 	cl_test = Cvar_Get ("cl_test", "0", 0);//JAPRO ENGINE
 	cl_testAngle = Cvar_Get ("cl_testAngle", "0", 0);//JAPRO ENGINE
 #endif
+	cl_idrive = Cvar_Get ("cl_idrive", "0", 0);//JAPRO ENGINE
 }

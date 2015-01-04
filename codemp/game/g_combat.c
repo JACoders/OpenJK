@@ -2462,11 +2462,18 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 	self->client->ps.fd.forceDeactivateAll = 1;
 
+
 	if ((self == attacker || (attacker && !attacker->client)) &&
-		(meansOfDeath == MOD_CRUSH || meansOfDeath == MOD_FALLING || meansOfDeath == MOD_TRIGGER_HURT || meansOfDeath == MOD_UNKNOWN) &&
-		self->client->ps.otherKillerTime > level.time)
+		(meansOfDeath == MOD_CRUSH || meansOfDeath == MOD_FALLING || meansOfDeath == MOD_TRIGGER_HURT || meansOfDeath == MOD_UNKNOWN))
 	{
-		attacker = &g_entities[self->client->ps.otherKiller];
+		if (g_fixKillCredit.integer) {
+			if (self->client->ps.otherKillerTime > level.time)
+				attacker = &g_entities[self->client->ps.otherKiller]; //problem is here?
+		}
+		else {
+			if (self->client->ps.otherKillerTime > level.time)
+				attacker = &g_entities[self->client->ps.otherKiller];
+		}
 	}
 
 //JAPRO - Serverside - Fixkillcredit for suiciders and teamchangers - Start
@@ -2475,8 +2482,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		self->client->ps.otherKillerTime > level.time)
 	{
 		if (OnSameTeam (self, &g_entities[self->client->ps.otherKiller]) && g_friendlyFire.integer)
-				attacker = &g_entities[self->client->ps.otherKiller];
-		else
+			attacker = &g_entities[self->client->ps.otherKiller];
+		else if (level.gametype < GT_TEAM)
 			attacker = &g_entities[self->client->ps.otherKiller];
 	}
 //JAPRO - Serverside - Fixkillcredit for suiciders and teamchangers - End
