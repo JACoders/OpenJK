@@ -543,29 +543,29 @@ vehField_t vehicleFields[] =
 	{"soundTurbo",		VFOFS(soundTurbo),		VF_SOUND},//sound to play when turbo/afterburner kicks in
 	{"soundHyper",		VFOFS(soundHyper),		VF_SOUND_CLIENT},//sound to play when hits hyperspace
 	{"soundLand",		VFOFS(soundLand),		VF_SOUND},//sound to play when ship lands
-	{"soundFlyBy",		VFOFS(soundFlyBy),		VF_SOUND},//sound to play when they buzz you
-	{"soundFlyBy2",		VFOFS(soundFlyBy2),		VF_SOUND},//alternate sound to play when they buzz you
+	{"soundFlyBy",		VFOFS(soundFlyBy),		VF_SOUND_CLIENT},//sound to play when they buzz you
+	{"soundFlyBy2",		VFOFS(soundFlyBy2),		VF_SOUND_CLIENT},//alternate sound to play when they buzz you
 	{"soundShift1",		VFOFS(soundShift1),		VF_SOUND},//sound to play when changing speeds
 	{"soundShift2",		VFOFS(soundShift2),		VF_SOUND},//sound to play when changing speeds
 	{"soundShift3",		VFOFS(soundShift3),		VF_SOUND},//sound to play when changing speeds
 	{"soundShift4",		VFOFS(soundShift4),		VF_SOUND},//sound to play when changing speeds
 
-	{"exhaustFX", VFOFS(iExhaustFX), VF_EFFECT},		//exhaust effect, played from "*exhaust" bolt(s)
-	{"turboFX", VFOFS(iTurboFX), VF_EFFECT},		//turbo exhaust effect, played from "*exhaust" bolt(s) when ship is in "turbo" mode
+	{"exhaustFX", VFOFS(iExhaustFX), VF_EFFECT_CLIENT},		//exhaust effect, played from "*exhaust" bolt(s)
+	{"turboFX", VFOFS(iTurboFX), VF_EFFECT_CLIENT},		//turbo exhaust effect, played from "*exhaust" bolt(s) when ship is in "turbo" mode
 	{"turboStartFX", VFOFS(iTurboStartFX), VF_EFFECT},		//turbo start effect, played from "*exhaust" bolt(s) when ship is in "turbo" mode
-	{"trailFX", VFOFS(iTrailFX), VF_EFFECT},		//trail effect, played from "*trail" bolt(s)
-	{"impactFX", VFOFS(iImpactFX), VF_EFFECT},		//impact effect, for when it bumps into something
+	{"trailFX", VFOFS(iTrailFX), VF_EFFECT_CLIENT},		//trail effect, played from "*trail" bolt(s)
+	{"impactFX", VFOFS(iImpactFX), VF_EFFECT_CLIENT},		//impact effect, for when it bumps into something
 	{"explodeFX", VFOFS(iExplodeFX), VF_EFFECT},		//explosion effect, for when it blows up (should have the sound built into explosion effect)
-	{"wakeFX", VFOFS(iWakeFX), VF_EFFECT},		//effect it makes when going across water
-	{"dmgFX", VFOFS(iDmgFX), VF_EFFECT},		//effect to play on damage from a weapon or something
+	{"wakeFX", VFOFS(iWakeFX), VF_EFFECT_CLIENT},		//effect it makes when going across water
+	{"dmgFX", VFOFS(iDmgFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
 #ifdef _JK2MP
 	{"injureFX", VFOFS(iInjureFX), VF_EFFECT_CLIENT}, //effect to play on partially damaged ship surface
 	{"noseFX", VFOFS(iNoseFX), VF_EFFECT_CLIENT},		//effect for nose piece flying away when blown off
 	{"lwingFX", VFOFS(iLWingFX), VF_EFFECT_CLIENT},		//effect for left wing piece flying away when blown off
 	{"rwingFX", VFOFS(iRWingFX), VF_EFFECT_CLIENT},		//effect for right wing piece flying away when blown off
 #else
-	{"armorLowFX", VFOFS(iArmorLowFX), VF_EFFECT},		//effect to play on damage from a weapon or something
-	{"armorGoneFX", VFOFS(iArmorGoneFX), VF_EFFECT},		//effect to play on damage from a weapon or something
+	{"armorLowFX", VFOFS(iArmorLowFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
+	{"armorGoneFX", VFOFS(iArmorGoneFX), VF_EFFECT_CLIENT},		//effect to play on damage from a weapon or something
 #endif
 
 	// Weapon stuff:
@@ -940,8 +940,14 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 		*(int *)(b+vehField->ofs) = trap_R_RegisterModel( value );
 #endif
 		break;
-	case VF_MODEL_CLIENT:	// take the string, get the index
-		*(int *)(b+vehField->ofs) = cgi_R_RegisterModel( value );
+	case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
+#ifndef _JK2MP
+		*(int *)(b+vehField->ofs) = G_ModelIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehField->ofs) = G_ModelIndex( value );
+#else
+		*(int *)(b+vehField->ofs) = trap_R_RegisterModel( value );
+#endif
 		break;
 	case VF_EFFECT:	// take the string, get the G_EffectIndex
 #ifdef QAGAME
@@ -950,8 +956,14 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 		*(int *)(b+vehField->ofs) = trap_FX_RegisterEffect( value );
 #endif
 		break;
-	case VF_EFFECT_CLIENT:	// take the string, get the effect index
-		*(int *)(b+vehField->ofs) = theFxScheduler.RegisterEffect( value );
+	case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the G_EffectIndex
+#ifndef _JK2MP
+		*(int *)(b+vehField->ofs) = G_EffectIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehField->ofs) = G_EffectIndex( value );
+#elif defined CGAME
+		*(int *)(b+vehField->ofs) = trap_FX_RegisterEffect( value );
+#endif
 		break;
 	case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 #ifdef WE_ARE_IN_THE_UI
@@ -972,8 +984,14 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 		*(int *)(b+vehField->ofs) = trap_S_RegisterSound( value );
 #endif
 		break;
-	case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
-		*(int *)(b+vehField->ofs) = cgi_S_RegisterSound( value );
+	case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the G_SoundIndex
+#ifndef _JK2MP
+		*(int *)(b+vehField->ofs) = G_SoundIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehField->ofs) = G_SoundIndex( value );
+#else
+		*(int *)(b+vehField->ofs) = trap_S_RegisterSound( value );
+#endif
 		break;
 	default:
 		//Unknown type?
