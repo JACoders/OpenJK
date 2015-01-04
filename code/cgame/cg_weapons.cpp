@@ -2895,7 +2895,7 @@ qboolean CG_VehicleWeaponImpact( centity_t *cent )
 	if (cent->currentState.otherEntityNum2
 		&& g_vehWeaponInfo[cent->currentState.otherEntityNum2].iImpactFX)
 	{//missile is from a special vehWeapon
-		theFxScheduler.PlayEffect(g_vehWeaponInfo[cent->currentState.otherEntityNum2].iImpactFX, cent->lerpOrigin, cent->gent->pos1);
+		CG_PlayEffectID(g_vehWeaponInfo[cent->currentState.otherEntityNum2].iImpactFX, cent->lerpOrigin, cent->gent->pos1);
 		return qtrue;
 	}
 	return qfalse;

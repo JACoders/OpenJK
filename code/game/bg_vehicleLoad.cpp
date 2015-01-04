@@ -82,12 +82,6 @@ extern sfxHandle_t	trap_S_RegisterSound( const char *sample);		// returns buzz i
 #include "../namespace_end.h"
 #endif
 
-extern sfxHandle_t	cgi_S_RegisterSound( const char *sample );
-extern qhandle_t	cgi_R_RegisterModel( const char *name );
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "../cgame/FxScheduler.h"
-#endif
-
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 // These buffers are filled in with the same contents and then just read from in
@@ -165,7 +159,7 @@ vehField_t vehWeaponFields[] =
 	{"hasGravity", VWFOFS(bHasGravity), VF_BOOL},	//if a projectile, drops
 	{"ionWeapon", VWFOFS(bIonWeapon), VF_BOOL},	//disables ship shields and sends them out of control
 	{"saberBlockable", VWFOFS(bSaberBlockable), VF_BOOL},	//lightsabers can deflect this projectile
-	{"muzzleFX", VWFOFS(iMuzzleFX), VF_EFFECT},	//index of Muzzle Effect
+	{"muzzleFX", VWFOFS(iMuzzleFX), VF_EFFECT_CLIENT},	//index of Muzzle Effect
 	{"model", VWFOFS(iModel), VF_MODEL_CLIENT},	//handle to the model used by this projectile
 	{"shotFX", VWFOFS(iShotFX), VF_EFFECT_CLIENT},	//index of Shot Effect
 	{"impactFX", VWFOFS(iImpactFX), VF_EFFECT_CLIENT},	//index of Impact Effect
@@ -273,8 +267,14 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		*(int *)(b+vehWeaponField->ofs) = trap_R_RegisterModel( value );
 #endif
 		break;
-	case VF_MODEL_CLIENT:	// take the string, get the index
-		*(int *)(b+vehWeaponField->ofs) = cgi_R_RegisterModel( value );
+	case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
+#ifndef _JK2MP
+		*(int *)(b+vehWeaponField->ofs) = G_ModelIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehWeaponField->ofs) = G_ModelIndex( value );
+#else
+		*(int *)(b+vehWeaponField->ofs) = trap_R_RegisterModel( value );
+#endif
 		break;
 	case VF_EFFECT:	// take the string, get the G_EffectIndex
 #ifdef QAGAME
@@ -283,8 +283,14 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		*(int *)(b+vehWeaponField->ofs) = trap_FX_RegisterEffect( value );
 #endif
 		break;
-	case VF_EFFECT_CLIENT:	// take the string, get the index
-		*(int *)(b+vehWeaponField->ofs) = theFxScheduler.RegisterEffect( value );
+	case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the index
+#ifndef _JK2MP
+		*(int *)(b+vehWeaponField->ofs) = G_EffectIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehWeaponField->ofs) = G_EffectIndex( value );
+#elif defined CGAME
+		*(int *)(b+vehWeaponField->ofs) = trap_FX_RegisterEffect( value );
+#endif
 		break;
 	case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 #ifdef WE_ARE_IN_THE_UI
@@ -305,8 +311,14 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		*(int *)(b+vehWeaponField->ofs) = trap_S_RegisterSound( value );
 #endif
 		break;
-	case VF_SOUND_CLIENT:	// take the string, get the index
-		*(int *)(b+vehWeaponField->ofs) = cgi_S_RegisterSound( value );
+	case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
+#ifndef _JK2MP
+		*(int *)(b+vehWeaponField->ofs) = G_SoundIndex( value );
+#elif defined QAGAME
+		//*(int *)(b+vehWeaponField->ofs) = G_SoundIndex( value );
+#else
+		*(int *)(b+vehWeaponField->ofs) = trap_S_RegisterSound( value );
+#endif
 		break;
 	default:
 		//Unknown type?
