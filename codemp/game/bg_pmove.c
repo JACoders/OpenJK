@@ -9646,7 +9646,7 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 {
 	Vehicle_t *pVeh = veh->m_pVehicle;
-	qboolean setAngles = qtrue;
+	qboolean setAngles = qfalse;
 	vec3_t clampMin;
 	vec3_t clampMax;
 	int i;
