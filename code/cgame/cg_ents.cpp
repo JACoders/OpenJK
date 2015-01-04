@@ -1117,7 +1117,7 @@ static void CG_Missile( centity_t *cent ) {
 		VectorCopy( s1->angles, cent->lerpAngles );
 	}
 
-	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iShotFX != NULL_FX || g_vehWeaponInfo[s1->otherEntityNum2].iModel != NULL_HANDLE) )
+	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iShotFX || g_vehWeaponInfo[s1->otherEntityNum2].iModel) )
 	{
 		vec3_t forward;
 		
@@ -1151,15 +1151,18 @@ static void CG_Missile( centity_t *cent ) {
 			VectorScale( forward, scale, forward );
 		}
 		
-		theFxScheduler.PlayEffect(g_vehWeaponInfo[s1->otherEntityNum2].iShotFX, cent->lerpOrigin, forward);
+		CG_PlayEffectID(g_vehWeaponInfo[s1->otherEntityNum2].iShotFX, cent->lerpOrigin, forward);
 		if ( g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound )
 		{
 			vec3_t	velocity;
 			EvaluateTrajectoryDelta( &cent->currentState.pos, cg.time, velocity );
-			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound );
+			if (cgs.sound_precache[g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound] != NULL_SFX)
+			{
+				cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, cgs.sound_precache[g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound] );
+			}
 		}
 		//add custom model
-		if ( g_vehWeaponInfo[s1->otherEntityNum2].iModel == NULL_HANDLE )
+		if ( !g_vehWeaponInfo[s1->otherEntityNum2].iModel )
 		{
 			return;
 		}
@@ -1220,8 +1223,8 @@ Ghoul2 Insert End
 	ent.skinNum = cg.clientFrame & 1;
 	ent.renderfx = /*weapon->missileRenderfx | */RF_NOSHADOW;
 
-	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iModel != NULL_HANDLE))
-		ent.hModel = g_vehWeaponInfo[s1->otherEntityNum2].iModel;
+	if ( s1->otherEntityNum2 && g_vehWeaponInfo[s1->otherEntityNum2].iModel && cgs.model_draw[g_vehWeaponInfo[s1->otherEntityNum2].iModel] != NULL_HANDLE)
+		ent.hModel = cgs.model_draw[g_vehWeaponInfo[s1->otherEntityNum2].iModel];
 	else if ( cent->gent->alt_fire )
 		ent.hModel = weapon->alt_missileModel;
 	else
