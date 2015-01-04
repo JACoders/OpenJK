@@ -1020,6 +1020,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 int		Sys_Milliseconds2(void);
+void	Sys_Sleep( int msec );
 
 extern "C" void	Sys_SnapVector( float *v );
 
@@ -1062,6 +1063,34 @@ qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
 
 void Sys_SetProcessorAffinity( void );
+
+// Graphics API
+typedef struct window_s
+{
+	void *handle; // OS-dependent window handle
+} window_t;
+
+typedef enum graphicsApi_e
+{
+	GRAPHICS_API_GENERIC,
+
+	// Only OpenGL needs special treatment..
+	GRAPHICS_API_OPENGL,
+} graphicsApi_t;
+
+typedef struct windowCreateOptions_s
+{
+	int openglMajorVersion;
+	int openglMinorVersion;
+	bool openglCoreContext;
+} windowCreateOptions_t;
+
+typedef struct glconfig_s glconfig_t;
+window_t	WIN_Init( graphicsApi_t api, glconfig_t *glConfig );
+void		WIN_Present( window_t *window );
+void		WIN_SetGamma( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
+void		WIN_Shutdown( void );
+void *		WIN_GL_GetProcAddress( const char *proc );
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined
@@ -1125,24 +1154,3 @@ inline int Round(float value)
 // Persistent data store API
 bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
-
-// Graphics API
-typedef struct window_s
-{
-	void *handle; // OS-dependent window handle
-} window_t;
-
-typedef enum graphicsApi_e
-{
-	GRAPHICS_API_GENERIC,
-
-	// Only OpenGL needs special treatment..
-	GRAPHICS_API_OPENGL,
-} graphicsApi_t;
-
-typedef struct windowCreateOptions_s
-{
-	int openglMajorVersion;
-	int openglMinorVersion;
-	bool openglCoreContext;
-} windowCreateOptions_t;
