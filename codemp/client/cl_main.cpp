@@ -12,7 +12,6 @@
 #include "cl_lan.h"
 #include "snd_local.h"
 #include "sys/sys_loadlib.h"
-#include "sys/sys_local.h"
 
 cvar_t	*cl_renderer;
 

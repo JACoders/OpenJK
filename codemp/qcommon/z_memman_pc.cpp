@@ -1,7 +1,6 @@
 // Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
 #include "client/client.h" // hi i'm bad
-#include "sys/sys_local.h"
 
 ////////////////////////////////////////////////
 //

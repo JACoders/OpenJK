@@ -217,14 +217,28 @@ void Sys_Print( const char *msg ) {
 	Conbuf_AppendText( msg );
 }
 
+/*
+================
+Sys_Init
+
+Called after the common systems (cvars, files, etc)
+are initialized
+================
+*/
+void Sys_Init( void ) {
+	Cmd_AddCommand ("in_restart", IN_Restart);
+	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
+	Cvar_Set( "username", Sys_GetCurrentUser() );
+
+	Sys_PlatformInit();
+}
+
 void Sys_Exit( int ex ) __attribute__((noreturn));
 void Sys_Exit( int ex ) {
 #ifndef DEDICATED
 	SDL_Quit( );
 #endif
 
-    // Give me a backtrace on error exits.
-    assert( ex == 0 );
     exit(ex);
 }
 
@@ -248,9 +262,7 @@ void Sys_Quit (void) {
 	Com_ShutdownZoneMemory();
 	Com_ShutdownHunkMemory();
 
-#if defined(DEDICATED) && !defined(_WIN32)
-	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-#endif
+	Sys_PlatformQuit();
 
     Sys_Exit(0);
 }

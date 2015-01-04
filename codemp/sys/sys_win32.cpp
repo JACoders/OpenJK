@@ -646,13 +646,12 @@ char *Sys_ConsoleInput(void)
 
 /*
 ================
-Sys_Init
+Sys_PlatformInit
 
-Called after the common systems (cvars, files, etc)
-are initialized
+Platform-specific initialization
 ================
 */
-void Sys_Init( void ) {
+void Sys_PlatformInit( void ) {
 	OSVERSIONINFO osversion = {};
 	osversion.dwOSVersionInfoSize = sizeof( osversion );
 
@@ -667,10 +666,18 @@ void Sys_Init( void ) {
 	// make sure the timer is high precision, otherwise
 	// NT gets 18ms resolution
 	timeBeginPeriod( 1 );
+}
 
-	Cmd_AddCommand ("in_restart", IN_Restart);
-	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
-	Cvar_Set( "username", Sys_GetCurrentUser() );
+/*
+================
+Sys_PlatformQuit
+
+Platform-specific exit code
+================
+*/
+void Sys_PlatformQuit( void )
+{
+	timeEndPeriod(1);
 }
 
 void Sys_Sleep( int msec )

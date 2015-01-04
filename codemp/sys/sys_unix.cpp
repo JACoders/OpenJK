@@ -21,10 +21,15 @@ qboolean stdinIsATTY = qfalse;
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
 
-void	Sys_Init (void) {
-	Cmd_AddCommand ("in_restart", IN_Restart);
-	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
-	Cvar_Set( "username", Sys_GetCurrentUser( ) );
+void Sys_PlatformInit( void )
+{
+}
+
+void Sys_PlatformQuit( void )
+{
+#if defined(DEDICATED)
+	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+#endif
 }
 
 /*
