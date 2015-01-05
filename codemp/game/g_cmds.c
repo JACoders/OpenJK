@@ -5338,6 +5338,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 			Q_strcat(buf, sizeof(buf), "movementStyle ");
 			Q_strcat(buf, sizeof(buf), "rocketChange ");
 			Q_strcat(buf, sizeof(buf), "hide ");
+			Q_strcat(buf, sizeof(buf), "practice ");
+			Q_strcat(buf, sizeof(buf), "launch ");
 			Q_strcat(buf, sizeof(buf), "warpList ");
 			Q_strcat(buf, sizeof(buf), "warp ");
 			if (g_allowRaceTele.integer) {

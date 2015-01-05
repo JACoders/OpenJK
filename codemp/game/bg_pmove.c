@@ -8744,7 +8744,7 @@ if (pm->ps->duelInProgress)
 		if (g_tweakWeapons.integer & INFINITE_AMMO)
 			amount = 0;
 		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & STAKE_GUN)
-			amount = 5;//5 ammo per stake? eh
+			amount = 10;//5 ammo per stake? eh
 		else
 #endif
 		amount = weaponData[pm->ps->weapon].energyPerShot;
