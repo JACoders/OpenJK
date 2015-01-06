@@ -73,6 +73,8 @@ void UI_DrawConnect( const char *servername, const char *updateInfoString ) {
 	else {
 		UI_DrawThumbNail(0,0, SCREEN_WIDTH, SCREEN_HEIGHT, levelPic );
 	}
+#else
+	UI_DrawHandlePic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
 #endif
 }
 
