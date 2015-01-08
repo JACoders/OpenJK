@@ -247,7 +247,7 @@ static char *CommaParse( char **data_p ) {
 
 	while ( 1 ) {
 		// skip whitespace
-		while( (c = *data) <= ' ') {
+		while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ') {
 			if( !c ) {
 				break;
 			}
