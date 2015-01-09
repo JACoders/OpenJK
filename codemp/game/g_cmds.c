@@ -773,17 +773,17 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			if (!target->client)
 				return;
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
-			target->client->noclip = !target->client->noclip;
-			if (target->client->sess.raceMode)
+			if (target->client->sess.raceMode && target->client->noclip)
 				AmTeleportPlayer( target, target->client->ps.origin, target->client->ps.viewangles, qtrue, qtrue ); //Good
+			target->client->noclip = !target->client->noclip;
 			ResetPlayerTimers(target, qtrue);
 			return;
 		}
 		if (trap->Argc() == 1) {
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
-			ent->client->noclip = !ent->client->noclip;
-			if (ent->client->sess.raceMode)
+			if (ent->client->sess.raceMode && ent->client->noclip)
 				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
+			ent->client->noclip = !ent->client->noclip;
 			ResetPlayerTimers(ent, qtrue);
 			return;
 		}
