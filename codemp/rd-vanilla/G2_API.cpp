@@ -2064,20 +2064,18 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 
 				if (!gG2_GBMUseSPMethod)
 				{ //this is horribly stupid and I hate it. But lots of game code is written to assume this 90 degree offset thing.
-					mdxaBone_t	rotMat, tempMatrix;
-					vec3_t		newangles = {0,270,0};
-					Create_Matrix(newangles, &rotMat);
-					// make the model space matrix we have for this bolt into a world matrix
-					Multiply_3x4Matrix(&tempMatrix, &worldMatrix, &bolt);
-					vec3_t origin;
-					origin[0] = tempMatrix.matrix[0][3];
-					origin[1] = tempMatrix.matrix[1][3];
-					origin[2] = tempMatrix.matrix[2][3];
-					tempMatrix.matrix[0][3] = tempMatrix.matrix[1][3] = tempMatrix.matrix[2][3] = 0;
-					Multiply_3x4Matrix(matrix, &tempMatrix, &rotMat);
-					matrix->matrix[0][3] = origin[0];
-					matrix->matrix[1][3] = origin[1];
-					matrix->matrix[2][3] = origin[2];
+					float ftemp;
+					ftemp = matrix->matrix[0][0];
+					matrix->matrix[0][0] = -matrix->matrix[0][1];
+					matrix->matrix[0][1] = ftemp;
+					
+					ftemp = matrix->matrix[1][0];
+					matrix->matrix[1][0] = -matrix->matrix[1][1];
+					matrix->matrix[1][1] = ftemp;
+
+					ftemp = matrix->matrix[2][0];
+					matrix->matrix[2][0] = -matrix->matrix[2][1];
+					matrix->matrix[2][1] = ftemp;
 				}
 				else
 				{ //reset it

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1166,6 +1165,8 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, qboolean altFire );
 
 void CG_DrawTargetBeam( vec3_t start, vec3_t end, vec3_t norm, const char *beamFx, const char *impactFx );
+
+qboolean CG_VehicleWeaponImpact( centity_t *cent );
 
 
 /*

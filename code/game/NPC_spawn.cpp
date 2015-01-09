@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1621,7 +1620,31 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		newent->m_pVehicle->m_pParentEntity = newent;
 		newent->m_pVehicle->m_pVehicleInfo->Initialize( newent->m_pVehicle );
 		newent->client->NPC_class = CLASS_VEHICLE;
-
+		if ( g_vehicleInfo[iVehIndex].type == VH_FIGHTER )
+		{//FIXME: EXTERN!!!
+			newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED);//don't get pushed around, blasters bounce off
+		}
+		//WTF?!!! Ships spawning in pointing straight down!
+		//set them up to start landed
+		newent->m_pVehicle->m_vOrientation[YAW] = ent->s.angles[YAW];
+		newent->m_pVehicle->m_vOrientation[PITCH] = newent->m_pVehicle->m_vOrientation[ROLL] = 0.0f;
+		G_SetAngles( newent, newent->m_pVehicle->m_vOrientation );
+		SetClientViewAngle( newent, newent->m_pVehicle->m_vOrientation );
+		
+		//newent->m_pVehicle->m_ulFlags |= VEH_GEARSOPEN;
+		//why? this would just make it so the initial anim never got played... -rww
+		//There was no initial anim, it would just open the gear even though it's already on the ground (fixed now, made an initial anim)
+		
+		//For SUSPEND spawnflag, the amount of time to drop like a rock after SUSPEND turns off
+		newent->fly_sound_debounce_time = ent->fly_sound_debounce_time;
+		
+		//for no-pilot-death delay
+		newent->damage = ent->damage;
+		
+		//no-pilot-death distance
+		newent->speed = ent->speed;
+		
+		newent->model2 = ent->model2;//for droidNPC
 	}
 	else
 	{
@@ -4085,9 +4108,8 @@ static void NPC_Spawn_f(void)
 	NPCspawner->e_ThinkFunc = thinkF_G_FreeEntity;
 	NPCspawner->nextthink = level.time + FRAMETIME;
 	
-
 	char	*npc_type = gi.argv( 2 );
-	if (!npc_type )
+	if (!npc_type || !npc_type[0] )
 	{
 		gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn [NPC type (from NCPCs.cfg)]\n" );
 		return;
@@ -4097,7 +4119,7 @@ static void NPC_Spawn_f(void)
 	{//spawning a vehicle
 		isVehicle = qtrue;
 		npc_type = gi.argv( 3 );
-		if (!npc_type )
+		if (!npc_type || !npc_type[0] )
 		{
 			gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn vehicle [NPC type (from NCPCs.cfg)]\n" );
 			return;
@@ -4157,6 +4179,10 @@ static void NPC_Spawn_f(void)
 		NPCspawner->NPC_type = NULL;
 		NPCspawner->spawnflags |= 4;
 		SP_NPC_Jedi( NPCspawner );
+	}
+	else if ( isVehicle )
+	{
+		SP_NPC_Vehicle( NPCspawner );
 	}
 	else
 	{

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,7 +24,11 @@ This file is part of Jedi Academy.
    Structures local to the files_* modules.
 */
 
+#ifdef USE_INTERNAL_ZLIB
 #include "zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
 #include "minizip/unzip.h"
 
 #define MAX_ZPATH			256

@@ -1369,6 +1369,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			{
 				vec3_t	color;
 
+				VectorClear( color );
+
 				ParseVector( text, 3, color );
 				stage->constantColor[0] = 255 * color[0];
 				stage->constantColor[1] = 255 * color[1];
@@ -3774,6 +3776,106 @@ void	R_ShaderList_f (void) {
 	ri->Printf( PRINT_ALL,  "------------------\n");
 }
 
+int COM_CompressShader( char *data_p )
+{
+	char *in, *out;
+	int c;
+	qboolean newline = qfalse, whitespace = qfalse;
+
+	in = out = data_p;
+	if ( in )
+	{
+		while ( (c = *in) != 0 )
+		{
+			// skip double slash comments
+			if ( c == '/' && in[1] == '/' )
+			{
+				while ( *in && *in != '\n' )
+				{
+					in++;
+				}
+			}
+			// skip number sign comments
+			else if ( c == '#' )
+			{
+				while ( *in && *in != '\n' )
+				{
+					in++;
+				}
+			}
+			// skip /* */ comments
+			else if ( c == '/' && in[1] == '*' )
+			{
+				while ( *in && (*in != '*' || in[1] != '/') )
+					in++;
+				if ( *in )
+					in += 2;
+			}
+			// record when we hit a newline
+			else if ( c == '\n' || c == '\r' )
+			{
+				newline = qtrue;
+				in++;
+			}
+			// record when we hit whitespace
+			else if ( c == ' ' || c == '\t' )
+			{
+				whitespace = qtrue;
+				in++;
+				// an actual token
+			}
+			else
+			{
+				// if we have a pending newline, emit it (and it counts as whitespace)
+				if ( newline )
+				{
+					*out++ = '\n';
+					newline = qfalse;
+					whitespace = qfalse;
+				} if ( whitespace )
+				{
+					*out++ = ' ';
+					whitespace = qfalse;
+				}
+
+				// copy quoted strings unmolested
+				if ( c == '"' )
+				{
+					*out++ = c;
+					in++;
+					while ( 1 )
+					{
+						c = *in;
+						if ( c && c != '"' )
+						{
+							*out++ = c;
+							in++;
+						}
+						else
+						{
+							break;
+						}
+					}
+					if ( c == '"' )
+					{
+						*out++ = c;
+						in++;
+					}
+				}
+				else
+				{
+					*out = c;
+					out++;
+					in++;
+				}
+			}
+		}
+
+		*out = 0;
+	}
+	return out - data_p;
+}
+
 /*
 ====================
 ScanAndLoadShaderFiles
@@ -3835,6 +3937,14 @@ static void ScanAndLoadShaderFiles( void )
 			Q_strncpyz(shaderName, token, sizeof(shaderName));
 			shaderLine = COM_GetCurrentParseLine();
 
+			if ( token[0] == '#' )
+			{
+				ri->Printf( PRINT_WARNING, "WARNING: Deprecated shader comment \"%s\" on line %d in file %s.  Ignoring line.\n",
+					shaderName, shaderLine, filename );
+				SkipRestOfLine( &p );
+				continue;
+			}
+
 			token = COM_ParseExt(&p, qtrue);
 			if(token[0] != '{' || token[1] != '\0')
 			{
@@ -3882,7 +3992,7 @@ static void ScanAndLoadShaderFiles( void )
 		ri->FS_FreeFile( buffers[i] );
 	}
 
-	COM_Compress( s_shaderText );
+	COM_CompressShader( s_shaderText );
 
 	// free up memory
 	ri->FS_FreeFileList( shaderFiles );
@@ -3896,6 +4006,12 @@ static void ScanAndLoadShaderFiles( void )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 ) {
 			break;
+		}
+
+		if ( token[0] == '#' )
+		{
+			SkipRestOfLine( &p );
+			continue;
 		}
 
 		hash = generateHashValue(token, MAX_SHADERTEXT_HASH);
@@ -3922,6 +4038,12 @@ static void ScanAndLoadShaderFiles( void )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 ) {
 			break;
+		}
+
+		if ( token[0] == '#' )
+		{
+			SkipRestOfLine( &p );
+			continue;
 		}
 
 		hash = generateHashValue(token, MAX_SHADERTEXT_HASH);

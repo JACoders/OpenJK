@@ -18,9 +18,15 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	# Files
 
 	# JPEG
-	file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-	source_group("jpeg-8c" FILES ${J_SRC})
-	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
+	if(UseInternalJPEG)
+		file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
+		source_group("jpeg-8c" FILES ${J_SRC})
+		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
+	else()
+		find_package(JPEG REQUIRED)
+		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${JPEG_INCLUDE_DIR})
+		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${JPEG_LIBRARIES})
+	endif()
 
 	# GHOUL 2
 	set(SPRDVanillaG2Files
