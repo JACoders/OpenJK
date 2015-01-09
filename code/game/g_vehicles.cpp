@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -804,8 +803,8 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		{// Riding means you get WP_NONE
 			ent->client->ps.stats[ STAT_WEAPONS ] |= (1<<WP_NONE);
 		}
-		if ( ent->client->ps.weapon != WP_SABER
-			&& ent->client->ps.weapon != WP_BLASTER )
+		if ( (ent->client->ps.weapon != WP_SABER
+			&& ent->client->ps.weapon != WP_BLASTER) || !(pVeh->m_pVehicleInfo->type == VH_ANIMAL || pVeh->m_pVehicleInfo->type == VH_SPEEDER))
 		{//switch to weapon none?
 			if (ent->s.number<MAX_CLIENTS)
 			{

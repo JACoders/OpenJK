@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1118,7 +1117,57 @@ static void CG_Missile( centity_t *cent ) {
 		VectorCopy( s1->angles, cent->lerpAngles );
 	}
 
-	if ( cent->gent->alt_fire )
+	if ( s1->otherEntityNum2 && (g_vehWeaponInfo[s1->otherEntityNum2].iShotFX || g_vehWeaponInfo[s1->otherEntityNum2].iModel) )
+	{
+		vec3_t forward;
+		
+		if (s1->eFlags & EF_USE_ANGLEDELTA)
+		{
+			AngleVectors(cent->currentState.angles, forward, 0, 0);
+		}
+		else
+		{
+			if ( VectorNormalize2( cent->gent->s.pos.trDelta, forward ) == 0.0f )
+			{
+				if ( VectorNormalize2( s1->pos.trDelta, forward ) == 0.0f )
+				{
+					forward[2] = 1.0f;
+				}
+			}
+		}
+		
+		// hack the scale of the forward vector if we were just fired or bounced...this will shorten up the tail for a split second so tails don't clip so harshly
+		int dif = cg.time - cent->gent->s.pos.trTime;
+		
+		if ( dif < 75 )
+		{
+			if ( dif < 0 )
+			{
+				dif = 0;
+			}
+			
+			float scale = ( dif / 75.0f ) * 0.95f + 0.05f;
+			
+			VectorScale( forward, scale, forward );
+		}
+		
+		CG_PlayEffectID(g_vehWeaponInfo[s1->otherEntityNum2].iShotFX, cent->lerpOrigin, forward);
+		if ( g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound )
+		{
+			vec3_t	velocity;
+			EvaluateTrajectoryDelta( &cent->currentState.pos, cg.time, velocity );
+			if (cgs.sound_precache[g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound] != NULL_SFX)
+			{
+				cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, velocity, cgs.sound_precache[g_vehWeaponInfo[s1->otherEntityNum2].iLoopSound] );
+			}
+		}
+		//add custom model
+		if ( !g_vehWeaponInfo[s1->otherEntityNum2].iModel )
+		{
+			return;
+		}
+	}
+	else if ( cent->gent->alt_fire )
 	{
 		// add trails
 		if ( weapon->alt_missileTrailFunc )  
@@ -1174,7 +1223,9 @@ Ghoul2 Insert End
 	ent.skinNum = cg.clientFrame & 1;
 	ent.renderfx = /*weapon->missileRenderfx | */RF_NOSHADOW;
 
-	if ( cent->gent->alt_fire )
+	if ( s1->otherEntityNum2 && g_vehWeaponInfo[s1->otherEntityNum2].iModel && cgs.model_draw[g_vehWeaponInfo[s1->otherEntityNum2].iModel] != NULL_HANDLE)
+		ent.hModel = cgs.model_draw[g_vehWeaponInfo[s1->otherEntityNum2].iModel];
+	else if ( cent->gent->alt_fire )
 		ent.hModel = weapon->alt_missileModel;
 	else
 		ent.hModel = weapon->missileModel;
