@@ -6444,6 +6444,9 @@ static void Cmd_Launch_f(gentity_t *ent)
 	//PM_AddEvent( EV_JUMP );
 	ent->client->ps.fd.forceJumpSound = 1;
 	//ent->client->pers.cmd.upmove = 0;
+
+	ent->client->pers.stats.startTime = trap->Milliseconds(); //Set their timer as now..
+	ent->client->ps.duelTime = level.time;
 }
 
 static void Cmd_Practice_f(gentity_t *ent)
