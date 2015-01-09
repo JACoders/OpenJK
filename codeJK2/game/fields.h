@@ -82,8 +82,8 @@ typedef enum
 
 typedef struct
 {
-	char	*psName;
-	int		iOffset;
+	const char	*psName;
+	size_t		iOffset;
 	fieldtypeSAVE_t	eFieldType;
 	int		iFlags;
 } field_t;
