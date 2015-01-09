@@ -2865,7 +2865,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 	else if (g_fixHighFPSAbuse.integer && msec < 5)
-		ucmd->serverTime = (ucmd->serverTime + 4);
+		ucmd->serverTime = (ucmd->serverTime + 4); /// 5 * 5    ?
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;

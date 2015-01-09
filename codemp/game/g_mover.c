@@ -897,7 +897,11 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	}
 
 #if 1
-	if (activator->client->sess.raceMode && (!other || !(other->spawnflags & 4)) && ((ent->pos2[2] - ent->pos1[2]) > 128)) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
+	if (activator->client->sess.raceMode && 
+		(!other || !(other->spawnflags & 4)) && 
+		((ent->pos2[2] - ent->pos1[2]) > 128) &&
+		(activator->client->ps.origin[2] < (ent->r.absmax[2] + 96)) &&
+		(activator->client->ps.origin[2] > (ent->r.absmax[2] - 96)) ) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..
 	{ //Turn this ele into a jumppad.  Also only do this if the trigger was not a use button
 		float height, time, strength;
 
@@ -935,17 +939,11 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		//ent->damage = 0; //Temp
 
 		//trap->Print("assumed ele starting height: %.2f, pos1: %2f, pos2: %2f, Our Height: %.2f\n", ent->r.absmax[2], ent->pos1[2], ent->pos2[2], activator->client->ps.origin[2]); //Lets assume the ele starts there...
-
-		if (activator->client->ps.origin[2] > (ent->r.absmax[2] + 96) /*jumpHeight*/) //We are already higher than where the ele starts, so forget it..
-			return;
-
-		if (activator->client->ps.origin[2] < (ent->r.absmax[2] - 96)) //We are already lower than where the ele starts.. so forget it?
-			return;
 		
 		height = ent->pos2[2] - ent->pos1[2] + 64; //Send them up a lil higher just to be safe
 		time = sqrt(height / (.5f * g_gravity.value));
 		if (!time)
-			return;
+			return; //bua ?
 		strength = (height / time) * 2.0f;
 
 		activator->client->ps.velocity[0] = activator->client->ps.velocity[1] = 0; //reset our xyspeed... meh
