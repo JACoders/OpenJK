@@ -6447,6 +6447,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 
 	ent->client->pers.stats.startTime = trap->Milliseconds(); //Set their timer as now..
 	ent->client->ps.duelTime = level.time;
+	ent->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - ent->client->pers.cmd.serverTime; //use level.previousTime?
 }
 
 static void Cmd_Practice_f(gentity_t *ent)

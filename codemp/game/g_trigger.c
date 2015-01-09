@@ -1369,6 +1369,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 
 		time -= InterpolateTouchTime(player, trigger);//Other is the trigger_multiple that set this off
 		time /= 1000.0f;
+		if (time < 0.001f)
+			time = 0.001f;
 		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
 
 		if (trigger->spawnflags)//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
@@ -1512,6 +1514,9 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		}
 		else 
 			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
+
+		if (time < 1)
+			time = 1;
 
 		/*
 		if (trigger && trigger->spawnflags & 1)//Minimalist print loda fixme get rid of target shit 
