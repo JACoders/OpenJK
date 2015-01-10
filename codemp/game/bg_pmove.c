@@ -8310,7 +8310,7 @@ if (pm->ps->duelInProgress)
 			if (pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].energyPerShot &&
 				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot
 #ifdef _GAME 
-				&& (!((g_tweakWeapons.integer & STAKE_GUN) & (pm->ps->weapon != WP_FLECHETTE)))
+				&& (!(g_tweakWeapons.integer & STAKE_GUN) || (pm->ps->weapon != WP_FLECHETTE)) //I guess we have to make the stake gun 
 #endif
 				)
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
@@ -8766,7 +8766,11 @@ if (pm->ps->duelInProgress)
 		else	// Not enough energy
 		{
 			// Switch weapons
+#ifdef _GAME
+			if ((pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted) && (pm->ps->weapon != WP_FLECHETTE || !(g_tweakWeapons.integer & STAKE_GUN)))
+#else
 			if (pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted)
+#endif
 			{
 				PM_AddEventWithParm( EV_NOAMMO, WP_NUM_WEAPONS+pm->ps->weapon );
 				if (pm->ps->weaponTime < 500)

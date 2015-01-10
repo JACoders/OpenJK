@@ -651,12 +651,14 @@ typedef struct {//JAPRO - Serverside - Stats
 
 	int startTimeFlag;//could be float?
 	float displacementFlag;
-	int topSpeedFlag;
+	float topSpeedFlag;
+	int	displacementFlagSamples;
 
 	int	startTime;//For timers that are not flags
 	int	startLevelTime;//For timers that are not flags
 	float displacement;
-	int topSpeed;
+	int	displacementSamples;
+	float topSpeed;
 	int lastCheckpointTime;//For checkpoint floodprotect
 
 	int	teamHealGiven;

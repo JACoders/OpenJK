@@ -2794,6 +2794,7 @@ void SetFailedCallVoteIP(char *ClientIP) {
 
 static void VotePassed( void ) {
 	gentity_t *ent;
+	gentity_t *te;
 	int i;
 
 	//trap->Print("Delay is %i\n", level.voteExecuteDelay);
@@ -2802,9 +2803,8 @@ static void VotePassed( void ) {
 
 	if (level.voteExecuteDelay >= 5000) {
 		for (i = 0; i < level.numConnectedClients; i++) {
-			gentity_t *ent = &g_entities[level.sortedClients[i]];
-
-			gentity_t *te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC );
+			ent = &g_entities[level.sortedClients[i]];
+			te = G_TempEntity( ent->client->ps.origin, EV_SIEGESPEC );
 			te->s.time = level.voteExecuteTime;
 			te->s.owner = ent->s.number;
 		}
@@ -3617,8 +3617,9 @@ void G_RunFrame( int levelTime ) {
 
 				if (level.gametype == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.
 					if (ent->client->pers.stats.startTimeFlag) {
-						float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);//Is this before snapvector??
+						const float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);//Is this before snapvector??
 						ent->client->pers.stats.displacementFlag += xyspeed/sv_fps.value;
+						ent->client->pers.stats.displacementFlagSamples++;
 
 						if (xyspeed > ent->client->pers.stats.topSpeedFlag)
 							ent->client->pers.stats.topSpeedFlag = xyspeed;
@@ -3626,11 +3627,13 @@ void G_RunFrame( int levelTime ) {
 					else {
 						ent->client->pers.stats.displacementFlag = 0;
 						ent->client->pers.stats.topSpeedFlag = 0;
+						ent->client->pers.stats.displacementFlagSamples = 0;
 					}
 				}
 				if (ent->client->pers.stats.startTime) {
-					float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
+					const float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
 					ent->client->pers.stats.displacement += xyspeed/sv_fps.value;
+					ent->client->pers.stats.displacementSamples++;
 					if (xyspeed > ent->client->pers.stats.topSpeed)
 						ent->client->pers.stats.topSpeed = xyspeed; //uhh, round?           
 				}	

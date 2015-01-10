@@ -1312,6 +1312,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.startTime -= InterpolateTouchTime(player, trigger);
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
+	player->client->pers.stats.displacementSamples = 0;
 
 	//if (player->r.svFlags & SVF_JUNIORADMIN)
 		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, trap->Milliseconds() - player->client->pers.cmd.serverTime));
@@ -1371,7 +1372,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		time /= 1000.0f;
 		if (time < 0.001f)
 			time = 0.001f;
-		average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
+		//average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
+		average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
 
 		if (trigger->spawnflags)//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
 			restrictions = trigger->spawnflags;
@@ -1453,12 +1455,12 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 
 		if (trigger->message) {
 			trap->SendServerCommand( -1, va("print \"^3%-16s%s completed in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-				trigger->message, c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
+				trigger->message, c, timeStr, c, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), c, average, c, style, c, nameColor, playerName));
 		}
 		else {
 			//Q_strcat(courseName, sizeof(courseName), " ()");
 			trap->SendServerCommand( -1, va("print \"%sCompleted in ^3%-12s%s max:^3%-10i%s average:^3%-10i%s style:^3%-10s%s by ^%i%s\n\"",
-				c, timeStr, c, player->client->pers.stats.topSpeed, c, average, c, style, c, nameColor, playerName));
+				c, timeStr, c, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), c, average, c, style, c, nameColor, playerName));
 		}
 		if (valid) {
 			char strIP[NET_ADDRSTRMAXLEN] = {0};
@@ -1468,7 +1470,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			if (p)
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
-				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], player->client->pers.stats.topSpeed, average);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average);
 			}
 		}
 
@@ -1507,7 +1509,8 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
 		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
-		const int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f; //Could this be more accurate?
+		//const int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f; //Could this be more accurate?
+		const int average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
 
 		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
@@ -1528,10 +1531,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		if (player->client->pers.showCheckpoints == 1)
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 		else if (player->client->pers.showCheckpoints == 2)
-			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average));
 		else if (player->client->pers.showCheckpoints == 3) {
 			trap->SendServerCommand( player-g_entities, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
-			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+			trap->SendServerCommand( player-g_entities, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average));
 		}
 		
 		for (i=0; i<MAX_CLIENTS; i++) {//Also print to anyone spectating them..
@@ -1543,10 +1546,10 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 				if (level.clients[i].pers.showCheckpoints == 1)
 					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
 				else if (level.clients[i].pers.showCheckpoints == 2)
-					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average));
 				else if (level.clients[i].pers.showCheckpoints == 3) {
 					trap->SendServerCommand( i, va("cp \"^3%.3fs^5, avg ^3%i^5u\n\n\n\n\n\n\n\n\n\n\"", (float)time * 0.001f, average));
-					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, player->client->pers.stats.topSpeed, average));
+					trap->SendServerCommand( i, va("chat \"^5Checkpoint: ^3%.3f^5, max ^3%i^5, average ^3%i^5 ups\"", (float)time * 0.001f, (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average));
 				}
 			}
 		}

@@ -657,9 +657,11 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.startTime = 0;
 	ent->client->pers.stats.topSpeed = 0;
 	ent->client->pers.stats.displacement = 0;
+	ent->client->pers.stats.displacementSamples = 0;
 	ent->client->pers.stats.startTimeFlag = 0;
 	ent->client->pers.stats.topSpeedFlag = 0;
 	ent->client->pers.stats.displacementFlag = 0;
+	ent->client->pers.stats.displacementFlagSamples = 0;
 	ent->client->ps.stats[STAT_JUMPTIME] = 0;
 	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
 
@@ -5320,8 +5322,10 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	}
 	if (g_allowSaberSwitch.integer) 
 		Q_strcat(buf, sizeof(buf), "saber ");
-	if (g_allowFlagThrow.integer) 
+	if (g_allowFlagThrow.integer && ((level.gametype == GT_CTF) || g_rabbit.integer)) 
 		Q_strcat(buf, sizeof(buf), "throwFlag ");
+	if ((level.gametype >= GT_TEAM) && g_allowSpotting.integer)
+		Q_strcat(buf, sizeof(buf), "spot ");
 	if (g_tweakJetpack.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
