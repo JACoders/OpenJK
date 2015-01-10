@@ -1063,10 +1063,6 @@ typedef struct {
 	float					rangedFog;
 
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 int		 R_Images_StartIteration(void);
@@ -1080,6 +1076,7 @@ extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //
@@ -1387,17 +1384,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 
 ====================================================================
 */
-
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( const char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], 
-						    unsigned char green[256],
-							unsigned char blue[256] );
+static inline void GLimp_LogComment( char *comment ) {}
 
 
 /*

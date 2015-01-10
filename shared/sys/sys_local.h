@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../qcommon/qcommon.h"
+#include "qcommon/qcommon.h"
 
 void 		IN_Init( void *windowData );
 void 		IN_Frame( void );

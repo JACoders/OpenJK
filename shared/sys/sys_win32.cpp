@@ -488,14 +488,13 @@ bool Sys_UnpackDLL(const char *name)
 	void *data;
 	fileHandle_t f;
 	int len = FS_ReadFile(name, &data);
-	int ck;
 
 	if (len < 1)
 	{ //failed to read the file (out of the pk3 if pure)
 		return false;
 	}
 
-	if (FS_FileIsInPAK(name, &ck) == -1)
+	if (FS_FileIsInPAK(name, NULL) == -1)
 	{ //alright, it isn't in a pk3 anyway, so we don't need to write it.
 		//this is allowable when running non-pure.
 		FS_FreeFile(data);

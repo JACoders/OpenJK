@@ -922,6 +922,8 @@ typedef struct backEndState_s {
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
+	window_t				window;
+
 	int						visCount;		// incremented every time a new vis cluster is entered
 	int						frameCount;		// incremented every frame
 	int						sceneCount;		// incremented every scene
@@ -1047,6 +1049,7 @@ extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //

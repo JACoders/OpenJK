@@ -11,6 +11,7 @@
 glconfig_t	glConfig;
 glconfigExt_t glConfigExt;
 glstate_t	glState;
+window_t	window;
 
 static void GfxInfo_f( void );
 
@@ -278,7 +279,7 @@ void R_Splash()
 		qglVertex2f(x2, y2);
 	qglEnd();
 
-	ri->WIN_Present(NULL);
+	ri->WIN_Present(&window);
 }
 
 /*
@@ -744,7 +745,7 @@ static void InitOpenGL( void )
 	{
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window_t window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 

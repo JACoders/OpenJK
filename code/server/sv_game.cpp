@@ -39,9 +39,9 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+static void *gameLibrary;
+
 //prototypes
-extern void	Sys_UnloadGame( void );
-extern void	*Sys_GetGameAPI( void *parms);
 extern void Com_WriteCam ( const char *text );
 extern void Com_FlushCamFile();
 
@@ -403,7 +403,7 @@ void SV_ShutdownGameProgs (qboolean shutdownCin) {
 	SCR_StopCinematic();
 	CL_ShutdownCGame();	//we have cgame burried in here.
 	
-	Sys_UnloadGame ();	//this kills cgame as well.
+	Sys_UnloadDll( gameLibrary );
 
 	ge = NULL;
 	cgvm.entryPoint = 0;
@@ -455,7 +455,7 @@ void SV_InitGameProgs (void) {
 	import.FlushCamFile = Com_FlushCamFile;
 	import.Error = Com_Error;
 
-	import.Milliseconds = Sys_Milliseconds;
+	import.Milliseconds = Sys_Milliseconds2;
 
 	import.DropClient = SV_GameDropClient;
 
@@ -616,18 +616,36 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-	ge = (game_export_t *)Sys_GetGameAPI (&import);
+#ifdef JK2_MODE
+	const char *gamename = "jospgame";
+#else
+	const char *gamename = "jagame";
+#endif
 
+	GetGameAPIProc *GetGameAPI;
+	gameLibrary = Sys_LoadSPGameDll( gamename, &GetGameAPI );
+	if ( !gameLibrary )
+		Com_Error( ERR_DROP, "Failed to load %s library", gamename );
+
+	ge = (game_export_t *)GetGameAPI( &import );
 	if (!ge)
-		Com_Error (ERR_DROP, "failed to load game DLL");
-
-	//hook up the client while we're here
-	if (!VM_Create("cl"))
-		Com_Error (ERR_DROP, "failed to attach to the client DLL");
+	{
+		Sys_UnloadDll( gameLibrary );
+		Com_Error( ERR_DROP, "Failed to load %s library", gamename );
+	}
 
 	if (ge->apiversion != GAME_API_VERSION)
-		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion,
-		GAME_API_VERSION);
+	{
+		Sys_UnloadDll( gameLibrary );
+		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion, GAME_API_VERSION);
+	}
+
+	//hook up the client while we're here
+	if ( !CL_InitCGameVM( gameLibrary ) )
+	{
+		Sys_UnloadDll( gameLibrary );
+		Com_Error ( ERR_DROP, "Failed to load client game functions" );
+	}
 
 	sv.entityParsePoint = CM_EntityString();
 

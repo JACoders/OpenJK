@@ -3,7 +3,6 @@
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
-#include "sdl_qgl.h"
 
 enum rserr_t
 {
@@ -33,11 +32,12 @@ cvar_t	*r_stereo;
 cvar_t	*r_mode;
 cvar_t	*r_displayRefresh;
 
-// Window render surface cvars
+// Window surface cvars
 cvar_t	*r_stencilbits;
 cvar_t	*r_depthbits;
 cvar_t	*r_colorbits;
 cvar_t	*r_ignorehwgamma;
+cvar_t  *r_ext_multisample;
 
 /*
 ** R_GetModeInfo
@@ -63,7 +63,7 @@ const vidmode_t r_vidModes[] = {
     { "Mode 11: 856x480 (wide)", 856,	 480 },
     { "Mode 12: 2400x600(surround)",2400,600 }
 };
-static const int	s_numVidModes = ( sizeof( r_vidModes ) / sizeof( r_vidModes[0] ) );
+static const int	s_numVidModes = ARRAY_LEN( r_vidModes );
 
 qboolean R_GetModeInfo( int *width, int *height, int mode ) {
 	const vidmode_t	*vm;
@@ -120,7 +120,16 @@ void GLimp_Minimize(void)
 
 void WIN_Present( window_t *window )
 {
-	SDL_GL_SwapWindow(screen);
+	if ( window->api == GRAPHICS_API_OPENGL )
+	{
+		SDL_GL_SwapWindow(screen);
+
+		if ( r_swapInterval->modified )
+		{
+			r_swapInterval->modified = qfalse;
+			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+		}
+	}
 }
 
 /*
@@ -231,11 +240,11 @@ static bool GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, const char *windowTitle, int mode, qboolean fullscreen, qboolean noborder)
 {
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
-	//int samples;
+	int samples;
 	int i = 0;
 	Uint32 flags = SDL_WINDOW_SHOWN;
 	SDL_DisplayMode desktopMode;
@@ -327,17 +336,17 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 		glConfig->isFullscreen = qfalse;
 	}
 
-	colorBits = r_colorbits->value;
+	colorBits = r_colorbits->integer;
 	if ((!colorBits) || (colorBits >= 32))
 		colorBits = 24;
 
-	if (!r_depthbits->value)
+	if (!r_depthbits->integer)
 		depthBits = 24;
 	else
-		depthBits = r_depthbits->value;
+		depthBits = r_depthbits->integer;
 
-	stencilBits = r_stencilbits->value;
-	//samples = r_ext_multisample->value;
+	stencilBits = r_stencilbits->integer;
+	samples = r_ext_multisample->integer;
 
 	if ( graphicsApi == GRAPHICS_API_OPENGL )
 	{
@@ -410,8 +419,8 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 			SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, testDepthBits );
 			SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, testStencilBits );
 
-			/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
-			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );*/
+			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
+			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
 
 			if(r_stereo->integer)
 			{
@@ -430,7 +439,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 			if( !r_allowSoftwareGL->integer )
 				SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
 
-			if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
+			if( ( screen = SDL_CreateWindow( windowTitle, x, y,
 					glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
 			{
 				Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
@@ -460,8 +469,6 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 				}
 			}
 
-			SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-
 			if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 			{
 				Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
@@ -482,7 +489,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 	else
 	{
 		// Just create a regular window
-		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
+		if( ( screen = SDL_CreateWindow( windowTitle, x, y,
 				glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
 		{
 			Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
@@ -494,10 +501,6 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, in
 				if( SDL_SetWindowDisplayMode( screen, NULL ) < 0 )
 				{
 					Com_DPrintf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
-				}
-				else
-				{
-					SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 				}
 			}
 		}
@@ -556,7 +559,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(glConfig, graphicsApi, mode, fullscreen, noborder);
+	err = GLimp_SetMode(glConfig, graphicsApi, CLIENT_WINDOW_TITLE, mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -576,12 +579,6 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 	return qtrue;
 }
 
-#ifdef _WIN32
-#define SWAPINTERVAL_FLAGS (CVAR_ARCHIVE)
-#else
-#define SWAPINTERVAL_FLAGS (CVAR_ARCHIVE | CVAR_LATCH)
-#endif
-
 window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 {
 	Cmd_AddCommand("modelist", R_ModeList_f);
@@ -596,7 +593,7 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	r_centerWindow		= Cvar_Get( "r_centerWindow",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customwidth		= Cvar_Get( "r_customwidth",		"1600",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_customheight		= Cvar_Get( "r_customheight",		"1024",		CVAR_ARCHIVE|CVAR_LATCH );
-	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		SWAPINTERVAL_FLAGS );
+	r_swapInterval		= Cvar_Get( "r_swapInterval",		"0",		CVAR_ARCHIVE );
 	r_stereo			= Cvar_Get( "r_stereo",				"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_mode				= Cvar_Get( "r_mode",				"4",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_displayRefresh	= Cvar_Get( "r_displayRefresh",		"0",		CVAR_LATCH );
@@ -607,6 +604,7 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	r_depthbits			= Cvar_Get( "r_depthbits",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_colorbits			= Cvar_Get( "r_colorbits",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_ignorehwgamma		= Cvar_Get( "r_ignorehwgamma",		"0",		CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_multisample	= Cvar_Get( "r_ext_multisample",	"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Create the window and set up the context
 	if(GLimp_StartDriverAndSetMode(glConfig, api, r_mode->integer,
@@ -649,6 +647,8 @@ success:
 	// window_t is only really useful for Windows if the renderer wants to create a D3D context.
 	window_t window = {};
 
+	window.api = api;
+
 #if defined(_WIN32)
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
@@ -668,6 +668,11 @@ success:
 
 	return window;
 }
+
+class T
+{
+	typedef T* Ptr;
+};
 
 /*
 ===============

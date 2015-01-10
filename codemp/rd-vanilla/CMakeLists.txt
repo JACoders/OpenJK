@@ -8,7 +8,12 @@ endif(NOT InOpenJK)
 # Check for dependencies first
 
 set(MPVanillaRendererIncludeDirectories ${MPDir})
-set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/rd-vanilla")
+set(MPVanillaRendererIncludeDirectories
+	${MPVanillaRendererIncludeDirectories}
+	${SharedDir}
+	${MPDir}
+	"${MPDir}/rd-vanilla"
+	)
 
 set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/glext.h"

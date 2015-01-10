@@ -100,11 +100,13 @@ set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
 # Library names
 set(MPBotLib "botlib")
+set(SharedLib "shared")
 
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
+set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 
 # Common settings
 if(WIN32)
