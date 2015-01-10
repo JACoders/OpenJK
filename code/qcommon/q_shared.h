@@ -992,6 +992,12 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
+// For compatibility with shared code
+static inline void COM_BeginParseSession( const char *sessionName )
+{
+	COM_BeginParseSession();
+}
+
 class COM_ParseSession {
 public:
 	COM_ParseSession() { COM_BeginParseSession(); };

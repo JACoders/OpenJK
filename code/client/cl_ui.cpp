@@ -22,6 +22,7 @@ This file is part of Jedi Academy.
 
 #include "client.h"
 #include "client_ui.h"
+#include "qcommon/stringed_ingame.h"
 
 #include "vmachine.h"
 
@@ -300,7 +301,7 @@ void CL_InitUI( void ) {
 
 	uii.GetConfigString			= (void (*)(int, char *, int))GetConfigString;
 
-	uii.Milliseconds			= Sys_Milliseconds;
+	uii.Milliseconds			= Sys_Milliseconds2;
 
 	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 

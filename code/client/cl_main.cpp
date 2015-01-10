@@ -26,11 +26,8 @@ This file is part of Jedi Academy.
 #include "client_ui.h"
 #include <limits.h>
 #include "../ghoul2/G2.h"
-
-#ifndef _WIN32
-#include "../sys/sys_loadlib.h"
-#include "../sys/sys_local.h"
-#endif
+#include "qcommon/stringed_ingame.h"
+#include "sys/sys_loadlib.h"
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -73,9 +70,7 @@ cvar_t	*cl_activeAction;
 
 cvar_t	*cl_inGameVideo;
 
-#ifndef _WIN32
 cvar_t	*cl_consoleKeys;
-#endif
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -1020,15 +1015,6 @@ const char *String_GetStringValue( const char *reference )
 #endif
 }
 
-#ifdef _WIN32
-// DLL glue --eez
-WinVars_t *GetWindowsVariables( void )
-{
-	extern WinVars_t g_wv;
-	return &g_wv;
-}
-#endif
-
 extern qboolean gbAlreadyDoingLoad;
 extern void *gpvCachedMapDiskImage;
 extern char  gsCachedMapDiskImage[MAX_QPATH];
@@ -1157,11 +1143,11 @@ void CL_InitRef( void ) {
 
 	RIT(Hunk_ClearToMark);
 
-#ifndef _WIN32
-    RIT(IN_Init);
-    RIT(IN_Shutdown);
-    RIT(IN_Restart);
-#endif
+    rit.WIN_Init = WIN_Init;
+	rit.WIN_SetGamma = WIN_SetGamma;
+    rit.WIN_Shutdown = WIN_Shutdown;
+    rit.WIN_Present = WIN_Present;
+	rit.GL_GetProcAddress = WIN_GL_GetProcAddress;
 
 	rit.PD_Load = PD_Load;
 	rit.PD_Store = PD_Store;
@@ -1169,11 +1155,8 @@ void CL_InitRef( void ) {
 	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
 	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
-#ifdef _WIN32
-	rit.GetWinVars = GetWindowsVariables;
-#endif
 	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
-	rit.Milliseconds = Sys_Milliseconds;
+	rit.Milliseconds = Sys_Milliseconds2;
 	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
 
@@ -1273,10 +1256,8 @@ void CL_Init( void ) {
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
 	
-#ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
-#endif
 
 	// userinfo
 #ifdef JK2_MODE

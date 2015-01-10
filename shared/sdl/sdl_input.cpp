@@ -453,8 +453,6 @@ static void IN_InitJoystick( void )
 
 void IN_Init( void *windowData )
 {
-	int appState;
-
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 	{
 		Com_Error( ERR_FATAL, "IN_Init called before SDL_Init( SDL_INIT_VIDEO )" );
@@ -480,9 +478,9 @@ void IN_Init( void *windowData )
 	mouseAvailable = (qboolean)( in_mouse->value != 0 );
 	IN_DeactivateMouse( );
 
-	appState = SDL_GetWindowFlags( SDL_window );
-	Cvar_SetValue( "com_unfocused",	!( appState & SDL_WINDOW_INPUT_FOCUS ) );
-	Cvar_SetValue( "com_minimized", appState & SDL_WINDOW_MINIMIZED );
+	int appState = SDL_GetWindowFlags( SDL_window );
+	Cvar_SetValue( "com_unfocused", ( appState & SDL_WINDOW_INPUT_FOCUS ) == 0 );
+	Cvar_SetValue( "com_minimized", ( appState & SDL_WINDOW_MINIMIZED ) != 0 );
 
 	IN_InitKeyLockStates( );
 

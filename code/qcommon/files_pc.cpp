@@ -19,6 +19,10 @@ This file is part of Jedi Academy.
 #include "qcommon.h"
 #include "files.h"
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 /*
 ================
 return a hash value for the filename
@@ -327,6 +331,70 @@ static bool FS_FileCacheable(const char* const filename)
 	}
 	return( strchr(filename, '/') != 0 );
 }
+
+bool Sys_GetFileTime(LPCSTR psFileName, FILETIME &ft)
+{
+	bool bSuccess = false;
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+
+	hFile = CreateFile(	psFileName,	// LPCTSTR lpFileName,          // pointer to name of the file
+						GENERIC_READ,			// DWORD dwDesiredAccess,       // access (read-write) mode
+						FILE_SHARE_READ,		// DWORD dwShareMode,           // share mode
+						NULL,					// LPSECURITY_ATTRIBUTES lpSecurityAttributes,	// pointer to security attributes
+						OPEN_EXISTING,			// DWORD dwCreationDisposition,  // how to create
+						FILE_FLAG_NO_BUFFERING,// DWORD dwFlagsAndAttributes,   // file attributes
+						NULL					// HANDLE hTemplateFile          // handle to file with attributes to
+						);
+
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		if (GetFileTime(hFile,	// handle to file
+						NULL,	// LPFILETIME lpCreationTime
+						NULL,	// LPFILETIME lpLastAccessTime
+						&ft		// LPFILETIME lpLastWriteTime
+						)
+			)
+		{
+			bSuccess = true;
+		}
+
+		CloseHandle(hFile);
+	}
+
+	return bSuccess;
+}
+
+bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName /* src */ )
+{
+	FILETIME ftFinalFile, ftDataFile;
+
+	if (Sys_GetFileTime(psFinalFileName, ftFinalFile) && Sys_GetFileTime(psDataFileName, ftDataFile))
+	{
+		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
+		//
+		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
+		if (  (abs((double)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
+				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime
+			)
+		{
+			return false;	// file not out of date, ie use it.
+		}
+		return true;	// flag return code to copy over a replacement version of this file
+	}
+
+
+	// extra error check, report as suspicious if you find a file locally but not out on the net.,.
+	//
+	if (com_developer->integer)
+	{
+		if (!Sys_GetFileTime(psDataFileName, ftDataFile))
+		{
+			Com_Printf( "Sys_FileOutOfDate: reading %s but it's not on the net!\n", psFinalFileName);
+		}
+	}
+
+	return false;
+}
 #endif
 
 /*
@@ -523,7 +591,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 								
 								FS_CreatePath( copypath );
 
-								if (Sys_CopyFile( netpath, copypath, qtrue ))
+								if (FS_CopyFile( netpath, copypath, qtrue ))
 								{
 									// clear this handle and setup for re-opening of the new local copy...
 									//

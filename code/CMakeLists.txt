@@ -22,17 +22,13 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	# Defines
 	set(SPEngineDefines ${SharedDefines} "_JK2EXE") # it's called JK2EXE but it really just means Singleplayer Exe
 
-	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir})
+	set(SPEngineIncludeDirectories
+		${SPEngineIncludeDirectories}
+		${SharedDir}
+		${SPDir}
+		${OpenJKLibDir})
 	
 	#    Dependencies
-	
-	if (NOT WIN32)
-		# OpenGL
-		find_package(OpenGL REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${OPENGL_LIBRARIES})
-	endif()
-
 	# OpenAL (is optionally included for Windows)
 	if(WIN32 AND NOT WIN64)
 		if(UseInternalOpenAL)
@@ -57,11 +53,9 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif()
 
-	if(NOT WIN32)
-		find_package(SDL2 REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
+	find_package(SDL2 REQUIRED)
+	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+	set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
 
 	
 	#    Source Files
@@ -283,38 +277,40 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	source_group("cgame" FILES ${SPEngineCGameFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCGameFiles})
 
-
-	# 
 	if(WIN32)
 		set(SPEngineWin32Files
-			"${SPDir}/win32/afxres.h"
-			"${SPDir}/win32/win_input.cpp"
-			"${SPDir}/win32/win_main.cpp"
-			"${SPDir}/win32/win_shared.cpp"
-			"${SPDir}/win32/win_snd.cpp"
-			"${SPDir}/win32/win_syscon.cpp"
-			"${SPDir}/win32/win_wndproc.cpp"
-			"${SPDir}/win32/win_local.h"
-			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"
-			"${SPDir}/win32/glw_win.h"
 			"${SPDir}/win32/winquake.rc"
 			)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
-	else(WIN32)
+	endif()
+
+	set(SPEngineSysFiles
+		"${SharedDir}/sys/sys_main.cpp"
+		"${SharedDir}/sys/sys_local.h"
+		"${SharedDir}/sys/sys_public.h"
+		"${SharedDir}/sys/sys_loadlib.h"
+		"${SharedDir}/sdl/sdl_qgl.h"
+		"${SharedDir}/sdl/sdl_sound.cpp"
+		"${SharedDir}/sdl/sdl_input.cpp"
+		"${SharedDir}/sdl/sdl_window.cpp"
+		)
+
+	if(WIN32)
 		set(SPEngineSysFiles
-			"${SPDir}/sys/sys_main.cpp"
-			"${SPDir}/sys/sys_unix.cpp"
-			"${SPDir}/sys/sys_local.h"
-			"${SPDir}/sys/sys_loadlib.h"
-			"${SPDir}/sdl/sdl_qgl.h"
-			"${SPDir}/sdl/sdl_snd.cpp"
-			"${SPDir}/sdl/sdl_input.cpp"
+			${SPEngineSysFiles}
+			"${SharedDir}/sys/sys_win32.cpp"
 			)
-		source_group("sys" FILES ${SPEngineSysFiles})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
-	endif(WIN32)
+	else()
+		set(SPEngineSysFiles
+			${SPEngineSysFiles}
+			"${SharedDir}/sys/sys_unix.cpp"
+			)
+	endif()
+
+	source_group("sys" FILES ${SPEngineSysFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 
 	if(UseInternalZlib)
 		set(SPEngineZlibFiles

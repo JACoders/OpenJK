@@ -20,6 +20,7 @@ This file is part of Jedi Academy.
 #include "q_shared.h"
 #include "qcommon.h"
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
+#include "stringed_ingame.h"
 #include "stv_version.h"
 
 // Because renderer.
@@ -57,7 +58,7 @@ cvar_t  *com_homepath;
 cvar_t	*com_G2Report;
 #endif
 
-static cvar_t *com_affinity;
+cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -1188,8 +1189,6 @@ void Com_Init( char *commandLine ) {
 		SV_Init();
 		
 		CL_Init();
-
-		Sys_ShowConsole( com_viewlog->integer, qfalse );
 		
 		// set com_frameTime so that if a map is started on the
 		// command line it will still be able to count on com_frameTime
@@ -1378,12 +1377,6 @@ void Com_Frame( void ) {
 
 		// write config file if anything changed
 		Com_WriteConfiguration(); 
-
-		// if "viewlog" has been modified, show or hide the log console
-		if ( com_viewlog->modified ) {
-			Sys_ShowConsole( com_viewlog->integer, qfalse );
-			com_viewlog->modified = qfalse;
-		}
 
 		//
 		// main event loop

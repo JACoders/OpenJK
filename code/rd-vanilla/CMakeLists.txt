@@ -8,7 +8,11 @@ endif(NOT InOpenJK)
 if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 
 	set(SPRDVanillaRendererIncludeDirectories ${SPDir})
-	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${SPDir}/rd-vanilla")
+	set(SPRDVanillaRendererIncludeDirectories
+		${SharedDir}
+		${SPRDVanillaRendererIncludeDirectories}
+		"${SPDir}/rd-vanilla"
+		)
 
 	# Modular Renderer crap (let's hope this works..)
 
@@ -171,31 +175,9 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	source_group("rd-common" FILES ${SPRDVanillaRdCommonFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaRdCommonFiles})
 
-	if(WIN32)
-		set(SPRDVanillaWin32Files
-			"${SPDir}/win32/win_gamma.cpp"
-			"${SPDir}/win32/win_glimp.cpp"
-			"${SPDir}/win32/win_qgl.cpp"
-			)
-		source_group("win32" FILES ${SPRDVanillaWin32Files})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaWin32Files})
-	else(WIN32)
-		set(SPRDVanillaSdlFiles
-			"${SPDir}/sdl/sdl_glimp.cpp")
-		source_group("sdl" FILES ${SPRDVanillaSdlFiles})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaSdlFiles})
-	endif(WIN32)
-
-	if(NOT WIN32)
-		find_package(OpenGL REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${OPENGL_LIBRARIES})
-
-		set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
-		find_package(SDL2 REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
+	find_package(OpenGL REQUIRED)
+	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${OPENGL_LIBRARIES})
 
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OpenJKLibDir})
 	

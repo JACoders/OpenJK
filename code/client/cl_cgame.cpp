@@ -24,6 +24,8 @@ This file is part of Jedi Academy.
 
 #include "client.h"
 #include "vmachine.h"
+#include "qcommon/stringed_ingame.h"
+#include "sys/sys_loadlib.h"
 
 vm_t	cgvm;
 /*
@@ -49,6 +51,31 @@ extern menuDef_t *Menus_FindByName(const char *p);
 extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
 
 void UI_SetActiveMenu( const char* menuname,const char *menuID );
+
+qboolean CL_InitCGameVM( void *gameLibrary )
+{
+	typedef intptr_t SyscallProc( intptr_t, ... );
+	typedef void DllEntryProc( SyscallProc * );
+
+	DllEntryProc *dllEntry = (DllEntryProc *)Sys_LoadFunction( gameLibrary, "dllEntry" ); 
+	cgvm.entryPoint = (intptr_t (*)(int,...))Sys_LoadFunction( gameLibrary, "vmMain" );
+
+	if ( !cgvm.entryPoint || !dllEntry ) {
+#ifdef JK2_MODE
+		const char *gamename = "jospgame";
+#else
+		const char *gamename = "jagame";
+#endif
+
+		Com_Printf( "CL_InitCGameVM: client game entry point not found in %s" ARCH_STRING DLL_EXT ": %s\n",
+					gamename, Sys_LibraryError() );
+		return qfalse;
+	}
+
+	dllEntry( VM_DllSyscall );
+
+	return qtrue;
+}
 
 /*
 ====================

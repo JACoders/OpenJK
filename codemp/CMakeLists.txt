@@ -33,7 +33,7 @@ if(BuildMPEngine OR BuildMPDed)
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
 	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
-	set(MPBotlibIncludeDirectories ${MPDir})
+	set(MPBotlibIncludeDirectories ${SharedDir} ${MPDir})
 	set(MPBotlibBotlibFiles
 		"${MPDir}/botlib/aasfile.h"
 		"${MPDir}/botlib/be_aas.h"
@@ -140,7 +140,7 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
 	endif(WIN32)
 	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 
 	if(UseInternalZlib)
 		set(MPEngineAndDedZLibFiles
@@ -481,13 +481,12 @@ if(BuildMPEngine)
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
 
 	set(MPEngineSysFiles
-		"${MPDir}/sdl/sdl_glimp.cpp"
-		"${MPDir}/sdl/sdl_input.cpp"
-		"${MPDir}/sdl/sdl_qgl.h"
-		"${MPDir}/sdl/sdl_snd.cpp"
-		"${MPDir}/sys/sys_loadlib.h"
-		"${MPDir}/sys/sys_local.h"
-		"${MPDir}/sys/sys_main.cpp"
+		"${SharedDir}/sdl/sdl_window.cpp"
+		"${SharedDir}/sdl/sdl_input.cpp"
+		"${SharedDir}/sdl/sdl_sound.cpp"
+		"${SharedDir}/sys/sys_loadlib.h"
+		"${SharedDir}/sys/sys_local.h"
+		"${SharedDir}/sys/sys_main.cpp"
 		)
 
 	if(WIN32)
@@ -497,14 +496,17 @@ if(BuildMPEngine)
 			"${MPDir}/win32/openjk.rc"
 			)
 
+		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
+		source_group("win32" FILES ${MPEngineWin32Files})
+
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
-			"${MPDir}/sys/sys_win32.cpp")
+			"${SharedDir}/sys/sys_win32.cpp"
+			)
 	else(WIN32)
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
-			"${MPDir}/sys/sys_unix.cpp"
-			"${MPDir}/sys/unix_local.h"
+			"${SharedDir}/sys/sys_unix.cpp"
 			)
 	endif(WIN32)
 
@@ -593,17 +595,16 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 
 		set(MPDedSysFiles
-			"${MPDir}/sys/sys_main.cpp"
-			"${MPDir}/sys/sys_win32.cpp"
+			"${SharedDir}/sys/sys_main.cpp"
+			"${SharedDir}/sys/sys_win32.cpp"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 		source_group("sys" FILES ${MPDedSysFiles})
 		set(MPDedFiles ${MPDedFiles} ${MPDedSysFiles})
 	else(WIN32)
 		set(MPDedSysFiles
-			"${MPDir}/sys/sys_main.cpp"
-			"${MPDir}/sys/sys_unix.cpp"
-			"${MPDir}/sys/unix_local.h"
+			"${SharedDir}/sys/sys_main.cpp"
+			"${SharedDir}/sys/sys_unix.cpp"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 		source_group("sys" FILES ${MPDedSysFiles})
