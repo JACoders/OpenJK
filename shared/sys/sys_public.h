@@ -44,16 +44,20 @@ sysEvent_t	Sys_GetEvent( void );
 void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
-typedef void *GetGameAPIProc( void *);
+typedef void *GetGameAPIProc( void  *);
+typedef intptr_t QDECL VMMainProc( int, ... );
+typedef intptr_t QDECL SystemCallProc( intptr_t, ... );
+typedef void * QDECL GetModuleAPIProc( int, ... );
+
 void	*Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI );
 void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	* QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
-void	* QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) );
+void	* QDECL Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls );
+void	* QDECL Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI );
 void	Sys_UnloadDll( void *dllHandle );
 
 char	*Sys_GetCurrentUser( void );
 
-void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
+void	QDECL Sys_Error( const char *error, ... ) __attribute__((noreturn));
 void	Sys_Quit (void);
 char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
 
