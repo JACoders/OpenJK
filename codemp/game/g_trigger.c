@@ -1371,7 +1371,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		if (time < 0.001f)
 			time = 0.001f;
 		//average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f;//Should use level time for this 
-		average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
+		if (player->client->pers.stats.displacementSamples)
+			average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
+		else 
+			average = player->client->pers.stats.topSpeed;
 
 		if (trigger->spawnflags)//Get the restrictions for the specific course (only allow jump1, or jump2, etc..)
 			restrictions = trigger->spawnflags;
@@ -1507,8 +1510,12 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
 		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
+		int average;
 		//const int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f; //Could this be more accurate?
-		const int average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
+		if (player->client->pers.stats.displacementSamples)
+			average = floorf(((player->client->pers.stats.displacement * sv_fps.value) / player->client->pers.stats.displacementSamples) + 0.5f);
+		else
+			average = player->client->pers.stats.topSpeed;
 
 		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;

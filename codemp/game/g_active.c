@@ -2835,6 +2835,24 @@ void ClientThink_real( gentity_t *ent ) {
 
 #endif
 
+#if 0
+	//Set sad hack of userinput 
+	if (ucmd->forwardmove > 0) //w
+		client->ps.userInt1 = 1;
+	if (ucmd->rightmove < 0) //a
+		client->ps.userInt2 = 1;
+	if (ucmd->forwardmove < 0) //s
+		client->ps.userInt3 = 1;
+	if (ucmd->rightmove > 0) //d
+		client->ps.userFloat1 = 1;
+	if (ucmd->upmove > 0) //up
+		client->ps.userFloat2 = 1;
+	if (ucmd->upmove < 0) //down
+		client->ps.userFloat3 = 1;
+	if (ucmd->buttons & BUTTON_WALKING)
+		client->ps.userVec1[0] = 1;
+#endif
+
 	if (isNPC && (ucmd->serverTime - client->ps.commandTime) < 1)
 	{
 		ucmd->serverTime = client->ps.commandTime + 100;
