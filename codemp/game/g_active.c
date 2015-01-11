@@ -4821,6 +4821,10 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 
 
 void G_RunClient( gentity_t *ent ) {
+
+
+	//If racemode , do forceclientupdaterate hardcoded at like 4/5 hz ?
+
 	// force client updates if they're not sending packets at roughly 4hz
 	if ( !(ent->r.svFlags & SVF_BOT) && g_forceClientUpdateRate.integer && ent->client->lastCmdTime < level.time - g_forceClientUpdateRate.integer ) {
 		trap->GetUsercmd( ent-g_entities, &ent->client->pers.cmd );

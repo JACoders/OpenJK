@@ -1323,6 +1323,21 @@ void Svcmd_DBInfo_f(void)
 	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.\n", numAccounts, numRaces, numDuels);
 }
 
+void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
+	switch(style) {
+		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
+		case 1: Q_strncpyz(styleString, "jka", styleStringSize); break;
+		case 2:	Q_strncpyz(styleString, "qw", styleStringSize);	break;
+		case 3:	Q_strncpyz(styleString, "cpm", styleStringSize); break;
+		case 4:	Q_strncpyz(styleString, "q3", styleStringSize); break;
+		case 5:	Q_strncpyz(styleString, "pjk", styleStringSize); break;
+		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
+		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
+		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
+		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
+	}
+}
+
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	sqlite3 * db;
     char * sql;
@@ -1436,6 +1451,8 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 	float kdr, realkdr;
 	char buf[MAX_STRING_CHARS-64] = {0};
 	char timeStr[64] = {0};
+	char goldStr[128] = {0}, silverStr[128] = {0}, bronzeStr[128] = {0}, styleStr[16] = {0};
+	const int NUM_MEDALS_TO_DISPLAY = 5;
 
 	if (trap->Argc() != 2) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username>\n\"");
@@ -1526,23 +1543,54 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 
 	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
-	//For each course-style, find the #1 rank.  If it matches username, add to count.
+	//For each course-style, find the 1/2/3 rank.  If it matches username, add to count.
 	for (course = 0; course < level.numCourses; course++) { //For each course
 		for (style = 0; style <= NUM_MOVEMENTSTYLES; style++) { //For each style...0 = siege, 8 = rjcpm
-			if (!Q_stricmp(HighScores[course][style][0].username, username))
+			IntegerToRaceName(style, styleStr, sizeof(styleStr));
+
+			if (!Q_stricmp(HighScores[course][style][0].username, username)) { //They have gold
 				numGolds++;
-			else if (!Q_stricmp(HighScores[course][style][1].username, username))
+				if (numGolds <= 1)
+					Q_strcat(goldStr, sizeof(goldStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numGolds <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(goldStr, sizeof(goldStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
+			else if (!Q_stricmp(HighScores[course][style][1].username, username)) { //They have silver
 				numSilvers++;
-			else if (!Q_stricmp(HighScores[course][style][2].username, username))
+				if (numSilvers <= 1)
+					Q_strcat(silverStr, sizeof(silverStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numSilvers <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(silverStr, sizeof(silverStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
+			else if (!Q_stricmp(HighScores[course][style][2].username, username)) { //They have bronze
 				numBronzes++;
+				if (numBronzes <= 1)
+					Q_strcat(bronzeStr, sizeof(bronzeStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numBronzes <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(bronzeStr, sizeof(bronzeStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
 		}
 	}
+
+	if (numGolds > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(goldStr, sizeof(goldStr), " ..." );
+	if (numSilvers > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(silverStr, sizeof(silverStr), " ..." );
+	if (numBronzes > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(bronzeStr, sizeof(bronzeStr), " ..." );
 
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
 	Q_strcat(buf, sizeof(buf), va("   ^5Kills / Deaths / Suicides: ^2%i / %i / %i\n", kills, deaths, suicides));
 	Q_strcat(buf, sizeof(buf), va("   ^5Captures / Returns^3: ^2%i / %i\n", captures, returns));
 	Q_strcat(buf, sizeof(buf), va("   ^5KDR / Real KDR^3: ^2%.2f / %.2f\n", kdr, realkdr));
-	Q_strcat(buf, sizeof(buf), va("   ^5Current map Golds / Silvers / Bronzes: ^2%i / %i / %i\n", numGolds, numSilvers, numBronzes));
+	//Q_strcat(buf, sizeof(buf), va("   ^5Current map Golds / Silvers / Bronzes: ^2%i / %i / %i\n", numGolds, numSilvers, numBronzes));
+
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Golds (%i): %s\n", numGolds, goldStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Silvers (%i): %s\n", numSilvers, silverStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Bronzes (%i): %s\n", numBronzes, bronzeStr));
+
+
+
 	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 
 	//--find a way to rank player in defrag.. maybe when building every highscore table on mapload, increment number of points each player has in a new table..in database.. 
@@ -1853,21 +1901,6 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		trap->Print("Highscores built for %s\n", mapName);
 
 	//DebugWriteToDB("BuildMapHighscores");
-}
-
-void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
-	switch(style) {
-		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
-		case 1: Q_strncpyz(styleString, "jka", styleStringSize); break;
-		case 2:	Q_strncpyz(styleString, "qw", styleStringSize);	break;
-		case 3:	Q_strncpyz(styleString, "cpm", styleStringSize); break;
-		case 4:	Q_strncpyz(styleString, "q3", styleStringSize); break;
-		case 5:	Q_strncpyz(styleString, "pjk", styleStringSize); break;
-		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
-		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
-		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
-		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
-	}
 }
 
 int RaceNameToInteger(char *style) {
