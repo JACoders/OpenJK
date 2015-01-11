@@ -505,12 +505,6 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
-	if (!Sys_UnpackDLL(filename))
-	{
-		Com_DPrintf( "Sys_LoadSPGameDll: Failed to unpack %s from PK3.\n", filename );
-		return NULL;
-	}
-
 #ifdef MACOS_X
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
