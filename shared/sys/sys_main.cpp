@@ -436,7 +436,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 	return NULL;
 }
 
-void *Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
+void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls )
 {
 	void	*libHandle = NULL;
 	char	filename[MAX_OSPATH];
@@ -481,9 +481,11 @@ void *Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ..
 			return NULL;
 	}
 
-	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
-	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )Sys_LoadFunction( libHandle, "dllEntry" );
-	*vmMain = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
+	typedef void QDECL DllEntryProc( SystemCallProc *syscallptr );
+
+	DllEntryProc *dllEntry = (DllEntryProc *)Sys_LoadFunction( libHandle, "dllEntry" );
+	*vmMain = (VMMainProc *)Sys_LoadFunction( libHandle, "vmMain" );
+
 	if ( !*vmMain || !dllEntry ) {
 		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
@@ -547,7 +549,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 	return libHandle;
 }
 
-void *Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) )
+void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 {
 	void	*libHandle = NULL;
 	char	filename[MAX_OSPATH];
@@ -592,7 +594,7 @@ void *Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) )
 			return NULL;
 	}
 
-	*moduleAPI = (void *(QDECL *)(int,...))Sys_LoadFunction( libHandle, "GetModuleAPI" );
+	*moduleAPI = (GetModuleAPIProc *)Sys_LoadFunction( libHandle, "GetModuleAPI" );
 	if ( !*moduleAPI ) {
 		Com_Printf ( "Sys_LoadGameDll(%s) failed to find GetModuleAPI function:\n\"%s\" !\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
