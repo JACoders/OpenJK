@@ -2016,8 +2016,8 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 			if (!Q_stricmp(username, PersonalBests[style][i].username) && !Q_stricmp(courseNameFull, PersonalBests[style][i].coursename)) { //Its us, and right course
 				//trap->Print("Found In My Cache\n");
 				duration_ms = PersonalBests[style][i].duration_ms;
-				topspeed = HighScores[course][style][i].topspeed;
-				average = HighScores[course][style][i].average;
+				topspeed = 0;//HighScores[course][style][i].topspeed; //Topspeed and average are not yet stored in personalBest cache, so uh.... make them 0 for now...
+				average = 0;//HighScores[course][style][i].average;
 				break;
 			}
 			if (!PersonalBests[style][i].username[0])

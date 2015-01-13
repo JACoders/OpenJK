@@ -4224,7 +4224,7 @@ static void WP_FireLightningGun( gentity_t *ent )
 				ent->client->accuracy_hits++;
 			} 
 
-			if (g_tweakWeapons.integer & STUN_HEAL)
+			if ((g_tweakWeapons.integer & STUN_HEAL) && !ent->client->ps.duelInProgress)
 				G_Damage( traceEnt, ent, ent, forward, tr.endpos, -damage*0.25, DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_STUN_BATON );
 			else
 				G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_STUN_BATON );
