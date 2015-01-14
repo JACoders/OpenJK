@@ -22,13 +22,8 @@ This file is part of Jedi Academy.
 #include "../qcommon/qfiles.h"
 #include "../rd-common/tr_public.h"
 #include "../rd-common/mdx_format.h"
-#ifdef _WIN32
 #include "qgl.h"
 #include "glext.h"
-#else
-#include "qgl.h"
-#include "../sdl/sdl_qgl.h"
-#endif
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
