@@ -329,7 +329,7 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 
 	set(MPEngineAndDedSysFiles
-		"${MPDir}/sys/snapvector.cpp"
+		"${SharedDir}/sys/snapvector.cpp"
 		)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
 	source_group("sys" FILES ${MPEngineAndDedSysFiles})
