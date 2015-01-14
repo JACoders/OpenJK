@@ -7467,7 +7467,7 @@ qboolean ItemParse_flag( itemDef_t *item, int handle)
 
 	if (itemFlags[i].string == NULL)
 	{
-		Com_Printf( S_COLOR_YELLOW "Unknown item style value '%s'", token.string );
+		Com_Printf( S_COLOR_YELLOW "Unknown item style value '%s'\n", token.string );
 	}
 
 	return qtrue;
@@ -7483,7 +7483,7 @@ qboolean ItemParse_style( itemDef_t *item, int handle)
 {
 	if (!PC_Int_Parse(handle, &item->window.style))
 	{
-		Com_Printf(S_COLOR_YELLOW "Unknown item style value");
+		Com_Printf(S_COLOR_YELLOW "Unknown item style value\n");
 		return qfalse;
 	}
 
@@ -7711,7 +7711,7 @@ qboolean ItemParse_textalign( itemDef_t *item, int handle )
 {
 	if (!PC_Int_Parse(handle, &item->textalignment))
 	{
-		Com_Printf(S_COLOR_YELLOW "Unknown text alignment value");
+		Com_Printf(S_COLOR_YELLOW "Unknown text alignment value\n");
 
 		return qfalse;
 	}
@@ -8760,7 +8760,7 @@ qboolean MenuParse_style( itemDef_t *item, int handle)
 
 	if (!PC_Int_Parse(handle, &menu->window.style))
 	{
-		Com_Printf(S_COLOR_YELLOW "Unknown menu style value");
+		Com_Printf(S_COLOR_YELLOW "Unknown menu style value\n");
 		return qfalse;
 	}
 
@@ -8864,7 +8864,7 @@ qboolean MenuParse_descAlignment( itemDef_t *item, int handle )
 
 	if (!PC_Int_Parse(handle, &menu->descAlignment))
 	{
-		Com_Printf(S_COLOR_YELLOW "Unknown desc alignment value");
+		Com_Printf(S_COLOR_YELLOW "Unknown desc alignment value\n");
 		return qfalse;
 	}
 
