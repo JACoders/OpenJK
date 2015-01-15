@@ -2292,7 +2292,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	int			i;
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
-	qboolean	admin = qfalse;
+	qboolean	whois = qfalse, seeip = qfalse;
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
@@ -2300,24 +2300,36 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 	if (ent->client->sess.fullAdmin) {//Logged in as full admin
 		if (g_fullAdminLevel.integer & (1 << A_WHOIS))
-			admin = qtrue;
+			whois = qtrue;
+		if (g_fullAdminLevel.integer & (1 << A_SEEIP))
+			seeip = qtrue;
 	}
 	else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
 		if (g_juniorAdminLevel.integer & (1 << A_WHOIS))
-			admin = qtrue;
+			whois = qtrue;
+		if (g_juniorAdminLevel.integer & (1 << A_SEEIP))
+			seeip = qtrue;
 	}
+	
+	//A_STATUS
 
-	if (admin) {
+	if (whois) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 		sql = "SELECT username FROM LocalAccount WHERE lastip = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	}
 
-	if (admin) {
+	if (whois && seeip) {
 		if (g_raceMode.integer)
 			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Race  Style  Jump  Hidden  Nickame\n\"");
 		else
 			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Nickname\n\"");
+	}
+	else if (whois) {
+		if (g_raceMode.integer)
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Admin  Race  Style  Jump  Hidden  Nickame\n\"");
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Admin  Nickname\n\"");
 	}
 	else {
 		if (g_raceMode.integer)
@@ -2352,10 +2364,12 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			if (cl->sess.sessionTeam != TEAM_SPECTATOR)
 				Q_strncpyz(jumpLevel, va("%i", cl->ps.fd.forcePowerLevel[FP_LEVITATION]), sizeof(jumpLevel));
 
-			if (admin) {
+			if (whois || seeip) {
 				p = strchr(strIP, ':');
 				if (p) //loda - fix ip sometimes not printing in amstatus?
 					*p = 0;
+			}
+			if (whois) {
 				if (cl->sess.fullAdmin)
 					Q_strncpyz( strAdmin, "^3Full^7", sizeof(strAdmin));
 				else if (cl->sess.juniorAdmin)
@@ -2400,7 +2414,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			else
 				Q_strncpyz(strPlugin, (cl->pers.isJAPRO) ? "^2Yes^7" : "^1No^7", sizeof(strPlugin));
 
-			if (admin) { //No username means not logged in, so check if they have an account tied to their ip
+			if (whois) { //No username means not logged in, so check if they have an account tied to their ip
 				if (!cl->pers.userName[0]) {
 					unsigned int ip;
 
@@ -2426,11 +2440,20 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					CALL_SQLITE (clear_bindings (stmt));
 				}
 
-				//Admin prints
-				if (g_raceMode.integer)
-					tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
-				else
-					tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
+				if (seeip) {
+					//Admin prints
+					if (g_raceMode.integer)
+						tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+					else
+						tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
+				}
+				else {
+					//Admin prints
+					if (g_raceMode.integer)
+						tmpMsg = va( "%-2s%-22s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+					else
+						tmpMsg = va( "%-2s%-22s%-12s%-11s%s\n", strNum, strUser, strPlugin, strAdmin, strName);
+				}
 			}
 			else {//Not admin
 				if (g_raceMode.integer)
@@ -2447,7 +2470,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 		}
 	}
 
-	if (admin) {
+	if (whois) {
 		CALL_SQLITE (finalize(stmt));
 		CALL_SQLITE (close(db));
 	}
