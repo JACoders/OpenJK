@@ -763,7 +763,8 @@ static void ProjectDlightTexture2( void ) {
 			CrossProduct(e1,e2,normal);
 //			fac=DotProduct(normal,origin)-DotProduct(normal,posa);
 //			if (fac <= 0.0f || // backface
-			if ( (!r_dlightBacks->integer && DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f) || // backface
+// rjr - removed for hacking 			if ( (!r_dlightBacks->integer && DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f) || // backface
+			if ( DotProduct(normal,origin)-DotProduct(normal,posa) <= 0.0f || // backface
 				DotProduct(normal,normal) < 1E-8f) // junk triangle
 			{
 				continue;
