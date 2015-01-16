@@ -51,7 +51,7 @@ cvar_t	*r_measureOverdraw;
 cvar_t	*r_fastsky;
 cvar_t	*r_drawSun;
 cvar_t	*r_dynamiclight;
-cvar_t	*r_dlightBacks;
+// rjr - removed for hacking cvar_t	*r_dlightBacks;
 
 cvar_t	*r_lodbias;
 cvar_t	*r_lodscale;
@@ -1207,7 +1207,8 @@ void R_Register( void )
 	r_fastsky = ri.Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
 	r_drawSun = ri.Cvar_Get( "r_drawSun", "0", CVAR_ARCHIVE );
 	r_dynamiclight = ri.Cvar_Get( "r_dynamiclight", "1", CVAR_ARCHIVE );
-	r_dlightBacks = ri.Cvar_Get( "r_dlightBacks", "0", CVAR_ARCHIVE );
+	// rjr - removed for hacking
+//	r_dlightBacks = ri.Cvar_Get( "r_dlightBacks", "0", CVAR_ARCHIVE );
 	r_finish = ri.Cvar_Get ("r_finish", "0", CVAR_ARCHIVE);
 	r_textureMode = ri.Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
 	r_swapInterval = ri.Cvar_Get( "r_swapInterval", "0", SWAPINTERVAL_FLAGS );
