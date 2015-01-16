@@ -134,33 +134,13 @@ char	*Sys_DefaultHomePath(void) {
 	Com_Printf("Portable install requested, skipping homepath support\n");
 	return NULL;
 #else
-	typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR);
-
-	TCHAR szPath[MAX_PATH];
-	GETFOLDERPATH qSHGetFolderPath;
-	HMODULE shfolder = LoadLibrary("shfolder.dll");
-
-	if(shfolder == NULL)
+	if(!homePath[0] && com_homepath)
 	{
-		Com_Printf("Unable to load SHFolder.dll\n");
-		return NULL;
-	}
+		TCHAR szPath[MAX_PATH];
 
-	if(!*homePath && com_homepath)
-	{
-		qSHGetFolderPath = (GETFOLDERPATH)GetProcAddress(shfolder, "SHGetFolderPathA");
-		if(qSHGetFolderPath == NULL)
-		{
-			Com_Printf("Unable to find SHGetFolderPath in SHFolder.dll\n");
-			FreeLibrary(shfolder);
-			return NULL;
-		}
-
-		if( !SUCCEEDED( qSHGetFolderPath( NULL, CSIDL_PERSONAL,
-						NULL, 0, szPath ) ) )
+		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, szPath ) ) )
 		{
 			Com_Printf("Unable to detect CSIDL_PERSONAL\n");
-			FreeLibrary(shfolder);
 			return NULL;
 		}
 
@@ -172,7 +152,6 @@ char	*Sys_DefaultHomePath(void) {
 			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_WIN);
 	}
 
-	FreeLibrary(shfolder);
 	return homePath;
 #endif
 }
