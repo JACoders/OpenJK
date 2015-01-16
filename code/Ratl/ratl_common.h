@@ -262,10 +262,6 @@ namespace str
 	{
 		return strtok(s,gap);
 	}
-
-	void	to_upper(char *dest);
-	void	to_lower(char *dest);
-	void	printf(char *dest,const char *formatS, ...);
 }
 
 
