@@ -118,30 +118,5 @@ void	ratl_base::ProfilePrint(const char * format, ...)
 {
 }
 #endif
-
-namespace str
-{
-	void	to_upper(char *dest)
-	{
-		for (size_t i=0; i<len(dest);i++)
-		{
-			dest[i] = (char)(toupper(dest[i]));
-		}
-	}
-	void	to_lower(char *dest)
-	{
-		for (size_t i=0; i<len(dest);i++)
-		{
-			dest[i] = (char)(tolower(dest[i]));
-		}
-	}
-	void	printf(char *dest,const char *formatS, ...)
-	{
-		va_list		argptr;
-		va_start (argptr, formatS);
-		vsprintf (dest, formatS,argptr);
-		va_end (argptr);
-	}
-}
 }
 
