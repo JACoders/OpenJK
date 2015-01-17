@@ -106,13 +106,12 @@ Key: - removed, + added, * modified
 [SP] + gamecode: Added cg_dynamicCrosshair (default 1)
 [MP] + Added support for surfaceSprites flattened in MP.  (Fixes surface sprites on t2_trip)
 [SP/MP] * Fixed never fading shadow in text
-[SP/MP] + trap_R_DrawRotatePic/2 allows full shader support now
 [SP] * MAX_SHADER_FILES bumped to 4096 from 1024 to match MP
 [MP] + Added in-engine ban code from ioquake3. Cmds: sv_rehashbans, sv_listbans, sv_banaddr, sv_exceptaddr, sv_bandel, sv_exceptdel, sv_flushbans. CVar: sv_banFile
 [SP/MP] * Fix up font renderer glyph positioning
 [MP] + addFavorite
-[SP/MP] * Fixed overstrike mode when using any UI edit box
-[SP/MP] * Fix crash when standing on an NPC who has been knocked down
+[SP/MP] * gamecode: Fixed overstrike mode when using any UI edit box
+[SP/MP] * gamecode: Fix crash when standing on an NPC who has been knocked down
 [MP] + gamecode: fx_wind entity
 [MP] * gamecode: fx_rain entity supports most options from SP now. LIGHTNING/shaking not supported, acidrain doesn't actually hurt
 [MP] * gamecode: more customRGBA options from SP on NPCs
