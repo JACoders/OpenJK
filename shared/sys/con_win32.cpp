@@ -45,6 +45,7 @@ static int qconsole_history_oldest = 0;
 static char qconsole_line[ MAX_EDIT_LINE ];
 static int qconsole_linelen = 0;
 static bool qconsole_drawinput = true;
+static int qconsole_cursor;
 
 static HANDLE qconsole_hout;
 static HANDLE qconsole_hin;
@@ -129,17 +130,16 @@ static void CON_HistPrev( void )
 {
 	int pos;
 
-	pos = ( qconsole_history_pos < 1 ) ?
-		( QCONSOLE_HISTORY - 1 ) : ( qconsole_history_pos - 1 );
+	pos = ( qconsole_history_pos < 1 ) ? ( QCONSOLE_HISTORY - 1 ) : ( qconsole_history_pos - 1 );
 
 	// don' t allow looping through history
 	if( pos == qconsole_history_oldest || pos >= qconsole_history_lines )
 		return;
 
 	qconsole_history_pos = pos;
-	Q_strncpyz( qconsole_line, qconsole_history[ qconsole_history_pos ], 
-		sizeof( qconsole_line ) );
+	Q_strncpyz( qconsole_line, qconsole_history[ qconsole_history_pos ], sizeof( qconsole_line ) );
 	qconsole_linelen = strlen( qconsole_line );
+	qconsole_cursor = qconsole_linelen;
 }
 
 /*
@@ -155,8 +155,7 @@ static void CON_HistNext( void )
 	if( qconsole_history_pos == qconsole_history_oldest )
 		return;
 
-	pos = ( qconsole_history_pos >= QCONSOLE_HISTORY - 1 ) ?
-		0 : ( qconsole_history_pos + 1 ); 
+	pos = ( qconsole_history_pos >= QCONSOLE_HISTORY - 1 ) ? 0 : ( qconsole_history_pos + 1 ); 
 
 	// clear the edit buffer if they try to advance to a future command
 	if( pos == qconsole_history_oldest )
@@ -164,13 +163,14 @@ static void CON_HistNext( void )
 		qconsole_history_pos = pos;
 		qconsole_line[ 0 ] = '\0';
 		qconsole_linelen = 0;
+		qconsole_cursor = qconsole_linelen;
 		return;
 	}
 
 	qconsole_history_pos = pos;
-	Q_strncpyz( qconsole_line, qconsole_history[ qconsole_history_pos ],
-		sizeof( qconsole_line ) );
+	Q_strncpyz( qconsole_line, qconsole_history[ qconsole_history_pos ], sizeof( qconsole_line ) );
 	qconsole_linelen = strlen( qconsole_line );
+	qconsole_cursor = qconsole_linelen;
 }
 
 
@@ -234,7 +234,11 @@ static void CON_Show( void )
 
 	// set curor position
 	cursorPos.Y = binfo.dwCursorPosition.Y;
-	cursorPos.X = qconsole_linelen > binfo.srWindow.Right ? binfo.srWindow.Right : qconsole_linelen;
+	cursorPos.X = qconsole_cursor < qconsole_linelen
+					? qconsole_cursor
+					: qconsole_linelen > binfo.srWindow.Right
+						? binfo.srWindow.Right
+						: qconsole_linelen;
 
 	SetConsoleCursorPosition( qconsole_hout, cursorPos );
 }
@@ -297,8 +301,7 @@ void CON_Init( void )
 	GetConsoleMode( qconsole_hin, &qconsole_orig_mode );
 
 	// allow mouse wheel scrolling
-	SetConsoleMode( qconsole_hin,
-		qconsole_orig_mode & ~ENABLE_MOUSE_INPUT );
+	SetConsoleMode( qconsole_hin, qconsole_orig_mode & ~ENABLE_MOUSE_INPUT );
 
 	FlushConsoleInputBuffer( qconsole_hin ); 
 
@@ -356,31 +359,66 @@ char *CON_Input( void )
 
 		key = buff[ i ].Event.KeyEvent.wVirtualKeyCode;
 
-		if( key == VK_RETURN )
+		bool keyHandled = true;
+		switch ( key )
 		{
-			newlinepos = i;
-			break;
-		}
-		else if( key == VK_UP )
-		{
-			CON_HistPrev();
-			break;
-		}
-		else if( key == VK_DOWN )
-		{
-			CON_HistNext();
-			break;
-		}
-		else if( key == VK_TAB )
-		{
-			field_t f;
+			case VK_RETURN:
+				newlinepos = i;
+				qconsole_cursor = 0;
+				break;
 
-			Q_strncpyz( f.buffer, qconsole_line,
-				sizeof( f.buffer ) );
-			Field_AutoComplete( &f );
-			Q_strncpyz( qconsole_line, f.buffer,
-				sizeof( qconsole_line ) );
-			qconsole_linelen = strlen( qconsole_line );
+			case VK_UP:
+				CON_HistPrev();
+				break;
+
+			case VK_DOWN:
+				CON_HistNext();
+				break;
+
+			case VK_LEFT:
+				qconsole_cursor--;
+				if ( qconsole_cursor < 0 )
+				{
+					qconsole_cursor = 0;
+				}
+				break;
+
+			case VK_RIGHT:
+				qconsole_cursor++;
+				if ( qconsole_cursor > qconsole_linelen )
+				{
+					qconsole_cursor = qconsole_linelen;
+				}
+				break;
+
+			case VK_HOME:
+				qconsole_cursor = 0;
+				break;
+
+			case VK_END:
+				qconsole_cursor = qconsole_linelen;
+				break;
+
+			case VK_TAB:
+			{
+				field_t f;
+
+				Q_strncpyz( f.buffer, qconsole_line, sizeof( f.buffer ) );
+				Field_AutoComplete( &f );
+				Q_strncpyz( qconsole_line, f.buffer, sizeof( qconsole_line ) );
+				qconsole_linelen = strlen( qconsole_line );
+				qconsole_cursor = qconsole_linelen;
+
+				break;
+			}
+
+			default:
+				keyHandled = false;
+				break;
+		}
+
+		if ( keyHandled )
+		{
 			break;
 		}
 
@@ -390,15 +428,33 @@ char *CON_Input( void )
 
 			if( key == VK_BACK )
 			{
-				int pos = ( qconsole_linelen > 0 ) ?
-					qconsole_linelen - 1 : 0; 
+				if ( qconsole_cursor > 0 )
+				{
+					int newlen = ( qconsole_linelen > 0 ) ? qconsole_linelen - 1 : 0;
+					if ( qconsole_cursor < qconsole_linelen )
+					{
+						memmove( qconsole_line + qconsole_cursor - 1,
+									qconsole_line + qconsole_cursor,
+									qconsole_linelen - qconsole_cursor );
+					}
 
-				qconsole_line[ pos ] = '\0';
-				qconsole_linelen = pos;
+					qconsole_line[ newlen ] = '\0';
+					qconsole_linelen = newlen;
+					qconsole_cursor--;
+				}
 			}
 			else if( c )
 			{
-				qconsole_line[ qconsole_linelen++ ] = c;
+				if ( qconsole_linelen > qconsole_cursor )
+				{
+					memmove( qconsole_line + qconsole_cursor + 1,
+								qconsole_line + qconsole_cursor,
+								qconsole_linelen - qconsole_cursor );
+				}
+
+				qconsole_line[ qconsole_cursor++ ] = c;
+
+				qconsole_linelen++;
 				qconsole_line[ qconsole_linelen ] = '\0'; 
 			}
 		}
