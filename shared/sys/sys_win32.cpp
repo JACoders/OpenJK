@@ -129,6 +129,21 @@ char *Sys_GetCurrentUser( void )
 	return s_userName;
 }
 
+bool Sys_GetDefaultHomePath( char *buffer, size_t size )
+{
+	TCHAR szPath[MAX_PATH];
+
+	if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, szPath ) ) )
+	{
+		Com_Printf("Unable to detect CSIDL_PERSONAL\n");
+		return false;
+	}
+
+	Q_strncpyz( buffer, szPath, size );
+
+	return true;
+}
+
 char	*Sys_DefaultHomePath(void) {
 #ifdef _PORTABLE_VERSION
 	Com_Printf("Portable install requested, skipping homepath support\n");
@@ -136,15 +151,14 @@ char	*Sys_DefaultHomePath(void) {
 #else
 	if(!homePath[0] && com_homepath)
 	{
-		TCHAR szPath[MAX_PATH];
+		char path[MAX_PATH];
 
-		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, szPath ) ) )
+		if ( !Sys_GetDefaultHomePath( path, sizeof( path ) ) )
 		{
-			Com_Printf("Unable to detect CSIDL_PERSONAL\n");
 			return NULL;
 		}
 
-		Com_sprintf(homePath, sizeof(homePath), "%s%cMy Games%c", szPath, PATH_SEP, PATH_SEP);
+		Com_sprintf(homePath, sizeof(homePath), "%s%cMy Games%c", path, PATH_SEP, PATH_SEP);
 
 		if(com_homepath->string[0])
 			Q_strcat(homePath, sizeof(homePath), com_homepath->string);
@@ -518,6 +532,7 @@ static void PrintMatches( const char *s ) {
 
 char *Sys_ConsoleInput(void)
 {
+#if defined(DEDICATED)
 	const char ClearLine[] = "\r                                                                               \r";
 
 	static int	len=0;
@@ -618,6 +633,7 @@ char *Sys_ConsoleInput(void)
 			break;
 		}
 	}
+#endif
 
 	return NULL;
 }
