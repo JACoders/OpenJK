@@ -130,6 +130,7 @@ typedef struct {
 
 // For compatibility with shared code
 static inline void NET_Init( void ) {}
+static inline void NET_Shutdown( void ) {}
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
 void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
@@ -599,9 +600,11 @@ extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
 extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
-extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
+#ifndef _WIN32
+extern	cvar_t	*com_ansiColor;
+#endif
 
 extern	cvar_t	*com_affinity;
 

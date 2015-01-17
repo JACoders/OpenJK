@@ -1,205 +1,21 @@
-#if !defined(_WIN32)
-#include <dlfcn.h>
-#include <unistd.h>
-#ifdef DEDICATED
-#include <sys/fcntl.h>
-#endif
-#endif
+#include <csignal>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstdio>
+#include <sys/stat.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "qcommon/qcommon.h"
 #include "sys_local.h"
 #include "sys_loadlib.h"
 #include "sys_public.h"
-#include <inttypes.h>
+#include "con_local.h"
 
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
 cvar_t *com_minimized;
 cvar_t *com_unfocused;
-
-/*
-========================================================================
-
-CONSOLE LOG
-
-========================================================================
-*/
-#define MAX_CONSOLE_LOG_SIZE (65535)
-
-struct ConsoleLog
-{
-	// Cicular buffer of characters. Be careful, there is no null terminator.
-	// You're expected to use the console log length to know where the end
-	// of the string is.
-	char text[MAX_CONSOLE_LOG_SIZE];
-
-	// Where to start writing the next string
-	int writeHead;
-
-	// Length of buffer
-	int length;
-};
-
-static ConsoleLog consoleLog;
-
-void ConsoleLogAppend( ConsoleLog *consoleLog, const char *string )
-{
-	for ( int i = 0; string[i]; i++ )
-	{
-		consoleLog->text[consoleLog->writeHead] = string[i];
-		consoleLog->writeHead = (consoleLog->writeHead + 1) % MAX_CONSOLE_LOG_SIZE;
-
-		consoleLog->length++;
-		if ( consoleLog->length > MAX_CONSOLE_LOG_SIZE )
-		{
-			consoleLog->length = MAX_CONSOLE_LOG_SIZE;
-		}
-	}
-}
-
-void ConsoleLogWriteOut( ConsoleLog *consoleLog, FILE *fp )
-{
-	assert( fp );
-
-	if ( consoleLog->writeHead == MAX_CONSOLE_LOG_SIZE )
-	{
-		fwrite( consoleLog->text + consoleLog->writeHead, MAX_CONSOLE_LOG_SIZE - consoleLog->writeHead, 1, fp );
-	}
-
-	fwrite( consoleLog->text, consoleLog->writeHead, 1, fp );
-}
-
-/*
-========================================================================
-
-EVENT LOOP
-
-========================================================================
-*/
-
-#define	MAX_QUED_EVENTS		256
-#define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
-
-sysEvent_t	eventQue[MAX_QUED_EVENTS];
-int			eventHead, eventTail;
-byte		sys_packetReceived[MAX_MSGLEN];
-
-sysEvent_t Sys_GetEvent( void ) {
-	sysEvent_t	ev;
-	char		*s;
-#if !defined(_JK2EXE)
-	netadr_t	adr;
-	msg_t		netmsg;
-#endif
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// check for console commands
-	s = Sys_ConsoleInput();
-	if ( s ) {
-		char	*b;
-		int		len;
-
-		len = strlen( s ) + 1;
-		b = (char *)Z_Malloc( len,TAG_EVENT,qfalse );
-		strcpy( b, s );
-		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
-	}
-
-#if !defined(_JK2EXE)
-	// check for network packets
-	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
-	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
-		netadr_t		*buf;
-		int				len;
-
-		// copy out to a seperate buffer for qeueing
-		len = sizeof( netadr_t ) + netmsg.cursize;
-		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
-		*buf = adr;
-		memcpy( buf+1, netmsg.data, netmsg.cursize );
-		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
-	}
-#endif
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// create an empty event to return
-
-	memset( &ev, 0, sizeof( ev ) );
-	ev.evTime = Sys_Milliseconds();
-
-	return ev;
-}
-
-/*
-================
-Sys_QueEvent
-
-A time of 0 will get the current time
-Ptr should either be null, or point to a block of data that can
-be freed by the game later.
-================
-*/
-void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
-	sysEvent_t	*ev;
-
-	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
-
-	// bk000305 - was missing
-	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-	  Com_Printf("Sys_QueEvent: overflow\n");
-	  // we are discarding an event, but don't leak memory
-	  if ( ev->evPtr ) {
-	    Z_Free( ev->evPtr );
-	  }
-	  eventTail++;
-	}
-
-	eventHead++;
-
-	if ( time == 0 ) {
-		time = Sys_Milliseconds();
-	}
-
-	ev->evTime = time;
-	ev->evType = type;
-	ev->evValue = value;
-	ev->evValue2 = value2;
-	ev->evPtrLength = ptrLength;
-	ev->evPtr = ptr;
-}
-
-/*
-==================
-Sys_GetClipboardData
-==================
-*/
-char *Sys_GetClipboardData( void ) {
-#ifdef DEDICATED
-	return NULL;
-#else
-	if ( !SDL_HasClipboardText() )
-		return NULL;
-
-	char *cbText = SDL_GetClipboardText();
-	size_t len = strlen( cbText ) + 1;
-
-	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
-	Q_strncpyz( buf, cbText, len );
-
-	SDL_free( cbText );
-	return buf;
-#endif
-}
 
 /*
 =================
@@ -254,17 +70,39 @@ char *Sys_DefaultAppPath(void)
 	return Sys_BinaryPath();
 }
 
-// We now expect newlines instead of always appending
-// otherwise sectioned prints get messed up.
-#define MAXPRINTMSG		4096
-void Conbuf_AppendText( const char *pMsg )
-{
-	char msg[MAXPRINTMSG] = {0};
-	Q_strncpyz(msg, pMsg, sizeof(msg));
-	Q_StripColor(msg);
-	printf("%s", msg);
+/*
+==================
+Sys_GetClipboardData
+==================
+*/
+char *Sys_GetClipboardData( void ) {
+#ifdef DEDICATED
+	return NULL;
+#else
+	if ( !SDL_HasClipboardText() )
+		return NULL;
 
-	ConsoleLogAppend( &consoleLog, msg );
+	char *cbText = SDL_GetClipboardText();
+	size_t len = strlen( cbText ) + 1;
+
+	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
+	Q_strncpyz( buf, cbText, len );
+
+	SDL_free( cbText );
+	return buf;
+#endif
+}
+
+/*
+=================
+Sys_ConsoleInput
+
+Handle new console input
+=================
+*/
+char *Sys_ConsoleInput(void)
+{
+	return CON_Input( );
 }
 
 void Sys_Print( const char *msg ) {
@@ -276,7 +114,8 @@ void Sys_Print( const char *msg ) {
 	if ( msg[0] == '*' ) {
 		msg += 1;
 	}
-	Conbuf_AppendText( msg );
+	ConsoleLogAppend( msg );
+	CON_Print( msg );
 }
 
 /*
@@ -289,20 +128,26 @@ are initialized
 */
 void Sys_Init( void ) {
 	Cmd_AddCommand ("in_restart", IN_Restart);
-	Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
-	Cvar_Set( "username", Sys_GetCurrentUser() );
-
+	Cvar_Get( "arch", OS_STRING " " ARCH_STRING, CVAR_ROM );
+	Cvar_Get( "username", Sys_GetCurrentUser(), CVAR_ROM );
 	com_unfocused = Cvar_Get( "com_unfocused", "0", CVAR_ROM );
 	com_minimized = Cvar_Get( "com_minimized", "0", CVAR_ROM );
-
-	Sys_PlatformInit();
 }
 
-void Sys_Exit( int ex ) __attribute__((noreturn));
-void Sys_Exit( int ex ) {
+static void __attribute__((noreturn)) Sys_Exit( int ex ) {
+	IN_Shutdown( );
 #ifndef DEDICATED
 	SDL_Quit( );
 #endif
+
+	NET_Shutdown( );
+
+	Sys_PlatformExit( );
+
+	Com_ShutdownHunkMemory( );
+	Com_ShutdownZoneMemory( );
+
+	CON_Shutdown();
 
     exit(ex);
 }
@@ -327,14 +172,14 @@ static void Sys_ErrorDialog( const char *error )
 	FILE *fp = fopen( crashLogPath, "w" );
 	if ( fp )
 	{
-		ConsoleLogWriteOut( &consoleLog, fp );
+		ConsoleLogWriteOut( fp );
 		fclose( fp );
 	}
 	else
 	{
 		// Getting pretty desperate now
 		fprintf( stderr, "Failed to open crash log. Writing out to console...\n" );
-		ConsoleLogWriteOut( &consoleLog, stderr );
+		ConsoleLogWriteOut( stderr );
 		fflush( stderr );
 	}
 }
@@ -358,14 +203,24 @@ void Sys_Error( const char *error, ... )
 }
 
 void Sys_Quit (void) {
-	IN_Shutdown();
-
-	Com_ShutdownZoneMemory();
-	Com_ShutdownHunkMemory();
-
-	Sys_PlatformQuit();
-
     Sys_Exit(0);
+}
+
+/*
+============
+Sys_FileTime
+
+returns -1 if not present
+============
+*/
+int Sys_FileTime( char *path )
+{
+	struct stat buf;
+
+	if ( stat( path, &buf ) == -1 )
+		return -1;
+
+	return buf.st_mtime;
 }
 
 /*
@@ -694,6 +549,38 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 	return libHandle;
 }
 
+/*
+=================
+Sys_SigHandler
+=================
+*/
+void Sys_SigHandler( int signal )
+{
+	static qboolean signalcaught = qfalse;
+
+	if( signalcaught )
+	{
+		fprintf( stderr, "DOUBLE SIGNAL FAULT: Received signal %d, exiting...\n",
+			signal );
+	}
+	else
+	{
+		signalcaught = qtrue;
+		//VM_Forced_Unload_Start();
+#ifndef DEDICATED
+		CL_Shutdown();
+		//CL_Shutdown(va("Received signal %d", signal), qtrue, qtrue);
+#endif
+		SV_Shutdown(va("Received signal %d", signal) );
+		//VM_Forced_Unload_Done();
+	}
+
+	if( signal == SIGTERM || signal == SIGINT )
+		Sys_Exit( 1 );
+	else
+		Sys_Exit( 2 );
+}
+
 #ifdef MACOS_X
 /*
  =================
@@ -735,6 +622,9 @@ int main ( int argc, char* argv[] )
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
+	CON_Init();
+	Sys_PlatformInit();
+
 	// get the initial time base
 	Sys_Milliseconds();
 
@@ -765,10 +655,6 @@ int main ( int argc, char* argv[] )
 	Com_Init (commandLine);
 
 	NET_Init();
-
-#if defined(DEDICATED) && !defined(_WIN32)
-    fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
-#endif
 
 	// main game loop
 	while (1)
@@ -802,4 +688,5 @@ int main ( int argc, char* argv[] )
 	}
 
 	// never gets here
+	return 0;
 }

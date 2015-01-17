@@ -487,7 +487,10 @@ if(BuildMPEngine)
 		"${SharedDir}/sys/sys_loadlib.h"
 		"${SharedDir}/sys/sys_local.h"
 		"${SharedDir}/sys/sys_main.cpp"
+		"${SharedDir}/sys/sys_event.cpp"
 		"${SharedDir}/sys/sys_public.h"
+		"${SharedDir}/sys/con_local.h"
+		"${SharedDir}/sys/con_log.cpp"
 		)
 
 	if(WIN32)
@@ -503,11 +506,13 @@ if(BuildMPEngine)
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
 			"${SharedDir}/sys/sys_win32.cpp"
+			"${SharedDir}/sys/con_passive.cpp"
 			)
 	else(WIN32)
 		set(MPEngineSysFiles
 			${MPEngineSysFiles}
 			"${SharedDir}/sys/sys_unix.cpp"
+			"${SharedDir}/sys/con_tty.cpp"
 			)
 	endif(WIN32)
 
@@ -596,16 +601,30 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 
 		set(MPDedSysFiles
+			"${SharedDir}/sys/sys_loadlib.h"
+			"${SharedDir}/sys/sys_local.h"
 			"${SharedDir}/sys/sys_main.cpp"
+			"${SharedDir}/sys/sys_event.cpp"
+			"${SharedDir}/sys/sys_public.h"
 			"${SharedDir}/sys/sys_win32.cpp"
+			"${SharedDir}/sys/con_local.h"
+			"${SharedDir}/sys/con_log.cpp"
+			"${SharedDir}/sys/con_win32.cpp"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 		source_group("sys" FILES ${MPDedSysFiles})
 		set(MPDedFiles ${MPDedFiles} ${MPDedSysFiles})
 	else(WIN32)
 		set(MPDedSysFiles
+			"${SharedDir}/sys/sys_loadlib.h"
+			"${SharedDir}/sys/sys_local.h"
 			"${SharedDir}/sys/sys_main.cpp"
+			"${SharedDir}/sys/sys_event.cpp"
+			"${SharedDir}/sys/sys_public.h"
 			"${SharedDir}/sys/sys_unix.cpp"
+			"${SharedDir}/sys/con_local.h"
+			"${SharedDir}/sys/con_log.cpp"
+			"${SharedDir}/sys/con_tty.cpp"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 		source_group("sys" FILES ${MPDedSysFiles})

@@ -35,7 +35,6 @@ static fileHandle_t	camerafile;
 fileHandle_t	com_journalFile;
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_timescale;
@@ -53,6 +52,9 @@ cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 cvar_t  *com_homepath;
+#ifndef _WIN32
+cvar_t	*com_ansiColor = NULL;
+#endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
@@ -140,9 +142,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	}
 
 	CL_ConsolePrint( msg );
-
-	// Strip out color codes because these aren't needed in the log/viewlog or in the output window --eez
-	Q_StripColor( msg );
 
 	// echo to dedicated console and early console
 	Sys_Print( msg );
@@ -1145,7 +1144,6 @@ void Com_Init( char *commandLine ) {
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
-		com_viewlog = Cvar_Get( "viewlog", "0", CVAR_TEMP );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		
 #ifdef G2_PERFORMANCE_ANALYSIS
