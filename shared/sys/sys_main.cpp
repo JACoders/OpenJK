@@ -202,6 +202,18 @@ char *Sys_DefaultAppPath(void)
 	return Sys_BinaryPath();
 }
 
+// Cicular buffer of characters. Be careful, there is no null terminator.
+// You're expected to use the console log length to know where the end
+// of the string is.
+#define MAX_CONSOLE_LOG_SIZE (65535)
+static char consoleLog[MAX_CONSOLE_LOG_SIZE];
+
+// Where to start writing the next string
+static int consoleLogWriteHead;
+
+// Length of buffer
+static int consoleLogLength;
+
 // We now expect newlines instead of always appending
 // otherwise sectioned prints get messed up.
 #define MAXPRINTMSG		4096
@@ -211,6 +223,20 @@ void Conbuf_AppendText( const char *pMsg )
 	Q_strncpyz(msg, pMsg, sizeof(msg));
 	Q_StripColor(msg);
 	printf("%s", msg);
+
+	// Add to log
+	for ( int i = 0; msg[i]; i++ )
+	{
+		consoleLog[consoleLogWriteHead] = msg[i];
+
+		consoleLogWriteHead = (consoleLogWriteHead + 1) % MAX_CONSOLE_LOG_SIZE;
+
+		consoleLogLength++;
+		if ( consoleLogLength > MAX_CONSOLE_LOG_SIZE )
+		{
+			consoleLogLength = MAX_CONSOLE_LOG_SIZE;
+		}
+	}
 }
 
 void Sys_Print( const char *msg ) {
@@ -253,6 +279,54 @@ void Sys_Exit( int ex ) {
     exit(ex);
 }
 
+#if !defined(DEDICATED)
+static void Sys_ErrorDialog( const char *error )
+{
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
+	char crashLogPath[64];
+
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+	Com_sprintf( crashLogPath, sizeof( crashLogPath ), "crashlog-%s.txt", timeStr );
+
+	const char *errorMessage = va( "%s\nWrite crash log to %s?\n", error, crashLogPath );
+
+	const SDL_MessageBoxButtonData buttons[] = {
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
+	};
+
+	SDL_MessageBoxData messageBoxData = {};
+	messageBoxData.buttons = buttons;
+	messageBoxData.numbuttons = ARRAY_LEN( buttons );
+	messageBoxData.flags = SDL_MESSAGEBOX_ERROR;
+	messageBoxData.message = errorMessage;
+	messageBoxData.title = "Error";
+
+	int button;
+	if ( SDL_ShowMessageBox( &messageBoxData, &button ) < 0 )
+	{
+		// Bad things happened
+		return;
+	}
+
+	if ( button == 1 )
+	{
+		FILE *fp = fopen( crashLogPath, "w" );
+
+		if ( consoleLogLength == MAX_CONSOLE_LOG_SIZE )
+		{
+			fwrite( consoleLog + consoleLogWriteHead, MAX_CONSOLE_LOG_SIZE - consoleLogWriteHead, 1, fp );
+		}
+
+		fwrite( consoleLog, consoleLogWriteHead, 1, fp );
+
+		fclose( fp );
+	}
+}
+#endif
+
 void Sys_Error( const char *error, ... )
 {
 	va_list argptr;
@@ -263,6 +337,9 @@ void Sys_Error( const char *error, ... )
 	va_end (argptr);
 
 	Sys_Print( string );
+#if !defined(DEDICATED)
+	Sys_ErrorDialog( string );
+#endif
 
 	Sys_Exit( 3 );
 }
