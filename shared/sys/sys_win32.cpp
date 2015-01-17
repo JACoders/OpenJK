@@ -10,6 +10,8 @@
 // Used to determine where to store user-specific files
 static char homePath[ MAX_OSPATH ] = { 0 };
 
+static UINT timerResolution = 0;
+
 /*
 ==============
 Sys_Basename
@@ -90,29 +92,29 @@ int Sys_Milliseconds2( void )
 Sys_RandomBytes
 ================
 */
-qboolean Sys_RandomBytes( byte *string, int len )
+bool Sys_RandomBytes( byte *string, int len )
 {
 	HCRYPTPROV  prov;
 
 	if( !CryptAcquireContext( &prov, NULL, NULL,
 		PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) )  {
 
-		return qfalse;
+		return false;
 	}
 
 	if( !CryptGenRandom( prov, len, (BYTE *)string ) )  {
 		CryptReleaseContext( prov, 0 );
-		return qfalse;
+		return false;
 	}
 	CryptReleaseContext( prov, 0 );
-	return qtrue;
+	return true;
 }
 
 /*
- ==================
- Sys_GetCurrentUser
- ==================
- */
+==================
+Sys_GetCurrentUser
+==================
+*/
 char *Sys_GetCurrentUser( void )
 {
 	static char s_userName[1024];
@@ -515,129 +517,6 @@ bool Sys_UnpackDLL(const char *name)
 	return true;
 }
 
-static char g_consoleField1[256];
-static char g_consoleField2[256];
-
-/*
-===============
-PrintMatches
-
-===============
-*/
-static void PrintMatches( const char *s ) {
-	if ( !Q_stricmpn( s, g_consoleField1, strlen( g_consoleField1 ) ) ) {
-		printf( "    %s\n", s );
-	}
-}
-
-char *Sys_ConsoleInput(void)
-{
-#if defined(DEDICATED)
-	const char ClearLine[] = "\r                                                                               \r";
-
-	static int	len=0;
-	static bool bPendingExtended = false;
-
-	if (!_kbhit()) return NULL;
-
-	if (len == 0) memset(g_consoleField1,0,sizeof(g_consoleField1));
-
-	g_consoleField1[len] = _getch();
-
-	if (bPendingExtended)
-	{
-		switch (g_consoleField1[len])
-		{
-			case 'H':	//up
-				strcpy(g_consoleField1, g_consoleField2);
-				printf(ClearLine);
-				printf("%s",g_consoleField1);
-				len = strlen(g_consoleField1);
-			break;
-
-			case 'K':	//left
-			break;
-
-			case 'M':	//right
-			break;
-
-			case 'P':	//down
-			break;
-		}
-		g_consoleField1[len] = 0;	//erase last key hit
-		bPendingExtended = false;
-	}
-	else
-	{
-		switch ((unsigned char) g_consoleField1[len])
-		{
-		case 0x00:	//fkey is next
-		case 0xe0:	//extended = arrow keys
-			g_consoleField1[len] = 0;	//erase last key hit
-			bPendingExtended = true;
-			break;
-		case 8: // backspace
-			printf("%c %c",g_consoleField1[len],g_consoleField1[len]);
-			g_consoleField1[len] = 0;
-			if (len > 0) len--;
-			g_consoleField1[len] = 0;
-			break;
-		case 9:	//Tab
-			if (len) {
-				g_consoleField1[len] = 0;	//erase last key hit
-				printf( "\n");
-				// run through again, printing matches
-				Cmd_CommandCompletion( PrintMatches );
-				Cvar_CommandCompletion( PrintMatches );
-				printf( "\n%s", g_consoleField1);
-			}
-			break;
-		case 27: // esc
-			// clear the line
-			printf(ClearLine);
-			len = 0;
-			break;
-		case '\r':	//enter
-			g_consoleField1[len] = 0;	//erase last key hit
-			printf("\n");
-			if (len) {
-				len = 0;
-				strcpy(g_consoleField2, g_consoleField1);
-				return g_consoleField1;
-			}
-			break;
-		case 'v' - 'a' + 1:	// ctrl-v is paste
-			g_consoleField1[len] = 0;	//erase last key hit
-			char *cbd;
-			cbd = Sys_GetClipboardData();
-			if (cbd) {
-				strncpy (&g_consoleField1[len], cbd, sizeof(g_consoleField1) );
-				printf("%s",cbd);
-				len += strlen(cbd);
-				Z_Free( cbd );
-				if (len == sizeof(g_consoleField1))
-				{
-					len = 0;
-					return g_consoleField1;
-				}
-			}
-			break;
-		default:
-			printf("%c",g_consoleField1[len]);
-			len++;
-			if (len == sizeof(g_consoleField1))
-			{
-				len = 0;
-				return g_consoleField1;
-			}
-			break;
-		}
-	}
-#endif
-
-	return NULL;
-}
-
 /*
 ================
 Sys_PlatformInit
@@ -657,24 +536,51 @@ void Sys_PlatformInit( void ) {
 	if (osversion.dwPlatformId == VER_PLATFORM_WIN32s)
 		Sys_Error ("This game doesn't run on Win32s");
 
-	// make sure the timer is high precision, otherwise
-	// NT gets 18ms resolution
-	timeBeginPeriod( 1 );
+	TIMECAPS ptc;
+	if ( timeGetDevCaps( &ptc, sizeof( ptc ) ) == MMSYSERR_NOERROR )
+	{
+		timerResolution = ptc.wPeriodMin;
+
+		if ( timerResolution > 1 )
+		{
+			Com_Printf( "Warning: Minimum supported timer resolution is %ums "
+				"on this system, recommended resolution 1ms\n", timerResolution );
+		}
+
+		timeBeginPeriod( timerResolution );
+	}
+	else
+		timerResolution = 0;
 }
 
 /*
 ================
-Sys_PlatformQuit
+Sys_PlatformExit
 
 Platform-specific exit code
 ================
 */
-void Sys_PlatformQuit( void )
+void Sys_PlatformExit( void )
 {
-	timeEndPeriod(1);
+	if ( timerResolution )
+		timeEndPeriod( timerResolution );
 }
 
 void Sys_Sleep( int msec )
 {
-	Sleep(msec);
+	if ( msec == 0 )
+		return;
+
+#ifdef DEDICATED
+	if ( msec < 0 )
+		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), INFINITE );
+	else
+		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), msec );
+#else
+	// Client Sys_Sleep doesn't support waiting on stdin
+	if ( msec < 0 )
+		return;
+
+	Sleep( msec );
+#endif
 }

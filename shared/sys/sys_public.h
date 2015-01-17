@@ -71,10 +71,7 @@ void	Sys_Sleep( int msec );
 
 extern "C" void	Sys_SnapVector( float *v );
 
-qboolean Sys_RandomBytes( byte *string, int len );
-
-// the system console is shown when a dedicated server is running
-void	Sys_DisplaySystemConsole( qboolean show );
+bool Sys_RandomBytes( byte *string, int len );
 
 void	Sys_SetErrorText( const char *text );
 
@@ -105,8 +102,9 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
+int Sys_FileTime( char *path );
+
 qboolean Sys_LowPhysicalMemory();
-unsigned int Sys_ProcessorCount();
 
 void Sys_SetProcessorAffinity( void );
 

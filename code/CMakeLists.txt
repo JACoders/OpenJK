@@ -288,9 +288,12 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 	set(SPEngineSysFiles
 		"${SharedDir}/sys/sys_main.cpp"
+		"${SharedDir}/sys/sys_event.cpp"
 		"${SharedDir}/sys/sys_local.h"
 		"${SharedDir}/sys/sys_public.h"
 		"${SharedDir}/sys/sys_loadlib.h"
+		"${SharedDir}/sys/con_local.h"
+		"${SharedDir}/sys/con_log.cpp"
 		"${SharedDir}/sdl/sdl_qgl.h"
 		"${SharedDir}/sdl/sdl_sound.cpp"
 		"${SharedDir}/sdl/sdl_input.cpp"
@@ -301,11 +304,13 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineSysFiles
 			${SPEngineSysFiles}
 			"${SharedDir}/sys/sys_win32.cpp"
+			"${SharedDir}/sys/con_passive.cpp"
 			)
 	else()
 		set(SPEngineSysFiles
 			${SPEngineSysFiles}
 			"${SharedDir}/sys/sys_unix.cpp"
+			"${SharedDir}/sys/con_tty.cpp"
 			)
 	endif()
 

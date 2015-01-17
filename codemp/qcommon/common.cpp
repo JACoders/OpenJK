@@ -12,7 +12,6 @@ fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_dedicated;
@@ -40,6 +39,9 @@ cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_cameraMode;
 cvar_t  *com_homepath;
+#ifndef _WIN32
+cvar_t	*com_ansiColor = NULL;
+#endif
 
 cvar_t *com_affinity;
 
@@ -1221,7 +1223,6 @@ void Com_Init( char *commandLine ) {
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
 		com_dropsim = Cvar_Get ("com_dropsim", "0", CVAR_CHEAT);
-		com_viewlog = Cvar_Get( "viewlog", "0", 0 );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		com_timedemo = Cvar_Get ("timedemo", "0", 0);
 		com_cameraMode = Cvar_Get ("com_cameraMode", "0", CVAR_CHEAT);
@@ -1233,6 +1234,9 @@ void Com_Init( char *commandLine ) {
 		com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM);
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+#ifndef _WIN32
+		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
+#endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
@@ -1241,12 +1245,6 @@ void Com_Init( char *commandLine ) {
 		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
-
-		if ( com_dedicated->integer ) {
-			if ( !com_viewlog->integer ) {
-				Cvar_Set( "viewlog", "1" );
-			}
-		}
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1267,7 +1265,6 @@ void Com_Init( char *commandLine ) {
 		com_dedicated->modified = qfalse;
 		if ( !com_dedicated->integer ) {
 			CL_Init();
-			//Sys_ShowConsole( com_viewlog->integer, qfalse );
 		}
 
 		// set com_frameTime so that if a map is started on the
@@ -1468,14 +1465,6 @@ void Com_Frame( void ) {
 		// write config file if anything changed
 		Com_WriteConfiguration();
 
-		// if "viewlog" has been modified, show or hide the log console
-		if ( com_viewlog->modified ) {
-			if ( !com_dedicated->value ) {
-				//Sys_ShowConsole( com_viewlog->integer, qfalse );
-			}
-			com_viewlog->modified = qfalse;
-		}
-
 		//
 		// main event loop
 		//
@@ -1523,11 +1512,9 @@ void Com_Frame( void ) {
 			com_dedicated->modified = qfalse;
 			if ( !com_dedicated->integer ) {
 				CL_Init();
-				//Sys_ShowConsole( com_viewlog->integer, qfalse );
 				CL_StartHunkUsers();	//fire up the UI!
 			} else {
 				CL_Shutdown();
-				//Sys_ShowConsole( 1, qtrue );
 			}
 		}
 
