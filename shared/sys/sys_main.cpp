@@ -20,6 +20,58 @@ cvar_t *com_unfocused;
 /*
 ========================================================================
 
+CONSOLE LOG
+
+========================================================================
+*/
+#define MAX_CONSOLE_LOG_SIZE (65535)
+
+struct ConsoleLog
+{
+	// Cicular buffer of characters. Be careful, there is no null terminator.
+	// You're expected to use the console log length to know where the end
+	// of the string is.
+	char text[MAX_CONSOLE_LOG_SIZE];
+
+	// Where to start writing the next string
+	int writeHead;
+
+	// Length of buffer
+	int length;
+};
+
+static ConsoleLog consoleLog;
+
+void ConsoleLogAppend( ConsoleLog *consoleLog, const char *string )
+{
+	for ( int i = 0; string[i]; i++ )
+	{
+		consoleLog->text[consoleLog->writeHead] = string[i];
+		consoleLog->writeHead = (consoleLog->writeHead + 1) % MAX_CONSOLE_LOG_SIZE;
+
+		consoleLog->length++;
+		if ( consoleLog->length > MAX_CONSOLE_LOG_SIZE )
+		{
+			consoleLog->length = MAX_CONSOLE_LOG_SIZE;
+		}
+	}
+}
+
+void ConsoleLogWriteOut( ConsoleLog *consoleLog, FILE *fp )
+{
+	assert( fp );
+
+	if ( consoleLog->writeHead == MAX_CONSOLE_LOG_SIZE )
+	{
+		fwrite( consoleLog->text + consoleLog->writeHead, MAX_CONSOLE_LOG_SIZE - consoleLog->writeHead, 1, fp );
+	}
+
+	fwrite( consoleLog->text, consoleLog->writeHead, 1, fp );
+}
+
+/*
+========================================================================
+
 EVENT LOOP
 
 ========================================================================
@@ -202,18 +254,6 @@ char *Sys_DefaultAppPath(void)
 	return Sys_BinaryPath();
 }
 
-// Cicular buffer of characters. Be careful, there is no null terminator.
-// You're expected to use the console log length to know where the end
-// of the string is.
-#define MAX_CONSOLE_LOG_SIZE (65535)
-static char consoleLog[MAX_CONSOLE_LOG_SIZE];
-
-// Where to start writing the next string
-static int consoleLogWriteHead;
-
-// Length of buffer
-static int consoleLogLength;
-
 // We now expect newlines instead of always appending
 // otherwise sectioned prints get messed up.
 #define MAXPRINTMSG		4096
@@ -224,19 +264,7 @@ void Conbuf_AppendText( const char *pMsg )
 	Q_StripColor(msg);
 	printf("%s", msg);
 
-	// Add to log
-	for ( int i = 0; msg[i]; i++ )
-	{
-		consoleLog[consoleLogWriteHead] = msg[i];
-
-		consoleLogWriteHead = (consoleLogWriteHead + 1) % MAX_CONSOLE_LOG_SIZE;
-
-		consoleLogLength++;
-		if ( consoleLogLength > MAX_CONSOLE_LOG_SIZE )
-		{
-			consoleLogLength = MAX_CONSOLE_LOG_SIZE;
-		}
-	}
+	ConsoleLogAppend( &consoleLog, msg );
 }
 
 void Sys_Print( const char *msg ) {
@@ -314,14 +342,7 @@ static void Sys_ErrorDialog( const char *error )
 	if ( button == 1 )
 	{
 		FILE *fp = fopen( crashLogPath, "w" );
-
-		if ( consoleLogLength == MAX_CONSOLE_LOG_SIZE )
-		{
-			fwrite( consoleLog + consoleLogWriteHead, MAX_CONSOLE_LOG_SIZE - consoleLogWriteHead, 1, fp );
-		}
-
-		fwrite( consoleLog, consoleLogWriteHead, 1, fp );
-
+		ConsoleLogWriteOut( &consoleLog, fp );
 		fclose( fp );
 	}
 }
