@@ -13,9 +13,11 @@ EVENT LOOP
 #define	MAX_QUED_EVENTS		256
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
-sysEvent_t	eventQue[MAX_QUED_EVENTS];
-int			eventHead, eventTail;
-byte		sys_packetReceived[MAX_MSGLEN];
+static sysEvent_t	eventQue[MAX_QUED_EVENTS] = {};
+static int			eventHead = 0, eventTail = 0;
+#if !defined(_JK2EXE)
+static byte		sys_packetReceived[MAX_MSGLEN] = {};
+#endif
 
 sysEvent_t Sys_GetEvent( void ) {
 	sysEvent_t	ev;
@@ -88,7 +90,7 @@ void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptr
 	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-		Com_Printf("Sys_QueEvent: overflow\n");
+		Com_Printf("Sys_QueEvent: overflow (event type %i)\n", type);
 		// we are discarding an event, but don't leak memory
 		if ( ev->evPtr ) {
 			Z_Free( ev->evPtr );
