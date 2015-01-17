@@ -23,7 +23,6 @@ This file is part of Jedi Academy.
 #include "../rd-common/tr_public.h"
 #include "../rd-common/mdx_format.h"
 #include "qgl.h"
-#include "glext.h"
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
