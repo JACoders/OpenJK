@@ -9,6 +9,7 @@
 #include "sys_local.h"
 #include "sys_loadlib.h"
 #include "sys_public.h"
+#include <inttypes.h>
 
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
@@ -487,12 +488,12 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	*vmMain = (VMMainProc *)Sys_LoadFunction( libHandle, "vmMain" );
 
 	if ( !*vmMain || !dllEntry ) {
-		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError() );
+		Com_DPrintf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n...%s!\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
 
-	Com_Printf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *vmMain );
+	Com_DPrintf ( "Sys_LoadGameDll(%s) found vmMain function at 0x%" PRIxPTR "\n", name, *vmMain );
 	dllEntry( systemcalls );
 
 	return libHandle;
@@ -541,7 +542,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 
 	*GetGameAPI = (GetGameAPIProc *)Sys_LoadFunction( libHandle, "GetGameAPI" );
 	if ( !*GetGameAPI ) {
-		Com_Printf ( "%s(%s) failed to find GetGameAPI function:\n\"%s\"!\n", __FUNCTION__, name, Sys_LibraryError() );
+		Com_DPrintf ( "%s(%s) failed to find GetGameAPI function:\n...%s!\n", __FUNCTION__, name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
@@ -596,7 +597,7 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 
 	*moduleAPI = (GetModuleAPIProc *)Sys_LoadFunction( libHandle, "GetModuleAPI" );
 	if ( !*moduleAPI ) {
-		Com_Printf ( "Sys_LoadGameDll(%s) failed to find GetModuleAPI function:\n\"%s\" !\n", name, Sys_LibraryError() );
+		Com_DPrintf ( "Sys_LoadGameDll(%s) failed to find GetModuleAPI function:\n...%s!\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
