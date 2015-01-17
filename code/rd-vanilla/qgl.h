@@ -6,7 +6,9 @@
 #	include <windows.h>
 #	include <gl/gl.h>
 #elif defined(MACOS_X)
-#	include "../macosx/macosx_glimp.h"
+// Prevent OS X headers from including its own glext header
+#	define GL_GLEXT_LEGACY
+#	include <OpenGL/gl.h>
 #elif defined( __linux__ )
 #	include <GL/gl.h>
 #	include <GL/glx.h>
