@@ -311,39 +311,31 @@ void Sys_Exit( int ex ) {
 static void Sys_ErrorDialog( const char *error )
 {
 	time_t rawtime;
-	char timeStr[32] = {0}; // should really only reach ~19 chars
+	char timeStr[32] = {}; // should really only reach ~19 chars
 	char crashLogPath[64];
 
 	time( &rawtime );
 	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 	Com_sprintf( crashLogPath, sizeof( crashLogPath ), "crashlog-%s.txt", timeStr );
 
-	const char *errorMessage = va( "%s\nWrite crash log to %s?\n", error, crashLogPath );
-
-	const SDL_MessageBoxButtonData buttons[] = {
-		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
-		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes" },
-	};
-
-	SDL_MessageBoxData messageBoxData = {};
-	messageBoxData.buttons = buttons;
-	messageBoxData.numbuttons = ARRAY_LEN( buttons );
-	messageBoxData.flags = SDL_MESSAGEBOX_ERROR;
-	messageBoxData.message = errorMessage;
-	messageBoxData.title = "Error";
-
-	int button;
-	if ( SDL_ShowMessageBox( &messageBoxData, &button ) < 0 )
+	const char *errorMessage = va( "%s\nThe crash log was written to %s", error, crashLogPath );
+	if ( SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", errorMessage, NULL ) < 0 )
 	{
-		// Bad things happened
-		return;
+		fprintf( stderr, "%s", errorMessage );
 	}
 
-	if ( button == 1 )
+	FILE *fp = fopen( crashLogPath, "w" );
+	if ( fp )
 	{
-		FILE *fp = fopen( crashLogPath, "w" );
 		ConsoleLogWriteOut( &consoleLog, fp );
 		fclose( fp );
+	}
+	else
+	{
+		// Getting pretty desperate now
+		fprintf( stderr, "Failed to open crash log. Writing out to console...\n" );
+		ConsoleLogWriteOut( &consoleLog, stderr );
+		fflush( stderr );
 	}
 }
 #endif
@@ -400,7 +392,6 @@ First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
-
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle = NULL;
