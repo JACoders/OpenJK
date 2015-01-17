@@ -344,7 +344,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 	return dllhandle;
 }
 
-#ifdef MACOS_X
+#if defined(MACOS_X) && !defined(_JK2EXE)
 void *Sys_LoadMachOBundle( const char *name )
 {
 	if ( !FS_LoadMachOBundle(name) )
@@ -449,7 +449,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 		return NULL;
 	}
 
-#ifdef MACOS_X
+#if defined(MACOS_X) && !defined(_JK2EXE)
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
     libHandle = Sys_LoadMachOBundle( name );
@@ -507,7 +507,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
-#ifdef MACOS_X
+#if defined(MACOS_X) && !defined(_JK2EXE)
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
     libHandle = Sys_LoadMachOBundle( name );
@@ -541,7 +541,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 
 	*GetGameAPI = (GetGameAPIProc *)Sys_LoadFunction( libHandle, "GetGameAPI" );
 	if ( !*GetGameAPI ) {
-		Com_Printf ( __FUNCTION__ "(%s) failed to find GetGameAPI function:\n\"%s\"!\n", name, Sys_LibraryError() );
+		Com_Printf ( "%s(%s) failed to find GetGameAPI function:\n\"%s\"!\n", __FUNCTION__, name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
@@ -562,7 +562,7 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 		return NULL;
 	}
 
-#ifdef MACOS_X
+#if defined(MACOS_X) && !defined(_JK2EXE)
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
     libHandle = Sys_LoadMachOBundle( name );
