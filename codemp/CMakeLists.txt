@@ -487,6 +487,7 @@ if(BuildMPEngine)
 		"${SharedDir}/sys/sys_loadlib.h"
 		"${SharedDir}/sys/sys_local.h"
 		"${SharedDir}/sys/sys_main.cpp"
+		"${SharedDir}/sys/sys_public.h"
 		)
 
 	if(WIN32)
