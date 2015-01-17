@@ -194,6 +194,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 		//gi.Error("Nameless ref_tag found at (%i %i %i)", (int)origin[0], (int)origin[1], (int)origin[2]);
 		gi.Printf(S_COLOR_RED"ERROR: Nameless ref_tag found at (%i %i %i)\n", (int)origin[0], (int)origin[1], (int)origin[2]);
 		delayedShutDown = level.time + 100;
+		delete tag;
 		return NULL;
 	}
 
@@ -206,6 +207,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 	{
 		delayedShutDown = level.time + 100;
 		gi.Printf(S_COLOR_RED"ERROR: Duplicate tag name \"%s\"\n", name );
+		delete tag;
 		return NULL;
 	}
 
