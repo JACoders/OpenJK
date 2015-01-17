@@ -1770,7 +1770,6 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	ri.Cmd_RemoveCommand ("imagecacheinfo");
 	ri.Cmd_RemoveCommand ("r_we");
 	ri.Cmd_RemoveCommand ("r_reloadfonts");
-	ri.Cmd_RemoveCommand ("minimize");
 
 	R_ShutdownWorldEffects();
 	R_ShutdownFonts();
