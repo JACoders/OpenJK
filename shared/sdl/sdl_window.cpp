@@ -687,6 +687,7 @@ void WIN_Shutdown( void )
 	IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
+	screen = NULL;
 }
 
 void GLimp_EnableLogging( qboolean enable )
