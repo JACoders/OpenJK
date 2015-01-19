@@ -134,22 +134,22 @@ void Sys_Init( void ) {
 	com_minimized = Cvar_Get( "com_minimized", "0", CVAR_ROM );
 }
 
-static void __attribute__((noreturn)) Sys_Exit( int ex ) {
-	IN_Shutdown( );
+static void NORETURN Sys_Exit( int ex ) {
+	IN_Shutdown();
 #ifndef DEDICATED
-	SDL_Quit( );
+	SDL_Quit();
 #endif
 
-	NET_Shutdown( );
+	NET_Shutdown();
 
-	Sys_PlatformExit( );
+	Sys_PlatformExit();
 
-	Com_ShutdownHunkMemory( );
-	Com_ShutdownZoneMemory( );
+	Com_ShutdownHunkMemory();
+	Com_ShutdownZoneMemory();
 
 	CON_Shutdown();
 
-    exit(ex);
+    exit( ex );
 }
 
 #if !defined(DEDICATED)
@@ -185,7 +185,7 @@ static void Sys_ErrorDialog( const char *error )
 }
 #endif
 
-void Sys_Error( const char *error, ... )
+void NORETURN QDECL Sys_Error( const char *error, ... )
 {
 	va_list argptr;
 	char    string[1024];
@@ -202,7 +202,7 @@ void Sys_Error( const char *error, ... )
 	Sys_Exit( 3 );
 }
 
-void Sys_Quit (void) {
+void NORETURN Sys_Quit (void) {
     Sys_Exit(0);
 }
 
