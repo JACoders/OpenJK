@@ -5518,28 +5518,28 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 #endif
 
-	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && take > 1) { //JAPRO - Serverside - Damage numbers  - Start
+	if (g_damageNumbers.integer && attacker->client && targ && targ->client && targ != attacker && targ->health > 0 && targ->client->ps.stats[STAT_HEALTH] > 0 && (take + asave) > 1) { //JAPRO - Serverside - Damage numbers  - Start
 		int i;
 
 		if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 7) {
 			if (attacker->client->lastDamageTime < level.time - 3000) //This attack of theirs is within 500ms of a previous attack.
-				attacker->client->totalDamage = take; //Reset the damage counter
+				attacker->client->totalDamage = take + asave; //Reset the damage counter
 			else //Set their new dmg print as cumulitave damage.
-				attacker->client->totalDamage += take;
+				attacker->client->totalDamage += take + asave;
 			attacker->client->lastDamageTime = level.time;
 		}
 
 		if (!attacker->client->pers.noDamageNumbers) {
 			if (g_damageNumbers.integer == 1 || g_damageNumbers.integer == 5 || g_damageNumbers.integer == 6) 
-				trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take, targ->client->pers.netname));
+				trap->SendServerCommand(attacker-g_entities, va("print \"^3%i ^7damage given to (%s^7)\n\"", take + asave, targ->client->pers.netname));
 			if (g_damageNumbers.integer == 2 || g_damageNumbers.integer == 5) {
 				trap->SendServerCommand( attacker-g_entities, va("cp \"%i\n\n\n\n\n\n\n\n\n\n\n\n\"", attacker->client->totalDamage));
 			}
 			if (g_damageNumbers.integer == 4)
-				trap->SendServerCommand( attacker-g_entities, va( "chat \"^3%i ^7damage given to (%s^7)\"", take, targ->client->pers.netname ) );
+				trap->SendServerCommand( attacker-g_entities, va( "chat \"^3%i ^7damage given to (%s^7)\"", take + asave, targ->client->pers.netname ) );
 			if (g_damageNumbers.integer == 3 || g_damageNumbers.integer == 6) {
 				vec3_t damageorigin = {targ->r.currentOrigin[0] + crandom() * 8, targ->r.currentOrigin[1] + crandom() * 8, targ->r.currentOrigin[2] + 16};
-				ScorePlum(attacker, damageorigin, take);
+				ScorePlum(attacker, damageorigin, take + asave);
 			}
 		}
 
@@ -5559,10 +5559,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
 		if (attacker->client && targ && targ->client)
 			//attacker->client->pers.stats.damageGiven += ((take > targ->health) ? targ->health : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
-			attacker->client->pers.stats.damageGiven += ((take > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
+			attacker->client->pers.stats.damageGiven += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
 		if (targ && targ->client)
 			//targ->client->pers.stats.damageTaken += ((take > targ->health) ? targ->health : take);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
-			targ->client->pers.stats.damageTaken += ((take > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
+			targ->client->pers.stats.damageTaken += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
 	}
 
 
