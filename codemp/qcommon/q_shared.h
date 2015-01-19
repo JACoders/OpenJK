@@ -105,6 +105,12 @@
 	#define Q_EXPORT
 #endif
 
+#if defined(__GNUC__)
+#define NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
+#endif
+
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -1137,7 +1143,7 @@ qboolean Info_NextPair( const char **s, char *key, char *value );
 	void (*Com_Error)( int level, const char *error, ... );
 	void (*Com_Printf)( const char *msg, ... );
 #else
-	void QDECL Com_Error( int level, const char *error, ... );
+	void NORETURN QDECL Com_Error( int level, const char *error, ... );
 	void QDECL Com_Printf( const char *msg, ... );
 #endif
 

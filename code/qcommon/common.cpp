@@ -241,7 +241,7 @@ void SG_Shutdown();
 #ifdef JK2_MODE
 extern void SCR_UnprecacheScreenshot();
 #endif
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -304,7 +304,7 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f( void ) {
+void NORETURN Com_Quit_f( void ) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		SV_Shutdown ("Server quit\n");
@@ -932,7 +932,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -976,7 +976,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
