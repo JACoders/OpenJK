@@ -1755,7 +1755,7 @@ int PM_SaberBackflipAttackMove( void )
 		return LS_A_T2B;//LS_NONE;
 	}
 
-	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) //not in wsw
+	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) //not in wsw, do this here since we cant disable everything in wsw cuz wsw needs carts i guess?
 		return LS_A_T2B;
 
 	//just do it
@@ -2274,9 +2274,6 @@ qboolean PM_InSecondaryStyle( void )
 			return qtrue;
 		}
 	}
-	if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 3 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 4 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 7 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 8)
-		return qtrue;
-
 	return qfalse;
 }
 
@@ -2344,10 +2341,14 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 		else if (saber2 && (saber2->saberFlags&SFL_NO_CARTWHEELS))//no reason not to use else if, no point in setting it twice
 			allowCartwheels = qfalse;
-		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7 || PM_GetMovePhysics() == 8)
+		else if (PM_GetMovePhysics() == 3 || PM_GetMovePhysics() == 4 || PM_GetMovePhysics() == 7 || PM_GetMovePhysics() == 8) {
 			allowCartwheels = qfalse;
-		else if (pm->ps->stats[STAT_ONLYBHOP])
+			noSpecials = qtrue;
+		}
+		else if (pm->ps->stats[STAT_ONLYBHOP]) {
 			allowCartwheels = qfalse;
+			noSpecials = qtrue;
+		}
 	}
 
 	if ( pm->cmd.rightmove > 0 )
