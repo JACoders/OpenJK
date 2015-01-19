@@ -1964,6 +1964,25 @@ saberMoveName_t PM_SaberJumpAttackMove2( void )
 //	return LS_A_T2B;
 }
 
+/* //JK2 version
+saberMoveName_t PM_SaberJumpAttackMove( void )
+{
+	vec3_t fwdAngles, jumpFwd;
+
+	VectorCopy( pm->ps->viewangles, fwdAngles );
+	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
+	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
+	VectorScale( jumpFwd, 300, pm->ps->velocity );
+	pm->ps->velocity[2] = 280;//180;
+	pm->ps->fd.forceJumpZStart = pm->ps->origin[2];//so we don't take damage if we land at same height
+
+	PM_AddEvent( EV_JUMP );
+	pm->ps->fd.forceJumpSound = 1;
+	pm->cmd.upmove = 0;
+
+	return LS_A_JUMP_T__B_;
+}*/
+
 saberMoveName_t PM_SaberJumpAttackMove( void )
 {
 	vec3_t fwdAngles, jumpFwd;
