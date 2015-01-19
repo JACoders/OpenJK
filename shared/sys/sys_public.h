@@ -39,6 +39,9 @@ typedef struct sysEvent_s {
 	void			*evPtr;			// this must be manually freed if not NULL
 } sysEvent_t;
 
+extern cvar_t *com_minimized;
+extern cvar_t *com_unfocused;
+
 sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
