@@ -30,8 +30,6 @@ This file is part of Jedi Knight 2.
 
 #define MAX_LINE_BYTES 2048
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-
 qhandle_t ghFontHandle = 0;
 float gfFontScale = 1.0f;
 vec4_t gv4Color = {0};
