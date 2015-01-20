@@ -669,11 +669,6 @@ success:
 	return window;
 }
 
-class T
-{
-	typedef T* Ptr;
-};
-
 /*
 ===============
 GLimp_Shutdown
