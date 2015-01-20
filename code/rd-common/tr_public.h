@@ -23,11 +23,6 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#ifdef _WIN32
-// down
-#include "../win32/win_local.h"
-#endif
-
 #define	REF_API_VERSION		14
 
 typedef struct {
