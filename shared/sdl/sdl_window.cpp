@@ -64,6 +64,8 @@ const vidmode_t r_vidModes[] = {
 };
 static const int	s_numVidModes = ARRAY_LEN( r_vidModes );
 
+#define R_MODE_FALLBACK (4) // 640x480
+
 qboolean R_GetModeInfo( int *width, int *height, int mode ) {
 	const vidmode_t	*vm;
 
@@ -525,8 +527,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
-			Com_Printf( "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n",
-					SDL_GetError());
+			Com_Printf( "SDL_Init( SDL_INIT_VIDEO ) FAILED (%s)\n", SDL_GetError());
 			return qfalse;
 		}
 
@@ -602,37 +603,23 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	r_ext_multisample	= Cvar_Get( "r_ext_multisample",	"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Create the window and set up the context
-	if(GLimp_StartDriverAndSetMode(glConfig, api, r_mode->integer,
-									(qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer))
-		goto success;
-
-	// TODO: Reimplement. We need a fallback plan if creating the window fails
-
-	// Try again, this time in a platform specific "safe mode"
-	/* Sys_GLimpSafeInit( );
-
-	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, qfalse))
-		goto success; */
-
-	/*	// Finally, try the default screen resolution
-	if( r_mode->integer != R_MODE_FALLBACK )
+	if(!GLimp_StartDriverAndSetMode( glConfig, api, r_mode->integer,
+										(qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer ))
 	{
-		Com_Printf( "Setting r_mode %d failed, falling back on r_mode %d\n",
-				r_mode->integer, R_MODE_FALLBACK );
+		if( r_mode->integer != R_MODE_FALLBACK )
+		{
+			Com_Printf( "Setting r_mode %d failed, falling back on r_mode %d\n", r_mode->integer, R_MODE_FALLBACK );
 
-		if(GLimp_StartDriverAndSetMode(R_MODE_FALLBACK, qfalse, qfalse))
-			goto success;
-			}*/
+			if (!GLimp_StartDriverAndSetMode( glConfig, api, R_MODE_FALLBACK, qfalse, qfalse ))
+			{
+				// Nothing worked, give up
+				Com_Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
+			}
+		}
+	}
 
-	// Nothing worked, give up
-	Com_Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
-
-success:
-	// This values force the UI to disable driver selection
-	//	glConfig.driverType = GLDRV_ICD;
-	//	glConfig.hardwareType = GLHW_GENERIC;
-	glConfig->deviceSupportsGamma = (qboolean)(!r_ignorehwgamma->integer &&
-		SDL_SetWindowBrightness( screen, 1.0f ) >= 0);
+	glConfig->deviceSupportsGamma =
+		(qboolean)(!r_ignorehwgamma->integer && SDL_SetWindowBrightness( screen, 1.0f ) >= 0);
 
 	Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
