@@ -25,8 +25,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-
 #define fCARD_FADESECONDS		1.0f	// fade up time, also fade down time
 #define fCARD_SUSTAINSECONDS	2.0f	// hold time before fade down
 #define fLINE_SECONDTOSCROLLUP	15.0f	// how long one line takes to scroll up the screen
