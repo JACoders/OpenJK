@@ -18,7 +18,6 @@ static SDL_Window *screen = NULL;
 static SDL_GLContext opengl_context;
 static float displayAspect;
 
-cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_sdlDriver;
 
 // Window cvars
@@ -434,10 +433,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 			}
 
 			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-			// If not allowing software GL, demand accelerated
-			if( !r_allowSoftwareGL->integer )
-				SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
 
 			if( ( screen = SDL_CreateWindow( windowTitle, x, y,
 					glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
@@ -584,7 +580,6 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	Cmd_AddCommand("modelist", R_ModeList_f);
 	Cmd_AddCommand("minimize", GLimp_Minimize);
 
-	r_allowSoftwareGL	= Cvar_Get( "r_allowSoftwareGL",	"0",		CVAR_LATCH );
 	r_sdlDriver			= Cvar_Get( "r_sdlDriver",			"",			CVAR_ROM );
 
 	// Window cvars
