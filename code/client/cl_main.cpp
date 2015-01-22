@@ -1204,6 +1204,8 @@ void CL_InitRef( void ) {
 
 //===========================================================================================
 
+void CL_CompleteCinematic( char *args, int argNum );
+
 /*
 ====================
 CL_Init
@@ -1306,6 +1308,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f);
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
 	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f);
+	Cmd_SetCommandCompletionFunc( "cinematic", CL_CompleteCinematic );
 	Cmd_AddCommand ("ingamecinematic", CL_PlayInGameCinematic_f);
 	Cmd_AddCommand ("uimenu", CL_GenericMenu_f);
 	Cmd_AddCommand ("datapad", CL_DataPad_f);

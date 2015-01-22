@@ -1952,6 +1952,15 @@ qboolean CL_CheckPendingCinematic(void)
 	return qfalse;
 }
 
+/*
+==================
+CL_CompleteCinematic
+==================
+*/
+void CL_CompleteCinematic( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "video", "roq", qtrue, qfalse );
+}
 
 void CL_PlayCinematic_f(void) 
 {
