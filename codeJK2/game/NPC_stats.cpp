@@ -2251,7 +2251,6 @@ void NPC_LoadParms( void )
 	char		npcExtensionListBuf[2048];			//	The list of file names read in
 
 	//First, load in the npcs.cfg
-	gi.Printf( "Parsing %s\n", filename );
 	len = gi.FS_ReadFile( filename, (void **) &buffer );
 	if ( len == -1 ) {
 		gi.Printf( "file not found\n" );
@@ -2276,8 +2275,6 @@ void NPC_LoadParms( void )
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 )
 	{
 		npcExtFNLen = strlen( holdChar );
-
-		gi.Printf( "Parsing %s\n", holdChar );
 
 		len = gi.FS_ReadFile( va( "ext_data/%s", holdChar), (void **) &buffer );
 
