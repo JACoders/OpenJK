@@ -1,5 +1,4 @@
 #include "sys_local.h"
-#include <conio.h>
 #include <direct.h>
 #include <io.h>
 #include <ShlObj.h>
@@ -525,17 +524,6 @@ Platform-specific initialization
 ================
 */
 void Sys_PlatformInit( void ) {
-	OSVERSIONINFO osversion = {};
-	osversion.dwOSVersionInfoSize = sizeof( osversion );
-
-	if (!GetVersionEx (&osversion))
-		Sys_Error ("Couldn't get OS info");
-
-	if (osversion.dwMajorVersion < 4)
-		Sys_Error ("This game requires Windows version 4 or greater");
-	if (osversion.dwPlatformId == VER_PLATFORM_WIN32s)
-		Sys_Error ("This game doesn't run on Win32s");
-
 	TIMECAPS ptc;
 	if ( timeGetDevCaps( &ptc, sizeof( ptc ) ) == MMSYSERR_NOERROR )
 	{
