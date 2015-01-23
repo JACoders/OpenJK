@@ -56,7 +56,6 @@ char *CON_Input( void )
 CON_Print
 ==================
 */
-#define MAXPRINTMSG		4096
 void CON_Print( const char *msg )
 {
 	char cmsg[MAXPRINTMSG] = { 0 };
