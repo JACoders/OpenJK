@@ -135,37 +135,37 @@ bool Sys_GetDefaultHomePath( char *buffer, size_t size )
 {
 	TCHAR szPath[MAX_PATH];
 
-	if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, szPath ) ) )
-	{
-		Com_Printf("Unable to detect CSIDL_PERSONAL\n");
-		return false;
-	}
+	
 
 	Q_strncpyz( buffer, szPath, size );
 
 	return true;
 }
 
-char	*Sys_DefaultHomePath(void) {
-#ifdef _PORTABLE_VERSION
-	Com_Printf("Portable install requested, skipping homepath support\n");
+/*
+* Builds the path for the user's game directory
+*/
+char *Sys_DefaultHomePath( void )
+{
+#if defined(_PORTABLE_VERSION)
+	Com_Printf( "Portable install requested, skipping homepath support\n" );
 	return NULL;
 #else
-	if(!homePath[0] && com_homepath)
+	if ( !homePath[0] )
 	{
-		char path[MAX_PATH];
+		TCHAR homeDirectory[MAX_PATH];
 
-		if ( !Sys_GetDefaultHomePath( path, sizeof( path ) ) )
+		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, homeDirectory ) ) )
 		{
-			return NULL;
+			Com_Printf( "Unable to determine your home directory.\n" );
+			return false;
 		}
 
-		Com_sprintf(homePath, sizeof(homePath), "%s%cMy Games%c", path, PATH_SEP, PATH_SEP);
-
-		if(com_homepath->string[0])
-			Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+		Com_sprintf( homePath, sizeof( homePath ), "%s%cMy Games%c", homeDirectory, PATH_SEP, PATH_SEP );
+		if ( com_homepath && com_homepath->string[0] )
+			Q_strcat( homePath, sizeof( homePath ), com_homepath->string );
 		else
-			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_WIN);
+			Q_strcat( homePath, sizeof( homePath ), HOMEPATH_NAME_WIN );
 	}
 
 	return homePath;
