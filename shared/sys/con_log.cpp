@@ -47,7 +47,8 @@ void ConsoleLogWriteOut( FILE *fp )
 {
 	assert( fp );
 
-	if ( consoleLog.writeHead == MAX_CONSOLE_LOG_SIZE )
+	if ( consoleLog.length == MAX_CONSOLE_LOG_SIZE &&
+			consoleLog.writeHead != MAX_CONSOLE_LOG_SIZE )
 	{
 		fwrite( consoleLog.text + consoleLog.writeHead, MAX_CONSOLE_LOG_SIZE - consoleLog.writeHead, 1, fp );
 	}
