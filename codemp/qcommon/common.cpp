@@ -5,8 +5,6 @@
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
 
-#define	MAXPRINTMSG	4096
-
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here

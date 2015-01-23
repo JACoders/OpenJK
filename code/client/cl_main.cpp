@@ -980,7 +980,6 @@ CL_RefPrintf
 DLL glue
 ================
 */
-#define	MAXPRINTMSG	4096
 void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];

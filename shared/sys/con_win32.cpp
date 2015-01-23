@@ -488,7 +488,6 @@ CON_WindowsColorPrint
 Set text colors based on Q3 color codes
 =================
 */
-#define MAXPRINTMSG		4096
 void CON_WindowsColorPrint( const char *msg )
 {
 	static char buffer[ MAXPRINTMSG ];

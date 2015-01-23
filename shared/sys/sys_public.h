@@ -2,6 +2,8 @@
 
 #include "qcommon/q_shared.h"
 
+#define MAXPRINTMSG 4096
+
 /*
 ==============================================================
 
