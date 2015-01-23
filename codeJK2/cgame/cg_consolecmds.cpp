@@ -278,6 +278,7 @@ static const char *gcmds[] = {
 	"saberAttackCycle",
 	"saberColor",
 	"setForceAll",
+	"setSaberAll",
 	"setobjective",
 	"setviewpos",
 	"taunt",

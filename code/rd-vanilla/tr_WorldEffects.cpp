@@ -640,7 +640,7 @@ public:
 	
 	fileHandle_t WriteCachedWeatherFile( void )
 	{
-		fileHandle_t f = ri.FS_FOpenFileWrite( GenCachedWeatherFilename() );
+		fileHandle_t f = ri.FS_FOpenFileWrite( GenCachedWeatherFilename(), qtrue );
 		if (f)
 		{
 			WeatherFileHeader_t WeatherFileHeader;
