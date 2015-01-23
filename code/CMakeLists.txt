@@ -118,8 +118,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/common.cpp"
 		"${SPDir}/qcommon/cvar.cpp"
 
-		"${SPDir}/qcommon/files_common.cpp"
-		"${SPDir}/qcommon/files_pc.cpp"
+		"${SPDir}/qcommon/files.cpp"
 
 		"${SPDir}/qcommon/md4.cpp"
 		"${SPDir}/qcommon/msg.cpp"
@@ -141,7 +140,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/qfiles.h"
-		"${SPDir}/qcommon/files.h"
 		"${SPDir}/qcommon/qcommon.h"
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
