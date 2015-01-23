@@ -473,36 +473,6 @@ char *Sys_DefaultHomePath(void)
 }
 #endif
 
-char *Sys_ConsoleInput(void)
-{
-    static char text[256];
-    int     len;
-	fd_set	fdset;
-    struct timeval timeout;
-
-	if (!stdin_active)
-		return NULL;
-
-	FD_ZERO(&fdset);
-	FD_SET(0, &fdset); // stdin
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	if (select (1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
-		return NULL;
-
-	len = read (0, text, sizeof(text));
-	if (len == 0) { // eof!
-		stdin_active = qfalse;
-		return NULL;
-	}
-
-	if (len < 1)
-		return NULL;
-	text[len-1] = 0;    // rip off the /n and terminate
-
-	return text;
-}
-
 void Sys_SetProcessorAffinity( void ) {
 #if defined(__linux__)
 	uint32_t cores;
