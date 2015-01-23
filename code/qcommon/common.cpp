@@ -241,7 +241,7 @@ void SG_Shutdown();
 #ifdef JK2_MODE
 extern void SCR_UnprecacheScreenshot();
 #endif
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -304,7 +304,7 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f( void ) {
+void NORETURN Com_Quit_f( void ) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		SV_Shutdown ("Server quit\n");
@@ -852,7 +852,7 @@ int Com_EventLoop( void ) {
 
 		switch ( ev.evType ) {
 		default:
-			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evTime );
+			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evType );
 			break;
         case SE_NONE:
             break;
@@ -932,7 +932,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -976,7 +976,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
@@ -1048,37 +1048,6 @@ static void Com_CatchError ( int code )
 		CL_FlushMemory( );
 		com_errorEntered = qfalse;
 	}
-}
-
-#ifdef _WIN32
-static const char *GetErrorString( DWORD error ) {
-	static char buf[MAX_STRING_CHARS];
-	buf[0] = '\0';
-
-	if ( error ) {
-		LPVOID lpMsgBuf;
-		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
-		if ( bufLen ) {
-			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
-			LocalFree( lpMsgBuf );
-		}
-	}
-	return buf;
-}
-#endif
-
-// based on Smod code
-static void Com_SetProcessorAffinity( void ) {
-#ifdef _WIN32
-	DWORD processMask;
-	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
-		processMask = 1; // set to first core only
-
-	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
-		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
-#endif
 }
 
 /*
@@ -1180,7 +1149,7 @@ void Com_Init( char *commandLine ) {
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
-		Com_SetProcessorAffinity();
+		Sys_SetProcessorAffinity();
 
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();

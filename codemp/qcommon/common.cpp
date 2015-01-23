@@ -218,7 +218,7 @@ Both client and server can use this, and it will
 do the appropriate things.
 =============
 */
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -970,7 +970,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -1014,7 +1014,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
