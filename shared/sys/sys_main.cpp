@@ -14,8 +14,10 @@
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
+#ifndef DEDICATED
 cvar_t *com_minimized;
 cvar_t *com_unfocused;
+#endif
 
 /*
 =================
@@ -130,8 +132,10 @@ void Sys_Init( void ) {
 	Cmd_AddCommand ("in_restart", IN_Restart);
 	Cvar_Get( "arch", OS_STRING " " ARCH_STRING, CVAR_ROM );
 	Cvar_Get( "username", Sys_GetCurrentUser(), CVAR_ROM );
+#ifndef DEDICATED
 	com_unfocused = Cvar_Get( "com_unfocused", "0", CVAR_ROM );
 	com_minimized = Cvar_Get( "com_minimized", "0", CVAR_ROM );
+#endif
 }
 
 static void NORETURN Sys_Exit( int ex ) {

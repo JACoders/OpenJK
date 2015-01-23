@@ -41,8 +41,10 @@ typedef struct sysEvent_s {
 	void			*evPtr;			// this must be manually freed if not NULL
 } sysEvent_t;
 
+#ifndef DEDICATED
 extern cvar_t *com_minimized;
 extern cvar_t *com_unfocused;
+#endif
 
 sysEvent_t	Sys_GetEvent( void );
 
