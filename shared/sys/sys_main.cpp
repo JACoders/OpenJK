@@ -157,30 +157,41 @@ static void Sys_ErrorDialog( const char *error )
 {
 	time_t rawtime;
 	char timeStr[32] = {}; // should really only reach ~19 chars
-	char crashLogPath[64];
+	char crashLogPath[MAX_OSPATH];
 
 	time( &rawtime );
 	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
-	Com_sprintf( crashLogPath, sizeof( crashLogPath ), "crashlog-%s.txt", timeStr );
+	Com_sprintf( crashLogPath, sizeof( crashLogPath ),
+					"%s%ccrashlog-%s.txt",
+					Sys_DefaultHomePath(), PATH_SEP, timeStr );
 
-	const char *errorMessage = va( "%s\nThe crash log was written to %s", error, crashLogPath );
-	if ( SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", errorMessage, NULL ) < 0 )
-	{
-		fprintf( stderr, "%s", errorMessage );
-	}
+	Sys_Mkdir( Sys_DefaultHomePath() );
 
 	FILE *fp = fopen( crashLogPath, "w" );
 	if ( fp )
 	{
 		ConsoleLogWriteOut( fp );
 		fclose( fp );
+
+		const char *errorMessage = va( "%s\n\nThe crash log was written to %s", error, crashLogPath );
+		if ( SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", errorMessage, NULL ) < 0 )
+		{
+			fprintf( stderr, "%s", errorMessage );
+		}
 	}
 	else
 	{
 		// Getting pretty desperate now
-		fprintf( stderr, "Failed to open crash log. Writing out to console...\n" );
 		ConsoleLogWriteOut( stderr );
 		fflush( stderr );
+
+		const char *errorMessage = va( "%s\nCould not write the crash log file, but we printed it to stderr.\n"
+										"Try running the game using a command line interface.", error );
+		if ( SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", errorMessage, NULL ) < 0 )
+		{
+			// We really have hit rock bottom here :(
+			fprintf( stderr, "%s", errorMessage );
+		}
 	}
 }
 #endif
@@ -195,6 +206,10 @@ void Sys_Error( const char *error, ... )
 	va_end (argptr);
 
 	Sys_Print( string );
+
+	// Only print Sys_ErrorDialog for client binary. The dedicated
+	// server binary is meant to be a command line program so you would
+	// expect to see the error printed.
 #if !defined(DEDICATED)
 	Sys_ErrorDialog( string );
 #endif
