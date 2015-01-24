@@ -550,6 +550,17 @@ if(BuildMPEngine)
 
 	if(WIN32)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
+		if(UseInternalSDL2)
+			if(ARCH_BITS EQUAL 32)
+				set(MPEngineExtraInstallFiles
+					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+					)
+			else()
+				set(MPEngineExtraInstallFiles
+					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+					)
+			endif()
+		endif()
 	else(WIN32)
 		if(MakeApplicationBundles)
 			add_executable(${MPEngine} MACOSX_BUNDLE ${MPEngineFiles})
@@ -563,6 +574,9 @@ if(BuildMPEngine)
 		install(TARGETS ${MPEngine} BUNDLE DESTINATION ".")
 	else(MakeApplicationBundles)
 		install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+		if(MPEngineExtraInstallFiles)
+			install(FILES ${MPEngineExtraInstallFiles} DESTINATION ".")
+		endif()
 	endif(MakeApplicationBundles)
 
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
