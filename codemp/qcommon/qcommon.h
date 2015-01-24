@@ -3,6 +3,7 @@
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 
 #include "qcommon/q_shared.h"
+#include "sys/sys_public.h"
 
 //============================================================================
 
@@ -101,25 +102,9 @@ NET
 #define	MAX_RELIABLE_COMMANDS	128			// max string commands buffered for restransmit
 
 typedef enum {
-	NA_BAD = 0,					// an address lookup failed
-	NA_BOT,
-	NA_LOOPBACK,
-	NA_BROADCAST,
-	NA_IP
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
-
-typedef struct netadr_s {
-	netadrtype_t	type;
-
-	byte	ip[4];
-
-	unsigned short	port;
-} netadr_t;
 
 void		NET_Init( void );
 void		NET_Shutdown( void );
@@ -127,8 +112,8 @@ void		NET_Restart_f( void );
 void		NET_Config( qboolean enableNetworking );
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
-void		QDECL NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
-void		QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
+void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
+void		NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
 
 qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
 qboolean	NET_CompareBaseAdrMask( netadr_t a, netadr_t b, int netmask );

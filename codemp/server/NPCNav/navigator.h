@@ -18,11 +18,6 @@
 #pragma warning( disable : 4786)
 #endif
 
-#if defined(_WIN32)
-	#define COM_NO_WINDOWS_H
-	#include <objbase.h>
-#endif
-
 #include <map>
 #include <vector>
 #include <list>

@@ -4,6 +4,10 @@
 #include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 FILE *debuglogfile;
 fileHandle_t logfile;

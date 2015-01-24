@@ -23,6 +23,7 @@ This file is part of Jedi Academy.
 #include "stringed_ingame.h"
 #include "strippublic.h"
 #include "cm_public.h"
+#include "sys/sys_public.h"
 
 
 // some zone mem debugging stuff
@@ -114,20 +115,9 @@ NET
 #define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
 
 typedef enum {
-	NA_BAD,					// an address lookup failed
-	NA_LOOPBACK,
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
-
-typedef struct {
-	netadrtype_t	type;
-
-	unsigned short	port;
-} netadr_t;
 
 // For compatibility with shared code
 static inline void NET_Init( void ) {}
