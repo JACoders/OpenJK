@@ -370,11 +370,30 @@ if(BuildMPEngine)
 		endif(UseInternalOpenAL)
 	endif()
 
-	#if(NOT WIN32)
+	if(UseInternalSDL2)
+		if(ARCH_BITS EQUAL 32)
+			set(MPEngineLibraries
+				${MPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				)
+		else()
+			set(MPEngineLibraries
+				${MPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				)
+		endif()
+		
+		set(MPEngineIncludeDirectories
+			${MPEngineIncludeDirectories}
+			${OpenJKLibDir}/SDL2/include
+			)
+	else()
 		find_package(SDL2 REQUIRED)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
 		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
-	#endif(NOT WIN32)
+	endif()
 
 	# EAX is Windows-Only (right?)
 	if(WIN32)

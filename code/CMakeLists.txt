@@ -53,10 +53,30 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif()
 
-	find_package(SDL2 REQUIRED)
-	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
-	set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
-
+	if(UseInternalSDL2)
+		if(ARCH_BITS EQUAL 32)
+			set(SPEngineLibraries
+				${SPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				)
+		else()
+			set(SPEngineLibraries
+				${SPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				)
+		endif()
+		
+		set(SPEngineIncludeDirectories
+			${SPEngineIncludeDirectories}
+			${OpenJKLibDir}/SDL2/include
+			)
+	else()
+		find_package(SDL2 REQUIRED)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
+	endif()
 	
 	#    Source Files
 
