@@ -22,6 +22,10 @@ This file is part of Jedi Academy.
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stringed_ingame.h"
 #include "stv_version.h"
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 // Because renderer.
 #include "../rd-common/tr_public.h"

@@ -4,6 +4,23 @@
 
 #define MAXPRINTMSG 4096
 
+typedef enum netadrtype_s
+{
+	NA_BAD = 0,					// an address lookup failed
+	NA_BOT,
+	NA_LOOPBACK,
+	NA_BROADCAST,
+	NA_IP
+} netadrtype_t;
+
+typedef struct netadr_s
+{
+	netadrtype_t	type;
+
+	byte	ip[4];
+	unsigned short	port;
+} netadr_t;
+
 /*
 ==============================================================
 
