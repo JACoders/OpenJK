@@ -438,8 +438,6 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 #endif
 
 	if (!libHandle) {
-		//Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", filename, Sys_LibraryError() );
-
 		char *basepath = Cvar_VariableString( "fs_basepath" );
 		char *homepath = Cvar_VariableString( "fs_homepath" );
 		char *cdpath = Cvar_VariableString( "fs_cdpath" );
@@ -469,12 +467,12 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	*vmMain = (VMMainProc *)Sys_LoadFunction( libHandle, "vmMain" );
 
 	if ( !*vmMain || !dllEntry ) {
-		Com_DPrintf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n...%s!\n", name, Sys_LibraryError() );
+		Com_DPrintf ( "Sys_LoadLegacyGameDll(%s) failed to find vmMain function:\n...%s!\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
 
-	Com_DPrintf ( "Sys_LoadGameDll(%s) found vmMain function at 0x%" PRIxPTR "\n", name, *vmMain );
+	Com_DPrintf ( "Sys_LoadLegacyGameDll(%s) found vmMain function at 0x%" PRIxPTR "\n", name, *vmMain );
 	dllEntry( systemcalls );
 
 	return libHandle;
@@ -551,8 +549,6 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 #endif
 
 	if (!libHandle) {
-		//Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", filename, Sys_LibraryError() );
-
 		char *basepath = Cvar_VariableString( "fs_basepath" );
 		char *homepath = Cvar_VariableString( "fs_homepath" );
 		char *cdpath = Cvar_VariableString( "fs_cdpath" );
