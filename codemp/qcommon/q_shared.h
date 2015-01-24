@@ -15,6 +15,7 @@
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
