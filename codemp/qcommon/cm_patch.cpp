@@ -391,8 +391,8 @@ static	patchPlane_t	planes[MAX_PATCH_PLANES];
 //static	facet_t			facets[MAX_PATCH_PLANES]; //maybe MAX_FACETS ??
 static		facet_t			*facets = NULL;
 
-#define	NORMAL_EPSILON	0.0001
-#define	DIST_EPSILON	0.02
+#define	NORMAL_EPSILON	0.00015
+#define	DIST_EPSILON	0.0235
 
 static inline int CM_PlaneEqual(patchPlane_t *p, float plane[4], int *flipped) {
 	float invplane[4];
