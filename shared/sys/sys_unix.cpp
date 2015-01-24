@@ -407,11 +407,6 @@ bool Sys_PathCmp( const char *path1, const char *path2 )
 	return false;
 }
 
-void Sys_SetDefaultHomePath(const char *path)
-{
-	Q_strncpyz(homePath, path, sizeof(homePath));
-}
-
 /*
 ==================
 Sys_DefaultHomePath
@@ -422,18 +417,17 @@ char *Sys_DefaultHomePath(void)
 {
 	char *p;
 
-	if( !*homePath && com_homepath != NULL )
+	if ( !homePath[0] )
 	{
-		if( ( p = getenv( "HOME" ) ) != NULL )
+		if ( (p = getenv( "HOME" )) != NULL )
 		{
-			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
-			Q_strcat(homePath, sizeof(homePath),
-                     "Library/Application Support/");
+			Com_sprintf( homePath, sizeof( homePath ), "%s%c", p, PATH_SEP );
+			Q_strcat( homePath, sizeof( homePath ), "Library/Application Support/" );
 
-			if(com_homepath->string[0])
-				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			if ( com_homepath && com_homepath->string[0] )
+				Q_strcat( homePath, sizeof( homePath ), com_homepath->string );
 			else
-				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
+				Q_strcat( homePath, sizeof( homePath ), HOMEPATH_NAME_MACOSX );
 		}
 	}
 
@@ -444,26 +438,26 @@ char *Sys_DefaultHomePath(void)
 {
 	char *p;
 
-	if( !*homePath && com_homepath != NULL )
+	if ( !homePath[0] )
 	{
-		if( ( p = getenv( "XDG_DATA_HOME" ) ) != NULL )
+		if ( (p = getenv( "XDG_DATA_HOME" )) != NULL )
 		{
-			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
-			if(com_homepath->string[0])
-				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			Com_sprintf( homePath, sizeof( homePath ), "%s%c", p, PATH_SEP );
+			if ( com_homepath && com_homepath->string[0] )
+				Q_strcat( homePath, sizeof( homePath ), com_homepath->string );
 			else
-				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+				Q_strcat( homePath, sizeof( homePath ), HOMEPATH_NAME_UNIX );
 
 			return homePath;
 		}
 
-		if( ( p = getenv( "HOME" ) ) != NULL )
+		if ( (p = getenv( "HOME" )) != NULL )
 		{
-			Com_sprintf(homePath, sizeof(homePath), "%s%c.local%cshare%c", p, PATH_SEP, PATH_SEP, PATH_SEP);
-			if(com_homepath->string[0])
-				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			Com_sprintf( homePath, sizeof( homePath ), "%s%c.local%cshare%c", p, PATH_SEP, PATH_SEP, PATH_SEP );
+			if ( com_homepath && com_homepath->string[0] )
+				Q_strcat( homePath, sizeof( homePath ), com_homepath->string );
 			else
-				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+				Q_strcat( homePath, sizeof( homePath ), HOMEPATH_NAME_UNIX );
 
 			return homePath;
 		}
