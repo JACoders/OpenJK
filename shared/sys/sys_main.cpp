@@ -266,46 +266,48 @@ First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
-void *Sys_LoadDll(const char *name, qboolean useSystemLib)
+void *Sys_LoadDll( const char *name, qboolean useSystemLib )
 {
 	void *dllhandle = NULL;
 
-	if(useSystemLib)
-		Com_Printf("Trying to load \"%s\"...\n", name);
-
-	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
+	if ( useSystemLib )
 	{
-		char libPath[MAX_OSPATH];
-		const char *topDir = Sys_BinaryPath();
+		Com_Printf( "Trying to load \"%s\"...\n", name );
 
-		if(!*topDir)
-			topDir = ".";
+		dllhandle = Sys_LoadLibrary( name );
+		if ( dllhandle )
+			return dllhandle;
 
-		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
-		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
-
-		if(!(dllhandle = Sys_LoadLibrary(libPath)))
-		{
-			const char *basePath = Cvar_VariableString("fs_basepath");
-
-			if(!basePath || !*basePath)
-				basePath = ".";
-
-			if(FS_FilenameCompare(topDir, basePath))
-			{
-				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
-				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
-				dllhandle = Sys_LoadLibrary(libPath);
-			}
-
-			if(!dllhandle)
-			{
-				Com_Printf("Loading \"%s\" failed\n", name);
-			}
-		}
+		Com_Printf( "%s(%s) failed: \"%s\"\n", __FUNCTION__, name, Sys_LibraryError() );
 	}
 
-	return dllhandle;
+	const char *binarypath = Sys_BinaryPath();
+	const char *basepath = Cvar_VariableString( "fs_basepath" );
+
+	if ( !*binarypath )
+		binarypath = ".";
+
+	const char *searchPaths[] = {
+		binarypath,
+		basepath,
+	};
+	const size_t numPaths = ARRAY_LEN( searchPaths );
+
+	for ( size_t i = 0; i < numPaths; i++ )
+	{
+		const char *libDir = searchPaths[i];
+		if ( !libDir[0] )
+			continue;
+
+		Com_Printf( "Trying to load \"%s\" from \"%s\"...\n", name, libDir );
+		char *fn = va( "%s%c%s", libDir, PATH_SEP, name );
+		dllhandle = Sys_LoadLibrary( fn );
+		if ( dllhandle )
+			return dllhandle;
+
+		Com_Printf( "%s(%s) failed: \"%s\"\n", __FUNCTION__, fn, Sys_LibraryError() );
+	}
+	return NULL;
 }
 
 #if defined(MACOS_X) && !defined(_JK2EXE)
