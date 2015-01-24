@@ -406,7 +406,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			if ( !libDir[0] )
 				continue;
 
-			fn = va( "%s/%s", libDir, filename );
+			fn = va( "%s%c%s", libDir, PATH_SEP, filename );
 			libHandle = Sys_LoadLibrary( fn );
 			if ( libHandle )
 				break;
