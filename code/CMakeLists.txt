@@ -384,6 +384,17 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 		if(WIN32)
 			add_executable(${ProjectName} WIN32 ${SPEngineFiles})
+			if(UseInternalSDL2)
+				if(ARCH_BITS EQUAL 32)
+					set(SPEngineExtraInstallFiles
+						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+						)
+				else()
+					set(SPEngineExtraInstallFiles
+						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+						)
+				endif()
+			endif()
 		else(WIN32)
 			if(MakeApplicationBundles)
 				add_executable(${ProjectName} MACOSX_BUNDLE ${SPEngineFiles})
@@ -397,6 +408,9 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			install(TARGETS ${ProjectName} BUNDLE DESTINATION ".")
 		else(MakeApplicationBundles)
 			install(TARGETS ${ProjectName} RUNTIME DESTINATION ".")
+			if(SPEngineExtraInstallFiles)
+				install(FILES ${SPEngineExtraInstallFiles} DESTINATION ".")
+			endif()
 		endif(MakeApplicationBundles)
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPEngineDefines};${ReleaseDefines}")
