@@ -130,17 +130,6 @@ char *Sys_GetCurrentUser( void )
 	return s_userName;
 }
 
-bool Sys_GetDefaultHomePath( char *buffer, size_t size )
-{
-	TCHAR szPath[MAX_PATH];
-
-	
-
-	Q_strncpyz( buffer, szPath, size );
-
-	return true;
-}
-
 /*
 * Builds the path for the user's game directory
 */
