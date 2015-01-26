@@ -1989,6 +1989,9 @@ saberMoveName_t PM_SaberJumpAttackMove( void )
 	saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
 	saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
 	//see if we have an overridden (or cancelled) lunge move
+
+	//trap->Print("Dfa check 3\n");
+
 	if ( saber1
 		&& saber1->jumpAtkFwdMove != LS_INVALID )
 	{
@@ -2475,6 +2478,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 	}
 	else
 	{//not moving left or right
+		//trap->Print("Dfa check 1\n");
 		if ( pm->cmd.forwardmove > 0 )
 		{//forward= T2B slash
 			if (!noSpecials&&
@@ -2507,7 +2511,6 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				BG_EnoughForcePowerForMove(SABER_ALT_ATTACK_POWER_FB))
 			{ //FLIP AND DOWNWARD ATTACK
 				//trace_t tr;
-
 				//if (PM_SomeoneInFront(&tr))
 				{
 					newmove = PM_SaberFlipOverAttackMove();
@@ -2533,7 +2536,6 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				BG_EnoughForcePowerForMove( SABER_ALT_ATTACK_POWER_FB ))
 			{ //DFA
 				//trace_t tr;
-
 				//if (PM_SomeoneInFront(&tr))
 				{
 					newmove = PM_SaberJumpAttackMove();
@@ -2561,6 +2563,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				BG_EnoughForcePowerForMove( SABER_ALT_ATTACK_POWER_FB ))
 			{ //DFA
 				float animLength = PM_AnimLength( 0, (animNumber_t)pm->ps->torsoAnim );
+				//trap->Print("Dfa check 2\n");
 				if ( animLength - pm->ps->torsoTimer < 500 )
 				{
 					newmove = PM_SaberJumpAttackMove();
@@ -3697,6 +3700,8 @@ weapChecks:
 		// ***************************************************
 		// Pressing attack, so we must look up the proper attack move.
 
+		//trap->Print("Swing check 1\n");
+
 		if ( pm->ps->weaponTime > 0 )
 		{	// Last attack is not yet complete.
 			pm->ps->weaponstate = WEAPON_FIRING;
@@ -3749,8 +3754,9 @@ weapChecks:
 			//FIXME: diagonal dirs use the figure-eight attacks from ready pose?
 			if ( anim == -1 )
 			{
+
 				//FIXME: take FP_SABER_OFFENSE into account here somehow?
-				if ( PM_SaberInTransition( curmove ) )
+				if ( PM_SaberInTransition( curmove ) ) //not in jk2 ?
 				{//in a transition, must play sequential attack
 					newmove = saberMoveData[curmove].chain_attack;
 				}
@@ -3764,12 +3770,6 @@ weapChecks:
 				}
 				else//if ( pm->cmd.buttons&BUTTON_ATTACK && !(pm->ps->pm_flags&PMF_ATTACK_HELD) )//only do this if just pressed attack button?
 				{//get attack move from movement command
-					/*
-					if ( PM_SaberKataDone() )
-					{//we came from a bounce and cannot chain to another attack because our kata is done
-						newmove = saberMoveData[curmove].chain_idle;
-					}
-					else */
 					newmove = PM_SaberAttackForMovement( curmove );
 					if ( (PM_SaberInBounce( curmove )||PM_SaberInBrokenParry( curmove ))
 						&& saberMoveData[newmove].startQuad == saberMoveData[curmove].endQuad )
@@ -3785,13 +3785,6 @@ weapChecks:
 							newmove = saberMoveData[curmove].chain_idle;
 					}
 				}
-				/*
-				if ( newmove == LS_NONE )
-				{//FIXME: should we allow this?  Are there some anims that you should never be able to chain into an attack?
-					//only curmove that might get in here is LS_NONE, LS_DRAW, LS_PUTAWAY and the LS_R_ returns... all of which are in Q_R
-					newmove = PM_AttackMoveForQuad( saberMoveData[curmove].endQuad );
-				}
-				*/
 
 				if ( newmove != LS_NONE )
 				{

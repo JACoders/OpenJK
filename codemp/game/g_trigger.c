@@ -1239,8 +1239,6 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (player->client->pers.practice)
 		return qfalse;
-	if (!g_forceClientUpdateRate.integer || g_forceClientUpdateRate.integer > 250)
-		return qfalse;
 
 	return qtrue;
 }

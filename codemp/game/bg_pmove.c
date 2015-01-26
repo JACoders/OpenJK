@@ -3743,18 +3743,7 @@ static void PM_DashMove(void)
 	VectorCopy(dashdir, pm->ps->velocity);
 
 	pm->ps->velocity[2] = DASH_JUMP_SPEED;
-
-#ifdef _GAME
-{
-    gclient_t *client = NULL;
-	int clientNum = pm->ps->clientNum;
-	if (0 <= clientNum && clientNum < MAX_CLIENTS) {
-		client = g_entities[clientNum].client;
-	}
-	if (client->pers.practice)
-		pm->ps->stats[STAT_JUMPTIME] = 401;
-}
-#endif
+	pm->ps->stats[STAT_JUMPTIME] = 401;
 }
 
 static void PM_CheckDash(void)
@@ -3939,6 +3928,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		G_PlayEffect( EFFECT_LANDING_SAND, trace.endpos, trace.plane.normal );//Should be spot on wall, and wallnormal, a better, predicted way to do this?
 #endif
 
+	/*
 #ifdef _GAME
 {
     gclient_t *client = NULL;
@@ -3950,6 +3940,7 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 		pm->ps->stats[STAT_JUMPTIME] = 401;
 }
 #endif
+	*/
 	}
 }
 

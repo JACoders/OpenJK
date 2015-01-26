@@ -1045,6 +1045,87 @@ void ClientImpacts( gentity_t *ent, pmove_t *pmove ) {
 
 /*
 ============
+G_TouchTriggersLerped
+
+Find all trigger entities that ent's current position touches.
+Spectators will only interact with teleporters.
+
+This version checks at 6 unit steps between last and current origins
+============
+*/
+//extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+void G_TouchTriggersLerped( gentity_t *ent ) {
+	int			i, num, touch[MAX_GENTITIES];
+	float		dist, curDist = 0;
+	gentity_t	*hit;
+	trace_t		trace;
+	vec3_t		end, mins, maxs, diff;
+	const vec3_t	range = { 40, 40, 52 };
+	qboolean	touched[MAX_GENTITIES];
+
+	//trap->Print("Checking lerped trigger\n");
+
+	if (!ent->client)
+		return;
+
+	VectorSubtract( ent->client->ps.origin, ent->client->oldOrigin, diff );
+	dist = VectorNormalize( diff );
+
+	if (dist > 1024)
+		return;
+	memset (touched, qfalse, sizeof(touched));
+
+	for (curDist = 0; curDist  < dist; curDist += 24.0f) {
+		VectorMA( ent->client->oldOrigin, curDist, diff, end );
+
+		/*
+		{
+			vec3_t		end2;
+			VectorCopy(end, end2);
+			end2[2] += 128;
+			G_TestLine(end, end2, 0x00000ff, 5000);
+		}
+		*/
+
+		VectorSubtract( end, range, mins ); //tha fuck is this
+		VectorAdd( end, range, maxs );
+
+		num = trap->EntitiesInBox(mins, maxs, touch, MAX_GENTITIES);
+
+		VectorAdd( end, ent->r.mins, mins ); //tha fuck is this
+		VectorAdd( end, ent->r.maxs, maxs );
+
+		for ( i=0 ; i<num ; i++ ) {
+			hit = &g_entities[touch[i]];
+
+			if ((!hit->touch) && (!ent->touch)) //why ent->touch ?
+				continue;
+			if (!(hit->r.contents & CONTENTS_TRIGGER))
+				continue;
+			if (touched[i] == qtrue) //already touched this move
+				continue;
+			if (Q_stricmp(hit->classname, "trigger_teleport") && Q_stricmp(hit->classname, "trigger_multiple"))//Not teleport, or multiple trigger
+				continue;
+			if (!trap->EntityContact( mins, maxs, (sharedEntity_t *)hit, qfalse))
+				continue;
+
+			touched[i] = qtrue;
+
+			memset( &trace, 0, sizeof(trace) );
+
+			if (hit->touch) {
+				hit->touch (hit, ent, &trace);
+				//trap->Print("Using a lerped trigger!\n");
+				//trap->SendServerCommand( -1, "print \"Using lerped trigger\n\"");
+			}
+		}
+	}
+
+}
+
+
+/*
+============
 G_TouchTriggers
 
 Find all trigger entities that ent's current position touches.
@@ -2883,7 +2964,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (pmove_fixed.integer || client->pers.pmoveFixed)
 		ucmd->serverTime = ((ucmd->serverTime + pmove_msec.integer-1) / pmove_msec.integer) * pmove_msec.integer;
 	else if (g_fixHighFPSAbuse.integer && msec < 5)
-		ucmd->serverTime = (ucmd->serverTime + 4); /// 5 * 5    ?
+		ucmd->serverTime = ((ucmd->serverTime + 4) / 5) * 5; /// 5 * 5    ?
 
 	if ((client->sess.sessionTeam != TEAM_SPECTATOR) && !client->ps.stats[STAT_RACEMODE] && g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) { //Ok,, this should be like every frame, right??
 		client->sess.movementStyle = g_movementStyle.integer;
@@ -2898,6 +2979,9 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 	else if (client->savedJumpLevel) {
 		client->ps.fd.forcePowerLevel[FP_LEVITATION] = client->savedJumpLevel;
+	}
+	if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_ONLYBHOP]) {
+		client->ps.fd.forcePowerLevel[FP_LEVITATION] = 3;
 	}
 
 	//
@@ -4838,33 +4922,49 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 }
 
 
+static void ForceClientUpdate(gentity_t *ent) {
+	trap->GetUsercmd( ent-g_entities, &ent->client->pers.cmd );
+
+	ent->client->lastCmdTime = level.time;
+
+	// fill with seemingly valid data
+	ent->client->pers.cmd.serverTime = level.time;
+
+	//ent->client->pers.cmd.buttons = 0;
+	//ent->client->pers.cmd.forwardmove = ent->client->pers.cmd.rightmove = ent->client->pers.cmd.upmove = 0;
+
+	ent->client->pers.cmd.buttons = ent->client->pers.lastCmd.buttons;
+	ent->client->pers.cmd.forwardmove = ent->client->pers.lastCmd.forwardmove;
+	ent->client->pers.cmd.rightmove = ent->client->pers.lastCmd.rightmove;
+	ent->client->pers.cmd.upmove = ent->client->pers.lastCmd.upmove;
+
+	//Get rid of deadstops caused by lag (set their upmove to their last upmove) ..apparently this was really annoying for some people with bad net
+	//Still fixes the problem of lagging through triggers, or freezing midair etc..
+
+	ClientThink_real( ent );
+}
+
 void G_RunClient( gentity_t *ent ) {
 
 
 	//If racemode , do forceclientupdaterate hardcoded at like 4/5 hz ?
 
 	// force client updates if they're not sending packets at roughly 4hz
-	if ( !(ent->r.svFlags & SVF_BOT) && g_forceClientUpdateRate.integer && ent->client->lastCmdTime < level.time - g_forceClientUpdateRate.integer ) {
-		trap->GetUsercmd( ent-g_entities, &ent->client->pers.cmd );
 
-		ent->client->lastCmdTime = level.time;
-
-		// fill with seemingly valid data
-		ent->client->pers.cmd.serverTime = level.time;
-
-		//ent->client->pers.cmd.buttons = 0;
-		//ent->client->pers.cmd.forwardmove = ent->client->pers.cmd.rightmove = ent->client->pers.cmd.upmove = 0;
-
-		ent->client->pers.cmd.buttons = ent->client->pers.lastCmd.buttons;
-		ent->client->pers.cmd.forwardmove = ent->client->pers.lastCmd.forwardmove;
-		ent->client->pers.cmd.rightmove = ent->client->pers.lastCmd.rightmove;
-		ent->client->pers.cmd.upmove = ent->client->pers.lastCmd.upmove;
-	
-		//Get rid of deadstops caused by lag (set their upmove to their last upmove) ..apparently this was really annoying for some people with bad net
-		//Still fixes the problem of lagging through triggers, or freezing midair etc..
-
-		ClientThink_real( ent );
-		return;
+	if (ent->client->sess.raceMode) {
+		if (!(ent->r.svFlags & SVF_BOT) && (ent->client->lastCmdTime < (level.time - 250))) { //Force 250ms updaterate for racers?
+			ForceClientUpdate(ent);
+			return;
+		}
+		if (!(ent->r.svFlags & SVF_BOT) && !ent->client->noclip && (ent->client->lastCmdTime < (level.time - 50))) { //eh?
+			G_TouchTriggersLerped( ent );
+		}
+	}
+	else {
+		if (!(ent->r.svFlags & SVF_BOT) && g_forceClientUpdateRate.integer && (ent->client->lastCmdTime < (level.time - g_forceClientUpdateRate.integer))) {
+			ForceClientUpdate(ent);
+			return;
+		}
 	}
 
 	ent->client->pers.lastCmd = ent->client->pers.cmd;
