@@ -36,7 +36,7 @@ float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle);
 
 // cinematics and voice-over-network will send raw samples
 // 1.0 volume will be direct output of source samples
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame );
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame );
 // stop all sounds
 void S_StopSounds(void);	// from snd_dma.cpp
 // stop all sounds and the background track
