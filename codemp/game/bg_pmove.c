@@ -12608,12 +12608,15 @@ void PmoveSingle (pmove_t *pmove) {
 			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
 	//Wallbug fix end
 
-	// snap velocity to integer coordinates to save network bandwidth
-	if (!pm->pmove_float && !pm->ps->stats[STAT_RACEMODE])//japro fix racemode fps
-		trap->SnapVector( pm->ps->velocity );
-
-	else if (pm->ps->stats[STAT_RACEMODE])
+	if (pm->ps->stats[STAT_RACEMODE]) //japro fix racemode fps
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
+#ifdef _GAME
+	else if (g_fixHighFPSAbuse.integer && (pml.msec < 4)) { //333fps, todo add prediction
+		//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
+	}
+#endif
+	else if (!pm->pmove_float)
+		trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
 
 #ifdef _GAME
 	if (pm->ps->pm_type == PM_NORMAL) {

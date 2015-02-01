@@ -1970,12 +1970,13 @@ qboolean ScoreIsTied( void ) {
 	return a == b;
 }
 
-void PrintStats(int gametype) //JAPRO STATS
+void PrintStats(int client) //JAPRO STATS
 {
 	int			i, j = 0;
 	char		msg[1024-128] = {0};
 	qboolean	showAccuracy = qtrue, showTeamPowers = qtrue;
 	gclient_t	*cl;
+	int gametype = level.gametype;
 
 	if (gametype != GT_CTF && gametype != GT_TEAM)
 		return;
@@ -1986,7 +1987,7 @@ void PrintStats(int gametype) //JAPRO STATS
 	if ((g_forcePowerDisable.integer & (1<<FP_TEAM_HEAL)) && (g_forcePowerDisable.integer & (1<<FP_TEAM_FORCE))) //TE and TH are disabled
 		showTeamPowers = qfalse;
 
-	trap->SendServerCommand(-1, "print \"\n\"");
+	trap->SendServerCommand(client, "print \"\n\"");
 
 	if (gametype == GT_TEAM) {//tffa
 		if (showAccuracy) {
@@ -2094,13 +2095,13 @@ void PrintStats(int gametype) //JAPRO STATS
 			}
 
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
-				trap->SendServerCommand(-1, va("print \"%s\"", msg));
+				trap->SendServerCommand(client, va("print \"%s\"", msg));
 				msg[0] = '\0';
 			}
 			Q_strcat(msg, sizeof(msg), tmpMsg);
 		}
 	}
-	trap->SendServerCommand(-1, va("print \"%s\n\"", msg));
+	trap->SendServerCommand(client, va("print \"%s\n\"", msg));
 }
 
 /*
@@ -2213,7 +2214,7 @@ void CheckExitRules( void ) {
 					Com_Printf("POWERDUEL WIN CONDITION: Timelimit hit (1)\n");
 				}
 				LogExit( "Timelimit hit." );
-				PrintStats(level.gametype);//JAPRO STATS
+				PrintStats(-1);//JAPRO STATS
 				return;
 			}
 		}
@@ -2361,7 +2362,7 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
 			}
 			LogExit( sKillLimit );
-			PrintStats(level.gametype);//JAPRO STATS
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 
@@ -2372,7 +2373,7 @@ void CheckExitRules( void ) {
 				Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
 			}
 			LogExit( sKillLimit );
-			PrintStats(level.gametype);//JAPRO STATS
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 
@@ -2425,7 +2426,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
-			PrintStats(level.gametype);//JAPRO STATS
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 
@@ -2433,7 +2434,7 @@ void CheckExitRules( void ) {
 			trap->SendServerCommand( -1,  va("print \"%s \"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")));
 			trap->SendServerCommand( -1,  va("print \"%s.\n\"", G_GetStringEdString("MP_SVGAME", "HIT_CAPTURE_LIMIT")));
 			LogExit( "Capturelimit hit." );
-			PrintStats(level.gametype);//JAPRO STATS
+			PrintStats(-1);//JAPRO STATS
 			return;
 		}
 	}

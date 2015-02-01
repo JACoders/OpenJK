@@ -5316,6 +5316,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	Q_strncpyz(buf, "   ^3Game commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "amMOTD ");
+	Q_strcat(buf, sizeof(buf), "printStats ");
 	if (g_privateDuel.integer) {
 		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
 		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
@@ -5690,6 +5691,16 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 }
 //Jetpack end
 
+void PrintStats(int client);
+static void Cmd_PrintStats_f(gentity_t *ent)
+{
+	if (level.gametype != GT_CTF && level.gametype != GT_TEAM) {
+		trap->SendServerCommand( ent-g_entities, "print \"Command only allowed in TFFA or CTF. (printStats).\n\"" );
+		return;
+	}
+	//Uhh.. any restrictions on this? idk.. floodprotect?
+	PrintStats(ent->s.number);
+}
 
 void SpotIcon( gentity_t *ent, vec3_t origin ) {
 	gentity_t *plum;
@@ -7695,6 +7706,7 @@ command_t commands[] = {
 	{ "nudge",				Cmd_Nudge_f,				CMD_CHEAT|CMD_NOINTERMISSION },
 
 	{ "practice",			Cmd_Practice_f,				CMD_NOINTERMISSION|CMD_ALIVE},
+	{ "printstats",			Cmd_PrintStats_f,			CMD_NOINTERMISSION },
 	{ "race",				Cmd_Race_f,					CMD_NOINTERMISSION },
 	{ "register",			Cmd_ACRegister_f,			CMD_NOINTERMISSION },
 	{ "rocketchange",		Cmd_BackwardsRocket_f,		CMD_NOINTERMISSION|CMD_ALIVE},
