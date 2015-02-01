@@ -4755,8 +4755,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (attacker && attacker->client) {//always kill him if he dies by falling
 				if (attacker->s.number != targ->client->ps.duelIndex)//Dont dmg him if its not his duelpartner doing the dmg
 					return;	
-				else if (mod != MOD_SABER && dueltypes[attacker->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
+				if (mod != MOD_SABER && dueltypes[attacker->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
 					return;
+				if ((mod == MOD_TRIP_MINE_SPLASH || mod == MOD_DET_PACK_SPLASH) && dueltypes[attacker->client->ps.clientNum] == 1) //Tripmine or detpack in FF duel.. sad hack!
+					return; //Ideal solution would be to either blow up a players mines when they enter a duel, or do a more extensive check here..
 			}
 		}
 		if (attacker && attacker->client && attacker->client->ps.duelInProgress)//Attacker is dueling
@@ -4764,7 +4766,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (targ && targ->client) {//always kill him if he dies by falling
 				if (targ->s.number != attacker->client->ps.duelIndex)//Dont dmg him if its not his duelpartner doing the dmg
 					return;	
-				else if (mod != MOD_SABER && dueltypes[targ->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
+				if (mod != MOD_SABER && dueltypes[targ->client->ps.clientNum] == 0)//Only allow saber only dmg in saber duels, this is just a doublecheck?
+					return;
+				if ((mod == MOD_TRIP_MINE_SPLASH || mod == MOD_DET_PACK_SPLASH) && dueltypes[attacker->client->ps.clientNum] == 1) //Tripmine or detpack in FF duel.. sad hack!
 					return;
 			}
 		}
