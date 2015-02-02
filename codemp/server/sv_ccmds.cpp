@@ -1612,6 +1612,7 @@ static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
 		return 0;
 	}
 	timeinfo.tm_year -= 1900;
+	timeinfo.tm_mon--;
 	return mktime( &timeinfo );
 }
 
