@@ -344,14 +344,14 @@ enum SearchPathFlag
 };
 
 static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, const char **searchPaths,
-									int numPaths, uint32_t searchFlags, const char *callerName )
+									size_t numPaths, uint32_t searchFlags, const char *callerName )
 {
 	char *fn;
 	void *libHandle;
 
 	if ( searchFlags & SEARCH_PATH_MOD )
 	{
-		for ( int i = 0; i < numPaths; i++ )
+		for ( size_t i = 0; i < numPaths; i++ )
 		{
 			const char *libDir = searchPaths[i];
 			if ( !libDir[0] )
@@ -368,7 +368,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 
 	if ( searchFlags & SEARCH_PATH_BASE )
 	{
-		for ( int i = 0; i < numPaths; i++ )
+		for ( size_t i = 0; i < numPaths; i++ )
 		{
 			const char *libDir = searchPaths[i];
 			if ( !libDir[0] )
@@ -385,7 +385,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 
 	if ( searchFlags & SEARCH_PATH_OPENJK )
 	{
-		for ( int i = 0; i < numPaths; i++ )
+		for ( size_t i = 0; i < numPaths; i++ )
 		{
 			const char *libDir = searchPaths[i];
 			if ( !libDir[0] )
@@ -402,7 +402,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 
 	if ( searchFlags & SEARCH_PATH_ROOT )
 	{
-		for ( int i = 0; i < numPaths; i++ )
+		for ( size_t i = 0; i < numPaths; i++ )
 		{
 			const char *libDir = searchPaths[i];
 			if ( !libDir[0] )
@@ -456,7 +456,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 #endif
 			cdpath,
 		};
-		int numPaths = ARRAY_LEN( searchPaths );
+		size_t numPaths = ARRAY_LEN( searchPaths );
 
 		libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
 		if ( !libHandle )
@@ -512,7 +512,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 #endif
 			cdpath,
 		};
-		int numPaths = ARRAY_LEN( searchPaths );
+		size_t numPaths = ARRAY_LEN( searchPaths );
 
 		libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths,
 											SEARCH_PATH_BASE | SEARCH_PATH_MOD | SEARCH_PATH_OPENJK | SEARCH_PATH_ROOT,
