@@ -2056,7 +2056,7 @@ S_RawSamples
 Music streaming
 ============
 */
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame )
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame )
 {
 	int		i;
 	int		src, dst;
@@ -2080,7 +2080,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 	scale = (float)rate / dma.speed;
 
 //Com_Printf ("%i < %i < %i\n", s_soundtime, s_paintedtime, s_rawend);
-	if (s_channels == 2 && width == 2)
+	if (channels == 2 && width == 2)
 	{
 		if (scale == 1.0)
 		{	// optimized case
@@ -2141,7 +2141,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 2)
+	else if (channels == 1 && width == 2)
 	{
 		if (bFirstOrOnlyUpdateThisFrame)
 		{
@@ -2176,7 +2176,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 2 && width == 1)
+	else if (channels == 2 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2213,7 +2213,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 1)
+	else if (channels == 1 && width == 1)
 	{
 		intVolume *= 256;
 
