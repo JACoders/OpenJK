@@ -701,6 +701,8 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
+		memset(&glConfig, 0, sizeof(glConfig));
+
 		window = ri.WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
 
 		// get our config strings
