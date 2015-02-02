@@ -449,11 +449,11 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 #endif
 
 		const char *searchPaths[] = {
-			basepath,
 			homepath,
 #ifdef MACOS_X
 			apppath,
 #endif
+			basepath,
 			cdpath,
 		};
 		size_t numPaths = ARRAY_LEN( searchPaths );
@@ -505,11 +505,11 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 #endif
 
 		const char *searchPaths[] = {
-			basepath,
 			homepath,
 #ifdef MACOS_X
 			apppath,
 #endif
+			basepath,
 			cdpath,
 		};
 		size_t numPaths = ARRAY_LEN( searchPaths );
@@ -560,14 +560,14 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 #endif
 
 		const char *searchPaths[] = {
-			basepath,
 			homepath,
 #ifdef MACOS_X
 			apppath,
 #endif
+			basepath,
 			cdpath,
 		};
-		int numPaths = ARRAY_LEN( searchPaths );
+		size_t numPaths = ARRAY_LEN( searchPaths );
 
 		libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
 		if ( !libHandle )
