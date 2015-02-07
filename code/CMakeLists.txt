@@ -74,8 +74,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			)
 	else()
 		find_package(SDL2 REQUIRED)
-		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
 	endif()
 	
 	#    Source Files
