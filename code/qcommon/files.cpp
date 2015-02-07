@@ -37,6 +37,10 @@ This file is part of Jedi Academy.
 	#include <unistd.h>
 #endif
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 /*
 =============================================================================
 
@@ -1420,7 +1424,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 								FS_CreatePath( copypath );
 
 								bool bOk = true;
-								if (!CopyFile( netpath, copypath, FALSE ))
+								if (CopyFile( netpath, copypath, qtrue ))
 								{
 									DWORD dwAttrs = GetFileAttributes(copypath);
 									SetFileAttributes(copypath, dwAttrs & ~FILE_ATTRIBUTE_READONLY);

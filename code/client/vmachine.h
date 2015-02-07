@@ -64,46 +64,14 @@ VIRTUAL MACHINE
 
 ==============================================================
 */
-struct vm_s {
+typedef struct vm_s {
 	intptr_t	(*entryPoint)( int callNum, ... );
-};
+} vm_t;
 
-typedef struct vm_s vm_t;
+extern vm_t cgvm;
 
-extern	vm_t	cgvm;	// interface to cgame dll or vm
-
-extern intptr_t	VM_Call( int callnum, ... );
-extern intptr_t VM_DllSyscall( intptr_t arg, ... );
-extern void CL_ShutdownCGame(void);
-
-/*
-================
-VM_Create
-
-it will attempt to load as a system dll
-================
-*/
-extern void *Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) );
-
-inline void *VM_Create( const char *module) 
-{
-	void *res;
-	// try to load as a system dll
-	if (!Q_stricmp("cl", module))
-	{
-		res = Sys_LoadCgame( &cgvm.entryPoint, VM_DllSyscall );
-		if ( !res) 
-		{
-			//Com_Printf( "Failed.\n" );
-			return 0;
-		}
-	}
-	else 
-	{
-		res = 0;
-	}
-
-	return res;
-}
+intptr_t	VM_Call( int callnum, ... );
+intptr_t	VM_DllSyscall( intptr_t arg, ... );
+void		CL_ShutdownCGame( void );
 
 #endif //__VMACHINE_H__

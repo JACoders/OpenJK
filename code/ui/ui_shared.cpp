@@ -33,9 +33,7 @@ This file is part of Jedi Academy.
 #include "ui_shared.h"
 #include "menudef.h"
 
-#ifndef _WIN32
-#include <cmath>
-#endif
+#include "qcommon/stringed_ingame.h"
 
 void		UI_LoadMenus(const char *menuFile, qboolean reset);
 

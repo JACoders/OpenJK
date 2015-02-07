@@ -19,11 +19,12 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../server/exe_headers.h"
+#include "server/exe_headers.h"
 
 
 #include "client.h"
-#include "../qcommon/stv_version.h"
+#include "qcommon/stringed_ingame.h"
+#include "qcommon/stv_version.h"
 
 int g_console_field_width = 78;
 

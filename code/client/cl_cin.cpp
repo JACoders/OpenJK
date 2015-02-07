@@ -37,9 +37,7 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"	// CHC
 #include "snd_local.h"
-#ifndef _WIN32
-#include <cmath>
-#endif
+#include "qcommon/stringed_ingame.h"
 
 #define MAXSIZE				8
 #define MINSIZE				4
