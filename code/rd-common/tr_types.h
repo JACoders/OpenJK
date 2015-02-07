@@ -213,7 +213,7 @@ typedef enum {
 	TC_S3TC_DXT
 } textureCompression_t;
 
-typedef struct {
+typedef struct glconfig_s {
 	const char				*renderer_string;
 	const char				*vendor_string;
 	const char				*version_string;

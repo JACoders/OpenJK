@@ -23,6 +23,7 @@ This file is part of Jedi Academy.
 #include "stringed_ingame.h"
 #include "strippublic.h"
 #include "cm_public.h"
+#include "sys/sys_public.h"
 
 
 // some zone mem debugging stuff
@@ -114,20 +115,13 @@ NET
 #define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
 
 typedef enum {
-	NA_BAD,					// an address lookup failed
-	NA_LOOPBACK,
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
 
-typedef struct {
-	netadrtype_t	type;
-
-	unsigned short	port;
-} netadr_t;
+// For compatibility with shared code
+static inline void NET_Init( void ) {}
+static inline void NET_Shutdown( void ) {}
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
 void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
@@ -139,6 +133,12 @@ qboolean	NET_IsLANAddress (netadr_t adr);
 const char	*NET_AdrToString (netadr_t a);
 qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
+
+void		Sys_SendPacket( int length, const void *data, netadr_t to );
+//Does NOT parse port numbers, only base addresses.
+qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
+qboolean	Sys_IsLANAddress (netadr_t adr);
+void		Sys_ShowIP(void);
 
 
 #define	MAX_MSGLEN				(1*17408)		// max length of a message, which may
@@ -459,8 +459,8 @@ char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 int		FS_GetModList(  char *listbuf, int bufsize );
 
-fileHandle_t FS_FOpenFileWrite( const char *qpath, qboolean safe = qtrue );
 // will properly create any needed paths and deal with seperater character issues
+fileHandle_t FS_FOpenFileWrite( const char *qpath, qboolean safe = qtrue );
 
 fileHandle_t FS_FOpenFileAppend( const char *filename );	// this was present already, but no public proto
 
@@ -475,8 +475,12 @@ long		FS_FOpenFileRead( const char *qpath, fileHandle_t *file, qboolean uniqueFI
 // It is generally safe to always set uniqueFILE to true, because the majority of
 // file IO goes through FS_ReadFile, which Does The Right Thing already.
 
-int	FS_FileIsInPAK(const char *filename );
 // returns 1 if a file is in the PAK file, otherwise -1
+int	FS_FileIsInPAK(const char *filename );
+static inline int FS_FileIsInPAK( const char *filename, int *checksum )
+{
+	return FS_FileIsInPAK( filename );
+}
 
 int	FS_Write( const void *buffer, int len, fileHandle_t f );
 
@@ -586,8 +590,8 @@ void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
-void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
-void 		Com_Quit_f( void );
+void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
+void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
@@ -606,9 +610,13 @@ extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
 extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
-extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_homepath;
+#ifndef _WIN32
+extern	cvar_t	*com_ansiColor;
+#endif
+
+extern	cvar_t	*com_affinity;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -670,7 +678,7 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #else
 
-	void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign = 4);	// return memory NOT zero-filled by default
+	void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
 	void *S_Malloc	( int iSize );									// NOT 0 filled memory only for small allocations
 
 	#define Z_Label(_ptr, _label)	/* */
@@ -776,99 +784,6 @@ qboolean SV_GameCommand( void );
 qboolean UI_GameCommand( void );
 
 
-/*
-==============================================================
-
-NON-PORTABLE SYSTEM SERVICES
-
-==============================================================
-*/
-
-typedef enum {
-	AXIS_SIDE,
-	AXIS_FORWARD,
-	AXIS_UP,
-	AXIS_ROLL,
-	AXIS_YAW,
-	AXIS_PITCH,
-	MAX_JOYSTICK_AXIS
-} joystickAxis_t;
-
-typedef enum {
-	SE_NONE,	// evTime is still valid
-	SE_KEY,		// evValue is a key code, evValue2 is the down flag
-	SE_CHAR,	// evValue is an ascii char
-	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
-	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
-	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
-} sysEventType_t;
-
-typedef struct {
-	int				evTime;
-	sysEventType_t	evType;
-	int				evValue, evValue2;
-	int				evPtrLength;	// bytes of data pointed to by evPtr, for journaling
-	void			*evPtr;			// this must be manually freed if not NULL
-} sysEvent_t;
-
-sysEvent_t	Sys_GetEvent( void );
-
-void	Sys_Init (void);
-
-#ifdef _WIN32
-	#include <Windows.h>
-	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
-	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
-	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
-	#define Sys_LibraryError() "unknown"
-#endif // linux and mac use SDL in SDL_loadlibrary.h
-
-void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	Sys_UnloadDll( void *dllHandle );
-
-char	*Sys_GetCurrentUser( void );
-
-void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
-void	Sys_Quit (void);
-char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
-
-void	Sys_Print( const char *msg );
-
-// Sys_Milliseconds should only be used for profiling purposes,
-// any game related timing information should come from event timestamps
-int		Sys_Milliseconds (void);
-#ifndef _WIN32
-void 	Sys_SetEnv(const char *name, const char *value);
-#endif
-
-
-// the system console is shown when a dedicated server is running
-void	Sys_DisplaySystemConsole( qboolean show );
-
-void	Sys_ShowConsole( int level, qboolean quitOnClose );
-void	Sys_SetErrorText( const char *text );
-
-qboolean	Sys_Mkdir( const char *path );
-char	*Sys_Cwd( void );
-char	*Sys_DefaultCDPath(void);
-void	Sys_SetDefaultInstallPath(const char *path);
-char	*Sys_DefaultInstallPath(void);
-
-#ifdef MACOS_X
-char    *Sys_DefaultAppPath(void);
-#endif
-
-char	*Sys_DefaultHomePath(void);
-const char *Sys_Dirname( char *path );
-const char *Sys_Basename( char *path );
-
-char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
-void	Sys_FreeFileList( char **filelist );
-
-qboolean Sys_LowPhysicalMemory();
-
-
 byte*	SCR_GetScreenshot(qboolean *qValid);
 #ifdef JK2_MODE
 void	SCR_SetScreenshot(const byte *pbData, int w, int h);
@@ -884,5 +799,7 @@ inline int Round(float value)
 // Persistent data store API
 bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
+
+#include "sys/sys_public.h"
 
 #endif //__QCOMMON_H__

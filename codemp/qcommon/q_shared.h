@@ -15,6 +15,7 @@
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
@@ -103,6 +104,12 @@
 	#define Q_EXPORT __attribute__((visibility("default")))
 #else
 	#define Q_EXPORT
+#endif
+
+#if defined(__GNUC__)
+#define NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
 #endif
 
 // this is the define for determining if we have an asm version of a C function
@@ -1137,7 +1144,7 @@ qboolean Info_NextPair( const char **s, char *key, char *value );
 	void (*Com_Error)( int level, const char *error, ... );
 	void (*Com_Printf)( const char *msg, ... );
 #else
-	void QDECL Com_Error( int level, const char *error, ... );
+	void NORETURN QDECL Com_Error( int level, const char *error, ... );
 	void QDECL Com_Printf( const char *msg, ... );
 #endif
 

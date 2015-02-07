@@ -49,6 +49,12 @@ else()
 	set(MakeApplicationBundles OFF)
 endif()
 
+if(MSVC)
+	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
+else()
+	set(UseInternalSDL2 OFF)
+endif()
+
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed
@@ -100,11 +106,13 @@ set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
 # Library names
 set(MPBotLib "botlib")
+set(SharedLib "shared")
 
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
+set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 
 # Common settings
 if(WIN32)

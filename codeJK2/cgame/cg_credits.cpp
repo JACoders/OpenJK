@@ -30,8 +30,6 @@ This file is part of Jedi Knight 2.
 
 #define MAX_LINE_BYTES 2048
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-
 qhandle_t ghFontHandle = 0;
 float gfFontScale = 1.0f;
 vec4_t gv4Color = {0};
@@ -602,7 +600,7 @@ qboolean CG_Credits_Draw( void )
 					int iYpos = SCREEN_HEIGHT + (CreditLine.iLine * iFontHeight);
 						iYpos-= (int) (fPixelsPerSecond * fSecondsElapsed);
 
-					int iTextLinesThisItem = max(CreditLine.vstrText.size(),1);
+					int iTextLinesThisItem = (std::max)( (int)CreditLine.vstrText.size(), 1);
 					if (iYpos + (iTextLinesThisItem * iFontHeight) < 0)
 					{
 						// scrolled off top of screen, so erase it...

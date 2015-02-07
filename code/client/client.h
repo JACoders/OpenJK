@@ -271,9 +271,7 @@ extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cl_activeAction;
 
-#ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
-#endif
 
 //=================================================
 
@@ -398,6 +396,7 @@ void CIN_CloseAllVideos(void);
 //
 // cl_cgame.c
 //
+qboolean CL_InitCGameVM( void *gameLibrary );
 void CL_InitCGame( void );
 void CL_ShutdownCGame( void );
 qboolean CL_GameCommand( void );

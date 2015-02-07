@@ -121,6 +121,12 @@ This file is part of Jedi Academy.
 	#define Q_EXPORT
 #endif
 
+#if defined(__GNUC__)
+#define NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
+#endif
+
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -152,6 +158,12 @@ typedef unsigned long ulong;
 typedef enum { qfalse=0, qtrue } qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
+#ifndef min
+	#define min(x,y) ((x)<(y)?(x):(y))
+#endif
+#ifndef max
+	#define max(x,y) ((x)>(y)?(x):(y))
+#endif
 
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
@@ -992,6 +1004,12 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
+// For compatibility with shared code
+static inline void COM_BeginParseSession( const char *sessionName )
+{
+	COM_BeginParseSession();
+}
+
 class COM_ParseSession {
 public:
 	COM_ParseSession() { COM_BeginParseSession(); };
@@ -1117,7 +1135,7 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char key[MAX_INFO_KEY], char value[MAX_INFO_VALUE] );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	QDECL Com_Error( int level, const char *error, ... );
+void	NORETURN QDECL Com_Error( int level, const char *error, ... );
 void	QDECL Com_Printf( const char *msg, ... );
 
 
