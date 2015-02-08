@@ -705,13 +705,11 @@ Ghoul2 Insert End
 #define CG_FORMATMASK	0x00000007
 #define CG_SMALLFONT	0x00000010
 #define CG_BIGFONT		0x00000020	// default
-#define CG_GIANTFONT	0x00000040
+
 #define CG_DROPSHADOW	0x00000800
 #define CG_BLINK		0x00001000
 #define CG_INVERSE		0x00002000
 #define CG_PULSE		0x00004000
-#define CG_UNDERLINE	0x00008000
-#define CG_TINYFONT		0x00010000
 
 
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );

@@ -2859,7 +2859,11 @@ void CG_LoadMenus(const char *menuFile)
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
 	if ( !f )
 	{
-		CG_Printf( "hud menu file not found: %s, using default\n", menuFile );
+		if ( Q_isanumber( menuFile ) ) // cg_hudFiles 1
+			CG_Printf( S_COLOR_GREEN "hud menu file skipped, using default\n" );
+		else
+			CG_Printf( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile );
+
 		len = cgi_FS_FOpenFile( "ui/jahud.txt", &f, FS_READ );
 		if (!f)
 		{
@@ -2900,8 +2904,7 @@ void CG_LoadMenus(const char *menuFile)
 
 		if (Q_stricmp(token, "loadmenu") == 0)
 		{
-			int menuLoad = CG_Load_Menu(&p);
-			if (menuLoad)
+			if (CG_Load_Menu(&p))
 			{
 				continue;
 			}
