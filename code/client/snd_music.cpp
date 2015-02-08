@@ -24,9 +24,7 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/sstring.h"
 #include <algorithm>
-#ifndef _WIN32
 #include <string>
-#endif
 
 #include "snd_local.h"
 #include "cl_mp3.h"

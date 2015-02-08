@@ -2258,13 +2258,7 @@ int CSequencer::DestroySequence( CSequence *sequence )
 	{
 		if((*tsi).second == sequence)
 		{
-#ifdef _WIN32
-			tsi = m_taskSequences.erase(tsi);
-#else
-			taskSequence_m::iterator itTemp = tsi;
-			tsi++;
-			m_taskSequences.erase(itTemp);
-#endif
+			m_taskSequences.erase(tsi++);
 		}
 		else
 		{
