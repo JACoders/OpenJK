@@ -43,7 +43,7 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 ## Dependencies ##
 
-* SDL2 (2.0.3+) (Only on non-Windows platforms)
+* SDL2 (2.0.3+) (included on Windows)
 * OpenGL
 * OpenAL (included on Windows)
 * libpng (included on Windows)
@@ -58,7 +58,7 @@ In order to run a dedicated server, you must use the openjkded binary. Running d
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
-Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code.
+Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code under the same GPLv2 licence.
 
 ### If you wish to contribute to OpenJK, please do the following ###
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
@@ -80,8 +80,8 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-palpatine (Maintainer: mrwonko)
 * rd-sidious (Maintainer: mrwonko)
 
-### Engine "hax" ###
-* You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
+### Engine hacks in existing mods ###
+Mods which make use of runtime memory patches may fail to run under OpenJK, and in the worst case will cause the program to crash. Consider forking OpenJK and adding your engine modifications directly, or applying these patches only if you are running on the retail engine.
 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)
