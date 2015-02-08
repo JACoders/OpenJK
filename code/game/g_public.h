@@ -146,7 +146,9 @@ typedef struct {
 	void	(*FlushCamFile)();
 
 	// abort the game
-	NORETURN void	(*Error)( int, const char *fmt, ... );
+	// (this is not NORETURN because MSVC's version of NORETURN is not
+	// supported for function pointers)
+	__attribute__((noreturn)) void	(*Error)( int, const char *fmt, ... );
 
 	// get current time for profiling reasons
 	// this should NOT be used for any game related tasks,
