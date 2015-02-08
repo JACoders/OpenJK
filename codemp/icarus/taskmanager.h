@@ -3,9 +3,7 @@
 // Task Manager header file
 
 #include <map>
-#ifndef _WIN32
 #include <string>
-#endif
 
 #include "sequencer.h"
 class CSequencer;

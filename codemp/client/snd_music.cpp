@@ -4,9 +4,6 @@
 
 #include "qcommon/q_shared.h"
 
-#ifndef _WIN32
-#include <string>
-#endif
 
 #include "qcommon/sstring.h"
 
@@ -15,6 +12,7 @@
 #pragma warning( push, 3 )
 #endif
 #include <algorithm>
+#include <string>
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
@@ -769,12 +767,9 @@ qboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 {
 	char sLevelName[MAX_QPATH];
 	Q_strncpyz(sLevelName,COM_SkipPath( const_cast<char*>( (psDynamicMusicLabel&&psDynamicMusicLabel[0])?psDynamicMusicLabel:gsLevelNameFromServer.c_str() ) ),sizeof(sLevelName));
-#ifdef _WIN32
-	strlwr(sLevelName);
-#else
-	string s = sLevelName;
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
+
+	std::string s = sLevelName;
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
 	if (strlen(sLevelName))	// avoid error messages when there's no music waiting to be played and we try and restart it...
 	{
