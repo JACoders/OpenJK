@@ -2773,8 +2773,8 @@ void S_GetSoundtime(void)
 
 	if( CL_VideoRecording( ) )
 	{
-		float fps = min(cl_aviFrameRate->value, 1000.0f);
-		float frameDuration = max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
+		float fps = Q_min(cl_aviFrameRate->value, 1000.0f);
+		float frameDuration = Q_max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
 		int msec = (int)frameDuration;
 		s_soundtime += msec;
 		clc.aviSoundFrameRemainder = frameDuration - msec;
@@ -6037,7 +6037,7 @@ void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < Q_min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{

@@ -6064,7 +6064,7 @@ static void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < Q_min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{

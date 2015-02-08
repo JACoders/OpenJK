@@ -170,7 +170,7 @@ static const char *GetErrorString( DWORD error ) {
 			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
 		if ( bufLen ) {
 			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
+			Q_strncpyz( buf, lpMsgStr, Q_min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
 			LocalFree( lpMsgBuf );
 		}
 	}
