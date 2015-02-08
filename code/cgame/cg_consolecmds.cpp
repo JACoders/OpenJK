@@ -299,6 +299,7 @@ static const char *gcmds[] = {
 	"npc",
 	"playermodel",
 	"playerteam",
+	"playertint",
 	"runscript",
 	"saber",
 	"saberAttackCycle",
