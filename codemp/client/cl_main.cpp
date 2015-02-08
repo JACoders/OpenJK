@@ -2104,8 +2104,8 @@ void CL_Frame ( int msec ) {
 	// if recording an avi, lock to a fixed fps
 	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
 		if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
-			float fps = min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
-			float frameDuration = max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
+			float fps = Q_min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
+			float frameDuration = Q_max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
 			takeVideoFrame = qtrue;
 
 			msec = (int)frameDuration;

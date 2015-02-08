@@ -586,8 +586,8 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	// now print the cursor as well...
 	//
 	char sTemp[1024];
-	int iCopyCount = min((int)strlen(text), cursorPos);
-		iCopyCount = min(iCopyCount,(int)sizeof(sTemp));
+	int iCopyCount = Q_min((int)strlen(text), cursorPos);
+		iCopyCount = Q_min(iCopyCount,(int)sizeof(sTemp));
 
 	// copy text into temp buffer for pixel measure...
 	//
@@ -4601,15 +4601,15 @@ static void	UI_DemoSetForceLevels( void )
 
 	if (pState)
 	{//i am carrying over from a previous level, so get the increased power! (non-core only)
-		uiInfo.forcePowerLevel[FP_HEAL] = max(pState->forcePowerLevel[FP_HEAL], uiInfo.forcePowerLevel[FP_HEAL]);
-		uiInfo.forcePowerLevel[FP_TELEPATHY]=max(pState->forcePowerLevel[FP_TELEPATHY], uiInfo.forcePowerLevel[FP_TELEPATHY]);
-		uiInfo.forcePowerLevel[FP_GRIP]=max(pState->forcePowerLevel[FP_GRIP], uiInfo.forcePowerLevel[FP_GRIP]);
-		uiInfo.forcePowerLevel[FP_LIGHTNING]=max(pState->forcePowerLevel[FP_LIGHTNING], uiInfo.forcePowerLevel[FP_LIGHTNING]);
-		uiInfo.forcePowerLevel[FP_PROTECT]=max(pState->forcePowerLevel[FP_PROTECT], uiInfo.forcePowerLevel[FP_PROTECT]);
+		uiInfo.forcePowerLevel[FP_HEAL] = Q_max(pState->forcePowerLevel[FP_HEAL], uiInfo.forcePowerLevel[FP_HEAL]);
+		uiInfo.forcePowerLevel[FP_TELEPATHY]=Q_max(pState->forcePowerLevel[FP_TELEPATHY], uiInfo.forcePowerLevel[FP_TELEPATHY]);
+		uiInfo.forcePowerLevel[FP_GRIP]=Q_max(pState->forcePowerLevel[FP_GRIP], uiInfo.forcePowerLevel[FP_GRIP]);
+		uiInfo.forcePowerLevel[FP_LIGHTNING]=Q_max(pState->forcePowerLevel[FP_LIGHTNING], uiInfo.forcePowerLevel[FP_LIGHTNING]);
+		uiInfo.forcePowerLevel[FP_PROTECT]=Q_max(pState->forcePowerLevel[FP_PROTECT], uiInfo.forcePowerLevel[FP_PROTECT]);
 
-		uiInfo.forcePowerLevel[FP_ABSORB]=max(pState->forcePowerLevel[FP_ABSORB], uiInfo.forcePowerLevel[FP_ABSORB]);
-		uiInfo.forcePowerLevel[FP_DRAIN]=max(pState->forcePowerLevel[FP_DRAIN], uiInfo.forcePowerLevel[FP_DRAIN]);
-		uiInfo.forcePowerLevel[FP_RAGE]=max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
+		uiInfo.forcePowerLevel[FP_ABSORB]=Q_max(pState->forcePowerLevel[FP_ABSORB], uiInfo.forcePowerLevel[FP_ABSORB]);
+		uiInfo.forcePowerLevel[FP_DRAIN]=Q_max(pState->forcePowerLevel[FP_DRAIN], uiInfo.forcePowerLevel[FP_DRAIN]);
+		uiInfo.forcePowerLevel[FP_RAGE]=Q_max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
 	}
 }
 

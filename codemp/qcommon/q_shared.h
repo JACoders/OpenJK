@@ -142,12 +142,8 @@ typedef unsigned long ulong;
 
 typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
 
-#ifndef min
-	#define min(x,y) ((x)<(y)?(x):(y))
-#endif
-#ifndef max
-	#define max(x,y) ((x)>(y)?(x):(y))
-#endif
+#define Q_min(x,y) ((x)<(y)?(x):(y))
+#define Q_max(x,y) ((x)>(y)?(x):(y))
 
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
