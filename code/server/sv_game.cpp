@@ -568,11 +568,6 @@ static int SV_G2API_GetSurfaceRenderStatus( CGhoul2Info *ghlInfo, const char *su
 	return re.G2API_GetSurfaceRenderStatus( ghlInfo, surfaceName );
 }
 
-static int SV_G2API_GetTime( int argTime )
-{
-	return re.G2API_GetTime( argTime );
-}
-
 static void SV_G2API_GiveMeVectorFromMatrix( mdxaBone_t &boltMatrix, Eorientations flags, vec3_t &vec )
 {
 	re.G2API_GiveMeVectorFromMatrix( boltMatrix, flags, vec );
@@ -742,11 +737,6 @@ static qboolean SV_G2API_SetGhoul2ModelFlags( CGhoul2Info *ghlInfo, const int fl
 	return re.G2API_SetGhoul2ModelFlags( ghlInfo, flags );
 }
 
-static void  SV_G2API_SetGhoul2ModelIndexes( CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList )
-{
-	return re.G2API_SetGhoul2ModelIndexes( ghoul2, modelList, skinList );
-}
-
 static qboolean SV_G2API_SetLodBias( CGhoul2Info *ghlInfo, int lodBias )
 {
 	return re.G2API_SetLodBias( ghlInfo, lodBias );
@@ -782,11 +772,6 @@ static qboolean SV_G2API_SetSurfaceOnOff( CGhoul2Info *ghlInfo, const char *surf
 	return re.G2API_SetSurfaceOnOff( ghlInfo, surfaceName, flags );
 }
 
-static void  SV_G2API_SetTime( int currentTime, int clock )
-{
-	return re.G2API_SetTime( currentTime, clock );
-}
-
 static qboolean SV_G2API_StopBoneAnim( CGhoul2Info *ghlInfo, const char *boneName )
 {
 	return re.G2API_StopBoneAnim( ghlInfo, boneName );
@@ -818,16 +803,6 @@ static void  SV_G2API_ClearSkinGore( CGhoul2Info_v &ghoul2 )
 	return re.G2API_ClearSkinGore( ghoul2 );
 }
 #endif
-
-static void SV_G2Time_ResetTimers( void )
-{
-	re.G2Time_ResetTimers();
-}
-
-static void	SV_G2Time_ReportTimers( void )
-{
-	re.G2Time_ReportTimers();
-}
 
 static IGhoul2InfoArray& SV_TheGhoul2InfoArray( void )
 {

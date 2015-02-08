@@ -1224,25 +1224,26 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	while ( 1 ) {	
 		// parse key
 		com_token = COM_Parse( data );
-		if ( com_token[0] == '}' ) {
-			break;
-		}
-		if ( !data ) {
+		if ( !*data ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
+		}
+
+		if ( com_token[0] == '}' ) {
+			break;
 		}
 
 		Q_strncpyz( keyname, com_token, sizeof(keyname) );
 		
 		// parse value	
 		com_token = COM_Parse( data );
+		if ( !*data ) {
+			COM_EndParseSession();
+			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
+		}
 		if ( com_token[0] == '}' ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
-		}
-		if ( !data ) {
-			COM_EndParseSession();
-			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 		if ( numSpawnVars == MAX_SPAWN_VARS ) {
 			COM_EndParseSession();

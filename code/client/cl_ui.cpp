@@ -26,8 +26,6 @@ This file is part of Jedi Academy.
 
 #include "vmachine.h"
 
-int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
-
 intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes

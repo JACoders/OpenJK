@@ -1067,7 +1067,7 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 
 void CL_InitRef( void ) {
 	refexport_t	*ret;
-	refimport_t rit;
+	static refimport_t rit;
 	char		dllName[MAX_OSPATH];
 	GetRefAPI_t	GetRefAPI;
 
@@ -1088,6 +1088,8 @@ void CL_InitRef( void ) {
 	if ( !rendererLib ) {
 		Com_Error( ERR_FATAL, "Failed to load renderer" );
 	}
+
+	memset( &rit, 0, sizeof( rit ) );
 
 	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
 	if ( !GetRefAPI )

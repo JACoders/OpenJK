@@ -329,13 +329,11 @@ typedef enum {
 #define UI_FORMATMASK	0x00000007
 #define UI_SMALLFONT	0x00000010
 #define UI_BIGFONT		0x00000020	// default
-#define UI_GIANTFONT	0x00000040
+
 #define UI_DROPSHADOW	0x00000800
 #define UI_BLINK		0x00001000
 #define UI_INVERSE		0x00002000
 #define UI_PULSE		0x00004000
-#define UI_UNDERLINE	0x00008000
-#define UI_TINYFONT		0x00010000
 
 
 #define Com_Memset memset
