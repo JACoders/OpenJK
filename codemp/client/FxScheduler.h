@@ -15,9 +15,6 @@
 #pragma warning (pop)
 #endif
 
-using namespace std;
-
-
 #define FX_FILE_PATH	"effects"
 
 #define FX_MAX_TRACE_DIST		16384	// SOF2 uses a larger scale
@@ -65,7 +62,7 @@ class CMediaHandles
 {
 private:
 
-	vector<int>	mMediaList;
+	std::vector<int>	mMediaList;
 
 public:
 
@@ -385,7 +382,7 @@ public:
 		std::rotate (freeAndAllocated, freeAndAllocated + 1, freeAndAllocated + N);
 		numFree--;
 
-		highWatermark = Q_max (highWatermark, N - numFree);
+		highWatermark = Q_max(highWatermark, N - numFree);
 
 		return ptr;
 	}
@@ -601,9 +598,9 @@ private:
 	};
 
 	// this makes looking up the index based on the string name much easier
-	typedef map<string, int>				TEffectID;
+	typedef std::map<std::string, int>				TEffectID;
 
-	typedef list<SScheduledEffect*>			TScheduledEffect;
+	typedef std::list<SScheduledEffect*>			TScheduledEffect;
 
 	// Effects
 	SEffectTemplate		mEffectTemplates[FX_MAX_EFFECTS];

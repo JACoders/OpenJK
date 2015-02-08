@@ -15,9 +15,6 @@
 #pragma warning (pop)
 #endif
 
-using namespace std;
-
-
 #define	LL(x) x=LittleLong(x)
 #define	LS(x) x=LittleShort(x)
 #define	LF(x) x=LittleFloat(x)
@@ -46,8 +43,8 @@ Ghoul2 Insert End
 // This stuff looks a bit messy, but it's kept here as black box, and nothing appears in any .H files for other
 //	modules to worry about. I may make another module for this sometime.
 //
-typedef pair<int,int> StringOffsetAndShaderIndexDest_t;
-typedef vector <StringOffsetAndShaderIndexDest_t> ShaderRegisterData_t;
+typedef std::pair<int,int> StringOffsetAndShaderIndexDest_t;
+typedef std::vector <StringOffsetAndShaderIndexDest_t> ShaderRegisterData_t;
 struct CachedEndianedModelBinary_s
 {
 	void	*pModelDiskImage;
@@ -67,7 +64,7 @@ struct CachedEndianedModelBinary_s
 	}
 };
 typedef struct CachedEndianedModelBinary_s CachedEndianedModelBinary_t;
-typedef map <sstring_t,CachedEndianedModelBinary_t>	CachedModels_t;
+typedef std::map <sstring_t,CachedEndianedModelBinary_t>	CachedModels_t;
 CachedModels_t *CachedModels = NULL;	// the important cache item.
 
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke)

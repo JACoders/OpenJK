@@ -44,7 +44,6 @@ This file is part of Jedi Academy.
 #include "stringed_ingame.h"
 
 #include <string>
-using namespace std;
 
 #ifdef _STRINGED
 #include <stdlib.h>

@@ -16,7 +16,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 #include "cm_local.h"
-using namespace std;
 
 class CPoint
 {

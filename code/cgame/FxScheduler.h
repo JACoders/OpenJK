@@ -26,9 +26,6 @@ typedef sstring_t fxString_t;
 #ifndef FX_SCHEDULER_H_INC
 #define FX_SCHEDULER_H_INC
 
-using namespace std;
-
-
 #define FX_FILE_PATH	"effects"
 
 #define FX_MAX_TRACE_DIST			WORLD_SIZE

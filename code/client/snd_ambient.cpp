@@ -111,7 +111,7 @@ Free
 
 void CSetGroup::Free( void )
 {
-	vector<ambientSet_t *>::iterator	ai;
+	std::vector<ambientSet_t *>::iterator	ai;
 
 	for ( ai = m_ambientSets->begin(); ai != m_ambientSets->end(); ai++ )
 	{

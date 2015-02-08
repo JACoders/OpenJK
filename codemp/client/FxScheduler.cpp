@@ -216,7 +216,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 		{
 			// Clear the effect names, but first get the name of the effect to preserve,
 			// and restore it after clearing.
-			string str;
+			std::string str;
 			TEffectID::iterator iter;
 
 			for (iter = mEffectIDs.begin(); iter != mEffectIDs.end(); ++iter)
@@ -283,10 +283,10 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	char			*bufParse = 0;
 
 	// if our file doesn't have an extension, add one
-	string finalFilename = file;
-	string effectsSubstr = finalFilename.substr(0, 7);
+	std::string finalFilename = file;
+	std::string effectsSubstr = finalFilename.substr(0, 7);
 
-	if (finalFilename.find('.') == string::npos)
+	if (finalFilename.find('.') == std::string::npos)
 	{
 		// didn't find an extension so add one
 		finalFilename += ".efx";
@@ -296,7 +296,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	if (effectsSubstr.compare("effects") != 0)
 	{
 		//theFxHelper.Print("Hey!!! '%s' should be pathed from the base directory!!!\n", finalFilename.c_str());
-		string strTemp = finalFilename;
+		std::string strTemp = finalFilename;
 		finalFilename = "effects/";
 		finalFilename += strTemp;
 	}

@@ -37,8 +37,6 @@ This file is part of Jedi Knight 2.
 	#pragma warning (pop)
 #endif
 
-using namespace std;
-
 #define IBI_HEADER_ID_LENGTH 4 // Length of IBI_HEADER_ID + 1 for the null terminating byte.
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"

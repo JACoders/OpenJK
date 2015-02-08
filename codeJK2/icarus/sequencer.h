@@ -40,8 +40,6 @@ This file is part of Jedi Knight 2.
 	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #endif
 
-using namespace std;
-
 //Defines
 
 #define SQ_COMMON		0x00000000 	//Common one-pass sequence

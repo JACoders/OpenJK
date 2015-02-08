@@ -20,8 +20,8 @@ public:
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;
-	virtual vector<CGhoul2Info> &Get(int handle)=0;
-	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
+	virtual std::vector<CGhoul2Info> &Get(int handle)=0;
+	virtual const std::vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
 IGhoul2InfoArray &TheGhoul2InfoArray();
@@ -47,12 +47,12 @@ class CGhoul2Info_v
 			mItem=0;
 		}
 	}
-	vector<CGhoul2Info> &Array()
+	std::vector<CGhoul2Info> &Array()
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
 	}
-	const vector<CGhoul2Info> &Array() const
+	const std::vector<CGhoul2Info> &Array() const
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
