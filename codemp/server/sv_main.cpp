@@ -976,7 +976,7 @@ void SV_CheckCvars( void ) {
 		client_t *cl = NULL;
 		int i=0;
 		int minSnaps = Com_Clampi( 1, sv_snapsMax->integer, sv_snapsMin->integer ); // between 1 and sv_snapsMax ( 1 <-> 40 )
-		int maxSnaps = min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+		int maxSnaps = Q_min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
 
 		lastModFramerate = sv_fps->modificationCount;
 		lastModSnapsMin = sv_snapsMin->modificationCount;

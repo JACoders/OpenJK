@@ -762,7 +762,7 @@ static void InitOpenGL( void )
 		qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
 
 		// stubbed or broken drivers may have reported 0...
-		glConfig.maxTextureSize = max(0, glConfig.maxTextureSize);
+		glConfig.maxTextureSize = Q_max(0, glConfig.maxTextureSize);
 
 		// initialize extensions
 		GLimp_InitExtensions( );
