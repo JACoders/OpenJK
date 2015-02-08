@@ -1647,7 +1647,6 @@ static void CG_DrawBatteryCharge( void )
 static void CG_DrawSimpleSaberStyle( const centity_t *cent )
 {
 	uint32_t	calcColor;
-	int			currValue = 0;
 	char		num[7] = { 0 };
 	int			weapX = 16;
 
@@ -1720,7 +1719,7 @@ static void CG_DrawSimpleAmmo( const centity_t *cent )
 	currValue = ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
 
 	// No ammo
-	if ( currValue < 0 || weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0 )
+	if ( currValue < 0 || (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0) )
 	{
 		SimpleHud_DrawString( SCREEN_WIDTH - (16 + 32), (SCREEN_HEIGHT - 80) + 40, "--", colorTable[CT_HUD_ORANGE] );
 		return;
