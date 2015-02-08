@@ -358,23 +358,12 @@ MATHLIB
 ==============================================================
 */
 
+typedef float	 vec_t;
+typedef float	 vec2_t[2], vec3_t[3], vec4_t[4], vec5_t[5];
+typedef int		ivec2_t[2], ivec3_t[3], ivec4_t[4], ivec5_t[5];
+typedef vec3_t vec3pair_t[2], matrix3_t[3];
 
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
-typedef vec_t vec5_t[5];
-
-typedef vec3_t	vec3pair_t[2];
-
-typedef int ivec2_t[2];
-typedef int ivec3_t[3];
-typedef int ivec4_t[4];
-typedef int ivec5_t[5];
-
-typedef	int	fixed4_t;
-typedef	int	fixed8_t;
-typedef	int	fixed16_t;
+typedef	int	fixed4_t, fixed8_t, fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
