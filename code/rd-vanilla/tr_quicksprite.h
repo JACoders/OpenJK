@@ -22,12 +22,7 @@ This file is part of Jedi Academy.
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_TR_QUICKSPRITE_H__6F05EB85_A1ED_4537_9EC0_9F5D82A5D99A__INCLUDED_)
-#define AFX_TR_QUICKSPRITE_H__6F05EB85_A1ED_4537_9EC0_9F5D82A5D99A__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 class CQuickSpriteSystem
 {
@@ -56,8 +51,3 @@ public:
 };
 
 extern CQuickSpriteSystem SQuickSprite;
-
-
-#endif
-
-
