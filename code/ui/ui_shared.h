@@ -39,17 +39,6 @@ This file is part of Jedi Academy.
 #define SLIDER_THUMB_HEIGHT 16.0
 #define SCROLLBAR_SIZE 16.0
 
-typedef struct pc_token_s
-{
-	int			type;
-	int			subtype;
-	int			intvalue;
-	float		floatvalue;
-	char		string[MAX_TOKENLENGTH];
-} pc_token_t;
-
-
-
 // FIXME: combine flags into bitfields to save space
 // FIXME: consolidate all of the common stuff in one structure for menus and items
 // THINKABOUTME: is there any compelling reason not to have items contain items

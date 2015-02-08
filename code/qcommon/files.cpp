@@ -2375,7 +2375,6 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 
 			if (nPaks > 0) {
 				bool isBase = !Q_stricmp( name, BASEGAME );
-				bool isOpenJK = !Q_stricmp( name, OPENJKGAME );
 				nLen = isBase ? 1 : strlen(name) + 1;
 				// nLen is the length of the mod path
 				// we need to see if there is a description available

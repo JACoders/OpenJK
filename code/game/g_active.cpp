@@ -4718,16 +4718,16 @@ extern void ForceHeal(gentity_t *ent);
 static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 {
 	switch(cmd) {
-	case 0:
+	default:
 		break;
-	case GENCMD_FORCE_DRAIN:
-		ForceDrain2(ent);
+	case GENCMD_FORCE_HEAL:
+		ForceHeal( ent );
+		break;
+	case GENCMD_FORCE_SPEED:
+		ForceSpeed( ent );
 		break;
 	case GENCMD_FORCE_THROW:
 		ForceThrow(ent, qfalse);
-		break;
-	case GENCMD_FORCE_SPEED:
-		ForceSpeed(ent);
 		break;
 	case GENCMD_FORCE_PULL:
 		ForceThrow(ent, qtrue);
@@ -4750,11 +4750,11 @@ static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 	case GENCMD_FORCE_ABSORB:
 		ForceAbsorb(ent);
 		break;
+	case GENCMD_FORCE_DRAIN:
+		ForceDrain2( ent );
+		break;
 	case GENCMD_FORCE_SEEING:
 		ForceSeeing(ent);
-		break;
-	case GENCMD_FORCE_HEAL:
-		ForceHeal(ent);
 		break;
 	}
 }

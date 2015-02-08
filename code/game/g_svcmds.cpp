@@ -67,25 +67,49 @@ void	Svcmd_EntityList_f (void) {
 		gi.Printf("%3i:", e);
 		switch ( check->s.eType ) {
 		case ET_GENERAL:
-			gi.Printf("ET_GENERAL ");
+			gi.Printf( "ET_GENERAL          " );
 			break;
 		case ET_PLAYER:
-			gi.Printf("ET_PLAYER  ");
+			gi.Printf( "ET_PLAYER           " );
 			break;
 		case ET_ITEM:
-			gi.Printf("ET_ITEM    ");
+			gi.Printf( "ET_ITEM             " );
 			break;
 		case ET_MISSILE:
-			gi.Printf("ET_MISSILE ");
+			gi.Printf( "ET_MISSILE          " );
 			break;
 		case ET_MOVER:
-			gi.Printf("ET_MOVER   ");
+			gi.Printf( "ET_MOVER            " );
 			break;
 		case ET_BEAM:
-			gi.Printf("ET_BEAM    ");
+			gi.Printf( "ET_BEAM             " );
+			break;
+		case ET_PORTAL:
+			gi.Printf( "ET_PORTAL           " );
+			break;
+		case ET_SPEAKER:
+			gi.Printf( "ET_SPEAKER          " );
+			break;
+		case ET_PUSH_TRIGGER:
+			gi.Printf( "ET_PUSH_TRIGGER     " );
+			break;
+		case ET_TELEPORT_TRIGGER:
+			gi.Printf( "ET_TELEPORT_TRIGGER " );
+			break;
+		case ET_INVISIBLE:
+			gi.Printf( "ET_INVISIBLE        " );
+			break;
+		case ET_THINKER:
+			gi.Printf( "ET_THINKER          " );
+			break;
+		case ET_CLOUD:
+			gi.Printf( "ET_CLOUD            " );
+			break;
+		case ET_TERRAIN:
+			gi.Printf( "ET_TERRAIN          " );
 			break;
 		default:
-			gi.Printf("#%i", check->s.eType);
+			gi.Printf( "%-3i                ", check->s.eType );
 			break;
 		}
 
@@ -94,43 +118,6 @@ void	Svcmd_EntityList_f (void) {
 		}
 		gi.Printf("\n");
 	}
-}
-
-gclient_t	*ClientForString( const char *s ) {
-	gclient_t	*cl;
-	int			i;
-	int			idnum;
-
-	// numeric values are just slot numbers
-	if ( s[0] >= '0' && s[0] <= '9' ) {
-		idnum = atoi( s );
-		if ( idnum < 0 || idnum >= level.maxclients ) {
-			Com_Printf( "Bad client slot: %i\n", idnum );
-			return NULL;
-		}
-
-		cl = &level.clients[idnum];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			gi.Printf( "Client %i is not connected\n", idnum );
-			return NULL;
-		}
-		return cl;
-	}
-
-	// check for a name match
-	for ( i=0 ; i < level.maxclients ; i++ ) {
-		cl = &level.clients[i];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-		if ( !Q_stricmp( cl->pers.netname, s ) ) {
-			return cl;
-		}
-	}
-
-	gi.Printf( "User %s is not on the server\n", s );
-
-	return NULL;
 }
 
 //---------------------------
@@ -632,7 +619,6 @@ void G_GrabEntity( gentity_t *grabber, const char *target )
 /*
 =================
 ConsoleCommand
-// these are added in cg_main, CG_Init so they tab-complete
 =================
 */
 qboolean	ConsoleCommand( void ) {
@@ -650,11 +636,6 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_GameMem_f();
 		return qtrue;
 	}
-
-//	if (Q_stricmp (cmd, "addbot") == 0) {
-//		Svcmd_AddBot_f();
-//		return qtrue;
-//	}
 
 	if (Q_stricmp (cmd, "nav") == 0) 
 	{
@@ -734,7 +715,6 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_SaberBlade_f();
 		return qtrue;
 	}
-
 
 	if ( Q_stricmp( cmd, "setForceJump" ) == 0 )	
 	{

@@ -265,11 +265,6 @@ void CL_AddCgameCommand( const char *cmdName ) {
 	Cmd_AddCommand( cmdName, NULL );
 }
 
-void CL_CgameError( const char *string ) {
-	Com_Error( ERR_DROP, "%s", string );
-}
-
-
 /*
 =====================
 CL_ConfigstringModified
@@ -800,7 +795,6 @@ CL_CgameSystemCalls
 The cgame module is making a system call
 ====================
 */
-void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
 extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
 extern menuDef_t *Menus_FindByName(const char *p);

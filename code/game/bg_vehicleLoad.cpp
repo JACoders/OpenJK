@@ -519,7 +519,7 @@ vehField_t vehicleFields[] =
 	{"surfDestruction", VFOFS(surfDestruction), VF_INT},
 
 	//visuals & sounds
-	{"model", VFOFS(model), VF_STRING},			//what model to use - if make it an NPC's primary model, don't need this?
+	{"model", VFOFS(model), VF_STRING},				//what model to use - if make it an NPC's primary model, don't need this?
 	{"skin", VFOFS(skin), VF_STRING},				//what skin to use - if make it an NPC's primary model, don't need this?
 	{"g2radius", VFOFS(g2radius), VF_INT},			//render radius (really diameter, but...) for the ghoul2 model
 	{"riderAnim", VFOFS(riderAnim), VF_ANIM},		//what animation the rider uses

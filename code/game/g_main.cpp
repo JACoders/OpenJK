@@ -534,7 +534,7 @@ void G_FindTeams( void ) {
 	c = 0;
 	c2 = 0;
 //	for ( i=1, e=g_entities,i ; i < globals.num_entities ; i++,e++ )
-	for ( i=1 ; i < globals.num_entities ; i++ )
+	for ( i=MAX_CLIENTS ; i < globals.num_entities ; i++ )
 	{
 //		if (!e->inuse)
 //			continue;
