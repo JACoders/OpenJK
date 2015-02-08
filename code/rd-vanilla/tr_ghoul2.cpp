@@ -2332,9 +2332,9 @@ void RenderSurfaces(CRenderSurface &RS)
 			if (RS.gore_set && drawGore)
 			{
 				int curTime = G2API_GetTime(tr.refdef.time);
-				pair<multimap<int,SGoreSurface>::iterator,multimap<int,SGoreSurface>::iterator> range=
+				std::pair<std::multimap<int,SGoreSurface>::iterator,std::multimap<int,SGoreSurface>::iterator> range=
 					RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
-				multimap<int,SGoreSurface>::iterator k,kcur;
+				std::multimap<int,SGoreSurface>::iterator k,kcur;
 				CRenderableSurface *last=newSurf;
 				for (k=range.first;k!=range.second;)
 				{

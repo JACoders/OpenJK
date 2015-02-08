@@ -24,8 +24,8 @@ extern int delayedShutDown;
 
 #define	TAG_GENERIC_NAME	"__WORLD__"	//If a designer chooses this name, cut a finger off as an example to the others
 
-typedef vector < reference_tag_t * >		refTag_v;
-typedef map < string, reference_tag_t * >	refTag_m;
+typedef std::vector < reference_tag_t * >		refTag_v;
+typedef std::map < std::string, reference_tag_t * >	refTag_m;
 
 typedef struct tagOwner_s
 {
@@ -33,7 +33,7 @@ typedef struct tagOwner_s
 	refTag_m	tagMap;
 } tagOwner_t;
 
-typedef map < string, tagOwner_t * >	refTagOwner_m;
+typedef std::map < std::string, tagOwner_t * >	refTagOwner_m;
 
 refTagOwner_m	refTagOwnerMap;
 

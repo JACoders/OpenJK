@@ -64,15 +64,15 @@ protected:
 
 	int						m_GUID;
 
-	typedef list< CSequence * >				sequence_l;
-	typedef list< CSequencer * >			sequencer_l;
-	typedef map < int, CSequencer* >		sequencer_m;
+	typedef std::list< CSequence * >				sequence_l;
+	typedef std::list< CSequencer * >			sequencer_l;
+	typedef std::map < int, CSequencer* >		sequencer_m;
 
 	sequence_l				m_sequences;
 	sequencer_l				m_sequencers;
 	sequencer_m				m_sequencerMap;
 
-	typedef map < string, unsigned char >	signal_m;
+	typedef std::map < std::string, unsigned char >	signal_m;
 	signal_m				m_signals;
 
 	static double ICARUS_VERSION;

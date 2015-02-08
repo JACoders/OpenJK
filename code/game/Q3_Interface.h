@@ -543,12 +543,12 @@ typedef struct pscript_s
 } pscript_t;
 
 // STL map type definitions for the Entity List and Script Buffer List.
-typedef	map < string, int, less<string>, allocator<int> >		entitylist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	scriptlist_t;
+typedef	std::map < std::string, int >		entitylist_t;
+typedef std::map < std::string, pscript_t* >	scriptlist_t;
 
 // STL map type definitions for the variable containers.
-typedef map < string, string >		varString_m;
-typedef map < string, float >		varFloat_m;
+typedef std::map < std::string, std::string >		varString_m;
+typedef std::map < std::string, float >		varFloat_m;
 
 
 // The Quake 3 Game Interface Class for Quake3 and Icarus to use.
