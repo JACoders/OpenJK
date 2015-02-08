@@ -720,11 +720,9 @@ static void InitOpenGL( void )
 		// initialize extensions
 		GLimp_InitExtensions( );
 
-		// print info the first time only
 		// set default state
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
-		GfxInfo_f();
 	}
 	else
 	{
@@ -1752,6 +1750,8 @@ void R_Init( void ) {
 		ri.Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
 
 	RestoreGhoul2InfoArray();
+	// print info
+	GfxInfo_f();
 
 	//ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
