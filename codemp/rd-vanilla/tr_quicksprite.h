@@ -21,7 +21,7 @@ private:
 
 public:
 			CQuickSpriteSystem();
-	virtual ~CQuickSpriteSystem();
+			~CQuickSpriteSystem();
 
 			void StartGroup(textureBundle_t *bundle, uint32_t glbits, int fogIndex = -1);
 			void EndGroup(void);

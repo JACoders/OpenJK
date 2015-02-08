@@ -18,9 +18,18 @@ CQuickSpriteSystem SQuickSprite;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CQuickSpriteSystem::CQuickSpriteSystem()
+CQuickSpriteSystem::CQuickSpriteSystem() :
+	mTexBundle(NULL),
+	mGLStateBits(0),
+	mFogIndex(-1),
+	mUseFog(qfalse),
+	mNextVert(0)
 {
 	int i;
+
+	memset( mVerts, 0, sizeof( mVerts ) );
+	memset( mFogTextureCoords, 0, sizeof( mFogTextureCoords ) );
+	memset( mColors, 0, sizeof( mColors ) );
 
 	for (i=0; i<SHADER_MAX_VERTEXES; i+=4)
 	{
