@@ -74,8 +74,9 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 #endif
 void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to, qboolean isVehiclePS = qfalse );
 
-
+#ifndef FINAL_BUILD
 void MSG_ReportChangeVectors_f( void );
+#endif
 
 //============================================================================
 
@@ -609,6 +610,15 @@ void	FS_ForceFlush( fileHandle_t f );
 
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
+
+class FS_AutoFreeFile {
+private:
+	FS_AutoFreeFile();
+	void *buffer;
+public:
+	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
+	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
+};
 
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed

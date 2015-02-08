@@ -161,16 +161,6 @@ void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale, float mPitchO
 	cl.cgameInvenSelection = invenSel;
 }
 
-/*
-=====================
-CL_CgameError
-=====================
-*/
-void CL_CgameError( const char *string ) {
-	Com_Error( ERR_DROP, "%s", string );
-}
-
-
 int gCLTotalClientNum = 0;
 //keep track of the total number of clients
 extern cvar_t	*cl_autolodscale;

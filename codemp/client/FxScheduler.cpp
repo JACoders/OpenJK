@@ -994,7 +994,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, int vol, int rad
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, vol, rad );
 }

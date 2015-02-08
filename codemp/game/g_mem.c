@@ -39,7 +39,7 @@ void *G_Alloc( int size ) {
 	}
 
 	if ( allocPoint + size > POOLSIZE ) {
-	  trap->Error( ERR_DROP, "G_Alloc: failed on allocation of %i bytes\n", size ); // bk010103 - was %u, but is signed
+		trap->Error( ERR_DROP, "G_Alloc: failed on allocation of %i bytes\n", size ); // bk010103 - was %u, but is signed
 		return NULL;
 	}
 

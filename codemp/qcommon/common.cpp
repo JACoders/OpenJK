@@ -665,12 +665,9 @@ journaled file
 ===================================================================
 */
 
-// bk001129 - here we go again: upped from 64
 #define	MAX_PUSHED_EVENTS	            1024
-// bk001129 - init, also static
 static int		com_pushedEventsHead = 0;
 static int             com_pushedEventsTail = 0;
-// bk001129 - static
 static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
@@ -746,23 +743,20 @@ sysEvent_t	Com_GetRealEvent( void ) {
 	return ev;
 }
 
-
 /*
 =================
 Com_InitPushEvent
 =================
 */
-// bk001129 - added
 void Com_InitPushEvent( void ) {
-  // clear the static buffer array
-  // this requires SE_NONE to be accepted as a valid but NOP event
-  memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
-  // reset counters while we are at it
-  // beware: GetEvent might still return an SE_NONE from the buffer
-  com_pushedEventsHead = 0;
-  com_pushedEventsTail = 0;
+	// clear the static buffer array
+	// this requires SE_NONE to be accepted as a valid but NOP event
+	memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
+	// reset counters while we are at it
+	// beware: GetEvent might still return an SE_NONE from the buffer
+	com_pushedEventsHead = 0;
+	com_pushedEventsTail = 0;
 }
-
 
 /*
 =================
@@ -771,7 +765,7 @@ Com_PushEvent
 */
 void Com_PushEvent( sysEvent_t *event ) {
 	sysEvent_t		*ev;
-	static int printedWarning = 0; // bk001129 - init, bk001204 - explicit int
+	static int printedWarning = 0;
 
 	ev = &com_pushedEvents[ com_pushedEventsHead & (MAX_PUSHED_EVENTS-1) ];
 
@@ -871,7 +865,6 @@ int Com_EventLoop( void ) {
 
 		switch ( ev.evType ) {
 		default:
-		  // bk001129 - was ev.evTime
 			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evType );
 			break;
         case SE_NONE:
@@ -1449,20 +1442,11 @@ void Com_Frame( void ) {
 		int		msec, minMsec;
 		static int	lastTime = 0;
 
-		int		timeBeforeFirstEvents;
-		int           timeBeforeServer;
-		int           timeBeforeEvents;
-		int           timeBeforeClient;
-		int           timeAfter;
-
-
-		// bk001204 - init to zero.
-		//  also:  might be clobbered by `longjmp' or `vfork'
-		timeBeforeFirstEvents =0;
-		timeBeforeServer =0;
-		timeBeforeEvents =0;
-		timeBeforeClient = 0;
-		timeAfter = 0;
+		int		timeBeforeFirstEvents = 0;
+		int           timeBeforeServer = 0;
+		int           timeBeforeEvents = 0;
+		int           timeBeforeClient = 0;
+		int           timeAfter = 0;
 
 		// write config file if anything changed
 		Com_WriteConfiguration();

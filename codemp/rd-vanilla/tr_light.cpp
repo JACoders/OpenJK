@@ -397,9 +397,8 @@ int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, ve
 {
 	trRefEntity_t ent;
 
-	// bk010103 - this segfaults with -nolight maps
 	if ( tr.world->lightGridData == NULL )
-	  return qfalse;
+		return qfalse;
 
 	memset(&ent, 0, sizeof(ent));
 	VectorCopy( point, ent.e.origin );

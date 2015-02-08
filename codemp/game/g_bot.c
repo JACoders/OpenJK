@@ -817,8 +817,8 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// get the botinfo from bots.txt
 	botinfo = G_GetBotInfoByName( name );
 	if ( !botinfo ) {
-		trap->BotFreeClient( clientNum );
 		trap->Print( S_COLOR_RED "Error: Bot '%s' not defined\n", name );
+		trap->BotFreeClient( clientNum );
 		return;
 	}
 
@@ -912,7 +912,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// initialize the bot settings
 	if ( !team || !*team ) {
 		if ( level.gametype >= GT_TEAM ) {
-			if ( PickTeam( clientNum ) == TEAM_RED)
+			if ( PickTeam( clientNum ) == TEAM_RED )
 				team = "red";
 			else
 				team = "blue";
@@ -1135,7 +1135,7 @@ static void G_SpawnBots( char *botList, int baseDelay ) {
 		while( *p && *p == ' ' ) {
 			p++;
 		}
-		if( !p ) {
+		if( !*p ) {
 			break;
 		}
 

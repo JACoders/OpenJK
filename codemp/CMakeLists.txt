@@ -355,7 +355,6 @@ if(BuildMPEngine)
 	# OpenAL (is optionally included for Windows)
 	if (WIN32 AND NOT WIN64)
 		if(UseInternalOpenAL)
-			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
 			find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir})

@@ -545,24 +545,6 @@ void Cmd_KillOther_f( gentity_t *ent )
 	G_Kill( otherEnt );
 }
 
-gentity_t *G_GetDuelWinner(gclient_t *client)
-{
-	gclient_t *wCl;
-	int i;
-
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		wCl = &level.clients[i];
-
-		if (wCl && wCl != client && /*wCl->ps.clientNum != client->ps.clientNum &&*/
-			wCl->pers.connected == CON_CONNECTED && wCl->sess.sessionTeam != TEAM_SPECTATOR)
-		{
-			return &g_entities[wCl->ps.clientNum];
-		}
-	}
-
-	return NULL;
-}
-
 /*
 =================
 BroadCastTeamChange
@@ -589,29 +571,8 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
 	} else if ( client->sess.sessionTeam == TEAM_FREE ) {
-		if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
-		{
-			/*
-			gentity_t *currentWinner = G_GetDuelWinner(client);
-
-			if (currentWinner && currentWinner->client)
-			{
-				trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
-				currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), client->pers.netname));
-			}
-			else
-			{
-				trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-				client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
-			}
-			*/
-			//NOTE: Just doing a vs. once it counts two players up
-		}
-		else
-		{
-			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
-			client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
-		}
+		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
 	}
 
 	G_LogPrintf( "ChangeTeam: %i [%s] (%s) \"%s^7\" %s -> %s\n", (int)(client - level.clients), client->sess.IP, client->pers.guid, client->pers.netname, TeamName( oldTeam ), TeamName( client->sess.sessionTeam ) );
@@ -963,7 +924,7 @@ void StopFollowing( gentity_t *ent ) {
 	ent->client->ps.forceHandExtend = HANDEXTEND_NONE;
 	ent->client->ps.forceHandExtendTime = 0;
 	ent->client->ps.zoomMode = 0;
-	ent->client->ps.zoomLocked = 0;
+	ent->client->ps.zoomLocked = qfalse;
 	ent->client->ps.zoomLockTime = 0;
 	ent->client->ps.saberMove = LS_NONE;
 	ent->client->ps.legsAnim = 0;
@@ -1472,7 +1433,7 @@ void Cmd_FollowCycle_f( gentity_t *ent, int dir ) {
 		clientnum += dir;
 		if ( clientnum >= level.maxclients )
 		{
-			//JAC: Avoid /team follow1 crash
+			// Avoid /team follow1 crash
 			if ( looped )
 			{
 				clientnum = original;

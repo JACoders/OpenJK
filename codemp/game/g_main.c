@@ -1083,20 +1083,6 @@ void CalculateRanks( void ) {
 	if ( !g_warmup.integer || level.gametype == GT_SIEGE )
 		level.warmupTime = 0;
 
-	/*
-	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && level.gametype == GT_DUEL && !level.warmupTime)
-	{
-		gentity_t *currentWinner = G_GetDuelWinner(&level.clients[nonSpecIndex]);
-
-		if (currentWinner && currentWinner->client)
-		{
-			trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
-			currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), level.clients[nonSpecIndex].pers.netname));
-		}
-	}
-	*/
-	//NOTE: for now not doing this either. May use later if appropriate.
-
 	qsort( level.sortedClients, level.numConnectedClients,
 		sizeof(level.sortedClients[0]), SortRanks );
 
