@@ -147,7 +147,7 @@ void SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile )
 // quake-style method of doing things since their file-list code doesn't have a 'recursive' flag...
 //
 int giFilesFound;
-static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &strResults )
+static void SE_R_ListFiles( const char *psExtension, const char *psDir, std::string &strResults )
 {
 //	Com_Printf(va("Scanning Dir: %s\n",psDir));
 
@@ -207,7 +207,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 //
 // expected result is a ';'-delineated string (including last one) containing file-list search results
 //
-int SE_BuildFileList( const char *psStartDir, string &strResults )
+int SE_BuildFileList( const char *psStartDir, std::string &strResults )
 {
 #ifndef _STRINGED
 	giFilesFound = 0;

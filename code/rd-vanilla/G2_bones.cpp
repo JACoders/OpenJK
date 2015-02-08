@@ -1141,7 +1141,7 @@ enum ERagState
 };
 static int				ragState;
 
-static vector<boneInfo_t *>		*rag = NULL;  // once we get the dependents precomputed this can be local
+static std::vector<boneInfo_t *>		*rag = NULL;  // once we get the dependents precomputed this can be local
 
 
 static void G2_Generate_MatrixRag(
@@ -2249,7 +2249,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 	assert(ghoul2.mFileName[0]);
 	boneInfo_v &blist = ghoul2.mBlist;
 	if(!rag) {
-		rag = new vector<boneInfo_t*>;
+		rag = new std::vector<boneInfo_t*>;
 	}
 	rag->clear();
 	int numRendered=0;

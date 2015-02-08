@@ -313,7 +313,7 @@ int iFilesUpdated;
 int iErrors;
 qboolean qbForceRescan;
 qboolean qbForceStereo;
-string strErrors;
+std::string strErrors;
 
 void R_CheckMP3s( const char *psDir )
 {

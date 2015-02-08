@@ -763,9 +763,9 @@ public:
 	bool operator()(const char *s1, const char *s2) const { return(Q_stricmp(s1, s2) < 0); } 
 };
 
-typedef map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
-													AllocatedImages_t AllocatedImages;
-													AllocatedImages_t::iterator itAllocatedImages;
+typedef std::map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
+AllocatedImages_t AllocatedImages;
+AllocatedImages_t::iterator itAllocatedImages;
 
 int giTextureBindNum = 1024;	// will be set to this anyway at runtime, but wtf?
 

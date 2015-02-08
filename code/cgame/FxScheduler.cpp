@@ -44,7 +44,7 @@ CFxScheduler	theFxScheduler;
 
 // don't even ask,. it's to do with loadsave...
 //
-vector < sstring_t > g_vstrEffectsNeededPerSlot;
+std::vector < sstring_t > g_vstrEffectsNeededPerSlot;
 SLoopedEffect	gLoopedEffectArray[MAX_LOOPED_FX];	// must be in sync with CFxScheduler::mLoopedEffectArray
 void CFxScheduler::FX_CopeWithAnyLoadedSaveGames(void)
 {

@@ -74,7 +74,7 @@ class CMediaHandles
 {
 private:
 
-	vector<int>	mMediaList;
+	std::vector<int>	mMediaList;
 
 public:
 
@@ -431,9 +431,9 @@ private:
 
 
 	// this makes looking up the index based on the string name much easier
-	typedef map<fxString_t, int>			TEffectID;
+	typedef std::map<fxString_t, int>			TEffectID;
 
-	typedef list<SScheduledEffect*>			TScheduledEffect;
+	typedef std::list<SScheduledEffect*>			TScheduledEffect;
 
 	// Effects
 	SEffectTemplate		mEffectTemplates[FX_MAX_EFFECTS];

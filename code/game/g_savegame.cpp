@@ -150,7 +150,7 @@ static const save_field_t savefields_gClient[] =
 	{NULL, 0, F_IGNORE}
 };
 
-list<sstring_t> *strList = NULL;
+std::list<sstring_t> *strList = NULL;
 
 
 /////////// char * /////////////
@@ -496,7 +496,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 
 static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, int iLen)
 {
-	strList = new list<sstring_t>;
+	strList = new std::list<sstring_t>;
 
 	// enumerate all the fields...
 	//
@@ -515,7 +515,7 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 
 	// save out any associated strings..
 	//
-	list<sstring_t>::iterator it = strList->begin();
+	std::list<sstring_t>::iterator it = strList->begin();
 	for (size_t i=0; i<strList->size(); i++, ++it)
 	{
 		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);

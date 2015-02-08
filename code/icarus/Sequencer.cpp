@@ -228,7 +228,7 @@ Deletes parsing stream
 */
 void CSequencer::DeleteStream( bstream_t *bstream )
 {
-	vector<bstream_t*>::iterator finder = find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
+	std::vector<bstream_t*>::iterator finder = find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
 	if(finder != m_streamsCreated.end())
 	{
 		m_streamsCreated.erase(finder);
