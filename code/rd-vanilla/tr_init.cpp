@@ -1532,7 +1532,7 @@ void R_Register( void )
 	//
 	r_lodCurveError = ri.Cvar_Get( "r_lodCurveError", "250", CVAR_ARCHIVE );
 	r_lodbias = ri.Cvar_Get( "r_lodbias", "0", CVAR_ARCHIVE );
-	r_flares = ri.Cvar_Get ("r_flares", "0", CVAR_ARCHIVE );
+	r_flares = ri.Cvar_Get ("r_flares", "1", CVAR_ARCHIVE );
 	r_lodscale = ri.Cvar_Get( "r_lodscale", "10", CVAR_ARCHIVE );
 
 	r_znear = ri.Cvar_Get( "r_znear", "4", CVAR_ARCHIVE );	//if set any lower, you lose a lot of precision in the distance
