@@ -474,14 +474,12 @@ void NET_OpenSocks( int port ) {
 	Com_Printf( "Opening connection to SOCKS server.\n" );
 
 	if ( ( socks_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
-		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: socket: %s\n", NET_ErrorString() );
 		return;
 	}
 
 	h = gethostbyname( net_socksServer->string );
 	if ( h == NULL ) {
-		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: gethostbyname: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -764,13 +762,11 @@ void NET_GetLocalAddress( void )
 	numIP = 0;
 
 	if( gethostname( hostname, 256 ) == SOCKET_ERROR ) {
-		error = socketError;
 		return;
 	}
 
 	hostInfo = gethostbyname( hostname );
 	if( !hostInfo ) {
-		error = socketError;
 		return;
 	}
 

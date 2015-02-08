@@ -1776,6 +1776,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 		qglDeleteTextures( 1, &tr.blurImage );
 	}
 
+	R_ShutdownWorldEffects();
 	R_ShutdownFonts();
 	if ( tr.registered ) {
 		R_IssuePendingRenderCommands();

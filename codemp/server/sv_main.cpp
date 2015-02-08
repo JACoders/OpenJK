@@ -61,7 +61,7 @@ Converts newlines to "\n" so a line prints nicer
 */
 char	*SV_ExpandNewlines( char *in ) {
 	static	char	string[1024];
-	unsigned int	l;
+	size_t	l;
 
 	l = 0;
 	while ( *in && l < sizeof(string) - 3 ) {
@@ -474,7 +474,7 @@ void SVC_Status( netadr_t from ) {
 	if(strlen(Cmd_Argv(1)) > 128)
 		return;
 
-	strcpy( infostring, Cvar_InfoString( CVAR_SERVERINFO ) );
+	Q_strncpyz( infostring, Cvar_InfoString( CVAR_SERVERINFO ), sizeof( infostring ) );
 
 	// echo back the parameter to status. so master servers can use it as a challenge
 	// to prevent timed spoofed reply packets that add ghost servers
@@ -796,7 +796,7 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		return;
 	}
 
-	// if we received a sequenced packet from an address we don't reckognize,
+	// if we received a sequenced packet from an address we don't recognize,
 	// send an out of band disconnect packet to it
 	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
 }

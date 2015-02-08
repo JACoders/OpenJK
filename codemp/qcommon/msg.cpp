@@ -1,8 +1,6 @@
-// rjr: this is only used when cl_shownet is turned on and the server and client are in the same session
-#include "game/g_public.h"
+#include "qcommon/q_shared.h"
+#include "qcommon/qcommon.h"
 #include "server/server.h"
-
-extern	cvar_t	*cl_shownet;
 
 //#define _NEWHUFFTABLE_		// Build "c:\\netchan.bin"
 //#define _USINGNEWHUFFTABLE_		// Build a new frequency table to cut and paste.
@@ -247,7 +245,7 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 		}
 		msg->readcount = (msg->bit>>3)+1;
 	}
-	if ( sgn ) {
+	if ( sgn && bits > 0 && bits < 32 ) {
 		if ( value & ( 1 << ( bits - 1 ) ) ) {
 			value |= -1 ^ ( ( 1 << bits ) - 1 );
 		}
@@ -544,7 +542,9 @@ delta functions
 =============================================================================
 */
 
-#define	LOG(x) if( cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
+extern	cvar_t	*cl_shownet;
+
+#define	LOG(x) if( cl_shownet && cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
 
 void MSG_WriteDelta( msg_t *msg, int oldV, int newV, int bits ) {
 	if ( oldV == newV ) {
@@ -993,7 +993,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	float		fullFloat;
 	int			*fromF, *toF;
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN( entityStateFields );
 
 	// all fields should be 32 bits to avoid any compiler packing issues
 	// the "number" field is not part of the field list
@@ -1017,8 +1017,6 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 
 	lc = 0;
 	// build the change vector as bytes so it is endian independent
-	// TODO: OPTIMIZE: How about we do this in reverse order so we can
-	// just break out at the first changed field we find?
 	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
@@ -1121,13 +1119,17 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		Com_Error( ERR_DROP, "Bad delta entity number: %i", number );
 	}
 
-	startBit = msg->bit;
+	if ( msg->bit == 0 ) {
+		startBit = msg->readcount * 8 - GENTITYNUM_BITS;
+	} else {
+		startBit = ( msg->readcount - 1 ) * 8 + msg->bit - GENTITYNUM_BITS;
+	}
 
 	// check for a remove
 	if ( MSG_ReadBits( msg, 1 ) == 1 ) {
 		Com_Memset( to, 0, sizeof( *to ) );
 		to->number = MAX_GENTITIES - 1;
-		if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
+		if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) ) {
 			Com_Printf( "%3i: #%-3i remove\n", msg->readcount, number );
 		}
 		return;
@@ -1140,12 +1142,15 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		return;
 	}
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN(entityStateFields);
 	lc = MSG_ReadByte(msg);
+
+	if ( lc > numFields || lc < 0 )
+		Com_Error( ERR_DROP, "invalid entityState field count" );
 
 	// shownet 2/3 will interleave with other printed info, -1 will
 	// just print the delta records`
-	if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
+	if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) ) {
 		print = 1;
 		if (sv.state)
 		{
@@ -1212,7 +1217,11 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 	}
 
 	if ( print ) {
-		endBit = msg->bit;
+		if ( msg->bit == 0 ) {
+			endBit = msg->readcount * 8 - GENTITYNUM_BITS;
+		} else {
+			endBit = ( msg->readcount - 1 ) * 8 + msg->bit - GENTITYNUM_BITS;
+		}
 		Com_Printf( " (%i bits)\n", endBit - startBit  );
 	}
 }
@@ -1843,13 +1852,13 @@ void MSG_CheckNETFPSFOverrides(qboolean psfOverrides)
 	{ //do PSF overrides instead of NETF
 		fileName = "psf_overrides.txt";
 		bitStorage = &g_psfBitStorage;
-		numFields = sizeof(playerStateFields)/sizeof(playerStateFields[0]);
+		numFields = (int)ARRAY_LEN( playerStateFields );
 	}
 	else
 	{
 		fileName = "netf_overrides.txt";
 		bitStorage = &g_netfBitStorage;
-		numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+		numFields = (int)ARRAY_LEN( entityStateFields );
 	}
 
 	if (*bitStorage)
@@ -1876,7 +1885,7 @@ void MSG_CheckNETFPSFOverrides(qboolean psfOverrides)
 
 	len = FS_FOpenFileRead(va("ext_data/MP/%s", fileName), &f, qfalse);
 
-	if (!f)
+	if (!f || len < 0)
 	{ //silently exit since this file is not needed to proceed.
 		return;
 	}
@@ -2040,7 +2049,6 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 	int				ammobits;
 	int				powerupbits;
 	int				numFields;
-	int				c;
 	netField_t		*field;
 	netField_t		*PSFields = playerStateFields;
 	int				*fromF, *toF;
@@ -2056,13 +2064,11 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 		Com_Memset (&dummy, 0, sizeof(dummy));
 	}
 
-	c = msg->cursize;
-
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #ifdef _OPTIMIZED_VEHICLE_NETWORKING
 	if ( isVehiclePS )
 	{//a vehicle playerstate
-		numFields = sizeof( vehPlayerStateFields ) / sizeof( vehPlayerStateFields[0] );
+		numFields = (int)ARRAY_LEN( vehPlayerStateFields );
 		PSFields = vehPlayerStateFields;
 	}
 	else
@@ -2071,18 +2077,18 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			&& (to->eFlags&EF_NODRAW) )
 		{//pilot riding *inside* a vehicle!
 			MSG_WriteBits( msg, 1, 1 );	// Pilot player state
-			numFields = sizeof( pilotPlayerStateFields ) / sizeof( pilotPlayerStateFields[0] ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields ) - 82;
 			PSFields = pilotPlayerStateFields;
 		}
 		else
 		{//normal client
 			MSG_WriteBits( msg, 0, 1 );	// Normal player state
-			numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+			numFields = (int)ARRAY_LEN( playerStateFields );
 		}
 	}
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #else// _OPTIMIZED_VEHICLE_NETWORKING
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 #endif// _OPTIMIZED_VEHICLE_NETWORKING
 
 	lc = 0;
@@ -2146,7 +2152,6 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			MSG_WriteBits( msg, *toF, field->bits );
 		}
 	}
-	c = msg->cursize - c;
 
 
 	//
@@ -2302,7 +2307,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 
 	// shownet 2/3 will interleave with other printed info, -2 will
 	// just print the delta records
-	if ( cl_shownet->integer >= 2 || cl_shownet->integer == -2 ) {
+	if ( cl_shownet && ( cl_shownet->integer >= 2 || cl_shownet->integer == -2 ) ) {
 		print = 1;
 		Com_Printf( "%3i: playerstate ", msg->readcount );
 	} else {
@@ -2313,7 +2318,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 #ifdef _OPTIMIZED_VEHICLE_NETWORKING
 	if ( isVehiclePS )
 	{//a vehicle playerstate
-		numFields = sizeof( vehPlayerStateFields ) / sizeof( vehPlayerStateFields[0] );
+		numFields = (int)ARRAY_LEN( vehPlayerStateFields );
 		PSFields = vehPlayerStateFields;
 	}
 	else
@@ -2321,20 +2326,23 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		int isPilot = MSG_ReadBits( msg, 1 );
 		if ( isPilot )
 		{//pilot riding *inside* a vehicle!
-			numFields = sizeof( pilotPlayerStateFields ) / sizeof( pilotPlayerStateFields[0] ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields ) - 82;
 			PSFields = pilotPlayerStateFields;
 		}
 		else
 		{//normal client
-			numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+			numFields = (int)ARRAY_LEN( playerStateFields );
 		}
 	}
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #else//_OPTIMIZED_VEHICLE_NETWORKING
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 #endif//_OPTIMIZED_VEHICLE_NETWORKING
 
 	lc = MSG_ReadByte(msg);
+
+	if ( lc > numFields || lc < 0 )
+		Com_Error( ERR_DROP, "invalid playerState field count" );
 
 	for ( i = 0, field = PSFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
@@ -3070,12 +3078,12 @@ MSG_ReportChangeVectors_f
 Prints out a table from the current statistics for copying to code
 =================
 */
-void MSG_ReportChangeVectors_f( void ) {
 #ifndef FINAL_BUILD
+void MSG_ReportChangeVectors_f( void ) {
 	int			numFields, i;
 	netField_t	*field;
 
-	numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
+	numFields = (int)ARRAY_LEN( entityStateFields );
 
 	Com_Printf("Entity State Fields:\n");
 	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ )
@@ -3085,14 +3093,14 @@ void MSG_ReportChangeVectors_f( void ) {
 	}
 
 	Com_Printf("\nPlayer State Fields:\n");
-	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
+	numFields = (int)ARRAY_LEN( playerStateFields );
 	for ( i = 0, field = playerStateFields ; i < numFields ; i++, field++ )
 	{
 		Com_Printf("%s\t\t%d\n", field->name, field->mCount);
 		field->mCount = 0;
 	}
 
-#endif	// FINAL_BUILD
 }
+#endif	// FINAL_BUILD
 
 //===========================================================================

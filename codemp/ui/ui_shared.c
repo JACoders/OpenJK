@@ -287,6 +287,7 @@ void String_Init() {
 	}
 }
 
+#if 0
 /*
 =================
 PC_SourceWarning
@@ -308,6 +309,7 @@ void PC_SourceWarning(int handle, char *format, ...) {
 
 	Com_Printf(S_COLOR_YELLOW "WARNING: %s, line %d: %s\n", filename, line, string);
 }
+#endif
 
 /*
 =================
@@ -656,12 +658,15 @@ void Window_Paint(windowDef_t *w, float fadeAmount, float fadeClamp, float fadeC
 	vec4_t color;
 	rectDef_t fillRect;
 
+	if ( w == NULL )
+		return;
+
 	if ( debugMode ) {
 		color[0] = color[1] = color[2] = color[3] = 1;
 		DC->drawRect(w->rect.x, w->rect.y, w->rect.w, w->rect.h, 1, color);
 	}
 
-	if ( w == NULL || ( w->style == 0 && w->border == 0 ) )
+	if ( w->style == 0 && w->border == 0 )
 		return;
 
 	fillRect = w->rect;
@@ -8031,8 +8036,10 @@ qboolean ItemParse_cvarFloat( itemDef_t *item, int handle ) {
 	return qfalse;
 }
 
+#ifdef _UI
 char currLanguage[32][128];
 static const char languageString[32] = "@MENUS_MYLANGUAGE";
+#endif
 
 qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	pc_token_t token;

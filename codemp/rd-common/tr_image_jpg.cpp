@@ -61,10 +61,7 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	unsigned int pixelcount, memcount;
 	unsigned int sindex, dindex;
 	byte *out;
-	union {
-		byte *b;
-		void *v;
-	} fbuffer;
+	fileBuffer_t fbuffer;
 	byte  *buf;
 	/* In this example we want to open the input file before doing anything else,
 	* so that the setjmp() error recovery below can assume the file is open.

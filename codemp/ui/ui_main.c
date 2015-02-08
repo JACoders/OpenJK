@@ -2284,7 +2284,7 @@ void UpdateForceStatus()
 
 static void UI_DrawNetSource(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iMenuFont)
 {
-	if (ui_netSource.integer < 0 || ui_netSource.integer > numNetSources) {
+	if (ui_netSource.integer < 0 || ui_netSource.integer >= numNetSources) {
 		trap->Cvar_Set("ui_netSource", "0");
 		trap->Cvar_Update(&ui_netSource);
 	}
@@ -2731,7 +2731,7 @@ static int UI_OwnerDrawWidth(int ownerDraw, float scale) {
 			s = va("%i. %s", iUse, text);
       break;
 		case UI_NETSOURCE:
-			if (ui_netSource.integer < 0 || ui_netSource.integer > numNetSources) {
+			if (ui_netSource.integer < 0 || ui_netSource.integer >= numNetSources) {
 				trap->Cvar_Set("ui_netSource", "0");
 				trap->Cvar_Update(&ui_netSource);
 			}
@@ -6254,11 +6254,11 @@ static void UI_RunMenuScript(char **args)
 				} else {
 					int i;
 					for (i = 0; i < uiInfo.myTeamCount; i++) {
-						if (Q_stricmp(UI_Cvar_VariableString("name"), uiInfo.teamNames[i]) == 0) {
+						if (uiInfo.playerNumber == uiInfo.teamClientNums[i]) {
 							continue;
 						}
-						Q_strncpyz( buff, orders, sizeof( buff ) );
-						trap->Cmd_ExecuteText( EXEC_APPEND, va(buff, uiInfo.teamNames[i]) );
+						Com_sprintf( buff, sizeof( buff ), orders, uiInfo.teamClientNums[i] );
+						trap->Cmd_ExecuteText( EXEC_APPEND, buff );
 						trap->Cmd_ExecuteText( EXEC_APPEND, "\n" );
 					}
 				}
@@ -7634,8 +7634,6 @@ static int UI_GetServerStatusInfo( const char *serverAddress, serverStatusInfo_t
 			while (p && *p) {
 				if (*p == '\\')
 					*p++ = '\0';
-				if (!p)
-					break;
 				score = p;
 				p = strchr(p, ' ');
 				if (!p)
