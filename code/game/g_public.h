@@ -146,7 +146,7 @@ typedef struct {
 	void	(*FlushCamFile)();
 
 	// abort the game
-	void	(*Error)( int, const char *fmt, ... );
+	NORETURN void	(*Error)( int, const char *fmt, ... );
 
 	// get current time for profiling reasons
 	// this should NOT be used for any game related tasks,
