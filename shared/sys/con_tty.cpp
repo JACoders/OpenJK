@@ -454,7 +454,7 @@ char *CON_Input( void )
 				CON_FlushIn();
 				return NULL;
 			}
-			if (TTY_con.cursor >= sizeof(text) - 1)
+			if (TTY_con.cursor >= (int)sizeof(text) - 1)
 				return NULL;
 			// push regular character
 			TTY_con.buffer[TTY_con.cursor] = key;
