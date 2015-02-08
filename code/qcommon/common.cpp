@@ -980,6 +980,8 @@ A way to force a bus error for development reasons
 */
 static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
+	/* that should crash already, but to reassure the compiler: */
+	abort();
 }
 
 /*
