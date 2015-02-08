@@ -1766,43 +1766,45 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri.Cmd_RemoveCommand( commands[i].cmd );
 
+	if ( r_DynamicGlow && r_DynamicGlow->integer )
+	{
+		// Release the Glow Vertex Shader.
+		if ( tr.glowVShader )
+		{
+			qglDeleteProgramsARB( 1, &tr.glowVShader );
+		}
+
+		// Release Pixel Shader.
+		if ( tr.glowPShader )
+		{
+			if ( qglCombinerParameteriNV  )
+			{
+				// Release the Glow Regcom call list.
+				qglDeleteLists( tr.glowPShader, 1 );
+			}
+			else if ( qglGenProgramsARB )
+			{
+				// Release the Glow Fragment Shader.
+				qglDeleteProgramsARB( 1, &tr.glowPShader );
+			}
+		}
+
+		// Release the scene glow texture.
+		qglDeleteTextures( 1, &tr.screenGlow );
+
+		// Release the scene texture.
+		qglDeleteTextures( 1, &tr.sceneImage );
+
+		// Release the blur texture.
+		qglDeleteTextures( 1, &tr.blurImage );
+	}
+
 	R_ShutdownWorldEffects();
 	R_ShutdownFonts();
-
-	if ( tr.registered ) {
-		if ( r_DynamicGlow && r_DynamicGlow->integer )
-		{
-			// Release the Glow Vertex Shader.
-			if ( tr.glowVShader )
-			{
-				qglDeleteProgramsARB( 1, &tr.glowVShader );
-			}
-
-			// Release Pixel Shader.
-			if ( tr.glowPShader )
-			{
-				if ( qglCombinerParameteriNV  )
-				{
-					// Release the Glow Regcom call list.
-					qglDeleteLists( tr.glowPShader, 1 );
-				}
-				else if ( qglGenProgramsARB )
-				{
-					// Release the Glow Fragment Shader.
-					qglDeleteProgramsARB( 1, &tr.glowPShader );
-				}
-			}
-
-			// Release the scene glow texture.
-			qglDeleteTextures( 1, &tr.screenGlow );
-
-			// Release the scene texture.
-			qglDeleteTextures( 1, &tr.sceneImage );
-
-			// Release the blur texture.
-			qglDeleteTextures( 1, &tr.blurImage );
-		}
-		if (destroyWindow)
+	if ( tr.registered )
+	{
+		R_IssuePendingRenderCommands();
+		if ( destroyWindow )
 		{
 			R_DeleteTextures();	// only do this for vid_restart now, not during things like map load
 
