@@ -651,7 +651,7 @@ NET_GetLocalAddress
 	// tjw: assume that once upon a time some version did have sa_len
 	#define IFR_NEXT(ifr)	\
 	((struct ifreq *) ((char *) (ifr) + sizeof(*(ifr)) + \
-	max(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
+	Q_max(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
 #endif
 
 

@@ -586,7 +586,8 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	// now print the cursor as well...
 	//
 	char sTemp[1024];
-	int iCopyCount = Q_min((int)strlen(text), cursorPos);
+	int iCopyCount = iMaxPixelWidth > 0 ? Q_min( (int)strlen( text ), iMaxPixelWidth ) : (int)strlen( text );
+	int iCopyCount = Q_min(iCopyCount, cursorPos);
 		iCopyCount = Q_min(iCopyCount,(int)sizeof(sTemp));
 
 	// copy text into temp buffer for pixel measure...
