@@ -186,6 +186,9 @@ typedef struct
 	int			shotTime;
 	int			burstCount;
 	int			burstMin;
+#ifdef BASE_SAVE_COMPAT
+	int			burstMean;			// keeping for original save compatibility
+#endif
 	int			burstMax;
 	int			burstSpacing;
 	int			attackHold;

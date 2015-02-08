@@ -701,6 +701,9 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{//commando
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 4;
+#ifdef BASE_SAVE_COMPAT
+			ent->NPC->burstMean = 8;
+#endif
 			ent->NPC->burstMax = 12;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 600;//attack debounce
@@ -813,6 +816,9 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 3;
+#ifdef BASE_SAVE_COMPAT
+			ent->NPC->burstMean = 6;
+#endif
 			ent->NPC->burstMax = 10;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 1500;//attack debounce
@@ -903,6 +909,9 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 3;
+#ifdef BASE_SAVE_COMPAT
+			ent->NPC->burstMean = 3;
+#endif
 			ent->NPC->burstMax = 3;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 1500;//attack debounce
@@ -959,6 +968,9 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 2; // 3 shots, really
+#ifdef BASE_SAVE_COMPAT
+			ent->NPC->burstMean = 2;
+#endif
 			ent->NPC->burstMax = 2;
 
 			if ( ent->owner ) // if we have an owner, it should be the chair at this point...so query the chair for its shot debounce times, etc.

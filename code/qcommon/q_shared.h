@@ -74,6 +74,8 @@ This file is part of Jedi Academy.
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
+#define BASE_SAVE_COMPAT // this is defined to disable/fix some changes that break save compatibility
+
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //JAC: Added
@@ -1372,7 +1374,12 @@ Ghoul2 Insert End
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
 
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
+#ifdef BASE_SAVE_COMPAT
+#define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
+#define	CS_PLAYERS			(CS_RESERVED1 + 96)
+#else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
+#endif
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
