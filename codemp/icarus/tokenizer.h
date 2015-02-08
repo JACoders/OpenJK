@@ -17,12 +17,6 @@
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
 #endif
 
-using namespace std;
-
-#ifndef _WIN32
-#include <string.h>
-#endif
-
 #include "qcommon/q_shared.h"
 
 #define MAX_STRING_LENGTH		256
@@ -272,7 +266,7 @@ protected:
 	char*			m_symbolName;
 };
 
-typedef map<const char *, CSymbol*, lessstr> symbolmap_t;
+typedef std::map<const char *, CSymbol*, lessstr> symbolmap_t;
 
 class CDirectiveSymbol : public CSymbol
 {

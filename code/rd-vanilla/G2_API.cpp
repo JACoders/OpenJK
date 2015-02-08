@@ -63,8 +63,6 @@ This file is part of Jedi Academy.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
-using namespace std;
-
 extern mdxaBone_t		worldMatrix;
 extern mdxaBone_t		worldMatrixInv;
 

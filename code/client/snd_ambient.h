@@ -40,8 +40,6 @@ This file is part of Jedi Academy.
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #endif
 
-using namespace std;
-
 // Defines
 
 #define	AMBIENT_SET_FILENAME	"sound/sound.txt"

@@ -47,12 +47,9 @@ This file is part of Jedi Academy.
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
 #endif
-#include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-using namespace std;
 
 typedef vector<string>	vStrings_t;
 typedef vector<int>		vInts_t;

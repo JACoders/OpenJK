@@ -16,12 +16,10 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <algorithm>
 #ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #endif
-using namespace std;
 
 //Defines
 
@@ -71,8 +69,8 @@ class ICARUS_Instance;
 class CSequencer
 {
 //	typedef	map < int, CSequence * >			sequenceID_m;
-	typedef list < CSequence * >				sequence_l;
-	typedef map < CTaskGroup *, CSequence * >	taskSequence_m;
+	typedef std::list < CSequence * >				sequence_l;
+	typedef std::map < CTaskGroup *, CSequence * >	taskSequence_m;
 
 public:
 
@@ -184,5 +182,5 @@ protected:
 
 	int					m_elseValid;
 	CBlock				*m_elseOwner;
-	vector<bstream_t*>  m_streamsCreated;
+	std::vector<bstream_t*>  m_streamsCreated;
 };

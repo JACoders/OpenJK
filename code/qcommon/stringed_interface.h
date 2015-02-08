@@ -27,11 +27,10 @@ This file is part of Jedi Academy.
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
 #endif
 #include <string>
-using namespace std;
 
 unsigned char *	SE_LoadFileData			( const char *psFileName, int *piLoadedLength = 0);
 void			SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile );
-int				SE_BuildFileList		( const char *psStartDir, string &strResults );
+int				SE_BuildFileList		( const char *psStartDir, std::string &strResults );
 
 #endif	// #ifndef STRINGED_INTERFACE_H
 

@@ -8,7 +8,6 @@
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
-using namespace std;
 bool gServerSkinHack = false;
 
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );

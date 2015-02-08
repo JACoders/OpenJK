@@ -1,13 +1,16 @@
 #pragma once
 
+#include <map>
+#include <string>
+
 typedef struct pscript_s
 {
 	char	*buffer;
 	long	length;
 } pscript_t;
 
-typedef	map < string, int, less<string>, allocator<int> >		entlist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	bufferlist_t;
+typedef	std::map < std::string, int >		entlist_t;
+typedef std::map < std::string, pscript_t* >	bufferlist_t;
 
 //ICARUS includes
 extern	interface_export_t	interface_export;

@@ -28,7 +28,6 @@ Ghoul2 Insert Start
 #include <map>
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-using namespace std;
 /*
 Ghoul2 Insert End
 */

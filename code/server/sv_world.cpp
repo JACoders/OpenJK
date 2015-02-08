@@ -474,7 +474,6 @@ void SV_SectorList_f( void ) {
 #include <list>
 #include <map>
 #pragma warning (pop)
-using namespace std;
 
 class CBBox
 {

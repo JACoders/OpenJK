@@ -42,8 +42,6 @@ This file is part of Jedi Academy.
 
 #include <map>
 
-using namespace std;
-
 static char	saveGameComment[iSG_COMMENT_SIZE];
 
 //#define SG_PROFILE	// enable for debug save stats if you want
