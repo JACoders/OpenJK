@@ -144,7 +144,7 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale )
 
 	if ( r > 1.0f || g > 1.0f || b > 1.0f )
 	{
-		float high = max (max (r, g), b);
+		float high = Q_max (Q_max (r, g), b);
 
 		r /= high;
 		g /= high;

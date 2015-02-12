@@ -1234,7 +1234,7 @@ enum ERagState
 };
 static int				ragState;
 
-static vector<boneInfo_t *>		rag;  // once we get the dependents precomputed this can be local
+static std::vector<boneInfo_t *>		rag;  // once we get the dependents precomputed this can be local
 
 
 static void G2_Generate_MatrixRag(

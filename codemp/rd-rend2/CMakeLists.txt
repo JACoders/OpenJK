@@ -6,10 +6,15 @@ if(NOT InOpenJK)
 endif(NOT InOpenJK)
 
 set(MPRend2IncludeDirectories ${MPDir})
-set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} "${MPDir}/rd-rend2")
+set(MPRend2IncludeDirectories
+	${MPRend2IncludeDirectories}
+	${SharedDir}
+	"${MPDir}/rd-rend2"
+	)
 
 set(MPRend2Files
 	"${MPDir}/rd-rend2/iqm.h"
+	"${MPDir}/rd-rend2/glext.h"
 	"${MPDir}/rd-rend2/qgl.h"
 	"${MPDir}/rd-rend2/G2_API.cpp"
 	"${MPDir}/rd-rend2/G2_bolts.cpp"
@@ -84,17 +89,22 @@ set(MPRend2RdCommonFiles
 source_group("rd-common" FILES ${MPRend2RdCommonFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
 
-set(MPRend2QcommonFiles
-	"${MPDir}/qcommon/GenericParser2.cpp"
+set(MPRend2CommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
 	"${MPDir}/qcommon/q_math.cpp"
 	"${MPDir}/qcommon/q_shared.cpp")
-source_group("qcommon" FILES ${MPRend2QcommonFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2QcommonFiles})
+source_group("common" FILES ${MPRend2CommonFiles})
+set(MPRend2Files ${MPRend2Files} ${MPRend2CommonFiles})
 
-file(GLOB_RECURSE MPRend2JpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-source_group("jpeg-8c" FILES ${MPRend2JpegFiles})
-set(MPRend2Files ${MPRend2Files} ${MPRend2JpegFiles})
+if(UseInternalJPEG)
+	file(GLOB_RECURSE MPRend2JpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
+	source_group("jpeg-8c" FILES ${MPRend2JpegFiles})
+	set(MPRend2Files ${MPRend2Files} ${MPRend2JpegFiles})
+else()
+	find_package(JPEG REQUIRED)
+	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${JPEG_INCLUDE_DIR})
+	set(MPRend2Libraries ${MPRend2Libraries} ${JPEG_LIBRARIES})
+endif()
 
 if(UseInternalPNG)
 	set(MPRend2LibPngFiles
@@ -160,30 +170,9 @@ else(UseInternalZlib)
 	set(MPRend2Libraries ${MPRend2Libraries} ${ZLIB_LIBRARY})
 endif(UseInternalZlib)
 
-if(NOT WIN32)
-	find_package(OpenGL REQUIRED)
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPRend2Libraries ${MPRend2Libraries} ${OPENGL_LIBRARIES})
-
-	find_package(SDL2 REQUIRED)
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${SDL2_INCLUDE_DIR})
-	set(MPRend2Libraries ${MPRend2Libraries} ${SDL2_LIBRARY})
-endif(NOT WIN32)
-
-
-if(WIN32)
-	set(MPRend2Win32Files
-		"${MPDir}/win32/win_gamma.cpp"
-		"${MPDir}/win32/win_glimp.cpp"
-		"${MPDir}/win32/win_qgl.cpp")
-	source_group("win32" FILES ${MPRend2Win32Files})
-	set(MPRend2Files ${MPRend2Files} ${MPRend2Win32Files})
-else(WIN32)
-	set(MPRend2SysFiles
-		"${MPDir}/sdl/sdl_glimp.cpp")
-	source_group("sys" FILES ${MPRend2SysFiles})
-	set(MPRend2Files ${MPRend2Files} ${MPRend2SysFiles})
-endif(WIN32)
+find_package(OpenGL REQUIRED)
+set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OPENGL_INCLUDE_DIR})
+set(MPRend2Libraries ${MPRend2Libraries} ${OPENGL_LIBRARIES})
 
 source_group("renderer" FILES ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
 set(MPRend2Files ${MPRend2Files} ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)

@@ -40,11 +40,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <unordered_map>
 #include <string>
 
-#ifdef _WIN32
-#include "win32\win_local.h"
-#include "qcommon\sstring.h"
-#endif
-
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
@@ -1934,6 +1929,8 @@ typedef struct {
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
+	window_t				window;
+
 	int						visIndex;
 	int						visClusters[MAX_VISCOUNTS];
 	int						visCounts[MAX_VISCOUNTS];	// incremented every time a new vis cluster is entered
@@ -2117,10 +2114,6 @@ typedef struct trGlobals_s {
 	float					rangedFog;
 	float					distanceCull, distanceCullSquared; //rwwRMG - added
 
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
-
 	// Specific to Jedi Academy
 	int						numBSPModels;
 	int						currentLevel;
@@ -2137,6 +2130,7 @@ extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glRefConfig_t glRefConfig;
+extern window_t		window;
 
 //
 // cvars
@@ -2450,13 +2444,8 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-void		GLimp_LogComment( char *comment );
-void		GLimp_InitExtraExtensions( void );
-void		GLimp_Minimize( void );
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
+static QINLINE void	GLimp_LogComment( char *comment ) {}
+void GLimp_InitExtraExtensions();
 
 /*
 ====================================================================

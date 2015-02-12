@@ -23,14 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 
-#ifndef _WIN32
-#include <SDL.h>
-#define GL_GetProcAddress SDL_GL_GetProcAddress
-#else
-#include "../win32/glw_win.h"
-extern glwstate_t glw_state;
-#define GL_GetProcAddress qwglGetProcAddress
-#endif
+#define GL_GetProcAddress ri->GL_GetProcAddress
 
 // Drawing commands
 PFNGLDRAWRANGEELEMENTSPROC qglDrawRangeElements;

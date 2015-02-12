@@ -1930,7 +1930,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 
 static int CalcNumMipmapLevels ( int width, int height )
 {
-	return static_cast<int>(ceil (log2 (max (width, height))) + 1);
+	return static_cast<int>(ceil (log2 (Q_max (width, height))) + 1);
 }
 
 static void RawImage_UploadTexture( byte *data, int x, int y, int width, int height, GLenum internalFormat, imgType_t type, int flags, qboolean subtexture )
@@ -3028,7 +3028,7 @@ void R_SetColorMappings( void ) {
 
 	if ( glConfig.deviceSupportsGamma )
 	{
-		GLimp_SetGamma( s_gammatable, s_gammatable, s_gammatable );
+		ri->WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
 	}
 }
 

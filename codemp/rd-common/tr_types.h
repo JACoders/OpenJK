@@ -351,7 +351,4 @@ typedef struct glconfig_s {
 	// used CDS.
 	qboolean				isFullscreen;
 	qboolean				stereoEnabled;
-
-	// specific to rend2
-	int						numTextureUnits;
 } glconfig_t;
