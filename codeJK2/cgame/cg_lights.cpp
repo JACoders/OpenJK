@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -62,6 +61,8 @@ void CG_RunLightStyles (void)
 
 	for (i=0,ls=cl_lightstyle ; i<MAX_LIGHT_STYLES ; i++, ls++)
 	{
+		byteAlias_t *ba = (byteAlias_t *)&ls->value;
+
 		if (!ls->length)
 		{
 			ls->value[0] = ls->value[1] = ls->value[2] = ls->value[3] = 255;
@@ -80,7 +81,7 @@ void CG_RunLightStyles (void)
 			ls->value[2] = ls->map[ofs%ls->length][2];
 			ls->value[3] = 255; //ls->map[ofs%ls->length][3];
 		}
-		trap_R_SetLightStyle(i, *(int*)ls->value);
+		trap_R_SetLightStyle( i, ba->i );
 	}
 }
 

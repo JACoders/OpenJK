@@ -2,9 +2,8 @@
 This file is part of OpenJK.
 
     OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     OpenJK is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -46,7 +45,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 	VectorScale( self->maxs, -1, self->mins );
 
 	self->activator = self->owner;
-	self->owner = NULL; 
+	self->owner = NULL;
 
 	self->e_TouchFunc = touchF_NULL;
 	self->e_ThinkFunc = thinkF_NULL;
@@ -56,7 +55,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 }
 
 //---------------------------------------------------------
-static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir ) 
+static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 //---------------------------------------------------------
 {
 	// Chucking a new one
@@ -79,7 +78,7 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 
 	missile->s.eFlags |= EF_MISSILE_STICK;
 	missile->e_TouchFunc = touchF_charge_stick;
-	
+
 	missile->damage = weaponData[WP_DET_PACK].damage;
 	missile->methodOfDeath = MOD_DETPACK;
 
@@ -94,7 +93,7 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 
 	missile->s.radius = 30;
 	VectorSet( missile->s.modelScale, 1.0f, 1.0f, 1.0f );
-	gi.G2API_InitGhoul2Model( missile->ghoul2, weaponData[WP_DET_PACK].missileMdl, G_ModelIndex( weaponData[WP_DET_PACK].missileMdl ), NULL, NULL, 0, 0);
+	gi.G2API_InitGhoul2Model( missile->ghoul2, weaponData[WP_DET_PACK].missileMdl, G_ModelIndex( weaponData[WP_DET_PACK].missileMdl ), NULL_HANDLE, NULL_HANDLE, 0, 0);
 
 	AddSoundEvent( NULL, missile->currentOrigin, 128, AEL_MINOR, qtrue );
 	AddSightEvent( NULL, missile->currentOrigin, 128, AEL_SUSPICIOUS, 10 );

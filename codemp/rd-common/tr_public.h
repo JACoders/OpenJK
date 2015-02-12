@@ -6,7 +6,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 5
+#define	REF_API_VERSION 6
 
 //
 // these are the functions exported by the refresh module
@@ -293,13 +293,14 @@ typedef struct refimport_s {
 	qboolean		(*CGVMLoaded)						( void );
 	int				(*CGVM_RagCallback)					( int callType );
 
-	// ugly win32 backend
-	void *			(*GetWinVars)						( void ); //g_wv
+	// window handling
+	window_t		(*WIN_Init)                         ( graphicsApi_t graphicsApi, glconfig_t *glConfig );
+	void			(*WIN_SetGamma)						( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
+	void			(*WIN_Present)						( window_t *window );
+	void            (*WIN_Shutdown)                     ( void );
 
-    // input event handling
-	void            (*IN_Init)                          ( void *windowData );
-	void            (*IN_Shutdown)                      ( void );
-	void            (*IN_Restart)                       ( void );
+	// OpenGL-specific
+	void *			(*GL_GetProcAddress)				( const char *name );
 
 	// gpvCachedMapDiskImage
 	void *			(*CM_GetCachedMapDiskImage)			( void );
@@ -309,7 +310,7 @@ typedef struct refimport_s {
 
 	// even the server will have this, which is a singleton
 	// so before assigning to this in R_Init, check if it's NULL!
-	IHeapAllocator *		(*GetG2VertSpaceServer)				( void );
+	IHeapAllocator *(*GetG2VertSpaceServer)				( void );
 
 	// Persistent data store
 	bool			(*PD_Store)							( const char *name, const void *data, size_t size );

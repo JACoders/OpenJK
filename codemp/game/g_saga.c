@@ -780,7 +780,7 @@ void G_ValidateSiegeClassForTeam(gentity_t *ent, int team)
 		if (newClassIndex != -1)
 		{ //ok, let's find it in the global class array
 			ent->client->siegeClass = BG_SiegeFindClassIndexByName(stm->classes[newClassIndex]->name);
-			strcpy(ent->client->sess.siegeClass, stm->classes[newClassIndex]->name);
+			Q_strncpyz( ent->client->sess.siegeClass, stm->classes[newClassIndex]->name, sizeof( ent->client->sess.siegeClass ));
 		}
 	}
 }

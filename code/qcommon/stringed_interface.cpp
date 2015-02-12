@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -45,7 +44,6 @@ This file is part of Jedi Academy.
 #include "stringed_ingame.h"
 
 #include <string>
-using namespace std;
 
 #ifdef _STRINGED
 #include <stdlib.h>
@@ -149,7 +147,7 @@ void SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile )
 // quake-style method of doing things since their file-list code doesn't have a 'recursive' flag...
 //
 int giFilesFound;
-static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &strResults )
+static void SE_R_ListFiles( const char *psExtension, const char *psDir, std::string &strResults )
 {
 //	Com_Printf(va("Scanning Dir: %s\n",psDir));
 
@@ -209,7 +207,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 //
 // expected result is a ';'-delineated string (including last one) containing file-list search results
 //
-int SE_BuildFileList( const char *psStartDir, string &strResults )
+int SE_BuildFileList( const char *psStartDir, std::string &strResults )
 {
 #ifndef _STRINGED
 	giFilesFound = 0;

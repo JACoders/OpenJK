@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -38,8 +37,6 @@ This file is part of Jedi Academy.
 #pragma warning (pop)
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
 #endif
-using namespace std;
-
 
 class CSequence;
 class CSequencer;
@@ -67,15 +64,15 @@ protected:
 
 	int						m_GUID;
 
-	typedef list< CSequence * >				sequence_l;
-	typedef list< CSequencer * >			sequencer_l;
-	typedef map < int, CSequencer* >		sequencer_m;
+	typedef std::list< CSequence * >				sequence_l;
+	typedef std::list< CSequencer * >			sequencer_l;
+	typedef std::map < int, CSequencer* >		sequencer_m;
 
 	sequence_l				m_sequences;
 	sequencer_l				m_sequencers;
 	sequencer_m				m_sequencerMap;
 
-	typedef map < string, unsigned char >	signal_m;
+	typedef std::map < std::string, unsigned char >	signal_m;
 	signal_m				m_signals;
 
 	static double ICARUS_VERSION;

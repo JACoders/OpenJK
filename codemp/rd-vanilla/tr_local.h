@@ -3,14 +3,8 @@
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
-
-#ifdef _WIN32
-	#include "qgl.h"
-#else
-	#include "../sdl/sdl_qgl.h"
-#endif
-
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "qgl.h"
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
@@ -961,12 +955,10 @@ typedef struct backEndState_s {
 
 #define NUM_SCRATCH_IMAGES 16
 
-#ifdef _WIN32
-	#include "../win32/win_local.h"
-#endif
-
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
+
+	window_t				window;
 
 	int						visCount;		// incremented every time a new vis cluster is entered
 	int						frameCount;		// incremented every frame
@@ -1072,10 +1064,6 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -1097,6 +1085,7 @@ extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //
@@ -1427,14 +1416,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
+static QINLINE void	GLimp_LogComment( char *comment ) {}
 
 /*
 ====================================================================

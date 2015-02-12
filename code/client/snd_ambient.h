@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -40,8 +39,6 @@ This file is part of Jedi Academy.
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #endif
-
-using namespace std;
 
 // Defines
 
@@ -121,8 +118,8 @@ public:
 protected:
 
 	int								m_numSets;
-	vector < ambientSet_t * >		*m_ambientSets;
-	map	< sstring_t, ambientSet_t * >	*m_setMap;
+	std::vector < ambientSet_t * >		*m_ambientSets;
+	std::map	< sstring_t, ambientSet_t * >	*m_setMap;
 };
 
 // Prototypes

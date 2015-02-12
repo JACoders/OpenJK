@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -240,12 +239,10 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
-		#ifdef _WIN32
 		if (gbMemFreeupOccured)
 		{
-			Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
+			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
 		}
-		#endif
 
 		if (bZeroit) {
 			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );

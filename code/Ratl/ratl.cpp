@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -81,7 +80,7 @@ void	ratl_base::load(hfile& file)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// A Profile Print Function 
+// A Profile Print Function
 ////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(FINAL_BUILD)
 void	ratl_base::ProfilePrint(const char * format, ...)
@@ -119,30 +118,5 @@ void	ratl_base::ProfilePrint(const char * format, ...)
 {
 }
 #endif
-
-namespace str
-{
-	void	to_upper(char *dest)
-	{
-		for (int i=0; i<len(dest);i++)
-		{
-			dest[i] = (char)(toupper(dest[i]));
-		}
-	}
-	void	to_lower(char *dest)
-	{
-		for (int i=0; i<len(dest);i++)
-		{
-			dest[i] = (char)(tolower(dest[i]));
-		}
-	}
-	void	printf(char *dest,const char *formatS, ...)
-	{
-		va_list		argptr;
-		va_start (argptr, formatS);
-		vsprintf (dest, formatS,argptr);
-		va_end (argptr);
-	}
-}
 }
 

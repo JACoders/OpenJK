@@ -38,7 +38,7 @@ class CGoreSet
 public:
 	int		 mMyGoreSetTag;
 	unsigned char mRefCount;
-	multimap<int,SGoreSurface> mGoreRecords; // a map from surface index
+	std::multimap<int,SGoreSurface> mGoreRecords; // a map from surface index
 	CGoreSet(int tag) : mMyGoreSetTag(tag), mRefCount(0) {}
 	~CGoreSet();
 };

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -70,7 +69,7 @@ int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const in
 	// didn't find it
 	return -1;
 }
-			
+
 //=========================================================================================
 //// Public Bolt Routines
 int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist, const int surfNum)
@@ -97,7 +96,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 		}
 	}
 
-	// we have a surface 
+	// we have a surface
 	// look through entire list - see if it's already there first
 	for(size_t i=0; i<bltlist.size(); i++)
 	{
@@ -111,7 +110,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 	tempBolt.surfaceNumber = surfNum;
 	tempBolt.surfaceType = G2SURFACEFLAG_GENERATED;
@@ -130,7 +129,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 	boltInfo_t			tempBolt;
-	int					flags;
+	uint32_t			flags;
 
 	assert(G2_MODEL_OK(ghlInfo));
 
@@ -165,7 +164,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		 		return i;
 			}
 		}
-	
+
 		// ok, we didn't find an existing surface of that name, or an empty slot. Lets add an entry
 		tempBolt.surfaceNumber = surfNum;
 		tempBolt.boneNumber = -1;
@@ -227,7 +226,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	 		return i;
 		}
 	}
-	
+
 	// ok, we didn't find an existing bone of that name, or an empty slot. Lets add an entry
 	tempBolt.boneNumber = x;
 	tempBolt.surfaceNumber = -1;

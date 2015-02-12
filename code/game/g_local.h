@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -453,7 +452,7 @@ void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char 
 // g_main.c
 //
 void G_RunThink (gentity_t *ent);
-void QDECL G_Error( const char *fmt, ... );
+void NORETURN QDECL G_Error( const char *fmt, ... );
 void SetInUse(gentity_t *ent);
 void ClearInUse(gentity_t *ent);
 qboolean PInUse(unsigned int entNum);

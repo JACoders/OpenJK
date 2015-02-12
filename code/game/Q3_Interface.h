@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -544,12 +543,12 @@ typedef struct pscript_s
 } pscript_t;
 
 // STL map type definitions for the Entity List and Script Buffer List.
-typedef	map < string, int, less<string>, allocator<int> >		entitylist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	scriptlist_t;
+typedef	std::map < std::string, int >		entitylist_t;
+typedef std::map < std::string, pscript_t* >	scriptlist_t;
 
 // STL map type definitions for the variable containers.
-typedef map < string, string >		varString_m;
-typedef map < string, float >		varFloat_m;
+typedef std::map < std::string, std::string >		varString_m;
+typedef std::map < std::string, float >		varFloat_m;
 
 
 // The Quake 3 Game Interface Class for Quake3 and Icarus to use.

@@ -195,8 +195,6 @@ void CG_Respawn( void ) {
 	cg.weaponSelect = cg.snap->ps.weapon;
 }
 
-extern char *eventnames[];
-
 /*
 ==============
 CG_CheckPlayerstateEvents

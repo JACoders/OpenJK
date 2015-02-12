@@ -288,9 +288,9 @@ qboolean G2API_OverrideServerWithClientData(CGhoul2Info_v& ghoul2, int modelInde
 
 class Ghoul2InfoArray : public IGhoul2InfoArray
 {
-	vector<CGhoul2Info>	mInfos[MAX_G2_MODELS];
+	std::vector<CGhoul2Info>	mInfos[MAX_G2_MODELS];
 	int					mIds[MAX_G2_MODELS];
-	list<int>			mFreeIndecies;
+	std::list<int>			mFreeIndecies;
 	void DeleteLow(int idx)
 	{
 		for (size_t model=0; model< mInfos[idx].size(); model++)
@@ -396,9 +396,9 @@ public:
 			DeleteLow(handle&G2_INDEX_MASK);
 		}
 	}
-	vector<CGhoul2Info> &Get(int handle)
+	std::vector<CGhoul2Info> &Get(int handle)
 	{
-		static vector<CGhoul2Info> null;
+		static std::vector<CGhoul2Info> null;
 		assert(handle>0); //null handle
 		assert((handle&G2_INDEX_MASK)>=0&&(handle&G2_INDEX_MASK)<MAX_G2_MODELS); //junk handle
 		assert(mIds[handle&G2_INDEX_MASK]==handle); // not a valid handle, could be old or garbage
@@ -409,7 +409,7 @@ public:
 		}
 		return mInfos[handle&G2_INDEX_MASK];
 	}
-	const vector<CGhoul2Info> &Get(int handle) const
+	const std::vector<CGhoul2Info> &Get(int handle) const
 	{
 		assert(handle>0);
 		assert(mIds[handle&G2_INDEX_MASK]==handle); // not a valid handle, could be old or garbage
@@ -1847,20 +1847,18 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 
 				if (!gG2_GBMUseSPMethod)
 				{ //this is horribly stupid and I hate it. But lots of game code is written to assume this 90 degree offset thing.
-					mdxaBone_t	rotMat, tempMatrix;
-					vec3_t		newangles = {0,270,0};
-					Create_Matrix(newangles, &rotMat);
-					// make the model space matrix we have for this bolt into a world matrix
-					Multiply_3x4Matrix(&tempMatrix, &worldMatrix, &bolt);
-					vec3_t origin;
-					origin[0] = tempMatrix.matrix[0][3];
-					origin[1] = tempMatrix.matrix[1][3];
-					origin[2] = tempMatrix.matrix[2][3];
-					tempMatrix.matrix[0][3] = tempMatrix.matrix[1][3] = tempMatrix.matrix[2][3] = 0;
-					Multiply_3x4Matrix(matrix, &tempMatrix, &rotMat);
-					matrix->matrix[0][3] = origin[0];
-					matrix->matrix[1][3] = origin[1];
-					matrix->matrix[2][3] = origin[2];
+					float ftemp;
+					ftemp = matrix->matrix[0][0];
+					matrix->matrix[0][0] = -matrix->matrix[0][1];
+					matrix->matrix[0][1] = ftemp;
+					
+					ftemp = matrix->matrix[1][0];
+					matrix->matrix[1][0] = -matrix->matrix[1][1];
+					matrix->matrix[1][1] = ftemp;
+					
+					ftemp = matrix->matrix[2][0];
+					matrix->matrix[2][0] = -matrix->matrix[2][1];
+					matrix->matrix[2][1] = ftemp;
 				}
 				else
 				{ //reset it

@@ -627,16 +627,14 @@ void RB_CalcColorFromEntity( unsigned char *dstColors )
 {
 	int	i;
 	int *pColors = ( int * ) dstColors;
-	int c;
 
 	if ( !backEnd.currentEntity )
 		return;
 
-	c = * ( int * ) backEnd.currentEntity->e.shaderRGBA;
+	const byteAlias_t *ba = (byteAlias_t *)&backEnd.currentEntity->e.shaderRGBA;
 
-	for ( i = 0; i < tess.numVertexes; i++, pColors++ )
-	{
-		*pColors = c;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*pColors++ = ba->i;
 	}
 }
 
@@ -648,7 +646,6 @@ void RB_CalcColorFromOneMinusEntity( unsigned char *dstColors )
 	int	i;
 	int *pColors = ( int * ) dstColors;
 	unsigned char invModulate[4];
-	int c;
 
 	if ( !backEnd.currentEntity )
 		return;
@@ -658,11 +655,10 @@ void RB_CalcColorFromOneMinusEntity( unsigned char *dstColors )
 	invModulate[2] = 255 - backEnd.currentEntity->e.shaderRGBA[2];
 	invModulate[3] = 255 - backEnd.currentEntity->e.shaderRGBA[3];	// this trashes alpha, but the AGEN block fixes it
 
-	c = * ( int * ) invModulate;
+	byteAlias_t *ba = (byteAlias_t *)&invModulate;
 
-	for ( i = 0; i < tess.numVertexes; i++, pColors++ )
-	{
-		*pColors = c;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*pColors++ = ba->i;
 	}
 }
 
@@ -730,10 +726,10 @@ void RB_CalcWaveColor( const waveForm_t *wf, unsigned char *dstColors )
 	v = Q_ftol( 255 * glow );
 	color[0] = color[1] = color[2] = v;
 	color[3] = 255;
-	v = *(int *)color;
+	byteAlias_t *ba = (byteAlias_t *)&color;
 
-	for ( i = 0; i < tess.numVertexes; i++, colors++ ) {
-		*colors = v;
+	for ( i = 0; i < tess.numVertexes; i++ ) {
+		*colors++ = ba->i;
 	}
 }
 

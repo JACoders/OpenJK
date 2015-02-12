@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -706,13 +705,11 @@ Ghoul2 Insert End
 #define CG_FORMATMASK	0x00000007
 #define CG_SMALLFONT	0x00000010
 #define CG_BIGFONT		0x00000020	// default
-#define CG_GIANTFONT	0x00000040
+
 #define CG_DROPSHADOW	0x00000800
 #define CG_BLINK		0x00001000
 #define CG_INVERSE		0x00002000
 #define CG_PULSE		0x00004000
-#define CG_UNDERLINE	0x00008000
-#define CG_TINYFONT		0x00010000
 
 
 void CG_DrawRect( float x, float y, float width, float height, float size, const float *color );
@@ -1167,6 +1164,8 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 
 void CG_DrawTargetBeam( vec3_t start, vec3_t end, vec3_t norm, const char *beamFx, const char *impactFx );
 
+qboolean CG_VehicleWeaponImpact( centity_t *cent );
+
 
 /*
 Ghoul2 Insert Start
@@ -1209,6 +1208,9 @@ void	cgi_UI_MenuCloseAll(void);
 void	cgi_UI_String_Init(void);
 int		cgi_UI_GetMenuItemInfo(const char *menuFile,const char *itemName,int *x,int *y,int *w,int *h,vec4_t color,qhandle_t *background);
 int		cgi_UI_GetMenuInfo(char *menuFile,int *x,int *y,int *w,int *h);
+void	cgi_UI_Menu_Paint( void *menu, qboolean force );
+void	*cgi_UI_GetMenuByName( const char *menu );
+
 
 void	SetWeaponSelectTime(void);
 

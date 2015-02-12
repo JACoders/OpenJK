@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,12 +23,7 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#ifdef _WIN32
-// down
-#include "../win32/win_local.h"
-#endif
-
-#define	REF_API_VERSION		13
+#define	REF_API_VERSION		14
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -68,10 +62,10 @@ typedef struct {
 	void				(*FS_FreeFile)						( void *buffer );
 	void				(*FS_FreeFileList)					( char **fileList );
 	int					(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int					(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long					(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void				(*FS_FCloseFile)					( fileHandle_t f );
-	int					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath );
+	long					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int					(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean			(*FS_FileExists)					( const char *file );
 	int					(*FS_FileIsInPAK)					( const char *filename );
@@ -91,14 +85,14 @@ typedef struct {
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
 
-#ifdef _WIN32
-	WinVars_t *			(*GetWinVars)						( void ); //g_wv
-#endif
+	// window handling
+	window_t		(*WIN_Init)                         ( graphicsApi_t graphicsApi, glconfig_t *glConfig );
+	void			(*WIN_SetGamma)						( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
+	void			(*WIN_Present)						( window_t *window );
+	void            (*WIN_Shutdown)                     ( void );
 
-    // input event handling
-	void            (*IN_Init)                          ( void *windowData );
-	void            (*IN_Shutdown)                      ( void );
-	void            (*IN_Restart)                       ( void );
+	// OpenGL-specific
+	void *			(*GL_GetProcAddress)				( const char *name );
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -312,6 +311,7 @@ void COM_BeginParseSession( void )
 #endif
 
 	parseData[parseDataCount].com_lines = 1;
+	parseData[parseDataCount].com_tokenline = 0;
 }
 
 void COM_EndParseSession( void )
@@ -326,6 +326,9 @@ int COM_GetCurrentParseLine( int index )
 {
 	if(parseDataCount < 0)
 		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
+
+	if ( parseData[parseDataCount].com_tokenline )
+		return parseData[parseDataCount].com_tokenline;
 
 	return parseData[parseDataCount].com_lines;
 }
@@ -347,20 +350,20 @@ string will be returned if the next token is
 a newline.
 ==============
 */
-const char *SkipWhitespace( const char *data, qboolean *hasNewLines ) 
+const char *SkipWhitespace( const char *data, qboolean *hasNewLines )
 {
 	int c;
 
 	if(parseDataCount < 0)
 		Com_Error(ERR_FATAL, "SkipWhitespace: parseDataCount < 0");
 
-	while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ') 
+	while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ')
 	{
-		if( !c ) 
+		if( !c )
 		{
 			return NULL;
 		}
-		if( c == '\n' ) 
+		if( c == '\n' )
 		{
 			parseData[parseDataCount].com_lines++;
 			*hasNewLines = qtrue;
@@ -386,9 +389,9 @@ int COM_Compress( char *data_p ) {
 				}
 			// skip /* */ comments
 			} else if ( c == '/' && in[1] == '*' ) {
-				while ( *in && ( *in != '*' || in[1] != '/' ) ) 
+				while ( *in && ( *in != '*' || in[1] != '/' ) )
 					in++;
-				if ( *in ) 
+				if ( *in )
 					in += 2;
 				// record when we hit a newline
 			} else if ( c == '\n' || c == '\r' ) {
@@ -449,6 +452,8 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 	data = *data_p;
 	len = 0;
 	com_token[0] = 0;
+	if(parseDataCount >= 0)
+		parseData[parseDataCount].com_tokenline = 0;
 
 	// make sure incoming data is valid
 	if ( !data )
@@ -481,20 +486,23 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 		if ( c == '/' && data[1] == '/' )
 		{
 			data += 2;
-			while (*data && *data != '\n')
-			{
+			while (*data && *data != '\n') {
 				data++;
 			}
 		}
 		// skip /* */ comments
-		else if ( c=='/' && data[1] == '*' ) 
+		else if ( c=='/' && data[1] == '*' )
 		{
 			data += 2;
-			while ( *data && ( *data != '*' || data[1] != '/' ) ) 
+			while ( *data && ( *data != '*' || data[1] != '/' ) )
 			{
+				if ( *data == '\n' )
+				{
+					parseData[parseDataCount].com_lines++;
+				}
 				data++;
 			}
-			if ( *data ) 
+			if ( *data )
 			{
 				data += 2;
 			}
@@ -504,6 +512,9 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 			break;
 		}
 	}
+
+	// token starts on this line
+	parseData[parseDataCount].com_tokenline = parseData[parseDataCount].com_lines;
 
 	// handle quoted strings
 	if (c == '\"')
@@ -517,6 +528,10 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 				com_token[len] = 0;
 				*data_p = ( char * ) data;
 				return com_token;
+			}
+			if ( c == '\n' )
+			{
+				parseData[parseDataCount].com_lines++;
 			}
 			if (len < MAX_TOKEN_CHARS - 1)
 			{
@@ -536,14 +551,89 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 		}
 		data++;
 		c = *data;
-		if ( c == '\n' )
-			parseData[parseDataCount].com_lines++;
 	} while (c>32);
 
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
 	return com_token;
+}
+
+/*
+===============
+COM_ParseString
+===============
+*/
+qboolean COM_ParseString( const char **data, const char **s ) 
+{
+	*s = COM_ParseExt( data, qfalse );
+	if ( s[0] == 0 )
+	{
+		Com_Printf("unexpected EOF in COM_ParseString\n");
+		return qtrue;
+	}
+	return qfalse;
+}
+
+/*
+===============
+COM_ParseInt
+===============
+*/
+qboolean COM_ParseInt( const char **data, int *i ) 
+{
+	const char	*token;
+
+	token = COM_ParseExt( data, qfalse );
+	if ( token[0] == 0 )
+	{
+		Com_Printf( "unexpected EOF in COM_ParseInt\n" );
+		return qtrue;
+	}
+
+	*i = atoi( token );
+	return qfalse;
+}
+
+/*
+===============
+COM_ParseFloat
+===============
+*/
+qboolean COM_ParseFloat( const char **data, float *f ) 
+{
+	const char	*token;
+
+	token = COM_ParseExt( data, qfalse );
+	if ( token[0] == 0 )
+	{
+		Com_Printf( "unexpected EOF in COM_ParseFloat\n" );
+		return qtrue;
+	}
+
+	*f = atof( token );
+	return qfalse;
+}
+
+/*
+===============
+COM_ParseVec4
+===============
+*/
+qboolean COM_ParseVec4( const char **buffer, vec4_t *c)
+{
+	int i;
+	float f;
+
+	for (i = 0; i < 4; i++)
+	{
+		if (COM_ParseFloat(buffer, &f))
+		{
+			return qtrue;
+		}
+		(*c)[i] = f;
+	}
+	return qfalse;
 }
 
 /*
@@ -555,7 +645,7 @@ void COM_MatchToken( const char **buf_p, const char *match ) {
 	const char	*token;
 
 	token = COM_Parse( buf_p );
-	if ( strcmp( token, match ) ) 
+	if ( strcmp( token, match ) )
 	{
 		Com_Error( ERR_DROP, "MatchToken: %s != %s", token, match );
 	}
@@ -606,6 +696,10 @@ void SkipRestOfLine ( const char **data ) {
 		Com_Error(ERR_FATAL, "SkipRestOfLine: parseDataCount < 0");
 
 	p = *data;
+
+	if ( !*p )
+		return;
+
 	while ( (c = *p++) != 0 ) {
 		if ( c == '\n' ) {
 			parseData[parseDataCount].com_lines++;
@@ -664,7 +758,7 @@ int Com_HexStrToInt( const char *str )
 {
 	if ( !str || !str[ 0 ] )
 		return -1;
-	
+
 	// check for hex code
 	if( str[ 0 ] == '0' && str[ 1 ] == 'x' )
 	{
@@ -740,7 +834,7 @@ qboolean Q_isanumber( const char *s )
 		return qfalse;
 
 	ret = strtod( s, &p );
-	
+
 	if ( ret == HUGE_VAL || errno == ERANGE )
 		return qfalse;
 
@@ -805,7 +899,16 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 #if 1         
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
-	
+
+	if ( s1 == NULL ) {
+		if ( s2 == NULL )
+			return 0;
+		else
+			return -1;
+	}
+	else if ( s2==NULL )
+		return 1;
+
 	do {
 		c1 = *s1++;
 		c2 = *s2++;
@@ -966,8 +1069,10 @@ char *Q_CleanStr( char *string ) {
 /*
 ==================
 Q_StripColor
- 
+
 Strips coloured strings in-place using multiple passes: "fgs^^56fds" -> "fgs^6fds" -> "fgsfds"
+
+This function modifies INPUT (is mutable)
 
 (Also strips ^8 and ^9)
 ==================
@@ -1025,22 +1130,25 @@ void Q_strstrip( char *string, const char *strip, const char *repl )
 	char		*out=string, *p=string, c;
 	const char	*s=strip;
 	int			replaceLen = repl?strlen( repl ):0, offset=0;
+	qboolean	recordChar = qtrue;
 
 	while ( (c = *p++) != '\0' )
 	{
+		recordChar = qtrue;
 		for ( s=strip; *s; s++ )
 		{
 			offset = s-strip;
 			if ( c == *s )
 			{
 				if ( !repl || offset >= replaceLen )
-					c = *p++;
+					recordChar = qfalse;
 				else
 					c = repl[offset];
 				break;
 			}
 		}
-		*out++ = c;
+		if ( recordChar )
+			*out++ = c;
 	}
 	*out = '\0';
 }
@@ -1075,7 +1183,7 @@ const char *Q_strchrs( const char *string, const char *search )
 /*
 =============
 Q_vsnprintf
- 
+
 Special wrapper function for Microsoft's broken _vsnprintf() function.
 MinGW comes with its own snprintf() which is not broken.
 =============
@@ -1104,8 +1212,6 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 }
 #endif
 
-//Raz: Patched version of Com_sprintf
-//Ensiform: But this is better
 int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
@@ -1116,7 +1222,7 @@ int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
-	
+
 	return len;
 }
 
@@ -1316,16 +1422,16 @@ void Info_RemoveKey( char *s, const char *key ) {
 		}
 		*o = 0;
 
+		//OJKNOTE: static analysis pointed out pkey may not be null-terminated
 		if (!strcmp (key, pkey) )
 		{
-			strcpy (start, s);	// remove this part
+			memmove(start, s, strlen(s) + 1);	// remove this part
 			return;
 		}
 
 		if (!*s)
 			return;
 	}
-
 }
 
 
@@ -1356,27 +1462,19 @@ Changes or adds a key/value pair
 */
 void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 	char	newi[MAX_INFO_STRING];
+	const char* blacklist = "\\;\"";
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
 	}
 
-	if (strchr (key, '\\') || strchr (value, '\\'))
+	for(; *blacklist; ++blacklist)
 	{
-		Com_Printf ("Can't use keys or values with a \\(%s, %s)\n",key,value);
-		return;
-	}
-
-	if (strchr (key, ';') || strchr (value, ';'))
-	{
-		Com_Printf ("Can't use keys or values with a semicolon(%s, %s)\n",key,value);
-		return;
-	}
-
-	if (strchr (key, '\"') || strchr (value, '\"'))
-	{
-		Com_Printf ("Can't use keys or values with a \"(%s, %s)\n",key,value);
-		return;
+		if (strchr (key, *blacklist) || strchr (value, *blacklist))
+		{
+			Com_Printf (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
+			return;
+		}
 	}
 
 	Info_RemoveKey (s, key);
@@ -1385,13 +1483,14 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 
 	Com_sprintf (newi, sizeof(newi), "\\%s\\%s", key, value);
 
-	if (strlen(newi) + strlen(s) > MAX_INFO_STRING)
+	if (strlen(newi) + strlen(s) >= MAX_INFO_STRING)
 	{
 		Com_Printf ("Info string length exceeded\n");
 		return;
 	}
 
-	strcat (s, newi);
+	strcat (newi, s);
+	strcpy (s, newi);
 }
 
 /*
@@ -1504,86 +1603,6 @@ const char *GetStringForID( const stringID_table_t *table, int id )
 
 	return NULL;
 }
-
-/*
-===============
-COM_ParseString
-===============
-*/
-qboolean COM_ParseString( const char **data, const char **s ) 
-{
-//	*s = COM_ParseExt( data, qtrue );
-	*s = COM_ParseExt( data, qfalse );
-	if ( s[0] == 0 ) 
-	{
-		Com_Printf("unexpected EOF in COM_ParseString\n");
-		return qtrue;
-	}
-	return qfalse;
-}
-
-/*
-===============
-COM_ParseInt
-===============
-*/
-qboolean COM_ParseInt( const char **data, int *i ) 
-{
-	const char	*token;
-
-	token = COM_ParseExt( data, qfalse );
-	if ( token[0] == 0 ) 
-	{
-		Com_Printf( "unexpected EOF in COM_ParseInt\n" );
-		return qtrue;
-	}
-
-	*i = atoi( token );
-	return qfalse;
-}
-
-/*
-===============
-COM_ParseFloat
-===============
-*/
-qboolean COM_ParseFloat( const char **data, float *f ) 
-{
-	const char	*token;
-
-	token = COM_ParseExt( data, qfalse );
-	if ( token[0] == 0 ) 
-	{
-		Com_Printf( "unexpected EOF in COM_ParseFloat\n" );
-		return qtrue;
-	}
-
-	*f = atof( token );
-	return qfalse;
-}
-
-/*
-===============
-COM_ParseVec4
-===============
-*/
-qboolean COM_ParseVec4( const char **buffer, vec4_t *c) 
-{
-	int i;
-	float f;
-
-	for (i = 0; i < 4; i++) 
-	{
-		if (COM_ParseFloat(buffer, &f)) 
-		{
-			return qtrue;
-		}
-		(*c)[i] = f;
-	}
-	return qfalse;
-}
-
-
 
 // end
 

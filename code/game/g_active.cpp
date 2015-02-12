@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -4719,16 +4718,16 @@ extern void ForceHeal(gentity_t *ent);
 static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 {
 	switch(cmd) {
-	case 0:
+	default:
 		break;
-	case GENCMD_FORCE_DRAIN:
-		ForceDrain2(ent);
+	case GENCMD_FORCE_HEAL:
+		ForceHeal( ent );
+		break;
+	case GENCMD_FORCE_SPEED:
+		ForceSpeed( ent );
 		break;
 	case GENCMD_FORCE_THROW:
 		ForceThrow(ent, qfalse);
-		break;
-	case GENCMD_FORCE_SPEED:
-		ForceSpeed(ent);
 		break;
 	case GENCMD_FORCE_PULL:
 		ForceThrow(ent, qtrue);
@@ -4751,11 +4750,11 @@ static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 	case GENCMD_FORCE_ABSORB:
 		ForceAbsorb(ent);
 		break;
+	case GENCMD_FORCE_DRAIN:
+		ForceDrain2( ent );
+		break;
 	case GENCMD_FORCE_SEEING:
 		ForceSeeing(ent);
-		break;
-	case GENCMD_FORCE_HEAL:
-		ForceHeal(ent);
 		break;
 	}
 }

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -88,7 +87,7 @@ class CTaskGroup
 {
 public:
 
-	typedef map < int, bool > taskCallback_m;
+	typedef std::map < int, bool > taskCallback_m;
 
 	CTaskGroup( void );
 	~CTaskGroup( void );
@@ -134,11 +133,11 @@ class CSequencer;
 class CTaskManager
 {
 
-	typedef	map < int, CTask * >			taskID_m;
-	typedef map < string, CTaskGroup * >	taskGroupName_m;
-	typedef map < int, CTaskGroup * >		taskGroupID_m;
-	typedef vector < CTaskGroup * >			taskGroup_v;
-	typedef list < CTask *>					tasks_l;
+	typedef	std::map < int, CTask * >			taskID_m;
+	typedef std::map < std::string, CTaskGroup * >	taskGroupName_m;
+	typedef std::map < int, CTaskGroup * >		taskGroupID_m;
+	typedef std::vector < CTaskGroup * >			taskGroup_v;
+	typedef std::list < CTask *>					tasks_l;
 
 public:
 

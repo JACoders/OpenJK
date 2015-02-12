@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -163,7 +162,7 @@ typedef struct {
 	int		(*FS_Read)( void *buffer, int len, fileHandle_t f );
 	int		(*FS_Write)( const void *buffer, int len, fileHandle_t f );
 	void	(*FS_FCloseFile)( fileHandle_t f );
-	int		(*FS_ReadFile)( const char *name, void **buf );
+	long	(*FS_ReadFile)( const char *name, void **buf );
 	void	(*FS_FreeFile)( void *buf );
 	int		(*FS_GetFileList)(  const char *path, const char *extension, char *listbuf, int bufsize );
 

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1599,7 +1598,9 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 
 	ENUM2STRING(BOTH_STAND_TO_KNEEL),
 	ENUM2STRING(BOTH_KNEEL_TO_STAND),
+#ifndef BASE_SAVE_COMPAT
 	ENUM2STRING(BOTH_KNEELATTACK),
+#endif
 
 	ENUM2STRING(BOTH_TUSKENATTACK1),
 	ENUM2STRING(BOTH_TUSKENATTACK2),

@@ -576,7 +576,7 @@ void SP_target_location( gentity_t *self ) {
 
 		if ( level.locations.num >= MAX_LOCATIONS ) {
 			if ( !didwarn ) {
-				trap->Print( "Maximum target_locations hit (%d)\n", MAX_LOCATIONS );
+				trap->Print( "Maximum target_locations hit (%d)! Remaining locations will be removed.\n", MAX_LOCATIONS );
 				didwarn = qtrue;
 			}
 			G_FreeEntity( self );

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,11 +27,10 @@ This file is part of Jedi Academy.
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
 #endif
 #include <string>
-using namespace std;
 
 unsigned char *	SE_LoadFileData			( const char *psFileName, int *piLoadedLength = 0);
 void			SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile );
-int				SE_BuildFileList		( const char *psStartDir, string &strResults );
+int				SE_BuildFileList		( const char *psStartDir, std::string &strResults );
 
 #endif	// #ifndef STRINGED_INTERFACE_H
 

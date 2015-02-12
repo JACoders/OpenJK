@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,6 +24,8 @@ This file is part of Jedi Academy.
 
 #include "client.h"
 #include "vmachine.h"
+#include "qcommon/stringed_ingame.h"
+#include "sys/sys_loadlib.h"
 
 vm_t	cgvm;
 /*
@@ -50,6 +51,31 @@ extern menuDef_t *Menus_FindByName(const char *p);
 extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
 
 void UI_SetActiveMenu( const char* menuname,const char *menuID );
+
+qboolean CL_InitCGameVM( void *gameLibrary )
+{
+	typedef intptr_t SyscallProc( intptr_t, ... );
+	typedef void DllEntryProc( SyscallProc * );
+
+	DllEntryProc *dllEntry = (DllEntryProc *)Sys_LoadFunction( gameLibrary, "dllEntry" ); 
+	cgvm.entryPoint = (intptr_t (*)(int,...))Sys_LoadFunction( gameLibrary, "vmMain" );
+
+	if ( !cgvm.entryPoint || !dllEntry ) {
+#ifdef JK2_MODE
+		const char *gamename = "jospgame";
+#else
+		const char *gamename = "jagame";
+#endif
+
+		Com_Printf( "CL_InitCGameVM: client game entry point not found in %s" ARCH_STRING DLL_EXT ": %s\n",
+					gamename, Sys_LibraryError() );
+		return qfalse;
+	}
+
+	dllEntry( VM_DllSyscall );
+
+	return qtrue;
+}
 
 /*
 ====================
@@ -238,11 +264,6 @@ void CL_SetUserCmdAngles( float pitchOverride, float yawOverride, float rollOver
 void CL_AddCgameCommand( const char *cmdName ) {
 	Cmd_AddCommand( cmdName, NULL );
 }
-
-void CL_CgameError( const char *string ) {
-	Com_Error( ERR_DROP, "%s", string );
-}
-
 
 /*
 =====================
@@ -774,7 +795,6 @@ CL_CgameSystemCalls
 The cgame module is making a system call
 ====================
 */
-void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
 extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
 extern menuDef_t *Menus_FindByName(const char *p);

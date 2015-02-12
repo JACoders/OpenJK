@@ -63,10 +63,10 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 
 	args[0] = arg;
 
-	va_start(ap, arg);
+	va_start( ap, arg );
 	for (size_t i = 1; i < ARRAY_LEN (args); i++)
-		args[i] = va_arg(ap, intptr_t);
-	va_end(ap);
+		args[i] = va_arg( ap, intptr_t );
+	va_end( ap );
 
 	return currentVM->legacy.syscall( args );
 #else // original id code
@@ -111,9 +111,9 @@ vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t( *systemCalls )(intptr_t *) ) 
 
 	// find the legacy syscall api
 	FS_FindPureDLL( vm->name );
-	Com_Printf( "VM_CreateLegacy: %s"ARCH_STRING DLL_EXT, vm->name );
 	vm->dllHandle = Sys_LoadLegacyGameDll( vm->name, &vm->legacy.main, VM_DllSyscall );
 
+	Com_Printf( "VM_CreateLegacy: %s"ARCH_STRING DLL_EXT, vm->name );
 	if ( vm->dllHandle ) {
 		if ( com_developer->integer )
 			Com_Printf( " succeeded [0x%" PRIxPTR "]\n", (uintptr_t)vm->dllHandle );

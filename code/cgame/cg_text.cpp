@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -242,7 +241,7 @@ void CG_CaptionText( const char *str, int sound)
 		// we only care about some sound dirs...
 		if (!Q_stricmpn(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
 		{
-			Com_Printf("WARNING: CG_CaptionText given invalid text key :'%s'\n",str);
+			Com_Printf("WARNING: CG_CaptionText given invalid text key: '%s'\n", str);
 		}
 		else
 		{

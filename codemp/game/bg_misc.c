@@ -2311,7 +2311,7 @@ void BG_EvaluateTrajectoryDelta( const trajectory_t *tr, int atTime, vec3_t resu
 	}
 }
 
-char *eventnames[] = {
+const char *eventnames[] = {
 	"EV_NONE",
 
 	"EV_CLIENTJOIN",

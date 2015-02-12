@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +36,7 @@ float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle);
 
 // cinematics and voice-over-network will send raw samples
 // 1.0 volume will be direct output of source samples
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame );
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame );
 // stop all sounds
 void S_StopSounds(void);	// from snd_dma.cpp
 // stop all sounds and the background track

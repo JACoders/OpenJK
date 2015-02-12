@@ -3,9 +3,7 @@
 // Task Manager header file
 
 #include <map>
-#ifndef _WIN32
 #include <string>
-#endif
 
 #include "sequencer.h"
 class CSequencer;
@@ -65,7 +63,7 @@ class CTaskGroup
 {
 public:
 
-	typedef map < int, bool > taskCallback_m;
+	typedef std::map < int, bool > taskCallback_m;
 
 	CTaskGroup( void );
 	~CTaskGroup( void );
@@ -99,11 +97,11 @@ public:
 class CTaskManager
 {
 
-	typedef	map < int, CTask * >			taskID_m;
-	typedef map < string, CTaskGroup * >	taskGroupName_m;
-	typedef map < int, CTaskGroup * >		taskGroupID_m;
-	typedef vector < CTaskGroup * >			taskGroup_v;
-	typedef list < CTask *>					tasks_l;
+	typedef	std::map < int, CTask * >			taskID_m;
+	typedef std::map < std::string, CTaskGroup * >	taskGroupName_m;
+	typedef std::map < int, CTaskGroup * >		taskGroupID_m;
+	typedef std::vector < CTaskGroup * >			taskGroup_v;
+	typedef std::list < CTask *>					tasks_l;
 
 public:
 

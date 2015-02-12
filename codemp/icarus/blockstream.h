@@ -18,7 +18,6 @@
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
-using namespace std;
 
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"
@@ -114,7 +113,7 @@ protected:
 
 class CBlock
 {
-	typedef vector< CBlockMember * >	blockMember_v;
+	typedef std::vector< CBlockMember * >	blockMember_v;
 
 public:
 

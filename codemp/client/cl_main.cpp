@@ -11,11 +11,7 @@
 #include "cl_uiapi.h"
 #include "cl_lan.h"
 #include "snd_local.h"
-
-#ifndef _WIN32
 #include "sys/sys_loadlib.h"
-#include "sys/sys_local.h"
-#endif
 
 cvar_t	*cl_renderer;
 
@@ -75,9 +71,7 @@ cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_autolodscale;
 
-#ifndef _WIN32
 cvar_t	*cl_consoleKeys;
-#endif
 
 cvar_t  *cl_lanForcePackets;
 
@@ -2110,8 +2104,8 @@ void CL_Frame ( int msec ) {
 	// if recording an avi, lock to a fixed fps
 	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
 		if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
-			float fps = min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
-			float frameDuration = max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
+			float fps = Q_min(cl_aviFrameRate->value * com_timescale->value, 1000.0f);
+			float frameDuration = Q_max(1000.0f / fps, 1.0f) + clc.aviVideoFrameRemainder;
 			takeVideoFrame = qtrue;
 
 			msec = (int)frameDuration;
@@ -2195,7 +2189,6 @@ CL_RefPrintf
 DLL glue
 ================
 */
-#define	MAXPRINTMSG	4096
 void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -2300,11 +2293,6 @@ CL_InitRef
 */
 qboolean Com_TheHunkMarkHasBeenMade(void);
 
-#ifdef _WIN32
-	//win32/win_main.cpp
-	#include "win32/win_local.h"
-	extern WinVars_t g_wv;
-#endif
 //qcommon/cm_load.cpp
 extern void *gpvCachedMapDiskImage;
 extern qboolean gbUsingCachedMapDataRightNow;
@@ -2312,9 +2300,6 @@ extern qboolean gbUsingCachedMapDataRightNow;
 static char *GetSharedMemory( void ) { return cl.mSharedMemory; }
 static vm_t *GetCurrentVM( void ) { return currentVM; }
 static qboolean CGVMLoaded( void ) { return (qboolean)cls.cgameStarted; }
-#ifdef _WIN32
-	static void *GetWinVars( void ) { return (void *)&g_wv; }
-#endif
 static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
 static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
 static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
@@ -2426,15 +2411,12 @@ void CL_InitRef( void ) {
 	ri.CGVMLoaded = CGVMLoaded;
 	ri.CGVM_RagCallback = CGVM_RagCallback;
 
-	// ugly win32 backend
-#ifdef _WIN32
-	ri.GetWinVars = GetWinVars;
-#endif
-#ifndef _WIN32
-    ri.IN_Init = IN_Init;
-    ri.IN_Shutdown = IN_Shutdown;
-    ri.IN_Restart = IN_Restart;
-#endif
+    ri.WIN_Init = WIN_Init;
+	ri.WIN_SetGamma = WIN_SetGamma;
+    ri.WIN_Shutdown = WIN_Shutdown;
+    ri.WIN_Present = WIN_Present;
+	ri.GL_GetProcAddress = WIN_GL_GetProcAddress;
+
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
@@ -2733,10 +2715,8 @@ void CL_Init( void ) {
 
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
-#ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
-#endif
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );

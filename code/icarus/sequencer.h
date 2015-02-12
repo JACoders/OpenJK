@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -47,8 +46,8 @@ typedef struct bstream_s
 class CSequencer
 {
 	//typedef	map < int, CSequence * >			sequenceID_m;
-	typedef list < CSequence * >				sequence_l;
-	typedef map < CTaskGroup *, CSequence * >	taskSequence_m;
+	typedef std::list < CSequence * >				sequence_l;
+	typedef std::map < CTaskGroup *, CSequence * >	taskSequence_m;
 
 public:
 	enum
@@ -171,7 +170,7 @@ protected:
 
 	int					m_elseValid;
 	CBlock				*m_elseOwner;
-	vector<bstream_t*>  m_streamsCreated;
+	std::vector<bstream_t*>  m_streamsCreated;
 
 	int					m_id;
 };

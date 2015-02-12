@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,13 +22,7 @@ This file is part of Jedi Academy.
 #include "../qcommon/qfiles.h"
 #include "../rd-common/tr_public.h"
 #include "../rd-common/mdx_format.h"
-#ifdef _WIN32
 #include "qgl.h"
-#include "glext.h"
-#else
-#include "qgl.h"
-#include "../sdl/sdl_qgl.h"
-#endif
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
@@ -1025,6 +1018,7 @@ typedef struct {
 
 	vec3_t					sunLight;			// from the sky shader for this level
 	vec3_t					sunDirection;
+	int						sunSurfaceLight;	// from the sky shader for this level
 	vec3_t					sunAmbient;			// from the sky shader	(only used for John's terrain system)
 
 
@@ -1063,10 +1057,6 @@ typedef struct {
 	float					rangedFog;
 
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 int		 R_Images_StartIteration(void);
@@ -1080,6 +1070,7 @@ extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //
@@ -1114,7 +1105,7 @@ extern cvar_t	*r_primitives;			// "0" = based on compiled vertex array existance
 extern cvar_t	*r_fastsky;				// controls whether sky should be cleared or drawn
 extern cvar_t	*r_drawSun;				// controls drawing of sun quad
 extern cvar_t	*r_dynamiclight;		// dynamic lights enabled/disabled
-extern cvar_t	*r_dlightBacks;			// dlight non-facing surfaces for continuity
+// rjr - removed for hacking extern cvar_t	*r_dlightBacks;			// dlight non-facing surfaces for continuity
 
 extern	cvar_t	*r_norefresh;			// bypasses the ref rendering
 extern	cvar_t	*r_drawentities;		// disable/enable entity rendering
@@ -1374,6 +1365,11 @@ shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 void		R_InitShaders( void );
 void		R_ShaderList_f( void );
 
+//
+// tr_arb.c
+//
+void ARB_InitGlowShaders( void );
+
 
 /*
 ====================================================================
@@ -1382,17 +1378,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 
 ====================================================================
 */
-
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( const char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], 
-						    unsigned char green[256],
-							unsigned char blue[256] );
+static inline void GLimp_LogComment( char *comment ) {}
 
 
 /*
@@ -1480,20 +1466,6 @@ WORLD MAP
 void R_AddBrushModelSurfaces( trRefEntity_t *e );
 void R_AddWorldSurfaces( void );
 
-
-/*
-============================================================
-
-FLARES
-
-============================================================
-*/
-
-void R_ClearFlares( void );
-
-void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t normal, float lightScale );
-void RB_AddDlightFlares( void );
-void RB_RenderFlares (void);
 
 /*
 ============================================================
@@ -1827,10 +1799,7 @@ extern	backEndData_t	*backEndData;
 void *R_GetCommandBuffer( int bytes );
 void RB_ExecuteRenderCommands( const void *data );
 
-void R_InitCommandBuffers( void );
-void R_ShutdownCommandBuffers( void );
-
-void R_SyncRenderThread( void );
+void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 

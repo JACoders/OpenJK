@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -52,7 +51,7 @@ void Debug_Printf (cvar_t *cv, int debugLevel, char *fmt, ...)
 		color = S_COLOR_RED;
 
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	gi.Printf("%s%5i:%s", color, level.time, msg);
@@ -90,7 +89,7 @@ void Debug_NPCPrintf (gentity_t *printNPC, cvar_t *cv, int debugLevel, char *fmt
 		color = COLOR_RED;
 
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	gi.Printf ("%c%c%5i (%s) %s", Q_COLOR_ESCAPE, color, level.time, printNPC->targetname, msg);

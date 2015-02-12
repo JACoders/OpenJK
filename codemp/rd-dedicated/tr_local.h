@@ -970,10 +970,6 @@ typedef struct backEndState_s {
 
 #define NUM_SCRATCH_IMAGES 16
 
-#ifdef _WIN32
-	#include "../win32/win_local.h"
-#endif
-
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
@@ -1081,10 +1077,6 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,10 +22,9 @@ This file is part of Jedi Academy.
 
 #include "client.h"
 #include "client_ui.h"
+#include "qcommon/stringed_ingame.h"
 
 #include "vmachine.h"
-
-int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
 
 intptr_t CL_UISystemCalls( intptr_t *args );
 
@@ -301,7 +299,7 @@ void CL_InitUI( void ) {
 
 	uii.GetConfigString			= (void (*)(int, char *, int))GetConfigString;
 
-	uii.Milliseconds			= Sys_Milliseconds;
+	uii.Milliseconds			= Sys_Milliseconds2;
 
 	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -1142,7 +1141,7 @@ enum ERagState
 };
 static int				ragState;
 
-static vector<boneInfo_t *>		*rag = NULL;  // once we get the dependents precomputed this can be local
+static std::vector<boneInfo_t *>		*rag = NULL;  // once we get the dependents precomputed this can be local
 
 
 static void G2_Generate_MatrixRag(
@@ -2250,7 +2249,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 	assert(ghoul2.mFileName[0]);
 	boneInfo_v &blist = ghoul2.mBlist;
 	if(!rag) {
-		rag = new vector<boneInfo_t*>;
+		rag = new std::vector<boneInfo_t*>;
 	}
 	rag->clear();
 	int numRendered=0;

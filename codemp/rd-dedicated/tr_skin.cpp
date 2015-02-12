@@ -8,7 +8,6 @@
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
-using namespace std;
 bool gServerSkinHack = false;
 
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
@@ -247,7 +246,7 @@ static char *CommaParse( char **data_p ) {
 
 	while ( 1 ) {
 		// skip whitespace
-		while( (c = *data) <= ' ') {
+		while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ') {
 			if( !c ) {
 				break;
 			}

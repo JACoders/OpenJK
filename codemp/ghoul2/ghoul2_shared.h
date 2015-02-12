@@ -11,7 +11,7 @@ Ghoul2 Insert Start
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
-using namespace std;
+
 /*
 Ghoul2 Insert End
 */
@@ -221,10 +221,10 @@ struct SSkinGoreData
 
 #define MAX_GHOUL_COUNT_BITS 8 // bits required to send across the MAX_G2_MODELS inside of the networking - this is the only restriction on ghoul models possible per entity
 
-typedef vector <surfaceInfo_t> surfaceInfo_v;
-typedef vector <boneInfo_t> boneInfo_v;
-typedef vector <boltInfo_t> boltInfo_v;
-typedef vector <pair<int,mdxaBone_t> > mdxaBone_v;
+typedef std::vector <surfaceInfo_t> surfaceInfo_v;
+typedef std::vector <boneInfo_t> boneInfo_v;
+typedef std::vector <boltInfo_t> boltInfo_v;
+typedef std::vector <std::pair<int,mdxaBone_t> > mdxaBone_v;
 
 // defines for stuff to go into the mflags
 #define		GHOUL2_NOCOLLIDE 0x001

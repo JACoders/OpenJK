@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -451,7 +450,7 @@ static void Q3_CenterPrint ( const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	// FIXME: added '!' so you can print something that's hasn't been precached, '@' searches only for precache text
@@ -9144,7 +9143,7 @@ void Q3_DebugPrint( int level, const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	//Add the color formatting

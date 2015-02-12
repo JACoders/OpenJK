@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -272,9 +271,7 @@ extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cl_activeAction;
 
-#ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
-#endif
 
 //=================================================
 
@@ -399,6 +396,7 @@ void CIN_CloseAllVideos(void);
 //
 // cl_cgame.c
 //
+qboolean CL_InitCGameVM( void *gameLibrary );
 void CL_InitCGame( void );
 void CL_ShutdownCGame( void );
 qboolean CL_GameCommand( void );

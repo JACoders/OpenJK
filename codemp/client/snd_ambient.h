@@ -22,8 +22,6 @@
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #endif
 
-using namespace std;
-
 // Defines
 
 #define	AMBIENT_SET_FILENAME	"sound/sound.txt"
@@ -102,8 +100,8 @@ public:
 protected:
 
 	int								m_numSets;
-	vector < ambientSet_t * >		*m_ambientSets;
-	map	< sstring_t, ambientSet_t * >	*m_setMap;
+	std::vector < ambientSet_t * >		*m_ambientSets;
+	std::map	< sstring_t, ambientSet_t * >	*m_setMap;
 };
 
 // Prototypes

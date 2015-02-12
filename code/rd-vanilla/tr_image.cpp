@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,8 +25,14 @@ This file is part of Jedi Academy.
 
 #include "tr_local.h"
 #include "../rd-common/tr_common.h"
-#include "../qcommon/sstring.h"
 #include <png.h>
+#ifdef _MSC_VER
+#pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
+#include <map>
+#ifdef _MSC_VER
+#pragma warning (pop)
+#endif
 
 
 static byte			 s_intensitytable[256];
@@ -63,6 +68,8 @@ textureMode_t modes[] = {
 	{"GL_NEAREST_MIPMAP_LINEAR", GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST},
 	{"GL_LINEAR_MIPMAP_LINEAR", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR}
 };
+
+static const size_t numTextureModes = ARRAY_LEN(modes);
 
 /*
 ================
@@ -113,20 +120,20 @@ GL_TextureMode
 ===============
 */
 void GL_TextureMode( const char *string ) {
-	int		i;
+	size_t	i;
 	image_t	*glt;
 
-	for ( i=0 ; i< 6 ; i++ ) {
+	for ( i = 0; i < numTextureModes ; i++ ) {
 		if ( !Q_stricmp( modes[i].name, string ) ) {
 			break;
 		}
 	}
 
-	if ( i == 6 ) {
+	if ( i == numTextureModes ) {
 		ri.Printf (PRINT_ALL, "bad filter name\n");
-		for ( i=0 ; i< 6 ; i++ ) {
-			ri.Printf( PRINT_ALL, "%s\n",modes[i].name);
-			}
+		for ( i = 0; i < numTextureModes ; i++ ) {
+			ri.Printf( PRINT_ALL, "%s\n", modes[i].name);
+		}
 		return;
 	}
 
@@ -136,7 +143,7 @@ void GL_TextureMode( const char *string ) {
 	// If the level they requested is less than possible, set the max possible...
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
-		ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic", glConfig.maxTextureFilterAnisotropy );
 	}
 
 	// change all the existing mipmap texture objects
@@ -756,9 +763,9 @@ public:
 	bool operator()(const char *s1, const char *s2) const { return(Q_stricmp(s1, s2) < 0); } 
 };
 
-typedef map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
-													AllocatedImages_t AllocatedImages;
-													AllocatedImages_t::iterator itAllocatedImages;
+typedef std::map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
+AllocatedImages_t AllocatedImages;
+AllocatedImages_t::iterator itAllocatedImages;
 
 int giTextureBindNum = 1024;	// will be set to this anyway at runtime, but wtf?
 
@@ -807,26 +814,19 @@ static void GL_ResetBinds(void)
 //
 void R_Images_DeleteLightMaps(void)
 {
-	qboolean bEraseOccured = qfalse;
-
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
-	{			
-		bEraseOccured = qfalse;
-
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* empty */)
+	{
 		image_t *pImage = (*itImage).second;
-		
+
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-			itImage = AllocatedImages.erase(itImage);
-#else
-            AllocatedImages_t::iterator itTemp = itImage;
-            itImage++;
-            AllocatedImages.erase(itTemp);
-#endif
 
-			bEraseOccured = qtrue;
+			AllocatedImages.erase(itImage++);
+		}
+		else
+		{
+			++itImage;
 		}
 	}
 
@@ -836,12 +836,12 @@ void R_Images_DeleteLightMaps(void)
 // special function currently only called by Dissolve code...
 //
 void R_Images_DeleteImage(image_t *pImage)
-{		
+{
 	// Even though we supply the image handle, we need to get the corresponding iterator entry...
 	//
 	AllocatedImages_t::iterator itImage = AllocatedImages.find(pImage->imgName);
 	if (itImage != AllocatedImages.end())
-	{		
+	{
 		R_Images_DeleteImageContents(pImage);
 		AllocatedImages.erase(itImage);
 	}
@@ -854,9 +854,9 @@ void R_Images_DeleteImage(image_t *pImage)
 // called only at app startup, vid_restart, app-exit
 //
 void R_Images_Clear(void)
-{		
+{
 	image_t *pImage;
-	//	int iNumImages = 
+	//	int iNumImages =
 	   				  R_Images_StartIteration();
 	while ( (pImage = R_Images_GetNextIteration()) != NULL)
 	{
@@ -894,10 +894,10 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 {
 	//ri.Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd():\n");
 
-	qboolean bEraseOccured = qfalse;
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
-	{			
-		bEraseOccured = qfalse;
+	qboolean imageDeleted = qtrue;
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* blank */)
+	{
+		qboolean bEraseOccured = qfalse;
 
 		image_t *pImage = (*itImage).second;
 
@@ -910,15 +910,16 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//ri.Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-				itImage = AllocatedImages.erase(itImage);
-#else
-                AllocatedImages_t::iterator itTemp = itImage;
-                itImage++;
-                AllocatedImages.erase(itTemp);
-#endif
-                bEraseOccured = qtrue;
+
+				AllocatedImages.erase(itImage++);
+				bEraseOccured = qtrue;
+				imageDeleted = qtrue;
 			}
+		}
+
+		if ( !bEraseOccured )
+		{
+			++itImage;
 		}
 	}
 
@@ -926,18 +927,18 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 
 	GL_ResetBinds();
 
-	return bEraseOccured;
+	return imageDeleted;
 }
 
 
 
-// returns image_t struct if we already have this, else NULL. No disk-open performed 
+// returns image_t struct if we already have this, else NULL. No disk-open performed
 //	(important for creating default images).
 //
 // This is called by both R_FindImageFile and anything that creates default images...
 //
 static image_t *R_FindImageFile_NoLoad(const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode )
-{	
+{
 	if (!name) {
 		return NULL;
 	}
@@ -949,7 +950,7 @@ static image_t *R_FindImageFile_NoLoad(const char *name, qboolean mipmap, qboole
 	//
 	AllocatedImages_t::iterator itAllocatedImage = AllocatedImages.find(pName);
 	if (itAllocatedImage != AllocatedImages.end())
-	{	
+	{
 		image_t *pImage = (*itAllocatedImage).second;
 
 		// the white image can be used with any set of parms, but other mismatches are errors...
@@ -1101,43 +1102,6 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 }
 
 
-
-// EF dlight image creation code
-/*
-================
-R_CreateDlightImage
-================
-*/
-/*
-#define	DLIGHT_SIZE	16
-static void R_CreateDlightImage( void ) {
-	int		x,y;
-	byte	data[DLIGHT_SIZE][DLIGHT_SIZE][4];
-	int		b;
-
-	// make a centered inverse-square falloff blob for dynamic lighting
-	for (x=0 ; x<DLIGHT_SIZE ; x++) {
-		for (y=0 ; y<DLIGHT_SIZE ; y++) {
-			float	d;
-
-			d = ( DLIGHT_SIZE/2 - 0.5 - x ) * ( DLIGHT_SIZE/2 - 0.5 - x ) +
-				( DLIGHT_SIZE/2 - 0.5 - y ) * ( DLIGHT_SIZE/2 - 0.5 - y );
-			b = 4000 / d;
-			if (b > 255) {
-				b = 255;
-			} else if ( b < 75 ) {
-				b = 0;
-			}
-			data[y][x][0] = 
-			data[y][x][1] = 
-			data[y][x][2] = 255;
-			data[y][x][3] = b/8;			
-		}
-	}
-	tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP );
-}
-*/
-// Holomatch dlight image creation code
 /*
 ================
 R_CreateDlightImage
@@ -1228,7 +1192,7 @@ void R_InitFogTable( void ) {
 	int		i;
 	float	d;
 	float	exp;
-	
+
 	exp = 0.5;
 
 	for ( i = 0 ; i < FOG_TABLE_SIZE ; i++ ) {
@@ -1258,7 +1222,7 @@ float	R_FogFactor( float s, float t ) {
 		return 0;
 	}
 	if ( t < 31.0/32 ) {
-		s *= (t - 1.0/32) / (30.0/32);
+		s *= (t - 1.0f/32.0f) / (30.0f/32.0f);
 	}
 
 	// we need to leave a lot of clamp range
@@ -1291,10 +1255,10 @@ static void R_CreateFogImage( void ) {
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
 		for (y=0 ; y<FOG_T ; y++) {
-			d = R_FogFactor( ( x + 0.5 ) / FOG_S, ( y + 0.5 ) / FOG_T );
+			d = R_FogFactor( ( x + 0.5f ) / FOG_S, ( y + 0.5f ) / FOG_T );
 
-			data[(y*FOG_S+x)*4+0] = 
-			data[(y*FOG_S+x)*4+1] = 
+			data[(y*FOG_S+x)*4+0] =
+			data[(y*FOG_S+x)*4+1] =
 			data[(y*FOG_S+x)*4+2] = 255;
 			data[(y*FOG_S+x)*4+3] = 255*d;
 		}
@@ -1373,22 +1337,22 @@ void R_CreateBuiltinImages( void ) {
 	// Create the scene glow image. - AReis
 	tr.screenGlow = 1024 + giTextureBindNum++;
 	qglDisable( GL_TEXTURE_2D );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.screenGlow );
-	qglTexImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA16, glConfig.vidWidth, glConfig.vidHeight, 0, GL_RGB, GL_FLOAT, 0 );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	qglEnable( GL_TEXTURE_RECTANGLE_ARB );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.screenGlow );
+	qglTexImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16, glConfig.vidWidth, glConfig.vidHeight, 0, GL_RGB, GL_FLOAT, 0 );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 	// Create the scene image. - AReis
 	tr.sceneImage = 1024 + giTextureBindNum++;
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.sceneImage );
-	qglTexImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA16, glConfig.vidWidth, glConfig.vidHeight, 0, GL_RGB, GL_FLOAT, 0 );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage );
+	qglTexImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16, glConfig.vidWidth, glConfig.vidHeight, 0, GL_RGB, GL_FLOAT, 0 );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
 	// Create the minimized scene blur image.
 	if ( r_DynamicGlowWidth->integer > glConfig.vidWidth  )
@@ -1400,13 +1364,13 @@ void R_CreateBuiltinImages( void ) {
 		r_DynamicGlowHeight->integer = glConfig.vidHeight;
 	}
 	tr.blurImage = 1024 + giTextureBindNum++;
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, tr.blurImage );
-	qglTexImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA16, r_DynamicGlowWidth->integer, r_DynamicGlowHeight->integer, 0, GL_RGB, GL_FLOAT, 0 );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
+	qglBindTexture( GL_TEXTURE_RECTANGLE_ARB, tr.blurImage );
+	qglTexImage2D( GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA16, r_DynamicGlowWidth->integer, r_DynamicGlowHeight->integer, 0, GL_RGB, GL_FLOAT, 0 );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
 	qglEnable( GL_TEXTURE_2D );
 
 
@@ -1509,7 +1473,7 @@ void R_SetColorMappings( void ) {
 
 	if ( glConfig.deviceSupportsGamma )
 	{
-		GLimp_SetGamma( s_gammatable, s_gammatable, s_gammatable );
+		ri.WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
 	}
 }
 
@@ -1537,462 +1501,7 @@ R_DeleteTextures
 //
 void R_DeleteTextures( void ) {
 
-	R_Images_Clear();	
+	R_Images_Clear();
 	GL_ResetBinds();
 }
 
-/*
-============================================================================
-
-SKINS
-
-============================================================================
-*/
-
-/*
-==================
-CommaParse
-
-This is unfortunate, but the skin files aren't
-compatable with our normal parsing rules.
-==================
-*/
-static char *CommaParse( char **data_p ) {
-	int c = 0, len;
-	char *data;
-	static	char	com_token[MAX_TOKEN_CHARS];
-
-	data = *data_p;
-	len = 0;
-	com_token[0] = 0;
-
-	// make sure incoming data is valid
-	if ( !data ) {
-		*data_p = NULL;
-		return com_token;
-	}
-
-	while ( 1 ) {
-		// skip whitespace
-		while( (c = *data) <= ' ') {
-			if( !c ) {
-				break;
-			}
-			data++;
-		}
-
-
-		c = *data;
-
-		// skip double slash comments
-		if ( c == '/' && data[1] == '/' )
-		{
-			while (*data && *data != '\n')
-				data++;
-		}
-		// skip /* */ comments
-		else if ( c=='/' && data[1] == '*' ) 
-		{
-			while ( *data && ( *data != '*' || data[1] != '/' ) ) 
-			{
-				data++;
-			}
-			if ( *data ) 
-			{
-				data += 2;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	if ( c == 0 ) {
-		return "";
-	}
-
-	// handle quoted strings
-	if (c == '\"')
-	{
-		data++;
-		while (1)
-		{
-			c = *data++;
-			if (c=='\"' || !c)
-			{
-				com_token[len] = 0;
-				*data_p = ( char * ) data;
-				return com_token;
-			}
-			if (len < MAX_TOKEN_CHARS - 1)
-			{
-				com_token[len] = c;
-				len++;
-			}
-		}
-	}
-
-	// parse a regular word
-	do
-	{
-		if (len < MAX_TOKEN_CHARS - 1)
-		{
-			com_token[len] = c;
-			len++;
-		}
-		data++;
-		c = *data;
-	} while (c>32 && c != ',' );
-
-	com_token[len] = 0;
-
-	*data_p = ( char * ) data;
-	return com_token;
-}
-
-/*
-class CStringComparator
-{
-public:
-	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); } 
-};
-*/
-typedef map<sstring_t,char * /*, CStringComparator*/ >	AnimationCFGs_t;
-													AnimationCFGs_t AnimationCFGs;
-
-// I added this function for development purposes (and it's VM-safe) so we don't have problems
-//	with our use of cached models but uncached animation.cfg files (so frame sequences are out of sync
-//	if someone rebuild the model while you're ingame and you change levels)...
-//
-// Usage:  call with psDest == NULL for a size enquire (for malloc), 
-//				then with NZ ptr for it to copy to your supplied buffer...
-//
-int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
-{
-	char *psText = NULL;
-
-	AnimationCFGs_t::iterator it = AnimationCFGs.find(psCFGFilename);
-	if (it != AnimationCFGs.end())
-	{
-		psText = (*it).second;
-	}
-	else
-	{
-		// not found, so load it...
-		//
-		fileHandle_t f;
-		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
-		if (iLen <= 0)
-		{
-			return 0;
-		}
-
-		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse, 4 );
-
-		ri.FS_Read( psText, iLen, f );
-		psText[iLen] = '\0';
-		ri.FS_FCloseFile( f );
-
-		AnimationCFGs[psCFGFilename] = psText;
-	}
-
-	if (psText)	// sanity, but should always be NZ
-	{
-		if (psDest)
-		{
-			Q_strncpyz(psDest,psText,iDestSize);
-		}
-
-		return strlen(psText);
-	}
-
-	return 0;
-}
-
-// only called from devmapbsp, devmapall, or ...
-//
-void RE_AnimationCFGs_DeleteAll(void)
-{
-	for (AnimationCFGs_t::iterator it = AnimationCFGs.begin(); it != AnimationCFGs.end(); ++it)
-	{
-		char *psText = (*it).second;
-		Z_Free(psText);
-	}
-
-	AnimationCFGs.clear();
-}
-
-/*
-===============
-RE_SplitSkins
-input = skinname, possibly being a macro for three skins
-return= true if three part skins found
-output= qualified names to three skins if return is true, undefined if false
-===============
-*/
-bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *skinlower)
-{	//INname= "models/players/jedi_tf/|head01_skin1|torso01|lower01";
-	if (strchr(INname, '|'))
-	{
-		char name[MAX_QPATH];
-		strcpy(name, INname);
-		char *p = strchr(name, '|');
-		*p=0;
-		p++;
-		//fill in the base path
-		strcpy (skinhead, name);
-		strcpy (skintorso, name);
-		strcpy (skinlower, name);
-
-		//now get the the individual files
-		
-		//advance to second
-		char *p2 = strchr(p, '|'); 
-		assert(p2);
-		*p2=0;
-		p2++;
-		strcat (skinhead, p);
-		strcat (skinhead, ".skin");
-
-
-		//advance to third
-		p = strchr(p2, '|');
-		assert(p);
-		if (!p)
-		{
-			return false;
-		}
-		*p=0;
-		p++;
-		strcat (skintorso,p2);
-		strcat (skintorso, ".skin");
-
-		strcat (skinlower,p);
-		strcat (skinlower, ".skin");
-		
-		return true;
-	}
-	return false;
-}
-
-
-qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin);
-/*
-===============
-RE_RegisterSkin
-
-===============
-*/
-qhandle_t RE_RegisterSkin( const char *name) {
-	qhandle_t	hSkin;
-	skin_t		*skin;
-
-//	if (!cls.cgameStarted && !cls.uiStarted)		
-//	{
-		//rww - added uiStarted exception because we want ghoul2 models in the menus.
-		// gwg well we need our skins to set surfaces on and off, so we gotta get em
-		//return 1;	// cope with Ghoul2's calling-the-renderer-before-its-even-started hackery, must be any NZ amount here to trigger configstring setting
-//	}
-
-	if (!tr.numSkins)
-	{
-		R_InitSkins(); //make sure we have numSkins set to at least one.
-	}
-
-	if ( !name || !name[0] ) {
-		Com_Printf( "Empty name passed to RE_RegisterSkin\n" );
-		return 0;
-	}
-
-	if ( strlen( name ) >= MAX_QPATH ) {
-		Com_Printf( "Skin name exceeds MAX_QPATH\n" );
-		return 0;
-	}
-
-	// see if the skin is already loaded
-	for ( hSkin = 1; hSkin < tr.numSkins ; hSkin++ ) {
-		skin = tr.skins[hSkin];
-		if ( !Q_stricmp( skin->name, name ) ) {
-			if( skin->numSurfaces == 0 ) {
-				return 0;		// default skin
-			}
-			return(hSkin);
-		}
-	}
-
-	if ( tr.numSkins == MAX_SKINS )	{
-		ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) MAX_SKINS hit\n", name );
-		return 0;
-	}
-	// allocate a new skin
-	tr.numSkins++;
-	skin = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
-	tr.skins[hSkin] = skin;
-	Q_strncpyz( skin->name, name, sizeof( skin->name ) );	//always make one so it won't search for it again
-
-	// If not a .skin file, load as a single shader	- then return
-	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
-#ifdef JK2_MODE
-		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
-		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
-		return hSkin;
-#endif
-/*		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
-		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
-		return hSkin;
-*/
-	}
-
-	char skinhead[MAX_QPATH]={0};
-	char skintorso[MAX_QPATH]={0};
-	char skinlower[MAX_QPATH]={0};
-	if ( RE_SplitSkins(name, (char*)&skinhead, (char*)&skintorso, (char*)&skinlower ) )
-	{//three part
-		hSkin = RE_RegisterIndividualSkin(skinhead, hSkin);
-		if (hSkin)
-		{
-			hSkin = RE_RegisterIndividualSkin(skintorso, hSkin);
-			if (hSkin)
-			{
-				hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
-			}
-		}
-	}
-	else
-	{//single skin
-		hSkin = RE_RegisterIndividualSkin(name, hSkin);
-	}
-	return(hSkin);
-}
-
-// given a name, go get the skin we want and return
-qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin) 
-{
-	skin_t		*skin;
-	skinSurface_t	*surf;
-	char		*text, *text_p;
-	char		*token;
-	char		surfName[MAX_QPATH];
-
-	// load and parse the skin file
-    ri.FS_ReadFile( name, (void **)&text );
-	if ( !text ) {
-		ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) failed to load!\n", name );
-		return 0;
-	}
-
-	assert (tr.skins[hSkin]);	//should already be setup, but might be an 3part append
-
-	skin = tr.skins[hSkin];
-
-	text_p = text;
-	while ( text_p && *text_p ) {
-		// get surface name
-		token = CommaParse( &text_p );
-		Q_strncpyz( surfName, token, sizeof( surfName ) );
-
-		if ( !token[0] ) {
-			break;
-		}
-		// lowercase the surface name so skin compares are faster
-		Q_strlwr( surfName );
-
-		if ( *text_p == ',' ) {
-			text_p++;
-		}
-
-		if ( !strncmp( token, "tag_", 4 ) ) {	//these aren't in there, but just in case you load an id style one...
-			continue;
-		}
-		
-		// parse the shader name
-		token = CommaParse( &text_p );
-
-#ifndef JK2_MODE
-		if ( !strcmp( &surfName[strlen(surfName)-4], "_off") )
-		{
-			if ( !strcmp( token ,"*off" ) )
-			{
-				continue;	//don't need these double offs
-			}
-			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
-		}
-#endif
-		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
-		{
-			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
-			ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %u surfaces!\n", name, (unsigned int)ARRAY_LEN(skin->surfaces) );
-			break;
-		}
-		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
-		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
-		surf->shader = R_FindShader( token, lightmapsNone, stylesDefault, qtrue );
-		skin->numSurfaces++;
-	}
-
-	ri.FS_FreeFile( text );
-
-
-	// never let a skin have 0 shaders
-	if ( skin->numSurfaces == 0 ) {
-		return 0;		// use default skin
-	}
-
-	return hSkin;
-}
-
-
-/*
-===============
-R_InitSkins
-===============
-*/
-void	R_InitSkins( void ) {
-	skin_t		*skin;
-
-	tr.numSkins = 1;
-
-	// make the default skin have all default shaders
-	skin = tr.skins[0] = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
-	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
-	skin->numSurfaces = 1;
-	skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
-	skin->surfaces[0]->shader = tr.defaultShader;
-}
-
-/*
-===============
-R_GetSkinByHandle
-===============
-*/
-skin_t	*R_GetSkinByHandle( qhandle_t hSkin ) {
-	if ( hSkin < 1 || hSkin >= tr.numSkins ) {
-		return tr.skins[0];
-	}
-	return tr.skins[ hSkin ];
-}
-
-/*
-===============
-R_SkinList_f
-===============
-*/
-void	R_SkinList_f (void) {
-	int			i, j;
-	skin_t		*skin;
-
-	ri.Printf (PRINT_ALL, "------------------\n");
-
-	for ( i = 0 ; i < tr.numSkins ; i++ ) {
-		skin = tr.skins[i];
-		ri.Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
-		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
-			ri.Printf( PRINT_ALL, "       %s = %s\n", 
-				skin->surfaces[j]->name, skin->surfaces[j]->shader->name );
-		}
-	}
-	ri.Printf (PRINT_ALL, "------------------\n");
-}

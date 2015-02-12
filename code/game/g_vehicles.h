@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -50,7 +49,6 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 typedef struct
 {
-//*** IMPORTANT!!! *** the number of variables in the vehWeaponStats_t struct (including all elements of arrays) must be reflected by NUM_VWEAP_PARMS!!!
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
 	qboolean	bIsProjectile;	//traceline or entity?
@@ -78,8 +76,6 @@ typedef struct
 	int		iLifeTime;	//removes itself after this amount of time
 	qboolean	bExplodeOnExpire;	//when iLifeTime is up, explodes rather than simply removing itself
 } vehWeaponInfo_t;
-//NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
-#define NUM_VWEAP_PARMS	25
 
 #define	VWFOFS(x) offsetof(vehWeaponInfo_t, x)
 

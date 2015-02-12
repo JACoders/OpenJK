@@ -454,10 +454,6 @@ void R_Init( void ) {
 	memset( &tr, 0, sizeof( tr ) );
 	memset( &backEnd, 0, sizeof( backEnd ) );
 
-#ifdef _WIN32
-	tr.wv = (WinVars_t *)ri->GetWinVars();
-#endif
-
 //	Swap_Init();
 
 	//
@@ -488,8 +484,8 @@ void R_Init( void ) {
 	}
 	R_Register();
 
-	max_polys = (std::min)( r_maxpolys->integer, DEFAULT_MAX_POLYS );
-	max_polyverts = (std::min)( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
+	max_polys = Q_min( r_maxpolys->integer, DEFAULT_MAX_POLYS );
+	max_polyverts = Q_min( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
 	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;

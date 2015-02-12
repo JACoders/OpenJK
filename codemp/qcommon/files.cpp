@@ -14,6 +14,10 @@
 #endif
 #include "minizip/unzip.h"
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 // for rmdir
 #if defined (_MSC_VER)
 	#include <direct.h>
@@ -515,7 +519,9 @@ qboolean FS_CreatePath (char *OSPath) {
 
 	// Skip creation of the root directory as it will always be there
 	ofs = strchr( path, PATH_SEP );
-	ofs++;
+	if ( ofs ) {
+		ofs++;
+	}
 
 	for (; ofs != NULL && *ofs ; ofs++) {
 		if (*ofs == PATH_SEP) {
@@ -1319,7 +1325,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 						// from every pk3 file..
 
 						// The x86.dll suffixes are needed in order for sv_pure to continue to
-						// work on non-x86/windows systems... 
+						// work on non-x86/windows systems...
 
 						l = strlen( filename );
 						if ( !(pak->referenced & FS_GENERAL_REF)) {
@@ -1675,7 +1681,6 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	return len;
 }
 
-#define	MAXPRINTMSG	4096
 void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
@@ -3814,7 +3819,6 @@ void FS_Restart( int checksumFeed ) {
 		Com_Error( ERR_FATAL, "Couldn't load mpdefault.cfg" );
 	}
 
-	// bk010116 - new check before safeMode
 	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
 		// skip the jampconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {

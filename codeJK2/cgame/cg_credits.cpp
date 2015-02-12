@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,8 +29,6 @@ This file is part of Jedi Knight 2.
 
 
 #define MAX_LINE_BYTES 2048
-
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
 
 qhandle_t ghFontHandle = 0;
 float gfFontScale = 1.0f;
@@ -603,7 +600,7 @@ qboolean CG_Credits_Draw( void )
 					int iYpos = SCREEN_HEIGHT + (CreditLine.iLine * iFontHeight);
 						iYpos-= (int) (fPixelsPerSecond * fSecondsElapsed);
 
-					int iTextLinesThisItem = max(CreditLine.vstrText.size(),1);
+					int iTextLinesThisItem = Q_max( (int)CreditLine.vstrText.size(), 1);
 					if (iYpos + (iTextLinesThisItem * iFontHeight) < 0)
 					{
 						// scrolled off top of screen, so erase it...

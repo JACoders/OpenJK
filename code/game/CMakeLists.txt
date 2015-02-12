@@ -6,7 +6,12 @@ if(NOT InOpenJK)
 endif(NOT InOpenJK)
 
 set(SPGameDefines ${SharedDefines})
-set(SPGameIncludeDirectories "${SPDir}/game")
+set(SPGameIncludeDirectories
+	${SharedDir}
+	${SPDir}
+	"${SPDir}/game"
+	)
+
 if(WIN32)
 	set(SPGameLibraries "winmm")
 endif(WIN32)

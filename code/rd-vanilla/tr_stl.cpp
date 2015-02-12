@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -44,11 +43,10 @@ This file is part of Jedi Academy.
 
 #include <map>
 #include "../qcommon/sstring.h"	// #include <string>
-using namespace std;
 
-typedef map<sstring_t, const char *>	ShaderEntryPtrs_t;
+typedef std::map<sstring_t, const char *>	ShaderEntryPtrs_t;
+typedef ShaderEntryPtrs_t::size_type	ShaderEntryPtr_size;
 										ShaderEntryPtrs_t ShaderEntryPtrs;
-
 
 void ShaderEntryPtrs_Clear(void)
 {
@@ -61,8 +59,7 @@ int ShaderEntryPtrs_Size(void)
 	return ShaderEntryPtrs.size();
 }
 
-
-void ShaderEntryPtrs_Insert(const char  *token, const char  *p)
+void ShaderEntryPtrs_Insert(const char *token, const char *p)
 {
 	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(token);
 
@@ -75,8 +72,6 @@ void ShaderEntryPtrs_Insert(const char  *token, const char  *p)
 		ri.Printf( PRINT_DEVELOPER, "Duplicate shader entry %s!\n",token );
 	}
 }
-
-
 
 // returns NULL if not found...
 //
@@ -95,4 +90,3 @@ const char *ShaderEntryPtrs_Lookup(const char *psShaderName)
 #ifdef _MSC_VER
 #pragma warning ( pop )
 #endif
-

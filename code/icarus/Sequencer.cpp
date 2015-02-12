@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -229,7 +228,7 @@ Deletes parsing stream
 */
 void CSequencer::DeleteStream( bstream_t *bstream )
 {
-	vector<bstream_t*>::iterator finder = find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
+	std::vector<bstream_t*>::iterator finder = std::find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
 	if(finder != m_streamsCreated.end())
 	{
 		m_streamsCreated.erase(finder);
@@ -2375,13 +2374,7 @@ int CSequencer::DestroySequence( CSequence *sequence, CIcarus* icarus )
 	{
 		if((*tsi).second == sequence)
 		{
-#ifdef _WIN32
-			tsi = m_taskSequences.erase(tsi);
-#else
-			taskSequence_m::iterator itTemp = tsi;
-			tsi++;
-			m_taskSequences.erase(itTemp);
-#endif
+			m_taskSequences.erase(tsi++);
 		}
 		else
 		{

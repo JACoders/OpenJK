@@ -4,9 +4,6 @@
 
 #include "qcommon/q_shared.h"
 
-#ifndef _WIN32
-#include <string>
-#endif
 
 #include "qcommon/sstring.h"
 
@@ -15,6 +12,7 @@
 #pragma warning( push, 3 )
 #endif
 #include <algorithm>
+#include <string>
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
@@ -70,9 +68,9 @@ struct MusicExitTime_t	// need to declare this way for operator < below
 
 // it's possible for all 3 of these to be empty if it's boss or death music
 //
-typedef vector	<MusicExitPoint_t>	MusicExitPoints_t;
-typedef vector	<MusicExitTime_t>	MusicExitTimes_t;
-typedef map		<sstring_t, float>	MusicEntryTimes_t;	// key eg "marker1"
+typedef std::vector	<MusicExitPoint_t>	MusicExitPoints_t;
+typedef std::vector	<MusicExitTime_t>	MusicExitTimes_t;
+typedef std::map	<sstring_t, float>	MusicEntryTimes_t;	// key eg "marker1"
 
 typedef struct MusicFile_s {
 	sstring_t			sFileNameBase;
@@ -82,7 +80,7 @@ typedef struct MusicFile_s {
 
 } MusicFile_t;
 
-typedef map <sstring_t, MusicFile_t>	MusicData_t;			// string is "explore", "action", "boss" etc
+typedef std::map <sstring_t, MusicFile_t>	MusicData_t;			// string is "explore", "action", "boss" etc
 										MusicData_t* MusicData = NULL;
 // there are now 2 of these, because of the new "uses" keyword...
 //
@@ -346,7 +344,7 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 //
 static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 {
-	string strNewText;
+	std::string strNewText;
 
 	while (*pText)
 	{
@@ -769,12 +767,9 @@ qboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 {
 	char sLevelName[MAX_QPATH];
 	Q_strncpyz(sLevelName,COM_SkipPath( const_cast<char*>( (psDynamicMusicLabel&&psDynamicMusicLabel[0])?psDynamicMusicLabel:gsLevelNameFromServer.c_str() ) ),sizeof(sLevelName));
-#ifdef _WIN32
-	strlwr(sLevelName);
-#else
-	string s = sLevelName;
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
+
+	std::string s = sLevelName;
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
 	if (strlen(sLevelName))	// avoid error messages when there's no music waiting to be played and we try and restart it...
 	{
@@ -936,7 +931,7 @@ qboolean Music_AllowedToTransition( float			fPlayingTimeElapsed,
 
 		// since a MusicExitTimes_t item is a sorted array, we can use the equal_range algorithm...
 		//
-		pair <MusicExitTimes_t::iterator, MusicExitTimes_t::iterator> itp = equal_range( pMusicFile->MusicExitTimes.begin(), pMusicFile->MusicExitTimes.end(), T);
+		std::pair <MusicExitTimes_t::iterator, MusicExitTimes_t::iterator> itp = equal_range( pMusicFile->MusicExitTimes.begin(), pMusicFile->MusicExitTimes.end(), T);
 		if (itp.first != pMusicFile->MusicExitTimes.begin())
 			itp.first--;	// encompass the one before, in case we've just missed an exit point by < fTimeEpsilon
 		if (itp.second!= pMusicFile->MusicExitTimes.end())

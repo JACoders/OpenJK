@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,13 +20,16 @@ This file is part of Jedi Academy.
 #include "q_shared.h"
 #include "qcommon.h"
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
+#include "stringed_ingame.h"
 #include "stv_version.h"
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 // Because renderer.
 #include "../rd-common/tr_public.h"
 extern refexport_t re;
-
-#define	MAXPRINTMSG	4096
 
 static fileHandle_t	logfile;
 static fileHandle_t	speedslog;
@@ -35,7 +37,6 @@ static fileHandle_t	camerafile;
 fileHandle_t	com_journalFile;
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_timescale;
@@ -53,12 +54,15 @@ cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 cvar_t  *com_homepath;
+#ifndef _WIN32
+cvar_t	*com_ansiColor = NULL;
+#endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
 
-static cvar_t *com_affinity;
+cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -140,9 +144,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	}
 
 	CL_ConsolePrint( msg );
-
-	// Strip out color codes because these aren't needed in the log/viewlog or in the output window --eez
-	Q_StripColor( msg );
 
 	// echo to dedicated console and early console
 	Sys_Print( msg );
@@ -242,7 +243,7 @@ void SG_Shutdown();
 #ifdef JK2_MODE
 extern void SCR_UnprecacheScreenshot();
 #endif
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -305,7 +306,7 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f( void ) {
+void NORETURN Com_Quit_f( void ) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		SV_Shutdown ("Server quit\n");
@@ -853,7 +854,7 @@ int Com_EventLoop( void ) {
 
 		switch ( ev.evType ) {
 		default:
-			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evTime );
+			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evType );
 			break;
         case SE_NONE:
             break;
@@ -933,7 +934,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -977,8 +978,10 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
+	/* that should crash already, but to reassure the compiler: */
+	abort();
 }
 
 /*
@@ -1051,37 +1054,6 @@ static void Com_CatchError ( int code )
 	}
 }
 
-#ifdef _WIN32
-static const char *GetErrorString( DWORD error ) {
-	static char buf[MAX_STRING_CHARS];
-	buf[0] = '\0';
-
-	if ( error ) {
-		LPVOID lpMsgBuf;
-		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
-		if ( bufLen ) {
-			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
-			LocalFree( lpMsgBuf );
-		}
-	}
-	return buf;
-}
-#endif
-
-// based on Smod code
-static void Com_SetProcessorAffinity( void ) {
-#ifdef _WIN32
-	DWORD processMask;
-	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
-		processMask = 1; // set to first core only
-
-	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
-		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
-#endif
-}
-
 /*
 =================
 Com_Init
@@ -1145,7 +1117,6 @@ void Com_Init( char *commandLine ) {
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
-		com_viewlog = Cvar_Get( "viewlog", "0", CVAR_TEMP );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -1182,15 +1153,13 @@ void Com_Init( char *commandLine ) {
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
-		Com_SetProcessorAffinity();
+		Sys_SetProcessorAffinity();
 
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();
 		SV_Init();
 		
 		CL_Init();
-
-		Sys_ShowConsole( com_viewlog->integer, qfalse );
 		
 		// set com_frameTime so that if a map is started on the
 		// command line it will still be able to count on com_frameTime
@@ -1379,12 +1348,6 @@ void Com_Frame( void ) {
 
 		// write config file if anything changed
 		Com_WriteConfiguration(); 
-
-		// if "viewlog" has been modified, show or hide the log console
-		if ( com_viewlog->modified ) {
-			Sys_ShowConsole( com_viewlog->integer, qfalse );
-			com_viewlog->modified = qfalse;
-		}
 
 		//
 		// main event loop

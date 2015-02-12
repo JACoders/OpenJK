@@ -2,9 +2,8 @@
 This file is part of Jedi Knight 2.
 
     Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Knight 2 is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,8 +35,8 @@ This file is part of Jedi Knight 2.
 
 //Miscellaneous defines
 #define	NODE_NONE		-1
-#define	NAV_HEADER_ID	'JNV5'
-#define	NODE_HEADER_ID	'NODE'
+#define	NAV_HEADER_ID	INT_ID('J','N','V','5')
+#define	NODE_HEADER_ID	INT_ID('N','O','D','E')
 
 typedef multimap<int, int> EdgeMultimap;
 typedef multimap<int, int>::iterator EdgeMultimapIt;
@@ -95,7 +94,7 @@ public:
 
 	int	GetID( void )					const	{	return m_ID;	}
 	void GetPosition( vec3_t position )	const	{	if ( position )	VectorCopy( m_position, position );	}
- 	
+
 	int GetNumEdges( void )				const	{	return m_numEdges;	}
 	int	GetEdgeNumToNode( int ID );
 	int GetEdge( int edgeNum );
@@ -120,7 +119,7 @@ protected:
 	int				m_flags;
 	int				m_radius;
 	int				m_ID;
-	
+
 	edge_v	m_edges;
 
 	int		*m_ranks;
@@ -147,7 +146,7 @@ class CNavigator
 	typedef	list < CEdge >				edge_l;
 
 #if __NEWCOLLECT
-	
+
 	struct nodeList_t
 	{
 		int				nodeID;
@@ -192,7 +191,7 @@ public:
 	float GetNodeLeadDistance( int nodeID );
 
 	int GetNumNodes( void )		const	{	return (int)m_nodes.size();		}
-	
+
 	bool Connected( int startID, int endID );
 
 	unsigned int GetPathCost( int startID, int endID );
@@ -223,7 +222,7 @@ public:
 	void FlagAllNodes( int newFlag );
 
 	qboolean pathsCalculated;
-	failedEdge_t	failedEdges[MAX_FAILED_EDGES];	
+	failedEdge_t	failedEdges[MAX_FAILED_EDGES];
 
 //MCG Added END
 
@@ -232,7 +231,7 @@ protected:
 	int		TestNodePath( gentity_t *ent, int okToHitEntNum, vec3_t position, qboolean includeEnts );
 	int		TestNodeLOS( gentity_t *ent, vec3_t position );
 	int		TestBestFirst( gentity_t *ent, int lastID, int flags );
-	
+
 #if __NEWCOLLECT
 	int		CollectNearestNodes( vec3_t origin, int radius, int maxCollect, nodeChain_l &nodeChain );
 #else
@@ -265,7 +264,7 @@ class CPriorityQueue
 public:
 	CPriorityQueue() {};
 	~CPriorityQueue();
-	
+
 // Functionality
 //--------------------------------------------------------------
 public:
@@ -274,7 +273,7 @@ public:
 	void	Push( CEdge* theEdge );
 	void	Update(CEdge* edge );
 	bool	Empty();
-	
+
 
 // DATA
 //--------------------------------------------------------------

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -81,7 +80,7 @@ extern HUDMenuItem_t forceTics[];
 extern HUDMenuItem_t otherHUDBits[];
 
 
-typedef enum 
+typedef enum
 {
 	OHB_HEALTHAMOUNT = 0,
 	OHB_ARMORAMOUNT,
@@ -99,7 +98,7 @@ typedef enum
 
 #define NUM_CHUNK_MODELS	4
 
-enum 
+enum
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,
@@ -256,7 +255,6 @@ typedef struct {
 	// sounds
 	sfxHandle_t disintegrateSound;
 	sfxHandle_t disintegrate2Sound;
-	sfxHandle_t disintegrate3Sound;
 
 	sfxHandle_t	grenadeBounce1;
 	sfxHandle_t	grenadeBounce2;
@@ -264,7 +262,7 @@ typedef struct {
 	sfxHandle_t	flechetteStickSound;
 	sfxHandle_t	detPackStickSound;
 	sfxHandle_t	tripMineStickSound;
-	
+
 	sfxHandle_t	selectSound;
 	sfxHandle_t	selectSound2;
 	sfxHandle_t	overchargeSlowSound;
@@ -277,7 +275,7 @@ typedef struct {
 
 //	sfxHandle_t talkSound;
 	sfxHandle_t	noAmmoSound;
-	
+
 	sfxHandle_t landSound;
 	sfxHandle_t rollSound;
 	sfxHandle_t messageLitSound;
@@ -299,7 +297,7 @@ typedef struct {
 	sfxHandle_t	zoomLoop;
 	sfxHandle_t	zoomEnd;
 	sfxHandle_t	disruptorZoomLoop;
-	
+
 	//new stuff for Jedi Academy
 	sfxHandle_t	drainSound;
 
@@ -372,7 +370,7 @@ typedef struct {
 	glconfig_t		glconfig;			// rendering configuration
 
 	int				serverCommandSequence;	// reliable command stream counter
-	
+
 	// parsed from serverinfo
 	int				dmflags;
 	int				teamflags;

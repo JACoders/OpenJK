@@ -3,7 +3,12 @@
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
+
+#ifdef USE_INTERNAL_ZLIB
 #include "zlib/zlib.h"
+#else
+#include <zlib.h>
+#endif
 
 static char hiddenCvarVal[128];
 
@@ -408,7 +413,7 @@ void CL_SystemInfoChanged( void ) {
 	// NOTE TTimo:
 	// when the serverId changes, any further messages we send to the server will use this new serverId
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=475
-	// in some cases, outdated cp commands might get sent with this news serverId
+	// in some cases, outdated cp commands might get sent with this new serverId
 	cl.serverId = atoi( Info_ValueForKey( systemInfo, "sv_serverid" ) );
 
 	// don't set any vars when playing a demo

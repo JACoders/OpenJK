@@ -89,11 +89,10 @@ typedef struct entityShared_s {
 	// entity[ent->s.ownerNum].ownerNum = passEntityNum	(don't interact with other missiles from owner)
 	int			ownerNum;
 
-	// mask of clients that this entity should be broadcast too.  The first 32 clients
-	// are represented by the first array index and the latter 32 clients are represented
-	// by the second array index.
-	int			broadcastClients[2];
-
+	// mask of clients that this entity should be broadcast to
+	// the first 32 clients are represented by the first array index and the latter 32 clients are represented by the
+	//	second array index.
+	uint32_t	broadcastClients[2];
 } entityShared_t;
 
 //bstate.h

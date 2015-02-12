@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,17 +38,6 @@ This file is part of Jedi Academy.
 #define SLIDER_THUMB_WIDTH 12.0
 #define SLIDER_THUMB_HEIGHT 16.0
 #define SCROLLBAR_SIZE 16.0
-
-typedef struct pc_token_s
-{
-	int			type;
-	int			subtype;
-	int			intvalue;
-	float		floatvalue;
-	char		string[MAX_TOKENLENGTH];
-} pc_token_t;
-
-
 
 // FIXME: combine flags into bitfields to save space
 // FIXME: consolidate all of the common stuff in one structure for menus and items

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -26,8 +25,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-
 #define fCARD_FADESECONDS		1.0f	// fade up time, also fade down time
 #define fCARD_SUSTAINSECONDS	2.0f	// hold time before fade down
 #define fLINE_SECONDTOSCROLLUP	15.0f	// how long one line takes to scroll up the screen
@@ -42,7 +39,7 @@ vec4_t gv4Color = {0};
 struct StringAndSize_t
 {
 	int iStrLenPixels;
-	string str;
+	std::string str;
 
 	StringAndSize_t()
 	{
@@ -86,7 +83,7 @@ struct CreditCard_t
 {
 	int						iTime;
 	StringAndSize_t			strTitle;
-	vector<StringAndSize_t> vstrText;
+	std::vector<StringAndSize_t> vstrText;
 
 	CreditCard_t()
 	{
@@ -98,12 +95,12 @@ struct CreditLine_t
 {
 	int						iLine;
 	StringAndSize_t			strText;
-	vector<StringAndSize_t> vstrText;
+	std::vector<StringAndSize_t> vstrText;
 	bool					bDotted;
 };
 
-typedef list <CreditLine_t>		CreditLines_t;
-typedef list <CreditCard_t>		CreditCards_t;
+typedef std::list <CreditLine_t>		CreditLines_t;
+typedef std::list <CreditCard_t>		CreditCards_t;
 
 struct CreditData_t
 {
@@ -184,7 +181,7 @@ static const char *UpperCaseFirstLettersOnly(const char *psTest)
 	return sTemp;
 }
 
-static const char *GetSubString(string &strResult)
+static const char *GetSubString(std::string &strResult)
 {
 	static char sTemp[MAX_LINE_BYTES];
 
@@ -424,7 +421,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color)
 									CreditLine.iLine	= iLineNumber;
 									CreditLine.bDotted	= true;
 
-					string strResult(sLine);
+					std::string strResult(sLine);
 					const char *p;
 					while ((p=GetSubString(strResult)) != NULL)
 					{
@@ -467,7 +464,7 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color)
 				{
 					CreditCard_t CreditCard;
 	
-					string strResult(sLine);
+					std::string strResult(sLine);
 					const char *p;
 					while ((p=GetSubString(strResult)) != NULL)
 					{
@@ -623,7 +620,7 @@ qboolean CG_Credits_Draw( void )
 					int iYpos = SCREEN_HEIGHT + (CreditLine.iLine * iFontHeight);
 						iYpos-= (int) (fPixelsPerSecond * fSecondsElapsed);
 
-					int iTextLinesThisItem = max(CreditLine.vstrText.size(),1);
+					int iTextLinesThisItem = Q_max( (int)CreditLine.vstrText.size(), 1);
 					if (iYpos + (iTextLinesThisItem * iFontHeight) < 0)
 					{
 						// scrolled off top of screen, so erase it...

@@ -1333,8 +1333,8 @@ updates an interpreted modules' version of a cvar
 =====================
 */
 void	Cvar_Update( vmCvar_t *vmCvar ) {
-	cvar_t	*cv = NULL; // bk001129
-	assert(vmCvar); // bk
+	cvar_t	*cv = NULL;
+	assert(vmCvar);
 
 	if ( (unsigned)vmCvar->handle >= (unsigned)cvar_numIndexes ) {
 		Com_Error( ERR_DROP, "Cvar_Update: handle %u out of range", (unsigned)vmCvar->handle );
@@ -1349,17 +1349,9 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 		return;		// variable might have been cleared by a cvar_restart
 	}
 	vmCvar->modificationCount = cv->modificationCount;
-	// bk001129 - mismatches.
-	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING )
-	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING",
-		     cv->string,
-		     (unsigned int) strlen(cv->string));
-	// bk001212 - Q_strncpyz guarantees zero padding and dest[MAX_CVAR_VALUE_STRING-1]==0
-	// bk001129 - paranoia. Never trust the destination string.
-	// bk001129 - beware, sizeof(char*) is always 4 (for cv->string).
-	//            sizeof(vmCvar->string) always MAX_CVAR_VALUE_STRING
-	//Q_strncpyz( vmCvar->string, cv->string, sizeof( vmCvar->string ) ); // id
-	Q_strncpyz( vmCvar->string, cv->string,  MAX_CVAR_VALUE_STRING );
+	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
+		Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING", cv->string, (unsigned int) strlen(cv->string));
+	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING ); 
 
 	vmCvar->value = cv->value;
 	vmCvar->integer = cv->integer;

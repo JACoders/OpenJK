@@ -38,10 +38,22 @@ else()
 	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" OFF)
 endif()
 
+if(WIN32 OR APPLE)
+	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" ON)
+else()
+	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" OFF)
+endif()
+
 if(APPLE)
 	option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 else()
 	set(MakeApplicationBundles OFF)
+endif()
+
+if(MSVC)
+	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
+else()
+	set(UseInternalSDL2 OFF)
 endif()
 
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
@@ -96,28 +108,31 @@ set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
 # Library names
 set(MPBotLib "botlib")
+set(SharedLib "shared")
 
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
+set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 
 # Common settings
 if(WIN32)
+	set(SharedDefines "NOMINMAX")
 	if(MSVC)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # enable parallel compilation
 	endif(MSVC)
 	if(WIN64)
+		set(SharedDefines ${SharedDefines} "WIN64")
 		if(MSVC)
-			set(SharedDefines "WIN64" "_CRT_SECURE_NO_WARNINGS")
+			set(SharedDefines ${SharedDefines} "_CRT_SECURE_NO_WARNINGS")
 		else()
-			set(SharedDefines "WIN64")
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 		endif()
 	else()
 		if(MSVC)
-			set(SharedDefines "_CRT_SECURE_NO_WARNINGS")
+			set(SharedDefines ${SharedDefines} "_CRT_SECURE_NO_WARNINGS")
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 		endif()
@@ -192,6 +207,14 @@ endif()
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
+endif()
+
+if(UseInternalJPEG)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_JPEG")
+endif()
+
+if(UseInternalZlib)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")

@@ -839,8 +839,8 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 {
 	vec3_t			f, r, u, result;
 	sharedEntity_t	*ent = NULL;
-	trajectory_t	*originTrajectory, *angleTrajectory;
-	float			*origin, *angle;
+	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
+	float			*origin = NULL, *angle = NULL;
 
 
 	if ( svs.time < roff_ent->mNextROFFTime )

@@ -32,7 +32,7 @@ CG_RunLightStyles
 */
 void CG_RunLightStyles (void)
 {
-	int ofs, i, j;
+	int ofs, i;
 	clightstyle_t *ls;
 
 	ofs = cg.time / 50;
@@ -41,7 +41,7 @@ void CG_RunLightStyles (void)
 	lastofs = ofs;
 
 	for ( i=0, ls=cl_lightstyle; i<MAX_LIGHT_STYLES; i++, ls++ ) {
-		union { byte b[4]; int32_t i; } a;
+		byteAlias_t *ba = (byteAlias_t *)&ls->value;
 
 		ls->value[3] = 255;
 		if ( !ls->length ) {
@@ -60,9 +60,7 @@ void CG_RunLightStyles (void)
 		//	ls->value[3] = ls->map[ofs%ls->length][3];
 		}
 
-		for ( j=0; j<4; j++ )
-			a.b[j] = ls->value[j];
-		trap->R_SetLightStyle( i, a.i );
+		trap->R_SetLightStyle( i, ba->i );
 	}
 }
 

@@ -324,7 +324,7 @@ static void SV_MapRestart_f( void ) {
 			// this generally shouldn't happen, because the client
 			// was connected before the level change
 			SV_DropClient( client, denied );
-			Com_Printf( "SV_MapRestart_f(%d): dropped client %i - denied!\n", delay, i ); // bk010125
+			Com_Printf( "SV_MapRestart_f(%d): dropped client %i - denied!\n", delay, i );
 			continue;
 		}
 
@@ -673,11 +673,10 @@ Remove a ban or an exception from the list.
 ==================
 */
 
-static qboolean SV_DelBanEntryFromList( int index )
-{
+static qboolean SV_DelBanEntryFromList( int index ) {
 	if ( index == serverBansCount - 1 )
 		serverBansCount--;
-	else if ( index < ARRAY_LEN( serverBans ) - 1 )
+	else if ( index < (int)ARRAY_LEN( serverBans ) - 1 )
 	{
 		memmove( serverBans + index, serverBans + index + 1, (serverBansCount - index - 1) * sizeof( *serverBans ) );
 		serverBansCount--;
@@ -760,7 +759,7 @@ static void SV_AddBanToList( qboolean isexception )
 		return;
 	}
 
-	if ( serverBansCount >= ARRAY_LEN( serverBans ) )
+	if ( serverBansCount >= (int)ARRAY_LEN( serverBans ) )
 	{
 		Com_Printf( "Error: Maximum number of bans/exceptions exceeded.\n" );
 		return;
@@ -1613,6 +1612,7 @@ static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
 		return 0;
 	}
 	timeinfo.tm_year -= 1900;
+	timeinfo.tm_mon--;
 	return mktime( &timeinfo );
 }
 

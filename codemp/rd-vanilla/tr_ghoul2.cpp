@@ -299,10 +299,10 @@ public:
 	const model_t		*mod;
 
 	// these are split for better cpu cache behavior
-	vector<SBoneCalc> mBones;
-	vector<CTransformBone> mFinalBones;
+	std::vector<SBoneCalc> mBones;
+	std::vector<CTransformBone> mFinalBones;
 
-	vector<CTransformBone> mSmoothBones; // for render smoothing
+	std::vector<CTransformBone> mSmoothBones; // for render smoothing
 	//vector<mdxaSkel_t *>   mSkels;
 
 	boneInfo_v		*rootBoneList;
@@ -2493,9 +2493,9 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			if (RS.gore_set && drawGore)
 			{
 				int curTime = G2API_GetTime(tr.refdef.time);
-				pair<multimap<int,SGoreSurface>::iterator,multimap<int,SGoreSurface>::iterator> range=
+				std::pair<std::multimap<int,SGoreSurface>::iterator,std::multimap<int,SGoreSurface>::iterator> range=
 					RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
-				multimap<int,SGoreSurface>::iterator k,kcur;
+				std::multimap<int,SGoreSurface>::iterator k,kcur;
 				CRenderableSurface *last=newSurf;
 				for (k=range.first;k!=range.second;)
 				{
