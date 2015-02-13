@@ -30,10 +30,10 @@
 #include "q_shared.h"
 #include "qcommon.h"
 
-struct mdfour {
+typedef struct mdfour_s {
 	uint32_t A, B, C, D;
 	uint32_t totalN;
-};
+} mdfour_ctx;
 
 
 /* NOTE: This code makes no attempt to be fast!
@@ -41,7 +41,7 @@ struct mdfour {
    It assumes that an int is at least 32 bits long
 */
 
-static struct mdfour *m;
+static  mdfour_ctx *m;
 
 #define F(X,Y,Z) (((X)&(Y)) | ((~(X))&(Z)))
 #define G(X,Y,Z) (((X)&(Y)) | ((X)&(Z)) | ((Y)&(Z)))
@@ -118,7 +118,7 @@ static void copy4(byte *out,uint32_t x)
 	out[3] = (x>>24)&0xFF;
 }
 
-void mdfour_begin(struct mdfour *md)
+void mdfour_begin(mdfour_ctx *md)
 {
 	md->A = 0x67452301;
 	md->B = 0xefcdab89;
@@ -155,7 +155,7 @@ static void mdfour_tail(byte *in, int n)
 	}
 }
 
-static void mdfour_update(struct mdfour *md, byte *in, int n)
+static void mdfour_update(mdfour_ctx *md, byte *in, int n)
 {
 	uint32_t M[16];
 
@@ -175,7 +175,7 @@ static void mdfour_update(struct mdfour *md, byte *in, int n)
 }
 
 
-static void mdfour_result(struct mdfour *md, byte *out)
+static void mdfour_result(mdfour_ctx *md, byte *out)
 {
 	m = md;
 
@@ -187,7 +187,7 @@ static void mdfour_result(struct mdfour *md, byte *out)
 
 static void mdfour(byte *out, byte *in, int n)
 {
-	struct mdfour md;
+	mdfour_ctx md;
 	mdfour_begin(&md);
 	mdfour_update(&md, in, n);
 	mdfour_result(&md, out);
