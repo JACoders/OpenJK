@@ -948,18 +948,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		return;
 	}
 
-#ifdef _WIN32
-	if( in_joystick->integer == 2 )
-	{
-		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
-		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
-		cl.viewangles[YAW] -= (cl_yawspeed->value / 100.0f) * (cl.joystickAxis[AXIS_YAW]/1024.0f);
-		cl.viewangles[PITCH] += (cl_pitchspeed->value / 100.0f) * (cl.joystickAxis[AXIS_PITCH]/1024.0f);
-	}
-	else
-	{
-#endif
 	if ( !(in_speed.active ^ cl_run->integer) ) {
 		cmd->buttons |= BUTTON_WALKING;
 	}
@@ -986,7 +974,8 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		{
 			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
 		}
-	} else
+	}
+	else
 	{
 		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
 	}
@@ -1013,9 +1002,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 
 	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
-#ifdef _WIN32
-	}
-#endif
 }
 
 /*
