@@ -75,6 +75,7 @@ protected:
 
 public:
 				CGPObject(const char *initName);
+		virtual	~CGPObject() {}
 
 	const char	*GetName(void) { return mName; }
 
