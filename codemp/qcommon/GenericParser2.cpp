@@ -154,9 +154,6 @@ static char *GetToken(char **text, bool allowLineBreaks, bool readUntilEOL = fal
 	return token;
 }
 
-
-
-
 CTextPool::CTextPool(int initSize) :
 	mNext(0),
 	mSize(initSize),
