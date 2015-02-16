@@ -2542,7 +2542,8 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					if ( newmove != LS_A_T2B
 						&& newmove != LS_NONE )
 					{
-						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
+						if (g_fixRedDFA.integer <= 1) 
+							BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 					}
 				}
 			}
@@ -3780,7 +3781,7 @@ weapChecks:
 					if (PM_SaberKataDone(curmove, newmove))
 					{//cannot chain this time
 #ifdef _GAME
-						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer))
+						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer == 1))
 #endif
 							newmove = saberMoveData[curmove].chain_idle;
 					}
