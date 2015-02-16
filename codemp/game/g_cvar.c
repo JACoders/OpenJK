@@ -167,6 +167,11 @@ static void CVU_Jawarun(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }	
 
+static void CVU_HighFPS(void) {
+	g_fixHighFPSAbuse.integer ?
+		(jcinfo.integer |= JAPRO_CINFO_HIGHFPSFIX) : (jcinfo.integer &= ~JAPRO_CINFO_HIGHFPSFIX);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
 
 static void RemoveRabbit(void) {
 	int i;

@@ -218,7 +218,7 @@ XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_movementStyle,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixHighFPSAbuse,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixHighFPSAbuse,			"0",			CVU_HighFPS,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
 

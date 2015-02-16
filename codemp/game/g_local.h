@@ -183,7 +183,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_GUNROLL			(1<<18)	//allow  gunroll
 #define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
 #define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //No aim backslash
-#define JAPRO_CINFO_UNUSED3			(1<<21) //Siege aircontrol
+#define JAPRO_CINFO_HIGHFPSFIX		(1<<21) //g_fixhighfpsabuse prediction
 #define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa

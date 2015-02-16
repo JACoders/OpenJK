@@ -4512,7 +4512,8 @@ void Cmd_Ignore_f(gentity_t *ent)
 			const int targetID = JP_ClientNumberFromString(ent, netname);
 			if (targetID == clientNum) {
 				trap->SendServerCommand(clientNum, "print \"Cannot ignore self\n\"");
-			} else if (targetID != -1) {
+			} 
+			else if (targetID >= 0) {
 				trap->SendServerCommand(clientNum, va(ClientIgnore(clientNum, targetID) ?  "print \"Ignored %s\n\"" : "print \"Unignored %s\n\"", g_entities[targetID].client->pers.netname));
 			}
 		}

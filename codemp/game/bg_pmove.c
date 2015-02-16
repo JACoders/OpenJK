@@ -12614,6 +12614,9 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (g_fixHighFPSAbuse.integer && (pml.msec < 4)) { //333fps, todo add prediction
 		//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
 	}
+#else if _CGAME
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK) && (pml.msec < 4)) {
+	}
 #endif
 	else if (!pm->pmove_float)
 		trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
