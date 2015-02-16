@@ -316,6 +316,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SharedDir}/sdl/sdl_sound.cpp"
 		"${SharedDir}/sdl/sdl_input.cpp"
 		"${SharedDir}/sdl/sdl_window.cpp"
+		"${SharedDir}/sdl/sdl_icon.h"
 		)
 
 	if(WIN32)

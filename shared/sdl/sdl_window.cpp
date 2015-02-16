@@ -3,6 +3,7 @@
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
+#include "sdl_icon.h"
 
 enum rserr_t
 {
@@ -247,6 +248,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	int colorBits, depthBits, stencilBits;
 	int samples;
 	int i = 0;
+	SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
@@ -258,6 +260,19 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	}
 
 	Com_Printf( "Initializing display\n");
+
+	icon = SDL_CreateRGBSurfaceFrom(
+		(void *)CLIENT_WINDOW_ICON.pixel_data,
+		CLIENT_WINDOW_ICON.width,
+		CLIENT_WINDOW_ICON.height,
+		CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
+		CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
+#ifdef Q3_LITTLE_ENDIAN
+		0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
+#else
+		0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
+#endif
+		);
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -298,6 +313,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	else if ( !R_GetModeInfo( &glConfig->vidWidth, &glConfig->vidHeight, /*&glConfig.windowAspect,*/ mode ) )
 	{
 		Com_Printf( " invalid mode\n" );
+		SDL_FreeSurface( icon );
 		return RSERR_INVALID_MODE;
 	}
 	Com_Printf( " %d %d\n", glConfig->vidWidth, glConfig->vidHeight);
@@ -444,6 +460,8 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 				continue;
 			}
 
+			SDL_SetWindowIcon( screen, icon );
+
 			if( fullscreen )
 			{
 				SDL_DisplayMode mode;
@@ -494,6 +512,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 		}
 		else
 		{
+			SDL_SetWindowIcon( screen, icon );
 			if( fullscreen )
 			{
 				if( SDL_SetWindowDisplayMode( screen, NULL ) < 0 )
@@ -503,6 +522,8 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 			}
 		}
 	}
+
+	SDL_FreeSurface( icon );
 
 	if (!GLimp_DetectAvailableModes())
 	{
