@@ -500,6 +500,7 @@ if(BuildMPEngine)
 
 	set(MPEngineSysFiles
 		"${SharedDir}/sdl/sdl_window.cpp"
+		"${SharedDir}/sdl/sdl_icon.h"
 		"${SharedDir}/sdl/sdl_input.cpp"
 		"${SharedDir}/sdl/sdl_sound.cpp"
 		"${SharedDir}/sys/sys_loadlib.h"
