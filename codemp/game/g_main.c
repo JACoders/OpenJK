@@ -2377,6 +2377,31 @@ void CheckExitRules( void ) {
 			return;
 		}
 
+		//Mercy rule start
+		if (g_mercyRule.value && (fraglimit.integer > 5) && ((level.teamScores[TEAM_RED] > fraglimit.integer * 0.5f) || (level.teamScores[TEAM_BLUE] > fraglimit.integer * 0.5f))) {
+			if ((level.teamScores[TEAM_RED] - level.teamScores[TEAM_BLUE]) > (g_mercyRule.value * fraglimit.integer)) { //Red team is beating red bad
+				trap->SendServerCommand( -1, va("print \"Red %s (Mercy rule)\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+				if (d_powerDuelPrint.integer)
+				{
+					Com_Printf("POWERDUEL WIN CONDITION: Kill limit (1)\n");
+				}
+				LogExit( sKillLimit );
+				PrintStats(-1);//JAPRO STATS
+				return;
+			}
+			if ((level.teamScores[TEAM_BLUE] - level.teamScores[TEAM_RED]) > (g_mercyRule.value * fraglimit.integer)) { //Blue team is beating red bad
+				trap->SendServerCommand( -1, va("print \"Blue %s (Mercy rule)\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
+				if (d_powerDuelPrint.integer)
+				{
+					Com_Printf("POWERDUEL WIN CONDITION: Kill limit (2)\n");
+				}
+				LogExit( sKillLimit );
+				PrintStats(-1);//JAPRO STATS
+				return;
+			}
+		}
+		//Mercy rule end
+
 		for ( i=0 ; i< sv_maxclients.integer ; i++ ) {
 			cl = level.clients + i;
 			if ( cl->pers.connected != CON_CONNECTED ) {

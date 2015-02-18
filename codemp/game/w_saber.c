@@ -6995,7 +6995,7 @@ qboolean saberCheckKnockdown_Thrown(gentity_t *saberent, gentity_t *saberOwner, 
 		return qfalse;
 	}
 
-	if (!SaberSPStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERBLOCK))
+	if (!SaberSPStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERDROP)) //test..
 		return qfalse; //Dont do saberdrops for idle STs either i guess..
 
 	defenLevel = other->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE];
