@@ -3912,6 +3912,16 @@ void ClientDisconnect( int clientNum ) {
 
 	G_LeaveVehicle( ent, qtrue );
 
+	if ( ent->client->ewebIndex )
+	{
+		gentity_t *eweb = &g_entities[ent->client->ewebIndex];
+
+		ent->client->ps.emplacedIndex = 0;
+		ent->client->ewebIndex = 0;
+		ent->client->ewebHealth = 0;
+		G_FreeEntity( eweb );
+	}
+
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if ( level.clients[i].sess.sessionTeam == TEAM_SPECTATOR
