@@ -609,18 +609,23 @@ qboolean CROFFSystem::List( int id )
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean isClient )
 {
-	sharedEntity_t *ent = SV_GentityNum( entID );
+	sharedEntity_t *ent = NULL;
 
-	ent->r.mIsRoffing = qtrue;
-/*rjr	if(ent->GetPhysics() == PHYSICS_TYPE_NONE)
+	if ( !isClient )
 	{
-		ent->SetPhysics(PHYSICS_TYPE_BRUSHMODEL);
-	}*/
-	//bjg TODO: reset this latter?
+		ent = SV_GentityNum( entID );
 
-	if ( ent == 0 )
-	{ // shame on you..
-		return qfalse;
+		if ( ent == NULL )
+		{ // shame on you..
+			return qfalse;
+		}
+		ent->r.mIsRoffing = qtrue;
+
+		/*rjr	if(ent->GetPhysics() == PHYSICS_TYPE_NONE)
+		{
+		ent->SetPhysics(PHYSICS_TYPE_BRUSHMODEL);
+		}*/
+		//bjg TODO: reset this latter?
 	}
 
 	SROFFEntity *roffing_ent = new SROFFEntity;
@@ -634,7 +639,8 @@ qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean 
 	roffing_ent->mTranslated	= doTranslation;
 	roffing_ent->mIsClient		= isClient;
 
-	VectorCopy(ent->s.apos.trBase, roffing_ent->mStartAngles);
+	if ( !isClient )
+		VectorCopy(ent->s.apos.trBase, roffing_ent->mStartAngles);
 
 	mROFFEntList.push_back( roffing_ent );
 
@@ -922,7 +928,8 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	roff_ent->mNextROFFTime = svs.time + roff->mFrameTime;
 
 	//rww - npcs need to know when they're getting roff'd
-	ent->next_roff_time = roff_ent->mNextROFFTime;
+	if ( !roff_ent->mIsClient )
+		ent->next_roff_time = roff_ent->mNextROFFTime;
 
 
 	return qtrue;
@@ -990,7 +997,7 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 {
-	sharedEntity_t	*ent;
+	sharedEntity_t	*ent = NULL;
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 
