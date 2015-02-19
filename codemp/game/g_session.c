@@ -141,7 +141,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	if ( level.gametype >= GT_TEAM ) {
 		if ( g_teamAutoJoin.integer && !(g_entities[client-level.clients].r.svFlags & SVF_BOT) ) {
 			sess->sessionTeam = PickTeam( -1 );
-			BroadcastTeamChange( client, -1 );
+			client->ps.fd.forceDoInit = 1; //every time we change teams make sure our force powers are set right
 		} else {
 			// always spawn as spectator in team games
 			if (!isBot)
@@ -163,7 +163,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 				{
 					sess->sessionTeam = PickTeam( -1 );
 				}
-				BroadcastTeamChange( client, -1 );
+				client->ps.fd.forceDoInit = 1; //every time we change teams make sure our force powers are set right
 			}
 		}
 	} else {
