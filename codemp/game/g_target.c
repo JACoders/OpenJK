@@ -197,7 +197,12 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 			}
 			else
 			{
-				trap->SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+				if (ent->spawnflags & 8) //Spawnflags 8 is console print
+					trap->SendServerCommand( activator-g_entities, va("print \"%s\n\"", ent->message ));
+				else if (ent->spawnflags & 16) //Spawnflags 16 is chat print
+					trap->SendServerCommand( activator-g_entities, va("chat \"%s\"", ent->message));
+				else //Otherwise do normal centerprint
+					trap->SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
 			}
 		}
 		//NOTE: change in functionality - if there *is* no valid client ent, it won't send it to anyone at all
@@ -234,7 +239,12 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 	}
 	else
 	{
-		trap->SendServerCommand( -1, va("cp \"%s\"", ent->message ));
+		if (ent->spawnflags & 8) //Spawnflags 8 is console print
+			trap->SendServerCommand( -1, va("print \"%s\n\"", ent->message ));
+		else if (ent->spawnflags & 16) //Spawnflags 16 is chat print
+			trap->SendServerCommand( -1, va("chat \"%s\"", ent->message));
+		else //Otherwise do normal centerprint
+			trap->SendServerCommand( -1, va("cp \"%s\"", ent->message ));
 	}
 }
 

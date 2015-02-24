@@ -2821,10 +2821,31 @@ qboolean G_VoteVSTR( gentity_t *ent, int numArgs, const char *arg1, const char *
 
 	Q_strncpyz( vstr, arg2, sizeof( vstr ) );
 	//clean the string?
+	Q_strlwr(vstr);
+	Q_CleanStr(vstr);
 
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, vstr );
 
 	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
+qboolean G_VoteForceSpec( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+	int n = atoi ( arg2 );
+
+	if ( n < 0 || n >= level.maxclients ) {
+		trap->SendServerCommand( ent-g_entities, va( "print \"invalid client number %d.\n\"", n ) );
+		return qfalse;
+	}
+
+	if ( g_entities[n].client->pers.connected == CON_DISCONNECTED ) {
+		trap->SendServerCommand( ent-g_entities, va( "print \"there is no client with the client number %d.\n\"", n ) );
+		return qfalse;
+	}
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "forceteam %i s", n );
+	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "forcespec %s", g_entities[n].client->pers.netname );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	return qtrue;
 }
@@ -2843,6 +2864,7 @@ static voteString_t validVoteStrings[] = {
 	//	vote string				aliases										# args	valid gametypes							exec delay		short help
 	{	"capturelimit",			"caps",				G_VoteCapturelimit,		1,		GTB_CTF|GTB_CTY,						qtrue,			"<num>" },
 	{	"clientkick",			NULL,				G_VoteClientkick,		1,		GTB_ALL,								qfalse,			"<clientnum>" },
+	{	"forcespec",			"forcespec",		G_VoteForceSpec,		1,		GTB_ALL,								qfalse,			"<clientnum>" },
 	{	"fraglimit",			"frags",			G_VoteFraglimit,		1,		GTB_ALL & ~(GTB_SIEGE|GTB_CTF|GTB_CTY),	qtrue,			"<num>" },
 	{	"g_doWarmup",			"dowarmup warmup",	G_VoteWarmup,			1,		GTB_ALL,								qtrue,			"<0-1>" },
 	{	"g_gametype",			"gametype gt mode",	G_VoteGametype,			1,		GTB_ALL,								qtrue,			"<num or name>" },
@@ -2850,8 +2872,8 @@ static voteString_t validVoteStrings[] = {
 	{	"map",					NULL,				G_VoteMap,				0,		GTB_ALL,								qtrue,			"<name>" },
 	{	"map_restart",			"restart",			G_VoteMapRestart,		0,		GTB_ALL,								qtrue,			"<optional delay>" },
 	{	"nextmap",				NULL,				G_VoteNextmap,			0,		GTB_ALL,								qtrue,			NULL },
-	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 	{	"sv_maxteamsize",		"teamsize",			G_VoteTeamSize,			1,		GTB_TEAM|GTB_SIEGE|GTB_CTY|GTB_CTF,		qtrue,			"<num>" },
+	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
@@ -7315,8 +7337,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5JK2 style lunge\n");
 	if (g_maxSaberDefense.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber defense level capped at^3: ^2%i\n", g_maxSaberDefense.integer));
-	if ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && !d_saberSPStyleDamage.integer)
+	if ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && (!d_saberSPStyleDamage.integer || !g_saberDuelSPDamage.integer))
 		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber block for MP style damage\n");
+	if ((g_tweakWeapons.integer & REDUCE_SABERDROP) && (!d_saberSPStyleDamage.integer || !g_forceDuelSPDamage.integer))
+		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber drop for MP style damage\n");
 	if (g_tweakWeapons.integer & FIXED_SABERSWITCH)
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed saber switch swing\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));

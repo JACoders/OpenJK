@@ -622,7 +622,7 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Fixed saberswitch"},//23
 	{"Impact nitrons"},//24
 	{"Flechette stake gun"},//25
-	{"Reduce saberdrops"}//25
+	{"Reduce saberdrops for MP damages"}//25
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 

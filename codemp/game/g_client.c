@@ -1921,6 +1921,7 @@ static QINLINE qboolean IsColorCode(const char *s) {
 	return (qboolean) (*s == '^' && '0' <= *(s+1) && *(s+1) <= '9');
 }
 
+/*
 static void StripColors(const char *s, char *out) {
 	while (*s) {
 		if (IsColorCode(s)) s += 2;
@@ -1932,12 +1933,34 @@ static void StripColors(const char *s, char *out) {
 	}
 	*out = 0;
 }
+*/
+
+void StripWhitespace(char *s)
+{
+  char* i = s;
+  char* j = s;
+  while(*j != 0)
+  {
+    *i = *j++;
+    if(*i != ' ')
+      i++;
+  }
+  *i = 0;
+}
 
 static qboolean ClientNameEquals(const char *n1, const char *n2) {
 	char o1[MAX_NETNAME];
 	char o2[MAX_NETNAME];
-	StripColors(n1, o1);
-	StripColors(n2, o2);
+	//StripColors(n1, o1);
+	//StripColors(n2, o2);
+	Q_strncpyz(o1, n1, MAX_NETNAME);
+	Q_strncpyz(o2, n2, MAX_NETNAME);
+
+	Q_CleanStr(o1);
+	Q_CleanStr(o2);
+	StripWhitespace(o1);
+	StripWhitespace(o2);
+
 	return (qboolean) (Q_stricmp(o1, o2) == 0);
 }
 
@@ -1963,6 +1986,7 @@ static void CheckDuplicateName(int clientNum) {
 		// make room for a number
 		// assuming a number will be 2 digits in length
 		// format will be like "%s ^7[%d]"
+
 		if (len > 28) netname[28] = 0;
 		do {
 			// move the new name to the buffer, since we shouldn't read and write in same location
