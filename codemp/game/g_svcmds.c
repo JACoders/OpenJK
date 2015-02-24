@@ -493,7 +493,9 @@ void Svcmd_ForceTeam_f( void ) {
 
 	// set the team
 	trap->Argv( 2, str, sizeof( str ) );
-	SetTeam( &g_entities[cl - level.clients], str , qfalse);
+	SetTeam( &g_entities[cl - level.clients], str , qtrue); //can just be cl?
+
+	cl->switchTeamTime = level.time + 5000; //might need to be way more
 }
 
 void Svcmd_AmKick_f(void) {

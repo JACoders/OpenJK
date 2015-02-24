@@ -2926,9 +2926,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// can't vote as a spectator, except in (power)duel
-	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR && !g_fixVote.integer) {
-		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
-		return;
+	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR) {
+		if (level.gametype >= GT_TEAM || !g_fixVote.integer) {
+			trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
+			return;
+		}
 	}
 
 	if (g_fixVote.integer) {
