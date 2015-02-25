@@ -1196,7 +1196,7 @@ void R_Register( void )
 	r_windPointX						= ri->Cvar_Get( "r_windPointX",						"0",						CVAR_NONE );
 	r_windPointY						= ri->Cvar_Get( "r_windPointY",						"0",						CVAR_NONE );
 	r_nocurves							= ri->Cvar_Get( "r_nocurves",						"0",						CVAR_CHEAT );
-	r_drawworld							= ri->Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT );
+	r_drawworld							= ri->Cvar_Get( "r_drawworld",						"1",						CVAR_NONE );
 	r_drawfog							= ri->Cvar_Get( "r_drawfog",						"2",						CVAR_ARCHIVE );//JAPRO ENGINE
 	r_lightmap							= ri->Cvar_Get( "r_lightmap",						"0",						CVAR_ARCHIVE );//JAPRO ENGINE
 	r_distanceCull						= ri->Cvar_Get( "r_distanceCull",					"0",						CVAR_ARCHIVE );//JAPRO ENGINE
@@ -1205,7 +1205,7 @@ void R_Register( void )
 	r_measureOverdraw					= ri->Cvar_Get( "r_measureOverdraw",				"0",						CVAR_CHEAT );
 	r_lodscale							= ri->Cvar_Get( "r_lodscale",						"5",						CVAR_NONE );
 	r_norefresh							= ri->Cvar_Get( "r_norefresh",						"0",						CVAR_CHEAT );
-	r_drawentities						= ri->Cvar_Get( "r_drawentities",					"1",						CVAR_CHEAT );
+	r_drawentities						= ri->Cvar_Get( "r_drawentities",					"1",						CVAR_NONE );
 	r_ignore							= ri->Cvar_Get( "r_ignore",							"1",						CVAR_CHEAT );
 	r_nocull							= ri->Cvar_Get( "r_nocull",							"0",						CVAR_CHEAT );
 	r_novis								= ri->Cvar_Get( "r_novis",							"0",						CVAR_CHEAT );

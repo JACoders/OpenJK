@@ -3061,6 +3061,52 @@ static qboolean PM_CheckJump( void )
 		}
 	}
 
+#ifdef _GAME
+	if (g_jk2DFA.integer)
+#else
+	if (((cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA))))
+#endif
+	{
+		if ( pm->cmd.upmove > 0 
+			&& (pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE)
+			&& !PM_IsRocketTrooper()
+			&& (pm->ps->weaponTime > 0||pm->cmd.buttons&BUTTON_ATTACK) )
+		{//okay, we just jumped and we're in an attack
+			if ( !BG_InRoll( pm->ps, pm->ps->legsAnim )
+				&& !PM_InKnockDown( pm->ps )
+				&& !BG_InDeathAnim(pm->ps->legsAnim)
+				&& !BG_FlippingAnim( pm->ps->legsAnim )
+				&& !PM_SpinningAnim( pm->ps->legsAnim )
+				&& !BG_SaberInSpecialAttack( pm->ps->torsoAnim )
+				&& ( BG_SaberInAttack( pm->ps->saberMove ) ) )
+			{//not in an anim we shouldn't interrupt
+				//see if it's not too late to start a special jump-attack
+				float animLength = PM_AnimLength( 0, (animNumber_t)pm->ps->torsoAnim );
+				if ( animLength - pm->ps->torsoTimer < 500 )
+				{//just started the saberMove
+					//check for special-case jump attacks
+					if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_3 )
+					{//using strong attacks
+						if ( pm->cmd.forwardmove > 0 && //going forward
+							(pm->cmd.buttons & BUTTON_ATTACK) && //must be holding attack still
+							PM_GroundDistance() < 32 &&
+							!BG_InSpecialJump(pm->ps->legsAnim))
+						{//strong attack: jump-hack
+							PM_SetSaberMove( PM_SaberJumpAttackMove() );
+							pml.groundPlane = qfalse;
+							pml.walking = qfalse;
+							pm->ps->pm_flags |= PMF_JUMP_HELD;
+							pm->ps->groundEntityNum = ENTITYNUM_NONE;
+							VectorClear(pml.groundTrace.plane.normal);
+
+							pm->ps->weaponTime = pm->ps->torsoTimer;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if ( pm->ps->groundEntityNum == ENTITYNUM_NONE )
 	{
 		return qfalse;
