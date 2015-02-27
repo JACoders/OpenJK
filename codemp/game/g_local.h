@@ -1041,6 +1041,8 @@ struct gclient_s {
 	char		csMessage[MAX_STRING_CHARS];	// JAPRO - Message to say CenterScreen
 	short		csTimeLeft;						// JAPRO - Time left for client's CenterScreen
 	int			pmoveMsec;//Japro timers
+	int			saberDelay;//Fix the saberswitch shit, can be blanket fixed for all attacks/force, then serverside refixed for forcepowers
+	int			saberDelayCount;
 	int			lastBounceTime; //japro bounce trigger
 	short		noKnockdownStreak; //pseudo random knockdowns option
 	short		totalDamage;

@@ -6950,8 +6950,11 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) //fix saber switch glitch if we want
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) {//fix saber switch glitch if we want
 		pm->ps->weaponTime += 1250;
+		((gentity_t *)pm_entSelf)->client->saberDelayCount += 1000; //Ait.. this is the delay past 250 that is added, we wil subract this from weapontime later when checking forcepower use
+		//saberDelay can never be negative. Saber delay can never be more than weapontime-250.
+	}
 	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FAST_WEAPONSWITCH))
 		pm->ps->weaponTime += 25;
 	else
@@ -9000,6 +9003,23 @@ static void PM_DropTimers( void ) {
 
 	if (pm->ps->stats[STAT_JUMPTIME] > 0)
 		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
+
+#ifdef _GAME
+	if (g_tweakWeapons.integer & FIXED_SABERSWITCH) {
+		if (((gentity_t *)pm_entSelf)->client->saberDelayCount > 0) {
+			((gentity_t *)pm_entSelf)->client->saberDelayCount -= pml.msec;
+			((gentity_t *)pm_entSelf)->client->saberDelay = 1000;
+		}
+		if (((gentity_t *)pm_entSelf)->client->saberDelayCount <= 0) {
+			((gentity_t *)pm_entSelf)->client->saberDelayCount = 0;
+			((gentity_t *)pm_entSelf)->client->saberDelay = 0;
+		}
+	}
+	else {
+		((gentity_t *)pm_entSelf)->client->saberDelayCount = 0;
+		((gentity_t *)pm_entSelf)->client->saberDelay = 0;
+	}
+#endif
 }
 
 // Following function is stateless (at the moment). And hoisting it out
