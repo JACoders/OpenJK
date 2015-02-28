@@ -2958,6 +2958,14 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (pmove_msec.integer > 66) {
 		trap->Cvar_Set("pmove_msec", "66");
 	}
+
+	if (client->sess.sessionTeam == TEAM_FREE && !g_raceMode.integer) {
+		if (client->ps.stats[STAT_RACEMODE] || level.gametype >= GT_TEAM) {
+			SetTeam ( ent, "spectator", qtrue );
+			client->sess.raceMode = qfalse;
+			client->ps.stats[STAT_RACEMODE] = qfalse;
+		}
+	}
 	
 	if (client->ps.stats[STAT_RACEMODE])
 		ucmd->serverTime = ((ucmd->serverTime + 7) / 8) * 8;//Integer math was making this bad, but is this even really needed? I guess for 125fps bhop height it is?

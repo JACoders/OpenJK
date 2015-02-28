@@ -1282,9 +1282,9 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 
 //void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
-	if (level.gametype != GT_FFA)
-		return;
 	if (!player->client)
+		return;
+	if (player->client->sess.sessionTeam != TEAM_FREE)
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
@@ -1331,9 +1331,9 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 void TimeToString(int duration_ms, char *timeStr, size_t strSize);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
-	if (level.gametype != GT_FFA)
-		return;
 	if (!player->client)
+		return;
+	if (player->client->sess.sessionTeam != TEAM_FREE)
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
@@ -1483,9 +1483,9 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 }
 
 void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
-	if (level.gametype != GT_FFA)
-		return;
 	if (!player->client)
+		return;
+	if (player->client->sess.sessionTeam != TEAM_FREE)
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;

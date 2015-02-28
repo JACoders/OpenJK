@@ -1147,7 +1147,10 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			else
 			{
 			*/
-				team = PickTeam( clientNum );
+				if (g_raceMode.integer)
+					team = TEAM_FREE;
+				else
+					team = PickTeam( clientNum );
 				if(team == TEAM_BLUE && !forcedToJoin) {
 					if (level.isLockedblue)
 						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));

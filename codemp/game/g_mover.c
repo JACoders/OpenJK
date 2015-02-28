@@ -897,7 +897,8 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	}
 
 #if 1
-	if (activator->client->sess.raceMode && 
+	if (activator->client &&
+		activator->client->sess.raceMode && 
 		(!other || !(other->spawnflags & 4)) && 
 		((ent->pos2[2] - ent->pos1[2]) > 128) &&
 		(activator->client->ps.origin[2] < (ent->r.absmax[2] + 96)) &&
@@ -1092,7 +1093,6 @@ void Blocked_Door( gentity_t *ent, gentity_t *other )
 	if ( ent->spawnflags & MOVER_CRUSHER ) {
 		return;		// crushers don't reverse
 	}
-
 	// reverse direction
 	Use_BinaryMover( ent, ent, other );
 	if(relock)
