@@ -6250,10 +6250,12 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
+	/*
 	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
 		return;
 	}
+	*/
 
 	if (!ent->client->sess.raceMode) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
@@ -6346,10 +6348,12 @@ static void Cmd_BackwardsRocket_f(gentity_t *ent)
 		return;
 	}
 
+	/*
 	if (level.gametype != GT_FFA) {
 		trap->SendServerCommand(ent-g_entities, "print \"This command is not allowed in this gametype!\n\"");
 		return;
 	}
+	*/
 
 	if (!ent->client->sess.raceMode) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be in racemode to use this command!\n\"");
