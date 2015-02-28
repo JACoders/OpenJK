@@ -6356,8 +6356,10 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							}
 						}
 
-						// zyk: target will not be knocked back by Rockfall
-						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0)
+						// zyk: target will not be knocked back by Rockfall, Dome of Damage or Ultra Flame
+						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0 || 
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_flame") == 0)
 							G_Damage (ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
 						else
 							G_Damage (ent, quest_power_user, quest_power_user, dir, origin, (int)points, DAMAGE_RADIUS, mod);
