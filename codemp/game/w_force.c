@@ -3035,9 +3035,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 	}
 
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
-#ifdef _GAME
-	trap->SendServerCommand( -1, va( "print \"Weaptime is %i, Delay is %i, realdelay is %i\n n\"", self->client->ps.weaponTime, self->client->saberDelay, self->client->ps.weaponTime - self->client->saberDelay));
-#endif
 	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
 		if (!(g_fixGetups.integer > 1 && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B)))
