@@ -4882,7 +4882,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{ // zyk: bonus damage of each RPG class
 		// zyk: gets bonus damage if using Ultra Strength
 		if (attacker->client->pers.quest_power_status & (1 << 3))
-			damage = (int)ceil(damage * 1.07);
+			damage = (int)ceil(damage * 1.1);
 
 		if (attacker->client->pers.rpg_class == 0)
 		{
@@ -5032,7 +5032,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		// zyk: Ultra Resistance bonus resistance
 		if (targ->client->pers.quest_power_status & (1 << 7))
-			damage = (int)ceil(damage * 0.93);
+			damage = (int)ceil(damage * 0.9);
 
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
 		{
