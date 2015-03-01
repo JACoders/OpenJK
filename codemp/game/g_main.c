@@ -4544,6 +4544,10 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
+	else if (selected_power < 0 || selected_power > 17)
+	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
+		return qfalse;
+	}
 
 	return qtrue;
 }

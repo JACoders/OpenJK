@@ -4763,6 +4763,7 @@ int zyk_max_magic_power(gentity_t *ent)
 }
 
 // zyk: initialize RPG skills of this player
+extern qboolean magic_master_has_this_power(gentity_t *ent, int selected_power);
 void initialize_rpg_skills(gentity_t *ent)
 {
 	if (ent->client->sess.amrpgmode == 2)
@@ -5011,9 +5012,14 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.thermal_vision = qfalse;
 
-		ent->client->pers.selected_special_power = 0;
-		ent->client->pers.selected_left_special_power = 0;
-		ent->client->pers.selected_right_special_power = 0;
+		if (ent->client->pers.rpg_class != 8 || magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse || 
+			magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse || 
+			magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse)
+		{ // zyk: this will allow Magic Master selected powers to persist between respawns
+			ent->client->pers.selected_special_power = 0;
+			ent->client->pers.selected_left_special_power = 0;
+			ent->client->pers.selected_right_special_power = 0;
+		}
 
 		ent->client->pers.quest_power_usage_timer = 0;
 
