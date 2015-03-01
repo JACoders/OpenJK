@@ -8785,7 +8785,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nThis skill requires some force power\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: hits players or npcs around the duelist, disables jetpack, disables force regen and does damage to them\nForce Gunner: creates an electric dome that damages and disables jetpack of enemies\n\"") );
+					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nThis skill requires some force power\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: hits players or npcs around the duelist, disables jetpack, disables force regen and does damage to them\nForce Gunner: disarms enemies nearby\n\"") );
 				}
 				else
 				{
