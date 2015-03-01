@@ -417,6 +417,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		// zyk: also registers Bowcaster so players can see Magic Fist
 		this_item = BG_FindItemForWeapon(WP_BOWCASTER);
 		RegisterItem(this_item);
+
+		// zyk: registers DEMP2 so people can see the Electric Dome unique skill of Force Gunner
+		this_item = BG_FindItemForWeapon(WP_DEMP2);
+		RegisterItem(this_item);
 	}
 
 	SaveRegisteredItems();

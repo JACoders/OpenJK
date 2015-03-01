@@ -1968,6 +1968,7 @@ extern int zyk_max_magic_power(gentity_t *ent);
 extern void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power);
+extern void DEMP2_AltDetonate( gentity_t *ent );
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -3356,6 +3357,43 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->pers.unique_skill_timer = level.time + 35000;
 							}
+						}
+						else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
+						{ // zyk: Force Gunner
+							gentity_t *electric_dome_missile;
+							vec3_t missile_origin;
+
+							electric_dome_missile = G_Spawn();
+
+							VectorSet(missile_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] - 20.0);
+
+							G_SetOrigin(electric_dome_missile, missile_origin);
+
+							VectorCopy( missile_origin, electric_dome_missile->pos1 );
+
+							electric_dome_missile->count = 6;
+
+							electric_dome_missile->classname = "demp2_alt_proj";
+							electric_dome_missile->s.weapon = WP_DEMP2;
+
+							electric_dome_missile->think = DEMP2_AltDetonate;
+							electric_dome_missile->nextthink = level.time;
+
+							electric_dome_missile->splashDamage = electric_dome_missile->damage = zyk_demp2_alt_damage.integer * 4;
+							electric_dome_missile->splashMethodOfDeath = electric_dome_missile->methodOfDeath = MOD_DEMP2;
+							electric_dome_missile->splashRadius = 512;
+
+							electric_dome_missile->r.ownerNum = ent->s.number;
+
+							electric_dome_missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+							electric_dome_missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+							// we don't want it to ever bounce
+							electric_dome_missile->bounceCount = 0;
+
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+							ent->client->pers.unique_skill_timer = level.time + 40000;
 						}
 					}
 					else
