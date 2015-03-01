@@ -2113,7 +2113,12 @@ static qboolean PM_CheckJump( void )
 	else if ( pm->cmd.upmove > 0 && pm->waterlevel < 2 &&
 		pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0 &&
 		!(pm->ps->pm_flags&PMF_JUMP_HELD) &&
-		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
+		(
+#if defined( _GAME ) // zyk: Force Gunner class can use wall runs and wall flips with any weapon
+		(g_entities[pm->ps->clientNum].client->sess.amrpgmode == 2 && 
+		 g_entities[pm->ps->clientNum].client->pers.rpg_class == 7) || 
+#endif
+		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE)) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
