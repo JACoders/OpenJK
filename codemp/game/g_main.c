@@ -2017,7 +2017,7 @@ void PrintStats(int client) //JAPRO STATS
 			continue;
 
 		cl = &level.clients[i];
-		if (cl->pers.netname[0] && /*!(cl->ps.pm_flags & PMF_FOLLOW) &&*/ cl->sess.sessionTeam != TEAM_SPECTATOR) //sad
+		if (cl->pers.netname[0] && /*!(cl->ps.pm_flags & PMF_FOLLOW) &&*/ (cl->sess.sessionTeam != TEAM_SPECTATOR) && !(level.gametype >= GT_TEAM && cl->sess.sessionTeam == TEAM_FREE)) //sad
 		{
 			char strName[MAX_NETNAME] = {0};
 			char strDG[32] = {0};

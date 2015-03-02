@@ -6972,6 +6972,7 @@ void Cmd_Amrename_f(gentity_t *ent)
    ClientUserinfoChanged(clientid); 
    level.clients[clientid].pers.netnameTime = level.time + 5000;
 }
+
 //[JAPRO - Serverside - All - Amrename - End]
 void Cmd_Race_f(gentity_t *ent)
 {
@@ -7327,8 +7328,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Duelers start with ^2%i ^5health\n", g_duelStartHealth.integer));
 	if (g_allowSaberSwitch.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Allow saber switch\n");
-	if (!d_saberSPStyleDamage.integer && !g_saberTouchDmg.integer)
-		Q_strcat(buf, sizeof(buf), "   ^5No saber touch damage\n");
+	if (!d_saberSPStyleDamage.integer && g_saberTouchDmg.integer != 1)
+		Q_strcat(buf, sizeof(buf), va("   ^5Saber touch damage^3: ^2%i\n", g_saberTouchDmg.integer));
+	if (g_saberDmgDelay_Idle.integer != 350)
+		Q_strcat(buf, sizeof(buf), va("   ^5Idle saber damage delay^3: ^2%i\n", g_saberDmgDelay_Idle.integer)); 
 	Q_strcat(buf, sizeof(buf), va("   ^5Saber kick tweak^3: ^2%s\n", (d_saberKickTweak.integer) ? "Yes" : "No"));
 	if (g_fixGroundStab.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Groundstabs damage players not on ground\n");
@@ -7336,6 +7339,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Groundstabs damage players not on ground, but with reduced damage\n");
 	if (g_backslashDamageScale.value != 1)
 		Q_strcat(buf, sizeof(buf), va("   ^5Backslash damage scale^3: ^2%.2f\n", g_backslashDamageScale.value));
+	if (g_redDFADamageScale.value != 1)
+		Q_strcat(buf, sizeof(buf), va("   ^5Red DFA damage scale^3: ^2%.2f\n", g_redDFADamageScale.value));
 	if (g_tweakYellowDFA.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5JK2 Style yellow DFA\n");
 	if (g_spinBackslash.integer)
