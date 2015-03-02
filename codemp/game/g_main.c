@@ -408,17 +408,18 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap->SetConfigstring ( CS_CLIENT_DUELHEALTHS, va("-1|-1|!") );
 	trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("-1") );
 
-	// zyk: registers Force Boon item so the artifacts in the quests will be shown properly
 	if (1)
 	{
 		gitem_t *this_item = BG_FindItemForPowerup(PW_FORCE_BOON);
+
+		// zyk: registers Force Boon item so the artifacts in the quests will be shown properly
 		RegisterItem(this_item);
 
 		// zyk: also registers Bowcaster so players can see Magic Fist
 		this_item = BG_FindItemForWeapon(WP_BOWCASTER);
 		RegisterItem(this_item);
 
-		// zyk: registers DEMP2 so people can see the Electric Dome unique skill of Force Gunner
+		// zyk: registers DEMP2 so people can see the electric bolts shot by  Magic Master
 		this_item = BG_FindItemForWeapon(WP_DEMP2);
 		RegisterItem(this_item);
 	}

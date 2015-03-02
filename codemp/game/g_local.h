@@ -676,7 +676,7 @@ typedef struct clientPersistant_s {
 	// 3 - Monk Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 4 - Duelist Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 5 - Force Gunner Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 6 - Unused
+	// 6 - Magic Master Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 7 - Stealth Attacker Upgrade
 	// 8 - Unused
 	// 9 - Impact Reducer

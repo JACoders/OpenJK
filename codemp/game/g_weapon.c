@@ -3581,25 +3581,45 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 			AngleVectors( dir, zyk_forward, NULL, NULL );
 
-			missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+			if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+			{
+				missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
 
-			missile->classname = "bowcaster_proj";
-			missile->s.weapon = WP_BOWCASTER;
+				missile->classname = "demp2_proj";
+				missile->s.weapon = WP_DEMP2;
 
-			VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
-			VectorScale( missile->r.maxs, -1, missile->r.mins );
+				VectorSet( missile->r.maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+				missile->damage = zyk_magic_fist_damage.integer * 18;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_DEMP2;
+				missile->clipmask = MASK_SHOT;
 
-			missile->damage = zyk_magic_fist_damage.integer;
-			missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-			missile->methodOfDeath = MOD_MELEE;
-			missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+				// we don't want it to ever bounce
+				missile->bounceCount = 0;
+			}
+			else
+			{
+				missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
 
-			// we don't want it to bounce
-			missile->bounceCount = 0;
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
 
-			ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
+				VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				missile->damage = zyk_magic_fist_damage.integer;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
+			}
 
 			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
+
+			ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
 		}
 
 		VectorCopy(ent->client->ps.origin, muzzlePunch);

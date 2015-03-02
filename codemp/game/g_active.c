@@ -3402,21 +3402,17 @@ void ClientThink_real( gentity_t *ent ) {
 
 							ent->client->pers.unique_skill_timer = level.time + 40000;
 						}
+						else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
+						{ // zyk: Magic Master
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+							ent->client->pers.unique_skill_timer = level.time + 50000;
+						}
 					}
 					else
 					{ // zyk: still in cooldown time, shows the time left in chat
 						trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time)/1000)));
 					}
-
-					if (ent->client->pers.rpg_class == 8)
-					{ // zyk: Magic Master can choose his power here
-						zyk_show_magic_master_powers(ent, qtrue);
-					}
-				}
-				else if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
-				{ // zyk: Magic Master, selects previous power
-					// zyk: Magic Master can choose his power here
-					zyk_show_magic_master_powers(ent, qfalse);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_SPEED && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
@@ -3431,9 +3427,19 @@ void ClientThink_real( gentity_t *ent ) {
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_HEAL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
 					// zyk: Magic Master can choose his power here
-					zyk_show_right_magic_master_powers(ent, qtrue);
+					zyk_show_magic_master_powers(ent, qtrue);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_PROTECT && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_magic_master_powers(ent, qfalse);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_ABSORB && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master, selects previous power
+					// zyk: Magic Master can choose his power here
+					zyk_show_right_magic_master_powers(ent, qtrue);
+				}
+				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_DISTRACT && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
 					// zyk: Magic Master can choose his power here
 					zyk_show_right_magic_master_powers(ent, qfalse);
