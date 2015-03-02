@@ -1848,12 +1848,13 @@ static void G_UpdateForceSightBroadcasts ( gentity_t *self )
 		
 			// If not within the field of view then forget it
 			if ( !InFieldOfVision ( ent->client->ps.viewangles, MAX_SIGHT_FOV, angles ) )
-				break;
+				continue;
+				//break; //why is this break and not continue?
 		}
 		// Turn on the broadcast bit for the master and since there is only one
 		// master we are done
 		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
-		break;
+		//break; //wait what, this isnt master this is force sight, there could be way more than one user why does it break
 	}
 }
 
@@ -1904,6 +1905,8 @@ static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
 		// Turn on the broadcast bit for the master and since there is only one
 		// master we are done
 		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
+		//why not break here, since there actually is only one master?... the fuck is this
+		break;
 	}
 }
 
