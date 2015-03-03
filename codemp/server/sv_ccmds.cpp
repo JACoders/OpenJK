@@ -1016,7 +1016,6 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	char folderDate[MAX_OSPATH];
 	time_t rawtime;
 	struct tm * timeinfo;
-	char *c;
 	time( &rawtime );
 	timeinfo = localtime( &rawtime );
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
@@ -1025,13 +1024,8 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
-	int tmp = sizeof( demoNames ) / sizeof( *demoNames );
-	for ( char **start = demoNames; start - demoNames < sizeof( demoNames ) / sizeof( *demoNames ); start++ ) {
-		for ( c = *start; *c != 0 && c - *start < MAX_OSPATH; c++ ) {
-			if ( *c == '\\' || *c == '/' || *c == '.' ) {
-				*c = '_';
-			}
-		}
+	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
+		Q_strstrip( *start, "\n\r;:.?*<>|\\/\"", NULL );
 	}
 	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s", demoFolderName, demoFileName );
 	SV_RecordDemo( cl, demoName );
@@ -1063,10 +1057,22 @@ static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2
 // starts demo recording on all active clients
 void SV_BeginAutoRecordDemos() {
 	if ( sv_autoDemo->integer ) {
-		for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
-			if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
-				if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
-					SV_AutoRecordDemo( client );
+		if (sv_autoDemo->integer > 1) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
+			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+				if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+					if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
+						SV_AutoRecordDemo( client );
+						break;
+					}
+				}
+			}
+		}
+		else { //Normal autodemo behaviour, record 1 demo for everyone
+			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+				if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+					if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
+						SV_AutoRecordDemo( client );
+					}
 				}
 			}
 		}
