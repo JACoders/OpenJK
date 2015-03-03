@@ -444,6 +444,21 @@ static void SV_Kick_f( void ) {
 				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
 			}
 		}
+		else if ( !Q_stricmp(Cmd_Argv(1), "allplayingbots") ) {
+			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
+				if ( !cl->state ) {
+					continue;
+				}
+				if( cl->netchan.remoteAddress.type != NA_BOT ) {
+					continue;
+				}
+				if (!Q_stricmp(cl->name, "RECORDER")) {
+					continue;
+				}
+				SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
+			}
+		}
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
