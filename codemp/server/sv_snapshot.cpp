@@ -800,7 +800,7 @@ void SV_SendClientSnapshot( client_t *client ) {
 	// build the snapshot
 	SV_BuildClientSnapshot( client );
 
-	if ( sv_autoDemo->integer && !client->demo.demorecording ) {
+	if ( (sv_autoDemo->integer == 1) && !client->demo.demorecording ) { //Does this really have to be done this often..wtf..
 		if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
 			SV_BeginAutoRecordDemos();
 		}

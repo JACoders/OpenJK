@@ -1438,8 +1438,6 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	}
 }
 
-
-
 /*
 =================
 ClientInactivityTimer

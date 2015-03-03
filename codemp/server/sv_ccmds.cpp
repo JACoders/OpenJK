@@ -1104,7 +1104,7 @@ void SV_BeginAutoRecordDemos() {
 				}
 			}
 		}
-		if ( sv_autoDemoMaxMaps->integer > 0 ) {
+		if ( sv_autoDemoMaxMaps->integer > 0 ) { //This is pretty expensive.... it was being called once per frame for each client... wtf?
 			char fileList[MAX_QPATH * 500];
 			char autorecordDirList[500][MAX_QPATH];
 			int autorecordDirListCount = 0;

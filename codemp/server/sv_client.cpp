@@ -1045,6 +1045,8 @@ const char *SV_GetStringEdString(char *refSection, char *refName);
 static void SV_Disconnect_f( client_t *cl ) {
 //	SV_DropClient( cl, "disconnected" );
 	SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","DISCONNECTED") );
+
+	//If there are no humans... stop the bot demo..? how to stop sum1 from abusing this by recon spamming.
 }
 
 /*
