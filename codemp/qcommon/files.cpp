@@ -14,6 +14,9 @@
 #endif
 #endif
 #include "unzip.h"
+#ifdef USE_AIO
+#include <fcntl.h>
+#endif
 
 // for rmdir
 #if defined (_MSC_VER)
@@ -1016,7 +1019,7 @@ on files returned by FS_FOpenFile...
 ==============
 */
 #ifdef USE_AIO
-void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*notify_function) (sigval_t) );
+static void FS_WriteAio( const void *buffer, int len, fileHandle_t h, void (*notify_function) (sigval_t) );
 #endif
 void FS_FCloseFile( fileHandle_t f ) {
 	if ( !fs_searchpaths ) {
@@ -1854,7 +1857,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	if ( fsh[h].handleAsync ) {
 		if ( fsh[h].closing ) {
 			Com_Printf( "Denying attempt to write to async file %d after closing it\n", h );
-			return;
+			return 0;
 		}
 		// first buffer as much as we can
 		pendingBuffer_t *pb = &fsh[h].pendingBuffer;
