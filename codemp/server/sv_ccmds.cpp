@@ -1036,7 +1036,10 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
 	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
-	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
+	if (sv_autoDemo->integer > 1)
+		Com_sprintf( demoFileName, sizeof( demoFileName ), "%s %s", Cvar_VariableString( "mapname" ), date );
+	else
+		Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
 	Com_sprintf( demoFolderName, sizeof( demoFolderName ), "%s %s", Cvar_VariableString( "mapname" ), folderDate );
 	// sanitize filename
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
@@ -1073,11 +1076,21 @@ static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2
 void SV_BeginAutoRecordDemos() {
 	if ( sv_autoDemo->integer ) {
 		if (sv_autoDemo->integer > 1) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
+			int humans = 0;
+
 			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
-				if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
-					if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
-						SV_AutoRecordDemo( client );
-						break;
+				if ( client->state == CS_ACTIVE && client->netchan.remoteAddress.type != NA_BOT ) {
+					humans++;
+				}
+			}
+
+			if (humans >= 1) { //mm.. stop demos of only bots being started when map_restart calls this 
+				for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
+					if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
+						if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
+							SV_AutoRecordDemo( client );
+							break;
+						}
 					}
 				}
 			}
