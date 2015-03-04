@@ -291,3 +291,9 @@ void SNDDMA_BeginPainting (void)
 {
 	SDL_LockAudio();
 }
+
+// (De)activates sound playback
+void SNDDMA_Activate( qboolean activate )
+{
+	SDL_PauseAudio( !activate );
+}
