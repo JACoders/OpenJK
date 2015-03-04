@@ -4958,6 +4958,27 @@ void G_RunClient( gentity_t *ent ) {
 
 	// force client updates if they're not sending packets at roughly 4hz
 
+	if (ent->client->recordingDemo) {
+		if (ent->client->pers.noFollow || ent->client->pers.practice || sv_cheats.integer || !ent->client->pers.userName[0] || !ent->client->sess.raceMode || !ent->client->pers.stats.startTime
+			|| (ent->client->lastHereTime < level.time - 30000) ||
+			(level.time - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
+		{
+			//Their demo is fine, keep it going.
+		}
+		else 
+			ent->client->stopRecordingTime = level.time + 5000; //Their demo is bad! Stop it if it stays that way.
+	}
+
+	if (ent->client->recordingDemo && ent->client->stopRecordingTime && (ent->client->stopRecordingTime < level.time)) {
+		ent->client->recordingDemo = qfalse;
+		//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED\"");
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i\n", ent->client->ps.clientNum));
+	}
+
+	if (ent->client->pers.cmd.forwardmove || ent->client->pers.cmd.rightmove || ent->client->pers.cmd.upmove || (ent->client->pers.cmd.buttons & (BUTTON_ATTACK|BUTTON_ALT_ATTACK))) {
+		ent->client->lastHereTime = level.time;
+	}
+
 	if (ent->client->sess.raceMode) {
 		if (!(ent->r.svFlags & SVF_BOT) && (ent->client->lastCmdTime < (level.time - 250))) { //Force 250ms updaterate for racers?
 			ForceClientUpdate(ent);

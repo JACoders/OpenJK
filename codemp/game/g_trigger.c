@@ -1297,6 +1297,21 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
+	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && !sv_cheats.integer && player->client->pers.userName[0]) {
+		if (!player->client->recordingDemo) { //Start the new demo
+			player->client->recordingDemo = qtrue;
+			//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
+			trap->SendConsoleCommand( EXEC_APPEND, va("svrecord %s %i\n", player->client->pers.userName, player->client->ps.clientNum));
+		}
+		else { //Check if we should "restart" the demo
+			if (trap->Milliseconds() - player->client->pers.stats.startTime > 5000) {
+				player->client->recordingDemo = qtrue;
+				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrecord %s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+			}
+		}
+	}
+
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
 
 	if (trigger->noise_index) 
@@ -1331,7 +1346,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 }
 
 void TimeToString(int duration_ms, char *timeStr, size_t strSize);
-void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average); //should this be extern?
+void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	if (!player->client)
 		return;
@@ -1471,7 +1486,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			if (p)
 				*p = 0;
 			if (player->client->pers.userName[0]) { //omg
-				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average);
+				G_AddRaceTime(player->client->pers.userName, trigger->message, (int)(time*1000), player->client->ps.stats[STAT_MOVEMENTSTYLE], (int)floorf(player->client->pers.stats.topSpeed + 0.5f), average, player->client->ps.clientNum);
 			}
 		}
 

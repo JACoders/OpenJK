@@ -564,7 +564,23 @@ void PrintCompletedRace(qboolean valid, char *netname, char *username, int rank,
 }
 */
 
-void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average) {//should be short.. but have to change elsewhere? is it worth it?
+void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
+	switch(style) {
+		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
+		case 1: Q_strncpyz(styleString, "jka", styleStringSize); break;
+		case 2:	Q_strncpyz(styleString, "qw", styleStringSize);	break;
+		case 3:	Q_strncpyz(styleString, "cpm", styleStringSize); break;
+		case 4:	Q_strncpyz(styleString, "q3", styleStringSize); break;
+		case 5:	Q_strncpyz(styleString, "pjk", styleStringSize); break;
+		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
+		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
+		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
+		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
+	}
+}
+
+void StripWhitespace(char *s);
+void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
 	char		string[1024] = {0}, info[1024] = {0}, courseName[40];
 	int i, course = 0, newRank = -1, rowToDelete = 9;
@@ -646,6 +662,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	//trap->Print("NewRank: %i, RowToDelete: %i\n", newRank, rowToDelete);
 		
 	if (newRank >= 0) {
+		gclient_t	*cl;
+
+		trap->Print("memepoint1\n");
+		cl = &level.clients[clientNum];
+		trap->Print("memepoint2\n");
+
 		if (rowToDelete >= 0) {
 			for (i = rowToDelete; i < 10; i++) {
 				if (i < 9)
@@ -675,6 +697,16 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
 		else 
 			PlayActualGlobalSound("sound/chars/rosh/misc/taunt1");
+
+		if (cl->recordingDemo) {
+			char styleString[16] = {0};
+			//trap->SendServerCommand( clientNum, "chat \"RECORDING STOPPED, HIGHSCORE\"");
+			IntegerToRaceName(style, styleString, sizeof(styleString));
+			if (cl) {
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/%s.dm_26 demos/%s-%s-%s.dm_26\n", clientNum, cl->pers.userName, cl->pers.userName, message, styleString));
+				cl->recordingDemo = qfalse;
+			}
+		}
 	}
 	else {
 		//Check if its a personal best.. Check the cache first.
@@ -1321,21 +1353,6 @@ void Svcmd_DBInfo_f(void)
 	CALL_SQLITE (close(db));
 
 	trap->Print( "There are %i accounts, %i race records, and %i duels in the database.\n", numAccounts, numRaces, numDuels);
-}
-
-void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
-	switch(style) {
-		case 0: Q_strncpyz(styleString, "siege", styleStringSize); break;
-		case 1: Q_strncpyz(styleString, "jka", styleStringSize); break;
-		case 2:	Q_strncpyz(styleString, "qw", styleStringSize);	break;
-		case 3:	Q_strncpyz(styleString, "cpm", styleStringSize); break;
-		case 4:	Q_strncpyz(styleString, "q3", styleStringSize); break;
-		case 5:	Q_strncpyz(styleString, "pjk", styleStringSize); break;
-		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
-		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
-		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
-		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
-	}
 }
 
 void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done

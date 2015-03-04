@@ -7335,26 +7335,11 @@ void DoAloneStuff(bot_state_t *bs, float thinktime) {
 
 }
 
-//Returns qtrue if client is active
-static qboolean IsClientActive( gclient_t *client ) {
-	//if (g_inactivity.integer <= 60) { //If this is set, anyone left on the server is determined active
-		//return qtrue;
-	//}
-	if (client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove || (client->pers.cmd.buttons & (BUTTON_ATTACK|BUTTON_ALT_ATTACK))) {
-		client->AFKTime = level.time + 60 * 1000;
-	} 
-	else if ( level.time > client->AFKTime ) {
-		return qfalse;
-	}
-	return qtrue;
-}
-
 void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 {
 	int closestID = -1;
 	int i;
 	qboolean someonesHere = qfalse;
-
 
 	for (i=0; i<level.numConnectedClients; i++) { //Go through each client, see if they are "afk", if everyone is afk, fuck this then.
 		gentity_t *ent = &g_entities[level.sortedClients[i]];
@@ -7365,7 +7350,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 			continue;
 		if (!ent->client)
 			continue;//should never happen
-		if (IsClientActive(ent->client)) {
+		if (ent->client->lastHereTime > level.time - 60000) { //They have moved in last 60 seconds.
 			someonesHere = qtrue;
 			break;
 		}

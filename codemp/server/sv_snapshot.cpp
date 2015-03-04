@@ -426,6 +426,16 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+		if (sv_autoDemo->integer == 2) //How find out how to only add all entities for the bot named RECORDER, not all bots? what entities can we still exclude?
+		{
+			sharedEntity_t *ent2;
+			ent2 = SV_GentityNum(frame->ps.clientNum);
+			if (ent2->r.svFlags & SVF_BOT && ent2->playerState->pm_type == PM_SPECTATOR) {
+				SV_AddEntToSnapshot( svEnt, ent, eNums );
+				continue;
+			}
+		}
+
 		if (com_RMG && com_RMG->integer)
 		{
 			VectorAdd(ent->r.absmax, ent->r.absmin, difference);

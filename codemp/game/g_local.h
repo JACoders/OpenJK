@@ -892,7 +892,9 @@ struct gclient_s {
 	// timers
 	int			respawnTime;		// can respawn when time > this, force after g_forcerespwan
 	int			inactivityTime;		// kick players when time > this
-	int			AFKTime;		//japro to optimize bots / autorecord
+	int			lastHereTime;		//japro to optimize bots / autorecord
+	qboolean	recordingDemo;//japro autodemo for defrag... :S
+	int			stopRecordingTime;
 	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
 
