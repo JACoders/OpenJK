@@ -4920,7 +4920,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 8 && mod == MOD_MELEE)
 		{ // zyk: Magic Master bonus melee damage
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.improvements_level)));
-			if (inflictor && inflictor->s.weapon == WP_BOWCASTER)
+			if (inflictor && (inflictor->s.weapon == WP_BOWCASTER || inflictor->s.weapon == WP_DEMP2))
 				can_damage_heavy_things = qtrue;
 		}
 	}
@@ -5067,8 +5067,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 	}
 
-	if (mod == MOD_DEMP2 && targ && targ->inuse && targ->client)
-	{
+	if ((mod == MOD_DEMP2 || (mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_DEMP2)) && targ && targ->inuse && targ->client)
+	{ // zyk: added the MOD_MELEE condition because of Magic Master Unique Skill
 		if ( targ->client->ps.electrifyTime < level.time )
 		{//electrocution effect
 			if (targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE &&

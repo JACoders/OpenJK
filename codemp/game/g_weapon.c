@@ -3590,9 +3590,9 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				VectorSet( missile->r.maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
 				VectorScale( missile->r.maxs, -1, missile->r.mins );
-				missile->damage = zyk_magic_fist_damage.integer * 18;
+				missile->damage = zyk_magic_fist_damage.integer * 2;
 				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-				missile->methodOfDeath = MOD_DEMP2;
+				missile->methodOfDeath = MOD_MELEE;
 				missile->clipmask = MASK_SHOT;
 
 				// we don't want it to ever bounce

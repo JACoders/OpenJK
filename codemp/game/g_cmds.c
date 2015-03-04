@@ -3976,9 +3976,9 @@ qboolean TryGrapple(gentity_t *ent)
 
 							VectorSet( missile->r.maxs, 2, 2, 2 );
 							VectorScale( missile->r.maxs, -1, missile->r.mins );
-							missile->damage = zyk_magic_fist_damage.integer * 18;
+							missile->damage = zyk_magic_fist_damage.integer * 2;
 							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_DEMP2;
+							missile->methodOfDeath = MOD_MELEE;
 							missile->clipmask = MASK_SHOT;
 
 							// we don't want it to ever bounce
@@ -4034,9 +4034,9 @@ qboolean TryGrapple(gentity_t *ent)
 
 							VectorSet( missile->r.maxs, 2, 2, 2 );
 							VectorScale( missile->r.maxs, -1, missile->r.mins );
-							missile->damage = zyk_magic_fist_damage.integer * 18;
+							missile->damage = zyk_magic_fist_damage.integer * 2;
 							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_DEMP2;
+							missile->methodOfDeath = MOD_MELEE;
 							missile->clipmask = MASK_SHOT;
 
 							// we don't want it to ever bounce
