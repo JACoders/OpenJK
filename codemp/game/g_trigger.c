@@ -1300,7 +1300,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && !sv_cheats.integer && player->client->pers.userName[0]) {
 		if (!player->client->recordingDemo) { //Start the new demo
 			player->client->recordingDemo = qtrue;
-			trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
+			//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
 			trap->SendConsoleCommand( EXEC_APPEND, va("svrecord %s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 		}
 		else { //Check if we should "restart" the demo
