@@ -811,7 +811,7 @@ void SV_SendClientSnapshot( client_t *client ) {
 	SV_BuildClientSnapshot( client );
 
 	if ( !client->demo.demorecording ) { //dont think this needs to be done with singledemo option
-		if (sv_autoDemo->integer > 1) {
+		if (sv_autoDemo->integer == 2) {
 			if (client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER")) {
 				SV_BeginAutoRecordDemos();
 			}

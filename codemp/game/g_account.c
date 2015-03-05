@@ -703,7 +703,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			//trap->SendServerCommand( clientNum, "chat \"RECORDING STOPPED, HIGHSCORE\"");
 			IntegerToRaceName(style, styleString, sizeof(styleString));
 			if (cl) {
-				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/%s.dm_26 demos/%s-%s-%s.dm_26\n", clientNum, cl->pers.userName, cl->pers.userName, message, styleString));
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/temp/%s.dm_26 demos/races/%s-%s-%s.dm_26\n", clientNum, cl->pers.userName, cl->pers.userName, message, styleString));
 				cl->recordingDemo = qfalse;
 			}
 		}

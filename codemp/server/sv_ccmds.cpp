@@ -1076,7 +1076,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
 	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
-	if (sv_autoDemo->integer > 1)
+	if (sv_autoDemo->integer == 2)
 		Com_sprintf( demoFileName, sizeof( demoFileName ), "%s %s", Cvar_VariableString( "mapname" ), date );
 	else
 		Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s", cl - svs.clients, cl->name, Cvar_VariableString( "mapname" ), date );
@@ -1115,7 +1115,7 @@ static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2
 // starts demo recording on all active clients
 void SV_BeginAutoRecordDemos() {
 	if ( sv_autoDemo->integer ) {
-		if (sv_autoDemo->integer > 1) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
+		if (sv_autoDemo->integer == 2) { //Record a bot in spec named "RECORDER" only (to be used with cvar that networks spectators all player info)
 			int humans = 0;
 
 			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
@@ -1135,7 +1135,7 @@ void SV_BeginAutoRecordDemos() {
 				}
 			}
 		}
-		else { //Normal autodemo behaviour, record 1 demo for everyone
+		else if (sv_autoDemo->integer == 1) { //Normal autodemo behaviour, record 1 demo for everyone
 			for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
 				if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
 					if ( client->netchan.remoteAddress.type != NA_BOT || sv_autoDemoBots->integer ) {
@@ -1144,7 +1144,7 @@ void SV_BeginAutoRecordDemos() {
 				}
 			}
 		}
-		if ( sv_autoDemoMaxMaps->integer > 0 ) { //This is a bit expensive
+		if ( sv_autoDemoMaxMaps->integer > 0 && (sv_autoDemo->integer == 1) || (sv_autoDemo->integer == 2)) { //This is a bit expensive
 			char fileList[MAX_QPATH * 500];
 			char autorecordDirList[500][MAX_QPATH];
 			int autorecordDirListCount = 0;
