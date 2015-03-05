@@ -10,6 +10,7 @@
 #include <pwd.h>
 #include <libgen.h>
 #include <sched.h>
+#include <signal.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -23,6 +24,18 @@ static char homePath[ MAX_OSPATH ] = { 0 };
 
 void Sys_PlatformInit( void )
 {
+	const char* term = getenv( "TERM" );
+
+	signal( SIGHUP, Sys_SigHandler );
+	signal( SIGQUIT, Sys_SigHandler );
+	signal( SIGTRAP, Sys_SigHandler );
+	signal( SIGIOT, Sys_SigHandler );
+	signal( SIGBUS, Sys_SigHandler );
+
+	if (isatty( STDIN_FILENO ) && !( term && ( !strcmp( term, "raw" ) || !strcmp( term, "dumb" ) ) ))
+		stdinIsATTY = qtrue;
+	else
+		stdinIsATTY = qfalse;
 }
 
 void Sys_PlatformExit( void )

@@ -657,8 +657,8 @@ int main ( int argc, char* argv[] )
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
-	CON_Init();
 	Sys_PlatformInit();
+	CON_Init();
 
 	// get the initial time base
 	Sys_Milliseconds();
