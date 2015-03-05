@@ -1300,17 +1300,18 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && !sv_cheats.integer && player->client->pers.userName[0]) {
 		if (!player->client->recordingDemo) { //Start the new demo
 			player->client->recordingDemo = qtrue;
-			//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
+			trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
 			trap->SendConsoleCommand( EXEC_APPEND, va("svrecord %s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 		}
 		else { //Check if we should "restart" the demo
-			if (trap->Milliseconds() - player->client->pers.stats.startTime > 5000) {
+			if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
 				player->client->recordingDemo = qtrue;
 				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
 				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrecord %s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
 			}
 		}
 	}
+	player->client->lastStartTime = level.time;
 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
 

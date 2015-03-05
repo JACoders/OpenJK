@@ -1050,6 +1050,7 @@ struct gclient_s {
 	short		noKnockdownStreak; //pseudo random knockdowns option
 	short		totalDamage;
 	int			lastDamageTime;
+	int			lastStartTime; //for autodemo floodprotect
 	//int			numStakes;
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
