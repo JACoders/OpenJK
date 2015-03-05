@@ -1297,6 +1297,14 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
+	if (player->client->recordingDemo && player->client->keepDemo) {
+		//We are still recording a demo that we want to keep?
+		//Stop and rename it
+		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->oldDemoName, player->client->demoName));
+		player->client->recordingDemo = qfalse;
+	}
+
 	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && !sv_cheats.integer && player->client->pers.userName[0]) {
 		if (!player->client->recordingDemo) { //Start the new demo
 			player->client->recordingDemo = qtrue;
@@ -1312,6 +1320,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		}
 	}
 	player->client->lastStartTime = level.time;
+	player->client->keepDemo = qfalse;
 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
 

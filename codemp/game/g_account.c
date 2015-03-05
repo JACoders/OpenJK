@@ -663,10 +663,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		
 	if (newRank >= 0) {
 		gclient_t	*cl;
-
-		trap->Print("memepoint1\n");
 		cl = &level.clients[clientNum];
-		trap->Print("memepoint2\n");
 
 		if (rowToDelete >= 0) {
 			for (i = rowToDelete; i < 10; i++) {
@@ -700,11 +697,18 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 		if (cl->recordingDemo) {
 			char styleString[16] = {0};
-			//trap->SendServerCommand( clientNum, "chat \"RECORDING STOPPED, HIGHSCORE\"");
+			char mapCourse[MAX_QPATH] = {0};
+
+			Q_strncpyz(mapCourse, courseName, sizeof(mapCourse));
+			StripWhitespace(mapCourse);
+
+			//trap->SendServerCommand( clientNum, "chat \"RECORDING PENDING STOP, HIGHSCORE\"");
 			IntegerToRaceName(style, styleString, sizeof(styleString));
 			if (cl) {
-				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/temp/%s.dm_26 demos/races/%s-%s-%s.dm_26\n", clientNum, cl->pers.userName, cl->pers.userName, message, styleString));
-				cl->recordingDemo = qfalse;
+				cl->stopRecordingTime = level.time + 2000;
+				cl->keepDemo = qtrue;
+				Com_sprintf(cl->oldDemoName, sizeof(cl->oldDemoName), "%s", cl->pers.userName);
+				Com_sprintf(cl->demoName, sizeof(cl->demoName), "%s-%s-%s", cl->pers.userName, mapCourse, styleString);
 			}
 		}
 	}
@@ -1152,6 +1156,7 @@ void Svcmd_Register_f(void)
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
+	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
 
 	Q_CleanStr(password);
 
@@ -1380,6 +1385,7 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_strlwr(username);
 	Q_CleanStr(username);
+	Q_strstrip( username, "\n\r;:.?*<>|\\/\"", NULL );
 
 	Q_CleanStr(password);
 

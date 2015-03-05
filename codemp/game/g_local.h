@@ -895,6 +895,9 @@ struct gclient_s {
 	int			lastHereTime;		//japro to optimize bots / autorecord
 	qboolean	recordingDemo;//japro autodemo for defrag... :S
 	int			stopRecordingTime;
+	qboolean	keepDemo;
+	char		oldDemoName[16];
+	char		demoName[MAX_QPATH];
 	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
 

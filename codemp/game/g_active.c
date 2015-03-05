@@ -4963,16 +4963,23 @@ void G_RunClient( gentity_t *ent ) {
 			|| (ent->client->lastHereTime < level.time - 30000) ||
 			(level.time - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
 		{
-			//Their demo is fine, keep it going.
+			//Their demo is bad, dont keep telling game to keep it
 		}
 		else 
-			ent->client->stopRecordingTime = level.time + 5000; //Their demo is bad! Stop it if it stays that way.
+			ent->client->stopRecordingTime = level.time + 5000; //Their demo is good! tell game not to delete it yet
 	}
 
 	if (ent->client->recordingDemo && ent->client->stopRecordingTime && (ent->client->stopRecordingTime < level.time)) {
 		ent->client->recordingDemo = qfalse;
-		//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED\"");
-		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i\n", ent->client->ps.clientNum));
+
+		if (ent->client->keepDemo) {
+			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
+			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->client->ps.clientNum, ent->client->oldDemoName, ent->client->demoName));
+		}
+		else {
+			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED\"");
+			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i\n", ent->client->ps.clientNum));
+		}
 	}
 
 	if (ent->client->pers.cmd.forwardmove || ent->client->pers.cmd.rightmove || ent->client->pers.cmd.upmove || (ent->client->pers.cmd.buttons & (BUTTON_ATTACK|BUTTON_ALT_ATTACK))) {
