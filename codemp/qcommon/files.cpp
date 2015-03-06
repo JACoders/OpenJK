@@ -924,6 +924,9 @@ void FS_SV_Rename( const char *from, const char *to, qboolean safe ) {
 	}
 
 	if (rename( from_ospath, to_ospath )) {
+		if ( fs_debug->integer ) {
+			Com_Printf( "FS_SV_Rename failed, attemping to copy: %s --> %s\n", from_ospath, to_ospath );
+		}
 		// Failed, try copying it and deleting the original
 		FS_CopyFile ( from_ospath, to_ospath );
 		FS_Remove ( from_ospath );
