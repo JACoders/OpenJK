@@ -232,7 +232,7 @@ Sys_FileTime
 returns -1 if not present
 ============
 */
-int Sys_FileTime( char *path )
+time_t Sys_FileTime( const char *path )
 {
 	struct stat buf;
 

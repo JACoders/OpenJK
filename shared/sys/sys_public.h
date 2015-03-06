@@ -126,7 +126,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-int Sys_FileTime( char *path );
+time_t Sys_FileTime( const char *path );
 
 qboolean Sys_LowPhysicalMemory();
 
