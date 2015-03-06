@@ -1315,7 +1315,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 			if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
 				player->client->recordingDemo = qtrue;
 				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
-				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
+				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
 			}
 		}
 	}
