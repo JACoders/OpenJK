@@ -333,20 +333,6 @@ static void IN_DeactivateMouse( void )
 	}
 }
 
-/*
-===============
-IN_InitKeyLockStates
-===============
-*/
-void IN_InitKeyLockStates( void )
-{
-	const unsigned char *keystate = SDL_GetKeyboardState(NULL);
-
-	kg.keys[A_SCROLLLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_SCROLLLOCK]);
-	kg.keys[A_NUMLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_NUMLOCKCLEAR]);
-	kg.keys[A_CAPSLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_CAPSLOCK]);
-}
-
 // We translate axes movement into keypresses
 static int joy_keys[16] = {
 	A_CURSOR_LEFT, A_CURSOR_RIGHT,
@@ -481,8 +467,6 @@ void IN_Init( void *windowData )
 	int appState = SDL_GetWindowFlags( SDL_window );
 	Cvar_SetValue( "com_unfocused", ( appState & SDL_WINDOW_INPUT_FOCUS ) == 0 );
 	Cvar_SetValue( "com_minimized", ( appState & SDL_WINDOW_MINIMIZED ) != 0 );
-
-	IN_InitKeyLockStates( );
 
 	IN_InitJoystick( );
 	Com_DPrintf( "------------------------------------\n" );
