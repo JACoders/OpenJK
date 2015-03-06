@@ -3444,6 +3444,30 @@ void ClientThink_real( gentity_t *ent ) {
 					// zyk: Magic Master can choose his power here
 					zyk_show_right_magic_master_powers(ent, qfalse);
 				}
+				else if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
+				{ // zyk: Magic Master Fist attacks
+					if (ent->client->pers.magic_fist_selection < 3)
+						ent->client->pers.magic_fist_selection++;
+					else
+						ent->client->pers.magic_fist_selection = 0;
+
+					if (ent->client->pers.magic_fist_selection == 0)
+					{
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Magic Fist          ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+					}
+					else if (ent->client->pers.magic_fist_selection == 1)
+					{
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Fist Charged Attack ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+					}
+					else if (ent->client->pers.magic_fist_selection == 2)
+					{
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Fist Spray Attack   ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+					}
+					else
+					{
+						trap->SendServerCommand( ent->s.number, va("chat \"^7None                ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+					}
+				}
 			}
 
 			ent->client->lastGenCmdTime = level.time + 300; //default 100ms debounce between issuing the same command.

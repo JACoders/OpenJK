@@ -624,6 +624,14 @@ typedef struct clientPersistant_s {
 
 	// zyk: same as above but selects power to be used with D + melee kata
 	int selected_right_special_power;
+	
+	// zyk: activates Magic Fist types
+	// Possible values are:
+	// 0 - Magic Fist
+	// 1 - Fist Charged Attack
+	// 2 - Fist Spray Attack
+	// 3 - No fist attacks
+	int magic_fist_selection;
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;

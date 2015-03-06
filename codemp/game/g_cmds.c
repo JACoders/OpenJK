@@ -3940,132 +3940,6 @@ qboolean TryGrapple(gentity_t *ent)
 					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
 				}
 			}
-			else if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)))
-			{ // zyk: Magic Master Charged Attack and Spray Attack
-				if (ent->client->pers.cmd.rightmove > 0 && ent->client->pers.selected_right_special_power == 0 && 
-					ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
-				{ // zyk: Magic Fist Spray Attack
-					gentity_t	*missile;
-					vec3_t origin;
-					int i;
-					int angle_value = ent->client->ps.viewangles[1];
-
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33);
-
-					for (i = 0; i < zyk_fist_spray_count.integer; i++ )
-					{
-						vec3_t dir, forward;
-
-						angle_value += (360/zyk_fist_spray_count.integer);
-
-						if (angle_value >= 180)
-							angle_value -= 359;
-
-						VectorSet(dir, 0, angle_value, 0);
-
-						AngleVectors( dir, forward, NULL, NULL );
-
-						VectorNormalize(forward);
-
-						if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-						{
-							missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-							missile->classname = "demp2_proj";
-							missile->s.weapon = WP_DEMP2;
-
-							VectorSet( missile->r.maxs, 2, 2, 2 );
-							VectorScale( missile->r.maxs, -1, missile->r.mins );
-							missile->damage = zyk_magic_fist_damage.integer * 2;
-							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_MELEE;
-							missile->clipmask = MASK_SHOT;
-
-							// we don't want it to ever bounce
-							missile->bounceCount = 0;
-						}
-						else
-						{
-							missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-							missile->classname = "bowcaster_proj";
-							missile->s.weapon = WP_BOWCASTER;
-
-							VectorSet( missile->r.maxs, 2, 2, 2 );
-							VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-							missile->damage = zyk_magic_fist_damage.integer;
-							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_MELEE;
-							missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-							// we don't want it to bounce
-							missile->bounceCount = 0;
-						}
-					}
-
-					ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
-					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-				}
-				else if (ent->client->pers.cmd.rightmove < 0 && ent->client->pers.selected_left_special_power == 0 && 
-						 ent->client->pers.magic_power >= zyk_first_charged_mp_cost.integer)
-				{ // zyk: Magic Fist Charged Attack
-					int count = 3;
-					gentity_t	*missile;
-					vec3_t origin, dir, forward;
-					int i;
-
-					for (i = 0; i < count; i++ )
-					{
-						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 2));
-			
-						VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
-
-						AngleVectors( dir, forward, NULL, NULL );
-
-						VectorNormalize(forward);
-
-						if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-						{
-							missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-							missile->classname = "demp2_proj";
-							missile->s.weapon = WP_DEMP2;
-
-							VectorSet( missile->r.maxs, 2, 2, 2 );
-							VectorScale( missile->r.maxs, -1, missile->r.mins );
-							missile->damage = zyk_magic_fist_damage.integer * 2;
-							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_MELEE;
-							missile->clipmask = MASK_SHOT;
-
-							// we don't want it to ever bounce
-							missile->bounceCount = 0;
-						}
-						else
-						{
-							missile = CreateMissile( origin, forward, 5000.0, 10000, ent, qfalse);
-
-							missile->classname = "bowcaster_proj";
-							missile->s.weapon = WP_BOWCASTER;
-
-							VectorSet( missile->r.maxs, 2, 2, 2 );
-							VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-							missile->damage = zyk_magic_fist_damage.integer;
-							missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-							missile->methodOfDeath = MOD_MELEE;
-							missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-							// we don't want it to bounce
-							missile->bounceCount = 0;
-						}
-					}
-
-					ent->client->pers.magic_power -= zyk_first_charged_mp_cost.integer;
-					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-				}
-			}
 		}
 
 		return qtrue;
@@ -5058,11 +4932,14 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		if (ent->client->pers.rpg_class != 8 || magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse || 
 			magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse || 
-			magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse)
+			magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse || 
+			ent->client->pers.magic_fist_selection < 0 || 
+			ent->client->pers.magic_fist_selection > 3)
 		{ // zyk: this will allow Magic Master selected powers to persist between respawns
-			ent->client->pers.selected_special_power = 0;
-			ent->client->pers.selected_left_special_power = 0;
-			ent->client->pers.selected_right_special_power = 0;
+			ent->client->pers.selected_special_power = 1;
+			ent->client->pers.selected_left_special_power = 1;
+			ent->client->pers.selected_right_special_power = 1;
+			ent->client->pers.magic_fist_selection = 0;
 		}
 
 		ent->client->pers.quest_power_usage_timer = 0;

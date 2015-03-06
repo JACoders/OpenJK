@@ -3566,60 +3566,189 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	}
 	else
 	{
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-			ent->client->pers.selected_special_power == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
-		{ // zyk: Magic Master has Magic Fist power
-			vec3_t origin, dir, zyk_forward;
-			gentity_t *missile = NULL;
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8)
+		{ // zyk: Magic Master fist attacks
+			if (ent->client->pers.magic_fist_selection == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
+			{ // zyk: Magic Fist
+				vec3_t origin, dir, zyk_forward;
+				gentity_t *missile = NULL;
 
-			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
-			else
-				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
-			AngleVectors( dir, zyk_forward, NULL, NULL );
+				AngleVectors( dir, zyk_forward, NULL, NULL );
 
-			if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-			{
-				missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				{
+					missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
 
-				missile->classname = "demp2_proj";
-				missile->s.weapon = WP_DEMP2;
+					missile->classname = "demp2_proj";
+					missile->s.weapon = WP_DEMP2;
 
-				VectorSet( missile->r.maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
-				VectorScale( missile->r.maxs, -1, missile->r.mins );
-				missile->damage = zyk_magic_fist_damage.integer * 2;
-				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-				missile->methodOfDeath = MOD_MELEE;
-				missile->clipmask = MASK_SHOT;
+					VectorSet( missile->r.maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
+					VectorScale( missile->r.maxs, -1, missile->r.mins );
+					missile->damage = zyk_magic_fist_damage.integer * 2;
+					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+					missile->methodOfDeath = MOD_MELEE;
+					missile->clipmask = MASK_SHOT;
 
-				// we don't want it to ever bounce
-				missile->bounceCount = 0;
+					// we don't want it to ever bounce
+					missile->bounceCount = 0;
+				}
+				else
+				{
+					missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+
+					missile->classname = "bowcaster_proj";
+					missile->s.weapon = WP_BOWCASTER;
+
+					VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
+					VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+					missile->damage = zyk_magic_fist_damage.integer;
+					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+					missile->methodOfDeath = MOD_MELEE;
+					missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+					// we don't want it to bounce
+					missile->bounceCount = 0;
+				}
+
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
+
+				ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
 			}
-			else
-			{
-				missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+			else if (ent->client->pers.magic_fist_selection == 1 && ent->client->pers.magic_power >= zyk_first_charged_mp_cost.integer)
+			{ // zyk: Magic Fist Charged Attack
+				int count = 2;
+				gentity_t	*missile;
+				vec3_t origin, dir, zyk_forward;
+				int i;
 
-				missile->classname = "bowcaster_proj";
-				missile->s.weapon = WP_BOWCASTER;
+				for (i = 0; i < count; i++ )
+				{
+					if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 9 + (i * 3));
+					else
+						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 3));
+			
+					VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
-				VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
-				VectorScale( missile->r.maxs, -1, missile->r.mins );
+					AngleVectors( dir, zyk_forward, NULL, NULL );
 
-				missile->damage = zyk_magic_fist_damage.integer;
-				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-				missile->methodOfDeath = MOD_MELEE;
-				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+					VectorNormalize(zyk_forward);
 
-				// we don't want it to bounce
-				missile->bounceCount = 0;
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+					{
+						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+
+						missile->classname = "demp2_proj";
+						missile->s.weapon = WP_DEMP2;
+
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
+						missile->damage = zyk_magic_fist_damage.integer * 2;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT;
+
+						// we don't want it to ever bounce
+						missile->bounceCount = 0;
+					}
+					else
+					{
+						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+
+						missile->classname = "bowcaster_proj";
+						missile->s.weapon = WP_BOWCASTER;
+
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+						missile->damage = zyk_magic_fist_damage.integer;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+						// we don't want it to bounce
+						missile->bounceCount = 0;
+					}
+				}
+
+				ent->client->pers.magic_power -= zyk_first_charged_mp_cost.integer;
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 			}
+			else if (ent->client->pers.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
+			{ // zyk: Magic Fist Spray Attack
+				gentity_t	*missile;
+				vec3_t origin;
+				int i;
+				int angle_value = ent->client->ps.viewangles[1];
 
-			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 9);
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33);
 
-			ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
+				for (i = 0; i < zyk_fist_spray_count.integer; i++ )
+				{
+					vec3_t dir, zyk_forward;
+
+					angle_value += (360/zyk_fist_spray_count.integer);
+
+					if (angle_value >= 180)
+						angle_value -= 359;
+
+					VectorSet(dir, 0, angle_value, 0);
+
+					AngleVectors( dir, zyk_forward, NULL, NULL );
+
+					VectorNormalize(zyk_forward);
+
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+					{
+						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+
+						missile->classname = "demp2_proj";
+						missile->s.weapon = WP_DEMP2;
+
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
+						missile->damage = zyk_magic_fist_damage.integer * 2;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT;
+
+						// we don't want it to ever bounce
+						missile->bounceCount = 0;
+					}
+					else
+					{
+						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+
+						missile->classname = "bowcaster_proj";
+						missile->s.weapon = WP_BOWCASTER;
+
+						VectorSet( missile->r.maxs, 2, 2, 2 );
+						VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+						missile->damage = zyk_magic_fist_damage.integer;
+						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+						missile->methodOfDeath = MOD_MELEE;
+						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+						// we don't want it to bounce
+						missile->bounceCount = 0;
+					}
+				}
+
+				ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+			}
 		}
 
 		VectorCopy(ent->client->ps.origin, muzzlePunch);
