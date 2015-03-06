@@ -292,8 +292,19 @@ void SNDDMA_BeginPainting (void)
 	SDL_LockAudio();
 }
 
+#ifdef USE_OPENAL
+extern int s_UseOpenAL;
+#endif
+
 // (De)activates sound playback
 void SNDDMA_Activate( qboolean activate )
 {
+#ifdef USE_OPENAL
+	if ( s_UseOpenAL )
+	{
+		S_AL_MuteAllSounds( (qboolean)!activate );
+	}
+#endif
+
 	SDL_PauseAudio( !activate );
 }
