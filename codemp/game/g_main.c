@@ -535,16 +535,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
-	// zyk: initializing battle type variables
-	level.battle_type = 0;
+	// zyk: initializing special power variables
 	if (1)
 	{
 		int zyk_iterator = 0;
-
-		for (zyk_iterator = 0; zyk_iterator < MAX_CLIENTS; zyk_iterator++)
-		{
-			level.battle_type_players[zyk_iterator] = 0;
-		}
 
 		for (zyk_iterator = 0; zyk_iterator < ENTITYNUM_MAX_NORMAL; zyk_iterator++)
 		{
