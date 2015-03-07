@@ -102,6 +102,10 @@ typedef enum //# setType_e
 	SET_FACEBLINK,		//## %f="0.0" # Set face to Blink expression for number of seconds
 	SET_FACEBLINKFROWN,	//## %f="0.0" # Set face to Blinkfrown expression for number of seconds
 	SET_FACEFROWN,		//## %f="0.0" # Set face to Frown expression for number of seconds
+	SET_FACESMILE,		//## %f="0.0" # Set face to Smile expression for number of seconds
+	SET_FACEGLAD,		//## %f="0.0" # Set face to Glad expression for number of seconds
+	SET_FACEHAPPY,		//## %f="0.0" # Set face to Happy expression for number of seconds
+	SET_FACESHOCKED,		//## %f="0.0" # Set face to Shocked expression for number of seconds
 	SET_FACENORMAL,		//## %f="0.0" # Set face to Normal expression for number of seconds
 	SET_FACEEYESCLOSED,	//## %f="0.0" # Set face to Eyes closed
 	SET_FACEEYESOPENED,	//## %f="0.0" # Set face to Eyes open
