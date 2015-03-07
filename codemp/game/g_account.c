@@ -701,6 +701,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 			Q_strncpyz(mapCourse, courseName, sizeof(mapCourse));
 			StripWhitespace(mapCourse);
+			Q_strstrip( mapCourse, "\n\r;:.?*<>|\\/\"", NULL );
 
 			//trap->SendServerCommand( clientNum, "chat \"RECORDING PENDING STOP, HIGHSCORE\"");
 			IntegerToRaceName(style, styleString, sizeof(styleString));
