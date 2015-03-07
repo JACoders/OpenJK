@@ -5557,7 +5557,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && 
 		attacker->client && 
 		attacker->client->NPC_class != CLASS_RANCOR && // zyk: grip cant be absorbed by shields
-		(attacker->client->ps.fd.forcePowersActive & (1 << FP_GRIP))
+		(attacker->client->ps.fd.forcePowersActive & (1 << FP_GRIP) &&
+		mod == MOD_FORCE_DARK)
 		) // zyk: grip cant be absorbed by shields
 		check_shield = 0;
 	
