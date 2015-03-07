@@ -156,10 +156,6 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FACEBLINK),
 	ENUM2STRING(SET_FACEBLINKFROWN),
 	ENUM2STRING(SET_FACEFROWN),
-	ENUM2STRING(SET_FACESMILE),
-	ENUM2STRING(SET_FACEGLAD),
-	ENUM2STRING(SET_FACEHAPPY),
-	ENUM2STRING(SET_FACESHOCKED),
 	ENUM2STRING(SET_FACENORMAL),
 	ENUM2STRING(SET_FACEEYESCLOSED),
 	ENUM2STRING(SET_FACEEYESOPENED),
@@ -1309,10 +1305,6 @@ int Q3_GetFloat( int entID, int type, const char *name, float *value )
 	case SET_FACEBLINK:		//## %f="0.0" # Set face to Blink expression for number of seconds
 	case SET_FACEBLINKFROWN:	//## %f="0.0" # Set face to Blinkfrown expression for number of seconds
 	case SET_FACEFROWN:		//## %f="0.0" # Set face to Frown expression for number of seconds
-	case SET_FACESMILE:		//## %f="0.0" # Set face to Smile expression for number of seconds
-	case SET_FACEGLAD:		//## %f="0.0" # Set face to Glad expression for number of seconds
-	case SET_FACEHAPPY:		//## %f="0.0" # Set face to Happy expression for number of seconds
-	case SET_FACESHOCKED:		//## %f="0.0" # Set face to Shocked expression for number of seconds
 	case SET_FACENORMAL:		//## %f="0.0" # Set face to Normal expression for number of seconds
 		G_DebugPrint( WL_WARNING, "Q3_GetFloat: SET_FACE___ not implemented\n" );
 		return 0;
@@ -6625,10 +6617,6 @@ qboolean Q3_Set( int taskID, int entID, const char *type_name, const char *data 
 	case SET_FACEBLINK:
 	case SET_FACEBLINKFROWN:
 	case SET_FACEFROWN:
-	case SET_FACESMILE:
-	case SET_FACEGLAD:
-	case SET_FACEHAPPY:
-	case SET_FACESHOCKED:
 	case SET_FACENORMAL:
 		float_data = atof((char *) data);
 		Q3_Face(entID, toSet, float_data);
