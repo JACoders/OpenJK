@@ -624,10 +624,12 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Fixed saberswitch"},//23
 	{"Impact nitrons"},//24
 	{"Flechette stake gun"},//25
-	{"Reduce saberdrops for MP damages"}//25
+	{"Reduce saberdrops for MP damages"},//26
+	{"Allow rollcancel for saber swings"}//27
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
+void CVU_TweakWeapons (void);
 void Svcmd_ToggleTweakWeapons_f( void ) {
 	if ( trap->Argc() == 1 ) {
 		int i = 0;
@@ -659,6 +661,8 @@ void Svcmd_ToggleTweakWeapons_f( void ) {
 
 		trap->Print( "%s %s^7\n", weaponTweaks[index].string, ((g_tweakWeapons.integer & (1 << index))
 			? "^2Enabled" : "^1Disabled") );
+
+		CVU_TweakWeapons();
 	}
 }
 
