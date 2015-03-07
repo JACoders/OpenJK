@@ -4958,26 +4958,29 @@ void G_RunClient( gentity_t *ent ) {
 
 	// force client updates if they're not sending packets at roughly 4hz
 
-	if (ent->client->recordingDemo) {
+	if (ent->client->pers.recordingDemo) {
 		if (ent->client->pers.noFollow || ent->client->pers.practice || sv_cheats.integer || !ent->client->pers.userName[0] || !ent->client->sess.raceMode || !ent->client->pers.stats.startTime
 			|| (ent->client->lastHereTime < level.time - 30000) ||
 			(level.time - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
 		{
+			trap->Print("Demo is bad\n");
 			//Their demo is bad, dont keep telling game to keep it
 		}
 		else 
-			ent->client->stopRecordingTime = level.time + 5000; //Their demo is good! tell game not to delete it yet
+			ent->client->pers.stopRecordingTime = level.time + 5000; //Their demo is good! tell game not to delete it yet
 	}
 
-	if (ent->client->recordingDemo && ent->client->stopRecordingTime && (ent->client->stopRecordingTime < level.time)) {
-		ent->client->recordingDemo = qfalse;
+	trap->Print("Stoptime: %i, %i\n", ent->client->pers.stopRecordingTime, ent->client->pers.recordingDemo);
 
-		if (ent->client->keepDemo) {
-			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
-			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->client->ps.clientNum, ent->client->oldDemoName, ent->client->demoName));
+	if (ent->client->pers.recordingDemo && (ent->client->pers.stopRecordingTime < level.time)) {
+		ent->client->pers.recordingDemo = qfalse;
+
+		if (ent->client->pers.keepDemo) {
+			trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED (timeout), HIGHSCORE\"");
+			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", ent->client->ps.clientNum, ent->client->pers.oldDemoName, ent->client->pers.demoName));
 		}
 		else {
-			//trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED\"");
+			trap->SendServerCommand( ent-g_entities, "chat \"RECORDING STOPPED\"");
 			trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i\n", ent->client->ps.clientNum));
 		}
 	}

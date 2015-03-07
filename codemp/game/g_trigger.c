@@ -1297,30 +1297,30 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 
-	if (player->client->recordingDemo && player->client->keepDemo) {
+	if (player->client->pers.recordingDemo && player->client->pers.keepDemo) {
 		//We are still recording a demo that we want to keep?
 		//Stop and rename it
-		//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
-		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->oldDemoName, player->client->demoName));
-		player->client->recordingDemo = qfalse;
+		trap->SendServerCommand( player-g_entities, "chat \"RECORDING STOPPED (at startline), HIGHSCORE\"");
+		trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrenamedemo demos/temp/%s.dm_26 demos/races/%s.dm_26\n", player->client->ps.clientNum, player->client->pers.oldDemoName, player->client->pers.demoName));
+		player->client->pers.recordingDemo = qfalse;
 	}
 
-	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && !sv_cheats.integer && player->client->pers.userName[0]) {
-		if (!player->client->recordingDemo) { //Start the new demo
-			player->client->recordingDemo = qtrue;
-			//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
+	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && player->client->sess.raceMode && !sv_cheats.integer && player->client->pers.userName[0]) {
+		if (!player->client->pers.recordingDemo) { //Start the new demo
+			player->client->pers.recordingDemo = qtrue;
+			trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");
 			trap->SendConsoleCommand( EXEC_APPEND, va("svrecord temp/%s %i\n", player->client->pers.userName, player->client->ps.clientNum));
 		}
 		else { //Check if we should "restart" the demo
 			if (!player->client->lastStartTime || (level.time - player->client->lastStartTime > 5000)) {
-				player->client->recordingDemo = qtrue;
-				//trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
+				player->client->pers.recordingDemo = qtrue;
+				trap->SendServerCommand( player-g_entities, "chat \"RECORDING RESTARTED\"");
 				trap->SendConsoleCommand( EXEC_APPEND, va("svstoprecord %i;wait 20;svrecord temp/%s %i\n", player->client->ps.clientNum, player->client->pers.userName, player->client->ps.clientNum));
 			}
 		}
 	}
 	player->client->lastStartTime = level.time;
-	player->client->keepDemo = qfalse;
+	player->client->pers.keepDemo = qfalse;
 
 	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
 
