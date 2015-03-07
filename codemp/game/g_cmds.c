@@ -5767,6 +5767,12 @@ void try_finishing_race()
 	if (has_someone_racing == 0)
 	{ // zyk: no one is racing, so finish the race
 		level.race_mode = 0;
+
+		for (j = 0; j < MAX_RACERS; j++)
+		{ // zyk: resetting race vehicle ids
+			level.race_mode_vehicle[j] = -1;
+		}
+
 		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7The race is over!\""));
 	}
 }
@@ -11155,8 +11161,6 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 
 		if (Q_stricmp(zyk_mapname, "t2_trip") == 0)
 		{
-			int max_racers = 8; // zyk: each race map will have its own max_racers
-
 			if (level.race_mode > 1)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"Race has already started. Try again at the next race!\n\"" );
@@ -11187,7 +11191,7 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 					occupied_positions[this_ent->client->pers.race_position - 1] = 1;
 			}
 
-			for (j = 0; j < max_racers; j++)
+			for (j = 0; j < MAX_RACERS; j++)
 			{
 				if (occupied_positions[j] == 0)
 				{ // zyk: an empty race position, use this one
@@ -11210,7 +11214,7 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 			yaw[1] = -179.0f;
 			yaw[2] = 0.0f;
 
-			if (swoop_number < max_racers)
+			if (swoop_number < MAX_RACERS)
 			{
 				// zyk: teleporting player to the swoop area
 				zyk_TeleportPlayer( ent, origin, yaw);
@@ -11222,6 +11226,8 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 				{ // zyk: setting the vehicle hover height and hover strength
 					this_ent->m_pVehicle->m_pVehicleInfo->hoverHeight = 40.0;
 					this_ent->m_pVehicle->m_pVehicleInfo->hoverStrength = 40.0;
+
+					level.race_mode_vehicle[swoop_number] = this_ent->s.number;
 				}
 
 				level.race_start_timer = level.time + 15000; // zyk: race will start 15 seconds after the last player who joined the race

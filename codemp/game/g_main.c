@@ -535,13 +535,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
-	// zyk: initializing special power variables
 	if (1)
 	{
 		int zyk_iterator = 0;
 
+		for (zyk_iterator = 0; zyk_iterator < MAX_RACERS; zyk_iterator++)
+		{ // zyk: initializing race vehicle ids
+			level.race_mode_vehicle[zyk_iterator] = -1;
+		}
+
 		for (zyk_iterator = 0; zyk_iterator < ENTITYNUM_MAX_NORMAL; zyk_iterator++)
-		{
+		{ // zyk: initializing special power variables
 			level.special_power_effects[zyk_iterator] = -1;
 			level.special_power_effects_timer[zyk_iterator] = 0;
 		}
@@ -5457,7 +5461,7 @@ void G_RunFrame( int levelTime ) {
 			{ // zyk: Race Mode management
 				if (level.race_mode == 3)
 				{ // zyk: if race already started
-					if (ent->client->ps.m_iVehicleNum <= 0 && ent->health > 0)
+					if (ent->client->ps.m_iVehicleNum != level.race_mode_vehicle[ent->client->pers.race_position - 1] && ent->health > 0)
 					{ // zyk: if player loses his vehicle, he loses the race
 						trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7lost his vehicle and so he lost the race!\n\"",ent->client->pers.netname) );
 

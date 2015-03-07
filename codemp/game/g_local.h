@@ -1249,6 +1249,9 @@ typedef struct {
 	vec3_t	origin;
 } locationData_t;
 
+// zyk: Max racers in the map
+#define MAX_RACERS 8
+
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
@@ -1438,6 +1441,9 @@ typedef struct level_locals_s {
 
 	// zyk: timer to remove each effect used in Special Powers
 	int special_power_effects_timer[ENTITYNUM_MAX_NORMAL];
+
+	// zyk: vehicle ids of the swoops used in Race Mode. Used to validate if player is using the correct vehicle
+	int race_mode_vehicle[MAX_RACERS];
 } level_locals_t;
 
 
