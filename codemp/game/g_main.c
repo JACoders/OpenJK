@@ -4743,6 +4743,11 @@ void quest_power_events(gentity_t *ent)
 
 			if (ent->client->pers.quest_power_status & (1 << 4))
 			{ // zyk: Poison Mushrooms
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 4);
+				}
+
 				if (ent->client->pers.quest_power_hit_counter > 0 && ent->client->pers.quest_target3_timer < level.time)
 				{
 					gentity_t *poison_mushrooms_user = &g_entities[ent->client->pers.quest_power_user2_id];
@@ -4763,6 +4768,11 @@ void quest_power_events(gentity_t *ent)
 
 			if (ent->client->pers.quest_power_status & (1 << 5))
 			{ // zyk: Hurricane
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 5);
+				}
+
 				if (ent->client->pers.quest_target4_timer > level.time)
 				{
 					static vec3_t forward;
@@ -4791,9 +4801,17 @@ void quest_power_events(gentity_t *ent)
 				}
 			}
 
-			if (ent->client->pers.quest_power_status & (1 << 6) && ent->client->pers.quest_target5_timer < level.time)
+			if (ent->client->pers.quest_power_status & (1 << 6))
 			{ // zyk: Slow Motion
-				ent->client->pers.quest_power_status &= ~(1 << 6);
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 6);
+				}
+
+				if (ent->client->pers.quest_target5_timer < level.time)
+				{ // zyk: Slow Motion run out
+					ent->client->pers.quest_power_status &= ~(1 << 6);
+				}
 			}
 
 			if (ent->client->pers.quest_power_status & (1 << 7) && ent->client->pers.quest_power3_timer < level.time)
@@ -4803,6 +4821,11 @@ void quest_power_events(gentity_t *ent)
 
 			if (ent->client->pers.quest_power_status & (1 << 8))
 			{ // zyk: Blowing Wind
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 8);
+				}
+
 				if (ent->client->pers.quest_target6_timer > level.time)
 				{
 					gentity_t *blowing_wind_user = &g_entities[ent->client->pers.quest_power_user3_id];
