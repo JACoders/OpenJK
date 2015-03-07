@@ -5761,6 +5761,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
+	// zyk: Unique Skill of Magic Master can disable jetpacks
+	if (mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_DEMP2 && client)
+	{
+		if (client->jetPackOn)
+		{ //disable jetpack temporarily
+			Jetpack_Off(targ);
+			client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
+		}
+
+		if (client->NPC_class == CLASS_BOBAFETT)
+		{ // zyk: DEMP2 also disables npc jetpack
+			Boba_FlyStop(targ);
+		}
+	}
+
 	if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT )
 	{//FIXME: screw with non-animal vehicles, too?
 		if ( client )
