@@ -4329,15 +4329,28 @@ static int PM_TryRoll( void )
 			return 0;
 		}
 
-	if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
-		|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
-		|| PM_SaberInStart( pm->ps->saberMove ) )
-	{//attacking or spinning (or, if player, starting an attack)
-		if ( PM_CanRollFromSoulCal( pm->ps ) )
-		{//hehe
+#ifdef _GAME
+	if (!(g_tweakWeapons.integer & ALLOW_ROLLCANCEL)) {
+#else
+	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL)) {
+#endif
+		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
+			|| BG_SpinningSaberAnim( pm->ps->legsAnim ) 
+			|| PM_SaberInStart( pm->ps->saberMove ) )
+		{//attacking or spinning (or, if player, starting an attack)
+			if ( PM_CanRollFromSoulCal( pm->ps ) )
+			{//hehe
+			}
+			else
+			{
+				return 0;
+			}
 		}
-		else
-		{
+	}
+	else {
+		if ( BG_SaberInAttack( pm->ps->saberMove ) || BG_SaberInSpecialAttack( pm->ps->torsoAnim ) 
+			|| BG_SpinningSaberAnim( pm->ps->legsAnim ))
+		{//attacking or spinning (or, if player, starting an attack)
 			return 0;
 		}
 	}

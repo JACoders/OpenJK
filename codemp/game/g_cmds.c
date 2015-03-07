@@ -7357,6 +7357,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber drop for MP style damage\n");
 	if (g_tweakWeapons.integer & FIXED_SABERSWITCH)
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed saber switch swing\n");
+	if (g_tweakWeapons.integer & ALLOW_ROLLCANCEL)
+		Q_strcat(buf, sizeof(buf), "   ^5Roll cancel enabled\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes

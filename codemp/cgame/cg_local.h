@@ -113,12 +113,13 @@
 #define JAPRO_CINFO_GUNROLL			(1<<18)	//allow grun roll
 #define	JAPRO_CINFO_PSEUDORANDOM_FIRE (1<<19) //so they can predict it right?
 #define JAPRO_CINFO_EASYBACKSLASH	(1<<20) //No aim backslash
-#define JAPRO_CINFO_UNUSED3			(1<<21) //unused
+#define JAPRO_CINFO_HIGHFPSFIX		(1<<21) //unused
 #define JAPRO_CINFO_LEGDANGLE		(1<<22) //No legdangle annoyance
 #define JAPRO_CINFO_JK2LUNGE		(1<<23) //JK2 style lunge
 #define JAPRO_CINFO_JK2DFA			(1<<24) //JK2 style rdfa
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
 #define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
+#define JAPRO_CINFO_ROLLCANCEL		(1<<27) //jk2 1.02 rollcancel move
 
 typedef enum {
 	FOOTSTEP_STONEWALK,
