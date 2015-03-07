@@ -629,8 +629,10 @@ void TossClientItems( gentity_t *self ) {
 				}
 
 				// zyk: RPG players cannot drop force enlightments because they are now used as the effect when using Special Powers
+				// and cannot drop neutral flag and quad because they are used by Unique Skill
 				if (item->giType == IT_POWERUP && 
-					(item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || item->giTag == PW_FORCE_ENLIGHTENED_DARK) && 
+					(item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || item->giTag == PW_FORCE_ENLIGHTENED_DARK || 
+					 item->giTag == PW_NEUTRALFLAG || item->giTag == PW_QUAD) && 
 					self->client->sess.amrpgmode == 2)
 				{
 					continue;
