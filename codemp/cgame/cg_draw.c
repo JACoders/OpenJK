@@ -1223,9 +1223,20 @@ void CG_DrawHUD(centity_t	*cent)
 					Com_sprintf(ammoString, sizeof(ammoString), "MEDIUM");
 					weapX += 16;
 				}
+				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_4)
+				{ // zyk: added the Desann style to HUD
+					Com_sprintf(ammoString, sizeof(ammoString), "DESANN");
+					weapX += 16;
+				}
+				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_5)
+				{ // zyk: added the Tavion style to HUD
+					Com_sprintf(ammoString, sizeof(ammoString), "TAVION");
+					weapX += 16;
+				}
 				else
 				{
 					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
+					weapX += 16;
 				}
 			}
 			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
