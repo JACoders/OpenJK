@@ -153,6 +153,83 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	return qfalse;
 }
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
+static bool IN_NumLockEnabled( void )
+{
+#if defined(_WIN32)
+	return (GetKeyState( VK_NUMLOCK ) & 1) != 0;
+#else
+	// @fixme : doesn't give proper state if numlock is on before app startup
+	return (SDL_GetModState() & KMOD_NUM) != 0;
+#endif
+}
+
+static void IN_TranslateNumpad( SDL_Keysym *keysym, fakeAscii_t *key )
+{
+	if ( IN_NumLockEnabled() )
+	{
+		switch ( keysym->sym )
+		{
+		case SDLK_KP_0:
+			keysym->scancode = SDL_SCANCODE_0;
+			keysym->sym = SDLK_0;
+			*key = A_0;
+			break;
+		case SDLK_KP_1:
+			keysym->scancode = SDL_SCANCODE_1;
+			keysym->sym = SDLK_1;
+			*key = A_1;
+			break;
+		case SDLK_KP_2:
+			keysym->scancode = SDL_SCANCODE_2;
+			keysym->sym = SDLK_2;
+			*key = A_2;
+			break;
+		case SDLK_KP_3:
+			keysym->scancode = SDL_SCANCODE_3;
+			keysym->sym = SDLK_3;
+			*key = A_3;
+			break;
+		case SDLK_KP_4:
+			keysym->scancode = SDL_SCANCODE_4;
+			keysym->sym = SDLK_4;
+			*key = A_4;
+			break;
+		case SDLK_KP_5:
+			keysym->scancode = SDL_SCANCODE_5;
+			keysym->sym = SDLK_5;
+			*key = A_5;
+			break;
+		case SDLK_KP_6:
+			keysym->scancode = SDL_SCANCODE_6;
+			keysym->sym = SDLK_6;
+			*key = A_6;
+			break;
+		case SDLK_KP_7:
+			keysym->scancode = SDL_SCANCODE_7;
+			keysym->sym = SDLK_7;
+			*key = A_7;
+			break;
+		case SDLK_KP_8:
+			keysym->scancode = SDL_SCANCODE_8;
+			keysym->sym = SDLK_8;
+			*key = A_8;
+			break;
+		case SDLK_KP_9:
+			keysym->scancode = SDL_SCANCODE_9;
+			keysym->sym = SDLK_9;
+			*key = A_9;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 /*
 ===============
 IN_TranslateSDLToJKKey
@@ -168,6 +245,8 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	}
 	else
 	{
+		IN_TranslateNumpad( keysym, &key );
+
 		switch( keysym->sym )
 		{
 			case SDLK_PAGEUP:       key = A_PAGE_UP;       break;
