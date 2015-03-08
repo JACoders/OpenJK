@@ -2850,8 +2850,8 @@ qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *
 
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "" );
 
-	Q_strncpyz( level.voteDisplayString, question, sizeof( level.voteDisplayString ) );
-	Q_strncpyz( level.voteStringClean, question, sizeof( level.voteStringClean ) );
+	Q_strncpyz( level.voteDisplayString, va("poll: %s", question), sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, va("poll: %s", question), sizeof( level.voteStringClean ) );
 	return qtrue;
 }
 
