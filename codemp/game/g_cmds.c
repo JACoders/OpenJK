@@ -2821,16 +2821,37 @@ qboolean G_VoteTeamSize( gentity_t *ent, int numArgs, const char *arg1, const ch
 
 qboolean G_VoteVSTR( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	char vstr[64] = {0};
+	char buf[MAX_CVAR_VALUE_STRING];
 
 	Q_strncpyz( vstr, arg2, sizeof( vstr ) );
 	//clean the string?
 	Q_strlwr(vstr);
 	Q_CleanStr(vstr);
 
+	//Check if vstr exists, if not return qfalse.
+	trap->Cvar_VariableStringBuffer(va("%s", vstr), buf, sizeof(buf));
+	if (!Q_stricmp(buf, ""))
+		return qfalse;
+
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s", arg1, vstr );
 
 	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
+qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+	char question[64] = {0};
+
+	Q_strncpyz( question, arg2, sizeof( question ) );
+	//clean the string?
+	Q_strlwr(question);
+	Q_CleanStr(question);
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "" );
+
+	Q_strncpyz( level.voteDisplayString, question, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, question, sizeof( level.voteStringClean ) );
 	return qtrue;
 }
 
@@ -2878,6 +2899,7 @@ static voteString_t validVoteStrings[] = {
 	{	"sv_maxteamsize",		"teamsize",			G_VoteTeamSize,			1,		GTB_TEAM|GTB_SIEGE|GTB_CTY|GTB_CTF,		qtrue,			"<num>" },
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
+	{	"poll",					"poll",				G_VotePoll,				1,		GTB_ALL,								qfalse,			"<poll question>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -2929,7 +2951,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// can't vote as a spectator, except in (power)duel
-	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->client->sess.sessionTeam == TEAM_SPECTATOR) {
+	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && (ent->client->sess.sessionTeam == TEAM_SPECTATOR || ent->client->sess.sessionTeam == TEAM_FREE)) {
 		if (level.gametype >= GT_TEAM || !g_fixVote.integer) {
 			trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
 			return;
@@ -3094,7 +3116,10 @@ validVote:
 
 	// start the voting, the caller automatically votes yes
 	level.voteTime = level.time;
-	level.voteYes = 1;
+	if (!Q_stricmp(arg1, "poll"))
+		level.voteYes = 0;
+	else
+		level.voteYes = 1;
 	level.voteNo = 0;
 
 	for ( i=0; i<level.maxclients; i++ ) {
@@ -3102,8 +3127,10 @@ validVote:
 		level.clients[i].pers.vote = 0;
 	}
 
-	ent->client->mGameFlags |= PSG_VOTED;
-	ent->client->pers.vote = 1;
+	if (Q_stricmp(arg1, "poll")) {
+		ent->client->mGameFlags |= PSG_VOTED;
+		ent->client->pers.vote = 1;
+	}
 
 	trap->SetConfigstring( CS_VOTE_TIME,	va( "%i", level.voteTime ) );
 	//trap->SetConfigstring( CS_VOTE_STRING,	level.voteDisplayString );	
@@ -5212,6 +5239,7 @@ void Cmd_Amvstr_f(gentity_t *ent)
 			return;
 		}
 
+		trap->SendServerCommand( -1, va("print \"^3Vstr (%s) executed by ^7%s\n\"", arg, ent->client->pers.netname ));
 		trap->SendConsoleCommand( EXEC_APPEND, va("vstr %s\n", arg));
 
 }

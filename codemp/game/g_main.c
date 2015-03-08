@@ -2905,7 +2905,7 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
+	if ( level.time-level.voteTime >= VOTE_TIME || ((level.voteYes + level.voteNo == 0) && Q_stricmp(level.voteString, "")) ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
 		if (g_fixVote.integer) {
 			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
 				VotePassed();
