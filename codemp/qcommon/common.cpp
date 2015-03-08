@@ -1575,6 +1575,12 @@ void Com_Frame( void ) {
 			c_pointcontents = 0;
 		}
 
+		if ( com_affinity->modified )
+		{
+			com_affinity->modified = qfalse;
+			Sys_SetProcessorAffinity();
+		}
+
 		com_frameNumber++;
 	}
 	catch (int code) {
