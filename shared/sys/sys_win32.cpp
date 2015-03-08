@@ -178,17 +178,20 @@ static const char *GetErrorString( DWORD error ) {
 }
 
 void Sys_SetProcessorAffinity( void ) {
-	DWORD_PTR processMask, dummy;
+	DWORD_PTR processMask, processAffinityMask, systemAffinityMask;
 	HANDLE handle = GetCurrentProcess();
 
-	if ( !GetProcessAffinityMask( handle, &dummy, &dummy ) )
+	if ( !GetProcessAffinityMask( handle, &processAffinityMask, &systemAffinityMask ) )
 		return;
 
 	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
 		processMask = 1; // set to first core only
 
 	if ( !processMask )
-		return;
+		processMask = systemAffinityMask; // use all the cores available to the system
+
+	if ( processMask == processAffinityMask )
+		return; // no change
 
 	if ( !SetProcessAffinityMask( handle, processMask ) )
 		Com_DPrintf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );

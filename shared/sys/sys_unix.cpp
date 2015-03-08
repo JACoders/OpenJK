@@ -487,10 +487,10 @@ void Sys_SetProcessorAffinity( void ) {
 	if ( sscanf( com_affinity->string, "%X", &cores ) != 1 )
 		cores = 1; // set to first core only
 
-	if ( !cores )
-		return;
-
 	const long numCores = sysconf( _SC_NPROCESSORS_ONLN );
+	if ( !cores )
+		cores = (1 << numCores) - 1; // use all cores
+
 	cpu_set_t set;
 	CPU_ZERO( &set );
 	for ( int i = 0; i < numCores; i++ ) {
