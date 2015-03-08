@@ -3537,6 +3537,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 // FireMelee
 //---------------------------------------------------------
+extern void rpg_skill_counter(gentity_t *ent, int amount);
 void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 {
 	gentity_t	*tr_ent;
@@ -3618,6 +3619,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					missile->bounceCount = 0;
 				}
 
+				rpg_skill_counter(ent, 10);
+
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
 
 				ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
@@ -3678,6 +3681,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 						missile->bounceCount = 0;
 					}
 				}
+
+				rpg_skill_counter(ent, 20);
 
 				ent->client->pers.magic_power -= zyk_first_charged_mp_cost.integer;
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
@@ -3745,6 +3750,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 						missile->bounceCount = 0;
 					}
 				}
+
+				rpg_skill_counter(ent, 30);
 
 				ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
@@ -4740,7 +4747,6 @@ FireWeapon
 ===============
 */
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
-extern void rpg_skill_counter(gentity_t *ent, int amount);
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
 	// track shots taken for accuracy tracking. melee weapons are not tracked.
 	if( ent->s.weapon != WP_SABER && ent->s.weapon != WP_STUN_BATON && ent->s.weapon != WP_MELEE )
