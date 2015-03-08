@@ -7228,7 +7228,7 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// Set up lighting
 	//VectorCopy( refdef.vieworg, ent.lightingOrigin );
-	ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+	ent.renderfx = RF_NOSHADOW;
 
 	ui.R_AddLightToScene(refdef.vieworg, 500, 1, 1, 1);	//fixme: specify in menu file!
 
