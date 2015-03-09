@@ -2093,21 +2093,27 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	//DebugWriteToDB("Cmd_PersonalBest_f");
 }
 
-void TimeToString(int duration_ms, char *timeStr, size_t strSize) { 
+void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs) { 
 	if (duration_ms > (60*60*1000)) { //thanks, eternal
 		int hours, minutes, seconds, milliseconds; 
 		hours = (int)((duration_ms / (1000*60*60)) % 24); //wait wut
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
 		milliseconds = duration_ms % 1000; 
-		Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
+		if (noMs)
+			Com_sprintf(timeStr, strSize, "%i:%02i:%02i", hours, minutes, seconds);
+		else
+			Com_sprintf(timeStr, strSize, "%i:%02i:%02i.%03i", hours, minutes, seconds, milliseconds);
 	}
 	else if (duration_ms > (60*1000)) {
 		int minutes, seconds, milliseconds;
 		minutes = (int)((duration_ms / (1000*60)) % 60);
 		seconds = (int)(duration_ms / 1000) % 60;
 		milliseconds = duration_ms % 1000; 
-		Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
+		if (noMs)
+			Com_sprintf(timeStr, strSize, "%i:%02i", minutes, seconds);
+		else
+			Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
 	}
 	else
 		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
@@ -2279,7 +2285,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		char *tmpMsg = NULL;
 		if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
 		{
-			TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr));
+			TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr), qfalse);
 			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));

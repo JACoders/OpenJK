@@ -2903,6 +2903,7 @@ static voteString_t validVoteStrings[] = {
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
+void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs);
 void Cmd_CallVote_f( gentity_t *ent ) {
 	int				i=0, numArgs=0;
 	char			arg1[MAX_CVAR_VALUE_STRING] = {0};
@@ -2977,8 +2978,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 				//trap->Print("Found clients IP in array!\n");
 				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*60*3))) {
 					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
-					//trap->SendServerCommand( ent-g_entities, "print \"A vote has just failed, you are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
-					trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
+					char timeStr[32];
+					TimeToString( (1000*60*3 - (level.time - voteFloodProtect[j].lastVoteTime)) , timeStr, sizeof(timeStr), qtrue);
+					trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
 					return;
 				}
 				break;
@@ -3008,7 +3010,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	if (g_fixVote.integer && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
-		trap->SendServerCommand( ent-g_entities, "print \"The server just changed to this map, you are not allowed to vote for a new one yet.\n\"" );//print to wait X more minutes..seconds?
+		char timeStr[32];
+		TimeToString( (1000*60*10 - (level.time - level.startTime)) , timeStr, sizeof(timeStr), qtrue);
+		trap->SendServerCommand( ent-g_entities, va( "print \"The server just changed to this map, please wait %s before calling a map vote.\n\"", timeStr) );
 		return;
 	}
 
