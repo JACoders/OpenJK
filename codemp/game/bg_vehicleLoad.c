@@ -1440,7 +1440,14 @@ void BG_GetVehicleSkinName(char *skinname, int len)
     if ( !VALIDSTRING( g_vehicleInfo[vIndex].skin ) )
 		skinname[0] = 0;
 	else
+	{
+		if (Q_stricmp(g_vehicleInfo[vIndex].name, "swoop") == 0)
+		{ // zyk: if this is the swoop vehicle, set the golden skin
+			strcpy(g_vehicleInfo[vIndex].skin, "gold");
+		}
+
 		Q_strncpyz( skinname, g_vehicleInfo[vIndex].skin, len );
+	}
 }
 
 #if defined(_GAME) || defined(_CGAME)
