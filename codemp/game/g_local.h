@@ -543,6 +543,7 @@ typedef struct clientPersistant_s {
 
 	// zyk: Possible bit values are:
 	// 0 - Player is silenced
+	// 1 - using an emote
 	int player_statuses;
 
 	// zyk: point marked in map so player can teleport to this point

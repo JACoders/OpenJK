@@ -1350,6 +1350,12 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 	}
 	actionPressed = G_ActionButtonPressed(buttons);
 
+	// zyk: if the player is using an emote, keeps the emote
+	if (!ent->NPC && ent->client->pers.player_statuses & (1 << 1))
+	{
+		ent->client->ps.forceHandExtendTime = level.time + 1000;
+	}
+
 	VectorSubtract(ent->client->ps.viewangles, ent->client->idleViewAngles, viewChange);
 	if ( !VectorCompare( vec3_origin, ent->client->ps.velocity )
 		|| actionPressed || ucmd->forwardmove || ucmd->rightmove || ucmd->upmove
@@ -1370,6 +1376,13 @@ void G_CheckClientIdle( gentity_t *ent, usercmd_t *ucmd )
 		|| (ent->client->ps.weapon != ent->client->pers.cmd.weapon && ent->s.eType != ET_NPC))
 	{//FIXME: also check for turning?
 		qboolean brokeOut = qfalse;
+
+		// zyk: if the player is using an emote, removes it
+		if (!ent->NPC && ent->client->pers.player_statuses & (1 << 1) && actionPressed == qtrue)
+		{
+			ent->client->pers.player_statuses &= ~(1 << 1);
+			ent->client->ps.forceHandExtendTime = level.time;
+		}
 
 		if ( !VectorCompare( vec3_origin, ent->client->ps.velocity )
 			|| actionPressed || ucmd->forwardmove || ucmd->rightmove || ucmd->upmove

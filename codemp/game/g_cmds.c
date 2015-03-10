@@ -345,7 +345,11 @@ void Cmd_Emote_f( gentity_t *ent )
 		return;
 	}
 
-	G_SetAnim(ent, NULL, SETANIM_BOTH, anim_id, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART, 0);
+	ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+	ent->client->ps.forceDodgeAnim = anim_id;
+	ent->client->ps.forceHandExtendTime = level.time + 1000;
+
+	ent->client->pers.player_statuses |= (1 << 1);
 }
 
 void Cmd_Give_f( gentity_t *ent )
