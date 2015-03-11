@@ -3511,9 +3511,9 @@ qboolean TryGrapple(gentity_t *ent)
 		}
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
 		
-		if (ent->client->sess.amrpgmode == 2)
+		if (ent->client->sess.amrpgmode == 2 && !(ent->client->pers.player_settings & (1 << 5)))
 		{ // zyk: if this is a RPG player, tests if he can use a special power
-			if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.player_settings & (1 << 16)))
+			if (ent->client->pers.rpg_class == 8)
 			{ // zyk: Magic Master has his own way of choosing a power
 				if (ent->client->pers.cmd.forwardmove > 0)
 				{ // zyk: Special Power Up direction
@@ -3610,7 +3610,7 @@ qboolean TryGrapple(gentity_t *ent)
 					use_this_power = 0;
 				}
 			}
-			else if (!(ent->client->pers.player_settings & (1 << 16)))
+			else
 			{
 				// zyk: each class can use a different set of powers
 				if (ent->client->pers.cmd.rightmove > 0)
@@ -3704,7 +3704,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 
 			if (ent->client->pers.cmd.forwardmove < 0 && ent->client->pers.universe_quest_progress >= 15 && 
-				ent->client->pers.quest_power_usage_timer < level.time && !(ent->client->pers.player_settings & (1 << 5)))
+				ent->client->pers.quest_power_usage_timer < level.time)
 			{ // zyk: Ultimate Power
 				if (zyk_enable_ultra_drain.integer == 1 && ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= zyk_ultra_drain_mp_cost.integer)
 				{ // zyk: Ultra Drain
@@ -10302,11 +10302,11 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 5))
 		{
-			sprintf(message,"%s\n^3 5 - Ultimate Power - ^1OFF", message);
+			sprintf(message,"%s\n^3 5 - Special Powers - ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^3 5 - Ultimate Power - ^2ON", message);
+			sprintf(message,"%s\n^3 5 - Special Powers - ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 6))
@@ -10413,6 +10413,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			sprintf(message,"%s\n^315 - Difficulty ^2Normal", message);
 		}
 
+		/*
 		if (ent->client->pers.player_settings & (1 << 16))
 		{
 			sprintf(message,"%s\n^316 - Special Power ^1OFF", message);
@@ -10421,6 +10422,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		{
 			sprintf(message,"%s\n^316 - Special Power ^2ON", message);
 		}
+		*/
 
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
 	}
@@ -10433,7 +10435,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		value = atoi(arg1);
 
-		if (value < 0 || value > 16)
+		if (value < 0 || value > 15)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"Invalid settings value.\n\"" );
 			return;
@@ -10568,7 +10570,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 5)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Ultimate Power %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Special Powers %s\n\"", new_status) );
 		}
 		else if (value == 6)
 		{
@@ -10623,10 +10625,12 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Difficulty %s\n\"", new_status) );
 		}
+		/*
 		else if (value == 16)
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Special Power %s\n\"", new_status) );
 		}
+		*/
 		return;
 	}
 }
