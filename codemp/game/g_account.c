@@ -2115,8 +2115,12 @@ void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMs)
 		else
 			Com_sprintf(timeStr, strSize, "%i:%02i.%03i", minutes, seconds, milliseconds);
 	}
-	else
-		Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
+	else {
+		if (noMs)
+			Q_strncpyz(timeStr, va("%.0f", ((float)duration_ms * 0.001)), strSize);
+		else
+			Q_strncpyz(timeStr, va("%.3f", ((float)duration_ms * 0.001)), strSize);
+	}
 }
 
 void Cmd_NotCompleted_f(gentity_t *ent) {

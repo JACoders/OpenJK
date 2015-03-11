@@ -9515,7 +9515,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 		return 0;
 
 	if (self->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == FORCE_LEVEL_3) {
-		if (d_saberGhoul2Collision.integer)
+		if (d_saberGhoul2Collision.integer) //wew, this could really affect how much swings block? (yes, its 0.05 in jk2).
 			blockFactor = 0.3f;
 		else
 			blockFactor = 0.05f;
@@ -9533,7 +9533,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	if (attackStr)//blocking a saber, not a projectile.
 		blockFactor -= 0.25f;
 
-	if (!InFront( point, self->client->ps.origin, self->client->ps.viewangles, blockFactor )) //orig 0.2f
+	if (!InFront( point, self->client->ps.origin, self->client->ps.viewangles, blockFactor )) //orig 0.2f , higher BlockFactor means less block.
 		return 0;
 
 	if (projectile)
