@@ -114,6 +114,40 @@ set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 
+# Install components
+set(JKAMPCoreComponent "JKAMPCore")
+set(JKAMPServerComponent "JKAMPServer")
+set(JKAMPClientComponent "JKAMPClient")
+set(JKASPClientComponent "JKASPClient")
+set(JK2SPClientComponent "JK2SPClient")
+
+# Component display names
+include(CPackComponent)
+
+set(CPACK_COMPONENT_JKAMPCORE_DISPLAY_NAME "Core")
+set(CPACK_COMPONENT_JKAMPCORE_REQUIRED TRUE)
+set(CPACK_COMPONENT_JKAMPCLIENT_DISPLAY_NAME "Client")
+set(CPACK_COMPONENT_JKAMPSERVER_DISPLAY_NAME "Server")
+set(CPACK_COMPONENT_JKASPCLIENT_DISPLAY_NAME "Core")
+set(CPACK_COMPONENT_JKASPCLIENT_REQUIRED TRUE)
+set(CPACK_COMPONENT_JK2SPCLIENT_DISPLAY_NAME "Core")
+set(CPACK_COMPONENTS_ALL
+	${JKAMPCoreComponent}
+	${JKAMPClientComponent}
+	${JKAMPServerComponent}
+	${JKASPClientComponent})
+
+# Component groups
+set(CPACK_COMPONENT_JKAMPCORE_GROUP "JKAMP")
+set(CPACK_COMPONENT_JKAMPCLIENT_GROUP "JKAMP")
+set(CPACK_COMPONENT_JKAMPSERVER_GROUP "JKAMP")
+set(CPACK_COMPONENT_JKASPCLIENT_GROUP "JKASP")
+set(CPACK_COMPONENT_JK2SPCLIENT_GROUP "JK2SP")
+
+cpack_add_component_group(JKAMP DISPLAY_NAME "Jedi Academy Multiplayer")
+cpack_add_component_group(JKASP DISPLAY_NAME "Jedi Academy Single Player")
+cpack_add_component_group(JK2SP DISPLAY_NAME "Jedi Outcast Single Player")
+
 # Common settings
 if(WIN32)
 	set(SharedDefines "NOMINMAX")
