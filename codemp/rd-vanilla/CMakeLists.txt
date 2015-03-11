@@ -173,14 +173,24 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 if(WIN32)
-	install(TARGETS ${MPVanillaRenderer} RUNTIME DESTINATION ".")
+	install(TARGETS ${MPVanillaRenderer}
+		RUNTIME
+		DESTINATION "."
+		COMPONENT ${JKAMPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPVanillaRenderer} LIBRARY DESTINATION "${MPEngine}.app/Contents/MacOS/")
-	else(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPVanillaRenderer} LIBRARY DESTINATION ".")
-	endif(MakeApplicationBundles AND BuildMPEngine)
-endif(WIN32)
+		install(TARGETS ${MPVanillaRenderer}
+			LIBRARY
+			DESTINATION "${MPEngine}.app/Contents/MacOS/"
+			COMPONENT ${JKAMPClientComponent})
+	else()
+		install(TARGETS ${MPVanillaRenderer}
+			LIBRARY
+			DESTINATION "."
+			COMPONENT ${JKAMPClientComponent})
+	endif()
+endif()
+
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SharedDefines};${ReleaseDefines}")

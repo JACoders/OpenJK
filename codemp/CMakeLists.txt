@@ -571,11 +571,19 @@ if(BuildMPEngine)
 	endif(WIN32)
 
 	if(MakeApplicationBundles)
-		install(TARGETS ${MPEngine} BUNDLE DESTINATION ".")
+		install(TARGETS ${MPEngine}
+			BUNDLE
+			DESTINATION "."
+			COMPONENT ${JKAMPClientComponent})
 	else(MakeApplicationBundles)
-		install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+		install(TARGETS ${MPEngine}
+			RUNTIME
+			DESTINATION "."
+			COMPONENT ${JKAMPClientComponent})
 		if(MPEngineExtraInstallFiles)
-			install(FILES ${MPEngineExtraInstallFiles} DESTINATION ".")
+			install(FILES ${MPEngineExtraInstallFiles}
+				DESTINATION "."
+				COMPONENT ${JKAMPClientComponent})
 		endif()
 	endif(MakeApplicationBundles)
 
@@ -665,7 +673,10 @@ if(BuildMPDed)
 	endif(WIN32)
 
 	add_executable(${MPDed} ${MPDedFiles})
-	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")
+	install(TARGETS ${MPDed}
+		RUNTIME
+		DESTINATION "."
+		COMPONENT ${JKAMPServerComponent})
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
