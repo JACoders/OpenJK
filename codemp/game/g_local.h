@@ -697,6 +697,8 @@ typedef struct clientPersistant_s {
 	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
 	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
 	float		telemarkPitchAngle;//JAPRO - Serverside - Admin - Telemark storage
+	vec3_t		respawnLocation;//JAPRO - Serverside - Admin - Telemark storage
+	float		respawnAngle;
 	//char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
 	//int			sayteammod;//0 = normal, 1 = clan, 2 = admin
 	int			lastChatTime;//godchat fuck idk why im doing this

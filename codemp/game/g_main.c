@@ -2824,7 +2824,10 @@ static void VotePassed( void ) {
 	int i;
 
 	//trap->Print("Delay is %i\n", level.voteExecuteDelay);
-	trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
+	if (!Q_stricmp(level.voteString, "")) //No command to execute if its a poll
+		trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
+	else
+		trap->SendServerCommand( -1, va("print \"%s (%s^7), command will be executed in %i seconds.\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean, (int)(level.voteExecuteDelay * 0.001f)) );
 	level.voteExecuteTime = level.time + level.voteExecuteDelay;
 
 	if (level.voteExecuteDelay >= 5000) {

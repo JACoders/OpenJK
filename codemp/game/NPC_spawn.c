@@ -1532,7 +1532,6 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		{//FIXME: EXTERN!!!
 			if (g_tweakWeapons.integer & ANTI_VEHICLE) {
 				newent->flags |= (FL_NO_KNOCKBACK);
-				trap->Print("DUHH HELLO\n");
 			}
 			else
 				newent->flags |= (FL_NO_KNOCKBACK|FL_SHIELDED|FL_DMG_BY_HEAVY_WEAP_ONLY);//don't get pushed around, blasters bounce off, only damage from heavy weaps

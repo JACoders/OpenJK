@@ -233,6 +233,7 @@ XCVAR_DEF( g_allowUseInDuel,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowGunDuel,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_saberDuelForceRegenTime,	"200",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceDuelForceRegenTime,	"200",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_duelRespawn,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO ADMIN
 XCVAR_DEF( g_juniorAdminLevel,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )

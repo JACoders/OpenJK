@@ -180,7 +180,7 @@ void CG_ParseServerinfo( void ) {
 		cgs.isJAPlus = qtrue;
 		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
 	} 
-	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 7)) {
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
 		cgs.isJAPro = qtrue;
 		cgs.jcinfo= atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 	}

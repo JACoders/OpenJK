@@ -581,6 +581,27 @@ qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest )
 	return qfalse;
 }
 
+qboolean SpotWouldTelefrag3( vec3_t spot ) {
+	int			i, num;
+	int			touch[MAX_GENTITIES];
+	gentity_t	*hit;
+	vec3_t		mins, maxs;
+
+	VectorAdd( spot, playerMins, mins );
+	VectorAdd( spot, playerMaxs, maxs );
+	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
+
+	for (i=0 ; i<num ; i++) {
+		hit = &g_entities[touch[i]];
+		if ( hit->client && hit->client->ps.stats[STAT_HEALTH] > 0 ) {
+			return qtrue;
+		}
+
+	}
+
+	return qfalse;
+}
+
 /*
 ================
 SelectNearestDeathmatchSpawnPoint
@@ -3518,6 +3539,12 @@ void ClientSpawn(gentity_t *ent) {
 				spawnPoint = SelectSpawnPoint ( 
 					client->ps.origin, 
 					spawn_origin, spawn_angles, client->sess.sessionTeam, !!(ent->r.svFlags & SVF_BOT) );
+
+				if (g_duelRespawn.integer && level.gametype == GT_FFA && VectorLength(client->pers.respawnLocation) && !SpotWouldTelefrag3(client->pers.respawnLocation)) {
+					VectorCopy(client->pers.respawnLocation, spawn_origin);
+					spawn_angles[YAW] = client->pers.respawnAngle;
+				}//sad hack
+
 			}
 		}
 	}
@@ -4269,7 +4296,7 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 //JAPRO - Serverside - Stop those pesky reconnect whores - Start
-	if (g_fixKillCredit.integer > 1 && ent->client && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	if (g_fixKillCredit.integer > 1 && ent->client && (ent->health > 0) && !(ent->r.svFlags & SVF_BOT) && 0 <= ent->client->ps.otherKiller && ent->client->ps.otherKiller < MAX_CLIENTS && ent->client->ps.otherKillerTime > level.time && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{
 		attacker = &g_entities[ent->client->ps.otherKiller];
 		if (attacker->client) {

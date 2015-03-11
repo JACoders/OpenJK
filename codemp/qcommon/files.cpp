@@ -207,6 +207,7 @@ typedef struct searchpath_s {
 static char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 static cvar_t		*fs_debug;
 static cvar_t		*fs_homepath;
+static cvar_t		*sv_skipServersideDownloads;
 
 #ifdef MACOS_X
 // Also search the .app bundle for .pk3 files
@@ -3559,6 +3560,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_packFiles = 0;
 
+	sv_skipServersideDownloads = Cvar_Get( "sv_skipServersideDownloads", "0", 0 );
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
 	fs_cdpath = Cvar_Get ("fs_cdpath", "", CVAR_INIT|CVAR_PROTECTED );
@@ -3788,6 +3790,14 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 		for ( search = fs_searchpaths ; search ; search = search->next ) {
 			// is the element a pak file and has it been referenced based on flag?
 			if ( search->pack && (search->pack->referenced & nFlags)) {
+
+				
+				//If its blacklisted, skip it
+				if (sv_skipServersideDownloads && sv_skipServersideDownloads->integer && !Q_stricmpn(search->pack->pakBasename, "noDL", 4)) {//Filename starts with noDL, skip it!
+					continue;
+				}
+				
+
 				Q_strcat( info, sizeof( info ), va("%i ", search->pack->pure_checksum ) );
 				if (nFlags & (FS_CGAME_REF | FS_UI_REF)) {
 					break;
@@ -3828,6 +3838,14 @@ const char *FS_ReferencedPakNames( void ) {
 		// is the element a pak file?
 		if ( search->pack ) {
 			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+
+				
+				//If its blacklisted, skip it
+				if (sv_skipServersideDownloads && sv_skipServersideDownloads->integer && !Q_stricmpn(search->pack->pakBasename, "noDL", 4)) {//Filename starts with noDL, skip it!
+					continue;
+				}
+				
+
 				if (*info) {
 					Q_strcat(info, sizeof( info ), " " );
 				}
