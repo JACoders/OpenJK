@@ -9187,7 +9187,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 17)
 						{
-							chaos_power(ent,900,320);
+							chaos_power(ent,900,300);
 
 							trap->SendServerCommand( -1, "chat \"^1Master of Death: ^7Chaos Power!\"");
 
