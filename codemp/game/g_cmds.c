@@ -7360,7 +7360,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Duelers start with ^2%i ^5health\n", g_duelStartHealth.integer));
 	if (g_allowSaberSwitch.integer)
 		Q_strcat(buf, sizeof(buf), "   ^5Allow saber switch\n");
-	if (!d_saberSPStyleDamage.integer && g_saberTouchDmg.integer != 1)
+	if (!d_saberSPStyleDamage.integer && g_saberTouchDmg.value != 1.0f)
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber touch damage^3: ^2%i\n", g_saberTouchDmg.integer));
 	if (g_saberDmgDelay_Idle.integer != 350)
 		Q_strcat(buf, sizeof(buf), va("   ^5Idle saber damage delay^3: ^2%i\n", g_saberDmgDelay_Idle.integer)); 

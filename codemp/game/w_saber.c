@@ -4356,8 +4356,8 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 //[JAPRO - Serverside - Saber - Remove Saber Touch Damage - Start]
 		else if (BG_SaberInReturn( self->client->ps.saberMove))
 			dmg = 10 * g_saberDamageScale.value;
-		else if (g_saberTouchDmg.integer > 0)
-			dmg = g_saberTouchDmg.integer;
+		else if (g_saberTouchDmg.value > 0)
+			dmg = g_saberTouchDmg.value;
 		else 
 			dmg = 0;
 //[JAPRO - Serverside - Saber - Remove Saber Touch Damage - End]
@@ -9173,12 +9173,10 @@ nextStep:
 					}
 				}
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - Start]
-				else// if ( d_saberSPStyleDamage.integer )
+				else if (d_saberSPStyleDamage.integer || !(g_tweakWeapons.integer & NO_MP_SABERLERP))
 					G_SPSaberDamageTraceLerped( self, rSaberNum, rBladeNum, boltOrigin, end, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT) );
-				/*else
-				{
+				else
 					CheckSaberDamage(self, rSaberNum, rBladeNum, boltOrigin, end, qfalse, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT), qfalse);
-				}*/
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - End]
 
 				VectorCopy(boltOrigin, self->client->saber[rSaberNum].blade[rBladeNum].trail.base);
