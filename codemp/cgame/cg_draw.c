@@ -3496,12 +3496,10 @@ float CG_DrawRadar ( float y )
 					{
 						float f = (cent->vChatTime + 2000 - cg.time) / 3000.0f;
 						arrowBaseScale = 16.0f + 4.0f * f;
-						color[0] = teamColor[0] + (1.0f - teamColor[0]) * f;
-						color[1] = teamColor[1] + (1.0f - teamColor[1]) * f;
-						color[2] = teamColor[2] + (1.0f - teamColor[2]) * f;
 					}
 
-					trap->R_SetColor ( color );
+					// zyk: npcs will be drown in yellow
+					trap->R_SetColor ( g_color_table[ColorIndex(COLOR_YELLOW)] );
 
 					//we want to scale the thing up/down based on the relative Z (up/down) positioning
 					if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
