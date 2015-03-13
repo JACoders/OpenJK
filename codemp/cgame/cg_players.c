@@ -8640,29 +8640,23 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
-	// Add the player to the radar if on the same team and its a team game
-	if (cgs.gametype >= GT_TEAM)
+	// zyk: add player to radar
+	if ( cent->currentState.eType != ET_NPC &&
+		cg.snap->ps.clientNum != cent->currentState.number)
 	{
-		if ( cent->currentState.eType != ET_NPC &&
-			cg.snap->ps.clientNum != cent->currentState.number &&
-			ci->team == cg.snap->ps.persistant[PERS_TEAM] )
-		{
-			CG_AddRadarEnt(cent);
-		}
+		CG_AddRadarEnt(cent);
 	}
 
-	if (cent->currentState.eType == ET_NPC &&
-		cent->currentState.NPC_class == CLASS_VEHICLE)
-	{ //add vehicles
+	if (cent->currentState.eType == ET_NPC)
+	{// zyk: npcs will also be shown in radar
 		CG_AddRadarEnt(cent);
-		if ( CG_InFighter() )
+		if ( cent->currentState.NPC_class == CLASS_VEHICLE && CG_InFighter() )
 		{//this is a vehicle, bracket it
 			if ( cg.predictedPlayerState.m_iVehicleNum != cent->currentState.clientNum )
 			{//don't add the vehicle I'm in... :)
 				CG_AddBracketedEnt(cent);
 			}
 		}
-
 	}
 
 	if (!cent->ghoul2)

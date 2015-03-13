@@ -3223,17 +3223,19 @@ float CG_DrawRadar ( float y )
 	float			zScale;
 	int				xOffset = 0;
 
+	
 	if (!cg.snap)
 	{
 		return y;
 	}
-
+	
 	// Make sure the radar should be showing
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 )
 	{
 		return y;
 	}
 
+	
 	if ( (cg.predictedPlayerState.pm_flags & PMF_FOLLOW) || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
 	{
 		return y;
@@ -4059,9 +4061,8 @@ static void CG_DrawUpperRight( void ) {
 		y = CG_DrawTimer( y );
 	}
 
-	if ( ( cgs.gametype >= GT_TEAM || cg.predictedPlayerState.m_iVehicleNum )
-		&& cg_drawRadar.integer )
-	{//draw Radar in Siege mode or when in a vehicle of any kind
+	if ( cg_drawRadar.integer )
+	{ // zyk: draw radar in any gametype
 		y = CG_DrawRadar ( y );
 	}
 
