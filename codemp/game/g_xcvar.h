@@ -302,7 +302,8 @@ XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfalse )
 
-//XCVAR_DEF( cl_yawspeed,					"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
+//XCVAR_DEF( cl_yawspeed,				"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
+//XCVAR_DEF( cl_allowDownload,			"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
 
 XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

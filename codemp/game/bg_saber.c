@@ -2352,6 +2352,26 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			allowCartwheels = qfalse;
 			noSpecials = qtrue;
 		}
+
+#ifdef _GAME
+		{
+			gclient_t *client = NULL;
+			{
+				int clientNum = pm->ps->clientNum;
+				if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+					client = g_entities[clientNum].client;
+				}
+			}
+
+			if (client && client->pers.noCartwheel) {
+				allowCartwheels = qfalse;
+			}
+		}
+#else
+		if (cgs.isJAPro && cg_noCartwheel.integer) {
+			allowCartwheels = qfalse;
+		}
+#endif
 	}
 
 	if ( pm->cmd.rightmove > 0 )
@@ -2364,7 +2384,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			&& ( pm->cmd.upmove > 0 || (pm->ps->pm_flags & PMF_JUMP_HELD) )//focus-holding player
 			&& BG_EnoughForcePowerForMove( SABER_ALT_ATTACK_POWER_LR ) )//have enough power
 		{//cartwheel right
-			BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_LR);
+			if (allowCartwheels || (pm->ps->fd.saberAnimLevel == SS_STAFF)) { //dunno why do this if they cant cart..?
+				BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_LR);
+			}
 			if ( overrideJumpRightAttackMove != LS_INVALID )
 			{//overridden with another move
 				return overrideJumpRightAttackMove;
@@ -2425,7 +2447,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			&& ( pm->cmd.upmove > 0 || (pm->ps->pm_flags & PMF_JUMP_HELD) )//focus-holding player
 			&& BG_EnoughForcePowerForMove( SABER_ALT_ATTACK_POWER_LR ) )//have enough power
 		{//cartwheel left
-			BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_LR);
+			if (allowCartwheels || (pm->ps->fd.saberAnimLevel == SS_STAFF)) { //dunno why do this if they cant cart..?
+				BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_LR);
+			}
 
 			if ( overrideJumpLeftAttackMove != LS_INVALID )
 			{//overridden with another move

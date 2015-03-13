@@ -711,6 +711,7 @@ typedef struct clientPersistant_s {
 	//qboolean	raceMode; //move this to session data
 	qboolean	onlyBhop;
 	qboolean	noRoll;
+	qboolean	noCartwheel;
 
 	int			startLag;
 	//int		movementStyle; //move this to session data

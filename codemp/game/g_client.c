@@ -2252,6 +2252,13 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			client->pers.noRoll = qfalse;
 	}
 
+	s = Info_ValueForKey( userinfo, "cg_noCartwheel" );
+	if ( atoi( s ) ) {
+			client->pers.noCartwheel = qtrue;
+	} else {
+			client->pers.noCartwheel = qfalse;
+	}
+
 	s = Info_ValueForKey( userinfo, "cg_centerMuzzle" );
 	if ( !atoi( s ) ) {
 		client->pers.centerMuzzle = qfalse;

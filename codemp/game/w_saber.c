@@ -9173,10 +9173,12 @@ nextStep:
 					}
 				}
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - Start]
-				else if (SaberSPStyle(self) || !(g_tweakWeapons.integer & NO_MP_SABERLERP)) //oops
+				else if (SaberSPStyle(self) || !(g_tweakWeapons.integer & NO_MP_SABERLERP)) { //oops
 					G_SPSaberDamageTraceLerped( self, rSaberNum, rBladeNum, boltOrigin, end, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT) );
-				else
+				}
+				else {
 					CheckSaberDamage(self, rSaberNum, rBladeNum, boltOrigin, end, qfalse, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT), qfalse);
+				}
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - End]
 
 				VectorCopy(boltOrigin, self->client->saber[rSaberNum].blade[rBladeNum].trail.base);
@@ -9492,7 +9494,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	}
 
 	//JAPRO reduce saber block
-	if (!SaberSPStyle(self) && (g_tweakWeapons.integer & REDUCE_SABERBLOCK && !projectile && !thrownSaber)) {
+	if (!SaberSPStyle(self) && ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && !projectile && !thrownSaber)) {
 		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
 		const int theirLevel = G_SaberLevelForStance( attackStr );
 		const int diff = theirLevel - ourLevel; // range [0, 2]
