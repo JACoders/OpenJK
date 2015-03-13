@@ -9173,7 +9173,7 @@ nextStep:
 					}
 				}
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - Start]
-				else if (d_saberSPStyleDamage.integer || !(g_tweakWeapons.integer & NO_MP_SABERLERP))
+				else if (SaberSPStyle(self) || !(g_tweakWeapons.integer & NO_MP_SABERLERP)) //oops
 					G_SPSaberDamageTraceLerped( self, rSaberNum, rBladeNum, boltOrigin, end, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT) );
 				else
 					CheckSaberDamage(self, rSaberNum, rBladeNum, boltOrigin, end, qfalse, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT), qfalse);
