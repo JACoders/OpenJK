@@ -3422,9 +3422,8 @@ float CG_DrawRadar ( float y )
 				break;
 
 			case ET_NPC://FIXME: draw last, with players...
-				if ( cent->currentState.NPC_class == CLASS_VEHICLE
-					&& cent->currentState.speed > 0 )
-				{
+				if ( cent->currentState.NPC_class == CLASS_VEHICLE)
+				{ // zyk: detect vehicles even if they are not moving
 					if ( cent->m_pVehicle && cent->m_pVehicle->m_pVehicleInfo->radarIconHandle )
 					{
 						float  x;
@@ -3482,6 +3481,63 @@ float CG_DrawRadar ( float y )
 						}
 						CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, cent->m_pVehicle->m_pVehicleInfo->radarIconHandle );
 					}
+				}
+				else
+				{ // zyk: draw npcs too
+					vec4_t color;
+
+					VectorCopy4 ( teamColor, color );
+
+					arrowBaseScale = 16.0f;
+					zScale = 1.0f;
+
+					// Pulse the radar icon after a voice message
+					if ( cent->vChatTime + 2000 > cg.time )
+					{
+						float f = (cent->vChatTime + 2000 - cg.time) / 3000.0f;
+						arrowBaseScale = 16.0f + 4.0f * f;
+						color[0] = teamColor[0] + (1.0f - teamColor[0]) * f;
+						color[1] = teamColor[1] + (1.0f - teamColor[1]) * f;
+						color[2] = teamColor[2] + (1.0f - teamColor[2]) * f;
+					}
+
+					trap->R_SetColor ( color );
+
+					//we want to scale the thing up/down based on the relative Z (up/down) positioning
+					if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
+					{ //higher, scale up (between 16 and 32)
+						float dif = (cent->lerpOrigin[2] - cg.predictedPlayerState.origin[2]);
+
+						//max out to 2x scale at 1024 units above local player's height
+						dif /= 1024.0f;
+						if (dif > 1.0f)
+						{
+							dif = 1.0f;
+						}
+						zScale += dif;
+					}
+					else if (cent->lerpOrigin[2] < cg.predictedPlayerState.origin[2])
+					{ //lower, scale down (between 16 and 8)
+						float dif = (cg.predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
+
+						//half scale at 512 units below local player's height
+						dif /= 1024.0f;
+						if (dif > 0.5f)
+						{
+							dif = 0.5f;
+						}
+						zScale -= dif;
+					}
+
+					arrowBaseScale *= zScale;
+
+					arrow_w = arrowBaseScale * RADAR_RADIUS / 128;
+					arrow_h = arrowBaseScale * RADAR_RADIUS / 128;
+
+					CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + sin (angle) * distance + xOffset,
+									   y + RADAR_RADIUS + cos (angle) * distance,
+									   arrow_w, arrow_h,
+									   (360 - cent->lerpAngles[YAW]) + cg.predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
 				}
 				break; //maybe do something?
 
