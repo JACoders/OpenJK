@@ -2922,12 +2922,15 @@ void laserTrapDelayedExplode( gentity_t *self, gentity_t *inflictor, gentity_t *
 	self->think = laserTrapExplode;
 	self->nextthink = level.time + FRAMETIME;
 	self->takedamage = qfalse;
+
+	/*
 	if ( attacker && attacker->s.number < MAX_CLIENTS )
 	{
 		//less damage when shot by player
 		self->splashDamage /= 3;
 		self->splashRadius /= 3;
 	}
+	*/
 }
 
 void touchLaserTrap( gentity_t *ent, gentity_t *other, trace_t *trace )
