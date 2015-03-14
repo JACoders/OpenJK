@@ -5253,12 +5253,6 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 			return;
 		}
 
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-		{
-			trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to login.\n\"" );
-			return;
-		}
-
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		trap->Argv(2, arg2, sizeof( arg2 ));
 
@@ -5301,6 +5295,13 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 		{
 			initialize_rpg_skills(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Use command ^3/list^7.\n\"" );
+		}
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+			add_credits(ent, 10);
+			G_Kill(ent);
 		}
 	}
 	else
@@ -9613,12 +9614,7 @@ Cmd_ResetAccount_f
 void Cmd_ResetAccount_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 			
-	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to reset account.\n\"" );
-		return;
-	}
-	else if (trap->Argc() == 1)
+	if (trap->Argc() == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"^2Choose one of the options below\n\n^3/resetaccount rpg: ^7resets your entire account except admin commands.\n^3/resetaccount quests: ^7resets your RPG quests.\n^3/resetaccount levels: ^7resets your levels and upgrades.\n\"" );
 		return;
@@ -9674,6 +9670,13 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, "print \"Your entire account is reset.\n\"" );
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+			add_credits(ent, 10);
+			G_Kill(ent);
+		}
 	}
 	else if (Q_stricmp( arg1, "quests") == 0)
 	{
@@ -9686,6 +9689,13 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, "print \"Your quests are reset.\n\"" );
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+			add_credits(ent, 10);
+			G_Kill(ent);
+		}
 	}
 	else if (Q_stricmp( arg1, "levels") == 0)
 	{
@@ -9728,6 +9738,13 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, "print \"Your levels are reset.\n\"" );
+
+		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+			add_credits(ent, 10);
+			G_Kill(ent);
+		}
 	}
 	else
 	{
@@ -10458,12 +10475,6 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			return;
 		}
 
-		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-		{ // zyk: player can only activate quests again in Spectator Mode
-			trap->SendServerCommand( ent-g_entities, "print \"You can only turn RPG quests ON/OFF in Spectator Mode.\n\"" );
-			return;
-		}
-
 		if (value != 8 && value != 14 && value != 15)
 		{
 			if (ent->client->pers.player_settings & (1 << value))
@@ -10648,7 +10659,13 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			trap->SendServerCommand( ent-g_entities, va("print \"Special Power %s\n\"", new_status) );
 		}
 		*/
-		return;
+
+		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+			add_credits(ent, 10);
+			G_Kill(ent);
+		}
 	}
 }
 
@@ -10759,12 +10776,6 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int i = 0;
-
-	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to change your RPG class.\n\"" );
-		return;
-	}
 
 	if (trap->Argc() == 1)
 	{
@@ -10913,6 +10924,13 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	save_account(ent);
 
 	trap->SendServerCommand( ent-g_entities, va("print \"You are now a %s\n\"", zyk_rpg_class(ent)) );
+
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+		// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+		add_credits(ent, 10);
+		G_Kill(ent);
+	}
 }
 
 /*
@@ -10990,12 +11008,6 @@ Cmd_PlayerMode_f
 ==================
 */
 void Cmd_PlayerMode_f( gentity_t *ent ) {
-	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You must be at Spectator Mode to change mode.\n\"" );
-		return;
-	}
-
 	load_account(ent, qtrue);
 	save_account(ent);
 
@@ -11003,6 +11015,13 @@ void Cmd_PlayerMode_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2Admin-Only mode^7.\n\"" );
 	else
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2RPG mode^7.\n\"" );
+
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+		// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+		add_credits(ent, 10);
+		G_Kill(ent);
+	}
 }
 
 /*
