@@ -7406,7 +7406,7 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	}
 	*/
 
-	if (g_forcePowerDisable.integer != 163837 || g_flipKick.integer) {
+	if ((g_forcePowerDisable.integer != 163837 && g_forcePowerDisable.integer != 163839) || g_flipKick.integer) {
 		if (bs->currentEnemy->client->ps.fd.forceSide == FORCE_LIGHTSIDE) { // They are LS.
 			if (bs->cur_ps.fd.forceSide == FORCE_LIGHTSIDE)
 				NewBotAI_LSvLS(bs);

@@ -503,7 +503,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 		trap->Print("Loaded previous map racetimes from %s.\n", TEMP_RACE_LOG);
 	}
 	else 
-		trap->Print("ERROR: Unable to insert previous map racetimes into database.\n");
+		trap->Print("Unable to insert previous map racetimes into database.\n");
 
 	//DebugWriteToDB("G_AddToDBFromFile");
 }
@@ -709,7 +709,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				cl->pers.stopRecordingTime = level.time + 2000;
 				cl->pers.keepDemo = qtrue;
 				Com_sprintf(cl->pers.oldDemoName, sizeof(cl->pers.oldDemoName), "%s", cl->pers.userName);
-				Com_sprintf(cl->pers.demoName, sizeof(cl->pers.demoName), "%s-%s-%s", cl->pers.userName, mapCourse, styleString);
+				Com_sprintf(cl->pers.demoName, sizeof(cl->pers.demoName), "%s-%s-%s", cl->pers.userName, mapCourse, styleString); //TODO, change this to %s/%s-%s so its puts in individual players folder
 			}
 		}
 	}

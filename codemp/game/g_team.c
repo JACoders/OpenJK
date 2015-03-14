@@ -744,6 +744,7 @@ static vec3_t	maxFlagRange = { 44, 36, 36 };
 int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team );
 void G_AddSimpleStat(char *username, int type);
 
+#define _DEBUGCTFCRASH 1
 int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	int			i, num, j, enemyTeam;
 	gentity_t	*player;
@@ -753,6 +754,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	int			touch[MAX_GENTITIES];
 	gentity_t*	enemy;
 	float		enemyDist, dist;
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function called\n");
+#endif
 
 	if (cl->sess.sessionTeam == TEAM_RED) {
 		enemy_flag = PW_BLUEFLAG;
@@ -775,18 +780,29 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		other->client->pers.teamState.lastreturnedflag = level.time;
 		//ResetFlag will remove this entity!  We must return zero
 		Team_ReturnFlagSound(Team_ResetFlag(team), team);
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 1, Enemy Flag is %i\n", enemy_flag);
+#endif
 		return 0;
 	}
 
 	// the flag is at home base.  if the player has the enemy
 	// flag, he's just won!
-	if (!cl->ps.powerups[enemy_flag])
+	if (!cl->ps.powerups[enemy_flag]) {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 2, Enemy Flag is %i\n", enemy_flag);
+#endif
 		return 0; // We don't have the flag
+	}
 
 	// fix: captures after timelimit hit could 
 	// cause game ending with tied score
-	if (level.intermissionQueued)
+	if (level.intermissionQueued) {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 3, Enemy Flag is %i\n", enemy_flag);
+#endif
 		return 0;
+	}
 
 	// check for enemy closer to grab the flag
 	VectorSubtract( ent->s.pos.trBase, minFlagRange, mins );
@@ -830,6 +846,9 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 			// possible recursion is hidden in this, but 
 			// infinite recursion wont happen, because we cant 
 			// have a < b and b < a at the same time
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 4, Enemy Flag is %i\n", enemy_flag);
+#endif
 			return Team_TouchEnemyFlag( ent, enemy, team );
 		}
 	}
@@ -914,6 +933,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	CalculateRanks();
 
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at end, Enemy Flag is %i\n", enemy_flag);
+#endif
+
 	return 0; // Do not respawn this automatically
 }
 
@@ -924,6 +947,10 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	int			touch[MAX_GENTITIES];
 	gentity_t*	enemy;
 	float		enemyDist, dist;
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchEnemyFlag called \n");
+#endif
 
 	VectorSubtract( ent->s.pos.trBase, minFlagRange, mins );
 	VectorAdd( ent->s.pos.trBase, maxFlagRange, maxs );
@@ -964,6 +991,9 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 			// possible recursion is hidden in this, but 
 			// infinite recursion wont happen, because we cant 
 			// have a < b and b < a at the same time
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchEnemyFlag returned at point 1, team %i, ourflag %i\n", team, ourFlag);
+#endif
 			return Team_TouchOurFlag( ent, enemy, team );
 		}
 	}
@@ -1013,12 +1043,20 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 	cl->pers.teamState.flagsince = level.time;
 	Team_TakeFlagSound( ent, team );
 
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchEnemyFlag returned at emd, team %i, ourflag %i\n", team, ourFlag);
+#endif
+
 	return -1; // Do not respawn this automatically, but do delete it if it was FL_DROPPED
 }
 
 int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	int team;
 	gclient_t *cl = other->client;
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Pickup_Team function called\n");
+#endif
 
 	// figure out what team this flag is
 	if( strcmp(ent->classname, "team_CTF_redflag") == 0 ) {
@@ -1031,16 +1069,30 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 		team = TEAM_FREE;
 	}
 	else {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Pickup_Team function exited at point 1\n");
+#endif
 //		PrintMsg ( other, "Don't know what team the flag is on.\n");
 		return 0;
 	}
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
-		if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer)
+		if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer) {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Pickup_Team function exited at point 2, team Flag is %i\n", team);
+#endif
 			return Team_TouchEnemyFlag( ent, other, team );
-		else 
+		}
+		else {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Pickup_Team function exited at point 3, team Flag is %i\n", team);
+#endif
 			return Team_TouchOurFlag( ent, other, team );
+		}
 	}
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Pickup_Team function exited at end, team Flag is %i\n", team);
+#endif
 	return Team_TouchEnemyFlag( ent, other, team );
 }
 
