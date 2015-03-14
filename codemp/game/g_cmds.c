@@ -10781,6 +10781,14 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent->client->pers.credits < 10)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have enough credits to change your class.\n\"" );
+		return;
+	}
+
+	remove_credits(ent, 10);
+
 	save_config(ent);
 
 	ent->client->pers.rpg_class = value;
