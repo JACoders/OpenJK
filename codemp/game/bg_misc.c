@@ -2396,7 +2396,7 @@ char *eventnames[] = {
 	"EV_USE_ITEM12",
 	"EV_USE_ITEM13",
 	"EV_USE_ITEM14",
-	"EV_USE_ITEM15",
+	"EV_RPG_STUFF",
 
 	"EV_ITEMUSEFAIL",
 

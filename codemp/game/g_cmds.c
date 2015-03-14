@@ -5132,6 +5132,10 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: loading initial shield of the player
 		set_max_shield(ent);
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+
+		// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter with the Upgrade
+		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			G_AddEvent(ent, EV_RPG_STUFF, 1);
 	}
 }
 
@@ -5846,6 +5850,9 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 
 	// zyk: resetting force powers
 	WP_InitForcePowers( ent );
+
+	// zyk: removing rpg stuff from client-side game
+	G_AddEvent(ent, EV_RPG_STUFF, 0);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
@@ -8922,7 +8929,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 29)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. You can set the Thermal Vision level by upgrading Sense\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. You can set the Thermal Vision level by upgrading Sense. Gives the Radar Upgrade (requires Zyk OpenJK Client installed)\n\n\"");
 		}
 		else if (i == 30)
 		{
@@ -8995,7 +9002,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[44] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50};
 
 	if (trap->Argc() == 1)
 	{
@@ -9006,7 +9013,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (value < 1 || value > 44)
+	if (value < 1 || value > NUMBER_OF_SELLER_ITEMS)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;
@@ -9241,6 +9248,10 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 29)
 		{
 			ent->client->pers.secrets_found |= (1 << 1);
+
+			// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter
+			if (ent->client->pers.rpg_class == 2)
+				G_AddEvent(ent, EV_RPG_STUFF, 1);
 		}
 		else if (value == 30)
 		{
@@ -9327,7 +9338,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[44] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -9338,7 +9349,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (value < 1 || value > 44 || items_costs[value-1] == 0)
+	if (value < 1 || value > NUMBER_OF_SELLER_ITEMS || items_costs[value-1] == 0)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid product number.\n\"" );
 		return;

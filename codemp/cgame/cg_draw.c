@@ -3247,6 +3247,11 @@ float CG_DrawRadar ( float y )
 		return y;
 	}
 
+	if (cgs.gametype < GT_TEAM && !(cg.rpg_stuff & (1 << 0)))
+	{ // zyk: verify if this player has the Radar Upgrade in non-team gametypes
+		return y;
+	}
+
 	// Draw the radar background image
 	color[0] = color[1] = color[2] = 1.0f;
 	color[3] = 0.6f;

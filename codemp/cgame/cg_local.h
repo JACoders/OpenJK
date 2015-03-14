@@ -1008,6 +1008,10 @@ Ghoul2 Insert End
 	int numSpawnVarChars;
 	char spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
+	// zyk: RPG stuff will be set here
+	// possible bitvalues are:
+	// 0 - Radar Upgrade
+	int rpg_stuff;
 } cg_t;
 
 #define MAX_TICS	14

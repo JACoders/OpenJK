@@ -1829,6 +1829,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		trap->S_StartSound (NULL, es->number, CHAN_AUTO, CG_CustomSound( es->number, "*gasp.wav" ) );
 		break;
 
+	// zyk: RPG Stuff. Has bitvalue of stuff the player has in RPG Mode. The bitvalue is sent through eventParm
+	case EV_RPG_STUFF:
+		DEBUGNAME("EV_RPG_STUFF");
+		cg.rpg_stuff = es->eventParm;
+		break;
 	case EV_ITEM_PICKUP:
 		DEBUGNAME("EV_ITEM_PICKUP");
 		{

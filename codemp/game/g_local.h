@@ -514,6 +514,9 @@ typedef enum {
 #define MAX_JETPACK_FUEL 10000
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
+// zyk: quantity of items at the jawa seller
+#define NUMBER_OF_SELLER_ITEMS 44
+
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 typedef struct clientPersistant_s {
@@ -680,7 +683,7 @@ typedef struct clientPersistant_s {
 	// zyk: bit flag, loaded in load_account()
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
-	// 1 - Bounty Hunter Upgrade - bought from the jawa seller
+	// 1 - Bounty Hunter Upgrade
 	// 2 - Force User Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 3 - Monk Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 4 - Duelist Unique Skill - got after player reaches level 10 and fills the skill counter once
