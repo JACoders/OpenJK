@@ -126,11 +126,16 @@ include(CPackComponent)
 
 set(CPACK_COMPONENT_JKAMPCORE_DISPLAY_NAME "Core")
 set(CPACK_COMPONENT_JKAMPCORE_REQUIRED TRUE)
+set(CPACK_COMPONENT_JKAMPCORE_DESCRIPTION "Core files shared by the multiplayer client and server executables.")
 set(CPACK_COMPONENT_JKAMPCLIENT_DISPLAY_NAME "Client")
+set(CPACK_COMPONENT_JKAMPCLIENT_DESCRIPTION "Files required to play the multiplayer game.")
 set(CPACK_COMPONENT_JKAMPSERVER_DISPLAY_NAME "Server")
+set(CPACK_COMPONENT_JKAMPSERVER_DESCRIPTION "Files required to run a Jedi Academy server.")
 set(CPACK_COMPONENT_JKASPCLIENT_DISPLAY_NAME "Core")
-set(CPACK_COMPONENT_JKASPCLIENT_REQUIRED TRUE)
+set(CPACK_COMPONENT_JKASPCLIENT_DESCRIPTION "Files required to play the Jedi Academy single player game.")
+#set(CPACK_COMPONENT_JKASPCLIENT_REQUIRED TRUE)
 set(CPACK_COMPONENT_JK2SPCLIENT_DISPLAY_NAME "Core")
+set(CPACK_COMPONENT_JK2SPCLIENT_DESCRIPTION "Files required to play the Jedi Outcast single player game.")
 set(CPACK_COMPONENTS_ALL
 	${JKAMPCoreComponent}
 	${JKAMPClientComponent}
@@ -144,9 +149,21 @@ set(CPACK_COMPONENT_JKAMPSERVER_GROUP "JKAMP")
 set(CPACK_COMPONENT_JKASPCLIENT_GROUP "JKASP")
 set(CPACK_COMPONENT_JK2SPCLIENT_GROUP "JK2SP")
 
-cpack_add_component_group(JKAMP DISPLAY_NAME "Jedi Academy Multiplayer")
-cpack_add_component_group(JKASP DISPLAY_NAME "Jedi Academy Single Player")
-cpack_add_component_group(JK2SP DISPLAY_NAME "Jedi Outcast Single Player")
+cpack_add_component_group(JKAMP
+	DISPLAY_NAME "Jedi Academy Multiplayer"
+	DESCRIPTION "Jedi Academy multiplayer game")
+cpack_add_component_group(JKASP
+	DISPLAY_NAME "Jedi Academy Single Player"
+	DESCRIPTION "Jedi Academy single player game")
+cpack_add_component_group(JK2SP
+	DISPLAY_NAME "Jedi Outcast Single Player"
+	DESCRIPTION "Jedi Outcast single player game")
+
+if(WIN32)
+	include(CPackNSIS)
+	set(CPACK_NSIS_DISPLAY_NAME "OpenJK")
+	set(CPACK_NSIS_PACKAGE_NAME "OpenJK")
+endif()
 
 # Common settings
 if(WIN32)
@@ -267,14 +284,15 @@ add_subdirectory(${MPDir})
 
 # CPack for installer creation
 # TODO: Which version are we?
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 # I'm just not appending the version for now
 set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
 set(CPACK_PACKAGE_VENDOR "JACoders")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenJK")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_DIRECTORY ${PACKAGE_DIR})
