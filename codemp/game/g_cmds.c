@@ -5135,7 +5135,9 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter with the Upgrade
 		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			G_AddEvent(ent, EV_RPG_STUFF, 1);
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+		else // zyk: removing rpg stuff from client-side game		
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
 	}
 }
 
@@ -5853,7 +5855,7 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	WP_InitForcePowers( ent );
 
 	// zyk: removing rpg stuff from client-side game
-	G_AddEvent(ent, EV_RPG_STUFF, 0);
+	G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
@@ -9252,7 +9254,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 
 			// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter
 			if (ent->client->pers.rpg_class == 2)
-				G_AddEvent(ent, EV_RPG_STUFF, 1);
+				G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
 		}
 		else if (value == 30)
 		{

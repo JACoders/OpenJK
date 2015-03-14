@@ -841,9 +841,9 @@ typedef enum {
 	EV_USE_ITEM12,
 	EV_USE_ITEM13,
 	EV_USE_ITEM14,
-	EV_RPG_STUFF, // zyk: used to send events to client game which are used in RPG Mode
+	EV_USE_ITEM15, 
 
-	EV_ITEMUSEFAIL,
+	EV_ITEMUSEFAIL, // zyk: also used to send events to client game which are used in RPG Mode
 
 	EV_ITEM_RESPAWN,
 	EV_ITEM_POP,

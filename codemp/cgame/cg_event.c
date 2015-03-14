@@ -1828,12 +1828,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_WATER_CLEAR");
 		trap->S_StartSound (NULL, es->number, CHAN_AUTO, CG_CustomSound( es->number, "*gasp.wav" ) );
 		break;
-
-	// zyk: RPG Stuff. Has bitvalue of stuff the player has in RPG Mode. The bitvalue is sent through eventParm
-	case EV_RPG_STUFF:
-		DEBUGNAME("EV_RPG_STUFF");
-		cg.rpg_stuff = es->eventParm;
-		break;
 	case EV_ITEM_PICKUP:
 		DEBUGNAME("EV_ITEM_PICKUP");
 		{
@@ -2644,6 +2638,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_ITEMUSEFAIL:
 		DEBUGNAME("EV_ITEMUSEFAIL");
+
+		// zyk: value 5 means it is the Radar of Bounty Hunter Upgrade
+		if (es->eventParm == 5)
+		{
+			cg.rpg_stuff |= (1 << 0);
+		}
+		else if (es->eventParm == 6)
+		{ // zyk: value 6 removes the radar
+			cg.rpg_stuff &= ~(1 << 0);
+		}
+
 		if (cg.snap->ps.clientNum == es->number)
 		{
 			char *psStringEDRef = NULL;
