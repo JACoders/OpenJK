@@ -55,8 +55,6 @@ else()
 	set(UseInternalSDL2 OFF)
 endif()
 
-option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
-
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
