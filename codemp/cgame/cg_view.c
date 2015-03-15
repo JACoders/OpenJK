@@ -2568,8 +2568,8 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.predictedPlayerState.forceHandExtend == HANDEXTEND_KNOCKDOWN || cg.predictedPlayerState.fallingToDeath ||
 			cg.predictedPlayerState.m_iVehicleNum || PM_InKnockDown(&cg.predictedPlayerState))
 		{
-			if (cg_fpls.integer && cg.predictedPlayerState.weapon == WP_SABER)
-			{ //force to first person for fpls
+			if (cg_fpls.integer && (cg.predictedPlayerState.weapon == WP_SABER || cg.predictedPlayerState.weapon == WP_MELEE))
+			{ //force to first person for fpls // zyk: melee will also allow it
 				cg.renderingThirdPerson = 0;
 			}
 			else
