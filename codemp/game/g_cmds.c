@@ -11713,6 +11713,46 @@ void Cmd_EntRemove_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_ClientPrint_f
+==================
+*/
+void Cmd_ClientPrint_f( gentity_t *ent ) {
+	int client_id = -1;
+	char   arg1[MAX_STRING_CHARS];
+	char   arg2[MAX_STRING_CHARS];
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_CLIENTPRINT)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( trap->Argc() < 3)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Usage: /clientprint <player name or ID, or -1 to show to all players> <message>\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	if (atoi(arg1) != -1)
+	{ // zyk: -1 means all players will get the message
+		client_id = zyk_get_client( arg1 );
+
+		if (client_id == -1)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+			return;
+		}
+	}
+
+	trap->Argv( 2, arg2, sizeof( arg2 ) );
+
+	trap->SendServerCommand( client_id, va("cp \"%s\"", arg2) );
+}
+
+/*
+==================
 Cmd_Silence_f
 ==================
 */
@@ -11836,12 +11876,21 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[6],va("^3 %d ^7- Silence: ^1no\n",ADM_SILENCE));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_CLIENTPRINT))) 
+		{
+			strcpy(message_content[7],va("^3 %d ^7- ClientPrint: ^2yes\n",ADM_CLIENTPRINT));
+		}
+		else
+		{
+			strcpy(message_content[7],va("^3 %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"\n%s\nUse ^3/adminlist <number> ^7to see command info\n\n\"", message) );
+		trap->SendServerCommand( ent-g_entities, va("print \"\n%s\n^7Use ^3/adminlist <number> ^7to see command info\n\n\"", message) );
 	}
 	else
 	{ // zyk: display help info for an admin command
@@ -11878,6 +11927,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_SILENCE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/silence <player name or ID> ^7to silence that player\n\n\"" );
+		}
+		else if (command_number == ADM_CLIENTPRINT)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/clientprint <player name or ID, or -1 to show to all players> <message> ^7to print a message in the screen\n\n\"" );
 		}
 	}
 }
@@ -12054,6 +12107,7 @@ command_t commands[] = {
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
 	{ "changepassword",		Cmd_ChangePassword_f,		CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "clientprint",		Cmd_ClientPrint_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "creditgive",			Cmd_CreditGive_f,			CMD_RPG|CMD_NOINTERMISSION },
 	{ "datetime",			Cmd_DateTime_f,				CMD_NOINTERMISSION },
 	{ "debugBMove_Back",	Cmd_BotMoveBack_f,			CMD_CHEAT|CMD_ALIVE },

@@ -480,6 +480,7 @@ typedef enum {
 	ADM_ADMPROTECT,
 	ADM_ENTITYSYSTEM,
 	ADM_SILENCE,
+	ADM_CLIENTPRINT,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 
