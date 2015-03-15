@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright 2007-2009 Kitware, Inc.
+# 
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file Copyright.txt for details.
@@ -28,6 +29,13 @@ if(WIN32)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a -tzip "<ARCHIVE>" <FILES>)
     endif()
   endif()
+  
+  if(NOT ZIP_EXECUTABLE)
+    find_program(ZIP_EXECUTABLE winrar PATHS "$ENV{ProgramFiles}/WinRAR")
+    if(ZIP_EXECUTABLE)
+      set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a "<ARCHIVE>" <FILES>)
+    endif()
+  endif()
 endif()
 
 if(NOT ZIP_EXECUTABLE)
@@ -45,7 +53,7 @@ endif()
 
 function(add_zip_command output)
   set(MultiValueArgs FILES DEPENDS)
-  cmake_parse_arguments(ARGS "" "${OneValueArgs}" "${MultiValueArgs}" ${ARGN})
+  cmake_parse_arguments(ARGS "" "" "${MultiValueArgs}" ${ARGN})
   
   set(ZipCommand ${ZIP_COMMAND})
   string(REPLACE <ARCHIVE> "${output}" ZipCommand "${ZipCommand}")
