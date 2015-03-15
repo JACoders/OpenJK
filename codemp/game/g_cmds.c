@@ -10448,16 +10448,14 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			sprintf(message,"%s\n^315 - Difficulty ^2Normal", message);
 		}
 
-		/*
 		if (ent->client->pers.player_settings & (1 << 16))
 		{
-			sprintf(message,"%s\n^316 - Special Power ^1OFF", message);
+			sprintf(message,"%s\n^316 - Allow Screen Message ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^316 - Special Power ^2ON", message);
+			sprintf(message,"%s\n^316 - Allow Screen Message ^2ON", message);
 		}
-		*/
 
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\n^7Choose a setting above and use ^3/settings <number> ^7to turn it ^2ON ^7or ^1OFF^7\n\"", message) );
 	}
@@ -10470,7 +10468,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		trap->Argv(1, arg1, sizeof( arg1 ));
 		value = atoi(arg1);
 
-		if (value < 0 || value > 15)
+		if (value < 0 || value > 16)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"Invalid settings value.\n\"" );
 			return;
@@ -10654,12 +10652,10 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"Difficulty %s\n\"", new_status) );
 		}
-		/*
 		else if (value == 16)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Special Power %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Allow Screen Message %s\n\"", new_status) );
 		}
-		*/
 
 		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits

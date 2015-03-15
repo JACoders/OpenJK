@@ -3826,6 +3826,16 @@ void ClientSpawn(gentity_t *ent) {
 			tent->s.clientNum = ent->s.clientNum;
 
 			trap->LinkEntity ((sharedEntity_t *)ent);
+
+			// zyk: show screen message if the player did not see it yet
+			if (level.read_screen_message[ent->s.number] == qfalse && Q_stricmp(zyk_screen_message.string, "") != 0)
+			{
+				if (ent->client->sess.amrpgmode == 0 || !(ent->client->pers.player_settings & (1 << 16)))
+				{ // zyk: logged players can disable the screen message if they want to
+					level.read_screen_message[ent->s.number] = qtrue;
+					level.screen_message_timer[ent->s.number] = level.time + zyk_screen_message_timer.integer;
+				}
+			}
 		}
 	} else {
 		// move players to intermission
@@ -4043,6 +4053,8 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
+
+	level.read_screen_message[ent->s.number] = qfalse;
 
 	// zyk: if player was fighting a guardian, allow other players to fight the guardian now
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)

@@ -273,4 +273,7 @@ XCVAR_DEF( zyk_enable_ultra_drain,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,	
 XCVAR_DEF( zyk_enable_immunity_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_chaos_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_time_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_screen_message,	"",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_screen_message_timer,	"3000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+
 #undef XCVAR_DEF

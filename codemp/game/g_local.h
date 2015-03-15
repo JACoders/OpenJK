@@ -1449,6 +1449,12 @@ typedef struct level_locals_s {
 
 	// zyk: vehicle ids of the swoops used in Race Mode. Used to validate if player is using the correct vehicle
 	int race_mode_vehicle[MAX_RACERS];
+
+	// zyk: sets the players who already read the screen message
+	qboolean read_screen_message[MAX_CLIENTS];
+
+	// zyk: how much time it must show the message for the player
+	int screen_message_timer[MAX_CLIENTS];
 } level_locals_t;
 
 

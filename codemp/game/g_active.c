@@ -829,8 +829,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
+		}
 
-
+		if (level.screen_message_timer[ent->s.number] >= (level.time + 1000))
+		{ // zyk: show the screen message. The cp shows the message at least for 3 seconds
+			trap->SendServerCommand( ent->s.number, va("cp \"%s\"", zyk_screen_message.string) );
 		}
 	}
 }

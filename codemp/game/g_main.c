@@ -549,6 +549,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			level.special_power_effects[zyk_iterator] = -1;
 			level.special_power_effects_timer[zyk_iterator] = 0;
 		}
+
+		for (zyk_iterator = 0; zyk_iterator < MAX_CLIENTS; zyk_iterator++)
+		{
+			level.read_screen_message[zyk_iterator] = qfalse;
+			level.screen_message_timer[zyk_iterator] = 0;
+		}
 	}
 
 	// zyk: getting mapname
