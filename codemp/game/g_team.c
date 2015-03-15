@@ -755,10 +755,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	gentity_t*	enemy;
 	float		enemyDist, dist;
 
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function called\n");
-#endif
-
 	if (cl->sess.sessionTeam == TEAM_RED) {
 		enemy_flag = PW_BLUEFLAG;
 	} else if (cl->sess.sessionTeam == TEAM_BLUE) {
@@ -766,6 +762,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	} else { //rabbit
 		enemy_flag = PW_NEUTRALFLAG;
 	}
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function called spot 1: enemy_flag is %i\n", enemy_flag);
+#endif
 
 	if ( ent->flags & FL_DROPPED_ITEM ) {
 		// hey, its not home.  return it by teleporting it back
@@ -804,6 +804,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		return 0;
 	}
 
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 2, Enemy Flag is %i\n", enemy_flag);
+#endif
+
 	// check for enemy closer to grab the flag
 	VectorSubtract( ent->s.pos.trBase, minFlagRange, mins );
 	VectorAdd( ent->s.pos.trBase, maxFlagRange, maxs );
@@ -814,8 +818,14 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		
 	if (other->client->sess.sessionTeam == TEAM_RED)
 		enemyTeam = TEAM_BLUE;
-	else
+	else if (other->client->sess.sessionTeam == TEAM_BLUE)
 		enemyTeam = TEAM_RED;
+	else 
+		enemyTeam = TEAM_FREE; //racemode ctf crashfix?
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 3, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
+#endif
 
 	for (j = 0; j < num; j++) {
 		enemy = (g_entities + touch[j]);
@@ -852,6 +862,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 			return Team_TouchEnemyFlag( ent, enemy, team );
 		}
 	}
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 4, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
+#endif
 
 	//PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the %s flag!\n", cl->pers.netname, TeamName(OtherTeam(team)));
 
@@ -894,6 +908,10 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 	else
 		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_CAPTURED_FLAG); 
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 5, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
+#endif
 
 	Team_CaptureFlagSound( ent, team );
 
@@ -1054,10 +1072,6 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 	int team;
 	gclient_t *cl = other->client;
 
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Pickup_Team function called\n");
-#endif
-
 	// figure out what team this flag is
 	if( strcmp(ent->classname, "team_CTF_redflag") == 0 ) {
 		team = TEAM_RED;
@@ -1069,30 +1083,18 @@ int Pickup_Team( gentity_t *ent, gentity_t *other ) {
 		team = TEAM_FREE;
 	}
 	else {
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Pickup_Team function exited at point 1\n");
-#endif
 //		PrintMsg ( other, "Don't know what team the flag is on.\n");
 		return 0;
 	}
 	// GT_CTF
 	if( team == cl->sess.sessionTeam) {
 		if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer) {
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Pickup_Team function exited at point 2, team Flag is %i\n", team);
-#endif
 			return Team_TouchEnemyFlag( ent, other, team );
 		}
 		else {
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Pickup_Team function exited at point 3, team Flag is %i\n", team);
-#endif
 			return Team_TouchOurFlag( ent, other, team );
 		}
 	}
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Pickup_Team function exited at end, team Flag is %i\n", team);
-#endif
 	return Team_TouchEnemyFlag( ent, other, team );
 }
 
