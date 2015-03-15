@@ -203,6 +203,11 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 	qboolean	foundClient = qfalse;
 	gentity_t	*entity_list[MAX_GENTITIES], *target, *bestTarget = NULL;
 
+	if (!pVeh->m_pPilot)
+	{ // zyk: only try to find enemies if the vehicle has a pilot
+		return qfalse;
+	}
+
 	WP_CalcVehMuzzle( parent, curMuzzle );
 	VectorCopy( pVeh->m_vMuzzlePos[curMuzzle], org2 );
 
