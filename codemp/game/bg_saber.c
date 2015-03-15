@@ -2391,7 +2391,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			{//overridden with another move
 				return overrideJumpRightAttackMove;
 			}
-			else
+			else if (allowCartwheels || (pm->ps->fd.saberAnimLevel == SS_STAFF))
 			{
 				vec3_t right, fwdAngles;
 
@@ -2455,7 +2455,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			{//overridden with another move
 				return overrideJumpLeftAttackMove;
 			}
-			else
+			else if (allowCartwheels || (pm->ps->fd.saberAnimLevel == SS_STAFF))
 			{
 				vec3_t right, fwdAngles;
 
