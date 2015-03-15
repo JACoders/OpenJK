@@ -713,6 +713,6 @@ add_zip_command(openjk.pk3
 add_custom_target(Assets
 	ALL
 	DEPENDS openjk.pk3)
-install(FILES ${CMAKE_BINARY_DIR}/openjk.pk3
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
 	DESTINATION "OpenJK"
 	COMPONENT ${JKAMPCoreComponent})
