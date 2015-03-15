@@ -5134,9 +5134,9 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
 		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			G_AddEvent(ent, EV_ITEMUSEFAIL, (ent->s.number + 32));
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
 		else // zyk: removing rpg stuff from client-side game		
-			G_AddEvent(ent, EV_ITEMUSEFAIL, (-1 * (ent->s.number + 32)));
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
 	}
 }
 
@@ -5854,7 +5854,7 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	WP_InitForcePowers( ent );
 
 	// zyk: removing rpg stuff from client-side game
-	G_AddEvent(ent, EV_ITEMUSEFAIL, (-1 * (ent->s.number + 32)));
+	G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
