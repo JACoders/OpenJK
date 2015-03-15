@@ -815,9 +815,9 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			if (!(ent->client->pers.player_statuses & (1 << 2)) && (level.time - ent->client->pers.enterTime) > 1000)
 			{ // zyk: send this event after 1 second in map and if the player did not received this event yet
 				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-					G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+					G_AddEvent(ent, EV_ITEMUSEFAIL, (ent->s.number + 32));
 				else // zyk: removing rpg stuff from client-side game		
-					G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+					G_AddEvent(ent, EV_ITEMUSEFAIL, (-1 * (ent->s.number + 32)));
 
 				ent->client->pers.player_statuses |= (1 << 2);
 			}

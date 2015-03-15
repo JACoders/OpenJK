@@ -2639,14 +2639,25 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_ITEMUSEFAIL:
 		DEBUGNAME("EV_ITEMUSEFAIL");
 
-		// zyk: value 5 means it is the Radar of Bounty Hunter Upgrade
-		if (es->eventParm == 5)
-		{
-			cg.rpg_stuff |= (1 << 0);
+		// zyk: if it is at least 32, it is the radar event. Radar is used in RPG Mode by Bounty Hunter class
+		// added 32 + entity id because the game sends the event to all clients but only the correct client must use it
+		if (es->eventParm >= 32)
+		{ // zyk: if greater than 0, add the radar
+			int zyk_player_id = es->eventParm - 32;
+
+			if (zyk_player_id == cg.clientNum)
+			{
+				cg.rpg_stuff |= (1 << 0);
+			}
 		}
-		else if (es->eventParm == 6)
-		{ // zyk: value 6 removes the radar
-			cg.rpg_stuff &= ~(1 << 0);
+		else if (es->eventParm <= -32)
+		{ // zyk: if less than 0, remove the radar
+			int zyk_player_id = (-1 * es->eventParm) - 32;
+
+			if (zyk_player_id == cg.clientNum)
+			{
+				cg.rpg_stuff &= ~(1 << 0);
+			}
 		}
 
 		if (cg.snap->ps.clientNum == es->number)
