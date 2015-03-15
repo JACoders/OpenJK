@@ -280,37 +280,6 @@ if(BuildJK2SPGame)
 endif()
 add_subdirectory(${MPDir})
 
-set(GameLibsBuilt)
-if(BuildMPGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
-endif()
-
-if(BuildMPCGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-endif()
-
-if(BuildMPUI)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
-endif()
-
-set(GameLibFullPaths)
-foreach(GameLib ${GameLibsBuilt})
-	set(GameLibFullPaths
-		${GameLibFullPaths}
-		${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-endforeach(GameLib)
-
-include(InstallZIP)
-add_zip_command(openjk.pk3
-	FILES ${GameLibFullPaths}
-	DEPENDS "${GameLibsBuilt}")
-add_custom_target(Assets
-	ALL
-	DEPENDS openjk.pk3)
-install(FILES ${CMAKE_BINARY_DIR}/openjk.pk3
-	DESTINATION "OpenJK"
-	COMPONENT ${JKAMPCoreComponent})
-
 # CPack for installer creation
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
