@@ -120,27 +120,15 @@ if(NOT WIN32)
 	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
-if(WIN32)
+if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPCGame}
-		RUNTIME
-		DESTINATION "OpenJK"
+		LIBRARY
+		DESTINATION "${MPEngine}.app/Contents/MacOS/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
-else()
-	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPCGame}
-			LIBRARY
-			DESTINATION "${MPEngine}.app/Contents/MacOS/OpenJK"
-			COMPONENT ${JKAMPCoreComponent})
-		install(TARGETS ${MPCGame}
-			LIBRARY
-			DESTINATION "${MPEngine}.app/Contents/MacOS/base"
-			COMPONENT ${JKAMPCoreComponent})
-	else()
-		install(TARGETS ${MPCGame}
-			LIBRARY
-			DESTINATION "OpenJK"
-			COMPONENT ${JKAMPCoreComponent})
-	endif()
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
+		COMPONENT ${JKAMPCoreComponent})
 endif()
 
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPCGameDefines};${ReleaseDefines}")

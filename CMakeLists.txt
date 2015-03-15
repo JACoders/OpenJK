@@ -88,7 +88,6 @@ message("Architecture is ${Architecture}")
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-# TODO: actually use the Git SHA1 for something?
 message("Git revision is ${GIT_SHA1}")
 
 # Binary names
@@ -133,7 +132,6 @@ set(CPACK_COMPONENT_JKAMPSERVER_DISPLAY_NAME "Server")
 set(CPACK_COMPONENT_JKAMPSERVER_DESCRIPTION "Files required to run a Jedi Academy server.")
 set(CPACK_COMPONENT_JKASPCLIENT_DISPLAY_NAME "Core")
 set(CPACK_COMPONENT_JKASPCLIENT_DESCRIPTION "Files required to play the Jedi Academy single player game.")
-#set(CPACK_COMPONENT_JKASPCLIENT_REQUIRED TRUE)
 set(CPACK_COMPONENT_JK2SPCLIENT_DISPLAY_NAME "Core")
 set(CPACK_COMPONENT_JK2SPCLIENT_DESCRIPTION "Files required to play the Jedi Outcast single player game.")
 set(CPACK_COMPONENTS_ALL
@@ -282,12 +280,41 @@ if(BuildJK2SPGame)
 endif()
 add_subdirectory(${MPDir})
 
+set(GameLibsBuilt)
+if(BuildMPGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
+endif()
+
+if(BuildMPCGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
+endif()
+
+if(BuildMPUI)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
+endif()
+
+set(GameLibFullPaths)
+foreach(GameLib ${GameLibsBuilt})
+	set(GameLibFullPaths
+		${GameLibFullPaths}
+		${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+endforeach(GameLib)
+
+include(InstallZIP)
+add_zip_command(openjk.pk3
+	FILES ${GameLibFullPaths}
+	DEPENDS "${GameLibsBuilt}")
+add_custom_target(Assets
+	ALL
+	DEPENDS openjk.pk3)
+install(FILES ${CMAKE_BINARY_DIR}/openjk.pk3
+	DESTINATION "OpenJK"
+	COMPONENT ${JKAMPCoreComponent})
+
 # CPack for installer creation
-# TODO: Which version are we?
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
-# I'm just not appending the version for now
 set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
