@@ -812,6 +812,16 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
 
+			if (!(ent->client->pers.player_statuses & (1 << 2)) && (level.time - ent->client->pers.enterTime) > 1000)
+			{ // zyk: send this event after 1 second in map and if the player did not received this event yet
+				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+				else // zyk: removing rpg stuff from client-side game		
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+
+				ent->client->pers.player_statuses |= (1 << 2);
+			}
+
 			if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && ent->health > 0)
 			{ // zyk: Light Power
 				if (ent->health < ent->client->pers.max_rpg_health)
@@ -819,6 +829,8 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
+
+
 		}
 	}
 }

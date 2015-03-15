@@ -5133,7 +5133,6 @@ void initialize_rpg_skills(gentity_t *ent)
 		set_max_shield(ent);
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
-		// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter with the Upgrade
 		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
 			G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
 		else // zyk: removing rpg stuff from client-side game		

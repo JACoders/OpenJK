@@ -547,6 +547,7 @@ typedef struct clientPersistant_s {
 	// zyk: Possible bit values are:
 	// 0 - Player is silenced
 	// 1 - using an emote
+	// 2 - Received Radar event - necessary because after a map change, the first spawn cannot get the event immediately
 	int player_statuses;
 
 	// zyk: point marked in map so player can teleport to this point

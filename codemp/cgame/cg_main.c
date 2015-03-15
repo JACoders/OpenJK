@@ -2505,6 +2505,9 @@ Ghoul2 Insert End
 
 	cg.clientNum = clientNum;
 
+	// zyk: initialize this value, used by RPG Mode
+	cg.rpg_stuff = 0;
+
 	cgs.processedSnapshotNum = serverMessageNum;
 	cgs.serverCommandSequence = serverCommandSequence;
 
@@ -2684,9 +2687,6 @@ Ghoul2 Insert End
 	trap->Cvar_VariableStringBuffer( "rate", buf, sizeof( buf ) );
 	if ( atoi( buf ) == 4000 )
 		trap->Print( "^3WARNING: Default /rate value detected. Suggest typing /rate 25000 for a smoother connection!\n" );
-
-	// zyk: initialize this value, used by RPG Mode
-	cg.rpg_stuff = 0;
 }
 
 //makes sure returned string is in localized format
