@@ -12690,11 +12690,11 @@ void PmoveSingle (pmove_t *pmove) {
 	if (pm->ps->stats[STAT_RACEMODE]) //japro fix racemode fps
 		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 #ifdef _GAME
-	else if (g_fixHighFPSAbuse.integer && (pml.msec < 4)) { //333fps, todo add prediction
+	else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
 		//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
 	}
 #else if _CGAME
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK) && (pml.msec < 4)) {
+	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK) && ((pml.msec < 4) || (pml.msec > 25))) {
 	}
 #endif
 	else if (!pm->pmove_float)
