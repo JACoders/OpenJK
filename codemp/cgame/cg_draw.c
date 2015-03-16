@@ -3247,8 +3247,8 @@ float CG_DrawRadar ( float y )
 		return y;
 	}
 
-	if (cgs.gametype < GT_TEAM && !(cg.rpg_stuff & (1 << 0)))
-	{ // zyk: verify if this player has the Radar Upgrade in non-team gametypes
+	if (cgs.gametype < GT_TEAM && !(cg.rpg_stuff & (1 << 0)) && !cg.predictedPlayerState.m_iVehicleNum)
+	{ // zyk: verify if this player has the Radar Upgrade in non-team gametypes. Show radar if in a vehicle
 		return y;
 	}
 
