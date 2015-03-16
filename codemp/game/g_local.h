@@ -647,40 +647,25 @@ typedef struct clientPersistant_s {
 
 	int force_powers_levels[18]; // zyk: RPG mode level of each force power
 	int ammo_levels[7]; // zyk: RPG mode level of each type of ammo
-	int weapons_levels[10]; // zyk: RPG mode level of each weapon excluding saber, melee and stun baton
+	// zyk: weapons_levels[10] is stun baton, weapons_levels[11] is melee
+	int weapons_levels[12]; // zyk: RPG mode level of each weapon, including melee and stun baton, and excluding saber (which is in force_powers_levels)
 	int holdable_items_levels[8]; // zyk: RPG mode level of each Holdable Item
-
-	int starting_shield_level; // zyk: RPG mode Max Shield skill level
+	int other_skills_levels[11]; // zyk: RPG mode level of each skill in the other category of /list command
 
 	int max_rpg_health; // zyk: max health the player can have in RPG Mode. This is set to STAT_MAX_HEALTH for RPG players
-	int max_rpg_shield; // zyk: max shield the player can have in RPG Mode based in the starting_shield_level value
+	int max_rpg_shield; // zyk: max shield the player can have in RPG Mode based in the other_skills_levels[0] value
 
-	int jetpack_level; // zyk: RPG mode Jetpack skill level
 	int jetpack_fuel; // zyk: now this is the fuel that is spent. Then we scale this value to the 0 - 100 range to set it in the jetpackFuel attribute to show the fuel bar correctly to the client
 
-	int playerhealth; // zyk: Sense Health skill level. Used in RPG mode
 	int sense_health_timer; // zyk: used to periodically show health of player or npc with Sense Health skill
 
-	int shield; // zyk: shield heal level. Used in RPG mode
-	int teamshield; // zyk: teamshield heal level. Used in RPG mode
-
-	int drain_shield; // zyk: drain shield level. Used in RPG mode
-	int stun_baton_level; // zyk: if stun baton is in level 2, it does double damage and causes the slap effect. If in level 3, deactivates cloak and does triple damage
-	
 	int flame_thrower; // zyk: used by stun baton. Its the flame thrower timer
-
-	int mind_control; // zyk: mind control skill level. Used in RPG mode
 	
 	// zyk: tests if this player or npc is being mind controlled by a player. If -1, means that he is not being controlled, otherwise it has the player id of the player who is controlling this player or npc
 	int being_mind_controlled;
 
 	// zyk: entity ids of the mind controlled entities. Default -1, which means player is not controlling anyone
 	int mind_controlled1_id;
-
-	int melee_level; // zyk: melee RPG mode level. In level 1 causes normal damage, level 2 causes 2 times more damage and level 3 causes 5 times more damage
-	
-	int health_strength; // zyk: increases player resistance to damage in health.
-	int shield_strength; // zyk: shield strength level. Used in RPG mode
 
 	// zyk: bit flag, loaded in load_account()
 	// Possible bit values (1 << bit_value) are:
@@ -709,10 +694,7 @@ typedef struct clientPersistant_s {
 	// zyk: amount of sentries placed in map
 	int bounty_hunter_placed_sentries;
 
-	int max_force_power_level; // zyk: force power skill level. Has 5 levels, each one giving 25 per cent of max force power cvar to the player
-	int max_force_power; // zyk: max force power the player can have based on max_force_power_level value
-
-	int improvements_level; // zyk: improvements skill. Each class gets some improvements in its unique features
+	int max_force_power; // zyk: max force power the player can have based on other_skills_levels[9] value
 
 	int score_modifier; // zyk: sets the amount of extra score a player can get by defeating some npcs
 

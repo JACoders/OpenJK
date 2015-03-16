@@ -5434,15 +5434,15 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: RPG Mode jetpack skill. Each level decreases fuel debounce
 					if (ent->client->pers.rpg_class == 2)
 					{ // zyk: Bounty Hunter can have a more efficient jetpack
-						jetpack_debounce_amount -= ((ent->client->pers.jetpack_level * 3) + (ent->client->pers.improvements_level * 2));
+						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 2));
 					}
 					else if (ent->client->pers.rpg_class == 8)
 					{ // zyk: Magic Master has the best jetpack
-						jetpack_debounce_amount = 7 - ent->client->pers.jetpack_level - ent->client->pers.improvements_level;
+						jetpack_debounce_amount = 7 - ent->client->pers.other_skills_levels[4] - ent->client->pers.other_skills_levels[10];
 					}
 					else
 					{
-						jetpack_debounce_amount -= (ent->client->pers.jetpack_level * 3);
+						jetpack_debounce_amount -= (ent->client->pers.other_skills_levels[4] * 3);
 					}
 				}
 
@@ -5571,13 +5571,13 @@ void G_RunFrame( int levelTime ) {
 				// zyk: Monk class has a faster melee fireTime and altFireTime
 				if (ent->client->pers.rpg_class == 4 && ent->client->ps.weapon == WP_MELEE)
 				{
-					if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.improvements_level + 1))
+					if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1))
 					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.improvements_level + 1);
+						ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1);
 					}
-					else if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.improvements_level + 1))
+					else if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1))
 					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.improvements_level + 1);
+						ent->client->ps.weaponTime = (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1);
 					}
 				}
 

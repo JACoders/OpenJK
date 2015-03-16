@@ -1749,7 +1749,7 @@ finish:
 	if (newent && newent->client)
 	{
 		newent->client->pers.being_mind_controlled = -1;
-		newent->client->pers.mind_control = 0;
+		newent->client->pers.other_skills_levels[8] = 0;
 		newent->client->pers.mind_controlled1_id = -1;
 		newent->client->pers.guardian_invoked_by_id = -1;
 		newent->client->pers.guardian_mode = 0;

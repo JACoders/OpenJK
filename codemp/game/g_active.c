@@ -2518,10 +2518,9 @@ void ClientThink_real( gentity_t *ent ) {
 		float zyk_player_speed = g_speed.value;
 
 		// set speed
-		// set speed
 		if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4)
 		{ // zyk: each Improvements level increases the Monk speed
-			zyk_player_speed *= (client->pers.improvements_level * 0.3 + 1);
+			zyk_player_speed *= (client->pers.other_skills_levels[10] * 0.3 + 1);
 		}
 
 		//Check for a siege class speed multiplier

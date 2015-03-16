@@ -3468,11 +3468,11 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 		G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 
 		// zyk: if stun baton is in level 2 in RPG mode, does double damage
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 2)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 2)
 		{
 			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 2, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 3)
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3)
 		{ // zyk: if in level 3, causes triple damage
 			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 3, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
@@ -3496,13 +3496,13 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 			{
 				tr_ent->client->ps.electrifyTime = level.time + 700;
 
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level == 3 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
 				{ // zyk: stun baton level 3 skill decloaks players except Stealth Attacker
 					Jedi_Decloak(tr_ent);
 				}
 
 				// zyk: if the player has stun baton in level 2 or 3 in RPG mode, causes the tr_ent to be slapped
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.stun_baton_level >= 2 && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8)
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] >= 2 && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8)
 				{
 					// zyk: allies cant be slapped
 					if (ent->client->sess.ally1 == (tr_ent-g_entities) || ent->client->sess.ally2 == (tr_ent-g_entities) || ent->client->sess.ally3 == (tr_ent-g_entities))
