@@ -4571,7 +4571,7 @@ void save_account(gentity_t *ent)
 			new_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
 			if (new_file != NULL)
 			{
-				fprintf(new_file,"%s\n2\n0\n0\n0\n1\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n",ent->client->pers.password);
+				fprintf(new_file,"%s\n2\n0\n0\n0\n1\n1\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n100\n0\n",ent->client->pers.password);
 				fclose(new_file);
 
 				// zyk: removing the pistol when creating account because player starts without any skill
