@@ -7282,6 +7282,9 @@ void DoAloneStuff(bot_state_t *bs, float thinktime) {
 		if ((hit->item->giType == IT_ARMOR) && (bs->cur_ps.stats[STAT_ARMOR] >= 100))
 			continue;
 
+		if (hit->item->giType == IT_HOLDABLE) //just ignore bacta/shield etc i gues..
+			continue; 		//ideally, check if we already have the item, like a bacta or shields etc
+
 		/*
 		bs->wpSwitchTime++;
 

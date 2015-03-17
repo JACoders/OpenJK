@@ -552,6 +552,7 @@ struct gentity_s {
 
 	vec3_t		origOrigin; //japro pushpullitems
 	qboolean    spawnedBefore; //japro pushpullitems
+	qboolean	raceModeShooter;
 
 	// OpenJK add
 	int			useDebounceTime;	// for cultist_destroyer
@@ -1318,7 +1319,7 @@ typedef struct level_locals_s {
 
 	int         frameStartTime;
 	struct {
-		int state; // loda fixme, not needed?	
+		int state; // loda fixme, not needed?	- well now it is. OSP: pause
 		int time;
 	} pause;
 
@@ -1853,6 +1854,12 @@ typedef enum userinfoValidationBits_e {
 	USERINFO_VALIDATION_CONTROLCHARS,
 	USERINFO_VALIDATION_MAX
 } userinfoValidationBits_t;
+
+typedef enum matchPause_e { //OSP: pause
+	PAUSE_NONE = 0,
+	PAUSE_PAUSED,
+	PAUSE_UNPAUSING,
+} matchPause_t;
 
 void Svcmd_ToggleUserinfoValidation_f( void );
 

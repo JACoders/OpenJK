@@ -1242,6 +1242,91 @@ void Svcmd_DeleteAccount_f(void)
 	CALL_SQLITE (close(db));
 }
 
+void Svcmd_RenameAccount_f(void)
+{
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16], newUsername[16], confirm[16];
+	int s;
+
+	if (trap->Argc() != 4) {
+		trap->Print( "Usage: /renameAccount <username> <new username> <confirm>\n");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	trap->Argv(2, newUsername, sizeof(newUsername));
+	trap->Argv(3, confirm, sizeof(confirm));
+
+	if (Q_stricmp(confirm, "confirm")) {
+		trap->Print( "Usage: /renameAccount <username> <new username> <confirm>\n");
+		return;
+	}
+
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	Q_strlwr(newUsername);
+	Q_CleanStr(newUsername);
+	Q_strstrip( newUsername, "\n\r;:.?*<>|\\/\"", NULL );
+
+	if (CheckUserExists(newUsername)) {
+		trap->Print( "ERROR: Desired username already exists.\n");
+	}
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	
+	if (CheckUserExists(username)) {
+		sql = "UPDATE LocalAccount SET username = ? WHERE username = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, newUsername, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_DONE)
+			trap->Print( "Account renamed.\n");
+		else 
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+	}
+	else 
+		trap->Print( "User does not exist, renaming in highscores and duels anyway.\n");
+
+	sql = "UPDATE LocalRun SET username = ? WHERE username = ?";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, newUsername, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+    
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "UPDATE LocalDuel SET winner = ? WHERE winner = ?";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, newUsername, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+    
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "UPDATE LocalDuel SET loser = ? WHERE loser = ?";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, newUsername, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+    
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+}
+
 void Svcmd_AccountInfo_f(void)
 {
 	sqlite3 * db;

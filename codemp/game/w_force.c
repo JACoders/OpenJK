@@ -4566,6 +4566,10 @@ int WP_DoSpecificPower( gentity_t *self, usercmd_t *ucmd, forcePowers_t forcepow
 
 	powerSucceeded = 1;
 
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE && self->client && !self->client->sess.raceMode ) //racemode cant use force anyway so... eh..
+		return 0;
+
 	// OVERRIDEFIXME
 	if ( !WP_ForcePowerAvailable( self, forcepower, 0 ) )
 	{

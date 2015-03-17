@@ -3115,8 +3115,20 @@ G_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
+void proxMineThink( gentity_t *ent ); //OSP: pause
 void G_RunThink (gentity_t *ent) {
 	float	thinktime;
+
+	//OSP: pause
+	//	If paused, push nextthink
+	if ( level.pause.state != PAUSE_NONE && !ent->raceModeShooter) { //i dont think this could affect racers.. well maybe their rockets ? shit
+		if ( ent - g_entities >= sv_maxclients.integer && ent->nextthink > level.time ) //loda - why is this sv_maxclients, shouldnt it be MAX_CLIENTS?
+			ent->nextthink += level.time - level.previousTime;
+
+		// special case, mines need update here
+		if ( ent->think == proxMineThink && ent->genericValue15 > level.time )
+			ent->genericValue15 += level.time - level.previousTime;
+	}
 
 	thinktime = ent->nextthink;
 	if (thinktime <= 0) {
@@ -3227,6 +3239,8 @@ void G_RunFrame( int levelTime ) {
 	void		*timer_Queues;
 #endif
 
+	static int lastMsgTime = 0;//OSP: pause
+
 	if ((unsigned int)levelTime > (1<<31)) {
 		trap->Print ("Auto quitting server %i\n", levelTime);
 		trap->SendConsoleCommand( EXEC_APPEND, "quit\n");
@@ -3318,6 +3332,64 @@ void G_RunFrame( int levelTime ) {
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
+
+
+
+
+	//OSP: pause
+	//loda - defrag uses trap_milliseconds instead of level.time so this shouldnt interfere?... avg/max depends on level.time though?
+	if ( level.pause.state != PAUSE_NONE ) {
+		static int lastCSTime = 0;
+		int dt = level.time - level.previousTime;
+
+		// compensate for timelimit and warmup time
+		if ( level.warmupTime > 0 )
+			level.warmupTime += dt;
+		level.startTime += dt;
+
+		// floor start time to avoid time flipering
+		if ( (level.time - level.startTime) % 1000 >= 500 )
+			level.startTime += (level.time - level.startTime) % 1000;
+
+		// initial CS update time, needed!
+		if ( !lastCSTime )
+			lastCSTime = level.time;
+
+		// client needs to do the same, just adjust the configstrings periodically
+		// i can't see a way around this mess without requiring a client mod.
+		if ( lastCSTime < level.time - 500 ) {
+			lastCSTime += 500;
+			trap->SetConfigstring( CS_LEVEL_START_TIME, va( "%i", level.startTime ) );
+			if ( level.warmupTime > 0 )
+				trap->SetConfigstring( CS_WARMUP, va( "%i", level.warmupTime ) );
+		}
+	}
+	if ( level.pause.state == PAUSE_PAUSED ) {
+		if ( lastMsgTime < level.time - 500 ) {
+			//G_Announce( va( "Match has been paused.\n%.0f seconds remaining", ceilf( (level.pause.time - level.time) / 1000.0f ) ) );
+			trap->SendServerCommand( -1, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			lastMsgTime = level.time;
+		}
+
+		if ( level.time > level.pause.time - (g_unpauseTime.integer * 1000) )
+			level.pause.state = PAUSE_UNPAUSING;
+	}
+	if ( level.pause.state == PAUSE_UNPAUSING ) {
+		if ( lastMsgTime < level.time - 500 ) {
+			//G_Announce( va( "MATCH IS UNPAUSING\nin %.0f...", ceilf( (level.pause.time - level.time) / 1000.0f ) ) );
+			trap->SendServerCommand( -1, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			lastMsgTime = level.time;
+		}
+
+		if ( level.time > level.pause.time ) {
+			level.pause.state = PAUSE_NONE;
+			trap->SendServerCommand( -1, "cp \"Fight!\n\"" );
+		}
+	}
+
+
+
+
 
 	if (g_allowNPC.integer)
 	{
@@ -3423,8 +3495,21 @@ void G_RunFrame( int levelTime ) {
 			continue;
 		}*/
 
+		/*
 		if ( ent->s.eType == ET_MISSILE ) {
 			G_RunMissile( ent );
+			continue;
+		}
+		*/
+
+		if ( ent->s.eType == ET_MISSILE ) {
+			//OSP: pause
+			if ( level.pause.state == PAUSE_NONE || ent->raceModeShooter) //loda - fixme - Or the shoother is in racemode... this does not take into account what they were at time of firing :/
+				G_RunMissile( ent );
+			else {// During a pause, gotta keep track of stuff in the air
+				ent->s.pos.trTime += level.time - level.previousTime;
+				G_RunThink( ent );
+			}
 			continue;
 		}
 

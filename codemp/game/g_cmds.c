@@ -638,7 +638,7 @@ void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
 	gentity_t *hit;
 	for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
 		hit = &g_entities[i];
-		if (hit-> inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
+		if (hit->inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
 			G_FreeEntity(hit);
 			//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
 		}
@@ -854,6 +854,12 @@ void Cmd_TeamTask_f( gentity_t *ent ) {
 #endif
 
 void G_Kill( gentity_t *ent ) {
+
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE && ent->client && !ent->client->sess.raceMode) {
+		return;
+	}
+
 	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) &&
 		level.numPlayingClients > 1 && !level.warmupTime)
 	{
@@ -2855,6 +2861,14 @@ qboolean G_VotePoll( gentity_t *ent, int numArgs, const char *arg1, const char *
 	return qtrue;
 }
 
+qboolean G_VotePause( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "pause");
+	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
 qboolean G_VoteForceSpec( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	int n = atoi ( arg2 );
 
@@ -2900,6 +2914,7 @@ static voteString_t validVoteStrings[] = {
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 	{	"poll",					"poll",				G_VotePoll,				1,		GTB_ALL,								qfalse,			"<poll question>" },
+	{	"pause",				"pause",			G_VotePause,			0,		GTB_ALL,								qfalse,			NULL },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -7577,6 +7592,11 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 	else if ((level.gametype == GT_FFA || level.gametype == GT_TEAM) && g_rabbit.integer) {
 	}
 	else return;
+
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE ) { // racers cant hold flag neway
+		return;
+	}
 	
 	if (!g_allowFlagThrow.integer)
 		return;

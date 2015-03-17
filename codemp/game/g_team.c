@@ -1407,6 +1407,10 @@ void CheckTeamStatus(void) {
 	int i;
 	gentity_t *loc, *ent;
 
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE ) //doesnt affect racers since thats team_free i guess
+		return;
+
 	if (level.time - level.lastTeamLocationTime > TEAM_LOCATION_UPDATE_TIME) {
 
 		level.lastTeamLocationTime = level.time;

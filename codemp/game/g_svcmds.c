@@ -570,6 +570,18 @@ void Svcmd_Amgrantadmin_f(void)
 		}
 }
 
+static void SV_Pause_f( void ) {
+	//OSP: pause
+	if ( level.pause.state == PAUSE_NONE ) {
+		level.pause.state = PAUSE_PAUSED;
+		level.pause.time = level.time + g_pauseTime.integer * 1000;
+	}
+	else if ( level.pause.state == PAUSE_PAUSED ) {
+		level.pause.state = PAUSE_UNPAUSING;
+		level.pause.time = level.time + g_unpauseTime.integer * 1000;
+	}
+}
+
 char *ConcatArgs( int start );
 void Svcmd_Say_f( void ) {
 	char *p = NULL;
@@ -683,6 +695,7 @@ void Svcmd_ChangePass_f( void );
 void Svcmd_Register_f( void );
 void Svcmd_AccountInfo_f( void );
 void Svcmd_DeleteAccount_f( void );
+void Svcmd_RenameAccount_f( void );
 void Svcmd_ClearIP_f( void );
 void Svcmd_DBInfo_f( void );
 
@@ -713,9 +726,14 @@ svcmd_t svcmds[] = {
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 
+	{ "pause",						SV_Pause_f,							qfalse },
+
 	{ "register",					Svcmd_Register_f,					qfalse },
 
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
+
+	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
+
 	{ "say",						Svcmd_Say_f,						qtrue },
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
 	{ "tweakweapons",				Svcmd_ToggleTweakWeapons_f,			qfalse }

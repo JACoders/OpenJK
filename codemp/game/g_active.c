@@ -1344,6 +1344,10 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		client->ps.speed = 400;	// faster than normal
 		client->ps.basespeed = 400;
 
+		////OSP: pause
+		//if ( level.pause.state != PAUSE_NONE ) //actually why should spectators be frozen in pause?
+		//	client->ps.pm_type = PM_FREEZE;
+
 		//hmm, shouldn't have an anim if you're a spectator, make sure
 		//it gets cleared.
 		client->ps.legsAnim = 0;
@@ -3080,7 +3084,13 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.eFlags &= ~EF_JETPACK;
 	}
 
-	if ( client->noclip ) {
+	//OSP: pause
+	if ( level.pause.state != PAUSE_NONE && !client->sess.raceMode) { //Only pause non racers?
+		ucmd->buttons = ucmd->generic_cmd = 0;
+		ucmd->forwardmove = ucmd->rightmove = ucmd->upmove = 0;
+		client->ps.pm_type = PM_FREEZE;
+	}
+	else  if ( client->noclip ) {
 		client->ps.pm_type = PM_NOCLIP;
 	} else if ( client->ps.eFlags & EF_DISINTEGRATION ) {
 		client->ps.pm_type = PM_NOCLIP;
@@ -4543,7 +4553,11 @@ void ClientThink_real( gentity_t *ent ) {
 	ent->watertype = pmove.watertype;
 
 	// execute client events
-	ClientEvents( ent, oldEventSequence );
+	//OSP: pause
+	if ( level.pause.state == PAUSE_NONE || ent->client->sess.raceMode )
+		ClientEvents( ent, oldEventSequence );
+
+
 
 	if ( pmove.useEvent )
 	{
@@ -4795,7 +4809,9 @@ void ClientThink_real( gentity_t *ent ) {
 	VectorCopy(ent->client->ps.velocity, ent->client->lastVelocity);
 
 	// perform once-a-second actions
-	ClientTimerActions( ent, msec );
+	//OSP: pause
+	if ( level.pause.state == PAUSE_NONE || ent->client->sess.raceMode )
+		ClientTimerActions( ent, msec );
 
 	G_UpdateClientBroadcasts ( ent );
 
@@ -4958,7 +4974,7 @@ void G_RunClient( gentity_t *ent ) {
 
 	// force client updates if they're not sending packets at roughly 4hz
 
-	if (ent->client->pers.recordingDemo) {
+	if (ent->client->pers.recordingDemo) { //(ent->client->ps.pm_flags & PMF_FOLLOW) ?
 		if (ent->client->pers.noFollow || ent->client->pers.practice || sv_cheats.integer || !ent->client->pers.userName[0] || !ent->client->sess.raceMode || !ent->client->pers.stats.startTime || (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
 			|| (ent->client->lastHereTime < level.time - 30000) ||
 			(level.time - ent->client->pers.stats.startTime > 240*60*1000)) // just give up on races longer than 4 hours lmao
@@ -5095,10 +5111,45 @@ void ClientEndFrame( gentity_t *ent ) {
 
 	// turn off any expired powerups
 	for ( i = 0 ; i < MAX_POWERUPS ; i++ ) {
+
+		//OSP: pause
+		//	If we're paused, update powerup timers accordingly.
+		//	Make sure we dont let stuff like CTF flags expire.
+		if ( ent->client->ps.powerups[i] == 0 ) //loda- whats this do?
+			continue;
+
+		if ( level.pause.state != PAUSE_NONE && ent->client->ps.powerups[i] != INT_MAX && !ent->client->sess.raceMode )
+			ent->client->ps.powerups[i] += level.time - level.previousTime;
+
 		if ( ent->client->ps.powerups[ i ] < level.time ) {
 			ent->client->ps.powerups[ i ] = 0;
 		}
+
 	}
+
+
+	//OSP: pause
+	//	If we're paused, make sure other timers stay in sync
+	if ( level.pause.state != PAUSE_NONE && !ent->client->sess.raceMode) {
+		int time_delta = level.time - level.previousTime;
+
+		ent->client->airOutTime += time_delta;
+		ent->client->inactivityTime += time_delta;
+		ent->client->pers.connectTime += time_delta;
+		ent->client->pers.enterTime += time_delta;
+		ent->client->pers.teamState.lastreturnedflag += time_delta;
+		ent->client->pers.teamState.lasthurtcarrier += time_delta;
+		ent->client->pers.teamState.lastfraggedcarrier += time_delta;
+		ent->client->respawnTime += time_delta;
+		ent->pain_debounce_time += time_delta;
+
+		ent->client->force.drainDebounce += time_delta;
+		ent->client->force.lightningDebounce += time_delta;
+		//ent->client->forceDebounce.drain += time_delta;
+		//ent->client->forceDebounce.lightning += time_delta;
+		ent->client->ps.fd.forcePowerRegenDebounceTime += time_delta;
+	}
+
 
 	//
 	// If the end of unit layout is displayed, don't give

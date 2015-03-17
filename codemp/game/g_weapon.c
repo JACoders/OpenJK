@@ -2411,8 +2411,10 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	missile->s.weapon = WP_ROCKET_LAUNCHER;
 
 	// Make it easier to hit things
-	if (q3style)
+	if (q3style) {
 		VectorSet( missile->r.maxs, 1, 1, 1 ); //Can this be smaller?
+		missile->raceModeShooter = qtrue;
+	}
 	else
 		VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
 	VectorScale( missile->r.maxs, -1, missile->r.mins );
