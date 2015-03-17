@@ -239,8 +239,8 @@ void R_Splash()
 	if ( !pImage )
 	{
 		// Can't find the splash image so just clear to black
-		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
+		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+		qglClear( GL_COLOR_BUFFER_BIT );
 	}
 	else
 	{
