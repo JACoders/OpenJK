@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.8)
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
+include(FindPkgConfig)
+
 # Project name
 set(ProjectName "OpenJK" CACHE STRING "Project Name")
 project(${ProjectName})
@@ -30,6 +32,8 @@ if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
 	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
 endif()
+
+option(UseInternalMinizip "Whether to use the included minizip instead of a locally installed one" ON)
 
 if(WIN32)
 	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" ON)
@@ -260,6 +264,10 @@ endif()
 
 if(UseInternalZlib)
 	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
+endif()
+
+if(UseInternalMinizip)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_MINIZIP")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")

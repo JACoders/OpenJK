@@ -328,6 +328,21 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 
+	if(UseInternalMinizip)
+		set(MPEngineAndDedMinizipFiles
+			"${OpenJKLibDir}/minizip/ioapi.c"
+			"${OpenJKLibDir}/minizip/ioapi.h"
+			"${OpenJKLibDir}/minizip/unzip.cpp"
+			"${OpenJKLibDir}/minizip/unzip.h"
+			)
+		source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
+		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
+	else(UseInternalMinizip)
+		pkg_check_modules(MINIZIP REQUIRED minizip)
+		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${MINIZIP_INCLUDE_DIRS})
+		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${MINIZIP_LIBRARIES})
+	endif(UseInternalMinizip)
+
 	set(MPEngineAndDedSysFiles
 		"${SharedDir}/sys/snapvector.cpp"
 		)
