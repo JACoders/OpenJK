@@ -764,24 +764,36 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 
 #ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function called spot 1: enemy_flag is %i\n", enemy_flag);
+	G_SecurityLogPrintf("Team_TouchOurFlag function called spot 1: enemy_flag is %i, team is %i\n", enemy_flag, team);
 #endif
 
 	if ( ent->flags & FL_DROPPED_ITEM ) {
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 2\n");
+#endif
 		// hey, its not home.  return it by teleporting it back
 		//PrintMsg( NULL, "%s" S_COLOR_WHITE " returned the %s flag!\n", 
 		//	cl->pers.netname, TeamName(team));
 		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_RETURNED_FLAG);
 
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 3\n");
+#endif
+
 		AddScore(other, ent->r.currentOrigin, CTF_RECOVERY_BONUS);
 		other->client->pers.teamState.flagrecovery++;
 		if (other->client->pers.userName && other->client->pers.userName[0])
 			G_AddSimpleStat(other->client->pers.userName, 5);
+
+#ifdef _DEBUGCTFCRASH
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 4\n");
+#endif
+
 		other->client->pers.teamState.lastreturnedflag = level.time;
 		//ResetFlag will remove this entity!  We must return zero
-		Team_ReturnFlagSound(Team_ResetFlag(team), team);
+		Team_ReturnFlagSound(Team_ResetFlag(team), team); //is this crashing wtf
 #ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 1, Enemy Flag is %i\n", enemy_flag);
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 5, Enemy Flag is %i\n", enemy_flag);
 #endif
 		return 0;
 	}
@@ -790,7 +802,7 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	// flag, he's just won!
 	if (!cl->ps.powerups[enemy_flag]) {
 #ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 2, Enemy Flag is %i\n", enemy_flag);
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 6, Enemy Flag is %i\n", enemy_flag);
 #endif
 		return 0; // We don't have the flag
 	}
@@ -799,13 +811,13 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	// cause game ending with tied score
 	if (level.intermissionQueued) {
 #ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 3, Enemy Flag is %i\n", enemy_flag);
+	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 7, Enemy Flag is %i\n", enemy_flag);
 #endif
 		return 0;
 	}
 
 #ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 2, Enemy Flag is %i\n", enemy_flag);
+	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 8, Enemy Flag is %i\n", enemy_flag);
 #endif
 
 	// check for enemy closer to grab the flag
@@ -822,10 +834,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		enemyTeam = TEAM_RED;
 	else 
 		enemyTeam = TEAM_FREE; //racemode ctf crashfix?
-
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 3, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
-#endif
 
 	for (j = 0; j < num; j++) {
 		enemy = (g_entities + touch[j]);
@@ -856,16 +864,9 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 			// possible recursion is hidden in this, but 
 			// infinite recursion wont happen, because we cant 
 			// have a < b and b < a at the same time
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function exited at point 4, Enemy Flag is %i\n", enemy_flag);
-#endif
 			return Team_TouchEnemyFlag( ent, enemy, team );
 		}
 	}
-
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 4, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
-#endif
 
 	//PrintMsg( NULL, "%s" S_COLOR_WHITE " captured the %s flag!\n", cl->pers.netname, TeamName(OtherTeam(team)));
 
@@ -908,10 +909,6 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	}
 	else
 		PrintCTFMessage(other->s.number, team, CTFMESSAGE_PLAYER_CAPTURED_FLAG); 
-
-#ifdef _DEBUGCTFCRASH
-	G_SecurityLogPrintf("Team_TouchOurFlag function reached point 5, Enemy Flag is %i, EnemyTeam is %i\n", enemy_flag, enemyTeam);
-#endif
 
 	Team_CaptureFlagSound( ent, team );
 

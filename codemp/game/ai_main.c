@@ -7072,6 +7072,17 @@ void NewBotAI_NF(bot_state_t *bs)
 			}
 			trap->EA_MoveForward(bs->client); 
 		}
+		else if (g_easyBackslash.integer && (bs->frame_Enemy_Len < 128) && (g_backslashDamageScale.value >= 5 || (g_backslashDamageScale.value >= 3 && g_spinBackslash.integer))) {
+			//Do a backslash 
+			//bs->ideal_viewangles[YAW] += 180;
+			if (BS_GroundDistance(bs) < 20)
+				trap->EA_Jump(bs->client); 
+			else
+				trap->EA_Crouch(bs->client); 
+			trap->EA_MoveBack(bs->client); 
+			if (g_entities[bs->client].client->ps.legsAnim != BOTH_ROLL_F)
+				trap->EA_Attack(bs->client);
+		}	
 		else {
 			trap->EA_MoveRight(bs->client); 
 			/*if (bs->currentEnemy->client->ps.saberMove > 1) {
@@ -7104,7 +7115,7 @@ void NewBotAI_NF(bot_state_t *bs)
 		trap->EA_MoveForward(bs->client); 
 	}
 	
-	if (swing && bs->frame_Enemy_Len < 200)
+	if (swing && bs->frame_Enemy_Len < 200 && g_entities[bs->client].client->ps.saberMove != 13) //fuck trying to aim backslash like this
 	{
 		vec3_t saberEnd, saberAngs;
 		VectorCopy(g_entities[bs->client].client->saber[0].blade[0].trail.tip, saberEnd); //Vector of the tip of the saber 
