@@ -7836,7 +7836,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 
 			if (Q_stricmp( arg1, "rpg" ) == 0)
 			{
-				trap->SendServerCommand(ent-g_entities, "print \"\n^2/list force: ^7lists force power skills\n^2/list weapons: ^7lists weapon skills\n^2/list other: ^7lists miscellaneous skills\n^2/list ammo: ^7lists ammo skills\n^2/list items: ^7lists the holdable items skills\n^2/list [skill number]: ^7lists info about a skill\n^2/list quests: ^7lists info about RPG mode quests\n^2/list commands: ^7lists the RPG Mode console commands\n^2/list classes: ^7lists the RPG classes\n^2/list stuff: ^7lists stuff bought from the seller\n\n\"");
+				trap->SendServerCommand(ent-g_entities, "print \"\n^2/list force: ^7lists force power skills\n^2/list weapons: ^7lists weapon skills\n^2/list other: ^7lists miscellaneous skills\n^2/list ammo: ^7lists ammo skills\n^2/list items: ^7lists holdable items skills\n^2/list [skill number]: ^7lists info about a skill\n^2/list quests: ^7lists the quests\n^2/list commands: ^7lists the RPG Mode console commands\n^2/list classes: ^7lists the RPG classes\n^2/list stuff: ^7lists stuff bought from the seller\n^2/list info: ^7lists info about the RPG Mode\n\n\"");
 			}
 			else if (Q_stricmp( arg1, "force" ) == 0)
 			{
@@ -8490,6 +8490,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7 Has all skills, but no unique features\n^31 - Force User\n^7 Has force powers, saber and melee. Saber does more damage. Force powers use less force\n^32 - Bounty Hunter\n^7 Has guns with more damage. Gets more credits in battles\n^33 - Armored Soldier\n^7 Deflects some gun shots. Can use guns and some holdable items. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7 Has melee and some force powers. Melee does more damage and destroy breakable objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7 Uses some guns. Has a lot of gun damage. Cloak Item does not decloak by electric attacks, and also takes less electric damage\n^36 - Duelist\n^7 Has some force powers and has the highest saber damage. Melee does more damage\n^37 - Force Gunner\n^7 Has some force powers and some guns. Improvements increase more damage and resistance than Free Warrior\n^38 - Magic Master\n^7 Has very few skills but can learn many powers\n^3/rpgclass <class number>\n\"" );
+			}
+			else if (Q_stricmp( arg1, "info" ) == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"\nTo get levels in RPG Mode, defeat players or npcs. The levels also give skillpoints, which can be used to get skills (force, weapons, ammo, etc). You can upgrade skills by using ^3/up <skill number>^7. Try also playing the quests, which can give you special powers.\n\n\"");
 			}
 			else if (Q_stricmp( arg1, "stuff" ) == 0)
 			{
