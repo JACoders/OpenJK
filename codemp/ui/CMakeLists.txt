@@ -82,6 +82,16 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		LIBRARY
 		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
 		COMPONENT ${JKAMPCoreComponent})
+elseif(WIN32)
+	install(TARGETS ${MPUI}
+		RUNTIME
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+else()
+	install(TARGETS ${MPUI}
+		LIBRARY
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
 endif()
 
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPUIDefines};${ReleaseDefines}")
