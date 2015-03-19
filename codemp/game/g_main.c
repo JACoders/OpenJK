@@ -185,6 +185,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.time = levelTime;
 	level.startTime = levelTime;
 
+#if _retardedsabertest
+	level.saberUpdateDebounceTime = levelTime; //JAPRO, stop this from started at 0 i guess though just incase
+#endif
+
 	level.follow1 = level.follow2 = -1;
 
 	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
@@ -3723,10 +3727,43 @@ void G_RunFrame( int levelTime ) {
 				}
 			}
 
+#define _retardedsabertest 0
+
 			if((!level.intermissiontime)&&!(ent->client->ps.pm_flags&PMF_FOLLOW) && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
 				WP_ForcePowersUpdate(ent, &ent->client->pers.cmd );
+#if _retardedsabertest
+				if (sv_saberFPS.integer > 0) {
+					const int savedLevelTime = level.time;
+					const int timeDelta = max((1000 / sv_saberFPS.integer), 1);
+
+					while (level.saberUpdateDebounceTime < savedLevelTime ) {
+						WP_SaberPositionUpdate(ent, &ent->client->pers.cmd); //Wew ok, so this is where sv_fps controls saber?
+
+						//G_RunThink( ent );
+						//G_RunClient( ent );
+
+						trap->Print("Msec: %i, level.time: %i, stime: %i, pos: %.0f, %.0f, %.0f\n", timeDelta, level.time, ent->client->saber[0].blade[0].trail.lastTime, ent->client->saber[0].blade[0].trail.tip[0], ent->client->saber[0].blade[0].trail.tip[1], ent->client->saber[0].blade[0].trail.tip[2]);
+						level.saberUpdateDebounceTime += timeDelta;
+						level.time += timeDelta;
+						//Why is the saber position not getting updated, is it a trap->linkEntity problem where that only happens every sv_fps ?
+
+						//Well this is just getting called like x times in a row, all at once.. if the collision is anim based then its not going to do anything? the checks need to be spread out?
+						//but how to do that without locking up server
+						//or find where in w_saber.c the speed of the saber swing is..? dunno
+						//but wait.. the checks are spread out.. thats exactly what 'faking' level.time here is doing.. idk
+
+						//Actually i think the problem is the saber position is got from "G2API_GetBoltMatrix" trap call, which is maybe only updated every sv_fps ?
+						//So how to update G2API_GetBoltMatrix more often?
+					}
+					level.time = savedLevelTime;
+				}
+				else {
+					WP_SaberPositionUpdate(ent, &ent->client->pers.cmd); //Wew ok, so this is where sv_fps controls saber?
+				}
+#else
 				WP_SaberPositionUpdate(ent, &ent->client->pers.cmd);
+#endif
 				WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
 
 				if (level.gametype == GT_CTF) { //No clue why it wont work when i use pm->xyspeed.

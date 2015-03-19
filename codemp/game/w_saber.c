@@ -8615,7 +8615,7 @@ nextStep:
 	}
 
 	//fVSpeed *= 0.08;
-	fVSpeed *= 1.6f/sv_fps.value;
+	fVSpeed *= 1.6f/sv_fps.value; //loda fixme, take into account sv_saberFPS maybe
 
 	//Cap it off at reasonable values so the saber box doesn't go flying ahead of us or
 	//something if we get a big speed boost from something.

@@ -81,9 +81,9 @@ typedef struct PlayerID_s {
 
 void getDateTime(int time, char * timeStr, size_t timeStrSize) {
 	time_t	timeGMT;
-	time -= 60*60*5; //EST timezone -5? 
+	//time -= 60*60*5; //EST timezone -5? 
 	timeGMT = (time_t)time;
-	strftime( timeStr, timeStrSize, "%m/%d/%y %I:%M %p", gmtime( &timeGMT ) );
+	strftime( timeStr, timeStrSize, "%m/%d/%y %I:%M %p", localtime( &timeGMT ) );
 }
 
 unsigned int ip_to_int (const char * ip) {
