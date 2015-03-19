@@ -129,6 +129,16 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		LIBRARY
 		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
 		COMPONENT ${JKAMPCoreComponent})
+elseif(WIN32)
+	install(TARGETS ${MPCGame}
+		RUNTIME
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+else()
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
 endif()
 
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPCGameDefines};${ReleaseDefines}")
