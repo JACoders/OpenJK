@@ -4115,6 +4115,11 @@ void load_account(gentity_t *ent, qboolean change_mode)
 				ent->client->sess.amrpgmode = 2;
 		}
 
+		if (zyk_allow_rpg_mode.integer == 0 && ent->client->sess.amrpgmode == 2)
+		{ // zyk: RPG Mode not allowed. Change his account to Admin-Only Mode
+			ent->client->sess.amrpgmode = 1;
+		}
+
 		// zyk: initializing mind control attributes used in RPG mode
 		ent->client->pers.being_mind_controlled = -1;
 		ent->client->pers.other_skills_levels[8] = 0;
@@ -5296,13 +5301,13 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 		{
 			initialize_rpg_skills(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Use command ^3/list^7.\n\"" );
-		}
 
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
-		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-			add_credits(ent, 10);
-			G_Kill(ent);
+			if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+			{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
+				// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
+				add_credits(ent, 10);
+				G_Kill(ent);
+			}
 		}
 	}
 	else
@@ -10641,7 +10646,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			trap->SendServerCommand( ent-g_entities, va("print \"Allow Screen Message %s\n\"", new_status) );
 		}
 
-		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.amrpgmode == 2)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
 			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
 			add_credits(ent, 10);
@@ -10928,7 +10933,7 @@ void Cmd_PlayerMode_f( gentity_t *ent ) {
 	else
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2RPG mode^7.\n\"" );
 
-	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.amrpgmode == 2)
 	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
 		// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
 		add_credits(ent, 10);
