@@ -276,5 +276,6 @@ XCVAR_DEF( zyk_enable_time_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,		
 XCVAR_DEF( zyk_screen_message,	"",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_screen_message_timer,	"3000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_rpg_mode,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_list_cmds_results_per_page,	"10",	NULL,			CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF

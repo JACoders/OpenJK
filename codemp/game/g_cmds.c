@@ -2170,7 +2170,7 @@ void Cmd_MapList_f( gentity_t *ent ) {
 		char file_content[MAX_STRING_CHARS];
 		char content[512];
 		int i = 0;
-		int results_per_page = 9; // zyk: number of results per page
+		int results_per_page = zyk_list_cmds_results_per_page.integer; // zyk: number of results per page
 		FILE *map_list_file;
 		strcpy(file_content,"");
 		strcpy(content,"");
@@ -11008,7 +11008,7 @@ void Cmd_NpcList_f( gentity_t *ent ) {
 	char file_content[MAX_STRING_CHARS];
 	char content[512];
 	int i = 0;
-	int results_per_page = 9; // zyk: number of results per page
+	int results_per_page = zyk_list_cmds_results_per_page.integer; // zyk: number of results per page
 	FILE *npc_list_file;
 	strcpy(file_content,"");
 	strcpy(content,"");
@@ -11064,7 +11064,7 @@ void Cmd_VehicleList_f( gentity_t *ent ) {
 	char file_content[MAX_STRING_CHARS];
 	char content[512];
 	int i = 0;
-	int results_per_page = 9; // zyk: number of results per page
+	int results_per_page = zyk_list_cmds_results_per_page.integer; // zyk: number of results per page
 	FILE *vehicle_list_file;
 	strcpy(file_content,"");
 	strcpy(content,"");
