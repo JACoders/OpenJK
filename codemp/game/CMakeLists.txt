@@ -202,10 +202,22 @@ elseif(WIN32)
 		RUNTIME
 		DESTINATION "OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
+	if (WIN64)
+		# Don't do this on 32-bit Windows to avoid overwriting
+		# vanilla JKA's DLLs
+		install(TARGETS ${MPGame}
+			RUNTIME
+			DESTINATION "base"
+			COMPONENT ${JKAMPCoreComponent})
+	endif()
 else()
 	install(TARGETS ${MPGame}
 		LIBRARY
 		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	install(TARGETS ${MPGame}
+		LIBRARY
+		DESTINATION "base"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
 
