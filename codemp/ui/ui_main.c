@@ -6305,6 +6305,14 @@ static void UI_RunMenuScript(char **args)
 
 					trap->Cmd_ExecuteText( EXEC_APPEND, va("login %s %s\n", zyk_login, zyk_password) );
 				}
+				else if (Q_stricmp( "changepassword", arg ) == 0)
+				{ // zyk: change password of the account
+					char zyk_password[512];
+
+					trap->Cvar_VariableStringBuffer("accPassword",zyk_password,sizeof(zyk_password));
+
+					trap->Cmd_ExecuteText( EXEC_APPEND, va("changepassword %s\n", zyk_password) );
+				}
 				else if (Q_stricmp( "logout", arg ) == 0)
 				{ // zyk: logout the account
 					trap->Cmd_ExecuteText( EXEC_APPEND, "logout\n" );
