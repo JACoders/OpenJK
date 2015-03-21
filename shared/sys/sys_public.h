@@ -168,12 +168,30 @@ typedef struct window_s
 	graphicsApi_t api;
 } window_t;
 
+typedef enum glProfile_e
+{
+	GLPROFILE_COMPATIBILITY,
+	GLPROFILE_CORE,
+	GLPROFILE_ES,
+} glProfile_t;
+
+typedef enum glContextFlag_e
+{
+	GLCONTEXT_DEBUG = (1 << 1),
+} glContextFlag_t;
+
 typedef struct windowDesc_s
 {
 	graphicsApi_t api;
-	int openglMajorVersion;
-	int openglMinorVersion;
-	bool openglCoreContext;
+
+	// Only used if api == GRAPHICS_API_OPENGL
+	struct gl_
+	{
+		int majorVersion;
+		int minorVersion;
+		glProfile_t profile;
+		uint32_t contextFlags;
+	} gl;
 } windowDesc_t;
 
 typedef struct glconfig_s glconfig_t;

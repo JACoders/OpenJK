@@ -460,15 +460,39 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
 
-			if ( windowDesc->openglMajorVersion )
+			if ( windowDesc->gl.majorVersion )
 			{
-				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, windowDesc->openglMajorVersion );
-				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, windowDesc->openglMinorVersion );
+				int compactVersion = windowDesc->gl.majorVersion * 100 + windowDesc->gl.minorVersion * 10;
+
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, windowDesc->gl.majorVersion );
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, windowDesc->gl.minorVersion );
+
+				if ( windowDesc->gl.profile == GLPROFILE_ES || compactVersion >= 320 )
+				{
+					int profile;
+					switch ( windowDesc->gl.profile )
+					{
+					default:
+					case GLPROFILE_COMPATIBILITY:
+						profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+						break;
+
+					case GLPROFILE_CORE:
+						profile = SDL_GL_CONTEXT_PROFILE_CORE;
+						break;
+
+					case GLPROFILE_ES:
+						profile = SDL_GL_CONTEXT_PROFILE_ES;
+						break;
+					}
+
+					SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, profile );
+				}
 			}
 
-			if ( windowDesc->openglCoreContext )
+			if ( windowDesc->gl.contextFlags & GLCONTEXT_DEBUG )
 			{
-				SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
 			}
 
 			if(r_stereo->integer)
