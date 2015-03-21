@@ -6279,6 +6279,38 @@ static void UI_RunMenuScript(char **args)
 				Menus_CloseAll();
 			}
 		}
+		else if (Q_stricmp(name, "zykmod") == 0)
+		{ // zyk: new ui script. Sends Zyk OpenJK Mod ui commands to server
+			const char *arg;
+
+			if (String_Parse(args, &arg))
+			{
+				if (Q_stricmp( "new", arg ) == 0)
+				{ // zyk: creates a new account
+					char zyk_login[512];
+					char zyk_password[512];
+
+					trap->Cvar_VariableStringBuffer("accLogin",zyk_login,sizeof(zyk_login));
+					trap->Cvar_VariableStringBuffer("accPassword",zyk_password,sizeof(zyk_password));
+
+					trap->Cmd_ExecuteText( EXEC_APPEND, va("new %s %s\n", zyk_login, zyk_password) );
+				}
+				else if (Q_stricmp( "login", arg ) == 0)
+				{ // zyk: login the account
+					char zyk_login[512];
+					char zyk_password[512];
+
+					trap->Cvar_VariableStringBuffer("accLogin",zyk_login,sizeof(zyk_login));
+					trap->Cvar_VariableStringBuffer("accPassword",zyk_password,sizeof(zyk_password));
+
+					trap->Cmd_ExecuteText( EXEC_APPEND, va("login %s %s\n", zyk_login, zyk_password) );
+				}
+				else if (Q_stricmp( "logout", arg ) == 0)
+				{ // zyk: logout the account
+					trap->Cmd_ExecuteText( EXEC_APPEND, "logout\n" );
+				}
+			}
+		}
 		else if (Q_stricmp(name, "setForce") == 0)
 		{
 			const char *teamArg;
