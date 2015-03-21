@@ -704,9 +704,10 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
+		windowDesc_t windowDesc = { GRAPHICS_API_OPENGL };
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window = ri.WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		window = ri.WIN_Init(&windowDesc, &glConfig);
 
 		// get our config strings
 		glConfig.vendor_string = (const char *)qglGetString (GL_VENDOR);

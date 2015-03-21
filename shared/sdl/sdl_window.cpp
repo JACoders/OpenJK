@@ -263,7 +263,7 @@ static bool GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, const char *windowTitle, int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDesc, const char *windowTitle, int mode, qboolean fullscreen, qboolean noborder)
 {
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
@@ -275,7 +275,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	int display = 0;
 	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
-	if ( graphicsApi == GRAPHICS_API_OPENGL )
+	if ( windowDesc->api == GRAPHICS_API_OPENGL )
 	{
 		flags |= SDL_WINDOW_OPENGL;
 	}
@@ -386,7 +386,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	stencilBits = r_stencilbits->integer;
 	samples = r_ext_multisample->integer;
 
-	if ( graphicsApi == GRAPHICS_API_OPENGL )
+	if ( windowDesc->api == GRAPHICS_API_OPENGL )
 	{
 		for (i = 0; i < 16; i++)
 		{
@@ -459,6 +459,17 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
+
+			if ( windowDesc->openglMajorVersion )
+			{
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, windowDesc->openglMajorVersion );
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, windowDesc->openglMinorVersion );
+			}
+
+			if ( windowDesc->openglCoreContext )
+			{
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+			}
 
 			if(r_stereo->integer)
 			{
@@ -559,7 +570,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 GLimp_StartDriverAndSetMode
 ===============
 */
-static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, int mode, qboolean fullscreen, qboolean noborder)
+static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, const windowDesc_t *windowDesc, int mode, qboolean fullscreen, qboolean noborder)
 {
 	rserr_t err;
 
@@ -598,7 +609,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(glConfig, graphicsApi, CLIENT_WINDOW_TITLE, mode, fullscreen, noborder);
+	err = GLimp_SetMode(glConfig, windowDesc, CLIENT_WINDOW_TITLE, mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -618,7 +629,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 	return qtrue;
 }
 
-window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
+window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 {
 	Cmd_AddCommand("modelist", R_ModeList_f);
 	Cmd_AddCommand("minimize", GLimp_Minimize);
@@ -645,14 +656,14 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	r_ext_multisample	= Cvar_Get( "r_ext_multisample",	"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Create the window and set up the context
-	if(!GLimp_StartDriverAndSetMode( glConfig, api, r_mode->integer,
+	if(!GLimp_StartDriverAndSetMode( glConfig, windowDesc, r_mode->integer,
 										(qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer ))
 	{
 		if( r_mode->integer != R_MODE_FALLBACK )
 		{
 			Com_Printf( "Setting r_mode %d failed, falling back on r_mode %d\n", r_mode->integer, R_MODE_FALLBACK );
 
-			if (!GLimp_StartDriverAndSetMode( glConfig, api, R_MODE_FALLBACK, qfalse, qfalse ))
+			if (!GLimp_StartDriverAndSetMode( glConfig, windowDesc, R_MODE_FALLBACK, qfalse, qfalse ))
 			{
 				// Nothing worked, give up
 				Com_Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
@@ -671,7 +682,7 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	// window_t is only really useful for Windows if the renderer wants to create a D3D context.
 	window_t window = {};
 
-	window.api = api;
+	window.api = windowDesc->api;
 
 #if defined(_WIN32)
 	SDL_SysWMinfo info;
