@@ -197,6 +197,28 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		LIBRARY
 		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
 		COMPONENT ${JKAMPCoreComponent})
+elseif(WIN32)
+	install(TARGETS ${MPGame}
+		RUNTIME
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	if (WIN64)
+		# Don't do this on 32-bit Windows to avoid overwriting
+		# vanilla JKA's DLLs
+		install(TARGETS ${MPGame}
+			RUNTIME
+			DESTINATION "base"
+			COMPONENT ${JKAMPCoreComponent})
+	endif()
+else()
+	install(TARGETS ${MPGame}
+		LIBRARY
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	install(TARGETS ${MPGame}
+		LIBRARY
+		DESTINATION "base"
+		COMPONENT ${JKAMPCoreComponent})
 endif()
 
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPGameDefines};${ReleaseDefines}")
