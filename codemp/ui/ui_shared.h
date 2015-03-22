@@ -10,7 +10,7 @@
 #define MAX_ITEMTEXT				64
 #define MAX_ITEMACTION				64
 #define MAX_MENUDEFFILE				8192 //4096
-#define MAX_MENUFILE				65536 //32768
+#define MAX_MENUFILE				131072 //32768 // zyk: default 65536
 #define MAX_MENUS					128 //64
 #define MAX_MENUITEMS				512 //256
 #define MAX_COLOR_RANGES			10
