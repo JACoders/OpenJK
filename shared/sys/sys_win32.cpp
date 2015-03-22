@@ -1,3 +1,24 @@
+/*
+===========================================================================
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "sys_local.h"
 #include <direct.h>
 #include <io.h>
@@ -178,17 +199,20 @@ static const char *GetErrorString( DWORD error ) {
 }
 
 void Sys_SetProcessorAffinity( void ) {
-	DWORD_PTR processMask, dummy;
+	DWORD_PTR processMask, processAffinityMask, systemAffinityMask;
 	HANDLE handle = GetCurrentProcess();
 
-	if ( !GetProcessAffinityMask( handle, &dummy, &dummy ) )
+	if ( !GetProcessAffinityMask( handle, &processAffinityMask, &systemAffinityMask ) )
 		return;
 
 	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
 		processMask = 1; // set to first core only
 
 	if ( !processMask )
-		return;
+		processMask = systemAffinityMask; // use all the cores available to the system
+
+	if ( processMask == processAffinityMask )
+		return; // no change
 
 	if ( !SetProcessAffinityMask( handle, processMask ) )
 		Com_DPrintf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );

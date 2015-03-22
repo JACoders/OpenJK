@@ -1,5 +1,27 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 #include "ghoul2/G2.h"
 #include "bg_saga.h"
@@ -3911,6 +3933,16 @@ void ClientDisconnect( int clientNum ) {
 	i = 0;
 
 	G_LeaveVehicle( ent, qtrue );
+
+	if ( ent->client->ewebIndex )
+	{
+		gentity_t *eweb = &g_entities[ent->client->ewebIndex];
+
+		ent->client->ps.emplacedIndex = 0;
+		ent->client->ewebIndex = 0;
+		ent->client->ewebHealth = 0;
+		G_FreeEntity( eweb );
+	}
 
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {

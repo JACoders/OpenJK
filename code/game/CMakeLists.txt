@@ -349,14 +349,24 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 if(WIN32)
-	install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+	install(TARGETS ${SPGame}
+		RUNTIME
+		DESTINATION "OpenJK"
+		COMPONENT ${JKASPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildSPEngine)
-		install(TARGETS ${SPGame} LIBRARY DESTINATION "${SPEngine}.app/Contents/MacOS/OpenJK")
-	else(MakeApplicationBundles AND BuildSPEngine)
-		install(TARGETS ${SPGame} LIBRARY DESTINATION "OpenJK")
-	endif(MakeApplicationBundles AND BuildSPEngine) 
-endif(WIN32)
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "${SPEngine}.app/Contents/MacOS/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	else()
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	endif() 
+endif()
+
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")

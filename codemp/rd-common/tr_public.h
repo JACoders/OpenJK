@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #ifndef TR_PUBLIC_H
 #define TR_PUBLIC_H
 
@@ -6,7 +30,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 6
+#define	REF_API_VERSION 7
 
 //
 // these are the functions exported by the refresh module
@@ -294,7 +318,7 @@ typedef struct refimport_s {
 	int				(*CGVM_RagCallback)					( int callType );
 
 	// window handling
-	window_t		(*WIN_Init)                         ( graphicsApi_t graphicsApi, glconfig_t *glConfig );
+	window_t		(*WIN_Init)                         ( const windowDesc_t *desc, glconfig_t *glConfig );
 	void			(*WIN_SetGamma)						( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
 	void			(*WIN_Present)						( window_t *window );
 	void            (*WIN_Shutdown)                     ( void );

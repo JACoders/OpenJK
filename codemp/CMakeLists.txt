@@ -505,6 +505,7 @@ if(BuildMPEngine)
 
 	set(MPEngineSysFiles
 		"${SharedDir}/sdl/sdl_window.cpp"
+		"${SharedDir}/sdl/sdl_icon.h"
 		"${SharedDir}/sdl/sdl_input.cpp"
 		"${SharedDir}/sdl/sdl_sound.cpp"
 		"${SharedDir}/sys/sys_loadlib.h"
@@ -575,11 +576,19 @@ if(BuildMPEngine)
 	endif(WIN32)
 
 	if(MakeApplicationBundles)
-		install(TARGETS ${MPEngine} BUNDLE DESTINATION ".")
+		install(TARGETS ${MPEngine}
+			BUNDLE
+			DESTINATION "."
+			COMPONENT ${JKAMPClientComponent})
 	else(MakeApplicationBundles)
-		install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+		install(TARGETS ${MPEngine}
+			RUNTIME
+			DESTINATION "."
+			COMPONENT ${JKAMPClientComponent})
 		if(MPEngineExtraInstallFiles)
-			install(FILES ${MPEngineExtraInstallFiles} DESTINATION ".")
+			install(FILES ${MPEngineExtraInstallFiles}
+				DESTINATION "."
+				COMPONENT ${JKAMPClientComponent})
 		endif()
 	endif(MakeApplicationBundles)
 
@@ -669,7 +678,10 @@ if(BuildMPDed)
 	endif(WIN32)
 
 	add_executable(${MPDed} ${MPDedFiles})
-	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")
+	install(TARGETS ${MPDed}
+		RUNTIME
+		DESTINATION "."
+		COMPONENT ${JKAMPServerComponent})
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
@@ -678,3 +690,36 @@ if(BuildMPDed)
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)
+
+set(GameLibsBuilt)
+if(BuildMPGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
+endif()
+
+if(BuildMPCGame)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
+endif()
+
+if(BuildMPUI)
+	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
+endif()
+
+set(GameLibFullPaths)
+foreach(GameLib ${GameLibsBuilt})
+	set(GameLibFullPaths
+		${GameLibFullPaths}
+		${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+endforeach(GameLib)
+
+if(WIN32)
+	include(InstallZIP)
+	add_zip_command(openjk.pk3
+		FILES ${GameLibFullPaths}
+		DEPENDS "${GameLibsBuilt}")
+	add_custom_target(Assets
+		ALL
+		DEPENDS openjk.pk3)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+endif()

@@ -1,27 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License version 2
-    as published by the Free Software Foundation.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_init.c -- functions that are not called every frame
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "tr_local.h"
 #include "../rd-common/tr_common.h"
@@ -236,8 +239,8 @@ void R_Splash()
 	if ( !pImage )
 	{
 		// Can't find the splash image so just clear to black
-		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
+		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+		qglClear( GL_COLOR_BUFFER_BIT );
 	}
 	else
 	{
@@ -701,9 +704,10 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
+		windowDesc_t windowDesc = { GRAPHICS_API_OPENGL };
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window = ri.WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		window = ri.WIN_Init(&windowDesc, &glConfig);
 
 		// get our config strings
 		glConfig.vendor_string = (const char *)qglGetString (GL_VENDOR);

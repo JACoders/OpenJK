@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
@@ -743,9 +766,10 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
+		windowDesc_t windowDesc = { GRAPHICS_API_OPENGL };
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		window = ri->WIN_Init(&windowDesc, &glConfig);
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 

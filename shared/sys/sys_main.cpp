@@ -1,3 +1,24 @@
+/*
+===========================================================================
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include <csignal>
 #include <cstdlib>
 #include <cstdarg>
@@ -232,7 +253,7 @@ Sys_FileTime
 returns -1 if not present
 ============
 */
-int Sys_FileTime( char *path )
+time_t Sys_FileTime( const char *path )
 {
 	struct stat buf;
 
@@ -657,8 +678,8 @@ int main ( int argc, char* argv[] )
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
-	CON_Init();
 	Sys_PlatformInit();
+	CON_Init();
 
 	// get the initial time base
 	Sys_Milliseconds();

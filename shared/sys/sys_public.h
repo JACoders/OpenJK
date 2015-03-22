@@ -1,3 +1,24 @@
+/*
+===========================================================================
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "qcommon/q_shared.h"
@@ -126,7 +147,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 void	Sys_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-int Sys_FileTime( char *path );
+time_t Sys_FileTime( const char *path );
 
 qboolean Sys_LowPhysicalMemory();
 
@@ -147,15 +168,34 @@ typedef struct window_s
 	graphicsApi_t api;
 } window_t;
 
-typedef struct windowCreateOptions_s
+typedef enum glProfile_e
 {
-	int openglMajorVersion;
-	int openglMinorVersion;
-	bool openglCoreContext;
-} windowCreateOptions_t;
+	GLPROFILE_COMPATIBILITY,
+	GLPROFILE_CORE,
+	GLPROFILE_ES,
+} glProfile_t;
+
+typedef enum glContextFlag_e
+{
+	GLCONTEXT_DEBUG = (1 << 1),
+} glContextFlag_t;
+
+typedef struct windowDesc_s
+{
+	graphicsApi_t api;
+
+	// Only used if api == GRAPHICS_API_OPENGL
+	struct gl_
+	{
+		int majorVersion;
+		int minorVersion;
+		glProfile_t profile;
+		uint32_t contextFlags;
+	} gl;
+} windowDesc_t;
 
 typedef struct glconfig_s glconfig_t;
-window_t	WIN_Init( graphicsApi_t api, glconfig_t *glConfig );
+window_t	WIN_Init( const windowDesc_t *desc, glconfig_t *glConfig );
 void		WIN_Present( window_t *window );
 void		WIN_SetGamma( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
 void		WIN_Shutdown( void );

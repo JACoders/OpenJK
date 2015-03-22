@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "RoffSystem.h"
 
 #ifndef DEDICATED
@@ -609,18 +632,23 @@ qboolean CROFFSystem::List( int id )
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean isClient )
 {
-	sharedEntity_t *ent = SV_GentityNum( entID );
+	sharedEntity_t *ent = NULL;
 
-	ent->r.mIsRoffing = qtrue;
-/*rjr	if(ent->GetPhysics() == PHYSICS_TYPE_NONE)
+	if ( !isClient )
 	{
-		ent->SetPhysics(PHYSICS_TYPE_BRUSHMODEL);
-	}*/
-	//bjg TODO: reset this latter?
+		ent = SV_GentityNum( entID );
 
-	if ( ent == 0 )
-	{ // shame on you..
-		return qfalse;
+		if ( ent == NULL )
+		{ // shame on you..
+			return qfalse;
+		}
+		ent->r.mIsRoffing = qtrue;
+
+		/*rjr	if(ent->GetPhysics() == PHYSICS_TYPE_NONE)
+		{
+		ent->SetPhysics(PHYSICS_TYPE_BRUSHMODEL);
+		}*/
+		//bjg TODO: reset this latter?
 	}
 
 	SROFFEntity *roffing_ent = new SROFFEntity;
@@ -634,7 +662,8 @@ qboolean CROFFSystem::Play( int entID, int id, qboolean doTranslation, qboolean 
 	roffing_ent->mTranslated	= doTranslation;
 	roffing_ent->mIsClient		= isClient;
 
-	VectorCopy(ent->s.apos.trBase, roffing_ent->mStartAngles);
+	if ( !isClient )
+		VectorCopy(ent->s.apos.trBase, roffing_ent->mStartAngles);
 
 	mROFFEntList.push_back( roffing_ent );
 
@@ -922,7 +951,8 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	roff_ent->mNextROFFTime = svs.time + roff->mFrameTime;
 
 	//rww - npcs need to know when they're getting roff'd
-	ent->next_roff_time = roff_ent->mNextROFFTime;
+	if ( !roff_ent->mIsClient )
+		ent->next_roff_time = roff_ent->mNextROFFTime;
 
 
 	return qtrue;
@@ -990,7 +1020,7 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 //---------------------------------------------------------------------------
 qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 {
-	sharedEntity_t	*ent;
+	sharedEntity_t	*ent = NULL;
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
 	float			*origin = NULL, *angle = NULL;
 

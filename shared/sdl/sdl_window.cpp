@@ -1,8 +1,30 @@
+/*
+===========================================================================
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include <SDL.h>
 #include <SDL_syswm.h>
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_types.h"
 #include "sys/sys_local.h"
+#include "sdl_icon.h"
 
 enum rserr_t
 {
@@ -241,23 +263,37 @@ static bool GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, const char *windowTitle, int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDesc, const char *windowTitle, int mode, qboolean fullscreen, qboolean noborder)
 {
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
 	int samples;
 	int i = 0;
+	SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
 	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
-	if ( graphicsApi == GRAPHICS_API_OPENGL )
+	if ( windowDesc->api == GRAPHICS_API_OPENGL )
 	{
 		flags |= SDL_WINDOW_OPENGL;
 	}
 
 	Com_Printf( "Initializing display\n");
+
+	icon = SDL_CreateRGBSurfaceFrom(
+		(void *)CLIENT_WINDOW_ICON.pixel_data,
+		CLIENT_WINDOW_ICON.width,
+		CLIENT_WINDOW_ICON.height,
+		CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
+		CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
+#ifdef Q3_LITTLE_ENDIAN
+		0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
+#else
+		0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
+#endif
+		);
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -298,6 +334,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	else if ( !R_GetModeInfo( &glConfig->vidWidth, &glConfig->vidHeight, /*&glConfig.windowAspect,*/ mode ) )
 	{
 		Com_Printf( " invalid mode\n" );
+		SDL_FreeSurface( icon );
 		return RSERR_INVALID_MODE;
 	}
 	Com_Printf( " %d %d\n", glConfig->vidWidth, glConfig->vidHeight);
@@ -349,7 +386,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 	stencilBits = r_stencilbits->integer;
 	samples = r_ext_multisample->integer;
 
-	if ( graphicsApi == GRAPHICS_API_OPENGL )
+	if ( windowDesc->api == GRAPHICS_API_OPENGL )
 	{
 		for (i = 0; i < 16; i++)
 		{
@@ -423,6 +460,41 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
 			SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
 
+			if ( windowDesc->gl.majorVersion )
+			{
+				int compactVersion = windowDesc->gl.majorVersion * 100 + windowDesc->gl.minorVersion * 10;
+
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, windowDesc->gl.majorVersion );
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, windowDesc->gl.minorVersion );
+
+				if ( windowDesc->gl.profile == GLPROFILE_ES || compactVersion >= 320 )
+				{
+					int profile;
+					switch ( windowDesc->gl.profile )
+					{
+					default:
+					case GLPROFILE_COMPATIBILITY:
+						profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+						break;
+
+					case GLPROFILE_CORE:
+						profile = SDL_GL_CONTEXT_PROFILE_CORE;
+						break;
+
+					case GLPROFILE_ES:
+						profile = SDL_GL_CONTEXT_PROFILE_ES;
+						break;
+					}
+
+					SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, profile );
+				}
+			}
+
+			if ( windowDesc->gl.contextFlags & GLCONTEXT_DEBUG )
+			{
+				SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
+			}
+
 			if(r_stereo->integer)
 			{
 				glConfig->stereoEnabled = qtrue;
@@ -443,6 +515,8 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 				Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 				continue;
 			}
+
+			SDL_SetWindowIcon( screen, icon );
 
 			if( fullscreen )
 			{
@@ -494,6 +568,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 		}
 		else
 		{
+			SDL_SetWindowIcon( screen, icon );
 			if( fullscreen )
 			{
 				if( SDL_SetWindowDisplayMode( screen, NULL ) < 0 )
@@ -503,6 +578,8 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 			}
 		}
 	}
+
+	SDL_FreeSurface( icon );
 
 	if (!GLimp_DetectAvailableModes())
 	{
@@ -517,7 +594,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, co
 GLimp_StartDriverAndSetMode
 ===============
 */
-static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t graphicsApi, int mode, qboolean fullscreen, qboolean noborder)
+static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, const windowDesc_t *windowDesc, int mode, qboolean fullscreen, qboolean noborder)
 {
 	rserr_t err;
 
@@ -556,7 +633,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(glConfig, graphicsApi, CLIENT_WINDOW_TITLE, mode, fullscreen, noborder);
+	err = GLimp_SetMode(glConfig, windowDesc, CLIENT_WINDOW_TITLE, mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -576,7 +653,7 @@ static qboolean GLimp_StartDriverAndSetMode(glconfig_t *glConfig, graphicsApi_t 
 	return qtrue;
 }
 
-window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
+window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 {
 	Cmd_AddCommand("modelist", R_ModeList_f);
 	Cmd_AddCommand("minimize", GLimp_Minimize);
@@ -603,14 +680,14 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	r_ext_multisample	= Cvar_Get( "r_ext_multisample",	"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Create the window and set up the context
-	if(!GLimp_StartDriverAndSetMode( glConfig, api, r_mode->integer,
+	if(!GLimp_StartDriverAndSetMode( glConfig, windowDesc, r_mode->integer,
 										(qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer ))
 	{
 		if( r_mode->integer != R_MODE_FALLBACK )
 		{
 			Com_Printf( "Setting r_mode %d failed, falling back on r_mode %d\n", r_mode->integer, R_MODE_FALLBACK );
 
-			if (!GLimp_StartDriverAndSetMode( glConfig, api, R_MODE_FALLBACK, qfalse, qfalse ))
+			if (!GLimp_StartDriverAndSetMode( glConfig, windowDesc, R_MODE_FALLBACK, qfalse, qfalse ))
 			{
 				// Nothing worked, give up
 				Com_Error( ERR_FATAL, "GLimp_Init() - could not load OpenGL subsystem" );
@@ -629,7 +706,7 @@ window_t WIN_Init( graphicsApi_t api, glconfig_t *glConfig )
 	// window_t is only really useful for Windows if the renderer wants to create a D3D context.
 	window_t window = {};
 
-	window.api = api;
+	window.api = windowDesc->api;
 
 #if defined(_WIN32)
 	SDL_SysWMinfo info;

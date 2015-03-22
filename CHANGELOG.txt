@@ -68,7 +68,6 @@ Key: - removed, + added, * modified
 [SP/MP] * Removed shift key requirement to open console
 [SP/MP] + Raw Mouse Input added to windows (in_mouse 2). An in_restart required if changed while game is running.
 [MP] + gamecode: /clientlist displays clients by id/name and if they are a bot. (Shows real client id unlike serverstatus)
-[SP/MP] + Added XInput support for XBOX 360 controllers (Windows only, in_joystick 2). SDL on *nix supports this as well.
 [SP/MP] + Updated the JPG library
 [MP] * svsay command prints to dedicated console
 [SP/MP] * Alt-tab works properly

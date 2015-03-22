@@ -1,3 +1,24 @@
+/*
+===========================================================================
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include <dirent.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -10,6 +31,7 @@
 #include <pwd.h>
 #include <libgen.h>
 #include <sched.h>
+#include <signal.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -23,6 +45,18 @@ static char homePath[ MAX_OSPATH ] = { 0 };
 
 void Sys_PlatformInit( void )
 {
+	const char* term = getenv( "TERM" );
+
+	signal( SIGHUP, Sys_SigHandler );
+	signal( SIGQUIT, Sys_SigHandler );
+	signal( SIGTRAP, Sys_SigHandler );
+	signal( SIGIOT, Sys_SigHandler );
+	signal( SIGBUS, Sys_SigHandler );
+
+	if (isatty( STDIN_FILENO ) && !( term && ( !strcmp( term, "raw" ) || !strcmp( term, "dumb" ) ) ))
+		stdinIsATTY = qtrue;
+	else
+		stdinIsATTY = qfalse;
 }
 
 void Sys_PlatformExit( void )
@@ -474,10 +508,10 @@ void Sys_SetProcessorAffinity( void ) {
 	if ( sscanf( com_affinity->string, "%X", &cores ) != 1 )
 		cores = 1; // set to first core only
 
-	if ( !cores )
-		return;
-
 	const long numCores = sysconf( _SC_NPROCESSORS_ONLN );
+	if ( !cores )
+		cores = (1 << numCores) - 1; // use all cores
+
 	cpu_set_t set;
 	CPU_ZERO( &set );
 	for ( int i = 0; i < numCores; i++ ) {

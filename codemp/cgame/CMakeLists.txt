@@ -120,16 +120,39 @@ if(NOT WIN32)
 	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
-if(WIN32)
-	install(TARGETS ${MPCGame} RUNTIME DESTINATION "OpenJK")
-else(WIN32)
-	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPCGame} LIBRARY DESTINATION "${MPEngine}.app/Contents/MacOS/OpenJK")
-		install(TARGETS ${MPCGame} LIBRARY DESTINATION "${MPEngine}.app/Contents/MacOS/base")
-	else(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPCGame} LIBRARY DESTINATION "OpenJK")
-	endif(MakeApplicationBundles AND BuildMPEngine)
-endif(WIN32)
+if(MakeApplicationBundles AND BuildMPEngine)
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "${MPEngine}.app/Contents/MacOS/OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
+		COMPONENT ${JKAMPCoreComponent})
+elseif(WIN32)
+	install(TARGETS ${MPCGame}
+		RUNTIME
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	if (WIN64)
+		# Don't do this on 32-bit Windows to avoid overwriting
+		# vanilla JKA's DLLs
+		install(TARGETS ${MPCGame}
+			RUNTIME
+			DESTINATION "base"
+			COMPONENT ${JKAMPCoreComponent})
+	endif()
+else()
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "OpenJK"
+		COMPONENT ${JKAMPCoreComponent})
+	install(TARGETS ${MPCGame}
+		LIBRARY
+		DESTINATION "base"
+		COMPONENT ${JKAMPCoreComponent})
+endif()
+
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")

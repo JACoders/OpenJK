@@ -181,7 +181,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OpenJKLibDir})
 	
-	function(add_sp_renderer_project ProjectName Label EngineName)
+	function(add_sp_renderer_project ProjectName Label EngineName Component)
 		add_library(${ProjectName} SHARED ${SPRDVanillaFiles})
 		if(NOT WIN32)
 			# remove "lib" prefix for .so/.dylib files
@@ -189,14 +189,23 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		endif(NOT WIN32)
 
 		if(WIN32)
-			install(TARGETS ${ProjectName} RUNTIME DESTINATION ".")
+			install(TARGETS ${ProjectName}
+				RUNTIME
+				DESTINATION "."
+				COMPONENT ${Component})
 		else(WIN32)
 			if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
-				install(TARGETS ${ProjectName} LIBRARY DESTINATION "${EngineName}.app/Contents/MacOS/")
-			else(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
-				install(TARGETS ${ProjectName} LIBRARY DESTINATION ".")
-			endif(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
-		endif(WIN32)
+				install(TARGETS ${ProjectName}
+					LIBRARY
+					DESTINATION "${EngineName}.app/Contents/MacOS/"
+					COMPONENT ${Component})
+			else()
+				install(TARGETS ${ProjectName}
+					LIBRARY
+					DESTINATION "."
+					COMPONENT ${Component})
+			endif()
+		endif()
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPRDVanillaDefines};${ReleaseDefines}")
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPRDVanillaDefines};${ReleaseDefines}")
@@ -209,11 +218,11 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	endfunction(add_sp_renderer_project)
 
 	if(BuildSPRdVanilla)
-		add_sp_renderer_project(${SPRDVanillaRenderer} "SP Vanilla Renderer" ${SPEngine})
+		add_sp_renderer_project(${SPRDVanillaRenderer} "SP Vanilla Renderer" ${SPEngine} ${JKASPClientComponent})
 	endif(BuildSPRdVanilla)
 	if(BuildJK2SPRdVanilla)
 		set(SPRDVanillaDefines ${SPRDVanillaDefines} "JK2_MODE")
-		add_sp_renderer_project(${JK2SPVanillaRenderer} "JK2 SP Vanilla Renderer" ${JK2SPEngine})
+		add_sp_renderer_project(${JK2SPVanillaRenderer} "JK2 SP Vanilla Renderer" ${JK2SPEngine} ${JK2SPClientComponent})
 	endif(BuildJK2SPRdVanilla)
 	
 endif(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
