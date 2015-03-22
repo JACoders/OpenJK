@@ -6313,13 +6313,17 @@ static void UI_RunMenuScript(char **args)
 
 					trap->Cmd_ExecuteText( EXEC_APPEND, va("changepassword %s\n", zyk_password) );
 				}
+				else if (Q_stricmp( "logout", arg ) == 0)
+				{ // zyk: logout the account
+					trap->Cmd_ExecuteText( EXEC_APPEND, "logout\n" );
+				}
 				else if (strstr(arg, "rpgclass"))
 				{ // zyk: rpgclass command. Comes with the class number, for example: rpgclass 0
 					trap->Cmd_ExecuteText( EXEC_APPEND, va("%s\n", arg) );
 				}
-				else if (Q_stricmp( "logout", arg ) == 0)
-				{ // zyk: logout the account
-					trap->Cmd_ExecuteText( EXEC_APPEND, "logout\n" );
+				else if (strstr(arg, "up"))
+				{ // zyk: up command. Comes with the skill number, for example: up 1
+					trap->Cmd_ExecuteText( EXEC_APPEND, va("%s\n", arg) );
 				}
 			}
 		}
