@@ -803,9 +803,14 @@ static void InitOpenGL( void )
 
 	if ( glConfig.vidWidth == 0 )
 	{
+		windowDesc_t windowDesc = {};
 		memset(&glConfig, 0, sizeof(glConfig));
 
-		window = ri->WIN_Init(GRAPHICS_API_OPENGL, &glConfig);
+		windowDesc.api = GRAPHICS_API_OPENGL;
+		windowDesc.gl.majorVersion = 3;
+		windowDesc.gl.minorVersion = 2;
+
+		window = ri->WIN_Init(&windowDesc, &glConfig);
 
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 
