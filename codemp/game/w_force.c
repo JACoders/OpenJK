@@ -634,6 +634,10 @@ qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int 
 		else
 			drain = (zyk_max_force_power.integer/2);
 	}
+	else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
+	{ // zyk: Force User class. He spends less force power
+		drain /= 2;
+	}
 
 	if (self->client->ps.fd.forcePowersActive & (1 << forcePower))
 	{ //we're probably going to deactivate it..
@@ -1122,6 +1126,7 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 
 	if ((int)forcePower == FP_SPEED && overrideAmt)
 	{
+		// zyk: Force User class spends less force
 		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
 			overrideAmt = forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower]/2;
 
@@ -1129,6 +1134,7 @@ void WP_ForcePowerStart( gentity_t *self, forcePowers_t forcePower, int override
 	}
 	else if ((int)forcePower != FP_GRIP && (int)forcePower != FP_DRAIN)
 	{ //grip and drain drain as damage is done
+		// zyk: Force User class spends less force
 		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
 			overrideAmt = forcePowerNeeded[self->client->ps.fd.forcePowerLevel[forcePower]][forcePower]/2;
 
