@@ -6325,6 +6325,10 @@ static void UI_RunMenuScript(char **args)
 				{ // zyk: up command. Comes with the skill number, for example: up 1
 					trap->Cmd_ExecuteText( EXEC_APPEND, va("%s\n", arg) );
 				}
+				else if (strstr(arg, "down"))
+				{ // zyk: down command. Comes with the skill number, for example: down 1
+					trap->Cmd_ExecuteText( EXEC_APPEND, va("%s\n", arg) );
+				}
 			}
 		}
 		else if (Q_stricmp(name, "setForce") == 0)
