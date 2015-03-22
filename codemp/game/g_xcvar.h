@@ -278,5 +278,7 @@ XCVAR_DEF( zyk_screen_message_timer,	"3000",			NULL,				CVAR_ARCHIVE|CVAR_NOREST
 XCVAR_DEF( zyk_allow_rpg_mode,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_list_cmds_results_per_page,	"10",	NULL,			CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_start_race_timer,	"15000",	NULL,			CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_flame_thrower_cooldown,	"50",	NULL,			CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_flame_thrower_damage,	"2",	NULL,			CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF

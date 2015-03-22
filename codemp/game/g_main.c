@@ -4390,6 +4390,8 @@ void Player_FireFlameThrower( gentity_t *self )
 	float visionArc = 120;
 	float radius = 144;
 
+	self->client->cloakDebReduce = level.time + zyk_flame_thrower_cooldown.integer;
+
 	origin[0] = self->r.currentOrigin[0];
 	origin[1] = self->r.currentOrigin[1];
 	origin[2] = self->r.currentOrigin[2] + 20.0f;
@@ -4454,7 +4456,7 @@ void Player_FireFlameThrower( gentity_t *self )
 		traceEnt = &g_entities[entityList[e]];
 		if (traceEnt && traceEnt != self)
 		{
-			G_Damage( traceEnt, self, self, self->client->ps.viewangles, tr.endpos, 1, DAMAGE_NO_KNOCKBACK|DAMAGE_IGNORE_TEAM, MOD_LAVA );
+			G_Damage( traceEnt, self, self, self->client->ps.viewangles, tr.endpos, zyk_flame_thrower_damage.integer, DAMAGE_NO_KNOCKBACK|DAMAGE_IGNORE_TEAM, MOD_LAVA );
 		}
 		e++;
 	}
@@ -5581,7 +5583,7 @@ void G_RunFrame( int levelTime ) {
 					}
 				}
 
-				if (ent->client->pers.flame_thrower > level.time)
+				if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)
 				{ // zyk: fires the flame thrower
 					Player_FireFlameThrower(ent);
 				}

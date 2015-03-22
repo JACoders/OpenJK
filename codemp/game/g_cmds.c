@@ -4927,6 +4927,9 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.sense_health_timer = 0;
 
+		// zyk: used to add a cooldown between each flame
+		ent->client->cloakDebReduce = 0;
+
 		ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.other_skills_levels[9]);
 		ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
