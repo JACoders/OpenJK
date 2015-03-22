@@ -11199,7 +11199,7 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 					level.race_mode_vehicle[swoop_number] = this_ent->s.number;
 				}
 
-				level.race_start_timer = level.time + 15000; // zyk: race will start 15 seconds after the last player who joined the race
+				level.race_start_timer = level.time + zyk_start_race_timer.integer; // zyk: race will start some seconds after the last player who joined the race
 				level.race_mode = 1;
 
 				trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7joined the race!\n\"",ent->client->pers.netname) );
