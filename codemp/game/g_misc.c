@@ -1917,7 +1917,7 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 		self->activator = activator;
 		while (i < AMMO_MAX)
 		{
-			add = ammoData[i].max*0.01; // zyk: changed from 0.05 to 0.01
+			add = ammoData[i].max*0.004; // zyk: default 0.05
 			if (add < 1)
 			{
 				add = 1;
@@ -1931,7 +1931,7 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 					gaveSome = qfalse;
 				}
 
-				// zyk: changed this> Now it will use Add_Ammo function
+				// zyk: changed this. Now it will use Add_Ammo function
 				// activator->client->ps.ammo[i] += add;
 				Add_Ammo(activator, i, add);
 
