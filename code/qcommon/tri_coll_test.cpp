@@ -3,6 +3,24 @@
  * See article "A Fast Triangle-Triangle Intersection Test",
  * Journal of Graphics Tools, 2(2), 1997
  *
+ *
+ * Copyright (C) 1997 Tomas Möller
+ * Copyright (C) 2000-2013 Raven Software, Inc.
+ * Copyright (C) 2001-2013 Activision, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *
+ *
  * int tri_tri_intersect(float V0[3],float V1[3],float V2[3],
  *                         float U0[3],float U1[3],float U2[3])
  *
