@@ -1760,6 +1760,7 @@ finish:
 
 		// zyk: initializing Quest Power attributes
 		newent->client->pers.quest_power_status = 0;
+		newent->client->cloakDebReduce = 0;
 
 		// zyk: saboteur npcs start with cloak
 		if (Q_stristr(newent->NPC_type,"saboteur"))
