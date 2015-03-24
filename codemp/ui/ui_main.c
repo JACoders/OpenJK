@@ -966,10 +966,12 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
 
+			/* zyk: now chatting can be done in any game type
 			if (trap->Cvar_VariableValue( "g_gametype" ) < GT_TEAM)
 			{
 				return;
 			}
+			*/
 
 			trap->Key_SetCatcher( KEYCATCH_UI );
 			Menus_CloseAll();
