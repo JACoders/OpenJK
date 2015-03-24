@@ -2214,24 +2214,6 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 void Add_Ammo (gentity_t *ent, int weapon, int count)
 {
-	/* zyk: new code for this function
-	int max = ammoData[weapon].max;
-
-	if (ent->client->ps.eFlags & EF_DOUBLE_AMMO)
-	{ // fix: double ammo for siege
-		max *= 2;
-	}
-
-	if ( ent->client->ps.ammo[weapon] < max )
-	{
-		ent->client->ps.ammo[weapon] += count;
-		if ( ent->client->ps.ammo[weapon] > max )
-		{
-			ent->client->ps.ammo[weapon] = max;
-		}
-	}
-	*/
-
 	int max_blasterpack_ammo = zyk_max_blaster_pack_ammo.integer;
 	int max_powercell_ammo = zyk_max_power_cell_ammo.integer;
 	int max_metalbolt_ammo = zyk_max_metal_bolt_ammo.integer;
@@ -2337,7 +2319,7 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 	}
 	else
 	{
-		Add_Ammo (other, ent->item->giTag, (int)ceil(quantity*0.5)); // zyk: changed from quantity to half of quantity
+		Add_Ammo (other, ent->item->giTag, (int)ceil(quantity * zyk_add_ammo_scale.value)); // zyk: cvar to scale the add ammo amount
 	}
 
 	return adjustRespawnTime(zyk_ammo_respawn_time.integer, ent->item->giType, ent->item->giTag);
@@ -2387,7 +2369,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 	other->client->ps.stats[STAT_WEAPONS] |= ( 1 << ent->item->giTag );
 
 	//Add_Ammo( other, ent->item->giTag, quantity );
-	Add_Ammo( other, weaponData[ent->item->giTag].ammoIndex, (int)ceil(quantity*0.5) ); // zyk: decreased amount of ammo from weapon by half
+	Add_Ammo( other, weaponData[ent->item->giTag].ammoIndex, (int)ceil(quantity * zyk_add_ammo_scale.value) ); // zyk: cvar to scale the add ammo amount
 
 	G_LogWeaponPickup(other->s.number, ent->item->giTag);
 
