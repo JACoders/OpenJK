@@ -1923,7 +1923,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 
 					// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
 					if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 3 && 
-						traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,4) == 0)
+						traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && Q_irand(0,9) == 0)
 					{
 						traceEnt->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
 					}
@@ -3697,7 +3697,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					push_list[x]->client->pers.secrets_found & (1 << 16))
 				{
 					pushPower /= 4;
-					if (Q_irand(0,1) == 0)
+					if (Q_irand(0,3) == 0)
 						canPullWeapon = qfalse;
 				}
 
