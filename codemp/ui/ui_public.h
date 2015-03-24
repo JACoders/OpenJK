@@ -27,7 +27,8 @@ typedef enum uiMenuCommand_e {
 	UIMENU_SIEGEOBJECTIVES,
 	UIMENU_VOICECHAT,
 	UIMENU_CLOSEALL,
-	UIMENU_CLASSSEL
+	UIMENU_CLASSSEL,
+	UIMENU_ZYKMOD // zyk: new menu. It opens the Zyk OpenJK Mod menu
 } uiMenuCommand_t;
 
 #define SORT_HOST			0

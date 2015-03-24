@@ -985,6 +985,11 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			Menus_CloseAll();
 			Menus_ActivateByName("ingame_siegeclass");
 			return;
+		case UIMENU_ZYKMOD: // zyk: new menu
+			trap->Key_SetCatcher( KEYCATCH_UI );
+			Menus_CloseAll();
+			Menus_ActivateByName("ingame_zykmod");
+			return;
 		}
 	}
 }

@@ -4863,6 +4863,7 @@ static const char *g_bindCommands[] = {
 	"weapon 7",
 	"weapon 8",
 	"weapon 9",
+	"zykmodopen", // zyk: new ui command
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)

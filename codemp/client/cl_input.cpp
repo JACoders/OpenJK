@@ -368,6 +368,16 @@ void IN_VoiceChatButton(void)
 	UIVM_SetActiveMenu( UIMENU_VOICECHAT );
 }
 
+// zyk: new menu
+void IN_ZykModButton(void)
+{
+	if (!cls.uiStarted)
+	{ //ui not loaded so this command is useless
+		return;
+	}
+	UIVM_SetActiveMenu( UIMENU_ZYKMOD );
+}
+
 void IN_KeyDown( kbutton_t *b ) {
 	int		k;
 	char	*c;
@@ -1693,6 +1703,7 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand("automap_button", IN_AutoMapButton);
 	Cmd_AddCommand("automap_toggle", IN_AutoMapToggle);
 	Cmd_AddCommand("voicechat", IN_VoiceChatButton);
+	Cmd_AddCommand("zykmodopen", IN_ZykModButton); // zyk: new menu
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
