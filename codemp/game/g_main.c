@@ -140,9 +140,27 @@ void zyk_create_info_player_deathmatch(int x, int y, int z, int yaw)
 	spawn_ent = G_Spawn();
 	if (spawn_ent)
 	{
+		int i = 0;
+		gentity_t *this_ent;
+		gentity_t *spawn_point_ent = NULL;
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			this_ent = &g_entities[i];
+			if (Q_stricmp( this_ent->classname, "info_player_deathmatch") == 0)
+			{ // zyk: found the original SP map spawn point
+				spawn_point_ent = this_ent;
+				break;
+			}
+		}
+
 		zyk_set_entity_field(spawn_ent,"classname","info_player_deathmatch");
 		zyk_set_entity_field(spawn_ent,"origin",va("%d %d %d",x,y,z));
 		zyk_set_entity_field(spawn_ent,"angles",va("0 %d 0",yaw));
+		if (spawn_point_ent && spawn_point_ent->target && level.quest_map != 9)
+		{ // zyk: setting the target for SP map spawn points so they will work properly. Do not do this in kor2 or it bugs quests
+			zyk_set_entity_field(spawn_ent,"target",spawn_point_ent->target);
+		}
 
 		zyk_spawn_entity(spawn_ent);
 	}
@@ -800,10 +818,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		for (i = 0; i < level.num_entities; i++)
 		{
 			ent = &g_entities[i];
-			if (Q_stricmp( ent->targetname, "t466") == 0)
-			{ // zyk: big front door at Lannik Racto building
-				G_FreeEntity( ent );
-			}
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
