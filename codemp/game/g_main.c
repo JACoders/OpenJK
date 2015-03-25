@@ -157,8 +157,8 @@ void zyk_create_info_player_deathmatch(int x, int y, int z, int yaw)
 		zyk_set_entity_field(spawn_ent,"classname","info_player_deathmatch");
 		zyk_set_entity_field(spawn_ent,"origin",va("%d %d %d",x,y,z));
 		zyk_set_entity_field(spawn_ent,"angles",va("0 %d 0",yaw));
-		if (spawn_point_ent && spawn_point_ent->target && level.quest_map != 9)
-		{ // zyk: setting the target for SP map spawn points so they will work properly. Do not do this in kor2 or it bugs quests
+		if (spawn_point_ent && spawn_point_ent->target)
+		{ // zyk: setting the target for SP map spawn points so they will work properly
 			zyk_set_entity_field(spawn_ent,"target",spawn_point_ent->target);
 		}
 
@@ -1096,8 +1096,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "kor2") == 0)
 	{
-		level.quest_map = 9;
-
 		zyk_create_info_player_deathmatch(2977,3137,-2526,0);
 		zyk_create_info_player_deathmatch(3072,2992,-2526,0);
 	}
@@ -1152,6 +1150,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	else if (Q_stricmp(zyk_mapname, "mp/duel5") == 0 && g_gametype.integer == GT_FFA)
 	{
 		level.quest_map = 11;
+	}
+	else if (Q_stricmp(zyk_mapname, "mp/duel6") == 0 && g_gametype.integer == GT_FFA)
+	{
+		level.quest_map = 9;
 	}
 	else if (Q_stricmp(zyk_mapname, "mp/duel7") == 0 && g_gametype.integer == GT_FFA)
 	{
@@ -6137,28 +6139,18 @@ void G_RunFrame( int levelTime ) {
 
 							if (ent->client->pers.universe_quest_messages == 0)
 							{
-								int npcs_it = 0;
-								gentity_t *this_ent = NULL;
-
-								for (npcs_it = 0; npcs_it < level.num_entities; npcs_it++)
-								{
-									this_ent = &g_entities[npcs_it];
-									if (Q_stricmp(this_ent->classname,"NPC_Tavion_New") == 0 && Q_stricmp(this_ent->targetname,"squad3") == 0)
-										G_FreeEntity(this_ent);
-								}
-
 								trap->SendServerCommand( -1, "chat \"^2Mysterious Voice^7: Go, hero... save the Guardian Sages... they need your help...\"");
-								npc_ent = Zyk_NPC_SpawnType("sage_of_light",14027,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_light",904,-1079,353,179);
 							}
 							else if (ent->client->pers.universe_quest_messages == 1)
 							{
 								trap->SendServerCommand( -1, va("chat \"%s^7: This voice...\"", ent->client->pers.netname));
-								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",14190,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",904,-991,353,179);
 							}
 							else if (ent->client->pers.universe_quest_messages == 2)
 							{
 								trap->SendServerCommand( -1, va("chat \"%s^7: I don't understand... maybe I should do as it says...\"", ent->client->pers.netname));
-								npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",14111,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",904,-897,353,179);
 							}
 							else if (ent->client->pers.universe_quest_messages == 3)
 							{
@@ -6176,24 +6168,24 @@ void G_RunFrame( int levelTime ) {
 							{
 								if (ent->client->pers.light_quest_messages > 8)
 								{
-									npc_ent = Zyk_NPC_SpawnType("quest_reborn",14027,-673,-3134,-90);
+									npc_ent = Zyk_NPC_SpawnType("quest_reborn",750,-908,497,0);
 									ent->client->pers.light_quest_messages--;
 								}
 								else if (ent->client->pers.light_quest_messages > 4)
 								{
-									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",14190,-673,-3134,-90);
+									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",750,-995,497,0);
 									ent->client->pers.light_quest_messages--;
 								}
 								else if (ent->client->pers.light_quest_messages > 1)
 								{
-									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",14111,-673,-3134,-90);
+									npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",750,-1079,497,0);
 									ent->client->pers.light_quest_messages--;
 								}
 								else if (ent->client->pers.light_quest_messages == 1 && ent->client->pers.universe_quest_objective_control == 1)
 								{
 									ent->client->pers.universe_quest_messages = 9;
 									ent->client->pers.light_quest_messages = 0;
-									npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",14111,-550,-3134,-90);
+									npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",730,-995,497,0);
 								}
 							}
 							else if (ent->client->pers.universe_quest_messages == 10)
@@ -6227,11 +6219,11 @@ void G_RunFrame( int levelTime ) {
 						{ // zyk: second Universe Quest mission
 							gentity_t *npc_ent = NULL;
 							if (ent->client->pers.universe_quest_messages == 0)
-								npc_ent = Zyk_NPC_SpawnType("sage_of_light",14027,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_light",904,-1079,353,179);
 							else if (ent->client->pers.universe_quest_messages == 1)
-								npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",14111,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_eternity",904,-991,353,179);
 							else if (ent->client->pers.universe_quest_messages == 2)
-								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",14190,-795,-3254,90);
+								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",904,-897,353,179);
 							else if (ent->client->pers.universe_quest_messages == 4)
 								trap->SendServerCommand( -1, va("chat \"^3Sage of Eternity: ^7Welcome, hero %s^7!\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 5)
@@ -6315,7 +6307,7 @@ void G_RunFrame( int levelTime ) {
 							if (ent->client->pers.universe_quest_messages < 3)
 							{
 								ent->client->pers.universe_quest_messages++;
-								ent->client->pers.universe_quest_timer = level.time + 5000;
+								ent->client->pers.universe_quest_timer = level.time + 1500;
 							}
 							else if (ent->client->pers.universe_quest_messages >= 4)
 							{ // zyk: universe_quest_messages will be 4 or higher when player reaches and press USE key on one of the sages
@@ -6324,7 +6316,7 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 12)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_messages < 5 && (int) ent->client->ps.origin[0] > 14012 && (int) ent->client->ps.origin[0] < 14181 && (int) ent->client->ps.origin[1] > -1641 && (int) ent->client->ps.origin[1] < -1528 && (int) ent->client->ps.origin[2] == -3143)
+						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 12)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_messages < 5 && (int) ent->client->ps.origin[0] > 972 && (int) ent->client->ps.origin[0] < 1012 && (int) ent->client->ps.origin[1] > 972 && (int) ent->client->ps.origin[1] < 1012 && (int) ent->client->ps.origin[2] > 646 && (int) ent->client->ps.origin[2] < 650)
 						{ // zyk: universe_quest_messages must be less than 5. If it is at least 5, player is in the universe quest missions in this map
 							trap->SendServerCommand( -1, "chat \"^3Quest System: ^7Found an ancient note.\"");
 							ent->client->pers.hunter_quest_progress |= (1 << 12);

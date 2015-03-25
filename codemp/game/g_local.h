@@ -736,7 +736,7 @@ typedef struct clientPersistant_s {
 	// 9 - Note at t3_bounty
 	// 10 - Note at t2_rogue
 	// 11 - Note at t1_danger
-	// 12 - Note at kor2
+	// 12 - Note at mp/duel6
 	int hunter_quest_progress;
 
 	// zyk: number of objectives completed in Eternity Quest

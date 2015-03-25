@@ -5675,7 +5675,7 @@ void choose_new_player(gentity_t *next_player)
 			}
 			else if (level.quest_map == 9 && !(next_player->client->pers.hunter_quest_progress & (1 << 12)))
 			{
-				load_note_model(14100,-1580,-3165);
+				load_note_model(992,992,626);
 			}
 		}
 
@@ -8344,9 +8344,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 							strcpy(dark_quest_message, va("%s\n^7Note ^3in the sand worm desert - ^1no",dark_quest_message));
 
 						if (ent->client->pers.hunter_quest_progress & (1 << 12))
-							strcpy(dark_quest_message, va("%s\n^7Note ^3in the tomb of a powerful sith - ^2yes",dark_quest_message));
+							strcpy(dark_quest_message, va("%s\n^7Note ^3in the sanctuary of the sages - ^2yes",dark_quest_message));
 						else
-							strcpy(dark_quest_message, va("%s\n^7Note ^3in the tomb of a powerful sith - ^1no",dark_quest_message));
+							strcpy(dark_quest_message, va("%s\n^7Note ^3in the sanctuary of the sages - ^1no",dark_quest_message));
 					}
 				}
 				else
@@ -8387,9 +8387,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				if (ent->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
 				{
 					if (ent->client->pers.universe_quest_progress == 0)
-						strcpy(universe_message, va("^3\n1. The Hero's Quest Begins\n\n^7Defeat the reborn attack at ^3kor2 ^7to save the Guardian Sages. Quest reborns remaining: ^3%d^7.",ent->client->pers.universe_quest_objective_control));
+						strcpy(universe_message, va("^3\n1. The Hero's Quest Begins\n\n^7Defeat the reborn attack at ^3mp/duel6 ^7to save the Guardian Sages. Quest reborns remaining: ^3%d^7.",ent->client->pers.universe_quest_objective_control));
 					else if (ent->client->pers.universe_quest_progress == 1)
-						strcpy(universe_message, "^3\n2. The Rise of an Evil Force\n\n^7Talk to the sages at ^3kor2 ^7to know more about your quest.");
+						strcpy(universe_message, "^3\n2. The Rise of an Evil Force\n\n^7Talk to the sages at ^3mp/duel6 ^7to know more about your quest.");
 					else if (ent->client->pers.universe_quest_progress == 2)
 						strcpy(universe_message, va("^3\n3. The Life-Force Artifacts\n\n^7Find the 8 artifacts in SP maps and talk to the sages at ^3yavin1b^7.\nCollected artifacts: ^3%d^7",number_of_artifacts(ent)));
 					else if (ent->client->pers.universe_quest_progress == 3)
