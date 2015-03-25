@@ -835,8 +835,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				G_FreeEntity( ent );
 			}
 		}
-		// zyk: spawning Lannik Racto npc
-		Zyk_NPC_SpawnType("lannik_racto",1950,1500,729,90);
+
 		zyk_create_info_player_deathmatch(1974,-1983,-550,90);
 		zyk_create_info_player_deathmatch(1779,-1983,-550,90);
 	}
