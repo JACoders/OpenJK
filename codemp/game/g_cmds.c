@@ -8452,11 +8452,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 13)
 					{
-						strcpy(universe_message, "^3\n14. The Hero's Choice\n\n^7Listen to the sages, guardians, Guardian of Time and the Master of Evil.\nAfter that, choose one of them that represents your choice and bring him to the center of the water inside the temple.\nThis decision will change the end of the quest and the power you will receive.");
+						strcpy(universe_message, "^3\n14. The Hero's Choice\n\n^7Listen to the sages, guardians, Guardian of Time and the Master of Evil.\nAfter that, choose one of them that represents your choice and bring him to the center of the water inside the temple.");
 					}
 					else if (ent->client->pers.universe_quest_progress == 14)
 					{
-						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension and defeat the ^1Guardian of Chaos^7.\nThe end of the quest depends on the choice you made earlier.");
+						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension and defeat the ^1Guardian of Chaos^7.");
 					}
 					else if (ent->client->pers.universe_quest_progress == 15)
 					{
@@ -8471,7 +8471,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 17)
 					{
-						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the ^1Master of Death ^7at ^3mp/duel7 ^7to get the Resurrection Power.");
+						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the ^1Master of Death ^7at ^3mp/duel7 ^7to finish the quest.");
 					}
 				}
 				else
