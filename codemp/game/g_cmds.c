@@ -5635,7 +5635,7 @@ void choose_new_player(gentity_t *next_player)
 		else if (level.quest_map == 17 && next_player->client->pers.universe_quest_progress == 11)
 		{ // zyk: Universe Quest. Player must defeat this quantity of quest_super_soldier npcs in this mission
 			next_player->client->pers.universe_quest_timer = level.time + 3000;
-			next_player->client->pers.universe_quest_objective_control = 22;
+			next_player->client->pers.universe_quest_objective_control = 20;
 		}
 
 		// zyk: loading note models if player must find a Dark Quest note

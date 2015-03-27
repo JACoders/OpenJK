@@ -7215,8 +7215,6 @@ void G_RunFrame( int levelTime ) {
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10220,8239,1800,-179);
 								else if (ent->client->pers.hunter_quest_messages == 21)
 									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10123,8343,1800,-179);
-								else if (ent->client->pers.hunter_quest_messages == 22)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",10026,8490,1800,-179);
 
 								if (npc_ent)
 									npc_ent->client->pers.universe_quest_objective_control = ent->s.number;
@@ -7226,7 +7224,7 @@ void G_RunFrame( int levelTime ) {
 									ent->client->pers.hunter_quest_messages++;
 									ent->client->pers.hunter_quest_timer = level.time + 1500;
 								}
-								else if (ent->client->pers.hunter_quest_messages > 11 && ent->client->pers.hunter_quest_messages < 23)
+								else if (ent->client->pers.hunter_quest_messages > 11 && ent->client->pers.hunter_quest_messages < 22)
 								{
 									ent->client->pers.hunter_quest_messages++;
 									ent->client->pers.hunter_quest_timer = level.time + 2000;

@@ -2316,7 +2316,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 					the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
 					the_old_player->client->pers.hunter_quest_messages = 40;
 				}
-				else if (the_old_player->client->pers.universe_quest_objective_control == 11)
+				else if (the_old_player->client->pers.universe_quest_objective_control == 10)
 				{ // zyk: after the player defeats some soldiers, Master of Evil will send more
 					the_old_player->client->pers.hunter_quest_messages = 12;
 					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7More soldiers coming.\"");
