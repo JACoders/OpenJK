@@ -1,0 +1,393 @@
+//----------------------------------------------------------------------------------------------
+// INGAME_JOIN MENU 
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"ingame_join"
+		visible					1
+		fullScreen				0
+		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
+		rect					55 40 128 128
+		focusColor				1 1 1 1
+
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 128 128
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		//---------------------------------
+		// BUTTONS
+		//---------------------------------
+		itemDef 
+		{
+			name				button1
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 4 124 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button2
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 34 124 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button3
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 64 124 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button4
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 94 124 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		//---------------------------------
+		// TEAM JOIN
+		//---------------------------------
+		itemDef 
+		{
+			name				team
+			text				@MENUS_AUTO_TEAM
+			type				1
+			style				2	
+			rect				2 4 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"6" ; 
+				"7" ; 
+				"8" ; 
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team free" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button1
+			}
+			mouseExit 
+			{ 
+				hide			button1
+			}
+		}
+
+		itemDef 
+		{
+			name				team
+			text				@MENUS_TEAM_RED
+			type				1
+			style				2	
+			rect				2 34 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"6" ; 
+				"7" ; 
+				"8" ;
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team red" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				team
+			text				@MENUS_TEAM_BLUE
+			type				1
+			style				2	
+			rect				2 64 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			0.2 0.2 1 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"6" ; 
+				"7" ; 
+				"8" ;
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team blue" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+
+
+		itemDef 
+		{
+			name				team
+			text				@MP_INGAME_JOIN_SINGLE
+			type				1
+			style				2	
+			rect				2 34 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"4"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd duelteam single" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				team
+			text				@MP_INGAME_JOIN_DOUBLE
+			type				1
+			style				2	
+			rect				2 64 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			0.2 0.2 1 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"4"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd duelteam double" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+ 
+ 
+		itemDef 
+		{
+			name				team
+			text				@MENUS_SPECTATE
+			type				1
+			style				2	
+			rect				2 94 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"6" ; 
+				"7" ; 
+				"8" ; 
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team s" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button4
+			}
+			mouseExit 
+			{ 
+				hide			button4
+			}
+		}
+
+		//---------------------------------
+		// NON-TEAM JOIN
+		//---------------------------------
+		itemDef 
+		{
+			name				team
+			text				@MENUS_JOIN_GAME
+			type				1
+			style				2	
+			rect				2 34 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"4" ;
+				"6" ; 
+				"7" ; 
+				"8" ; 
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team free" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+ 
+		itemDef 
+		{
+			name				team
+			text				@MENUS_SPECTATE
+			type				1
+			style				2	
+			rect				2 64 124 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			62
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{
+ 				"4" ;
+				"6" ; 
+				"7" ; 
+				"8" ; 
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd team s" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+
+	}
+}
+
+
+
+
+

@@ -1,0 +1,1173 @@
+//------------------------------------------------------------------------------------------------
+// PLAYER SETUP MENU  - ingame_player
+//
+//	Choose player skin, name
+//	Choose light saber
+//	Allocate force powers
+//
+//	g_gametypes
+//		"Free For All" 		0
+//		"Duel" 			3
+//		"Power Duel" 		4
+//		"Team FFA" 		6 
+//		"Siege" 		7
+//		"Capture the Flag" 	8
+//
+//	ui_net_gametype
+//		0 = FFA
+//		1 = DUEL
+//		2 = POWER DUEL
+//		3 = TEAM FFA
+//		4 = SIEGE
+//		5 = CTF
+//------------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name						"ingame_player"
+		visible						0
+		fullscreen					0
+		outOfBoundsClick										// this closes the window if it gets a click out of the rectangle
+		rect						20 25 600 440
+		focusColor					1 1 1 1					// Focus color for text and items
+		style						1
+		border						1
+		descX						320
+		descY						428
+		descScale					1
+		descColor				1 .682 0 .8
+		descAlignment					ITEM_ALIGN_CENTER		
+		onOpen  
+		{ 
+			uiScript				update "ui_GetName"
+			uiScript				updateForceStatus
+			hide					highlights
+		}
+		onClose 
+		{ 
+			uiScript				update "ui_SetName"
+			uiScript				updateForceStatus
+			hide					highlights
+		}
+
+//------------------------------------------------------------------------------------------------
+// Overall window backdrop
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 600 440
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+		// Button background at bottom of screen
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 420 600 20
+			backcolor			.298 .305 .690 1
+			forecolor			.549 .854 1 1
+			visible				1
+			decoration
+		}
+		
+
+//------------------------------------------------------------------------------------------------
+// Player Configuration
+//------------------------------------------------------------------------------------------------
+// Player Configuration title		
+		itemDef 
+		{
+			name				playerconfigtitle_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			rect				20 3 560 30
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				playerconfigtitle
+			style				WINDOW_STYLE_EMPTY
+			text				@MENUS_PLAYER_CONFIGURATION
+			rect				20 5 560 28
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			280
+			textaligny			2
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				3
+			textscale			1
+			forecolor			.549 .854 1 1
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+		}
+
+//------------------------------------------------------------------------------------------------
+// Name entry field
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				nameglow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				25 31 300 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name 				namefield
+			type 				ITEM_TYPE_EDITFIELD
+			style 				0
+			text 				@MENUS_NAME1
+			cvar 				"ui_Name"
+			maxchars 			26
+			rect 				20 33 300 20
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx 			0
+			textaligny 			-5
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			outlinecolor 			1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 				0
+			bordercolor 			0 0 0 0
+			descText			@MENUS_ENTER_YOUR_NAME_HERE
+			visible 			1 
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+			mouseenter 
+			{ 
+				show			nameglow
+			}
+			mouseexit 
+			{ 
+				hide			nameglow
+			}
+		}
+
+//------------------------------------------------------------------------------------------------
+// Player Model label		
+//------------------------------------------------------------------------------------------------
+		// Box around character models		
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			rect				15 65 570 230
+			border				1
+			bordercolor			.298 .305 .690 1
+			bordersize			2
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		// Title box for character models
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				17 57 570 20
+			backcolor			.298 .305 .690 1
+			forecolor			.549 .854 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				modeltitle
+			style				0	
+			text				@MENUS_CHARACTER_MODEL
+			rect				3 52 570 0
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			285
+//			textaligny			12
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+//			font				4
+//			textscale			1
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+//------------------------------------------------------------------------------------------------
+// Skin/Team Color Chooser
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				setcolor
+			style				0	
+			text				@MENUS_TEAM_COLOR
+			ownerdraw			UI_SKIN_COLOR
+			rect				50 78 160 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-5
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			.8
+			forecolor			1 .682 0 1
+			border				0
+			bordercolor			0 0 0 0
+			descText			@MENUS_CHOOSE_THE_COLOR_FOR
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"6" ;
+				"7" ;
+				"8" ;
+				"9"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+// Skin/Team Color Chooser
+		itemDef 
+		{
+			name				setcolor
+			style				0	
+			text				@MENUS_TEAM_COLOR
+			ownerdraw			UI_SKIN_COLOR
+			rect				50 78 160 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-5
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			.8
+			forecolor			0.7 0.7 0.7 1
+			border			0
+			bordercolor			0 0 0 0
+			descText			@MENUS_CHOOSE_THE_COLOR_FOR
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"6" ;
+				"7" ;
+				"8" ;
+				"9"
+			}
+			visible				1 
+			decoration
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+//------------------------------------------------------------------------------------------------
+// Scroll box with portraits.
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				headlist
+//			rect 				20 90 388 82
+			rect 				20 90 404 194			
+			type 				ITEM_TYPE_LISTBOX
+			style 			WINDOW_STYLE_FILLED
+			elementwidth 		64
+			elementheight 		64
+			elementtype 		LISTBOX_IMAGE
+			feeder 			FEEDER_Q3HEADS
+//			horizontalscroll
+			backcolor 			0 0 0 1
+			border 			1
+			bordercolor 		1 .682 0 1
+			forecolor 			1 1 1 1
+			descText			@MENUS_CHOOSE_THE_MODEL_FOR
+			visible 			1
+			textscale 			0.7
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+			mouseenter 
+			{ 
+				setitemcolor 	headlist bordercolor 1 0 0 1 
+			}
+			mouseexit 
+			{ 
+				setitemcolor 	headlist bordercolor 1 .682 0 .7
+			}
+		}
+
+//------------------------------------------------------------------------------------------------
+// Custom skin
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				customtitle
+			style				0	
+			text				@MENUS_CUSTOM
+			rect				425 130 150 26
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			75
+			textaligny			-3
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			visible			1 
+			decoration
+		}
+
+		itemDef 
+		{
+			name				custom
+			group				none
+			background			"gfx/mp/custom_mp_default"
+			descText			@MENUS_CUSTOMPLAYER_DESC
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			rect				465 160 75 75
+			font				3
+			textscale			1
+			textaligny			-1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			.5 .5 .5 1
+			visible			1
+			mouseEnter 
+			{ 
+				setitemcolor		custom	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		custom	forecolor	.5 .5 .5 1
+			}	  	  
+	     		action 
+			{ 
+				play			"sound/interface/button1.wav" 
+				uiScript				updateForceStatus
+				close			ingame_player
+				open			ingame_player2
+			}  	  
+		}
+
+//------------------------------------------------------------------------------------------------
+//	Saber Setup
+//------------------------------------------------------------------------------------------------
+		// Box for force powers
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			rect				15 299 410 100
+			border				1
+			bordercolor			.298 .305 .690 1
+			bordersize			2
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		// Title box for force powers
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				17 300 410 18
+			backcolor			.298 .305 .690 1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+				
+		// Box for saber setup
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			rect				430 299 155 100
+			border				1
+			bordercolor			.298 .305 .690 1
+			bordersize			2
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		// Title box for saber setup
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				432 300 155 18
+			backcolor			.298 .305 .690 1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				sabertitle
+			style				0	
+			text				@MENUS_SABER_TITLE
+			rect				430 297 150 26
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			75
+			textaligny			-3
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			visible				1 
+			decoration
+		}
+
+		itemDef 
+		{
+			name				saber
+			group				none
+			background			"gfx/menus/saberonly"
+			descText			@MENUS_SABER_TITLE_DESC
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			rect				465 322 75 75
+			font				3
+			textscale			1
+			textalignx			65
+			textaligny			-1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			.5 .5 .5 1
+			visible			1
+			mouseEnter 
+			{ 
+				setitemcolor		saber	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		saber	forecolor	.5 .5 .5 1
+			}	  	  
+	     		action 
+			{ 
+				play			"sound/interface/button1.wav" 
+				close			ingame_player 
+				open			ingame_saber 
+			}  	  
+		}
+
+
+//------------------------------------------------------------------------------------------------
+// FORCE POWER INFO (If normal server)
+//------------------------------------------------------------------------------------------------
+// The Force title		
+		itemDef 
+		{
+			name				forcetitle
+			group				yesforce
+			style				0	
+			text				@MENUS_THE_FORCE
+			rect				220 298 0 0
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			0
+			textaligny			-4
+			outlinecolor			1 .5 .5 .5
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			visible				1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			decoration 
+		}
+
+
+
+// Force Rank display
+		itemDef 
+		{
+			name				rankdisplay
+			group				"yesforce"
+			style				0	
+			text				@MENUS_FORCE_MASTERY
+			ownerdraw			UI_FORCE_RANK
+			rect				20 320 175 16
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 .682 0 .8
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			visible				1 
+			decoration 
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+		}
+
+// Force Side Chooser
+		itemDef 
+		{
+			name				setside
+			group				"yesforce"
+			style				0	
+			text				@MENUS_FORCE_SIDE
+			ownerdraw			UI_FORCE_SIDE
+			rect				20 340 175 16
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 .682 0 .8
+			visible				1 
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			decoration 
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+
+		}
+
+// Force pointsdisplay
+		itemDef 
+		{
+			name				setpoints
+			group				"yesforce"
+			style				0	
+			text				@MENUS_POINTS_REMAINING
+			ownerdraw			UI_FORCE_POINTS
+			rect				20 360 175 16
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 .682 0 .8
+			visible				1 
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			decoration 
+		}
+
+// Jedi/Non-Jedi Chooser
+		itemDef 
+		{
+			name				jedinonjedi
+			group				jedinonjedi
+			style				0	
+			text				@MENUS_JEDI_NONJEDI
+			ownerdraw			UI_JEDI_NONJEDI
+			rect				183 370 105 32
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			border				0
+			bordercolor			0 0 0 0
+			descText			@MENUS_CHOOSE_JEDI_NONJEDI
+			visible				1 
+			action 
+			{ 
+				uiScript		updateForceStatus
+			}
+		}
+
+//------------------------------------------------------------------------------------------------
+// Configure force button
+//------------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				configforcebutton
+			group				"yesforce"
+			type				1
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/configforce"
+			rect				275 320 75 75
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			97
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			.5 .5 .5 1
+			descText			@MENUS_SET_UP_THE_FORCE_ABILITIES
+			visible			1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			action 
+			{ 
+				play			"sound/interface/button1"
+				close			ingame_player
+				open			ingame_playerforce
+				hide			highlights
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		configforcebutton forecolor 1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		configforcebutton forecolor .5 .5 .5 1
+ 			}
+		}
+
+
+//----------------------------------------
+// DISABLED FORCE POWER (If g_forcepowerdisable)
+//----------------------------------------
+// The Force title		
+		itemDef 
+		{
+			name				forcetitle
+			group				noforce
+			style				0	
+			text				@MENUS_NOFORCE_DISABLED_0
+			rect				220 298 0 0
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			0
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			textaligny			-4
+			font				2
+			textscale			1
+			forecolor			1 1 1 1
+			visible			1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			decoration 
+		}
+
+
+		itemDef 
+		{
+			name				text2
+			group				"noforce"
+			style				0	
+			text				@MENUS_NOFORCE_DISABLED_1
+			rect				20 320 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 .8
+			visible			1 
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ;
+				"2"
+			}
+			decoration 
+		}
+
+//------------------------------------------------------------------------------------------------
+// HOLOCRON INFO
+//------------------------------------------------------------------------------------------------
+// The Force title		
+		itemDef 
+		{
+			name				forcetitle
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_HOLO_0
+			rect				220 298 0 0
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			0
+			backcolor			0 0 0 0
+			textaligny			-4
+			font				2
+			textscale			1
+			forecolor			1 1 1 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"1" 
+			}
+			visible			1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text1
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_HOLO_1
+			rect				20 330 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 .682 0 .8
+			outlinecolor			1 .5 .5 .5
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"1" 
+			}
+			visible			1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text2
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_HOLO_2
+			rect				20 350 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 .8
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"1" 
+			}
+			visible				1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text3
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_HOLO_3
+			rect				20 370 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 .8
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"1" 
+			}
+			visible				1
+			decoration 
+		}
+
+//------------------------------------------------------------------------------------------------
+// JEDI MASTER INFO
+//------------------------------------------------------------------------------------------------
+		// The Force title		
+		itemDef 
+		{
+			name				forcetitle
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_JEDI_0
+			rect				220 298 0 0
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			0
+			outlinecolor			1 .5 .5 .5
+			backcolor			0 0 0 0
+			textaligny			-4
+			font				2
+			textscale			1
+			forecolor			1 1 1 1
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"2" 
+			}
+			visible				1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text1
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_JEDI_1
+			rect				20 330 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 .682 0 .8
+			outlinecolor		1 .5 .5 .5
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"2" 
+			}
+			visible				1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text2
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_JEDI_2
+			rect				20 350 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 .8
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"2" 
+			}
+			visible				1
+			decoration 
+		}
+
+		itemDef 
+		{
+			name				text3
+			group				none
+			style				0	
+			text				@MENUS_NOFORCE_JEDI_3
+			rect				20 370 400 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			0
+			font				4
+			textscale			1
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 .8
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"2" 
+			}
+			visible				1
+			decoration 
+		}
+
+//---------------------------------------------
+//	APPLY BUTTON
+//---------------------------------------------
+// APPLY, already on a team
+		itemDef 
+		{
+			name				applyjoinButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				5 412 105 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+			appearance_slot		3
+		}
+
+		itemDef 
+		{
+			name				applycurrent
+			group				"playerapply"
+			text				@MENUS_APPLY
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				5 412 105 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			52
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			descText			@MENUS_APPLY_CHANGES_AND_JOIN
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript		setForce "none"
+				hide			highlights
+				uiScript		closeingame
+			}
+			mouseEnter 
+			{ 
+				show			applyjoinButton
+			}
+			mouseExit 
+			{ 
+				hide			applyjoinButton
+			}
+		}
+
+		// APPLY Free
+		itemDef 
+		{
+			name				applyjoin
+			group				"playerforcejoin"
+			text				@MENUS_JOIN_GAME
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				5 412 105 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			52
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			descText			@MENUS_APPLY_CHANGES_AND_JOIN
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript 		setForce "free"
+				hide			highlights
+				uiScript 		closeingame
+			}
+			mouseEnter 
+			{ 
+				show			applyjoinButton
+			}
+			mouseExit 
+			{ 
+				hide			applyjoinButton
+			}
+		}
+
+// APPLY RED
+		itemDef 
+		{
+			name				applyredButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				110 412 105 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				applyred
+			group				"playerforcered"
+			text				@MENUS_JOIN_RED
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				110 412 105 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			52
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"0" ;
+				"1" ;
+				"2" ;
+				"3" ;
+				"4"
+			}
+			descText			@MENUS_CHANGES_AND_JOIN_THE
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript		setForce "red"
+				hide			highlights
+				uiScript 		closeingame
+			}
+			mouseEnter 
+			{ 
+				show			applyredButton
+			}
+			mouseExit 
+			{ 
+				hide			applyredButton
+			}
+		}
+
+		// APPLY BLUE
+		itemDef 
+		{
+			name				applyblueButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				215 412 105 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				applyblue
+			group				"playerforceblue"
+			text				@MENUS_JOIN_BLUE
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				215 412 105 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			52
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"0" ;
+				"1" ;
+				"2" ;
+				"3" ;
+				"4"
+			}
+			descText			@MENUS_AND_JOIN_THE_BLUE_TEAM
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript 		setForce "blue"
+				hide			highlights
+				uiScript 		closeingame
+			}
+			mouseEnter 
+			{ 
+				show			applyblueButton
+			}
+			mouseExit 
+			{ 
+				hide			applyblueButton
+			}
+		}
+
+// APPLY SPECTATOR
+		itemDef 
+		{
+			name				applyspectateButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				320 412 105 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				applyspectate
+			group				"playerforcespectate"
+			text				@MENUS_SPECTATE
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				320 412 105 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			52
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			descText			@MENUS_APPLY_CHANGES_BUT_REMAIN
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript 		setForce "s"
+				hide			highlights
+				uiScript 		closeingame
+			}
+			mouseEnter 
+			{ 
+				show			applyspectateButton
+			}
+			mouseExit 
+			{ 
+				hide			applyspectateButton
+			}
+		}
+	}
+}

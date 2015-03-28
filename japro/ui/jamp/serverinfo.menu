@@ -1,0 +1,179 @@
+//----------------------------------------------------------------------------------------------
+//
+//	SERVER INFORMATION POPUP MENU
+//
+//	List information pertinant to one server
+//
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"serverinfo_popmenu"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
+		rect					140 60 360 360
+		focusColor				1 1 1 1								// Focus color for text and items
+		style					1
+		border					1
+		descX					320
+		descY					400
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+
+		onOpen 
+		{ 
+			uiScript			ServerStatus 
+		}
+
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" ; 
+			close				serverinfo_popmenu
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 360 360
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+
+		//---------------------------------------------
+		//	TITLE
+		//---------------------------------------------
+		// title
+		itemDef 
+		{
+			name				screenTitle
+			text				@MENUS_SERVER_INFORMATION 
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			rect				10 5 340 20
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			170
+			textaligny			1
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+		//---------------------------------------------
+		//	SERVER INFO
+		//---------------------------------------------
+		itemDef 
+		{
+			name				serverinfoList
+			rect				10 27 340 280
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			feeder				FEEDER_SERVERSTATUS
+			elementtype			LISTBOX_TEXT
+			elementwidth			120
+			elementheight			16
+			font				4
+			textscale			1
+			backcolor			0 0 0 0.5
+			border				1
+			bordersize			1
+			bordercolor			.5 .5 .5 1
+			notselectable
+			visible				1
+			columns				4	 2   40  148
+								50   40  50
+								100   40  45
+								150  40  165
+		}
+
+//----------------------------------------------------------------------------------------------
+//	BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				refresh
+			text				@MENUS_REFRESH_LIST
+			descText			@MENUS_REFRESH_SERVER_LIST
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				10 310 170 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			85
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				uiScript		ServerStatus 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	0 310 200 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				doneText
+			text				@MENUS_DONE_CAPS
+			descText			@MENUS_DONE_DESC
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				180 310 170 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			85
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				close			serverinfo_popmenu
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	170 310 200 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+	}
+}
