@@ -84,9 +84,9 @@
 			feeder				FEEDER_SERVERSTATUS
 			elementtype			LISTBOX_TEXT
 			elementwidth			120
-			elementheight			16
+			elementheight			11
 			font				4
-			textscale			1
+			textscale			0.8
 			backcolor			0 0 0 0.5
 			border				1
 			bordersize			1
