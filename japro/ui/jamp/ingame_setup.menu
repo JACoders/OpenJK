@@ -33,6 +33,7 @@
 			hide			options
 			hide			mods
 			hide			defaults
+			hide			japro
 			hide			default_glow
 			hide			highlight12
 
@@ -138,6 +139,7 @@
 				hide			options
 				hide			mods
 				hide			defaults
+				hide			japro
 
 				setitemcolor	setup_submenu		forecolor	1 .682 0 1
 				setitemcolor	video1menubutton	forecolor	1 1 1 1
@@ -198,6 +200,7 @@
 				hide			options
 				hide			mods
 				hide			defaults
+				hide			japro
 
 				setitemcolor	setup_submenu		forecolor	1 .682 0 1
 				setitemcolor	video2menubutton	forecolor	1 1 1 1
@@ -258,6 +261,7 @@
 				hide			options
 				hide			mods
 				hide			defaults
+				hide			japro
 
 				setitemcolor	setup_submenu		forecolor	1 .682 0 1
 				setitemcolor	soundmenubutton		forecolor	1 1 1 1
@@ -319,6 +323,7 @@
 				hide			langapply
 				hide			mods
 				hide			defaults
+				hide			japro
 
 				setitemcolor	setup_submenu			forecolor	1 .682 0 1
 				setitemcolor	gameoptionmenubutton	forecolor	1 1 1 1
@@ -393,9 +398,71 @@
 				hide			options
 				hide			mods
 				show			defaults
+				hide			japro
 
 				setitemcolor	setup_submenu			forecolor	1 .682 0 1
 				setitemcolor	gamedefaultsmenubutton	forecolor	1 1 1 1
+			}
+		}
+		
+		// japro button
+		itemDef 
+		{
+			name				japrobutton_glow
+			style				WINDOW_STYLE_SHADER
+			rect				20 193 185 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				japromenubutton
+			group				setup_submenu
+			text				japro
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				20 193 170 30
+			font				3
+			textscale			0.9
+			textalignx			170
+			textaligny			5
+			textalign			ITEM_ALIGN_RIGHT
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible				1
+			descText			"Configure jaPRO settings."
+
+			mouseEnter 
+			{ 
+				show			japrobutton_glow
+			}
+			mouseExit 
+			{ 
+				hide			japrobutton_glow
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1"
+
+				defer			VideoSetup	videowarningMenu
+
+				show			setup_background
+				hide 			video
+				hide			applyChanges
+				hide			video2
+				hide			vidrestart
+				hide			sound
+				hide			options
+				hide			mods
+				hide			defaults
+				show			japro
+
+				setitemcolor	setup_submenu			forecolor	1 .682 0 1
+				setitemcolor	japromenubutton			forecolor	1 1 1 1
 			}
 		}
 		
@@ -1631,7 +1698,6 @@
 			} 
 		}
 
-
 		itemDef 
 		{	
 			name				identifytarget
@@ -2266,6 +2332,47 @@
 			{ 
 				hide			default_no_button
 			}	  	  
+		}
+		//----------------------------------------------------------------------------------------------
+		//
+		//	JAPRO MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{	
+			name				onlybhop
+			group				japro
+      		type				ITEM_TYPE_MULTI
+			text				"Only Bhop"
+			cvar				"cg_onlyBhop"
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1 
+			}
+			rect				220 41 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			// appearance_slot		1
+			descText			"Toggle to disallow force jumps."
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+
+			mouseenter 
+			{ 
+				show			highlight1
+			}
+			mouseexit 
+			{ 
+				hide			highlight1
+			} 
 		}
 	}
 }
