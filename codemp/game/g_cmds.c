@@ -9946,189 +9946,156 @@ void Cmd_CreditGive_f( gentity_t *ent ) {
 
 /*
 ==================
-Cmd_QuestAnswer_f
-==================
-*/
-void Cmd_QuestAnswer_f( gentity_t *ent ) {
-	char arg1[MAX_STRING_CHARS];
-
-	if (ent->client->pers.universe_quest_progress != 5 || ent->client->pers.universe_quest_messages != 101)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You dont need to answer the mayor name now.\n\"" );
-		return;
-	}
-
-	if (level.quest_map != 24)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"This is not the right map.\n\"" );
-		return;
-	}
-
-	trap->Argv(1, arg1, sizeof( arg1 ));
-
-	if (Q_stricmp( arg1, "Samir" ) == 0 || Q_stricmp( arg1, "samir" ) == 0)
-	{
-		ent->client->pers.universe_quest_messages = 102;
-	}
-	else
-	{
-		ent->client->pers.universe_quest_messages = 103;
-	}
-}
-
-/*
-==================
 Cmd_Answer_f
 ==================
 */
 void Cmd_Answer_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 
-	if (ent->client->pers.eternity_quest_progress >= (NUMBER_OF_ETERNITY_QUEST_OBJECTIVES - 1))
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You dont need to answer riddles now.\n\"" );
-		return;
+	if (level.quest_map == 10 && ent->client->pers.can_play_quest == 1 && ent->client->pers.eternity_quest_timer > 0 && 
+		ent->client->pers.eternity_quest_progress < (NUMBER_OF_ETERNITY_QUEST_OBJECTIVES - 1))
+	{ // zyk: Eternity Quest
+		if (trap->Argc() != 2)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Use ^3/answer <word> ^7to answer the riddle.\n\"" );
+			return;
+		}
+
+		trap->Argv(1, arg1, sizeof( arg1 ));
+
+		if (ent->client->pers.eternity_quest_progress == 0 && Q_stricmp( arg1, "key" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 1;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Earth ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 1 && Q_stricmp( arg1, "clock" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 2;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Fire ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 2 && Q_stricmp( arg1, "sword" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 3;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Darkness ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 3 && Q_stricmp( arg1, "sun" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 4;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^4Riddle of Water ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 4 && Q_stricmp( arg1, "fire" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 5;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^7Riddle of Wind ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 5 && Q_stricmp( arg1, "water" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 6;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Light ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 6 && Q_stricmp( arg1, "time" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 7;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^6Riddle of Agility ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 7 && Q_stricmp( arg1, "star" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 8;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^2Riddle of Forest ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 8 && Q_stricmp( arg1, "nature" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 9;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Intelligence ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else if (ent->client->pers.eternity_quest_progress == 9 && Q_stricmp( arg1, "love" ) == 0)
+		{
+			ent->client->pers.eternity_quest_progress = 10;
+			save_account(ent);
+
+			quest_get_new_player(ent);
+
+			trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Eternity ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
+		else
+		{
+			trap->SendServerCommand( -1, va("chat \"Thats not the right answer, %s^7...\n\"",ent->client->pers.netname) );
+			return;
+		}
 	}
+	else if (level.quest_map == 24 && ent->client->pers.can_play_quest == 1 && 
+			 ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_messages == 101)
+	{ // zyk: amulets mission of Universe Quest
+		if (trap->Argc() > 1)
+		{
+			trap->Argv(1, arg1, sizeof( arg1 ));
 
-	if (level.quest_map != 10)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You are not in the right map.\n\"" );
-		return;
-	}
-
-	if (ent->client->pers.can_play_quest == 0)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"It is not your turn to answer riddles.\n\"" );
-		return;
-	}
-
-	if (ent->client->pers.eternity_quest_timer == 0)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You must find the location of the riddle in this map.\n\"" );
-		return;
-	}
-
-	if (trap->Argc() != 2)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"Use ^3/answer <word> ^7to answer the riddle.\n\"" );
-		return;
-	}
-
-	trap->Argv(1, arg1, sizeof( arg1 ));
-
-	if (ent->client->pers.eternity_quest_progress == 0 && Q_stricmp( arg1, "key" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 1;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Earth ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 1 && Q_stricmp( arg1, "clock" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 2;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Fire ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 2 && Q_stricmp( arg1, "sword" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = 0;
-		ent->client->pers.eternity_quest_progress = 3;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^1Riddle of Darkness ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 3 && Q_stricmp( arg1, "sun" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 4;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^4Riddle of Water ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 4 && Q_stricmp( arg1, "fire" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 5;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^7Riddle of Wind ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 5 && Q_stricmp( arg1, "water" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = 0;
-		ent->client->pers.eternity_quest_progress = 6;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Light ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 6 && Q_stricmp( arg1, "time" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 7;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^6Riddle of Agility ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 7 && Q_stricmp( arg1, "star" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = level.time + 5000;
-		ent->client->pers.eternity_quest_progress = 8;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^2Riddle of Forest ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 8 && Q_stricmp( arg1, "nature" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = 0;
-		ent->client->pers.eternity_quest_progress = 9;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^5Riddle of Intelligence ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
-	}
-	else if (ent->client->pers.eternity_quest_progress == 9 && Q_stricmp( arg1, "love" ) == 0)
-	{
-		ent->client->pers.eternity_quest_timer = 0;
-		ent->client->pers.eternity_quest_progress = 10;
-		save_account(ent);
-
-		quest_get_new_player(ent);
-
-		trap->SendServerCommand( -1, va("chat \"You answered the ^3Riddle of Eternity ^7correctly, %s^7...\n\"",ent->client->pers.netname) );
-		return;
+			if (Q_stricmp( arg1, "Samir" ) == 0 || Q_stricmp( arg1, "samir" ) == 0)
+			{
+				ent->client->pers.universe_quest_messages = 102;
+			}
+			else
+			{
+				ent->client->pers.universe_quest_messages = 103;
+			}
+			return;
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Use ^3/answer <mayor name>^7\n\"" );
+			return;
+		}
 	}
 	else
 	{
-		trap->SendServerCommand( -1, va("chat \"Thats not the right answer, %s^7...\n\"",ent->client->pers.netname) );
+		trap->SendServerCommand( ent-g_entities, "print \"You don't need to answer anything now.\n\"" );
+		return;
 	}
 }
 
@@ -12086,7 +12053,6 @@ command_t commands[] = {
 	{ "npc",				Cmd_NPC_f,					CMD_LOGGEDIN|CMD_ALIVE },
 	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
-	{ "questanswer",		Cmd_QuestAnswer_f,			CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "rpgclass",			Cmd_RpgClass_f,				CMD_RPG|CMD_NOINTERMISSION },

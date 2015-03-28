@@ -1878,7 +1878,7 @@ void TryUse( gentity_t *ent )
 				}
 				else if (!(ent->client->pers.universe_quest_counter & (1 << 0)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Tell me the name of the mayor and I give you the Amulet of Light! (use ^3/questanswer <name>^7 and talk again to the citizen)\""); // light
+					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Tell me the name of the mayor and I give you the Amulet of Light! (use ^3/answer <name>^7 and talk again to the citizen)\""); // light
 					ent->client->pers.universe_quest_messages = 101;
 				}
 				else
