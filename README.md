@@ -15,6 +15,6 @@ OpenJK is licensed under GPLv2 as free software. You are free to use, modify and
 Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code under the same GPLv2 licence.
 
 ### Links of Interest ###
-* [jaPRO Website](http://upsgaming.com/japro/)
+* [Server-side GitHub](https://github.com/videoP/jaPRO)
+* [Website](http://upsgaming.com/japro/)
 * [Forums](http://upsgaming.com/forums/)
-* [GitHub jaPRO Server-side](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
