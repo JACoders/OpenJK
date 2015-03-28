@@ -209,6 +209,8 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav"
+
+
 				uiScript		RefreshFilter 
 			}	  	  
 			mouseEnter 
@@ -343,6 +345,8 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav"
+
+
 				uiScript		RefreshFilter
 			}
 			mouseEnter 
@@ -375,50 +379,14 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav"
+
+
 				uiScript		RefreshFilter
 			}
 			mouseEnter 
 			{ 
 				show			button_glow2 
 				setitemrect		button_glow2	422 42 200 20
-			}
-			mouseExit 
-			{ 
-				hide			button_glow2 
-			}	  	  
-		}
-
-		// Data Rate selector
-		itemDef 
-		{
-			name				datarate
-	            	type				ITEM_TYPE_MULTI
-			text				@MENUS_DATA_RATE
-			descText			@MENUS_DATA_RATE_DESC
-			cvar				"rate"
-            		cvarFloatList 
-			{ 
-				"@MENUS_56K" 4000 
-				"@MENUS_ISDN" 5000 
-				"@MENUS_LAN/CABLE" 25000  
-			}
-			textscale			1
-			rect				430 62 180 18
-			font				4
-			textalignx			0
-			textaligny			0
-			textalign			ITEM_ALIGN_LEFT
-			forecolor			 .615 .615 .956 1
-			visible				1 
-			action 
-			{ 
-				play			"sound/interface/button1.wav"
-		        	uiScript		update ui_setRate
-			}
-			mouseEnter 
-			{ 
-				show			button_glow2 
-				setitemrect		button_glow2	422 60 200 20
 			}
 			mouseExit 
 			{ 
@@ -633,7 +601,7 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 116 604 26
+			rect				10 116 604 13
 			style				WINDOW_STYLE_FILLED
 			border				0
 			backcolor			0.1 0.1 0.3 0.5
@@ -644,7 +612,7 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 142 604 26
+			rect				10 129 604 13
 			style				WINDOW_STYLE_FILLED
 			border				0
 			backcolor			0 0 0.2 0.5
@@ -655,18 +623,39 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 168 604 26
+			rect				10 142 604 13
 			style				WINDOW_STYLE_FILLED
-			border			0
+			border				0
 			backcolor			0.1 0.1 0.3 0.5
-			visible			1
+			visible				1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 155 604 13
+			style				WINDOW_STYLE_FILLED
+			border				0
+			backcolor			0 0 0.2 0.5
+			visible				1
 			decoration
 		}
 
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 194 604 26
+			rect				10 168 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 181 604 13
+
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0 0 0.2 0.5
@@ -677,18 +666,17 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 220 604 26
+			rect				10 194 604 13
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0.1 0.1 0.3 0.5
 			visible			1
 			decoration
 		}
-
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 246 604 26
+			rect				10 207 604 13
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0 0 0.2 0.5
@@ -699,18 +687,18 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 272 604 26
+			rect				10 220 604 13
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0.1 0.1 0.3 0.5
 			visible			1
 			decoration
 		}
-
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 298 604 26
+			rect				10 233 604 13
+
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0 0 0.2 0.5
@@ -721,10 +709,20 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 324 604 26
+			rect				10 246 604 13
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 259 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0 0 0.2 0.5
 			visible			1
 			decoration
 		}
@@ -732,7 +730,81 @@
 		itemDef 
 		{
 			name				horizontalseparators
-			rect				10 350 604 26
+			rect				10 272 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 285 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0 0 0.2 0.5
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 298 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 311 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0 0 0.2 0.5
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 324 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 337 604 13
+
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0 0 0.2 0.5
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 350 604 13
+			style				WINDOW_STYLE_FILLED
+			border			0
+			backcolor			0.1 0.1 0.3 0.5
+			visible			1
+			decoration
+		}
+		itemDef 
+		{
+			name				horizontalseparators
+			rect				10 363 604 13
 			style				WINDOW_STYLE_FILLED
 			border			0
 			backcolor			0 0 0.2 0.5
@@ -823,10 +895,11 @@
 			type				ITEM_TYPE_LISTBOX
 			style				WINDOW_STYLE_FILLED
 			elementwidth			120
-			elementheight			26
+			elementheight			13
+
 			font				4
-			textscale			1
-			textaligny			6
+			textscale			0.85
+			textaligny			0
 			elementtype			LISTBOX_TEXT
 			feeder				FEEDER_SERVERS
 			border				1
@@ -836,6 +909,10 @@
 			outlinecolor			1 1 1 .25			//Highlight when item is selected.
 			visible				1
 			columns				5 2 40 258   270 40 104  388 5 64  450 20 100  560 20 47
+
+
+
+
 			mouseenter 
 			{ 
 				setitemcolor	serverlist bordercolor .79 .64 .22 1
