@@ -294,3 +294,9 @@ set(CPACK_BINARY_ZIP ON) # always create at least a zip file
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0) # prevent additional directory in zip
 
 include(CPack)
+
+if(WIN32)
+	set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+	include(InstallRequiredSystemLibraries)
+	install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION ".")
+endif()
