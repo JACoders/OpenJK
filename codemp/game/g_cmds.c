@@ -11993,6 +11993,19 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_ZykMod_f
+==================
+*/
+void Cmd_ZykMod_f( gentity_t *ent ) {
+	// zyk: sends info to the client-side menu
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent)));
+	}
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -12099,6 +12112,7 @@ command_t commands[] = {
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
+	{ "zykmod",				Cmd_ZykMod_f,				CMD_RPG|CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 

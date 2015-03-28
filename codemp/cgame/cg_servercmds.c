@@ -1562,6 +1562,48 @@ static void CG_ClientLevelShot_f( void ) {
 	cg.levelShot = qtrue;
 }
 
+static void CG_ZykMod( void )
+{ // zyk: receives account info of logged players
+	char arg[512] = {0};
+	char value[64] = {0};
+	int i = 0, j = 0, k = 0;
+
+	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
+
+	while (j < 7)
+	{ // zyk: parsing info from the server and setting the respective cvars
+		k = 0;
+
+		while(arg[i] != '-')
+		{
+			value[k] = arg[i];
+			i++;
+			k++;
+		}
+
+		i++;
+
+		value[k] = '\0';
+
+		if (j == 0)
+			trap->Cvar_Set("ui_zyk_rpg_level", va("%s",value));
+		else if (j == 1)
+			trap->Cvar_Set("ui_zyk_rpg_level_up_score", va("%s",value));
+		else if (j == 2)
+			trap->Cvar_Set("ui_zyk_rpg_skillpoints", va("%s",value));
+		else if (j == 3)
+			trap->Cvar_Set("ui_zyk_rpg_skillcounter", va("%s",value));
+		else if (j == 4)
+			trap->Cvar_Set("ui_zyk_rpg_magic_power", va("%s",value));
+		else if (j == 5)
+			trap->Cvar_Set("ui_zyk_rpg_credits", va("%s",value));
+		else if (j == 6)
+			trap->Cvar_Set("ui_zyk_rpg_rpgclass", va("%s",value));
+
+		j++;
+	}
+}
+
 typedef struct serverCommand_s {
 	const char	*cmd;
 	void		(*func)(void);
@@ -1597,6 +1639,7 @@ static serverCommand_t	commands[] = {
 	{ "sxd",				CG_ParseSiegeExtendedData },
 	{ "tchat",				CG_Chat_f },
 	{ "tinfo",				CG_ParseTeamInfo },
+	{ "zykmod",				CG_ZykMod },
 };
 
 static const size_t numCommands = ARRAY_LEN( commands );
