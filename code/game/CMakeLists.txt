@@ -162,6 +162,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/surfaceflags.h"
 	"${SPDir}/game/teams.h"
 	"${SPDir}/game/weapons.h"
+	"${SPDir}/game/w_local.h"
 	"${SPDir}/game/wp_saber.h"
 	"${SPDir}/game/g_vehicles.h"
 	)

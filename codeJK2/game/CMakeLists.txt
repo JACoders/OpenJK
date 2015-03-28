@@ -139,6 +139,7 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/surfaceflags.h"
 	"${JK2SPDir}/game/teams.h"
 	"${JK2SPDir}/game/weapons.h"
+	"${JK2SPDir}/game/w_local.h"
 	"${JK2SPDir}/game/wp_saber.h"
 	)
 source_group("game" FILES ${JK2SPGameGameFiles})
@@ -211,6 +212,7 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/q_platform.h"
+	"${SPDir}/qcommon/strippublic.h"
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
@@ -222,10 +224,14 @@ set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/TaskManager.cpp"
 	"${JK2SPDir}/icarus/Instance.cpp"
 	"${JK2SPDir}/icarus/blockstream.h"
+	"${JK2SPDir}/icarus/icarus.h"
+	"${JK2SPDir}/icarus/interface.h"
+	"${JK2SPDir}/icarus/interpreter.h"
 	"${JK2SPDir}/icarus/sequence.h"
 	"${JK2SPDir}/icarus/sequencer.h"
 	"${JK2SPDir}/icarus/taskmanager.h"
 	"${JK2SPDir}/icarus/instance.h"
+	"${JK2SPDir}/icarus/tokenizer.h"
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
