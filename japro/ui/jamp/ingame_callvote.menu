@@ -6,12 +6,12 @@
 		visible					0
 		fullscreen				0
 		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
-		rect					270 40 360 216
+		rect					270 40 360 246
 		focusColor				1 1 1 1								// Focus color for text and items
 		style					1
 		border					1
 		descX					450
-		descY					210
+		descY					240
 		descScale				1
 		descColor				1 .682 0 .8					// Focus color for text and items
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -36,7 +36,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 360 210
+			rect				0 0 360 240
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -67,7 +67,7 @@
 		{
 			name				setup_background
 			style				WINDOW_STYLE_SHADER
-			rect				112 35 245 135	
+			rect				112 35 245 165	
 			background			"gfx/menus/menu_box1"					// Frame
 			forecolor			1 1 1 1
 			visible				1
@@ -81,7 +81,7 @@
 			name				setup_background2
 			group				none
 			style				WINDOW_STYLE_FILLED
-			rect				120 35 235 135
+			rect				120 35 235 165
 			backcolor			0 0 .6 .5
 			forecolor			1 1 1 1
 			border				1
@@ -98,7 +98,7 @@
 			name				doneButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				140 186 80 30
+			rect				140 216 80 30
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -239,6 +239,7 @@
 				hide			grpCallVote ; 
 				show			maplist ;
 				show			map ;
+				show			mappreview ;
 				setitemcolor		grpbutton		forecolor	1 .682 0 1 ;
 				setitemcolor		changemapbutton	forecolor	1	1	1	1 ;
 			}
@@ -296,6 +297,53 @@
 			mouseExit 
 			{ 
 				hide			kick_glow
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				forcespec_glow
+			group				glows
+			style				WINDOW_STYLE_SHADER
+			rect				0 155 120 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				forcespecbutton
+			group				grpbutton
+			text				forcespec
+			descText			"Force a player to spectator."
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				10 155 103 30
+			font				3
+			textscale			0.9
+			textalignx			100
+			textaligny			5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide			grpCallVote ; 
+				show			forcespec ;
+				setitemcolor		grpbutton		forecolor	1 .682 0 1 ;
+				setitemcolor		forcespecbutton	forecolor	1	1	1	1 ;
+			}
+			mouseEnter 
+			{ 
+				show			forcespec_glow
+			}
+			mouseExit 
+			{ 
+				hide			forcespec_glow
 			}	  	  
 		}
 
@@ -370,6 +418,29 @@
 				uiScript 		closeingame 
 			}
 		}
+		
+		itemDef 
+		{
+			name				misc
+			group				grpCallVote
+			text				"Restart Server"
+			descText			"Restart the server"
+			rect				112 125 245 30
+			type				1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			122
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec 			"cmd callvote vstr server" ; 
+				uiScript 		closeingame 
+			}
+		}
 
 		//----------------------------------
 		// 	GAMETYPE VOTE PANEL
@@ -382,7 +453,7 @@
 			descText			@MENUS_SELECT_A_NEW_GAME_TYPE
 			style				0
 			ownerdraw			UI_NETGAMETYPE
-			rect				120 65 230 30
+			rect				120 95 230 30
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			50
 			textaligny			2
@@ -401,7 +472,7 @@
 			descText			@MENUS_BEGIN_VOTE_FOR_THIS_GAME
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				140 186 80 30
+			rect				140 216 80 30
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			40
 			textaligny			0
@@ -455,7 +526,7 @@
 			name				maplist
 			group				grpCallVote
 			descText			@MENUS_SELECT_DESIRED_MAP
-			rect				120 55 230 108
+			rect				120 55 230 138
 			type				ITEM_TYPE_LISTBOX
 			style				WINDOW_STYLE_FILLED
 			elementwidth			120
@@ -498,7 +569,7 @@
 			type				1
 			group				grpCallVote
 			style				WINDOW_STYLE_FILLED
-			rect				140 186 80 30
+			rect				140 216 80 30
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			40
 			textaligny			0
@@ -520,6 +591,17 @@
 			{ 
 				hide				doneButton
 			}	  	  
+		}
+
+
+		itemDef 
+		{
+			name				mappreview
+            group				grpCallVote
+			style				0	
+			ownerdraw			UI_MAPPREVIEW
+			rect				-260 14 250 188
+			visible				1
 		}
 
 
@@ -551,7 +633,7 @@
 			name				kick
 			group				grpCallVote
 			descText			@MENUS_SELECT_PLAYER_TO_KICK
-			rect				120 55 230 108
+			rect				120 55 230 138
 			style				WINDOW_STYLE_FILLED
 			type				ITEM_TYPE_LISTBOX
 			elementwidth			120
@@ -592,7 +674,7 @@
 			type				1
 			group				grpCallVote
 			style				WINDOW_STYLE_FILLED
-			rect				140 186 80 30
+			rect				140 216 80 30
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			40
 			textaligny			0
@@ -615,7 +697,99 @@
 				hide				doneButton
 			}	  	  
 		}
+		
+		//----------------------------------
+		// 	KICK VOTE PANEL
+		//----------------------------------
+		itemDef 
+		{
+			name				forcespec
+			group				grpCallVote
+			text				"Forcespec Player:"
+			rect				120 35 230 20
+			textalign			0
+			textalignx			5
+			textaligny			-2
+			font				2
+			textscale			.8
+			forecolor			.549 .854 1 1
+			visible				0
+			decoration
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+		}
 
+		itemDef 
+		{
+			name				forcespec
+			group				grpCallVote
+			descText			"Select player to force to spec."
+			rect				120 55 230 138
+			style				WINDOW_STYLE_FILLED
+			type				ITEM_TYPE_LISTBOX
+			elementwidth			120
+			elementheight			15
+			elementtype			LISTBOX_TEXT
+			feeder				FEEDER_PLAYER_LIST
+			border				1
+			bordercolor			1 .682 0 .8
+			backcolor			0 0 .5 .25
+			outlinecolor			.1 .1 .7 .5
+			font				2
+			textaligny			12
+			textscale			.8
+			forecolor			.615 .615 .956 1
+			visible				0
+			mouseEnter 
+			{ 
+				fadein message_arena ; 
+				setitemcolor forcespec bordercolor .7 0 0 1 
+			} 
+			mouseExit 
+			{ 
+				fadeout message_arena ; 
+				setitemcolor forcespec bordercolor .5 .5 .5 1 
+			}
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+		}
+
+		itemDef 
+		{
+			name				forcespec
+			text				@MENUS_OKAY
+			descText			"Begin vote to force spec this player."
+			type				1
+			group				grpCallVote
+			style				WINDOW_STYLE_FILLED
+			rect				140 216 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			0
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteForceSpec ; 
+				uiScript closeingame 
+			}
+			mouseEnter 
+			{ 
+				show				doneButton
+			}
+			mouseExit 
+			{ 
+				hide				doneButton
+			}	  	  
+		}
 	}
 }
 
