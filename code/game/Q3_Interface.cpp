@@ -331,6 +331,10 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_FACEBLINK),
 	ENUM2STRING(SET_FACEBLINKFROWN),
 	ENUM2STRING(SET_FACEFROWN),
+	ENUM2STRING(SET_FACESMILE),
+	ENUM2STRING(SET_FACEGLAD),
+	ENUM2STRING(SET_FACEHAPPY),
+	ENUM2STRING(SET_FACESHOCKED),
 	ENUM2STRING(SET_FACENORMAL),
 	ENUM2STRING(SET_FACEEYESCLOSED),
 	ENUM2STRING(SET_FACEEYESOPENED),
@@ -6036,6 +6040,28 @@ static void Q3_Face( int entID,int expression, float holdtime)
 		ent->client->facial_anim = FACE_FROWN;
 		break;
 
+	//Extra facial expressions:
+	case SET_FACESMILE:
+		ent->client->facial_blink = -(level.time + holdtime);
+		ent->client->facial_timer = -(level.time + holdtime);
+		ent->client->facial_anim = FACE_SMILE;
+		break;
+	case SET_FACEGLAD:
+		ent->client->facial_blink = 1;
+		ent->client->facial_timer = -(level.time + holdtime);
+		ent->client->facial_anim = FACE_TALK1;
+		break;
+	case SET_FACEHAPPY:
+		ent->client->facial_blink = -(level.time + holdtime);
+		ent->client->facial_timer = -(level.time + holdtime);
+		ent->client->facial_anim = FACE_TALK1;
+		break;
+	case SET_FACESHOCKED:
+		ent->client->facial_blink = -1;
+		ent->client->facial_timer = -(level.time + holdtime);
+		ent->client->facial_anim = FACE_TALK3;
+		break;
+
 	case SET_FACENORMAL:
 		ent->client->facial_timer = level.time + Q_flrand(6000.0, 10000.0);
 		ent->client->facial_blink = level.time + Q_flrand(3000.0, 5000.0);
@@ -8918,6 +8944,10 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	case SET_FACEBLINK:
 	case SET_FACEBLINKFROWN:
 	case SET_FACEFROWN:
+	case SET_FACESMILE:
+	case SET_FACEGLAD:
+	case SET_FACEHAPPY:
+	case SET_FACESHOCKED:
 	case SET_FACENORMAL:
 		float_data = atof((char *) data);
 		Q3_Face(entID, toSet, float_data);
@@ -9926,6 +9956,10 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 	case SET_FACEBLINK:		//## %f="0.0" # Set face to Blink expression for number of seconds
 	case SET_FACEBLINKFROWN:	//## %f="0.0" # Set face to Blinkfrown expression for number of seconds
 	case SET_FACEFROWN:		//## %f="0.0" # Set face to Frown expression for number of seconds
+	case SET_FACESMILE:		//## %f="0.0" # Set face to Smile expression for number of seconds
+	case SET_FACEGLAD:		//## %f="0.0" # Set face to Glad expression for number of seconds
+	case SET_FACEHAPPY:		//## %f="0.0" # Set face to Happy expression for number of seconds
+	case SET_FACESHOCKED:		//## %f="0.0" # Set face to Shocked expression for number of seconds
 	case SET_FACENORMAL:		//## %f="0.0" # Set face to Normal expression for number of seconds
 		DebugPrint( WL_WARNING, "GetFloat: SET_FACE___ not implemented\n" );
 		return false;
