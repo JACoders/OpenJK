@@ -4905,7 +4905,11 @@ static const char *g_bindCommands[] = {
 	"+button13",
 	"throwflag",
 	"engage_fullforceduel",
-	"engage_gunduel"
+	"engage_gunduel",
+	"amTeleMark",
+	"amTele",
+	"noclip",
+	"flipkick"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)
