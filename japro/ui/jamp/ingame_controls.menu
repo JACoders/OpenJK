@@ -44,6 +44,7 @@
 			hide			forcecontrols2 ;
 			hide			joycontrols ;
 			hide			othercontrols ;
+			hide			japrocontrols ;
 			setitemcolor		movementcontrolbutton 		forecolor 1 1 1 1 ;
 			setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1
 			setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -51,6 +52,7 @@
 			setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 			setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 			setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+			setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 		}
 
 		// Overall window backdrop
@@ -136,6 +138,7 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 1 1 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -143,6 +146,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -196,6 +200,7 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 1 1 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -203,6 +208,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -256,6 +262,7 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 1 1 1 ;
@@ -263,6 +270,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -316,6 +324,7 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -323,6 +332,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -375,6 +385,7 @@
 				show			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -382,6 +393,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 1 1 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -435,6 +447,7 @@
 				hide			forcecontrols2 ;
 				show			joycontrols ;
 				hide			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -442,6 +455,7 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 1 1 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -495,6 +509,7 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				show			othercontrols ;
+				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -502,6 +517,69 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 1 1 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 .682 0 1 ;
+			}
+		}
+		
+		// japro button
+		itemDef 
+		{
+			name				japrocontrolbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				20 253 185 30
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				japrocontrolbutton
+			group				none
+			text				japro
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				20 253 170 30
+			font				3
+			textscale			0.8
+			textalignx			170
+			textaligny			5
+			textalign			ITEM_ALIGN_RIGHT
+			textstyle			3
+			forecolor			0.65 0.65 1 1
+			visible				1
+			descText			"Configure your jaPRO controls."
+
+			mouseEnter 
+			{ 
+				show			japrocontrolbutton_glow
+			}
+			mouseExit 
+			{ 
+				hide			japrocontrolbutton_glow
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				show			setup_background ;
+				hide			movecontrols ;
+				hide 			attackcontrols ;
+				hide 			weaponcontrols ;	
+				hide			forcecontrols ;
+				hide			forcecontrols2 ;
+				hide			joycontrols ;
+				hide			othercontrols ;
+				show			japrocontrols ;
+				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
+				setitemcolor		forcecontrolbutton 			forecolor 1 .682 0 1 ;
+				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
+				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
+				setitemcolor		othercontrolbutton 			forecolor 1 .682 0 1 ;
+				setitemcolor		japrocontrolbutton 			forecolor 1 1 1 1 ;
 			}
 		}
 		
@@ -519,7 +597,6 @@
 			decoration
 		}
 		
-
 		//----------------------------------------------------------------------------------------------
 		//
 		//	HIGHLIGHT BARS
@@ -3184,7 +3261,147 @@
 				play			"sound/interface/button1.wav" ; 
 			}
 		}
+		
+//----------------------------------------------------------------------------------------------
+//
+//	JAPRO BINDING
+//
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				japro1
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Jetpack:"
+			cvar				"+button12"
+			rect				220 61 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			// appearance_slot		1
+			descText			"Gives Jetpack"
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
 
+			mouseenter 
+			{
+				show			highlight2
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight2
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			name				japro2
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Dash:"
+			cvar				"+button13"
+			rect				220 81 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			// appearance_slot		2
+			descText			"Dash in any direction with the Warsow movement style."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight3
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight3
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			name				japro3
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Throw Flag:"
+			cvar				"throwflag"
+			rect				220 101 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			// appearance_slot		3
+			descText			"Throw your team's flag in CTF mode."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight4
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			name				japro4
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Zoom:"
+			cvar				"+zoom"
+			rect				220 121 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			// appearance_slot		4
+			descText			"If held, allows player to zoom in."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight5
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+				hide			keybindstatus
+			}
+		}
 		//----------------------------------------------------------------------------------------------
 		//
 		//	Text
