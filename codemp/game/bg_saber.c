@@ -3827,7 +3827,7 @@ weapChecks:
 									down[2] -= 256;
 									pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
 
-									trap->Print("surfFlags: %i, Planenormal: %f\n", tr.surfaceFlags, pml.groundTrace.plane.normal[2]);
+									//trap->Print("surfFlags: %i, Planenormal: %f\n", tr.surfaceFlags, pml.groundTrace.plane.normal[2]);
 
 									if ( (tr.plane.normal[2] < MIN_WALK_NORMAL) || (tr.surfaceFlags & SURF_SLICK) || (tr.surfaceFlags & SURF_FORCEFIELD)) { //Dunno why slick is sometimes forcefield
 										newmove = saberMoveData[curmove].chain_idle;
