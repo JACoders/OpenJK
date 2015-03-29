@@ -7676,8 +7676,8 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
 				
 			if (g_entities[i].r.svFlags & SVF_BOT) {
-				Q_strncpyz(strRate, "^7Bot^7", sizeof(strRate));
-				Q_strncpyz(strSnaps, "^7Bot^7", sizeof(strSnaps));
+				Q_strncpyz(strRate, "^7Bot    ", sizeof(strRate)); //dont fucking know why it needs 4 spaces
+				Q_strncpyz(strSnaps, "^7Bot    ", sizeof(strSnaps));
 
 				//Q_strncpyz(strFPS, "^7Bot^7", sizeof(strFPS));
 				//Q_strncpyz(strPackets, "^7Bot^7", sizeof(strPackets));

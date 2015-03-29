@@ -3812,9 +3812,12 @@ weapChecks:
 #endif
 						{
 							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f)) {
-								const float xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]);
+								const float oldxyspeed = sqrt(pml.previous_velocity[0] * pml.previous_velocity[0] + pml.previous_velocity[1] * pml.previous_velocity[1]);
 
-								if (xyspeed >= 300.0f) {
+								if (oldxyspeed >= 300.0f) {
+									newmove = saberMoveData[curmove].chain_idle;
+								}
+								else { 
 									trace_t tr;
 									vec3_t down;
 
@@ -3830,8 +3833,6 @@ weapChecks:
 									//else 
 										//trap->Print("Move canceled!\n");
 								}
-								//else 
-									//trap->Print("Move canceled!\n");
 							}
 							else
 								newmove = saberMoveData[curmove].chain_idle;
