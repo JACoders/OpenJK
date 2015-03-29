@@ -430,7 +430,7 @@ int G_LoadRoff( const char *fileName )
 	// See if I'm already precached
 	for ( i = 0; i < num_roffs; i++ )
 	{
-		if ( stricmp( file, roffs[i].fileName ) == 0 )
+		if ( Q_stricmp( file, roffs[i].fileName ) == 0 )
 		{
 			// Good, just return me...avoid zero index
 			return i + 1;
