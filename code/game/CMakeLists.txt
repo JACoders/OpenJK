@@ -352,18 +352,18 @@ endif(NOT WIN32)
 if(WIN32)
 	install(TARGETS ${SPGame}
 		RUNTIME
-		DESTINATION "OpenJK"
+		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKASPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildSPEngine)
 		install(TARGETS ${SPGame}
 			LIBRARY
-			DESTINATION "${SPEngine}.app/Contents/MacOS/OpenJK"
+			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
 			COMPONENT ${JKASPClientComponent})
 	else()
 		install(TARGETS ${SPGame}
 			LIBRARY
-			DESTINATION "OpenJK"
+			DESTINATION "${JKAInstallDir}/OpenJK"
 			COMPONENT ${JKASPClientComponent})
 	endif() 
 endif()
