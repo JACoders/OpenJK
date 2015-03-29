@@ -11467,7 +11467,7 @@ void Cmd_EntNear_f( gentity_t *ent ) {
 	for (i = 0; i < level.num_entities; i++)
 	{
 		this_ent = &g_entities[i];
-		if ((int)Distance(ent->client->ps.origin, this_ent->s.origin) < 200)
+		if (ent != this_ent && (int)Distance(ent->client->ps.origin, this_ent->r.currentOrigin) < 200)
 		{
 			strcpy(message,va("%s\n%d - %s",message,this_ent->s.number,this_ent->classname));
 		}
