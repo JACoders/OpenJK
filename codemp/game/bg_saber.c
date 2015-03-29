@@ -3811,18 +3811,24 @@ weapChecks:
 						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer == 1))
 #endif
 						{
-							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) && (pm->ps->velocity[2] == 280.0f)) {
-								trace_t tr;
-								vec3_t down;
+							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f)) {
+								const float xyspeed = sqrt(pm->ps->velocity[0] * pm->ps->velocity[0] + pm->ps->velocity[1] * pm->ps->velocity[1]);
 
-								VectorCopy(pm->ps->origin, down);
-								down[2] -= 256;
-								pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+								if (xyspeed >= 300.0f) {
+									trace_t tr;
+									vec3_t down;
 
-								//trap->Print("Groundnormal: %i, Planenormal: %f\n", (int)pml.groundPlane, pml.groundTrace.plane.normal[2]);
+									VectorCopy(pm->ps->origin, down);
+									down[2] -= 256;
+									pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
 
-								if ( tr.plane.normal[2] < MIN_WALK_NORMAL ) {
-									newmove = saberMoveData[curmove].chain_idle;
+									//trap->Print("Groundnormal: %i, Planenormal: %f\n", (int)pml.groundPlane, pml.groundTrace.plane.normal[2]);
+
+									if ( tr.plane.normal[2] < MIN_WALK_NORMAL ) {
+										newmove = saberMoveData[curmove].chain_idle;
+									}
+									//else 
+										//trap->Print("Move canceled!\n");
 								}
 								//else 
 									//trap->Print("Move canceled!\n");
