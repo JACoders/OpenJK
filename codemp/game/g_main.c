@@ -933,8 +933,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				G_FreeEntity( ent );
 			}
 		}
-		// zyk: spawning Rax Joris npc
-		Zyk_NPC_SpawnType("rax",3080,-3700,921,90);
+
 		zyk_create_info_player_deathmatch(-2152,-3885,-134,90);
 		zyk_create_info_player_deathmatch(-2152,-3944,-134,90);
 	}
@@ -1157,8 +1156,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				G_FreeEntity( ent );
 			}
 		}
-		// zyk: spawning Alora npc to fight against her in this map
-		Zyk_NPC_SpawnType("alora_dual",-10423,-992,2417,0);
+
 		zyk_create_info_player_deathmatch(286,-2859,345,92);
 		zyk_create_info_player_deathmatch(190,-2834,345,90);
 	}
