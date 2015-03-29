@@ -614,6 +614,22 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		zyk_create_info_player_deathmatch(2053,3401,-486,-90);
 		zyk_create_info_player_deathmatch(4870,455,-486,-179);
 	}
+	else if (Q_stricmp(zyk_mapname, "yavin1") == 0)
+	{
+		int i = 0;
+		gentity_t *ent;
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			ent = &g_entities[i];
+			if (Q_stricmp( ent->targetname, "end_level") == 0)
+			{ // zyk: remove the map change entity
+				G_FreeEntity( ent );
+			}
+		}
+		zyk_create_info_player_deathmatch(472,-4833,437,74);
+		zyk_create_info_player_deathmatch(-167,-4046,480,0);
+	}
 	else if (Q_stricmp(zyk_mapname, "yavin1b") == 0)
 	{
 		int i = 0;
