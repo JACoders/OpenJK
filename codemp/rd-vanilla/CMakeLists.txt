@@ -175,18 +175,18 @@ endif(NOT WIN32)
 if(WIN32)
 	install(TARGETS ${MPVanillaRenderer}
 		RUNTIME
-		DESTINATION "."
+		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildMPEngine)
 		install(TARGETS ${MPVanillaRenderer}
 			LIBRARY
-			DESTINATION "${MPEngine}.app/Contents/MacOS/"
+			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
 			COMPONENT ${JKAMPClientComponent})
 	else()
 		install(TARGETS ${MPVanillaRenderer}
 			LIBRARY
-			DESTINATION "."
+			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
 	endif()
 endif()
