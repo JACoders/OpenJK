@@ -3811,30 +3811,22 @@ weapChecks:
 						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer == 1))
 #endif
 						{
-							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f)) {
-								//const float oldxyspeed = sqrt(pml.previous_velocity[0] * pml.previous_velocity[0] + pml.previous_velocity[1] * pml.previous_velocity[1]);
+							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f))
+							{
+								trace_t tr;
+								vec3_t down;
 
+								VectorCopy(pm->ps->origin, down);
+								down[2] -= 256;
+								pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
 
-								//if (oldxyspeed >= 300.0f) {
-								//	newmove = saberMoveData[curmove].chain_idle;
-								//}
-								//else 
-								{ 
-									trace_t tr;
-									vec3_t down;
+								//trap->Print("surfFlags: %i, Planenormal: %f\n", tr.surfaceFlags, pml.groundTrace.plane.normal[2]);
 
-									VectorCopy(pm->ps->origin, down);
-									down[2] -= 256;
-									pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
-
-									//trap->Print("surfFlags: %i, Planenormal: %f\n", tr.surfaceFlags, pml.groundTrace.plane.normal[2]);
-
-									if ( (tr.plane.normal[2] < MIN_WALK_NORMAL) || (tr.surfaceFlags & SURF_SLICK) || (tr.surfaceFlags & SURF_FORCEFIELD)) { //Dunno why slick is sometimes forcefield
-										newmove = saberMoveData[curmove].chain_idle;
-									}
-									//else 
-										//trap->Print("Move canceled!\n");
+								if ( (tr.plane.normal[2] < MIN_WALK_NORMAL) || (tr.surfaceFlags & SURF_SLICK) || (tr.surfaceFlags & SURF_FORCEFIELD)) { //Dunno why slick is sometimes forcefield
+									newmove = saberMoveData[curmove].chain_idle;
 								}
+								//else 
+									//trap->Print("Move canceled!\n");
 							}
 							else
 								newmove = saberMoveData[curmove].chain_idle;

@@ -1380,14 +1380,14 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
 
-		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
+		if (diffLag > 0) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
 		}
-		else 
-			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
+		//else 
+			//time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
 		if (player->client->sess.fullAdmin)
-			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > -10): %i\"", diffLag));
+			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > 0): %i\"", diffLag));
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 
@@ -1542,11 +1542,11 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 		else
 			average = player->client->pers.stats.topSpeed;
 
-		if (diffLag > -10) {//Should this be more trusting..?.. -20? -30?
+		if (diffLag > 0) {//Should this be more trusting..?.. -20? -30?
 			time += diffLag;
 		}
-		else 
-			time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
+		//else 
+			//time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
 		if (time < 1)
 			time = 1;
