@@ -8,12 +8,12 @@
 		visible						0
 		fullscreen					0
 		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
-		rect						105 40 430 425
+		rect						105 40 430 390
 		focusColor					1 1 1 1								// Focus color for text and items
 		style						1
 		border						1
 		descX						320
-		descY						450
+		descY						405
 		descScale					1
 		descColor				1 .682 0 .8
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -37,7 +37,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 430 425
+			rect				0 0 430 390
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -47,28 +47,6 @@
 		//----------------------------------------
 		// Force Configuration
 		//----------------------------------------
-		// Player Configuration title		
-		itemDef 
-		{
-			name				playerconfigtitle
-			style				WINDOW_STYLE_SHADER
-			background			"gfx/menus/menu_blendbox"
-			text				@MENUS_CHOOSE_YOUR_FORCE_TRAINING
-			rect				20 5 390 28
-			textalign			ITEM_ALIGN_CENTER		
-			textalignx			195
-			textaligny			2
-			outlinecolor			1 .5 .5 .5
-			backcolor			0 0 0 0
-			font				3
-			textscale			0.9
-			forecolor			.549 .854 1 1
-			border				0
-			bordercolor			0 0 0 0
-			visible				1 
-			decoration
-		}
-
 		// Force Rank display
 		itemDef 
 		{
@@ -77,7 +55,7 @@
 			style				0	
 			text				@MENUS_FORCE_MASTERY
 			ownerdraw			UI_FORCE_RANK
-			rect				220 40 0 0
+			rect				220 5 0 0
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			0
 			textaligny			-6
@@ -95,7 +73,7 @@
 			name				playerconfigtitle
 			style				0	
 			text				@MENUS_SPEND_YOUR_POINTS_BY
-			rect				220 60 0 0
+			rect				220 25 0 0
 			textalign			ITEM_ALIGN_CENTER		
 			textalignx			0
 			textaligny			0
@@ -116,7 +94,7 @@
 			name				forcedivlight
 			group				lightpowers
 			style				WINDOW_STYLE_SHADER
-			rect				0 85 225 20
+			rect				0 50 225 20
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 1 1 1
 			visible				1
@@ -129,7 +107,7 @@
 			name				forcedivdark
 			group				darkpowers
 			style				WINDOW_STYLE_SHADER
-			rect				00 85 225 20
+			rect				00 50 225 20
 			background			"gfx/menus/menu_blendboxr"
 			forecolor			1 1 1 1
 			visible				1
@@ -145,7 +123,7 @@
 			style				0	
 			text				@MENUS_FORCE_SIDE
 			ownerdraw			UI_FORCE_SIDE
-			rect				26 85 175 16
+			rect				26 50 175 16
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			-5
@@ -172,7 +150,7 @@
 			style				0	
 			text				@MENUS_POINTS_REMAINING
 			ownerdraw			UI_FORCE_POINTS
-			rect				250 85 0 0
+			rect				250 50 0 0
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			60
 			textaligny			-5
@@ -199,7 +177,7 @@
 			group				"playersettingforcegroup"
 			style				0	
 			text				@MENUS_FORCE_TEMPLATES
-			rect				16 113 0 0
+			rect				16 78 0 0
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx			4
 			textaligny			0
@@ -218,7 +196,7 @@
 		itemDef 
 		{
 			name				fcflist
-			rect				16 130 185 110
+			rect				16 95 185 140
 			type				ITEM_TYPE_LISTBOX
 			style				WINDOW_STYLE_FILLED
 			elementwidth			155
@@ -266,7 +244,7 @@
 			text 				@MENUS_FILENAME
 			cvar 				"ui_SaveFCF"
 			maxchars 			12
-			rect 				5 250 185 32
+			rect 				5 245 185 30
 			textalign			ITEM_ALIGN_LEFT		
 			textalignx 			0
 			textaligny 			0
@@ -287,7 +265,7 @@
 			name				templatesavebutton
 			group				"playerforcetemplatesave"
 			style				WINDOW_STYLE_SHADER
-			rect				16 280 185 32
+			rect				16 275 185 32
 			background			"gfx/menus/menu_buttonback"
 			forecolor			1 1 1 1
 			decoration
@@ -301,7 +279,7 @@
 			group				"playerforcetemplatesave"
 			style				WINDOW_STYLE_EMPTY
 			textalign			ITEM_ALIGN_LEFT		
-			rect				16 320 185 32
+			rect				16 305 185 32
 			forecolor			1 .682 0 .8
 			font				4
 			textscale			1
@@ -317,7 +295,7 @@
 			text				@MENUS_SAVE_FILE
 			type				1
 			style				WINDOW_STYLE_EMPTY
-			rect				16 280 185 32
+			rect				16 275 185 32
 			textalign			1
 			textalignx			92
 			textaligny			2
@@ -358,7 +336,7 @@
 			group				"playersettingforcegroup"
 			style				0	
 			text				@MENUS_POWER
-			rect				230 112 0 0
+			rect				230 77 0 0
 			textalign			ITEM_ALIGN_RIGHT		
 			textalignx			104
 			textaligny			0
@@ -379,7 +357,7 @@
 			group				"playersettingforcegroup"
 			style				0	
 			text				@MENUS_1_2_3
-			rect				230 112 0 0
+			rect				230 77 0 0
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			115
 			textaligny			0
@@ -402,7 +380,7 @@
 			style					0	
 			text					@MENUS_FORCE_JUMP
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 130 110 15
+			rect					230 95 110 15
 			textalign				ITEM_ALIGN_RIGHT		
 			textalignx				105
 			textaligny				0
@@ -424,7 +402,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_LEVITATION
-			rect					230 130 175 15
+			rect					230 95 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -459,7 +437,7 @@
 			style					0	
 			text					@MENUS_FORCE_PUSH
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 147 110 15
+			rect					230 112 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			textaligny				0
@@ -481,7 +459,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_PUSH
-			rect					230 147 175 15
+			rect					230 112 175 15
 			textalign				ITEM_ALIGN_LEFT
 			textalignx				115
 			textaligny				-6
@@ -516,7 +494,7 @@
 			style					0	
 			text					@MENUS_FORCE_PULL
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 164 110 15 
+			rect					230 129 110 15 
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			textaligny				0
@@ -538,7 +516,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_PULL
-			rect					230 164 175 15
+			rect					230 129 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -573,7 +551,7 @@
 			style					0	
 			text					@MENUS_FORCE_SPEED
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 181 110 15
+			rect					230 146 110 15
 			textalign				ITEM_ALIGN_RIGHT
 			textalignx				105
 			textaligny				0
@@ -595,7 +573,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_SPEED
-			rect					230 181 175 15
+			rect					230 146 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -629,7 +607,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			text					@MENUS_FORCE_SIGHT
-			rect					230 198 110 15
+			rect					230 163 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			textaligny				0
@@ -651,7 +629,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_SEE
-			rect					230 198 175 15
+			rect					230 163 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -689,7 +667,7 @@
 			group					lightpowers
 			style					0	
 			text					@MENUS_FORCE_ABSORB
-			rect					230 223 110 15
+			rect					230 188 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			textaligny				0
@@ -711,7 +689,7 @@
 			group					lightpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_ABSORB
-			rect					230 223 175 15
+			rect					230 188 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -745,7 +723,7 @@
 			style					0	
 			text					@MENUS_FORCE_HEAL
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 240 110 15
+			rect					230 205 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			textaligny				0
@@ -767,7 +745,7 @@
 			group					lightpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_HEAL
-			rect					230 240 175 15
+			rect					230 205 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -801,7 +779,7 @@
 			group					lightpowers
 			style					0	
 			text					@MENUS_FORCE_PROTECT
-			rect					230 257 110 15
+			rect					230 222 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			outlinecolor			1 .5 .5 .5
@@ -823,7 +801,7 @@
 			group					lightpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_PROTECT
-			rect					230 257 175 15
+			rect					230 222 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -857,7 +835,7 @@
 			group					lightpowers
 			style					0	
 			text					@MENUS_FORCE_MINDTRICK
-			rect					230 274 110 15
+			rect					230 239 110 15
 			textalign				ITEM_ALIGN_RIGHT
 			textalignx				105
 			textaligny				0
@@ -879,7 +857,7 @@
 			group					lightpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_TELEPATHY
-			rect					230 274 175 15
+			rect					230 239 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -913,7 +891,7 @@
 			group					lightpowers_team
 			style					0	
 			text					@MENUS_FORCE_TEAM_HEAL
-			rect					230 291 110 15
+			rect					230 256 110 15
 			textalign				ITEM_ALIGN_RIGHT	
 			textalignx				105
 			outlinecolor			1 .5 .5 .5
@@ -944,7 +922,7 @@
 			group					lightpowers_team
 			style					0	
 			ownerdraw				UI_FORCE_RANK_TEAM_HEAL
-			rect					230 291 175 15
+			rect					230 256 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -992,7 +970,7 @@
 			style					0	
 			text					@MENUS_FORCE_GRIP
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 223 110 15
+			rect					230 188 110 15
 			textalign				ITEM_ALIGN_RIGHT												
 			textalignx				105
 			textaligny				0
@@ -1014,7 +992,7 @@
 			group					darkpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_GRIP
-			rect					230 223 175 15
+			rect					230 188 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -1049,7 +1027,7 @@
 			style					0	
 			text					@MENUS_FORCE_DRAIN
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 240 110 15
+			rect					230 205 110 15
 			textalign				ITEM_ALIGN_RIGHT												
 			textalignx				105
 			textaligny				0
@@ -1071,7 +1049,7 @@
 			group					darkpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_DRAIN
-			rect					230 240 175 15
+			rect					230 205 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -1105,7 +1083,7 @@
 			style					0	
 			text					@MENUS_FORCE_LIGHTNING
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 257 110 15
+			rect					230 222 110 15
 			textalign				ITEM_ALIGN_RIGHT												
 			textalignx				105
 			textaligny				0
@@ -1127,7 +1105,7 @@
 			group					darkpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_LIGHTNING
-			rect					230 257 175 15
+			rect					230 222 175 15
 			textalign				ITEM_ALIGN_LEFT										
 			textalignx				115
 			textaligny				-6
@@ -1162,7 +1140,7 @@
 			style					0	
 			text					@MENUS_DARK_RAGE
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 274 110 15
+			rect					230 239 110 15
 			textalign				ITEM_ALIGN_RIGHT
 			textalignx				105
 			textaligny				0
@@ -1184,7 +1162,7 @@
 			group					darkpowers
 			style					0	
 			ownerdraw				UI_FORCE_RANK_RAGE
-			rect					230 274 175 15
+			rect					230 239 175 15
 			textalign				ITEM_ALIGN_LEFT										
 			textalignx				115
 			textaligny				-6
@@ -1219,7 +1197,7 @@
 			style					0	
 			text					@MENUS_FORCE_TEAM_REPLENISH
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 291 110 15
+			rect					230 256 110 15
 			textalign				ITEM_ALIGN_RIGHT										
 			textalignx				105
 			textaligny				0
@@ -1250,7 +1228,7 @@
 			group					darkpowers_team
 			style					0	
 			ownerdraw				UI_FORCE_RANK_TEAM_FORCE
-			rect					230 291 175 15
+			rect					230 256 175 15
 			textalign				ITEM_ALIGN_LEFT										
 			textalignx				115
 			textaligny				-6
@@ -1298,7 +1276,7 @@
 			style					0	
 			text					@MENUS_SABER_ATTACK
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 316 110 15
+			rect					230 281 110 15
 			textalign				ITEM_ALIGN_RIGHT		
 			textalignx				105
 			textaligny				0
@@ -1320,7 +1298,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_SABERATTACK
-			rect					230 316 175 15
+			rect					230 281 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -1355,7 +1333,7 @@
 			style					0	
 			text					@MENUS_SABER_DEFEND
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 333 110 15
+			rect					230 298 110 15
 			textalign				ITEM_ALIGN_RIGHT		
 			textalignx				105
 			textaligny				0
@@ -1377,7 +1355,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_SABERDEFEND
-			rect					230 333 175 15
+			rect					230 298 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -1412,7 +1390,7 @@
 			style					0	
 			text					@MENUS_SABER_THROW
 			//descText				@MENUS_DESCRIPTION_OF_A_FORCE
-			rect					230 350 110 15
+			rect					230 315 110 15
 			textalign				ITEM_ALIGN_RIGHT		
 			textalignx				105
 			textaligny				0
@@ -1434,7 +1412,7 @@
 			group					"playersettingforcegroup"
 			style					0	
 			ownerdraw				UI_FORCE_RANK_SABERTHROW
-			rect					230 350 175 15
+			rect					230 315 175 15
 			textalign				ITEM_ALIGN_LEFT		
 			textalignx				115
 			textaligny				-6
@@ -1469,7 +1447,7 @@
 			text				@MENUS_NO_LIGHTSABER
 			type				1
 			style				0	
-			rect				253 338 0 0
+			rect				253 303 0 0
 			textalign			ITEM_ALIGN_CENTER	 	
 			textalignx			65
 			textaligny				0
@@ -1493,7 +1471,7 @@
 			text					@MENUS__REQUIRES_SABER_ATTACK
 			type					1
 			style					0	
-			rect					253 355 0 0
+			rect					253 320 0 0
 			textalign				ITEM_ALIGN_CENTER		
 			textalignx				65
 			outlinecolor				1 .5 .5 .5
@@ -1515,7 +1493,7 @@
 			name					nosaber
 			group					"playersettinggroup"
 			style					0
-			rect					230 338 175 34
+			rect					230 303 175 34
 			forecolor				.7 .7 .7 1
 			decoration
 			descText				@MENUS_MUST_ACQUIRE_A_MINIMUM
@@ -1530,7 +1508,7 @@
 			name					applyjoinbutton
 			group					"playerforcejoin"
 			style					WINDOW_STYLE_SHADER
-			rect					140 370 150 32
+			rect					140 335 150 32
 			background				"gfx/menus/menu_buttonback"
 			forecolor				1 1 1 1
 			decoration
@@ -1544,7 +1522,7 @@
 			text				@MENUS_APPLY_POWERS
 			type				1
 			style				WINDOW_STYLE_EMPTY
-			rect				140 370 150 32
+			rect				140 335 150 32
 			textalign			1
 			textalignx			75
 			textaligny			2

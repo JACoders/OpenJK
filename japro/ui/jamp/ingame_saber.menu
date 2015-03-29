@@ -5,12 +5,12 @@
 		visible					0
 		fullscreen					0
 		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
-		rect						105 40 430 425
+		rect						105 40 430 400
 		focusColor					1 1 1 1					// Focus color for text and items
 		style						1
 		border					1
 		descX						320
-		descY						440
+		descY						415
 		descScale					1
 		descColor				1 .682 0 1					// Focus color for text and items
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -39,7 +39,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 430 425
+			rect				0 0 430 400
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -982,7 +982,7 @@
 			name				applyjoinButton
 			group				highlights 
 			style				WINDOW_STYLE_SHADER
-			rect				160 360 110 32
+			rect				160 335 110 32
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -994,7 +994,7 @@
 			name				applyjoinBorder
 			group				none
 			style				WINDOW_STYLE_EMPTY
-			rect				140 360 150 32
+			rect				140 335 150 32
 			forecolor			1 1 1 1
 			decoration
 			border				1
@@ -1010,7 +1010,7 @@
 			text				@MENUS_APPLY_CHANGES
 			type				1
 			style				WINDOW_STYLE_EMPTY
-			rect				160 360 110 32
+			rect				160 335 110 32
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			55
 			textaligny			2
