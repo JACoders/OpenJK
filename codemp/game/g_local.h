@@ -704,6 +704,8 @@ typedef struct clientPersistant_s {
 	//char		clanpass[MAX_QPATH];//Japro - Serverside Clanpass
 	//int			sayteammod;//0 = normal, 1 = clan, 2 = admin
 	int			lastChatTime;//godchat fuck idk why im doing this
+	int			rate;
+	int			snaps;
 
 	//int			aimSamples[64];//japro anti yawspeed?
 	//int			aimCount;

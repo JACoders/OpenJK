@@ -453,6 +453,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		{
 			ent->flags &= ~FL_BOUNCE_SHRAPNEL;
 		}
+		//trap->Print("Shrapnel is still there\n");
 		return;
 	}
 

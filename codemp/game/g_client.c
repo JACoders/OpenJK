@@ -2284,6 +2284,12 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.noDamageNumbers = qtrue;
 	}
 
+	s = Info_ValueForKey( userinfo, "rate" );
+	client->pers.rate = atoi(s);
+
+	s = Info_ValueForKey( userinfo, "snaps" );
+	client->pers.snaps = atoi(s);
+
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
 	// set name

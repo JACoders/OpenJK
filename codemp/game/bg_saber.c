@@ -3810,7 +3810,26 @@ weapChecks:
 #ifdef _GAME
 						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer == 1))
 #endif
-							newmove = saberMoveData[curmove].chain_idle;
+						{
+							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] != 0) && (pm->ps->velocity[2] == 280.0f)) {
+								trace_t tr;
+								vec3_t down;
+
+								VectorCopy(pm->ps->origin, down);
+								down[2] -= 256;
+								pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+
+								//trap->Print("Groundnormal: %i, Planenormal: %f\n", (int)pml.groundPlane, pml.groundTrace.plane.normal[2]);
+
+								if ( tr.plane.normal[2] < MIN_WALK_NORMAL ) {
+									newmove = saberMoveData[curmove].chain_idle;
+								}
+								//else 
+									//trap->Print("Move canceled!\n");
+							}
+							else
+								newmove = saberMoveData[curmove].chain_idle;
+						}
 					}
 				}
 

@@ -9916,17 +9916,19 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 		//Automatically slow down as the roll ends.
 	}
 
-	saber = BG_MySaber( ps->clientNum, 0 );
-	if ( saber 
-		&& saber->moveSpeedScale != 1.0f )
-	{
-		ps->speed *= saber->moveSpeedScale;
-	}
-	saber = BG_MySaber( ps->clientNum, 1 );
-	if ( saber 
-		&& saber->moveSpeedScale != 1.0f )
-	{
-		ps->speed *= saber->moveSpeedScale;
+	if (!ps->stats[STAT_RACEMODE]) {
+		saber = BG_MySaber( ps->clientNum, 0 );
+		if ( saber 
+			&& saber->moveSpeedScale != 1.0f )
+		{
+			ps->speed *= saber->moveSpeedScale;
+		}
+		saber = BG_MySaber( ps->clientNum, 1 );
+		if ( saber 
+			&& saber->moveSpeedScale != 1.0f )
+		{
+			ps->speed *= saber->moveSpeedScale;
+		}
 	}
 }
 

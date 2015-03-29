@@ -2835,7 +2835,7 @@ qboolean G_VoteVSTR( gentity_t *ent, int numArgs, const char *arg1, const char *
 	Q_CleanStr(vstr);
 
 	//Check if vstr exists, if not return qfalse.
-	trap->Cvar_VariableStringBuffer(va("%s", vstr), buf, sizeof(buf));
+	trap->Cvar_VariableStringBuffer(vstr, buf, sizeof(buf));
 	if (!Q_stricmp(buf, ""))
 		return qfalse;
 
@@ -5377,6 +5377,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "login ");
 	Q_strcat(buf, sizeof(buf), "logout ");
 	Q_strcat(buf, sizeof(buf), "changepassword ");
+	Q_strcat(buf, sizeof(buf), "stats ");
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -7649,6 +7650,67 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 
 }
 
+void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? conditional open/close issue??
+	int			i;
+	char		msg[1024-128] = {0};
+	gclient_t	*cl;
+
+	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate     Snaps     Name\n\"");
+
+	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
+		char *tmpMsg = NULL;
+		if (!g_entities[i].inuse)
+			continue;
+		cl = &level.clients[i];
+		if (cl->pers.netname[0]) {
+			char strNum[12] = {0};
+			char strName[MAX_NETNAME] = {0};
+			char strRate[16] = {0};
+			char strSnaps[16] = {0};
+
+			//char strFPS[16] = {0};
+			//char strPackets[16] = {0};
+			//char strTimenudge[16] = {0};
+
+			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
+			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
+				
+			if (g_entities[i].r.svFlags & SVF_BOT) {
+				Q_strncpyz(strRate, "^7Bot^7", sizeof(strRate));
+				Q_strncpyz(strSnaps, "^7Bot^7", sizeof(strSnaps));
+
+				//Q_strncpyz(strFPS, "^7Bot^7", sizeof(strFPS));
+				//Q_strncpyz(strPackets, "^7Bot^7", sizeof(strPackets));
+				//Q_strncpyz(strTimenudge, "^7Bot^7", sizeof(strTimenudge));
+			}
+			else {
+				if (cl->pers.rate < sv_maxRate.integer)
+					Q_strncpyz(strRate, va("^3%i", cl->pers.rate), sizeof(strRate));
+				else
+					Q_strncpyz(strRate, va("^7%i", cl->pers.rate), sizeof(strRate));
+				if (cl->pers.snaps < sv_fps.integer)
+					Q_strncpyz(strSnaps, va("^3%i", cl->pers.snaps), sizeof(strSnaps));
+				else
+					Q_strncpyz(strSnaps, va("^7%i", cl->pers.snaps), sizeof(strSnaps));
+
+				//Q_strncpyz(strFPS, va("%i", cl->pers.fps), sizeof(strFPS));
+				//Q_strncpyz(strPackets, va("%i", cl->pers.packets), sizeof(strPackets));
+				//Q_strncpyz(strTimenudge, va("%i", cl->pers.timenudge), sizeof(strTimenudge));
+			}
+
+			tmpMsg = va( "%-2s%-11s%-12s%s\n", strNum, strRate, strSnaps, strName);
+								
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+		}
+	}
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+}
+//
+
 /*
 =================
 ClientCommand
@@ -7811,6 +7873,9 @@ command_t commands[] = {
 	{ "score",				Cmd_Score_f,				0 },
 	{ "serverconfig",		Cmd_ServerConfig_f,			0 },
 	{ "setviewpos",			Cmd_SetViewpos_f,			CMD_NOINTERMISSION|CMD_CHEAT }, //wow really??
+
+	{ "showNet",			Cmd_ShowNet_f,				0 },
+
 	{ "siegeclass",			Cmd_SiegeClass_f,			CMD_NOINTERMISSION },
 
 	{ "spot",				Cmd_Spot_f,					CMD_NOINTERMISSION|CMD_ALIVE },
