@@ -191,33 +191,33 @@ endif(NOT WIN32)
 if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${MPEngine}.app/Contents/MacOS/OpenJK"
+		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "${MPEngine}.app/Contents/MacOS/base"
+		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/base"
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 	install(TARGETS ${MPGame}
 		RUNTIME
-		DESTINATION "OpenJK"
+		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	if (WIN64)
 		# Don't do this on 32-bit Windows to avoid overwriting
 		# vanilla JKA's DLLs
 		install(TARGETS ${MPGame}
 			RUNTIME
-			DESTINATION "base"
+			DESTINATION "${JKAInstallDir}/base"
 			COMPONENT ${JKAMPCoreComponent})
 	endif()
 else()
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "OpenJK"
+		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	install(TARGETS ${MPGame}
 		LIBRARY
-		DESTINATION "base"
+		DESTINATION "${JKAInstallDir}/base"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
 
