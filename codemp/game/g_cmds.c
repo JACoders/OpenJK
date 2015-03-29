@@ -5599,8 +5599,8 @@ void choose_new_player(gentity_t *next_player)
 
 		if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 0) 
 		{ // zyk: first Universe Quest objective
-			next_player->client->pers.universe_quest_objective_control = 10; // zyk: player must kill quest reborn npcs to complete the first objective
-			next_player->client->pers.light_quest_messages = 12; // zyk: amount of quest reborns that will be spawned
+			next_player->client->pers.universe_quest_objective_control = 12; // zyk: player must kill quest reborn npcs to complete the first objective
+			next_player->client->pers.light_quest_messages = 14; // zyk: amount of quest reborns that will be spawned
 		}
 		else if (level.quest_map == 9 && next_player->client->pers.universe_quest_progress == 1)
 		{ // zyk: second Universe Quest objective

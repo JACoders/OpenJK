@@ -6179,12 +6179,12 @@ void G_RunFrame( int levelTime ) {
 								trap->SendServerCommand( -1, "chat \"^3Sage of Eternity: ^7Hero... please help us!\"");
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
-								if (ent->client->pers.light_quest_messages > 8)
+								if (ent->client->pers.light_quest_messages > 10)
 								{
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn",750,-908,497,0);
 									ent->client->pers.light_quest_messages--;
 								}
-								else if (ent->client->pers.light_quest_messages > 4)
+								else if (ent->client->pers.light_quest_messages > 5)
 								{
 									npc_ent = Zyk_NPC_SpawnType("quest_reborn_blue",750,-995,497,0);
 									ent->client->pers.light_quest_messages--;
@@ -6225,7 +6225,7 @@ void G_RunFrame( int levelTime ) {
 								if (ent->client->pers.universe_quest_messages < 8)
 									ent->client->pers.universe_quest_timer = level.time + 3000;
 								else
-									ent->client->pers.universe_quest_timer = level.time + 1500;
+									ent->client->pers.universe_quest_timer = level.time + 1200;
 							}
 						}
 						else if (ent->client->pers.universe_quest_progress == 1 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_messages < 42 && ent->client->pers.universe_quest_objective_control > -1)
