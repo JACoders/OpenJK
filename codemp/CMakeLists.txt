@@ -573,16 +573,16 @@ if(BuildMPEngine)
 	if(MakeApplicationBundles)
 		install(TARGETS ${MPEngine}
 			BUNDLE
-			DESTINATION "."
+			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
 	else(MakeApplicationBundles)
 		install(TARGETS ${MPEngine}
 			RUNTIME
-			DESTINATION "."
+			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
 		if(MPEngineExtraInstallFiles)
 			install(FILES ${MPEngineExtraInstallFiles}
-				DESTINATION "."
+				DESTINATION ${JKAInstallDir}
 				COMPONENT ${JKAMPClientComponent})
 		endif()
 	endif(MakeApplicationBundles)
@@ -675,7 +675,7 @@ if(BuildMPDed)
 	add_executable(${MPDed} ${MPDedFiles})
 	install(TARGETS ${MPDed}
 		RUNTIME
-		DESTINATION "."
+		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPServerComponent})
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
@@ -715,6 +715,6 @@ if(WIN32)
 		ALL
 		DEPENDS openjk.pk3)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
-		DESTINATION "OpenJK"
+		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
