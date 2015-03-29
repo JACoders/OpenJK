@@ -2547,9 +2547,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			}
 			else if (
 #ifdef _GAME
-				!g_jk2DFA.integer 
+				(!g_jk2DFA.integer || pm->ps->stats[STAT_RACEMODE])
 #else
-				((cgs.isJAPro && !(cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
+				((cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_JK2DFA) || pm->ps->stats[STAT_RACEMODE])) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
 #endif
 				&& !noSpecials&&
 				pm->ps->fd.saberAnimLevel == SS_STRONG &&
@@ -2576,9 +2576,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 
 			else if ( //Loda fixme, why isnt this easy to do like jk2?
 #ifdef _GAME
-				g_jk2DFA.integer 
+				(g_jk2DFA.integer && !pm->ps->stats[STAT_RACEMODE])
 #else
-				((cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
+				((cgs.isJAPro && !pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
 #endif
 				&& !noSpecials && //JAPRO, JK2 RED DFA
 				pm->ps->fd.saberAnimLevel == SS_STRONG &&

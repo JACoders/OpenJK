@@ -3062,9 +3062,9 @@ static qboolean PM_CheckJump( void )
 	}
 
 #ifdef _GAME
-	if (g_jk2DFA.integer)
+	if (g_jk2DFA.integer && !pm->ps->stats[STAT_RACEMODE])
 #else
-	if (((cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA))))
+	if (((cgs.isJAPro && !pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA))))
 #endif
 	{
 		if ( pm->cmd.upmove > 0 
