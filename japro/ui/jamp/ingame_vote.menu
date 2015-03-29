@@ -1,0 +1,112 @@
+// SERVER INFO MENU 
+{
+	menuDef 
+	{
+		name					"ingame_vote"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
+		rect					430 40 80 68
+		focusColor				1 1 1 1
+		style					1
+		border					1
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 80 68
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+		itemDef 
+		{
+			name				button1
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 4 76 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				yes
+			text				@MENUS_YES
+			type				1
+			style				2	
+			rect				2 4 76 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			38
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"vote yes" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button1
+			}
+			mouseExit 
+			{ 
+				hide			button1
+			}
+		}
+
+		itemDef 
+		{
+			name				button2
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 34 76 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				no
+			text				@MENUS_NO
+			type				1
+			style				2	
+			rect				2 34 76 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			38
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"vote no" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+	}
+}
