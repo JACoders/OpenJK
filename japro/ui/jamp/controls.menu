@@ -3601,7 +3601,6 @@
 //----------------------------------------------------------------------------------------------
 		itemDef 
 		{
-			name				japro1
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"Jetpack:"
@@ -3634,7 +3633,6 @@
 		
 		itemDef 
 		{
-			name				japro2
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"Dash:"
@@ -3667,7 +3665,6 @@
 		
 		itemDef 
 		{
-			name				japro3
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"Throw Flag:"
@@ -3700,7 +3697,6 @@
 		
 		itemDef 
 		{
-			name				japro4
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"Zoom:"
@@ -3727,6 +3723,198 @@
 			mouseexit 
 			{ 
 				hide			highlight4
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Full Force Challenge:"
+			cvar				"engage_fullforceduel"
+			rect				260 244 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Challenge an enemy to a private full force duel, or accept another's challenge."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight5
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Gun Challenge:"
+			cvar				"engage_gunduel"
+			rect				260 259 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Challenge an enemy to a private gun duel, or accept another's challenge."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight6
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight6
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Teleport Mark:"
+			cvar				"amTeleMark"
+			rect				260 274 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Mark a position to teleport back to."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight7
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight7
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Teleport:"
+			cvar				"amTele"
+			rect				260 289 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Teleport to a teleport mark."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight8
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight8
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Noclip:"
+			cvar				"noclip"
+			rect				260 304 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Freely fly around the map in race mode. Use left-click and right-click to move faster."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight9
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight9
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"FlipKick:"
+			cvar				"flipkick"
+			rect				260 319 340 14
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			174 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Move forward and tap to flip kick your enemies."
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+			}
+
+			mouseenter 
+			{
+				show			highlight10
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight10
 				hide			keybindstatus
 			}
 		}
