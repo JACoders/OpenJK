@@ -1,0 +1,409 @@
+//----------------------------------------------------------------------------------------------
+// MOVE MENU 
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					movemenu
+		visible					1
+		fullScreen				0
+		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
+		rect					10 342 212 98
+		focusColor				1 1 1 1
+
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 212 98
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		//---------------------------------
+		// BUTTONS
+		//---------------------------------
+		itemDef 
+		{
+			name				button1
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 4 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button2
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 34 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button3
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 64 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				button4
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				72 4 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef 
+		{
+			name				button5
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				72 34 68 30 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef 
+		{
+			name				button6
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				72 64 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef 
+		{
+			name				button7
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				142 4 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef 
+		{
+			name				button8
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				142 34 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef 
+		{
+			name				button9
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				142 64 68 30   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+	
+		itemDef 
+		{
+			name				style
+			text				Siege
+			type				1
+			style				2	
+			rect				2 4 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move siege" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button1
+			}
+			mouseExit 
+			{ 
+				hide			button1
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				JKA
+			type				1
+			style				2	
+			rect				2 34 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move jka" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				QW
+			type				1
+			style				2	
+			rect				2 64 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move qw" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				CPM
+			type				1
+			style				2	
+			rect				72 4 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move cpm" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button4
+			}
+			mouseExit 
+			{ 
+				hide			button4
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				Q3
+			type				1
+			style				2	
+			rect				72 34 68 30 
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move q3" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button5
+			}
+			mouseExit 
+			{ 
+				hide			button5
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				PJK
+			type				1
+			style				2	
+			rect				72 64 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move pjk" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button6
+			}
+			mouseExit 
+			{ 
+				hide			button6
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				WSW
+			type				1
+			style				2	
+			rect				142 4 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move wsw" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button7
+			}
+			mouseExit 
+			{ 
+				hide			button7
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				RJQ3
+			type				1
+			style				2	
+			rect				142 34 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move rjq3" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button8
+			}
+			mouseExit 
+			{ 
+				hide			button8
+			}
+		}
+		
+		itemDef 
+		{
+			name				style
+			text				RJCPM
+			type				1
+			style				2	
+			rect				142 64 68 30   
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			34
+			textaligny			0     
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move rjcpm" ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			button9
+			}
+			mouseExit 
+			{ 
+				hide			button9
+			}
+		}
+	}
+}
