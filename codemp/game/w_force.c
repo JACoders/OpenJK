@@ -5910,8 +5910,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 				else if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
 					WP_ForcePowerRegenerate( self, (1 + self->client->pers.other_skills_levels[10]) ); // zyk: Force User and Duelist classes regen force faster
-				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 7)
-					WP_ForcePowerRegenerate( self, 2); // zyk: Force Gunner regens force a bit faster
+				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 7 && self->client->pers.secrets_found & (1 << 8))
+					WP_ForcePowerRegenerate( self, 2); // zyk: Force Gunner with Upgrade regens force a bit faster
 				else
 					WP_ForcePowerRegenerate( self, 0 );
 			}

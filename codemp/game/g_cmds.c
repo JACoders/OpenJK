@@ -8595,6 +8595,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					strcpy(stuff_message,va("%s^3Stealth Attacker Upgrade - ^1no\n",stuff_message));
 
+				if (ent->client->pers.secrets_found & (1 << 8))
+					strcpy(stuff_message,va("%s^3Force Gunner Upgrade - ^2yes\n",stuff_message));
+				else
+					strcpy(stuff_message,va("%s^3Force Gunner Upgrade - ^1no\n",stuff_message));
+
 				if (ent->client->pers.secrets_found & (1 << 9))
 					strcpy(stuff_message,va("%s^3Impact Reducer - ^2yes\n",stuff_message));
 				else
@@ -8899,7 +8904,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 7000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 7000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9077,6 +9082,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Magic Potion: ^7recovers all Magic Power\n\n\"");
 		}
+		else if (i == 45)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Gunner Upgrade: ^7increases run speed by 20 per cent. Force power regens 2x faster. Unique Skill uses %d force power to restore 25 shield\n\n\"");
+		}
 	}
 }
 
@@ -9088,7 +9097,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,7000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000};
 
 	if (trap->Argc() == 1)
 	{
@@ -9202,6 +9211,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	else if (value == 40 && ent->client->pers.secrets_found & (1 << 0))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You already have the Holdable Items Upgrade.\n\"" );
+		return;
+	}
+	else if (value == 45 && ent->client->pers.secrets_found & (1 << 8))
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You already have the Force Gunner Upgrade.\n\"" );
 		return;
 	}
 
@@ -9400,6 +9414,10 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.magic_power = zyk_max_magic_power(ent);
 		}
+		else if (value == 45)
+		{
+			ent->client->pers.secrets_found |= (1 << 8);
+		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
 
@@ -9424,7 +9442,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0};
 
 	if (trap->Argc() == 1)
 	{

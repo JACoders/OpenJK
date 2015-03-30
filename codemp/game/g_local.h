@@ -516,7 +516,7 @@ typedef enum {
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // zyk: quantity of items at the jawa seller
-#define NUMBER_OF_SELLER_ITEMS 44
+#define NUMBER_OF_SELLER_ITEMS 45
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -677,7 +677,7 @@ typedef struct clientPersistant_s {
 	// 5 - Force Gunner Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 6 - Magic Master Unique Skill - got after player reaches level 10 and fills the skill counter once
 	// 7 - Stealth Attacker Upgrade
-	// 8 - Unused
+	// 8 - Force Gunner Upgrade
 	// 9 - Impact Reducer
 	// 10 - Flame Thrower
 	// 11 - Power Cell Weapons Upgrade
