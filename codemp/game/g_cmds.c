@@ -6740,6 +6740,98 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value)
 	return qtrue;
 }
 
+char *zyk_rpg_class(gentity_t *ent)
+{
+	if (ent->client->pers.rpg_class == 0)
+		return "Free Warrior";
+	else if (ent->client->pers.rpg_class == 1)
+		return "Force User";
+	else if (ent->client->pers.rpg_class == 2)
+		return "Bounty Hunter";
+	else if (ent->client->pers.rpg_class == 3)
+		return "Armored Soldier";
+	else if (ent->client->pers.rpg_class == 4)
+		return "Monk";
+	else if (ent->client->pers.rpg_class == 5)
+		return "Stealth Attacker";
+	else if (ent->client->pers.rpg_class == 6)
+		return "Duelist";
+	else if (ent->client->pers.rpg_class == 7)
+		return "Force Gunner";
+	else if (ent->client->pers.rpg_class == 8)
+		return "Magic Master";
+	else
+		return "";
+}
+
+/*
+==================
+Cmd_ZykMod_f
+==================
+*/
+void Cmd_ZykMod_f( gentity_t *ent ) {
+	// zyk: sends info to the client-side menu
+	if (ent->client->sess.amrpgmode == 2)
+	{
+		int i = 0;
+		char content[512];
+
+		strcpy(content,"");
+
+		for (i = 0; i < 18; i++)
+		{
+			if (i == 0 || i == 5)
+				strcpy(content,va("%s%d/5-",content,ent->client->pers.force_powers_levels[i]));
+			else if (i == 3 || i == 8 || i == 10 || i == 13 || i == 16)
+				strcpy(content,va("%s%d/4-",content,ent->client->pers.force_powers_levels[i]));
+			else
+				strcpy(content,va("%s%d/3-",content,ent->client->pers.force_powers_levels[i]));
+		}
+
+		strcpy(content,va("%s%d/3-",content,ent->client->pers.weapons_levels[10]));
+
+		for (i = 0; i < 12; i++)
+		{
+			if (i == 11)
+				strcpy(content,va("%s%d/3-",content,ent->client->pers.weapons_levels[i]));
+			else if (i != 10)
+				strcpy(content,va("%s%d/2-",content,ent->client->pers.weapons_levels[i]));
+		}
+
+		for (i = 0; i < 9; i++)
+		{
+			if (i == 0)
+				strcpy(content,va("%s%d/5-",content,ent->client->pers.other_skills_levels[i]));
+			else if (i == 1 || i == 2)
+				strcpy(content,va("%s%d/4-",content,ent->client->pers.other_skills_levels[i]));
+			else if (i == 3 || i == 8)
+				strcpy(content,va("%s%d/1-",content,ent->client->pers.other_skills_levels[i]));
+			else
+				strcpy(content,va("%s%d/3-",content,ent->client->pers.other_skills_levels[i]));
+		}
+
+		for (i = 0; i < 7; i++)
+		{
+			strcpy(content,va("%s%d/3-",content,ent->client->pers.ammo_levels[i]));
+		}
+
+		for (i = 0; i < 8; i++)
+		{
+			strcpy(content,va("%s%d/1-",content,ent->client->pers.holdable_items_levels[i]));
+		}
+
+		for (i = 9; i < 11; i++)
+		{
+			if (i == 9)
+				strcpy(content,va("%s%d/5-",content,ent->client->pers.other_skills_levels[i]));
+			else
+				strcpy(content,va("%s%d/3-",content,ent->client->pers.other_skills_levels[i]));
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
+	}
+}
+
 /*
 ==================
 Cmd_UpSkill_f
@@ -6893,6 +6985,8 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 	save_account(ent);
 
 	trap->SendServerCommand( ent-g_entities, "print \"Skill upgraded successfully.\n\"" );
+
+	Cmd_ZykMod_f(ent);
 }
 
 /*
@@ -7782,30 +7876,8 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 	save_account(ent);
 
 	trap->SendServerCommand( ent-g_entities, "print \"Skill downgraded successfully.\n\"" );
-}
 
-char *zyk_rpg_class(gentity_t *ent)
-{
-	if (ent->client->pers.rpg_class == 0)
-		return "Free Warrior";
-	else if (ent->client->pers.rpg_class == 1)
-		return "Force User";
-	else if (ent->client->pers.rpg_class == 2)
-		return "Bounty Hunter";
-	else if (ent->client->pers.rpg_class == 3)
-		return "Armored Soldier";
-	else if (ent->client->pers.rpg_class == 4)
-		return "Monk";
-	else if (ent->client->pers.rpg_class == 5)
-		return "Stealth Attacker";
-	else if (ent->client->pers.rpg_class == 6)
-		return "Duelist";
-	else if (ent->client->pers.rpg_class == 7)
-		return "Force Gunner";
-	else if (ent->client->pers.rpg_class == 8)
-		return "Magic Master";
-	else
-		return "";
+	Cmd_ZykMod_f(ent);
 }
 
 /*
@@ -11957,19 +12029,6 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 	}
 
 	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entremove <entity id>: ^7removes the entity from the map\n\n\"") );
-}
-
-/*
-==================
-Cmd_ZykMod_f
-==================
-*/
-void Cmd_ZykMod_f( gentity_t *ent ) {
-	// zyk: sends info to the client-side menu
-	if (ent->client->sess.amrpgmode == 2)
-	{
-		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent)));
-	}
 }
 
 /*

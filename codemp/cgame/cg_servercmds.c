@@ -1570,7 +1570,7 @@ static void CG_ZykMod( void )
 
 	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
 
-	while (j < 7)
+	while (j < 63)
 	{ // zyk: parsing info from the server and setting the respective cvars
 		k = 0;
 
@@ -1599,6 +1599,10 @@ static void CG_ZykMod( void )
 			trap->Cvar_Set("ui_zyk_rpg_credits", va("%s",value));
 		else if (j == 6)
 			trap->Cvar_Set("ui_zyk_rpg_rpgclass", va("%s",value));
+		else
+		{
+			trap->Cvar_Set(va("ui_zyk_skill_%d_level", (j-6)), va("%s",value));
+		}
 
 		j++;
 	}
