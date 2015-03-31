@@ -65,7 +65,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 		if ( !s[0] ) {
 			break;
 		}
-		if ( !stricmp( s, name ) ) {
+		if ( !Q_stricmp( s, name ) ) {
 			return i;
 		}
 	}

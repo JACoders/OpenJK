@@ -211,7 +211,7 @@ static const char *GetCustomSound_VariantCapped(const char *ppsTable[], int iEnt
 						//
 						for (int iScanNum=0; iScanNum<iEntryNum; iScanNum++)
 						{
-							if (!stricmp(ppsTable[iScanNum], sName))
+							if (!Q_stricmp(ppsTable[iScanNum], sName))
 							{
 								// yeah, this entry is also present in the table, so ok to return it
 								//

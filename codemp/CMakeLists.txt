@@ -1,3 +1,21 @@
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+# 
+# This file is part of the OpenJK source code.
+# 
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
+
 cmake_minimum_required(VERSION 2.8.8)
 
 # Make sure the user is not executing this script directly
@@ -578,16 +596,16 @@ if(BuildMPEngine)
 	if(MakeApplicationBundles)
 		install(TARGETS ${MPEngine}
 			BUNDLE
-			DESTINATION "."
+			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
 	else(MakeApplicationBundles)
 		install(TARGETS ${MPEngine}
 			RUNTIME
-			DESTINATION "."
+			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
 		if(MPEngineExtraInstallFiles)
 			install(FILES ${MPEngineExtraInstallFiles}
-				DESTINATION "."
+				DESTINATION ${JKAInstallDir}
 				COMPONENT ${JKAMPClientComponent})
 		endif()
 	endif(MakeApplicationBundles)
@@ -680,7 +698,7 @@ if(BuildMPDed)
 	add_executable(${MPDed} ${MPDedFiles})
 	install(TARGETS ${MPDed}
 		RUNTIME
-		DESTINATION "."
+		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPServerComponent})
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
@@ -720,6 +738,6 @@ if(WIN32)
 		ALL
 		DEPENDS openjk.pk3)
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
-		DESTINATION "OpenJK"
+		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
