@@ -744,5 +744,48 @@
 				hide			printstatsButton
 			}
 		}
+		
+		itemDef 
+		{
+			name				cameraButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				215 448 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				camera
+			text				"Camera"
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				215 448 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			cameramenu
+			} 
+			mouseenter 
+			{ 
+				show			cameraButton
+			}
+			mouseexit 
+			{ 
+				hide			cameraButton
+			}
+		}
 	}
 }
