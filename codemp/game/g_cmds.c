@@ -6828,6 +6828,83 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 				strcpy(content,va("%s%d/3-",content,ent->client->pers.other_skills_levels[i]));
 		}
 
+		for (i = 0; i < 17; i++)
+		{ // zyk: settings values
+			if (i != 8 && i != 14 && i != 15)
+			{
+				if (!(ent->client->pers.player_settings & (1 << i)))
+				{
+					strcpy(content,va("%sON-",content));
+				}
+				else
+				{
+					strcpy(content,va("%sOFF-",content));
+				}
+			}
+			else if (i == 14)
+			{
+				if (ent->client->pers.player_settings & (1 << 24))
+				{
+					strcpy(content,va("%sKorriban Action-",content));
+				}
+				else if (ent->client->pers.player_settings & (1 << 25))
+				{
+					strcpy(content,va("%sMP Duel-",content));
+				}
+				else if (ent->client->pers.player_settings & (1 << 14))
+				{
+					strcpy(content,va("%sCustom-",content));
+				}
+				else 
+				{
+					strcpy(content,va("%sHoth2 Action-",content));
+				}
+
+			}
+			else if (i == 15)
+			{
+				if (!(ent->client->pers.player_settings & (1 << i)))
+				{
+					strcpy(content,va("%sNormal-",content));
+				}
+				else
+				{
+					if (ent->client->pers.defeated_guardians == 0 && ent->client->pers.hunter_quest_progress == 0 &&
+						ent->client->pers.eternity_quest_progress == 0 && ent->client->pers.universe_quest_progress == 0)
+					{
+						strcpy(content,va("%sChallenge-",content));
+					}
+					else
+					{
+						strcpy(content,va("%sHard-",content));
+					}
+				}
+			}
+			else
+			{ // zyk: starting saber style has its own handling code
+				if (ent->client->pers.player_settings & (1 << 27))
+				{
+					strcpy(content,va("%sRed-",content));
+				}
+				else if (ent->client->pers.player_settings & (1 << 28))
+				{
+					strcpy(content,va("%sDesann-",content));
+				}
+				else if (ent->client->pers.player_settings & (1 << 29))
+				{
+					strcpy(content,va("%sTavion-",content));
+				}
+				else if (ent->client->pers.player_settings & (1 << 26))
+				{
+					strcpy(content,va("%sYellow-",content));
+				}
+				else
+				{
+					strcpy(content,va("%sBlue-",content));
+				}
+			}
+		}
+
 		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
 	}
 }
@@ -10712,6 +10789,8 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			add_credits(ent, 10);
 			G_Kill(ent);
 		}
+
+		Cmd_ZykMod_f(ent);
 	}
 }
 
