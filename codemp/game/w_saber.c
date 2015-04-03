@@ -5590,6 +5590,11 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 		return;
 	}
 
+	if (self->client->sess.raceMode) { //Dont attempt to block in racemode
+		trap->Print("Memes, canceling block check\n");
+		return;
+	}
+
 	if ( BG_SabersOff( &self->client->ps ) && self->client->NPC_class != CLASS_BOBAFETT )
 	{
 		if ( self->s.eType != ET_NPC )
@@ -8250,6 +8255,11 @@ void WP_SaberPositionUpdate( gentity_t *self, usercmd_t *ucmd )
 	{ //we cycled attack levels while we were busy, so update now that we aren't (even if that means we're dead)
 		self->client->ps.fd.saberAnimLevel = self->client->saberCycleQueue;
 		self->client->saberCycleQueue = 0;
+	}
+
+	if (self && self->inuse && self->client && self->client->sess.raceMode) {
+		trap->Print("Memes, canceling saber check\n");
+		return;
 	}
 
 	if (!self ||
