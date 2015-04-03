@@ -9161,7 +9161,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 45)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Gunner Upgrade: ^7increases run speed by 20 per cent. Force power regens 2x faster. Unique Skill uses %d force power to restore 25 shield\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Gunner Upgrade: ^7increases run speed by 20 per cent. Force power regens 2x faster. Unique Skill uses some force power to restore 25 shield\n\n\"");
 		}
 	}
 }
