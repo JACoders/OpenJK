@@ -3873,7 +3873,7 @@ qboolean TryGrapple(gentity_t *ent)
 						sleeping_flowers(ent,3000,400);
 						ent->client->pers.magic_power -= zyk_sleeping_flowers_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0)) + (500 * ent->client->pers.other_skills_levels[10]);
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
