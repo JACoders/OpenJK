@@ -141,11 +141,11 @@ G_InitGame
 */
 void InitGameAccountStuff(void);
 void G_SpawnWarpLocationsFromCfg(void);
-void G_SpawnBlocksFromCfg(void);//sad hack until blockwallcreate
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
 gentity_t *SelectRandomDeathmatchSpawnPoint( void );
 void SP_info_jedimaster_start( gentity_t *ent );
+void G_SpawnHoleFixes( void );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -343,7 +343,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//setup the warp functionality, and database stuff - japro
 	G_SpawnWarpLocationsFromCfg();
-	G_SpawnBlocksFromCfg(); //sad hack until blockwallcreate
+	G_SpawnHoleFixes();
 	InitGameAccountStuff();
 
 	// general initialization
@@ -4291,4 +4291,137 @@ Q_EXPORT intptr_t vmMain( int command, intptr_t arg0, intptr_t arg1, intptr_t ar
 	}
 
 	return -1;
+}
+
+static void G_AddSingleBox( vec3_t mins, vec3_t maxs ) {
+	gentity_t *ent = G_Spawn(qtrue);
+	ent->r.contents = CONTENTS_SOLID;
+	VectorAverage( mins, maxs, ent->r.currentOrigin );
+	VectorSubtract( mins, ent->r.currentOrigin, ent->r.mins );
+	VectorSubtract( maxs, ent->r.currentOrigin, ent->r.maxs );
+	VectorCopy( ent->r.currentOrigin, ent->s.origin );
+	VectorCopy( ent->s.origin, ent->s.pos.trBase );
+	ent->s.pos.trType = TR_STATIONARY;
+	trap->LinkEntity( (sharedEntity_t *)ent );
+	// needs to be solid during link for solid calculation
+	ent->r.contents = CONTENTS_PLAYERCLIP;
+
+	//Check if its a box only for racemode players?
+	//Set some flag
+	//Check Later in collision tests.. idk?
+
+	{
+		int x, zd, zu;
+		vec3_t bmins, bmaxs;
+		// encoded bbox
+		x = (ent->s.solid & 255);
+		zd = ((ent->s.solid>>8) & 255);
+		zu = ((ent->s.solid>>16) & 255) - 32;
+
+		bmins[0] = bmins[1] = -x;
+		bmaxs[0] = bmaxs[1] = x;
+		bmins[2] = -zd;
+		bmaxs[2] = zu;
+		
+		if ( developer.integer ) {
+			Com_Printf( "Loaded box entity %d\n", ent->s.number );
+			Com_Printf( "mins   %f %f %f\norigin %f %f %f\nmaxs   %f %f %f\nsolid: %d\nbmins   %f %f %f\nbmaxs   %f %f %f\n",
+				ent->r.mins[0], ent->r.mins[1], ent->r.mins[2],
+				ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2],
+				ent->r.maxs[0], ent->r.maxs[1], ent->r.maxs[2],
+				ent->s.solid,
+				bmins[0], bmins[1], bmins[2],
+				bmaxs[0], bmaxs[1], bmaxs[2] );
+		}
+	}
+}
+
+static void G_AddBox( vec3_t mins, vec3_t maxs ) {
+	// restrictions on clientside prediction - x,y must be equal and symmetric, and must be <= 255
+	// z must be between -255 and 223 (corner case if all are at limit, so use 222 to avoid that issue)
+	//fuck, i dont care if its predicted i want to make huge ceilings without entity limit errors
+	vec3_t singleMins, singleMaxs;
+	int xylen = min(maxs[0] - mins[0], maxs[1] - mins[1]);//min( min( 510, maxs[0] - mins[0] ), maxs[1] - mins[1] );
+	int zlen =  maxs[2] - mins[2];//min( 444, maxs[2] - mins[2] );
+	for ( singleMins[0] = mins[0]; ; singleMins[0] += min( xylen, max( 0, maxs[0] - xylen - singleMins[0] ) ) ) {
+		singleMaxs[0] = singleMins[0] + xylen;
+		for ( singleMins[1] = mins[1]; ; singleMins[1] += min( xylen, max( 0, maxs[1] - xylen - singleMins[1] ) ) ) {
+			singleMaxs[1] = singleMins[1] + xylen;
+			for ( singleMins[2] = mins[2]; ; singleMins[2] += min( zlen, max( 0, maxs[2] - zlen - singleMins[2] ) ) ) {
+				singleMaxs[2] = singleMins[2] + zlen;
+				G_AddSingleBox( singleMins, singleMaxs );
+				if ( singleMins[2] + zlen >= maxs[2] ) {
+					break;
+				}
+			}
+			if ( singleMins[1] + xylen >= maxs[1] ) {
+				break;
+			}
+		}
+		if ( singleMins[0] + xylen >= maxs[0] ) {
+			break;
+		}
+	}
+}
+
+static void G_SpawnHoleFixes( void ) {
+	char mapname[MAX_QPATH], filename[MAX_QPATH];
+	int len;
+	fileHandle_t f;
+	char info[1024] = {0};
+
+	trap->GetServerinfo(info, sizeof(info));
+	Com_sprintf( mapname, sizeof(mapname), "%s", Info_ValueForKey(info, "mapname") );
+	// note: only / is replaced with _
+	Q_strstrip( mapname, "/\n\r;:.?*<>|\\\"", "_" );
+	Com_sprintf( filename, sizeof(filename), "%s_holes.cfg", mapname );
+	len = trap->FS_Open( filename, &f, FS_READ );
+	if ( len != -1 ) {
+		// read mins, maxs out of file
+		char **cursor;
+		char *text = (char *) calloc(len + 1, 1);
+		int i;
+		vec3_t mins;
+		vec3_t maxs;
+		qboolean ended = qfalse;
+		cursor = &text;
+		trap->FS_Read( text, len, f );
+		// read contents, parse out values
+		COM_BeginParseSession( filename );
+		while ( !ended ) {
+			for ( i = 0; i < 3; i++ ) {
+				char *token = COM_ParseExt( cursor, qtrue );
+				if (!token || !*token) {
+					ended = qtrue;
+					break;
+				}
+				mins[i] = atof( token );
+			}
+			for ( i = 0; i < 3; i++ ) {
+				char *token = COM_ParseExt( cursor, qtrue );
+				if ( !token || !*token ) {
+					ended = qtrue;
+					break;
+				}
+				maxs[i] = atof( token );
+			}
+			if ( !ended ) {
+				// fix so mins is actually mins and maxs is actually maxs
+				for (i = 0; i < 3; i++) {
+					int temp = max( mins[i], maxs[i] ); //this should be float? double?
+					mins[i] = min( mins[i], maxs[i] );
+					maxs[i] = temp;
+				}
+				G_AddBox( mins, maxs );
+				Com_Printf( "Loaded box entity %f %f %f %f %f %f from file %s\n",
+					mins[0], mins[1], mins[2],
+					maxs[0], maxs[1], maxs[2],
+					filename );
+			}
+		}
+		free( text );
+		trap->FS_Close( f );
+	} else {
+		Com_Printf( "Failed to open file %s\n", filename );
+	}
 }

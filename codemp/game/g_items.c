@@ -2927,6 +2927,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 					}
 					break;
 				default:
+					freeEntity = qtrue;
 					break;
 			}
 			if (freeEntity) {

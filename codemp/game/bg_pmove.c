@@ -12702,19 +12702,6 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (!pm->pmove_float)
 		trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
 
-#ifdef _GAME
-	if (pm->ps->pm_type == PM_NORMAL) {
-		if (blocks.roof && pm->ps->origin[2] > (blocks.roof + 128) && (pm->ps->velocity[2] > -128)) { //sad hack until blockwallcreate.. only racemode?
-			pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
-			pm->ps->velocity[2] = -128;
-		}
-		else if (blocks.roof && pm->ps->origin[2] > blocks.roof && pm->ps->velocity[2] > 0) //sad hack until blockwallcreate.. only racemode?
-			pm->ps->velocity[2] = 0;
-		else if (blocks.floor && pm->ps->origin[2] < blocks.floor && pm->ps->velocity[2] < 0)
-			pm->ps->velocity[2] = 0;
-	}
-#endif
-
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{
 		pm->ps->gravity = savedGravity;

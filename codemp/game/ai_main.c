@@ -6624,6 +6624,8 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 		return 0;
 	if (bs->frame_Enemy_Len > 640) //Check pull range..
 		return 0;
+	if (bs->frame_Enemy_Len < 50)
+		return 0; //dont need to pull, we are so close
 	if (!bs->frame_Enemy_Vis)
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
@@ -6646,8 +6648,11 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 	}
 
 	if (NewBotAI_IsEnemyPullable(bs)) {
-		if (BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim))
-			return (weight);
+		if (hisHealth <= 20 && bs->frame_Enemy_Len < 250) //Check for the insta kill
+			return 10;
+		if (BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) {
+			return (weight * 2);
+		}
 		return (weight);
 	}
 
@@ -7338,17 +7343,15 @@ void DoAloneStuff(bot_state_t *bs, float thinktime) {
 		NewBotAI_Flipkick(bs);
 	trap->EA_MoveForward(bs->client);
 
-
 	//Get closest weapon we dont already have
 	//Run to it
 
 	//Entities in box.. for each..
 	//Check if we have it..
 	//Run to it..
-
-
 }
 
+#define _ADVANCEDBOTSHIT 0
 void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 {
 	int closestID = -1;
@@ -7395,7 +7398,11 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 	}
 	
 	if (closestID == -1 || bs->cur_ps.stats[STAT_RACEMODE] ) {//Its just us, or they are too far away.
+#if _ADVANCEDBOTSHIT
 		DoAloneStuff(bs, thinktime);
+#else
+		StandardBotAI(bs, thinktime);
+#endif
 		return;
 	}
 
@@ -7409,7 +7416,11 @@ void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 		bs->frame_Enemy_Vis = 0;
 
 	if (!bs->frame_Enemy_Vis && bs->frame_Enemy_Len > 8096) {
+#if _ADVANCEDBOTSHIT
 		DoAloneStuff(bs, thinktime);
+#else
+		StandardBotAI(bs, thinktime);
+#endif
 		return;
 	}
 

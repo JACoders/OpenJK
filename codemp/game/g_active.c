@@ -1083,9 +1083,9 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 			vec3_t		end2;
 			VectorCopy(end, end2);
 			end2[2] += 128;
-			G_TestLine(end, end2, 0x00000ff, 5000);
+			G_TestLine(end, end2, 0x00000ff, 8000);
 		}
-		*/
+		*/		
 
 		VectorSubtract( end, range, mins ); //tha fuck is this
 		VectorAdd( end, range, maxs );
@@ -1104,7 +1104,7 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 				continue;
 			if (touched[i] == qtrue) //already touched this move
 				continue;
-			if (Q_stricmp(hit->classname, "trigger_teleport") && Q_stricmp(hit->classname, "trigger_multiple"))//Not teleport, or multiple trigger
+			if (Q_stricmp(hit->classname, "trigger_teleport") && Q_stricmp(hit->classname, "trigger_multiple") && Q_stricmp(hit->classname, "df_trigger_checkpoint"))//Not teleport, or multiple trigger, or checkpoint
 				continue;
 			if (!trap->EntityContact( mins, maxs, (sharedEntity_t *)hit, qfalse))
 				continue;

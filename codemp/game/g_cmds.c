@@ -7655,7 +7655,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
 
-	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate     Snaps     Name\n\"");
+	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate       Snaps     Name\n\"");
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
@@ -7698,7 +7698,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				//Q_strncpyz(strTimenudge, va("%i", cl->pers.timenudge), sizeof(strTimenudge));
 			}
 
-			tmpMsg = va( "%-2s%-11s%-12s%s\n", strNum, strRate, strSnaps, strName);
+			tmpMsg = va( "%-2s%-13s%-12s%s\n", strNum, strRate, strSnaps, strName);
 								
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
