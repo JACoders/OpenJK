@@ -2132,7 +2132,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if ( !attacker )
 		return;
 
-	if (g_duelRespawn.integer && level.gametype == GT_FFA && self->client->ps.duelInProgress && (meansOfDeath != MOD_SUICIDE) && (meansOfDeath != MOD_TEAM_CHANGE)) {
+	if (g_duelRespawn.integer && level.gametype == GT_FFA && self->client->ps.duelInProgress && !self->client->pers.noDuelTele && (meansOfDeath != MOD_SUICIDE) && (meansOfDeath != MOD_TEAM_CHANGE)) {
 		VectorCopy(self->client->ps.origin, self->client->pers.respawnLocation);
 		self->client->pers.respawnAngle = self->client->ps.viewangles[YAW];
 	}

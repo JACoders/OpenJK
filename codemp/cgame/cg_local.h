@@ -121,6 +121,16 @@
 #define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
 #define JAPRO_CINFO_ROLLCANCEL		(1<<27) //jk2 1.02 rollcancel move
 
+#define JAPRO_PLUGIN_BHOP			(1<<0)	//
+#define JAPRO_PLUGIN_NOROLL			(1<<1)	//
+#define JAPRO_PLUGIN_NOCART			(1<<2)	//
+#define JAPRO_PLUGIN_JAWARUN		(1<<3)	//
+#define JAPRO_PLUGIN_NODUELTELE		(1<<4)	//
+#define JAPRO_PLUGIN_NOCENTERCP		(1<<5)	//
+#define JAPRO_PLUGIN_CHATBOXCP		(1<<6)	//
+#define JAPRO_PLUGIN_NODMGNUMBERS	(1<<7)	//
+#define JAPRO_PLUGIN_CENTERMUZZLE	(1<<8)	//
+
 typedef enum {
 	FOOTSTEP_STONEWALK,
 	FOOTSTEP_STONERUN,

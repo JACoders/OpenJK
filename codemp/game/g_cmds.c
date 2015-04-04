@@ -6289,7 +6289,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 		return;
 	}
 
@@ -6338,7 +6338,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /movementStyle <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -7655,7 +7655,7 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 	char		msg[1024-128] = {0};
 	gclient_t	*cl;
 
-	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate       Snaps     Name\n\"");
+	trap->SendServerCommand(ent-g_entities, "print \"^5   Rate    Snaps     Maxpackets  Timenudge   MaxFPS   Name\n\"");
 
 	for (i=0; i<MAX_CLIENTS; i++) {//Build a list of clients
 		char *tmpMsg = NULL;
@@ -7668,9 +7668,9 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 			char strRate[16] = {0};
 			char strSnaps[16] = {0};
 
-			//char strFPS[16] = {0};
-			//char strPackets[16] = {0};
-			//char strTimenudge[16] = {0};
+			char strFPS[16] = {0};
+			char strPackets[16] = {0};
+			char strTimenudge[16] = {0};
 
 			Q_strncpyz(strNum, va("^5%2i^3:", i), sizeof(strNum));
 			Q_strncpyz(strName, cl->pers.netname, sizeof(strName));
@@ -7679,26 +7679,44 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				Q_strncpyz(strRate, "^7Bot    ", sizeof(strRate)); //dont fucking know why it needs 4 spaces
 				Q_strncpyz(strSnaps, "^7Bot    ", sizeof(strSnaps));
 
-				//Q_strncpyz(strFPS, "^7Bot^7", sizeof(strFPS));
-				//Q_strncpyz(strPackets, "^7Bot^7", sizeof(strPackets));
-				//Q_strncpyz(strTimenudge, "^7Bot^7", sizeof(strTimenudge));
+				Q_strncpyz(strFPS, "^7Bot^7", sizeof(strFPS));
+				Q_strncpyz(strPackets, "^7Bot^7", sizeof(strPackets));
+				Q_strncpyz(strTimenudge, "^7Bot^7", sizeof(strTimenudge));
 			}
 			else {
 				if (cl->pers.rate < sv_maxRate.integer)
 					Q_strncpyz(strRate, va("^3%i", cl->pers.rate), sizeof(strRate));
 				else
 					Q_strncpyz(strRate, va("^7%i", cl->pers.rate), sizeof(strRate));
+
 				if (cl->pers.snaps < sv_fps.integer)
 					Q_strncpyz(strSnaps, va("^3%i", cl->pers.snaps), sizeof(strSnaps));
 				else
 					Q_strncpyz(strSnaps, va("^7%i", cl->pers.snaps), sizeof(strSnaps));
 
-				//Q_strncpyz(strFPS, va("%i", cl->pers.fps), sizeof(strFPS));
-				//Q_strncpyz(strPackets, va("%i", cl->pers.packets), sizeof(strPackets));
-				//Q_strncpyz(strTimenudge, va("%i", cl->pers.timenudge), sizeof(strTimenudge));
+				if (cl->pers.maxFPS == 0)
+					Q_strncpyz(strFPS, "^3?", sizeof(strFPS));
+				else if (cl->pers.maxFPS > 250 || cl->pers.maxFPS < 60)
+					Q_strncpyz(strFPS, va("^3%i", cl->pers.maxFPS), sizeof(strFPS));
+				else
+					Q_strncpyz(strFPS, va("^7%i", cl->pers.maxFPS), sizeof(strFPS));
+
+				if (cl->pers.maxPackets == 0)
+					Q_strncpyz(strPackets, "^3?", sizeof(strPackets));
+				else if (cl->pers.maxPackets < 30)
+					Q_strncpyz(strPackets, va("^3%i", cl->pers.maxPackets), sizeof(strPackets));
+				else
+					Q_strncpyz(strPackets, va("^7%i", cl->pers.maxPackets), sizeof(strPackets));
+
+				if (cl->pers.timenudge == Q3_INFINITE)
+					Q_strncpyz(strTimenudge, "^3?", sizeof(strTimenudge));
+				else if (cl->pers.timenudge < -150 || cl->pers.timenudge > 0)
+					Q_strncpyz(strTimenudge, va("^3%i", cl->pers.timenudge), sizeof(strTimenudge));
+				else
+					Q_strncpyz(strTimenudge, va("^7%i", cl->pers.timenudge), sizeof(strTimenudge));
 			}
 
-			tmpMsg = va( "%-2s%-13s%-12s%s\n", strNum, strRate, strSnaps, strName);
+			tmpMsg = va( "%-2s%-10s%-12s%-14s%-14s%-11s^7%s\n", strNum, strRate, strSnaps, strPackets, strTimenudge, strFPS, strName);
 								
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));

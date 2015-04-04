@@ -245,6 +245,16 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define VOTE_FRAGLIMIT		(1<<6)
 #define VOTE_CAPTURELIMIT	(1<<7)
 
+#define JAPRO_PLUGIN_BHOP			(1<<0)	//
+#define JAPRO_PLUGIN_NOROLL			(1<<1)	//
+#define JAPRO_PLUGIN_NOCART			(1<<2)	//
+#define JAPRO_PLUGIN_JAWARUN		(1<<3)	//
+#define JAPRO_PLUGIN_NODUELTELE		(1<<4)	//
+#define JAPRO_PLUGIN_NOCENTERCP		(1<<5)	//
+#define JAPRO_PLUGIN_CHATBOXCP		(1<<6)	//
+#define JAPRO_PLUGIN_NODMGNUMBERS	(1<<7)	//
+#define JAPRO_PLUGIN_CENTERMUZZLE	(1<<8)	//
+
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
 void G_TimeShiftClient( gentity_t *ent, int time );
@@ -695,6 +705,7 @@ typedef struct clientPersistant_s {
 	qboolean	JAWARUN;//JAPRO - Serverside - Add Clientside Version
 	qboolean	centerMuzzle;//JAPRO - Serverside - Check if client wants to center muzzlepoint.
 	qboolean	noDamageNumbers;//Japro
+	qboolean	noDuelTele;
 	qboolean	amfreeze;//JAPRO - Serverside - Admin - Amfreeze admin cmd
 	vec3_t		telemarkOrigin;//JAPRO - Serverside - Admin - Telemark storage
 	float		telemarkAngle;//JAPRO - Serverside - Admin - Telemark storage
@@ -706,6 +717,9 @@ typedef struct clientPersistant_s {
 	int			lastChatTime;//godchat fuck idk why im doing this
 	int			rate;
 	int			snaps;
+	int			timenudge;
+	int			maxFPS;
+	int			maxPackets;
 
 	//int			aimSamples[64];//japro anti yawspeed?
 	//int			aimCount;
@@ -731,10 +745,11 @@ typedef struct clientPersistant_s {
 	qboolean	noFollow;
 	qboolean	practice;
 	qboolean	haste;
-	short		showCheckpoints; //0 = off, 1 = centerprint, 2 = chat
 	qboolean	validPlugin;
 	qboolean	recordingDemo;//japro autodemo for defrag... :S
 	qboolean	keepDemo;//japro autodemo for defrag... :S
+	qboolean	showChatCP;
+	qboolean	showCenterCP;
 	int			stopRecordingTime;
 	char		oldDemoName[16];
 	char		demoName[MAX_QPATH];

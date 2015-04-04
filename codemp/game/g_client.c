@@ -2229,66 +2229,80 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		client->pers.isJAPRO = qfalse;
 	}
 
-	if (client && client->pers.isJAPRO) {//eh
-		s = Info_ValueForKey( userinfo, "cg_newRunAnim" );
-		if ( atoi( s ) ) {
-			client->pers.JAWARUN = qtrue;
-		} else {
-			client->pers.JAWARUN = qfalse;
-		}
-	}
+	s = Info_ValueForKey( userinfo, "cp_pluginDisable" );
+	if (atoi(s) & JAPRO_PLUGIN_JAWARUN)
+		client->pers.JAWARUN = qtrue;
+	else
+		client->pers.JAWARUN = qfalse;
 
-	s = Info_ValueForKey( userinfo, "cg_onlyBhop" );
-	if ( atoi( s ) ) {
-			client->pers.onlyBhop = qtrue;
-	} else {
-			client->pers.onlyBhop = qfalse;
-	}
+	if (atoi(s) & JAPRO_PLUGIN_BHOP)
+		client->pers.onlyBhop = qtrue;
+	else
+		client->pers.onlyBhop = qfalse;
 
-	s = Info_ValueForKey( userinfo, "cg_noRoll" );
-	if ( atoi( s ) ) {
-			client->pers.noRoll = qtrue;
-	} else {
-			client->pers.noRoll = qfalse;
-	}
+	if (atoi(s) & JAPRO_PLUGIN_NOROLL)
+		client->pers.noRoll = qtrue;
+	else
+		client->pers.noRoll = qfalse;
 
-	s = Info_ValueForKey( userinfo, "cg_noCartwheel" );
-	if ( atoi( s ) ) {
-			client->pers.noCartwheel = qtrue;
-	} else {
-			client->pers.noCartwheel = qfalse;
-	}
+	if (atoi(s) & JAPRO_PLUGIN_NOCART)
+		client->pers.noCartwheel = qtrue;
+	else
+		client->pers.noCartwheel = qfalse;
 
-	s = Info_ValueForKey( userinfo, "cg_centerMuzzle" );
-	if ( !atoi( s ) ) {
-		client->pers.centerMuzzle = qfalse;
-	} else {
+	if (atoi(s) & JAPRO_PLUGIN_CENTERMUZZLE)
 		client->pers.centerMuzzle = qtrue;
-	}
+	else
+		client->pers.centerMuzzle = qfalse;
 
-	s = Info_ValueForKey( userinfo, "cg_checkpoints" );
-	if (atoi(s) < 1) {
-		client->pers.showCheckpoints = 1;
-	} else if (atoi(s) == 1) {
-		client->pers.showCheckpoints = 2;
-	} else if (atoi(s) == 2) {
-		client->pers.showCheckpoints = 3;
-	} else if (atoi(s) > 2) {
-		client->pers.showCheckpoints = 0;
-	}
+	if (atoi(s) & JAPRO_PLUGIN_NOCENTERCP)
+		client->pers.showCenterCP = qfalse;
+	else
+		client->pers.showCenterCP = qtrue;
 
-	s = Info_ValueForKey( userinfo, "cg_noDamageNumbers" );
-	if ( !atoi( s ) ) {
-		client->pers.noDamageNumbers = qfalse;
-	} else {
+	if (atoi(s) & JAPRO_PLUGIN_CHATBOXCP)
+		client->pers.showChatCP = qtrue;
+	else
+		client->pers.showChatCP = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NODMGNUMBERS)
 		client->pers.noDamageNumbers = qtrue;
-	}
+	else
+		client->pers.noDamageNumbers = qfalse;
+
+	if (atoi(s) & JAPRO_PLUGIN_NODUELTELE)
+		client->pers.noDuelTele = qtrue;
+	else
+		client->pers.noDuelTele = qfalse;
 
 	s = Info_ValueForKey( userinfo, "rate" );
 	client->pers.rate = atoi(s);
+	if (client->pers.rate > 90000)
+		client->pers.rate = 90000;
 
 	s = Info_ValueForKey( userinfo, "snaps" );
 	client->pers.snaps = atoi(s);
+	if (client->pers.snaps > 1000)
+		client->pers.snaps = 1000;
+
+	s = Info_ValueForKey( userinfo, "cl_timenudge" );
+	client->pers.timenudge = atoi(s);
+	if (client->pers.timenudge > 5000)
+		client->pers.timenudge = 5000;
+	else if (client->pers.timenudge < -5000)
+		client->pers.timenudge = -5000;
+	else if (!Q_stricmp(s, ""))
+		client->pers.timenudge = Q3_INFINITE;
+
+	s = Info_ValueForKey( userinfo, "com_maxfps" );
+	client->pers.maxFPS = atoi(s);
+	if (client->pers.maxFPS > 1000)
+		client->pers.maxFPS = 1000;
+
+	s = Info_ValueForKey( userinfo, "cl_maxPackets" );
+	client->pers.maxPackets = atoi(s);
+	if (client->pers.maxPackets > 1000)
+		client->pers.maxPackets = 1000;
 
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 
