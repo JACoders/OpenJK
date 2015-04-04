@@ -954,16 +954,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "vjun2") == 0)
 	{
-		int i = 0;
-		gentity_t *ent;
-		for (i = 0; i < level.num_entities; i++)
-		{
-			ent = &g_entities[i];
-			if (Q_stricmp( ent->targetname, "kyleDoor1") == 0)
-			{
-				fix_sp_func_door(ent);
-			}
-		}
 		zyk_create_info_player_deathmatch(-831,166,217,90);
 		zyk_create_info_player_deathmatch(-700,166,217,90);
 	}
