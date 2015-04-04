@@ -1758,6 +1758,10 @@ finish:
 		newent->client->pers.universe_quest_artifact_holder_id = -1;
 		newent->client->pers.race_position = 0;
 
+		newent->client->sess.ally1 = -1;
+		newent->client->sess.ally2 = -1;
+		newent->client->sess.ally3 = -1;
+
 		// zyk: initializing Quest Power attributes
 		newent->client->pers.quest_power_status = 0;
 		newent->client->cloakDebReduce = 0;
