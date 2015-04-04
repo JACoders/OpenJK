@@ -5449,7 +5449,7 @@ void G_RunFrame( int levelTime ) {
 			//      then we scale and set it to the jetpackFuel attribute to display the fuel bar correctly to the player
 			if (ent->client->jetPackOn && ent->client->jetPackDebReduce < level.time)
 			{
-				int jetpack_debounce_amount = 18;
+				int jetpack_debounce_amount = 20;
 
 				if (ent->client->sess.amrpgmode == 2)
 				{ // zyk: RPG Mode jetpack skill. Each level decreases fuel debounce
@@ -5459,7 +5459,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (ent->client->pers.rpg_class == 8)
 					{ // zyk: Magic Master has the best jetpack
-						jetpack_debounce_amount = 7 - ent->client->pers.other_skills_levels[4] - ent->client->pers.other_skills_levels[10];
+						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 3));
 					}
 					else
 					{
