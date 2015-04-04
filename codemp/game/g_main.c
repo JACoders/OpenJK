@@ -3829,8 +3829,8 @@ void zyk_NPC_Kill_f( char *name )
 		player = &g_entities[n];
 		if ( player && player->NPC && player->client )
 		{
-			if( (Q_stricmp( name, player->NPC_type ) == 0) || Q_stricmp( name, "all" ) == 0)
-			{
+			if( (Q_stricmp( name, player->NPC_type ) == 0 || Q_stricmp( name, "all" ) == 0) && player->client->pers.guardian_invoked_by_id == -1)
+			{ // zyk: do not kill guardians
 				player->health = 0;
 				player->client->ps.stats[STAT_HEALTH] = 0;
 				if (player->die)
