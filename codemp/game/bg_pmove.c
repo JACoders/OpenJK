@@ -3238,12 +3238,28 @@ static void PM_AirMove( void ) {
 		wishvel[2] = 0;
 
 		if (pm->cmd.upmove <= 0)
-		{
-            VectorScale(wishvel, 0.8f, wishvel);
+		{ // zyk: added the Jetpack Upgrade test, in this case, player can have more control
+#if defined (_GAME)
+			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
+				VectorScale(wishvel, 1.4f, wishvel);
+			else
+				VectorScale(wishvel, 0.8f, wishvel);
+#else
+			VectorScale(wishvel, 0.8f, wishvel);
+#endif
 		}
 		else
 		{ //if we are jetting then we have more control than usual
-            VectorScale(wishvel, 2.0f, wishvel);
+#if defined (_GAME) // zyk: added the Jetpack Upgrade test, in this case, player can have more control
+			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
+				VectorScale(wishvel, 3.5f, wishvel);
+			else
+				VectorScale(wishvel, 2.0f, wishvel);
+#else
+			VectorScale(wishvel, 2.0f, wishvel);
+#endif
 		}
 	}
 	else

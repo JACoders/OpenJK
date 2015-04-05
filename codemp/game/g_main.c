@@ -5455,16 +5455,19 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: RPG Mode jetpack skill. Each level decreases fuel debounce
 					if (ent->client->pers.rpg_class == 2)
 					{ // zyk: Bounty Hunter can have a more efficient jetpack
-						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 2));
+						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10]));
 					}
 					else if (ent->client->pers.rpg_class == 8)
 					{ // zyk: Magic Master has the best jetpack
-						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 3));
+						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 2));
 					}
 					else
 					{
 						jetpack_debounce_amount -= (ent->client->pers.other_skills_levels[4] * 3);
 					}
+
+					if (ent->client->pers.secrets_found & (1 << 17)) // zyk: Jetpack Upgrade decreases fuel usage
+						jetpack_debounce_amount -= 2;
 				}
 
 				if (ent->client->pers.cmd.upmove > 0)

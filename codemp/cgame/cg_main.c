@@ -1229,6 +1229,8 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.mShipDestBurning = trap->FX_RegisterEffect("effects/ships/dest_burning.efx");
 	cgs.effects.mBobaJet = trap->FX_RegisterEffect("effects/boba/jet.efx");
 
+	// zyk: added new effect
+	cgs.effects.mBlueJet = trap->FX_RegisterEffect("effects/rockettrooper/flamenew.efx");
 
 	cgs.effects.itemCone = trap->FX_RegisterEffect("mp/itemcone.efx");
 	cgs.effects.mTurretMuzzleFlash = trap->FX_RegisterEffect("effects/turret/muzzle_flash.efx");

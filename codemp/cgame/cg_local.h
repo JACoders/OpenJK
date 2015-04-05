@@ -1011,6 +1011,7 @@ Ghoul2 Insert End
 	// zyk: RPG stuff will be set here
 	// possible bitvalues are:
 	// 0 - Radar Upgrade
+	// 1 - Blue Jetpack Flame
 	int rpg_stuff;
 } cg_t;
 
@@ -1481,6 +1482,7 @@ typedef struct cgEffects_s {
 	fxHandle_t	mShipDestDestroyed;
 	fxHandle_t	mShipDestBurning;
 	fxHandle_t	mBobaJet;
+	fxHandle_t	mBlueJet; // zyk: added new jetpack effect
 
 	//footstep effects
 	fxHandle_t footstepMud;

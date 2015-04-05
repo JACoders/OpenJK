@@ -8756,8 +8756,16 @@ void CG_Player( centity_t *cent ) {
 				{ //create effects
 					//FIXME: Just one big effect
 					//Play the effect
-					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
-					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+					if (cg.rpg_stuff & (1 << 1))
+					{ // zyk: if player has the jetpack upgrade, use the blue jetpack effect
+						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
+						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
+					}
+					else
+					{
+						trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+						trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+					}
 
 					//Keep the jet fire sound looping
 					trap->S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin,
@@ -8767,7 +8775,14 @@ void CG_Player( centity_t *cent ) {
 				{ //just idling
 					//FIXME: Different smaller effect for idle
 					//Play the effect
-					trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+					if (cg.rpg_stuff & (1 << 1))
+					{ // zyk: if player has the jetpack upgrade, use the blue jetpack effect
+						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
+					}
+					else
+					{
+						trap->FX_PlayEffectID(cgs.effects.mBobaJet, flamePos, flameDir, -1, -1, qfalse);
+					}
 				}
 
 				n++;

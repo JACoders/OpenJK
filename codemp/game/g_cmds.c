@@ -5143,8 +5143,14 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
 			G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
-		else // zyk: removing rpg stuff from client-side game		
+		else // zyk: removing radar upgrade from client-side game		
 			G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+
+		// zyk: event to set the blue jetpack flame
+		if (ent->client->pers.secrets_found & (1 << 17))
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
+		else
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
 	}
 }
 
@@ -5863,6 +5869,9 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 
 	// zyk: removing rpg stuff from client-side game
 	G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+
+	// zyk: removing blue jetpack flame
+	G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
@@ -8717,6 +8726,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					strcpy(stuff_message,va("%s^3Armored Soldier Upgrade - ^1no\n",stuff_message));
 
+				if (ent->client->pers.secrets_found & (1 << 17))
+					strcpy(stuff_message,va("%s^3Jetpack Upgrade - ^2yes\n",stuff_message));
+				else
+					strcpy(stuff_message,va("%s^3Jetpack Upgrade - ^1no\n",stuff_message));
+
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"",stuff_message) );
 			}
 			else
@@ -8981,7 +8995,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 5000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 5000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9163,6 +9177,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Gunner Upgrade: ^7increases run speed by 20 per cent. Force power regens 2x faster. Unique Skill uses some force power to restore 25 shield\n\n\"");
 		}
+		else if (i == 46)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Jetpack Upgrade: ^7decreases jetpack fuel consumption a bit and makes the jetpack more stable and faster\n\n\"");
+		}
 	}
 }
 
@@ -9174,7 +9192,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,5000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,5000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000};
 
 	if (trap->Argc() == 1)
 	{
@@ -9495,6 +9513,13 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 8);
 		}
+		else if (value == 46)
+		{
+			ent->client->pers.secrets_found |= (1 << 17);
+
+			// zyk: event to set the blue jetpack flame
+			G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
+		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
 
@@ -9519,7 +9544,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0};
 
 	if (trap->Argc() == 1)
 	{

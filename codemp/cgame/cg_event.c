@@ -2670,6 +2670,14 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			{ // zyk: if 6, remove the radar
 				cg.rpg_stuff &= ~(1 << 0);
 			}
+			else if (es->eventParm == 7)
+			{ // zyk: if 7, set the blue jetpack flame
+				cg.rpg_stuff |= (1 << 1);
+			}
+			else if (es->eventParm == 8)
+			{ // zyk: if 8, remove blue jetpack flame
+				cg.rpg_stuff &= ~(1 << 1);
+			}
 
 			if (!psStringEDRef)
 			{
